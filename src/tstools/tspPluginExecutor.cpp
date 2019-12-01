@@ -202,8 +202,9 @@ void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRa
 // Description of a restart operation (constructor).
 //----------------------------------------------------------------------------
 
-ts::tsp::PluginExecutor::RestartData::RestartData(const UStringVector& params, Report& rep) :
+ts::tsp::PluginExecutor::RestartData::RestartData(const UStringVector& params, bool same, Report& rep) :
     report(rep),
+    same_args(same),
     args(params),
     mutex(),
     condition(),
@@ -213,14 +214,21 @@ ts::tsp::PluginExecutor::RestartData::RestartData(const UStringVector& params, R
 
 
 //----------------------------------------------------------------------------
-// Restart the plugin with new parameters.
+// Restart the plugin.
 //----------------------------------------------------------------------------
+
+void ts::tsp::PluginExecutor::restart(Report& report)
+{
+    restart(RestartDataPtr(new RestartData(UStringVector(), true, report)));
+}
 
 void ts::tsp::PluginExecutor::restart(const UStringVector& params, Report& report)
 {
-    // Allocate an object describing the operation.
-    RestartDataPtr rd(new RestartData(params, report));
+    restart(RestartDataPtr(new RestartData(params, false, report)));
+}
 
+void ts::tsp::PluginExecutor::restart(const RestartDataPtr& rd)
+{
     // Acquire the global mutex to modify global data.
     // To avoid deadlocks, always acquire the global mutex first, then a RestartData mutex.
     {
@@ -276,24 +284,30 @@ bool ts::tsp::PluginExecutor::processPendingRestart()
     // First, stop the current execution.
     plugin()->stop();
 
-    // Save previous arguments to restart with the previous configuration
-    // if the restart fails with the new arguments.
-    UStringVector previous_args;
-    plugin()->getCommandArgs(previous_args);
-
     // Redirect error messages from command line analysis to the remote tspcontrol.
     Report* previous_report = plugin()->redirectReport(&_restart_data->report);
 
-    // This command line analysis shall not affect the tsp process.
-    plugin()->setFlags(plugin()->getFlags() | Args::NO_HELP | Args::NO_EXIT_ON_ERROR);
+    bool success = false;
+    if (_restart_data->same_args) {
+        // Restart with same arguments, no need to reanalyze the command.
+        success = plugin()->start();
+    }
+    else {
+        // Save previous arguments to restart with the previous configuration if the restart fails with the new arguments.
+        UStringVector previous_args;
+        plugin()->getCommandArgs(previous_args);
 
-    // Try to restart with the new command line arguments.
-    bool success = plugin()->analyze(pluginName(), _restart_data->args, false) && plugin()->getOptions() && plugin()->start();
+        // This command line analysis shall not affect the tsp process.
+        plugin()->setFlags(plugin()->getFlags() | Args::NO_HELP | Args::NO_EXIT_ON_ERROR);
 
-    // In case of restart failure, try to restart with the previous arguments.
-    if (!success) {
-        _restart_data->report.warning(u"failed to restart plugin %s, restarting with previous parameters", {pluginName()});
-        success = plugin()->analyze(pluginName(), previous_args, false) && plugin()->getOptions() && plugin()->start();
+        // Try to restart with the new command line arguments.
+        success = plugin()->analyze(pluginName(), _restart_data->args, false) && plugin()->getOptions() && plugin()->start();
+
+        // In case of restart failure, try to restart with the previous arguments.
+        if (!success) {
+            _restart_data->report.warning(u"failed to restart plugin %s, restarting with previous parameters", {pluginName()});
+            success = plugin()->analyze(pluginName(), previous_args, false) && plugin()->getOptions() && plugin()->start();
+        }
     }
 
     // Restore error messages to previous report.

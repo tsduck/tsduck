@@ -43,7 +43,7 @@
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const size_t ts::TablesLogger::DEFAULT_LOG_SIZE;
+constexpr size_t ts::TablesLogger::DEFAULT_LOG_SIZE;
 #endif
 
 
@@ -363,21 +363,31 @@ bool ts::TablesLogger::open()
     _table_count = _packet_count = 0;
     _demux.reset();
     _cas_mapper.reset();
+    _xmlOut.close();
+    _xmlDoc.clear();
     _xmlOpen = false;
     _shortSections.clear();
     _allSections.clear();
     _sectionsOnce.clear();
-    _section_filters.clear();
+
+    if (_binfile.is_open()) {
+        _binfile.close();
+    }
+    if (_sock.isOpen()) {
+        _sock.close(_report);
+    }
 
     // Set PID's to filter.
     _demux.setPIDFilter(_initial_pids);
 
     // Set either a table or section handler, depending on --all-sections
     if (_all_sections) {
+        _demux.setTableHandler(nullptr);
         _demux.setSectionHandler(this);
     }
     else {
         _demux.setTableHandler(this);
+        _demux.setSectionHandler(nullptr);
     }
 
     // Type of sections to get.

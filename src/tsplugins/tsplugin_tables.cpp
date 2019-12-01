@@ -88,11 +88,13 @@ ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
 
 bool ts::TablesPlugin::getOptions()
 {
+    duck.reset();
     return duck.loadArgs(*this) && _logger.loadArgs(duck, *this) && _display.loadArgs(duck, *this);
 }
 
 bool ts::TablesPlugin::start()
 {
+    duck.resetStandards();  // reset accumulated standards (not command line ones).
     return _logger.open();
 }
 
@@ -109,6 +111,6 @@ bool ts::TablesPlugin::stop()
 
 ts::ProcessorPlugin::Status ts::TablesPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    _logger.feedPacket (pkt);
+    _logger.feedPacket(pkt);
     return _logger.completed() ? TSP_END : TSP_OK;
 }

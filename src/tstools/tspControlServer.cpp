@@ -329,6 +329,13 @@ void ts::tsp::ControlServer::executeRestart(const Args* args, Report& response)
     // Keep only plugin parameters.
     params.erase(params.begin());
 
+    // Same we use new parameters?
+    const bool same = args->present(u"same");
+    if (same && !params.empty()) {
+        response.error(u"do not specify new plugin options with --same");
+        return;
+    }
+
     // Get the target plugin.
     PluginExecutor* plugin = nullptr;
     if (index == 0) {
@@ -342,5 +349,10 @@ void ts::tsp::ControlServer::executeRestart(const Args* args, Report& response)
     }
 
     // Restart the plugin.
-    plugin->restart(params, response);
+    if (same) {
+        plugin->restart(response);
+    }
+    else {
+        plugin->restart(params, response);
+    }
 }

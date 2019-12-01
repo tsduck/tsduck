@@ -214,6 +214,13 @@ namespace ts {
             //!
             void restart(const UStringVector& params, Report& report);
 
+            //!
+            //! Restart the plugin with same parameters.
+            //! This method is called from another thread, not the plugin thread.
+            //! @param [in,out] report Where to report errors.
+            //!
+            void restart(Report& report);
+
         protected:
             PacketBuffer*         _buffer;    //!< Description of shared packet buffer.
             PacketMetadataBuffer* _metadata;  //!< Description of shared packet metadata buffer.
@@ -288,14 +295,18 @@ namespace ts {
                 TS_NOBUILD_NOCOPY(RestartData);
             public:
                 // Constructor.
-                RestartData(const UStringVector& params, Report& rep);
+                RestartData(const UStringVector& params, bool same, Report& rep);
 
                 Report&       report;      // Report progress and error messages.
+                bool          same_args;   // Use same args as previously.
                 UStringVector args;        // New command line parameters for the plugin (read-only).
                 Mutex         mutex;       // Mutex to protect the following fields.
                 Condition     condition;   // Condition to report the end of restart (for the requesting thread).
                 bool          completed;   // End of operation, restarted or aborted.
             };
+
+            // Restart this plugin.
+            void restart(const RestartDataPtr&);
         };
     }
 }

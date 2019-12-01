@@ -75,7 +75,7 @@ namespace ts {
         //! beginning of the table payload (the header is not displayed).
         //! The default is 8 bytes.
         //!
-        static const size_t DEFAULT_LOG_SIZE = 8;
+        static constexpr size_t DEFAULT_LOG_SIZE = 8;
 
         // Implementation of ArgsSupplierInterface.
         virtual void defineArgs(Args& args) const override;
