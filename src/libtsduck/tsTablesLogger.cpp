@@ -360,7 +360,8 @@ bool ts::TablesLogger::open()
 {
     // Reinitialize working data.
     _abort = _exit = false;
-    _table_count = _packet_count = 0;
+    _table_count = 0;
+    _packet_count = 0;
     _demux.reset();
     _cas_mapper.reset();
     _xmlOut.close();

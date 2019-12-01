@@ -551,8 +551,7 @@ bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& val
     }
 
     // Decode the string as an unsigned integer.
-    typedef typename std::make_unsigned<INT>::type UINT;
-    UINT uvalue = static_cast<UINT>(0);
+    typename std::make_unsigned<INT>::type uvalue = 0;
     const bool ok = ToIntegerHelper(start, end, uvalue, thousandSeparators, decimals, decimalSeparators);
 
     // Convert the unsigned integer as signed integer with the appropriate sign.
