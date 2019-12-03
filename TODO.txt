@@ -59,20 +59,14 @@ TSDuck - List of features to be implemented or fixed
   - 6.2.38   short_smoothing_buffer_descriptor
   - 6.2.42   telephone_descriptor
   - 6.4.4    part 9 of ETSI TS 102 825
-  - 6.4.5.1  C2_delivery_system_descriptor
-  - 6.4.5.2  SH_delivery_system_descriptor
-  - 6.4.5.3  T2_delivery_system_descriptor
-  - 6.4.5.4  C2_bundle_delivery_system_descriptor
-  - 6.4.6    image_icon_descriptor
-  - 6.4.8    network_change_notify_descriptor
-  - 6.4.11   target_region_descriptor
-  - 6.4.12   target_region_name_descriptor
-  - 6.4.14   URI_linkage_descriptor
-  - 6.4.15   video_depth_range_descriptor
+  - 6.4.6.5  S2X_satellite_delivery_system_descriptor
+  - 6.4.7    image_icon_descriptor
+  - 6.4.9    network_change_notify_descriptor
+  - 6.4.12   target_region_descriptor
+  - 6.4.13   target_region_name_descriptor
+  - 6.4.15   URI_linkage_descriptor
+  - 6.4.16   video_depth_range_descriptor
   - G.3.1    DTS-HD_audio_stream_descriptor
-
-  A038 (DVB SI)
-  - 6.4.6.5  S2X satellite delivery system descriptor
 
   ETSI TS 102 006 (System Software Update)
   - 9.5.2.6   update_descriptor

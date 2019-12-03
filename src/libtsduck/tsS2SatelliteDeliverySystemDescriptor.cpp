@@ -53,7 +53,7 @@ TS_FACTORY_REGISTER(ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor, 
 //----------------------------------------------------------------------------
 
 ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S2, MY_XML_NAME),
     scrambling_sequence_selector(false),
     multiple_input_stream_flag(false),
     backwards_compatibility_indicator(false),

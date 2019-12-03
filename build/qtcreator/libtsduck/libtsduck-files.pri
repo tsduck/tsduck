@@ -75,6 +75,8 @@ HEADERS += \
     ../../../src/libtsduck/tsBlockCipherAlertInterface.h \
     ../../../src/libtsduck/tsBouquetNameDescriptor.h \
     ../../../src/libtsduck/tsByteBlock.h \
+    ../../../src/libtsduck/tsC2BundleDeliverySystemDescriptor.h \
+    ../../../src/libtsduck/tsC2DeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsCableDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsCableEmergencyAlertTable.h \
     ../../../src/libtsduck/tsCADescriptor.h \
@@ -381,6 +383,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSHA256.h \
     ../../../src/libtsduck/tsSHA512.h \
     ../../../src/libtsduck/tsSharedLibrary.h \
+    ../../../src/libtsduck/tsSHDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsShortEventDescriptor.h \
     ../../../src/libtsduck/tsSimpleApplicationBoundaryDescriptor.h \
     ../../../src/libtsduck/tsSimpleApplicationLocationDescriptor.h \
@@ -418,6 +421,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSystemRandomGenerator.h \
     ../../../src/libtsduck/tsSysUtils.h \
     ../../../src/libtsduck/tsSysUtilsTemplate.h \
+    ../../../src/libtsduck/tsT2DeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsT2MIDemux.h \
     ../../../src/libtsduck/tsT2MIDescriptor.h \
     ../../../src/libtsduck/tsT2MIHandlerInterface.h \
@@ -608,6 +612,8 @@ SOURCES += \
     ../../../src/libtsduck/tsBlockCipherAlertInterface.cpp \
     ../../../src/libtsduck/tsBouquetNameDescriptor.cpp \
     ../../../src/libtsduck/tsByteBlock.cpp \
+    ../../../src/libtsduck/tsC2BundleDeliverySystemDescriptor.cpp \
+    ../../../src/libtsduck/tsC2DeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsCableDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsCableEmergencyAlertTable.cpp \
     ../../../src/libtsduck/tsCADescriptor.cpp \
@@ -871,6 +877,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSHA256.cpp \
     ../../../src/libtsduck/tsSHA512.cpp \
     ../../../src/libtsduck/tsSharedLibrary.cpp \
+    ../../../src/libtsduck/tsSHDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsShortEventDescriptor.cpp \
     ../../../src/libtsduck/tsSimpleApplicationBoundaryDescriptor.cpp \
     ../../../src/libtsduck/tsSimpleApplicationLocationDescriptor.cpp \
@@ -906,6 +913,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSystemMonitor.cpp \
     ../../../src/libtsduck/tsSystemRandomGenerator.cpp \
     ../../../src/libtsduck/tsSysUtils.cpp \
+    ../../../src/libtsduck/tsT2DeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsT2MIDemux.cpp \
     ../../../src/libtsduck/tsT2MIDescriptor.cpp \
     ../../../src/libtsduck/tsT2MIHandlerInterface.cpp \

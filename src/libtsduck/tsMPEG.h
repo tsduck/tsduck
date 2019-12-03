@@ -1356,7 +1356,7 @@ namespace ts {
         EDID_S2X_DELIVERY       = 0x17, //!< Ext.DID for S2X_satellite_delivery_system_descriptor
         EDID_PROTECTION_MSG     = 0x18, //!< Ext.DID for protection_message_descriptor
         EDID_AUDIO_PRESELECT    = 0x19, //!< Ext.DID for audio_preselection_descriptor
-        EDID_TTML_SUBTITLING    = 0x20, //!< Ext.DID for TTML_subtitling_descriptor (could become 0x1A, value in A038 seems weird)
+        EDID_TTML_SUBTITLING    = 0x20, //!< Ext.DID for TTML_subtitling_descriptor
         EDID_NULL               = 0xFF, //!< Invalid EDID value, can be used as placeholder.
     };
 

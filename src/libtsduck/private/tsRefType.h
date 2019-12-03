@@ -46,6 +46,8 @@
     REF_TYPE(AVCTimingAndHRDDescriptor);
     REF_TYPE(AVCVideoDescriptor);
     REF_TYPE(BouquetNameDescriptor);
+    REF_TYPE(C2BundleDeliverySystemDescriptor);
+    REF_TYPE(C2DeliverySystemDescriptor);
     REF_TYPE(CableDeliverySystemDescriptor);
     REF_TYPE(CADescriptor);
     REF_TYPE(CAIdentifierDescriptor);
@@ -143,6 +145,7 @@
     REF_TYPE(ServiceLocationDescriptor);
     REF_TYPE(ServiceMoveDescriptor);
     REF_TYPE(ServiceRelocatedDescriptor);
+    REF_TYPE(SHDeliverySystemDescriptor);
     REF_TYPE(ShortEventDescriptor);
     REF_TYPE(SimpleApplicationBoundaryDescriptor);
     REF_TYPE(SimpleApplicationLocationDescriptor);
@@ -162,6 +165,7 @@
     REF_TYPE(SubtitlingDescriptor);
     REF_TYPE(SupplementaryAudioDescriptor);
     REF_TYPE(SystemClockDescriptor);
+    REF_TYPE(T2DeliverySystemDescriptor);
     REF_TYPE(T2MIDescriptor);
     REF_TYPE(TargetBackgroundGridDescriptor);
     REF_TYPE(TargetIPAddressDescriptor);

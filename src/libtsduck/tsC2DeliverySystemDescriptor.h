@@ -28,51 +28,56 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Abstract base class for DVB delivery system descriptors
+//!  Representation of a C2_delivery_system_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractDescriptor.h"
-#include "tsModulationArgs.h"
-#include "tsMPEG.h"
+#include "tsAbstractDeliverySystemDescriptor.h"
 
 namespace ts {
-
     //!
-    //! Abstract base class for DVB delivery system descriptors.
+    //! Representation of a C2_delivery_system_descriptor.
+    //!
+    //! @see ETSI 300 468, 6.4.6.1
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL AbstractDeliverySystemDescriptor : public AbstractDescriptor
+    class TSDUCKDLL C2DeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
     {
     public:
-        //!
-        //! Get the delivery system.
-        //! @return The delivery system.
-        //!
-        virtual DeliverySystem deliverySystem() const;
+        // Public members:
+        uint8_t  plp_id;                           //!< PLP id.
+        uint8_t  data_slice_id;                    //!< Data slice id.
+        uint32_t C2_system_tuning_frequency;       //!< Frequency in Hz.
+        uint8_t  C2_system_tuning_frequency_type;  //!< 2 bits
+        uint8_t  active_OFDM_symbol_duration;      //!< 3 bits
+        uint8_t  guard_interval;                   //!< 3 bits, guard interval
 
         //!
-        //! Virtual destructor
+        //! Default constructor.
         //!
-        virtual ~AbstractDeliverySystemDescriptor();
+        C2DeliverySystemDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        C2DeliverySystemDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
+        DeclareDisplayDescriptor();
 
     protected:
-        //!
-        //! The delivery system can be modified by subclasses only
-        //!
-        DeliverySystem _system;
-
-        //!
-        //! Protected constructor for subclasses.
-        //! @param [in] tag Descriptor tag.
-        //! @param [in] sys The delivery system.
-        //! @param [in] xml_name Descriptor name, as used in XML structures.
-        //!
-        AbstractDeliverySystemDescriptor(DID tag, DeliverySystem sys, const UChar* xml_name);
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
 
     private:
-        // Unreachable constructors and operators.
-        AbstractDeliverySystemDescriptor() = delete;
+        // Enumerations for XML. Also used in class C2BundleDeliverySystemDescriptor.
+        friend class C2BundleDeliverySystemDescriptor;
+        static const ts::Enumeration C2GuardIntervalNames;
     };
 }
