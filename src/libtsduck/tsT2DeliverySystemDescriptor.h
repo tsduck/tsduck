@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an S2_satellite_delivery_system_descriptor.
+//!  Representation of a T2_delivery_system_descriptor.
 //!
 //----------------------------------------------------------------------------
 
@@ -37,32 +37,68 @@
 
 namespace ts {
     //!
-    //! Representation of an S2_satellite_delivery_system_descriptor.
+    //! Representation of a T2_delivery_system_descriptor.
     //!
-    //! @see ETSI 300 468, 6.2.13.3.
+    //! @see ETSI 300 468, 6.4.6.3
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL S2SatelliteDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
+    class TSDUCKDLL T2DeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
     {
     public:
-        // Public members:
-        bool     scrambling_sequence_selector;        //!< See ETSI 300 468, 6.2.13.3.
-        bool     multiple_input_stream_flag;          //!< See ETSI 300 468, 6.2.13.3.
-        bool     backwards_compatibility_indicator;   //!< See ETSI 300 468, 6.2.13.3.
-        uint32_t scrambling_sequence_index;           //!< See ETSI 300 468, 6.2.13.3, 18-bit value.
-        uint8_t  input_stream_identifier;             //!< See ETSI 300 468, 6.2.13.3.
+        //!
+        //! Description of a subcell.
+        //!
+        struct TSDUCKDLL Subcell
+        {
+            Subcell();                      //!< Default constructor.
+            uint8_t  cell_id_extension;     //!< Cell id extension.
+            uint64_t transposer_frequency;  //!< Subcell transposer frequency in Hz.
+        };
+
+        //!
+        //! List of subcell entries.
+        //!
+        typedef std::list<Subcell> SubcellList;
+
+        //!
+        //! Description of a cell.
+        //!
+        struct TSDUCKDLL Cell
+        {
+            Cell();                                  //!< Default constructor.
+            uint16_t              cell_id;           //!< Cell id.
+            std::vector<uint64_t> centre_frequency;  //!< Cell centre frequencies in Hz.
+            SubcellList           subcells;          //!< List of subcells.
+        };
+
+        //!
+        //! List of cell entries.
+        //!
+        typedef std::list<Cell> CellList;
+
+        // T2DeliverySystemDescriptor public members:
+        uint8_t   plp_id;             //!< PLP id.
+        uint16_t  T2_system_id;       //!< T2 system id.
+        bool      has_extension;      //!< If true, all subsequent fields are used. When false, they are ignored.
+        uint8_t   SISO_MISO;          //!< 2 bits, SISO/MISO indicator.
+        uint8_t   bandwidth;          //!< 2 bits, bandwidth.
+        uint8_t   guard_interval;     //!< 3 bits, guard interval.
+        uint8_t   transmission_mode;  //!< 3 bits, transmission mode.
+        bool      other_frequency;    //!< Other frequencies exist.
+        bool      tfs;                //!< TFS arrangement in place.
+        CellList  cells;              //!< List of cells.
 
         //!
         //! Default constructor.
         //!
-        S2SatelliteDeliverySystemDescriptor();
+        T2DeliverySystemDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        S2SatelliteDeliverySystemDescriptor(DuckContext& duck, const Descriptor& bin);
+        T2DeliverySystemDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;

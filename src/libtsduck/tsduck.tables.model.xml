@@ -769,6 +769,25 @@
         symbol_rate="SymbolRate, required"
         FEC_inner="undefined|1/2|2/3|3/4|5/6|7/8|8/9|3/5|4/5|9/10|none, required"/>
 
+    <C2_delivery_system_descriptor
+        plp_id="uint8, required"
+        data_slice_id="uint8, required"
+        C2_system_tuning_frequency="FrequencyHz, required"
+        C2_system_tuning_frequency_type="uint2, required"
+        active_OFDM_symbol_duration="uint3, required"
+        guard_interval="1/128|1/64|uint3, required"/>
+
+    <C2_bundle_delivery_system_descriptor>
+      <!-- One per PLP -->
+      <plp plp_id="uint8, required"
+           data_slice_id="uint8, required"
+           C2_system_tuning_frequency="FrequencyHz, required"
+           C2_system_tuning_frequency_type="uint2, required"
+           active_OFDM_symbol_duration="uint3, required"
+           guard_interval="1/128|1/64|uint3, required"
+           master_channel="bool, required"/>
+    </C2_bundle_delivery_system_descriptor>
+
     <caption_service_descriptor>
       <!-- One per service -->
       <service language="char3, required"
@@ -1370,11 +1389,6 @@
       </additional_identification_info>
     </registration_descriptor>
 
-    <S2_satellite_delivery_system_descriptor
-        backwards_compatibility="bool, required"
-        scrambling_sequence_index="uint18, optional"
-        input_stream_identifier="uint8, optional"/>
-
     <satellite_delivery_system_descriptor
         frequency="SatelliteFrequencyHz, required"
         orbital_position="SatelliteOrbitalPosition, eg. 19.2, required"
@@ -1385,6 +1399,39 @@
         modulation_type="auto|QPSK|8PSK|16-QAM, default=QPSK"
         symbol_rate="SatelliteSymbolRate, required"
         FEC_inner="undefined|1/2|2/3|3/4|5/6|7/8|8/9|3/5|4/5|9/10|none, required"/>
+
+    <S2_satellite_delivery_system_descriptor
+        backwards_compatibility="bool, required"
+        scrambling_sequence_index="uint18, optional"
+        input_stream_identifier="uint8, optional"/>
+
+    <SH_delivery_system_descriptor diversity_mode="uint4, required">
+      <!-- Number of modulations depends on the SH config, e.g. 1 in SFN, 2 in non-SFN -->
+      <modulation>
+        <!-- Modulation type: exactly one of TDM or OFDM must be present -->
+        <TDM
+            polarization="horizontal|vertical|left|right, required"
+            roll_off="0.35|0.25|0.15|reserved, required"
+            modulation_mode="QPSK|8PSK|16APSK|reserved, required"
+            code_rate="uint4, required"
+            symbol_rate="uint5, required"/>
+        <OFDM
+            bandwidth="8MHz|7MHz|6MHz|5MHz|1.7MHz|uint3, required"
+            priority="uint1, required"
+            constellation_and_hierarchy="uint3, required"
+            code_rate="uint4, required"
+            guard_interval="1/32|1/16|1/8|1/4|uint2, required"
+            transmission_mode="1k|2k|4k|8k|uint2, required"
+            common_frequency="bool, required"/>
+        <!-- At most one interleaver, optional fields must be all absent or all present -->
+        <interleaver
+            common_multiplier="uint6, required"
+            nof_late_taps="uint6, optional"
+            nof_slices="uint6, optional"
+            slice_distance="uint8, optional"
+            non_late_increments="uint6, optional"/>
+      </modulation>
+    </SH_delivery_system_descriptor>
 
     <scrambling_descriptor scrambling_mode="uint8, required"/>
 
@@ -1638,6 +1685,28 @@
         guard_interval="1/32|1/16|1/8|1/4, required"
         transmission_mode="2k|8k|4k, required"
         other_frequency="bool, required"/>
+
+    <T2_delivery_system_descriptor
+        plp_id="uint8, required"
+        T2_system_id="uint16, required">
+      <!-- Optional extension -->
+      <extension
+          SISO_MISO="SISO|MISO|uint2, required"
+          bandwidth="8MHz|7MHz|6MHz|5MHz|10MHz|1.712MHz|uint4, required"
+          guard_interval="1/32|1/16|1/8|1/4|1/128|19/128|19/256|uint3, required"
+          transmission_mode="2k|8k|4k|1k|16k|32k|uint3, required"
+          other_frequency="bool, required"
+          tfs="bool, required">
+        <!-- One per cell -->
+        <cell cell_id="uint16, required">
+          <!-- Only one if tfs is false, any number if tfs is true -->
+          <centre_frequency value="FrequencyHz, required"/>
+          <!-- One per subcell -->
+          <subcell cell_id_extension="uint8, required"
+                   transposer_frequency="FrequencyHz, required"/>
+        </cell>
+      </extension>
+    </T2_delivery_system_descriptor>
 
     <time_shifted_event_descriptor
         reference_service_id="uint16, required"

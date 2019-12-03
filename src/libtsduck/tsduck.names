@@ -3326,3 +3326,41 @@ Bits = 8
 0x21 = Viewer-Direct-Select Button B
 0x22 = Viewer-Direct-Select Button C
 0x23 = Viewer-Direct-Select Button D
+
+[C2TuningType]
+# In DVB C2_delivery_system_descriptor.
+Bits = 2
+0 = Data Slice tuning frequency
+1 = C2 system centre frequency
+2 = Initial tuning position for a dependent static data slice
+
+[C2SymbolDuration]
+# In DVB C2_delivery_system_descriptor.
+Bits = 3
+0 = 448 μs (4k FFT mode for 8MHz CATV systems)
+1 = 597,33 μs (4k FFT mode for 6MHz CATV systems)
+
+[SHConstellationHierarchy]
+# In DVB SH_delivery_system_descriptor.
+Bits = 3
+0 = QPSK
+1 = 16-QAM non hierarchical
+2 = 16-QAM hierarchical alpha = 1
+3 = 16-QAM hierarchical alpha = 2
+4 = 16-QAM hierarchical alpha = 3
+
+[SHCodeRate]
+# In DVB SH_delivery_system_descriptor.
+Bits = 4
+0 = 1/5 standard
+1 = 2/9 standard
+2 = 1/4 standard
+3 = 2/7 standard
+4 = 1/3 standard
+5 = 1/3 complementary
+6 = 2/5 standard
+7 = 2/5 complementary
+8 = 1/2 standard
+9 = 1/2 complementary
+10 = 2/3 standard
+11 = 2/3 complementary

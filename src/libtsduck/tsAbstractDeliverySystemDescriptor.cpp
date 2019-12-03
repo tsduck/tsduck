@@ -40,3 +40,9 @@ ts::AbstractDeliverySystemDescriptor::AbstractDeliverySystemDescriptor(DID tag, 
 ts::AbstractDeliverySystemDescriptor::~AbstractDeliverySystemDescriptor()
 {
 }
+
+ts::DeliverySystem ts::AbstractDeliverySystemDescriptor::deliverySystem() const
+{
+    // Default implementation.
+    return _system;
+}

@@ -47,10 +47,10 @@ namespace ts {
         // SatelliteDeliverySystemDescriptor public members:
         uint32_t frequency;          //!< Frequency, unit is 10 kHz.
         uint16_t orbital_position;   //!< Orbital position, unit is 0.1 degree.
-        bool     eastNotWest;        //!< True for East, false for West.
+        bool     east_not_west;      //!< True for East, false for West.
         uint8_t  polarization;       //!< Polarization, 0..3 (2 bits).
         uint8_t  roll_off;           //!< Roll-off factor, 0..3 (2 bits).
-        bool     dvbS2;              //!< True for DVB-S2, false for DVB-S.
+        bool     dvb_s2;             //!< True for DVB-S2, false for DVB-S.
         uint8_t  modulation_type;    //!< Modulation type, 0..3 (2 bits).
         uint32_t symbol_rate;        //!< Symbol rate, unit is 100 symbol/s.
         uint8_t  FEC_inner;          //!< FEC inner, 4 bits.
@@ -68,6 +68,7 @@ namespace ts {
         SatelliteDeliverySystemDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
+        virtual DeliverySystem deliverySystem() const override;
         virtual void serialize(DuckContext&, Descriptor&) const override;
         virtual void deserialize(DuckContext&, const Descriptor&) override;
         virtual void fromXML(DuckContext&, const xml::Element*) override;
@@ -76,5 +77,13 @@ namespace ts {
     protected:
         // Inherited methods
         virtual void buildXML(DuckContext&, xml::Element*) const override;
+
+    private:
+        static const Enumeration DirectionNames;
+        static const Enumeration PolarizationNames;
+        static const Enumeration RollOffNames;
+        static const Enumeration SystemNames;
+        static const Enumeration ModulationNames;
+        static const Enumeration CodeRateNames;
     };
 }

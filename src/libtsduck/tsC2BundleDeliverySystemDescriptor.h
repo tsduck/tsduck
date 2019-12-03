@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an S2_satellite_delivery_system_descriptor.
+//!  Representation of a C2_bundle_delivery_system_descriptor.
 //!
 //----------------------------------------------------------------------------
 
@@ -37,32 +37,54 @@
 
 namespace ts {
     //!
-    //! Representation of an S2_satellite_delivery_system_descriptor.
+    //! Representation of a C2_bundle_delivery_system_descriptor.
     //!
-    //! @see ETSI 300 468, 6.2.13.3.
+    //! @see ETSI 300 468, 6.4.6.4
+    //! @see C2DeliverySystemDescriptor
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL S2SatelliteDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
+    class TSDUCKDLL C2BundleDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
     {
     public:
-        // Public members:
-        bool     scrambling_sequence_selector;        //!< See ETSI 300 468, 6.2.13.3.
-        bool     multiple_input_stream_flag;          //!< See ETSI 300 468, 6.2.13.3.
-        bool     backwards_compatibility_indicator;   //!< See ETSI 300 468, 6.2.13.3.
-        uint32_t scrambling_sequence_index;           //!< See ETSI 300 468, 6.2.13.3, 18-bit value.
-        uint8_t  input_stream_identifier;             //!< See ETSI 300 468, 6.2.13.3.
+        //!
+        //! PLP entry.
+        //!
+        struct TSDUCKDLL Entry
+        {
+            Entry();                                   //!< Default constructor.
+            uint8_t  plp_id;                           //!< PLP id.
+            uint8_t  data_slice_id;                    //!< Data slice id.
+            uint32_t C2_system_tuning_frequency;       //!< Frequency in Hz.
+            uint8_t  C2_system_tuning_frequency_type;  //!< 2 bits
+            uint8_t  active_OFDM_symbol_duration;      //!< 3 bits
+            uint8_t  guard_interval;                   //!< 3 bits, guard interval.
+            bool     master_channel;                   //!< Use master clock.
+        };
+
+        //!
+        //! List of PLP entries.
+        //!
+        typedef std::list<Entry> EntryList;
+
+        //!
+        //! Maximum number of entries to fit in 254 bytes.
+        //!
+        static const size_t MAX_ENTRIES = 31;
+
+        // C2BundleDeliverySystemDescriptor public members:
+        EntryList entries;  //!< The list of PLP entries.
 
         //!
         //! Default constructor.
         //!
-        S2SatelliteDeliverySystemDescriptor();
+        C2BundleDeliverySystemDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        S2SatelliteDeliverySystemDescriptor(DuckContext& duck, const Descriptor& bin);
+        C2BundleDeliverySystemDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;
