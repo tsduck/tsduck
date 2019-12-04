@@ -200,6 +200,36 @@ namespace ts {
         //!
         static UString DeserializeLanguageCode(const uint8_t* data);
 
+        //!
+        //! Deserialize a 3-byte language or country code.
+        //! @param [out] lang Deserialized language code.
+        //! @param [in,out] data Address of memory area. Adjusted to point after the deserialized data.
+        //! @param [in,out] size Remaining size in bytes of memory area. Adjusted remove the deserialized data.
+        //! @return True on success, false on error. On error, the object is invalidated.
+        //!
+        bool deserializeLanguageCode(UString& lang, const uint8_t*& data, size_t& size);
+
+        //!
+        //! Deserialize an integer.
+        //! @tparam INT Some integer type.
+        //! @param [out] int Deserialized integer value.
+        //! @param [in,out] data Address of memory area. Adjusted to point after the deserialized data.
+        //! @param [in,out] size Remaining size in bytes of memory area. Adjusted remove the deserialized data.
+        //! @return True on success, false on error. On error, the object is invalidated.
+        //!
+        template<typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool deserializeInt(INT& value, const uint8_t*& data, size_t& size);
+
+        //!
+        //! Deserialize a one-bit boolean inside one byte.
+        //! @param [out] int Deserialized bool value.
+        //! @param [in,out] data Address of memory area. Adjusted to point after the deserialized data (one byte).
+        //! @param [in,out] size Remaining size in bytes of memory area. Adjusted remove the deserialized data.
+        //! @param [in] bit Bit number of the boolean in the deserialized byte, from 0 (LSB) to 7 (MSB).
+        //! @return True on success, false on error. On error, the object is invalidated.
+        //!
+        bool deserializeBool(bool& value, const uint8_t*& data, size_t& size, size_t bit = 0);
+
     private:
         const Standards _standards;  // Defining standards (usually only one).
 
@@ -207,3 +237,5 @@ namespace ts {
         AbstractSignalization() = delete;
     };
 }
+
+#include "tsAbstractSignalizationTemplate.h"

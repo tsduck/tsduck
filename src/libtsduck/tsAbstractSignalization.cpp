@@ -156,7 +156,7 @@ bool ts::AbstractSignalization::SerializeLanguageCode(ByteBlock& bb, const UStri
 
 
 //----------------------------------------------------------------------------
-// This static method deserializes a 3-byte language or country code.
+// Deserialize a 3-byte language or country code.
 //----------------------------------------------------------------------------
 
 ts::UString ts::AbstractSignalization::DeserializeLanguageCode(const uint8_t* data)
@@ -166,6 +166,38 @@ ts::UString ts::AbstractSignalization::DeserializeLanguageCode(const uint8_t* da
         str.push_back(UChar(data[i]));
     }
     return str;
+}
+
+bool ts::AbstractSignalization::deserializeLanguageCode(UString& lang, const uint8_t*& data, size_t& size)
+{
+    if (size < 3 || data == nullptr) {
+        lang.clear();
+        _is_valid = false;
+        return false;
+    }
+    else {
+        lang = DeserializeLanguageCode(data);
+        data += 3; size -= 3;
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Deserializes a one-bit boolean inside one byte.
+//----------------------------------------------------------------------------
+
+bool ts::AbstractSignalization::deserializeBool(bool& value, const uint8_t*& data, size_t& size, size_t bit)
+{
+    if (size < 1 || data == nullptr) {
+        _is_valid = false;
+        return false;
+    }
+    else {
+        value = (data[0] & (1 << bit)) != 0;
+        data++; size--;
+        return true;
+    }
 }
 
 

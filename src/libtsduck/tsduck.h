@@ -358,6 +358,7 @@
 #include "tsRRT.h"
 #include "tsRST.h"
 #include "tsS2SatelliteDeliverySystemDescriptor.h"
+#include "tsS2XSatelliteDeliverySystemDescriptor.h"
 #include "tsSafePtr.h"
 #include "tsSatelliteDeliverySystemDescriptor.h"
 #include "tsScramblingDescriptor.h"

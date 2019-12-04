@@ -19,6 +19,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractMultilingualDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractOutputStream.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractSignalization.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAbstractSignalizationTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTablePlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTableTemplate.h" />
@@ -357,6 +358,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsRRT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRST.h" />
     <ClInclude Include="..\..\src\libtsduck\tsS2SatelliteDeliverySystemDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsS2XSatelliteDeliverySystemDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSafePtr.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSafePtrTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.h" />
@@ -868,6 +870,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsRRT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRST.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsS2SatelliteDeliverySystemDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsS2XSatelliteDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsScramblingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSCTE35.cpp" />

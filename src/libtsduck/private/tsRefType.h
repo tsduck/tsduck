@@ -136,6 +136,7 @@
     REF_TYPE(RedistributionControlDescriptor);
     REF_TYPE(RegistrationDescriptor);
     REF_TYPE(S2SatelliteDeliverySystemDescriptor);
+    REF_TYPE(S2XSatelliteDeliverySystemDescriptor);
     REF_TYPE(SatelliteDeliverySystemDescriptor);
     REF_TYPE(ScramblingDescriptor);
     REF_TYPE(ServiceAvailabilityDescriptor);
