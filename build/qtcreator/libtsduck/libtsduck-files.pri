@@ -17,6 +17,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractMultilingualDescriptor.h \
     ../../../src/libtsduck/tsAbstractOutputStream.h \
     ../../../src/libtsduck/tsAbstractSignalization.h \
+    ../../../src/libtsduck/tsAbstractSignalizationTemplate.h \
     ../../../src/libtsduck/tsAbstractTable.h \
     ../../../src/libtsduck/tsAbstractTablePlugin.h \
     ../../../src/libtsduck/tsAbstractTableTemplate.h \
@@ -355,6 +356,7 @@ HEADERS += \
     ../../../src/libtsduck/tsRRT.h \
     ../../../src/libtsduck/tsRST.h \
     ../../../src/libtsduck/tsS2SatelliteDeliverySystemDescriptor.h \
+    ../../../src/libtsduck/tsS2XSatelliteDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsSafePtr.h \
     ../../../src/libtsduck/tsSafePtrTemplate.h \
     ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.h \
@@ -853,6 +855,7 @@ SOURCES += \
     ../../../src/libtsduck/tsRRT.cpp \
     ../../../src/libtsduck/tsRST.cpp \
     ../../../src/libtsduck/tsS2SatelliteDeliverySystemDescriptor.cpp \
+    ../../../src/libtsduck/tsS2XSatelliteDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsScramblingDescriptor.cpp \
     ../../../src/libtsduck/tsSCTE35.cpp \

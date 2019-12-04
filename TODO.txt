@@ -59,7 +59,6 @@ TSDuck - List of features to be implemented or fixed
   - 6.2.38   short_smoothing_buffer_descriptor
   - 6.2.42   telephone_descriptor
   - 6.4.4    part 9 of ETSI TS 102 825
-  - 6.4.6.5  S2X_satellite_delivery_system_descriptor
   - 6.4.7    image_icon_descriptor
   - 6.4.9    network_change_notify_descriptor
   - 6.4.12   target_region_descriptor

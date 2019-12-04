@@ -170,6 +170,7 @@
 #include "tsRedistributionControlDescriptor.h"
 #include "tsRegistrationDescriptor.h"
 #include "tsS2SatelliteDeliverySystemDescriptor.h"
+#include "tsS2XSatelliteDeliverySystemDescriptor.h"
 #include "tsSatelliteDeliverySystemDescriptor.h"
 #include "tsScramblingDescriptor.h"
 #include "tsServiceAvailabilityDescriptor.h"

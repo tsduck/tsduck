@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an S2_satellite_delivery_system_descriptor.
-//
-//----------------------------------------------------------------------------
 
 #include "tsS2SatelliteDeliverySystemDescriptor.h"
 #include "tsDescriptor.h"

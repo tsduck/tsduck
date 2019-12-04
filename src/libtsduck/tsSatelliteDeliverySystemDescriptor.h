@@ -79,6 +79,8 @@ namespace ts {
         virtual void buildXML(DuckContext&, xml::Element*) const override;
 
     private:
+        // Enumerations for XML.
+        friend class S2XSatelliteDeliverySystemDescriptor;
         static const Enumeration DirectionNames;
         static const Enumeration PolarizationNames;
         static const Enumeration RollOffNames;

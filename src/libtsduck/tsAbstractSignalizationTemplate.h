@@ -26,22 +26,25 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
-//----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 20
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1544
+
+
+//----------------------------------------------------------------------------
+// Deserialize an integer.
+//----------------------------------------------------------------------------
+
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+bool ts::AbstractSignalization::deserializeInt(INT& value, const uint8_t*& data, size_t& size)
+{
+    if (size < sizeof(INT) || data == nullptr) {
+        _is_valid = false;
+        return false;
+    }
+    else {
+        GetInt(data, value);
+        data += sizeof(INT);
+        size -= sizeof(INT);
+        return true;
+    }
+}
