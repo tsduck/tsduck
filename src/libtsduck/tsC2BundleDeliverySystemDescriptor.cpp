@@ -39,7 +39,6 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"C2_bundle_delivery_system_descriptor"
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_C2_BUNDLE_DELIVERY
-#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::C2BundleDeliverySystemDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::C2BundleDeliverySystemDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
