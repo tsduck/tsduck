@@ -902,9 +902,7 @@ TS_POP_WARNING()
 
 // See [BUG.1] above. Try to recover from this sh... bug in winioctl.h
 #if defined(TS_MSC)
-    #pragma warning(pop)         // one more to compensate for missing one in winioctl.h
-    #pragma warning(error:5031)  // restore warning without being 100% sure of what happened
-    #pragma warning(error:5032)  // idem
+    #pragma warning(pop)  // one more to compensate for missing one in winioctl.h
 #endif
 
 // Required link libraries under Windows.
