@@ -92,6 +92,7 @@ HEADERS += \
     ../../../src/libtsduck/tsCAT.h \
     ../../../src/libtsduck/tsCBC.h \
     ../../../src/libtsduck/tsCBCTemplate.h \
+    ../../../src/libtsduck/tsCellFrequencyLinkDescriptor.h \
     ../../../src/libtsduck/tsCerrReport.h \
     ../../../src/libtsduck/tsChannelFile.h \
     ../../../src/libtsduck/tsCIAncillaryDataDescriptor.h \
@@ -208,6 +209,7 @@ HEADERS += \
     ../../../src/libtsduck/tsFileOutputPlugin.h \
     ../../../src/libtsduck/tsFilePacketPlugin.h \
     ../../../src/libtsduck/tsForkPipe.h \
+    ../../../src/libtsduck/tsFrequencyListDescriptor.h \
     ../../../src/libtsduck/tsGenreDescriptor.h \
     ../../../src/libtsduck/tsGitHubRelease.h \
     ../../../src/libtsduck/tsGraphicsConstraintsDescriptor.h \
@@ -626,6 +628,7 @@ SOURCES += \
     ../../../src/libtsduck/tsCASMapper.cpp \
     ../../../src/libtsduck/tsCASSelectionArgs.cpp \
     ../../../src/libtsduck/tsCAT.cpp \
+    ../../../src/libtsduck/tsCellFrequencyLinkDescriptor.cpp \
     ../../../src/libtsduck/tsCerrReport.cpp \
     ../../../src/libtsduck/tsChannelFile.cpp \
     ../../../src/libtsduck/tsCIAncillaryDataDescriptor.cpp \
@@ -722,6 +725,7 @@ SOURCES += \
     ../../../src/libtsduck/tsFileOutputPlugin.cpp \
     ../../../src/libtsduck/tsFilePacketPlugin.cpp \
     ../../../src/libtsduck/tsForkPipe.cpp \
+    ../../../src/libtsduck/tsFrequencyListDescriptor.cpp \
     ../../../src/libtsduck/tsGenreDescriptor.cpp \
     ../../../src/libtsduck/tsGitHubRelease.cpp \
     ../../../src/libtsduck/tsGraphicsConstraintsDescriptor.cpp \
