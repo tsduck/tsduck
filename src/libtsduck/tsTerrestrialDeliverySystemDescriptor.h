@@ -45,7 +45,7 @@ namespace ts {
     {
     public:
         // TerrestrialDeliverySystemDescriptor public members:
-        uint32_t centre_frequency;   //!< Frequency, unit is 10 Hz.
+        uint64_t centre_frequency;   //!< Frequency in Hz (warning: coded in 10 Hz units in descriptor).
         uint8_t  bandwidth;          //!< Bandwidth, 0..7 (3 bits).
         bool     high_priority;      //!< Must be true if hierarchy == 0.
         bool     no_time_slicing;    //!< No time slicing.

@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a cable_delivery_system_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsCableDeliverySystemDescriptor.h"
 #include "tsDescriptor.h"
@@ -81,14 +77,10 @@ ts::CableDeliverySystemDescriptor::CableDeliverySystemDescriptor(DuckContext& du
 void ts::CableDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-
-    bbp->appendBCD(frequency, 8);
+    bbp->appendBCD(uint32_t(frequency / 100), 8);  // coded in 100 Hz units
     bbp->appendUInt16(0xFFF0 | FEC_outer);
     bbp->appendUInt8(modulation);
-    bbp->appendBCD(symbol_rate, 7);   // The last 4 bits are unused.
-    const size_t last = bbp->size() - 1;
-    (*bbp)[last] = ((*bbp)[last] & 0xF0) | (FEC_inner & 0x0F);
-
+    bbp->appendBCD(uint32_t(symbol_rate / 100), 7, true, FEC_inner);  // coded in 100 sym/s units, FEC in last nibble
     serializeEnd(desc, bbp);
 }
 
@@ -105,10 +97,10 @@ void ts::CableDeliverySystemDescriptor::deserialize(DuckContext& duck, const Des
 
     const uint8_t* data = desc.payload();
 
-    frequency = DecodeBCD(data, 8);
+    frequency = 100 * uint64_t(DecodeBCD(data, 8));  // coded in 100 Hz units
     FEC_outer = data[5] & 0x0F;
     modulation = data[6];
-    symbol_rate = DecodeBCD(data + 7, 7);
+    symbol_rate = 100 * uint64_t(DecodeBCD(data + 7, 7, true));  // coded in 100 sym/s units.
     FEC_inner = data[10] & 0x0F;
 }
 
@@ -154,10 +146,10 @@ namespace {
 
 void ts::CableDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"frequency", 100 * uint64_t(frequency), false);
+    root->setIntAttribute(u"frequency", frequency, false);
     root->setIntEnumAttribute(OuterFecNames, u"FEC_outer", FEC_outer);
     root->setIntEnumAttribute(ModulationNames, u"modulation", modulation);
-    root->setIntAttribute(u"symbol_rate", 100 * uint64_t(symbol_rate), false);
+    root->setIntAttribute(u"symbol_rate", symbol_rate, false);
     root->setIntEnumAttribute(InnerFecNames, u"FEC_inner", FEC_inner);
 }
 
@@ -168,21 +160,13 @@ void ts::CableDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element
 
 void ts::CableDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
-    uint64_t freq = 0;
-    uint64_t symrate = 0;
-
     _is_valid =
         checkXMLName(element) &&
-        element->getIntAttribute<uint64_t>(freq, u"frequency", true) &&
+        element->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
         element->getIntEnumAttribute<uint8_t>(FEC_outer, OuterFecNames, u"FEC_outer", false, 2) &&
         element->getIntEnumAttribute<uint8_t>(modulation, ModulationNames, u"modulation", false, 1) &&
-        element->getIntAttribute<uint64_t>(symrate, u"symbol_rate", true) &&
+        element->getIntAttribute<uint64_t>(symbol_rate, u"symbol_rate", true) &&
         element->getIntEnumAttribute(FEC_inner, InnerFecNames, u"FEC_inner", true);
-
-    if (_is_valid) {
-        frequency = uint32_t(freq / 100);
-        symbol_rate = uint32_t(symrate / 100);
-    }
 }
 
 
@@ -201,7 +185,7 @@ void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display
         uint8_t fec_inner = data[10] & 0x0F;
         std::string freq, srate;
         BCDToString(freq, data, 8, 4);
-        BCDToString(srate, data + 7, 7, 3);
+        BCDToString(srate, data + 7, 7, 3, true);
         data += 11; size -= 11;
 
         strm << margin << "Frequency: " << freq << " MHz" << std::endl

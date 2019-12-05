@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Modified Julian Date (MJD) utilities
-//
-//----------------------------------------------------------------------------
 
 #include "tsMJD.h"
 #include "tsBCD.h"
@@ -91,7 +87,7 @@ bool ts::DecodeMJD(const uint8_t* mjd, size_t mjd_size, Time& time)
 // This routine converts a base::Time into a modified Julian Date (MJD).
 //----------------------------------------------------------------------------
 
-bool ts::EncodeMJD (const Time& time, uint8_t* mjd, size_t mjd_size)
+bool ts::EncodeMJD(const Time& time, uint8_t* mjd, size_t mjd_size)
 {
     // Check buffer size
     if (mjd_size < 2 || mjd_size > 5) {
@@ -99,7 +95,7 @@ bool ts::EncodeMJD (const Time& time, uint8_t* mjd, size_t mjd_size)
     }
 
     // Compute milliseconds since Time epoch
-    MilliSecond time_ms (time - Time::Epoch);
+    MilliSecond time_ms = time - Time::Epoch;
 
     // Cannot represent dates earlier than MJD epoch
     if (time_ms < Time::JulianEpochOffset) {
@@ -108,15 +104,15 @@ bool ts::EncodeMJD (const Time& time, uint8_t* mjd, size_t mjd_size)
     }
 
     const uint64_t d = (time_ms - Time::JulianEpochOffset) / 1000; // seconds since MJD epoch
-    PutUInt16 (mjd, uint16_t (d / (24 * 3600))); // days
+    PutUInt16 (mjd, uint16_t(d / (24 * 3600))); // days
     if (mjd_size >= 3) {
-        mjd[2] = EncodeBCD (int ((d / 3600) % 24)); // hours
+        mjd[2] = EncodeBCD(int((d / 3600) % 24)); // hours
     }
     if (mjd_size >= 4) {
-        mjd[3] = EncodeBCD (int ((d / 60) % 60)); // minutes
+        mjd[3] = EncodeBCD(int((d / 60) % 60)); // minutes
     }
     if (mjd_size >= 5) {
-        mjd[4] = EncodeBCD (int (d % 60)); // seconds
+        mjd[4] = EncodeBCD(int(d % 60)); // seconds
     }
     return true;
 }

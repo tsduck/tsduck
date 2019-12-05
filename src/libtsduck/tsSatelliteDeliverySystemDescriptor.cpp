@@ -86,15 +86,14 @@ ts::DeliverySystem ts::SatelliteDeliverySystemDescriptor::deliverySystem() const
 void ts::SatelliteDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    EncodeBCD(bbp->enlarge(4), 8, frequency);
-    EncodeBCD(bbp->enlarge(2), 4, orbital_position);
+    bbp->appendBCD(uint32_t(frequency / 10000), 8); // coded in 10 kHz units
+    bbp->appendBCD(orbital_position, 4);
     bbp->appendUInt8((east_not_west ? 0x80 : 0x00) |
                      uint8_t((polarization & 0x03) << 5) |
                      (dvb_s2 ? uint8_t((roll_off & 0x03) << 3) : 0x00) |
                      (dvb_s2 ? 0x04 : 0x00) |
                      (modulation_type & 0x03));
-    EncodeBCD(bbp->enlarge(4), 7, symbol_rate);
-    bbp->back() = (bbp->back() & 0xF0) | (FEC_inner & 0x0F);
+    bbp->appendBCD(uint32_t(symbol_rate / 100), 7, true, FEC_inner); // coded in 100 sym/s units, FEC in last nibble
     serializeEnd(desc, bbp);
 }
 
@@ -111,14 +110,14 @@ void ts::SatelliteDeliverySystemDescriptor::deserialize(DuckContext& duck, const
 
     const uint8_t* data = desc.payload();
 
-    frequency = DecodeBCD(data, 8);
+    frequency = 10000 * uint64_t(DecodeBCD(data, 8)); // coded in 10 kHz units
     orbital_position = uint16_t(DecodeBCD(data + 4, 4));
     east_not_west = (data[6] & 0x80) != 0;
     polarization = (data[6] >> 5) & 0x03;
     dvb_s2 = (data[6] & 0x04) != 0;
     roll_off = dvb_s2 ? ((data[6] >> 3) & 0x03) : 0x00;
     modulation_type = data[6] & 0x03;
-    symbol_rate = DecodeBCD(data + 7, 7);
+    symbol_rate = 100 * uint64_t(DecodeBCD(data + 7, 7, true)); // coded in 100 sym/s units
     FEC_inner = data[10] & 0x0F;
 }
 
@@ -178,14 +177,14 @@ const ts::Enumeration ts::SatelliteDeliverySystemDescriptor::CodeRateNames({
 
 void ts::SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"frequency", 10000 * uint64_t(frequency), false);
+    root->setIntAttribute(u"frequency", frequency, false);
     root->setAttribute(u"orbital_position", UString::Format(u"%d.%d", {orbital_position / 10, orbital_position % 10}));
     root->setIntEnumAttribute(DirectionNames, u"west_east_flag", east_not_west);
     root->setIntEnumAttribute(PolarizationNames, u"polarization", polarization);
     root->setIntEnumAttribute(RollOffNames, u"roll_off", roll_off);
     root->setIntEnumAttribute(SystemNames, u"modulation_system", dvb_s2);
     root->setIntEnumAttribute(ModulationNames, u"modulation_type", modulation_type);
-    root->setIntAttribute(u"symbol_rate", 100 * uint64_t(symbol_rate), false);
+    root->setIntAttribute(u"symbol_rate", symbol_rate, false);
     root->setIntEnumAttribute(CodeRateNames, u"FEC_inner", FEC_inner);
 }
 
@@ -196,26 +195,21 @@ void ts::SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Ele
 
 void ts::SatelliteDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
-    uint64_t freq = 0;
-    uint64_t symrate = 0;
     UString orbit;
 
     _is_valid =
         checkXMLName(element) &&
-        element->getIntAttribute<uint64_t>(freq, u"frequency", true) &&
+        element->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
         element->getAttribute(orbit, u"orbital_position", true) &&
         element->getIntEnumAttribute(east_not_west, DirectionNames, u"west_east_flag", true) &&
         element->getIntEnumAttribute(polarization, PolarizationNames, u"polarization", true) &&
         element->getIntEnumAttribute<uint8_t>(roll_off, RollOffNames, u"roll_off", false, 0) &&
         element->getIntEnumAttribute(dvb_s2, SystemNames, u"modulation_system", false, false) &&
         element->getIntEnumAttribute<uint8_t>(modulation_type, ModulationNames, u"modulation_type", false, 1) &&
-        element->getIntAttribute<uint64_t>(symrate, u"symbol_rate", true) &&
+        element->getIntAttribute<uint64_t>(symbol_rate, u"symbol_rate", true) &&
         element->getIntEnumAttribute(FEC_inner, CodeRateNames, u"FEC_inner", true);
 
     if (_is_valid) {
-        frequency = uint32_t(freq / 10000);
-        symbol_rate = uint32_t(symrate / 100);
-
         // Expected orbital position is "XX.X" as in "19.2".
         UStringVector fields;
         uint16_t p1 = 0;
@@ -251,7 +245,7 @@ void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& dis
         std::string freq, srate, orbital;
         BCDToString(freq, data, 8, 3);
         BCDToString(orbital, data + 4, 4, 3);
-        BCDToString(srate, data + 7, 7, 3);
+        BCDToString(srate, data + 7, 7, 3, true);
         data += 11; size -= 11;
 
         strm << margin << "Orbital position: " << orbital

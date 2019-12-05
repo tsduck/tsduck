@@ -73,9 +73,12 @@ namespace ts {
     //! @param [in] bcd Address of an array of bytes.
     //! @param [in] bcd_count Number of BCD digits (@a bcd_count / 2 bytes).
     //! Note that @a bcd_count can be even.
+    //! @param [in] left_justified When true (the default), the first BCD digit starts in
+    //! the first half of the first byte. When false and @a bcd_count is odd, the first
+    //! BCD digit starts in the second half of the first byte. Ignored when @a bcd_count is even.
     //! @return The decoded integer value.
     //!
-    TSDUCKDLL uint32_t DecodeBCD(const uint8_t* bcd, size_t bcd_count);
+    TSDUCKDLL uint32_t DecodeBCD(const uint8_t* bcd, size_t bcd_count, bool left_justified = true);
 
     //!
     //! Encode a Binary Coded Decimal (BCD) string.
@@ -84,8 +87,16 @@ namespace ts {
     //! @param [in] bcd_count Number of BCD digits.
     //! Note that @a bcd_count can be even.
     //! @param [in] value The value to encode.
+    //! @param [in] left_justified When true (the default), the first BCD digit starts in
+    //! the first half of the first byte. When false and @a bcd_count is odd, the first
+    //! BCD digit starts in the second half of the first byte.
+    //! This parameter is ignored when @a bcd_count is even.
+    //! @param [in] pad_nibble A value in the range 0..15 to set in the unused nibble when
+    //! @a bcd_count is odd. This is the first half of the first byte when @a left_justified
+    //! is false. This is the second half of the last byte when @a left_justified is true.
+    //! This parameter is ignored when @a bcd_count is even.
     //!
-    TSDUCKDLL void EncodeBCD(uint8_t* bcd, size_t bcd_count, uint32_t value);
+    TSDUCKDLL void EncodeBCD(uint8_t* bcd, size_t bcd_count, uint32_t value, bool left_justified = true, uint8_t pad_nibble = 0);
 
     //!
     //! Decode a string representation of a variable-length Binary Coded Decimal (BCD) encoded integer.
@@ -95,6 +106,9 @@ namespace ts {
     //! Note that @a bcd_count can be even.
     //! @param [in] decimal Indicates the position of the virtual decimal point
     //! (-1: none, 0: before first digit, 1: after first digit, etc.)
+    //! @param [in] left_justified When true (the default), the first BCD digit starts in
+    //! the first half of the first byte. When false and @a bcd_count is odd, the first
+    //! BCD digit starts in the second half of the first byte. Ignored when @a bcd_count is even.
     //!
-    TSDUCKDLL void BCDToString(std::string &str, const uint8_t* bcd, size_t bcd_count, int decimal);
+    TSDUCKDLL void BCDToString(std::string &str, const uint8_t* bcd, size_t bcd_count, int decimal, bool left_justified = true);
 }

@@ -58,7 +58,6 @@ TSDuck - List of features to be implemented or fixed
   - 6.2.30   PDC_descriptor
   - 6.2.38   short_smoothing_buffer_descriptor
   - 6.2.42   telephone_descriptor
-  - 6.4.4    part 9 of ETSI TS 102 825
   - 6.4.7    image_icon_descriptor
   - 6.4.9    network_change_notify_descriptor
   - 6.4.12   target_region_descriptor
@@ -76,6 +75,9 @@ TSDuck - List of features to be implemented or fixed
   - 9.5.2.12  message_descriptor (not the same as ETSI EN 300 468, name it SSUMessageDescriptor)
   - 9.5.2.14  enhanced_message_descriptor (name it SSUEnhancedMessageDescriptor for consistency)
   - 9.5.2.15  ssu_uri_descriptor
+
+  ETSI TS 102 825-9 (CPCM System Adaptation Layer)
+  - 4.1.5  CPCM_delivery_signalling_descriptor (details in ETSI TS 102 825-4, 5.4.5)
 
   ETSI EN 303 560 (TTML subtitling systems)
   - 5.2.1.1  TTML subtitling descriptor

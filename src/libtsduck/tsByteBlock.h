@@ -479,10 +479,18 @@ namespace ts {
 
         //!
         //! Append an integer in Binary Coded Decimal (BCD) representation at the end.
-        //! @param [in] i Integer value to serialize at the end of the block.
+        //! @param [in] value Integer value to serialize at the end of the block.
         //! @param [in] bcd_count Number of BCD digits. Note that @a bcd_count can be even.
+        //! @param [in] left_justified When true (the default), the first BCD digit starts in
+        //! the first half of the first byte. When false and @a bcd_count is odd, the first
+        //! BCD digit starts in the second half of the first byte.
+        //! This parameter is ignored when @a bcd_count is even.
+        //! @param [in] pad_nibble A value in the range 0..15 to set in the unused nibble when
+        //! @a bcd_count is odd. This is the first half of the first byte when @a left_justified
+        //! is false. This is the second half of the last byte when @a left_justified is true.
+        //! This parameter is ignored when @a bcd_count is even.
         //!
-        TSDUCKDLL void appendBCD(uint32_t i, size_t bcd_count);
+        TSDUCKDLL void appendBCD(uint32_t value, size_t bcd_count, bool left_justified = true, uint8_t pad_nibble = 0);
 
         //!
         //! Read a byte block from a binary file.

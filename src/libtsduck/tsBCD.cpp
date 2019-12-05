@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Binary Coded Decimal utilities
-//
-//----------------------------------------------------------------------------
 
 #include "tsBCD.h"
 TSDUCK_SOURCE;
@@ -37,19 +33,21 @@ TSDUCK_SOURCE;
 
 //----------------------------------------------------------------------------
 // Return the decimal value of a BCD-encoded string, on bcd_count digits
-// (bcd_count/2 bytes). Note that bcd_count can be even.
 //----------------------------------------------------------------------------
 
-uint32_t ts::DecodeBCD(const uint8_t* bcd, size_t bcd_count)
+uint32_t ts::DecodeBCD(const uint8_t* bcd, size_t bcd_count, bool left_justified)
 {
     uint32_t result = 0;
 
-    for (size_t index = 0; index < bcd_count; index++) {
-        if (index % 2 == 0) {
-            result = 10 * result + (*bcd >> 4);
-        }
-        else {
-            result = 10 * result + (*bcd++ & 0x0F);
+    if (bcd != nullptr) {
+        const size_t offset = (bcd_count % 2) == 0 || left_justified ? 0 : 1;
+        for (size_t index = 0; index < bcd_count; index++) {
+            if (index % 2 == offset) {
+                result = 10 * result + (*bcd >> 4);
+            }
+            else {
+                result = 10 * result + (*bcd++ & 0x0F);
+            }
         }
     }
 
@@ -61,12 +59,26 @@ uint32_t ts::DecodeBCD(const uint8_t* bcd, size_t bcd_count)
 // Encode a Binary Coded Decimal (BCD) string.
 //----------------------------------------------------------------------------
 
-void ts::EncodeBCD(uint8_t* bcd, size_t bcd_count, uint32_t value)
+void ts::EncodeBCD(uint8_t* bcd, size_t bcd_count, uint32_t value, bool left_justified, uint8_t pad_nibble)
 {
-    if (bcd_count > 0) {
+    if (bcd_count > 0 && bcd != nullptr) {
+        const size_t offset = (bcd_count % 2) == 0 || left_justified ? 0 : 1;
+ 
+        // Preset first nibble with right-justified even number of digits.
+        if (offset == 1) {
+            *bcd = pad_nibble << 4;
+        }
+
+        // Point to last byte to write.
         bcd += (bcd_count - 1) / 2;
+
+        // Preset last nibble with left-justified even number of digits.
+        if ((bcd_count % 2) == 1 && left_justified) {
+            *bcd = pad_nibble & 0x0F;
+        }
+
         for (size_t index = bcd_count; index > 0; --index) {
-            if (index % 2 == 0) {
+            if (index % 2 == offset) {
                 *bcd = (*bcd & 0xF0) | (value % 10);
             }
             else {
@@ -81,30 +93,28 @@ void ts::EncodeBCD(uint8_t* bcd, size_t bcd_count, uint32_t value)
 
 //----------------------------------------------------------------------------
 // Decode a variable-length BCD-encoded integer.
-// Return a string representation in str.
-// The BCD-encoded data start at bcd, on bcd_count digits
-// (bcd_count/2 bytes).
-// The 'decimal' value indicates the position of the virtual decimal
-// point (-1: none, 0: before first digit, 1: after first digit, etc.)
 //----------------------------------------------------------------------------
 
-void ts::BCDToString(std::string &str, const uint8_t* bcd, size_t bcd_count, int decimal)
+void ts::BCDToString(std::string &str, const uint8_t* bcd, size_t bcd_count, int decimal, bool left_justified)
 {
     // Cleanup result string and over-pre-allocate
     str.clear();
     str.reserve(bcd_count + 2);
 
-    // Decode the BCD
-    for (size_t i = 0; i < bcd_count; i++) {
-        if (decimal == int (i)) {
-            if (str.empty()) {
-                str.push_back('0');
+    // Decode the BCD.
+    if (bcd != nullptr) {
+        const size_t offset = (bcd_count % 2) == 0 || left_justified ? 0 : 1;
+        for (size_t i = 0; i < bcd_count; i++) {
+            if (decimal == int(i)) {
+                if (str.empty()) {
+                    str.push_back('0');
+                }
+                str.push_back('.');
             }
-            str.push_back('.');
-        }
-        int digit = (i % 2 == 0) ? (*bcd >> 4) : (*bcd++ & 0x0F);
-        if (digit != 0 || !str.empty()) {
-            str.push_back(char('0' + digit));
+            const int digit = (i % 2 == offset) ? (*bcd >> 4) : (*bcd++ & 0x0F);
+            if (digit != 0 || !str.empty()) {
+                str.push_back(char('0' + digit));
+            }
         }
     }
 }
