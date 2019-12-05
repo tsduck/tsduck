@@ -16,6 +16,7 @@ SOURCES += \
     ../../../src/utest/utest.cpp \
     ../../../src/utest/utestAlgorithm.cpp \
     ../../../src/utest/utestArgs.cpp \
+    ../../../src/utest/utestBCD.cpp \
     ../../../src/utest/utestBitStream.cpp \
     ../../../src/utest/utestByteBlock.cpp \
     ../../../src/utest/utestChannels.cpp \

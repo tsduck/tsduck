@@ -120,13 +120,13 @@ void ts::S2XSatelliteDeliverySystemDescriptor::serialize(DuckContext& duck, Desc
 // Serialization of a channel description.
 void ts::S2XSatelliteDeliverySystemDescriptor::serializeChannel(const Channel& channel, ByteBlock& bb) const
 {
-    EncodeBCD(bb.enlarge(4), 8, uint32_t(channel.frequency / 10000));  // unit is 10 kHz
-    EncodeBCD(bb.enlarge(2), 4, channel.orbital_position);
+    bb.appendBCD(uint32_t(channel.frequency / 10000), 8);  // unit is 10 kHz
+    bb.appendBCD(channel.orbital_position, 4);
     bb.appendUInt8((channel.east_not_west ? 0x80 : 0x00) |
                    uint8_t((channel.polarization & 0x03) << 5) |
                    (channel.multiple_input_stream_flag ? 0x10 : 0x00) |
                    (channel.roll_off & 0x07));
-    EncodeBCD(bb.enlarge(4), 7, uint32_t(channel.symbol_rate / 100)); // unit is 100 sym/s 
+    bb.appendBCD(uint32_t(channel.symbol_rate / 100), 7, false); // unit is 100 sym/s 
     if (channel.multiple_input_stream_flag) {
         bb.appendUInt8(channel.input_stream_identifier);
     }
@@ -194,7 +194,7 @@ bool ts::S2XSatelliteDeliverySystemDescriptor::deserializeChannel(Channel& chann
     channel.polarization = (data[6] >> 5) & 0x03;
     channel.multiple_input_stream_flag = (data[6] & 0x10) != 0;
     channel.roll_off = (data[6] & 0x07);
-    channel.symbol_rate = DecodeBCD(data + 7, 7) * 100;  // unit is 100 sym/sec
+    channel.symbol_rate = uint64_t(DecodeBCD(data + 7, 7, false)) * 100;  // unit is 100 sym/sec
     data += 11; size -= 11;
 
     return !channel.multiple_input_stream_flag || deserializeInt(channel.input_stream_identifier, data, size);
@@ -306,7 +306,7 @@ bool ts::S2XSatelliteDeliverySystemDescriptor::DisplayChannel(TablesDisplay& dis
     std::string freq, srate, orbital;
     BCDToString(freq, data, 8, 3);
     BCDToString(orbital, data + 4, 4, 3);
-    BCDToString(srate, data + 7, 7, 3);
+    BCDToString(srate, data + 7, 7, 3, false);
     data += 11; size -= 11;
 
     strm << margin << title << ":" << std::endl

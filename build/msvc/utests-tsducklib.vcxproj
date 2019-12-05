@@ -10,6 +10,7 @@
     <ClCompile Include="..\..\src\utest\utest.cpp" />
     <ClCompile Include="..\..\src\utest\utestAlgorithm.cpp" />
     <ClCompile Include="..\..\src\utest\utestArgs.cpp" />
+    <ClCompile Include="..\..\src\utest\utestBCD.cpp" />
     <ClCompile Include="..\..\src\utest\utestBitStream.cpp" />
     <ClCompile Include="..\..\src\utest\utestByteBlock.cpp" />
     <ClCompile Include="..\..\src\utest\utestChannels.cpp" />

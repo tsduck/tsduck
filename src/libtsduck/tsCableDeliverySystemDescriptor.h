@@ -45,10 +45,10 @@ namespace ts {
     {
     public:
         // SatelliteDeliverySystemDescriptor public members:
-        uint32_t frequency;          //!< Frequency, unit is 100 Hz.
+        uint64_t frequency;          //!< Frequency in Hz (warning: coded in 100 Hz units in descriptor).
         uint8_t  FEC_outer;          //!< FEC outer, 4 bits.
         uint8_t  modulation;         //!< Modulation type, 8 bits.
-        uint32_t symbol_rate;        //!< Symbol rate, 28 bits, unit is 100 symbol/s.
+        uint64_t symbol_rate;        //!< Symbol rate in symbols/s (warning: coded in 100 sym/s units in descriptor).
         uint8_t  FEC_inner;          //!< FEC inner, 4 bits.
 
         //!

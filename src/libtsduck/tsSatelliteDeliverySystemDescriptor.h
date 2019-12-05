@@ -45,14 +45,14 @@ namespace ts {
     {
     public:
         // SatelliteDeliverySystemDescriptor public members:
-        uint32_t frequency;          //!< Frequency, unit is 10 kHz.
+        uint64_t frequency;          //!< Frequency in Hz (warning: coded in 10 kHz units in descriptor).
         uint16_t orbital_position;   //!< Orbital position, unit is 0.1 degree.
         bool     east_not_west;      //!< True for East, false for West.
         uint8_t  polarization;       //!< Polarization, 0..3 (2 bits).
         uint8_t  roll_off;           //!< Roll-off factor, 0..3 (2 bits).
         bool     dvb_s2;             //!< True for DVB-S2, false for DVB-S.
         uint8_t  modulation_type;    //!< Modulation type, 0..3 (2 bits).
-        uint32_t symbol_rate;        //!< Symbol rate, unit is 100 symbol/s.
+        uint64_t symbol_rate;        //!< Symbol rate (warning: coded in 100 symbol/s units in descriptor).
         uint8_t  FEC_inner;          //!< FEC inner, 4 bits.
 
         //!

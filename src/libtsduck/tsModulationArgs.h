@@ -98,7 +98,7 @@ namespace ts {
         //!
         static constexpr SpectralInversion DEFAULT_INVERSION = SPINV_AUTO;
         //!
-        //! Symbol rate.
+        //! Symbol rate in symbols / second.
         //! Applies to: DVB-S/S2, DVB-C (A,C), ISDB-S.
         //!
         Variable<uint32_t> symbol_rate;
