@@ -53,6 +53,7 @@
     REF_TYPE(CAIdentifierDescriptor);
     REF_TYPE(CaptionServiceDescriptor);
     REF_TYPE(CarouselIdentifierDescriptor);
+    REF_TYPE(CellFrequencyLinkDescriptor);
     REF_TYPE(CIAncillaryDataDescriptor);
     REF_TYPE(ComponentDescriptor);
     REF_TYPE(ComponentNameDescriptor);
@@ -95,6 +96,7 @@
     REF_TYPE(ExtendedEventDescriptor);
     REF_TYPE(ExternalApplicationAuthorizationDescriptor);
     REF_TYPE(ExternalESIdDescriptor);
+    REF_TYPE(FrequencyListDescriptor);
     REF_TYPE(GenreDescriptor);
     REF_TYPE(GraphicsConstraintsDescriptor);
     REF_TYPE(HDSimulcastLogicalChannelDescriptor);

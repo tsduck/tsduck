@@ -804,6 +804,14 @@
       </private_data>
     </carousel_identifier_descriptor>
 
+    <cell_frequency_link_descriptor>
+      <!-- One per cell -->
+      <cell cell_id="uint16, required" frequency="FrequencyHz, required">
+        <!-- One per subcell -->
+        <subcell cell_id_extension="uint8, required" transposer_frequency="FrequencyHz, required"/>
+      </cell>
+    </cell_frequency_link_descriptor>
+
     <CI_ancillary_data_descriptor>
       <ancillary_data>
         Hexadecimal content
@@ -1105,6 +1113,12 @@
     </external_application_authorization_descriptor>
 
     <external_ES_ID_descriptor external_ES_ID="uint16, required"/>
+
+    <frequency_list_descriptor
+        coding_type="undefined|satellite|cable|terrestrial|uint2, required">
+      <!-- List of frequencies -->
+      <centre_frequency value="FrequencyHz, required"/>
+    </frequency_list_descriptor>
 
     <genre_descriptor>
       <!-- One per attribute -->

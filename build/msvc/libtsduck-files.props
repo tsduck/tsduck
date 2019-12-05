@@ -94,6 +94,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsCAT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCBC.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCBCTemplate.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsCellFrequencyLinkDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCerrReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsChannelFile.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCIAncillaryDataDescriptor.h" />
@@ -210,6 +211,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsFileOutputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsFilePacketPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsForkPipe.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsFrequencyListDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGenreDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGitHubRelease.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGraphicsConstraintsDescriptor.h" />
@@ -641,6 +643,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsCASMapper.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCASSelectionArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCAT.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsCellFrequencyLinkDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCerrReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsChannelFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCIAncillaryDataDescriptor.cpp" />
@@ -737,6 +740,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsFileOutputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsFilePacketPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsForkPipe.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsFrequencyListDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGenreDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGitHubRelease.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGraphicsConstraintsDescriptor.cpp" />
