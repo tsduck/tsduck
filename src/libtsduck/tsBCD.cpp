@@ -66,7 +66,7 @@ void ts::EncodeBCD(uint8_t* bcd, size_t bcd_count, uint32_t value, bool left_jus
  
         // Preset first nibble with right-justified even number of digits.
         if (offset == 1) {
-            *bcd = pad_nibble << 4;
+            *bcd = uint8_t(pad_nibble << 4);
         }
 
         // Point to last byte to write.
