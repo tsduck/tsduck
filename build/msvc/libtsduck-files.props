@@ -95,6 +95,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsCBC.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCBCTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCellFrequencyLinkDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsCellListDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCerrReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsChannelFile.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCIAncillaryDataDescriptor.h" />
@@ -644,6 +645,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsCASSelectionArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCAT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCellFrequencyLinkDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsCellListDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCerrReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsChannelFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCIAncillaryDataDescriptor.cpp" />

@@ -54,6 +54,7 @@
     REF_TYPE(CaptionServiceDescriptor);
     REF_TYPE(CarouselIdentifierDescriptor);
     REF_TYPE(CellFrequencyLinkDescriptor);
+    REF_TYPE(CellListDescriptor);
     REF_TYPE(CIAncillaryDataDescriptor);
     REF_TYPE(ComponentDescriptor);
     REF_TYPE(ComponentNameDescriptor);

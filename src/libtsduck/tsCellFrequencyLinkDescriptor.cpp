@@ -145,7 +145,7 @@ void ts::CellFrequencyLinkDescriptor::DisplayDescriptor(TablesDisplay& display, 
         data += 7; size -= 7;
 
         while (size >= len && len >= 5) {
-            strm << margin << UString::Format(u"  Cell id ext: 0x%X, frequency: %'d Hz", {data[0], uint64_t(GetUInt32(data + 1)) * 10}) << std::endl;
+            strm << margin << UString::Format(u"  Subcell id ext: 0x%X, frequency: %'d Hz", {data[0], uint64_t(GetUInt32(data + 1)) * 10}) << std::endl;
             data += 5; size -= 5; len -= 5;
         }
         if (len > 0) {
@@ -175,16 +175,6 @@ void ts::CellFrequencyLinkDescriptor::buildXML(DuckContext& duck, xml::Element* 
     }
 }
 
-/*
-    <cell_frequency_link_descriptor>
-      <!-- One per cell -->
-      <cell cell_id="uint16, required" frequency="FrequencyHz, required">
-        <!-- One per subcell -->
-        <subcell cell_id_extension="uint8, required" transposer_frequency="FrequencyHz, required">
-        </subcell>
-      </cell>
-    </cell_frequency_link_descriptor>
- */
 
 //----------------------------------------------------------------------------
 // XML deserialization

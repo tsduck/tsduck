@@ -88,6 +88,7 @@
 #include "tsCaptionServiceDescriptor.h"
 #include "tsCarouselIdentifierDescriptor.h"
 #include "tsCellFrequencyLinkDescriptor.h"
+#include "tsCellListDescriptor.h"
 #include "tsCIAncillaryDataDescriptor.h"
 #include "tsComponentDescriptor.h"
 #include "tsComponentNameDescriptor.h"
