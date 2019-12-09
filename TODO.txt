@@ -47,9 +47,7 @@ TSDuck - List of features to be implemented or fixed
   - 2.11.3.8 ISO_IEC_14496_section
 
   ETSI EN 300 468 (DVB SI)
-  - 5.2.8    Stuffing Table (ST)
   - 6.2.3    announcement_support_descriptor
-  - 6.2.7    cell_list_descriptor
   - 6.2.14   DSNG_descriptor
   - 6.2.18   FTA_content_management_descriptor
   - 6.2.21   mosaic_descriptor

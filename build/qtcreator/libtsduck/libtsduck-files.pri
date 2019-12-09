@@ -93,6 +93,7 @@ HEADERS += \
     ../../../src/libtsduck/tsCBC.h \
     ../../../src/libtsduck/tsCBCTemplate.h \
     ../../../src/libtsduck/tsCellFrequencyLinkDescriptor.h \
+    ../../../src/libtsduck/tsCellListDescriptor.h \
     ../../../src/libtsduck/tsCerrReport.h \
     ../../../src/libtsduck/tsChannelFile.h \
     ../../../src/libtsduck/tsCIAncillaryDataDescriptor.h \
@@ -629,6 +630,7 @@ SOURCES += \
     ../../../src/libtsduck/tsCASSelectionArgs.cpp \
     ../../../src/libtsduck/tsCAT.cpp \
     ../../../src/libtsduck/tsCellFrequencyLinkDescriptor.cpp \
+    ../../../src/libtsduck/tsCellListDescriptor.cpp \
     ../../../src/libtsduck/tsCerrReport.cpp \
     ../../../src/libtsduck/tsChannelFile.cpp \
     ../../../src/libtsduck/tsCIAncillaryDataDescriptor.cpp \

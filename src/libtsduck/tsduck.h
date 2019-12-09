@@ -113,6 +113,7 @@
 #include "tsCAT.h"
 #include "tsCBC.h"
 #include "tsCellFrequencyLinkDescriptor.h"
+#include "tsCellListDescriptor.h"
 #include "tsCerrReport.h"
 #include "tsChannelFile.h"
 #include "tsCIAncillaryDataDescriptor.h"
