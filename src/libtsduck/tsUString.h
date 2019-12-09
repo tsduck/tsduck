@@ -2125,11 +2125,11 @@ namespace ts {
 
         // Internal helper for Decimal() when the value is the most negative value of a signed type.
         // This negative value cannot be made positive inside the same signed type.
-        template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+        template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value && sizeof(INT) == 8>::type* = nullptr>
         static void DecimalMostNegative(UString& result, const UString& separator);
 
-        template<>
-        static void DecimalMostNegative<int64_t>(UString& result, const UString& separator);
+        template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value && sizeof(INT) < 8>::type* = nullptr>
+        static void DecimalMostNegative(UString& result, const UString& separator);
 
         //!
         //! Analysis context of a Format or Scan string, base class.
