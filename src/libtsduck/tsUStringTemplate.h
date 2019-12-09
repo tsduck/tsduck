@@ -473,7 +473,7 @@ bool ts::UString::toInteger(INT& value, const UString& thousandSeparators, size_
 
 
 //----------------------------------------------------------------------------
-// Internal helper for toInteger, unsigned versions.
+// Internal helper for toInteger, unsigned version.
 //----------------------------------------------------------------------------
 
 template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
@@ -537,7 +537,7 @@ bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& val
 
 
 //----------------------------------------------------------------------------
-// Internal helper for toInteger, signed versions.
+// Internal helper for toInteger, signed version.
 //----------------------------------------------------------------------------
 
 template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
@@ -639,56 +639,9 @@ ts::UString ts::UString::Decimal(INT value,
                                  bool force_sign,
                                  UChar pad)
 {
-    // We build the result string in s IN REVERSE ORDER
+    // We build the result string in s.
     UString s;
-    s.reserve(32); // avoid reallocating (most of the time)
-
-    // So, we need the separator in reverse order too.
-    UString sep(separator);
-    sep.reverse();
-
-    // If the value is negative, format the absolute value.
-    // The test "value != 0 && value < 1" means "value < 0"
-    // but avoid GCC warning when the type is unsigned.
-    const bool negative = value != 0 && value < 1;
-
-    INT ivalue;
-    if (negative) {
-        // If the type is unsigned, "ivalue = -value" will never be executed but Visual C++ complains.
-        TS_PUSH_WARNING()
-        TS_MSC_NOWARNING(4146)
-
-        ivalue = -value;
-
-        TS_POP_WARNING()
-    }
-    else {
-        ivalue = value;
-    }
-
-    // Format the value
-    if (ivalue == 0) {
-        s.push_back(u'0');
-    }
-    else {
-        int count = 0;
-        while (ivalue != 0) {
-            s.push_back(u'0' + UChar(ivalue % 10));
-            ivalue /= 10;
-            if (++count % 3 == 0 && ivalue != 0) {
-                s += sep;
-            }
-        }
-    }
-    if (negative) {
-        s.push_back(u'-');
-    }
-    else if (force_sign) {
-        s.push_back(u'+');
-    }
-
-    // Reverse characters in string
-    s.reverse();
+    DecimalHelper(s, value, separator, force_sign);
 
     // Adjust string width.
     if (s.size() < min_width) {
@@ -706,11 +659,98 @@ ts::UString ts::UString::Decimal(INT value,
 
 
 //----------------------------------------------------------------------------
+// Internal helpers for Decimal(), unsigned version.
+//----------------------------------------------------------------------------
+
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
+void ts::UString::DecimalHelper(UString& result, INT value, const UString& separator, bool force_sign)
+{
+    // Avoid reallocating (most of the time).
+    result.clear();
+    result.reserve(32);
+
+    // We build the result string IN REVERSE ORDER
+    // So, we need the separator in reverse order too.
+    UString sep(separator);
+    sep.reverse();
+
+    // Format the value
+    int count = 0;
+    do {
+        result.push_back(u'0' + UChar(value % 10));
+        value /= 10;
+        if (++count % 3 == 0 && value != 0) {
+            result.append(sep);
+        }
+    } while (value != 0);
+    if (force_sign) {
+        result.push_back(u'+');
+    }
+
+    // Reverse characters in the string
+    result.reverse();
+}
+
+
+//----------------------------------------------------------------------------
+// Internal helpers for Decimal(), signed version.
+//----------------------------------------------------------------------------
+
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+void ts::UString::DecimalHelper(UString& result, INT value, const UString& separator, bool force_sign)
+{
+    // Unsigned version of the signed type (same size).
+    typedef typename std::make_unsigned<INT>::type UNSINT;
+
+    if (value == std::numeric_limits<INT>::min()) {
+        DecimalMostNegative<INT>(result, separator);
+    }
+    else if (value < 0) {
+        DecimalHelper<UNSINT>(result, static_cast<UNSINT>(-value), separator, false);
+        result.insert(0, 1, u'-');
+    }
+    else {
+        DecimalHelper<UNSINT>(result, static_cast<UNSINT>(value), separator, force_sign);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Internal helper for Decimal() when the value is the most negative value of
+// a signed type (cannot be made positive inside the same signed type).
+//----------------------------------------------------------------------------
+
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+void ts::UString::DecimalMostNegative(UString& result, const UString& separator)
+{
+    assert(sizeof(INT) < 8);
+    // INT is less than 64-bit long. Use an intermediate 64-bit conversion to have a valid positive value.
+    DecimalHelper<int64_t>(result, static_cast<int64_t>(std::numeric_limits<INT>::min()), separator, false);
+}
+
+template<>
+void ts::UString::DecimalMostNegative<int64_t>(UString& result, const UString& separator)
+{
+    // Specialization for 64-bit signed type to avoid infinite recursion.
+    // Hard-coded value since there is no way to build it:
+    result = u"-9223372036854775808";
+    if (!separator.empty()) {
+        int count = 0;
+        for (size_t i = result.size() - 1; i > 0; --i) {
+            if (++count % 3 == 0) {
+                result.insert(i, separator);
+            }
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Format a string containing an hexadecimal value.
 //----------------------------------------------------------------------------
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
-ts::UString ts::UString::Hexa(INT value,
+ts::UString ts::UString::Hexa(INT svalue,
                               size_type width,
                               const UString& separator,
                               bool use_prefix,
@@ -728,6 +768,10 @@ ts::UString ts::UString::Hexa(INT value,
     if (width == 0) {
         width = 2 * sizeof(INT);
     }
+
+    // In hexadecimal, always format the unsigned version of the binary value.
+    typedef typename std::make_unsigned<INT>::type UNSINT;
+    UNSINT value = static_cast<UNSINT>(svalue);
 
     // Format the value
     int count = 0;
@@ -765,7 +809,7 @@ ts::UString ts::UString::Hexa(INT value,
 //----------------------------------------------------------------------------
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
-ts::UString ts::UString::HexaMin(INT value,
+ts::UString ts::UString::HexaMin(INT svalue,
                                  size_type min_width,
                                  const UString& separator,
                                  bool use_prefix,
@@ -786,6 +830,10 @@ ts::UString ts::UString::HexaMin(INT value,
     if (use_prefix && min_width >= 2) {
         min_width -= 2;
     }
+
+    // In hexadecimal, always format the unsigned version of the binary value.
+    typedef typename std::make_unsigned<INT>::type UNSINT;
+    UNSINT value = static_cast<UNSINT>(svalue);
 
     // Format the value
     for (size_type digit_count = 0; digit_count == 0 || digit_count < min_digit || s.size() < min_width || value != 0; digit_count++) {
