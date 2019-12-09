@@ -996,6 +996,7 @@ void UStringTest::testToInteger()
     uint32_t ui32;
     uint64_t ui64;
     int64_t  i64;
+    int16_t  i16;
 
     TSUNIT_ASSERT(ts::UString(u"1").toInteger(i));
     TSUNIT_EQUAL(1, i);
@@ -1056,6 +1057,12 @@ void UStringTest::testToInteger()
 
     TSUNIT_ASSERT(ts::UString(u" -2.345678").toInteger(i, u",", 4));
     TSUNIT_EQUAL(-23456, i);
+
+    TSUNIT_ASSERT(ts::UString(u"-32768").toInteger(i));
+    TSUNIT_EQUAL(-32768, i);
+
+    TSUNIT_ASSERT(ts::UString(u"-32768").toInteger(i16));
+    TSUNIT_EQUAL(-32768, i16);
 
     std::list<int32_t> i32List;
     std::list<int32_t> i32Ref;
@@ -1216,6 +1223,11 @@ void UStringTest::testDecimal()
     TSUNIT_EQUAL(u"    -1,234", ts::UString::Decimal(-1234, 10, true, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, true));
     TSUNIT_EQUAL(u"    -1,234", ts::UString::Decimal(-1234, 10, true, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, false));
     TSUNIT_EQUAL(u"-1,234,567,890,123,456", ts::UString::Decimal(TS_CONST64(-1234567890123456)));
+    TSUNIT_EQUAL(u"-32,768", ts::UString::Decimal(-32768));
+    TSUNIT_EQUAL(u"-32,768", ts::UString::Decimal(int16_t(-32768)));
+    TSUNIT_EQUAL(u"-9223372036854775808", ts::UString::Decimal(std::numeric_limits<int64_t>::min(), 0, true, u""));
+    TSUNIT_EQUAL(u"-9,223,372,036,854,775,808", ts::UString::Decimal(std::numeric_limits<int64_t>::min()));
+    TSUNIT_EQUAL(u"9,223,372,036,854,775,807", ts::UString::Decimal(std::numeric_limits<int64_t>::max()));
 }
 
 void UStringTest::testHexa()

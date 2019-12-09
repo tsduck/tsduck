@@ -2107,13 +2107,29 @@ namespace ts {
 #endif
 
     private:
-        // Internal helpers for toInteger, signed and unsigned versions.
+        // Internal helpers for toInteger(), signed and unsigned versions.
         // Work on trimmed strings, with leading '+' skipped.
         template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
         static bool ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators);
 
         template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
         static bool ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators);
+
+        // Internal helpers for Decimal(), signed and unsigned versions.
+        // Produce unpadded strings.
+        template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
+        static void DecimalHelper(UString& result, INT value, const UString& separator, bool force_sign);
+
+        template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+        static void DecimalHelper(UString& result, INT value, const UString& separator, bool force_sign);
+
+        // Internal helper for Decimal() when the value is the most negative value of a signed type.
+        // This negative value cannot be made positive inside the same signed type.
+        template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+        static void DecimalMostNegative(UString& result, const UString& separator);
+
+        template<>
+        static void DecimalMostNegative<int64_t>(UString& result, const UString& separator);
 
         //!
         //! Analysis context of a Format or Scan string, base class.
