@@ -720,16 +720,8 @@ void ts::UString::DecimalHelper(UString& result, INT value, const UString& separ
 // a signed type (cannot be made positive inside the same signed type).
 //----------------------------------------------------------------------------
 
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value && sizeof(INT) == 8>::type*>
 void ts::UString::DecimalMostNegative(UString& result, const UString& separator)
-{
-    assert(sizeof(INT) < 8);
-    // INT is less than 64-bit long. Use an intermediate 64-bit conversion to have a valid positive value.
-    DecimalHelper<int64_t>(result, static_cast<int64_t>(std::numeric_limits<INT>::min()), separator, false);
-}
-
-template<>
-void ts::UString::DecimalMostNegative<int64_t>(UString& result, const UString& separator)
 {
     // Specialization for 64-bit signed type to avoid infinite recursion.
     // Hard-coded value since there is no way to build it:
@@ -742,6 +734,13 @@ void ts::UString::DecimalMostNegative<int64_t>(UString& result, const UString& s
             }
         }
     }
+}
+
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value && sizeof(INT) < 8>::type*>
+void ts::UString::DecimalMostNegative(UString& result, const UString& separator)
+{
+    // INT is less than 64-bit long. Use an intermediate 64-bit conversion to have a valid positive value.
+    DecimalHelper<int64_t>(result, static_cast<int64_t>(std::numeric_limits<INT>::min()), separator, false);
 }
 
 
