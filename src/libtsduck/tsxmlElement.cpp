@@ -393,6 +393,29 @@ bool ts::xml::Element::getAttribute(UString& value,
 
 
 //----------------------------------------------------------------------------
+// Get an optional string attribute of an XML element.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::getOptionalAttribute(Variable<UString>& value, const UString& name, size_t minSize, size_t maxSize) const
+{
+    // Default: erase value.
+    value.reset();
+    bool ok = true;
+
+    if (hasAttribute(name)) {
+        // Attribute present, value must be correct.
+        UString val;
+        ok = getAttribute(val, name, true, UString(), minSize, maxSize);
+        if (ok) {
+            value = val;
+        }
+    }
+
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
 // Get a boolean attribute of an XML element.
 //----------------------------------------------------------------------------
 

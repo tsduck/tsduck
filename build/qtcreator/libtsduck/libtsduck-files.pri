@@ -151,6 +151,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDoubleCheckLock.h \
     ../../../src/libtsduck/tsDSMCCStreamDescriptorsTable.h \
     ../../../src/libtsduck/tsDTSDescriptor.h \
+    ../../../src/libtsduck/tsDTSHDDescriptor.h \
     ../../../src/libtsduck/tsDTSNeuralDescriptor.h \
     ../../../src/libtsduck/tsduck.h \
     ../../../src/libtsduck/tsDuckConfigFile.h \
@@ -675,6 +676,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDoubleCheckLock.cpp \
     ../../../src/libtsduck/tsDSMCCStreamDescriptorsTable.cpp \
     ../../../src/libtsduck/tsDTSDescriptor.cpp \
+    ../../../src/libtsduck/tsDTSHDDescriptor.cpp \
     ../../../src/libtsduck/tsDTSNeuralDescriptor.cpp \
     ../../../src/libtsduck/tsDuckConfigFile.cpp \
     ../../../src/libtsduck/tsDuckContext.cpp \

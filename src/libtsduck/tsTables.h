@@ -107,6 +107,7 @@
 #include "tsDeferredAssociationTagsDescriptor.h"
 #include "tsDIILocationDescriptor.h"
 #include "tsDTSDescriptor.h"
+#include "tsDTSHDDescriptor.h"
 #include "tsDTSNeuralDescriptor.h"
 #include "tsDVBAC3Descriptor.h"
 #include "tsDVBAC4Descriptor.h"
