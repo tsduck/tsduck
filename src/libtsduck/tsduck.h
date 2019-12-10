@@ -163,6 +163,7 @@
 #include "tsDoubleCheckLock.h"
 #include "tsDSMCCStreamDescriptorsTable.h"
 #include "tsDTSDescriptor.h"
+#include "tsDTSHDDescriptor.h"
 #include "tsDTSNeuralDescriptor.h"
 #include "tsDuckConfigFile.h"
 #include "tsDuckContext.h"

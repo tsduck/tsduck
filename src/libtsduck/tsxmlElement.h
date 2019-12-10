@@ -401,6 +401,43 @@ namespace ts {
                               size_t maxSize = UNLIMITED) const;
 
             //!
+            //! Get an optional string attribute of an XML element.
+            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] minSize Minimum allowed size for the value string.
+            //! @param [in] maxSize Maximum allowed size for the value string.
+            //! @return True on success, false on error.
+            //!
+            bool getOptionalAttribute(Variable<UString>& value,
+                                      const UString& name,
+                                      size_t minSize = 0,
+                                      size_t maxSize = UNLIMITED) const;
+
+            //!
+            //! Get an optional attribute of an XML element.
+            //! getVariableAttribute() is different from getOptionalAttribute() in the result.
+            //! With getOptionalAttribute(), if the attribute is missing, the Variable is unset.
+            //! With getVariableAttribute(), if the attribute is missing, the Variable is set with the default value.
+            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @param [in] minSize Minimum allowed size for the value string.
+            //! @param [in] maxSize Maximum allowed size for the value string.
+            //! @return True on success, false on error.
+            //!
+            bool getVariableAttribute(Variable<UString>& value,
+                                      const UString& name,
+                                      bool required = false,
+                                      const UString& defValue = UString(),
+                                      size_t minSize = 0,
+                                      size_t maxSize = UNLIMITED) const
+            {
+                value.setDefault(defValue);
+                return getAttribute(value.value(), name, required, defValue, minSize, maxSize);
+            }
+
+            //!
             //! Get a boolean attribute of an XML element.
             //! @param [out] value Returned value of the attribute.
             //! @param [in] name Name of the attribute.
@@ -479,7 +516,7 @@ namespace ts {
             //! With getOptionalIntAttribute(), if the attribute is missing, the Variable is unset.
             //! With getVariableIntAttribute(), if the attribute is missing, the Variable is set with the default value.
             //! @tparam INT An integer type.
-            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
+            //! @param [out] value Returned value of the attribute.
             //! @param [in] name Name of the attribute.
             //! @param [in] required If true, generate an error if the attribute is not found.
             //! @param [in] defValue Default value to return if the attribute is not present.
@@ -544,7 +581,7 @@ namespace ts {
             //! With getOptionalIntEnumAttribute(), if the attribute is missing, the Variable is unset.
             //! With getVariableIntEnumAttribute(), if the attribute is missing, the Variable is set with the default value.
             //! @tparam INT An integer or enum type.
-            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
+            //! @param [out] value Returned value of the attribute.
             //! @param [in] definition The definition of enumeration values.
             //! @param [in] name Name of the attribute.
             //! @param [in] required If true, generate an error if the attribute is not found.

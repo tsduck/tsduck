@@ -73,6 +73,7 @@
     REF_TYPE(DeferredAssociationTagsDescriptor);
     REF_TYPE(DIILocationDescriptor);
     REF_TYPE(DTSDescriptor);
+    REF_TYPE(DTSHDDescriptor);
     REF_TYPE(DTSNeuralDescriptor);
     REF_TYPE(DVBAC3Descriptor);
     REF_TYPE(DVBAC4Descriptor);
