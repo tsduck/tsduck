@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.20-1541
+VERSION 3.20-1553
 
 [NEW] New commands and plugins:
 
@@ -13,6 +13,8 @@ VERSION 3.20-1541
   * Added option --control-port to "tsp" and other related --control options.
   * Added option --eit-date-only to plugin "timeref".
   * Option --buffer-size-mb of "tsp" now accepts decimal values (eg. "0.5").
+  * Added options --local-time-offset, --next-change, --next-time-offset,
+    --only-country name and --only-region to plugin "timeref".
 
 -------------------------------------------------------------------------------
 
