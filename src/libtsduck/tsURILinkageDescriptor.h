@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a T2MI_descriptor
+//!  Representation of a URI_linkage_descriptor
 //!
 //----------------------------------------------------------------------------
 
@@ -37,30 +37,30 @@
 
 namespace ts {
     //!
-    //! Representation of a T2MI_descriptor.
-    //! @see ETSI 300 468, 6.4.14.
+    //! Representation of a URI_linkage_descriptor.
+    //! @see ETSI 300 468, 6.4.15.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL T2MIDescriptor : public AbstractDescriptor
+    class TSDUCKDLL URILinkageDescriptor : public AbstractDescriptor
     {
     public:
-        // T2MIDescriptor public members:
-        uint8_t   t2mi_stream_id;              //!< Identifier of T2-MI packets (3 bits).
-        uint8_t   num_t2mi_streams_minus_one;  //!< Total number (minus 1) of T2-MI streams required to generate the complete DVB-T2 signal.
-        bool      pcr_iscr_common_clock_flag;  //!< Common clock source between PMT's PCR and ISCR (Input Stream Clock Reference).
-        ByteBlock reserved;                    //!< Reserved bytes.
+        // URILinkageDescriptor public members:
+        uint8_t   uri_linkage_type;      //!< URI linkage type.
+        UString   uri;                   //!< The URI.
+        uint16_t  min_polling_interval;  //!< Valid when uri_linkage_type == 0x00 or 0x01.
+        ByteBlock private_data;          //!< Private data.
 
         //!
         //! Default constructor.
         //!
-        T2MIDescriptor();
+        URILinkageDescriptor();
 
         //!
         //! Constructor from a binary descriptor.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        T2MIDescriptor(DuckContext& duck, const Descriptor& bin);
+        URILinkageDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;

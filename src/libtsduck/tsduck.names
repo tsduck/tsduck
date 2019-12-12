@@ -1546,6 +1546,16 @@ Bits = 8
 0x0C = TS containing INT BAT or NIT
 0x0D = event linkage
 
+[URILinkageType]
+# In URI_linkage_descriptor
+Bits = 8
+0x00 = Online SDT (OSDT) for CI Plus
+0x01 = DVB-IPTV SD&S
+0x02 = Material Resolution Server (MRS) for companion screen applications
+0x03-0x5F = Reserved for registration to DVB specifications
+0x60-0x7F = Reserved for registration to standardised systems through the DVB Project Office
+0x80-0xFF =  user defined
+
 [TeletextType]
 # In teletext_descriptor
 Bits = 8
@@ -3461,3 +3471,17 @@ Bits = 2
 1 = GSE
 2 = GSE high efficiency mode
 3 = Transport Stream
+
+[NetworkChangeType]
+# In network_change_notify_descriptor
+Bits = 4
+0x0 = Message only
+0x1 = Minor - default
+0x2 = Minor - multiplex removed
+0x3 = Minor - service changed
+0x4-0x7 = reserved for future use for other minor changes
+0x8 = Major - default
+0x9 = Major - multiplex frequency changed
+0xA = Major - multiplex coverage changed
+0xB = Major - multiplex added
+0xC-0xF = reserved for future use for other major changes

@@ -299,6 +299,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsMutex.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMutexInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNames.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsNetworkChangeNotifyDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNetworkNameDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNIT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNorDigLogicalChannelDescriptorV1.h" />
@@ -514,6 +515,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsUDPReceiver.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUDPSocket.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUID.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsURILinkageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUserInterrupt.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUString.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUStringTemplate.h" />
@@ -822,6 +824,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsMutex.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMutexInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNames.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsNetworkChangeNotifyDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNetworkNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNIT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNorDigLogicalChannelDescriptorV1.cpp" />
@@ -1017,6 +1020,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsUDPReceiver.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUDPSocket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUID.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsURILinkageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUserInterrupt.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUString.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVBIDataDescriptor.cpp" />

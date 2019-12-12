@@ -28,39 +28,75 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a T2MI_descriptor
+//!  Representation of a network_change_notify_descriptor
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsVariable.h"
+#include "tsTime.h"
 
 namespace ts {
     //!
-    //! Representation of a T2MI_descriptor.
-    //! @see ETSI 300 468, 6.4.14.
+    //! Representation of a network_change_notify_descriptor
+    //! @see ETSI 300 468, 6.4.9.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL T2MIDescriptor : public AbstractDescriptor
+    class TSDUCKDLL NetworkChangeNotifyDescriptor : public AbstractDescriptor
     {
     public:
-        // T2MIDescriptor public members:
-        uint8_t   t2mi_stream_id;              //!< Identifier of T2-MI packets (3 bits).
-        uint8_t   num_t2mi_streams_minus_one;  //!< Total number (minus 1) of T2-MI streams required to generate the complete DVB-T2 signal.
-        bool      pcr_iscr_common_clock_flag;  //!< Common clock source between PMT's PCR and ISCR (Input Stream Clock Reference).
-        ByteBlock reserved;                    //!< Reserved bytes.
+        //!
+        //! Network change entry.
+        //!
+        struct TSDUCKDLL Change
+        {
+            Change();                                  //!< Default constructor.
+            uint8_t            network_change_id;      //!< Network change id.
+            uint8_t            network_change_version; //!< Network change version.
+            Time               start_time_of_change;   //!< Start time of change.
+            Second             change_duration;        //!< Change duration in seconds (must be less than 12 hours)?
+            uint8_t            receiver_category;      //!< 3 bits, 0 for all, 1 for T2/S2/C2.
+            uint8_t            change_type;            //!< 4 bits, type of change.
+            uint8_t            message_id;             //!< Message id.
+            Variable<uint16_t> invariant_ts_tsid;      //!< Optional invariant TS id.
+            Variable<uint16_t> invariant_ts_onid;      //!< Original network id of optional invariant TS.
+        };
+
+        //!
+        //! List of change entries.
+        //!
+        typedef std::list<Change> ChangeList;
+
+        //!
+        //! Cell entry.
+        //!
+        struct TSDUCKDLL Cell
+        {
+            Cell();               //!< Default constructor.
+            uint16_t   cell_id;   //!< Cell id.
+            ChangeList changes;   //!< List of changes.
+        };
+
+        //!
+        //! List of Cell entries.
+        //!
+        typedef std::list<Cell> CellList;
+
+        // NetworkChangeNotifyDescriptor public members:
+        CellList cells;  //!< The list of cells and changes.
 
         //!
         //! Default constructor.
         //!
-        T2MIDescriptor();
+        NetworkChangeNotifyDescriptor();
 
         //!
-        //! Constructor from a binary descriptor.
+        //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        T2MIDescriptor(DuckContext& duck, const Descriptor& bin);
+        NetworkChangeNotifyDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;

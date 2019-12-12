@@ -125,6 +125,7 @@
     REF_TYPE(MultilingualNetworkNameDescriptor);
     REF_TYPE(MultilingualServiceNameDescriptor);
     REF_TYPE(MultiplexBufferUtilizationDescriptor);
+    REF_TYPE(NetworkChangeNotifyDescriptor);
     REF_TYPE(NetworkNameDescriptor);
     REF_TYPE(NorDigLogicalChannelDescriptorV1);
     REF_TYPE(NorDigLogicalChannelDescriptorV2);
@@ -189,6 +190,7 @@
     REF_TYPE(TimeSliceFECIdentifierDescriptor);
     REF_TYPE(TransportProtocolDescriptor);
     REF_TYPE(TransportStreamDescriptor);
+    REF_TYPE(URILinkageDescriptor);
     REF_TYPE(VBIDataDescriptor);
     REF_TYPE(VBITeletextDescriptor);
     REF_TYPE(VideoStreamDescriptor);
