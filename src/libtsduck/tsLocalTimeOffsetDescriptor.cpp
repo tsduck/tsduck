@@ -91,9 +91,9 @@ void ts::LocalTimeOffsetDescriptor::serialize(DuckContext& duck, Descriptor& des
             return;
         }
         bbp->appendUInt8(uint8_t(it->region_id << 2) | 0x02 | (it->time_offset < 0 ? 0x01 : 0x00));
-        bbp->appendUInt8(EncodeBCD(::abs(it->time_offset) / 60));
-        bbp->appendUInt8(EncodeBCD(::abs(it->time_offset) % 60));
-        EncodeMJD(it->next_change, reinterpret_cast<uint8_t*>(bbp->enlarge(MJD_SIZE)), MJD_SIZE);
+        bbp->appendUInt8(EncodeBCD(std::abs(it->time_offset) / 60));
+        bbp->appendUInt8(EncodeBCD(std::abs(it->time_offset) % 60));
+        EncodeMJD(it->next_change, bbp->enlarge(MJD_SIZE), MJD_SIZE);
         bbp->appendUInt8(EncodeBCD(::abs(it->next_time_offset) / 60));
         bbp->appendUInt8(EncodeBCD(::abs(it->next_time_offset) % 60));
     }

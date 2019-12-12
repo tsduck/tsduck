@@ -297,6 +297,7 @@ HEADERS += \
     ../../../src/libtsduck/tsMutex.h \
     ../../../src/libtsduck/tsMutexInterface.h \
     ../../../src/libtsduck/tsNames.h \
+    ../../../src/libtsduck/tsNetworkChangeNotifyDescriptor.h \
     ../../../src/libtsduck/tsNetworkNameDescriptor.h \
     ../../../src/libtsduck/tsNIT.h \
     ../../../src/libtsduck/tsNorDigLogicalChannelDescriptorV1.h \
@@ -512,6 +513,7 @@ HEADERS += \
     ../../../src/libtsduck/tsUDPReceiver.h \
     ../../../src/libtsduck/tsUDPSocket.h \
     ../../../src/libtsduck/tsUID.h \
+    ../../../src/libtsduck/tsURILinkageDescriptor.h \
     ../../../src/libtsduck/tsUserInterrupt.h \
     ../../../src/libtsduck/tsUString.h \
     ../../../src/libtsduck/tsUStringTemplate.h \
@@ -807,6 +809,7 @@ SOURCES += \
     ../../../src/libtsduck/tsMutex.cpp \
     ../../../src/libtsduck/tsMutexInterface.cpp \
     ../../../src/libtsduck/tsNames.cpp \
+    ../../../src/libtsduck/tsNetworkChangeNotifyDescriptor.cpp \
     ../../../src/libtsduck/tsNetworkNameDescriptor.cpp \
     ../../../src/libtsduck/tsNIT.cpp \
     ../../../src/libtsduck/tsNorDigLogicalChannelDescriptorV1.cpp \
@@ -1002,6 +1005,7 @@ SOURCES += \
     ../../../src/libtsduck/tsUDPReceiver.cpp \
     ../../../src/libtsduck/tsUDPSocket.cpp \
     ../../../src/libtsduck/tsUID.cpp \
+    ../../../src/libtsduck/tsURILinkageDescriptor.cpp \
     ../../../src/libtsduck/tsUserInterrupt.cpp \
     ../../../src/libtsduck/tsUString.cpp \
     ../../../src/libtsduck/tsVBIDataDescriptor.cpp \
