@@ -606,7 +606,7 @@ ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
 SUBDIRS = $(sort $(patsubst %/,%,$(wildcard */)))
 
 # List of subdirectories to ignore in make recursion.
-NORECURSE_SUBDIRS += debug release debug-% release-% Debug Release Debug-% Release-% .vs ipch %.t2d .git cov-int
+NORECURSE_SUBDIRS += tmp debug release debug-% release-% Debug Release Debug-% Release-% .vs ipch %.t2d .git cov-int
 
 # Actual recurse order. If the user did not define RECURSE_ORDER, use all
 # subdirectories, except those for which we know there is nothing to make.
@@ -944,7 +944,7 @@ endif
 clean:
 	@echo '  [CLEAN] $(CURDIR)'; \
 	rm -rf $(EXTRA_CLEAN) *~ \
-	    *.o *.ko *.a *.gcov *.dep *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
+	    *.o *.ko *.a *.gcov *.dep tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
 	    $(OBJDIR)/*.o $(OBJDIR)/*.ko $(OBJDIR)/*.a $(OBJDIR)/*.dep $(OBJDIR)/*.tmp $(OBJDIR)/*.out \
 	    $(OBJDIR)/*.log $(OBJDIR)/*.tlog $(OBJDIR)/core $(OBJDIR)/core.* $(OBJDIR)/vgcore.*
 	+@$(RECURSE)
