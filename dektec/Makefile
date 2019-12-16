@@ -83,7 +83,7 @@ $(DTAPI_H): $(if $(wildcard $(DTAPI_FILE)),$(DTAPI_FILE),sdkfile)
 	$(MAKE) expand
 
 # There is an auto-generated file with DtCaps definitions.
-DTCAPSNAMES_H = ../src/libtsduck/private/DtCapsNames.h
+DTCAPSNAMES_H = ../src/libtsduck/dtv/private/DtCapsNames.h
 dtcaps: $(DTCAPSNAMES_H)
 $(DTCAPSNAMES_H): $(DTAPI_H) format-dtcaps.sh
 	./format-dtcaps.sh >$@

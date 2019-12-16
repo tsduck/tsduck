@@ -42,8 +42,8 @@
   - build/msvc/libtsduck-files.props
   - build/qtcreator/libtsduck/libtsduck-files.pri
   - src/libtsduck/tsduck.h
-  - src/libtsduck/tsTables.h
-  - src/libtsduck/private/tsRefType.h
+  - src/libtsduck/dtv/tsTables.h
+  - src/libtsduck/dtv/private/tsRefType.h
 
   See the shell script build-project-files.sh for a Unix equivalent.
 
@@ -58,10 +58,6 @@ param([switch]$NoPause = $false)
 
 # PowerShell execution policy.
 Set-StrictMode -Version 3
-if (((Get-ExecutionPolicy) -ne "Unrestricted") -and ((Get-ExecutionPolicy) -ne "RemoteSigned")) {
-    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force -ErrorAction:SilentlyContinue
-}
-Import-Module -Force -Name (Join-Path $PSScriptRoot Build-Common.psm1)
 
 # Get the project directories.
 $RootDir = (Split-Path -Parent $PSScriptRoot)
@@ -73,17 +69,42 @@ $MsSrcRelPath = "..\..\src\libtsduck\"
 $QtSrcRelPath = "../../../src/libtsduck/"
 
 # Get all libtsduck files by type.
-function GetSources([string]$type, [string]$subdir = "", [string]$prefix = "", [string]$suffix, $exclude = "")
+function GetSources()
 {
-    Get-ChildItem "$SrcDir\$subdir\*" -Include "*.$type" -Exclude $exclude | `
-        ForEach-Object {$prefix + $_.Name + $suffix} | `
+    [CmdletBinding()]
+    param([string]$Type, [switch]$Unix = $false, [switch]$Windows = $false, [string]$Prefix = "", [string]$Suffix, [string[]]$Include = @(), [string[]]$Exclude = @())
+
+    Get-ChildItem "$SrcDir" -Recurse -Include "*.$Type" | `
+        Where-Object {
+            $tmpname = $_.FullName
+            ($Include.Count -eq 0) -or (($Include | ForEach-Object { $tmpname -like $_ }) -contains $true)
+        } | `
+        Where-Object {
+            $tmpname = $_.FullName
+            ($Exclude.Count -eq 0) -or -not (($Exclude | ForEach-Object { $tmpname -like $_ }) -contains $true)
+        } | `
+        ForEach-Object {
+            if ($Unix) {
+                $name = $_.FullName.Replace("$SrcDir\","") -replace "\\","/"
+            }
+            elseif ($Windows) {
+                $name = $_.FullName.Replace("$SrcDir\","")
+            }
+            else {
+                $name = $_.Name
+            }
+            $Prefix + $name + $Suffix
+        } | `
         Sort-Object -Culture en-US
 }
 
 # Get files based on doxygen group.
-function GetGroup([string]$group, [string]$subdir = "", [string]$prefix = "", [string]$suffix)
+function GetGroup()
 {
-    Get-ChildItem "$SrcDir\$subdir\*.h" -Exclude @("tsAbstract*.h", "tsVCT.h") | `
+    [CmdletBinding()]
+    param([string]$Group, [string]$Prefix = "", [string]$Suffix)
+
+    Get-ChildItem "$SrcDir" -Recurse -Include "*.h" -Exclude @("tsAbstract*.h", "tsVCT.h") | `
         Select-String -Pattern "@ingroup *$group" | `
         Select-Object -Unique Filename | `
         ForEach-Object {$prefix + ($_.Filename -replace '^ts','' -replace '\.h$','') + $suffix} | `
@@ -98,16 +119,12 @@ function GenerateMSProject()
     echo '  <ItemGroup>'
     $prefix = "    <ClInclude Include=`"$MsSrcRelPath"
     $suffix = "`" />"
-    GetSources h "" $prefix $suffix @("tsStaticReferences*")
-    GetSources h private "${prefix}private\" $suffix
-    GetSources h windows "${prefix}windows\" $suffix
+    GetSources -Type h -Windows -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*", "*\unix\*", "*\linux\*", "*\mac\*")
     echo '  </ItemGroup>'
     echo '  <ItemGroup>'
     $prefix = "    <ClCompile Include=`"$MsSrcRelPath"
     $suffix = "`" />"
-    GetSources cpp "" $prefix $suffix @("tsStaticReferences*")
-    GetSources cpp private "${prefix}private\" $suffix
-    GetSources cpp windows "${prefix}windows\" $suffix
+    GetSources -Type cpp -Windows -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*", "*\unix\*", "*\linux\*", "*\mac\*")
     echo '  </ItemGroup>'
     echo '</Project>'
 }
@@ -118,42 +135,36 @@ function GenerateQtProject()
     echo 'HEADERS += \'
     $prefix = "    $QtSrcRelPath"
     $suffix = " \"
-    GetSources h "" $prefix $suffix @("tsStaticReferences*")
-    GetSources h private "${prefix}private/" $suffix
+    GetSources -Type h -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*", "*\unix\*", "*\linux\*", "*\mac\*", "*\windows\*")
     echo ''
     echo 'SOURCES += \'
-    GetSources cpp "" $prefix $suffix @("tsStaticReferences*")
-    GetSources cpp private "${prefix}private/" $suffix
+    GetSources -Type cpp -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*", "*\unix\*", "*\linux\*", "*\mac\*", "*\windows\*")
     $prefix = "    $prefix"
     echo ''
     echo 'linux {'
     echo '    HEADERS += \'
-    GetSources h unix "${prefix}unix/" $suffix
-    GetSources h linux "${prefix}linux/" $suffix
+    GetSources -Type h -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*") -Include @("*\unix\*", "*\linux\*")
     echo ''
     echo '    SOURCES += \'
-    GetSources cpp unix "${prefix}unix/" $suffix
-    GetSources cpp linux "${prefix}linux/" $suffix
+    GetSources -Type cpp -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*") -Include @("*\unix\*", "*\linux\*")
     echo ''
     echo '}'
     echo ''
     echo 'mac {'
     echo '    HEADERS += \'
-    GetSources h unix "${prefix}unix/" $suffix
-    GetSources h mac "${prefix}mac/" $suffix
+    GetSources -Type h -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*") -Include @("*\unix\*", "*\mac\*")
     echo ''
     echo '    SOURCES += \'
-    GetSources cpp unix "${prefix}unix/" $suffix
-    GetSources cpp mac "${prefix}mac/" $suffix
+    GetSources -Type cpp -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*") -Include @("*\unix\*", "*\mac\*")
     echo ''
     echo '}'
     echo ''
     echo 'win32|win64 {'
     echo '    HEADERS += \'
-    GetSources h windows "${prefix}windows/" $suffix
+    GetSources -Type h -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*") -Include @("*\windows\*")
     echo ''
     echo '    SOURCES += \'
-    GetSources cpp windows "${prefix}windows/" $suffix
+    GetSources -Type cpp -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*") -Include @("*\windows\*")
     echo ''
     echo '}'
 }
@@ -167,20 +178,19 @@ function GenerateMainHeader()
     Get-Content $SrcDir\..\HEADER.txt
     echo ''
     echo '#pragma once'
-    GetSources h "" $prefix $suffix @("tsStaticReferences*", "*Template.h", "tsduck.h")
+    GetSources -Type h -Prefix $prefix -Suffix $suffix `
+        -Exclude @("*\tsStaticReferences*", "*Template.h", "*\tsduck.h", "*\unix\*", "*\linux\*", "*\mac\*", "*\windows\*", "*\private\*")
     echo ''
     echo '#if defined(TS_LINUX)'
-    GetSources h unix $prefix $suffix @("*Template.h")
-    GetSources h linux $prefix $suffix @("*Template.h")
+    GetSources -Type h -Prefix $prefix -Suffix $suffix -Exclude @("*Template.h") -Include @("*\unix\*", "*\linux\*")
     echo '#endif'
     echo ''
     echo '#if defined(TS_MAC)'
-    GetSources h unix $prefix $suffix $suffix @("*Template.h")
-    GetSources h mac $prefix $suffix @("*Template.h")
+    GetSources -Type h -Prefix $prefix -Suffix $suffix -Exclude @("*Template.h") -Include @("*\unix\*", "*\mac\*")
     echo '#endif'
     echo ''
     echo '#if defined(TS_WINDOWS)'
-    GetSources h windows $prefix $suffix @("*Template.h")
+    GetSources -Type h -Prefix $prefix -Suffix $suffix -Exclude @("*Template.h") -Include @("*\windows\*")
     echo '#endif'
 }
 
@@ -198,9 +208,9 @@ function GenerateTablesHeader()
     echo ''
     echo '#pragma once'
     echo ''
-    GetGroup table "" $prefix $suffix
+    GetGroup -Group table -Prefix $prefix -Suffix $suffix
     echo ''
-    GetGroup descriptor "" $prefix $suffix
+    GetGroup -Group descriptor -Prefix $prefix -Suffix $suffix
 }
 
 # Generate the header file containing static references to all tables and descriptors.
@@ -209,16 +219,18 @@ function GenerateRefType()
     $prefix = "    REF_TYPE("
     $suffix = ");"
 
-    GetGroup table "" $prefix $suffix
+    GetGroup -Group table -Prefix $prefix -Suffix $suffix
     echo ''
-    GetGroup descriptor "" $prefix $suffix
+    GetGroup -Group descriptor -Prefix $prefix -Suffix $suffix
 }
 
 # Generate the files.
 GenerateMSProject    | Out-File -Encoding ascii $MsvcDir\libtsduck-files.props
 GenerateQtProject    | Out-File -Encoding ascii $RootDir\build\qtcreator\libtsduck\libtsduck-files.pri
 GenerateMainHeader   | Out-File -Encoding ascii $SrcDir\tsduck.h
-GenerateTablesHeader | Out-File -Encoding ascii $SrcDir\tsTables.h
-GenerateRefType      | Out-File -Encoding ascii $SrcDir\private\tsRefType.h
+GenerateTablesHeader | Out-File -Encoding ascii $SrcDir\dtv\tsTables.h
+GenerateRefType      | Out-File -Encoding ascii $SrcDir\dtv\private\tsRefType.h
 
-Exit-Script -NoPause:$NoPause
+if (-not $NoPause) {
+    pause
+}

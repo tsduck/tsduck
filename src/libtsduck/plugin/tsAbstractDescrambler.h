@@ -120,7 +120,7 @@ namespace ts {
         //!
         //! @param [in] ecm CMT section (typically an ECM).
         //! @return False if this ECM cannot be deciphered.
-        //! True if it may be deciphered, altough it may fail when actually submitted.
+        //! True if it may be deciphered, although it may fail when actually submitted.
         //! @see decipherECM()
         //! @see checkCADescriptor()
         //!

@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Tag, Length, Value (TVL) syntax.
-//
-//----------------------------------------------------------------------------
 
 #include "tsTLVSyntax.h"
 #include "tsIntegerUtils.h"

@@ -47,10 +47,29 @@ PROJECT_LOGO   = ../images/tsduck-32.png
 FILE_PATTERNS    = *.h *.dox *.md
 EXCLUDE_PATTERNS = *Template.h tsduck.h
 INPUT            = ../src/doc ../src/libtsduck ../src/tstools
-EXCLUDE          = ../src/libtsduck/private
+EXCLUDE          = ../src/libtsduck/dtv/private
 RECURSIVE        = YES
 IMAGE_PATH       = ../images
 OUTPUT_DIRECTORY = ../doxy
+INCLUDE_PATH     = ../src/libtsduck \
+                   ../src/libtsduck/base \
+                   ../src/libtsduck/base/dvbcharset \
+                   ../src/libtsduck/base/json \
+                   ../src/libtsduck/base/linux \
+                   ../src/libtsduck/base/mac \
+                   ../src/libtsduck/base/network \
+                   ../src/libtsduck/base/unix \
+                   ../src/libtsduck/base/windows \
+                   ../src/libtsduck/base/xml \
+                   ../src/libtsduck/crypto \
+                   ../src/libtsduck/dtv \
+                   ../src/libtsduck/dtv/descriptors \
+                   ../src/libtsduck/dtv/dvbsimulcrypt \
+                   ../src/libtsduck/dtv/linux \
+                   ../src/libtsduck/dtv/mac \
+                   ../src/libtsduck/dtv/tables \
+                   ../src/libtsduck/dtv/windows \
+                   ../src/libtsduck/plugin
 
 # Error reporting:
 

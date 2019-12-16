@@ -177,7 +177,7 @@ if (-not $NoBuild) {
 }
 
 # A function to build a binary installer.
-function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$VCRedist)
+function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$VCRedist, [string]$HeadersDir)
 {
     Write-Output "Building installer for $Arch..."
 
@@ -195,19 +195,50 @@ function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$VCRedist)
         $NsisOptTeletext = "/DNoTeletext"
     }
     else {
-        $NsisOptTeletext =""
+        $NsisOptTeletext = ""
     }
 
     # Build the binary installer.
-    & $NSIS /V2 $NsisOptTeletext /D${Arch} /DBinDir=$BinDir /DVCRedist=$VCRedist /DVCRedistName=$VCRedistName /DVersion=$Version /DVersionInfo=$VersionInfo $NsisScript
+    & $NSIS /V2 $NsisOptTeletext /D$Arch /DBinDir=$BinDir /DVCRedist=$VCRedist /DVCRedistName=$VCRedistName /DHeadersDir=$HeadersDir /DVersion=$Version /DVersionInfo=$VersionInfo $NsisScript
 }
 
 # Build binary installers.
-if (-not $NoInstaller -and $Win32) {
-    Build-Binary "Win32" "Win32" $VCRedist32
-}
-if (-not $NoInstaller -and $Win64) {
-    Build-Binary "x64" "Win64" $VCRedist64
+if (-not $NoInstaller) {
+
+    # Create a temporary directory for header files (development options).
+    $TempDir = New-TempDirectory
+    $Exclude = @("*\unix\*", "*\linux\*", "*\mac\*", "*\private\*")
+    if ($NoTeletext) {
+        $Exclude += "*\tsduck.h"
+        $Exclude += "*\tsTeletextDemux.h"
+        $Exclude += "*\tsTeletextCharset.h"
+        Get-Content (Join-Multipath @($SrcDir, "libtsduck", "tsduck.h")) | `            Where-Object { ($_ -notmatch 'tsTeletextDemux.h') -and ($_ -notmatch 'tsTeletextCharset.h') } | `            Out-File -Encoding ascii (Join-Path $TempDir tsduck.h)
+    }
+    Get-ChildItem (Join-Path $SrcDir libtsduck) -Recurse -Include "*.h" | `
+        Where-Object {
+            $fname = $_.FullName
+            ($Exclude | ForEach-Object { $fname -like $_ }) -notcontains $true
+        } | `
+        ForEach-Object {
+            Copy-Item $_ $TempDir
+        }
+
+    Push-Location $TempDir
+    try {
+        if ($Win32) {
+            Build-Binary "Win32" "Win32" $VCRedist32 $TempDir
+        }
+        if ($Win64) {
+            Build-Binary "x64" "Win64" $VCRedist64 $TempDir
+        }
+    }
+    finally {
+        # Delete the temporary directory.
+        Pop-Location
+        if (Test-Path $TempDir) {
+            Remove-Item $TempDir -Recurse -Force
+        }
+    }
 }
 
 # A function to build a portable package.
@@ -228,17 +259,18 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
     try {
         # Build directory tree and copy files.
         $TempRoot = (New-Directory @($TempDir, "TSDuck"))
+        Copy-Item (Join-Path $RootDir "LICENSE.txt") -Destination $TempRoot
+        Copy-Item (Join-Path $RootDir "OTHERS.txt") -Destination $TempRoot
 
         $TempBin = (New-Directory @($TempRoot, "bin"))
         Copy-Item (Join-Path $BinDir "ts*.exe") -Exclude "*_static.exe" -Destination $TempBin
         Copy-Item (Join-Path $BinDir "ts*.dll") -Destination $TempBin
-        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "tsduck*.xml")) -Destination $TempBin
-        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "tsduck*.names")) -Destination $TempBin
+        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "dtv", "tsduck*.xml")) -Destination $TempBin
+        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "dtv", "tsduck*.names")) -Destination $TempBin
 
         $TempDoc = (New-Directory @($TempRoot, "doc"))
         Copy-Item (Join-Multipath @($RootDir, "doc", "tsduck.pdf")) -Destination $TempDoc
         Copy-Item (Join-Path $RootDir "CHANGELOG.txt") -Destination $TempDoc
-        Copy-Item (Join-Path $RootDir "LICENSE.txt") -Destination $TempDoc
 
         $TempSetup = (New-Directory @($TempRoot, "setup"))
         Copy-Item (Join-Path $BinDir "setpath.exe") -Destination $TempSetup
