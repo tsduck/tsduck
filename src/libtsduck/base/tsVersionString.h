@@ -34,7 +34,7 @@
 
 #pragma once
 
-// The file tsVersion.h is automatically updated during git commit.
+#include "tsPlatform.h"
 #include "tsVersion.h"
 
 //!

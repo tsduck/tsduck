@@ -37,7 +37,6 @@
 #include "tsException.h"
 #include "tsEnumeration.h"
 #include "tsVariable.h"
-#include "tsMPEG.h"
 
 namespace ts {
 

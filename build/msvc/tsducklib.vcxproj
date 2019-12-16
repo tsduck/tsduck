@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
     <Import Project="libtsduck-files.props" />
@@ -7,23 +8,24 @@
 
   <!-- Specific files for the static library only -->
   <ItemGroup>
-    <ClInclude Include="..\..\src\libtsduck\tsStaticReferencesDVB.h" />
+    <ClInclude Include="..\..\src\libtsduck\dtv\static\tsStaticReferencesDVB.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\libtsduck\tsStaticReferencesDVB.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\dtv\static\tsStaticReferencesDVB.cpp" />
   </ItemGroup>
 
   <!-- Other data files -->
   <ItemGroup>
-    <Xml Include="..\..\src\libtsduck\tsduck.tables.model.xml" />
-    <Xml Include="..\..\src\libtsduck\tsduck.channels.model.xml" />
-    <Xml Include="..\..\src\libtsduck\tsduck.keytable.model.xml" />
-    <Xml Include="..\..\src\libtsduck\tsduck.hfbands.model.xml" />
-    <Xml Include="..\..\src\libtsduck\tsduck.hfbands.xml" />
+    <Xml Include="..\..\src\libtsduck\dtv\tsduck.tables.model.xml" />
+    <Xml Include="..\..\src\libtsduck\dtv\tsduck.channels.model.xml" />
+    <Xml Include="..\..\src\libtsduck\dtv\tsduck.keytable.model.xml" />
+    <Xml Include="..\..\src\libtsduck\dtv\tsduck.hfbands.model.xml" />
+    <Xml Include="..\..\src\libtsduck\dtv\tsduck.hfbands.xml" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="..\..\src\libtsduck\tsduck.names" />
-    <None Include="..\..\src\libtsduck\tsduck.oui.names" />
+    <None Include="..\..\src\libtsduck\dtv\tsduck.names" />
+    <None Include="..\..\src\libtsduck\dtv\tsduck.oui.names" />
   </ItemGroup>
 
   <PropertyGroup Label="Globals">
@@ -31,22 +33,27 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tsducklib</RootNamespace>
   </PropertyGroup>
+
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-target-lib.props" />
     <Import Project="msvc-use-dtapi.props" />
   </ImportGroup>
+
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(TSDuckRootDir)\src\libtsduck;$(TSDuckRootDir)\src\libtsduck\windows;$(TSDuckRootDir)\src\libtsduck\private;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TSDuckLibDirs);$(TSDuckLibDirsInternal);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
+
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-end.props" />
   </ImportGroup>
+
   <Target Name="AfterBuild">
-    <CreateItem Include="..\..\src\libtsduck\tsduck*.xml;..\..\src\libtsduck\tsduck*.names">
+    <CreateItem Include="..\..\src\libtsduck\dtv\tsduck*.xml;..\..\src\libtsduck\dtv\tsduck*.names">
       <Output TaskParameter="Include" ItemName="ConfigFiles" />
     </CreateItem>
     <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(OutDir)" />
   </Target>
+
 </Project>

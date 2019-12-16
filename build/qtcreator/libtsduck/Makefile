@@ -36,6 +36,6 @@ include ../../../Makefile.tsduck
 default: libtsduck-files.pri
 	@true
 
-libtsduck-files.pri: $(BUILD_PROJ_FILES) $(LIB_HEADERS) $(LIB_SOURCES)
+libtsduck-files.pri: $(BUILD_PROJ_FILES) $(LIB_SOURCES)
 	@echo '  [REBUILD] $@'; \
 	$(BUILD_PROJ_FILES) $@

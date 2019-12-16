@@ -47,3 +47,4 @@ cov-int
 *.ts
 *.trp
 .DS_Store
+._*

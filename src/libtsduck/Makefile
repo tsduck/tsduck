@@ -34,8 +34,8 @@
 
 # Some source files are located in subdirectories but should be considered as part of libtsduck.
 
-OSDIR := $(if $(findstring darwin,$(shell uname -s | tr A-Z a-z)),mac,linux)
-CXXVPATH = $(OSDIR) unix private
+SKIPDIR := $(if $(findstring darwin,$(shell uname -s | tr A-Z a-z)),linux,mac)
+CXXVPATH = $(patsubst ./%,%,$(shell find . -type d ! -name . ! -name windows ! -name $(SKIPDIR)))
 
 # Detect the presence of the Dektec DTAPI.
 # DTAPI shall be separately downloaded using "make dtapi".
@@ -78,8 +78,8 @@ $(GENHEADERS): $(BUILD_PROJ_FILES) $(SRCROOT)/HEADER.txt $(LIB_HEADERS)
 # finished before building tsVersionInfo.o. However, the .dep file contains full paths
 # of dependencies and make cannot realize it is the same header files.
 
-$(OBJDIR)/tsVersionInfo.o: tsduck.h tsTables.h
-$(OBJDIR)/tsStaticReferencesDVB.o: private/tsRefType.h
+$(OBJDIR)/tsduck.o: tsduck.h dtv/tsTables.h
+$(OBJDIR)/tsStaticReferencesDVB.o: dtv/private/tsRefType.h
 
 # Specific (per-module) compilation options:
 
@@ -94,7 +94,7 @@ $(OBJDIR)/tsDVBCSA2.o: CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 
 # Dektec code is encapsulated into the TSDuck library.
 
-CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/private
+CFLAGS_INCLUDES += $(addprefix -I,$(shell find . -type d -name private))
 OBJS += $(DTAPI_OBJECT)
 
 # Library containing all modules.
@@ -127,16 +127,14 @@ install: $(OBJDIR)/$(SHARED_LIBTSDUCK)
 	    $(SYSROOT)$(SYSPREFIX)/bin/tsduck.dvb.names
 	install -m 644 \
 	    $(OBJDIR)/$(SHARED_LIBTSDUCK) \
-	    $(wildcard tsduck*.xml) \
-	    $(wildcard tsduck*.names) \
+	    $(shell find . -name 'tsduck*.xml' -o -name 'tsduck*.names') \
 	    $(SYSROOT)$(SYSPREFIX)/bin
 install-devel: $(OBJDIR)/$(STATIC_LIBTSDUCK) tsduck.h
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
 	install -m 644 $(OBJDIR)/$(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -m 644 tsduck.mk \
-	    $(filter-out $(if $(NOTELETEXT),tsTeletextCharset.h tsTeletextDemux.h,),$(wildcard ts*.h)) \
-	    $(wildcard $(OSDIR)/ts*.h unix/ts*.h) \
+	    $(filter-out $(if $(NOTELETEXT),%/tsTeletextCharset.h %/tsTeletextDemux.h,),$(shell find . -name 'ts*.h' ! -path '*/private/*' ! -path '*/windows/*' ! -path '*/$(SKIPDIR)/*')) \
 	    $(SYSROOT)$(SYSPREFIX)/include/tsduck
 ifdef NOTELETEXT
 	sed tsduck.h -e '/tsTeletextCharset.h/d' -e '/tsTeletextDemux.h/d' >$(SYSROOT)$(SYSPREFIX)/include/tsduck/tsduck.h

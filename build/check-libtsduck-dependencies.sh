@@ -1,3 +1,4 @@
+#!/bin/bash
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
@@ -27,14 +28,37 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  Dummy makefile for private modules.
-#  Actual make is under control of parent directory
+#  This script verifies that the source files are correctly organized in
+#  src/libtsduck. Specifically, it verifies that all included headers are
+#  strictly contained in a subdirectory or its dependencies.
+#
+#  The current dependency order of src/libtsduck subdirectories is:
+#
+#     core <--- crypto <-- dtv <-- plugin
 #
 #-----------------------------------------------------------------------------
 
-DONT_BUILD_DEPS := TRUE
-include ../../../Makefile.tsduck
+SCRIPT=$(basename ${BASH_SOURCE[0]} .sh)
 
-.PHONY: default
-default:
-	@true
+cd $(dirname ${BASH_SOURCE[0]})/../src/libtsduck
+
+# Loop on all subdirectories in reverse order of dependency.
+DEPDIRS=
+for subdir in core crypto dtv plugin; do
+
+    echo "==== Checking subtree $subdir"
+
+    # Directories to check for headers
+    DEPDIRS="$subdir $DEPDIRS"
+
+    # Collect all header files which are used in a the subdir tree.
+    # Exclude a couple of known headers which are out of dependencies
+    grep -Irh '^ *#include *"' $subdir |
+        sed -e 's/^ *#include *"//' -e 's/".*$//' |
+        sort -u |
+        grep -v DTAPI.h |
+        while read header; do
+            [[ -z $(find $DEPDIRS -path \*/$header) ]] && echo "$header not found in $DEPDIRS"
+        done
+
+done
