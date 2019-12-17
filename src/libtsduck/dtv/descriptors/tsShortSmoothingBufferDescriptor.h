@@ -28,20 +28,47 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a short_smoothing_buffer_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 20
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1557
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of a short_smoothing_buffer_descriptor.
+    //! @see ETSI 300 468, 6.2.38.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL ShortSmoothingBufferDescriptor : public AbstractDescriptor
+    {
+    public:
+        // Public members:
+        uint8_t   sb_size;       //!< 2 bits, smoothing buffer size code.
+        uint8_t   sb_leak_rate;  //!< 6 bits, smoothing buffer leak rate code.
+        ByteBlock DVB_reserved;  //!< Additional data.
+
+        //!
+        //! Default constructor.
+        //!
+        ShortSmoothingBufferDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        ShortSmoothingBufferDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+    };
+}

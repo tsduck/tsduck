@@ -1,9 +1,19 @@
 This directory contains all source code for the TSDuck library.
 
-All header files at this level are part of the public API of the library.
-They are installed with the TSDuck development environment.
+All header files are part of the public API of the library, with a few
+exceptions (see below). They are installed with the TSDuck development
+environment.
 
-Subdirectories:
+Main subdirectories:
+
+  - base   : Base C++ library, data structures, system support.
+  - crypto : Cryptographic code, mostly extracted from LibTomCrypt.
+  - dtv    : Digital TV classes, transport streams, signalization, tuning.
+  - plugin : Integration of plugins in TSDuck.
+
+These directories may contain additional subdirectories, either for
+functional classification or for system-specific purpose. In the latter
+case, the standard subdirectory naming is the following:
 
   - private : Internal to the library, not part of the public interface.
   - windows : Windows-specific.
@@ -20,6 +30,7 @@ be updated. Do not update them manually, use one of the follwing scripts:
 The following files are rebuilt:
 
   - build/msvc/libtsduck-files.props
-  - build/msvc/libtsduck-filters.props
   - build/qtcreator/libtsduck/libtsduck-files.pri
   - src/libtsduck/tsduck.h
+  - src/libtsduck/dtv/tsTables.h
+  - src/libtsduck/dtv/private/tsRefType.h

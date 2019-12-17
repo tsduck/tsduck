@@ -75,10 +75,10 @@ namespace ts {
     //! @return The value @a x rounded down to previous multiple of @a f.
     //!
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    inline INT RoundDown(INT x, INT f); // unsigned version
+    INT RoundDown(INT x, INT f); // unsigned version
 
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    inline INT RoundDown(INT x, INT f); // signed version
+    INT RoundDown(INT x, INT f); // signed version
 
     //!
     //! Round @a x up to next multiple of a factor @a f.
@@ -88,10 +88,21 @@ namespace ts {
     //! @return The value @a x rounded up to next multiple of @a f.
     //!
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    inline INT RoundUp(INT x, INT f); // unsigned version
+    INT RoundUp(INT x, INT f); // unsigned version
 
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    inline INT RoundUp(INT x, INT f); // signed version
+    INT RoundUp(INT x, INT f); // signed version
+
+    //!
+    //! Perform a sign extension on any subset of a signed integer.
+    //!
+    //! @tparam INT A signed integer type.
+    //! @param [in] x An integer containing a signed value in some number of LSB.
+    //! @param [in] bits Number of least significant bits containing a signed value.
+    //! @return A signed integer containing the same signed value with proper sign extension on the full size of INT.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+    INT SignExtend(INT x, int bits);
 
     //!
     //! Compute the maximum width of the decimal representation of an integer type.
