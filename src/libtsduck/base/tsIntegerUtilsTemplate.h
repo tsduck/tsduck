@@ -143,13 +143,17 @@ INT ts::SignExtend(INT x, int bits)
         // We need at least two bits, one for the sign, one for the value.
         return 0;
     }
-    else if (bits >= 8 * sizeof(x)) {
+    else if (bits >= int(8 * sizeof(x))) {
         // No need to extend, the value is already there.
         return x;
     }
     else {
-        // A mask with all 1's in MSB unused bits.
+        // A mask with all one's in MSB unused bits.
+        TS_PUSH_WARNING()
+        TS_GCC_NOWARNING(shift-negative-value)
         const INT mask = ~static_cast<INT>(0) << bits;
+        TS_POP_WARNING()
+
         // Test the sign bit in the LSB signed value.
         return (x & (static_cast<INT>(1) << (bits - 1))) == 0 ? (x & ~mask) : (x | mask);
     }
