@@ -218,6 +218,7 @@ HEADERS += \
     ../../../src/libtsduck/dtv/descriptors/tsDCCDepartingRequestDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsDeferredAssociationTagsDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsDIILocationDescriptor.h \
+    ../../../src/libtsduck/dtv/descriptors/tsDSNGDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsDTSDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsDTSHDDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsDTSNeuralDescriptor.h \
@@ -245,6 +246,7 @@ HEADERS += \
     ../../../src/libtsduck/dtv/descriptors/tsExternalApplicationAuthorizationDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsExternalESIdDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsFrequencyListDescriptor.h \
+    ../../../src/libtsduck/dtv/descriptors/tsFTAContentManagementDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsGenreDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsGraphicsConstraintsDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsHDSimulcastLogicalChannelDescriptor.h \
@@ -280,6 +282,7 @@ HEADERS += \
     ../../../src/libtsduck/dtv/descriptors/tsNVODReferenceDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsParentalRatingDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsPartialTransportStreamDescriptor.h \
+    ../../../src/libtsduck/dtv/descriptors/tsPDCDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsPrefetchDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsPrivateDataIndicatorDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsPrivateDataSpecifierDescriptor.h \
@@ -299,6 +302,7 @@ HEADERS += \
     ../../../src/libtsduck/dtv/descriptors/tsServiceRelocatedDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsSHDeliverySystemDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsShortEventDescriptor.h \
+    ../../../src/libtsduck/dtv/descriptors/tsShortSmoothingBufferDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsSimpleApplicationBoundaryDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsSimpleApplicationLocationDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsSkyLogicalChannelNumberDescriptor.h \
@@ -339,6 +343,7 @@ HEADERS += \
     ../../../src/libtsduck/dtv/descriptors/tsURILinkageDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsVBIDataDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsVBITeletextDescriptor.h \
+    ../../../src/libtsduck/dtv/descriptors/tsVideoDepthRangeDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsVideoStreamDescriptor.h \
     ../../../src/libtsduck/dtv/descriptors/tsVideoWindowDescriptor.h \
     ../../../src/libtsduck/dtv/dvbsimulcrypt/tsDuckProtocol.h \
@@ -724,6 +729,7 @@ SOURCES += \
     ../../../src/libtsduck/dtv/descriptors/tsDCCDepartingRequestDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsDeferredAssociationTagsDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsDIILocationDescriptor.cpp \
+    ../../../src/libtsduck/dtv/descriptors/tsDSNGDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsDTSDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsDTSHDDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsDTSNeuralDescriptor.cpp \
@@ -751,6 +757,7 @@ SOURCES += \
     ../../../src/libtsduck/dtv/descriptors/tsExternalApplicationAuthorizationDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsExternalESIdDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsFrequencyListDescriptor.cpp \
+    ../../../src/libtsduck/dtv/descriptors/tsFTAContentManagementDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsGenreDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsGraphicsConstraintsDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsHDSimulcastLogicalChannelDescriptor.cpp \
@@ -786,6 +793,7 @@ SOURCES += \
     ../../../src/libtsduck/dtv/descriptors/tsNVODReferenceDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsParentalRatingDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsPartialTransportStreamDescriptor.cpp \
+    ../../../src/libtsduck/dtv/descriptors/tsPDCDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsPrefetchDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsPrivateDataIndicatorDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsPrivateDataSpecifierDescriptor.cpp \
@@ -805,6 +813,7 @@ SOURCES += \
     ../../../src/libtsduck/dtv/descriptors/tsServiceRelocatedDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsSHDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsShortEventDescriptor.cpp \
+    ../../../src/libtsduck/dtv/descriptors/tsShortSmoothingBufferDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsSimpleApplicationBoundaryDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsSimpleApplicationLocationDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsSkyLogicalChannelNumberDescriptor.cpp \
@@ -845,6 +854,7 @@ SOURCES += \
     ../../../src/libtsduck/dtv/descriptors/tsURILinkageDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsVBIDataDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsVBITeletextDescriptor.cpp \
+    ../../../src/libtsduck/dtv/descriptors/tsVideoDepthRangeDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsVideoStreamDescriptor.cpp \
     ../../../src/libtsduck/dtv/descriptors/tsVideoWindowDescriptor.cpp \
     ../../../src/libtsduck/dtv/dvbsimulcrypt/tsDuckProtocol.cpp \

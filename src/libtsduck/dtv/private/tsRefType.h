@@ -72,6 +72,7 @@
     REF_TYPE(DCCDepartingRequestDescriptor);
     REF_TYPE(DeferredAssociationTagsDescriptor);
     REF_TYPE(DIILocationDescriptor);
+    REF_TYPE(DSNGDescriptor);
     REF_TYPE(DTSDescriptor);
     REF_TYPE(DTSHDDescriptor);
     REF_TYPE(DTSNeuralDescriptor);
@@ -99,6 +100,7 @@
     REF_TYPE(ExternalApplicationAuthorizationDescriptor);
     REF_TYPE(ExternalESIdDescriptor);
     REF_TYPE(FrequencyListDescriptor);
+    REF_TYPE(FTAContentManagementDescriptor);
     REF_TYPE(GenreDescriptor);
     REF_TYPE(GraphicsConstraintsDescriptor);
     REF_TYPE(HDSimulcastLogicalChannelDescriptor);
@@ -134,6 +136,7 @@
     REF_TYPE(NVODReferenceDescriptor);
     REF_TYPE(ParentalRatingDescriptor);
     REF_TYPE(PartialTransportStreamDescriptor);
+    REF_TYPE(PDCDescriptor);
     REF_TYPE(PrefetchDescriptor);
     REF_TYPE(PrivateDataIndicatorDescriptor);
     REF_TYPE(PrivateDataSpecifierDescriptor);
@@ -153,6 +156,7 @@
     REF_TYPE(ServiceRelocatedDescriptor);
     REF_TYPE(SHDeliverySystemDescriptor);
     REF_TYPE(ShortEventDescriptor);
+    REF_TYPE(ShortSmoothingBufferDescriptor);
     REF_TYPE(SimpleApplicationBoundaryDescriptor);
     REF_TYPE(SimpleApplicationLocationDescriptor);
     REF_TYPE(SkyLogicalChannelNumberDescriptor);
@@ -193,5 +197,6 @@
     REF_TYPE(URILinkageDescriptor);
     REF_TYPE(VBIDataDescriptor);
     REF_TYPE(VBITeletextDescriptor);
+    REF_TYPE(VideoDepthRangeDescriptor);
     REF_TYPE(VideoStreamDescriptor);
     REF_TYPE(VideoWindowDescriptor);

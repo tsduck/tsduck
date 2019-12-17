@@ -224,6 +224,7 @@
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsDCCDepartingRequestDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsDeferredAssociationTagsDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsDIILocationDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsDSNGDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsDTSDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsDTSHDDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsDTSNeuralDescriptor.h" />
@@ -251,6 +252,7 @@
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsExternalApplicationAuthorizationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsExternalESIdDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsFrequencyListDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsFTAContentManagementDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsGenreDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsGraphicsConstraintsDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsHDSimulcastLogicalChannelDescriptor.h" />
@@ -286,6 +288,7 @@
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsNVODReferenceDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsParentalRatingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsPartialTransportStreamDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsPDCDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsPrefetchDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsPrivateDataIndicatorDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsPrivateDataSpecifierDescriptor.h" />
@@ -305,6 +308,7 @@
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsServiceRelocatedDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsSHDeliverySystemDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsShortEventDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsShortSmoothingBufferDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsSimpleApplicationBoundaryDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsSimpleApplicationLocationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsSkyLogicalChannelNumberDescriptor.h" />
@@ -345,6 +349,7 @@
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsURILinkageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsVBIDataDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsVBITeletextDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsVideoDepthRangeDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsVideoStreamDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\descriptors\tsVideoWindowDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\dtv\dvbsimulcrypt\tsDuckProtocol.h" />
@@ -742,6 +747,7 @@
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsDCCDepartingRequestDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsDeferredAssociationTagsDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsDIILocationDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsDSNGDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsDTSDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsDTSHDDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsDTSNeuralDescriptor.cpp" />
@@ -769,6 +775,7 @@
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsExternalApplicationAuthorizationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsExternalESIdDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsFrequencyListDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsFTAContentManagementDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsGenreDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsGraphicsConstraintsDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsHDSimulcastLogicalChannelDescriptor.cpp" />
@@ -804,6 +811,7 @@
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsNVODReferenceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsParentalRatingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsPartialTransportStreamDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsPDCDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsPrefetchDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsPrivateDataIndicatorDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsPrivateDataSpecifierDescriptor.cpp" />
@@ -823,6 +831,7 @@
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsServiceRelocatedDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsSHDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsShortEventDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsShortSmoothingBufferDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsSimpleApplicationBoundaryDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsSimpleApplicationLocationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsSkyLogicalChannelNumberDescriptor.cpp" />
@@ -863,6 +872,7 @@
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsURILinkageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsVBIDataDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsVBITeletextDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsVideoDepthRangeDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsVideoStreamDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\descriptors\tsVideoWindowDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\dtv\dvbsimulcrypt\tsDuckProtocol.cpp" />

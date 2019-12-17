@@ -48,16 +48,11 @@ TSDuck - List of features to be implemented or fixed
 
   ETSI EN 300 468 (DVB SI)
   - 6.2.3    announcement_support_descriptor
-  - 6.2.14   DSNG_descriptor
-  - 6.2.18   FTA_content_management_descriptor
   - 6.2.21   mosaic_descriptor
-  - 6.2.30   PDC_descriptor
-  - 6.2.38   short_smoothing_buffer_descriptor
   - 6.2.42   telephone_descriptor
   - 6.4.7    image_icon_descriptor
   - 6.4.12   target_region_descriptor
   - 6.4.13   target_region_name_descriptor
-  - 6.4.16   video_depth_range_descriptor
 
   ETSI TS 102 006 (System Software Update)
   - 9.5.2.6   update_descriptor

@@ -941,6 +941,8 @@
       <module DII_identification="uint15, required" association_tag="uint16, required"/>
     </DII_location_descriptor>
 
+    <DSNG_descriptor station_identification="string, required"/>
+
     <DTS_descriptor
         sample_rate_code="uint4, required"
         bit_rate_code="uint6, required"
@@ -1206,6 +1208,12 @@
     </external_application_authorization_descriptor>
 
     <external_ES_ID_descriptor external_ES_ID="uint16, required"/>
+
+    <FTA_content_management_descriptor
+        user_defined="bool, required"
+        do_not_scramble="bool, required"
+        control_remote_access_over_internet="uint2, required"
+        do_not_apply_revocation="bool, required"/>
 
     <frequency_list_descriptor
         coding_type="undefined|satellite|cable|terrestrial|uint2, required">
@@ -1485,6 +1493,8 @@
         minimum_overall_smoothing_rate="uint22, default=0x3FFFFF"
         maximum_overall_smoothing_buffer="uint14, default=0x3FFF"/>
 
+    <PDC_descriptor programme_identification_label="MM-DD hh:mm, required"/>
+
     <prefetch_descriptor transport_protocol_label="uint8, required">
       <!-- Must be in an AIT (table id 0x74) -->
       <!-- One per module -->
@@ -1626,6 +1636,12 @@
       <event_name>String</event_name>
       <text>String</text>
     </short_event_descriptor>
+
+    <short_smoothing_buffer_descriptor
+        sb_size="uint2, required"
+        sb_leak_rate="uint6, required">
+      Hexadecimal content (optional DVB-reserved data)
+    </short_smoothing_buffer_descriptor>
 
     <simple_application_boundary_descriptor>
       <!-- Must be in an AIT (table id 0x74) -->
@@ -1914,7 +1930,7 @@
       </http>
       <!-- For other (unknown) protocol ids: -->
       <protocol id="uint16, required">
-        Hexadecimal content.
+        Hexadecimal content
       </protocol>
     </transport_protocol_descriptor>
 
@@ -1936,7 +1952,7 @@
         <field field_parity="bool, default=false" line_offset="uint5, default=0"/>
         <!-- Valid only when data_service_id is not any of 1, 2, 4, 5, 6, 7 -->
         <reserved>
-          Hexadecimal content.
+          Hexadecimal content
         </reserved>
       </service>
     </VBI_data_descriptor>
@@ -1947,6 +1963,17 @@
                 teletext_type="uint5, required"
                 page_number="uint16, required"/>
     </VBI_teletext_descriptor>
+
+    <video_depth_range_descriptor>
+      <!-- One per video range -->
+      <range range_type="uint8_t, required"
+             video_max_disparity_hint="int12, required when range_type == 0"
+             video_min_disparity_hint="int12, required when range_type == 0">
+        <range_selector>
+          Hexadecimal content
+        </range_selector>
+      </range>
+    </video_depth_range_descriptor>
 
     <video_stream_descriptor
         multiple_frame_rate="bool, required"

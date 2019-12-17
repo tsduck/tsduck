@@ -52,12 +52,14 @@ public:
     void testBoundedSub();
     void testRoundDown();
     void testRoundUp();
+    void testSignExtend();
 
     TSUNIT_TEST_BEGIN(IntegerUtilsTest);
     TSUNIT_TEST(testBoundedAdd);
     TSUNIT_TEST(testBoundedSub);
     TSUNIT_TEST(testRoundDown);
     TSUNIT_TEST(testRoundUp);
+    TSUNIT_TEST(testSignExtend);
     TSUNIT_TEST_END();
 };
 
@@ -179,4 +181,13 @@ void IntegerUtilsTest::testRoundUp()
     TSUNIT_EQUAL(0, ts::RoundUp(0, 0));
     TSUNIT_EQUAL(0, ts::RoundUp(0, 1));
     TSUNIT_EQUAL(0, ts::RoundUp(0, -27));
+}
+
+void IntegerUtilsTest::testSignExtend()
+{
+    TSUNIT_EQUAL(25, ts::SignExtend(int32_t(25), 12));
+    TSUNIT_EQUAL(0x07FF, ts::SignExtend(int16_t(0x07FF), 12));
+    TSUNIT_EQUAL(-1, ts::SignExtend(int16_t(0x0FFF), 12));
+    TSUNIT_EQUAL(-2047, ts::SignExtend(int16_t(0x0801), 12));
+    TSUNIT_EQUAL(-2048, ts::SignExtend(int16_t(0x2800), 12));
 }

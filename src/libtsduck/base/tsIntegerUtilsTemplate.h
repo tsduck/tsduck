@@ -106,27 +106,51 @@ INT ts::BoundedSub(INT a, INT b)
 //----------------------------------------------------------------------------
 
 template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
-inline INT ts::RoundDown(INT x, INT f)
+INT ts::RoundDown(INT x, INT f)
 {
     return f == 0 ? x : x - x % f;
 }
 
 template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
-inline INT ts::RoundDown(INT x, INT f)
+INT ts::RoundDown(INT x, INT f)
 {
     f = INT(std::abs(f));
     return f == 0 ? x : (x >= 0 ? x - x % f : x - (f + x % f) % f);
 }
 
 template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
-inline INT ts::RoundUp(INT x, INT f)
+INT ts::RoundUp(INT x, INT f)
 {
     return f == 0 ? x : x + (f - x % f) % f;
 }
 
 template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
-inline INT ts::RoundUp(INT x, INT f)
+INT ts::RoundUp(INT x, INT f)
 {
     f = INT(std::abs(f));
     return f == 0 ? x : (x >= 0 ? x + (f - x % f) % f : x - x % f);
+}
+
+
+//----------------------------------------------------------------------------
+// Perform a sign extension on any subset of a signed integer.
+//----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+INT ts::SignExtend(INT x, int bits)
+{
+    if (bits < 2) {
+        // We need at least two bits, one for the sign, one for the value.
+        return 0;
+    }
+    else if (bits >= 8 * sizeof(x)) {
+        // No need to extend, the value is already there.
+        return x;
+    }
+    else {
+        // A mask with all 1's in MSB unused bits.
+        const INT mask = ~static_cast<INT>(0) << bits;
+        // Test the sign bit in the LSB signed value.
+        return (x & (static_cast<INT>(1) << (bits - 1))) == 0 ? (x & ~mask) : (x | mask);
+    }
 }
