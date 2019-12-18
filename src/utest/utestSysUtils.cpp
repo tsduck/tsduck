@@ -82,6 +82,8 @@ public:
     void testAbsoluteFilePath();
     void testCleanupFilePath();
     void testRelativeFilePath();
+    void testIsURL();
+    void testToURL();
 
     TSUNIT_TEST_BEGIN(SysUtilsTest);
     TSUNIT_TEST(testCurrentProcessId);
@@ -109,6 +111,8 @@ public:
     TSUNIT_TEST(testAbsoluteFilePath);
     TSUNIT_TEST(testCleanupFilePath);
     TSUNIT_TEST(testRelativeFilePath);
+    TSUNIT_TEST(testIsURL);
+    TSUNIT_TEST(testToURL);
     TSUNIT_TEST_END();
 
 private:
@@ -798,5 +802,33 @@ void SysUtilsTest::testRelativeFilePath()
     TSUNIT_EQUAL(u"../../cd/ef", ts::RelativeFilePath(u"/ab/cd/ef", u"/ab/xy/kl/"));
     TSUNIT_EQUAL(u"../ab/cd/ef", ts::RelativeFilePath(u"/ab/cd/ef", u"/xy"));
     TSUNIT_EQUAL(u"ab/cd/ef", ts::RelativeFilePath(u"/ab/cd/ef", u"/"));
+#endif
+}
+
+
+void SysUtilsTest::testIsURL()
+{
+    TSUNIT_ASSERT(!ts::IsURL(u""));
+    TSUNIT_ASSERT(!ts::IsURL(u"foo/bar"));
+    TSUNIT_ASSERT(!ts::IsURL(u"C:/foo/bar"));
+
+    TSUNIT_ASSERT(ts::IsURL(u"http://foo/bar"));
+    TSUNIT_ASSERT(ts::IsURL(u"file:///foo/bar"));
+    TSUNIT_ASSERT(ts::IsURL(u"file:///C:/foo/bar"));
+    TSUNIT_ASSERT(ts::IsURL(u"file://C:/foo/bar"));
+}
+
+void SysUtilsTest::testToURL()
+{
+    TSUNIT_EQUAL(u"http://foo.bar", ts::ToURL(u"http://foo.bar"));
+
+#if defined(TS_WINDOWS)
+    TSUNIT_EQUAL(u"file://C:/ab/cd/ef", ts::ToURL(u"C:\\ab\\cd\\ef"));
+    TSUNIT_EQUAL(u"file://C:/ab/cd/ef", ts::ToURL(u"C:\\ab\\cd\\ef", u"", true));
+    TSUNIT_EQUAL(u"file:///C:/ab/cd/ef", ts::ToURL(u"C:\\ab\\cd\\ef", u"", false));
+    TSUNIT_EQUAL(u"file://C:/ab/cd/ef", ts::ToURL(u"ef", u"C:\\ab\\cd"));
+#else
+    TSUNIT_EQUAL(u"file:///ab/cd/ef", ts::ToURL(u"/ab/cd/ef"));
+    TSUNIT_EQUAL(u"file:///ab/cd/ef", ts::ToURL(u"ef", u"/ab/cd"));
 #endif
 }
