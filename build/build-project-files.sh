@@ -34,7 +34,6 @@
 #
 #  The following files are rebuilt:
 #
-#  - build/msvc/libtsduck-files.props
 #  - build/qtcreator/libtsduck/libtsduck-files.pri
 #  - src/libtsduck/tsduck.h
 #  - src/libtsduck/dtv/tsTables.h
@@ -103,24 +102,6 @@ GetGroup()
         sed -e 's|^.*/ts\(.*\)\.h|\1|' |
         sort --ignore-case |
         sed -e "s|^|${PREFIX}|" -e "s|\$|${SUFFIX}|"
-}
-
-# Generate the MS project file.
-GenerateMSProject()
-{
-    MS_RELPATH1=$(sed <<<${MS_RELPATH} -e 's|\\|\\\\|g')
-    echo '<?xml version="1.0" encoding="utf-8"?>'
-    echo '<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">'
-    echo '  <ItemGroup>'
-    PREFIX="    <ClInclude Include=\"${MS_RELPATH1}"
-    SUFFIX="\" />"
-    GetSources h windows ! -path '*/linux/*' ! -path '*/mac/*' ! -path '*/unix/*' ! -name "tsStaticReferences*"
-    echo '  </ItemGroup>'
-    echo '  <ItemGroup>'
-    PREFIX="    <ClCompile Include=\"${MS_RELPATH1}"
-    GetSources cpp windows ! -path '*/linux/*' ! -path '*/mac/*' ! -path '*/unix/*' ! -name "tsStaticReferences*"
-    echo '  </ItemGroup>'
-    echo '</Project>'
 }
 
 # Generate the Qt Creator project file.
@@ -222,10 +203,9 @@ GenerateRefType()
 }
 
 # Generate the files.
-[[ -z "$TARGET" || "$TARGET" == "libtsduck-files.props"   ]] && GenerateMSProject | unix2dos >"$MSVCDIR/libtsduck-files.props"
-[[ -z "$TARGET" || "$TARGET" == "libtsduck-files.pri"     ]] && GenerateQtProject  >"$ROOTDIR/build/qtcreator/libtsduck/libtsduck-files.pri"
-[[ -z "$TARGET" || "$TARGET" == "tsduck.h"                ]] && GenerateMainHeader >"$SRCDIR/tsduck.h"
-[[ -z "$TARGET" || "$TARGET" == "tsTables.h"              ]] && GenerateTablesHeader >"$SRCDIR/dtv/tsTables.h"
-[[ -z "$TARGET" || "$TARGET" == "tsRefType.h"             ]] && GenerateRefType >"$SRCDIR/dtv/private/tsRefType.h"
+[[ -z "$TARGET" || "$TARGET" == "libtsduck-files.pri" ]] && GenerateQtProject  >"$ROOTDIR/build/qtcreator/libtsduck/libtsduck-files.pri"
+[[ -z "$TARGET" || "$TARGET" == "tsduck.h"            ]] && GenerateMainHeader >"$SRCDIR/tsduck.h"
+[[ -z "$TARGET" || "$TARGET" == "tsTables.h"          ]] && GenerateTablesHeader >"$SRCDIR/dtv/tsTables.h"
+[[ -z "$TARGET" || "$TARGET" == "tsRefType.h"         ]] && GenerateRefType >"$SRCDIR/dtv/private/tsRefType.h"
 
 exit 0

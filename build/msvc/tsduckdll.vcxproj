@@ -3,21 +3,15 @@
 
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
-    <Import Project="libtsduck-files.props" />
   </ImportGroup>
 
-  <!-- Other data files -->
   <ItemGroup>
-    <Xml Include="..\..\src\libtsduck\dtv\tsduck.tables.model.xml" />
-    <Xml Include="..\..\src\libtsduck\dtv\tsduck.channels.model.xml" />
-    <Xml Include="..\..\src\libtsduck\dtv\tsduck.keytable.model.xml" />
-    <Xml Include="..\..\src\libtsduck\dtv\tsduck.hfbands.model.xml" />
-    <Xml Include="..\..\src\libtsduck\dtv\tsduck.hfbands.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\src\libtsduck\dtv\tsduck.names" />
-    <None Include="..\..\src\libtsduck\dtv\tsduck.oui.names" />
+    <ClInclude      Include="$(TSDuckRootDir)src\libtsduck\**\*.h"   Exclude="**\unix\**;**\linux\**;**\mac\**;**\static\**"/>
+    <ClCompile      Include="$(TSDuckRootDir)src\libtsduck\**\*.cpp" Exclude="**\unix\**;**\linux\**;**\mac\**;**\static\**"/>
+    <LibConfigXML   Include="$(TSDuckRootDir)src\libtsduck\**\*.xml"/>
+    <LibConfigNames Include="$(TSDuckRootDir)src\libtsduck\**\*.names"/>
+    <Xml            Include="@(LibConfigXML)"/>
+    <None           Include="@(LibConfigNames)"/>
   </ItemGroup>
 
   <PropertyGroup Label="Globals">
@@ -50,10 +44,7 @@
   </ImportGroup>
 
   <Target Name="AfterBuild">
-    <CreateItem Include="..\..\src\libtsduck\dtv\tsduck*.xml;..\..\src\libtsduck\dtv\tsduck*.names">
-      <Output TaskParameter="Include" ItemName="ConfigFiles" />
-    </CreateItem>
-    <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="@(LibConfigXML);@(LibConfigNames)" DestinationFolder="$(OutDir)" />
   </Target>
 
 </Project>
