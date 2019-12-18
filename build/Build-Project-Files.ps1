@@ -39,7 +39,6 @@
 
   The following files are rebuilt:
 
-  - build/msvc/libtsduck-files.props
   - build/qtcreator/libtsduck/libtsduck-files.pri
   - src/libtsduck/tsduck.h
   - src/libtsduck/dtv/tsTables.h
@@ -109,24 +108,6 @@ function GetGroup()
         Select-Object -Unique Filename | `
         ForEach-Object {$prefix + ($_.Filename -replace '^ts','' -replace '\.h$','') + $suffix} | `
         Sort-Object -Culture en-US
-}
-
-# Generate the MS project file.
-function GenerateMSProject()
-{
-    echo '<?xml version="1.0" encoding="utf-8"?>'
-    echo '<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">'
-    echo '  <ItemGroup>'
-    $prefix = "    <ClInclude Include=`"$MsSrcRelPath"
-    $suffix = "`" />"
-    GetSources -Type h -Windows -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*", "*\unix\*", "*\linux\*", "*\mac\*")
-    echo '  </ItemGroup>'
-    echo '  <ItemGroup>'
-    $prefix = "    <ClCompile Include=`"$MsSrcRelPath"
-    $suffix = "`" />"
-    GetSources -Type cpp -Windows -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*", "*\unix\*", "*\linux\*", "*\mac\*")
-    echo '  </ItemGroup>'
-    echo '</Project>'
 }
 
 # Generate the Qt Creator project file.
@@ -225,7 +206,6 @@ function GenerateRefType()
 }
 
 # Generate the files.
-GenerateMSProject    | Out-File -Encoding ascii $MsvcDir\libtsduck-files.props
 GenerateQtProject    | Out-File -Encoding ascii $RootDir\build\qtcreator\libtsduck\libtsduck-files.pri
 GenerateMainHeader   | Out-File -Encoding ascii $SrcDir\tsduck.h
 GenerateTablesHeader | Out-File -Encoding ascii $SrcDir\dtv\tsTables.h

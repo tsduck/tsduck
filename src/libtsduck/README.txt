@@ -29,7 +29,6 @@ be updated. Do not update them manually, use one of the follwing scripts:
 
 The following files are rebuilt:
 
-  - build/msvc/libtsduck-files.props
   - build/qtcreator/libtsduck/libtsduck-files.pri
   - src/libtsduck/tsduck.h
   - src/libtsduck/dtv/tsTables.h
