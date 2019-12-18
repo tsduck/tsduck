@@ -253,7 +253,15 @@ bool ts::WebRequest::SystemGuts::init()
         }
 
         // Send the response headers to the WebRequest object.
-        transmitResponseHeaders();
+        // Do not expect any response header from file: URL.
+        if (_previousURL.startWith(u"file:")) {
+            // Pass empty headers to the WebRequest.
+            _request.processReponseHeaders(u"");
+        }
+        else {
+            // Get actual response headers and pass them to the WebRequest.
+            transmitResponseHeaders();
+        }
 
         // If redirections are not allowed or no redirection occured, stop now.
         // Redirection codes are 3xx (eg. "HTTP/1.1 301 Moved Permanently").

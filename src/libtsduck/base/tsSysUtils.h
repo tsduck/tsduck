@@ -221,6 +221,33 @@ namespace ts {
     TSDUCKDLL UString PathPrefix(const UString& path);
 
     //!
+    //! Check if a string contains a URL (starts with scheme://).
+    //!
+    //! @param [in] path A file path.
+    //! @return True if @a path is a URL.
+    //!
+    TSDUCKDLL bool IsURL(const UString& path);
+
+    //!
+    //! Convert a file path into a URL.
+    //!
+    //! @param [in] path A file path.
+    //! @param [in] base The base directory to use if @a path is a relative file path.
+    //! By default, when @a base is empty, the current working directory is used.
+    //! @param [in] useWinInet This boolean is used on Windows only. When true, a file
+    //! URL is built as 'file://C:/dir/file" (with 2 slashes). When false, the URL is
+    //! 'file:///C:/dir/file" (with 3 slashes). The latter form is the documented one
+    //! from Microsoft and should be considered as the "correct" one. However, the
+    //! Microsoft WinInet library (which is used by the WebRequest class) requires
+    //! the incorrect form with 2 slashes. So, if the resulting URL is to be used
+    //! by WebRequest, set @a useWinInet to true (the default) but if the URL needs
+    //! to be published somewhere, use false.
+    //! @return If @a path is a URL, return it unchanged.
+    //! If it is not, convert it to a file: URL.
+    //!
+    TSDUCKDLL UString ToURL(const UString& path, const UString& base = UString(), bool useWinInet = true);
+
+    //!
     //! Get the current user's home directory.
     //!
     //! @return The full path of the current user's home directory.

@@ -372,6 +372,72 @@ ts::UString ts::PathPrefix(const UString& path)
 
 
 //----------------------------------------------------------------------------
+// Check if a string contains a URL (starts with scheme:).
+//----------------------------------------------------------------------------
+
+bool ts::IsURL(const UString& path)
+{
+    // Look for the URL scheme delimiter.
+    const size_t colon = path.find(u"://");
+
+    // On Windows, do not consider an absolute path with a device letter
+    // as a URL (C://foo/bar is not a URL with scheme C:). We require a
+    // scheme name with more than one single letter to avoid that case.
+
+    if (colon < 2 || colon > path.size()) {
+        // No scheme found, not a URL.
+        return false;
+    }
+    else {
+        // Check that all preceding characters are alphanumerical.
+        for (size_t i = 0; i < colon; ++i) {
+            if (!IsAlpha(path[i]) && !IsDigit(path[i])) {
+                // Invalid character before scheme, not a URL.
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a file path into a URL.
+//----------------------------------------------------------------------------
+
+ts::UString ts::ToURL(const UString& path, const UString& base, bool useWinInet)
+{
+    if (IsURL(path)) {
+        // Already an URL.
+#if defined(TS_WINDOWS)
+        // On Windows, cleanup 'file:///' URL's when needed.
+        if (useWinInet && path.startWith(u"file:///")) {
+            UString url(path);
+            url.erase(5, 1); // remove first slash
+            return url;
+        }
+        else {
+            return path;
+        }
+#else
+        return path;
+#endif
+    }
+    else {
+        const UChar* scheme = u"file://";
+        UString abs_path(AbsoluteFilePath(path, base));
+#if defined(TS_WINDOWS)
+        abs_path.substitute(u'\\', u'/');
+        if (!useWinInet) {
+            scheme = u"file:///";
+        }
+#endif
+        return scheme + abs_path;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Get the current user's home directory.
 //----------------------------------------------------------------------------
 

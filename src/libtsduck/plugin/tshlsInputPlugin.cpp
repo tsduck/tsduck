@@ -169,7 +169,7 @@ bool ts::hls::InputPlugin::getOptions()
 {
     // Decode options.
     _webArgs.loadArgs(duck, *this);
-    getValue(_url, u"");
+    _url = ToURL(value(u""));
     const UString saveDirectory(value(u"save-files"));
     getIntValue(_maxSegmentCount, u"segment-count");
     getIntValue(_minRate, u"min-bitrate");
