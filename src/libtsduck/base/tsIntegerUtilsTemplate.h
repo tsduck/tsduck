@@ -151,7 +151,7 @@ INT ts::SignExtend(INT x, int bits)
         // A mask with all one's in MSB unused bits.
         TS_PUSH_WARNING()
         TS_GCC_NOWARNING(shift-negative-value)
-        const INT mask = ~static_cast<INT>(0) << bits;
+        const INT mask = static_cast<INT>(~static_cast<INT>(0) << bits);
         TS_POP_WARNING()
 
         // Test the sign bit in the LSB signed value.
