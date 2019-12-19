@@ -658,6 +658,7 @@
     #define TS_LLVM_NOWARNING(name)
     #define TS_GCC_NOWARNING(name)  TS_PRAGMA(GCC diagnostic ignored TS_STRINGIFY(-W##name))
     #define TS_MSC_NOWARNING(num)
+    TS_GCC_NOWARNING(pragmas)       // ignore unknown recent warnings on older compilers
 #elif defined(TS_MSC)
     #define TS_PUSH_WARNING()       TS_PRAGMA(warning(push))
     #define TS_POP_WARNING()        TS_PRAGMA(warning(pop))
