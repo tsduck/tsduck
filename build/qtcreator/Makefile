@@ -32,8 +32,6 @@
 #-----------------------------------------------------------------------------
 
 include ../../Makefile.tsduck
-
-RECURSE_ORDER = libtsduck
-
+RECURSE_ORDER = none
 default:
-	+@$(RECURSE)
+	@true

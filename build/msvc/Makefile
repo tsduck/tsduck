@@ -34,3 +34,4 @@
 include ../../Makefile.tsduck
 RECURSE_ORDER = none
 default:
+	@true

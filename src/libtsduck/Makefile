@@ -67,7 +67,7 @@ default: headers libs
 	@true
 
 # These headers are automatically generated.
-GENHEADERS := tsduck.h tsTables.h private/tsRefType.h
+GENHEADERS := tsduck.h dtv/tsTables.h dtv/private/tsRefType.h
 .PHONY: headers
 headers: $(GENHEADERS)
 $(GENHEADERS): $(BUILD_PROJ_FILES) $(SRCROOT)/HEADER.txt $(LIB_HEADERS)

@@ -110,46 +110,6 @@ function GetGroup()
         Sort-Object -Culture en-US
 }
 
-# Generate the Qt Creator project file.
-function GenerateQtProject()
-{
-    echo 'HEADERS += \'
-    $prefix = "    $QtSrcRelPath"
-    $suffix = " \"
-    GetSources -Type h -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*", "*\unix\*", "*\linux\*", "*\mac\*", "*\windows\*")
-    echo ''
-    echo 'SOURCES += \'
-    GetSources -Type cpp -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*", "*\unix\*", "*\linux\*", "*\mac\*", "*\windows\*")
-    $prefix = "    $prefix"
-    echo ''
-    echo 'linux {'
-    echo '    HEADERS += \'
-    GetSources -Type h -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*") -Include @("*\unix\*", "*\linux\*")
-    echo ''
-    echo '    SOURCES += \'
-    GetSources -Type cpp -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*") -Include @("*\unix\*", "*\linux\*")
-    echo ''
-    echo '}'
-    echo ''
-    echo 'mac {'
-    echo '    HEADERS += \'
-    GetSources -Type h -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*") -Include @("*\unix\*", "*\mac\*")
-    echo ''
-    echo '    SOURCES += \'
-    GetSources -Type cpp -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*") -Include @("*\unix\*", "*\mac\*")
-    echo ''
-    echo '}'
-    echo ''
-    echo 'win32|win64 {'
-    echo '    HEADERS += \'
-    GetSources -Type h -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*") -Include @("*\windows\*")
-    echo ''
-    echo '    SOURCES += \'
-    GetSources -Type cpp -Unix -Prefix $prefix -Suffix $suffix -Exclude @("*\tsStaticReferences*") -Include @("*\windows\*")
-    echo ''
-    echo '}'
-}
-
 # Generate the main TSDuck header file.
 function GenerateMainHeader()
 {
@@ -174,7 +134,6 @@ function GenerateMainHeader()
     GetSources -Type h -Prefix $prefix -Suffix $suffix -Exclude @("*Template.h") -Include @("*\windows\*")
     echo '#endif'
 }
-
 
 # Generate the header file for PSI/SI tables and descriptors.
 function GenerateTablesHeader()
@@ -206,7 +165,6 @@ function GenerateRefType()
 }
 
 # Generate the files.
-GenerateQtProject    | Out-File -Encoding ascii $RootDir\build\qtcreator\libtsduck\libtsduck-files.pri
 GenerateMainHeader   | Out-File -Encoding ascii $SrcDir\tsduck.h
 GenerateTablesHeader | Out-File -Encoding ascii $SrcDir\dtv\tsTables.h
 GenerateRefType      | Out-File -Encoding ascii $SrcDir\dtv\private\tsRefType.h

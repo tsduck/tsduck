@@ -2,8 +2,8 @@ CONFIG += plugin
 include(../tsduck.pri)
 TEMPLATE = lib
 TARGET = tsduck
-QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/private
-INCLUDEPATH += $$SRCROOT/libtsduck/private
+INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name $$NOSYSDIR ! -name release\\* ! -name debug\\*")
+
 linux:QMAKE_LFLAGS += -Wl,-soname=tsduck.so
 mac:QMAKE_POST_LINK += install_name_tool -id $$OUT_PWD/tsduck.so $$OUT_PWD/tsduck.so $$escape_expand(\\n\\t)
 
@@ -17,19 +17,6 @@ linux {
     QMAKE_CXXFLAGS += -isystem $$PROJROOT/dektec/LinuxSDK/DTAPI/Include
 }
 
-DISTFILES += \
-    ../../../src/libtsduck/tsduck.names \
-    ../../../src/libtsduck/tsduck.oui.names \
-    ../../../src/libtsduck/tsduck.channels.model.xml \
-    ../../../src/libtsduck/tsduck.tables.model.xml \
-    ../../../src/libtsduck/tsduck.hfbands.model.xml \
-    ../../../src/libtsduck/tsduck.hfbands.xml \
-    ../../../src/libtsduck/tsduck.mk
-
-include(libtsduck-files.pri)
-
-HEADERS += \
-    ../../../src/libtsduck/tsStaticReferencesDVB.h
-
-SOURCES += \
-    ../../../src/libtsduck/tsStaticReferencesDVB.cpp
+DISTFILES += $$TS_CONFIG_FILES
+HEADERS   += $$system("find $$SRCROOT/libtsduck -name \\*.h ! -path \\*/windows/\\* ! -path \\*/$$NOSYSDIR/\\* ! -path \\*/release\\* ! -path \\*/debug\\*")
+SOURCES   += $$system("find $$SRCROOT/libtsduck -name \\*.cpp ! -path \\*/windows/\\* ! -path \\*/$$NOSYSDIR/\\* ! -path \\*/release\\* ! -path \\*/debug\\*")
