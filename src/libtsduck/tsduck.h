@@ -514,6 +514,7 @@
 #include "tsUDPSocket.h"
 #include "tsUID.h"
 #include "tsURILinkageDescriptor.h"
+#include "tsURL.h"
 #include "tsUserInterrupt.h"
 #include "tsUString.h"
 #include "tsVariable.h"

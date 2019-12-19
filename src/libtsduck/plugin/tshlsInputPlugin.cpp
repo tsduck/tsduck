@@ -29,6 +29,7 @@
 
 #include "tshlsInputPlugin.h"
 #include "tsSysUtils.h"
+#include "tsURL.h"
 TSDUCK_SOURCE;
 
 #define DEFAULT_MAX_QUEUED_PACKETS  1000    // Default size in packet of the inter-thread queue.
@@ -169,7 +170,7 @@ bool ts::hls::InputPlugin::getOptions()
 {
     // Decode options.
     _webArgs.loadArgs(duck, *this);
-    _url = ToURL(value(u""));
+    _url = URL(value(u"")).toString();
     const UString saveDirectory(value(u"save-files"));
     getIntValue(_maxSegmentCount, u"segment-count");
     getIntValue(_minRate, u"min-bitrate");
