@@ -42,9 +42,10 @@ ts::hls::PlayList::PlayList() :
     _valid(false),
     _version(1),
     _type(UNKNOWN_PLAYLIST),
-    _url(),
-    _urlBase(),
+    _original(),
+    _fileBase(),
     _isURL(false),
+    _url(),
     _targetDuration(0),
     _mediaSequence(0),
     _endList(false),
@@ -68,9 +69,10 @@ void ts::hls::PlayList::clear()
     _valid = false;
     _version = 1;
     _type = UNKNOWN_PLAYLIST;
-    _url.clear();
-    _urlBase.clear();
+    _original.clear();
+    _fileBase.clear();
     _isURL = false;
+    _url.clear();
     _targetDuration = 0;
     _mediaSequence = 0;
     _endList = false;
@@ -94,8 +96,10 @@ void ts::hls::PlayList::reset(ts::hls::PlayListType type, const ts::UString &fil
     _valid = true;
     _version = version;
     _type = type;
-    _url = AbsoluteFilePath(filename);
-    _urlBase = DirectoryName(_url) + PathSeparator;
+    _original = AbsoluteFilePath(filename);
+    _fileBase = DirectoryName(_original) + PathSeparator;
+    _isURL = false;
+    _url.clear();
 }
 
 
@@ -106,20 +110,17 @@ void ts::hls::PlayList::reset(ts::hls::PlayListType type, const ts::UString &fil
 ts::UString ts::hls::PlayList::buildURL(const ts::UString& uri) const
 {
     if (_isURL) {
-        // The base URL is really a URL, check if the URI starts with a protocol.
-        // Search the position of the first non-alpha character.
-        size_t pos = 0;
-        while (pos < uri.size() && IsAlpha(uri[pos])) {
-            ++pos;
-        }
-        if (pos > 0 && pos < uri.size() && uri[pos] == u':') {
-            // There is a protocol, this is an absolute URL.
-            return uri;
-        }
+        // Build a full URL, based on original URL.
+        return URL(uri, _url).toString();
     }
-
-    // This is a relative URI.
-    return _urlBase + uri;
+    else if (uri.startWith(u"/")) {
+        // The original URI was a file and the segment is an absolute file name.
+        return uri;
+    }
+    else {
+        // The original URI was a file and the segment is a relative file name.
+        return _fileBase + uri;
+    }
 }
 
 
@@ -229,9 +230,9 @@ bool ts::hls::PlayList::addSegment(const ts::hls::MediaSegment& seg, ts::Report&
         // Add the segment.
         _segments.push_back(seg);
         // Build a relative URI.
-        if (!_isURL && !_url.empty()) {
+        if (!_isURL && !_original.empty()) {
             // The playlist's URI is a file name, update the segment's URI.
-            _segments.back().uri = RelativeFilePath(seg.uri, _urlBase, FileSystemCaseSensitivity, true);
+            _segments.back().uri = RelativeFilePath(seg.uri, _fileBase, FileSystemCaseSensitivity, true);
         }
         return true;
     }
@@ -251,9 +252,9 @@ bool ts::hls::PlayList::addPlayList(const ts::hls::MediaPlayList& pl, ts::Report
         // Add the media playlist.
         _playlists.push_back(pl);
         // Build a relative URI.
-        if (!_isURL && !_url.empty()) {
+        if (!_isURL && !_original.empty()) {
             // The master playlist's URI is a file name, update the media playlist's URI.
-            _playlists.back().uri = RelativeFilePath(pl.uri, _urlBase, FileSystemCaseSensitivity, true);
+            _playlists.back().uri = RelativeFilePath(pl.uri, _fileBase, FileSystemCaseSensitivity, true);
         }
         return true;
     }
@@ -348,23 +349,31 @@ size_t ts::hls::PlayList::selectPlayListHighestResolution() const
 // Load the playlist from a URL.
 //----------------------------------------------------------------------------
 
-bool ts::hls::PlayList::loadURL(const UString& url, bool strict, const WebRequestArgs args, PlayListType type, Report& report)
+bool ts::hls::PlayList::loadURL(const UString& url_string, bool strict, const WebRequestArgs args, PlayListType type, Report& report)
+{
+    const URL url(url_string);
+    if (url.isValid()) {
+        return loadURL(url, strict, args, type, report);
+    }
+    else {
+        report.error(u"invalid URL");
+        return false;
+    }
+}
+
+bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArgs args, PlayListType type, Report& report)
 {
     clear();
     _type = type;
 
     // Keep the URL.
     _url = url;
+    _original = url.toString();
     _isURL = true;
-    size_t slash = _url.rfind(u"/");
-    if (slash != NPOS) {
-        // The URL base up the last "/" (inclusive).
-        _urlBase = _url.substr(0, slash + 1);
-    }
 
     // Build a web request to download the playlist.
     WebRequest web(report);
-    web.setURL(url);
+    web.setURL(_original);
     web.setArgs(args);
     if (args.useCookies) {
         web.enableCookies(args.cookiesFile);
@@ -375,18 +384,14 @@ bool ts::hls::PlayList::loadURL(const UString& url, bool strict, const WebReques
 
     // Download the content.
     UString text;
-    report.debug(u"downloading %s", {url});
+    report.debug(u"downloading %s", {_original});
     if (!web.downloadTextContent(text)) {
         return false;
     }
 
     // Save the final URL in case of redirections.
-    _url = web.finalURL();
-    slash = _url.rfind(u"/");
-    if (slash != NPOS) {
-        // The URL base up the last "/" (inclusive).
-        _urlBase = _url.substr(0, slash + 1);
-    }
+    _original = web.finalURL();
+    _url.setURL(_original);
 
     // Check MIME type of the downloaded content.
     const UString mime(web.mimeType());
@@ -395,13 +400,13 @@ bool ts::hls::PlayList::loadURL(const UString& url, bool strict, const WebReques
     // Check strict conformance: according to RFC 8216, a playlist must either ends in .m3u8 or .m3u - OR -
     // HTTP Content-Type is application/vnd.apple.mpegurl or audio/mpegurl.
     if (strict &&
-        !url.endWith(u".m3u8", CASE_INSENSITIVE) &&
-        !url.endWith(u".m3u", CASE_INSENSITIVE) &&
+        !_original.endWith(u".m3u8", CASE_INSENSITIVE) &&
+        !_original.endWith(u".m3u", CASE_INSENSITIVE) &&
         mime != u"application/vnd.apple.mpegurl" &&
         mime != u"application/mpegurl" &&
         mime != u"audio/mpegurl")
     {
-        report.error(u"Invalid MIME type \"%s\" for HLS playlist at %s", {mime, url});
+        report.error(u"Invalid MIME type \"%s\" for HLS playlist at %s", {mime, _original});
         return false;
     }
 
@@ -427,8 +432,8 @@ bool ts::hls::PlayList::loadFile(const UString& filename, bool strict, PlayListT
     _type = type;
 
     // Keep file name.
-    _url = filename;
-    _urlBase = DirectoryName(filename) + PathSeparator;
+    _original = filename;
+    _fileBase = DirectoryName(filename) + PathSeparator;
     _isURL = false;
 
     // Check strict conformance: according to RFC 8216, a playlist must either ends in .m3u8 or .m3u.
@@ -470,15 +475,15 @@ bool ts::hls::PlayList::loadText(const UString& text, bool strict, PlayListType 
 bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs args, ts::Report& report)
 {
     // Playlists which cannot be reloaded are ignored (no error).
-    if (_type != MEDIA_PLAYLIST || _endList || _url.empty()) {
-        report.debug(u"non-reloadable playlist: %s", {_url});
+    if (_type != MEDIA_PLAYLIST || _endList || _original.empty()) {
+        report.debug(u"non-reloadable playlist: %s", {_original});
         return true;
     }
 
     // Reload the new content in another object.
     PlayList plNew;
-    if ((_isURL && !plNew.loadURL(_url, strict, args, UNKNOWN_PLAYLIST, report)) ||
-        (!_isURL && !plNew.loadFile(_url, strict, UNKNOWN_PLAYLIST, report)))
+    if ((_isURL && !plNew.loadURL(_original, strict, args, UNKNOWN_PLAYLIST, report)) ||
+        (!_isURL && !plNew.loadFile(_original, strict, UNKNOWN_PLAYLIST, report)))
     {
         return false;
     }
@@ -832,12 +837,12 @@ bool ts::hls::PlayList::setType(PlayListType type, Report& report)
 
 bool ts::hls::PlayList::autoSave(Report& report)
 {
-    if (_autoSaveDir.empty() || _url.empty()) {
+    if (_autoSaveDir.empty() || _original.empty()) {
         // No need to save
         return true;
     }
     else {
-        const UString name(_autoSaveDir + PathSeparator + BaseName(_url));
+        const UString name(_autoSaveDir + PathSeparator + BaseName(_original));
         report.verbose(u"saving playlist to %s", {name});
         const bool ok = UString::Save(_loadedContent, name);
         if (!ok) {
@@ -857,11 +862,11 @@ ts::UString ts::hls::PlayList::toString() const
     UString str;
 
     if (_isURL) {
-        const size_t slash = _url.rfind(u'/');
-        str = slash == NPOS ? _url : _url.substr(slash + 1);
+        const size_t slash = _original.rfind(u'/');
+        str = slash == NPOS ? _original : _original.substr(slash + 1);
     }
     else {
-        str = BaseName(_url);
+        str = BaseName(_original);
     }
     if (!str.empty()) {
         str.append(u", ");
@@ -899,7 +904,7 @@ ts::UString ts::hls::PlayList::toString() const
 bool ts::hls::PlayList::saveFile(const ts::UString &filename, ts::Report &report) const
 {
     // Check that we have a valid file name to store the file.
-    if (filename.empty() && (_isURL || _url.empty())) {
+    if (filename.empty() && (_isURL || _original.empty())) {
         report.error(u"no file name specified to store the HLS playlist");
         return false;
     }
@@ -911,7 +916,7 @@ bool ts::hls::PlayList::saveFile(const ts::UString &filename, ts::Report &report
     }
 
     // Save the file.
-    const UString& name(filename.empty() ? _url : filename);
+    const UString& name(filename.empty() ? _original : filename);
     if (!text.save(name, false, true)) {
         report.error(u"error saving HLS playlist in %s", {name});
         return false;

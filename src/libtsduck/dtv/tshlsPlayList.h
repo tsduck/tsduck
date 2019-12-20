@@ -36,6 +36,7 @@
 #include "tshls.h"
 #include "tshlsMediaPlayList.h"
 #include "tshlsMediaSegment.h"
+#include "tsURL.h"
 #include "tsTime.h"
 #include "tsCerrReport.h"
 #include "tsWebRequestArgs.h"
@@ -81,6 +82,17 @@ namespace ts {
             //! @return True on success, false on error.
             //!
             bool loadURL(const UString& url, bool strict = false, const WebRequestArgs args = WebRequestArgs(), PlayListType type = UNKNOWN_PLAYLIST, Report& report = CERR);
+
+            //!
+            //! Load the playlist from a URL.
+            //! @param [in] url URL from which to load the playlist.
+            //! @param [in] strict If true, perform strict conformance checking. By default, relaxed as long as we can understand the content.
+            //! @param [in] args Web request arguments from command line.
+            //! @param [in] type Expected playlist type, unknown by default.
+            //! @param [in,out] report Where to report errors.
+            //! @return True on success, false on error.
+            //!
+            bool loadURL(const URL& url, bool strict = false, const WebRequestArgs args = WebRequestArgs(), PlayListType type = UNKNOWN_PLAYLIST, Report& report = CERR);
 
             //!
             //! Load the playlist from a text file.
@@ -153,7 +165,7 @@ namespace ts {
             //! Get the original URL.
             //! @return The original URL.
             //!
-            UString url() const { return _url; }
+            UString url() const { return _original; }
 
             //!
             //! Build an URL for a media segment or sub playlist.
@@ -367,9 +379,10 @@ namespace ts {
             bool               _valid;           // Content loaded and valid.
             int                _version;         // Playlist format version.
             PlayListType       _type;            // Playlist type.
-            UString            _url;             // Original URL (or file name).
-            UString            _urlBase;         // Base URL (to resolve relative URI's).
+            UString            _original;        // Original URL or file name.
+            UString            _fileBase;        // Base file path to resolve relative URI's (when original is a file name).
             bool               _isURL;           // The base is an URL, not a directory name.
+            URL                _url;             // Original URL.
             Second             _targetDuration;  // Segment target duration (media playlist).
             size_t             _mediaSequence;   // Sequence number of first segment (media playlist).
             bool               _endList;         // End of list indicator (media playlist).

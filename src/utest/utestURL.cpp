@@ -48,12 +48,16 @@ public:
 
     void testIsURL();
     void testParse();
+    void testBase();
     void testToString();
+    void testToRelative();
 
     TSUNIT_TEST_BEGIN(URLTest);
     TSUNIT_TEST(testIsURL);
     TSUNIT_TEST(testParse);
+    TSUNIT_TEST(testBase);
     TSUNIT_TEST(testToString);
+    TSUNIT_TEST(testToRelative);
     TSUNIT_TEST_END();
 };
 
@@ -114,17 +118,36 @@ void URLTest::testParse()
     TSUNIT_EQUAL(u"", url2.getFragment());
 }
 
+void URLTest::testBase()
+{
+    TSUNIT_EQUAL(u"http://foo.com/bar/abc/def", ts::URL(u"abc/def", u"http://foo.com/bar/cool").toString());
+    TSUNIT_EQUAL(u"http://foo.com/bar/cool/abc/def", ts::URL(u"abc/def", u"http://foo.com/bar/cool/").toString());
+    TSUNIT_EQUAL(u"http://foo.com/abc/def", ts::URL(u"/abc/def", u"http://foo.com/bar/cool/").toString());
+    TSUNIT_EQUAL(u"http://foo.com/bar/abc/def", ts::URL(u"../../abc/def", u"http://foo.com/bar/cool/taf/").toString());
+}
+
 void URLTest::testToString()
 {
     TSUNIT_EQUAL(u"http://foo.bar/", ts::URL(u"http://foo.bar").toString());
+    TSUNIT_EQUAL(u"http://foo.bar/a/d/e", ts::URL(u"http://foo.bar/a/b/c/../../d/e").toString());
 
 #if defined(TS_WINDOWS)
     TSUNIT_EQUAL(u"file://C:/ab/cd/ef", ts::URL(u"C:\\ab\\cd\\ef").toString());
     TSUNIT_EQUAL(u"file://C:/ab/cd/ef", ts::URL(u"C:\\ab\\cd\\ef").toString(true));
     TSUNIT_EQUAL(u"file:///C:/ab/cd/ef", ts::URL(u"C:\\ab\\cd\\ef").toString(false));
-    TSUNIT_EQUAL(u"file://C:/ab/cd/ef", ts::URL(u"ef", u"C:\\ab\\cd").toString());
+    TSUNIT_EQUAL(u"file://C:/ab/cd/ef", ts::URL(u"ef", u"C:\\ab\\cd\\").toString());
+    TSUNIT_EQUAL(u"file://C:/ab/ef", ts::URL(u"ef", u"C:\\ab\\cd").toString());
 #else
     TSUNIT_EQUAL(u"file:///ab/cd/ef", ts::URL(u"/ab/cd/ef").toString());
-    TSUNIT_EQUAL(u"file:///ab/cd/ef", ts::URL(u"ef", u"/ab/cd").toString());
+    TSUNIT_EQUAL(u"file:///ab/ef", ts::URL(u"ef", u"/ab/cd").toString());
+    TSUNIT_EQUAL(u"file:///ab/cd/ef", ts::URL(u"ef", u"/ab/cd/").toString());
 #endif
+}
+
+void URLTest::testToRelative()
+{
+    TSUNIT_EQUAL(u"http://foo.bar/abc/def", ts::URL(u"http://foo.bar/abc/def").toRelative(u"http://foo.car/abc/def"));
+    TSUNIT_EQUAL(u"/abc/def", ts::URL(u"http://foo.bar/abc/def").toRelative(u"http://foo.bar/xyz/def"));
+    TSUNIT_EQUAL(u"def", ts::URL(u"http://foo.bar/abc/def").toRelative(u"http://foo.bar/abc/"));
+    TSUNIT_EQUAL(u"abc/def", ts::URL(u"http://foo.bar/abc/def").toRelative(u"http://foo.bar/abc"));
 }

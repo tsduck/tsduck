@@ -35,6 +35,7 @@
 #pragma once
 #include "tsAbstractHTTPInputPlugin.h"
 #include "tshlsPlayList.h"
+#include "tsURL.h"
 #include "tsWebRequest.h"
 #include "tsWebRequestArgs.h"
 
@@ -66,7 +67,7 @@ namespace ts {
             virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
         private:
-            UString        _url;
+            URL            _url;
             BitRate        _minRate;
             BitRate        _maxRate;
             size_t         _minWidth;

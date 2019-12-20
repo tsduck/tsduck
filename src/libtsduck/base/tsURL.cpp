@@ -83,6 +83,7 @@ void ts::URL::setURL(const UString& path)
             dir.substitute(u'\\', u'/');
             dir.insert(0, u"/");
 #endif
+            // A directory must end with a slash in a URL.
             if (!dir.endWith(u"/") && !_path.empty()) {
                 dir.append(u"/");
             }
@@ -218,21 +219,38 @@ void ts::URL::applyBase(const URL& base)
 {
     // If there is no scheme, this was a relative URL.
     if (_scheme.empty()) {
+
+        // The scheme and host part is fully inherited from the base URL.
         _scheme = base._scheme;
         _username = base._username;
         _password = base._password;
         _host = base._host;
         _port = base._port;
+
+        // The path is built based on the base URL.
+        // If the path already starts with a slash, it is absolute on the host.
         if (_path.empty()) {
-            // Missing path, use base
+            // Completely missing path, use base
             _path = base._path;
         }
         else if (!_path.startWith(u"/")) {
             // Relative path, append after base.
-            if (!base._path.endWith(u"/")) {
-                _path.insert(0, u"/");
+            if (base._path.endWith(u"/")) {
+                // Base path is a directory, use it.
+                _path.insert(0, base._path);
             }
-            _path.insert(0, base._path);
+            else {
+                // Base path is a file/object, extract directory part.
+                const size_t last_slash = base._path.rfind(u'/');
+                if (last_slash >= base._path.size()) {
+                    // No slash in base path, assume root.
+                    _path.insert(0, 1, u'/');
+                }
+                else {
+                    // Insert directory part (including slash) of the base path.
+                    _path.insert(0, base._path, 0, last_slash + 1);
+                }
+            }
         }
     }
 
@@ -253,12 +271,12 @@ void ts::URL::cleanupPath()
 #if defined(TS_WINDOWS)
     _path.substitute(u'/', u'\\');
 #endif
-    CleanupFilePath(_path);
+    _path = CleanupFilePath(_path);
 #if defined(TS_WINDOWS)
     _path.substitute(u'\\', u'/');
 #endif
 
-    // Preserve final slash (meaningful in URL).
+    // Preserve final slash (meaningful in URL) if removed by CleanupFilePath().
     if (end_slash && !_path.endWith(u"/")) {
         _path.append(u"/");
     }
@@ -325,6 +343,54 @@ ts::UString ts::URL::toString(bool useWinInet) const
         }
     }
     return url;
+}
+
+
+//----------------------------------------------------------------------------
+// Extract a relative URL of this object, from a base URL.
+//----------------------------------------------------------------------------
+
+ts::UString ts::URL::toRelative(const UString& base, bool useWinInet) const
+{
+    return toRelative(URL(base), useWinInet);
+}
+
+ts::UString ts::URL::toRelative(const URL& base, bool useWinInet) const
+{
+    // If the base is not on the same server, there is no relative path, return the full URL.
+    if (!sameServer(base)) {
+        return toString(useWinInet);
+    }
+
+    // Get directory part of base path.
+    size_t start = 0;
+    const size_t last_slash = base._path.rfind(u'/');
+    if (last_slash < base._path.size() && _path.startWith(base._path.substr(0, last_slash + 1))) {
+        // The path has the same base, including trailing slash.
+        start = last_slash + 1;
+    }
+
+    // Build the relative URL.
+    UString url(_path, start, _path.size() - start);
+    if (!_query.empty()) {
+        url.append(u"?");
+        url.append(_query);
+    }
+    if (!_fragment.empty()) {
+        url.append(u"#");
+        url.append(_fragment);
+    }
+    return url;
+}
+
+
+//----------------------------------------------------------------------------
+// Check if two URL's use the same server (scheme, host, user, etc.)
+//----------------------------------------------------------------------------
+
+bool ts::URL::sameServer(const URL& other) const
+{
+    return _scheme == other._scheme && _username == other._username && _password == other._password && _host == other._host && _port == other._port;
 }
 
 

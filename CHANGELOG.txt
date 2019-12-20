@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.20-1553
+VERSION 3.20-1564
 
 [NEW] New commands and plugins:
 
@@ -15,6 +15,12 @@ VERSION 3.20-1553
   * Option --buffer-size-mb of "tsp" now accepts decimal values (eg. "0.5").
   * Added options --local-time-offset, --next-change, --next-time-offset,
     --only-country name and --only-region to plugin "timeref".
+
+[BUG] Bug fixes:
+
+  * In input plugin "hls", when the sub-playlists or media segments had
+    relative URI's with absolute file path, the sub-playlists or segments
+    were not correctly loaded.
 
 -------------------------------------------------------------------------------
 
