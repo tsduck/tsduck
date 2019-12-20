@@ -29,7 +29,6 @@
 
 #include "tshlsInputPlugin.h"
 #include "tsSysUtils.h"
-#include "tsURL.h"
 TSDUCK_SOURCE;
 
 #define DEFAULT_MAX_QUEUED_PACKETS  1000    // Default size in packet of the inter-thread queue.
@@ -170,7 +169,7 @@ bool ts::hls::InputPlugin::getOptions()
 {
     // Decode options.
     _webArgs.loadArgs(duck, *this);
-    _url = URL(value(u"")).toString();
+    _url.setURL(value(u""));
     const UString saveDirectory(value(u"save-files"));
     getIntValue(_maxSegmentCount, u"segment-count");
     getIntValue(_minRate, u"min-bitrate");
@@ -200,8 +199,8 @@ bool ts::hls::InputPlugin::getOptions()
         _startSegment = -1;
     }
 
-    if (_url.empty()) {
-        tsp->error(u"empty URL");
+    if (!_url.isValid()) {
+        tsp->error(u"invalid URL");
         return false;
     }
 
@@ -249,7 +248,7 @@ bool ts::hls::InputPlugin::start()
 {
     // Load the HLS playlist, can be a master playlist or a media playlist.
     _playlist.clear();
-    if (!_playlist.loadURL(_url, false, _webArgs, hls::UNKNOWN_PLAYLIST, *tsp)) {
+    if (!_playlist.loadURL(_url.toString(), false, _webArgs, hls::UNKNOWN_PLAYLIST, *tsp)) {
         return false;
     }
 

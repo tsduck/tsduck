@@ -109,6 +109,33 @@ namespace ts {
         UString toString(bool useWinInet = true) const;
 
         //!
+        //! Extract a relative URL of this object, from a base URL.
+        //! @param [in] base The base URL to use. If this object and @a base share the
+        //! same scheme and host specification.
+        //! @param [in] useWinInet This boolean is used on Windows only.
+        //! See toString() for details.
+        //! @return The relative URL as a string.
+        //!
+        UString toRelative(const URL& base, bool useWinInet = true) const;
+
+        //!
+        //! Extract a relative URL of this object, from a base URL.
+        //! @param [in] base The base URL to use. If this object and @a base share the
+        //! same scheme and host specification.
+        //! @param [in] useWinInet This boolean is used on Windows only.
+        //! See toString() for details.
+        //! @return The relative URL as a string.
+        //!
+        UString toRelative(const UString& base, bool useWinInet = true) const;
+
+        //!
+        //! Check if two URL's use the same server (scheme, host, user, etc.)
+        //! @param [in] other Another URL to compare.
+        //! @return True if the two URL' as a string's use the same server.
+        //!
+        bool sameServer(const URL& other) const;
+
+        //!
         //! Check if the URL is valid (was built from a valid URL string).
         //! @return True if the URL is valid.
         //!
