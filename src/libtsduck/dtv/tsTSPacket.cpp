@@ -294,8 +294,20 @@ bool ts::TSPacket::setPayloadSize(size_t size, bool shift_payload, uint8_t pad)
 
 bool ts::TSPacket::startPES() const
 {
+    // A PES header starts with the 3-byte prefix 0x000001. A packet has a PES
+    // header if the 'payload unit start' is set in the TS header and the
+    // payload starts with 0x000001.
+    //
+    // Note that there is no risk to misinterpret the prefix: When 'payload
+    // unit start' is set, the payload may also contains PSI/SI tables. In
+    // that case, 0x000001 is not a possible value for the beginning of the
+    // payload. With PSI/SI, a payload starting with 0x000001 would mean:
+    //  0x00 : pointer field -> a section starts at next byte
+    //  0x00 : table id -> a PAT
+    //  0x01 : section_syntax_indicator field is 0, impossible for a PAT
+
     const uint8_t* const pl = getPayload();
-    return hasValidSync() && getPUSI() && isClear() && hasPayload() &&
+    return hasValidSync() && !getTEI() && getPUSI() && isClear() && hasPayload() &&
         getPayloadSize() >= 3 && pl[0] == 0x00 && pl[1] == 0x00 && pl[2] == 0x01;
 }
 
@@ -1033,6 +1045,9 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
             strm << margin << "Discontinuity: " << getDiscontinuityIndicator()
                  << ", random access: " << getRandomAccessIndicator()
                  << ", ES priority: " << getESPI() << std::endl;
+        }
+        if (hasSpliceCountdown()) {
+            strm << margin << "Splice countdown: " << int(getSpliceCountdown()) << std::endl;
         }
         if (hasPCR() || hasOPCR()) {
             strm << margin;
