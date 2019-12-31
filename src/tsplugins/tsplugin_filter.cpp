@@ -65,7 +65,8 @@ namespace ts {
         bool            _with_payload;       // Packets with payload
         bool            _with_af;            // Packets with adaptation field
         bool            _with_pes;           // Packets with clear PES headers
-        bool            _has_pcr;            // Packets with PCR or OPCR
+        bool            _with_pcr;           // Packets with PCR or OPCR
+        bool            _with_splice;        // Packets with splice_countdown in adaptation field
         bool            _unit_start;         // Packets with payload unit start
         bool            _nullified;          // Packets which were nullified by a previous plugin
         bool            _input_stuffing;     // Null packets which were artificially inserted
@@ -75,6 +76,9 @@ namespace ts {
         int             _max_payload;        // Maximum payload size (<0: no filter)
         int             _min_af;             // Minimum adaptation field size (<0: no filter)
         int             _max_af;             // Maximum adaptation field size (<0: no filter)
+        int             _splice;             // Exact splice_countdown value (<-128: no filter)
+        int             _min_splice;         // Minimum splice_countdown value (<-128: no filter)
+        int             _max_splice;         // Maximum splice_countdown value (<-128: no filter)
         PacketCounter   _after_packets;      // Number of initial packets to skip
         PacketCounter   _every_packets;      // Filter 1 out of this number of packets
         PIDSet          _pid;                // PID values to filter
@@ -107,7 +111,8 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     _with_payload(false),
     _with_af(false),
     _with_pes(false),
-    _has_pcr(false),
+    _with_pcr(false),
+    _with_splice(false),
     _unit_start(false),
     _nullified(false),
     _input_stuffing(false),
@@ -117,6 +122,9 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     _max_payload(0),
     _min_af(0),
     _max_af(0),
+    _splice(0),
+    _min_splice(0),
+    _max_splice(0),
     _after_packets(0),
     _every_packets(0),
     _pid(),
@@ -262,6 +270,22 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Do not drop unselected packets, simply use selected ones as trigger. "
          u"Several --set-permanent-label options may be specified.");
 
+    option(u"has-splice-countdown");
+    help(u"has-splice-countdown", u"Select packets which contain a splice_countdown value in adaptation field.");
+
+    option(u"splice-countdown", 0, INT8);
+    help(u"splice-countdown", u"Select packets with the specified splice_countdown value in adaptation field.");
+
+    option(u"min-splice-countdown", 0, INT8);
+    help(u"min-splice-countdown",
+         u"Select packets with a splice_countdown value in adaptation field which is "
+         u"greater than or equal to the specified value.");
+
+    option(u"max-splice-countdown", 0, INT8);
+    help(u"max-splice-countdown",
+         u"Select packets with a splice_countdown value in adaptation field which is "
+         u"lower than or equal to the specified value.");
+
     option(u"reset-permanent-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
     help(u"reset-permanent-label", u"label1[-label2]",
          u"Clear the specified labels on all packets, selected and unselected ones, after at least one was selected. "
@@ -293,7 +317,8 @@ bool ts::FilterPlugin::getOptions()
     _with_payload = present(u"payload");
     _with_af = present(u"adaptation-field");
     _with_pes = present(u"pes");
-    _has_pcr = present(u"pcr");
+    _with_pcr = present(u"pcr");
+    _with_splice = present(u"has-splice-countdown");
     _unit_start = present(u"unit-start");
     _nullified = present(u"nullified");
     _input_stuffing = present(u"input-stuffing");
@@ -303,6 +328,9 @@ bool ts::FilterPlugin::getOptions()
     getIntValue(_max_payload, u"max-payload-size", -1);
     getIntValue(_min_af, u"min-adaptation-field-size", -1);
     getIntValue(_max_af, u"max-adaptation-field-size", -1);
+    getIntValue(_splice, u"splice-countdown", INT_MIN);
+    getIntValue(_min_splice, u"min-splice-countdown", INT_MIN);
+    getIntValue(_max_splice, u"max-splice-countdown", INT_MIN);
     getIntValue(_after_packets, u"after-packets");
     getIntValue(_every_packets, u"every");
     getIntValues(_pid, u"pid");
@@ -409,29 +437,18 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
         (_input_stuffing && pkt_data.getInputStuffing()) ||
         (_valid && pkt.hasValidSync() && !pkt.getTEI()) ||
         (_scrambling_ctrl == pkt.getScrambling()) ||
-        (_has_pcr && (pkt.hasPCR() || pkt.hasOPCR())) ||
-        (_min_payload >= 0 && int (pkt.getPayloadSize()) >= _min_payload) ||
-        (int (pkt.getPayloadSize()) <= _max_payload) ||
-        (_min_af >= 0 && int (pkt.getAFSize()) >= _min_af) ||
-        (int (pkt.getAFSize()) <= _max_af) ||
+        (_with_pcr && (pkt.hasPCR() || pkt.hasOPCR())) ||
+        (_with_splice && pkt.hasSpliceCountdown()) ||
+        (_splice >= -128 && pkt.hasSpliceCountdown() && pkt.getSpliceCountdown() == _splice) ||
+        (_min_splice >= -128 && pkt.hasSpliceCountdown() && pkt.getSpliceCountdown() >= _min_splice) ||
+        (_max_splice >= -128 && pkt.hasSpliceCountdown() && pkt.getSpliceCountdown() <= _max_splice) ||
+        (_min_payload >= 0 && int(pkt.getPayloadSize()) >= _min_payload) ||
+        (int(pkt.getPayloadSize()) <= _max_payload) ||
+        (_min_af >= 0 && int(pkt.getAFSize()) >= _min_af) ||
+        (int(pkt.getAFSize()) <= _max_af) ||
         pkt_data.hasAnyLabel(_labels) ||
         (_every_packets > 0 && (tsp->pluginPackets() - _after_packets) % _every_packets == 0) ||
-
-        // Check the presence of a PES header.
-        // A PES header starts with the 3-byte prefix 0x000001. A packet has a PES
-        // header if the 'payload unit start' is set in the TS header and the
-        // payload starts with 0x000001.
-        //
-        // Note that there is no risk to misinterpret the prefix: When 'payload
-        // unit start' is set, the payload may also contains PSI/SI tables. In
-        // that case, 0x000001 is not a possible value for the beginning of the
-        // payload. With PSI/SI, a payload starting with 0x000001 would mean:
-        //  0x00 : pointer field -> a section starts at next byte
-        //  0x00 : table id -> a PAT
-        //  0x01 : section_syntax_indicator field is 0, impossible for a PAT
-
-        (_with_pes && pkt.hasValidSync() && !pkt.getTEI() && pkt.getPayloadSize() >= 3 &&
-         (GetUInt32 (pkt.b + pkt.getHeaderSize() - 1) & 0x00FFFFFF) == 0x000001);
+        (_with_pes && pkt.startPES());
 
     // Search binary patterns in packets.
     if (!ok && !_pattern.empty()) {
