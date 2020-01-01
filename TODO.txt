@@ -47,12 +47,8 @@ TSDuck - List of features to be implemented or fixed
   - 2.11.3.8 ISO_IEC_14496_section
 
   ETSI EN 300 468 (DVB SI)
-  - 6.2.3    announcement_support_descriptor
   - 6.2.21   mosaic_descriptor
   - 6.2.42   telephone_descriptor
-  - 6.4.7    image_icon_descriptor
-  - 6.4.12   target_region_descriptor
-  - 6.4.13   target_region_name_descriptor
 
   ETSI TS 102 006 (System Software Update)
   - 9.5.2.6   update_descriptor

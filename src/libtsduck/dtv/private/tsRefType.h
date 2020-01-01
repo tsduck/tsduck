@@ -29,6 +29,7 @@
     REF_TYPE(AACDescriptor);
     REF_TYPE(AdaptationFieldDataDescriptor);
     REF_TYPE(AncillaryDataDescriptor);
+    REF_TYPE(AnnouncementSupportDescriptor);
     REF_TYPE(ApplicationDescriptor);
     REF_TYPE(ApplicationIconsDescriptor);
     REF_TYPE(ApplicationNameDescriptor);
@@ -108,6 +109,7 @@
     REF_TYPE(HEVCVideoDescriptor);
     REF_TYPE(HierarchyDescriptor);
     REF_TYPE(IBPDescriptor);
+    REF_TYPE(ImageIconDescriptor);
     REF_TYPE(IPMACGenericStreamLocationDescriptor);
     REF_TYPE(IPMACPlatformNameDescriptor);
     REF_TYPE(IPMACPlatformProviderNameDescriptor);
@@ -186,6 +188,8 @@
     REF_TYPE(TargetIPv6SourceSlashDescriptor);
     REF_TYPE(TargetMACAddressDescriptor);
     REF_TYPE(TargetMACAddressRangeDescriptor);
+    REF_TYPE(TargetRegionDescriptor);
+    REF_TYPE(TargetRegionNameDescriptor);
     REF_TYPE(TargetSerialNumberDescriptor);
     REF_TYPE(TargetSmartcardDescriptor);
     REF_TYPE(TeletextDescriptor);
