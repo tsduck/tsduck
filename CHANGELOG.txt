@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.20-1567
+VERSION 3.20-1568
 
 [NEW] New commands and plugins:
 
@@ -15,9 +15,10 @@ VERSION 3.20-1567
   * Option --buffer-size-mb of "tsp" now accepts decimal values (eg. "0.5").
   * Added options --local-time-offset, --next-change, --next-time-offset,
     --only-country name and --only-region to plugin "timeref".
+  * The command "tsdump" now displays the splice countdown when there is one.
   * Added options --has-splice-countdown, --splice-countdown,
     --min-splice-countdown and --max-splice-countdown to plugin "filter".
-  * The command "tsdump" now displays the splice countdown when there is one.
+  * Added option --label-close to output plugin "hls".
 
 [BUG] Bug fixes:
 
