@@ -168,7 +168,7 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     option(u"label", 'l', INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
     help(u"label", u"label1[-label2]",
          u"Select packets with any of the specified labels. "
-         u"Labels should have typically be set by a previous plugin in the chain. "
+         u"Labels should have typically been set by a previous plugin in the chain. "
          u"Several --label options may be specified.\n\n"
          u"Note that the option --label is different from the generic option --only-label. "
          u"The generic option --only-label acts at tsp level and controls which packets are "

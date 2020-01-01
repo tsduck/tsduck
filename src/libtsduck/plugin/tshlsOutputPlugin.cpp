@@ -66,7 +66,8 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     _playlist(),
     _pcrAnalyzer(1, 4),  // Minimum required: 1 PID, 4 PCR
     _previousBitrate(0),
-    _ccFixer(NoPID, tsp)
+    _ccFixer(NoPID, tsp),
+    _close_labels()
 {
     option(u"", 0, STRING, 1, 1);
     help(u"",
@@ -91,6 +92,16 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"By default, the segment size is variable and based on the --duration parameter. "
          u"When --fixed-segment-size is specified, the --duration parameter is only "
          u"used as a hint in the playlist file.");
+
+    option(u"label-close", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    help(u"label-close", u"label1[-label2]",
+         u"Close the current segment as soon as possible after a packet with any of the specified labels. "
+         u"Labels should have typically been set by a previous plugin in the chain. "
+         u"Several --label-close options may be specified.\n\n"
+         u"In practice, the current segment is closed and renewed at the start of the next PES packet "
+         u"on the video PID. This option is compatible with --duration. "
+         u"The current segment is closed on a labelled packed or segment duration, "
+         u"whichever comes first.");
 
     option(u"live", 'l', POSITIVE);
     help(u"live",
@@ -130,13 +141,19 @@ bool ts::hls::OutputPlugin::isRealTime()
 
 bool ts::hls::OutputPlugin::getOptions()
 {
-    // Decode options.
     getValue(_segmentTemplate, u"");
     getValue(_playlistFile, u"playlist");
     _liveDepth = intValue<size_t>(u"live");
     _targetDuration = intValue<Second>(u"duration", _liveDepth == 0 ? DEFAULT_OUT_DURATION : DEFAULT_OUT_LIVE_DURATION);
     _fixedSegmentSize = intValue<PacketCounter>(u"fixed-segment-size") / PKT_SIZE;
     _initialMediaSeq = intValue<size_t>(u"start-media-sequence", 0);
+    getIntValues(_close_labels, u"label-close");
+
+    if (_fixedSegmentSize > 0 && _close_labels.any()) {
+        tsp->error(u"options --fixed-segment-size and --label-close are incompatible");
+        return false;
+    }
+
     return true;
 }
 
@@ -465,14 +482,19 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
             // Each segment shall have a fixed size.
             renew = _segmentFile.getWriteCount() >= _fixedSegmentSize;
         }
-        else {
-            // The segment file shall be closed when the estimated duration exceeds the target duration.
-            if (!_segClosePending && _pcrAnalyzer.bitrateIsValid()) {
+        else if (!_segClosePending) {
+            if (pkt_data[i].hasAnyLabel(_close_labels)) {
+                // This packet is a trigger to close the segment as soon as possible.
+                _segClosePending = true;
+            }
+            else if (_pcrAnalyzer.bitrateIsValid()) {
+                // The segment file shall be closed when the estimated duration exceeds the target duration.
                 _segClosePending = PacketInterval(_pcrAnalyzer.bitrate188(), _segmentFile.getWriteCount()) >= _targetDuration * MilliSecPerSec;
             }
-            // We do close only when we start a new PES packet on the video PID.
-            renew = _segClosePending && (_videoPID == PID_NULL || (pkt[i].getPID() == _videoPID && pkt[i].getPUSI()));
         }
+
+        // We do close only when we start a new PES packet on the video PID.
+        renew = renew || (_segClosePending && (_videoPID == PID_NULL || (pkt[i].getPID() == _videoPID && pkt[i].getPUSI())));
 
         // Close current segment and recreate a new one when necessary.
         // Finally write the packet.
