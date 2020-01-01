@@ -3566,3 +3566,39 @@ Bits = 6
 59 = 72 Mbit/s
 60 = 108 Mbit/s
 61-63 = DVB-reserved
+
+[IconTransportMode]
+# In image_icon_descriptor
+Bits = 2
+0 = Delivered in the icon_data_bytes
+1 = Identified by URL
+2-3 = DVB-reserved
+
+[IconCoordinateSystem]
+# In image_icon_descriptor
+Bits = 3
+0 = Coordinates 720x576
+1 = Coordinates 1280x720
+2 = Coordinates 1920x1080
+3-6 = DVB reserved
+7 = User Private
+
+[AnnouncementType]
+# In announcement_support_descriptor
+Bits = 4
+0 = Emergency alarm
+1 = Road Traffic flash
+2 = Public Transport flash
+3 = Warning message
+4 = News flash
+5 = Weather flash
+6 = Event announcement
+7 = Personal call
+
+[AnnouncementReferenceType]
+# In announcement_support_descriptor
+Bits = 3
+0 = In usual audio stream of the service
+1 = In separate audio stream in the service
+2 = In a different service within the same transport stream
+3 = in a different service within a different transport stream

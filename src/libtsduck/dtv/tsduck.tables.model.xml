@@ -622,6 +622,17 @@
 
     <ancillary_data_descriptor ancillary_data_identifier="uint8, required"/>
 
+    <announcement_support_descriptor>
+      <!-- One per announcement type -->
+      <announcement
+          announcement_type="uint4, required"
+          reference_type="uint3, required"
+          original_network_id="uint16, optional"
+          transport_stream_id="uint16, optional"
+          service_id="uint16, optional"
+          component_tag="uint8, optional"/>
+    </announcement_support_descriptor>
+
     <application_descriptor
         service_bound="bool, required"
         visibility="uint2, required"
@@ -1284,6 +1295,21 @@
         identical_gop="bool, required"
         max_gop_length="uint14, required"/>
 
+    <image_icon_descriptor
+        descriptor_number="uint4, required"
+        last_descriptor_number="uint4, required"
+        icon_id="uint3, required"
+        icon_transport_mode="uint2, optional"
+        coordinate_system="uint3, optional"
+        icon_horizontal_origin="uint12, optional"
+        icon_vertical_origin="uint12, optional"
+        icon_type="string, optional"
+        url="string, optional">
+      <icon_data>
+        Hexadecimal content
+      </icon_data>
+    </image_icon_descriptor>
+
     <IPMAC_generic_stream_location_descriptor
         interactive_network_id="uint16, required"
         modulation_system_type="DVB-S2|DVB-T2|DVB-C2|DVB-NGH|uint8, required"
@@ -1818,10 +1844,27 @@
     <target_MAC_address_range_descriptor>
       <!-- Must be in an INT (table id 0x4C) -->
       <!-- One per MAC address range: -->
-      <range
-          MAC_addr_low="MAC address, required"
-          MAC_addr_high="MAC address, required"/>
+      <range MAC_addr_low="MAC address, required"
+             MAC_addr_high="MAC address, required"/>
     </target_MAC_address_range_descriptor>
+
+    <target_region_descriptor country_code="char3, required">
+      <!-- One per region -->
+      <region country_code="char3, optional"
+              primary_region_code="uint8, optional"
+              secondary_region_code="uint8, optional"
+              tertiary_region_code="uint16, optional"/>
+    </target_region_descriptor>
+
+    <target_region_name_descriptor
+        country_code="char3, required"
+        ISO_639_language_code="char3, required">
+      <!-- One per region -->
+      <region region_name="string, required"
+              primary_region_code="uint8, required"
+              secondary_region_code="uint8, optional"
+              tertiary_region_code="uint16, optional"/>
+    </target_region_name_descriptor>
 
     <target_serial_number_descriptor>
       <!-- Serial data bytes -->
