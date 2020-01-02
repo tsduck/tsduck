@@ -620,6 +620,8 @@
 
     <adaptation_field_data_descriptor adaptation_field_data_identifier="uint8, required"/>
 
+    <af_extensions_descriptor/>
+
     <ancillary_data_descriptor ancillary_data_identifier="uint8, required"/>
 
     <announcement_support_descriptor>
@@ -1431,6 +1433,11 @@
       </cell>
     </mosaic_descriptor>
 
+    <MPEG2_AAC_audio_descriptor
+        MPEG2_AAC_profile="uint8, required"
+        MPEG2_AAC_channel_configuration="uint8, required"
+        MPEG2_AAC_additional_information="uint8, required"/>
+
     <MPEG4_audio_descriptor MPEG4_audio_profile_and_level="uint8, required"/>
 
     <MPEG4_video_descriptor MPEG4_visual_profile_and_level="uint8, required"/>
@@ -1460,6 +1467,18 @@
     <multiplex_buffer_utilization_descriptor
         LTW_offset_lower_bound="uint15, optional"
         LTW_offset_upper_bound="uint15, optional"/>
+
+    <MVC_extension_descriptor
+        average_bitrate="uint16, required"
+        maximum_bitrate="uint16, required"
+        view_association_not_present="bool, required"
+        base_view_is_left_eyeview="bool, required"
+        view_order_index_min="uint10, required"
+        view_order_index_max="uint10, required"
+        temporal_id_start="uint3, required"
+        temporal_id_end="uint3, required"
+        no_sei_nal_unit_present="bool, required"
+        no_prefix_nal_unit_present="bool, required"/>
 
     <network_change_notify_descriptor>
       <!-- One per cell -->
@@ -1785,6 +1804,19 @@
         Hexadecimal content
       </private_data>
     </supplementary_audio_descriptor>
+
+    <SVC_extension_descriptor
+        width="uint16, required"
+        height="uint16, required"
+        frame_rate="uint16, required"
+        average_bitrate="uint16, required"
+        maximum_bitrate="uint16, required"
+        dependency_id="uint3, required"
+        quality_id_start="uint4, required"
+        quality_id_end="uint4, required"
+        temporal_id_start="uint3, required"
+        temporal_id_end="uint3, required"
+        no_sei_nal_unit_present="bool, required"/>
 
     <system_clock_descriptor
         external_clock_reference="bool required"

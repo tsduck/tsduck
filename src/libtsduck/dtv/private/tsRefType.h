@@ -28,6 +28,7 @@
 
     REF_TYPE(AACDescriptor);
     REF_TYPE(AdaptationFieldDataDescriptor);
+    REF_TYPE(AFExtensionsDescriptor);
     REF_TYPE(AncillaryDataDescriptor);
     REF_TYPE(AnnouncementSupportDescriptor);
     REF_TYPE(ApplicationDescriptor);
@@ -123,6 +124,7 @@
     REF_TYPE(MaximumBitrateDescriptor);
     REF_TYPE(MessageDescriptor);
     REF_TYPE(MosaicDescriptor);
+    REF_TYPE(MPEG2AACAudioDescriptor);
     REF_TYPE(MPEG4AudioDescriptor);
     REF_TYPE(MPEG4VideoDescriptor);
     REF_TYPE(MultilingualBouquetNameDescriptor);
@@ -130,6 +132,7 @@
     REF_TYPE(MultilingualNetworkNameDescriptor);
     REF_TYPE(MultilingualServiceNameDescriptor);
     REF_TYPE(MultiplexBufferUtilizationDescriptor);
+    REF_TYPE(MVCExtensionDescriptor);
     REF_TYPE(NetworkChangeNotifyDescriptor);
     REF_TYPE(NetworkNameDescriptor);
     REF_TYPE(NorDigLogicalChannelDescriptorV1);
@@ -177,6 +180,7 @@
     REF_TYPE(StreamModeDescriptor);
     REF_TYPE(SubtitlingDescriptor);
     REF_TYPE(SupplementaryAudioDescriptor);
+    REF_TYPE(SVCExtensionDescriptor);
     REF_TYPE(SystemClockDescriptor);
     REF_TYPE(T2DeliverySystemDescriptor);
     REF_TYPE(T2MIDescriptor);
