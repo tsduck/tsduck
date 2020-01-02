@@ -28,20 +28,44 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an af_extensions_descriptor
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 20
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1571
+#include "tsAbstractDescriptor.h"
+#include "tsVariable.h"
+
+namespace ts {
+    //!
+    //! Representation of an af_extensions_descriptor.
+    //!
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.99.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL AFExtensionsDescriptor : public AbstractDescriptor
+    {
+    public:
+        //!
+        //! Default constructor.
+        //!
+        AFExtensionsDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        AFExtensionsDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+    };
+}

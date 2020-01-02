@@ -28,20 +28,47 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an MPEG2_AAC_audio_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 20
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1571
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of an MPEG2_AAC_audio_descriptor.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.68.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL MPEG2AACAudioDescriptor : public AbstractDescriptor
+    {
+    public:
+        // MPEG2AACAudioDescriptor public members:
+        uint8_t MPEG2_AAC_profile;                 //!< Profile
+        uint8_t MPEG2_AAC_channel_configuration;   //!< Channel configuration
+        uint8_t MPEG2_AAC_additional_information;  //!< Additional information
+
+        //!
+        //! Default constructor.
+        //!
+        MPEG2AACAudioDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        MPEG2AACAudioDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+    };
+}
