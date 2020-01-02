@@ -1413,6 +1413,24 @@
       <text>String</text>
     </message_descriptor>
 
+    <mosaic_descriptor
+        mosaic_entry_point="bool, required"
+        number_of_horizontal_elementary_cells="uint3, required"
+        number_of_vertical_elementary_cells="uint3, required">
+      <!-- One per cell in the mosaic -->
+      <cell logical_cell_id="uint6, required"
+            logical_cell_presentation_info="uint3, required"
+            cell_linkage_info="uint8, required"
+            bouquet_id="uint16, optional"
+            original_network_id="uint16, optional"
+            transport_stream_id="uint16, optional"
+            service_id="uint16, optional"
+            event_id="uint16, optional">
+        <!-- One per elementary cell -->
+        <elementary_cell id="uint6, required"/>
+      </cell>
+    </mosaic_descriptor>
+
     <MPEG4_audio_descriptor MPEG4_audio_profile_and_level="uint8, required"/>
 
     <MPEG4_video_descriptor MPEG4_visual_profile_and_level="uint8, required"/>
@@ -1875,6 +1893,15 @@
       <!-- Private data bytes -->
       Hexadecimal content
     </target_smartcard_descriptor>
+
+    <telephone_descriptor
+        foreign_availability="bool, required"
+        connection_type="uint5, required"
+        country_prefix="string, 3 chars max, optional"
+        international_area_code="string, 7 chars max, optional"
+        operator_code="string, 3 chars max, optional"
+        national_area_code="string, 7 chars max, optional"
+        core_number="string, 15 chars max, optional"/>
 
     <teletext_descriptor>
       <!-- One per page -->

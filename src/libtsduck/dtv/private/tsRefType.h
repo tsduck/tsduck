@@ -122,6 +122,7 @@
     REF_TYPE(LogicalChannelNumberDescriptor);
     REF_TYPE(MaximumBitrateDescriptor);
     REF_TYPE(MessageDescriptor);
+    REF_TYPE(MosaicDescriptor);
     REF_TYPE(MPEG4AudioDescriptor);
     REF_TYPE(MPEG4VideoDescriptor);
     REF_TYPE(MultilingualBouquetNameDescriptor);
@@ -192,6 +193,7 @@
     REF_TYPE(TargetRegionNameDescriptor);
     REF_TYPE(TargetSerialNumberDescriptor);
     REF_TYPE(TargetSmartcardDescriptor);
+    REF_TYPE(TelephoneDescriptor);
     REF_TYPE(TeletextDescriptor);
     REF_TYPE(TerrestrialDeliverySystemDescriptor);
     REF_TYPE(TimeShiftedEventDescriptor);

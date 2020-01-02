@@ -3602,3 +3602,21 @@ Bits = 3
 1 = In separate audio stream in the service
 2 = In a different service within the same transport stream
 3 = in a different service within a different transport stream
+
+[MosaicLogicalCellPresentation]
+# In mosaic_descriptor
+Bits = 3
+0 = undefined
+1 = video
+2 = still picture
+3 = graphics/text
+4-7 = reserved for future use
+
+[MosaicCellLinkageInfo]
+# In mosaic_descriptor
+Bits = 8
+0x00 = undefined
+0x01 = bouquet related
+0x02 = service related
+0x03 = other mosaic related
+0x04 = event related
