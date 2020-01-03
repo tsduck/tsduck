@@ -127,7 +127,6 @@ namespace ts {
         //! @param [in] obj A COM object.
         //! @param [in] interface_id Id of the interface we request in the object.
         //! @param [in] report Where to report errors.
-        //! @return A reference to this object.
         //!
         ComPtr(::IUnknown* obj, const IID& interface_id, Report& report = CERR);
 
