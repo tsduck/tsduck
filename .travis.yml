@@ -13,6 +13,7 @@ addons:
     packages:
       - dos2unix
       - curl
+      - tar
       - libpcsclite-dev
       - libcurl4
       - libcurl4-openssl-dev
@@ -29,3 +30,6 @@ script:
   - make -j4
   - source src/tstools/release-x86_64/setenv.sh && tsversion --version=all
   - make test
+  - mkdir -p ../tsduck-test
+  - curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
+  - make test-suite
