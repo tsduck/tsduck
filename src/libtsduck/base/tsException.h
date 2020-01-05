@@ -106,8 +106,9 @@ namespace ts {
             ts::Exception(u ## #name, code)                       \
         {                                                         \
         }                                                         \
-    }                                                             \
-    TS_POP_WARNING()
+    };                                                            \
+    TS_POP_WARNING()                                              \
+    typedef int TS_UNIQUE_NAME(for_trailing_semicolon)
 
 //!
 //! Locate the source of the exception in the Exception constructor message string.
