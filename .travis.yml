@@ -1,6 +1,8 @@
 language: cpp
 os: linux
 dist: bionic
+arch:
+  - amd64
 compiler:
   - gcc
   - clang
@@ -24,4 +26,6 @@ branches:
     - master
 
 script:
-  - make -j4 test
+  - make -j4
+  - source src/tstools/release-x86_64/setenv.sh && tsversion --version=all
+  - make test

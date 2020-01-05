@@ -1454,7 +1454,6 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
 
         case DTAPI_MOD_ISDBT: {
             return startError(u"ISDB-T modulation not yet supported", DTAPI_OK);
-            break;
         }
 
         case -1: {

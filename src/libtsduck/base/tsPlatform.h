@@ -706,6 +706,8 @@
 // Large file system (LFS) support on Linux.
 
 #if defined(TS_LINUX) && !defined(DOXYGEN)
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(reserved-id-macro)
     #if !defined(_LARGEFILE_SOURCE)
         #define _LARGEFILE_SOURCE    1
     #endif
@@ -715,6 +717,7 @@
     #if !defined(_FILE_OFFSET_BITS)
         #define _FILE_OFFSET_BITS   64
     #endif
+    TS_POP_WARNING()
 #endif
 
 // Enforce assertions, even in optimized mode.

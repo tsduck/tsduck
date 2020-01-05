@@ -233,7 +233,7 @@ bool ts::HiDesDevice::GetAllDevices(HiDesDeviceInfoList& devices, Report& report
         // Ignore errors. We know that index and names are correct and they
         // describe a real device. Errors come from fetching other properties.
         Guts guts;
-        guts.open(index, names[index], report);
+        guts.open(int(index), names[index], report);
 
         // Push the description of the device.
         devices.push_back(guts.info);
@@ -494,7 +494,7 @@ bool ts::HiDesDevice::getGainRange(int& minGain, int& maxGain, uint64_t frequenc
     ite::TxGetGainRangeRequest request;
     TS_ZERO(request);
     request.frequency = uint32_t(frequency / 1000);
-    request.bandwidth = BandWidthValueHz(bandwidth) / 1000;
+    request.bandwidth = ite::Word(BandWidthValueHz(bandwidth) / 1000);
     errno = 0;
 
     if (request.bandwidth == 0) {
@@ -567,7 +567,7 @@ bool ts::HiDesDevice::tune(const ModulationArgs& in_params, Report& report)
     acqRequest.frequency = uint32_t(params.frequency.value() / 1000);
 
     // Bandwidth is in kHz
-    acqRequest.bandwidth = BandWidthValueHz(params.bandwidth.value()) / 1000;
+    acqRequest.bandwidth = ite::Word(BandWidthValueHz(params.bandwidth.value()) / 1000);
     if (acqRequest.bandwidth == 0) {
         report.error(u"unsupported bandwidth");
         return false;
@@ -577,6 +577,10 @@ bool ts::HiDesDevice::tune(const ModulationArgs& in_params, Report& report)
     // Translate TSDuck enums into HiDes codes.
     ite::TxSetModuleRequest modRequest;
     TS_ZERO(modRequest);
+
+    // Many switch/case structures here use only a subset of the enum type.
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(switch-enum)
 
     switch (params.modulation.value()) {
         case QPSK:
@@ -666,6 +670,8 @@ bool ts::HiDesDevice::tune(const ModulationArgs& in_params, Report& report)
             report.error(u"unsupported spectral inversion");
             return false;
     }
+
+    TS_POP_WARNING()
 
     // Now all parameters are validated, call the driver.
     errno = 0;

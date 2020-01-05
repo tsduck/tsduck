@@ -110,7 +110,7 @@ namespace {
         while (i != 0) {
             set.insert (i);
             i = va_arg (ap, Id);
-        };
+        }
         va_end (ap);
         return set;
     }

@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  User interrupt handling (Ctrl+C).
-//
-//----------------------------------------------------------------------------
 
 #include "tsUserInterrupt.h"
 #include "tsSingletonManager.h"
@@ -236,7 +232,10 @@ void ts::UserInterrupt::activate()
 
     // Establish the signal handler
     struct sigaction act;
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(disabled-macro-expansion)
     act.sa_handler = sysHandler;
+    TS_POP_WARNING()
     act.sa_flags = _one_shot ? SA_ONESHOT : 0;
     sigemptyset(&act.sa_mask);
 
@@ -287,7 +286,10 @@ void ts::UserInterrupt::deactivate()
     // Restore the signal handler to default behaviour
 
     struct sigaction act;
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(disabled-macro-expansion)
     act.sa_handler = SIG_DFL;
+    TS_POP_WARNING()
     act.sa_flags = 0;
     sigemptyset(&act.sa_mask);
 

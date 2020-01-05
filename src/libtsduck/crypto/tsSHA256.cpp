@@ -84,11 +84,11 @@ void ts::SHA256::compress (const uint8_t* buf)
     }
 
     /* Compress */
-#define RND(a,b,c,d,e,f,g,h,i,ki)                    \
-    t0 = h + Sigma1(e) + Ch(e, f, g) + ki + W[i];    \
-    t1 = Sigma0(a) + Maj(a, b, c);                   \
-    d += t0;                                         \
-    h  = t0 + t1;
+#define RND(a,b,c,d,e,f,g,h,i,ki)                 \
+    t0 = h + Sigma1(e) + Ch(e, f, g) + ki + W[i]; \
+    t1 = Sigma0(a) + Maj(a, b, c);                \
+    d += t0;                                      \
+    h  = t0 + t1
 
     RND(S[0],S[1],S[2],S[3],S[4],S[5],S[6],S[7],0,0x428a2f98);
     RND(S[7],S[0],S[1],S[2],S[3],S[4],S[5],S[6],1,0x71374491);

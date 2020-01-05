@@ -1143,7 +1143,7 @@ ts::UString ts::Args::getHelpText(HelpFormat format, size_t line_width) const
                 return _app_name + u" " + _syntax;
             }
             else {
-                return _shell + u" " + _app_name + u" " + _syntax;;
+                return _shell + u" " + _app_name + u" " + _syntax;
             }
         }
         case HELP_SYNTAX: {
