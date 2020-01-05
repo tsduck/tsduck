@@ -178,10 +178,10 @@ int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
                       << "  Channels: input: " << device.input.size()
                       << ", output: " << device.output.size() << std::endl;
             for (size_t i = 0; i < device.input.size(); i++) {
-                wideDisplay(UString::Format(u"  Input %d: %s", {i, DektecDevice::GetPortDescription(device.input[i])}));;
+                wideDisplay(UString::Format(u"  Input %d: %s", {i, DektecDevice::GetPortDescription(device.input[i])}));
             }
             for (size_t i = 0; i < device.output.size(); i++) {
-                wideDisplay(UString::Format(u"  Output %d: %s", {i, DektecDevice::GetPortDescription(device.output[i])}));;
+                wideDisplay(UString::Format(u"  Output %d: %s", {i, DektecDevice::GetPortDescription(device.output[i])}));
             }
             std::cout << UString::Format(u"  Subsystem id: 0x%04X", {device.desc.m_SubsystemId})
                       << " (" << device.model << ")" << std::endl

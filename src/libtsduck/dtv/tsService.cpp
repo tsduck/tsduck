@@ -236,44 +236,44 @@ ts::UString ts::Service::toString() const
 // Sort1: LCN, ONId, TSId, Id, name, provider, type, PMT PID
 bool ts::Service::Sort1 (const Service& s1, const Service& s2)
 {
-    _SORT_(_lcn);
-    _SORT_(_onid);
-    _SORT_(_tsid);
-    _SORT_(_id);
-    _SORT_(_name);
-    _SORT_(_provider);
-    _SORT_(_type_dvb);
-    _SORT_(_type_atsc);
-    _SORT_(_pmt_pid);
+    _SORT_(_lcn)
+    _SORT_(_onid)
+    _SORT_(_tsid)
+    _SORT_(_id)
+    _SORT_(_name)
+    _SORT_(_provider)
+    _SORT_(_type_dvb)
+    _SORT_(_type_atsc)
+    _SORT_(_pmt_pid)
     return true; // Default: remain stable
 }
 
 // Sort2: name, provider, LCN, ONId, TSId, Id, type, PMT PID
 bool ts::Service::Sort2 (const Service& s1, const Service& s2)
 {
-    _SORT_(_name);
-    _SORT_(_provider);
-    _SORT_(_lcn);
-    _SORT_(_onid);
-    _SORT_(_tsid);
-    _SORT_(_id);
-    _SORT_(_type_dvb);
-    _SORT_(_type_atsc);
-    _SORT_(_pmt_pid);
+    _SORT_(_name)
+    _SORT_(_provider)
+    _SORT_(_lcn)
+    _SORT_(_onid)
+    _SORT_(_tsid)
+    _SORT_(_id)
+    _SORT_(_type_dvb)
+    _SORT_(_type_atsc)
+    _SORT_(_pmt_pid)
     return true; // Default: remain stable
 }
 
 // Sort3: ONId, TSId, Id, type, name, provider, LCN, PMT PID
 bool ts::Service::Sort3 (const Service& s1, const Service& s2)
 {
-    _SORT_(_onid);
-    _SORT_(_tsid);
-    _SORT_(_id);
-    _SORT_(_type_dvb);
-    _SORT_(_type_atsc);
-    _SORT_(_name);
-    _SORT_(_provider);
-    _SORT_(_lcn);
-    _SORT_(_pmt_pid);
+    _SORT_(_onid)
+    _SORT_(_tsid)
+    _SORT_(_id)
+    _SORT_(_type_dvb)
+    _SORT_(_type_atsc)
+    _SORT_(_name)
+    _SORT_(_provider)
+    _SORT_(_lcn)
+    _SORT_(_pmt_pid)
     return true; // Default: remain stable
 }

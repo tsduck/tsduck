@@ -113,7 +113,7 @@ void ts::CellListDescriptor::deserialize(DuckContext& duck, const Descriptor& de
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag;;
+    _is_valid = desc.isValid() && desc.tag() == _tag;
     cells.clear();
 
     while (_is_valid && size >= 10) {

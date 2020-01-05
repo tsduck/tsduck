@@ -6,6 +6,12 @@
 #pragma once
 #include <stdint.h>
 
+// Many structures are poorly aligned and need padding.
+#if defined(__llvm__) || defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+
 
 //----------------------------------------------------------------------------
 // Windows driver interface
@@ -22,7 +28,7 @@
 // used by some vendors where engineers don't run guidgen.exe.
 #define ITE_STATIC_KSPROPSETID_IT9500PropertiesAux 0xc6efe5eb,0x855a,0x4f1b,{0xb7,0xaa,0x87,0xb5,0xe1,0xdc,0x41,0x13}
 
-// Maximum nulber of TS packets to send to modulator.
+// Maximum number of TS packets to send to modulator.
 #define IT95X_TX_BLOCK_PKTS 348
 
 // For get chip type.
@@ -1304,3 +1310,7 @@ namespace ite {
 #define IOCTL_ITE_DEMOD_SETDECRYPT ts::ioctl_request_t(_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x03, ite::TxSetDecryptRequest))
 
 #endif // Windows, Linux
+
+#if defined(__llvm__) || defined(__clang__)
+#pragma clang diagnostic pop
+#endif

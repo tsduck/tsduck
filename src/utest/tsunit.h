@@ -244,7 +244,7 @@ namespace tsunit {
 //! @see TSUNIT_TEST_BEGIN
 //!
 #define TSUNIT_TEST(method)  \
-            suite->addTestCase(new tsunit::TestCaseWrapper<_TestClass>(#method, &_TestClass::method, instance));
+            suite->addTestCase(new tsunit::TestCaseWrapper<_TestClass>(#method, &_TestClass::method, instance))
 
 //!
 //! Add a test method which should raise an exception to the test suite inside a test class.
@@ -254,7 +254,7 @@ namespace tsunit {
 //! @see TSUNIT_TEST_BEGIN
 //!
 #define TSUNIT_TEST_EXCEPTION(method, exceptclass)  \
-            suite->addTestCase(new tsunit::TestExceptionWrapper<_TestClass, exceptclass>(#method, #exceptclass, &_TestClass::method, instance, __FILE__, __LINE__));
+            suite->addTestCase(new tsunit::TestExceptionWrapper<_TestClass, exceptclass>(#method, #exceptclass, &_TestClass::method, instance, __FILE__, __LINE__))
 
 //!
 //! End of the test suite inside a test class.

@@ -16,7 +16,7 @@ TSDUCK_SOURCE;
 
 typedef uint64_t* uint64_ptr;
 
-#define clear_8(x)        (*(uint64_ptr(x)) = 0);
+#define clear_8(x)        (*(uint64_ptr(x)) = 0)
 #define memcpy_8(dst,src) (*(uint64_ptr(dst)) = *(uint64_ptr(src)))
 #define xor_8(res,a,b)    (*(uint64_ptr(res)) = *(uint64_ptr(a)) ^ *(uint64_ptr(b)))
 

@@ -1240,7 +1240,10 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
             struct ::sigaction sac;
             TS_ZERO(sac);
             ::sigemptyset(&sac.sa_mask);
+            TS_PUSH_WARNING()
+            TS_LLVM_NOWARNING(disabled-macro-expansion)
             sac.sa_handler = empty_signal_handler;
+            TS_POP_WARNING()
             if (::sigaction(_guts->rt_signal, &sac, nullptr) < 0) {
                 report.error(u"error setting tuner receive timer signal: %s", {ErrorCodeMessage()});
                 SignalAllocator::Instance()->release(_guts->rt_signal);
@@ -1277,7 +1280,10 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
             struct ::sigaction sac;
             TS_ZERO(sac);
             ::sigemptyset(&sac.sa_mask);
+            TS_PUSH_WARNING()
+            TS_LLVM_NOWARNING(disabled-macro-expansion)
             sac.sa_handler = SIG_IGN;
+            TS_POP_WARNING()
             if (::sigaction(_guts->rt_signal, &sac, nullptr) < 0) {
                 report.error(u"error ignoring tuner receive timer signal: %s", {ErrorCodeMessage()});
                 ok = false;
@@ -1327,7 +1333,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         // Note that _receive_timeout is in milliseconds and ::itimerspec is in nanoseconds.
         ::itimerspec timeout;
         timeout.it_value.tv_sec = long(_receive_timeout / 1000);
-        timeout.it_value.tv_nsec = (unsigned long) (1000000 * (_receive_timeout % 1000));
+        timeout.it_value.tv_nsec = long(1000000 * (_receive_timeout % 1000));
         timeout.it_interval.tv_sec = 0;
         timeout.it_interval.tv_nsec = 0;
         if (::timer_settime(_guts->rt_timer, 0, &timeout, nullptr) < 0) {
@@ -1503,19 +1509,6 @@ namespace {
     void Display(std::ostream& strm, const ts::UString& margin, const ts::UString& name, const ts::UString& value, const ts::UString& unit)
     {
         strm << margin << name.toJustified(value, 50, u'.', 1) << " " << unit << std::endl;
-    }
-}
-
-
-//-----------------------------------------------------------------------------
-//  This routine formats the percentage of an unsigned int
-//-----------------------------------------------------------------------------
-
-namespace {
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-    ts::UString Percent(INT value)
-    {
-        return ts::UString::Format(u"(%d%%)", {(uint64_t(value) * 100) / uint64_t(std::numeric_limits<INT>::max())});
     }
 }
 

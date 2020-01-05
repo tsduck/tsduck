@@ -138,7 +138,7 @@ void ts::SHA512::compress(const uint8_t* buf)
     t0 = h + Sigma1(e) + Ch(e, f, g) + K[i] + W[i];  \
     t1 = Sigma0(a) + Maj(a, b, c);                   \
     d += t0;                                         \
-    h  = t0 + t1;
+    h  = t0 + t1
 
     for (size_t i = 0; i < 80; i += 8) {
         RND(S[0],S[1],S[2],S[3],S[4],S[5],S[6],S[7],i+0);

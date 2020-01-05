@@ -878,7 +878,6 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     FILE* fp = fopen(filename, "r");
     if (fp == nullptr) {
         throw ts::Exception(UString::Format(u"error opening %s", {filename}), errno);
-        return;
     }
 
     ProcessStatus ps;
@@ -900,7 +899,6 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
 
     if (count != expected) {
         throw ts::Exception(UString::Format(u"error reading %s, got %d values, expected %d", {filename, count, expected}));
-        return;
     }
 
     // Get virtual memory size
