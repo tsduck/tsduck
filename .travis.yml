@@ -1,16 +1,27 @@
 language: cpp
 os: linux
 dist: bionic
-compiler: gcc
-before_install:
-  - sudo apt -y install dos2unix curl libpcsclite-dev libcurl4 libcurl4-openssl-dev
+compiler:
+  - gcc
+  - clang
+
 addons:
   apt:
     update: true
+    packages:
+      - dos2unix
+      - curl
+      - libpcsclite-dev
+      - libcurl4
+      - libcurl4-openssl-dev
+
 git:
   depth: 3
   quiet: true
+
 branches:
   only:
-  - master
-script: make -j4 test
+    - master
+
+script:
+  - make -j4 test
