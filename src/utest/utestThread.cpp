@@ -339,7 +339,7 @@ void ThreadTest::testMutexTimeout()
     // The next assert may fail on a very busy system (when you compile while running
     // your tests for instance). The test process may be suspended longer than expected
     // and the final dueTime2 may have already passed.
-    TSUNIT_ASSERT(ts::Time::CurrentUTC() < dueTime2);
+    TSUNIT_ASSUME(ts::Time::CurrentUTC() < dueTime2);
     TSUNIT_ASSERT(mutex.acquire(1000));
     TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime2);
     TSUNIT_ASSERT(mutex.release());

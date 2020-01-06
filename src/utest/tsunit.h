@@ -291,6 +291,15 @@ namespace tsunit {
 #define TSUNIT_ASSERT(cond) (tsunit::Assertions::condition((cond), #cond, __FILE__, __LINE__))
 
 //!
+//! Assume a condition, report failure but do not abort the test and do not mark as failed when false.
+//! This is a replacement for TSUNIT_ASSERT when the condition cannot always be enforced
+//! but of timing issues for instances.
+//! @hideinitializer
+//! @param cond A condition to assert.
+//!
+#define TSUNIT_ASSUME(cond) (tsunit::Assertions::assumption((cond), #cond, __FILE__, __LINE__))
+
+//!
 //! Assert that an expression has some expected value, mark the test as failed when different.
 //! @hideinitializer
 //! @param expected The expected value.
@@ -430,9 +439,9 @@ namespace tsunit {
         bool run(TestSuite* suite = nullptr, TestCase* test = nullptr);
         size_t getPassedCount() const { return _passedCount; }
         size_t getFailedCount() const { return _failedCount; }
-        std::ostream& out() { return _out; }
+        static std::string getCurrentTestName() { return _currentTestName; }
     private:
-        std::ostream& _out;
+        static std::string _currentTestName;
         size_t _passedCount;
         size_t _failedCount;
         TestRunner(TestRunner&&) = delete;
@@ -502,15 +511,18 @@ namespace tsunit {
     {
     private:
         static volatile size_t _passedCount;
-        static volatile size_t _failedCount;
+        static volatile size_t _failedAssertionsCount;
+        static volatile size_t _failedAssumptionsCount;
     public:
         // Assertion counts.
         static size_t getPassedCount() { return _passedCount; }
-        static size_t getFailedCount() { return _failedCount; }
+        static size_t getFailedAssertionsCount() { return _failedAssertionsCount; }
+        static size_t getFailedAssumptionsCount() { return _failedAssumptionsCount; }
 
         // Assertion functions.
         [[noreturn]] static void fail(const std::string& message, const char* sourcefile, int linenumber);
         static void condition(bool cond, const std::string& expression, const char* sourcefile, int linenumber);
+        static void assumption(bool cond, const std::string& expression, const char* sourcefile, int linenumber);
 
         template<typename CHAR>
         static void equalString(const std::basic_string<CHAR>& expected, const std::basic_string<CHAR>& actual, const char* sourcefile, int linenumber);
@@ -619,7 +631,7 @@ void tsunit::Assertions::equal(const ETYPE& expected, const ATYPE& actual, const
         ++_passedCount;
     }
     else {
-        ++_failedCount;
+        ++_failedAssertionsCount;
         const std::string details1("expected: " + toString(expected) + " (\"" + estr + "\")");
         const std::string details2("actual:   " + toString(actual) + " (\"" + astr + "\")");
         throw Failure("incorrect value", details1 + "\n" + details2, file, line);
@@ -633,7 +645,7 @@ void tsunit::Assertions::equalString(const std::basic_string<CHAR>& expected, co
         ++_passedCount;
     }
     else {
-        ++_failedCount;
+        ++_failedAssertionsCount;
         size_t diff = 0;
         while (diff < expected.size() && diff < actual.size() && expected[diff] == actual[diff]) {
             diff++;
