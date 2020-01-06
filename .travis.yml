@@ -1,22 +1,4 @@
 language: cpp
-os: linux
-dist: bionic
-arch:
-  - amd64
-compiler:
-  - gcc
-  - clang
-
-addons:
-  apt:
-    update: true
-    packages:
-      - dos2unix
-      - curl
-      - tar
-      - libpcsclite-dev
-      - libcurl4
-      - libcurl4-openssl-dev
 
 git:
   depth: 3
@@ -25,6 +7,35 @@ git:
 branches:
   only:
     - master
+
+addons:
+  apt:
+    packages:
+      - dos2unix
+      - curl
+      - tar
+      - libpcsclite-dev
+      - libcurl4
+      - libcurl4-openssl-dev
+  homebrew:
+    packages:
+      - gnu-sed
+      - grep
+      - dos2unix
+      - pcsc-lite
+
+matrix:
+  include:
+    - name "TSDuck on Linux"
+      os: linux
+      dist: bionic
+      arch: amd64
+      compiler:
+        - gcc
+        - clang
+    - name "TSDuck on macOS"
+      os: osx
+      osx_image: xcode11.3
 
 script:
   - make -j4

@@ -71,8 +71,10 @@ test: default
 test-suite: default
 	@if [[ -d ../tsduck-test/.git ]]; then \
 	   cd ../tsduck-test; git pull; ./run-all-tests.sh --dev; \
+	 elif [[ -x ../tsduck-test/run-all-tests.sh ]]; then \
+	   ../tsduck-test/run-all-tests.sh --dev; \
 	 else \
-	   echo >&2 "No git repository in ../tsduck-test"; \
+	   echo >&2 "No test repository in ../tsduck-test"; \
 	 fi
 
 # Download the Dektec DTAPI. Automatically done during a global "make" since
