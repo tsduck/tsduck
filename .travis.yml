@@ -26,14 +26,14 @@ addons:
 
 matrix:
   include:
-    - name "TSDuck on Linux"
+    - name: "TSDuck on Linux"
       os: linux
       dist: bionic
       arch: amd64
       compiler:
         - gcc
         - clang
-    - name "TSDuck on macOS"
+    - name: "TSDuck on macOS"
       os: osx
       osx_image: xcode11.3
 
