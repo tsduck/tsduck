@@ -348,8 +348,9 @@ tsunit::TestRepository::Register::Register(TestSuite* test)
 // A class running test suites and test cases.
 //----------------------------------------------------------------------------
 
+std::string tsunit::TestRunner::_currentTestName;
+
 tsunit::TestRunner::TestRunner() :
-    _out(std::cout),
     _passedCount(0),
     _failedCount(0)
 {
@@ -387,21 +388,22 @@ bool tsunit::TestRunner::run(TestSuite* suite, TestCase* test)
     else {
         // Run one test
         const std::string testName(suite->getName() + "::" + test->getName());
+        _currentTestName = testName;
         Test::debug() << "== Running test " << testName << std::endl;
         // Run pre-test
         try {
             suite->runBeforeTest();
         }
         catch (const std::exception& e) {
-            _out << std::endl
-                 << errorPrefix << testName << "::runBeforeTest, " << e.what() << std::endl
-                 << errorPrefix << "Test will NOT run" << std::endl;
+            std::cout << std::endl
+                      << errorPrefix << testName << "::runBeforeTest, " << e.what() << std::endl
+                      << errorPrefix << "Test will NOT run" << std::endl;
             ok = false;
         }
         catch (...) {
-            _out << std::endl
-                 << errorPrefix << testName << "::runBeforeTest, unknown exception" << std::endl
-                 << errorPrefix << "Test will NOT run" << std::endl;
+            std::cout << std::endl
+                      << errorPrefix << testName << "::runBeforeTest, unknown exception" << std::endl
+                      << errorPrefix << "Test will NOT run" << std::endl;
             ok = false;
         }
         // Run test if pre-test succeeded.
@@ -410,11 +412,11 @@ bool tsunit::TestRunner::run(TestSuite* suite, TestCase* test)
                 test->run();
             }
             catch (const std::exception& e) {
-                _out << std::endl << errorPrefix << testName << ", " << e.what() << std::endl;
+                std::cout << std::endl << errorPrefix << testName << ", " << e.what() << std::endl;
                 ok = false;
             }
             catch (...) {
-                _out << std::endl << errorPrefix << testName << ", unknown exception" << std::endl;
+                std::cout << std::endl << errorPrefix << testName << ", unknown exception" << std::endl;
                 ok = false;
             }
             // Run post-test even if test is not OK (must do cleanup if the test ran in any way).
@@ -422,14 +424,15 @@ bool tsunit::TestRunner::run(TestSuite* suite, TestCase* test)
                 suite->runAfterTest();
             }
             catch (const std::exception& e) {
-                _out << std::endl << errorPrefix << testName << "::runAfterTest, " << e.what() << std::endl;
+                std::cout << std::endl << errorPrefix << testName << "::runAfterTest, " << e.what() << std::endl;
                 ok = false;
             }
             catch (...) {
-                _out << std::endl << errorPrefix << testName << "::runAfterTest, unknown exception" << std::endl;
+                std::cout << std::endl << errorPrefix << testName << "::runAfterTest, unknown exception" << std::endl;
                 ok = false;
             }
         }
+        _currentTestName.clear();
         // Count passed and failed tests.
         if (ok) {
             ++_passedCount;
@@ -482,11 +485,12 @@ char const* tsunit::Failure::what() const noexcept
 //---------------------------------------------------------------------------------
 
 volatile size_t tsunit::Assertions::_passedCount = 0;
-volatile size_t tsunit::Assertions::_failedCount = 0;
+volatile size_t tsunit::Assertions::_failedAssertionsCount = 0;
+volatile size_t tsunit::Assertions::_failedAssumptionsCount = 0;
 
 void tsunit::Assertions::fail(const std::string& message, const char* sourcefile, int linenumber)
 {
-    ++_failedCount;
+    ++_failedAssertionsCount;
     throw Failure("test failed", message, sourcefile, linenumber);
 }
 
@@ -496,8 +500,21 @@ void tsunit::Assertions::condition(bool cond, const std::string& expression, con
         ++_passedCount;
     }
     else {
-        ++_failedCount;
+        ++_failedAssertionsCount;
         throw Failure("assertion failure", "condition: " + expression, sourcefile, linenumber);
+    }
+}
+
+void tsunit::Assertions::assumption(bool cond, const std::string& expression, const char* sourcefile, int linenumber)
+{
+    if (cond) {
+        ++_passedCount;
+    }
+    else {
+        ++_failedAssumptionsCount;
+        // Same message as an exeption, but do not throw it.
+        Failure fail("week assumption failure", "condition: " + expression, sourcefile, linenumber);
+        std::cout << std::endl << errorPrefix << TestRunner::getCurrentTestName() << ", " << fail.what() << std::endl;
     }
 }
 
@@ -547,13 +564,13 @@ tsunit::Main::Main(int argc, char* argv[]) :
     if (!ok) {
         _exitStatus = EXIT_FAILURE;
         std::cerr << _argv0 << ": invalid command" << std::endl
-            << std::endl
-            << "Syntax: " << _argv0 << " [options]" << std::endl
-            << std::endl
-            << "Options:" << std::endl
-            << "  -d : Debug messages are output on standard error." << std::endl
-            << "  -l : List all tests but do not execute them." << std::endl
-            << "  -t name : Run only one test or test suite." << std::endl;
+                  << std::endl
+                  << "Syntax: " << _argv0 << " [options]" << std::endl
+                  << std::endl
+                  << "Options:" << std::endl
+                  << "  -d : Debug messages are output on standard error." << std::endl
+                  << "  -l : List all tests but do not execute them." << std::endl
+                  << "  -t name : Run only one test or test suite." << std::endl;
     }
 }
 
@@ -649,18 +666,25 @@ int tsunit::Main::run()
     }
 
     // Print report.
-    if (success && runner.getFailedCount() == 0 && Assertions::getFailedCount() == 0) {
-        runner.out()
-            << std::endl
-            << "OK (" << runner.getPassedCount() << " tests, " << Assertions::getPassedCount() << " assertions)" << std::endl
-            << std::endl;
+    if (success && runner.getFailedCount() == 0 && Assertions::getFailedAssertionsCount() == 0) {
+        std::cout << std::endl << "OK ";
+        if (Assertions::getFailedAssumptionsCount() > 0) {
+            std::cout << "with weak failures ";
+        }
+        std::cout << "(" << runner.getPassedCount() << " tests, " << Assertions::getPassedCount() << " assertions";
+        if (Assertions::getFailedAssumptionsCount() > 0) {
+            std::cout << ", " << Assertions::getFailedAssumptionsCount() << " weak assumptions failed";
+        }
+        std::cout << ")" << std::endl << std::endl;
     }
     else {
-        runner.out()
-            << std::endl
-            << errorPrefix << "FAILURES (" << runner.getFailedCount() << " tests FAILED, " << runner.getPassedCount() << " passed, "
-            << Assertions::getFailedCount() << " assertions FAILED, " << Assertions::getPassedCount() << " passed)" << std::endl
-            << std::endl;
+        std::cout << std::endl
+                  << errorPrefix << "FAILURES (" << runner.getFailedCount() << " tests FAILED, " << runner.getPassedCount() << " passed, "
+                  << Assertions::getFailedAssertionsCount() << " assertions FAILED, " << Assertions::getPassedCount() << " passed";
+        if (Assertions::getFailedAssumptionsCount() > 0) {
+            std::cout << ", " << Assertions::getFailedAssumptionsCount() << " weak assumptions failed";
+        }
+        std::cout << ")" << std::endl << std::endl;
     }
 
     return success ? EXIT_SUCCESS : EXIT_FAILURE;

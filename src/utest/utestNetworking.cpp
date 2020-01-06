@@ -321,10 +321,10 @@ void NetworkingTest::testGetLocalIPAddresses()
     debug() << "NetworkingTest: GetLocalIPAddresses: " << addrMask.size() << " local addresses" << std::endl;
     for (size_t i = 0; i < addrMask.size(); ++i) {
         debug() << "NetworkingTest: local address " << i
-                     << ": " << addrMask[i].address
-                     << ", mask: " << addrMask[i].mask
-                     << ", broadcast: " << addrMask[i].broadcastAddress()
-                     << " (" << addrMask[i] << ")" << std::endl;
+                << ": " << addrMask[i].address
+                << ", mask: " << addrMask[i].mask
+                << ", broadcast: " << addrMask[i].broadcastAddress()
+                << " (" << addrMask[i] << ")" << std::endl;
     }
 
     for (size_t i = 0; i < addr.size(); ++i) {
