@@ -162,7 +162,7 @@ ts::Args::IOption::IOption(const UChar* name_,
             break;
         case INT32:
             min_value = -TS_CONST64(0x80000000);
-            max_value = 0x7FFFFFFFF;
+            max_value = 0x7FFFFFFF;
             type = INTEGER;
             break;
         default:
