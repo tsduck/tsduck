@@ -69,7 +69,7 @@ matrix:
       arch: amd64
       compiler: gcc
       env:
-        - TESTOPT=dev
+        - TESTOPT=--dev
 
     - name: "Linux with clang"
       os: linux
@@ -77,27 +77,27 @@ matrix:
       arch: amd64
       compiler: clang
       env:
-        - TESTOPT=dev
+        - TESTOPT=--dev
 
     - name: "macOS with clang"
       os: osx
       osx_image: xcode11.3
       compiler: clang
       env:
-        - TESTOPT=dev
+        - TESTOPT=--dev
 
     - name: "Windows 64 with VC++"
       os: windows
       env:
-        - TESTOPT=dev
-        - BUILDOPT=Win64
+        - TESTOPT=--dev
+        - BUILDOPT=-Win64
         - BINDIR=Release-x64
 
     - name: "Windows 32 with VC++"
       os: windows
       env:
-        - TESTOPT=dev32
-        - BUILDOPT=Win32
+        - TESTOPT=--dev32
+        - BUILDOPT=-Win32
         - BINDIR=Release-Win32
 
 # The commands to execute in each worker VM.
@@ -105,7 +105,7 @@ script:
   # Build TSDuck.
   - |-
     if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
-        powershell -ExecutionPolicy RemoteSigned build/Build.ps1 -$BUILDOPT -Release -NoStatic -Parallel 5 -NoLowPriority -NoPause
+        powershell -ExecutionPolicy RemoteSigned build/Build.ps1 $BUILDOPT -Release -NoStatic -Parallel 5 -NoLowPriority -NoPause
         ls -lA build/msvc/$BINDIR
     else
         make -j5
@@ -114,7 +114,8 @@ script:
   # Display TSDuck version and build options.
   - |-
     if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
-        build/msvc/$BINDIR/tsversion.exe --version=all
+        ls -l build/msvc/$BINDIR/tsversion.exe build/msvc/$BINDIR/tsduck.dll
+        build/msvc/$BINDIR/tsversion.exe --version=all 2>&1
     else
         source src/tstools/release-x86_64/setenv.sh && tsversion --version=all
     fi
@@ -122,7 +123,8 @@ script:
   # Run unitary tests.
   - |-
     if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
-        build/msvc/$BINDIR/utests-tsduckdll.exe
+        ls -l build/msvc/$BINDIR/utests-tsduckdll.exe build/msvc/$BINDIR/tsduck.dll
+        build/msvc/$BINDIR/utests-tsduckdll.exe 2>&1
     else
         make test
     fi
@@ -132,4 +134,9 @@ script:
   - curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
 
   # Run the test suite.
-  - ../tsduck-test/run-all-tests.sh --$TESTOPT
+  - ../tsduck-test/run-all-tests.sh $TESTOPT 2>&1
+  - |-
+    for f in $(find ../tsduck-test/tmp -name '*.diff'); do
+        echo "==== $f";
+        cat "$f"
+    done
