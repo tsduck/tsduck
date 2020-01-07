@@ -106,6 +106,7 @@ script:
   - |-
     if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
         powershell -ExecutionPolicy RemoteSigned build/Build.ps1 -$BUILDOPT -Release -NoStatic -Parallel 5 -NoLowPriority -NoPause
+        ls -lA build/msvc/$BINDIR
     else
         make -j5
     fi
