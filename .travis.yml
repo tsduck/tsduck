@@ -101,40 +101,42 @@ matrix:
         - BINDIR=Release-Win32
 
 # The commands to execute in each worker VM.
+# Currently, running TSDuck executables on Windows with Travis-CI is not
+# possible because of a DLL issue. So, we just build without running tests.
+# See: https://travis-ci.community/t/windows-build-ok-but-exec-fails-because-of-missing-dll/6775
 script:
   # Build TSDuck.
   - |-
     if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
         powershell -ExecutionPolicy RemoteSigned build/Build.ps1 $BUILDOPT -Release -NoStatic -Parallel 5 -NoLowPriority -NoPause
-        ls -lA build/msvc/$BINDIR
     else
         make -j5
     fi
 
   # Display TSDuck version and build options.
   - |-
-    if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
-        ls -l build/msvc/$BINDIR/tsversion.exe build/msvc/$BINDIR/tsduck.dll
-        build/msvc/$BINDIR/tsversion.exe --version=all 2>&1
-    else
+    if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then
         source src/tstools/release-x86_64/setenv.sh && tsversion --version=all
     fi
 
   # Run unitary tests.
   - |-
-    if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
-        ls -l build/msvc/$BINDIR/utests-tsduckdll.exe build/msvc/$BINDIR/tsduck.dll
-        build/msvc/$BINDIR/utests-tsduckdll.exe 2>&1
-    else
+    if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then
         make test
     fi
 
   # Download the full test suite (tarball only, no need to get the git repo).
-  - mkdir -p ../tsduck-test
-  - curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
+  - mkdir -p ../tsduck-test/tmp
+  - |-
+    if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then
+        curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
+    fi
 
   # Run the test suite.
-  - ../tsduck-test/run-all-tests.sh $TESTOPT 2>&1
+  - |-
+    if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then
+        ../tsduck-test/run-all-tests.sh $TESTOPT 2>&1
+    fi
   - |-
     for f in $(find ../tsduck-test/tmp -name '*.diff'); do
         echo "==== $f";
