@@ -513,7 +513,7 @@ void tsunit::Assertions::assumption(bool cond, const std::string& expression, co
     else {
         ++_failedAssumptionsCount;
         // Same message as an exeption, but do not throw it.
-        Failure fail("week assumption failure", "condition: " + expression, sourcefile, linenumber);
+        Failure fail("weak assumption failure", "condition: " + expression, sourcefile, linenumber);
         std::cout << std::endl << errorPrefix << TestRunner::getCurrentTestName() << ", " << fail.what() << std::endl;
     }
 }

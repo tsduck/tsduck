@@ -50,9 +50,18 @@
   execute a "pause" instruction at the end of execution, which is useful
   when the script was run from Windows Explorer.
 
+ .PARAMETER NoStatic
+
+  Do not build static library and corresponding tests. "setpath" is not built.
+
  .PARAMETER NoTeletext
 
   Build without Teletext support. The plugin "teletext" is not provided.
+
+ .PARAMETER Parallel
+
+  Specify the number of compilation processes to run in parallel. By default,
+  use all CPU's.
 
  .PARAMETER Debug
 
@@ -75,6 +84,7 @@
   is specified, both versions are built by default.
 #>
 param(
+    [int]$Parallel = 0,
     [switch]$GitPull = $false,
     [switch]$Installer = $false,
     [switch]$NoLowPriority = $false,
@@ -82,6 +92,7 @@ param(
     [switch]$Release = $false,
     [switch]$Win32 = $false,
     [switch]$Win64 = $false,
+    [switch]$NoStatic = $false,
     [switch]$NoTeletext = $false,
     [switch]$NoPause = $false
 )
@@ -139,20 +150,28 @@ function Call-MSBuild ([string] $configuration, [string] $platform, [string] $ta
     else {
         $OptTeletext =""
     }
-    & $MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=$configuration /property:Platform=$platform $OptTeletext $target 
+    if ($Parallel -gt 0) {
+        $OptCPU = "/maxcpucount:$Parallel"
+    }
+    else {
+        $OptCPU = "/maxcpucount"
+    }
+    & $MSBuild $SolutionFileName /nologo $OptCPU /property:Configuration=$configuration /property:Platform=$platform $OptTeletext $target
     if ($LastExitCode -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building $platform $configuration"
     }
 }
 
+# Build targets
+$AllTargets = @(Select-String -Path (Join-Path $ProjDir "*.vcxproj") -Pattern '<RootNameSpace>' |
+                ForEach-Object { $_ -replace '.*<RootNameSpace> *','' -replace ' *</RootNameSpace>.*','' })
+$plugins = ($AllTargets | Select-String "tsplugin_*") -join ';'
+$commands = ($AllTargets | Select-String -NotMatch @("tsduck*", "tsplugin_*", "tsp_static", "setpath", "utest*")) -join ';'
+
 # Rebuild TSDuck.
 if ($Installer) {
     # We build everything except test programs for the "Release" configuration.
     # Then, we need the DLL for all configurations (development environment).
-    $AllTargets = @(Select-String -Path (Join-Path $ProjDir "*.vcxproj") -Pattern '<RootNameSpace>' |
-                    ForEach-Object { $_ -replace '.*<RootNameSpace> *','' -replace ' *</RootNameSpace>.*','' })
-    $plugins = ($AllTargets | Select-String "tsplugin_*") -join ';'
-    $commands = ($AllTargets | Select-String -NotMatch @("tsduck*", "tsplugin_*", "setpath","utest*")) -join ';'
     $targets = "tsduckdll;tsducklib;$commands;$plugins;setpath"
 
     if ($Win32 -and $Win64) {
@@ -172,17 +191,23 @@ if ($Installer) {
 }
 else {
     # Not for an installer, build everything.
+    if ($NoStatic) {
+        $targets = "/target:tsduckdll;$commands;$plugins;utests-tsduckdll"
+    }
+    else {
+        $targets = ""
+    }
     if ($Release -and $Win64) {
-        Call-MSBuild Release x64
+        Call-MSBuild Release x64 $targets
     }
     if ($Release -and $Win32) {
-        Call-MSBuild Release Win32
+        Call-MSBuild Release Win32 $targets
     }
     if ($Debug -and $Win64) {
-        Call-MSBuild Debug x64
+        Call-MSBuild Debug x64 $targets
     }
     if ($Debug -and $Win32) {
-        Call-MSBuild Debug Win32
+        Call-MSBuild Debug Win32 $targets
     }
 }
 

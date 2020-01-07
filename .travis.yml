@@ -105,7 +105,7 @@ script:
   # Build TSDuck.
   - |-
     if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
-        powershell -NoLogo -ExecutionPolicy RemoteSigned build/Build.ps1 -$BUILDOPT -Release -NoPause
+        powershell -ExecutionPolicy RemoteSigned build/Build.ps1 -$BUILDOPT -Release -NoStatic -Parallel 5 -NoLowPriority -NoPause
     else
         make -j5
     fi
@@ -122,7 +122,6 @@ script:
   - |-
     if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
         build/msvc/$BINDIR/utests-tsduckdll.exe
-        build/msvc/$BINDIR/utests-tsducklib.exe
     else
         make test
     fi
@@ -131,5 +130,5 @@ script:
   - mkdir -p ../tsduck-test
   - curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
 
-  # Run the test suite (tarball only, no need to get the git repo).
+  # Run the test suite.
   - ../tsduck-test/run-all-tests.sh --$TESTOPT
