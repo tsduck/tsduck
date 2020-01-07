@@ -134,6 +134,38 @@ if (-not $NoInstall) {
     if (-not (Test-Path $DtapiSetup)) {
         Exit-Script "$DtapiSetup not found, cannot install DTAPI"
     }
+
+    # The Dektec WinSDK refuses to upgrade, you need to uninstall first.
+    # Registry roots for uninstallation procedures:
+    $RegUninstall = @(
+        "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+        "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+    )
+
+    # Loop on all uninstallation entries, looking for *dektec* names.
+    foreach ($reg in $RegUninstall) {
+        Get-ChildItem -Recurse -Path $reg |
+        ForEach-Object {
+            $name = (Split-Path -Leaf $_.Name)
+            $entries = ($_ | Get-ItemProperty)
+            if ($entries.DisplayName -like "*dektec*") {
+                # Found a Dektec product, uninstall it.
+                $cmd = $entries.UninstallString
+                Write-Output "Uninstalling $($entries.DisplayName) version $($entries.DisplayVersion)"
+                if ($cmd -like "msiexec*") {
+                    # Run msiexec with silent options.
+                    msiexec.exe /uninstall "$name" /passive /norestart
+                }
+                else {
+                    # Run the uninstall command
+                    Write-Output "Executing $cmd"
+                    Invoke-Expression -Command $cmd
+                }
+            }
+        }
+    }
+
+    # Install new version.
     . $DtapiSetup
 }
 
