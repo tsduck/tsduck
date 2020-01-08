@@ -27,41 +27,38 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsSTDDescriptor.h"
+#include "tsFlexMuxTimingDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"STD_descriptor"
-#define MY_DID ts::DID_STD
+#define MY_XML_NAME u"flexmux_timing_descriptor"
+#define MY_DID ts::DID_FLEX_MUX_TIMING
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::STDDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::STDDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::STDDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_XML_DESCRIPTOR_FACTORY(ts::FlexMuxTimingDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::FlexMuxTimingDescriptor, ts::EDID::Standard(MY_DID));
+TS_FACTORY_REGISTER(ts::FlexMuxTimingDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
-ts::STDDescriptor::STDDescriptor(bool leak_valid_) :
+ts::FlexMuxTimingDescriptor::FlexMuxTimingDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    leak_valid(leak_valid_)
+    FCR_ES_ID(0),
+    FCRResolution(0),
+    FCRLength(0),
+    FmxRateLength(0)
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::STDDescriptor::STDDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    leak_valid(false)
+ts::FlexMuxTimingDescriptor::FlexMuxTimingDescriptor(DuckContext& duck, const Descriptor& desc) :
+    FlexMuxTimingDescriptor()
 {
     deserialize(duck, desc);
 }
@@ -71,10 +68,13 @@ ts::STDDescriptor::STDDescriptor(DuckContext& duck, const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::FlexMuxTimingDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(leak_valid ? 0xFF : 0xFE);
+    bbp->appendUInt16(FCR_ES_ID);
+    bbp->appendUInt32(FCRResolution);
+    bbp->appendUInt8(FCRLength);
+    bbp->appendUInt8(FmxRateLength);
     serializeEnd(desc, bbp);
 }
 
@@ -83,12 +83,18 @@ void ts::STDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::FlexMuxTimingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+
+    _is_valid = desc.isValid() && desc.tag() == _tag && size == 8;
 
     if (_is_valid) {
-        leak_valid = (*desc.payload() & 0x01) != 0;
+        FCR_ES_ID = GetUInt16(data);
+        FCRResolution = GetUInt32(data + 2);
+        FCRLength = GetUInt8(data + 6);
+        FmxRateLength = GetUInt8(data + 7);
     }
 }
 
@@ -97,16 +103,21 @@ void ts::STDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::FlexMuxTimingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
-    if (size >= 1) {
-        uint8_t leak = data[0] & 0x01;
-        data += 1; size -= 1;
-        strm << margin << "Link valid flag: " << int(leak)
-             << (leak != 0 ? " (leak)" : " (vbv_delay)") << std::endl;
+    if (size >= 8) {
+        const uint16_t id = GetUInt16(data);
+        const uint32_t res = GetUInt32(data + 2);
+        const uint8_t len = GetUInt8(data + 6);
+        const uint8_t fmx = GetUInt8(data + 7);
+        data += 8; size -= 8;
+        strm << margin << UString::Format(u"FCR ES ID: 0x%X (%d)", {id, id}) << std::endl
+             << margin << UString::Format(u"FCR resolution: %'d cycles/second", {res}) << std::endl
+             << margin << UString::Format(u"FCR length: %'d", {len}) << std::endl
+             << margin << UString::Format(u"FMX rate length: %d", {fmx}) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);
@@ -117,9 +128,12 @@ void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::FlexMuxTimingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setBoolAttribute(u"leak_valid", leak_valid);
+    root->setIntAttribute(u"FCR_ES_ID", FCR_ES_ID, true);
+    root->setIntAttribute(u"FCRResolution", FCRResolution);
+    root->setIntAttribute(u"FCRLength", FCRLength);
+    root->setIntAttribute(u"FmxRateLength", FmxRateLength);
 }
 
 
@@ -127,9 +141,12 @@ void ts::STDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::FlexMuxTimingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
-        element->getBoolAttribute(leak_valid, u"leak_valid", true);
+        element->getIntAttribute<uint16_t>(FCR_ES_ID, u"FCR_ES_ID", true) &&
+        element->getIntAttribute<uint32_t>(FCRResolution, u"FCRResolution", true) &&
+        element->getIntAttribute<uint8_t>(FCRLength, u"FCRLength", true) &&
+        element->getIntAttribute<uint8_t>(FmxRateLength, u"FmxRateLength", true);
 }

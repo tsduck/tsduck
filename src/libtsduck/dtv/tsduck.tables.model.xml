@@ -1222,6 +1222,17 @@
 
     <external_ES_ID_descriptor external_ES_ID="uint16, required"/>
 
+    <flexmux_timing_descriptor
+        FCR_ES_ID="uint16, required"
+        FCRResolution="uint32, required"
+        FCRLength="uint8, required"
+        FmxRateLength="uint8, required"/>
+
+    <FMC_descriptor>
+      <!-- One per  SL_packetized stream -->
+      <stream ES_ID="uint16, required" FlexMuxChannel="uint8, required"/>
+    </FMC_descriptor>
+
     <FTA_content_management_descriptor
         user_defined="bool, required"
         do_not_scramble="bool, required"
@@ -1410,6 +1421,11 @@
 
     <maximum_bitrate_descriptor maximum_bitrate="uint32, in bits/second, required"/>
 
+    <metadata_STD_descriptor
+        metadata_input_leak_rate="uint22, required"
+        metadata_buffer_size="uint22, required"
+        metadata_output_leak_rate="uint22, required"/>
+
     <message_descriptor message_id="uint8, required"
                         language_code="char3, required">
       <text>String</text>
@@ -1463,6 +1479,10 @@
                 service_provider_name="string, required"
                 service_name="string, required"/>
     </multilingual_service_name_descriptor>
+
+    <multiplex_buffer_descriptor
+        MB_buffer_size="uint24, required"
+        TB_leak_rate="uint24, required"/>
 
     <multiplex_buffer_utilization_descriptor
         LTW_offset_lower_bound="uint15, optional"
