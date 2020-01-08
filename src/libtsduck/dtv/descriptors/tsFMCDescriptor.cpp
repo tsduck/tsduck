@@ -27,41 +27,35 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsSTDDescriptor.h"
+#include "tsFMCDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"STD_descriptor"
-#define MY_DID ts::DID_STD
+#define MY_XML_NAME u"FMC_descriptor"
+#define MY_DID ts::DID_FMC
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::STDDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::STDDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::STDDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_XML_DESCRIPTOR_FACTORY(ts::FMCDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::FMCDescriptor, ts::EDID::Standard(MY_DID));
+TS_FACTORY_REGISTER(ts::FMCDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
-ts::STDDescriptor::STDDescriptor(bool leak_valid_) :
+ts::FMCDescriptor::FMCDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    leak_valid(leak_valid_)
+    entries()
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::STDDescriptor::STDDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    leak_valid(false)
+ts::FMCDescriptor::FMCDescriptor(DuckContext& duck, const Descriptor& desc) :
+    FMCDescriptor()
 {
     deserialize(duck, desc);
 }
@@ -71,10 +65,13 @@ ts::STDDescriptor::STDDescriptor(DuckContext& duck, const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::FMCDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(leak_valid ? 0xFF : 0xFE);
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        bbp->appendUInt16(it->ES_ID);
+        bbp->appendUInt8(it->FlexMuxChannel);
+    }
     serializeEnd(desc, bbp);
 }
 
@@ -83,12 +80,18 @@ void ts::STDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::FMCDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+    _is_valid = desc.isValid() && desc.tag() == _tag && size % 3 == 0;
+    entries.clear();
 
     if (_is_valid) {
-        leak_valid = (*desc.payload() & 0x01) != 0;
+        while (size >= 3) {
+            entries.push_back(Entry(GetUInt16(data), data[2]));
+            data += 3; size -= 3;
+        }
     }
 }
 
@@ -97,16 +100,16 @@ void ts::STDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::FMCDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
-    if (size >= 1) {
-        uint8_t leak = data[0] & 0x01;
-        data += 1; size -= 1;
-        strm << margin << "Link valid flag: " << int(leak)
-             << (leak != 0 ? " (leak)" : " (vbv_delay)") << std::endl;
+    while (size >= 3) {
+        const uint16_t id = GetUInt16(data);
+        const uint8_t fmc = data[2];
+        data += 3; size -= 3;
+        strm << margin << UString::Format(u"ES id: 0x%X (%d), FlexMux channel: 0x%X (%d)", {id, id, fmc, fmc}) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);
@@ -117,9 +120,13 @@ void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::FMCDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setBoolAttribute(u"leak_valid", leak_valid);
+    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+        xml::Element* e = root->addElement(u"stream");
+        e->setIntAttribute(u"ES_ID", it->ES_ID, true);
+        e->setIntAttribute(u"FlexMuxChannel", it->FlexMuxChannel, true);
+    }
 }
 
 
@@ -127,9 +134,22 @@ void ts::STDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::FMCDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
+    entries.clear();
+
+    xml::ElementVector children;
     _is_valid =
         checkXMLName(element) &&
-        element->getBoolAttribute(leak_valid, u"leak_valid", true);
+        element->getChildren(children, u"stream", 0, MAX_ENTRIES);
+
+    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+        Entry entry;
+        _is_valid =
+            children[i]->getIntAttribute<uint16_t>(entry.ES_ID, u"ES_ID", true) &&
+            children[i]->getIntAttribute<uint8_t>(entry.FlexMuxChannel, u"FlexMuxChannel", true);
+        if (_is_valid) {
+            entries.push_back(entry);
+        }
+    }
 }

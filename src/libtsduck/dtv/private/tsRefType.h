@@ -101,6 +101,8 @@
     REF_TYPE(ExtendedEventDescriptor);
     REF_TYPE(ExternalApplicationAuthorizationDescriptor);
     REF_TYPE(ExternalESIdDescriptor);
+    REF_TYPE(FlexMuxTimingDescriptor);
+    REF_TYPE(FMCDescriptor);
     REF_TYPE(FrequencyListDescriptor);
     REF_TYPE(FTAContentManagementDescriptor);
     REF_TYPE(GenreDescriptor);
@@ -123,6 +125,7 @@
     REF_TYPE(LogicalChannelNumberDescriptor);
     REF_TYPE(MaximumBitrateDescriptor);
     REF_TYPE(MessageDescriptor);
+    REF_TYPE(MetadataSTDDescriptor);
     REF_TYPE(MosaicDescriptor);
     REF_TYPE(MPEG2AACAudioDescriptor);
     REF_TYPE(MPEG4AudioDescriptor);
@@ -131,6 +134,7 @@
     REF_TYPE(MultilingualComponentDescriptor);
     REF_TYPE(MultilingualNetworkNameDescriptor);
     REF_TYPE(MultilingualServiceNameDescriptor);
+    REF_TYPE(MultiplexBufferDescriptor);
     REF_TYPE(MultiplexBufferUtilizationDescriptor);
     REF_TYPE(MVCExtensionDescriptor);
     REF_TYPE(NetworkChangeNotifyDescriptor);

@@ -27,41 +27,36 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsSTDDescriptor.h"
+#include "tsMultiplexBufferDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"STD_descriptor"
-#define MY_DID ts::DID_STD
+#define MY_XML_NAME u"multiplex_buffer_descriptor"
+#define MY_DID ts::DID_MUX_BUFFER
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::STDDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::STDDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::STDDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_XML_DESCRIPTOR_FACTORY(ts::MultiplexBufferDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::MultiplexBufferDescriptor, ts::EDID::Standard(MY_DID));
+TS_FACTORY_REGISTER(ts::MultiplexBufferDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
-ts::STDDescriptor::STDDescriptor(bool leak_valid_) :
+ts::MultiplexBufferDescriptor::MultiplexBufferDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    leak_valid(leak_valid_)
+    MB_buffer_size(0),
+    TB_leak_rate(0)
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::STDDescriptor::STDDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    leak_valid(false)
+ts::MultiplexBufferDescriptor::MultiplexBufferDescriptor(DuckContext& duck, const Descriptor& desc) :
+    MultiplexBufferDescriptor()
 {
     deserialize(duck, desc);
 }
@@ -71,10 +66,11 @@ ts::STDDescriptor::STDDescriptor(DuckContext& duck, const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::MultiplexBufferDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(leak_valid ? 0xFF : 0xFE);
+    bbp->appendUInt24(MB_buffer_size);
+    bbp->appendUInt24(TB_leak_rate);
     serializeEnd(desc, bbp);
 }
 
@@ -83,12 +79,16 @@ void ts::STDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::MultiplexBufferDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+
+    _is_valid = desc.isValid() && desc.tag() == _tag && size == 6;
 
     if (_is_valid) {
-        leak_valid = (*desc.payload() & 0x01) != 0;
+        MB_buffer_size = GetUInt24(data);
+        TB_leak_rate = GetUInt24(data + 3);
     }
 }
 
@@ -97,16 +97,17 @@ void ts::STDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MultiplexBufferDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
-    if (size >= 1) {
-        uint8_t leak = data[0] & 0x01;
-        data += 1; size -= 1;
-        strm << margin << "Link valid flag: " << int(leak)
-             << (leak != 0 ? " (leak)" : " (vbv_delay)") << std::endl;
+    if (size >= 6) {
+        const uint32_t mb = GetUInt24(data);
+        const uint32_t tb = GetUInt24(data + 3);
+        data += 6; size -= 6;
+        strm << margin << UString::Format(u"MB buffer size: %'d bytes", {mb}) << std::endl
+             << margin << UString::Format(u"TB leak rate: %'d (%'d bits/s)", {tb, 400 * tb}) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);
@@ -117,9 +118,10 @@ void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::MultiplexBufferDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setBoolAttribute(u"leak_valid", leak_valid);
+    root->setIntAttribute(u"MB_buffer_size", MB_buffer_size);
+    root->setIntAttribute(u"TB_leak_rate", TB_leak_rate);
 }
 
 
@@ -127,9 +129,10 @@ void ts::STDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::MultiplexBufferDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
-        element->getBoolAttribute(leak_valid, u"leak_valid", true);
+        element->getIntAttribute<uint32_t>(MB_buffer_size, u"MB_buffer_size", true, 0, 0, 0x00FFFFFF) &&
+        element->getIntAttribute<uint32_t>(TB_leak_rate, u"TB_leak_rate", true, 0, 0, 0x00FFFFFF);
 }
