@@ -422,6 +422,7 @@
 #include "tsSpliceSegmentationDescriptor.h"
 #include "tsSpliceTimeDescriptor.h"
 #include "tsSRTInputPlugin.h"
+#include "tsSRTOutputPlugin.h"
 #include "tsSRTSocket.h"
 #include "tsSSUDataBroadcastIdDescriptor.h"
 #include "tsSSULinkageDescriptor.h"

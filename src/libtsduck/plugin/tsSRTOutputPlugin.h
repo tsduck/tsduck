@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2020, Thierry Lelegard
+// Copyright (c) 2020, Anthony Delannoy
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,20 +28,44 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  IP output plugin for tsp.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 20
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1595
+
+#if !defined(TS_NOSRT)
+
+#include "tsPlugin.h"
+#include "tsSRTSocket.h"
+
+namespace ts {
+    //!
+    //! SRT output plugin for tsp.
+    //! @ingroup plugin
+    //!
+    class TSDUCKDLL SRTOutputPlugin: public OutputPlugin
+    {
+        TS_NOBUILD_NOCOPY(SRTOutputPlugin);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
+        //!
+        SRTOutputPlugin(TSP* tsp);
+
+        // Implementation of plugin API
+        virtual bool getOptions(void) override;
+        virtual bool start(void) override;
+        virtual bool stop(void) override;
+        virtual bool isRealTime(void) override { return true; }
+        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
+
+    private:
+        SocketAddress  _local_addr;         // Local address.
+        PacketCounter  _pkt_count;          // Total packet counter for output packets
+        SRTSocket      _sock;
+    };
+}
+
+#endif /* TS_NOSRT */
