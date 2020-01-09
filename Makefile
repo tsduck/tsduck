@@ -36,6 +36,7 @@
 #  - NOCURL  : No HTTP support, remove dependency to libcurl.
 #  - NOPCSC  : No smartcard support, remove dependency to pcsc-lite.
 #  - NOTELETEXT : No Teletext support, remove teletext handling code.
+#  - NOSRT : No SRT support, remove "Secure Reliable Transport" code.
 #
 #-----------------------------------------------------------------------------
 
