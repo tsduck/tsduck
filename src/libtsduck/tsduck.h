@@ -421,6 +421,7 @@
 #include "tsSpliceSchedule.h"
 #include "tsSpliceSegmentationDescriptor.h"
 #include "tsSpliceTimeDescriptor.h"
+#include "tsSRTInputPlugin.h"
 #include "tsSRTSocket.h"
 #include "tsSSUDataBroadcastIdDescriptor.h"
 #include "tsSSULinkageDescriptor.h"
