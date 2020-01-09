@@ -104,6 +104,12 @@ ifdef NOTELETEXT
     CFLAGS_INCLUDES += -DTS_NOTELETEXT=1
 endif
 
+ifdef NOSRT
+       CFLAGS_INCLUDES += -DTS_NOSRT=1
+else
+       LDLIBS := -lsrt $(LDLIBS)
+endif
+
 ifdef NOCURL
     CFLAGS_INCLUDES += -DTS_NO_CURL=1
 else
