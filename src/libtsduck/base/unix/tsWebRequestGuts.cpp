@@ -58,6 +58,9 @@ ts::UString ts::WebRequest::GetLibraryVersion() { return UString(); }
 // Normal libcurl support
 //----------------------------------------------------------------------------
 
+// Some curl macros contains "old style" casts.
+TS_LLVM_NOWARNING(old-style-cast)
+
 #include <curl/curl.h>
 //
 // The callback CURLOPT_XFERINFOFUNCTION was introduced with libcurl 7.32.0.
