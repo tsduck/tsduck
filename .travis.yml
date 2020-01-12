@@ -29,6 +29,10 @@
 #
 #  Travis-CI configuration file (Continuous Integration on GitHub)
 #
+#  Note: This file is now kept for reference only. The continuous integration
+#  process for TSDuck has now moved to "GitHub Actions" which is more flexible
+#  than Travis-CI. See the directory .github/workflows for details.
+#
 #-----------------------------------------------------------------------------
 
 # Project language is C++.

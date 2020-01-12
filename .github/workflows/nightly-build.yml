@@ -58,19 +58,33 @@ jobs:
       run: |
         Get-Date
         build/Build-Installer.ps1 -NoPause -NoLowPriority -NoSource
-        Get-ChildItem -Recurse -Path installers -Include "TSDuck-Win64-*.exe" | `
+        $version = (Get-ChildItem -Recurse -Path installers -Include "TSDuck-Win64-*.exe" | `
           ForEach-Object { $_.Name -replace 'TSDuck-Win64-','' -replace '.exe','' } | `
-          Select-Object -Last 1 >version.txt
-        $ProgressPreference = 'SilentlyContinue'
-        Get-ChildItem -Recurse -Path installers -Include @("*.exe", "*.zip") | `
-          Compress-Archive -DestinationPath installers.zip -Force -CompressionLevel Fastest
-    - name: Upload installers
-      uses: actions/upload-artifact@master
-      with:
-        name: installers
-        path: installers.zip
+          Select-Object -Last 1)
+        $version | Out-File version.txt
+        Write-Output "::set-env name=VERSION::$version"
     - name: Upload version
       uses: actions/upload-artifact@master
       with:
         name: version
         path: version.txt
+    - name: Upload 64-bit installer
+      uses: actions/upload-artifact@master
+      with:
+        name: installer-64
+        path: installers/TSDuck-Win64-${{ env.VERSION }}.exe
+    - name: Upload 64-bit portable
+      uses: actions/upload-artifact@master
+      with:
+        name: portable-64
+        path: installers/TSDuck-Win64-${{ env.VERSION }}-Portable.zip
+    - name: Upload 32-bit installer
+      uses: actions/upload-artifact@master
+      with:
+        name: installer-32
+        path: installers/TSDuck-Win32-${{ env.VERSION }}.exe
+    - name: Upload 32-bit portable
+      uses: actions/upload-artifact@master
+      with:
+        name: portable-32
+        path: installers/TSDuck-Win32-${{ env.VERSION }}-Portable.zip
