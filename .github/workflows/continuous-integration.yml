@@ -136,7 +136,7 @@ jobs:
             cat "$f"
         done
 
-  windows-msvc:
+  windows-64-msvc:
     name: Windows 64-bit with VC++
     runs-on: windows-latest
     steps:
@@ -168,7 +168,7 @@ jobs:
             cat "$f"
         done
 
-  windows-msvc:
+  windows-32-msvc:
     name: Windows 32-bit with VC++
     runs-on: windows-latest
     steps:
