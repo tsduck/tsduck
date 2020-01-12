@@ -54,6 +54,8 @@ param(
     [switch]$NoPause = $false
 )
 
+Write-Output "Dektec WinSDK download and installation procedure"
+
 $DektecUrl = "http://www.dektec.com/downloads/SDK/"
 $DtapiInstaller = "DekTec SDK - Windows Setup.exe"
 
@@ -78,10 +80,13 @@ function Exit-Script([string]$Message = "")
 $ProgressPreference = 'SilentlyContinue'
 
 # Get the HTML page for Dektec SDK downloads.
+# Normally, Invoke-WebRequest relies on Internet Explorer for HTML parsing.
+# Use -UseBasicParsing here because when we try to install Dektec SDK in
+# GitHub Actions, we execute in the Azure cloud and Azure has no`# Internet Explorer installed. 
 $status = 0
 $message = ""
 try {
-    $response = Invoke-WebRequest $DektecUrl
+    $response = Invoke-WebRequest -UseBasicParsing -UserAgent Download -Uri $DektecUrl
     $status = [int] [Math]::Floor($response.StatusCode / 100)
 }
 catch {
@@ -97,8 +102,7 @@ if ($status -ne 1 -and $status -ne 2) {
 }
 
 # Parse HTML page to locate the WinSDK file.
-$sdk = $response.ParsedHtml.getElementsByTagName("a") | Where-Object { $_.href -like "*/WinSDK*.zip" } | Select-Object -First 1
-$sdkRef = $sdk.href -replace '^about:',''
+$sdkRef = $response.Links.href | Where-Object { $_ -like "*/WinSDK*.zip" } | Select-Object -First 1
 
 # Build the absolute URL from base URL (the download page) and href link.
 $DtapiUrl = (New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$DektecUrl),$sdkref)
@@ -113,14 +117,13 @@ if (-not $ForceDownload -and (Test-Path $DtapiZipFile)) {
 }
 else {
     Write-Output "Downloading $DtapiUrl ..."
-    Invoke-WebRequest -Uri $DtapiUrl -OutFile $DtapiZipFile
+    Invoke-WebRequest -UseBasicParsing -UserAgent Download -Uri $DtapiUrl -OutFile $DtapiZipFile
 }
 if (-not (Test-Path $DtapiZipFile)) {
     Exit-Script "$DtapiZipName download failed"
 }
 
 # Extract archive.
-Write-Output $DtapiDir
 if (Test-Path $DtapiDir) {
     Write-Output "Cleaning up previous $DtapiDir"
     Remove-Item $DtapiDir -Recurse -Force
@@ -165,8 +168,9 @@ if (-not $NoInstall) {
         }
     }
 
-    # Install new version.
-    . $DtapiSetup
+    # Install new version in silent mode.
+    Write-Output "Executing $DtapiSetup"
+    Start-Process -FilePath $DtapiSetup -ArgumentList @("/S", "/v/qn") -Wait
 }
 
 Exit-Script
