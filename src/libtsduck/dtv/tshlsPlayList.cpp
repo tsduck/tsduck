@@ -644,7 +644,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     if (tagParams.toInteger(kilobits)) {
                         segNext.bitrate = 1024 * kilobits;
                     }
-                    else {
+                    else if (strict) {
                         report.error(u"invalid segment bitrate in %s", {line});
                         _valid = false;
                     }
@@ -741,7 +741,7 @@ bool ts::hls::PlayList::getTag(const UString& line, Tag& tag, UString& params, b
 
     // Identify the tag. Report unknown tag but do not invalidate the playlist.
     if (!TagNames.getValue(tag, line.substr(1, pos - 1), strict)) {
-        report.error(u"unsupported HLS tag: %s", {line.substr(1, pos - 1)});
+        report.log(strict ? Severity::Error : Severity::Debug, u"unsupported HLS tag: %s", {line.substr(1, pos - 1)});
         return false;
     }
 
