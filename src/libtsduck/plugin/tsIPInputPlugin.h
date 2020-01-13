@@ -58,6 +58,7 @@ namespace ts {
         virtual bool abortInput() override;
         virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
+    protected:
         // Implementation of AbstractDatagramInputPlugin.
         virtual bool receiveDatagram(void* buffer, size_t buffer_size, size_t& ret_size) override;
 

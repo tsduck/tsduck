@@ -29,14 +29,14 @@ on Windows and Linux. macOS can only support files and IP for TS input and outpu
 
 ## Fedora {#reqfedora}
 
-- Setup for a TSDuck native build:
+- Up to Fedora 30:
 ~~~~
-dnf install gcc-c++ doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel libcurl libcurl-devel rpmdevtools
+dnf install gcc-c++ rpmdevtools doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel libcurl libcurl-devel
 ~~~~
 
-- Setup to build 32-bit TSDuck on 64-bit system (command `make m32`):
+- Fedora 31 onwards:
 ~~~~
-dnf install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 libcurl-devel.i686
+dnf install gcc-c++ rpmdevtools doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel libcurl libcurl-devel srt-devel
 ~~~~
 
 ## Red Hat Entreprise Linux, CentOS {#reqrhel}
@@ -46,25 +46,29 @@ dnf install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 libcurl-d
 yum install gcc-c++ doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel libcurl libcurl-devel rpmdevtools
 ~~~~
 
-- Setup to build 32-bit TSDuck on 64-bit system (command `make m32`):
+## Ubuntu {#requbuntu}
+
+- Up to Ubuntu 17:
 ~~~~
-yum install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 libcurl-devel.i686
+apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev libcurl3 libcurl3-dev
 ~~~~
 
-## Ubuntu, Debian, Raspbian {#requbuntu}
+- Ubuntu 18:
+~~~~
+apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev libcurl4 libcurl4-openssl-dev
+~~~~
+
+- Ubuntu 19 onwards:
+~~~~
+apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev libcurl4 libcurl4-openssl-dev libsrt-dev
+~~~~
+
+## Debian, Raspbian {#reqdebian}
 
 - Setup for a TSDuck native build:
 ~~~~
 apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev libcurl3 libcurl3-dev
 ~~~~
-
-- Starting with Ubuntu 18.04, `libcurl3` has been replaced by `libcurl4` and the installation commmand becomes:
-~~~~
-apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev libcurl4 libcurl4-openssl-dev
-~~~~
-
-- It is not possible to build 32-bit TSDuck on 64-bit Ubuntu system (command `make m32`) because
-  there is no 32-bit cross-compiled package for pcsc on Ubuntu 64-bit.
 
 ## Alpine Linux {#reqalpine}
 
@@ -99,7 +103,7 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
 
 - Install common open source tools using Homebrew:
 ~~~~
-brew install pcsc-lite doxygen graphviz gnu-sed grep dos2unix
+brew install srt pcsc-lite doxygen graphviz gnu-sed grep dos2unix
 ~~~~
 
 # Building the TSDuck binaries {#buildbin}
@@ -134,6 +138,7 @@ The following `make` variables can be defined:
 - `NODTAPI` : No Dektec support, remove dependency to `DTAPI`.
 - `NOCURL`  : No HTTP support, remove dependency to `libcurl`.
 - `NOPCSC`  : No smartcard support, remove dependency to `pcsc-lite`.
+- `NOSRT`   : No SRT (Secure Reliable Transport), remove dependency to `libsrt`.
 - `NOTELETEXT` : No Teletext support, remove teletext handling code.
 
 The following command, for instance, builds TSDuck without dependency

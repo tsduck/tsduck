@@ -27,13 +27,11 @@
 //
 //----------------------------------------------------------------------------
 
-#if !defined(TS_NOSRT)
-
-#include <srt/srt.h>
-
 #include "tsSRTInputPlugin.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
+
+#if !defined(TS_NOSRT)
 
 
 //----------------------------------------------------------------------------
@@ -41,43 +39,18 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
-    InputPlugin(tsp_, u"Receive TS packets from SRT", u"[options] [address:]port"),
-    _sock(ts::SRTSocketMode::CALLER, *tsp_),
-    _source(),
-    _eval_time(0),
-    _display_time(0),
-    _next_display(Time::Epoch),
-    _start(Time::Epoch),
-    _packets(0),
-    _start_0(Time::Epoch),
-    _packets_0(0),
-    _start_1(Time::Epoch),
-    _packets_1(0),
-    _inbuf_count(0),
-    _inbuf_next(0),
-    _inbuf()
+    AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE, u"Receive TS packets from Secure Reliable Transport (SRT)", u"[options] [address:]port"),
+    _sock(SRTSocketMode::CALLER, *tsp_),
+    _bind_addr()
 {
     _sock.defineArgs(*this);
 
     option(u"", 0, STRING, 1, 1);
     help(u"",
          u"The parameter address:port describes the destination for SRT packets. "
-         u"The 'address' specifies an unicast IP address."
+         u"The 'address' specifies a unicast IP address. "
          u"It can be also a host name that translates to an IP address. "
          u"The 'port' specifies the destination SRT port.");
-
-    option(u"display-interval", 'd', POSITIVE);
-    help(u"display-interval",
-         u"Specify the interval in seconds between two displays of the evaluated "
-         u"real-time input bitrate. The default is to never display the bitrate. "
-         u"This option is ignored if --evaluation-interval is not specified.");
-
-    option(u"evaluation-interval", 'e', POSITIVE);
-    help(u"evaluation-interval",
-         u"Specify that the real-time input bitrate shall be evaluated on a regular "
-         u"basis. The value specifies the number of seconds between two evaluations. "
-         u"By default, the real-time input bitrate is never evaluated and the input "
-         u"bitrate is evaluated from the PCR in the input packets.");
 }
 
 
@@ -87,21 +60,14 @@ ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
 
 bool ts::SRTInputPlugin::getOptions()
 {
-    // Get command line arguments
-    getValue(_source, u"");
-    _eval_time = MilliSecPerSec * intValue<MilliSecond>(u"evaluation-interval", 0);
-    _display_time = MilliSecPerSec * intValue<MilliSecond>(u"display-interval", 0);
-    return _sock.loadArgs(duck, *this);
-}
+    const UString source(value( u""));
+    if (source.empty() || !_bind_addr.resolve(source)) {
+        tsp->error(u"Invalid destination address and port: %s", {source});
+        return false;
+    }
 
-
-//----------------------------------------------------------------------------
-// Set receive timeout from tsp.
-//----------------------------------------------------------------------------
-
-bool ts::SRTInputPlugin::setReceiveTimeout(MilliSecond timeout)
-{
-    return true;
+    // Get command line arguments for superclass and socket.
+    return AbstractDatagramInputPlugin::getOptions() && _sock.loadArgs(duck, *this);
 }
 
 
@@ -111,24 +77,8 @@ bool ts::SRTInputPlugin::setReceiveTimeout(MilliSecond timeout)
 
 bool ts::SRTInputPlugin::start()
 {
-    if (_source.empty())
-        return false;
-
-    // Configure socket.
-    const SocketAddress bind_addr(_source);
-
-    if (!_sock.open(bind_addr, *tsp)) {
-        _sock.close(*tsp);
-        return false;
-    }
-
-    // Socket now ready.
-    // Initialize working data.
-    _inbuf_count = _inbuf_next = 0;
-    _start = _start_0 = _start_1 = _next_display = Time::Epoch;
-    _packets = _packets_0 = _packets_1 = 0;
-
-    return true;
+    // Initialize superclass and UDP socket.
+    return AbstractDatagramInputPlugin::start() && _sock.open(_bind_addr, *tsp);
 }
 
 
@@ -139,7 +89,7 @@ bool ts::SRTInputPlugin::start()
 bool ts::SRTInputPlugin::stop()
 {
     _sock.close(*tsp);
-    return true;
+    return AbstractDatagramInputPlugin::stop();
 }
 
 
@@ -149,145 +99,18 @@ bool ts::SRTInputPlugin::stop()
 
 bool ts::SRTInputPlugin::abortInput()
 {
-    return stop();
+    _sock.close(*tsp);
+    return true;
 }
 
 
 //----------------------------------------------------------------------------
-// Input bitrate evaluation method
+// Datagram reception method.
 //----------------------------------------------------------------------------
 
-ts::BitRate ts::SRTInputPlugin::getBitrate()
+bool ts::SRTInputPlugin::receiveDatagram(void* buffer, size_t buffer_size, size_t& ret_size)
 {
-    if (_eval_time > 0 && _start_0 != _start_1) {
-        // Evaluate bitrate since start of previous evaluation period.
-        // The current period may be too short for correct evaluation.
-        const MilliSecond ms = Time::CurrentUTC() - _start_0;
-        return ms == 0 ? 0 : BitRate((_packets_0 * PKT_SIZE * 8 * MilliSecPerSec) / ms);
-    }
-    // Not evaluated
-    return 0;
-}
-
-
-//----------------------------------------------------------------------------
-// Input method
-//----------------------------------------------------------------------------
-
-size_t ts::SRTInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
-{
-    // Check if we receive new packets or process remain of previous buffer.
-    bool new_packets = false;
-
-    // If there is no remaining packet in the input buffer, wait for a UDP
-    // message. Loop until we get some TS packets.
-    while (_inbuf_count <= 0) {
-
-        // Wait for a UDP message
-        size_t insize;
-        if (!_sock.receive(_inbuf, sizeof(_inbuf), insize, *tsp)) {
-            return 0;
-        }
-
-        // Locate the TS packets inside the UDP message. Basically, we
-        // expect the message to contain only TS packets. However, we
-        // will face the following situations:
-        // - Presence of a header preceeding the first TS packet (typically
-        //   when the TS packets are encapsulated in RTP).
-        // - Presence of a truncated packet at the end of message.
-
-        // To face the first situation, we look backward from the end of
-        // the message, looking for a 0x47 sync byte every 188 bytes, going
-        // backward.
-
-        const uint8_t* p;
-        for (p = _inbuf + insize; p >= _inbuf + PKT_SIZE && p[-int(PKT_SIZE)] == SYNC_BYTE; p -= PKT_SIZE) {}
-
-        if (p < _inbuf + insize) {
-            // Some packets were found
-            _inbuf_next = p - _inbuf;
-            _inbuf_count = (_inbuf + insize - p) / PKT_SIZE;
-            new_packets = true;
-            break; // exit receive loop
-        }
-
-        // If no TS packet is found using the first method, we restart from
-        // the beginning of the message, looking for a 0x47 sync byte every
-        // 188 bytes, going forward. If we find this pattern, followed by
-        // less than 188 bytes, then we have found a sequence of TS packets.
-
-        const uint8_t* max = _inbuf + insize - PKT_SIZE; // max address for a TS packet
-        _inbuf_count = 0;
-
-        for (p = _inbuf; p <= max; p++) {
-            if (*p == SYNC_BYTE) {
-                // Verify that we get a 0x47 sync byte every 188 bytes up
-                // to the end of message (not leaving more than one truncated
-                // TS packet at the end of the message).
-                const uint8_t* end;
-                for (end = p; end <= max && *end == SYNC_BYTE; end += PKT_SIZE) {}
-                if (end > max) {
-                    // Less than 188 bytes after last packet. Consider we are OK
-                    _inbuf_next = p - _inbuf;
-                    _inbuf_count = (end - p) / PKT_SIZE;
-                    new_packets = true;
-                    break; // exit packet search loop
-                }
-            }
-        }
-
-        if (new_packets) {
-            break; // exit receive loop
-        }
-    }
-
-    // If new packets were received, we may need to re-evaluate the real-time input bitrate.
-    if (new_packets && _eval_time > 0) {
-
-        const Time now(Time::CurrentUTC());
-
-        // Detect start time
-        if (_packets == 0) {
-            _start = _start_0 = _start_1 = now;
-            if (_display_time > 0) {
-                _next_display = now + _display_time;
-            }
-        }
-
-        // Count packets
-        _packets += _inbuf_count;
-        _packets_0 += _inbuf_count;
-        _packets_1 += _inbuf_count;
-
-        // Detect new evaluation period
-        if (now >= _start_1 + _eval_time) {
-            _start_0 = _start_1;
-            _packets_0 = _packets_1;
-            _start_1 = now;
-            _packets_1 = 0;
-
-        }
-
-        // Check if evaluated bitrate should be displayed
-        if (_display_time > 0 && now >= _next_display) {
-            _next_display += _display_time;
-            const MilliSecond ms_current = Time::CurrentUTC() - _start_0;
-            const MilliSecond ms_total = Time::CurrentUTC() - _start;
-            const BitRate br_current = ms_current == 0 ? 0 : BitRate((_packets_0 * PKT_SIZE * 8 * MilliSecPerSec) / ms_current);
-            const BitRate br_average = ms_total == 0 ? 0 : BitRate((_packets * PKT_SIZE * 8 * MilliSecPerSec) / ms_total);
-            tsp->info(u"IP input bitrate: %s, average: %s", {
-                br_current == 0 ? u"undefined" : UString::Decimal(br_current) + u" b/s",
-                br_average == 0 ? u"undefined" : UString::Decimal(br_average) + u" b/s"});
-        }
-    }
-
-    // Return packets from the input buffer
-    size_t pkt_cnt = std::min(_inbuf_count, max_packets);
-    TSPacket::Copy(buffer, _inbuf + _inbuf_next, pkt_cnt);
-    _inbuf_count -= pkt_cnt;
-    _inbuf_next += pkt_cnt * PKT_SIZE;
-
-    return pkt_cnt;
+    return _sock.receive(buffer, buffer_size, ret_size, *tsp);
 }
 
 #endif /* TS_NOSRT */

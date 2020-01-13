@@ -50,13 +50,18 @@ CFLAGS_CURL := $(shell curl-config --cflags)
 LDLIBS_CURL := $(shell curl-config --libs)
 ifdef TS_MAC
     TS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC -I$(TS_INCLUDE_DIR)
-    LDLIBS += $(if $(TS_STATIC),-L/usr/local/lib -ltsduck,/usr/local/bin/tsduck.so) $(LDLIBS_CURL) -L/usr/local/opt/pcsc-lite/lib -lpcsclite -lpthread -ldl -lm -lstdc++
+    LDLIBS += $(if $(TS_STATIC),-L/usr/local/lib -ltsduck,/usr/local/bin/tsduck.so) $(LDLIBS_CURL) -L/usr/local/opt/pcsc-lite/lib -lpcsclite -lsrt -lpthread -ldl -lm -lstdc++
     ifndef TS_STATIC
         LDFLAGS += -Wl,-rpath,@executable_path,-rpath,/usr/local/bin
         SOFLAGS = -install_name '@rpath/$(notdir $@)'
     endif
 else
     TS_INCLUDES += -I/usr/include/PCSC -I$(TS_INCLUDE_DIR)
+    ifeq ($(wildcard /usr/include/srt/*.h),)
+        CFLAGS += -DTS_NOSRT=1
+    else
+       LDLIBS += -lsrt
+    endif
     LDLIBS += $(if $(TS_STATIC),-ltsduck,/usr/bin/tsduck.so) $(LDLIBS_CURL) -lpcsclite -lpthread -lrt -ldl -lm -lstdc++
     ifndef TS_STATIC
         LDFLAGS += -Wl,-rpath,'$$ORIGIN',-rpath,/usr/bin

@@ -27,21 +27,22 @@
 //
 //----------------------------------------------------------------------------
 
-#if !defined(TS_NOSRT)
-
 #include "tsSRTOutputPlugin.h"
 #include "tsSystemRandomGenerator.h"
 TSDUCK_SOURCE;
+
+#if !defined(TS_NOSRT)
+
 
 //----------------------------------------------------------------------------
 // Output constructor
 //----------------------------------------------------------------------------
 
 ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, u"Send TS packets using SRT protocol", u"[options] address:port"),
+    OutputPlugin(tsp_, u"Send TS packets using Secure Reliable Transport (SRT)", u"[options] address:port"),
     _local_addr(),
     _pkt_count(0),
-    _sock(ts::SRTSocketMode::LISTENER, *tsp_)
+    _sock(SRTSocketMode::LISTENER, *tsp_)
 {
     _sock.defineArgs(*this);
 
@@ -56,11 +57,11 @@ ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
 
 bool ts::SRTOutputPlugin::getOptions(void)
 {
-    UString bind_addr;
-
-    getValue(bind_addr, u"", u"");
-    if (bind_addr.empty() || !_local_addr.resolve(bind_addr))
+    const UString bind_addr(value( u""));
+    if (bind_addr.empty() || !_local_addr.resolve(bind_addr)) {
+        tsp->error(u"Invalid listening IPv4 and port: %s", {bind_addr});
         return false;
+    }
 
     return _sock.loadArgs(duck, *this);
 }
