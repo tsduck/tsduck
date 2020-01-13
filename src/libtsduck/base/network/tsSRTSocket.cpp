@@ -454,7 +454,9 @@ bool ts::SRTSocket::setSockOptPre(ts::Report& report)
         (_ffs > 0 && !setSockOpt(SRTO_FC, "SRTO_FC", &_ffs, sizeof(_ffs), report)) ||
         (_iptos >= 0 && !setSockOpt(SRTO_IPTOS, "SRTO_IPTOS", &_iptos, sizeof(_iptos), report)) ||
         (_ipttl > 0 && !setSockOpt(SRTO_IPTTL, "SRTO_IPTTL", &_ipttl, sizeof(_ipttl), report)) ||
+#if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
         (_enforce_encryption > 0 && !setSockOpt(SRTO_ENFORCEDENCRYPTION, "SRTO_ENFORCEDENCRYPTION", &_enforce_encryption, sizeof(_enforce_encryption), report)) ||
+#endif
         (_kmrefreshrate >= 0 && !setSockOpt(SRTO_KMREFRESHRATE, "SRTO_KMREFRESHRATE", &_kmrefreshrate, sizeof(_kmrefreshrate), report)) ||
         (_kmpreannounce > 0 && !setSockOpt(SRTO_KMPREANNOUNCE, "SRTO_KMPREANNOUNCE", &_kmpreannounce, sizeof(_kmpreannounce), report)) ||
         (_latency > 0 && !setSockOpt(SRTO_LATENCY, "SRTO_LATENCY", &_latency, sizeof(_latency), report)) ||
@@ -464,12 +466,16 @@ bool ts::SRTSocket::setSockOptPre(ts::Report& report)
         (_min_version > 0 && !setSockOpt(SRTO_MINVERSION, "SRTO_MINVERSION", &_min_version, sizeof(_min_version), report)) ||
         (_mss >= 0 && !setSockOpt(SRTO_MSS, "SRTO_MSS", &_mss, sizeof(_mss), report)) ||
         (_nakreport >= 0 && !setSockOpt(SRTO_NAKREPORT, "SRTO_NAKREPORT", &_nakreport, sizeof(_nakreport), report)) ||
+        #if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
         (!_packet_filter.empty() && !setSockOpt(SRTO_PACKETFILTER, "SRTO_PACKETFILTER", _packet_filter.c_str(), _packet_filter.size(), report)) ||
+#endif
         (!_passphrase.empty() && !setSockOpt(SRTO_PASSPHRASE, "SRTO_PASSPHRASE", _passphrase.c_str(), _passphrase.size(), report)) ||
         (!_streamid.empty() && !setSockOpt(SRTO_STREAMID, "SRTO_STREAMID", _streamid.c_str(), _streamid.size())) ||
         (_payload_size > 0 && !setSockOpt(SRTO_PAYLOADSIZE, "SRTO_PAYLOADSIZE", &_payload_size, sizeof(_payload_size), report)) ||
         (_pbkeylen > 0 && !setSockOpt(SRTO_PBKEYLEN, "SRTO_PBKEYLEN", &_pbkeylen, sizeof(_pbkeylen), report)) ||
+#if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
         (_peer_idle_timeout > 0 && !setSockOpt(SRTO_PEERIDLETIMEO, "SRTO_PEERIDLETIMEO", &_peer_idle_timeout, sizeof(_peer_idle_timeout), report)) ||
+#endif
         (_peer_latency > 0 && !setSockOpt(SRTO_PEERLATENCY, "SRTO_PEERLATENCY", &_peer_latency, sizeof(_peer_latency), report)) ||
         (_rcvbuf > 0 && !setSockOpt(SRTO_RCVBUF, "SRTO_RCVBUF", &_rcvbuf, sizeof(_rcvbuf), report)) ||
         (_rcv_latency > 0 && !setSockOpt(SRTO_RCVLATENCY, "SRTO_RCVLATENCY", &_rcv_latency, sizeof(_rcv_latency), report)) ||
