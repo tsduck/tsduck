@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Basic definition of an MPEG-2 transport packet.
-//
-//----------------------------------------------------------------------------
 
 #include "tsTSPacket.h"
 #include "tsPCR.h"
@@ -899,6 +895,59 @@ bool ts::TSPacket::isDuplicate(const TSPacket& other) const
         getPID() != PID_NULL &&
         ::memcmp(b, other.b, 6) == 0 &&
         ::memcmp(b + offset, other.b + offset, PKT_SIZE - offset) == 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Locate contiguous TS packets into a buffer.
+//----------------------------------------------------------------------------
+
+bool ts::TSPacket::Locate(const uint8_t* buffer, size_t buffer_size, size_t& start_index, size_t& packet_count)
+{
+    // Nothing found by default.
+    start_index = 0;
+    packet_count = 0;
+
+    // Filter out invalid parameters.
+    if (buffer == nullptr || buffer_size < PKT_SIZE) {
+        return false;
+    }
+
+    // Look backward from the end of the message, looking for a 0x47 sync byte every 188 bytes, going backward.
+    const uint8_t* buffer_end = buffer + buffer_size;
+    const uint8_t* p;
+    for (p = buffer_end; p >= buffer + PKT_SIZE && *(p - PKT_SIZE) == SYNC_BYTE; p -= PKT_SIZE) {}
+
+    if (p < buffer_end) {
+        // Some packets were found
+        start_index = p - buffer;
+        packet_count = (buffer_end - p) / PKT_SIZE;
+        return true;
+    }
+
+    // No TS packet found using the first method. Restart from the beginning of the message.
+    const uint8_t* const max = buffer_end - PKT_SIZE; // max address for a TS packet
+    for (p = buffer; p <= max; p++) {
+        if (*p == SYNC_BYTE) {
+            // Found something that could be the start of a TS packet.
+            // Verify that we get a 0x47 sync byte every 188 bytes up
+            // to the end of message (not leaving more than one truncated
+            // TS packet at the end of the message).
+            const uint8_t* end;
+            for (end = p; end <= max && *end == SYNC_BYTE; end += PKT_SIZE) {}
+            if (end > max) {
+                // End is after the start of the last possible packet.
+                // So, there are less than 188 bytes left in buffer after last packet.
+                // Consider that we have found a valid suite of packets.
+                start_index = p - buffer;
+                packet_count = (end - p) / PKT_SIZE;
+                return true;
+            }
+        }
+    }
+
+    // Could not find a valid suite of TS packets.
+    return false;
 }
 
 

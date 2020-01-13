@@ -33,17 +33,15 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlugin.h"
+#include "tsAbstractDatagramInputPlugin.h"
 #include "tsUDPReceiver.h"
-#include "tsIPUtils.h"
-#include "tsTime.h"
 
 namespace ts {
     //!
     //! IP input plugin for tsp.
     //! @ingroup plugin
     //!
-    class TSDUCKDLL IPInputPlugin: public InputPlugin
+    class TSDUCKDLL IPInputPlugin: public AbstractDatagramInputPlugin
     {
         TS_NOBUILD_NOCOPY(IPInputPlugin);
     public:
@@ -57,25 +55,13 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual bool isRealTime() override;
-        virtual BitRate getBitrate() override;
-        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool abortInput() override;
         virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
+        // Implementation of AbstractDatagramInputPlugin.
+        virtual bool receiveDatagram(void* buffer, size_t buffer_size, size_t& ret_size) override;
+
     private:
-        UDPReceiver   _sock;               // Incoming socket with associated command line options
-        MilliSecond   _eval_time;          // Bitrate evaluation interval in milli-seconds
-        MilliSecond   _display_time;       // Bitrate display interval in milli-seconds
-        Time          _next_display;       // Next bitrate display time
-        Time          _start;              // UTC date of first received packet
-        PacketCounter _packets;            // Number of received packets since _start
-        Time          _start_0;            // Start of previous bitrate evaluation period
-        PacketCounter _packets_0;          // Number of received packets since _start_0
-        Time          _start_1;            // Start of previous bitrate evaluation period
-        PacketCounter _packets_1;          // Number of received packets since _start_1
-        size_t        _inbuf_count;        // Remaining TS packets in inbuf
-        size_t        _inbuf_next;         // Index in inbuf of next TS packet to return
-        uint8_t       _inbuf[IP_MAX_PACKET_SIZE]; // Input buffer
+        UDPReceiver _sock; // Incoming socket with associated command line options.
     };
 }
