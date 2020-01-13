@@ -27,6 +27,8 @@
 //
 //----------------------------------------------------------------------------
 
+#if !defined(TS_NOSRT)
+
 #include "tsSRTInputPlugin.h"
 #include "tsSRTOutputPlugin.h"
 #include "tsPluginRepository.h"
@@ -35,3 +37,5 @@ TSDUCK_SOURCE;
 TSPLUGIN_DECLARE_VERSION
 TSPLUGIN_DECLARE_INPUT(srt, ts::SRTInputPlugin)
 TSPLUGIN_DECLARE_OUTPUT(srt, ts::SRTOutputPlugin)
+
+#endif
