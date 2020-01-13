@@ -26,22 +26,19 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  SRT Socket
-//
-//----------------------------------------------------------------------------
-
-#if !defined(TS_NOSRT)
 
 #include "tsSRTSocket.h"
 #include "tsArgs.h"
 TSDUCK_SOURCE;
 
+#if !defined(TS_NOSRT)
+
+
 //----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::SRTSocket::SRTSocket(enum ts::SRTSocketMode mode, ts::Report& report) :
+ts::SRTSocket::SRTSocket(SRTSocketMode mode, Report& report) :
     _default_address(),
     _mode(mode),
     _sock(TS_SOCKET_T_INVALID),
@@ -50,7 +47,7 @@ ts::SRTSocket::SRTSocket(enum ts::SRTSocketMode mode, ts::Report& report) :
     _passphrase(u""),
     _streamid(u""),
     _polling_time(-1),
-    _messageapi(-1),
+    _messageapi(false),
     _nakreport(-1),
     _conn_timeout(-1),
     _ffs(-1),
@@ -311,7 +308,7 @@ void ts::SRTSocket::defineArgs(ts::Args& args) const
               u"sets multiple other parameters to their default values as required for a "
               u"particular transmission type.");
 
-    args.option(u"messageapi", 0, ts::Args::INTEGER, 0, 1, 0, 1);
+    args.option(u"messageapi");
     args.help(u"messageapi", u"When set, this socket uses the Message API, otherwise it uses Buffer API.");
 
     args.option(u"min-version", 0, ts::Args::INTEGER, 0, 1, 0, SRT_INTMAX32);
@@ -409,7 +406,7 @@ bool ts::SRTSocket::loadArgs(ts::DuckContext& duck, ts::Args& args)
     _transtype = (ttype == u"live") ? SRTT_LIVE : SRTT_FILE;
     _nakreport = args.intValue<bool>(u"nakreport", -1);
     _conn_timeout = args.intValue<int>(u"conn-timeout", -1);
-    _messageapi = args.intValue<bool>(u"messageapi", -1);
+    _messageapi = args.present(u"messageapi");
     _ffs = args.intValue<int>(u"ffs", -1);
     _input_bw = args.intValue<int64_t>(u"input-bw", -1);
     _iptos = args.intValue<int32_t>(u"iptos", -1);
@@ -448,10 +445,11 @@ bool ts::SRTSocket::loadArgs(ts::DuckContext& duck, ts::Args& args)
 bool ts::SRTSocket::setSockOptPre(ts::Report& report)
 {
     int yes = 1;
+    int msgapi = _messageapi ? 1 : 0;
 
-    if ((_mode != ts::SRTSocketMode::CALLER && !setSockOpt(SRTO_SENDER, "SRTO_SENDER", &yes, sizeof(yes), report)) ||
+    if ((_mode != SRTSocketMode::CALLER && !setSockOpt(SRTO_SENDER, "SRTO_SENDER", &yes, sizeof(yes), report)) ||
         (_transtype != SRTT_INVALID && !setSockOpt(SRTO_TRANSTYPE, "SRTO_TRANSTYPE", &_transtype, sizeof(_transtype), report)) ||
-        (_messageapi >= 0 && !setSockOpt(SRTO_MESSAGEAPI, "SRTO_MESSAGEAPI", &_messageapi, sizeof(_messageapi), report)) ||
+        (_messageapi && !setSockOpt(SRTO_MESSAGEAPI, "SRTO_MESSAGEAPI", &msgapi, sizeof(msgapi), report)) ||
         (_conn_timeout >= 0 && !setSockOpt(SRTO_CONNTIMEO, "SRTO_CONNTIMEO", &_conn_timeout, sizeof(_conn_timeout), report)) ||
         (_ffs > 0 && !setSockOpt(SRTO_FC, "SRTO_FC", &_ffs, sizeof(_ffs), report)) ||
         (_iptos >= 0 && !setSockOpt(SRTO_IPTOS, "SRTO_IPTOS", &_iptos, sizeof(_iptos), report)) ||
@@ -482,11 +480,12 @@ bool ts::SRTSocket::setSockOptPre(ts::Report& report)
     }
 
     // In case of error here, use system default
-    if (_udp_rcvbuf > 0)
+    if (_udp_rcvbuf > 0) {
         setSockOpt(SRTO_UDP_RCVBUF, "SRTO_UDP_RCVBUF", &_udp_rcvbuf, sizeof(_udp_rcvbuf), report);
-    if (_udp_sndbuf > 0)
+    }
+    if (_udp_sndbuf > 0) {
         setSockOpt(SRTO_UDP_SNDBUF, "SRTO_UDP_SNDBUF", &_udp_sndbuf, sizeof(_udp_sndbuf), report);
-
+    }
     return true;
 }
 
@@ -590,7 +589,7 @@ bool ts::SRTSocket::send(const void* data, size_t size, const ts::SocketAddress&
 
 bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, ts::Report& report)
 {
-    int ret = srt_recv(_sock, (char*)data, max_size);
+    int ret = srt_recv(_sock, reinterpret_cast<char*>(data), max_size);
     // For non-blocking mode only, if no data available yet
     if (srt_getlasterror(nullptr) == SRT_EASYNCRCV) {
         ret_size = 0;

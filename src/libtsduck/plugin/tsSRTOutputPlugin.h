@@ -28,20 +28,19 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  IP output plugin for tsp.
+//!  Secure Reliable Transport (SRT) output plugin for tsp.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-
-#if !defined(TS_NOSRT)
-
 #include "tsPlugin.h"
 #include "tsSRTSocket.h"
 
+#if !defined(TS_NOSRT)
+
 namespace ts {
     //!
-    //! SRT output plugin for tsp.
+    //! Secure Reliable Transport (SRT) output plugin for tsp.
     //! @ingroup plugin
     //!
     class TSDUCKDLL SRTOutputPlugin: public OutputPlugin
@@ -62,9 +61,9 @@ namespace ts {
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
-        SocketAddress  _local_addr;         // Local address.
-        PacketCounter  _pkt_count;          // Total packet counter for output packets
-        SRTSocket      _sock;
+        SocketAddress _local_addr;  // Local address.
+        PacketCounter _pkt_count;   // Total packet counter for output packets
+        SRTSocket     _sock;
     };
 }
 

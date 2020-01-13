@@ -28,24 +28,22 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  SRT input plugin for tsp.
+//!  Secure Reliable Transport (SRT) input plugin for tsp.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsAbstractDatagramInputPlugin.h"
+#include "tsSRTSocket.h"
 
 #if !defined(TS_NOSRT)
 
-#include "tsPlugin.h"
-#include "tsSRTSocket.h"
-#include "tsTime.h"
-
 namespace ts {
     //!
-    //! SRT input plugin for tsp.
+    //! Secure Reliable Transport (SRT) input plugin for tsp.
     //! @ingroup plugin
     //!
-    class TSDUCKDLL SRTInputPlugin: public InputPlugin
+    class TSDUCKDLL SRTInputPlugin: public AbstractDatagramInputPlugin
     {
         TS_NOBUILD_NOCOPY(SRTInputPlugin);
     public:
@@ -59,27 +57,15 @@ namespace ts {
         virtual bool getOptions(void) override;
         virtual bool start(void) override;
         virtual bool stop(void) override;
-        virtual bool isRealTime(void) override { return true; }
-        virtual BitRate getBitrate(void) override;
-        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool abortInput(void) override;
-        virtual bool setReceiveTimeout(MilliSecond timeout) override;
+
+    protected:
+        // Implementation of AbstractDatagramInputPlugin.
+        virtual bool receiveDatagram(void* buffer, size_t buffer_size, size_t& ret_size) override;
 
     private:
         SRTSocket     _sock;
-        UString       _source;             // Source address/port
-        MilliSecond   _eval_time;          // Bitrate evaluation interval in milli-seconds
-        MilliSecond   _display_time;       // Bitrate display interval in milli-seconds
-        Time          _next_display;       // Next bitrate display time
-        Time          _start;              // UTC date of first received packet
-        PacketCounter _packets;            // Number of received packets since _start
-        Time          _start_0;            // Start of previous bitrate evaluation period
-        PacketCounter _packets_0;          // Number of received packets since _start_0
-        Time          _start_1;            // Start of previous bitrate evaluation period
-        PacketCounter _packets_1;          // Number of received packets since _start_1
-        size_t        _inbuf_count;        // Remaining TS packets in inbuf
-        size_t        _inbuf_next;         // Index in inbuf of next TS packet to return
-        uint8_t       _inbuf[IP_MAX_PACKET_SIZE]; // Input buffer
+        SocketAddress _bind_addr;
     };
 }
 

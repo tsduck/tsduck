@@ -26,8 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-
-#if !defined(TS_NOSRT)
+//
+// Secure Reliable Transport (SRT) input and output plugin for tsp.
+//
+//----------------------------------------------------------------------------
 
 #include "tsSRTInputPlugin.h"
 #include "tsSRTOutputPlugin.h"
@@ -35,7 +37,8 @@
 TSDUCK_SOURCE;
 
 TSPLUGIN_DECLARE_VERSION
+
+#if !defined(TS_NOSRT)
 TSPLUGIN_DECLARE_INPUT(srt, ts::SRTInputPlugin)
 TSPLUGIN_DECLARE_OUTPUT(srt, ts::SRTOutputPlugin)
-
 #endif

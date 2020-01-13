@@ -28,31 +28,37 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  SRT Socket
+//!  Secure Reliable Transport (SRT) Socket.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-
-#if !defined(TS_NOSRT)
-
-#include <srt/srt.h>
-
 #include "tsSocketAddress.h"
 #include "tsIPUtils.h"
 #include "tsReport.h"
 #include "tsArgsSupplierInterface.h"
 
+// Currently, we disable SRT on Windows.
+#if defined(TS_WINDOWS) && !defined(TS_NOSRT)
+#define TS_NOSRT 1
+#endif
+
+#if !defined(TS_NOSRT)
+#include <srt/srt.h>
+
 namespace ts {
+    //!
+    //! SRT socket mode
+    //!
     enum SRTSocketMode: int {
-        LISTENER = 0,
-        CALLER = 1,
-        RENDEZVOUS = 2,
-        LEN = 3,
+        LISTENER   = 0,  //!< Listener mode.
+        CALLER     = 1,  //!< Caller mode.
+        RENDEZVOUS = 2,  //!< Rendez-vous mode (unsupported).
+        LEN        = 3,  //!< Unknown.
     };
 
     //!
-    //! SRT Socket.
+    //! Secure Reliable Transport (SRT) Socket.
     //! @see https://github.com/Haivision/srt
     //! @see https://www.srtalliance.org/
     //! @ingroup net
@@ -63,31 +69,79 @@ namespace ts {
     public:
         //!
         //! Constructor.
-        //! @param [in] auto_open If true, call open() immediately.
+        //! @param [in] mode SRT socket mode.
         //! @param [in,out] report Where to report error.
         //!
-        SRTSocket(enum SRTSocketMode mode, Report& report = CERR);
+        SRTSocket(SRTSocketMode mode, Report& report = CERR);
 
         //!
         //! Destructor.
         //!
         ~SRTSocket(void);
 
-        // Implementation of Socket interface.
+        //!
+        //! Open the socket.
+        //! @param [in] addr Socket address.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
         bool open(const SocketAddress& addr, Report& report = CERR);
+
+        //!
+        //! Close the socket.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
         bool close(Report& report = CERR);
 
         // Implementation of ArgsSupplierInterface.
         virtual void defineArgs(Args& args) const override;
         virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
+        //!
+        //! Send a message to the default destination address and port.
+        //! @param [in] data Address of the message to send.
+        //! @param [in] size Size in bytes of the message to send.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
         bool send(const void* data, size_t size, Report& report = CERR);
+
+        //!
+        //! Receive a message.
+        //! @param [out] data Address of the buffer for the received message.
+        //! @param [in] max_size Size in bytes of the reception buffer.
+        //! @param [out] ret_size Size in bytes of the received message. Will never be larger than @a max_size.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
         bool receive(void* data, size_t max_size, size_t& ret_size, Report& report = CERR);
 
-        // Getters
+        //!
+        //! Get SRT option.
+        //! @param [in] optName Option name as enumeration.
+        //! @param [in] optNameStr Option name as ASCII string.
+        //! @param [out] optval Address of returned value.
+        //! @param [in,out] optlen Size of returned buffer (input), updated to size of returned value.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
         bool getSockOpt(SRT_SOCKOPT optName, const char* optNameStr, void* optval, int& optlen, Report& report = CERR) const;
-        int getSocket(void) const { return _sock; }
-        int getMessageApi(void) const { return _messageapi; }
+
+
+        //!
+        //! Get the underlying socket device handle (use with care).
+        //! This method is reserved for low-level operations and should
+        //! not be used by normal applications.
+        //! @return The underlying socket system device handle or file descriptor.
+        //!
+        int getSocket() const { return _sock; }
+
+        //!
+        //! Check if the SRT socket uses the Message API.
+        //! @return True if the SRT socket uses the Message API. False if it uses the buffer API.
+        //!
+        bool getMessageApi() const { return _messageapi; }
 
     private:
         bool send(const void* data, size_t size, const SocketAddress& dest, Report& report);
@@ -103,7 +157,7 @@ namespace ts {
         int srtConnect(const SocketAddress& addr, Report& report);
 
         SocketAddress _default_address;
-        enum SRTSocketMode _mode;
+        SRTSocketMode _mode;
         int _sock;
 
         // Sock options
@@ -112,7 +166,7 @@ namespace ts {
         UString _passphrase;
         UString _streamid;
         int _polling_time;
-        int _messageapi;
+        bool _messageapi;
         int _nakreport;
         int _conn_timeout;
         int _ffs;
