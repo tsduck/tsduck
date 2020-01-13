@@ -143,7 +143,8 @@ if (-not $NoInstaller -or -not $NoPortable) {
                   ForEach-Object { (Get-Command $_).FileVersionInfo } |
                   Sort-Object -Unique -Property FileVersion  |
                   ForEach-Object { $_.FileName} | Select-Object -Last 1
-    $VCRedist64 = Get-ChildItem -Recurse -Path "C:\Program Files*\Microsoft Visual Studio" -Include "vc*redist*64.exe" -ErrorAction Ignore |
+    # Use "*x64" instead of "*64" since some VS installations may include an arm64 version.
+    $VCRedist64 = Get-ChildItem -Recurse -Path "C:\Program Files*\Microsoft Visual Studio" -Include "vc*redist*x64.exe" -ErrorAction Ignore |
                   ForEach-Object { (Get-Command $_).FileVersionInfo } |
                   Sort-Object -Unique -Property FileVersion  |
                   ForEach-Object { $_.FileName} | Select-Object -Last 1
