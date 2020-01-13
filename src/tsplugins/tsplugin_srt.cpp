@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2020, Thierry Lelegard
+// Copyright (c) 2020, Anthony Delannoy
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,22 +26,16 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
-//----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 20
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1599
+#if !defined(TS_NOSRT)
+
+#include "tsSRTInputPlugin.h"
+#include "tsSRTOutputPlugin.h"
+#include "tsPluginRepository.h"
+TSDUCK_SOURCE;
+
+TSPLUGIN_DECLARE_VERSION
+TSPLUGIN_DECLARE_INPUT(srt, ts::SRTInputPlugin)
+TSPLUGIN_DECLARE_OUTPUT(srt, ts::SRTOutputPlugin)
+
+#endif
