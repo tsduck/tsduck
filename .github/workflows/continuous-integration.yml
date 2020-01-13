@@ -55,7 +55,7 @@ jobs:
         # libsrt is available on Ubuntu 19.x
         DISTRO=$(lsb_release -i 2>/dev/null | sed -e 's/.*:[\t ]*//')
         MAJOR=$(lsb_release -r 2>/dev/null | sed -e 's/.*:[\t ]*//' -e 's/\..*//')
-        [[ "$DISTRO" == "Ubuntu" ]] && [[ "$MAJOR" -ge 19 ]] && sudo apt install libsrt-dev
+        [[ "$DISTRO" == "Ubuntu" ]] && [[ "$MAJOR" -ge 19 ]] && sudo apt install libsrt-dev; true
     - name: Build TSDuck
       run: make -j5
     - name: Test tsversion
@@ -89,7 +89,7 @@ jobs:
         # libsrt is available on Ubuntu 19.x
         DISTRO=$(lsb_release -i 2>/dev/null | sed -e 's/.*:[\t ]*//')
         MAJOR=$(lsb_release -r 2>/dev/null | sed -e 's/.*:[\t ]*//' -e 's/\..*//')
-        [[ "$DISTRO" == "Ubuntu" ]] && [[ "$MAJOR" -ge 19 ]] && sudo apt install libsrt-dev
+        [[ "$DISTRO" == "Ubuntu" ]] && [[ "$MAJOR" -ge 19 ]] && sudo apt install libsrt-dev; true
     - name: Build TSDuck
       run: make -j5
     - name: Test tsversion
