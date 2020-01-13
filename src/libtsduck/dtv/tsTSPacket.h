@@ -847,6 +847,32 @@ namespace ts {
         static void Copy(uint8_t* dest, const TSPacket* source, size_t count = 1);
 
         //!
+        //! Locate contiguous TS packets into a buffer.
+        //!
+        //! This static method is typically used to locate useful packets in a UDP datagram.
+        //! Basically, we expect the message to contain only TS packets. However, we
+        //! also face the following situations:
+        //! - Presence of a header preceeding the first TS packet (typically when the
+        //!   TS packets are encapsulated in RTP).
+        //! - Presence of a truncated packet at the end of message.
+        //!
+        //! To face the first situation, we look backward from the end of the message,
+        //! looking for a 0x47 sync byte every 188 bytes, going backward.
+        //!
+        //! If no TS packet is found using the first method, we restart from
+        //! the beginning of the message, looking for a 0x47 sync byte every
+        //! 188 bytes, going forward. If we find this pattern, followed by
+        //! less than 188 bytes, then we have found a sequence of TS packets.
+        //!
+        //! @param [in] buffer Address of a message buffer containing TS packets.
+        //! @param [in] buffer_size Size in bytes of the buffer.
+        //! @param [out] start_index Start index in bytes of the first TS packet in the buffer.
+        //! @param [out] packet_count Number of TS packets in the buffer.
+        //! @return True if at least one packet was found, false if there is no packet in the buffer.
+        //!
+        static bool Locate(const uint8_t* buffer, size_t buffer_size, size_t& start_index, size_t& packet_count);
+
+        //!
         //! Sanity check routine.
         //! Ensure that the TSPacket structure can
         //! be used in contiguous memory array and array of packets.
