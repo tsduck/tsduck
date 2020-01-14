@@ -44,7 +44,13 @@
 #endif
 
 #if !defined(TS_NOSRT)
+
+// The srtlib header contains errors.
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(documentation)
+TS_LLVM_NOWARNING(old-style-cast)
 #include <srt/srt.h>
+TS_POP_WARNING()
 
 namespace ts {
     //!

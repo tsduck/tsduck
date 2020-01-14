@@ -153,6 +153,7 @@ bool ts::SRTSocket::open(const ts::SocketAddress& addr, ts::Report& report)
             break;
         case RENDEZVOUS:
             /* TODO not supported for now */
+        case LEN:
         default:
             // Should not get here
             assert(0);
@@ -466,11 +467,11 @@ bool ts::SRTSocket::setSockOptPre(ts::Report& report)
         (_min_version > 0 && !setSockOpt(SRTO_MINVERSION, "SRTO_MINVERSION", &_min_version, sizeof(_min_version), report)) ||
         (_mss >= 0 && !setSockOpt(SRTO_MSS, "SRTO_MSS", &_mss, sizeof(_mss), report)) ||
         (_nakreport >= 0 && !setSockOpt(SRTO_NAKREPORT, "SRTO_NAKREPORT", &_nakreport, sizeof(_nakreport), report)) ||
-        #if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
-        (!_packet_filter.empty() && !setSockOpt(SRTO_PACKETFILTER, "SRTO_PACKETFILTER", _packet_filter.c_str(), _packet_filter.size(), report)) ||
+#if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
+        (!_packet_filter.empty() && !setSockOpt(SRTO_PACKETFILTER, "SRTO_PACKETFILTER", _packet_filter.c_str(), int(_packet_filter.size()), report)) ||
 #endif
-        (!_passphrase.empty() && !setSockOpt(SRTO_PASSPHRASE, "SRTO_PASSPHRASE", _passphrase.c_str(), _passphrase.size(), report)) ||
-        (!_streamid.empty() && !setSockOpt(SRTO_STREAMID, "SRTO_STREAMID", _streamid.c_str(), _streamid.size())) ||
+        (!_passphrase.empty() && !setSockOpt(SRTO_PASSPHRASE, "SRTO_PASSPHRASE", _passphrase.c_str(), int(_passphrase.size()), report)) ||
+        (!_streamid.empty() && !setSockOpt(SRTO_STREAMID, "SRTO_STREAMID", _streamid.c_str(), int(_streamid.size()))) ||
         (_payload_size > 0 && !setSockOpt(SRTO_PAYLOADSIZE, "SRTO_PAYLOADSIZE", &_payload_size, sizeof(_payload_size), report)) ||
         (_pbkeylen > 0 && !setSockOpt(SRTO_PBKEYLEN, "SRTO_PBKEYLEN", &_pbkeylen, sizeof(_pbkeylen), report)) ||
 #if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
@@ -575,7 +576,7 @@ bool ts::SRTSocket::send(const void* data, size_t size, ts::Report& report)
 
 bool ts::SRTSocket::send(const void* data, size_t size, const ts::SocketAddress& dest, ts::Report& report)
 {
-    int ret = srt_send(_sock, (char*)data, size);
+    int ret = srt_send(_sock, reinterpret_cast<const char*>(data), int(size));
     if (srt_getlasterror(nullptr) == SRT_EASYNCSND) {
         report.warning(u"not enough space to send data with size %d, msg: %s", { size, srt_getlasterror_str() });
         return true;
@@ -595,18 +596,20 @@ bool ts::SRTSocket::send(const void* data, size_t size, const ts::SocketAddress&
 
 bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, ts::Report& report)
 {
-    int ret = srt_recv(_sock, reinterpret_cast<char*>(data), max_size);
+    const int ret = srt_recv(_sock, reinterpret_cast<char*>(data), int(max_size));
     // For non-blocking mode only, if no data available yet
     if (srt_getlasterror(nullptr) == SRT_EASYNCRCV) {
         ret_size = 0;
         return true;
     }
-    if (ret < 0) {
+    else if (ret < 0) {
         report.error(u"error during srt_recv(), msg: %s", { srt_getlasterror_str() });
         return false;
     }
-    ret_size = ret;
-    return true;
+    else {
+        ret_size = size_t(ret);
+        return true;
+    }
 }
 
 #endif /* TS_NOSRT */
