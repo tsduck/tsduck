@@ -104,9 +104,9 @@ bool ts::SRTOutputPlugin::stop(void)
 bool ts::SRTOutputPlugin::send(const ts::TSPacket* pkt, const ts::TSPacketMetadata* pkt_data,
                                size_t packet_count)
 {
-    bool status;
+    bool status = false;
     size_t tmp = packet_count;
-    ts::TSPacket* tmp_pkt = (ts::TSPacket*)pkt;
+    const ts::TSPacket* tmp_pkt = pkt;
 
     while (tmp > 0) {
         size_t to_send = (_sock.getMessageApi() && tmp > MAX_PKT_MESSAGE_MODE) ? MAX_PKT_MESSAGE_MODE : tmp;
