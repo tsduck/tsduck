@@ -450,7 +450,7 @@ bool ts::SRTSocket::setSockOptPre(ts::Report& report)
 
     if ((_mode != SRTSocketMode::CALLER && !setSockOpt(SRTO_SENDER, "SRTO_SENDER", &yes, sizeof(yes), report)) ||
         (_transtype != SRTT_INVALID && !setSockOpt(SRTO_TRANSTYPE, "SRTO_TRANSTYPE", &_transtype, sizeof(_transtype), report)) ||
-        (_messageapi && !setSockOpt(SRTO_MESSAGEAPI, "SRTO_MESSAGEAPI", &msgapi, sizeof(msgapi), report)) ||
+        (!setSockOpt(SRTO_MESSAGEAPI, "SRTO_MESSAGEAPI", &msgapi, sizeof(msgapi), report)) ||
         (_conn_timeout >= 0 && !setSockOpt(SRTO_CONNTIMEO, "SRTO_CONNTIMEO", &_conn_timeout, sizeof(_conn_timeout), report)) ||
         (_ffs > 0 && !setSockOpt(SRTO_FC, "SRTO_FC", &_ffs, sizeof(_ffs), report)) ||
         (_iptos >= 0 && !setSockOpt(SRTO_IPTOS, "SRTO_IPTOS", &_iptos, sizeof(_iptos), report)) ||
