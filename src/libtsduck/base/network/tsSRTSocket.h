@@ -34,9 +34,18 @@
 
 #pragma once
 #include "tsSocketAddress.h"
+#include "tsUString.h"
 #include "tsIPUtils.h"
 #include "tsReport.h"
 #include "tsArgsSupplierInterface.h"
+
+namespace ts {
+    //!
+    //! Get the version of the SRT library.
+    //! @return A string describing the SRT library versions (or the lack of SRT support).
+    //!
+    TSDUCKDLL UString GetSRTVersion();
+}
 
 // Currently, we disable SRT on Windows.
 #if defined(TS_WINDOWS) && !defined(TS_NOSRT)

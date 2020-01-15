@@ -32,6 +32,7 @@
 #include "tsSysUtils.h"
 #include "tsDektecUtils.h"
 #include "tsWebRequest.h"
+#include "tsSRTSocket.h"
 TSDUCK_SOURCE;
 
 // Exported version of the TSDuck library.
@@ -49,6 +50,7 @@ const ts::Enumeration ts::VersionFormatEnum({
     {u"dektec",   ts::VERSION_DEKTEC},
     {u"http",     ts::VERSION_HTTP},
     {u"compiler", ts::VERSION_COMPILER},
+    {u"srt",      ts::VERSION_SRT},
     {u"all",      ts::VERSION_ALL},
 });
 
@@ -155,11 +157,16 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName)
         case VERSION_COMPILER: {
             return CompilerVersion();
         }
+        case VERSION_SRT: {
+            // The version of the SRT library.
+            return GetSRTVersion();
+        }
         case VERSION_ALL: {
             return GetVersion(VERSION_LONG, applicationName) + LINE_FEED +
                 u"Built " + GetVersion(VERSION_DATE) + LINE_FEED +
                 u"Using " + GetVersion(VERSION_COMPILER) + LINE_FEED +
                 u"Web library: " + GetVersion(VERSION_HTTP) + LINE_FEED +
+                u"SRT library: " + GetVersion(VERSION_SRT) + LINE_FEED +
                 u"Dektec: " + GetVersion(VERSION_DEKTEC);
         }
         default: {
