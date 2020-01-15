@@ -31,12 +31,26 @@
 #include "tsArgs.h"
 TSDUCK_SOURCE;
 
-#if !defined(TS_NOSRT)
+
+//----------------------------------------------------------------------------
+// Get the version of the SRT library.
+//----------------------------------------------------------------------------
+
+ts::UString ts::GetSRTVersion()
+{
+#if defined(TS_NOSRT)
+    return u"This version of TSDuck was compiled without SRT support";
+#else
+    return UString::Format(u"libsrt version %d.%d.%d", {SRT_VERSION_MAJOR, SRT_VERSION_MINOR, SRT_VERSION_PATCH});
+#endif
+}
 
 
 //----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
+
+#if !defined(TS_NOSRT)
 
 ts::SRTSocket::SRTSocket(SRTSocketMode mode, Report& report) :
     _default_address(),
