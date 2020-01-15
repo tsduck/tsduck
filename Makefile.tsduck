@@ -106,7 +106,7 @@ endif
 
 ifeq ($(MACOS)$(NOSRT),)
     # Not on macOS and SRT not disabled, check if libsrt is available.
-    NOSRT = $(if $(wildcard /usr/include/srt/*.h),,true)
+    NOSRT = $(if $(wildcard /usr/include/srt/*.h)$(wildcard /usr/local/include/srt/*.h),,true)
 endif
 
 ifneq ($(NOSRT),)
