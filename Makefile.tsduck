@@ -111,7 +111,6 @@ endif
 
 ifneq ($(NOSRT),)
     CFLAGS_INCLUDES += -DTS_NOSRT=1
-    export TSPLUGINS := $(filter-out tsplugin_srt, $(TSPLUGINS))
 else
     LDLIBS := -lsrt $(LDLIBS)
 endif

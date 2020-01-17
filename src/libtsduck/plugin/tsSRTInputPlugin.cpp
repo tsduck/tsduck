@@ -31,8 +31,6 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
-#if !defined(TS_NOSRT)
-
 
 //----------------------------------------------------------------------------
 // Input constructor
@@ -112,5 +110,3 @@ bool ts::SRTInputPlugin::receiveDatagram(void* buffer, size_t buffer_size, size_
 {
     return _sock.receive(buffer, buffer_size, ret_size, *tsp);
 }
-
-#endif /* TS_NOSRT */

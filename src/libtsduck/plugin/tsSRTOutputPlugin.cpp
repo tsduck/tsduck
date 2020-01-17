@@ -28,10 +28,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsSRTOutputPlugin.h"
-#include "tsSystemRandomGenerator.h"
 TSDUCK_SOURCE;
 
-#if !defined(TS_NOSRT)
+#define MAX_PKT_MESSAGE_MODE 7
 
 
 //----------------------------------------------------------------------------
@@ -99,26 +98,21 @@ bool ts::SRTOutputPlugin::stop(void)
 // Output method
 //----------------------------------------------------------------------------
 
-#define MAX_PKT_MESSAGE_MODE 7
-
-bool ts::SRTOutputPlugin::send(const ts::TSPacket* pkt, const ts::TSPacketMetadata* pkt_data,
-                               size_t packet_count)
+bool ts::SRTOutputPlugin::send(const ts::TSPacket* pkt, const ts::TSPacketMetadata* pkt_data, size_t packet_count)
 {
     bool status = false;
     size_t tmp = packet_count;
     const ts::TSPacket* tmp_pkt = pkt;
 
     while (tmp > 0) {
-        size_t to_send = (_sock.getMessageApi() && tmp > MAX_PKT_MESSAGE_MODE) ? MAX_PKT_MESSAGE_MODE : tmp;
-
+        const size_t to_send = (_sock.getMessageApi() && tmp > MAX_PKT_MESSAGE_MODE) ? MAX_PKT_MESSAGE_MODE : tmp;
         status = _sock.send(tmp_pkt, to_send * PKT_SIZE, *tsp);
-        if (!status)
+        if (!status) {
             break;
+        }
         tmp -= to_send;
         tmp_pkt += to_send;
         _pkt_count += to_send;
     }
     return status;
 }
-
-#endif /* TS_NOSRT */
