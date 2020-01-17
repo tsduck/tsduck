@@ -57,10 +57,8 @@ ifdef TS_MAC
     endif
 else
     TS_INCLUDES += -I/usr/include/PCSC -I$(TS_INCLUDE_DIR)
-    ifeq ($(wildcard /usr/include/srt/*.h)$(wildcard /usr/local/include/srt/*.h),)
-        CFLAGS += -DTS_NOSRT=1
-    else
-       LDLIBS += -lsrt
+    ifneq ($(wildcard /usr/include/srt/*.h)$(wildcard /usr/local/include/srt/*.h),)
+        LDLIBS += -lsrt
     endif
     LDLIBS += $(if $(TS_STATIC),-ltsduck,/usr/bin/tsduck.so) $(LDLIBS_CURL) -lpcsclite -lpthread -lrt -ldl -lm -lstdc++
     ifndef TS_STATIC

@@ -37,8 +37,5 @@
 TSDUCK_SOURCE;
 
 TSPLUGIN_DECLARE_VERSION
-
-#if !defined(TS_NOSRT)
 TSPLUGIN_DECLARE_INPUT(srt, ts::SRTInputPlugin)
 TSPLUGIN_DECLARE_OUTPUT(srt, ts::SRTOutputPlugin)
-#endif

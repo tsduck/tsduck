@@ -41,29 +41,7 @@
 
 namespace ts {
     //!
-    //! Get the version of the SRT library.
-    //! @return A string describing the SRT library versions (or the lack of SRT support).
-    //!
-    TSDUCKDLL UString GetSRTVersion();
-}
-
-// Currently, we disable SRT on Windows.
-#if defined(TS_WINDOWS) && !defined(TS_NOSRT)
-#define TS_NOSRT 1
-#endif
-
-#if !defined(TS_NOSRT)
-
-// The srtlib header contains errors.
-TS_PUSH_WARNING()
-TS_LLVM_NOWARNING(documentation)
-TS_LLVM_NOWARNING(old-style-cast)
-#include <srt/srt.h>
-TS_POP_WARNING()
-
-namespace ts {
-    //!
-    //! SRT socket mode
+    //! Secure Reliable Transport (SRT) socket mode
     //!
     enum SRTSocketMode: int {
         LISTENER   = 0,  //!< Listener mode.
@@ -74,6 +52,8 @@ namespace ts {
 
     //!
     //! Secure Reliable Transport (SRT) Socket.
+    //! If the libsrt is not available during compilation of this class,
+    //! all methods will fail with an error status.
     //! @see https://github.com/Haivision/srt
     //! @see https://www.srtalliance.org/
     //! @ingroup net
@@ -92,7 +72,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~SRTSocket(void);
+        ~SRTSocket();
 
         //!
         //! Open the socket.
@@ -134,14 +114,16 @@ namespace ts {
 
         //!
         //! Get SRT option.
-        //! @param [in] optName Option name as enumeration.
+        //! @param [in] optName Option name as enumeration. The possible values for @a optName are given
+        //! by the enumeration type SRT_SOCKOPT in libsrt. The profile of this method uses "int" to remain
+        //! portable in the absence of libsrt, but the actual values come from SRT_SOCKOPT in libsrt.
         //! @param [in] optNameStr Option name as ASCII string.
         //! @param [out] optval Address of returned value.
         //! @param [in,out] optlen Size of returned buffer (input), updated to size of returned value.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool getSockOpt(SRT_SOCKOPT optName, const char* optNameStr, void* optval, int& optlen, Report& report = CERR) const;
+        bool getSockOpt(int optName, const char* optNameStr, void* optval, int& optlen, Report& report = CERR) const;
 
         //!
         //! Get the underlying socket device handle (use with care).
@@ -149,65 +131,23 @@ namespace ts {
         //! not be used by normal applications.
         //! @return The underlying socket system device handle or file descriptor.
         //!
-        int getSocket() const { return _sock; }
+        int getSocket() const;
 
         //!
         //! Check if the SRT socket uses the Message API.
         //! @return True if the SRT socket uses the Message API. False if it uses the buffer API.
         //!
-        bool getMessageApi() const { return _messageapi; }
+        bool getMessageApi() const;
+
+        //!
+        //! Get the version of the SRT library.
+        //! @return A string describing the SRT library versions (or the lack of SRT support).
+        //!
+        static UString GetLibraryVersion();
 
     private:
-        bool send(const void* data, size_t size, const SocketAddress& dest, Report& report);
-
-        bool setDefaultAddress(const UString& name, Report& report = CERR);
-        bool setDefaultAddress(const SocketAddress& addr, Report& report = CERR);
-
-        bool setSockOpt(SRT_SOCKOPT optName, const char* optNameStr, const void* optval, int optlen, Report& report = CERR);
-        bool setSockOptPre(Report& report);
-        bool setSockOptPost(Report& report);
-
-        int srtListen(const SocketAddress& addr, Report& report);
-        int srtConnect(const SocketAddress& addr, Report& report);
-
-        SocketAddress _default_address;
-        SRTSocketMode _mode;
-        int _sock;
-
-        // Sock options
-        SRT_TRANSTYPE _transtype;
-        std::string _packet_filter;
-        std::string _passphrase;
-        std::string _streamid;
-        int _polling_time;
-        bool _messageapi;
-        bool _nakreport;
-        int _conn_timeout;
-        int _ffs;
-        int _linger;
-        int _lossmaxttl;
-        int _mss;
-        int _ohead_bw;
-        int _payload_size;
-        int _rcvbuf;
-        int _sndbuf;
-        bool _enforce_encryption;
-        int32_t _kmrefreshrate;
-        int32_t _kmpreannounce;
-        int _udp_rcvbuf;
-        int _udp_sndbuf;
-        int64_t _input_bw;
-        int64_t _max_bw;
-        int32_t _iptos;
-        int32_t _ipttl;
-        int32_t _latency;
-        int32_t _min_version;
-        int32_t _pbkeylen;
-        int32_t _peer_idle_timeout;
-        int32_t _peer_latency;
-        int32_t _rcv_latency;
-        bool _tlpktdrop;
+        // The actual implementation is private to the body of the class.
+        class Guts;
+        Guts* _guts;
     };
 }
-
-#endif /* TS_NOSRT */

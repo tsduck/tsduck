@@ -36,8 +36,6 @@
 #include "tsAbstractDatagramInputPlugin.h"
 #include "tsSRTSocket.h"
 
-#if !defined(TS_NOSRT)
-
 namespace ts {
     //!
     //! Secure Reliable Transport (SRT) input plugin for tsp.
@@ -68,5 +66,3 @@ namespace ts {
         SocketAddress _bind_addr;
     };
 }
-
-#endif /* TS_NOSRT */

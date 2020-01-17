@@ -159,7 +159,7 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName)
         }
         case VERSION_SRT: {
             // The version of the SRT library.
-            return GetSRTVersion();
+            return SRTSocket::GetLibraryVersion();
         }
         case VERSION_ALL: {
             return GetVersion(VERSION_LONG, applicationName) + LINE_FEED +

@@ -36,8 +36,6 @@
 #include "tsPlugin.h"
 #include "tsSRTSocket.h"
 
-#if !defined(TS_NOSRT)
-
 namespace ts {
     //!
     //! Secure Reliable Transport (SRT) output plugin for tsp.
@@ -66,5 +64,3 @@ namespace ts {
         SRTSocket     _sock;
     };
 }
-
-#endif /* TS_NOSRT */

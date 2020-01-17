@@ -126,3 +126,7 @@ UML_LOOK               = NO
 DOT_GRAPH_MAX_NODES    = 200
 HAVE_DOT               = $(HAVE_DOT)
 DOT_PATH               = $(DOT_PATH)
+
+# Symbols which cannot easily be avoided in the code:
+
+EXCLUDE_SYMBOLS        = TS_UNIQUE_NAME1, TS_UNIQUE_NAME2
