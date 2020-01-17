@@ -149,9 +149,10 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@master
+    - name: Install libsrt
+      run: build/install-libsrt.ps1 -NoPause
     - name: Install Dektec SDK
-      run: |
-        dektec/Download-Install-Dtapi.ps1 -NoPause
+      run: dektec/Download-Install-Dtapi.ps1 -NoPause
     - name: Build TSDuck
       run: build/Build.ps1 -Win64 -Release -Parallel 5 -NoLowPriority -NoPause
     - name: Test tsversion
@@ -181,9 +182,10 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@master
+    - name: Install libsrt
+      run: build/install-libsrt.ps1 -NoPause
     - name: Install Dektec SDK
-      run: |
-        dektec/Download-Install-Dtapi.ps1 -NoPause
+      run: dektec/Download-Install-Dtapi.ps1 -NoPause
     - name: Build TSDuck
       run: build/Build.ps1 -Win32 -Release -Parallel 5 -NoLowPriority -NoPause
     - name: Test tsversion

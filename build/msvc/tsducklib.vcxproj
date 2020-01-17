@@ -23,6 +23,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-target-lib.props" />
     <Import Project="msvc-use-dtapi.props" />
+    <Import Project="msvc-disable-srt.props" />
   </ImportGroup>
 
   <ItemDefinitionGroup>
