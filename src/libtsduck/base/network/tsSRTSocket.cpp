@@ -305,43 +305,43 @@ public:
      int srtConnect(const SocketAddress& addr, Report& report);
 
      // Socket working data.
-     SocketAddress _default_address;
-     SRTSocketMode _mode;
-     int           _sock;
+     SocketAddress default_address;
+     SRTSocketMode mode;
+     int           sock;
 
      // Socket options.
-     SRT_TRANSTYPE _transtype;
-     std::string   _packet_filter;
-     std::string   _passphrase;
-     std::string   _streamid;
-     int     _polling_time;
-     bool    _messageapi;
-     bool    _nakreport;
-     int     _conn_timeout;
-     int     _ffs;
-     int     _linger;
-     int     _lossmaxttl;
-     int     _mss;
-     int     _ohead_bw;
-     int     _payload_size;
-     int     _rcvbuf;
-     int     _sndbuf;
-     bool    _enforce_encryption;
-     int32_t _kmrefreshrate;
-     int32_t _kmpreannounce;
-     int     _udp_rcvbuf;
-     int     _udp_sndbuf;
-     int64_t _input_bw;
-     int64_t _max_bw;
-     int32_t _iptos;
-     int32_t _ipttl;
-     int32_t _latency;
-     int32_t _min_version;
-     int32_t _pbkeylen;
-     int32_t _peer_idle_timeout;
-     int32_t _peer_latency;
-     int32_t _rcv_latency;
-     bool    _tlpktdrop;
+     SRT_TRANSTYPE transtype;
+     std::string   packet_filter;
+     std::string   passphrase;
+     std::string   streamid;
+     int     polling_time;
+     bool    messageapi;
+     bool    nakreport;
+     int     conn_timeout;
+     int     ffs;
+     int     linger;
+     int     lossmaxttl;
+     int     mss;
+     int     ohead_bw;
+     int     payload_size;
+     int     rcvbuf;
+     int     sndbuf;
+     bool    enforce_encryption;
+     int32_t kmrefreshrate;
+     int32_t kmpreannounce;
+     int     udp_rcvbuf;
+     int     udp_sndbuf;
+     int64_t input_bw;
+     int64_t max_bw;
+     int32_t iptos;
+     int32_t ipttl;
+     int32_t latency;
+     int32_t min_version;
+     int32_t pbkeylen;
+     int32_t peer_idle_timeout;
+     int32_t peer_latency;
+     int32_t rcv_latency;
+     bool    tlpktdrop;
 };
 
 
@@ -349,42 +349,42 @@ public:
 // Guts constructor.
 //----------------------------------------------------------------------------
 
-ts::SRTSocket::Guts::Guts(SRTSocketMode mode) :
-    _default_address(),
-    _mode(mode),
-    _sock(TS_SOCKET_T_INVALID),
-    _transtype(SRTT_INVALID),
-    _packet_filter(),
-    _passphrase(),
-    _streamid(),
-    _polling_time(-1),
-    _messageapi(false),
-    _nakreport(false),
-    _conn_timeout(-1),
-    _ffs(-1),
-    _linger(-1),
-    _lossmaxttl(-1),
-    _mss(-1),
-    _ohead_bw(-1),
-    _payload_size(-1),
-    _rcvbuf(-1),
-    _sndbuf(-1),
-    _enforce_encryption(false),
-    _kmrefreshrate(-1),
-    _kmpreannounce(-1),
-    _udp_rcvbuf(-1),
-    _udp_sndbuf(-1),
-    _input_bw(-1),
-    _max_bw(-1),
-    _iptos(-1),
-    _ipttl(-1),
-    _latency(-1),
-    _min_version(-1),
-    _pbkeylen(-1),
-    _peer_idle_timeout(-1),
-    _peer_latency(-1),
-    _rcv_latency(-1),
-    _tlpktdrop(false)
+ts::SRTSocket::Guts::Guts(SRTSocketMode mode_) :
+    default_address(),
+    mode(mode_),
+    sock(TS_SOCKET_T_INVALID),
+    transtype(SRTT_INVALID),
+    packet_filter(),
+    passphrase(),
+    streamid(),
+    polling_time(-1),
+    messageapi(false),
+    nakreport(false),
+    conn_timeout(-1),
+    ffs(-1),
+    linger(-1),
+    lossmaxttl(-1),
+    mss(-1),
+    ohead_bw(-1),
+    payload_size(-1),
+    rcvbuf(-1),
+    sndbuf(-1),
+    enforce_encryption(false),
+    kmrefreshrate(-1),
+    kmpreannounce(-1),
+    udp_rcvbuf(-1),
+    udp_sndbuf(-1),
+    input_bw(-1),
+    max_bw(-1),
+    iptos(-1),
+    ipttl(-1),
+    latency(-1),
+    min_version(-1),
+    pbkeylen(-1),
+    peer_idle_timeout(-1),
+    peer_latency(-1),
+    rcv_latency(-1),
+    tlpktdrop(false)
 {
 }
 
@@ -422,12 +422,12 @@ ts::SRTSocket::~SRTSocket(void)
 
 int ts::SRTSocket::getSocket() const
 {
-    return _guts->_sock;
+    return _guts->sock;
 }
 
 bool ts::SRTSocket::getMessageApi() const
 {
-    return _guts->_messageapi;
+    return _guts->messageapi;
 }
 
 
@@ -454,7 +454,7 @@ bool ts::SRTSocket::Guts::setDefaultAddress(const ts::SocketAddress& addr, ts::R
         return false;
     }
     else {
-        _default_address = addr;
+        default_address = addr;
         return true;
     }
 }
@@ -472,8 +472,8 @@ bool ts::SRTSocket::open(const ts::SocketAddress& addr, ts::Report& report)
     addr.copy(sock_addr);
 
     // Only supports IPv4.
-    _guts->_sock = srt_socket(AF_INET, SOCK_DGRAM, 0);
-    if (_guts->_sock < 0) {
+    _guts->sock = srt_socket(AF_INET, SOCK_DGRAM, 0);
+    if (_guts->sock < 0) {
         report.error(u"error during srt_socket(), msg: %s", { srt_getlasterror_str() });
         return false;
     }
@@ -482,13 +482,13 @@ bool ts::SRTSocket::open(const ts::SocketAddress& addr, ts::Report& report)
         goto fail;
     }
 
-    switch (_guts->_mode) {
+    switch (_guts->mode) {
         case LISTENER:
             ret = _guts->srtListen(addr, report);
             if (ret < 0) {
                 goto fail;
             }
-            _guts->_sock = ret;
+            _guts->sock = ret;
             break;
         case CALLER:
             ret = _guts->srtConnect(addr, report);
@@ -522,9 +522,9 @@ fail:
 
 bool ts::SRTSocket::close(ts::Report& report)
 {
-    if (_guts->_sock >= 0) {
-        srt_close(_guts->_sock);
-        _guts->_sock = TS_SOCKET_T_INVALID;
+    if (_guts->sock >= 0) {
+        srt_close(_guts->sock);
+        _guts->sock = TS_SOCKET_T_INVALID;
     }
     return true;
 }
@@ -541,38 +541,38 @@ bool ts::SRTSocket::loadArgs(ts::DuckContext& duck, ts::Args& args)
         return false;
     }
 
-    _guts->_transtype = (ttype == u"live") ? SRTT_LIVE : SRTT_FILE;
-    _guts->_nakreport = args.present(u"nakreport");
-    _guts->_conn_timeout = args.intValue<int>(u"conn-timeout", -1);
-    _guts->_messageapi = args.present(u"messageapi");
-    _guts->_ffs = args.intValue<int>(u"ffs", -1);
-    _guts->_input_bw = args.intValue<int64_t>(u"input-bw", -1);
-    _guts->_iptos = args.intValue<int32_t>(u"iptos", -1);
-    _guts->_ipttl = args.intValue<int32_t>(u"ipttl", -1);
-    _guts->_enforce_encryption = args.present(u"enforce-encryption");
-    _guts->_kmrefreshrate = args.intValue<int32_t>(u"kmrefreshrate", -1);
-    _guts->_kmpreannounce = args.intValue<int32_t>(u"kmpreannounce", -1);
-    _guts->_latency = args.intValue<int32_t>(u"latency", -1);
-    _guts->_linger = args.intValue<int>(u"linger", -1);
-    _guts->_lossmaxttl = args.intValue<int>(u"lossmaxttl", -1);
-    _guts->_max_bw = args.intValue<int64_t>(u"max-bw", -1);
-    _guts->_min_version = args.intValue<int32_t>(u"min-version", -1);
-    _guts->_mss = args.intValue<int>(u"mss", -1);
-    _guts->_ohead_bw = args.intValue<int>(u"ohead-bw", -1);
-    _guts->_streamid = args.value(u"streamid").toUTF8();
-    _guts->_packet_filter = args.value(u"packet-filter").toUTF8();
-    _guts->_passphrase = args.value(u"passphrase").toUTF8();
-    _guts->_payload_size = args.intValue<int>(u"payload-size", -1);
-    _guts->_pbkeylen = args.intValue<int32_t>(u"pbkeylen", -1);
-    _guts->_peer_idle_timeout = args.intValue<int32_t>(u"peer-idle-timeout", -1);
-    _guts->_peer_latency = args.intValue<int32_t>(u"peer-latency", -1);
-    _guts->_rcvbuf = args.intValue<int>(u"rcvbuf", -1);
-    _guts->_rcv_latency = args.intValue<int32_t>(u"rcv-latency", -1);
-    _guts->_polling_time = args.intValue<int>(u"polling-time", DEFAULT_POLLING_TIME);
-    _guts->_sndbuf = args.intValue<int>(u"sndbuf", -1);
-    _guts->_tlpktdrop = args.present(u"tlpktdrop");
-    _guts->_udp_rcvbuf = args.intValue<int>(u"udp-rcvbuf", -1);
-    _guts->_udp_sndbuf = args.intValue<int>(u"udp-sndbuf", -1);
+    _guts->transtype = (ttype == u"live") ? SRTT_LIVE : SRTT_FILE;
+    _guts->nakreport = args.present(u"nakreport");
+    _guts->conn_timeout = args.intValue<int>(u"conn-timeout", -1);
+    _guts->messageapi = args.present(u"messageapi");
+    _guts->ffs = args.intValue<int>(u"ffs", -1);
+    _guts->input_bw = args.intValue<int64_t>(u"input-bw", -1);
+    _guts->iptos = args.intValue<int32_t>(u"iptos", -1);
+    _guts->ipttl = args.intValue<int32_t>(u"ipttl", -1);
+    _guts->enforce_encryption = args.present(u"enforce-encryption");
+    _guts->kmrefreshrate = args.intValue<int32_t>(u"kmrefreshrate", -1);
+    _guts->kmpreannounce = args.intValue<int32_t>(u"kmpreannounce", -1);
+    _guts->latency = args.intValue<int32_t>(u"latency", -1);
+    _guts->linger = args.intValue<int>(u"linger", -1);
+    _guts->lossmaxttl = args.intValue<int>(u"lossmaxttl", -1);
+    _guts->max_bw = args.intValue<int64_t>(u"max-bw", -1);
+    _guts->min_version = args.intValue<int32_t>(u"min-version", -1);
+    _guts->mss = args.intValue<int>(u"mss", -1);
+    _guts->ohead_bw = args.intValue<int>(u"ohead-bw", -1);
+    _guts->streamid = args.value(u"streamid").toUTF8();
+    _guts->packet_filter = args.value(u"packet-filter").toUTF8();
+    _guts->passphrase = args.value(u"passphrase").toUTF8();
+    _guts->payload_size = args.intValue<int>(u"payload-size", -1);
+    _guts->pbkeylen = args.intValue<int32_t>(u"pbkeylen", -1);
+    _guts->peer_idle_timeout = args.intValue<int32_t>(u"peer-idle-timeout", -1);
+    _guts->peer_latency = args.intValue<int32_t>(u"peer-latency", -1);
+    _guts->rcvbuf = args.intValue<int>(u"rcvbuf", -1);
+    _guts->rcv_latency = args.intValue<int32_t>(u"rcv-latency", -1);
+    _guts->polling_time = args.intValue<int>(u"polling-time", DEFAULT_POLLING_TIME);
+    _guts->sndbuf = args.intValue<int>(u"sndbuf", -1);
+    _guts->tlpktdrop = args.present(u"tlpktdrop");
+    _guts->udp_rcvbuf = args.intValue<int>(u"udp-rcvbuf", -1);
+    _guts->udp_sndbuf = args.intValue<int>(u"udp-sndbuf", -1);
 
     return true;
 }
@@ -584,7 +584,7 @@ bool ts::SRTSocket::loadArgs(ts::DuckContext& duck, ts::Args& args)
 
 bool ts::SRTSocket::Guts::setSockOpt(int optName, const char* optNameStr, const void* optval, int optlen, ts::Report& report)
 {
-    int ret = srt_setsockflag(_sock, SRT_SOCKOPT(optName), optval, optlen);
+    int ret = srt_setsockflag(sock, SRT_SOCKOPT(optName), optval, optlen);
     if (ret < 0) {
         report.error(u"error during srt_setsockflag(%s), msg: %s", { optNameStr, srt_getlasterror_str() });
         return false;
@@ -594,7 +594,7 @@ bool ts::SRTSocket::Guts::setSockOpt(int optName, const char* optNameStr, const 
 
 bool ts::SRTSocket::getSockOpt(int optName, const char* optNameStr, void* optval, int& optlen, ts::Report& report) const
 {
-    int ret = srt_getsockflag(_guts->_sock, SRT_SOCKOPT(optName), optval, &optlen);
+    int ret = srt_getsockflag(_guts->sock, SRT_SOCKOPT(optName), optval, &optlen);
     if (ret < 0) {
         report.error(u"error during srt_getsockflag(%s), msg: %s", { optNameStr, srt_getlasterror_str() });
         return false;
@@ -605,64 +605,64 @@ bool ts::SRTSocket::getSockOpt(int optName, const char* optNameStr, void* optval
 bool ts::SRTSocket::Guts::setSockOptPre(ts::Report& report)
 {
     const int yes     = 1;
-    const int msgapi  = _messageapi ? 1 : 0;
-    const int encrypt = _enforce_encryption ? 1 : 0;
-    const int nakrep  = _nakreport ? 1 : 0;
-    const int pktdrop = _tlpktdrop ? 1 : 0;
+    const int msgapi  = messageapi ? 1 : 0;
+    const int encrypt = enforce_encryption ? 1 : 0;
+    const int nakrep  = nakreport ? 1 : 0;
+    const int pktdrop = tlpktdrop ? 1 : 0;
 
-    if ((_mode != SRTSocketMode::CALLER && !setSockOpt(SRTO_SENDER, "SRTO_SENDER", &yes, sizeof(yes), report)) ||
-        (_transtype != SRTT_INVALID && !setSockOpt(SRTO_TRANSTYPE, "SRTO_TRANSTYPE", &_transtype, sizeof(_transtype), report)) ||
+    if ((mode != SRTSocketMode::CALLER && !setSockOpt(SRTO_SENDER, "SRTO_SENDER", &yes, sizeof(yes), report)) ||
+        (transtype != SRTT_INVALID && !setSockOpt(SRTO_TRANSTYPE, "SRTO_TRANSTYPE", &transtype, sizeof(transtype), report)) ||
         (!setSockOpt(SRTO_MESSAGEAPI, "SRTO_MESSAGEAPI", &msgapi, sizeof(msgapi), report)) ||
-        (_conn_timeout >= 0 && !setSockOpt(SRTO_CONNTIMEO, "SRTO_CONNTIMEO", &_conn_timeout, sizeof(_conn_timeout), report)) ||
-        (_ffs > 0 && !setSockOpt(SRTO_FC, "SRTO_FC", &_ffs, sizeof(_ffs), report)) ||
-        (_iptos >= 0 && !setSockOpt(SRTO_IPTOS, "SRTO_IPTOS", &_iptos, sizeof(_iptos), report)) ||
-        (_ipttl > 0 && !setSockOpt(SRTO_IPTTL, "SRTO_IPTTL", &_ipttl, sizeof(_ipttl), report)) ||
+        (conn_timeout >= 0 && !setSockOpt(SRTO_CONNTIMEO, "SRTO_CONNTIMEO", &conn_timeout, sizeof(conn_timeout), report)) ||
+        (ffs > 0 && !setSockOpt(SRTO_FC, "SRTO_FC", &ffs, sizeof(ffs), report)) ||
+        (iptos >= 0 && !setSockOpt(SRTO_IPTOS, "SRTO_IPTOS", &iptos, sizeof(iptos), report)) ||
+        (ipttl > 0 && !setSockOpt(SRTO_IPTTL, "SRTO_IPTTL", &ipttl, sizeof(ipttl), report)) ||
 #if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
-        (_enforce_encryption && !setSockOpt(SRTO_ENFORCEDENCRYPTION, "SRTO_ENFORCEDENCRYPTION", &encrypt, sizeof(encrypt), report)) ||
+        (enforce_encryption && !setSockOpt(SRTO_ENFORCEDENCRYPTION, "SRTO_ENFORCEDENCRYPTION", &encrypt, sizeof(encrypt), report)) ||
 #endif
-        (_kmrefreshrate >= 0 && !setSockOpt(SRTO_KMREFRESHRATE, "SRTO_KMREFRESHRATE", &_kmrefreshrate, sizeof(_kmrefreshrate), report)) ||
-        (_kmpreannounce > 0 && !setSockOpt(SRTO_KMPREANNOUNCE, "SRTO_KMPREANNOUNCE", &_kmpreannounce, sizeof(_kmpreannounce), report)) ||
-        (_latency > 0 && !setSockOpt(SRTO_LATENCY, "SRTO_LATENCY", &_latency, sizeof(_latency), report)) ||
-        (_linger >= 0 && !setSockOpt(SRTO_LINGER, "SRTO_LINGER", &_linger, sizeof(_linger), report)) ||
-        (_lossmaxttl >= 0 && !setSockOpt(SRTO_LOSSMAXTTL, "SRTO_LOSSMAXTTL", &_lossmaxttl, sizeof(_lossmaxttl), report)) ||
-        (_max_bw >= 0 && !setSockOpt(SRTO_MAXBW, "SRTO_MAXBW", &_max_bw, sizeof(_max_bw), report)) ||
-        (_min_version > 0 && !setSockOpt(SRTO_MINVERSION, "SRTO_MINVERSION", &_min_version, sizeof(_min_version), report)) ||
-        (_mss >= 0 && !setSockOpt(SRTO_MSS, "SRTO_MSS", &_mss, sizeof(_mss), report)) ||
-        (_nakreport && !setSockOpt(SRTO_NAKREPORT, "SRTO_NAKREPORT", &nakrep, sizeof(nakrep), report)) ||
+        (kmrefreshrate >= 0 && !setSockOpt(SRTO_KMREFRESHRATE, "SRTO_KMREFRESHRATE", &kmrefreshrate, sizeof(kmrefreshrate), report)) ||
+        (kmpreannounce > 0 && !setSockOpt(SRTO_KMPREANNOUNCE, "SRTO_KMPREANNOUNCE", &kmpreannounce, sizeof(kmpreannounce), report)) ||
+        (latency > 0 && !setSockOpt(SRTO_LATENCY, "SRTO_LATENCY", &latency, sizeof(latency), report)) ||
+        (linger >= 0 && !setSockOpt(SRTO_LINGER, "SRTO_LINGER", &linger, sizeof(linger), report)) ||
+        (lossmaxttl >= 0 && !setSockOpt(SRTO_LOSSMAXTTL, "SRTO_LOSSMAXTTL", &lossmaxttl, sizeof(lossmaxttl), report)) ||
+        (max_bw >= 0 && !setSockOpt(SRTO_MAXBW, "SRTO_MAXBW", &max_bw, sizeof(max_bw), report)) ||
+        (min_version > 0 && !setSockOpt(SRTO_MINVERSION, "SRTO_MINVERSION", &min_version, sizeof(min_version), report)) ||
+        (mss >= 0 && !setSockOpt(SRTO_MSS, "SRTO_MSS", &mss, sizeof(mss), report)) ||
+        (nakreport && !setSockOpt(SRTO_NAKREPORT, "SRTO_NAKREPORT", &nakrep, sizeof(nakrep), report)) ||
 #if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
-        (!_packet_filter.empty() && !setSockOpt(SRTO_PACKETFILTER, "SRTO_PACKETFILTER", _packet_filter.c_str(), int(_packet_filter.size()), report)) ||
+        (!packet_filter.empty() && !setSockOpt(SRTO_PACKETFILTER, "SRTO_PACKETFILTER", packet_filter.c_str(), int(packet_filter.size()), report)) ||
 #endif
-        (!_passphrase.empty() && !setSockOpt(SRTO_PASSPHRASE, "SRTO_PASSPHRASE", _passphrase.c_str(), int(_passphrase.size()), report)) ||
-        (!_streamid.empty() && !setSockOpt(SRTO_STREAMID, "SRTO_STREAMID", _streamid.c_str(), int(_streamid.size()), report)) ||
-        (_payload_size > 0 && !setSockOpt(SRTO_PAYLOADSIZE, "SRTO_PAYLOADSIZE", &_payload_size, sizeof(_payload_size), report)) ||
-        (_pbkeylen > 0 && !setSockOpt(SRTO_PBKEYLEN, "SRTO_PBKEYLEN", &_pbkeylen, sizeof(_pbkeylen), report)) ||
+        (!passphrase.empty() && !setSockOpt(SRTO_PASSPHRASE, "SRTO_PASSPHRASE", passphrase.c_str(), int(passphrase.size()), report)) ||
+        (!streamid.empty() && !setSockOpt(SRTO_STREAMID, "SRTO_STREAMID", streamid.c_str(), int(streamid.size()), report)) ||
+        (payload_size > 0 && !setSockOpt(SRTO_PAYLOADSIZE, "SRTO_PAYLOADSIZE", &payload_size, sizeof(payload_size), report)) ||
+        (pbkeylen > 0 && !setSockOpt(SRTO_PBKEYLEN, "SRTO_PBKEYLEN", &pbkeylen, sizeof(pbkeylen), report)) ||
 #if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
-        (_peer_idle_timeout > 0 && !setSockOpt(SRTO_PEERIDLETIMEO, "SRTO_PEERIDLETIMEO", &_peer_idle_timeout, sizeof(_peer_idle_timeout), report)) ||
+        (peer_idle_timeout > 0 && !setSockOpt(SRTO_PEERIDLETIMEO, "SRTO_PEERIDLETIMEO", &peer_idle_timeout, sizeof(peer_idle_timeout), report)) ||
 #endif
-        (_peer_latency > 0 && !setSockOpt(SRTO_PEERLATENCY, "SRTO_PEERLATENCY", &_peer_latency, sizeof(_peer_latency), report)) ||
-        (_rcvbuf > 0 && !setSockOpt(SRTO_RCVBUF, "SRTO_RCVBUF", &_rcvbuf, sizeof(_rcvbuf), report)) ||
-        (_rcv_latency > 0 && !setSockOpt(SRTO_RCVLATENCY, "SRTO_RCVLATENCY", &_rcv_latency, sizeof(_rcv_latency), report)) ||
-        (_sndbuf > 0 && !setSockOpt(SRTO_SNDBUF, "SRTO_SNDBUF", &_sndbuf, sizeof(_sndbuf), report)) ||
-        (_tlpktdrop && !setSockOpt(SRTO_TLPKTDROP, "SRTO_TLPKTDROP", &pktdrop, sizeof(pktdrop), report)))
+        (peer_latency > 0 && !setSockOpt(SRTO_PEERLATENCY, "SRTO_PEERLATENCY", &peer_latency, sizeof(peer_latency), report)) ||
+        (rcvbuf > 0 && !setSockOpt(SRTO_RCVBUF, "SRTO_RCVBUF", &rcvbuf, sizeof(rcvbuf), report)) ||
+        (rcv_latency > 0 && !setSockOpt(SRTO_RCVLATENCY, "SRTO_RCVLATENCY", &rcv_latency, sizeof(rcv_latency), report)) ||
+        (sndbuf > 0 && !setSockOpt(SRTO_SNDBUF, "SRTO_SNDBUF", &sndbuf, sizeof(sndbuf), report)) ||
+        (tlpktdrop && !setSockOpt(SRTO_TLPKTDROP, "SRTO_TLPKTDROP", &pktdrop, sizeof(pktdrop), report)))
     {
         return false;
     }
 
     // In case of error here, use system default
-    if (_udp_rcvbuf > 0) {
-        setSockOpt(SRTO_UDP_RCVBUF, "SRTO_UDP_RCVBUF", &_udp_rcvbuf, sizeof(_udp_rcvbuf), report);
+    if (udp_rcvbuf > 0) {
+        setSockOpt(SRTO_UDP_RCVBUF, "SRTO_UDP_RCVBUF", &udp_rcvbuf, sizeof(udp_rcvbuf), report);
     }
-    if (_udp_sndbuf > 0) {
-        setSockOpt(SRTO_UDP_SNDBUF, "SRTO_UDP_SNDBUF", &_udp_sndbuf, sizeof(_udp_sndbuf), report);
+    if (udp_sndbuf > 0) {
+        setSockOpt(SRTO_UDP_SNDBUF, "SRTO_UDP_SNDBUF", &udp_sndbuf, sizeof(udp_sndbuf), report);
     }
     return true;
 }
 
 bool ts::SRTSocket::Guts::setSockOptPost(ts::Report& report)
 {
-    if (_max_bw == 0 && (
-        (_input_bw >= 0 && !setSockOpt(SRTO_INPUTBW, "SRTO_INPUTBW", &_input_bw, sizeof(_input_bw), report)) ||
-        (_ohead_bw >= 5 && !setSockOpt(SRTO_OHEADBW, "SRTO_OHEADBW", &_ohead_bw, sizeof(_ohead_bw), report))))
+    if (max_bw == 0 && (
+        (input_bw >= 0 && !setSockOpt(SRTO_INPUTBW, "SRTO_INPUTBW", &input_bw, sizeof(input_bw), report)) ||
+        (ohead_bw >= 5 && !setSockOpt(SRTO_OHEADBW, "SRTO_OHEADBW", &ohead_bw, sizeof(ohead_bw), report))))
     {
         return false;
     }
@@ -681,20 +681,20 @@ int ts::SRTSocket::Guts::srtListen(const ts::SocketAddress& addr, ts::Report& re
         // Error handling if needed
     }
 
-    ret = srt_bind(_sock, &sock_addr, sizeof(sock_addr));
+    ret = srt_bind(sock, &sock_addr, sizeof(sock_addr));
     if (ret) {
         report.error(u"error during srt_bind(), msg: %s", { srt_getlasterror_str() });
         return -1;
     }
 
     // Second parameter is the number of simultaneous connection accepted. For now we only accept one.
-    ret = srt_listen(_sock, 1);
+    ret = srt_listen(sock, 1);
     if (ret) {
         report.error(u"error during srt_listen(), msg: %s", { srt_getlasterror_str() });
         return -1;
     }
 
-    ret = srt_accept(_sock, &peer_addr, &peer_addr_len);
+    ret = srt_accept(sock, &peer_addr, &peer_addr_len);
     if (ret < 0) {
         report.error(u"error during srt_accept(), msg: %s", { srt_getlasterror_str() });
         return -1;
@@ -715,7 +715,7 @@ int ts::SRTSocket::Guts::srtConnect(const ts::SocketAddress& addr, ts::Report& r
     ::sockaddr sock_addr;
     addr.copy(sock_addr);
 
-    ret = srt_connect(_sock, &sock_addr, sizeof(sock_addr));
+    ret = srt_connect(sock, &sock_addr, sizeof(sock_addr));
     if (ret < 0) {
         report.error(u"error during srt_connect, msg: %s", { srt_getlasterror_str() });
         return ret;
@@ -730,12 +730,12 @@ int ts::SRTSocket::Guts::srtConnect(const ts::SocketAddress& addr, ts::Report& r
 
 bool ts::SRTSocket::send(const void* data, size_t size, ts::Report& report)
 {
-    return _guts->send(data, size, _guts->_default_address, report);
+    return _guts->send(data, size, _guts->default_address, report);
 }
 
 bool ts::SRTSocket::Guts::send(const void* data, size_t size, const ts::SocketAddress& dest, ts::Report& report)
 {
-    int ret = srt_send(_sock, reinterpret_cast<const char*>(data), int(size));
+    int ret = srt_send(sock, reinterpret_cast<const char*>(data), int(size));
     if (srt_getlasterror(nullptr) == SRT_EASYNCSND) {
         report.warning(u"not enough space to send data with size %d, msg: %s", { size, srt_getlasterror_str() });
         return true;
@@ -755,7 +755,7 @@ bool ts::SRTSocket::Guts::send(const void* data, size_t size, const ts::SocketAd
 
 bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, ts::Report& report)
 {
-    const int ret = srt_recv(_guts->_sock, reinterpret_cast<char*>(data), int(max_size));
+    const int ret = srt_recv(_guts->sock, reinterpret_cast<char*>(data), int(max_size));
     // For non-blocking mode only, if no data available yet
     if (srt_getlasterror(nullptr) == SRT_EASYNCRCV) {
         ret_size = 0;
