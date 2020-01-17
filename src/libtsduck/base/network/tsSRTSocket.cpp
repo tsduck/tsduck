@@ -31,6 +31,8 @@
 #include "tsArgs.h"
 TSDUCK_SOURCE;
 
+#define DEFAULT_POLLING_TIME 100
+
 
 //----------------------------------------------------------------------------
 // Get the version of the SRT library.
@@ -57,12 +59,12 @@ ts::SRTSocket::SRTSocket(SRTSocketMode mode, Report& report) :
     _mode(mode),
     _sock(TS_SOCKET_T_INVALID),
     _transtype(SRTT_INVALID),
-    _packet_filter(u""),
-    _passphrase(u""),
-    _streamid(u""),
+    _packet_filter(),
+    _passphrase(),
+    _streamid(),
     _polling_time(-1),
     _messageapi(false),
-    _nakreport(-1),
+    _nakreport(false),
     _conn_timeout(-1),
     _ffs(-1),
     _linger(-1),
@@ -72,7 +74,7 @@ ts::SRTSocket::SRTSocket(SRTSocketMode mode, Report& report) :
     _payload_size(-1),
     _rcvbuf(-1),
     _sndbuf(-1),
-    _enforce_encryption(-1),
+    _enforce_encryption(false),
     _kmrefreshrate(-1),
     _kmpreannounce(-1),
     _udp_rcvbuf(-1),
@@ -87,7 +89,7 @@ ts::SRTSocket::SRTSocket(SRTSocketMode mode, Report& report) :
     _peer_idle_timeout(-1),
     _peer_latency(-1),
     _rcv_latency(-1),
-    _tlpktdrop(-1)
+    _tlpktdrop(false)
 {
     srt_startup();
 }
@@ -256,7 +258,7 @@ void ts::SRTSocket::defineArgs(ts::Args& args) const
               u"(see IPV6_UNICAST_HOPS for IPV6) depending on socket address family. "
               u"Applies to sender only, default: 64.");
 
-    args.option(u"enforce-encryption", 0, ts::Args::INTEGER, 0, 1, 0, 1);
+    args.option(u"enforce-encryption");
     args.help(u"enforce-encryption",
               u"This option enforces that both connection parties have the same passphrase set "
               u"(including empty, that is, with no encryption), or otherwise the connection is rejected.");
@@ -331,9 +333,9 @@ void ts::SRTSocket::defineArgs(ts::Args& args) const
               u"The minimum SRT version that is required from the peer. A connection to a peer "
               u"that does not satisfy the minimum version requirement will be rejected.");
 
-    args.option(u"nakreport", 0, ts::Args::INTEGER, 0, 1, 0, 1);
+    args.option(u"nakreport");
     args.help(u"nakreport",
-              u"When set to true, Receiver will send UMSG_LOSSREPORT messages periodically "
+              u"When this option is specified, the receiver will send UMSG_LOSSREPORT messages periodically "
               u"until the lost packet is retransmitted or intentionally dropped.");
 
     args.option(u"ohead-bw", 0, ts::Args::INTEGER, 0, 1, 5, 100);
@@ -414,19 +416,20 @@ void ts::SRTSocket::defineArgs(ts::Args& args) const
 
 bool ts::SRTSocket::loadArgs(ts::DuckContext& duck, ts::Args& args)
 {
-    UString ttype;
-    args.getValue(ttype, u"transtype", u"live");
-    if (ttype != u"live" && ttype != u"file")
+    const UString ttype(args.value(u"transtype", u"live"));
+    if (ttype != u"live" && ttype != u"file") {
         return false;
+    }
+
     _transtype = (ttype == u"live") ? SRTT_LIVE : SRTT_FILE;
-    _nakreport = args.intValue<bool>(u"nakreport", -1);
+    _nakreport = args.present(u"nakreport");
     _conn_timeout = args.intValue<int>(u"conn-timeout", -1);
     _messageapi = args.present(u"messageapi");
     _ffs = args.intValue<int>(u"ffs", -1);
     _input_bw = args.intValue<int64_t>(u"input-bw", -1);
     _iptos = args.intValue<int32_t>(u"iptos", -1);
     _ipttl = args.intValue<int32_t>(u"ipttl", -1);
-    _enforce_encryption = args.intValue(u"enforce-encryption", -1);
+    _enforce_encryption = args.present(u"enforce-encryption");
     _kmrefreshrate = args.intValue<int32_t>(u"kmrefreshrate", -1);
     _kmpreannounce = args.intValue<int32_t>(u"kmpreannounce", -1);
     _latency = args.intValue<int32_t>(u"latency", -1);
@@ -436,21 +439,18 @@ bool ts::SRTSocket::loadArgs(ts::DuckContext& duck, ts::Args& args)
     _min_version = args.intValue<int32_t>(u"min-version", -1);
     _mss = args.intValue<int>(u"mss", -1);
     _ohead_bw = args.intValue<int>(u"ohead-bw", -1);
-
-    args.getValue(_streamid, u"streamid", u"");
-    args.getValue(_packet_filter, u"packet-filter", u"");
-    args.getValue(_passphrase, u"passphrase", u"");
-
+    _streamid = args.value(u"streamid").toUTF8();
+    _packet_filter = args.value(u"packet-filter").toUTF8();
+    _passphrase = args.value(u"passphrase").toUTF8();
     _payload_size = args.intValue<int>(u"payload-size", -1);
     _pbkeylen = args.intValue<int32_t>(u"pbkeylen", -1);
     _peer_idle_timeout = args.intValue<int32_t>(u"peer-idle-timeout", -1);
     _peer_latency = args.intValue<int32_t>(u"peer-latency", -1);
     _rcvbuf = args.intValue<int>(u"rcvbuf", -1);
     _rcv_latency = args.intValue<int32_t>(u"rcv-latency", -1);
-#define DEFAULT_POLLING_TIME 100
     _polling_time = args.intValue<int>(u"polling-time", DEFAULT_POLLING_TIME);
     _sndbuf = args.intValue<int>(u"sndbuf", -1);
-    _tlpktdrop = args.intValue(u"tlpktdrop", -1);
+    _tlpktdrop = args.present(u"tlpktdrop");
     _udp_rcvbuf = args.intValue<int>(u"udp-rcvbuf", -1);
     _udp_sndbuf = args.intValue<int>(u"udp-sndbuf", -1);
 
@@ -459,8 +459,11 @@ bool ts::SRTSocket::loadArgs(ts::DuckContext& duck, ts::Args& args)
 
 bool ts::SRTSocket::setSockOptPre(ts::Report& report)
 {
-    int yes = 1;
-    int msgapi = _messageapi ? 1 : 0;
+    const int yes = 1;
+    const int msgapi = _messageapi ? 1 : 0;
+    const int encrypt = _enforce_encryption ? 1 : 0;
+    const int nakrep = _nakreport ? 1 : 0;
+    const int pktdrop = _tlpktdrop ? 1 : 0;
 
     if ((_mode != SRTSocketMode::CALLER && !setSockOpt(SRTO_SENDER, "SRTO_SENDER", &yes, sizeof(yes), report)) ||
         (_transtype != SRTT_INVALID && !setSockOpt(SRTO_TRANSTYPE, "SRTO_TRANSTYPE", &_transtype, sizeof(_transtype), report)) ||
@@ -470,7 +473,7 @@ bool ts::SRTSocket::setSockOptPre(ts::Report& report)
         (_iptos >= 0 && !setSockOpt(SRTO_IPTOS, "SRTO_IPTOS", &_iptos, sizeof(_iptos), report)) ||
         (_ipttl > 0 && !setSockOpt(SRTO_IPTTL, "SRTO_IPTTL", &_ipttl, sizeof(_ipttl), report)) ||
 #if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
-        (_enforce_encryption > 0 && !setSockOpt(SRTO_ENFORCEDENCRYPTION, "SRTO_ENFORCEDENCRYPTION", &_enforce_encryption, sizeof(_enforce_encryption), report)) ||
+        (_enforce_encryption && !setSockOpt(SRTO_ENFORCEDENCRYPTION, "SRTO_ENFORCEDENCRYPTION", &encrypt, sizeof(encrypt), report)) ||
 #endif
         (_kmrefreshrate >= 0 && !setSockOpt(SRTO_KMREFRESHRATE, "SRTO_KMREFRESHRATE", &_kmrefreshrate, sizeof(_kmrefreshrate), report)) ||
         (_kmpreannounce > 0 && !setSockOpt(SRTO_KMPREANNOUNCE, "SRTO_KMPREANNOUNCE", &_kmpreannounce, sizeof(_kmpreannounce), report)) ||
@@ -480,7 +483,7 @@ bool ts::SRTSocket::setSockOptPre(ts::Report& report)
         (_max_bw >= 0 && !setSockOpt(SRTO_MAXBW, "SRTO_MAXBW", &_max_bw, sizeof(_max_bw), report)) ||
         (_min_version > 0 && !setSockOpt(SRTO_MINVERSION, "SRTO_MINVERSION", &_min_version, sizeof(_min_version), report)) ||
         (_mss >= 0 && !setSockOpt(SRTO_MSS, "SRTO_MSS", &_mss, sizeof(_mss), report)) ||
-        (_nakreport >= 0 && !setSockOpt(SRTO_NAKREPORT, "SRTO_NAKREPORT", &_nakreport, sizeof(_nakreport), report)) ||
+        (_nakreport && !setSockOpt(SRTO_NAKREPORT, "SRTO_NAKREPORT", &nakrep, sizeof(nakrep), report)) ||
 #if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
         (!_packet_filter.empty() && !setSockOpt(SRTO_PACKETFILTER, "SRTO_PACKETFILTER", _packet_filter.c_str(), int(_packet_filter.size()), report)) ||
 #endif
@@ -495,7 +498,7 @@ bool ts::SRTSocket::setSockOptPre(ts::Report& report)
         (_rcvbuf > 0 && !setSockOpt(SRTO_RCVBUF, "SRTO_RCVBUF", &_rcvbuf, sizeof(_rcvbuf), report)) ||
         (_rcv_latency > 0 && !setSockOpt(SRTO_RCVLATENCY, "SRTO_RCVLATENCY", &_rcv_latency, sizeof(_rcv_latency), report)) ||
         (_sndbuf > 0 && !setSockOpt(SRTO_SNDBUF, "SRTO_SNDBUF", &_sndbuf, sizeof(_sndbuf), report)) ||
-        (_tlpktdrop > 0 && !setSockOpt(SRTO_TLPKTDROP, "SRTO_TLPKTDROP", &_tlpktdrop, sizeof(_tlpktdrop), report)))
+        (_tlpktdrop && !setSockOpt(SRTO_TLPKTDROP, "SRTO_TLPKTDROP", &pktdrop, sizeof(pktdrop), report)))
     {
         return false;
     }

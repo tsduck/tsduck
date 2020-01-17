@@ -143,7 +143,6 @@ namespace ts {
         //!
         bool getSockOpt(SRT_SOCKOPT optName, const char* optNameStr, void* optval, int& optlen, Report& report = CERR) const;
 
-
         //!
         //! Get the underlying socket device handle (use with care).
         //! This method is reserved for low-level operations and should
@@ -177,12 +176,12 @@ namespace ts {
 
         // Sock options
         SRT_TRANSTYPE _transtype;
-        UString _packet_filter;
-        UString _passphrase;
-        UString _streamid;
+        std::string _packet_filter;
+        std::string _passphrase;
+        std::string _streamid;
         int _polling_time;
         bool _messageapi;
-        int _nakreport;
+        bool _nakreport;
         int _conn_timeout;
         int _ffs;
         int _linger;
@@ -192,7 +191,7 @@ namespace ts {
         int _payload_size;
         int _rcvbuf;
         int _sndbuf;
-        int _enforce_encryption;
+        bool _enforce_encryption;
         int32_t _kmrefreshrate;
         int32_t _kmpreannounce;
         int _udp_rcvbuf;
@@ -207,7 +206,7 @@ namespace ts {
         int32_t _peer_idle_timeout;
         int32_t _peer_latency;
         int32_t _rcv_latency;
-        int32_t _tlpktdrop;
+        bool _tlpktdrop;
     };
 }
 
