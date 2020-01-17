@@ -32,11 +32,6 @@
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
-// Currently, we disable SRT on Windows.
-#if defined(TS_WINDOWS) && !defined(TS_NOSRT)
-#define TS_NOSRT 1
-#endif
-
 
 //----------------------------------------------------------------------------
 // Definition of command line arguments.
@@ -270,6 +265,7 @@ ts::UString ts::SRTSocket::GetLibraryVersion() { return NOSRT_ERROR_MSG; }
 TS_PUSH_WARNING()
 TS_LLVM_NOWARNING(documentation)
 TS_LLVM_NOWARNING(old-style-cast)
+TS_MSC_NOWARNING(4005)
 #include <srt/srt.h>
 TS_POP_WARNING()
 
@@ -352,7 +348,7 @@ public:
 ts::SRTSocket::Guts::Guts(SRTSocketMode mode_) :
     default_address(),
     mode(mode_),
-    sock(TS_SOCKET_T_INVALID),
+    sock(-1),  // do not use TS_SOCKET_T_INVALID, an SRT socket is not a socket, it is always an int
     transtype(SRTT_INVALID),
     packet_filter(),
     passphrase(),
@@ -524,7 +520,7 @@ bool ts::SRTSocket::close(ts::Report& report)
 {
     if (_guts->sock >= 0) {
         srt_close(_guts->sock);
-        _guts->sock = TS_SOCKET_T_INVALID;
+        _guts->sock = -1;
     }
     return true;
 }

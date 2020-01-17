@@ -46,14 +46,11 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Install NSIS
-      run: |
-        $NsisUrl = 'http://prdownloads.sourceforge.net/nsis/nsis-3.05-setup.exe?download'
-        $ProgressPreference = 'SilentlyContinue'
-        Invoke-WebRequest -UseBasicParsing -Uri $NsisUrl -UserAgent Download -OutFile nsis-setup.exe
-        Start-Process -FilePath nsis-setup.exe -ArgumentList @("/S") -Wait
+      run: build/install-nsis.ps1 -NoPause
+    - name: Install libsrt
+      run: build/install-libsrt.ps1 -NoPause
     - name: Install Dektec SDK
-      run: |
-        dektec/Download-Install-Dtapi.ps1 -NoPause
+      run: dektec/Download-Install-Dtapi.ps1 -NoPause
     - name: Build installers
       run: |
         Get-Date

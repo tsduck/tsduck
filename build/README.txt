@@ -75,6 +75,12 @@ Build scripts on Windows
   development environment. It is referenced by third-party applications using
   the TSDuck library.
 
+- install-libsrt.ps1 : This script downloads and installs libsrt, a pre-compiled
+  binary static library for SRT on Windows.
+
+- install-nsis.ps1 : This script downloads and installs NSIS, the NullSoft
+  Installer Scripting system which is required to build TSDuck installer.
+
 - WindowsPowerShell.reg : A registry file which add definitions to run a
   PowerShell script by double-clicking on it (the default action is to edit
   script files with notepad).

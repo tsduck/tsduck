@@ -21,8 +21,9 @@
   </PropertyGroup>
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-target-dll.props" />
-    <Import Project="msvc-use-dtapi.props" />
+    <Import Project="msvc-target-dll.props"/>
+    <Import Project="msvc-use-dtapi.props"/>
+    <Import Project="msvc-use-libsrt.props"/>
   </ImportGroup>
 
   <PropertyGroup>

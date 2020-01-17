@@ -66,6 +66,7 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_skip.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_slice.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_spliceinject.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_srt.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_stuffanalyze.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_svremove.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_svrename.cpp" />
