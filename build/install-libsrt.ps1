@@ -36,6 +36,11 @@
 
   Force a download even if the package is already downloaded.
 
+ .PARAMETER GitHubActions
+
+  When used in a GitHub Action workflow, make sure that the LIBSRT
+  environment variable is propagated to subsequent jobs.
+
  .PARAMETER NoInstall
 
   Do not install the package. By default, libsrt is installed.
@@ -49,6 +54,7 @@
 [CmdletBinding(SupportsShouldProcess=$true)]
 param(
     [switch]$ForceDownload = $false,
+    [switch]$GitHubActions = $false,
     [switch]$NoInstall = $false,
     [switch]$NoPause = $false
 )
@@ -129,6 +135,12 @@ else {
 if (-not $NoInstall) {
     Write-Output "Installing $InstallerName"
     Start-Process -FilePath $InstallerPath -ArgumentList @("/S") -Wait
+}
+
+# Propagate LIBSRT in next jobs for GitHub Actions.
+if ($GitHubActions) {
+    $libsrt = [System.Environment]::GetEnvironmentVariable("LIBSRT","Machine")
+    Write-Output "::set-env name=LIBSRT::$libsrt"
 }
 
 Exit-Script
