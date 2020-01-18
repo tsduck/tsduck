@@ -58,7 +58,7 @@ jobs:
         [[ "$DISTRO" == "Ubuntu" ]] && [[ "$MAJOR" -ge 19 ]] && sudo apt install libsrt-dev; true
     - name: Build TSDuck
       run: make -j5
-    - name: Test tsversion
+    - name: Check built version
       run: source src/tstools/release-x86_64/setenv.sh && tsversion --version=all
     - name: Run unitary tests
       run: make test
@@ -92,7 +92,7 @@ jobs:
         [[ "$DISTRO" == "Ubuntu" ]] && [[ "$MAJOR" -ge 19 ]] && sudo apt install libsrt-dev; true
     - name: Build TSDuck
       run: make -j5
-    - name: Test tsversion
+    - name: Check built version
       run: source src/tstools/release-x86_64/setenv.sh && tsversion --version=all
     - name: Run unitary tests
       run: make test
@@ -127,7 +127,7 @@ jobs:
         dos2unix --version
     - name: Build TSDuck
       run: make -j5
-    - name: Test tsversion
+    - name: Check built version
       run: source src/tstools/release-x86_64/setenv.sh && tsversion --version=all
     - name: Run unitary tests
       run: make test
@@ -150,12 +150,12 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Install libsrt
-      run: build/install-libsrt.ps1 -NoPause
+      run: build/install-libsrt.ps1 -GitHubActions -NoPause
     - name: Install Dektec SDK
       run: dektec/Download-Install-Dtapi.ps1 -NoPause
     - name: Build TSDuck
       run: build/Build.ps1 -Win64 -Release -Parallel 5 -NoLowPriority -NoPause
-    - name: Test tsversion
+    - name: Check built version
       run: build/msvc/Release-x64/tsversion.exe --version=all
     - name: Run unitary tests
       run: build/msvc/Release-x64/utests-tsduckdll.exe
@@ -183,12 +183,12 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Install libsrt
-      run: build/install-libsrt.ps1 -NoPause
+      run: build/install-libsrt.ps1 -GitHubActions -NoPause
     - name: Install Dektec SDK
       run: dektec/Download-Install-Dtapi.ps1 -NoPause
     - name: Build TSDuck
       run: build/Build.ps1 -Win32 -Release -Parallel 5 -NoLowPriority -NoPause
-    - name: Test tsversion
+    - name: Check built version
       run: build/msvc/Release-Win32/tsversion.exe --version=all
     - name: Run unitary tests
       run: build/msvc/Release-Win32/utests-tsduckdll.exe

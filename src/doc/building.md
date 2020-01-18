@@ -10,22 +10,38 @@ on Windows and Linux. macOS can only support files and IP for TS input and outpu
 
 ## Windows {#reqwindows}
 
+To build TSDuck binaries and installers:
+
 - Visual Studio 2019 Community Edition. This is the free version of Visual Studio.
   It can be downloaded [here](https://www.visualstudio.com/downloads/).
+
+- NSIS, the NullSoft Scriptable Install System.
+  Execute the PowerShell script `build\install-nsis.ps1`. 
+  It downloads and installs NSIS from SourceForge.
+  Alternatively, you may download it [here](http://nsis.sourceforge.net/Download).
+
+- Optional SRT library.
+  This is required if you need Secure Reliable Transport (SRT) support in TSDuck.
+  Execute the PowerShell script `build\install-libsrt.ps1`. 
+  It downloads and installs _libsrt_ from GitHub.
+  Alternatively, you may download it [here](https://github.com/tsduck/srt-win-installer/releases/latest)
+  TSDuck project files will detect libsrt automatically.
+  See the Visual Studio property file `build\msvc\msvc-use-libsrt.props` for details.
+
+- Optional Dektec Windows SDK (DTAPI).
+  This is required if you need to support Dektec devices in TSDuck.
+  Execute the PowerShell script `dektec\Download-Install-Dtapi.ps1`.
+  It downloads and installs the Dektec Windows SDK from the Dektec site.
+  Alternatively, you may download it [here](http://www.dektec.com/products/SDK/DTAPI/Downloads/WinSDK.zip).
+  TSDuck project files will detect DTAPI automatically.
+  See the Visual Studio property file `build\msvc\msvc-use-dtapi.props` for details.
+
+Additionally, if you want to generate the programmer's guide HTML pages:
 
 - Doxygen for Windows. Download [here](http://www.doxygen.org/download.html).
 
 - Graphviz for Windows (used by Doxygen to generate graphs and diagrams).
   Download [here](https://graphviz.gitlab.io/_pages/Download/Download_windows.html).
-
-- NSIS, the NullSoft Scriptable Install System.
-  Download [here](http://nsis.sourceforge.net/Download).
-
-- Optional Dektec Windows SDK (DTAPI): Execute the PowerShell script `dektec\Download-Install-Dtapi.ps1`.
-  It downloads and installs the Dektec Windows SDK from the Dektec site.
-  Alternatively, you may download it [here](http://www.dektec.com/products/SDK/DTAPI/Downloads/WinSDK.zip).
-  TSDuck project files will detect DTAPI automatically. See the Visual Studio property
-  file `build\msvc\msvc-use-dtapi.props` for details.
 
 ## Fedora {#reqfedora}
 
@@ -34,7 +50,7 @@ on Windows and Linux. macOS can only support files and IP for TS input and outpu
 dnf install gcc-c++ rpmdevtools doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel libcurl libcurl-devel
 ~~~~
 
-- Fedora 31 onwards:
+- Fedora 31 onwards (added libsrt support):
 ~~~~
 dnf install gcc-c++ rpmdevtools doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel libcurl libcurl-devel srt-devel
 ~~~~
@@ -53,12 +69,12 @@ yum install gcc-c++ doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel li
 apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev libcurl3 libcurl3-dev
 ~~~~
 
-- Ubuntu 18:
+- Ubuntu 18 (libcurl packages changed):
 ~~~~
 apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev libcurl4 libcurl4-openssl-dev
 ~~~~
 
-- Ubuntu 19 onwards:
+- Ubuntu 19 onwards (added libsrt support):
 ~~~~
 apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev libcurl4 libcurl4-openssl-dev libsrt-dev
 ~~~~
@@ -86,7 +102,7 @@ apk add bash coreutils diffutils procps util-linux dos2unix git make g++ doxygen
 But note that the Dektec DTAPI is available only for Linux distros on Intel CPU's
 with the GNU libc. Non-Intel systems (for instance ARM-based devices such as
 Raspberry Pi) cannot use Dektec devices. Similarly, Intel-based distros using
-another libc (for instance Alpine Linux which uses musl libc) cannot use Dektec
+a non-standard libc (for instance Alpine Linux which uses musl libc) cannot use Dektec
 devices either.
 
 ## macOS {#reqmac}
