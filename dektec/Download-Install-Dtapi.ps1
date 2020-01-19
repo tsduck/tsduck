@@ -157,12 +157,12 @@ if (-not $NoInstall) {
                 Write-Output "Uninstalling $($entries.DisplayName) version $($entries.DisplayVersion)"
                 if ($cmd -like "msiexec*") {
                     # Run msiexec with silent options.
-                    msiexec.exe /uninstall "$name" /passive /norestart
+                    Start-Process -FilePath msiexec.exe -ArgumentList @("/uninstall", "$name", "/passive", "/norestart") -Wait
                 }
                 else {
                     # Run the uninstall command
                     Write-Output "Executing $cmd"
-                    Invoke-Expression -Command $cmd
+                    Start-Process -FilePath powershell.exe -ArgumentList $cmd -Wait
                 }
             }
         }
