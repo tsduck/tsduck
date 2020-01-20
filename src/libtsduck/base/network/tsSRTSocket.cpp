@@ -276,7 +276,11 @@ TS_POP_WARNING()
 
 ts::UString ts::SRTSocket::GetLibraryVersion()
 {
+#if defined(SRT_VERSION_STRING)
+    return UString::Format(u"libsrt version %s", {SRT_VERSION_STRING});
+#else
     return UString::Format(u"libsrt version %d.%d.%d", {SRT_VERSION_MAJOR, SRT_VERSION_MINOR, SRT_VERSION_PATCH});
+#endif
 }
 
 
