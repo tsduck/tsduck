@@ -161,9 +161,10 @@ int main(int argc, char* argv[])
 
 #define BUFSIZE 43
     ts::TSPacket packetBuffer[BUFSIZE];
+    ts::TSPacketMetadata packetMetadata[BUFSIZE];
 
     while (1) {
-        size_t packetsReceived = inputPlugin->receive(packetBuffer, BUFSIZE);
+        size_t packetsReceived = inputPlugin->receive(packetBuffer, packetMetadata, BUFSIZE);
         if (!packetsReceived) {
             break;
         }
@@ -172,8 +173,7 @@ int main(int argc, char* argv[])
         size_t i;
         size_t startIndex = 0;
         for (i = 0; i < packetsReceived; i++) {
-            ts::TSPacketMetadata metadata;
-            ts::ProcessorPlugin::Status processorStatus = processorPlugin->processPacket(packetBuffer[i], metadata);
+            ts::ProcessorPlugin::Status processorStatus = processorPlugin->processPacket(packetBuffer[i], packetMetadata[i]);
 
             switch (processorStatus) {
                 case ts::ProcessorPlugin::Status::TSP_OK:
@@ -192,7 +192,7 @@ int main(int argc, char* argv[])
                     // send contiguous array of packets up till this point to output plugin
                     const size_t numberPackets = i - startIndex;
                     if (numberPackets) {
-                        success = outputPlugin->send(&packetBuffer[startIndex], numberPackets);
+                        success = outputPlugin->send(&packetBuffer[startIndex], &packetMetadata[startIndex], numberPackets);
                         if (!success) {
                             aborted = true;
                             break;
@@ -216,7 +216,7 @@ int main(int argc, char* argv[])
 
         const size_t numberPackets = packetsReceived - startIndex;
         if (numberPackets) {
-            success = outputPlugin->send(&packetBuffer[startIndex], numberPackets);
+            success = outputPlugin->send(&packetBuffer[startIndex], &packetMetadata[startIndex], numberPackets);
             if (!success) {
                 break;
             }
