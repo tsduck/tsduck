@@ -76,6 +76,9 @@ VIAddVersionKey FileDescription "TSDuck - The MPEG Transport Stream Toolkit"
     OutFile "${InstallerDir}\TSDuck-Win32-${Version}.exe"
 !endif
 
+; Generate a Unicode installer (default is ANSI).
+Unicode true
+
 ; Registry key for environment variables
 !define EnvironmentKey '"SYSTEM\CurrentControlSet\Control\Session Manager\Environment"'
 
