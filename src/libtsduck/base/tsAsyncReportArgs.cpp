@@ -27,28 +27,24 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPagerArgs.h"
-#include "tsNullReport.h"
+#include "tsAsyncReportArgs.h"
 #include "tsArgs.h"
 TSDUCK_SOURCE;
 
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+const size_t ts::AsyncReportArgs::MAX_LOG_MESSAGES;
+#endif
+
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
+// Constructor.
 //----------------------------------------------------------------------------
 
-ts::PagerArgs::PagerArgs(bool pageByDefault, bool stdoutOnly ) :
-    page_by_default(pageByDefault),
-    use_pager(pageByDefault),
-    _pager(ts::OutputPager::DEFAULT_PAGER, stdoutOnly)
+ts::AsyncReportArgs::AsyncReportArgs() :
+    sync_log(false),
+    timed_log(false),
+    log_msg_count(MAX_LOG_MESSAGES)
 {
-}
-
-ts::PagerArgs::~PagerArgs()
-{
-    if (_pager.isOpen()) {
-        _pager.close(NULLREP);
-    }
 }
 
 
@@ -56,51 +52,41 @@ ts::PagerArgs::~PagerArgs()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::PagerArgs::defineArgs(Args& args) const
+void ts::AsyncReportArgs::defineArgs(Args& args) const
 {
-    if (page_by_default) {
-        args.option(u"no-pager");
-        args.help(u"no-pager",
-                  u"Do not send output through a pager process. "
-                  u"By default, if the output device is a terminal, the output is paged.");
-    }
-    else {
-        args.option(u"pager");
-        args.help(u"pager",
-                  u"Send output through a pager process if the output device is a terminal.");
-    }
+    args.option(u"log-message-count", 0, Args::POSITIVE);
+    args.help(u"log-message-count",
+              u"Specify the maximum number of buffered log messages. Log messages are "
+              u"displayed asynchronously in a low priority thread. This value specifies "
+              u"the maximum number of buffered log messages in memory, before being "
+              u"displayed. When too many messages are logged in a short period of time, "
+              u"while plugins use all CPU power, extra messages are dropped. Increase "
+              u"this value if you think that too many messages are dropped. The default "
+              u"is " + UString::Decimal(MAX_LOG_MESSAGES) + u" messages.");
+
+    args.option(u"synchronous-log", 's');
+    args.help(u"synchronous-log",
+              u"Each logged message is guaranteed to be displayed, synchronously, without "
+              u"any loss of message. The downside is that a plugin thread may be blocked "
+              u"for a short while when too many messages are logged. This option shall be "
+              u"used when all log messages are needed and the source and destination are "
+              u"not live streams (files for instance). This option is not recommended for "
+              u"live streams, when the responsiveness of the application is more important "
+              u"than the logged messages.");
+
+    args.option(u"timed-log", 't');
+    args.help(u"timed-log", u"Each logged message contains a time stamp.");
 }
 
 
 //----------------------------------------------------------------------------
 // Load arguments from command line.
-// Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-bool ts::PagerArgs::loadArgs(DuckContext& duck, Args& args)
+bool ts::AsyncReportArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    if (page_by_default) {
-        use_pager = !args.present(u"no-pager");
-    }
-    else {
-        use_pager = args.present(u"pager");
-    }
+    log_msg_count = args.intValue<size_t>(u"log-message-count", MAX_LOG_MESSAGES);
+    sync_log = args.present(u"synchronous-log");
+    timed_log = args.present(u"timed-log");
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Return the output device for display.
-//----------------------------------------------------------------------------
-
-std::ostream& ts::PagerArgs::output(Report& report)
-{
-    if (use_pager && _pager.canPage() && (_pager.isOpen() || _pager.open(true, 0, report))) {
-        // Paging is in use.
-        return _pager;
-    }
-    else {
-        // Cannot page, use standard output.
-        return std::cout;
-    }
 }

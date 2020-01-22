@@ -33,9 +33,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsswitchOptions.h"
-#include "tsswitchInputExecutor.h"
-#include "tsswitchOutputExecutor.h"
+#include "tsInputSwitcherArgs.h"
+#include "tstsswitchInputExecutor.h"
+#include "tstsswitchOutputExecutor.h"
 #include "tsMutex.h"
 #include "tsCondition.h"
 #include "tsWatchDog.h"
@@ -55,10 +55,10 @@ namespace ts {
         public:
             //!
             //! Constructor.
-            //! @param [in,out] opt Command line options.
+            //! @param [in] opt Command line options.
             //! @param [in,out] log Log report.
             //!
-            Core(Options& opt, Report& log);
+            Core(const InputSwitcherArgs& opt, Report& log);
 
             //!
             //! Destructor.
@@ -183,8 +183,8 @@ namespace ts {
             typedef std::set<Action> ActionSet;
             typedef std::deque<Action> ActionQueue;
 
-            Options&            _opt;             // Command line options.
             Report&             _log;             // Asynchronous log report.
+            InputSwitcherArgs   _opt;             // Command line options.
             InputExecutorVector _inputs;          // Input plugins threads.
             OutputExecutor      _output;          // Output plugin thread.
             WatchDog            _receiveWatchDog; // Handle reception timeout.

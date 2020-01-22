@@ -26,12 +26,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor: Execution context of a plugin
-//
-//----------------------------------------------------------------------------
 
-#include "tspPluginExecutor.h"
+#include "tstspPluginExecutor.h"
 #include "tsPluginRepository.h"
 #include "tsGuardCondition.h"
 #include "tsGuard.h"
@@ -42,11 +38,14 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::tsp::PluginExecutor::PluginExecutor(Options* options,
-                                        const PluginOptions* pl_options,
+ts::tsp::PluginExecutor::PluginExecutor(const TSProcessorArgs& options,
+                                        PluginType type,
+                                        const PluginOptions& pl_options,
                                         const ThreadAttributes& attributes,
-                                        Mutex& global_mutex) :
-    JointTermination(options, pl_options, attributes, global_mutex),
+                                        Mutex& global_mutex,
+                                        Report* report) :
+
+    JointTermination(options, type, pl_options, attributes, global_mutex, report),
     RingNode(),
     _buffer(nullptr),
     _metadata(nullptr),

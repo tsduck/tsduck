@@ -74,10 +74,28 @@ namespace ts {
         virtual bool analyze(int argc, char* argv[], bool processRedirections = true) override;
         virtual bool analyze(const UString& app_name, const UStringVector& arguments, bool processRedirections = true) override;
 
-        // Option values
-        PluginOptionsVector inputs;    //!< Ordered list of input plugins.
-        PluginOptionsVector plugins;   //!< Ordered list of packet processor plugins.
-        PluginOptionsVector outputs;   //!< Ordered list of output plugins.
+        //!
+        //! Get the number of plugins of a given type, after command line analysis.
+        //! @param [in] type Type of plugin to find.
+        //! @return The number of plugins of that type.
+        //!
+        size_t pluginCount(PluginType type) const;
+
+        //!
+        //! Get a plugin of a given type, after command line analysis.
+        //! @param [out] plugin Returned name and arguments of the plugin.
+        //! @param [in] type Type of plugin to find.
+        //! @param [in] def_value The plugin name to set in @a plugin if the plugin is not present.
+        //! @param [in] index Index of the plugin to find.
+        //!
+        void getPlugin(PluginOptions& plugin, PluginType type, const UChar* def_value = u"", size_t index = 0) const;
+
+        //!
+        //! Get all plugins of a given type, after command line analysis.
+        //! @param [out] plugins Returned name and arguments of the plugins.
+        //! @param [in] type Type of plugin to find.
+        //!
+        void getPlugins(PluginOptionsVector& plugins, PluginType type) const;
 
     private:
         const size_t _min_inputs;
@@ -86,11 +104,12 @@ namespace ts {
         const size_t _max_plugins;
         const size_t _min_outputs;
         const size_t _max_outputs;
+        std::map<PluginType,PluginOptionsVector> _plugins;
 
         // Search next plugin option.
-        size_t nextProcOpt(const UStringVector& args, size_t index, PluginType& type, PluginOptionsVector*& opts);
+        size_t nextProcOpt(const UStringVector& args, size_t index, PluginType& type);
 
         // Load default list of plugins by type.
-        void loadDefaultPlugins(PluginType type, const UString& entry, PluginOptionsVector& options);
+        void loadDefaultPlugins(PluginType type, const UString& entry);
     };
 }

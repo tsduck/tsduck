@@ -34,6 +34,8 @@
 
 #pragma once
 #include "tsMPEG.h"
+#include "tsTSPacket.h"
+#include "tsResidentBuffer.h"
 
 namespace ts {
     //!
@@ -204,4 +206,15 @@ namespace ts {
     //! Vector of packet metadata.
     //!
     typedef std::vector<TSPacketMetadata> TSPacketMetadataVector;
+
+    //!
+    //! TS packet are accessed in a memory-resident buffer.
+    //!
+    typedef ResidentBuffer<TSPacket> PacketBuffer;
+
+    //!
+    //! Metadata for TS packet are accessed in a memory-resident buffer.
+    //! A packet and its metadata have the same index in their respective buffer.
+    //!
+    typedef ResidentBuffer<TSPacketMetadata> PacketMetadataBuffer;
 }

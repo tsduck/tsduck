@@ -34,27 +34,34 @@
 
 #pragma once
 #include "tsPlugin.h"
-#include "tsDisplayInterface.h"
 
 namespace ts {
     //!
     //! Command-line options for one plugin.
     //! @ingroup plugin
     //!
-    class TSDUCKDLL PluginOptions: public DisplayInterface
+    class TSDUCKDLL PluginOptions
     {
     public:
         //!
         //! Default constructor.
-        //! @param [in] type Plugin type.
         //! @param [in] name Plugin name.
+        //! @param [in] args Plugin arguments.
         //!
-        PluginOptions(PluginType type = PROCESSOR_PLUGIN, const UString& name = UString());
+        PluginOptions(const UString& name = UString(), const UStringVector& args = UStringVector());
 
-        // Implementation of DisplayInterface
-        virtual std::ostream& display(std::ostream& stream = std::cout, const UString& margin = UString()) const override;
+        //!
+        //! Set values.
+        //! @param [in] name Plugin name.
+        //! @param [in] args Plugin arguments.
+        //!
+        void set(const UString& name, const UStringVector& args = UStringVector());
 
-        PluginType    type;  //!< Plugin type.
+        //!
+        //! Clear the content of the options.
+        //!
+        void clear();
+
         UString       name;  //!< Plugin name.
         UStringVector args;  //!< Plugin options.
     };

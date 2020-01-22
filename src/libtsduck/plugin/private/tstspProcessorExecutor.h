@@ -28,54 +28,50 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Definition of TSP control commands syntax.
+//!  Transport stream processor: Execution context of a packet processor plugin
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tstsp.h"
-#include "tsArgs.h"
-#include "tsCerrReport.h"
+#include "tstspPluginExecutor.h"
 
 namespace ts {
     namespace tsp {
         //!
-        //! Definition of TSP control commands syntax.
+        //! Execution context of a tsp packet processor plugin.
+        //! This class is internal to the TSDuck library and cannot be called by applications.
         //! @ingroup plugin
         //!
-        class TSDUCKDLL ControlCommandLine
+        class ProcessorExecutor: public PluginExecutor
         {
-            TS_NOCOPY(ControlCommandLine);
+            TS_NOBUILD_NOCOPY(ProcessorExecutor);
         public:
             //!
             //! Constructor.
+            //! @param [in] options Command line options for tsp.
+            //! @param [in] pl_options Command line options for this plugin.
+            //! @param [in] attributes Creation attributes for the thread executing this plugin.
+            //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
+            //! @param [in,out] report Where to report logs.
             //!
-            ControlCommandLine();
+            ProcessorExecutor(const TSProcessorArgs& options,
+                              const PluginOptions& pl_options,
+                              const ThreadAttributes& attributes,
+                              Mutex& global_mutex,
+                              Report* report);
 
             //!
-            //! Analyze a command line.
-            //! @param [in] line Command line to analyze.
-            //! @param [out] cmd Returned command line index.
-            //! @param [out] args Return pointer to analyzed args.
-            //! Points to an Args object inside this instance of ControlCommandLine.
-            //! @param [in,out] report Where to report errors.
-            //! @return True for a valid command, false on invalid command.
+            //! Access the shared library API.
+            //! Override ts::tsp::PluginExecutor::plugin() with a specialized returned class.
+            //! @return Address of the plugin interface.
             //!
-            bool analyze(const UString& line, ControlCommand& cmd, const Args*& args, Report& report);
-
-            //!
-            //! Get a formatted help text for all commands.
-            //! @param [in] format Requested format of the help text.
-            //! @param [in] line_width Maximum width of text lines.
-            //! @return The formatted help text.
-            //!
-            UString getAllHelpText(Args::HelpFormat format, size_t line_width = 79) const;
+            ProcessorPlugin* plugin() {return _processor;}
 
         private:
-            std::map<ControlCommand,Args> _commands;
+            ProcessorPlugin* _processor;
 
-            // Add a new command.
-            Args* newCommand(ControlCommand cmd, const UString& description, const UString& syntax, int flags = 0);
+            // Inherited from Thread
+            virtual void main() override;
         };
     }
 }

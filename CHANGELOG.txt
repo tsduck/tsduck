@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.20-1600
+VERSION 3.20-1618
 
 [NEW] New commands and plugins:
 
@@ -10,6 +10,9 @@ VERSION 3.20-1600
   * Added input and output pluings "srt" for Secure Reliable Transport
     (code contribution from Anthony Delannoy). This plugin is not compiled
     on all platforms (subject to availability of libsrt).
+  * For developers, the features of "tsp" and "tsswitch" are now easily
+    accessible from the TSDuck library. See classes ts::TSProcessor and
+    ts::InputSwitcher.
 
 [IMP] Improvements on existing commands and plugins:
 

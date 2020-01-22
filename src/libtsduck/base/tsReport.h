@@ -305,6 +305,18 @@ namespace ts {
         //!
         void debug(const UString& fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Debug, fmt, args); }
 
+        //!
+        //! Check if errors (or worse) were reported through this object.
+        //! @return True if errors (or worse) were reported through this object.
+        //!
+        bool gotErrors() const { return _got_errors; }
+
+        //!
+        //! Reset the error indicator.
+        //! @see gotErrors()
+        //!
+        void resetErrors() { _got_errors = false; }
+
     protected:
         //!
         //! Debug level is accessible to subclasses
@@ -322,5 +334,8 @@ namespace ts {
         //! @param [in] msg Message text.
         //!
         virtual void writeLog(int severity, const UString& msg) = 0;
+
+    private:
+        volatile bool _got_errors;
     };
 }

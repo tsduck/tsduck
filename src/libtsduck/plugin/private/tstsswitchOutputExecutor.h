@@ -28,13 +28,13 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Input switch (tsswitch) remote control command receiver.
+//!  Input switch (tsswitch) output plugin executor thread.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsThread.h"
-#include "tsUDPReceiver.h"
+#include "tsInputSwitcherArgs.h"
+#include "tsPluginThread.h"
 
 namespace ts {
     //!
@@ -43,46 +43,44 @@ namespace ts {
     namespace tsswitch {
 
         class Core;
-        class Options;
 
         //!
-        //! Input switch (tsswitch) remote control command receiver.
+        //! Execution context of a tsswitch output plugin.
         //! @ingroup plugin
         //!
-        class CommandListener : private Thread
+        class OutputExecutor : public PluginThread
         {
-            TS_NOBUILD_NOCOPY(CommandListener);
+            TS_NOBUILD_NOCOPY(OutputExecutor);
         public:
             //!
             //! Constructor.
             //! @param [in,out] core Command core instance.
-            //! @param [in,out] opt Command line options.
+            //! @param [in] opt Command line options.
             //! @param [in,out] log Log report.
             //!
-            CommandListener(Core& core, Options& opt, Report& log);
+            OutputExecutor(Core& core, const InputSwitcherArgs& opt, Report& log);
 
             //!
             //! Destructor.
             //!
-            virtual ~CommandListener();
+            virtual ~OutputExecutor();
 
             //!
-            //! Open and start the command listener.
-            //! @return True on success, false on error.
+            //! Request the termination of the thread.
+            //! Actual termination will occur after completion of the current output operation.
             //!
-            bool open();
+            void terminateOutput() { _terminate = true; }
 
-            //!
-            //! Stop and close the command listener.
-            //!
-            void close();
+            // Implementation of TSP. We do not use "joint termination" in tsswitch.
+            virtual void useJointTermination(bool) override;
+            virtual void jointTerminate() override;
+            virtual bool useJointTermination() const override;
+            virtual bool thisJointTerminated() const override;
 
         private:
-            Core&         _core;
-            Options&      _opt;
-            Report&       _log;
-            UDPReceiver   _sock;
-            volatile bool _terminate;
+            Core&         _core;       // Application core.
+            OutputPlugin* _output;     // Plugin API.
+            volatile bool _terminate;  // Termination request.
 
             // Implementation of Thread.
             virtual void main() override;

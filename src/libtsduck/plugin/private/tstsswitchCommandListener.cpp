@@ -27,10 +27,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsswitchCommandListener.h"
-#include "tsswitchOptions.h"
-#include "tsswitchCore.h"
-#include "tsNullReport.h"
+#include "tstsswitchCommandListener.h"
+#include "tstsswitchCore.h"
 #include "tsNullMutex.h"
 #include "tsReportBuffer.h"
 TSDUCK_SOURCE;
@@ -40,10 +38,10 @@ TSDUCK_SOURCE;
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsswitch::CommandListener::CommandListener(Core& core, Options& opt, Report& log) :
+ts::tsswitch::CommandListener::CommandListener(Core& core, const InputSwitcherArgs& opt, Report& log) :
+    _log(log),
     _core(core),
     _opt(opt),
-    _log(log),
     _sock(_log),
     _terminate(false)
 {

@@ -27,9 +27,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsswitchOutputExecutor.h"
-#include "tsswitchOptions.h"
-#include "tsswitchCore.h"
+#include "tstsswitchOutputExecutor.h"
+#include "tstsswitchCore.h"
 TSDUCK_SOURCE;
 
 
@@ -37,8 +36,8 @@ TSDUCK_SOURCE;
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsswitch::OutputExecutor::OutputExecutor(Core& core, Options& opt, Report& log) :
-    PluginThread(&opt, opt.appName(), opt.outputs[0], ThreadAttributes()),
+ts::tsswitch::OutputExecutor::OutputExecutor(Core& core, const InputSwitcherArgs& opt, Report& log) :
+    PluginThread(&log, opt.appName, OUTPUT_PLUGIN, opt.output, ThreadAttributes()),
     _core(core),
     _output(dynamic_cast<OutputPlugin*>(plugin())),
     _terminate(false)

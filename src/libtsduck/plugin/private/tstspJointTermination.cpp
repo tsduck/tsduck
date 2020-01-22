@@ -26,12 +26,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor: Implementation of "Joint Termination"
-//
-//----------------------------------------------------------------------------
 
-#include "tspJointTermination.h"
+#include "tstspJointTermination.h"
 #include "tsGuard.h"
 TSDUCK_SOURCE;
 
@@ -49,8 +45,14 @@ ts::PacketCounter ts::tsp::JointTermination::_jt_hightest_pkt = 0;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::tsp::JointTermination::JointTermination(Options* options, const PluginOptions* pl_options, const ThreadAttributes& attributes, Mutex& global_mutex) :
-    PluginThread(options, options->appName(), *pl_options, attributes),
+ts::tsp::JointTermination::JointTermination(const TSProcessorArgs& options,
+                                            PluginType type,
+                                            const PluginOptions& pl_options,
+                                            const ThreadAttributes& attributes,
+                                            Mutex& global_mutex,
+                                            Report* report) :
+
+    PluginThread(report, options.app_name, type, pl_options, attributes),
     _global_mutex(global_mutex),
     _options(options),
     _use_jt(false),
@@ -129,5 +131,5 @@ void ts::tsp::JointTermination::jointTerminate()
 ts::PacketCounter ts::tsp::JointTermination::totalPacketsBeforeJointTermination() const
 {
     Guard lock (_global_mutex);
-    return !_options->ignore_jt && _jt_users > 0 && _jt_remaining <= 0 ? _jt_hightest_pkt : std::numeric_limits<PacketCounter>::max();
+    return !_options.ignore_jt && _jt_users > 0 && _jt_remaining <= 0 ? _jt_hightest_pkt : std::numeric_limits<PacketCounter>::max();
 }

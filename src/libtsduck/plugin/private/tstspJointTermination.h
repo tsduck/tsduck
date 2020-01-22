@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tspOptions.h"
+#include "tsTSProcessorArgs.h"
 #include "tsPluginThread.h"
 #include "tsMutex.h"
 
@@ -42,6 +42,7 @@ namespace ts {
         //!
         //! Implementation of "Joint Termination" in the Transport stream processor.
         //! This is a subclass of ts::TSP and a superclass of all plugin executors.
+        //! This class is internal to the TSDuck library and cannot be called by applications.
         //! @ingroup plugin
         //!
         class JointTermination: public PluginThread
@@ -50,15 +51,19 @@ namespace ts {
         public:
             //!
             //! Constructor.
-            //! @param [in,out] options Command line options for tsp.
+            //! @param [in] options Command line options for tsp.
+            //! @param [in] type Plugin type.
             //! @param [in] pl_options Command line options for this plugin.
             //! @param [in] attributes Creation attributes for the thread executing this plugin.
             //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
+            //! @param [in,out] report Where to report logs.
             //!
-            JointTermination(Options* options,
-                             const PluginOptions* pl_options,
+            JointTermination(const TSProcessorArgs& options,
+                             PluginType type,
+                             const PluginOptions& pl_options,
                              const ThreadAttributes& attributes,
-                             Mutex& global_mutex);
+                             Mutex& global_mutex,
+                             Report* report);
 
             // Implementation of "joint termination", inherited from TSP.
             virtual void useJointTermination(bool on) override;
@@ -67,8 +72,8 @@ namespace ts {
             virtual bool thisJointTerminated() const override;
 
         protected:
-            Mutex&         _global_mutex; //!< Reference to the TSP global mutex.
-            const Options* _options;      //!< TSP options.
+            Mutex& _global_mutex;
+            const TSProcessorArgs& _options;
 
             //!
             //! Get the packet number after which the "joint termination" must be applied.

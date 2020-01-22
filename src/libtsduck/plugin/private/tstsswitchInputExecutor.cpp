@@ -27,8 +27,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsswitchInputExecutor.h"
-#include "tsswitchCore.h"
+#include "tstsswitchInputExecutor.h"
+#include "tstsswitchCore.h"
 #include "tsGuard.h"
 #include "tsGuardCondition.h"
 TSDUCK_SOURCE;
@@ -38,9 +38,9 @@ TSDUCK_SOURCE;
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsswitch::InputExecutor::InputExecutor(size_t index, Core& core, Options& opt, Report& log) :
+ts::tsswitch::InputExecutor::InputExecutor(size_t index, Core& core, const InputSwitcherArgs& opt, Report& log) :
     // Input threads have a high priority to be always ready to load incoming packets in the buffer.
-    PluginThread(&opt, opt.appName(), opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority())),
+    PluginThread(&log, opt.appName, INPUT_PLUGIN, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority())),
     _core(core),
     _opt(opt),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),

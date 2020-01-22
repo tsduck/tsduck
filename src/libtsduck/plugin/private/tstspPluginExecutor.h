@@ -33,10 +33,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tspOptions.h"
-#include "tspJointTermination.h"
+#include "tsTSProcessorArgs.h"
+#include "tstspJointTermination.h"
 #include "tsPlugin.h"
-#include "tsResidentBuffer.h"
 #include "tsUserInterrupt.h"
 #include "tsRingNode.h"
 #include "tsCondition.h"
@@ -46,77 +45,7 @@
 namespace ts {
     namespace tsp {
         //!
-        //!  Execution context of a tsp plugin.
-        //!
-        //!  @anchor PacketBufferModel
-        //!
-        //!  Data model
-        //!  ----------
-        //!  There is a global buffer for TS packets. The input thread writes incoming
-        //!  packets here. All packet processors update them and the output thread
-        //!  picks them for the same place.
-        //!
-        //!  The buffer is an array of ts::TSPacket. It is managed in a circular way.
-        //!  It is divided into logical areas, one per processor (including input
-        //!  and output). These logical areas are sliding windows which move when
-        //!  packets are processed.
-        //!
-        //!  Each sliding window is defined by the index of its first packet
-        //!  (_pkt_first) and its size in packets (_pkt_cnt).
-        //!
-        //!  @anchor PacketBufferDiagram
-        //!  Flat (non-circular) view of the buffer:
-        //!
-        //!  @code
-        //!        output->_pkt_first            proc_1->_pkt_first
-        //!        |                             |
-        //!        |          proc_N->_pkt_first |          input->_pkt_first
-        //!        |          |                  |          |
-        //!        V          V                  V          V
-        //!       +----------+----------+-------+----------+---------+
-        //!  +->  |  output  |  proc N  |  ...  |  proc 1  |  input  |  ->-+
-        //!  |    +----------+----------+-------+----------+---------+     |
-        //!  |                                                             |
-        //!  +-------------------------------------------------------------+
-        //!  @endcode
-        //!
-        //!  When a thread terminates the processing of a bunch of packets, it moves
-        //!  up its first index and, consequently, decreases the sizes of its area
-        //!  and accordingly increases the size of the area of the next processor.
-        //!
-        //!  The modification of the starting index and size of any area must be
-        //!  performed under the protection of the global mutex. There is one global
-        //!  mutex for simplicity. The resulting bottleneck is not so important since
-        //!  updating a few pointers is fast.
-        //!
-        //!  When the sliding window of a processor is empty, the processor thread
-        //!  sleeps on its "_to_do" condition variable. Consequently, when a thread
-        //!  passes packets to the next processor (ie. increases the size of the sliding
-        //!  window of the next processor), it must notify the _to_do condition variable
-        //!  of the next thread.
-        //!
-        //!  When a packet processor decides to drop a packet, the synchronization
-        //!  byte (first byte of the packet, normally 0x47) is reset to zero. When
-        //!  a packet processor or the output processor encounters a packet starting
-        //!  with a zero byte, it ignores it.
-        //!
-        //!  All PluginExecutors are chained in a ring. The first one is input and
-        //!  the last one is output. The output points back to the input so that the
-        //!  output processor can easily pass free packets to be reused by the input
-        //!  processor.
-        //!
-        //!  The "_input_end" indicates that there is no more packet to process
-        //!  after those in the processor's area. This condition is signaled by
-        //!  the previous processor in the chain. All processors, except the output
-        //!  processor, may signal this condition to their successor.
-        //!
-        //!  The "_aborted" indicates that the current processor has encountered an
-        //!  error and has ceased to accept packets. This condition is checked by
-        //!  the previous processor in the chain (which, in turn, will declare itself
-        //!  as aborted). All processors, except the input processor may signal this
-        //!  condition. In case of error, all processors should also declare an
-        //!  "_input_end" to their successor.
-        //!
+        //! Execution context of a tsp plugin.
         //! @ingroup plugin
         //!
         class PluginExecutor: public JointTermination, public RingNode
@@ -124,27 +53,20 @@ namespace ts {
             TS_NOBUILD_NOCOPY(PluginExecutor);
         public:
             //!
-            //! TS packet are accessed in a memory-resident buffer.
-            //!
-            typedef ResidentBuffer<TSPacket> PacketBuffer;
-
-            //!
-            //! Metadata for TS packet are accessed in a memory-resident buffer.
-            //! A packet and its metadata have the same index in their respective buffer.
-            //!
-            typedef ResidentBuffer<TSPacketMetadata> PacketMetadataBuffer;
-
-            //!
             //! Constructor.
-            //! @param [in,out] options Command line options for tsp.
+            //! @param [in] options Command line options for tsp.
+            //! @param [in] type Plugin type.
             //! @param [in] pl_options Command line options for this plugin.
             //! @param [in] attributes Creation attributes for the thread executing this plugin.
             //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
+            //! @param [in,out] report Where to report logs.
             //!
-            PluginExecutor(Options* options,
-                           const PluginOptions* pl_options,
+            PluginExecutor(const TSProcessorArgs& options,
+                           PluginType type,
+                           const PluginOptions& pl_options,
                            const ThreadAttributes& attributes,
-                           Mutex& global_mutex);
+                           Mutex& global_mutex,
+                           Report* report);
 
             //!
             //! Virtual destructor.
@@ -281,7 +203,8 @@ namespace ts {
             typedef SafePtr<RestartData,Mutex> RestartDataPtr;
 
             // The following private data must be accessed exclusively under the protection of the global mutex.
-            Condition      _to_do;         // Notify processor to do something
+            // Implementation details: see the file src/docs/developing-plugins.dox
+            Condition      _to_do;         // Notify processor to do something.
             size_t         _pkt_first;     // Starting index of packets area
             size_t         _pkt_cnt;       // Size of packets area
             bool           _input_end;     // No more packet after current ones

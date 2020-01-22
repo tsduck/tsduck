@@ -30,30 +30,20 @@
 #include "tsPluginOptions.h"
 TSDUCK_SOURCE;
 
-
-//----------------------------------------------------------------------------
-// Default constructor for plugin options.
-//----------------------------------------------------------------------------
-
-ts::PluginOptions::PluginOptions(ts::PluginType type_, const ts::UString& name_) :
-    type(type_),
+ts::PluginOptions::PluginOptions(const ts::UString& name_, const UStringVector& args_) :
     name(name_),
-    args()
+    args(args_)
 {
-
 }
 
-
-//----------------------------------------------------------------------------
-// Display the content of the object to a stream
-//----------------------------------------------------------------------------
-
-std::ostream& ts::PluginOptions::display(std::ostream& strm, const UString& margin) const
+void ts::PluginOptions::set(const ts::UString& name_, const UStringVector& args_)
 {
-    strm << margin << "Name: " << name << std::endl
-         << margin << "Type: " << PluginTypeNames.name(type) << std::endl;
-    for (size_t i = 0; i < args.size(); ++i) {
-        strm << margin << "Arg[" << i << "]: \"" << args[i] << "\"" << std::endl;
-    }
-    return strm;
+    name = name_;
+    args = args_;
+}
+
+void ts::PluginOptions::clear()
+{
+    name.clear();
+    args.clear();
 }

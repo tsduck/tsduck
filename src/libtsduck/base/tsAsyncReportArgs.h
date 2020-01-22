@@ -28,35 +28,40 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Common definitions for the tsp tool.
-//!  @ingroup plugin
+//!  Parameters and command line arguments for asynchronous log.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsEnumeration.h"
+#include "tsArgsSupplierInterface.h"
 
 namespace ts {
     //!
-    //! Namespace for TSP classes.
+    //! Parameters and command line arguments for asynchronous log.
+    //! @ingroup cmd
     //!
-    namespace tsp {
-        //!
-        //! Definition of TSP control command.
-        //!
-        enum ControlCommand {
-            CMD_NONE,     //!< No command specified, do nothing.
-            CMD_EXIT,     //!< Exit tsp.
-            CMD_SETLOG,   //!< Change log level.
-            CMD_LIST,     //!< List all plugins.
-            CMD_SUSPEND,  //!< Suspend a plugin.
-            CMD_RESUME,   //!< Resume a suspended plugin.
-            CMD_RESTART,  //!< Restart a plugin with different parameters.
-        };
+    class TSDUCKDLL AsyncReportArgs : public ArgsSupplierInterface
+    {
+    public:
+        // Public fields
+        bool   sync_log;       //!< Synchronous log.
+        bool   timed_log;      //!< Add time stamps in log messages.
+        size_t log_msg_count;  //!< Maximum buffered log messages.
 
         //!
-        //! Enumeration description of ts::tsp::ControlCommand.
+        //! Default maximum number of messages in the queue.
+        //! Must be limited since the logging thread has a low priority.
+        //! If a high priority thread loops on report, it would exhaust the memory.
         //!
-        TSDUCKDLL extern const Enumeration ControlCommandEnum;
-    }
+        static const size_t MAX_LOG_MESSAGES = 512;
+
+        //!
+        //! Default constructor.
+        //!
+        AsyncReportArgs();
+
+        // Implementation of ArgsSupplierInterface.
+        virtual void defineArgs(Args& args) const override;
+        virtual bool loadArgs(DuckContext& duck, Args& args) override;
+    };
 }

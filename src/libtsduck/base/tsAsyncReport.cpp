@@ -30,23 +30,19 @@
 #include "tsAsyncReport.h"
 TSDUCK_SOURCE;
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const size_t ts::AsyncReport::MAX_LOG_MESSAGES;
-#endif
-
 
 //----------------------------------------------------------------------------
 // Default constructor
 //----------------------------------------------------------------------------
 
-ts::AsyncReport::AsyncReport(int max_severity, bool time_stamp, size_t max_messages, bool synchronous) :
+ts::AsyncReport::AsyncReport(int max_severity, const AsyncReportArgs& args) :
     Report(max_severity),
     Thread(ThreadAttributes().setPriority(ThreadAttributes::GetMinimumPriority())),
-    _log_queue(max_messages),
+    _log_queue(args.log_msg_count),
     _default_handler(*this),
     _handler(&_default_handler),
-    _time_stamp(time_stamp),
-    _synchronous(synchronous),
+    _time_stamp(args.timed_log),
+    _synchronous(args.sync_log),
     _terminated(false)
 {
     // Start the logging thread

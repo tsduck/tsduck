@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tspPluginExecutor.h"
+#include "tstspPluginExecutor.h"
 #include "tsPCRAnalyzer.h"
 #include "tsWatchDog.h"
 
@@ -41,6 +41,7 @@ namespace ts {
     namespace tsp {
         //!
         //! Execution context of a tsp input plugin.
+        //! This class is internal to the TSDuck library and cannot be called by applications.
         //! @ingroup plugin
         //!
         class InputExecutor: public PluginExecutor, private WatchDogHandlerInterface
@@ -49,15 +50,17 @@ namespace ts {
         public:
             //!
             //! Constructor.
-            //! @param [in,out] options Command line options for tsp.
+            //! @param [in] options Command line options for tsp.
             //! @param [in] pl_options Command line options for this plugin.
             //! @param [in] attributes Creation attributes for the thread executing this plugin.
             //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
+            //! @param [in,out] report Where to report logs.
             //!
-            InputExecutor(Options* options,
-                          const PluginOptions* pl_options,
+            InputExecutor(const TSProcessorArgs& options,
+                          const PluginOptions& pl_options,
                           const ThreadAttributes& attributes,
-                          Mutex& global_mutex);
+                          Mutex& global_mutex,
+                          Report* report);
 
             //!
             //! Initializes the packet buffer for all plugin executors, starting at this input executor.

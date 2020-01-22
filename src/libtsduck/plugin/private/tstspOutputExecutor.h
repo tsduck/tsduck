@@ -33,12 +33,13 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tspPluginExecutor.h"
+#include "tstspPluginExecutor.h"
 
 namespace ts {
     namespace tsp {
         //!
         //! Execution context of a tsp output plugin.
+        //! This class is internal to the TSDuck library and cannot be called by applications.
         //! @ingroup plugin
         //!
         class OutputExecutor: public PluginExecutor
@@ -47,15 +48,17 @@ namespace ts {
         public:
             //!
             //! Constructor.
-            //! @param [in,out] options Command line options for tsp.
+            //! @param [in] options Command line options for tsp.
             //! @param [in] pl_options Command line options for this plugin.
             //! @param [in] attributes Creation attributes for the thread executing this plugin.
             //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
+            //! @param [in,out] report Where to report logs.
             //!
-            OutputExecutor(Options* options,
-                           const PluginOptions* pl_options,
+            OutputExecutor(const TSProcessorArgs& options,
+                           const PluginOptions& pl_options,
                            const ThreadAttributes& attributes,
-                           Mutex& global_mutex);
+                           Mutex& global_mutex,
+                           Report* report);
 
             //!
             //! Access the shared library API.
