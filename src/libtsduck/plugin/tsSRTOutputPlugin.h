@@ -60,6 +60,7 @@ namespace ts {
 
     private:
         SocketAddress _local_addr;  // Local address.
+        SocketAddress _remote_addr; // Remote address.
         PacketCounter _pkt_count;   // Total packet counter for output packets
         SRTSocket     _sock;
     };

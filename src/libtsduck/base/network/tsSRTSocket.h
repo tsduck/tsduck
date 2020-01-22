@@ -76,11 +76,13 @@ namespace ts {
 
         //!
         //! Open the socket.
-        //! @param [in] addr Socket address.
+        //! @param [in] local_addr  Local socket address.
+        //! @param [in] remote_addr Remote socket address.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool open(const SocketAddress& addr, Report& report = CERR);
+        bool open(const SocketAddress& local_addr, const SocketAddress& remote_addr,
+                  Report& report = CERR);
 
         //!
         //! Close the socket.

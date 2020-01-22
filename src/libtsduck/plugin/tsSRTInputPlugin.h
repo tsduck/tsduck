@@ -63,6 +63,7 @@ namespace ts {
 
     private:
         SRTSocket     _sock;
-        SocketAddress _bind_addr;
+        SocketAddress _local_addr;
+        SocketAddress _remote_addr;
     };
 }
