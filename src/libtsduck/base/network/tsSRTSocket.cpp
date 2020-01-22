@@ -496,7 +496,7 @@ bool ts::SRTSocket::open(const ts::SocketAddress& local_addr,
             if (ret < 0) {
                 goto fail;
             }
-            /* FALLTHROUGH */
+            TS_FALLTHROUGH
         case CALLER:
             ret = _guts->srtConnect(remote_addr, report);
             if (ret < 0) {
