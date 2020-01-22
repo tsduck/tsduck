@@ -42,18 +42,14 @@ default: execs $(OBJDIR)/setenv.sh
 .PHONY: execs
 execs: $(EXECS)
 
-# tsp and tswitch have additional modules
-$(OBJDIR)/tsp: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(filter tsp%,$(MODULES_LIB))))
-$(OBJDIR)/tsswitch: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(filter tsswitch%,$(MODULES_LIB))))
-
 ifndef STATIC
-# With dynamic link (the default), we use the shareable library.
-$(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
+    # With dynamic link (the default), we use the shareable library.
+    $(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
 else
-# With static link, we compile in a specific directory and we link tsp with all plugins.
-LDFLAGS_EXTRA = -static
-$(OBJDIR)/tsp: $(addprefix $(TSPLUGINSDIR)/$(OBJDIR)/,$(addsuffix .o,$(TSPLUGINS)))
-$(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
+    # With static link, we compile in a specific directory and we link tsp with all plugins.
+    LDFLAGS_EXTRA = -static
+    $(OBJDIR)/tsp: $(addprefix $(TSPLUGINSDIR)/$(OBJDIR)/,$(addsuffix .o,$(TSPLUGINS)))
+    $(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
 endif
 
 $(OBJDIR)/setenv.sh: Makefile
