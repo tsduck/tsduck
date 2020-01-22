@@ -40,6 +40,7 @@ TSDUCK_SOURCE;
 ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send TS packets using Secure Reliable Transport (SRT)", u"[options] address:port"),
     _local_addr(),
+    _remote_addr(),
     _pkt_count(0),
     _sock(SRTSocketMode::LISTENER, *tsp_)
 {
@@ -47,6 +48,9 @@ ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
 
     option(u"", 0, STRING, 1, 1);
     help(u"", u"Specify listening IPv4 and port.");
+
+    option(u"rendezvous", 0, ts::Args::STRING);
+    help(u"rendezvous", u"Specify remote IP:port for rendez-vous mode.");
 }
 
 
@@ -58,7 +62,13 @@ bool ts::SRTOutputPlugin::getOptions(void)
 {
     const UString bind_addr(value( u""));
     if (bind_addr.empty() || !_local_addr.resolve(bind_addr)) {
-        tsp->error(u"Invalid listening IPv4 and port: %s", {bind_addr});
+        tsp->error(u"Invalid local address and port: %s", {bind_addr});
+        return false;
+    }
+
+    const UString remote(value(u"rendezvous"));
+    if (!remote.empty() && !_remote_addr.resolve(remote)) {
+        tsp->error(u"Invalid remote address and port: %s", {remote});
         return false;
     }
 
@@ -72,7 +82,7 @@ bool ts::SRTOutputPlugin::getOptions(void)
 
 bool ts::SRTOutputPlugin::start(void)
 {
-    if (!_sock.open(_local_addr, *tsp)) {
+    if (!_sock.open(_local_addr, _remote_addr, *tsp)) {
         _sock.close(*tsp);
         return false;
     }
