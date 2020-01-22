@@ -606,7 +606,9 @@ bool ts::SRTSocket::Guts::setSockOptPre(ts::Report& report)
 {
     const int yes     = 1;
     const int msgapi  = messageapi ? 1 : 0;
+#if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
     const int encrypt = enforce_encryption ? 1 : 0;
+#endif
     const int nakrep  = nakreport ? 1 : 0;
     const int pktdrop = tlpktdrop ? 1 : 0;
 
@@ -718,7 +720,6 @@ int ts::SRTSocket::Guts::srtConnect(const ts::SocketAddress& addr, ts::Report& r
     ret = srt_connect(sock, &sock_addr, sizeof(sock_addr));
     if (ret < 0) {
         report.error(u"error during srt_connect, msg: %s", { srt_getlasterror_str() });
-        return ret;
     }
 
     return ret;
@@ -736,10 +737,6 @@ bool ts::SRTSocket::send(const void* data, size_t size, ts::Report& report)
 bool ts::SRTSocket::Guts::send(const void* data, size_t size, const ts::SocketAddress& dest, ts::Report& report)
 {
     int ret = srt_send(sock, reinterpret_cast<const char*>(data), int(size));
-    if (srt_getlasterror(nullptr) == SRT_EASYNCSND) {
-        report.warning(u"not enough space to send data with size %d, msg: %s", { size, srt_getlasterror_str() });
-        return true;
-    }
     if (ret < 0) {
         report.error(u"error during srt_send(), msg: %s", { srt_getlasterror_str() });
         return false;
@@ -756,19 +753,12 @@ bool ts::SRTSocket::Guts::send(const void* data, size_t size, const ts::SocketAd
 bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, ts::Report& report)
 {
     const int ret = srt_recv(_guts->sock, reinterpret_cast<char*>(data), int(max_size));
-    // For non-blocking mode only, if no data available yet
-    if (srt_getlasterror(nullptr) == SRT_EASYNCRCV) {
-        ret_size = 0;
-        return true;
-    }
-    else if (ret < 0) {
+    if (ret < 0) {
         report.error(u"error during srt_recv(), msg: %s", { srt_getlasterror_str() });
         return false;
     }
-    else {
-        ret_size = size_t(ret);
-        return true;
-    }
+    ret_size = size_t(ret);
+    return true;
 }
 
 #endif // TS_NOSRT
