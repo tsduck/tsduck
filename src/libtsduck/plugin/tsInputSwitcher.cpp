@@ -26,49 +26,50 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Transport stream processor: Execution context of a packet processor plugin
-//!
+
+#include "tsInputSwitcher.h"
+#include "tsSystemMonitor.h"
+#include "tstsswitchCore.h"
+#include "tstsswitchCommandListener.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor and destructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tspPluginExecutor.h"
+ts::InputSwitcher::InputSwitcher(const InputSwitcherArgs& args, Report& report) :
+    _success(false)
+{
+    // Clear errors on the report, used to check further initialisation errors.
+    report.resetErrors();
 
-namespace ts {
-    namespace tsp {
-        //!
-        //! Execution context of a tsp packet processor plugin.
-        //! @ingroup plugin
-        //!
-        class ProcessorExecutor: public PluginExecutor
-        {
-            TS_NOBUILD_NOCOPY(ProcessorExecutor);
-        public:
-            //!
-            //! Constructor.
-            //! @param [in,out] options Command line options for tsp.
-            //! @param [in] pl_options Command line options for this plugin.
-            //! @param [in] attributes Creation attributes for the thread executing this plugin.
-            //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
-            //!
-            ProcessorExecutor(Options* options,
-                              const PluginOptions* pl_options,
-                              const ThreadAttributes& attributes,
-                              Mutex& global_mutex);
-
-            //!
-            //! Access the shared library API.
-            //! Override ts::tsp::PluginExecutor::plugin() with a specialized returned class.
-            //! @return Address of the plugin interface.
-            //!
-            ProcessorPlugin* plugin() {return _processor;}
-
-        private:
-            ProcessorPlugin* _processor;
-
-            // Inherited from Thread
-            virtual void main() override;
-        };
+    // Create the tsswitch core instance.
+    tsswitch::Core core(args, report);
+    if (report.gotErrors()) {
+        return; // error
     }
+
+    // Create a monitoring thread if required.
+    ts::SystemMonitor monitor(&report);
+    if (args.monitor) {
+        monitor.start();
+    }
+
+    // If a remote control is specified, start a UDP listener thread.
+    tsswitch::CommandListener remoteControl(core, args, report);
+    if (args.remoteServer.hasPort() && !remoteControl.open()) {
+        return; // error
+    }
+
+    // Start the processing.
+    if (!core.start()) {
+        return; // error
+    }
+
+    // Wait for completion.
+    core.waitForTermination();
+
+    // Now, we have a successful completion.
+    _success = true;
 }

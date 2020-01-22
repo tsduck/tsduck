@@ -26,12 +26,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor: Execution context of a packet processor plugin
-//
-//----------------------------------------------------------------------------
 
-#include "tspProcessorExecutor.h"
+#include "tstspProcessorExecutor.h"
 TSDUCK_SOURCE;
 
 
@@ -39,12 +35,13 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::tsp::ProcessorExecutor::ProcessorExecutor(Options* options,
-                                              const PluginOptions* pl_options,
+ts::tsp::ProcessorExecutor::ProcessorExecutor(const TSProcessorArgs& options,
+                                              const PluginOptions& pl_options,
                                               const ThreadAttributes& attributes,
-                                              Mutex& global_mutex) :
+                                              Mutex& global_mutex,
+                                              Report* report) :
 
-    PluginExecutor(options, pl_options, attributes, global_mutex),
+    PluginExecutor(options, PROCESSOR_PLUGIN, pl_options, attributes, global_mutex, report),
     _processor(dynamic_cast<ProcessorPlugin*>(PluginThread::plugin()))
 {
 }
@@ -189,7 +186,7 @@ void ts::tsp::ProcessorExecutor::main()
             // the next processor. Perform periodic flush to avoid waiting
             // too long before two output operations.
 
-            if (pkt_data->getFlush() || pkt_done == pkt_cnt || (_options->max_flush_pkt > 0 && pkt_flush % _options->max_flush_pkt == 0)) {
+            if (pkt_data->getFlush() || pkt_done == pkt_cnt || (_options.max_flush_pkt > 0 && pkt_flush % _options.max_flush_pkt == 0)) {
                 aborted = !passPackets(pkt_flush, output_bitrate, pkt_done == pkt_cnt && input_end, aborted);
                 pkt_flush = 0;
             }

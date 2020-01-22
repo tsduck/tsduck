@@ -142,6 +142,11 @@ namespace ts {
         };
 
         //!
+        //! Convenient command line options for "list processor" option.
+        //!
+        static const Enumeration ListProcessorEnum;
+
+        //!
         //! List all tsp processors.
         //! This function is typically used to implement the <code>tsp -\-list-processors</code> option.
         //! @param [in] loadAll When true, all available plugins are loaded first.

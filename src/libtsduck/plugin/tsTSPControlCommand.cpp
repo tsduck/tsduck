@@ -27,15 +27,25 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tstspControlCommandLine.h"
+#include "tsTSPControlCommand.h"
 TSDUCK_SOURCE;
+
+// Enumeration description of ControlCommand.
+const ts::Enumeration ts::TSPControlCommand::ControlCommandEnum({
+    {u"exit",    ts::TSPControlCommand::ControlCommand::CMD_EXIT},
+    {u"set-log", ts::TSPControlCommand::ControlCommand::CMD_SETLOG},
+    {u"list",    ts::TSPControlCommand::ControlCommand::CMD_LIST},
+    {u"suspend", ts::TSPControlCommand::ControlCommand::CMD_SUSPEND},
+    {u"resume",  ts::TSPControlCommand::ControlCommand::CMD_RESUME},
+    {u"restart", ts::TSPControlCommand::ControlCommand::CMD_RESTART},
+});
 
 
 //----------------------------------------------------------------------------
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::tsp::ControlCommandLine::ControlCommandLine() :
+ts::TSPControlCommand::TSPControlCommand() :
     _commands()
 {
     // Define the syntax for all commands.
@@ -84,7 +94,7 @@ ts::tsp::ControlCommandLine::ControlCommandLine() :
 // Add a new command.
 //----------------------------------------------------------------------------
 
-ts::Args* ts::tsp::ControlCommandLine::newCommand(ControlCommand cmd, const UString& description, const UString& syntax, int flags)
+ts::Args* ts::TSPControlCommand::newCommand(ControlCommand cmd, const UString& description, const UString& syntax, int flags)
 {
     Args* arg = &_commands[cmd];
 
@@ -111,7 +121,7 @@ ts::Args* ts::tsp::ControlCommandLine::newCommand(ControlCommand cmd, const UStr
 // Analyze a command line.
 //----------------------------------------------------------------------------
 
-bool ts::tsp::ControlCommandLine::analyze(const UString& line, ControlCommand& cmd, const Args*& args, Report& report)
+bool ts::TSPControlCommand::analyze(const UString& line, ControlCommand& cmd, const Args*& args, Report& report)
 {
     // Split the command.
     UString name;
@@ -149,7 +159,7 @@ bool ts::tsp::ControlCommandLine::analyze(const UString& line, ControlCommand& c
 // Get a formatted help text for all commands.
 //----------------------------------------------------------------------------
 
-ts::UString ts::tsp::ControlCommandLine::getAllHelpText(Args::HelpFormat format, size_t line_width) const
+ts::UString ts::TSPControlCommand::getAllHelpText(Args::HelpFormat format, size_t line_width) const
 {
     // Build a sorted list of command names.
     UStringVector names;

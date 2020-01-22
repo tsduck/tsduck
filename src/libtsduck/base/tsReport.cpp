@@ -46,7 +46,8 @@ constexpr int ts::Severity::Debug;
 //----------------------------------------------------------------------------
 
 ts::Report::Report(int max_severity) :
-    _max_severity(max_severity)
+    _max_severity(max_severity),
+    _got_errors(false)
 {
 }
 
@@ -128,6 +129,9 @@ ts::UString ts::Severity::Header(int severity)
 
 void ts::Report::log(int severity, const UString& msg)
 {
+    if (severity <= Severity::Error) {
+        _got_errors = true;
+    }
     if (severity <= _max_severity) {
         writeLog(severity, msg);
     }

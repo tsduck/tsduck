@@ -52,11 +52,12 @@ namespace ts {
         //! @param [in,out] report Initial report object.
         //! The @a report object is used to forward messages which are sent to this
         //! PluginThread instance (PluginThread is a subclass of Report through TSP).
-        //! @param [in] appName Application name.
+        //! @param [in] appName Application name, for help messages.
+        //! @param [in] type Plugin type.
         //! @param [in] options Command line options for this plugin.
         //! @param [in] attributes Creation attributes for the thread executing this plugin.
         //!
-        PluginThread(Report* report, const UString& appName, const PluginOptions& options, const ThreadAttributes& attributes);
+        PluginThread(Report* report, const UString& appName, PluginType type, const PluginOptions& options, const ThreadAttributes& attributes);
 
         //!
         //! Destructor

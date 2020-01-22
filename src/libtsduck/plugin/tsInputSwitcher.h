@@ -26,15 +26,44 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Implementation of the input plugin switcher (command tsswitch).
+//!
+//----------------------------------------------------------------------------
 
-#include "tstsp.h"
-TSDUCK_SOURCE;
+#pragma once
+#include "tsInputSwitcherArgs.h"
 
-const ts::Enumeration ts::tsp::ControlCommandEnum({
-    {u"exit",    ts::tsp::CMD_EXIT},
-    {u"set-log", ts::tsp::CMD_SETLOG},
-    {u"list",    ts::tsp::CMD_LIST},
-    {u"suspend", ts::tsp::CMD_SUSPEND},
-    {u"resume",  ts::tsp::CMD_RESUME},
-    {u"restart", ts::tsp::CMD_RESTART},
-});
+namespace ts {
+    //!
+    //! Implementation of the input plugin switcher.
+    //! This class is used by the @a tsswitch utility.
+    //! It can also be used in other applications to switch between input plugins.
+    //! @ingroup plugin
+    //!
+    class TSDUCKDLL InputSwitcher
+    {
+        TS_NOBUILD_NOCOPY(InputSwitcher);
+    public:
+        //!
+        //! Constructor.
+        //! The complete input switching session is performed in the constructor.
+        //! @param [in] args Arguments and options.
+        //! @param [in,out] report Where to report errors, logs, etc.
+        //! This object will be used concurrently by all plugin execution threads.
+        //! Consequently, it must be thread-safe. For performance reasons, it should
+        //! be asynchronous (see for instance class AsyncReport).
+        //!
+        InputSwitcher(const InputSwitcherArgs& args, Report& report);
+
+        //!
+        //! Check if the session (completely run in the constructor) was successful.
+        //! @return True on success, false on failure to start.
+        //!
+        bool success() const { return _success; }
+
+    private:
+        bool _success;
+    };
+}

@@ -28,44 +28,44 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Transport stream processor control command server.
+//!  Input switch (tsswitch) remote control command receiver.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tspOptions.h"
-#include "tspInputExecutor.h"
-#include "tspProcessorExecutor.h"
-#include "tspOutputExecutor.h"
-#include "tstspControlCommandLine.h"
+#include "tsInputSwitcherArgs.h"
 #include "tsThread.h"
-#include "tsMutex.h"
-#include "tsTCPServer.h"
-#include "tsReportWithPrefix.h"
+#include "tsUDPReceiver.h"
 
 namespace ts {
-    namespace tsp {
+    //!
+    //! Input switch (tsswitch) namespace.
+    //!
+    namespace tsswitch {
+
+        class Core;
+        class Options;
+
         //!
-        //! Transport stream processor control command server.
+        //! Input switch (tsswitch) remote control command receiver.
         //! @ingroup plugin
         //!
-        class ControlServer : private Thread
+        class CommandListener : private Thread
         {
-            TS_NOBUILD_NOCOPY(ControlServer);
+            TS_NOBUILD_NOCOPY(CommandListener);
         public:
             //!
             //! Constructor.
-            //! @param [in,out] options Command line options for tsp.
+            //! @param [in,out] core Command core instance.
+            //! @param [in] opt Command line options.
             //! @param [in,out] log Log report.
-            //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
-            //! @param [in] input Input plugin executor (start of plugin chain).
             //!
-            ControlServer(Options& options, Report& log, Mutex& global_mutex, InputExecutor* input);
+            CommandListener(Core& core, const InputSwitcherArgs& opt, Report& log);
 
             //!
             //! Destructor.
             //!
-            virtual ~ControlServer();
+            virtual ~CommandListener();
 
             //!
             //! Open and start the command listener.
@@ -79,32 +79,14 @@ namespace ts {
             void close();
 
         private:
-            volatile bool      _is_open;
-            volatile bool      _terminate;
-            Options&           _options;
-            ReportWithPrefix   _log;
-            ControlCommandLine _reference;
-            TCPServer          _server;
-            Mutex&             _mutex;
-            InputExecutor*     _input;
-            OutputExecutor*    _output;
-            std::vector<ProcessorExecutor*> _plugins;  // Packet processing plugins
+            Report&           _log;
+            Core&             _core;
+            InputSwitcherArgs _opt;
+            UDPReceiver       _sock;
+            volatile bool     _terminate;
 
             // Implementation of Thread.
             virtual void main() override;
-
-            // Command handlers.
-            typedef void (ControlServer::* CommandHandler)(const Args*, Report&);
-            std::map<ControlCommand,CommandHandler> _handlers;
-
-            void executeExit(const Args*, Report&);
-            void executeSetLog(const Args*, Report&);
-            void executeList(const Args*, Report&);
-            void listOnePlugin(size_t index, UChar type, PluginExecutor* plugin, Report& report);
-            void executeSuspend(const Args*, Report&);
-            void executeResume(const Args*, Report&);
-            void executeSuspendResume(bool state, const Args*, Report&);
-            void executeRestart(const Args*, Report&);
         };
     }
 }

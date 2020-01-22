@@ -26,10 +26,6 @@
 //  THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Display PSI/SI tables.
-//
-//----------------------------------------------------------------------------
 
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"

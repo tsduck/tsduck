@@ -36,7 +36,7 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::PluginThread::PluginThread(Report* report, const UString& appName, const PluginOptions& options, const ThreadAttributes& attributes) :
+ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginType type, const PluginOptions& options, const ThreadAttributes& attributes) :
     Thread(),
     TSP(report->maxSeverity()),
     _report(report),
@@ -47,7 +47,7 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, const Plu
     const UChar* shellOpt = nullptr;
 
     // Create the plugin instance object
-    switch (options.type) {
+    switch (type) {
         case INPUT_PLUGIN: {
             NewInputProfile allocator = PluginRepository::Instance()->getInput(_name, *report);
             if (allocator != nullptr) {

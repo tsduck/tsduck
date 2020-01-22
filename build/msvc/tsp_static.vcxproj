@@ -81,23 +81,6 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_until.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_zap.cpp" />
     <ClCompile Include="..\..\src\tstools\tsp.cpp" />
-    <ClCompile Include="..\..\src\tstools\tspControlServer.cpp" />
-    <ClCompile Include="..\..\src\tstools\tspInputExecutor.cpp" />
-    <ClCompile Include="..\..\src\tstools\tspJointTermination.cpp" />
-    <ClCompile Include="..\..\src\tstools\tspOptions.cpp" />
-    <ClCompile Include="..\..\src\tstools\tspOutputExecutor.cpp" />
-    <ClCompile Include="..\..\src\tstools\tspPluginExecutor.cpp" />
-    <ClCompile Include="..\..\src\tstools\tspProcessorExecutor.cpp" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ClInclude Include="..\..\src\tstools\tspControlServer.h" />
-    <ClInclude Include="..\..\src\tstools\tspInputExecutor.h" />
-    <ClInclude Include="..\..\src\tstools\tspJointTermination.h" />
-    <ClInclude Include="..\..\src\tstools\tspOptions.h" />
-    <ClInclude Include="..\..\src\tstools\tspOutputExecutor.h" />
-    <ClInclude Include="..\..\src\tstools\tspPluginExecutor.h" />
-    <ClInclude Include="..\..\src\tstools\tspProcessorExecutor.h" />
   </ItemGroup>
 
   <PropertyGroup Label="Globals">

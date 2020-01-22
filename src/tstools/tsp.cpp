@@ -32,16 +32,12 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
-#include "tspOptions.h"
-#include "tspInputExecutor.h"
-#include "tspOutputExecutor.h"
-#include "tspProcessorExecutor.h"
-#include "tspControlServer.h"
+#include "tsTSProcessor.h"
+#include "tsArgsWithPlugins.h"
+#include "tsDuckContext.h"
 #include "tsPluginRepository.h"
 #include "tsAsyncReport.h"
-#include "tsSystemMonitor.h"
-#include "tsMonotonic.h"
-#include "tsResidentBuffer.h"
+#include "tsUserInterrupt.h"
 #include "tsOutputPager.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
@@ -54,41 +50,85 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 
 
 //----------------------------------------------------------------------------
+//  Command line options
+//----------------------------------------------------------------------------
+
+class TSPOptions: public ts::ArgsWithPlugins
+{
+    TS_NOBUILD_NOCOPY(TSPOptions);
+public:
+    TSPOptions(int argc, char *argv[]);
+    virtual ~TSPOptions();
+
+    // Option values
+    ts::DuckContext     duck;             // TSDuck context
+    int                 list_proc_flags;  // List processors, mask of PluginRepository::ListFlag.
+    ts::AsyncReportArgs log_args;         // Asynchronous logger arguments.
+    ts::TSProcessorArgs tsp_args;         // TS processing arguments.
+};
+
+// Destructor.
+TSPOptions::~TSPOptions() {}
+
+// Constructor.
+TSPOptions::TSPOptions(int argc, char *argv[]) :
+    ts::ArgsWithPlugins(0, 1, 0, UNLIMITED_COUNT, 0, 1),
+    duck(this),
+    list_proc_flags(0),
+    log_args(),
+    tsp_args()
+{
+    setDescription(u"MPEG transport stream processor using a chain of plugins");
+
+    setSyntax(u"[tsp-options] \\\n"
+              u"    [-I input-name [input-options]] \\\n"
+              u"    [-P processor-name [processor-options]] ... \\\n"
+              u"    [-O output-name [output-options]]");
+
+    log_args.defineArgs(*this);
+    tsp_args.defineArgs(*this);
+
+    option(u"list-processors", 'l', ts::PluginRepository::ListProcessorEnum, 0, 1, true);
+    help(u"list-processors", u"List all available processors.");
+
+    // Analyze the command.
+    analyze(argc, argv);
+
+    // Load option values.
+    list_proc_flags = present(u"list-processors") ? intValue<int>(u"list-processors", ts::PluginRepository::LIST_ALL) : 0;
+    log_args.loadArgs(duck, *this);
+    tsp_args.loadArgs(duck, *this);
+
+    // Final checking
+    exitOnError();
+}
+
+
+//----------------------------------------------------------------------------
 //  Interrupt handler
 //----------------------------------------------------------------------------
 
-namespace ts {
-    namespace tsp {
-        class TSPInterruptHandler: public InterruptHandler
-        {
-            TS_NOCOPY(TSPInterruptHandler);
-        public:
-            TSPInterruptHandler(AsyncReport* report = nullptr, PluginExecutor* first_plugin = nullptr);
-            virtual void handleInterrupt() override;
-        private:
-            AsyncReport*    _report;
-            PluginExecutor* _first_plugin;
-        };
-    }
-}
+class TSPInterruptHandler: public ts::InterruptHandler
+{
+    TS_NOCOPY(TSPInterruptHandler);
+public:
+    TSPInterruptHandler(ts::AsyncReport* report = nullptr, ts::TSProcessor* tsproc = nullptr);
+    virtual void handleInterrupt() override;
+private:
+    ts::AsyncReport* _report;
+    ts::TSProcessor* _tsproc;
+};
 
-ts::tsp::TSPInterruptHandler::TSPInterruptHandler(AsyncReport* report, PluginExecutor* first_plugin) :
+TSPInterruptHandler::TSPInterruptHandler(ts::AsyncReport* report, ts::TSProcessor* tsproc) :
     _report(report),
-    _first_plugin(first_plugin)
+    _tsproc(tsproc)
 {
 }
 
-void ts::tsp::TSPInterruptHandler::handleInterrupt()
+void TSPInterruptHandler::handleInterrupt()
 {
     _report->info(u"tsp: user interrupt, terminating...");
-
-    // Place all threads in "aborted" state so that each thread will see its
-    // successor as aborted. Notify all threads that something happened.
-
-    PluginExecutor* proc = _first_plugin;
-    do {
-        proc->setAbort();
-    } while ((proc = proc->ringNext<PluginExecutor>()) != _first_plugin);
+    _tsproc->abort();
 }
 
 
@@ -102,10 +142,8 @@ int MainCode(int argc, char *argv[])
     ts::TSPacket::SanityCheck();
 
     // Get command line options.
-    ts::tsp::Options opt(argc, argv);
+    TSPOptions opt(argc, argv);
     CERR.setMaxSeverity(opt.maxSeverity());
-    assert(opt.inputs.size() == 1);
-    assert(opt.outputs.size() == 1);
 
     // Get the repository of plugins.
     ts::PluginRepository* plugins = ts::PluginRepository::Instance();
@@ -140,133 +178,22 @@ int MainCode(int argc, char *argv[])
     // Prevent from being killed when writing on broken pipes.
     ts::IgnorePipeSignal();
 
-    // There is one global mutex for protected operations.
-    // The resulting bottleneck of this single mutex is acceptable as long
-    // as all protected operations are fast (pointer update, simple arithmetic).
-    ts::Mutex global_mutex;
-
-    // Load all plugins and analyze their command line arguments.
-    // The first plugin is always the input and the last one is the output.
-    // The input thread has the highest priority to be always ready to load
-    // incoming packets in the buffer (avoid missing packets). The output
-    // plugin has a hight priority to make room in the buffer, but not as
-    // high as the input which must remain the top-most priority?
-
-    ts::tsp::InputExecutor* input = new ts::tsp::InputExecutor(&opt, &opt.inputs.front(), ts::ThreadAttributes().setPriority(ts::ThreadAttributes::GetMaximumPriority()), global_mutex);
-    ts::tsp::OutputExecutor* output = new ts::tsp::OutputExecutor(&opt, &opt.outputs.front(), ts::ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()), global_mutex);
-    output->ringInsertAfter(input);
-
-    // Check if at least one plugin prefers real-time defaults.
-    bool realtime = opt.realtime == ts::TRUE || input->isRealTime() || output->isRealTime();
-
-    for (auto it = opt.plugins.begin(); it != opt.plugins.end(); ++it) {
-        ts::tsp::PluginExecutor* p = new ts::tsp::ProcessorExecutor(&opt, &*it, ts::ThreadAttributes(), global_mutex);
-        p->ringInsertBefore(output);
-        realtime = realtime || p->isRealTime();
-    }
-
-    // Check if realtime defaults are explicitly disabled.
-    if (opt.realtime == ts::FALSE) {
-        realtime = false;
-    }
-
-    // Now, we definitely know if we are in offline or realtime mode.
-    // Adjust some default parameters.
-    opt.applyDefaults(realtime);
-
-    // Exit on error when initializing the plugins
-    opt.exitOnError();
-
     // Create an asynchronous error logger. Can be used in multi-threaded context.
-    ts::AsyncReport report(opt.maxSeverity(), opt.timed_log, opt.log_msg_count, opt.sync_log);
+    ts::AsyncReport report(opt.maxSeverity(), opt.log_args);
 
-    // Initialize all executors.
-    ts::tsp::PluginExecutor* proc = input;
-    do {
-        // Set the asynchronous logger as report method for all executors.
-        proc->setReport(&report);
-        proc->setMaxSeverity(report.maxSeverity());
-        // Also set realtime defaults.
-        proc->setRealTimeForAll(realtime);
-        // And decode command line parameters for the plugin.
-        if (!proc->plugin()->getOptions()) {
-            return EXIT_FAILURE;
-        }
-    } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
-
-    // Allocate a memory-resident buffer of TS packets
-    ts::tsp::PluginExecutor::PacketBuffer packet_buffer(opt.bufsize / ts::PKT_SIZE);
-    if (!packet_buffer.isLocked()) {
-        report.verbose(u"tsp: buffer failed to lock into physical memory (%d: %s), risk of real-time issue",
-                       {packet_buffer.lockErrorCode(), ts::ErrorCodeMessage(packet_buffer.lockErrorCode())});
-    }
-    report.debug(u"tsp: buffer size: %'d TS packets, %'d bytes", {packet_buffer.count(), packet_buffer.count() * ts::PKT_SIZE});
-
-    // Buffer for the packet metadata.
-    // A packet and its metadata have the same index in their respective buffer.
-    ts::tsp::PluginExecutor::PacketMetadataBuffer metadata_buffer(packet_buffer.count());
-
-    // Start all processors, except output, in reverse order (input last).
-    // Exit application in case of error.
-    for (proc = output->ringPrevious<ts::tsp::PluginExecutor>(); proc != output; proc = proc->ringPrevious<ts::tsp::PluginExecutor>()) {
-        if (!proc->plugin()->start()) {
-            return EXIT_FAILURE;
-        }
-    }
-
-    // Initialize packet buffer in the ring of executors.
-    // Exit application in case of error.
-    if (!input->initAllBuffers(&packet_buffer, &metadata_buffer)) {
-        return EXIT_FAILURE;
-    }
-
-    // Start the output device (we now have an idea of the bitrate).
-    // Exit application in case of error.
-    assert(output != nullptr);
-    assert(output->plugin() != nullptr);
-    if (!output->plugin()->start()) {
-        return EXIT_FAILURE;
-    }
+    // The TS processing is performed into this object.
+    ts::TSProcessor tsproc(report);
 
     // Use a Ctrl+C interrupt handler
-    ts::tsp::TSPInterruptHandler interrupt_handler(&report, input);
+    TSPInterruptHandler interrupt_handler(&report, &tsproc);
     ts::UserInterrupt interrupt_manager(&interrupt_handler, true, true);
 
-    // Create a monitoring thread if required.
-    ts::SystemMonitor monitor(&report);
-    if (opt.monitor) {
-        monitor.start();
+    // Start the TS processing.
+    if (!tsproc.start(opt.tsp_args)) {
+        return EXIT_FAILURE;
     }
 
-    // Create all plugin executors threads.
-    proc = input;
-    do {
-        proc->start();
-    } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
-
-    // Create a control server thread. Display but ignore errors (not a fatal error).
-    ts::tsp::ControlServer control(opt, report, global_mutex, input);
-    control.open();
-
-    // Wait for threads to terminate
-    proc = input;
-    do {
-        proc->waitForTermination();
-    } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
-
-    // Make sure the control server thread is terminated before deleting plugins.
-    control.close();
-
-    // Deallocate all plugins and plugin executor
-    bool last;
-    proc = input;
-    do {
-        last = proc->ringAlone();
-        ts::tsp::PluginExecutor* next = proc->ringNext<ts::tsp::PluginExecutor>();
-        proc->ringRemove();
-        delete proc;
-        proc = next;
-    } while (!last);
-
+    // And wait for TS processing termination.
+    tsproc.waitForTermination();
     return EXIT_SUCCESS;
 }

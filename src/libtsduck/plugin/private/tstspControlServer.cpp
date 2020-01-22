@@ -27,8 +27,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tspControlServer.h"
-#include "tspPluginExecutor.h"
+#include "tstspControlServer.h"
+#include "tstspPluginExecutor.h"
 #include "tsNullMutex.h"
 #include "tsNullReport.h"
 #include "tsReportBuffer.h"
@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsp::ControlServer::ControlServer(Options& options, Report& log, Mutex& global_mutex, InputExecutor* input) :
+ts::tsp::ControlServer::ControlServer(TSProcessorArgs& options, Report& log, Mutex& global_mutex, InputExecutor* input) :
     _is_open(false),
     _terminate(false),
     _options(options),
@@ -53,12 +53,12 @@ ts::tsp::ControlServer::ControlServer(Options& options, Report& log, Mutex& glob
     _input(input),
     _output(nullptr),
     _plugins(),
-    _handlers{{CMD_EXIT,    &ControlServer::executeExit},
-              {CMD_SETLOG,  &ControlServer::executeSetLog},
-              {CMD_LIST,    &ControlServer::executeList},
-              {CMD_SUSPEND, &ControlServer::executeSuspend},
-              {CMD_RESUME,  &ControlServer::executeResume},
-              {CMD_RESTART, &ControlServer::executeRestart}}
+    _handlers{{TSPControlCommand::CMD_EXIT,    &ControlServer::executeExit},
+              {TSPControlCommand::CMD_SETLOG,  &ControlServer::executeSetLog},
+              {TSPControlCommand::CMD_LIST,    &ControlServer::executeList},
+              {TSPControlCommand::CMD_SUSPEND, &ControlServer::executeSuspend},
+              {TSPControlCommand::CMD_RESUME,  &ControlServer::executeResume},
+              {TSPControlCommand::CMD_RESTART, &ControlServer::executeRestart}}
 {
     // Locate output plugin, count packet processor plugins.
     if (_input != nullptr) {
@@ -168,7 +168,7 @@ void ts::tsp::ControlServer::main()
             conn.setMaxSeverity(Severity::Info);
 
             // Analyze the command, return errors on the client connection.
-            ControlCommand cmd = CMD_NONE;
+            TSPControlCommand::ControlCommand cmd = TSPControlCommand::CMD_NONE;
             const Args* args = nullptr;
             CommandHandler handler = nullptr;
             if (_reference.analyze(line, cmd, args, conn)) {

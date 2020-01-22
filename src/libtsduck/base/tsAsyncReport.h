@@ -35,6 +35,7 @@
 #pragma once
 #include "tsReport.h"
 #include "tsReportHandler.h"
+#include "tsAsyncReportArgs.h"
 #include "tsMessageQueue.h"
 #include "tsNullMutex.h"
 #include "tsThread.h"
@@ -62,24 +63,13 @@ namespace ts {
         TS_NOCOPY(AsyncReport);
     public:
         //!
-        //! Default maximum number of messages in the queue.
-        //! Must be limited since the logging thread has a low priority.
-        //! If a high priority thread loops on report, it would exhaust the memory.
-        //!
-        static const size_t MAX_LOG_MESSAGES = 512;
-
-        //!
         //! Constructor.
         //! The default initial report level is Info.
         //! @param [in] max_severity Set initial level report to that level.
-        //! @param [in] time_stamp If true, time stamps are added to all messages.
-        //! @param [in] max_messages Maximum number of buffered messages.
-        //! @param [in] synchronous If true, the delivery of messages is synchronous.
-        //! No message is dropped, all messages are delivered. The downside is that
-        //! the emitted thread may be temporarily blocked when the message queue is
-        //! full. By default, @a synchronous is false.
+        //! @param [in] args Initial parameters.
+        //! @see AsyncReportArgs
         //!
-        AsyncReport(int max_severity = Severity::Info, bool time_stamp = false, size_t max_messages = MAX_LOG_MESSAGES, bool synchronous = false);
+        AsyncReport(int max_severity = Severity::Info, const AsyncReportArgs& args = AsyncReportArgs());
 
         //!
         //! Destructor.

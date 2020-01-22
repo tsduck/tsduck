@@ -26,12 +26,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor: Execution context of an output plugin
-//
-//----------------------------------------------------------------------------
 
-#include "tspOutputExecutor.h"
+#include "tstspOutputExecutor.h"
 TSDUCK_SOURCE;
 
 
@@ -39,12 +35,13 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::tsp::OutputExecutor::OutputExecutor(Options* options,
-                                        const PluginOptions* pl_options,
+ts::tsp::OutputExecutor::OutputExecutor(const TSProcessorArgs& options,
+                                        const PluginOptions& pl_options,
                                         const ThreadAttributes& attributes,
-                                        Mutex& global_mutex) :
+                                        Mutex& global_mutex,
+                                        Report* report) :
 
-    PluginExecutor(options, pl_options, attributes, global_mutex),
+    PluginExecutor(options, OUTPUT_PLUGIN, pl_options, attributes, global_mutex, report),
     _output(dynamic_cast<OutputPlugin*>(PluginThread::plugin()))
 {
 }

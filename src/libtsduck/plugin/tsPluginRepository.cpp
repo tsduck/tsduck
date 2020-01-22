@@ -35,6 +35,14 @@ TSDUCK_SOURCE;
 
 TS_DEFINE_SINGLETON(ts::PluginRepository);
 
+// Options for --list-processor.
+const ts::Enumeration ts::PluginRepository::ListProcessorEnum({
+    {u"all",    ts::PluginRepository::LIST_ALL},
+    {u"input",  ts::PluginRepository::LIST_INPUT  | ts::PluginRepository::LIST_COMPACT},
+    {u"output", ts::PluginRepository::LIST_OUTPUT | ts::PluginRepository::LIST_COMPACT},
+    {u"packet", ts::PluginRepository::LIST_PACKET | ts::PluginRepository::LIST_COMPACT},
+});
+
 
 //----------------------------------------------------------------------------
 // Constructors

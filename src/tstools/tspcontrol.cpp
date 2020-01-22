@@ -34,7 +34,7 @@
 #include "tsMain.h"
 #include "tsArgs.h"
 #include "tsTelnetConnection.h"
-#include "tstspControlCommandLine.h"
+#include "tsTSPControlCommand.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
@@ -50,9 +50,9 @@ public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
-    ts::tsp::ControlCommandLine command_reference;
-    ts::UString                 command_line;
-    ts::SocketAddress           tsp_address;
+    ts::TSPControlCommand command_reference;
+    ts::UString           command_line;
+    ts::SocketAddress     tsp_address;
 
     // Inherited methods.
     virtual ts::UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;
@@ -84,7 +84,7 @@ Options::Options(int argc, char *argv[]) :
     // Validate the control command. It will be validated inside tsp anyway
     // but let's not send an invalid command. Not all commands can be fully
     // validated outside the context of the tsp, but let's filter most errors.
-    ts::tsp::ControlCommand cmd = ts::tsp::CMD_NONE;
+    ts::TSPControlCommand::ControlCommand cmd = ts::TSPControlCommand::CMD_NONE;
     const ts::Args* ref = nullptr;
     if (!command_reference.analyze(command_line, cmd, ref, *this)) {
         error(u"invalid tsp control command: %s", {command_line});

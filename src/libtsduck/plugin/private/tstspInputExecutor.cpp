@@ -26,12 +26,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor: Execution context of an input plugin
-//
-//----------------------------------------------------------------------------
 
-#include "tspInputExecutor.h"
+#include "tstspInputExecutor.h"
 #include "tsTime.h"
 TSDUCK_SOURCE;
 
@@ -45,29 +41,30 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::tsp::InputExecutor::InputExecutor(Options* options,
-                                      const PluginOptions* pl_options,
+ts::tsp::InputExecutor::InputExecutor(const TSProcessorArgs& options,
+                                      const PluginOptions& pl_options,
                                       const ThreadAttributes& attributes,
-                                      Mutex& global_mutex) :
+                                      Mutex& global_mutex,
+                                      Report* report) :
 
-    PluginExecutor(options, pl_options, attributes, global_mutex),
+    PluginExecutor(options, INPUT_PLUGIN, pl_options, attributes, global_mutex, report),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
     _in_sync_lost(false),
-    _instuff_start_remain(options->instuff_start),
-    _instuff_stop_remain(options->instuff_stop),
+    _instuff_start_remain(options.instuff_start),
+    _instuff_stop_remain(options.instuff_stop),
     _instuff_nullpkt_remain(0),
     _instuff_inpkt_remain(0),
     _pcr_analyzer(MIN_ANALYZE_PID, MIN_ANALYZE_PCR),
     _dts_analyzer(),
     _use_dts_analyzer(false),
-    _watchdog(this, options->receive_timeout, 0, *this),
+    _watchdog(this, options.receive_timeout, 0, *this),
     _use_watchdog(false)
 {
     // Configure PTS/DTS analyze
     _dts_analyzer.resetAndUseDTS(MIN_ANALYZE_PID, MIN_ANALYZE_DTS);
 
     // Propose receive timeout to input plugin.
-    if (options->receive_timeout > 0 && !_input->setReceiveTimeout(options->receive_timeout)) {
+    if (options.receive_timeout > 0 && !_input->setReceiveTimeout(options.receive_timeout)) {
         debug(u"%s input plugin does not support receive timeout, using watchdog and abort", {pluginName()});
         _use_watchdog = true;
     }
@@ -125,17 +122,17 @@ bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer, PacketMetadata
 ts::BitRate ts::tsp::InputExecutor::getBitrate()
 {
     // Get bitrate from --bitrate command line option or from plugin otherwise.
-    BitRate bitrate = _options->bitrate > 0 ? _options->bitrate : _input->getBitrate();
+    BitRate bitrate = _options.bitrate > 0 ? _options.bitrate : _input->getBitrate();
 
     if (bitrate != 0) {
         // Got a bitrate value from command line or plugin.
-        if (_options->instuff_inpkt == 0) {
+        if (_options.instuff_inpkt == 0) {
             // No artificial input stuffing, use that bitrate.
             return bitrate;
         }
         else {
             // Need to adjust with artificial input stuffing.
-            return BitRate((uint64_t(bitrate) * uint64_t(_options->instuff_nullpkt + _options->instuff_inpkt)) / uint64_t(_options->instuff_inpkt));
+            return BitRate((uint64_t(bitrate) * uint64_t(_options.instuff_nullpkt + _options.instuff_inpkt)) / uint64_t(_options.instuff_inpkt));
         }
     }
 
@@ -278,7 +275,7 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(size_t index, size_t max_packets)
     }
 
     // Now read real packets.
-    if (_options->instuff_inpkt == 0) {
+    if (_options.instuff_inpkt == 0) {
         // There is no --add-input-stuffing option, simply call the plugin
         pkt_from_input = receiveAndValidate(index, pkt_remain);
         pkt_done += pkt_from_input;
@@ -301,7 +298,7 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(size_t index, size_t max_packets)
 
             // Restart sequence of input packets to read after reading intermediate null packets.
             if (_instuff_nullpkt_remain == 0 && _instuff_inpkt_remain == 0) {
-                _instuff_inpkt_remain = _options->instuff_inpkt;
+                _instuff_inpkt_remain = _options.instuff_inpkt;
             }
 
             // Read input packets from the plugin
@@ -315,7 +312,7 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(size_t index, size_t max_packets)
 
             // Restart sequence of null packets to stuff after reading chunk of input packets.
             if (_instuff_nullpkt_remain == 0 && _instuff_inpkt_remain == 0) {
-                _instuff_nullpkt_remain = _options->instuff_nullpkt;
+                _instuff_nullpkt_remain = _options.instuff_nullpkt;
             }
 
             // If input plugin returned less than expected, exit now
@@ -340,8 +337,8 @@ void ts::tsp::InputExecutor::main()
     debug(u"input thread started");
 
     Time current_time(Time::CurrentUTC());
-    Time bitrate_due_time(current_time + _options->bitrate_adj);
-    PacketCounter bitrate_due_packet = _options->init_bitrate_adj;
+    Time bitrate_due_time(current_time + _options.bitrate_adj);
+    PacketCounter bitrate_due_packet = _options.init_bitrate_adj;
     bool plugin_completed = false;
     bool input_end = false;
     bool aborted = false;
@@ -376,8 +373,8 @@ void ts::tsp::InputExecutor::main()
         }
 
         // Do not read more packets than request by --max-input-packets
-        if (_options->max_input_pkt > 0 && pkt_max > _options->max_input_pkt) {
-            pkt_max = _options->max_input_pkt;
+        if (_options.max_input_pkt > 0 && pkt_max > _options.max_input_pkt) {
+            pkt_max = _options.max_input_pkt;
         }
 
         // Now read at most the specified number of packets (pkt_max).
@@ -402,12 +399,12 @@ void ts::tsp::InputExecutor::main()
         // Process periodic bitrate adjustment.
         // In initial phase, as long as the bitrate is unknown, retry every init_bitrate_adj packets.
         // Once the bitrate is known, retry every bitrate_adj milliseconds.
-        if (_options->bitrate == 0 && ((_tsp_bitrate == 0 && pluginPackets() >= bitrate_due_packet) || (current_time = Time::CurrentUTC()) > bitrate_due_time)) {
+        if (_options.bitrate == 0 && ((_tsp_bitrate == 0 && pluginPackets() >= bitrate_due_packet) || (current_time = Time::CurrentUTC()) > bitrate_due_time)) {
 
             // When bitrate is unknown, retry in a fixed amount of packets.
             if (_tsp_bitrate == 0) {
                 do {
-                    bitrate_due_packet += _options->init_bitrate_adj;
+                    bitrate_due_packet += _options.init_bitrate_adj;
                 } while (bitrate_due_packet <= pluginPackets());
             }
 
@@ -415,7 +412,7 @@ void ts::tsp::InputExecutor::main()
             // use a monotonic time (we use current time and not due time as
             // base for next calculation).
             if (current_time >= bitrate_due_time) {
-                bitrate_due_time = current_time + _options->bitrate_adj;
+                bitrate_due_time = current_time + _options.bitrate_adj;
             }
 
             // Call shared library to get input bitrate
