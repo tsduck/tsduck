@@ -116,7 +116,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install doxygen graphviz
+        sudo apt install dos2unix curl tar libpcsclite-dev libcurl4 libcurl4-openssl-dev doxygen graphviz
     - name: Build TSDuck documentation
       run: make doxygen
 

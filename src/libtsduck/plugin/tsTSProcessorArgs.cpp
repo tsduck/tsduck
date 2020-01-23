@@ -50,7 +50,7 @@ ts::TSProcessorArgs::TSProcessorArgs() :
     app_name(),
     monitor(false),
     ignore_jt(false),
-    bufsize(0),
+    bufsize(DEF_BUFSIZE_MB * 1000000),
     max_flush_pkt(0),
     max_input_pkt(0),
     instuff_nullpkt(0),
@@ -58,7 +58,7 @@ ts::TSProcessorArgs::TSProcessorArgs() :
     instuff_start(0),
     instuff_stop(0),
     bitrate(0),
-    bitrate_adj(0),
+    bitrate_adj(DEF_BITRATE_INTERVAL * MilliSecPerSec),
     init_bitrate_adj(DEF_INIT_BITRATE_PKT_INTERVAL),
     realtime(Tristate::MAYBE),
     receive_timeout(0),
@@ -249,6 +249,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     }
 
     // Decode --add-input-stuffing nullpkt/inpkt.
+    instuff_nullpkt = instuff_inpkt = 0;
     if (args.present(u"add-input-stuffing") && !args.value(u"add-input-stuffing").scan(u"%d/%d", {&instuff_nullpkt, &instuff_inpkt})) {
         args.error(u"invalid value for --add-input-stuffing, use \"nullpkt/inpkt\" format");
     }

@@ -15,6 +15,6 @@ endif
 default: myexec
 
 clean:
-	rm -rf *.o
+	rm -rf *.o *.ts
 distclean: clean
 	rm -rf myexec
