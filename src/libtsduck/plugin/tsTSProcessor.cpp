@@ -68,11 +68,16 @@ ts::TSProcessor::~TSProcessor()
 
 void ts::TSProcessor::cleanupInternal()
 {
-    // We are in a cleanup phase, everything is stopped, no need to lock.
+    // Abort and wait for threads to terminate
+    tsp::PluginExecutor* proc = _input;
+    do {
+        proc->setAbort();
+        proc->waitForTermination();
+    } while ((proc = proc->ringNext<tsp::PluginExecutor>()) != _input);
 
     // Deallocate all plugin executors.
     bool last = false;
-    tsp::PluginExecutor* proc = _input;
+    proc = _input;
     do {
         last = proc->ringAlone();
         tsp::PluginExecutor* next = proc->ringNext<ts::tsp::PluginExecutor>();
@@ -127,6 +132,9 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         // Keep command line options for further use.
         _args = args;
 
+        // Clear errors on the report, used to check further initialisation errors.
+        _report.resetErrors();
+
         // Load all plugins and analyze their command line arguments.
         // The first plugin is always the input and the last one is the output.
         // The input thread has the highest priority to be always ready to load
@@ -139,7 +147,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
 
         _output = new tsp::OutputExecutor(_args, _args.output, ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()), _mutex, &_report);
         CheckNonNull(_output);
-        
+
         _output->ringInsertAfter(_input);
 
         // Check if at least one plugin prefers real-time defaults.
