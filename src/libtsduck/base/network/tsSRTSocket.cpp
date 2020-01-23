@@ -240,9 +240,9 @@ void ts::SRTSocket::defineArgs(ts::Args& args) const
 #define NOSRT_ERROR_MSG u"This version of TSDuck was compiled without SRT support"
 #define NOSRT_ERROR { report.error(NOSRT_ERROR_MSG); return false; }
 
-ts::SRTSocket::SRTSocket(SRTSocketMode mode, Report& report) : _guts(nullptr) {}
+ts::SRTSocket::SRTSocket() : _guts(nullptr) {}
 ts::SRTSocket::~SRTSocket() {}
-bool ts::SRTSocket::open(const ts::SocketAddress& addr, ts::Report& report) NOSRT_ERROR
+bool ts::SRTSocket::open(SRTSocketMode mode, const ts::SocketAddress& local_addr, const ts::SocketAddress& remote_addr, ts::Report& report) NOSRT_ERROR
 bool ts::SRTSocket::close(ts::Report& report) NOSRT_ERROR
 bool ts::SRTSocket::loadArgs(ts::DuckContext& duck, ts::Args& args) { return true; }
 bool ts::SRTSocket::send(const void* data, size_t size, ts::Report& report) NOSRT_ERROR
@@ -290,10 +290,10 @@ ts::UString ts::SRTSocket::GetLibraryVersion()
 
 class ts::SRTSocket::Guts
 {
-     TS_NOBUILD_NOCOPY(Guts);
+     TS_NOCOPY(Guts);
 public:
      // Default constructor.
-     explicit Guts(SRTSocketMode mode);
+     Guts();
 
      bool send(const void* data, size_t size, const SocketAddress& dest, Report& report);
      bool setDefaultAddress(const UString& name, Report& report);
@@ -303,6 +303,7 @@ public:
      bool setSockOptPost(Report& report);
      int srtListen(const SocketAddress& addr, Report& report);
      int srtConnect(const SocketAddress& addr, Report& report);
+     int srtBind(const SocketAddress& addr, Report& report);
 
      // Socket working data.
      SocketAddress default_address;
@@ -349,9 +350,9 @@ public:
 // Guts constructor.
 //----------------------------------------------------------------------------
 
-ts::SRTSocket::Guts::Guts(SRTSocketMode mode_) :
+ts::SRTSocket::Guts::Guts() :
     default_address(),
-    mode(mode_),
+    mode(LISTENER),
     sock(-1),  // do not use TS_SOCKET_T_INVALID, an SRT socket is not a socket, it is always an int
     transtype(SRTT_INVALID),
     packet_filter(),
@@ -393,8 +394,8 @@ ts::SRTSocket::Guts::Guts(SRTSocketMode mode_) :
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::SRTSocket::SRTSocket(SRTSocketMode mode, Report& report) :
-    _guts(new Guts(mode))
+ts::SRTSocket::SRTSocket() :
+    _guts(new Guts)
 {
     CheckNonNull(_guts);
     srt_startup();
@@ -465,11 +466,14 @@ bool ts::SRTSocket::Guts::setDefaultAddress(const ts::SocketAddress& addr, ts::R
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::SRTSocket::open(const ts::SocketAddress& addr, ts::Report& report)
+bool ts::SRTSocket::open(SRTSocketMode mode,
+                         const ts::SocketAddress& local_addr,
+                         const ts::SocketAddress& remote_addr,
+                         ts::Report& report)
 {
     int ret = 0;
-    ::sockaddr sock_addr;
-    addr.copy(sock_addr);
+
+    _guts->mode = mode;
 
     // Only supports IPv4.
     _guts->sock = srt_socket(AF_INET, SOCK_DGRAM, 0);
@@ -484,20 +488,24 @@ bool ts::SRTSocket::open(const ts::SocketAddress& addr, ts::Report& report)
 
     switch (_guts->mode) {
         case LISTENER:
-            ret = _guts->srtListen(addr, report);
+            ret = _guts->srtListen(local_addr, report);
             if (ret < 0) {
                 goto fail;
             }
             _guts->sock = ret;
             break;
+        case RENDEZVOUS:
+            ret = _guts->srtBind(local_addr, report);
+            if (ret < 0) {
+                goto fail;
+            }
+            TS_FALLTHROUGH
         case CALLER:
-            ret = _guts->srtConnect(addr, report);
+            ret = _guts->srtConnect(remote_addr, report);
             if (ret < 0) {
                 goto fail;
             }
             break;
-        case RENDEZVOUS:
-            // TODO not supported for now.
         case LEN:
         default:
             report.error(u"unsupported socket mode");
@@ -606,7 +614,9 @@ bool ts::SRTSocket::Guts::setSockOptPre(ts::Report& report)
 {
     const int yes     = 1;
     const int msgapi  = messageapi ? 1 : 0;
+#if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
     const int encrypt = enforce_encryption ? 1 : 0;
+#endif
     const int nakrep  = nakreport ? 1 : 0;
     const int pktdrop = tlpktdrop ? 1 : 0;
 
@@ -614,6 +624,7 @@ bool ts::SRTSocket::Guts::setSockOptPre(ts::Report& report)
         (transtype != SRTT_INVALID && !setSockOpt(SRTO_TRANSTYPE, "SRTO_TRANSTYPE", &transtype, sizeof(transtype), report)) ||
         (!setSockOpt(SRTO_MESSAGEAPI, "SRTO_MESSAGEAPI", &msgapi, sizeof(msgapi), report)) ||
         (conn_timeout >= 0 && !setSockOpt(SRTO_CONNTIMEO, "SRTO_CONNTIMEO", &conn_timeout, sizeof(conn_timeout), report)) ||
+        (mode == SRTSocketMode::RENDEZVOUS && !setSockOpt(SRTO_RENDEZVOUS, "SRTO_RENDEZVOUS", &yes, sizeof(yes), report)) ||
         (ffs > 0 && !setSockOpt(SRTO_FC, "SRTO_FC", &ffs, sizeof(ffs), report)) ||
         (iptos >= 0 && !setSockOpt(SRTO_IPTOS, "SRTO_IPTOS", &iptos, sizeof(iptos), report)) ||
         (ipttl > 0 && !setSockOpt(SRTO_IPTTL, "SRTO_IPTTL", &ipttl, sizeof(ipttl), report)) ||
@@ -718,7 +729,20 @@ int ts::SRTSocket::Guts::srtConnect(const ts::SocketAddress& addr, ts::Report& r
     ret = srt_connect(sock, &sock_addr, sizeof(sock_addr));
     if (ret < 0) {
         report.error(u"error during srt_connect, msg: %s", { srt_getlasterror_str() });
-        return ret;
+    }
+
+    return ret;
+}
+
+int ts::SRTSocket::Guts::srtBind(const ts::SocketAddress& addr, ts::Report& report)
+{
+    int ret;
+    ::sockaddr sock_addr;
+    addr.copy(sock_addr);
+
+    ret = srt_bind(sock, &sock_addr, sizeof(sock_addr));
+    if (ret < 0) {
+        report.error(u"error during srt_bind, msg: %s", { srt_getlasterror_str() });
     }
 
     return ret;
@@ -736,10 +760,6 @@ bool ts::SRTSocket::send(const void* data, size_t size, ts::Report& report)
 bool ts::SRTSocket::Guts::send(const void* data, size_t size, const ts::SocketAddress& dest, ts::Report& report)
 {
     int ret = srt_send(sock, reinterpret_cast<const char*>(data), int(size));
-    if (srt_getlasterror(nullptr) == SRT_EASYNCSND) {
-        report.warning(u"not enough space to send data with size %d, msg: %s", { size, srt_getlasterror_str() });
-        return true;
-    }
     if (ret < 0) {
         report.error(u"error during srt_send(), msg: %s", { srt_getlasterror_str() });
         return false;
@@ -756,19 +776,12 @@ bool ts::SRTSocket::Guts::send(const void* data, size_t size, const ts::SocketAd
 bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, ts::Report& report)
 {
     const int ret = srt_recv(_guts->sock, reinterpret_cast<char*>(data), int(max_size));
-    // For non-blocking mode only, if no data available yet
-    if (srt_getlasterror(nullptr) == SRT_EASYNCRCV) {
-        ret_size = 0;
-        return true;
-    }
-    else if (ret < 0) {
+    if (ret < 0) {
         report.error(u"error during srt_recv(), msg: %s", { srt_getlasterror_str() });
         return false;
     }
-    else {
-        ret_size = size_t(ret);
-        return true;
-    }
+    ret_size = size_t(ret);
+    return true;
 }
 
 #endif // TS_NOSRT

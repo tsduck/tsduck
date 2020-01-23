@@ -38,8 +38,10 @@ TSDUCK_SOURCE;
 
 ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
     AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE, u"Receive TS packets from Secure Reliable Transport (SRT)", u"[options] [address:]port"),
-    _sock(SRTSocketMode::CALLER, *tsp_),
-    _bind_addr()
+    _sock(),
+    _mode(SRTSocketMode::CALLER),
+    _local_addr(),
+    _remote_addr()
 {
     _sock.defineArgs(*this);
 
@@ -49,6 +51,9 @@ ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
          u"The 'address' specifies a unicast IP address. "
          u"It can be also a host name that translates to an IP address. "
          u"The 'port' specifies the destination SRT port.");
+
+    option(u"rendezvous", 0, ts::Args::STRING);
+    help(u"rendezvous", u"address:port", u"Specify local address and port for rendez-vous mode.");
 }
 
 
@@ -59,9 +64,18 @@ ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
 bool ts::SRTInputPlugin::getOptions()
 {
     const UString source(value( u""));
-    if (source.empty() || !_bind_addr.resolve(source)) {
+    if (source.empty() || !_remote_addr.resolve(source)) {
         tsp->error(u"Invalid destination address and port: %s", {source});
         return false;
+    }
+
+    const UString local(value(u"rendezvous"));
+    if (!local.empty()) {
+        _mode = SRTSocketMode::RENDEZVOUS;
+        if (!_local_addr.resolve(local)) {
+            tsp->error(u"Invalid local address and port: %s", {local});
+            return false;
+        }
     }
 
     // Get command line arguments for superclass and socket.
@@ -76,7 +90,7 @@ bool ts::SRTInputPlugin::getOptions()
 bool ts::SRTInputPlugin::start()
 {
     // Initialize superclass and UDP socket.
-    return AbstractDatagramInputPlugin::start() && _sock.open(_bind_addr, *tsp);
+    return AbstractDatagramInputPlugin::start() && _sock.open(_mode, _local_addr, _remote_addr, *tsp);
 }
 
 
