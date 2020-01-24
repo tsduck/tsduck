@@ -68,7 +68,10 @@ bool ts::SRTOutputPlugin::getOptions(void)
     }
 
     const UString remote(value(u"rendezvous"));
-    if (!remote.empty()) {
+    if (remote.empty()) {
+        _mode = SRTSocketMode::LISTENER;
+    }
+    else {
         _mode = SRTSocketMode::RENDEZVOUS;
         if (!_remote_addr.resolve(remote)) {
             tsp->error(u"Invalid remote address and port: %s", {remote});
