@@ -1,3 +1,4 @@
+//----------------------------------------------------------------------------
 //
 // TSDuck sample application running a chain of plugins.
 // One of the plugins is a custom one, in this source file.
@@ -8,13 +9,17 @@
 //   export LD_LIBRARY_PATH=/usr/bin
 // Use /usr/local instead of /usr on macOS.
 //
+//----------------------------------------------------------------------------
 
 #include "tsduck.h"
 
-//
+
+//----------------------------------------------------------------------------
 // A sample custom packet processing plugin.
-// The plugin takes one optional parameter, a PID, and counts all packets in that PID.
-//
+// The plugin takes one optional parameter, a PID,
+// and counts all packets in that PID.
+//----------------------------------------------------------------------------
+
 class FooBarPlugin: public ts::ProcessorPlugin
 {
 public:
@@ -86,9 +91,11 @@ ts::ProcessorPlugin::Status FooBarPlugin::processPacket(ts::TSPacket& pkt, ts::T
     return TSP_OK;
 }
 
-//
+
+//----------------------------------------------------------------------------
 // Application entry point.
-//
+//----------------------------------------------------------------------------
+
 int main(int argc, char* argv[])
 {
     // Register our custom plugin with the name "foobar".
@@ -100,11 +107,12 @@ int main(int argc, char* argv[])
 
     // Build tsp options. Accept most default values, except a few ones.
     ts::TSProcessorArgs opt;
-    opt.monitor = true;       // use a system monitor threads.
-    opt.instuff_start = 10;   // insert 10 null packets at start of stream.
-    opt.instuff_stop = 5;     // insert 5 null packets at end of stream.
+    opt.app_name = u"myexec";  // for error messages only.
+    opt.monitor = true;        // use a system monitor threads.
+    opt.instuff_start = 10;    // insert 10 null packets at start of stream.
+    opt.instuff_stop = 5;      // insert 5 null packets at end of stream.
 
-    // Use "http" input plugin, using a TS file from the TSDuck stream repository.
+    // Use "http" input plugin, using a small TS file from the TSDuck stream repository.
     // Repeat the file twice.
     opt.input = {u"http", {u"--repeat", u"2", u"https://tsduck.io/streams/test-patterns/test-3packets-04-05-06.ts"}};
 

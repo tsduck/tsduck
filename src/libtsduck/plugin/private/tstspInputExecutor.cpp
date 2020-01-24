@@ -122,7 +122,7 @@ bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer, PacketMetadata
 ts::BitRate ts::tsp::InputExecutor::getBitrate()
 {
     // Get bitrate from --bitrate command line option or from plugin otherwise.
-    BitRate bitrate = _options.bitrate > 0 ? _options.bitrate : _input->getBitrate();
+    BitRate bitrate = _options.fixed_bitrate > 0 ? _options.fixed_bitrate : _input->getBitrate();
 
     if (bitrate != 0) {
         // Got a bitrate value from command line or plugin.
@@ -399,7 +399,7 @@ void ts::tsp::InputExecutor::main()
         // Process periodic bitrate adjustment.
         // In initial phase, as long as the bitrate is unknown, retry every init_bitrate_adj packets.
         // Once the bitrate is known, retry every bitrate_adj milliseconds.
-        if (_options.bitrate == 0 && ((_tsp_bitrate == 0 && pluginPackets() >= bitrate_due_packet) || (current_time = Time::CurrentUTC()) > bitrate_due_time)) {
+        if (_options.fixed_bitrate == 0 && ((_tsp_bitrate == 0 && pluginPackets() >= bitrate_due_packet) || (current_time = Time::CurrentUTC()) > bitrate_due_time)) {
 
             // When bitrate is unknown, retry in a fixed amount of packets.
             if (_tsp_bitrate == 0) {

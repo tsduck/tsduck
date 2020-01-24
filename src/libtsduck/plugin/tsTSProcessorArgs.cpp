@@ -32,7 +32,11 @@
 #include "tsArgsWithPlugins.h"
 TSDUCK_SOURCE;
 
-#define DEF_BUFSIZE_MB                    16  // mega-bytes
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+const size_t ts::TSProcessorArgs::DEFAULT_BUFFER_SIZE;
+const size_t ts::TSProcessorArgs::MIN_BUFFER_SIZE;
+#endif
+
 #define DEF_BITRATE_INTERVAL               5  // seconds
 #define DEF_INIT_BITRATE_PKT_INTERVAL   1000  // packets
 #define DEF_MAX_FLUSH_PKT_OFL          10000  // packets
@@ -50,14 +54,14 @@ ts::TSProcessorArgs::TSProcessorArgs() :
     app_name(),
     monitor(false),
     ignore_jt(false),
-    bufsize(DEF_BUFSIZE_MB * 1000000),
+    ts_buffer_size(DEFAULT_BUFFER_SIZE),
     max_flush_pkt(0),
     max_input_pkt(0),
     instuff_nullpkt(0),
     instuff_inpkt(0),
     instuff_start(0),
     instuff_stop(0),
-    bitrate(0),
+    fixed_bitrate(0),
     bitrate_adj(DEF_BITRATE_INTERVAL * MilliSecPerSec),
     init_bitrate_adj(DEF_INIT_BITRATE_PKT_INTERVAL),
     realtime(Tristate::MAYBE),
@@ -118,7 +122,7 @@ void ts::TSProcessorArgs::defineArgs(Args& args) const
     args.help(u"buffer-size-mb",
               u"Specify the buffer size in mega-bytes. This is the size of "
               u"the buffer between the input and output devices. The default "
-              u"is " TS_USTRINGIFY(DEF_BUFSIZE_MB) u" MB.");
+              u"is " + UString::Decimal(DEFAULT_BUFFER_SIZE / 1000000) + u" MB.");
 
     args.option(u"control-port", 0, Args::UINT16);
     args.help(u"control-port",
@@ -208,8 +212,8 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
 {
     app_name = args.appName();
     monitor = args.present(u"monitor");
-    bufsize = args.intValue<size_t>(u"buffer-size-mb", DEF_BUFSIZE_MB * 1000000);
-    bitrate = args.intValue<BitRate>(u"bitrate", 0);
+    ts_buffer_size = args.intValue<size_t>(u"buffer-size-mb", DEFAULT_BUFFER_SIZE);
+    fixed_bitrate = args.intValue<BitRate>(u"bitrate", 0);
     bitrate_adj = MilliSecPerSec * args.intValue(u"bitrate-adjust-interval", DEF_BITRATE_INTERVAL);
     max_flush_pkt = args.intValue<size_t>(u"max-flushed-packets", 0);
     max_input_pkt = args.intValue<size_t>(u"max-input-packets", 0);
@@ -223,7 +227,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     control_reuse = args.present(u"control-reuse-port");
 
     // Convert MB in MiB for buffer size for compatibility with original versions.
-    bufsize = size_t((uint64_t(bufsize) * 1024 * 1024) / 1000000);
+    ts_buffer_size = size_t((uint64_t(ts_buffer_size) * 1024 * 1024) / 1000000);
 
     // Get and resolve optional local address.
     if (!args.present(u"control-local")) {

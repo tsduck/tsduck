@@ -132,6 +132,9 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         // Keep command line options for further use.
         _args = args;
 
+        // Check or adjust a few parameters.
+        _args.ts_buffer_size = std::max(_args.ts_buffer_size, TSProcessorArgs::MIN_BUFFER_SIZE);
+
         // Clear errors on the report, used to check further initialisation errors.
         _report.resetErrors();
 
@@ -188,7 +191,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != _input);
 
         // Allocate a memory-resident buffer of TS packets
-        _packet_buffer = new PacketBuffer(_args.bufsize / ts::PKT_SIZE);
+        _packet_buffer = new PacketBuffer(_args.ts_buffer_size / ts::PKT_SIZE);
         CheckNonNull(_packet_buffer);
         if (!_packet_buffer->isLocked()) {
             _report.verbose(u"tsp: buffer failed to lock into physical memory (%d: %s), risk of real-time issue",

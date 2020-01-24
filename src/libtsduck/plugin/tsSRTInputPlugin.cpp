@@ -70,7 +70,10 @@ bool ts::SRTInputPlugin::getOptions()
     }
 
     const UString local(value(u"rendezvous"));
-    if (!local.empty()) {
+    if (local.empty()) {
+        _mode = SRTSocketMode::CALLER;
+    }
+    else {
         _mode = SRTSocketMode::RENDEZVOUS;
         if (!_local_addr.resolve(local)) {
             tsp->error(u"Invalid local address and port: %s", {local});
