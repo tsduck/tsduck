@@ -69,8 +69,8 @@ namespace ts {
         PluginOptionsVector plugins;      //!< Packet processor plugins descriptions.
         PluginOptions       output;       //!< Output plugin description.
 
-        static const size_t DEFAULT_BUFFER_SIZE = 16 * 1000000;  //!< Default size in bytes of global TS buffer.
-        static const size_t MIN_BUFFER_SIZE = 18800;             //!< Minimum size in bytes of global TS buffer.
+        static constexpr size_t DEFAULT_BUFFER_SIZE = 16 * 1000000;  //!< Default size in bytes of global TS buffer.
+        static constexpr size_t MIN_BUFFER_SIZE = 18800;             //!< Minimum size in bytes of global TS buffer.
 
         //!
         //! Constructor.

@@ -31,14 +31,19 @@
 #include "tsArgsWithPlugins.h"
 TSDUCK_SOURCE;
 
-#define DEFAULT_MAX_INPUT_PACKETS   128
-#define DEFAULT_MAX_OUTPUT_PACKETS  128
-#define DEFAULT_BUFFERED_PACKETS    512
-#define DEFAULT_RECEIVE_TIMEOUT    2000
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+constexpr size_t ts::InputSwitcherArgs::DEFAULT_MAX_INPUT_PACKETS;
+constexpr size_t ts::InputSwitcherArgs::MIN_INPUT_PACKETS;
+constexpr size_t ts::InputSwitcherArgs::DEFAULT_MAX_OUTPUT_PACKETS;
+constexpr size_t ts::InputSwitcherArgs::MIN_OUTPUT_PACKETS;
+constexpr size_t ts::InputSwitcherArgs::DEFAULT_BUFFERED_PACKETS;
+constexpr size_t ts::InputSwitcherArgs::MIN_BUFFERED_PACKETS;
+constexpr ts::MilliSecond ts::InputSwitcherArgs::DEFAULT_RECEIVE_TIMEOUT;
+#endif
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors.
 //----------------------------------------------------------------------------
 
 ts::InputSwitcherArgs::InputSwitcherArgs() :
@@ -61,6 +66,38 @@ ts::InputSwitcherArgs::InputSwitcherArgs() :
     inputs(),
     output()
 {
+}
+
+ts::InputSwitcherArgs::InputSwitcherArgs(const InputSwitcherArgs& other) :
+    appName(other.appName),
+    fastSwitch(other.fastSwitch),
+    delayedSwitch(other.delayedSwitch),
+    terminate(other.terminate),
+    monitor(other.monitor),
+    reusePort(other.reusePort),
+    firstInput(std::min(other.firstInput, std::max<size_t>(other.inputs.size(), 1) - 1)),
+    primaryInput(other.primaryInput),
+    cycleCount(other.cycleCount),
+    bufferedPackets(std::max(other.bufferedPackets, MIN_BUFFERED_PACKETS)),
+    maxInputPackets(std::max(other.maxInputPackets, MIN_INPUT_PACKETS)),
+    maxOutputPackets(std::max(other.maxOutputPackets, MIN_OUTPUT_PACKETS)),
+    sockBuffer(other.sockBuffer),
+    remoteServer(other.remoteServer),
+    allowedRemote(other.allowedRemote),
+    receiveTimeout(other.receiveTimeout),
+    inputs(other.inputs),
+    output(other.output)
+{
+    if (inputs.empty()) {
+        // If no input plugin is used, used only standard input.
+        inputs.push_back(PluginOptions(u"file"));
+    }
+    if (output.name.empty()) {
+        output.set(u"file");
+    }
+    if (receiveTimeout <= 0 && primaryInput != NPOS) {
+        receiveTimeout = DEFAULT_RECEIVE_TIMEOUT;
+    }
 }
 
 

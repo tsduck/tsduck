@@ -289,8 +289,6 @@ void ts::TSProcessor::abort()
 void ts::TSProcessor::waitForTermination()
 {
     if (isStarted()) {
-        _terminating = true;
-
         // Wait for threads to terminate
         tsp::PluginExecutor* proc = _input;
         do {
@@ -302,7 +300,5 @@ void ts::TSProcessor::waitForTermination()
 
         // Deallocate all plugins and plugin executor
         cleanupInternal();
-
-        _terminating = false;
     }
 }
