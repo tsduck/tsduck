@@ -108,7 +108,11 @@ namespace ts {
         APSK_16  = ::APSK_16,
         APSK_32  = ::APSK_32,
         DQPSK    = ::DQPSK,
+#if !defined(QAM_4_NR)
+        QAM_4_NR = -14,
+#else
         QAM_4_NR = ::QAM_4_NR,
+#endif
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         QPSK     = ::BDA_MOD_QPSK,
         PSK_8    = ::BDA_MOD_8PSK,
@@ -197,7 +201,11 @@ namespace ts {
         FEC_3_5  = ::FEC_3_5,
         FEC_1_3  = -12,
         FEC_1_4  = -13,
+#if !defined(FEC_2_5)
+        FEC_2_5  = -14,
+#else
         FEC_2_5  = ::FEC_2_5,
+#endif
         FEC_5_11 = -15,
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         FEC_NONE = ::BDA_BCC_RATE_NOT_SET,
@@ -396,8 +404,16 @@ namespace ts {
         TM_1K    = ::TRANSMISSION_MODE_1K,
         TM_16K   = ::TRANSMISSION_MODE_16K,
         TM_32K   = ::TRANSMISSION_MODE_32K,
+#if !defined(TRANSMISSION_MODE_C1)
+        TM_C1    = -12,
+#else
         TM_C1    = ::TRANSMISSION_MODE_C1,
+#endif
+#if !defined(TRANSMISSION_MODE_C3780)
+        TM_C3780 = -13,
+#else
         TM_C3780 = ::TRANSMISSION_MODE_C3780,
+#endif
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         TM_AUTO  = ::BDA_XMIT_MODE_NOT_DEFINED,
         TM_2K    = ::BDA_XMIT_MODE_2K,
@@ -443,9 +459,21 @@ namespace ts {
         GUARD_1_128  = ::GUARD_INTERVAL_1_128,
         GUARD_19_128 = ::GUARD_INTERVAL_19_128,
         GUARD_19_256 = ::GUARD_INTERVAL_19_256,
+#if !defined(GUARD_INTERVAL_PN420)
+        GUARD_PN420  = -9,
+#else
         GUARD_PN420  = ::GUARD_INTERVAL_PN420,
+#endif
+#if !defined(GUARD_INTERVAL_PN595)
+        GUARD_PN595  = -10,
+#else
         GUARD_PN595  = ::GUARD_INTERVAL_PN595,
+#endif
+#if !defined(GUARD_INTERVAL_PN945)
+        GUARD_PN945  = -11,
+#else
         GUARD_PN945  = ::GUARD_INTERVAL_PN945,
+#endif
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         GUARD_AUTO   = ::BDA_GUARD_NOT_DEFINED,
         GUARD_1_32   = ::BDA_GUARD_1_32,
