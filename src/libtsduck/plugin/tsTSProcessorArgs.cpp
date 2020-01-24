@@ -33,8 +33,8 @@
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const size_t ts::TSProcessorArgs::DEFAULT_BUFFER_SIZE;
-const size_t ts::TSProcessorArgs::MIN_BUFFER_SIZE;
+constexpr size_t ts::TSProcessorArgs::DEFAULT_BUFFER_SIZE;
+constexpr size_t ts::TSProcessorArgs::MIN_BUFFER_SIZE;
 #endif
 
 #define DEF_BITRATE_INTERVAL               5  // seconds

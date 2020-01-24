@@ -56,7 +56,7 @@ namespace ts {
         size_t              cycleCount;        //!< Number of input cycles to execute.
         size_t              bufferedPackets;   //!< Input buffer size in packets.
         size_t              maxInputPackets;   //!< Maximum input packets to read at a time.
-        size_t              maxOutputPackets;  //!< Maximum input packets to read at a time.
+        size_t              maxOutputPackets;  //!< Maximum input packets to send at a time.
         size_t              sockBuffer;        //!< Socket buffer size.
         SocketAddress       remoteServer;      //!< UDP server addres for remote control.
         IPAddressSet        allowedRemote;     //!< Set of allowed remotes.
@@ -64,10 +64,25 @@ namespace ts {
         PluginOptionsVector inputs;            //!< Input plugins descriptions.
         PluginOptions       output;            //!< Output plugin description.
 
+        static constexpr size_t      DEFAULT_MAX_INPUT_PACKETS = 128;  //!< Default maximum input packets to read at a time.
+        static constexpr size_t      MIN_INPUT_PACKETS = 1;            //!< Minimum input packets to read at a time.
+        static constexpr size_t      DEFAULT_MAX_OUTPUT_PACKETS = 128; //!< Default maximum input packets to send at a time.
+        static constexpr size_t      MIN_OUTPUT_PACKETS = 1;           //!< Minimum input packets to send at a time.
+        static constexpr size_t      DEFAULT_BUFFERED_PACKETS = 512;   //!< Default input size buffer in packets.
+        static constexpr size_t      MIN_BUFFERED_PACKETS = 16;        //!< Minimum input size buffer in packets.
+        static constexpr MilliSecond DEFAULT_RECEIVE_TIMEOUT = 2000;   //!< Default received timeout with --primary-input.
+
         //!
         //! Constructor.
         //!
         InputSwitcherArgs();
+
+        //!
+        //! Copy constructor.
+        //! Default or minimum values are enforced.
+        //! @param [in] other instance to copy.
+        //!
+        InputSwitcherArgs(const InputSwitcherArgs& other);
 
         // Implementation of ArgsSupplierInterface.
         virtual void defineArgs(Args& args) const override;

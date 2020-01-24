@@ -79,11 +79,11 @@ namespace ts {
             void close();
 
         private:
-            Report&           _log;
-            Core&             _core;
-            InputSwitcherArgs _opt;
-            UDPReceiver       _sock;
-            volatile bool     _terminate;
+            Report&       _log;
+            Core&         _core;
+            const InputSwitcherArgs& _opt;
+            UDPReceiver   _sock;
+            volatile bool _terminate;
 
             // Implementation of Thread.
             virtual void main() override;
