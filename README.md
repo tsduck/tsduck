@@ -60,6 +60,12 @@ The command `tsversion --check` can be used to check if a new version of TSDuck 
 online. The command `tsversion --upgrade` downloads the latest binaries for the current
 operating system and upgrades TSDuck.
 
+### Project resources
+
+TSDuck is developed by one single developer on spare time and on personal expenses.
+You may consider [contributing](https://tsduck.io/donate/) to the hardware and Web hosting costs
+using [![Donate](https://tsduck.io/images/donate-paypal.svg)](https://tsduck.io/donate/)
+
 ### License
 
 TSDuck is distributed under the terms of the Simplified BSD License.
