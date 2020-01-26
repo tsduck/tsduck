@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.20-1618
+VERSION 3.20-1629
 
 [NEW] New commands and plugins:
 
@@ -31,6 +31,8 @@ VERSION 3.20-1618
   * In input plugin "hls", when the sub-playlists or media segments had
     relative URI's with absolute file path, the sub-playlists or segments
     were not correctly loaded.
+  * On Unix systems (Linux, macOS), the option --append was not correctly
+    handled in plugin "file". The file was rewritten from the beginning.
 
 -------------------------------------------------------------------------------
 

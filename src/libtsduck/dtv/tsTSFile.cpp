@@ -147,7 +147,7 @@ ts::UString ts::TSFile::getDisplayFileName() const
     }
     else {
         return u"closed";
-    }        
+    }
 }
 
 
@@ -205,7 +205,7 @@ bool ts::TSFile::open(const UString& filename, OpenFlags flags, Report& report)
     if ((flags & APPEND) != 0) {
         flags |= WRITE;
     }
-    
+
     if (_is_open) {
         report.log(_severity, u"already open");
         return false;
@@ -316,30 +316,41 @@ bool ts::TSFile::openInternal(Report& report)
         uflags |= O_RDONLY;
     }
     else if (!read_access) { // write only
-        uflags |= O_WRONLY | O_CREAT | O_TRUNC;
+        uflags |= O_WRONLY | O_CREAT;
+        if (!append_access) {
+            uflags |= O_TRUNC;
+        }
     }
     else { // read + write
         uflags |= O_RDWR | O_CREAT;
     }
-    if (append_access) {
-        uflags |= O_APPEND;
-    }
     if (write_access && keep_file) {
         uflags |= O_EXCL;
     }
-    
+
     if (_filename.empty()) {
+        // File name is empty means standard input or output. No need to open.
         _fd = read_access ? STDIN_FILENO : STDOUT_FILENO;
     }
-    else if ((_fd = ::open(_filename.toUTF8().c_str(), uflags, mode)) < 0) {
-        const ErrorCode err = LastErrorCode();
-        report.log(_severity, u"cannot open file %s: %s", {getDisplayFileName(), ErrorCodeMessage(err)});
-        return false;
-    }
-    else if (temporary) {
-        // Immediately delete the file. It is removed from the directory.
-        // It remains accessible as long as the file is open and is deleted on close.
-        ::unlink(_filename.toUTF8().c_str());
+    else {
+        // Open a named file.
+        if ((_fd = ::open(_filename.toUTF8().c_str(), uflags, mode)) < 0) {
+            const ErrorCode err = LastErrorCode();
+            report.log(_severity, u"cannot open file %s: %s", {getDisplayFileName(), ErrorCodeMessage(err)});
+            return false;
+        }
+        // Move to end of file if --append.
+        if (append_access && ::lseek(_fd, 0, SEEK_END) == off_t(-1)) {
+            const ErrorCode err = LastErrorCode();
+            report.log (_severity, u"error seeking at end of file %s: %s", {getDisplayFileName(), ErrorCodeMessage(err)});
+            ::close(_fd);
+            return false;
+        }
+        if (temporary) {
+            // Immediately delete the file. It is removed from the directory.
+            // It remains accessible as long as the file is open and is deleted on close.
+            ::unlink(_filename.toUTF8().c_str());
+        }
     }
 
     // If a repeat count or initial offset is specified, the input file must be a regular file
