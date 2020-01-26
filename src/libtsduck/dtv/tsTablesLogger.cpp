@@ -954,7 +954,7 @@ void ts::TablesLogger::logSection(const Section& sect)
     // Table identification.
     header += UString::Format(u"PID 0x%X, TID 0x%X", {sect.sourcePID(), sect.tableId()});
     if (sect.isLongSection()) {
-        header += UString::Format(u", TIDext 0x%X, V%d", {sect.tableIdExtension(), sect.version()});
+        header += UString::Format(u", TIDext 0x%X, V%d, Sec %d/%d", {sect.tableIdExtension(), sect.version(), sect.sectionNumber(), sect.lastSectionNumber()});
     }
     header += u": ";
 
