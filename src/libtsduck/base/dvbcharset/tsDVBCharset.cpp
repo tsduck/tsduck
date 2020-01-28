@@ -60,7 +60,12 @@ bool ts::DVBCharset::GetCharCodeTable(uint32_t& code, size_t& codeSize, const ui
     else if (*dvb == 0x1F) {
         if (dvbSize >= 2) {
             // Second byte is encoding_type_id.
-            // Currently unsupported.
+            // Value          Owner/Charset
+            // 0x00 to 0x04 - BBC
+            // 0x05 to 0x06 - MYTV (Malaysian TV broadcasting company)
+            // See: https://www.dvbservices.com/identifiers/encoding_type_id
+            // Currently unsupported, Huffmann decoding table not publicly
+            // available.
             code = 0xFFFFFFFF;
             codeSize = 2;
             return false;
