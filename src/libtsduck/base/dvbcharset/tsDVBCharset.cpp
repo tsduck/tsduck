@@ -70,6 +70,28 @@ bool ts::DVBCharset::GetCharCodeTable(uint32_t& code, size_t& codeSize, const ui
         if (dvbSize >= 3) {
             code = GetUInt24(dvb);
             codeSize = 3;
+            /*
+             * Here are the values for ISO 8859 charsets both present in one
+             * byte and three-bytes sets.
+             *
+             * ISO 8859-5    0x01    0x100005
+             * ISO 8859-6    0x02    0x100006
+             * ISO 8859-7    0x03    0x100007
+             * ISO 8859-8    0x04    0x100008
+             * ISO 8859-9    0x05    0x100009
+             * ISO 8859-10   0x06    0x10000A
+             * ISO 8859-11   0x07    0x10000B
+             * (ISO 8859-12   n/a     n/a)
+             * ISO 8859-13   0x09    0x10000D
+             * ISO 8859-14   0x0A    0x10000E
+             * ISO 8859-15   0x0B    0x10000F
+             *
+             * In this line we translate the three-bytes forms to the one byte
+             * already coded in tsDVBCharsetSingleByte.cpp
+             */
+            if (code >= 0x100005 && code <= 0x10000F) {
+                code = (code & 0xFF) - 4;
+            }
             return true;
         }
     }
