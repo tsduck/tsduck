@@ -475,8 +475,12 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
 
     _guts->mode = mode;
 
+#if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 1)
+    _guts->sock = srt_create_socket();
+#else
     // Only supports IPv4.
     _guts->sock = srt_socket(AF_INET, SOCK_DGRAM, 0);
+#endif
     if (_guts->sock < 0) {
         report.error(u"error during srt_socket(), msg: %s", { srt_getlasterror_str() });
         return false;
