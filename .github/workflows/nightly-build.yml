@@ -89,3 +89,7 @@ jobs:
       with:
         name: portable-32
         path: installers/TSDuck-Win32-${{ env.VERSION }}-Portable.zip
+    - name: Trigger action at web server
+      run: |
+        $response = Invoke-WebRequest https://tsduck.io/download/prerelease/get-nightly-builds
+        $response.RawContent
