@@ -1581,7 +1581,11 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
         {u"8-VSB",                  ::FE_CAN_8VSB},
         {u"16-VSB",                 ::FE_CAN_16VSB},
         {u"extended caps",          ::FE_HAS_EXTENDED_CAPS},
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
+        {u"multistream",            int(0x4000000)},
+#else
         {u"multistream",            ::FE_CAN_MULTISTREAM},
+#endif
         {u"turbo FEC",              ::FE_CAN_TURBO_FEC},
         {u"2nd generation",         ::FE_CAN_2G_MODULATION},
         {u"needs bending",          ::FE_NEEDS_BENDING},
