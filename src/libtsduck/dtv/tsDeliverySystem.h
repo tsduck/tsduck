@@ -73,7 +73,6 @@ namespace ts {
 #else
         DS_DTMB          = ::SYS_DTMB,
 #endif
-        DS_DTMB          = ::SYS_DTMB,
         DS_CMMB          = ::SYS_CMMB,
         DS_DAB           = ::SYS_DAB,
         DS_DSS           = ::SYS_DSS,
