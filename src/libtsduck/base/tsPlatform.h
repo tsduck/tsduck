@@ -858,6 +858,7 @@ TS_MSC_NOWARNING(5027)
 #include <linux/dvb/version.h>
 #include <linux/dvb/frontend.h>
 #include <linux/dvb/dmx.h>
+#include <linux/version.h>
 #endif
 
 #if defined(TS_MAC)

@@ -324,11 +324,15 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 
     _delivery_systems.clear();
     DTVProperties props;
+#if defined(DTV_ENUM_DELSYS)
     props.add(DTV_ENUM_DELSYS);
     if (::ioctl(_guts->frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) >= 0) {
         // DTV_ENUM_DELSYS succeeded, get all delivery systems.
         props.getValuesByCommand(_delivery_systems, DTV_ENUM_DELSYS);
     }
+#else
+    if (0) {;}
+#endif
     else {
         // DTV_ENUM_DELSYS failed, convert tuner type from FE_GET_INFO.
         const ErrorCode err = LastErrorCode();
@@ -540,7 +544,9 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_MODULATION);
             props.add(DTV_PILOT);
             props.add(DTV_ROLLOFF);
+#if defined(DTV_STREAM_ID)
             props.add(DTV_STREAM_ID);
+#endif
 
             if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const ErrorCode err = LastErrorCode();
@@ -556,7 +562,11 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             params.roll_off = RollOff(props.getByCommand(DTV_ROLLOFF));
 
             // With the Linux DVB API, all multistream selection info are passed in the "stream id".
+#if defined(DTV_STREAM_ID)
             const uint32_t id = props.getByCommand(DTV_STREAM_ID);
+#else
+            const uint32_t id = NO_STREAM_ID_FILTER;
+#endif
             params.isi = id & 0x000000FF;
             params.pls_code = (id >> 8) & 0x0003FFFF;
             params.pls_mode = PLSMode(id >> 26);
@@ -574,7 +584,9 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_TRANSMISSION_MODE);
             props.add(DTV_GUARD_INTERVAL);
             props.add(DTV_HIERARCHY);
+#if defined(DTV_STREAM_ID)
             props.add(DTV_STREAM_ID);
+#endif
 
             if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const ErrorCode err = LastErrorCode();
@@ -591,7 +603,11 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             params.transmission_mode = TransmissionMode(props.getByCommand(DTV_TRANSMISSION_MODE));
             params.guard_interval = GuardInterval(props.getByCommand(DTV_GUARD_INTERVAL));
             params.hierarchy = Hierarchy(props.getByCommand(DTV_HIERARCHY));
+#if defined(DTV_STREAM_ID)
             params.plp = props.getByCommand(DTV_STREAM_ID);
+#else
+            params.plp = NO_STREAM_ID_FILTER;
+#endif
             return true;
         }
         case DS_DVB_C_ANNEX_A:
@@ -1013,7 +1029,9 @@ bool ts::Tuner::tune(ModulationArgs& params, Report& report)
                     ((params.pls_code.value(ModulationArgs::DEFAULT_PLS_CODE) & 0x0003FFFF) << 8) |
                     (params.isi.value() & 0x000000FF);
                 report.debug(u"using DVB-S2 multi-stream id 0x%X (%d)", {id, id});
+#if defined(DTV_STREAM_ID)
                 props.add(DTV_STREAM_ID, id);
+#endif
             }
             break;
         }
@@ -1029,7 +1047,9 @@ bool ts::Tuner::tune(ModulationArgs& params, Report& report)
             props.addVar(DTV_TRANSMISSION_MODE, params.transmission_mode);
             props.addVar(DTV_GUARD_INTERVAL, params.guard_interval);
             props.addVar(DTV_HIERARCHY, params.hierarchy);
+#if defined(DTV_STREAM_ID)
             props.addVar(DTV_STREAM_ID, params.plp);
+#endif
             break;
         }
         case DS_DVB_C_ANNEX_A:
@@ -1561,7 +1581,11 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
         {u"8-VSB",                  ::FE_CAN_8VSB},
         {u"16-VSB",                 ::FE_CAN_16VSB},
         {u"extended caps",          ::FE_HAS_EXTENDED_CAPS},
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
+        {u"multistream",            int(0x4000000)},
+#else
         {u"multistream",            ::FE_CAN_MULTISTREAM},
+#endif
         {u"turbo FEC",              ::FE_CAN_TURBO_FEC},
         {u"2nd generation",         ::FE_CAN_2G_MODULATION},
         {u"needs bending",          ::FE_NEEDS_BENDING},

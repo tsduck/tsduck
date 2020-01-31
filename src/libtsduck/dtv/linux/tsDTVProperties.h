@@ -36,6 +36,10 @@
 #include "tsReport.h"
 #include "tsVariable.h"
 
+#if !defined(NO_STREAM_ID_FILTER)
+#define NO_STREAM_ID_FILTER    (~0U)
+#endif
+
 namespace ts {
     //!
     //! Encapsulation of Linux DVB property lists.
