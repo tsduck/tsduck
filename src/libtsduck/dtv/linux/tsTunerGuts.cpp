@@ -540,7 +540,9 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_MODULATION);
             props.add(DTV_PILOT);
             props.add(DTV_ROLLOFF);
+#if defined(DTV_STREAM_ID)
             props.add(DTV_STREAM_ID);
+#endif
 
             if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const ErrorCode err = LastErrorCode();
@@ -556,7 +558,11 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             params.roll_off = RollOff(props.getByCommand(DTV_ROLLOFF));
 
             // With the Linux DVB API, all multistream selection info are passed in the "stream id".
+#if defined(DTV_STREAM_ID)
             const uint32_t id = props.getByCommand(DTV_STREAM_ID);
+#else
+            const uint32_t id = NO_STREAM_ID_FILTER;
+#endif
             params.isi = id & 0x000000FF;
             params.pls_code = (id >> 8) & 0x0003FFFF;
             params.pls_mode = PLSMode(id >> 26);
@@ -574,7 +580,9 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_TRANSMISSION_MODE);
             props.add(DTV_GUARD_INTERVAL);
             props.add(DTV_HIERARCHY);
+#if defined(DTV_STREAM_ID)
             props.add(DTV_STREAM_ID);
+#endif
 
             if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const ErrorCode err = LastErrorCode();
@@ -591,7 +599,11 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             params.transmission_mode = TransmissionMode(props.getByCommand(DTV_TRANSMISSION_MODE));
             params.guard_interval = GuardInterval(props.getByCommand(DTV_GUARD_INTERVAL));
             params.hierarchy = Hierarchy(props.getByCommand(DTV_HIERARCHY));
+#if defined(DTV_STREAM_ID)
             params.plp = props.getByCommand(DTV_STREAM_ID);
+#else
+            params.plp = NO_STREAM_ID_FILTER;
+#endif
             return true;
         }
         case DS_DVB_C_ANNEX_A:
@@ -1013,7 +1025,9 @@ bool ts::Tuner::tune(ModulationArgs& params, Report& report)
                     ((params.pls_code.value(ModulationArgs::DEFAULT_PLS_CODE) & 0x0003FFFF) << 8) |
                     (params.isi.value() & 0x000000FF);
                 report.debug(u"using DVB-S2 multi-stream id 0x%X (%d)", {id, id});
+#if defined(DTV_STREAM_ID)
                 props.add(DTV_STREAM_ID, id);
+#endif
             }
             break;
         }
@@ -1029,7 +1043,9 @@ bool ts::Tuner::tune(ModulationArgs& params, Report& report)
             props.addVar(DTV_TRANSMISSION_MODE, params.transmission_mode);
             props.addVar(DTV_GUARD_INTERVAL, params.guard_interval);
             props.addVar(DTV_HIERARCHY, params.hierarchy);
+#if defined(DTV_STREAM_ID)
             props.addVar(DTV_STREAM_ID, params.plp);
+#endif
             break;
         }
         case DS_DVB_C_ANNEX_A:
