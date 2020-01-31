@@ -207,7 +207,6 @@ namespace ts {
         FEC_2_5  = ::FEC_2_5,
 #endif
         FEC_5_11 = -15,
-        FEC_5_11 = -15,
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         FEC_NONE = ::BDA_BCC_RATE_NOT_SET,
         FEC_AUTO = ::BDA_BCC_RATE_NOT_DEFINED,
