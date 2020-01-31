@@ -331,7 +331,8 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
         props.getValuesByCommand(_delivery_systems, DTV_ENUM_DELSYS);
     }
 #else
-    if (0) {;}
+    if (false) {
+    }
 #endif
     else {
         // DTV_ENUM_DELSYS failed, convert tuner type from FE_GET_INFO.
@@ -565,7 +566,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 #if defined(DTV_STREAM_ID)
             const uint32_t id = props.getByCommand(DTV_STREAM_ID);
 #else
-            const uint32_t id = NO_STREAM_ID_FILTER;
+            const uint32_t id = PLP_DISABLE;
 #endif
             params.isi = id & 0x000000FF;
             params.pls_code = (id >> 8) & 0x0003FFFF;
@@ -606,7 +607,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 #if defined(DTV_STREAM_ID)
             params.plp = props.getByCommand(DTV_STREAM_ID);
 #else
-            params.plp = NO_STREAM_ID_FILTER;
+            params.plp = PLP_DISABLE;
 #endif
             return true;
         }
