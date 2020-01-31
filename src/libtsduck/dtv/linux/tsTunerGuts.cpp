@@ -324,11 +324,15 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 
     _delivery_systems.clear();
     DTVProperties props;
+#if defined(DTV_ENUM_DELSYS)
     props.add(DTV_ENUM_DELSYS);
     if (::ioctl(_guts->frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) >= 0) {
         // DTV_ENUM_DELSYS succeeded, get all delivery systems.
         props.getValuesByCommand(_delivery_systems, DTV_ENUM_DELSYS);
     }
+#else
+    if (0) {;}
+#endif
     else {
         // DTV_ENUM_DELSYS failed, convert tuner type from FE_GET_INFO.
         const ErrorCode err = LastErrorCode();
