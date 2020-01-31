@@ -50,15 +50,17 @@ namespace ts {
         DS_DVB_S_TURBO   = ::SYS_TURBO,
         DS_DVB_T         = ::SYS_DVBT,
         DS_DVB_T2        = ::SYS_DVBT2,
-#if !defined(SYS_DVBC_ANNEX_A)
-#define SYS_DVBC_ANNEX_A     SYS_DVBC_ANNEX_AC
-#endif
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0)
+        DS_DVB_C_ANNEX_A = ::SYS_DVBC_ANNEX_AC,
+#else
         DS_DVB_C_ANNEX_A = ::SYS_DVBC_ANNEX_A,
-        DS_DVB_C_ANNEX_B = ::SYS_DVBC_ANNEX_B,
-#if !defined(SYS_DVBC_ANNEX_C)
-#define SYS_DVBC_ANNEX_C     SYS_DVBC_ANNEX_AC
 #endif
+        DS_DVB_C_ANNEX_B = ::SYS_DVBC_ANNEX_B,
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0)
+        DS_DVB_C_ANNEX_C = -11,
+#else
         DS_DVB_C_ANNEX_C = ::SYS_DVBC_ANNEX_C,
+#endif
         DS_DVB_C2        = -10,
         DS_DVB_H         = ::SYS_DVBH,
         DS_ISDB_S        = ::SYS_ISDBS,
@@ -66,8 +68,10 @@ namespace ts {
         DS_ISDB_C        = ::SYS_ISDBC,
         DS_ATSC          = ::SYS_ATSC,
         DS_ATSC_MH       = ::SYS_ATSCMH,
-#if !defined(SYS_DTMB)
-#define SYS_DTMB             SYS_DMBTH
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
+        DS_DTMB          = ::SYS_DMBTH,
+#else
+        DS_DTMB          = ::SYS_DTMB,
 #endif
         DS_DTMB          = ::SYS_DTMB,
         DS_CMMB          = ::SYS_CMMB,
