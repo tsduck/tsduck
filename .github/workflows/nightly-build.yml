@@ -45,13 +45,30 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@master
+    - name: Create dummy cache
+      run: mkdir dummy-cache
+    - name: Check cached commit
+      # Note: this creates one cache key at each rebuild but GitHub
+      # removes cache entries that have not been accessed in over 7 days.
+      id: cache-commit
+      uses: actions/cache@v1
+      with:
+        key: commit-${{ github.sha }}
+        path: dummy-cache
+    - name: Check same version
+      if: steps.cache-commit.outputs.cache-hit == 'true'
+      run: Write-Output "No new commit since last nightly build, not rebuilt"
     - name: Install NSIS
+      if: steps.cache-commit.outputs.cache-hit != 'true'
       run: build/install-nsis.ps1 -NoPause
     - name: Install libsrt
+      if: steps.cache-commit.outputs.cache-hit != 'true'
       run: build/install-libsrt.ps1 -GitHubActions -NoPause
     - name: Install Dektec SDK
+      if: steps.cache-commit.outputs.cache-hit != 'true'
       run: dektec/Download-Install-Dtapi.ps1 -NoPause
     - name: Build installers
+      if: steps.cache-commit.outputs.cache-hit != 'true'
       run: |
         Get-Date
         build/Build-Installer.ps1 -NoPause -NoLowPriority -NoSource
@@ -61,35 +78,43 @@ jobs:
         $version | Out-File version.txt
         Write-Output "::set-env name=VERSION::$version"
     - name: Check built version (64-bit)
+      if: steps.cache-commit.outputs.cache-hit != 'true'
       run: build/msvc/Release-x64/tsversion.exe --version=all
     - name: Check built version (32-bit)
+      if: steps.cache-commit.outputs.cache-hit != 'true'
       run: build/msvc/Release-Win32/tsversion.exe --version=all
     - name: Upload version
+      if: steps.cache-commit.outputs.cache-hit != 'true'
       uses: actions/upload-artifact@master
       with:
         name: version
         path: version.txt
     - name: Upload 64-bit installer
+      if: steps.cache-commit.outputs.cache-hit != 'true'
       uses: actions/upload-artifact@master
       with:
         name: installer-64
         path: installers/TSDuck-Win64-${{ env.VERSION }}.exe
     - name: Upload 64-bit portable
+      if: steps.cache-commit.outputs.cache-hit != 'true'
       uses: actions/upload-artifact@master
       with:
         name: portable-64
         path: installers/TSDuck-Win64-${{ env.VERSION }}-Portable.zip
     - name: Upload 32-bit installer
+      if: steps.cache-commit.outputs.cache-hit != 'true'
       uses: actions/upload-artifact@master
       with:
         name: installer-32
         path: installers/TSDuck-Win32-${{ env.VERSION }}.exe
     - name: Upload 32-bit portable
+      if: steps.cache-commit.outputs.cache-hit != 'true'
       uses: actions/upload-artifact@master
       with:
         name: portable-32
         path: installers/TSDuck-Win32-${{ env.VERSION }}-Portable.zip
     - name: Trigger action at web server
+      if: steps.cache-commit.outputs.cache-hit != 'true'
       run: |
         $response = Invoke-WebRequest https://tsduck.io/download/prerelease/get-nightly-builds
         $response.RawContent
