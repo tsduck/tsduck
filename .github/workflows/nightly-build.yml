@@ -44,77 +44,91 @@ jobs:
     name: Windows build
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Create dummy cache
-      run: mkdir dummy-cache
-    - name: Check cached commit
-      # Note: this creates one cache key at each rebuild but GitHub
-      # removes cache entries that have not been accessed in over 7 days.
-      id: cache-commit
-      uses: actions/cache@v1
-      with:
-        key: commit-${{ github.sha }}
-        path: dummy-cache
-    - name: Check same version
-      if: steps.cache-commit.outputs.cache-hit == 'true'
-      run: Write-Output "No new commit since last nightly build, not rebuilt"
-    - name: Install NSIS
-      if: steps.cache-commit.outputs.cache-hit != 'true'
-      run: build/install-nsis.ps1 -NoPause
-    - name: Install libsrt
-      if: steps.cache-commit.outputs.cache-hit != 'true'
-      run: build/install-libsrt.ps1 -GitHubActions -NoPause
-    - name: Install Dektec SDK
-      if: steps.cache-commit.outputs.cache-hit != 'true'
-      run: dektec/Download-Install-Dtapi.ps1 -NoPause
-    - name: Build installers
-      if: steps.cache-commit.outputs.cache-hit != 'true'
+
+    - name: Get TSDuck repo
+      uses: actions/checkout@master
+
+    - name: Check if rebuild is necessary
       run: |
-        Get-Date
-        build/Build-Installer.ps1 -NoPause -NoLowPriority -NoSource
-        $version = (Get-ChildItem -Recurse -Path installers -Include "TSDuck-Win64-*.exe" | `
-          ForEach-Object { $_.Name -replace 'TSDuck-Win64-','' -replace '.exe','' } | `
-          Select-Object -Last 1)
+        try {
+            $response = Invoke-RestMethod https://tsduck.io/download/prerelease/get-versions
+            $remote_version = $response.latest
+        }
+        catch {
+            $remote_version = ""
+        }
+        $version = (& build\get-version-from-sources.ps1)
+        $rebuild = ($version -ne $remote_version).ToString().ToLower()
         $version | Out-File version.txt
+        Write-Output "Current version: $version, latest on tsduck.io: $remote_version"
         Write-Output "::set-env name=VERSION::$version"
+        Write-Output "::set-env name=REBUILD::$rebuild"
+
+    - name: Check same version
+      if: env.REBUILD == 'false'
+      run: Write-Output "Same version as latest pre-release, not rebuilt"
+
+    - name: Install NSIS
+      if: env.REBUILD == 'true'
+      run: build/install-nsis.ps1 -NoPause
+
+    - name: Install libsrt
+      if: env.REBUILD == 'true'
+      run: build/install-libsrt.ps1 -GitHubActions -NoPause
+
+    - name: Install Dektec SDK
+      if: env.REBUILD == 'true'
+      run: dektec/Download-Install-Dtapi.ps1 -NoPause
+
+    - name: Build installers
+      if: env.REBUILD == 'true'
+      run: build/Build-Installer.ps1 -NoPause -NoLowPriority -NoSource
+
     - name: Check built version (64-bit)
-      if: steps.cache-commit.outputs.cache-hit != 'true'
+      if: env.REBUILD == 'true'
       run: build/msvc/Release-x64/tsversion.exe --version=all
+
     - name: Check built version (32-bit)
-      if: steps.cache-commit.outputs.cache-hit != 'true'
+      if: env.REBUILD == 'true'
       run: build/msvc/Release-Win32/tsversion.exe --version=all
+
     - name: Upload version
-      if: steps.cache-commit.outputs.cache-hit != 'true'
+      if: env.REBUILD == 'true'
       uses: actions/upload-artifact@master
       with:
         name: version
         path: version.txt
+
     - name: Upload 64-bit installer
-      if: steps.cache-commit.outputs.cache-hit != 'true'
+      if: env.REBUILD == 'true'
       uses: actions/upload-artifact@master
       with:
         name: installer-64
         path: installers/TSDuck-Win64-${{ env.VERSION }}.exe
+
     - name: Upload 64-bit portable
-      if: steps.cache-commit.outputs.cache-hit != 'true'
+      if: env.REBUILD == 'true'
       uses: actions/upload-artifact@master
       with:
         name: portable-64
         path: installers/TSDuck-Win64-${{ env.VERSION }}-Portable.zip
+
     - name: Upload 32-bit installer
-      if: steps.cache-commit.outputs.cache-hit != 'true'
+      if: env.REBUILD == 'true'
       uses: actions/upload-artifact@master
       with:
         name: installer-32
         path: installers/TSDuck-Win32-${{ env.VERSION }}.exe
+
     - name: Upload 32-bit portable
-      if: steps.cache-commit.outputs.cache-hit != 'true'
+      if: env.REBUILD == 'true'
       uses: actions/upload-artifact@master
       with:
         name: portable-32
         path: installers/TSDuck-Win32-${{ env.VERSION }}-Portable.zip
+
     - name: Trigger action at web server
-      if: steps.cache-commit.outputs.cache-hit != 'true'
+      if: env.REBUILD == 'true'
       run: |
-        $response = Invoke-WebRequest https://tsduck.io/download/prerelease/get-nightly-builds
-        $response.RawContent
+        $response = Invoke-RestMethod https://tsduck.io/download/prerelease/get-nightly-builds
+        $response | Format-Custom
