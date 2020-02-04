@@ -154,11 +154,9 @@ if (-not $NoInstaller -or -not $NoPortable) {
 }
 
 # Get version name.
-$Major = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MAJOR ").ToString() -replace "#define TS_VERSION_MAJOR *","")
-$Minor = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MINOR ").ToString() -replace "#define TS_VERSION_MINOR *","")
-$Commit = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_COMMIT ").ToString() -replace "#define TS_COMMIT *","")
-$Version = "${Major}.${Minor}-${Commit}"
-$VersionInfo = "${Major}.${Minor}.${Commit}.0"
+$GetVersion = (Join-Path $PSScriptRoot get-version-from-sources.ps1)
+$Version = (& $GetVersion)
+$VersionInfo = (& $GetVersion -Windows)
 
 # Lower process priority so that the build does not eat up all CPU.
 if (-not $NoLowPriority) {

@@ -1,4 +1,4 @@
-#-----------------------------------------------------------------------------
+﻿#-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
 #  Copyright (c) 2005-2020, Thierry Lelegard
@@ -26,36 +26,31 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
-#
-#  GitHub Actions configuration file : Nightly builds update
-#
-#  This workflow is supposed to be temporary. It is a workaround for a
-#  problem with the GitHub Actions API (beta). The "nightly build" workflow
-#  runs every night at 01:10 GMT. It builds Windows installers, uploads them
-#  as artifacts and triggers an action on tsduck.io. This trigger calls the
-#  GitHub Actions API to retrieve and download the artifacts (the installers).
-#  However, the artifacts are made available to the API only when the workflow
-#  completes, not when the upload-artifact steps completes. Since the trigger
-#  is activated in the last step of the workflow (hence before it completes),
-#  the artifacts are never found by tsduck.io. The present workflow runs
-#  three hours after "nightly build". We expect the artifacts to be available
-#  at that time.
-#
-#-----------------------------------------------------------------------------
 
-name: Nightly build update
+<#
+ .SYNOPSIS
 
-# Trigger the workflow every day at 04:10 GMT
-on:
-  schedule:
-    - cron:  '10 4 * * *'
+  Get the TSDuck version string from the source files.
 
-jobs:
-  windows:
-    name: Windows build update
-    runs-on: windows-latest
-    steps:
-    - name: Trigger action at web server
-      run: |
-        $response = Invoke-RestMethod https://tsduck.io/download/prerelease/get-nightly-builds
-        $response | Format-Custom
+ .PARAMETER Windows
+
+  Return a "version info" string for Windows executable.
+#>
+[CmdletBinding()]
+param(
+    [switch]$Windows = $false
+)
+
+$RootDir = (Split-Path -Parent $PSScriptRoot)
+$SrcDir = (Join-Path $RootDir "src")
+
+$Major = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MAJOR ").ToString() -replace "#define TS_VERSION_MAJOR *","")
+$Minor = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MINOR ").ToString() -replace "#define TS_VERSION_MINOR *","")
+$Commit = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_COMMIT ").ToString() -replace "#define TS_COMMIT *","")
+
+if ($Windows) {
+    Write-Output "${Major}.${Minor}.${Commit}.0"
+}
+else {
+    Write-Output "${Major}.${Minor}-${Commit}"
+}
