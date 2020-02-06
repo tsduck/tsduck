@@ -55,16 +55,6 @@ ifndef TSPLUGINS
                                             $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.cpp)))))
 endif
 
-# Product version
-
-ifndef TS_VERSION
-    export TS_MAJOR := $(shell $(GREP) '\#define *TS_VERSION_MAJOR ' $(LIBTSDUCKDIR)/tsVersion.h | $(SED) -e 's/.* //')
-    export TS_MINOR := $(shell $(GREP) '\#define *TS_VERSION_MINOR ' $(LIBTSDUCKDIR)/tsVersion.h | $(SED) -e 's/.* //')
-    export TS_COMMIT := $(shell $(GREP) '\#define *TS_COMMIT ' $(LIBTSDUCKDIR)/tsVersion.h | $(SED) -e 's/.* //')
-    export TS_VERSION := $(TS_MAJOR).$(TS_MINOR)
-    export TS_FULL_VERSION := $(TS_MAJOR).$(TS_MINOR)-$(TS_COMMIT)
-endif
-
 # Default installation root.
 # RPM packagers should override this in the "make install" command line.
 

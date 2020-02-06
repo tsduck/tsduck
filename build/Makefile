@@ -78,7 +78,8 @@ install-devel:
 	@true
 
 # Build the source tarballs for distribution.
-TARNAME = tsduck-$(TS_FULL_VERSION)
+VERSION = $(shell ./get-version-from-sources.sh)
+TARNAME = tsduck-$(VERSION)
 TARFILE = $(INSTALLERDIR)/$(TARNAME).tgz
 TMPROOT = $(INSTALLERDIR)/tmp
 ifdef NOTELETEXT
@@ -114,10 +115,14 @@ DTAPI_ORIGIN = $(if $(wildcard $(ROOTDIR)/dektec/LinuxSDK.version),$(ROOTDIR)/de
 rpm: tarball $(RPMBUILDROOT)
 	cp -f $(TARFILE) $(RPMBUILDROOT)/SOURCES/
 	$(if $(wildcard $(DTAPI_ORIGIN)),MAKEFLAGS=DTAPI_ORIGIN=$(DTAPI_ORIGIN),) \
-	  $(RPMBUILD) $(RPMBUILDFLAGS) -D 'version $(TS_VERSION)' -D 'commit $(TS_COMMIT)'  -D 'distro $(DISTRO)' tsduck.spec
-	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(TS_FULL_VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
-	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(TS_FULL_VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
-	cp -uf $(RPMBUILDROOT)/SRPMS/tsduck-$(TS_FULL_VERSION)$(DISTRO).src.rpm $(INSTALLERDIR)
+	  $(RPMBUILD) $(RPMBUILDFLAGS) \
+	      -D 'version $(shell ./get-version-from-sources.sh --main)' \
+	      -D 'commit $(shell ./get-version-from-sources.sh --commit)' \
+	      -D 'distro $(DISTRO)' \
+	      tsduck.spec
+	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
+	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
+	cp -uf $(RPMBUILDROOT)/SRPMS/tsduck-$(VERSION)$(DISTRO).src.rpm $(INSTALLERDIR)
 rpm32:
 	$(MAKE) rpm M32=true
 
@@ -130,7 +135,7 @@ deb-main:
 	rm -rf $(TMPDIR)
 	$(MAKE) NOTEST=true -C $(ROOTDIR) install SYSROOT=$(TMPDIR)
 	mkdir $(TMPDIR)/DEBIAN
-	sed -e 's/{{VERSION}}/$(TS_FULL_VERSION)/g' \
+	sed -e 's/{{VERSION}}/$(VERSION)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    tsduck.control >$(TMPDIR)/DEBIAN/control
 	sed -e 's|{{EXECS}}|$(addprefix /usr/bin/,$(TSEXECS))|g' \
@@ -144,7 +149,7 @@ deb-dev:
 	rm -rf $(TMPDIR)
 	$(MAKE) NOTEST=true -C $(ROOTDIR) install-devel SYSROOT=$(TMPDIR)
 	mkdir $(TMPDIR)/DEBIAN
-	sed -e 's/{{VERSION}}/$(TS_FULL_VERSION)/g' \
+	sed -e 's/{{VERSION}}/$(VERSION)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    tsduck-dev.control >$(TMPDIR)/DEBIAN/control
 	cp tsduck-dev.postinst $(TMPDIR)/DEBIAN/postinst
