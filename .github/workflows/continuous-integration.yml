@@ -49,13 +49,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install dos2unix curl tar libpcsclite-dev libcurl4 libcurl4-openssl-dev dpkg-dev
-        # libsrt is available on Ubuntu 19.x
-        DISTRO=$(lsb_release -i 2>/dev/null | sed -e 's/.*:[\t ]*//')
-        MAJOR=$(lsb_release -r 2>/dev/null | sed -e 's/.*:[\t ]*//' -e 's/\..*//')
-        [[ "$DISTRO" == "Ubuntu" ]] && [[ "$MAJOR" -ge 19 ]] && sudo apt install libsrt-dev; true
+      run: build/install-prerequisites.sh
     - name: Build TSDuck
       run: make -j5
     - name: Check built version
@@ -83,13 +77,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install dos2unix curl tar libpcsclite-dev libcurl4 libcurl4-openssl-dev dpkg-dev
-        # libsrt is available on Ubuntu 19.x
-        DISTRO=$(lsb_release -i 2>/dev/null | sed -e 's/.*:[\t ]*//')
-        MAJOR=$(lsb_release -r 2>/dev/null | sed -e 's/.*:[\t ]*//' -e 's/\..*//')
-        [[ "$DISTRO" == "Ubuntu" ]] && [[ "$MAJOR" -ge 19 ]] && sudo apt install libsrt-dev; true
+      run: build/install-prerequisites.sh
     - name: Build TSDuck
       run: make -j5
     - name: Check built version
@@ -114,9 +102,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install dos2unix curl tar libpcsclite-dev libcurl4 libcurl4-openssl-dev doxygen graphviz
+      run: build/install-prerequisites.sh
     - name: Build TSDuck documentation
       run: make doxygen
 
@@ -129,9 +115,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
-      run: |
-        brew update
-        brew install gnu-sed grep dos2unix pcsc-lite srt
+      run: build/install-prerequisites.sh
     - name: Check dependencies
       run: |
         gsed --version
