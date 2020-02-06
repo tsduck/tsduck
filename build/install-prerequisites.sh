@@ -54,7 +54,7 @@ if [[ $(uname -s) == Darwin ]]; then
     brew update
     brew install gnu-sed grep dos2unix pcsc-lite jg srt
 
-if [[ "$DISTRO" == "Ubuntu" ]]; then
+elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
     # Ubuntu
     pkglist="g++ dos2unix curl tar zip doxygen graphviz pcscd libpcsclite-dev dpkg-dev jq"
