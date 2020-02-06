@@ -40,6 +40,46 @@ on:
 
 # We currently build on Windows only. If is easy for users to rebuild on Unix.
 jobs:
+  doxygen:
+    name: Doxygen build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Get TSDuck repo
+      uses: actions/checkout@master
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install dos2unix curl tar zip doxygen graphviz
+
+    - name: Check if rebuild is necessary
+      run: |
+        remote_version=$(curl -sL https://tsduck.io/doxy/docversion.txt | grep '[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*$')
+        version=$(build/get-version-from-sources.sh)
+        [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
+        echo "Current version: $version, latest on tsduck.io: $remote_version"
+        echo "::set-env name=VERSION::$version"
+        echo "::set-env name=REBUILD::$rebuild"
+
+    - name: Check same version
+      if: env.REBUILD == 'false'
+      run: echo "Same version as currently published documentation, not rebuilt"
+
+    - name: Build TSDuck documentation
+      if: env.REBUILD == 'true'
+      run: |
+        make doxygen
+        echo "${{ env.VERSION }}" >doxy/docversion.txt
+        zip -qr9 doxy.zip doxy
+
+    - name: Upload doxygen package
+      if: env.REBUILD == 'true'
+      uses: actions/upload-artifact@master
+      with:
+        name: doxy
+        path: doxy.zip
+
   windows:
     name: Windows build
     runs-on: windows-latest
@@ -92,6 +132,14 @@ jobs:
       if: env.REBUILD == 'true'
       run: build/msvc/Release-Win32/tsversion.exe --version=all
 
+    - name: Get plugin lists
+      if: env.REBUILD == 'true'
+      run: |
+        Start-Process -Wait -RedirectStandardError tsp.version.txt -File build\msvc\Release-x64\tsp.exe -ArgumentList "--version=short"
+        Start-Process -Wait -RedirectStandardError tsp.input.txt   -File build\msvc\Release-x64\tsp.exe -ArgumentList "--list=input"
+        Start-Process -Wait -RedirectStandardError tsp.output.txt  -File build\msvc\Release-x64\tsp.exe -ArgumentList "--list=output"
+        Start-Process -Wait -RedirectStandardError tsp.packet.txt  -File build\msvc\Release-x64\tsp.exe -ArgumentList "--list=packet"
+
     - name: Upload version
       if: env.REBUILD == 'true'
       uses: actions/upload-artifact@master
@@ -126,9 +174,3 @@ jobs:
       with:
         name: portable-32
         path: installers/TSDuck-Win32-${{ env.VERSION }}-Portable.zip
-
-    - name: Trigger action at web server
-      if: env.REBUILD == 'true'
-      run: |
-        $response = Invoke-RestMethod https://tsduck.io/download/prerelease/get-nightly-builds
-        $response | Format-Custom
