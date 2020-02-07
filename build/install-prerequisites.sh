@@ -28,7 +28,17 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  This script installs all pre-requisites packages, depending on the distro.
+#  This script installs all pre-requisites packages, depending on the system.
+#
+#  Supported operating systems:
+#  - macOS
+#  - Ubuntu
+#  - Debian
+#  - Raspbian
+#  - Fedora
+#  - Red Hat
+#  - CentOS
+#  - Alpine Linux
 #
 #-----------------------------------------------------------------------------
 
@@ -38,21 +48,22 @@ error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 
 DISTRO=$(lsb_release -i 2>/dev/null | sed -e 's/.*:[\t ]*//')
 MAJOR=$(lsb_release -r 2>/dev/null | sed -e 's/.*:[\t ]*//' -e 's/\..*//')
-MINOR=$(lsb_release -r 2>/dev/null | sed -e 's/.*:.*\.//' -e 's/\..*//')
+MINOR=$(lsb_release -r 2>/dev/null | sed -e '/\./!d' -e 's/.*:[\t ]*//' -e 's/.*\.//')
 
 if [[ $(uname -s) == Darwin ]]; then
 
     # macOS
-    if [[ -z $(which clang 2>dev/null) ]]; then
+    if [[ -z $(which clang 2>/dev/null) ]]; then
         # Build tools not installed
         xcode-select --install
     fi
-    if [[ -z $(which brew 2>dev/null) ]]; then
+    if [[ -z $(which brew 2>/dev/null) ]]; then
         # Homebrew not installed
         ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     fi
     brew update
-    brew install gnu-sed grep dos2unix pcsc-lite jg srt
+    brew upgrade
+    brew install gnu-sed grep dos2unix pcsc-lite jq srt
 
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
@@ -69,6 +80,18 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     sudo apt update
     sudo apt install -y $pkglist
 
+elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
+
+    # Debian or Raspbian (Raspberry Pi)
+    pkglist="g++ dos2unix curl tar zip doxygen graphviz pcscd libpcsclite-dev dpkg-dev jq"
+    if [[ "$MAJOR" -le 9 ]]; then
+        pkglist="$pkglist libcurl3 libcurl3-dev"
+    else
+        pkglist="$pkglist libcurl4 libcurl4-openssl-dev"
+    fi
+    sudo apt update
+    sudo apt install -y $pkglist
+
 elif [[ -f /etc/fedora-release ]]; then
 
     # Fedora
@@ -78,11 +101,17 @@ elif [[ -f /etc/fedora-release ]]; then
         pkglist="$pkglist srt-devel"
     fi
     sudo dnf -y install $pkglist
-    
+
 elif [[ -f /etc/redhat-release ]]; then
 
     # Red Hat or CentOS
     pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz pcsc-tools pcsc-lite-devel libcurl libcurl-devel rpmdevtools jq"
     sudo yum -y install $pkglist
+
+elif [[ -f /etc/alpine-release ]]; then
+
+    # Alpine Linux
+    pkglist="bash coreutils diffutils procps util-linux linux-headers git make g++ dos2unix curl tar zip doxygen graphviz pcsc-lite-dev curl-dev jq"
+    sudo apk add $pkglist
 
 fi
