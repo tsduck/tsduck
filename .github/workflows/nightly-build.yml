@@ -171,17 +171,28 @@ jobs:
             echo -n $(basename $cmd):
             $cmd --help=description 2>&1
         done >tsduck.commands.txt
-        zip -q9 tsduck.ubuntu.zip \
-          tsp.version.txt tsp.input.txt tsp.output.txt tsp.packet.txt tsduck.commands.txt \
-          installers/tsduck_${{ env.VERSION }}_amd64.deb \
-          installers/tsduck-dev_${{ env.VERSION }}_amd64.deb
+        zip -q9 tsduck.commands.zip tsp.version.txt tsp.input.txt tsp.output.txt tsp.packet.txt tsduck.commands.txt \
 
-    - name: Upload package
+    - name: Upload command lists
+      if: env.REBUILD == 'true'
+      uses: actions/upload-artifact@master
+      with:
+        name: command-lists
+        path: tsduck.commands.zip
+
+    - name: Upload Ubuntu package
       if: env.REBUILD == 'true'
       uses: actions/upload-artifact@master
       with:
         name: ubuntu-package
-        path: tsduck.ubuntu.zip
+        path: installers/tsduck_${{ env.VERSION }}_amd64.deb
+        
+    - name: Upload Ubuntu dev package
+      if: env.REBUILD == 'true'
+      uses: actions/upload-artifact@master
+      with:
+        name: ubuntu-dev-package
+        path: installers/tsduck-dev_${{ env.VERSION }}_amd64.deb
         
   doc:
     name: Documentation build
