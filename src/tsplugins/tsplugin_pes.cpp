@@ -596,7 +596,7 @@ void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t se
                 }
              }
           }
-          timecode << (int)h << ":" << (int)m << ":" << (int)s << "." << (int)n_frames;
+          timecode << int(h) << ":" << int(m) << ":" << int(s) << "." << int(n_frames);
           DISS(timecode, timecode.str());
        }
 #undef DISS
