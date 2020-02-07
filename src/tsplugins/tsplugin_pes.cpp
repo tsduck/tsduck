@@ -558,19 +558,19 @@ void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t se
        bs.skip(15);
        uint8_t pic_struct = bs.read<uint8_t>(4);
        DISP(pic_struct);
-       bool clock_timestamp_flag = bs.readBit();
+       uint8_t clock_timestamp_flag = bs.readBit();
        if (clock_timestamp_flag)
        {
           uint8_t ct_type = bs.read<uint8_t>(2);
           DISP(ct_type);
-          bool nuit_field_based_flag = bs.readBit();
+          uint8_t nuit_field_based_flag = bs.readBit();
           DISP(nuit_field_based_flag);
           uint8_t counting_type = bs.read<uint8_t>(5);
           DISP(counting_type);
-          bool full_timestamp_flag = bs.readBit();
-          bool discontinuity_flag = bs.readBit();
+          uint8_t full_timestamp_flag = bs.readBit();
+          uint8_t discontinuity_flag = bs.readBit();
           DISP(discontinuity_flag);
-          bool cnt_dropped_flag = bs.readBit();
+          uint8_t cnt_dropped_flag = bs.readBit();
           DISP(cnt_dropped_flag);
           uint8_t n_frames = bs.read<uint8_t>(8);
           std::stringstream timecode;
