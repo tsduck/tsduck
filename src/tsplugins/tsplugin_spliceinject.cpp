@@ -799,6 +799,9 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
             next_pts = (last_pts - preceding) & PTS_DTS_MASK;
         }
     }
+    else if (sit.isValid() && sit.splice_command_type == SPLICE_TIME_SIGNAL) {
+       next_pts = sit.time_signal.value() - 90000*4;
+    }
 }
 
 
