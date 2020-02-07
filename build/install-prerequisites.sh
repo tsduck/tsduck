@@ -53,6 +53,7 @@ MINOR=$(lsb_release -r 2>/dev/null | sed -e '/\./!d' -e 's/.*:[\t ]*//' -e 's/.*
 if [[ $(uname -s) == Darwin ]]; then
 
     # macOS
+    pkglist="gnu-sed grep dos2unix pcsc-lite jq srt"
     if [[ -z $(which clang 2>/dev/null) ]]; then
         # Build tools not installed
         xcode-select --install
@@ -62,8 +63,11 @@ if [[ $(uname -s) == Darwin ]]; then
         ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     fi
     brew update
-    brew upgrade
-    brew install gnu-sed grep dos2unix pcsc-lite jq srt
+    for pkg in $pkglist; do
+        # Install or upgrade package (cannot be done in command)
+        brew ls --versions $pkg >/dev/null && cmd=upgrade || cmd=install
+        HOMEBREW_NO_AUTO_UPDATE=1 brew $cmd $pkg
+    done
 
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
