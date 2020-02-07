@@ -38,6 +38,8 @@
 #include "tsAVCSequenceParameterSet.h"
 #include "tsNames.h"
 #include "tsMemory.h"
+#include "tsBitStream.h"
+#include <sstream>
 TSDUCK_SOURCE;
 
 
@@ -546,6 +548,60 @@ void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t se
         out << " (truncated)";
     }
     out << ":" << std::endl << UString::Dump(pkt.payload() + offset, dsize, _hexa_flags | UString::ASCII, 4, _hexa_bpl);
+
+    if (sei_type == AVC_SEI_PIC_TIMING)
+    {
+       // Maybe move that code to a new "tsAVCSEI.cpp" file
+#define DISS(n, v) out << "  " << u ## #n << " = " << v << std::endl
+#define DISP(n) DISS(n, static_cast<int>(n))
+       ts::BitStream bs(pkt.payload() + offset, size*8);
+       bs.skip(15);
+       uint8_t pic_struct = bs.read<uint8_t>(4);
+       DISP(pic_struct);
+       bool clock_timestamp_flag = bs.readBit();
+       if (clock_timestamp_flag)
+       {
+          uint8_t ct_type = bs.read<uint8_t>(2);
+          DISP(ct_type);
+          bool nuit_field_based_flag = bs.readBit();
+          DISP(nuit_field_based_flag);
+          uint8_t counting_type = bs.read<uint8_t>(5);
+          DISP(counting_type);
+          bool full_timestamp_flag = bs.readBit();
+          bool discontinuity_flag = bs.readBit();
+          DISP(discontinuity_flag);
+          bool cnt_dropped_flag = bs.readBit();
+          DISP(cnt_dropped_flag);
+          uint8_t n_frames = bs.read<uint8_t>(8);
+          std::stringstream timecode;
+          uint8_t s = 0, m = 0, h = 0;
+          if (full_timestamp_flag)
+          {
+             s = bs.read<uint8_t>(6);
+             m = bs.read<uint8_t>(6);
+             h = bs.read<uint8_t>(5);
+          }
+          else
+          {
+             if (bs.readBit())
+             {
+                s = bs.read<uint8_t>(6);
+                if (bs.readBit())
+                {
+                   m = bs.read<uint8_t>(6);
+                   if (bs.readBit())
+                   {
+                      h = bs.read<uint8_t>(5);
+                   }
+                }
+             }
+          }
+          timecode << (int)h << ":" << (int)m << ":" << (int)s << "." << (int)n_frames;
+          DISS(timecode, timecode.str());
+       }
+#undef DISS
+#undef DISP
+    }
 }
 
 
