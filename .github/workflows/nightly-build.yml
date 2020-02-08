@@ -35,8 +35,13 @@ name: Nightly build
 
 # Trigger the workflow every day at 01:10 GMT
 on:
-  schedule:
-    - cron:  '10 1 * * *'
+  #@@@@ One push test
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 # We currently build on Windows only. If is easy for users to rebuild on Unix.
 jobs:
@@ -140,7 +145,7 @@ jobs:
 
     - name: Check if rebuild is necessary
       run: |
-        remote_version=$(curl -sL https://tsduck.io/download/prerelease/get-versions | jq -r '.latest?')
+        remote_version=$(curl -sL https://tsduck.io/download/prerelease/get-versions | jq -r '.latest?'; true)
         version=$(build/get-version-from-sources.sh)
         [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
         echo "Current version: $version, latest on tsduck.io: $remote_version"
@@ -207,7 +212,7 @@ jobs:
 
     - name: Check if rebuild is necessary
       run: |
-        remote_version=$(curl -sL https://tsduck.io/doxy/docversion.txt | grep '^[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*$')
+        remote_version=$(curl -sL https://tsduck.io/doxy/docversion.txt | grep '^[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*$'; true)
         version=$(build/get-version-from-sources.sh)
         [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
         echo "Current version: $version, latest on tsduck.io: $remote_version"
