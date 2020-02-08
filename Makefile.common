@@ -973,7 +973,7 @@ NOSOURCE = \
 DOXYGEN ?= $(call F_COMMAND,doxygen,doxygen)
 .PHONY: doxygen
 doxygen:
-	@[ -e Doxyfile ] && $(DOXYGEN) || $(RECURSE)
+	@[ -e Doxyfile ] && $(DOXYGEN) $(DOXYGEN_FLAGS) || $(RECURSE)
 
 # Texinfo document generation.
 MAKEINFO ?= makeinfo

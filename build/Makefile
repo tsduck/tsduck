@@ -57,10 +57,12 @@ $(GITHOOKS_TARGETS): Makefile
 default: $(GITHOOKS_TARGETS)
 	+@$(RECURSE)
 
-# Check if dot (from Graphviz) is installed.
-# These environment variables are used in Doxyfile.
-export DOT_PATH := $(call F_SEARCH,dot)
-export HAVE_DOT := $(if $(DOT_PATH),YES,NO)
+# Doxygen needs the TSDuck version and dot (from Graphviz).
+ifneq ($(filter-out doxygen,$(MAKECMDGOALS)), $(MAKECMDGOALS))
+    export TS_FULL_VERSION := $(shell ./get-version-from-sources.sh)
+    export DOT_PATH := $(call F_SEARCH,dot)
+    export HAVE_DOT := $(if $(DOT_PATH),YES,NO)
+endif
 
 # Install system files.
 .PHONY: install install-devel
