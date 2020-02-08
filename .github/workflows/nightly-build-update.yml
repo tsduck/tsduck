@@ -29,17 +29,13 @@
 #
 #  GitHub Actions configuration file : Nightly builds update
 #
-#  This workflow is supposed to be temporary. It is a workaround for a
-#  problem with the GitHub Actions API (beta). The "nightly build" workflow
-#  runs every night at 01:10 GMT. It builds Windows installers, uploads them
-#  as artifacts and triggers an action on tsduck.io. This trigger calls the
-#  GitHub Actions API to retrieve and download the artifacts (the installers).
-#  However, the artifacts are made available to the API only when the workflow
-#  completes, not when the upload-artifact steps completes. Since the trigger
-#  is activated in the last step of the workflow (hence before it completes),
-#  the artifacts are never found by tsduck.io. The present workflow runs
-#  three hours after "nightly build". We expect the artifacts to be available
-#  at that time.
+#  The "nightly build" workflow runs every night at 01:10 GMT. It builds
+#  installers and documentations and uploads them as artifacts. These
+#  artifacts are made available only when the "nightly build" workflow
+#  completes. The present workflow runs three hours after "nightly build".
+#  We expect the artifacts to be available at that time. This workflow
+#  triggers an action at tsduck.io which downloads the new installers and
+#  documentation and make them available on the Web site.
 #
 #-----------------------------------------------------------------------------
 
@@ -51,11 +47,11 @@ on:
     - cron:  '10 4 * * *'
 
 jobs:
-  windows:
-    name: Windows build update
-    runs-on: windows-latest
+  update:
+    name: Update nightly builds
+    runs-on: ubuntu-latest
     steps:
-    - name: Trigger action at web server
-      run: |
-        $response = Invoke-RestMethod https://tsduck.io/download/prerelease/get-nightly-builds
-        $response | Format-Custom
+    - name: Install dependencies
+      run: sudo apt install -y curl jq
+    - name: Trigger download
+      run: curl -sL https://tsduck.io/download/prerelease/get-nightly-builds | jq
