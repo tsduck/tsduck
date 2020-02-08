@@ -35,9 +35,12 @@ name: Continuous integration
 
 # Trigger the workflow on push or pull request, for master branch only.
 on:
-  #@@@@ One push test
-  schedule:
-    - cron:  '10 1 * * *'
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   linux-gcc:

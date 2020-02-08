@@ -35,13 +35,8 @@ name: Nightly build
 
 # Trigger the workflow every day at 01:10 GMT
 on:
-  #@@@@ One push test
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+  schedule:
+    - cron:  '10 1 * * *'
 
 # We currently build on Windows only. If is easy for users to rebuild on Unix.
 jobs:
