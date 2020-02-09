@@ -24,7 +24,7 @@ case, the standard subdirectory naming is the following:
 If you add or remove source files in this directory, a few project files shall
 be updated. Do not update them manually, use one of the following scripts:
 
-  - Windows: build\Build-Project-Files.ps1
+  - Windows: build/build-project-files.ps1
   - Unix:    build/build-project-files.sh
 
 The following files are rebuilt:

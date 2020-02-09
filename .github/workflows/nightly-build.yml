@@ -68,21 +68,13 @@ jobs:
       if: env.REBUILD == 'false'
       run: Write-Output "Same version as latest pre-release, not rebuilt"
 
-    - name: Install NSIS
+    - name: Install dependencies
       if: env.REBUILD == 'true'
-      run: build/install-nsis.ps1 -NoPause
-
-    - name: Install libsrt
-      if: env.REBUILD == 'true'
-      run: build/install-libsrt.ps1 -GitHubActions -NoPause
-
-    - name: Install Dektec SDK
-      if: env.REBUILD == 'true'
-      run: dektec/Download-Install-Dtapi.ps1 -NoPause
+      run: build/install-prerequisites.ps1 -GitHubActions -NoPause
 
     - name: Build installers
       if: env.REBUILD == 'true'
-      run: build/Build-Installer.ps1 -NoPause -NoLowPriority -NoSource
+      run: build/build-installer.ps1 -NoPause -NoLowPriority -NoSource
 
     - name: Check built version (64-bit)
       if: env.REBUILD == 'true'

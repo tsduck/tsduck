@@ -104,7 +104,7 @@ Set-StrictMode -Version 3
 if (((Get-ExecutionPolicy) -ne "Unrestricted") -and ((Get-ExecutionPolicy) -ne "RemoteSigned")) {
     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force -ErrorAction:SilentlyContinue
 }
-Import-Module -Force -Name (Join-Path $PSScriptRoot Build-Common.psm1)
+Import-Module -Force -Name (Join-Path $PSScriptRoot build-common.psm1)
 
 # Get the project directories.
 $RootDir = (Split-Path -Parent $PSScriptRoot)
@@ -167,7 +167,7 @@ if (-not $NoLowPriority) {
 if (-not $NoBuild) {
     Write-Output "Compiling..."
     Push-Location
-    & (Join-Path $PSScriptRoot Build.ps1) -Installer -NoPause -Win32:$Win32 -Win64:$Win64 -GitPull:$GitPull -NoLowPriority:$NoLowPriority -NoTeletext:$NoTeletext
+    & (Join-Path $PSScriptRoot build.ps1) -Installer -NoPause -Win32:$Win32 -Win64:$Win64 -GitPull:$GitPull -NoLowPriority:$NoLowPriority -NoTeletext:$NoTeletext
     $Code = $LastExitCode
     Pop-Location
     if ($Code -ne 0) {
@@ -316,7 +316,7 @@ if (-not $NoSource) {
         Copy-Item $RootDir $TempRoot -Recurse
 
         # Cleanup the temporary tree.
-        & (Join-MultiPath @($TempRoot, "build", "Cleanup.ps1")) -Deep -NoPause -Silent
+        & (Join-MultiPath @($TempRoot, "build", "cleanup.ps1")) -Deep -NoPause -Silent
 
         if ($NoTeletext) {
             Get-ChildItem $TempRoot -Recurse -Include @("tsTeletextDemux.*", "tsTeletextCharset.*", "tsplugin_teletext.*") | Remove-Item -Force -ErrorAction Ignore

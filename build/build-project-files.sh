@@ -39,7 +39,7 @@
 #  - src/libtsduck/dtv/tsTables.h
 #  - src/libtsduck/dtv/private/tsRefType.h
 #
-#  See the PowerShell script Build-Project-Files.ps1 for a Windows equivalent.
+#  See the PowerShell script build-project-files.ps1 for a Windows equivalent.
 #
 #-----------------------------------------------------------------------------
 

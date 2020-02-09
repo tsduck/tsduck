@@ -147,22 +147,24 @@ if (-not $NoInstall) {
 
     # Loop on all uninstallation entries, looking for *dektec* names.
     foreach ($reg in $RegUninstall) {
-        Get-ChildItem -Recurse -Path $reg |
-        ForEach-Object {
-            $name = (Split-Path -Leaf $_.Name)
-            $entries = ($_ | Get-ItemProperty)
-            if ($entries.DisplayName -like "*dektec*") {
-                # Found a Dektec product, uninstall it.
-                $cmd = $entries.UninstallString
-                Write-Output "Uninstalling $($entries.DisplayName) version $($entries.DisplayVersion)"
-                if ($cmd -like "msiexec*") {
-                    # Run msiexec with silent options.
-                    Start-Process -FilePath msiexec.exe -ArgumentList @("/uninstall", "$name", "/passive", "/norestart") -Wait
-                }
-                else {
-                    # Run the uninstall command
-                    Write-Output "Executing $cmd"
-                    Start-Process -FilePath powershell.exe -ArgumentList $cmd -Wait
+        if (Test-Path $reg) {
+            Get-ChildItem -Recurse -Path $reg |
+            ForEach-Object {
+                $name = (Split-Path -Leaf $_.Name)
+                $entries = ($_ | Get-ItemProperty)
+                if ($entries.DisplayName -like "*dektec*") {
+                    # Found a Dektec product, uninstall it.
+                    $cmd = $entries.UninstallString
+                    Write-Output "Uninstalling $($entries.DisplayName) version $($entries.DisplayVersion)"
+                    if ($cmd -like "msiexec*") {
+                        # Run msiexec with silent options.
+                        Start-Process -FilePath msiexec.exe -ArgumentList @("/uninstall", "$name", "/passive", "/norestart") -Wait
+                    }
+                    else {
+                        # Run the uninstall command
+                        Write-Output "Executing $cmd"
+                        Start-Process -FilePath powershell.exe -ArgumentList $cmd -Wait
+                    }
                 }
             }
         }

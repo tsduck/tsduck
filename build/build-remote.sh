@@ -225,7 +225,7 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
         # Build on Windows.
         # Cleanup repository, rebuild from scratch.
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" PowerShell \
-            ". '$REMOTE_DIR/build/Cleanup.ps1' -NoPause"
+            ". '$REMOTE_DIR/build/cleanup.ps1' -NoPause"
 
         # Create a remote timestamp in installers subdirectory.
         # Newer files will be the installers we build.
@@ -234,7 +234,7 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
 
         # Build installers after updating the repository.
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" PowerShell \
-            ". '$REMOTE_DIR/build/Build-Installer.ps1' -GitPull -NoSource -NoPause"
+            ". '$REMOTE_DIR/build/build-installer.ps1' -GitPull -NoSource -NoPause"
 
         # Get all files from installers directory which are newer than the timestamp.
         files=$(ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" PowerShell \
