@@ -26,7 +26,7 @@ The git hooks are automatically installed when building TSDuck.
   git hooks are installed or updated.
 
 - git-hook-update.ps1 : This Windows PowerShell script installs the git hooks.
-  It is automatically invoked by Build.ps1, the main build script for TSDuck.
+  It is automatically invoked by build.ps1, the main build script for TSDuck.
 
 - git-hook.sh : This script implements the various git hooks, on Unix and
   Windows. The actual hook scripts, in .git/hooks, simply call this script.
@@ -36,47 +36,59 @@ Build scripts on Windows
 ------------------------
 - msvc : A subdirectory containing all project files for Visual Studio 2015,
   2017 and 2019. These files are also valid MSBuild project files. The
-  software may be built either using MSBuild (see Build.ps1) or using the
+  software may be built either using MSBuild (see build.ps1) or using the
   tsduck.sln solution file in the Visual Studio GUI.
 
 - tsduck.rc : The Microsoft resource file which is used to build the various
   TSDuck executables.
 
-- Build-Common.psm1 : A common code module for all PowerShell scripts here.
+- build-common.psm1 : A common code module for all PowerShell scripts here.
 
-- Build.ps1 : This script builds all TSDuck code, executables and DLL's.
+- build.ps1 : This script builds all TSDuck code, executables and DLL's.
 
-- Build-Installer.ps1 : This script builds the binary installers for TSDuck.
-  It automatically invoke Build.ps1. So, to build TSDuck installers from a
+- build-installer.ps1 : This script builds the binary installers for TSDuck.
+  It automatically invoke build.ps1. So, to build TSDuck installers from a
   freshly cloned repository, just run this script.
 
-- Build-Project-Files.ps1 : This script builds all project files which list the
+- build-project-files.ps1 : This script builds all project files which list the
   source files in the TSDuck DLL. Adding new source files in the TSDuck library
-  is a common task. Each time a new file is added, many different files must be
-  updated: Visual Studio project files, Qt Creator project files, tsduck.h main
-  header file. This script recreates all these files from the current set of
-  source files in src/libtsduck. It is automatically invoked by Build.ps1 to
-  ensure that the project files are always up to date.
+  is a common task. Each time a new file is added, some header files must be
+  updated, such as tsduck.h, the main header file. This script recreates all
+  these files from the current set of source files in src/libtsduck. It is
+  automatically invoked by build.ps1 to ensure that the project files are
+  always up to date.
 
-- Build-User-Guide-PDF.ps1 : This script updates the Microsoft Word document
+- build-user-guide-pdf.ps1 : This script updates the Microsoft Word document
   for the TSDuck User's Guide. The version, dates, tables of contents and all
   other fields are updated. The PDF file is generated. So, when updating the
   documentation for new features, just add the description of the new features,
   save and close the Word file and then run this script.
 
-- Cleanup.ps1 : This scripts does a complete cleanup of the directory tree,
+- get-version-from-sources.ps1 : Extract the TSDuck version number from the
+  source files.
+
+- cleanup.ps1 : This script does a complete cleanup of the directory tree,
   removing all generated or temporary files. This is a Windows equivalent of
   "make distclean" on Unix.
 
 - tsduck.nsi : This file is an NSIS script to build the binary installers of
-  TSDuck. It is used by Build-Installer.ps1.
+  TSDuck. It is used by build-installer.ps1.
 
 - tsduck.props : This Visual Studio property file is installed with the TSDuck
   development environment. It is referenced by third-party applications using
   the TSDuck library.
 
+- install-prerequisites.ps1 : This script downloads and installs all
+  pre-requisite packages to build TSDuck on Windows. Alternatively,
+  the following individual install-*.ps1 scripts can be used.
+
 - install-libsrt.ps1 : This script downloads and installs libsrt, a pre-compiled
   binary static library for SRT on Windows.
+
+- install-doxygen.ps1 : This script downloads and installs Doxygen.
+
+- install-graphviz.ps1 : This script downloads and installs Graphviz, which is
+  required by Doxygen to build class diagrams.
 
 - install-nsis.ps1 : This script downloads and installs NSIS, the NullSoft
   Installer Scripting system which is required to build TSDuck installer.
@@ -92,7 +104,7 @@ Build scripts on Windows
 Project files for Linux and macOS
 ---------------------------------
 - build-project-files.sh : This shell script is the Unix equivalent of
-  Build-Project-Files.ps1. It is automatically invoked by the makefiles of
+  build-project-files.ps1. It is automatically invoked by the makefiles of
   the directory of each project file.
 
 - create-release-text.sh : This shell script recreates the MarkDown file which
@@ -100,6 +112,18 @@ Project files for Linux and macOS
 
 - build-remote.sh : Build the TSDuck installers on a remote system, either a
   running physical system or a local VM to start.
+
+- get-version-from-sources.sh : Extract the TSDuck version number from the
+  source files.
+
+- install-prerequisites.sh : This script downloads and installs all
+  pre-requisite packages to build TSDuck on Linux or macOS.
+
+- check-libtsduck-dependencies.sh : This script verifies that the source files
+  are correctly organized in src/libtsduck. Specifically, it verifies that all
+  included headers are strictly contained in a subdirectory or its dependencies.
+  This script is useful to run only when there is a major reorganization of the
+  source code tree.
 
 - qtcreator : This subdirectory contains all project files for Qt Creator.
   TSDuck does not use Qt. But Qt Creator is a superior C++ IDE which can be
@@ -142,5 +166,5 @@ Doxygen documentation
 
 - doxy-style.css : CSS style sheet for Doxygen-generated HTML pages.
 
-- Build-Doxygen.ps1 : Windows PowerShell script to create the Doxygen
+- build-doxygen.ps1 : Windows PowerShell script to create the Doxygen
   documentation. On Unix systems, use "make doxygen" at project root level.

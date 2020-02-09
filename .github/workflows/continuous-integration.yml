@@ -145,12 +145,10 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@master
-    - name: Install libsrt
-      run: build/install-libsrt.ps1 -GitHubActions -NoPause
-    - name: Install Dektec SDK
-      run: dektec/Download-Install-Dtapi.ps1 -NoPause
+    - name: Install dependencies
+      run: build/install-prerequisites.ps1 -GitHubActions -NoPause
     - name: Build TSDuck
-      run: build/Build.ps1 -Win64 -Release -Parallel 5 -NoLowPriority -NoPause
+      run: build/build.ps1 -Win64 -Release -Parallel 5 -NoLowPriority -NoPause
     - name: Check built version
       run: build/msvc/Release-x64/tsversion.exe --version=all
     - name: Run unitary tests
@@ -178,12 +176,10 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@master
-    - name: Install libsrt
-      run: build/install-libsrt.ps1 -GitHubActions -NoPause
-    - name: Install Dektec SDK
-      run: dektec/Download-Install-Dtapi.ps1 -NoPause
+    - name: Install dependencies
+      run: build/install-prerequisites.ps1 -GitHubActions -NoPause
     - name: Build TSDuck
-      run: build/Build.ps1 -Win32 -Release -Parallel 5 -NoLowPriority -NoPause
+      run: build/build.ps1 -Win32 -Release -Parallel 5 -NoLowPriority -NoPause
     - name: Check built version
       run: build/msvc/Release-Win32/tsversion.exe --version=all
     - name: Run unitary tests

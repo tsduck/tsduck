@@ -28,7 +28,7 @@
 ;-----------------------------------------------------------------------------
 ;
 ;  NSIS script to build the TSDuck binary installer for Windows.
-;  Do not invoke NSIS directly, use Build-Installer.ps1.
+;  Do not invoke NSIS directly, use build-installer.ps1.
 ;
 ;  Required command-line definitions:
 ;  - Version : Product version.

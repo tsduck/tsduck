@@ -28,7 +28,8 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  This script installs all pre-requisites packages, depending on the system.
+#  This script installs all pre-requisites packages to build TSDuck,
+#  depending on the system.
 #
 #  Supported operating systems:
 #  - macOS
