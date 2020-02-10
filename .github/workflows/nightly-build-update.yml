@@ -54,4 +54,5 @@ jobs:
     - name: Install dependencies
       run: sudo apt install -y curl jq
     - name: Trigger download
-      run: curl -sL -H 'X-Upload-Credentials: ${{ secrets.UPLOAD_CREDENTIALS }}' https://tsduck.io/download/prerelease/get-nightly-builds | jq .
+      run: |
+        curl -sL -H 'X-Upload-Credentials: ${{ secrets.UPLOAD_CREDENTIALS }}' https://tsduck.io/download/prerelease/get-nightly-builds | jq .
