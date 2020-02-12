@@ -54,7 +54,7 @@ endif
 
 $(OBJDIR)/setenv.sh: Makefile
 	echo '[[ ":$$PATH:" != *:$(realpath $(OBJDIR)):* ]] && export PATH="$(realpath $(OBJDIR)):$$PATH"' >$@
-	echo 'export LD_LIBRARY_PATH="$(realpath $(LIBTSDUCKDIR)/$(OBJDIR))"' >>$@
+	echo 'export LD_LIBRARY_PATH="$(realpath $(LIBTSDUCKDIR)/$(OBJDIR)):$LD_LIBRARY_PATH"' >>$@
 	echo 'export TSPLUGINS_PATH=$(realpath $(TSPLUGINSDIR)/$(OBJDIR)):$(realpath $(LIBTSDUCKDIR)/dtv)' >>$@
 
 .PHONY: install install-devel
