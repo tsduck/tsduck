@@ -66,11 +66,13 @@ include ../../Makefile.tsduck
 default: headers libs
 	@true
 
-# These headers are automatically generated.
-GENHEADERS := tsduck.h dtv/tsTables.h dtv/private/tsRefType.h
+# The GEN_HEADERS headers are automatically generated from SRC_HEADERS using BUILD_PROJ_FILES.
+GEN_HEADERS = tsduck.h dtv/tsTables.h dtv/private/tsRefType.h
+SRC_HEADERS = $(filter-out $(GEN_HEADERS),$(wildcard *.h */*.h */*/*.h))
+BUILD_PROJ_FILES = $(ROOTDIR)/build/build-project-files.sh
 .PHONY: headers
-headers: $(GENHEADERS)
-$(GENHEADERS): $(BUILD_PROJ_FILES) $(SRCROOT)/HEADER.txt $(LIB_HEADERS)
+headers: $(GEN_HEADERS)
+$(GEN_HEADERS): $(BUILD_PROJ_FILES) $(SRCROOT)/HEADER.txt $(SRC_HEADERS)
 	@echo '  [REBUILD] $@'; \
 	$(BUILD_PROJ_FILES) $@
 

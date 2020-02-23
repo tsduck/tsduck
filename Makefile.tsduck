@@ -147,11 +147,3 @@ CFLAGS_INCLUDES += $(addprefix -I,$(shell find $(LIBTSDUCKDIR) -type d ! -name p
 ifneq ($(TS_NO_BUILD_VERSION),)
     CPPFLAGS += -DTS_NO_BUILD_VERSION
 endif
-
-# The following script is used to build a few project files.
-# It shall be used when source files are added or removed in the library.
-
-ifndef BUILD_PROJ_FILES
-    export BUILD_PROJ_FILES = $(ROOTDIR)/build/build-project-files.sh
-    export LIB_SOURCES = $(shell find $(LIBTSDUCKDIR) \( -name '*.h' -o -name '*.cpp' \) ! -name tsduck.h ! -name tsTables.h ! -name tsRefType.h)
-endif
