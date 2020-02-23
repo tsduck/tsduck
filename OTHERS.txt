@@ -66,3 +66,17 @@ as the name is changed.
    TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
   0. You just DO WHAT THE FUCK YOU WANT TO.
+
+                                ==== LIBSRT ====
+
+[[ LIBSRT is used by TSDuck to access Secure Reliable Transport. LIBSRT is ]]
+[[ distributed according to the terms of the Mozilla Public License        ]]
+[[ Version 2.0. No source code from LIBSRT is used in TSDuck. However, on  ]]
+[[ Windows, the TSDuck binary installers include the LIBSRT binaries.      ]]
+[[ Reference site: https://github.com/Haivision/srt                        ]]
+
+Copyright (c) 2018 Haivision Systems Inc.
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
