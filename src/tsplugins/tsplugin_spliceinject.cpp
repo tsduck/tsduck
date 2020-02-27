@@ -80,7 +80,7 @@ namespace {
 namespace ts {
     class SpliceInjectPlugin:
         public ProcessorPlugin,
-        private PMTHandlerInterface,
+        private SignalizationHandlerInterface,
         private SectionProviderInterface
     {
         TS_NOBUILD_NOCOPY(SpliceInjectPlugin);
@@ -212,8 +212,8 @@ namespace ts {
         Mutex         _wfb_mutex;           // Mutex waiting for _wfb_received.
         Condition     _wfb_condition;       // Condition waiting for _wfb_received.
 
-        // Implementation of PMTHandlerInterface.
-        virtual void handlePMT(const PMT&) override;
+        // Implementation of SignalizationHandlerInterface.
+        virtual void handlePMT(const PMT&, PID) override;
 
         // Implementation of SectionProviderInterface.
         virtual void provideSection(SectionCounter counter, SectionPtr& section) override;
@@ -535,10 +535,10 @@ ts::ProcessorPlugin::Status ts::SpliceInjectPlugin::processPacket(TSPacket& pkt,
 
 //----------------------------------------------------------------------------
 // Invoked when the PMT of the service is found.
-// Implementation of PMTHandlerInterface.
+// Implementation of SignalizationHandlerInterface.
 //----------------------------------------------------------------------------
 
-void ts::SpliceInjectPlugin::handlePMT(const PMT& pmt)
+void ts::SpliceInjectPlugin::handlePMT(const PMT& pmt, PID)
 {
     // Get the PID with PCR's.
     if (_pcr_pid == PID_NULL) {

@@ -2,12 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.20-1629
+VERSION 3.20-1670
 
 [NEW] New commands and plugins:
 
   * Added command "tspcontrol" to send control commands to a running "tsp".
-  * Added input and output pluings "srt" for Secure Reliable Transport
+  * Added input and output plugins "srt" for Secure Reliable Transport
     (code contribution from Anthony Delannoy). This plugin is not compiled
     on all platforms (subject to availability of libsrt).
   * For developers, the features of "tsp" and "tsswitch" are now easily
@@ -16,7 +16,8 @@ VERSION 3.20-1629
 
 [IMP] Improvements on existing commands and plugins:
 
-  * Added option --control-port to "tsp" and other related --control options.
+  * Added option --control-port to "tsp" and other related --control options
+    for use with the new command "tspcontrol".
   * Added option --eit-date-only to plugin "timeref".
   * Option --buffer-size-mb of "tsp" now accepts decimal values (eg. "0.5").
   * Added options --local-time-offset, --next-change, --next-time-offset,
@@ -25,6 +26,7 @@ VERSION 3.20-1629
   * Added options --has-splice-countdown, --splice-countdown,
     --min-splice-countdown and --max-splice-countdown to plugin "filter".
   * Added option --label-close to output plugin "hls".
+  * Added option --ignore-absent to plugin "zap".
 
 [BUG] Bug fixes:
 

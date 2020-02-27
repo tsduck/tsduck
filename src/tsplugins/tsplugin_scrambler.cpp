@@ -95,7 +95,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class ScramblerPlugin:
         public ProcessorPlugin,
-        private PMTHandlerInterface
+        private SignalizationHandlerInterface
     {
         TS_NOBUILD_NOCOPY(ScramblerPlugin);
     public:
@@ -214,7 +214,7 @@ namespace ts {
         bool tryExitDegradedMode();
 
         // Invoked when the PMT of the service is available.
-        virtual void handlePMT(const PMT&) override;
+        virtual void handlePMT(const PMT&, PID) override;
     };
 }
 
@@ -507,7 +507,7 @@ bool ts::ScramblerPlugin::stop()
 //  This method processes the PMT of the service.
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::handlePMT(const PMT& table)
+void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
 {
     assert(_use_service);
 

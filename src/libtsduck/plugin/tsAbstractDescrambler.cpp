@@ -232,7 +232,7 @@ bool ts::AbstractDescrambler::stop()
 //  This method is invoked when a PMT is available for the service.
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescrambler::handlePMT(const PMT& pmt)
+void ts::AbstractDescrambler::handlePMT(const PMT& pmt, PID)
 {
     tsp->debug(u"PMT: service 0x%X, %d elementary streams", {pmt.service_id, pmt.streams.size()});
 

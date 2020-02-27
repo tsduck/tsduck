@@ -50,7 +50,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class TeletextPlugin:
         public ProcessorPlugin,
-        private PMTHandlerInterface,
+        private SignalizationHandlerInterface,
         private TeletextHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TeletextPlugin);
@@ -74,8 +74,8 @@ namespace ts {
         std::set<int>    _pages;      // Set of all Teletext pages in the PID (for information only).
 
         // Implementation of interfaces.
-        virtual void handlePMT(const PMT& table) override;
-        virtual void handleTeletextMessage(TeletextDemux& demux, const TeletextFrame& frame) override;
+        virtual void handlePMT(const PMT&, PID) override;
+        virtual void handleTeletextMessage(TeletextDemux&, const TeletextFrame&) override;
     };
 }
 
@@ -199,7 +199,7 @@ bool ts::TeletextPlugin::stop()
 // Invoked by the service discovery when the PMT of the service is available.
 //----------------------------------------------------------------------------
 
-void ts::TeletextPlugin::handlePMT(const PMT& pmt)
+void ts::TeletextPlugin::handlePMT(const PMT& pmt, PID)
 {
     bool languageOK = _language.empty();
     bool pageOK = _page < 0;
