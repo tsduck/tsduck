@@ -49,7 +49,7 @@ namespace ts {
     class RMSplicePlugin:
             public ProcessorPlugin,
             private SectionHandlerInterface,
-            private PMTHandlerInterface
+            private SignalizationHandlerInterface
     {
         TS_NOBUILD_NOCOPY(RMSplicePlugin);
     public:
@@ -137,8 +137,8 @@ namespace ts {
         ContinuityAnalyzer _ccFixer;     // To fix continuity counters in spliced PID's.
 
         // Implementation of interfaces.
-        virtual void handleSection(SectionDemux& demux, const Section& section) override;
-        virtual void handlePMT(const PMT& table) override;
+        virtual void handleSection(SectionDemux&, const Section&) override;
+        virtual void handlePMT(const PMT&, PID) override;
     };
 }
 
@@ -270,7 +270,7 @@ ts::RMSplicePlugin::PIDState::PIDState(PID pid_) :
 // Invoked by the service discovery when the PMT of the service is available.
 //----------------------------------------------------------------------------
 
-void ts::RMSplicePlugin::handlePMT(const PMT& pmt)
+void ts::RMSplicePlugin::handlePMT(const PMT& pmt, PID)
 {
     // We need to find a PID carrying splice information sections.
     bool foundSpliceInfo = false;

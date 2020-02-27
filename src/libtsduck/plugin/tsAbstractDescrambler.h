@@ -51,7 +51,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractDescrambler:
         public ProcessorPlugin,
-        protected PMTHandlerInterface,
+        protected SignalizationHandlerInterface,
         protected SectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(AbstractDescrambler);
@@ -168,11 +168,12 @@ namespace ts {
     protected:
         //!
         //! This hook is invoked when a new PMT is available.
-        //! Implementation of PMTHandlerInterface.
+        //! Implementation of SignalizationHandlerInterface.
         //! If overridden by a concrete descrambler, the superclass must be explicitly invoked.
         //! @param [in] table A reference to the new PMT.
+        //! @param [in] pid The PID on which the table was found.
         //!
-        virtual void handlePMT(const PMT& table) override;
+        virtual void handlePMT(const PMT& table, PID pid) override;
 
         //!
         //! This hook is invoked when a complete section is available.

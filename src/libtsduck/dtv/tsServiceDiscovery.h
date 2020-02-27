@@ -36,7 +36,7 @@
 #include "tsService.h"
 #include "tsSectionDemux.h"
 #include "tsNullReport.h"
-#include "tsPMTHandlerInterface.h"
+#include "tsSignalizationHandlerInterface.h"
 #include "tsPAT.h"
 #include "tsSDT.h"
 #include "tsMGT.h"
@@ -60,7 +60,7 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! @param [in] pmtHandler Handler to call for each new PMT.
         //!
-        explicit ServiceDiscovery(DuckContext& duck, PMTHandlerInterface* pmtHandler = nullptr);
+        explicit ServiceDiscovery(DuckContext& duck, SignalizationHandlerInterface* pmtHandler = nullptr);
 
         //!
         //! Constructor using a string description.
@@ -69,7 +69,7 @@ namespace ts {
         //! this is a service id, otherwise this is a service name. If the string is empty, use the first service from the PAT.
         //! @param [in] pmtHandler Handler to call for each new PMT.
         //!
-        explicit ServiceDiscovery(DuckContext& duck, const UString& desc, PMTHandlerInterface* pmtHandler = nullptr);
+        explicit ServiceDiscovery(DuckContext& duck, const UString& desc, SignalizationHandlerInterface* pmtHandler = nullptr);
 
         // Inherited methods
         virtual void set(const UString& desc) override;
@@ -86,7 +86,7 @@ namespace ts {
         //! Replace the PMT handler.
         //! @param [in] h The new handler.
         //!
-        void setPMTHandler(PMTHandlerInterface* h) { _pmtHandler = h; }
+        void setPMTHandler(SignalizationHandlerInterface* h) { _pmtHandler = h; }
 
         //!
         //! Check if the PMT of the service is known.
@@ -108,18 +108,18 @@ namespace ts {
         bool nonExistentService() const { return _notFound; }
 
     private:
-        DuckContext&         _duck;
-        bool                 _notFound;    // Set when service does not exist.
-        PMTHandlerInterface* _pmtHandler;  // Handler to call for each new PMT.
-        PMT                  _pmt;         // Last valid PMT for the service.
-        SectionDemux         _demux;       // PSI demux for service discovery.
+        DuckContext& _duck;
+        bool         _notFound;    // Set when service does not exist.
+        SignalizationHandlerInterface* _pmtHandler;  // Handler to call for each new PMT.
+        PMT          _pmt;         // Last valid PMT for the service.
+        SectionDemux _demux;       // PSI demux for service discovery.
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Process specific tables
         void processPAT(const PAT&);
-        void processPMT(const PMT&);
+        void processPMT(const PMT&, PID pid);
         void processSDT(const SDT&);
         void analyzeMGT(const MGT&);
         void analyzeVCT(const VCT&);

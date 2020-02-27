@@ -44,7 +44,7 @@ namespace ts {
     //! @ingroup table
     //!
     //! Warning: The ATSC STT violates the common usage rules of MPEG sections,
-    //! as defined in ISO/IEC 13818-1. An STT section is, be essence, unique.
+    //! as defined in ISO/IEC 13818-1. An STT section is, by essence, unique.
     //! Each section carries a different system time. According the MPEG rules,
     //! this should be a short section, just like a TDT or TOT, its DVB counterparts.
     //! However, ATSC defines the STT as a long section with version zero.

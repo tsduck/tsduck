@@ -35,7 +35,7 @@ TSDUCK_SOURCE;
 // Default constructor.
 //----------------------------------------------------------------------------
 
-ts::ServiceDiscovery::ServiceDiscovery(DuckContext& duck, PMTHandlerInterface* pmtHandler) :
+ts::ServiceDiscovery::ServiceDiscovery(DuckContext& duck, SignalizationHandlerInterface* pmtHandler) :
     Service(),
     _duck(duck),
     _notFound(false),
@@ -51,7 +51,7 @@ ts::ServiceDiscovery::ServiceDiscovery(DuckContext& duck, PMTHandlerInterface* p
 // Constructor using a string description.
 //----------------------------------------------------------------------------
 
-ts::ServiceDiscovery::ServiceDiscovery(DuckContext& duck, const UString& desc, PMTHandlerInterface* pmtHandler) :
+ts::ServiceDiscovery::ServiceDiscovery(DuckContext& duck, const UString& desc, SignalizationHandlerInterface* pmtHandler) :
     ServiceDiscovery(duck, pmtHandler)
 {
     set(desc);
@@ -148,7 +148,7 @@ void ts::ServiceDiscovery::handleTable(SectionDemux& demux, const BinaryTable& t
         case TID_PMT: {
             PMT pmt(_duck, table);
             if (pmt.isValid() && hasId(pmt.service_id)) {
-                processPMT(pmt);
+                processPMT(pmt, table.sourcePID());
             }
             break;
         }
@@ -362,13 +362,13 @@ void ts::ServiceDiscovery::processPAT(const PAT& pat)
 //  This method processes a Program Map Table (PMT).
 //----------------------------------------------------------------------------
 
-void ts::ServiceDiscovery::processPMT(const PMT& pmt)
+void ts::ServiceDiscovery::processPMT(const PMT& pmt, PID pid)
 {
     // Store the new PMT.
     _pmt = pmt;
 
     // Notify the application.
     if (_pmtHandler != nullptr) {
-        _pmtHandler->handlePMT(_pmt);
+        _pmtHandler->handlePMT(_pmt, pid);
     }
 }
