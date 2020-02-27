@@ -62,11 +62,13 @@ jobs:
         curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
     - name: Run test suite
       run: |
-        make test-suite
-        for f in $(find ../tsduck-test/tmp -name '*.diff'); do
+        make test-suite && status=? || status=$?
+        cd ../tsduck-test
+        for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
             cat "$f"
         done
+        exit $status
 
   linux-clang:
     name: Linux with clang
@@ -90,11 +92,13 @@ jobs:
         curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
     - name: Run test suite
       run: |
-        make test-suite
-        for f in $(find ../tsduck-test/tmp -name '*.diff'); do
+        make test-suite && status=? || status=$?
+        cd ../tsduck-test
+        for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
             cat "$f"
         done
+        exit $status
 
   doxygen:
     name: Doxygen documentation
@@ -133,12 +137,13 @@ jobs:
         curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
     - name: Run test suite
       run: |
-        make test-suite
+        make test-suite && status=? || status=$?
         cd ../tsduck-test
         for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
             cat "$f"
         done
+        exit $status
 
   windows-64-msvc:
     name: Windows 64-bit with VC++
@@ -165,11 +170,12 @@ jobs:
       shell: bash
       run: |
         cd ../tsduck-test
-        ./run-all-tests.sh --dev
+        ./run-all-tests.sh --dev && status=? || status=$?
         for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
             cat "$f"
         done
+        exit $status
 
   windows-32-msvc:
     name: Windows 32-bit with VC++
@@ -196,8 +202,9 @@ jobs:
       shell: bash
       run: |
         cd ../tsduck-test
-        ./run-all-tests.sh --dev32
+        ./run-all-tests.sh --dev32 && status=? || status=$?
         for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
             cat "$f"
         done
+        exit $status
