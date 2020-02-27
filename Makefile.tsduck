@@ -81,6 +81,11 @@ else
     LDLIBS := -ldl $(LDLIBS)
 endif
 
+# A setenv.sh script to setup the environment for a binary directory.
+
+$(OBJDIR)/setenv.sh: $(ROOTDIR)/build/setenv-template.sh
+	cp -f $< $@
+
 # External include directories and libraries.
 
 ifdef CROSS_TARGET
