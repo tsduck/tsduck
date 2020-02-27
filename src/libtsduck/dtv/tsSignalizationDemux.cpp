@@ -57,7 +57,7 @@ ts::SignalizationDemux::SignalizationDemux(DuckContext& duck, SignalizationHandl
 
 ts::PID ts::SignalizationDemux::nitPID() const
 {
-    return _last_pat.isValid() && _last_pat.nit_pid != PID_NULL ? _last_pat.nit_pid : PID_NIT;
+    return _last_pat.isValid() && _last_pat.nit_pid != PID_NULL ? _last_pat.nit_pid : PID(PID_NIT);
 }
 
 
