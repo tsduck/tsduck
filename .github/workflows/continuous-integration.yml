@@ -62,7 +62,7 @@ jobs:
         curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
     - name: Run test suite
       run: |
-        make test-suite && status=? || status=$?
+        make test-suite && status=$? || status=$?
         cd ../tsduck-test
         for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
@@ -92,7 +92,7 @@ jobs:
         curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
     - name: Run test suite
       run: |
-        make test-suite && status=? || status=$?
+        make test-suite && status=$? || status=$?
         cd ../tsduck-test
         for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
@@ -137,7 +137,7 @@ jobs:
         curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
     - name: Run test suite
       run: |
-        make test-suite && status=? || status=$?
+        make test-suite && status=$? || status=$?
         cd ../tsduck-test
         for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
@@ -170,7 +170,7 @@ jobs:
       shell: bash
       run: |
         cd ../tsduck-test
-        ./run-all-tests.sh --dev && status=? || status=$?
+        ./run-all-tests.sh --dev && status=$? || status=$?
         for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
             cat "$f"
@@ -202,7 +202,7 @@ jobs:
       shell: bash
       run: |
         cd ../tsduck-test
-        ./run-all-tests.sh --dev32 && status=? || status=$?
+        ./run-all-tests.sh --dev32 && status=$? || status=$?
         for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
             cat "$f"
