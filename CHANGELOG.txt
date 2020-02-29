@@ -35,6 +35,8 @@ VERSION 3.20-1670
     were not correctly loaded.
   * On Unix systems (Linux, macOS), the option --append was not correctly
     handled in plugin "file". The file was rewritten from the beginning.
+  * In plugin "pes", when a NALunit contained more than one SEI message,
+    only the first one was reported.
 
 -------------------------------------------------------------------------------
 
