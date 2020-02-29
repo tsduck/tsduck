@@ -467,8 +467,8 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
                     // Point after nalunit type:
                     const uint8_t* p = pdata + offset + 1;
 
-                    while (p < nalunit_end)
-                    {
+                    // Loop on all SEI messages in the NALunit.
+                    while (p < nalunit_end) {
                        // Compute SEI payload type.
                        uint32_t sei_type = 0;
                        while (p < nalunit_end && *p == 0xFF) {
@@ -487,7 +487,7 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
                        }
                        sei_size = std::min<size_t>(sei_size, nalunit_end - p);
                        // Invoke handler for the SEI.
-                       if (_pes_handler != nullptr) {
+                       if (_pes_handler != nullptr && sei_size > 0) {
                           _pes_handler->handleSEI(*this, pp, sei_type, p - pdata, sei_size);
                        }
                        p += sei_size;
