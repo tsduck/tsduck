@@ -466,26 +466,31 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
                     // See H.264 section 7.3.2.3.1, "Supplemental enhancement information message syntax".
                     // Point after nalunit type:
                     const uint8_t* p = pdata + offset + 1;
-                    // Compute SEI payload type.
-                    uint32_t sei_type = 0;
-                    while (p < nalunit_end && *p == 0xFF) {
-                        sei_type += *p++;
-                    }
-                    if (p < nalunit_end) {
-                        sei_type += *p++;
-                    }
-                    // Compute SEI payload size.
-                    size_t sei_size = 0;
-                    while (p < nalunit_end && *p == 0xFF) {
-                        sei_size += *p++;
-                    }
-                    if (p < nalunit_end) {
-                        sei_size += *p++;
-                    }
-                    sei_size = std::min<size_t>(sei_size, nalunit_end - p);
-                    // Invoke handler for the SEI.
-                    if (_pes_handler != nullptr) {
-                        _pes_handler->handleSEI(*this, pp, sei_type, p - pdata, sei_size);
+
+                    while (p < nalunit_end)
+                    {
+                       // Compute SEI payload type.
+                       uint32_t sei_type = 0;
+                       while (p < nalunit_end && *p == 0xFF) {
+                          sei_type += *p++;
+                       }
+                       if (p < nalunit_end) {
+                          sei_type += *p++;
+                       }
+                       // Compute SEI payload size.
+                       size_t sei_size = 0;
+                       while (p < nalunit_end && *p == 0xFF) {
+                          sei_size += *p++;
+                       }
+                       if (p < nalunit_end) {
+                          sei_size += *p++;
+                       }
+                       sei_size = std::min<size_t>(sei_size, nalunit_end - p);
+                       // Invoke handler for the SEI.
+                       if (_pes_handler != nullptr) {
+                          _pes_handler->handleSEI(*this, pp, sei_type, p - pdata, sei_size);
+                       }
+                       p += sei_size;
                     }
                 }
 
