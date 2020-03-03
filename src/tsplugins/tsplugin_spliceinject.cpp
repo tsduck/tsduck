@@ -769,23 +769,31 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
 
     // The initial values for the member fields are set for one immediate injection.
     // This must be changed for non-immediate splice insert commands.
-    if (sit.isValid() && sit.splice_command_type == SPLICE_INSERT && !sit.splice_insert.canceled && !sit.splice_insert.immediate) {
+    if (sit.isValid() && ((sit.splice_command_type == SPLICE_TIME_SIGNAL) || 
+        (sit.splice_command_type == SPLICE_INSERT && !sit.splice_insert.canceled && !sit.splice_insert.immediate))) {
         // Compute the splice event PTS value. This will be the last time for
         // the splice command injection since the event is obsolete afterward.
-        if (sit.splice_insert.program_splice) {
-            // Common PTS value, program-wide.
-            if (sit.splice_insert.program_pts.set()) {
-                last_pts = sit.splice_insert.program_pts.value();
+        if (sit.splice_command_type == SPLICE_INSERT) {
+            if (sit.splice_insert.program_splice) {
+                // Common PTS value, program-wide.
+                if (sit.splice_insert.program_pts.set()) {
+                    last_pts = sit.splice_insert.program_pts.value();
+                }
             }
-        }
-        else {
-            // Compute the earliest PTS in all components.
-            for (auto it = sit.splice_insert.components_pts.begin(); it != sit.splice_insert.components_pts.end(); ++it) {
-                if (it->second.set()) {
-                    if (last_pts == INVALID_PTS || SequencedPTS(it->second.value(), last_pts)) {
-                        last_pts = it->second.value();
+            else {
+                // Compute the earliest PTS in all components.
+                for (auto it = sit.splice_insert.components_pts.begin(); it != sit.splice_insert.components_pts.end(); ++it) {
+                    if (it->second.set()) {
+                        if (last_pts == INVALID_PTS || SequencedPTS(it->second.value(), last_pts)) {
+                            last_pts = it->second.value();
+                        }
                     }
                 }
+            }
+        }
+        else if (sit.splice_command_type == SPLICE_TIME_SIGNAL) {
+            if (sit.time_signal.set()) {
+                last_pts = sit.time_signal.value();
             }
         }
         // If we could not find the event PTS, keep one single immediate injection.
