@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.20-1670
+VERSION 3.20-1680
 
 [NEW] New commands and plugins:
 
@@ -37,6 +37,9 @@ VERSION 3.20-1670
     handled in plugin "file". The file was rewritten from the beginning.
   * In plugin "pes", when a NALunit contained more than one SEI message,
     only the first one was reported.
+  * In plugin "spliceinject", the non-immediate time_signal() commands were
+    immediately injected. Now, they are processed the same way as non-immediate
+    splice_insert() commands.
 
 -------------------------------------------------------------------------------
 
