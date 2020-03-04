@@ -128,6 +128,7 @@
     REF_TYPE(MetadataSTDDescriptor);
     REF_TYPE(MosaicDescriptor);
     REF_TYPE(MPEG2AACAudioDescriptor);
+    REF_TYPE(MPEG2StereoscopicVideoFormatDescriptor);
     REF_TYPE(MPEG4AudioDescriptor);
     REF_TYPE(MPEG4VideoDescriptor);
     REF_TYPE(MultilingualBouquetNameDescriptor);
@@ -179,6 +180,8 @@
     REF_TYPE(SSUDataBroadcastIdDescriptor);
     REF_TYPE(SSULinkageDescriptor);
     REF_TYPE(STDDescriptor);
+    REF_TYPE(StereoscopicProgramInfoDescriptor);
+    REF_TYPE(StereoscopicVideoInfoDescriptor);
     REF_TYPE(StreamEventDescriptor);
     REF_TYPE(StreamIdentifierDescriptor);
     REF_TYPE(StreamModeDescriptor);
@@ -206,6 +209,7 @@
     REF_TYPE(TerrestrialDeliverySystemDescriptor);
     REF_TYPE(TimeShiftedEventDescriptor);
     REF_TYPE(TimeSliceFECIdentifierDescriptor);
+    REF_TYPE(TransportProfileDescriptor);
     REF_TYPE(TransportProtocolDescriptor);
     REF_TYPE(TransportStreamDescriptor);
     REF_TYPE(URILinkageDescriptor);

@@ -3620,3 +3620,30 @@ Bits = 8
 0x02 = service related
 0x03 = other mosaic related
 0x04 = event related
+
+[StereoscopicServiceType]
+# In stereoscopic_program_info_descriptor
+Bits = 3
+0 = Unspecified
+1 = 2D-only (monoscopic) service
+2 = Frame-compatible stereoscopic 3D service
+3 = Service-compatible stereoscopic 3D service
+
+[StereoscopicUpsamplingFactor]
+# In stereoscopic_video_info_descriptor
+Bits = 4
+0 = Forbidden
+1 = Unspecified
+2 = Same as coded resolution of base view
+3 = 3/4 coded resolution of base view
+4 = 2/3 coded resolution of base view
+5 = 1/2 coded resolution of base view
+
+[TransportProfile]
+# In transport_profile_descriptor
+Bits = 8
+0x00 = unspecified
+0x01 = Complete profile
+0x02 = Adaptive profile
+0x03-0x0E = reserved
+0x0F-0xFF = user_private

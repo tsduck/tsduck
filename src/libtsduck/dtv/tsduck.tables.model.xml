@@ -1454,6 +1454,8 @@
         MPEG2_AAC_channel_configuration="uint8, required"
         MPEG2_AAC_additional_information="uint8, required"/>
 
+    <MPEG2_stereoscopic_video_format_descriptor arrangement_type="uint7, optional"/>
+
     <MPEG4_audio_descriptor MPEG4_audio_profile_and_level="uint8, required"/>
 
     <MPEG4_video_descriptor MPEG4_visual_profile_and_level="uint8, required"/>
@@ -1780,6 +1782,15 @@
 
     <STD_descriptor leak_valid="bool, required"/>
 
+    <stereoscopic_program_info_descriptor stereoscopic_service_type="uint3, required"/>
+
+    <stereoscopic_video_info_descriptor
+        base_video="bool, required"
+        leftview="bool, optional"
+        usable_as_2D="bool, optional"
+        horizontal_upsampling_factor="uint4, optional"
+        vertical_upsampling_factor="uint4, optional"/>
+
     <stream_mode_descriptor stream_mode="uint8, required"/>
 
     <stream_event_descriptor
@@ -2023,6 +2034,12 @@
         time_slice_fec_id="uint4, default=0">
       <id_selector_bytes>Hexadecimal content</id_selector_bytes>
     </time_slice_fec_identifier_descriptor>
+
+    <transport_profile_descriptor transport_profile="uint8, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </transport_profile_descriptor>
 
     <transport_protocol_descriptor transport_protocol_label="uint8, required">
       <!-- Must be in an AIT (table id 0x74) -->
