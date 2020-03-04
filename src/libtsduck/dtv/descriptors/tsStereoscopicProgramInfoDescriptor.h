@@ -28,20 +28,45 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a stereoscopic_program_info_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 20
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1685
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of a stereoscopic_program_info_descriptor.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.86.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL StereoscopicProgramInfoDescriptor : public AbstractDescriptor
+    {
+    public:
+        // StereoscopicProgramInfoDescriptor public members:
+        uint8_t stereoscopic_service_type;  //!< 3 bits, stereoscopic service type
+
+        //!
+        //! Default constructor.
+        //!
+        StereoscopicProgramInfoDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        StereoscopicProgramInfoDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+    };
+}

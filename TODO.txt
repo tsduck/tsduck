@@ -19,10 +19,6 @@ TSDuck - List of features to be implemented or fixed
   - 2.6.74   auxiliary_video_stream_descriptor
   - 2.6.80   J2K_video_descriptor
   - 2.6.82   MVC_operation_point_descriptor
-  - 2.6.84   MPEG2_stereoscopic_video_format_descriptor
-  - 2.6.86   stereoscopic_program_info_descriptor
-  - 2.6.88   stereoscopic_video_info_descriptor
-  - 2.6.93   transport_profile_descriptor
   - 2.6.100  HEVC_operation_point_descriptor
   - 2.6.102  HEVC_hierarchy_extension_descriptor
   - 2.6.104  green_extension_descriptor
@@ -39,6 +35,7 @@ TSDuck - List of features to be implemented or fixed
   - 2.11.3.8 ISO_IEC_14496_section
 
   ETSI TS 102 006 (System Software Update)
+  - 9.4.1     UNT
   - 9.5.2.6   update_descriptor
   - 9.5.2.7   SSU_location_descriptor
   - 9.5.2.8   SSU_subgroup_association_descriptor
