@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.20-1680
+VERSION 3.20-1686
 
 [NEW] New commands and plugins:
 
@@ -40,6 +40,9 @@ VERSION 3.20-1680
   * In plugin "spliceinject", the non-immediate time_signal() commands were
     immediately injected. Now, they are processed the same way as non-immediate
     splice_insert() commands.
+  * In command "tsp", when the number of initial null packets (--add-start-
+    stuffing) was larger than half the global buffer, the command terminated
+    before having read the input (an end of file was incorrectly assumed).
 
 -------------------------------------------------------------------------------
 
