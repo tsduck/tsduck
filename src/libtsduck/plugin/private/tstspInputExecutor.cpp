@@ -262,6 +262,9 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(size_t index, size_t max_packets)
     size_t pkt_remain = max_packets;  // Remaining number of packets to read
     size_t pkt_from_input = 0;        // Number of packets actually read from plugin
 
+    // Check if the remaining initial null packets will fill the buffer.
+    const bool instuff_start_only = _instuff_start_remain >= max_packets;
+
     // If initial stuffing not yet completed, add initial stuffing.
     while (_instuff_start_remain > 0 && pkt_remain > 0) {
         _buffer->base()[index] = NullPacket;
@@ -323,8 +326,9 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(size_t index, size_t max_packets)
     }
 
     // Return number of packets which were added into the packet buffer.
-    // In case if end of input, no need to return initial null packets (if any).
-    return pkt_from_input == 0 ? 0 : pkt_done;
+    // In case of end of input (pkt_from_input == 0), no need to return initial null packets (if any).
+    // Except if there are so many initial null packets that they did not yet let space for the actual input.
+    return pkt_from_input == 0 && !instuff_start_only ? 0 : pkt_done;
 }
 
 
