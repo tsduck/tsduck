@@ -28,20 +28,52 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an SSU_message_descriptor (UNT specific).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 20
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1687
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of an SSU_message_descriptor (UNT specific).
+    //!
+    //! This descriptor cannot be present in other tables than a UNT
+    //! because its tag reuses an MPEG-defined one.
+    //!
+    //! @see ETSI TS 102 006, 9.5.2.12
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL SSUMessageDescriptor : public AbstractDescriptor
+    {
+    public:
+        // SSUMessageDescriptor public members:
+        uint8_t descriptor_number;       //!< 4 bits, descriptor number.
+        uint8_t last_descriptor_number;  //!< 4 bits, last descriptor number.
+        UString ISO_639_language_code;   //!< 3 char, language code.
+        UString text;                    //!< Message text.
+
+        //!
+        //! Default constructor.
+        //!
+        SSUMessageDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        SSUMessageDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+    };
+}

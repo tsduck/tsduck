@@ -165,7 +165,7 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& display, DI
                     Time next_change;
                     DecodeMJD(data, 5, next_change);
                     data += 5; size -= 5;
-                    strm << margin << "Next change: " << next_change.format(Time::DATE | Time::TIME) << std::endl;
+                    strm << margin << "Next change: " << next_change.format(Time::DATETIME) << std::endl;
                     if (size >= 2) {
                         strm << margin
                              << UString::Format(u"Next time offset: %s%02d:%02d", {polarity ? u"-" : u"", DecodeBCD(data[0]), DecodeBCD(data[1])})

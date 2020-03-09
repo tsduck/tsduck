@@ -199,6 +199,40 @@
       </device>
     </INT>
 
+    <!-- Update Notification Table -->
+    <UNT version="uint5, default=0"
+         current="bool, default=true"
+         action_type="uint8, default=0x01"
+         OUI="uint24, required"
+         processing_order="uint8, default=0x00">
+      <!-- Common descriptors, apply to all SSU -->
+      <_any in="_descriptors"/>
+      <!-- One per set of devices -->
+      <devices>
+        <!-- More than one allowed, individual descriptor inside compatibilityDescriptor() -->
+        <compatibilityDescriptor
+            descriptorType="uint8, required"
+            specifierType="uint8, default=0x01"
+            specifierData="uint24, required"
+            model="uint16, default=0x00"
+            version="uint16, default=0x00">
+          <!-- Several subdescriptors -->
+          <subDescriptor subDescriptorType="uint8, required">
+            Hexadecimal content
+          </subDescriptor>
+        </compatibilityDescriptor>
+        <!-- One per platform -->
+        <platform>
+          <target>
+            <_any in="_descriptors"/>
+          </target>
+          <operational>
+            <_any in="_descriptors"/>
+          </operational>
+        </platform>
+      </devices>
+    </UNT>
+
     <!-- Application Information Table -->
     <AIT version="uint5, default=0"
          current="bool, default=true"
@@ -267,7 +301,7 @@
       <time_signal pts_time="uint33, optional"/>
       <bandwidth_reservation/>
       <private_command identifier="uint32, required">
-        Hexadecimal digits.
+        Hexadecimal content
       </private_command>
       <!-- Splice descriptors, depend on splice command -->
       <_any in="_descriptors"/>
@@ -1680,6 +1714,22 @@
       </modulation>
     </SH_delivery_system_descriptor>
 
+    <scheduling_descriptor
+        start_date_time="YYYY-MM-DD hh:mm:ss, required"
+        end_date_time="YYYY-MM-DD hh:mm:ss, required"
+        final_availability="bool, required"
+        periodicity="bool, required"
+        period_unit="second|minute|hour|day|uint2, required"
+        duration_unit="second|minute|hour|day|uint2, required"
+        estimated_cycle_time_unit="second|minute|hour|day|uint2, required"
+        period="uint8, required"
+        duration="uint8, required"
+        estimated_cycle_time="uint8, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </scheduling_descriptor>
+
     <scrambling_descriptor scrambling_mode="uint8, required"/>
 
     <service_descriptor
@@ -1779,6 +1829,41 @@
         TAI_seconds="uint48, required"
         TAI_ns="uint32, required"
         UTC_offset="uint16, required"/>
+
+    <SSU_enhanced_message_descriptor
+        descriptor_number="uint4, required"
+        last_descriptor_number="uint4, required"
+        ISO_639_language_code="char3, required"
+        message_index="uint5, required">
+      <text>String</text>
+    </SSU_enhanced_message_descriptor>
+
+    <SSU_event_name_descriptor ISO_639_language_code="char3, required">
+      <name>String</name>
+      <text>String</text>
+    </SSU_event_name_descriptor>
+
+    <SSU_location_descriptor
+        data_broadcast_id="uint16, required"
+        association_tag="uint16, optional">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </SSU_location_descriptor>
+
+    <SSU_message_descriptor
+        descriptor_number="uint4, required"
+        last_descriptor_number="uint4, required"
+        ISO_639_language_code="char3, required">
+      <text>String</text>
+    </SSU_message_descriptor>
+
+    <SSU_subgroup_association_descriptor subgroup_tag="uint40, required"/>
+
+    <SSU_uri_descriptor
+        max_holdoff_time="uint8, required"
+        min_polling_interval="uint8, required"
+        uri="string, required"/>
 
     <STD_descriptor leak_valid="bool, required"/>
 
@@ -2074,6 +2159,15 @@
     </transport_protocol_descriptor>
 
     <transport_stream_descriptor compliance="string, required"/>
+
+    <update_descriptor
+        update_flag="uint2, required"
+        update_method="uint4, required"
+        update_priority="uint2, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </update_descriptor>
 
     <URI_linkage_descriptor
         uri_linkage_type="uint8, required"
