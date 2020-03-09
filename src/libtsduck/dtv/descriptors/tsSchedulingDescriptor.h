@@ -84,6 +84,7 @@ namespace ts {
         // Inherited methods
         virtual void buildXML(DuckContext&, xml::Element*) const override;
 
+    private:
         static const Enumeration SchedulingUnitNames;
     };
 }
