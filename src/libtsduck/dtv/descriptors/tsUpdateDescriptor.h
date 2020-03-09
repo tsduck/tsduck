@@ -28,20 +28,52 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an update_descriptor (UNT specific).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 20
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1687
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of an update_descriptor (UNT specific).
+    //!
+    //! This descriptor cannot be present in other tables than a UNT
+    //! because its tag reuses an MPEG-defined one.
+    //!
+    //! @see ETSI TS 102 006, 9.5.2.6
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL UpdateDescriptor : public AbstractDescriptor
+    {
+    public:
+        // UpdateDescriptor public members:
+        uint8_t   update_flag;      //!< 2 bits
+        uint8_t   update_method;    //!< 4 bits
+        uint8_t   update_priority;  //!< 2 bits
+        ByteBlock private_data;     //!< Private data
+
+        //!
+        //! Default constructor.
+        //!
+        UpdateDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        UpdateDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+    };
+}

@@ -26,65 +26,39 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Time & Date Table (TDT)
-//
-//----------------------------------------------------------------------------
 
-#include "tsTDT.h"
-#include "tsMJD.h"
-#include "tsBinaryTable.h"
+#include "tsSSUSubgroupAssociationDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"TDT"
-#define MY_TID ts::TID_TDT
+#define MY_XML_NAME u"SSU_subgroup_association_descriptor"
+#define MY_DID ts::DID_UNT_SUBGROUP_ASSOC
+#define MY_TID ts::TID_UNT
 #define MY_STD ts::STD_DVB
 
-TS_XML_TABLE_FACTORY(ts::TDT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::TDT, MY_TID, MY_STD);
-TS_FACTORY_REGISTER(ts::TDT::DisplaySection, MY_TID);
+TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::SSUSubgroupAssociationDescriptor, MY_XML_NAME, MY_TID);
+TS_ID_DESCRIPTOR_FACTORY(ts::SSUSubgroupAssociationDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_FACTORY_REGISTER(ts::SSUSubgroupAssociationDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
 
 
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::TDT::TDT(const Time& utc_time_) :
-    AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
-    utc_time(utc_time_)
+ts::SSUSubgroupAssociationDescriptor::SSUSubgroupAssociationDescriptor() :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    subgroup_tag(0)
 {
     _is_valid = true;
 }
 
-ts::TDT::TDT(DuckContext& duck, const BinaryTable& table) :
-    TDT()
+ts::SSUSubgroupAssociationDescriptor::SSUSubgroupAssociationDescriptor(DuckContext& duck, const Descriptor& desc) :
+    SSUSubgroupAssociationDescriptor()
 {
-    deserialize(duck, table);
-}
-
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::TDT::deserializeContent(DuckContext& duck, const BinaryTable& table)
-{
-    // This is a short table, must have only one section
-    if (table.sectionCount() != 1) {
-        return;
-    }
-
-    // Reference to single section
-    const Section& sect(*table.sectionAt(0));
-
-    // Get UTC time.
-    if (sect.payloadSize() >= MJD_SIZE) {
-        DecodeMJD(sect.payload(), MJD_SIZE, utc_time);
-        _is_valid = true;
-    }
+    deserialize(duck, desc);
 }
 
 
@@ -92,35 +66,44 @@ void ts::TDT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::SSUSubgroupAssociationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    // Encode the data in MJD in the payload (5 bytes)
-    uint8_t payload[MJD_SIZE];
-    EncodeMJD(utc_time, payload, MJD_SIZE);
-
-    // Add the section in the table
-    table.addSection(new Section(MY_TID, // tid
-                                 true,    // is_private_section
-                                 payload,
-                                 MJD_SIZE));
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt40(subgroup_tag);
+    serializeEnd(desc, bbp);
 }
 
 
 //----------------------------------------------------------------------------
-// A static method to display a TDT section.
+// Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::SSUSubgroupAssociationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+{
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+
+    _is_valid = desc.isValid() && desc.tag() == _tag && size == 5;
+
+    if (_is_valid) {
+        subgroup_tag = GetUInt40(data);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::SSUSubgroupAssociationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     std::ostream& strm(display.duck().out());
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
+    const std::string margin(indent, ' ');
 
     if (size >= 5) {
-        Time time;
-        DecodeMJD(data, 5, time);
+        const uint64_t tag = GetUInt40(data);
+        strm << margin << UString::Format(u"Subgroup tag: 0x%010X (%d)", {tag, tag}) << std::endl;
         data += 5; size -= 5;
-        strm << std::string(indent, ' ') << "UTC time: " << time.format(Time::DATETIME) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);
@@ -131,9 +114,9 @@ void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::SSUSubgroupAssociationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setDateTimeAttribute(u"UTC_time", utc_time);
+    root->setIntAttribute(u"subgroup_tag", subgroup_tag, true);
 }
 
 
@@ -141,9 +124,10 @@ void ts::TDT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::SSUSubgroupAssociationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
+    xml::ElementVector children;
     _is_valid =
         checkXMLName(element) &&
-        element->getDateTimeAttribute(utc_time, u"UTC_time", true);
+        element->getIntAttribute<uint64_t>(subgroup_tag, u"subgroup_tag", true, 0, 0, TS_UCONST64(0x000000FFFFFFFFFF));
 }

@@ -3647,3 +3647,31 @@ Bits = 8
 0x02 = Adaptive profile
 0x03-0x0E = reserved
 0x0F-0xFF = user_private
+
+[CompatibilityDescriptorType]
+# In compatibilityDescriptor() of UNT
+Bits = 8
+0x00 = pad descriptor
+0x01 = system hardware descriptor
+0x02 = system software descriptor
+0x03-0x3F = ISO/IEC 13818-6 reserved
+0x40-0x7F = reserved for future use
+0x80-0xFF = user defined
+
+[SSUUpdateFlag]
+# In update_descriptor
+Bits = 2
+0 = Update has to be activated manually
+1 = Update may be performed automatically
+2 = reserved for future use
+3 = reserved for future use
+
+[SSUUpdateMethod]
+# In update_descriptor
+Bits = 4
+0    = Immediate update: performed whatever the IRD state
+1    = IRD available: update when not interfere with user
+2    = Next restart: update at next IRD restart
+3-7  = reserved for future use
+8-14 = private use
+15   = reserved

@@ -26,65 +26,41 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Time & Date Table (TDT)
-//
-//----------------------------------------------------------------------------
 
-#include "tsTDT.h"
-#include "tsMJD.h"
-#include "tsBinaryTable.h"
+#include "tsSSUURIDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"TDT"
-#define MY_TID ts::TID_TDT
+#define MY_XML_NAME u"SSU_uri_descriptor"
+#define MY_DID ts::DID_UNT_SSU_URI
+#define MY_TID ts::TID_UNT
 #define MY_STD ts::STD_DVB
 
-TS_XML_TABLE_FACTORY(ts::TDT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::TDT, MY_TID, MY_STD);
-TS_FACTORY_REGISTER(ts::TDT::DisplaySection, MY_TID);
+TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::SSUURIDescriptor, MY_XML_NAME, MY_TID);
+TS_ID_DESCRIPTOR_FACTORY(ts::SSUURIDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_FACTORY_REGISTER(ts::SSUURIDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
 
 
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::TDT::TDT(const Time& utc_time_) :
-    AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
-    utc_time(utc_time_)
+ts::SSUURIDescriptor::SSUURIDescriptor() :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    max_holdoff_time(0),
+    min_polling_interval(0),
+    uri()
 {
     _is_valid = true;
 }
 
-ts::TDT::TDT(DuckContext& duck, const BinaryTable& table) :
-    TDT()
+ts::SSUURIDescriptor::SSUURIDescriptor(DuckContext& duck, const Descriptor& desc) :
+    SSUURIDescriptor()
 {
-    deserialize(duck, table);
-}
-
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::TDT::deserializeContent(DuckContext& duck, const BinaryTable& table)
-{
-    // This is a short table, must have only one section
-    if (table.sectionCount() != 1) {
-        return;
-    }
-
-    // Reference to single section
-    const Section& sect(*table.sectionAt(0));
-
-    // Get UTC time.
-    if (sect.payloadSize() >= MJD_SIZE) {
-        DecodeMJD(sect.payload(), MJD_SIZE, utc_time);
-        _is_valid = true;
-    }
+    deserialize(duck, desc);
 }
 
 
@@ -92,38 +68,55 @@ void ts::TDT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::SSUURIDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    // Encode the data in MJD in the payload (5 bytes)
-    uint8_t payload[MJD_SIZE];
-    EncodeMJD(utc_time, payload, MJD_SIZE);
-
-    // Add the section in the table
-    table.addSection(new Section(MY_TID, // tid
-                                 true,    // is_private_section
-                                 payload,
-                                 MJD_SIZE));
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt8(max_holdoff_time);
+    bbp->appendUInt8(min_polling_interval);
+    bbp->append(duck.toDVB(uri));
+    serializeEnd(desc, bbp);
 }
 
 
 //----------------------------------------------------------------------------
-// A static method to display a TDT section.
+// Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::SSUURIDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+{
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+
+    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 2;
+
+    if (_is_valid) {
+        max_holdoff_time = data[0];
+        min_polling_interval = data[1];
+        uri.assign(duck.fromDVB(data + 2, size - 2));
+    }
+    else {
+        uri.clear();
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::SSUURIDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     std::ostream& strm(display.duck().out());
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
+    const std::string margin(indent, ' ');
 
-    if (size >= 5) {
-        Time time;
-        DecodeMJD(data, 5, time);
-        data += 5; size -= 5;
-        strm << std::string(indent, ' ') << "UTC time: " << time.format(Time::DATETIME) << std::endl;
+    if (size >= 2) {
+        strm << margin << UString::Format(u"Max holdoff time: %d minutes", {data[0]}) << std::endl
+             << margin << UString::Format(u"Min polling interval: %d hours", {data[1]}) << std::endl
+             << margin << "URI: \"" << display.duck().fromDVB(data + 2, size - 2) << "\"" << std::endl;
     }
-
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }
 
 
@@ -131,9 +124,11 @@ void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::SSUURIDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setDateTimeAttribute(u"UTC_time", utc_time);
+    root->setIntAttribute(u"max_holdoff_time", max_holdoff_time, false);
+    root->setIntAttribute(u"min_polling_interval", min_polling_interval, false);
+    root->setAttribute(u"uri", uri);
 }
 
 
@@ -141,9 +136,13 @@ void ts::TDT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::SSUURIDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
+    uri.clear();
+    xml::ElementVector children;
     _is_valid =
         checkXMLName(element) &&
-        element->getDateTimeAttribute(utc_time, u"UTC_time", true);
+        element->getIntAttribute<uint8_t>(max_holdoff_time, u"max_holdoff_time", true) &&
+        element->getIntAttribute<uint8_t>(min_polling_interval, u"min_polling_interval", true) &&
+        element->getAttribute(uri, u"uri", true, u"", 0, MAX_DESCRIPTOR_SIZE - 4);
 }

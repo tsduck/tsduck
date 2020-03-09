@@ -34,17 +34,6 @@ TSDuck - List of features to be implemented or fixed
   - 2.12.6   metadata_section
   - 2.11.3.8 ISO_IEC_14496_section
 
-  ETSI TS 102 006 (System Software Update)
-  - 9.4.1     UNT
-  - 9.5.2.6   update_descriptor
-  - 9.5.2.7   SSU_location_descriptor
-  - 9.5.2.8   SSU_subgroup_association_descriptor
-  - 9.5.2.9   scheduling_descriptor
-  - 9.5.2.11  SSU_event_name_descriptor
-  - 9.5.2.12  message_descriptor (not the same as ETSI EN 300 468, name it SSUMessageDescriptor)
-  - 9.5.2.14  enhanced_message_descriptor (name it SSUEnhancedMessageDescriptor for consistency)
-  - 9.5.2.15  ssu_uri_descriptor
-
   ETSI TS 102 825-9 (CPCM System Adaptation Layer)
   - 4.1.5  CPCM_delivery_signalling_descriptor (details in ETSI TS 102 825-4, 5.4.5)
 
