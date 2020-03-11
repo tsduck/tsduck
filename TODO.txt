@@ -2,24 +2,20 @@
 TSDuck - List of features to be implemented or fixed
 ====================================================
 
+* Issue #515: Fix scheduling of sections in some pathological cases.
+
+* Issue #324: Fix tsswitch --delayed-switch --receive-timeout.
+
 * Improve packet distribution in plugin "merge". Evaluate average stuffing
   distribution, evaluate merged stream bitrate, then smoothen merged packets.
 
 * Implement missing PSI/SI tables and descriptors (list below).
 
   ISO/IEC 13818-1 / H.222 (MPEG system layer)
-  - 2.6.40   IOD_descriptor
-  - 2.6.48   muxcode_descriptor
-  - 2.6.50   FmxBufferSize_descriptor
   - 2.6.56   content_labelling_descriptor
   - 2.6.58   metadata_pointer_descriptor
   - 2.6.60   metadata_descriptor
-  - 2.6.70   MPEG4_text_descriptor
-  - 2.6.72   MPEG4_audio_extension_descriptor
-  - 2.6.74   auxiliary_video_stream_descriptor
-  - 2.6.80   J2K_video_descriptor
   - 2.6.82   MVC_operation_point_descriptor
-  - 2.6.100  HEVC_operation_point_descriptor
   - 2.6.102  HEVC_hierarchy_extension_descriptor
   - 2.6.104  green_extension_descriptor
   - 2.6.106  MPEGH_3D_audio_descriptor
@@ -31,8 +27,18 @@ TSDuck - List of features to be implemented or fixed
   - 2.6.118  MPEGH_3D_audio_command_descriptor
   - 2.6.119  quality_extension_descriptor
   - 2.6.120  virtual_segmentation_descriptor
-  - 2.12.6   metadata_section
-  - 2.11.3.8 ISO_IEC_14496_section
+  - With embedded data structures from ISO/IEC 14496-1 (MPEG-4 system):
+    - 2.6.40   IOD_descriptor
+    - 2.6.48   muxcode_descriptor
+    - 2.6.50   FmxBufferSize_descriptor
+  - With embedded data structures from ISO/IEC 14496-3 (MPEG-4 Audio):
+    - 2.6.72   MPEG4_audio_extension_descriptor
+  - With embedded data structures from ISO/IEC 14496-17 (MPEG-4 text subtitles):
+    - 2.6.70   MPEG4_text_descriptor
+  - With embedded data structures from ISO/IEC 23002-3 (MPEG-C auxiliairy video):
+    - 2.6.74   auxiliary_video_stream_descriptor
+  - With embedded data structures from ISO/IEC 23008-2 / H.265 (HEVC):
+    - 2.6.100  HEVC_operation_point_descriptor
 
   ETSI TS 102 825-9 (CPCM System Adaptation Layer)
   - 4.1.5  CPCM_delivery_signalling_descriptor (details in ETSI TS 102 825-4, 5.4.5)

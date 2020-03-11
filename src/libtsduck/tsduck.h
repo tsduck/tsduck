@@ -272,6 +272,7 @@
 #include "tsIPv6Address.h"
 #include "tsISO639LanguageDescriptor.h"
 #include "tsISPAccessModeDescriptor.h"
+#include "tsJ2KVideoDescriptor.h"
 #include "tsjson.h"
 #include "tsjsonArray.h"
 #include "tsjsonFalse.h"

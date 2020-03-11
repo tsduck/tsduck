@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an AVC_video_descriptor
+//!  Representation of a J2K_video_descriptor
 //!
 //----------------------------------------------------------------------------
 
@@ -37,35 +37,38 @@
 
 namespace ts {
     //!
-    //! Representation of an AVC_video_descriptor.
+    //! Representation of a J2K_video_descriptor.
     //!
-    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.64.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.80.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL AVCVideoDescriptor : public AbstractDescriptor
+    class TSDUCKDLL J2KVideoDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        uint8_t profile_idc;           //!< Same as AVC concept.
-        bool    constraint_set0;       //!< Same as AVC concept.
-        bool    constraint_set1;       //!< Same as AVC concept.
-        bool    constraint_set2;       //!< Same as AVC concept.
-        uint8_t AVC_compatible_flags;  //!< Same as AVC concept.
-        uint8_t level_idc;             //!< Same as AVC concept.
-        bool    AVC_still_present;     //!< May contain still pictures.
-        bool    AVC_24_hour_picture;   //!< May contain 24-hour pictures.
+        uint16_t  profile_and_level;    //!< Same as J2K concept.
+        uint32_t  horizontal_size;      //!< Same as J2K concept.
+        uint32_t  vertical_size;        //!< Same as J2K concept.
+        uint32_t  max_bit_rate;         //!< Same as J2K concept.
+        uint32_t  max_buffer_size;      //!< Same as J2K concept.
+        uint16_t  DEN_frame_rate;       //!< Same as J2K concept.
+        uint16_t  NUM_frame_rate;       //!< Same as J2K concept.
+        uint8_t   color_specification;  //!< Same as J2K concept.
+        bool      still_mode;           //!< Same as J2K concept.
+        bool      interlaced_video;     //!< Same as J2K concept.
+        ByteBlock private_data;         //!< Private data
 
         //!
         //! Default constructor.
         //!
-        AVCVideoDescriptor();
+        J2KVideoDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        AVCVideoDescriptor(DuckContext& duck, const Descriptor& bin);
+        J2KVideoDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;

@@ -155,6 +155,7 @@
 #include "tsIPSignallingDescriptor.h"
 #include "tsISO639LanguageDescriptor.h"
 #include "tsISPAccessModeDescriptor.h"
+#include "tsJ2KVideoDescriptor.h"
 #include "tsLinkageDescriptor.h"
 #include "tsLocalTimeOffsetDescriptor.h"
 #include "tsLogicalChannelNumberDescriptor.h"

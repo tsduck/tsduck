@@ -121,6 +121,7 @@
     REF_TYPE(IPSignallingDescriptor);
     REF_TYPE(ISO639LanguageDescriptor);
     REF_TYPE(ISPAccessModeDescriptor);
+    REF_TYPE(J2KVideoDescriptor);
     REF_TYPE(LinkageDescriptor);
     REF_TYPE(LocalTimeOffsetDescriptor);
     REF_TYPE(LogicalChannelNumberDescriptor);

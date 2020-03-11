@@ -1401,6 +1401,22 @@
       <!-- Must be in an INT (table id 0x4C) -->
     </ISP_access_mode_descriptor>
 
+    <J2K_video_descriptor
+        profile_and_level="uint16, required"
+        horizontal_size="uint32, required"
+        vertical_size="uint32, required"
+        max_bit_rate="uint32, required"
+        max_buffer_size="uint32, required"
+        DEN_frame_rate="uint16, required"
+        NUM_frame_rate="uint16, required"
+        color_specification="uint8, required"
+        still_mode="bool, required"
+        interlaced_video="bool, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </J2K_video_descriptor>
+
     <linkage_descriptor
         transport_stream_id="uint16, required"
         original_network_id="uint16, required"
