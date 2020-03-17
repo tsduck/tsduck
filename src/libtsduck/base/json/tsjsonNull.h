@@ -28,12 +28,27 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Implementation of a JSON true literal.
+//!  Implementation of a JSON null literal.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsjsonValue.h"
+
+// A bug was introduced in Microsoft Visual Studio 2019 16.5.
+// Some constant objects with virtual superclass crash the application when they
+// are destroyed. This occur when the vtable is updated between destructors.
+// The object being constant, its vtable is erroneously stored in read-only
+// memory, causing a segmentation fault when the vtable is updated.
+// References:
+// https://developercommunity.visualstudio.com/content/problem/952463/vs-165-c-generated-code-crashes-on-virtual-destruc.html
+// https://developercommunity.visualstudio.com/content/problem/909556/code-generation-problem-causing-crash-with-pure-vi.html
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1925)
+    #define CONST_MSVC165_BUG
+#else
+    #define CONST_MSVC165_BUG const
+#endif
 
 namespace ts {
     namespace json {
@@ -58,6 +73,6 @@ namespace ts {
         //!
         //! A general-purpose constant null JSON value.
         //!
-        extern const Null NullValue;
+        extern CONST_MSVC165_BUG Null NullValue;
     }
 }
