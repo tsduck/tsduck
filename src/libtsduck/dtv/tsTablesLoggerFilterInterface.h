@@ -85,7 +85,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~TablesLoggerFilterInterface();
+        virtual ~TablesLoggerFilterInterface() = default;
     };
 
     //!

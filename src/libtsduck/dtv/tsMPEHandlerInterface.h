@@ -69,6 +69,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~MPEHandlerInterface();
+        virtual ~MPEHandlerInterface() = default;
     };
 }

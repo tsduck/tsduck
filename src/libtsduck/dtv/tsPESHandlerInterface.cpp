@@ -63,7 +63,3 @@ void ts::PESHandlerInterface::handleNewAudioAttributes(PESDemux& demux, const PE
 void ts::PESHandlerInterface::handleNewAC3Attributes(PESDemux& demux, const PESPacket& packet, const AC3Attributes& attr)
 {
 }
-
-ts::PESHandlerInterface::~PESHandlerInterface()
-{
-}

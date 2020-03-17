@@ -211,7 +211,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
     public:
         ts::ByteBlock data;
 
-        Transfer() = default;
+        Transfer() : data() {}
 
         virtual bool handleWebStart(const ts::WebRequest& req, size_t size) override
         {

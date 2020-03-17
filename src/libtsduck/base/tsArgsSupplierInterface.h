@@ -65,6 +65,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~ArgsSupplierInterface();
+        virtual ~ArgsSupplierInterface() = default;
     };
 }

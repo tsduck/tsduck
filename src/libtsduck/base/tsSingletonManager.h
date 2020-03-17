@@ -62,7 +62,7 @@ namespace ts {
         Mutex mutex;
     private:
         static SingletonManager* volatile _instance;
-        SingletonManager() = default;
+        SingletonManager() : mutex() {}
     };
 }
 

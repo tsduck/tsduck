@@ -60,6 +60,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~TableHandlerInterface();
+        virtual ~TableHandlerInterface() = default;
     };
 }

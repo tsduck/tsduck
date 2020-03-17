@@ -78,6 +78,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~WebRequestHandlerInterface();
+        virtual ~WebRequestHandlerInterface() = default;
     };
 }

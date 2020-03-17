@@ -123,6 +123,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~PESHandlerInterface();
+        virtual ~PESHandlerInterface() = default;
     };
 }
