@@ -40,7 +40,6 @@ TS_DEFINE_SINGLETON(ts::CerrReport);
 
 // Constructor / destructor.
 ts::CerrReport::CerrReport() {}
-ts::CerrReport::~CerrReport() {}
 
 // Message logging method.
 void ts::CerrReport::writeLog(int severity, const UString &msg)

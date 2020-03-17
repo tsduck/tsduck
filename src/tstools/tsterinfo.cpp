@@ -84,7 +84,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
     uint64_t          frequency;     // Carrier frequency from which to get UHF channel
     uint32_t          uhf_channel;   // UHF channel from which to compute frequency
@@ -101,10 +101,6 @@ public:
     ts::UString       hfband_region;   // Region for UHF/VHF band frequency layout
 };
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Compute or convert DVB-Terrestrial information", u"[options]"),
     frequency(0),

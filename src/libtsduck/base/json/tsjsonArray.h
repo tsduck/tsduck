@@ -47,7 +47,7 @@ namespace ts {
             //!
             //! Constructor.
             //!
-            Array() : _value() {}
+            Array() = default;
 
             // Implementation of ts::json::Value.
             virtual Type type() const override;

@@ -46,7 +46,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
     bool         test;      // Test mode
     bool         circular;  // Add empty packets to enforce circular continuity
@@ -57,9 +57,6 @@ public:
     // Print an error message if this is the case.
     bool fileError(const ts::UChar* message);
 };
-
-// Destructor.
-Options::~Options() {}
 
 // Constructor.
 Options::Options(int argc, char *argv[]) :

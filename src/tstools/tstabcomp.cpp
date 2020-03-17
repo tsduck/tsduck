@@ -59,7 +59,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
     ts::DuckContext       duck;            // Execution context.
     ts::UStringVector     infiles;         // Input file names.
@@ -74,10 +74,6 @@ public:
     const ts::DVBCharset* defaultCharset;  // Default DVB character set to interpret strings.
 };
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"PSI/SI tables compiler", u"[options] filename ..."),
     duck(this),

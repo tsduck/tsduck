@@ -52,7 +52,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
     ts::BitRate target_bitrate;
     ts::PID     reference_pid;
@@ -69,10 +69,6 @@ public:
     ts::UString output_file;
 };
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Add stuffing to a transport stream to reach a target bitrate", u"[options] [input-file]"),
     target_bitrate(0),

@@ -55,7 +55,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
     ts::DuckContext   duck;     // TSDuck execution context.
     ts::TablesDisplay display;  // Table formatting options.
@@ -64,10 +64,6 @@ public:
     ts::UString       infile;   // Input file name
 };
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Extract all standard PSI from an MPEG transport stream", u"[options] [filename]"),
     duck(this),

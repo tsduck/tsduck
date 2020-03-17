@@ -48,4 +48,3 @@ void ts::SignalizationHandlerInterface::handleCVCT(const CVCT&, PID) {}
 void ts::SignalizationHandlerInterface::handleTVCT(const TVCT&, PID) {}
 void ts::SignalizationHandlerInterface::handleRRT(const RRT&, PID) {}
 void ts::SignalizationHandlerInterface::handleSTT(const STT&, PID) {}
-ts::SignalizationHandlerInterface::~SignalizationHandlerInterface() {}

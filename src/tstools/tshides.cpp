@@ -54,13 +54,9 @@ public:
     ts::BandWidth bandwidth;   // Bandwidth.
 
     HiDesOptions(int argc, char *argv[]);
-    virtual ~HiDesOptions();
+    virtual ~HiDesOptions() = default;
 };
 
-// Destructor.
-HiDesOptions::~HiDesOptions() {}
-
-// Constructor.
 HiDesOptions::HiDesOptions(int argc, char *argv[]) :
     ts::Args(u"List HiDes modulator devices", u"[options]"),
     count(false),

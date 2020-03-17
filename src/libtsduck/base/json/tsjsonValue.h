@@ -67,7 +67,7 @@ namespace ts {
             //!
             //! Virtual destructor.
             //!
-            virtual ~Value();
+            virtual ~Value() = default;
             //!
             //! Get the JSON value type.
             //! @return The JSON value type.

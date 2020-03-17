@@ -341,7 +341,7 @@ namespace ts {
         struct MReq : public POCS<::ip_mreq>
         {
             typedef POCS<::ip_mreq> SuperClass;
-            MReq() : SuperClass() {}
+            MReq() = default;
             MReq(const IPAddress& multicast_, const IPAddress& interface_) : SuperClass()
             {
                 multicast_.copy(data.imr_multiaddr);
@@ -353,7 +353,7 @@ namespace ts {
         struct SSMReq : public POCS<::ip_mreq_source>
         {
             typedef POCS<::ip_mreq_source> SuperClass;
-            SSMReq() : SuperClass() {}
+            SSMReq() = default;
             SSMReq(const IPAddress& multicast_, const IPAddress& interface_, const IPAddress& source_) : SuperClass()
             {
                 multicast_.copy(data.imr_multiaddr);

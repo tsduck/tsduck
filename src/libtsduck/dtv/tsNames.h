@@ -496,7 +496,7 @@ namespace ts {
     {
         TS_DECLARE_SINGLETON(NamesMain);
     public:
-        virtual ~NamesMain() override;  //!< Destructor
+        virtual ~NamesMain() = default;  //!< Destructor
     };
 
     //!
@@ -507,7 +507,7 @@ namespace ts {
     {
         TS_DECLARE_SINGLETON(NamesOUI);
     public:
-        virtual ~NamesOUI() override;  //!< Destructor
+        virtual ~NamesOUI() = default;  //!< Destructor
     };
 
     //!

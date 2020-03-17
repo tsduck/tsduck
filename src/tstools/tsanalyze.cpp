@@ -49,7 +49,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
     ts::DuckContext       duck;      // TSDuck execution context.
     ts::BitRate           bitrate;   // Expected bitrate (188-byte packets)
@@ -92,10 +92,6 @@ Options::Options(int argc, char *argv[]) :
     bitrate = intValue<ts::BitRate>(u"bitrate");
 
     exitOnError();
-}
-
-Options::~Options()
-{
 }
 
 

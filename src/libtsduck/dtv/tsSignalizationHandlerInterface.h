@@ -163,6 +163,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~SignalizationHandlerInterface();
+        virtual ~SignalizationHandlerInterface() = default;
     };
 }

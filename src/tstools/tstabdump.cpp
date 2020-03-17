@@ -61,7 +61,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
     ts::DuckContext   duck;              // TSDuck execution context.
     ts::TablesDisplay display;           // Options about displaying tables
@@ -73,10 +73,6 @@ public:
     bool              no_encapsulation;  // Raw sections in UDP messages.
 };
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Dump PSI/SI tables, as saved by tstables", u"[options] [filename ...]"),
     duck(this),

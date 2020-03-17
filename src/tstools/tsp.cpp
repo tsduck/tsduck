@@ -58,7 +58,7 @@ class TSPOptions: public ts::ArgsWithPlugins
     TS_NOBUILD_NOCOPY(TSPOptions);
 public:
     TSPOptions(int argc, char *argv[]);
-    virtual ~TSPOptions();
+    virtual ~TSPOptions() = default;
 
     // Option values
     ts::DuckContext     duck;             // TSDuck context
@@ -67,10 +67,6 @@ public:
     ts::TSProcessorArgs tsp_args;         // TS processing arguments.
 };
 
-// Destructor.
-TSPOptions::~TSPOptions() {}
-
-// Constructor.
 TSPOptions::TSPOptions(int argc, char *argv[]) :
     ts::ArgsWithPlugins(0, 1, 0, UNLIMITED_COUNT, 0, 1),
     duck(this),

@@ -449,7 +449,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        ArgMixIn() : ArgMix() {}
+        ArgMixIn() = default;
         //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
@@ -531,7 +531,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        ArgMixOut() : ArgMix() {}
+        ArgMixOut() = default;
         //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.

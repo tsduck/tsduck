@@ -63,7 +63,7 @@ class ScanOptions: public ts::Args
     TS_NOBUILD_NOCOPY(ScanOptions);
 public:
     ScanOptions(int argc, char *argv[]);
-    virtual ~ScanOptions();
+    virtual ~ScanOptions() = default;
 
     ts::DuckContext   duck;
     ts::TunerArgs     tuner_args;
@@ -89,10 +89,6 @@ public:
     bool              default_channel_file;
 };
 
-// Destructor.
-ScanOptions::~ScanOptions() {}
-
-// Constructor.
 ScanOptions::ScanOptions(int argc, char *argv[]) :
     Args(u"Scan a DVB network", u"[options]"),
     duck(this),

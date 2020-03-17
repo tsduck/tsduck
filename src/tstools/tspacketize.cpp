@@ -50,7 +50,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
     ts::DuckContext           duck;
     bool                      continuous; // Continuous packetization
@@ -63,10 +63,6 @@ public:
     ts::SectionFile::FileType inType;     // Input files type
 };
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Packetize PSI/SI sections in a transport stream PID", u"[options] [input-file[=rate] ...]"),
     duck(this),
