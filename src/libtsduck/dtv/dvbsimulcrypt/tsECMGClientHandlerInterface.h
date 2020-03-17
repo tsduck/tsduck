@@ -54,6 +54,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~ECMGClientHandlerInterface();
+        virtual ~ECMGClientHandlerInterface() = default;
     };
 }

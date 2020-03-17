@@ -59,7 +59,7 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~StringifyInterface();
+        virtual ~StringifyInterface() = default;
     };
 
     TS_POP_WARNING()

@@ -41,7 +41,3 @@ bool ts::WebRequestHandlerInterface::handleWebStop(const WebRequest& request)
 {
     return true;
 }
-
-ts::WebRequestHandlerInterface::~WebRequestHandlerInterface()
-{
-}

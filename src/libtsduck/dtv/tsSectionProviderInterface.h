@@ -68,6 +68,6 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~SectionProviderInterface();
+        virtual ~SectionProviderInterface() = default;
     };
 }

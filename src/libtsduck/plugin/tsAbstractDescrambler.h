@@ -199,7 +199,7 @@ namespace ts {
         {
         public:
             // Constructor
-            ScrambledStream() = default;
+            ScrambledStream() : ecm_pids() {}
 
             std::set<PID> ecm_pids;  // PIDs of ECM streams
         };
