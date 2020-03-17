@@ -35,11 +35,6 @@ TSDUCK_SOURCE;
 // SpliceTime methods
 //----------------------------------------------------------------------------
 
-// Virtual destructor.
-ts::SpliceTime::~SpliceTime()
-{
-}
-
 // Convert the SpliceTime structure to string.
 ts::UString ts::SpliceTime::toString() const
 {

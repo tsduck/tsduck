@@ -69,7 +69,7 @@ class TSSwitchOptions: public ts::ArgsWithPlugins
     TS_NOBUILD_NOCOPY(TSSwitchOptions);
 public:
     TSSwitchOptions(int argc, char *argv[]);
-    virtual ~TSSwitchOptions();
+    virtual ~TSSwitchOptions() = default;
 
     // Option values
     ts::DuckContext       duck;         // TSDuck context
@@ -77,10 +77,6 @@ public:
     ts::InputSwitcherArgs switch_args;  // TS processing arguments.
 };
 
-// Destructor.
-TSSwitchOptions::~TSSwitchOptions() {}
-
-// Constructor.
 TSSwitchOptions::TSSwitchOptions(int argc, char *argv[]) :
     ts::ArgsWithPlugins(0, UNLIMITED_COUNT, 0, 0, 0, 1),
     duck(this),

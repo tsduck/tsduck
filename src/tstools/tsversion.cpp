@@ -55,7 +55,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
     bool        current;    // Display current version of TSDuck, this executable.
     bool        integer;    // Display current version of TSDuck as integer value.
@@ -72,10 +72,6 @@ public:
     ts::UString out_dir;    // Output directory for downloaded files.
 };
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Check version, download and upgrade TSDuck", u"[options]"),
     current(false),

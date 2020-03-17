@@ -52,7 +52,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
     ts::DuckContext   duck;     // TSDuck execution context.
     ts::TablesDisplay display;  // Table formatting options (all default values, nothing on command line).
@@ -91,10 +91,6 @@ Options::Options(int argc, char *argv[]) :
     no_tot = present(u"notot");
 
     exitOnError();
-}
-
-Options::~Options()
-{
 }
 
 

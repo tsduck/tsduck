@@ -55,7 +55,7 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        AbstractAVCStructure() : AbstractAVCData() {}
+        AbstractAVCStructure() = default;
 
         // Inherited
         virtual bool parse(const void* addr, size_t size) override;

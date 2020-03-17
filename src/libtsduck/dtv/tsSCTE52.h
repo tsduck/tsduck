@@ -55,7 +55,7 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        SCTE52_2003() : DVS042<DES>() {}
+        SCTE52_2003() = default;
 
         // Implementation of BlockCipher interface.
         virtual UString name() const override;
@@ -83,7 +83,7 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        SCTE52_2008() : DVS042<DES>() {}
+        SCTE52_2008() = default;
 
         // Implementation of BlockCipher interface.
         virtual UString name() const override;

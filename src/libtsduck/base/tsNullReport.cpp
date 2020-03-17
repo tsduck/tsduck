@@ -40,5 +40,4 @@ TS_DEFINE_SINGLETON(ts::NullReport);
 
 // Does nothing, really nothing at all.
 ts::NullReport::NullReport() {}
-ts::NullReport::~NullReport() {}
 void ts::NullReport::writeLog(int severity, const UString &msg) {}

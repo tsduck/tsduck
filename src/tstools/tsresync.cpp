@@ -58,7 +58,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
     size_t      sync_size;   // number of initial bytes to analyze for resync
     size_t      contig_size; // required size of contiguous packets to accept a stream slice
@@ -70,10 +70,6 @@ public:
     ts::UString outfile;     // Output file name
 };
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Resynchronize a non-standard or corrupted MPEG transport stream", u"[options] [filename]"),
     sync_size(0),

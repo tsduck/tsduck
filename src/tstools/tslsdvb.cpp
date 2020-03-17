@@ -53,7 +53,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
 #if defined(TS_WINDOWS)
     ts::DirectShowTest::TestType test_type;  // DirectShow test (Windows only).
@@ -63,10 +63,6 @@ public:
     ts::TunerArgs   tuner_args;  // Name of device to list (unspecified means all).
 };
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"List DVB tuner devices", u"[options]"),
 #if defined(TS_WINDOWS)

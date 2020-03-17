@@ -49,7 +49,7 @@ class GenECMOptions: public ts::Args
     TS_NOBUILD_NOCOPY(GenECMOptions);
 public:
     GenECMOptions(int argc, char *argv[]);
-    virtual ~GenECMOptions();
+    virtual ~GenECMOptions() = default;
 
     ts::DuckContext    duck;       // TSDuck execution context.
     ts::UString        outFile;    // Name of binary output file.
@@ -59,10 +59,6 @@ public:
     ts::ByteBlock      cwNext;     // Next CW
 };
 
-// Destructor.
-GenECMOptions::~GenECMOptions() {}
-
-// Constructor.
 GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     ts::Args(u"Generate one ECM using any DVB SimulCrypt compliant ECMG", u"[options] output-file"),
     duck(this),

@@ -50,7 +50,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
     ts::DuckContext   duck;        // TSDuck context
     uint32_t          dump_flags;  // Dump options for Hexa and Packet::dump
@@ -177,10 +177,6 @@ Options::Options(int argc, char *argv[]) :
     }
 
     exitOnError();
-}
-
-Options::~Options()
-{
 }
 
 

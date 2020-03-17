@@ -48,7 +48,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
     ts::TSPControlCommand command_reference;
     ts::UString           command_line;
@@ -99,10 +99,6 @@ Options::Options(int argc, char *argv[]) :
     }
 
     exitOnError();
-}
-
-Options::~Options()
-{
 }
 
 ts::UString Options::getHelpText(HelpFormat format, size_t line_width) const

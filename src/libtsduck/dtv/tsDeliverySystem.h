@@ -192,7 +192,7 @@ namespace ts {
 
 #if !defined(DOXYGEN)
         // Trampolines to superclass constructors.
-        DeliverySystemSet() : SuperClass() {}
+        DeliverySystemSet() = default;
         DeliverySystemSet(const SuperClass& other) : SuperClass(other) {}
         DeliverySystemSet(const SuperClass&& other) : SuperClass(other) {}
         DeliverySystemSet(std::initializer_list<value_type> init) : SuperClass(init) {}

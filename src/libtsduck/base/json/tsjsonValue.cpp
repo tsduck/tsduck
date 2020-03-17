@@ -36,8 +36,6 @@ TSDUCK_SOURCE;
 // Simple virtual methods
 //----------------------------------------------------------------------------
 
-ts::json::Value::~Value() {}
-
 bool ts::json::Value::isNull()   const { return false; }
 bool ts::json::Value::isTrue()   const { return false; }
 bool ts::json::Value::isFalse()  const { return false; }

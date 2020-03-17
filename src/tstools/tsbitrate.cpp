@@ -47,7 +47,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    virtual ~Options();
+    virtual ~Options() = default;
 
     uint32_t    min_pcr;       // Min # of PCR per PID
     uint16_t    min_pid;       // Min # of PID
@@ -121,10 +121,6 @@ Options::Options(int argc, char *argv[]) :
     ignore_errors = present(u"ignore-errors");
 
     exitOnError();
-}
-
-Options::~Options()
-{
 }
 
 

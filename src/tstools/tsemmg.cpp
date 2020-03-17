@@ -70,7 +70,7 @@ class EMMGOptions: public ts::Args
     TS_NOBUILD_NOCOPY(EMMGOptions);
 public:
     EMMGOptions(int argc, char *argv[]);
-    virtual ~EMMGOptions();
+    virtual ~EMMGOptions() = default;
 
     ts::DuckContext      duck;                // TSDuck execution context.
     ts::tlv::Logger      logger;              // Message logger.
@@ -101,10 +101,6 @@ public:
     bool adjustBandwidth(uint16_t allocated);
 };
 
-// Destructor.
-EMMGOptions::~EMMGOptions() {}
-
-// Constructor.
 EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     ts::Args(u"Minimal generic DVB SimulCrypt-compliant EMMG", u"[options] [section-file ...]"),
     duck(this),

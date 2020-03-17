@@ -73,7 +73,7 @@ class ECMGOptions: public ts::Args
     TS_NOBUILD_NOCOPY(ECMGOptions);
 public:
     ECMGOptions(int argc, char *argv[]);
-    virtual ~ECMGOptions();
+    virtual ~ECMGOptions() = default;
 
     int                        log_protocol;   // Log level for ECMG <=> SCS protocol.
     int                        log_data;       // Log level for CW/ECM data messages.
@@ -85,10 +85,6 @@ public:
     ts::ecmgscs::StreamStatus  streamStatus;   // Standard parameters required by this ECMG.
 };
 
-// Destructor.
-ECMGOptions::~ECMGOptions() {}
-
-// Constructor.
 ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     ts::Args(u"Minimal generic DVB SimulCrypt-compliant ECMG", u"[options]"),
     log_protocol(ts::Severity::Debug),

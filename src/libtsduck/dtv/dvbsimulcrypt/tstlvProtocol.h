@@ -155,7 +155,7 @@ namespace ts {
             // Description of a command:
             struct Command {
                 ParameterMap params;
-                Command() : params() {}
+                Command() = default;
             };
             typedef std::map<TAG,Command> CommandMap;
 
