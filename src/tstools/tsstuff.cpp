@@ -47,27 +47,28 @@ static const size_t   DEFAULT_TS_BUFFER_SIZE = 4 * 1024 * 1024;  // 4 MB
 static const size_t   MAX_TS_BUFFER_SIZE     = 16 * 1024 * 1024; // 16 MB
 static const uint64_t DEFAULT_MIN_INTERVAL   = 100;              // milliseconds
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options() = default;
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::BitRate target_bitrate;
-    ts::PID     reference_pid;
-    size_t      buffer_size;
-    uint64_t    leading_packets;
-    uint64_t    trailing_packets;
-    uint64_t    final_inter_packet;
-    uint64_t    initial_inter_packet;
-    uint64_t    min_interval_ms;
-    bool        dts_based;
-    bool        dyn_final_inter_packet;
-    bool        dyn_initial_inter_packet;
-    ts::UString input_file;
-    ts::UString output_file;
-};
+        ts::BitRate target_bitrate;
+        ts::PID     reference_pid;
+        size_t      buffer_size;
+        uint64_t    leading_packets;
+        uint64_t    trailing_packets;
+        uint64_t    final_inter_packet;
+        uint64_t    initial_inter_packet;
+        uint64_t    min_interval_ms;
+        bool        dts_based;
+        bool        dyn_final_inter_packet;
+        bool        dyn_initial_inter_packet;
+        ts::UString input_file;
+        ts::UString output_file;
+    };
+}
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Add stuffing to a transport stream to reach a target bitrate", u"[options] [input-file]"),

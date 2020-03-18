@@ -43,20 +43,21 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options() = default;
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::TSPControlCommand command_reference;
-    ts::UString           command_line;
-    ts::SocketAddress     tsp_address;
+        ts::TSPControlCommand command_reference;
+        ts::UString           command_line;
+        ts::SocketAddress     tsp_address;
 
-    // Inherited methods.
-    virtual ts::UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;
-};
+        // Inherited methods.
+        virtual ts::UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;
+    };
+}
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Send control commands to a running tsp", u"[options] command ...", GATHER_PARAMETERS),

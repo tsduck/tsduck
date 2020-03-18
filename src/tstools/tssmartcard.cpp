@@ -44,17 +44,18 @@ TS_LLVM_NOWARNING(old-style-cast)
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options() = default;
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::UString reader;        // Optional reader name
-    uint32_t    timeout_ms;    // Timeout in milliseconds
-    uint32_t    reset_action;  // Type of reset to apply
-};
+        ts::UString reader;        // Optional reader name
+        uint32_t    timeout_ms;    // Timeout in milliseconds
+        uint32_t    reset_action;  // Type of reset to apply
+    };
+}
 
 Options::Options(int argc, char *argv[]) :
     Args(u"List or control smartcards", u"[options] [reader-name]"),

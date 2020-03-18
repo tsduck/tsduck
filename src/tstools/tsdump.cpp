@@ -45,23 +45,24 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options() = default;
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::DuckContext   duck;        // TSDuck context
-    uint32_t          dump_flags;  // Dump options for Hexa and Packet::dump
-    bool              raw_file;    // Raw dump of file, not TS packets
-    bool              log;         // Option --log
-    size_t            log_size;    // Size to display with --log
-    ts::PIDSet        pids;        // PID values to dump.
-    ts::PacketCounter max_packets; // Maximum number of packets to dump per file
-    ts::UStringVector infiles;     // Input file names
-    ts::PagerArgs     pager;       // Output paging options.
-};
+        ts::DuckContext   duck;        // TSDuck context
+        uint32_t          dump_flags;  // Dump options for Hexa and Packet::dump
+        bool              raw_file;    // Raw dump of file, not TS packets
+        bool              log;         // Option --log
+        size_t            log_size;    // Size to display with --log
+        ts::PIDSet        pids;        // PID values to dump.
+        ts::PacketCounter max_packets; // Maximum number of packets to dump per file
+        ts::UStringVector infiles;     // Input file names
+        ts::PagerArgs     pager;       // Output paging options.
+    };
+}
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Dump and format MPEG transport stream packets", u"[options] [filename ...]"),

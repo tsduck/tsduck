@@ -70,6 +70,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~BlockCipherAlertInterface() = default;
+        virtual ~BlockCipherAlertInterface();
     };
 }

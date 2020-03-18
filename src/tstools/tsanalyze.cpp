@@ -44,19 +44,20 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options() = default;
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::DuckContext       duck;      // TSDuck execution context.
-    ts::BitRate           bitrate;   // Expected bitrate (188-byte packets)
-    ts::UString           infile;    // Input file name
-    ts::TSAnalyzerOptions analysis;  // Analysis options.
-    ts::PagerArgs         pager;     // Output paging options.
-};
+        ts::DuckContext       duck;      // TSDuck execution context.
+        ts::BitRate           bitrate;   // Expected bitrate (188-byte packets)
+        ts::UString           infile;    // Input file name
+        ts::TSAnalyzerOptions analysis;  // Analysis options.
+        ts::PagerArgs         pager;     // Output paging options.
+    };
+}
 
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"Analyze the structure of a transport stream", u"[options] [filename]"),

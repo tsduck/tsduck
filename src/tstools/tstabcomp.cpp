@@ -54,25 +54,26 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options() = default;
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::DuckContext       duck;            // Execution context.
-    ts::UStringVector     infiles;         // Input file names.
-    ts::UString           outfile;         // Output file path.
-    bool                  outdir;          // Output name is a directory.
-    bool                  compile;         // Explicit compilation.
-    bool                  decompile;       // Explicit decompilation.
-    bool                  packAndFlush;    // Pack and flush incomplete tables before exiting.
-    bool                  xmlModel;        // Display XML model instead of compilation.
-    bool                  withExtensions;  // XML model with extensions.
-    ts::xml::Tweaks       xmlTweaks;       // XML formatting options.
-    const ts::DVBCharset* defaultCharset;  // Default DVB character set to interpret strings.
-};
+        ts::DuckContext       duck;            // Execution context.
+        ts::UStringVector     infiles;         // Input file names.
+        ts::UString           outfile;         // Output file path.
+        bool                  outdir;          // Output name is a directory.
+        bool                  compile;         // Explicit compilation.
+        bool                  decompile;       // Explicit decompilation.
+        bool                  packAndFlush;    // Pack and flush incomplete tables before exiting.
+        bool                  xmlModel;        // Display XML model instead of compilation.
+        bool                  withExtensions;  // XML model with extensions.
+        ts::xml::Tweaks       xmlTweaks;       // XML formatting options.
+        const ts::DVBCharset* defaultCharset;  // Default DVB character set to interpret strings.
+    };
+}
 
 Options::Options(int argc, char *argv[]) :
     Args(u"PSI/SI tables compiler", u"[options] filename ..."),

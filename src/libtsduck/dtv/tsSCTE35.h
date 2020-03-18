@@ -104,7 +104,7 @@ namespace ts {
         SpliceTime(const SpliceTime& other) = default;
         SpliceTime& operator=(const SpliceTime& other) { SuperClass::operator=(other); return *this; }
         SpliceTime& operator=(const uint64_t& other) { SuperClass::operator=(other); return *this; }
-        virtual ~SpliceTime() = default;
+        virtual ~SpliceTime();
         //! @endcond
     };
 

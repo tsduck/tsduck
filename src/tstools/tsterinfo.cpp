@@ -79,27 +79,28 @@ namespace {
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options() = default;
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    uint64_t          frequency;     // Carrier frequency from which to get UHF channel
-    uint32_t          uhf_channel;   // UHF channel from which to compute frequency
-    uint32_t          vhf_channel;   // VHF channel from which to compute frequency
-    int32_t           hf_offset;     // UHF/VHF offset from channel
-    ts::BitRate       bitrate;       // TS bitrate from which to guess modulation parameters
-    size_t            max_guess;     // Max number of modulation parameters to guess.
-    ts::Modulation    constellation; // Modulation parameters to compute bitrate
-    ts::InnerFEC      fec_hp;
-    ts::GuardInterval guard_interval;
-    ts::BandWidth     bandwidth;
-    bool              simple;          // Simple output
-    bool              default_region;  // Display the default region for UHF/VHF band frequency layout
-    ts::UString       hfband_region;   // Region for UHF/VHF band frequency layout
-};
+        uint64_t          frequency;       // Carrier frequency from which to get UHF channel
+        uint32_t          uhf_channel;     // UHF channel from which to compute frequency
+        uint32_t          vhf_channel;     // VHF channel from which to compute frequency
+        int32_t           hf_offset;       // UHF/VHF offset from channel
+        ts::BitRate       bitrate;         // TS bitrate from which to guess modulation parameters
+        size_t            max_guess;       // Max number of modulation parameters to guess.
+        ts::Modulation    constellation;   // Modulation parameters to compute bitrate
+        ts::InnerFEC      fec_hp;
+        ts::GuardInterval guard_interval;
+        ts::BandWidth     bandwidth;
+        bool              simple;          // Simple output
+        bool              default_region;  // Display the default region for UHF/VHF band frequency layout
+        ts::UString       hfband_region;   // Region for UHF/VHF band frequency layout
+    };
+}
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Compute or convert DVB-Terrestrial information", u"[options]"),

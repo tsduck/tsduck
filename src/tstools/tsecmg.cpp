@@ -68,22 +68,23 @@ namespace {
 //  Command line options
 //----------------------------------------------------------------------------
 
-class ECMGOptions: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(ECMGOptions);
-public:
-    ECMGOptions(int argc, char *argv[]);
-    virtual ~ECMGOptions() = default;
+namespace {
+    class ECMGOptions: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(ECMGOptions);
+    public:
+        ECMGOptions(int argc, char *argv[]);
 
-    int                        log_protocol;   // Log level for ECMG <=> SCS protocol.
-    int                        log_data;       // Log level for CW/ECM data messages.
-    bool                       once;           // Accept only one client.
-    bool                       reusePort;      // Socket option.
-    ts::MilliSecond            ecmCompTime;    // ECM computation time.
-    ts::SocketAddress          serverAddress;  // TCP server local address.
-    ts::ecmgscs::ChannelStatus channelStatus;  // Standard parameters required by this ECMG.
-    ts::ecmgscs::StreamStatus  streamStatus;   // Standard parameters required by this ECMG.
-};
+        int                        log_protocol;   // Log level for ECMG <=> SCS protocol.
+        int                        log_data;       // Log level for CW/ECM data messages.
+        bool                       once;           // Accept only one client.
+        bool                       reusePort;      // Socket option.
+        ts::MilliSecond            ecmCompTime;    // ECM computation time.
+        ts::SocketAddress          serverAddress;  // TCP server local address.
+        ts::ecmgscs::ChannelStatus channelStatus;  // Standard parameters required by this ECMG.
+        ts::ecmgscs::StreamStatus  streamStatus;   // Standard parameters required by this ECMG.
+    };
+}
 
 ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     ts::Args(u"Minimal generic DVB SimulCrypt-compliant ECMG", u"[options]"),

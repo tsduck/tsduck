@@ -42,9 +42,11 @@ TSDUCK_SOURCE;
 
 TS_DEFINE_SINGLETON(ts::NamesMain);
 ts::NamesMain::NamesMain() : Names(u"tsduck.names", true) {}
+ts::NamesMain::~NamesMain() {}
 
 TS_DEFINE_SINGLETON(ts::NamesOUI);
 ts::NamesOUI::NamesOUI() : Names(u"tsduck.oui.names") {}
+ts::NamesOUI::~NamesOUI() {}
 
 
 //----------------------------------------------------------------------------
