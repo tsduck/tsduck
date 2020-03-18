@@ -50,19 +50,20 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options() = default;
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::DuckContext   duck;     // TSDuck execution context.
-    ts::TablesDisplay display;  // Table formatting.
-    ts::TablesLogger  logger;   // Table logging.
-    ts::PagerArgs     pager;    // Output paging options.
-    ts::UString       infile;   // Input file name.
-};
+        ts::DuckContext   duck;     // TSDuck execution context.
+        ts::TablesDisplay display;  // Table formatting.
+        ts::TablesLogger  logger;   // Table logging.
+        ts::PagerArgs     pager;    // Output paging options.
+        ts::UString       infile;   // Input file name.
+    };
+}
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Collect PSI/SI tables from an MPEG transport stream", u"[options] [filename]"),

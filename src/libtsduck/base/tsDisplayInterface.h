@@ -54,7 +54,7 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~DisplayInterface() = default;
+        virtual ~DisplayInterface();
     };
 }
 

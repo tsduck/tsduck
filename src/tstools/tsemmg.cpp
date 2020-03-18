@@ -65,41 +65,42 @@ namespace {
 //  Command line options
 //----------------------------------------------------------------------------
 
-class EMMGOptions: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(EMMGOptions);
-public:
-    EMMGOptions(int argc, char *argv[]);
-    virtual ~EMMGOptions() = default;
+namespace {
+    class EMMGOptions: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(EMMGOptions);
+    public:
+        EMMGOptions(int argc, char *argv[]);
 
-    ts::DuckContext      duck;                // TSDuck execution context.
-    ts::tlv::Logger      logger;              // Message logger.
-    ts::UStringVector    inputFiles;          // Input file names.
-    ts::SectionPtrVector sections;            // Loaded sections from input files.
-    size_t               maxCycles;           // Maximum number of cycles of section files.
-    ts::SocketAddress    tcpMuxAddress;       // TCP server address for MUX.
-    ts::SocketAddress    udpMuxAddress;       // UDP server address for MUX.
-    bool                 useUDP;              // Use UDP to send data provisions.
-    uint32_t             clientId;            // Client id, see EMMG/PDG <=> MUX protocol.
-    uint16_t             channelId;           // Data_channel_id, see EMMG/PDG <=> MUX protocol.
-    uint16_t             streamId;            // Data_stream_id, see EMMG/PDG <=> MUX protocol.
-    uint16_t             dataId;              // Data_id, see EMMG/PDG <=> MUX protocol.
-    uint8_t              dataType;            // Data_type, see EMMG/PDG <=> MUX protocol.
-    bool                 sectionMode;         // If true, send data in section format.
-    uint16_t             sendBandwidth;       // Bandwidth of sent data in kb/s.
-    uint16_t             requestedBandwidth;  // Requested bandwidth in kb/s.
-    bool                 ignoreAllocatedBW;   // Ignore the returned allocated bandwidth.
-    size_t               emmSize;             // Size in bytes of generated EMM's.
-    ts::TID              emmMinTableId;       // Minimum table id of generated EMM's.
-    ts::TID              emmMaxTableId;       // Maximum table id of generated EMM's.
-    uint64_t             maxBytes;            // Stop after injecting that number of bytes.
-    ts::BitRate          dataBitrate;         // Actual data bitrate.
-    size_t               bytesPerSend;        // Approximate size of each send.
-    ts::NanoSecond       sendInterval;        // Interval between two send operations.
+        ts::DuckContext      duck;                // TSDuck execution context.
+        ts::tlv::Logger      logger;              // Message logger.
+        ts::UStringVector    inputFiles;          // Input file names.
+        ts::SectionPtrVector sections;            // Loaded sections from input files.
+        size_t               maxCycles;           // Maximum number of cycles of section files.
+        ts::SocketAddress    tcpMuxAddress;       // TCP server address for MUX.
+        ts::SocketAddress    udpMuxAddress;       // UDP server address for MUX.
+        bool                 useUDP;              // Use UDP to send data provisions.
+        uint32_t             clientId;            // Client id, see EMMG/PDG <=> MUX protocol.
+        uint16_t             channelId;           // Data_channel_id, see EMMG/PDG <=> MUX protocol.
+        uint16_t             streamId;            // Data_stream_id, see EMMG/PDG <=> MUX protocol.
+        uint16_t             dataId;              // Data_id, see EMMG/PDG <=> MUX protocol.
+        uint8_t              dataType;            // Data_type, see EMMG/PDG <=> MUX protocol.
+        bool                 sectionMode;         // If true, send data in section format.
+        uint16_t             sendBandwidth;       // Bandwidth of sent data in kb/s.
+        uint16_t             requestedBandwidth;  // Requested bandwidth in kb/s.
+        bool                 ignoreAllocatedBW;   // Ignore the returned allocated bandwidth.
+        size_t               emmSize;             // Size in bytes of generated EMM's.
+        ts::TID              emmMinTableId;       // Minimum table id of generated EMM's.
+        ts::TID              emmMaxTableId;       // Maximum table id of generated EMM's.
+        uint64_t             maxBytes;            // Stop after injecting that number of bytes.
+        ts::BitRate          dataBitrate;         // Actual data bitrate.
+        size_t               bytesPerSend;        // Approximate size of each send.
+        ts::NanoSecond       sendInterval;        // Interval between two send operations.
 
-    // Adjust the various rates and delays according to the allocated bandwidth.
-    bool adjustBandwidth(uint16_t allocated);
-};
+        // Adjust the various rates and delays according to the allocated bandwidth.
+        bool adjustBandwidth(uint16_t allocated);
+    };
+}
 
 EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     ts::Args(u"Minimal generic DVB SimulCrypt-compliant EMMG", u"[options] [section-file ...]"),

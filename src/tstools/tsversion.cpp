@@ -50,27 +50,28 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options() = default;
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    bool        current;    // Display current version of TSDuck, this executable.
-    bool        integer;    // Display current version of TSDuck as integer value.
-    bool        latest;     // Display the latest version of TSDuck.
-    bool        check;      // Check if a new version of TSDuck is available.
-    bool        all;        // List all available versions of TSDuck.
-    bool        download;   // Download the latest version.
-    bool        force;      // Force downloads.
-    bool        binary;     // With --download, fetch the binaries.
-    bool        source;     // With --download, feth the source code instead of the binaries.
-    bool        upgrade;    // Upgrade TSDuck to the latest version.
-    bool        extensions; // List extensions.
-    ts::UString name;       // Use the specified version, not the latest one.
-    ts::UString out_dir;    // Output directory for downloaded files.
-};
+        bool        current;    // Display current version of TSDuck, this executable.
+        bool        integer;    // Display current version of TSDuck as integer value.
+        bool        latest;     // Display the latest version of TSDuck.
+        bool        check;      // Check if a new version of TSDuck is available.
+        bool        all;        // List all available versions of TSDuck.
+        bool        download;   // Download the latest version.
+        bool        force;      // Force downloads.
+        bool        binary;     // With --download, fetch the binaries.
+        bool        source;     // With --download, feth the source code instead of the binaries.
+        bool        upgrade;    // Upgrade TSDuck to the latest version.
+        bool        extensions; // List extensions.
+        ts::UString name;       // Use the specified version, not the latest one.
+        ts::UString out_dir;    // Output directory for downloaded files.
+    };
+}
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Check version, download and upgrade TSDuck", u"[options]"),

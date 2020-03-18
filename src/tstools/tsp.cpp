@@ -53,19 +53,20 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 //  Command line options
 //----------------------------------------------------------------------------
 
-class TSPOptions: public ts::ArgsWithPlugins
-{
-    TS_NOBUILD_NOCOPY(TSPOptions);
-public:
-    TSPOptions(int argc, char *argv[]);
-    virtual ~TSPOptions() = default;
+namespace {
+    class TSPOptions: public ts::ArgsWithPlugins
+    {
+        TS_NOBUILD_NOCOPY(TSPOptions);
+    public:
+        TSPOptions(int argc, char *argv[]);
 
-    // Option values
-    ts::DuckContext     duck;             // TSDuck context
-    int                 list_proc_flags;  // List processors, mask of PluginRepository::ListFlag.
-    ts::AsyncReportArgs log_args;         // Asynchronous logger arguments.
-    ts::TSProcessorArgs tsp_args;         // TS processing arguments.
-};
+        // Option values
+        ts::DuckContext     duck;             // TSDuck context
+        int                 list_proc_flags;  // List processors, mask of PluginRepository::ListFlag.
+        ts::AsyncReportArgs log_args;         // Asynchronous logger arguments.
+        ts::TSProcessorArgs tsp_args;         // TS processing arguments.
+    };
+}
 
 TSPOptions::TSPOptions(int argc, char *argv[]) :
     ts::ArgsWithPlugins(0, 1, 0, UNLIMITED_COUNT, 0, 1),

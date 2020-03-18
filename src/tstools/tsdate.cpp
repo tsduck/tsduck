@@ -47,20 +47,21 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options() = default;
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::DuckContext   duck;     // TSDuck execution context.
-    ts::TablesDisplay display;  // Table formatting options (all default values, nothing on command line).
-    bool              no_tdt;   // Do not try to get a TDT
-    bool              no_tot;   // Do not try to get a TOT
-    bool              all;      // Report all tables, not only the first one.
-    ts::UString       infile;   // Input file name
-};
+        ts::DuckContext   duck;     // TSDuck execution context.
+        ts::TablesDisplay display;  // Table formatting options (all default values, nothing on command line).
+        bool              no_tdt;   // Do not try to get a TDT
+        bool              no_tot;   // Do not try to get a TOT
+        bool              all;      // Report all tables, not only the first one.
+        ts::UString       infile;   // Input file name
+    };
+}
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Extract the date and time (TDT/TOT) from a transport stream", u"[options] [filename]"),

@@ -44,20 +44,21 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class GenECMOptions: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(GenECMOptions);
-public:
-    GenECMOptions(int argc, char *argv[]);
-    virtual ~GenECMOptions() = default;
+namespace {
+    class GenECMOptions: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(GenECMOptions);
+    public:
+        GenECMOptions(int argc, char *argv[]);
 
-    ts::DuckContext    duck;       // TSDuck execution context.
-    ts::UString        outFile;    // Name of binary output file.
-    ts::ECMGClientArgs ecmg;       // ECMG parameters
-    uint16_t           cpNumber;   // Crypto-period number
-    ts::ByteBlock      cwCurrent;  // Current CW
-    ts::ByteBlock      cwNext;     // Next CW
-};
+        ts::DuckContext    duck;       // TSDuck execution context.
+        ts::UString        outFile;    // Name of binary output file.
+        ts::ECMGClientArgs ecmg;       // ECMG parameters
+        uint16_t           cpNumber;   // Crypto-period number
+        ts::ByteBlock      cwCurrent;  // Current CW
+        ts::ByteBlock      cwNext;     // Next CW
+    };
+}
 
 GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     ts::Args(u"Generate one ECM using any DVB SimulCrypt compliant ECMG", u"[options] output-file"),

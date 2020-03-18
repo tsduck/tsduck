@@ -89,6 +89,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~MutexInterface() = default;
+        virtual ~MutexInterface();
     };
 }

@@ -55,6 +55,6 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~AbortInterface() = default;
+        virtual ~AbortInterface();
     };
 }

@@ -41,22 +41,23 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options() = default;
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    bool         test;      // Test mode
-    bool         circular;  // Add empty packets to enforce circular continuity
-    ts::UString  filename;  // File name
-    std::fstream file;      // File buffer
+        bool         test;      // Test mode
+        bool         circular;  // Add empty packets to enforce circular continuity
+        ts::UString  filename;  // File name
+        std::fstream file;      // File buffer
 
-    // Check if there was an I/O error on the file.
-    // Print an error message if this is the case.
-    bool fileError(const ts::UChar* message);
-};
+        // Check if there was an I/O error on the file.
+        // Print an error message if this is the case.
+        bool fileError(const ts::UChar* message);
+    };
+}
 
 // Constructor.
 Options::Options(int argc, char *argv[]) :

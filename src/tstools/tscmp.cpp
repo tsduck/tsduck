@@ -48,29 +48,30 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options() = default;
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::UString filename1;
-    ts::UString filename2;
-    uint64_t    byte_offset;
-    size_t      buffered_packets;
-    size_t      threshold_diff;
-    bool        subset;
-    bool        dump;
-    uint32_t    dump_flags;
-    bool        normalized;
-    bool        quiet;
-    bool        payload_only;
-    bool        pcr_ignore;
-    bool        pid_ignore;
-    bool        cc_ignore;
-    bool        continue_all;
-};
+        ts::UString filename1;
+        ts::UString filename2;
+        uint64_t    byte_offset;
+        size_t      buffered_packets;
+        size_t      threshold_diff;
+        bool        subset;
+        bool        dump;
+        uint32_t    dump_flags;
+        bool        normalized;
+        bool        quiet;
+        bool        payload_only;
+        bool        pcr_ignore;
+        bool        pid_ignore;
+        bool        cc_ignore;
+        bool        continue_all;
+    };
+}
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Compare two transport stream files", u"[options] filename-1 filename-2"),
