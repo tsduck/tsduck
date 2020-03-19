@@ -362,6 +362,12 @@ namespace ts {
         bool isAVC() const;
 
         //!
+        //! Check if the PES packet contains HEVC / H.265 video.
+        //! @return True if the PES packet contains HEVC / H.265 video.
+        //!
+        bool isHEVC() const;
+
+        //!
         //! Check if the PES packet contains AC-3 or Enhanced-AC-3 audio.
         //!
         //! Warning: As specified in ETSI TS 102 366, an AC-3 audio frame always

@@ -76,22 +76,38 @@ const ts::Enumeration ts::StandardsEnum({
 bool ts::IsPES (uint8_t st)
 {
     return
-        st == ST_MPEG1_VIDEO ||
-        st == ST_MPEG2_VIDEO ||
-        st == ST_MPEG1_AUDIO ||
-        st == ST_MPEG2_AUDIO ||
-        st == ST_PES_PRIV    ||
-        st == ST_MPEG2_ATM   ||
-        st == ST_MPEG4_VIDEO ||
-        st == ST_MPEG4_AUDIO ||
-        st == ST_MPEG4_PES   ||
-        st == ST_MDATA_PES   ||
-        st == ST_AVC_VIDEO   ||
-        st == ST_AAC_AUDIO   ||
-        st == ST_AC3_AUDIO   ||
-        st == ST_EAC3_AUDIO  ||
-        st == ST_HEVC_VIDEO  ||
-        st == ST_HEVC_SUBVIDEO;
+        st == ST_MPEG1_VIDEO      ||
+        st == ST_MPEG2_VIDEO      ||
+        st == ST_MPEG1_AUDIO      ||
+        st == ST_MPEG2_AUDIO      ||
+        st == ST_PES_PRIV         ||
+        st == ST_MPEG2_ATM        ||
+        st == ST_MPEG4_VIDEO      ||
+        st == ST_MPEG4_AUDIO      ||
+        st == ST_MPEG4_PES        ||
+        st == ST_MDATA_PES        ||
+        st == ST_AVC_VIDEO        ||
+        st == ST_AAC_AUDIO        ||
+        st == ST_AC3_AUDIO        ||
+        st == ST_EAC3_AUDIO       ||
+        st == ST_HEVC_VIDEO       ||
+        st == ST_HEVC_SUBVIDEO    ||
+        st == ST_MPEG4_AUDIO_RAW  ||
+        st == ST_MPH3D_MAIN       ||
+        st == ST_MPH3D_AUX        ||
+        st == ST_AUX_VIDEO        ||
+        st == ST_AVC_SUBVIDEO_G   ||
+        st == ST_AVC_SUBVIDEO_H   ||
+        st == ST_J2K_VIDEO        ||
+        st == ST_MPEG2_3D_VIEW    ||
+        st == ST_AVC_3D_VIEW      ||
+        st == ST_AVC_SUBVIDEO_I   ||
+        st == ST_HEVC_SUBVIDEO_G  ||
+        st == ST_HEVC_SUBVIDEO_TG ||
+        st == ST_HEVC_SUBVIDEO_H  ||
+        st == ST_HEVC_SUBVIDEO_TH ||
+        st == ST_MPEG4_TEXT       ||
+        st == ST_EXT_MEDIA;
 }
 
 
@@ -102,12 +118,23 @@ bool ts::IsPES (uint8_t st)
 bool ts::IsVideoST (uint8_t st)
 {
     return
-        st == ST_MPEG1_VIDEO ||
-        st == ST_MPEG2_VIDEO ||
-        st == ST_MPEG4_VIDEO ||
-        st == ST_AVC_VIDEO   ||
-        st == ST_HEVC_VIDEO  ||
-        st == ST_HEVC_SUBVIDEO;
+        st == ST_MPEG1_VIDEO      ||
+        st == ST_MPEG2_VIDEO      ||
+        st == ST_MPEG4_VIDEO      ||
+        st == ST_AVC_VIDEO        ||
+        st == ST_HEVC_VIDEO       ||
+        st == ST_HEVC_SUBVIDEO    ||
+        st == ST_AUX_VIDEO        ||
+        st == ST_AVC_SUBVIDEO_G   ||
+        st == ST_AVC_SUBVIDEO_H   ||
+        st == ST_J2K_VIDEO        ||
+        st == ST_MPEG2_3D_VIEW    ||
+        st == ST_AVC_3D_VIEW      ||
+        st == ST_AVC_SUBVIDEO_I   ||
+        st == ST_HEVC_SUBVIDEO_G  ||
+        st == ST_HEVC_SUBVIDEO_TG ||
+        st == ST_HEVC_SUBVIDEO_H  ||
+        st == ST_HEVC_SUBVIDEO_TH;
 }
 
 
@@ -118,12 +145,15 @@ bool ts::IsVideoST (uint8_t st)
 bool ts::IsAudioST (uint8_t st)
 {
     return
-        st == ST_MPEG1_AUDIO ||
-        st == ST_MPEG2_AUDIO ||
-        st == ST_MPEG4_AUDIO ||
-        st == ST_AAC_AUDIO   ||
-        st == ST_AC3_AUDIO   ||
-        st == ST_EAC3_AUDIO;
+        st == ST_MPEG1_AUDIO     ||
+        st == ST_MPEG2_AUDIO     ||
+        st == ST_MPEG4_AUDIO     ||
+        st == ST_AAC_AUDIO       ||
+        st == ST_AC3_AUDIO       ||
+        st == ST_EAC3_AUDIO      ||
+        st == ST_MPEG4_AUDIO_RAW ||
+        st == ST_MPH3D_MAIN      ||
+        st == ST_MPH3D_AUX;
 }
 
 
@@ -134,12 +164,14 @@ bool ts::IsAudioST (uint8_t st)
 bool ts::IsSectionST (uint8_t st)
 {
     return
-        st == ST_PRIV_SECT ||
-        st == ST_DSMCC_UN ||
-        st == ST_DSMCC_SECT ||
-        st == ST_MPEG4_SECT ||
-        st == ST_MDATA_SECT ||
-        st == ST_SCTE35_SPLICE;
+        st == ST_PRIV_SECT     ||
+        st == ST_DSMCC_UN      ||
+        st == ST_DSMCC_SECT    ||
+        st == ST_MPEG4_SECT    ||
+        st == ST_MDATA_SECT    ||
+        st == ST_SCTE35_SPLICE ||
+        st == ST_GREEN         ||
+        st == ST_QUALITY;
 }
 
 
