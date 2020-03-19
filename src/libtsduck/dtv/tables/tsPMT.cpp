@@ -205,7 +205,11 @@ void ts::PMT::serializeContent(DuckContext& duck, BinaryTable& table) const
 
 bool ts::PMT::Stream::isVideo() const
 {
-    return IsVideoST(stream_type) || descs.search(DID_HEVC_VIDEO) < descs.count();
+    return IsVideoST(stream_type) ||
+        descs.search(DID_AVC_VIDEO) < descs.count() ||
+        descs.search(DID_HEVC_VIDEO) < descs.count() ||
+        descs.search(DID_MPEG4_VIDEO) < descs.count() ||
+        descs.search(DID_J2K_VIDEO) < descs.count();
 }
 
 bool ts::PMT::Stream::isAudio() const

@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class extracts PES packets from TS packets
-//
-//----------------------------------------------------------------------------
 
 #include "tsPESDemux.h"
 #include "tsMemory.h"

@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of MPEG PES packets
-//
-//----------------------------------------------------------------------------
 
 #include "tsPESPacket.h"
 TSDUCK_SOURCE;
@@ -286,7 +282,7 @@ bool ts::PESPacket::operator==(const PESPacket& pp) const
 bool ts::PESPacket::isMPEG2Video() const
 {
     // Must have a video stream_id and payload must start with 00 00 01.
-    if (_stream_type == ST_MPEG1_VIDEO || _stream_type == ST_MPEG2_VIDEO) {
+    if (_stream_type == ST_MPEG1_VIDEO || _stream_type == ST_MPEG2_VIDEO || _stream_type == ST_MPEG2_3D_VIEW) {
         return true;
     }
     else if (_stream_type != ST_NULL || !IsVideoSID(getStreamId())) {
@@ -307,7 +303,12 @@ bool ts::PESPacket::isMPEG2Video() const
 bool ts::PESPacket::isAVC() const
 {
     // Must have a video stream_id and payload must start with 00 00 00 [00...] 01
-    if (_stream_type == ST_AVC_VIDEO) {
+    if (_stream_type == ST_AVC_VIDEO ||
+        _stream_type == ST_AVC_3D_VIEW ||
+        _stream_type == ST_AVC_SUBVIDEO_G ||
+        _stream_type == ST_AVC_SUBVIDEO_H ||
+        _stream_type == ST_AVC_SUBVIDEO_I)
+    {
         return true;
     }
     else if (_stream_type != ST_NULL || !IsVideoSID(getStreamId())) {
@@ -322,6 +323,24 @@ bool ts::PESPacket::isAVC() const
         }
         return pl_size > 0 && *pl == 0x01 && pl > payload() + 2;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the PES packet contains HEVC.
+//----------------------------------------------------------------------------
+
+bool ts::PESPacket::isHEVC() const
+{
+    // Currently, only test the stream type from the PMT.
+    // Can we use additional non-ambiguous test on the PES payload?
+    return
+        _stream_type == ST_HEVC_VIDEO ||
+        _stream_type == ST_HEVC_SUBVIDEO ||
+        _stream_type == ST_HEVC_SUBVIDEO_G ||
+        _stream_type == ST_HEVC_SUBVIDEO_TG ||
+        _stream_type == ST_HEVC_SUBVIDEO_H ||
+        _stream_type == ST_HEVC_SUBVIDEO_TH;
 }
 
 
