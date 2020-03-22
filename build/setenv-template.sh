@@ -12,3 +12,5 @@ dtvdir="$srcdir/libtsduck/dtv"
 [[ ":$LD_LIBRARY_PATH:" != *:$libdir:* ]] && export LD_LIBRARY_PATH="$libdir:$LD_LIBRARY_PATH"
 [[ ":$TSPLUGINS_PATH:" != *:$dtvdir:* ]] && export TSPLUGINS_PATH="$dtvdir:$TSPLUGINS_PATH"
 [[ ":$TSPLUGINS_PATH:" != *:$plgdir:* ]] && export TSPLUGINS_PATH="$plgdir:$TSPLUGINS_PATH"
+
+true

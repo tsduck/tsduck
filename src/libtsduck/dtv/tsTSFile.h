@@ -71,8 +71,9 @@ namespace ts {
         //!
         //! Open the file for read.
         //! @param [in] filename File name. If empty, use standard input.
-        //! Must be a regular file if @a repeat_count is not 1 or if
-        //! @a start_offset is not zero.
+        //! Must be a regular file if @a start_offset is not zero.
+        //! If @a repeat_count is not 1 and the file is not a regular one,
+        //! the file is closed and reopened instead of being rewound.
         //! @param [in] repeat_count Reading packets loops back after end of
         //! file until all repeat are done. If zero, infinitely repeat.
         //! @param [in] start_offset Offset in bytes from the beginning of the file
@@ -100,13 +101,15 @@ namespace ts {
         //! Flags for open().
         //!
         enum OpenFlags {
-            NONE      = 0x0000,   //!< No option, do not open the file.
-            READ      = 0x0001,   //!< Read the file.
-            WRITE     = 0x0002,   //!< Write the file.
-            APPEND    = 0x0004,   //!< Append packets to an existing file.
-            KEEP      = 0x0008,   //!< Keep previous file with same name. Fail if it already exists.
-            SHARED    = 0x0010,   //!< Write open with shared read for other processes. Windows only. Always shared on Unix.
-            TEMPORARY = 0x0020,   //!< Temporary file, deleted on close, not always visible in the file system.
+            NONE        = 0x0000,   //!< No option, do not open the file.
+            READ        = 0x0001,   //!< Read the file.
+            WRITE       = 0x0002,   //!< Write the file.
+            APPEND      = 0x0004,   //!< Append packets to an existing file.
+            KEEP        = 0x0008,   //!< Keep previous file with same name. Fail if it already exists.
+            SHARED      = 0x0010,   //!< Write open with shared read for other processes. Windows only. Always shared on Unix.
+            TEMPORARY   = 0x0020,   //!< Temporary file, deleted on close, not always visible in the file system.
+            REOPEN      = 0x0040,   //!< Close and reopen the file instead of rewind to start of file when looping on input file.
+            REOPEN_SPEC = 0x0080,   //!< Force REOPEN when the file is not a regular file.
         };
 
         //!
@@ -210,7 +213,7 @@ namespace ts {
         //! @return The number of read packets.
         //!
         PacketCounter getReadCount() const { return _total_read; }
-    
+
         //!
         //! Get the number of written packets.
         //! @return The number of written packets.
@@ -232,6 +235,7 @@ namespace ts {
         volatile bool _at_eof;        //!< End of file has been reached
         volatile bool _aborted;       //!< Operation has been aborted, no operation available
         bool          _rewindable;    //!< Opened in rewindable mode
+        bool          _regular;       //!< Is a regular file (ie. not a pipe or special device)
 #if defined(TS_WINDOWS)
         ::HANDLE      _handle;        //!< File handle
 #else
@@ -239,7 +243,8 @@ namespace ts {
 #endif
 
         // Internal methods
-        bool openInternal(Report& report);
+        bool openInternal(bool reopen, Report& report);
+        bool seekCheck(Report& report);
         bool seekInternal(uint64_t index, Report& report);
 
         // Inaccessible operations.
