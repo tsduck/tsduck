@@ -50,6 +50,7 @@ ts::TSFile::TSFile() :
     _at_eof(false),
     _aborted(false),
     _rewindable(false),
+    _regular(false),
 #if defined(TS_WINDOWS)
     _handle(INVALID_HANDLE_VALUE)
 #else
@@ -76,6 +77,7 @@ ts::TSFile::TSFile(const TSFile& other) :
     _at_eof(false),
     _aborted(false),
     _rewindable(false),
+    _regular(false),
 #if defined(TS_WINDOWS)
     _handle(INVALID_HANDLE_VALUE)
 #else
@@ -102,6 +104,7 @@ ts::TSFile::TSFile(TSFile&& other) noexcept :
     _at_eof(other._at_eof),
     _aborted(other._aborted),
     _rewindable(other._rewindable),
+    _regular(other._regular),
 #if defined(TS_WINDOWS)
     _handle(other._handle)
 #else
@@ -169,7 +172,7 @@ bool ts::TSFile::openRead(const UString& filename, uint64_t start_offset, Report
     _rewindable = true;
     _flags = READ;
 
-    return openInternal(report);
+    return openInternal(false, report);
 }
 
 
@@ -189,9 +192,9 @@ bool ts::TSFile::openRead(const UString& filename, size_t repeat_count, uint64_t
     _counter = 0;
     _start_offset = start_offset;
     _rewindable = false;
-    _flags = READ;
+    _flags = READ | REOPEN_SPEC;
 
-    return openInternal(report);
+    return openInternal(false, report);
 }
 
 
@@ -226,7 +229,7 @@ bool ts::TSFile::open(const UString& filename, OpenFlags flags, Report& report)
     _rewindable = true;
     _flags = flags;
 
-    return openInternal(report);
+    return openInternal(false, report);
 }
 
 
@@ -234,7 +237,7 @@ bool ts::TSFile::open(const UString& filename, OpenFlags flags, Report& report)
 // Internal open
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::openInternal(Report& report)
+bool ts::TSFile::openInternal(bool reopen, Report& report)
 {
     const bool read_access = (_flags & READ) != 0;
     const bool write_access = (_flags & WRITE) != 0;
@@ -243,6 +246,17 @@ bool ts::TSFile::openInternal(Report& report)
     const bool keep_file = (_flags & KEEP) != 0;
     const bool temporary = (_flags & TEMPORARY) != 0;
 
+    // Only named files can be reopened.
+    if (reopen) {
+        if (_filename.empty()) {
+            report.log(_severity, u"internal error, cannot reopen standard input or output");
+            return false;
+        }
+        else {
+            report.debug(u"closing and reopening %s", {_filename});
+        }
+    }
+
 #if defined(TS_WINDOWS)
 
     // Windows implementation
@@ -250,6 +264,12 @@ bool ts::TSFile::openInternal(Report& report)
     const ::DWORD attrib = temporary ? (FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE) : FILE_ATTRIBUTE_NORMAL;
     const ::DWORD shared = read_only || (_flags & SHARE) != 0 ? FILE_SHARE_READ : 0;
     ::DWORD winflags = 0;
+
+    // Close first if this is a reopen.
+    if (reopen) {
+        ::CloseHandle(_handle);
+        _handle = INVALID_HANDLE_VALUE;
+    }
 
     if (read_only) {
         winflags = OPEN_EXISTING;
@@ -283,9 +303,11 @@ bool ts::TSFile::openInternal(Report& report)
         }
     }
 
-    // If a repeat count or initial offset is specified, the input file must be a regular file
-    if ((_repeat != 1 || _start_offset != 0) && ::GetFileType(_handle) != FILE_TYPE_DISK) {
-        report.log(_severity, u"file %s is not a regular file, cannot %s", {getDisplayFileName(), _repeat != 1 ? u"repeat" : u"specify start offset"});
+    // Check if this is a regular file.
+    _regular = ::GetFileType(_handle) == FILE_TYPE_DISK;
+
+    // Check if seek is required or possible.
+    if (!seekCheck(report)) {
         if (!_filename.empty()) {
             ::CloseHandle(_handle);
         }
@@ -311,6 +333,12 @@ bool ts::TSFile::openInternal(Report& report)
     // UNIX implementation
     int uflags = O_LARGEFILE;
     const mode_t mode = 0666; // -rw-rw-rw (minus umask)
+
+    // Close first if this is a reopen.
+    if (reopen) {
+        ::close(_fd);
+        _fd = -1;
+    }
 
     if (read_only) {
         uflags |= O_RDONLY;
@@ -353,24 +381,24 @@ bool ts::TSFile::openInternal(Report& report)
         }
     }
 
-    // If a repeat count or initial offset is specified, the input file must be a regular file
-    if (_repeat != 1 || _start_offset != 0) {
-        struct stat st;
-        if (::fstat(_fd, &st) < 0) {
-            const ErrorCode err = LastErrorCode();
-            report.log(_severity, u"cannot stat input file %s: %s", {getDisplayFileName(), ErrorCodeMessage(err)});
-            if (!_filename.empty()) {
-                ::close(_fd);
-            }
-            return false;
+    // Check if this is a regular file.
+    struct stat st;
+    if (::fstat(_fd, &st) < 0) {
+        const ErrorCode err = LastErrorCode();
+        report.log(_severity, u"cannot stat input file %s: %s", {getDisplayFileName(), ErrorCodeMessage(err)});
+        if (!_filename.empty()) {
+            ::close(_fd);
         }
-        if (!S_ISREG(st.st_mode)) {
-            report.log(_severity, u"input file %s is not a regular file, cannot %s", {getDisplayFileName(), _repeat != 1 ? u"repeat" : u"specify start offset"});
-            if (!_filename.empty()) {
-                ::close(_fd);
-            }
-            return false;
+        return false;
+    }
+    _regular = S_ISREG(st.st_mode);
+
+    // Check if seek is required or possible.
+    if (!seekCheck(report)) {
+        if (!_filename.empty()) {
+            ::close(_fd);
         }
+        return false;
     }
 
     // If an initial offset is specified, move here
@@ -385,10 +413,39 @@ bool ts::TSFile::openInternal(Report& report)
 
 #endif
 
-    _total_read = _total_write = 0;
+    // Reset counters only if not a reopen.
+    if (!reopen) {
+        _total_read = _total_write = 0;
+    }
+
     _at_eof = _aborted = false;
     _is_open = true;
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Internal seek check. Return true when seeking is not required or possible.
+// Return false if seeking is required but not possible.
+//----------------------------------------------------------------------------
+
+bool ts::TSFile::seekCheck(Report& report)
+{
+    if (_regular || (_repeat == 1 && _start_offset == 0)) {
+        // Regular disk files can always be seeked.
+        // Or no need to seek if the file is read only once, from the beginning.
+        return true;
+    }
+    else if (_start_offset == 0 && !_filename.empty() && (_flags & (REOPEN | REOPEN_SPEC)) != 0) {
+        // Force reopen at each rewind on non-regular named files when read from the beginning.
+        _flags |= REOPEN;
+        return true;
+    }
+    else {
+        // We need to seek but we can't.
+        report.log(_severity, u"input file %s is not a regular file, cannot %s", {getDisplayFileName(), _repeat != 1 ? u"repeat" : u"specify start offset"});
+        return false;
+    }
 }
 
 
@@ -398,6 +455,13 @@ bool ts::TSFile::openInternal(Report& report)
 
 bool ts::TSFile::seekInternal(uint64_t index, Report& report)
 {
+    // If seeking at the beginning and REOPEN is set, close and reopen the file.
+    if (index == 0 && (_flags & REOPEN) != 0) {
+        return openInternal(true, report);
+    }
+
+    report.debug(u"seeking %s at offset %'d", {_filename, _start_offset + index});
+
 #if defined(TS_WINDOWS)
     // In Win32, LARGE_INTEGER is a 64-bit structure, not an integer type
     uint64_t where = _start_offset + index;
@@ -531,7 +595,7 @@ size_t ts::TSFile::read(TSPacket* buffer, size_t max_packets, Report& report)
         // At end of file, if the file must be repeated a finite number of times,
         // check if this was the last time. If the file must be repeated again,
         // rewind to original start offset.
-        if (_at_eof && (_repeat == 0 || ++_counter < _repeat) && !seekInternal (0, report)) {
+        if (_at_eof && (_repeat == 0 || ++_counter < _repeat) && !seekInternal(0, report)) {
             return 0; // rewind error
         }
     }
