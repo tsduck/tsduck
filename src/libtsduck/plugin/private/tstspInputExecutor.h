@@ -84,6 +84,9 @@ namespace ts {
             //!
             InputPlugin* plugin() {return _input;}
 
+            // Overridden methods.
+            virtual void setAbort() override;
+
         private:
             InputPlugin* _input;                  // Plugin API
             bool         _in_sync_lost;           // Input synchronization lost (no 0x47 at start of packet)

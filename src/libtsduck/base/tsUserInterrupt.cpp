@@ -203,7 +203,7 @@ void ts::UserInterrupt::activate()
 #if defined(TS_WINDOWS)
 
     // Install the console interrupt handler
-    if (SetConsoleCtrlHandler(sysHandler, TRUE) == 0) {
+    if (::SetConsoleCtrlHandler(sysHandler, TRUE) == 0) {
         // Failure
         const ErrorCode err = LastErrorCode();
         std::cerr << "* Error establishing console interrupt handler: " << ErrorCodeMessage(err) << std::endl;
@@ -279,7 +279,10 @@ void ts::UserInterrupt::deactivate()
 #if defined(TS_WINDOWS)
 
     // Remove the console interrupt handler
-    SetConsoleCtrlHandler(sysHandler, FALSE);
+    ::SetConsoleCtrlHandler(sysHandler, FALSE);
+
+    // Restore normal processing of Ctrl-C
+    ::SetConsoleCtrlHandler(NULL, FALSE);
 
 #elif defined(TS_UNIX)
 

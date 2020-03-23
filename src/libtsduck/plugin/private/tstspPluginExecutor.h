@@ -104,7 +104,7 @@ namespace ts {
             //!
             //! This method sets the current packet processor in an abort state.
             //!
-            void setAbort();
+            virtual void setAbort();
 
             //!
             //! Check if the plugin a real time one.
