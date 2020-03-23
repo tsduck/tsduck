@@ -80,8 +80,9 @@ bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer, PacketMetadata
     // Pre-declare buffer for input plugin.
     initBuffer(buffer, metadata, 0, buffer->count(), false, false, 0);
 
-    // Pre-load half of the buffer with packets from the input device.
-    const size_t pkt_read = receiveAndStuff(0, buffer->count() / 2);
+    // Pre-load half of the buffer (the default) with packets from the input device.
+    const size_t init_packets = _options.init_input_pkt == 0 ? buffer->count() / 2 : std::min(_options.init_input_pkt, buffer->count());
+    const size_t pkt_read = receiveAndStuff(0, init_packets);
 
     if (pkt_read == 0) {
         return false; // receive error
@@ -152,13 +153,29 @@ ts::BitRate ts::tsp::InputExecutor::getBitrate()
 
 
 //----------------------------------------------------------------------------
+// This method sets the current processor in an abort state.
+//----------------------------------------------------------------------------
+
+void ts::tsp::InputExecutor::setAbort()
+{
+    // Call the superclass to place the executor in an abort state.
+    PluginExecutor::setAbort();
+
+    // Abort current input operation if still blocked.
+    if (_input != nullptr) {
+        _input->abortInput();
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Implementation of WatchDogHandlerInterface
 //----------------------------------------------------------------------------
 
 void ts::tsp::InputExecutor::handleWatchDogTimeout(WatchDog& watchdog)
 {
     debug(u"receive timeout, aborting");
-    if (!_input->abortInput()) {
+    if (_input != nullptr && !_input->abortInput()) {
         warning(u"failed to abort input on receive timeout, maybe not supported by this plugin");
     }
 }
