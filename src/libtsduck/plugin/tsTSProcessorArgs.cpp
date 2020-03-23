@@ -57,6 +57,7 @@ ts::TSProcessorArgs::TSProcessorArgs() :
     ts_buffer_size(DEFAULT_BUFFER_SIZE),
     max_flush_pkt(0),
     max_input_pkt(0),
+    init_input_pkt(0),
     instuff_nullpkt(0),
     instuff_inpkt(0),
     instuff_start(0),
@@ -165,6 +166,13 @@ void ts::TSProcessorArgs::defineArgs(Args& args) const
               u"--ignore-joint-termination disables the termination of tsp when all "
               u"plugins have reached their joint termination condition.");
 
+    args.option(u"initial-input-packets", 0, Args::POSITIVE);
+    args.help(u"initial-input-packets",
+              u"Specify the number of packets to initially read in the buffer before starting the processing. "
+              u"The initial load is used to evaluate the bitrate so that all subsequent plugins can have "
+              u"a valid bitrate value from the beginning. "
+              u"The default initial load is half the size of the global buffer.");
+
     args.option(u"receive-timeout", 0, Args::POSITIVE);
     args.help(u"receive-timeout", u"milliseconds",
               u"Specify a timeout in milliseconds for all input operations. "
@@ -217,6 +225,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     bitrate_adj = MilliSecPerSec * args.intValue(u"bitrate-adjust-interval", DEF_BITRATE_INTERVAL);
     max_flush_pkt = args.intValue<size_t>(u"max-flushed-packets", 0);
     max_input_pkt = args.intValue<size_t>(u"max-input-packets", 0);
+    init_input_pkt = args.intValue<size_t>(u"initial-input-packets", 0);
     instuff_start = args.intValue<size_t>(u"add-start-stuffing", 0);
     instuff_stop = args.intValue<size_t>(u"add-stop-stuffing", 0);
     ignore_jt = args.present(u"ignore-joint-termination");

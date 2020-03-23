@@ -2,6 +2,14 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.21-1697
+
+[IMP] Improvements on existing commands and plugins:
+
+  * Added option --initial-input-packets to "tsp".
+
+-------------------------------------------------------------------------------
+
 VERSION 3.20-1686
 
 [NEW] New commands and plugins:
