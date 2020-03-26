@@ -28,7 +28,11 @@
 //----------------------------------------------------------------------------
 
 #include "tsFileOutputPlugin.h"
+#include "tsNullReport.h"
+#include "tsSysUtils.h"
 TSDUCK_SOURCE;
+
+#define DEF_RETRY_INTERVAL 2000 // milliseconds
 
 
 //----------------------------------------------------------------------------
@@ -39,6 +43,9 @@ ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Write packets to a file", u"[options] [file-name]"),
     _name(),
     _flags(TSFile::NONE),
+    _reopen(false),
+    _retry_interval(DEF_RETRY_INTERVAL),
+    _retry_max(0),
     _file()
 {
     option(u"", 0, STRING, 0, 1);
@@ -49,6 +56,24 @@ ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
 
     option(u"keep", 'k');
     help(u"keep", u"Keep existing file (abort if the specified file already exists). By default, existing files are overwritten.");
+
+    option(u"reopen-on-error", 'r');
+    help(u"reopen-on-error",
+         u"In case of write error, close the file and try to reopen it several times. "
+         u"After a write error, attempt to reopen or recreate the file immediately. "
+         u"Then, in case of open error, periodically retry to open the file. "
+         u"See also options --retry-interval and --max-retry.");
+
+    option(u"retry-interval", 0, POSITIVE);
+    help(u"retry-interval", u"milliseconds",
+         u"With --reopen-on-error, specify the number of milliseconds to wait before "
+         u"attempting to reopen the file after a failure. The default is " +
+         UString::Decimal(DEF_RETRY_INTERVAL) + u" milliseconds.");
+
+    option(u"max-retry", 0, UINT32);
+    help(u"max-retry",
+         u"With --reopen-on-error, specify the maximum number of times the file is reopened on error. "
+         u"By default, the file is indefinitely reopened.");
 }
 
 
@@ -66,12 +91,16 @@ bool ts::FileOutputPlugin::getOptions()
     if (present(u"keep")) {
         _flags |= TSFile::KEEP;
     }
+    _reopen = present(u"reopen-on-error");
+    _retry_max = intValue<size_t>(u"max-retry", 0);
+    _retry_interval = intValue<MilliSecond>(u"retry-interval", DEF_RETRY_INTERVAL);
     return true;
 }
 
 bool ts::FileOutputPlugin::start()
 {
-    return _file.open(_name, _flags, *tsp);
+    size_t retry_allowed = _retry_max == 0 ? std::numeric_limits<size_t>::max() : _retry_max;
+    return openAndRetry(false, retry_allowed);
 }
 
 bool ts::FileOutputPlugin::stop()
@@ -81,5 +110,74 @@ bool ts::FileOutputPlugin::stop()
 
 bool ts::FileOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count)
 {
-    return _file.write(buffer, packet_count, *tsp);
+    // Total number of retries.
+    size_t retry_allowed = _retry_max == 0 ? std::numeric_limits<size_t>::max() : _retry_max;
+    bool done_once = false;
+
+    for (;;) {
+
+        // Write some packets.
+        const PacketCounter where = _file.getWriteCount();
+        const bool success = _file.write(buffer, packet_count, *tsp);
+
+        // In case of success or no retry, return now.
+        if (success || !_reopen || tsp->aborting()) {
+            return success;
+        }
+
+        // Update counters of actually written packets.
+        const PacketCounter written = std::min<PacketCounter>(_file.getWriteCount() - where, packet_count);
+        buffer += written;
+        packet_count -= written;
+
+        // Close the file and try to reopen it a number of times.
+        _file.close(NULLREP);
+
+        // Reopen multiple times. Wait before open only when we already waited and reopened.
+        if (!openAndRetry(done_once, retry_allowed)) {
+            return false;
+        }
+        done_once = true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Open the file, retry on error if necessary.
+//----------------------------------------------------------------------------
+
+bool ts::FileOutputPlugin::openAndRetry(bool initial_wait, size_t& retry_allowed)
+{
+    bool done_once = false;
+
+    // Loop on all retry attempts.
+    for (;;) {
+
+        // Wait before next open when required.
+        if (initial_wait || done_once) {
+            SleepThread(_retry_interval);
+        }
+
+        // Try to open the file.
+        tsp->debug(u"opening output file %s", {_name});
+        const bool success = _file.open(_name, _flags, *tsp);
+
+        // Update remaining open count.
+        if (retry_allowed > 0) {
+            retry_allowed--;
+        }
+
+        // In case of success or no retry, return now.
+        if (success || !_reopen || tsp->aborting()) {
+            return success;
+        }
+
+        // Check if we can try again.
+        if (retry_allowed == 0) {
+            tsp->error(u"reached max number of output retries, aborting");
+            return false;
+        }
+
+        done_once = true;
+    }
 }

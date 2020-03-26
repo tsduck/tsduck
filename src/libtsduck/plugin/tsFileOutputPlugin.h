@@ -60,6 +60,13 @@ namespace ts {
     private:
         UString           _name;
         TSFile::OpenFlags _flags;
+        bool              _reopen;
+        MilliSecond       _retry_interval;
+        size_t            _retry_max;
         TSFile            _file;
+
+        // Open the file, retry on error if necessary.
+        // Use max number of retries. Updated with remaining number of retries.
+        bool openAndRetry(bool initial_wait, size_t& retry_allowed);
     };
 }
