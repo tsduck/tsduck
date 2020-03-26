@@ -126,7 +126,7 @@ bool ts::FileOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
         }
 
         // Update counters of actually written packets.
-        const PacketCounter written = std::min<PacketCounter>(_file.getWriteCount() - where, packet_count);
+        const size_t written = std::min(size_t(_file.getWriteCount() - where), packet_count);
         buffer += written;
         packet_count -= written;
 
