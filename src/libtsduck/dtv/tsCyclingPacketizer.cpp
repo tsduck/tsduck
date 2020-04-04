@@ -37,11 +37,11 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Constructors and destructors
 //----------------------------------------------------------------------------
 
-ts::CyclingPacketizer::CyclingPacketizer(PID pid, StuffingPolicy stuffing, BitRate bitrate) :
-    Packetizer(pid, this),
+ts::CyclingPacketizer::CyclingPacketizer(PID pid, StuffingPolicy stuffing, BitRate bitrate, Report* report) :
+    Packetizer(pid, this, report),
     _stuffing(stuffing),
     _bitrate(bitrate),
     _section_count(0),
@@ -54,12 +54,16 @@ ts::CyclingPacketizer::CyclingPacketizer(PID pid, StuffingPolicy stuffing, BitRa
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
-
 ts::CyclingPacketizer::~CyclingPacketizer()
+{
+}
+
+ts::CyclingPacketizer::SectionDesc::SectionDesc(const SectionPtr& sec, MilliSecond rep) :
+    section(sec),
+    repetition(rep),
+    last_packet(0),
+    due_packet(0),
+    last_cycle(0)
 {
 }
 
@@ -101,15 +105,60 @@ void ts::CyclingPacketizer::addTable(DuckContext& duck, const AbstractTable& tab
 
 
 //----------------------------------------------------------------------------
-// Insert a scheduled section in the list, sorted by due_packet, after other
-// sections with the same due_packet.
+// Check if this section shall be inserted after some other one.
+//----------------------------------------------------------------------------
+
+bool ts::CyclingPacketizer::SectionDesc::insertAfter(const SectionDesc& other) const
+{
+    // Insert sections according due time when due times are different.
+    if (due_packet != other.due_packet) {
+        return due_packet > other.due_packet;
+    }
+
+    // At this point, the two sections have the same due time.
+    // Decide insertion order based on the sections contents.
+    const Section& sec1(*section);
+    const Section& sec2(*(other.section));
+
+    if (sec1.tableId() != sec2.tableId() || (sec1.isLongSection() && sec1.tableIdExtension() != sec2.tableIdExtension())) {
+        // Sections do not belong to the same table => insert before
+        return false;
+    }
+    else if (last_cycle > other.last_cycle) {
+        // This section in one cycle in advance => insert after
+        return true;
+    }
+    else if (last_cycle < other.last_cycle) {
+        // This section in one cycle late => insert before
+        return false;
+    }
+    else if (sec1.isShortSection() || sec2.isShortSection() || sec1.tableIdExtension() != sec2.tableIdExtension()) {
+        // Both sections have the same due packet and in the same cycle. They also have the same table id.
+        // Either they are short equivalent sections or do not have the same table id ext => insert after.
+        return true;
+    }
+    else {
+        // Same due packet, same cycle, same long table => insert in order of section number.
+        return sec1.sectionNumber() >= sec2.sectionNumber();
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Insert a scheduled section in the list, sorted by due_packet.
 //----------------------------------------------------------------------------
 
 void ts::CyclingPacketizer::addScheduledSection(const SectionDescPtr& sect)
 {
-    const PacketCounter due_packet = sect->due_packet;
-    SectionDescList::iterator it;
-    for (it = _sched_sections.begin(); it != _sched_sections.end() && (*it)->due_packet < due_packet; ++it) {}
+    report().log(2, u"schedule section: PID 0x%X, TID 0x%X, TIDext 0x%X, section %d/%d, cycle: %'d, packet: %'d, due packet: %'d",
+                 {getPID(), sect->section->tableId(), sect->section->tableIdExtension(),
+                  sect->section->sectionNumber(), sect->section->lastSectionNumber(),
+                  sect->last_cycle, sect->last_packet, sect->due_packet});
+
+    auto it = _sched_sections.begin();
+    while (it != _sched_sections.end() && sect->insertAfter(**it)) {
+        ++it;
+    }
     _sched_sections.insert(it, sect);
 }
 

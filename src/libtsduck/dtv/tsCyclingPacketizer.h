@@ -93,8 +93,9 @@ namespace ts {
         //! @param [in] policy TS packet stuffing policy at end of packet.
         //! @param [in] bitrate Output bitrate, zero if undefined.
         //! Useful only when using specific repetition rates for sections
+        //! @param [in] report Optional address of a Report object for debug and trace messages.
         //!
-        CyclingPacketizer(PID pid = PID_NULL, StuffingPolicy policy = AT_END, BitRate bitrate = 0);
+        CyclingPacketizer(PID pid = PID_NULL, StuffingPolicy policy = AT_END, BitRate bitrate = 0, Report* report = nullptr);
 
         //!
         //! Destructor
@@ -224,10 +225,10 @@ namespace ts {
             SectionCounter last_cycle;  // Cycle index of last time the section was sent
 
             // Constructor
-            SectionDesc(const SectionPtr& sec, MilliSecond rep) :
-                section(sec), repetition(rep), last_packet(0), due_packet(0), last_cycle(0)
-            {
-            }
+            SectionDesc(const SectionPtr& sec, MilliSecond rep);
+
+            // Check if this section shall be inserted after some other one.
+            bool insertAfter(const SectionDesc& other) const;
 
             // Display the internal state, mainly for debug.
             std::ostream& display(std::ostream&) const;
@@ -252,8 +253,7 @@ namespace ts {
 
         static const SectionCounter UNDEFINED = ~SectionCounter(0);
 
-        // Insert a scheduled section in the list, sorted by due_packet,
-        // after other sections with the same due_packet.
+        // Insert a scheduled section in the list, sorted by due_packet.
         void addScheduledSection(const SectionDescPtr&);
 
         // Remove all sections with the specified tid/tid_ext in the specified list.
