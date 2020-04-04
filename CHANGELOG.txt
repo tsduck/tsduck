@@ -10,6 +10,12 @@ VERSION 3.21-1701
   * Added options --reopen-on-error, --max-retry and --retry-interval to
     output plugin "file".
 
+[BUG] Bug fixes:
+
+  * Fixed issue #515: In some cases, when multi-section long tables were
+    injected, after some time, sections were not always inserted in the
+    increasing order of section numbers.
+
 -------------------------------------------------------------------------------
 
 VERSION 3.20-1686

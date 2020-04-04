@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPacketizer.h"
+#include "tsNullReport.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
@@ -40,8 +41,9 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::Packetizer::Packetizer(PID pid, SectionProviderInterface* provider) :
+ts::Packetizer::Packetizer(PID pid, SectionProviderInterface* provider, Report* report) :
     _provider(provider),
+    _report(report == nullptr ? NULLREP : *report),
     _pid(pid),
     _continuity(0),
     _section(nullptr),

@@ -2,8 +2,6 @@
 TSDuck - List of features to be implemented or fixed
 ====================================================
 
-* Issue #515: Fix scheduling of sections in some pathological cases.
-
 * Issue #324: Fix tsswitch --delayed-switch --receive-timeout.
 
 * Improve packet distribution in plugin "merge". Evaluate average stuffing

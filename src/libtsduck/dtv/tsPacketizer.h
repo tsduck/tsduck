@@ -36,6 +36,7 @@
 #include "tsMPEG.h"
 #include "tsTSPacket.h"
 #include "tsSectionProviderInterface.h"
+#include "tsReport.h"
 
 namespace ts {
     //!
@@ -52,8 +53,9 @@ namespace ts {
         //! Default constructor.
         //! @param [in] pid PID for generated TS packets.
         //! @param [in] provider An object which will be called each time a section is required.
+        //! @param [in] report Optional address of a Report object for debug and trace messages.
         //!
-        Packetizer(PID pid = PID_NULL, SectionProviderInterface* provider = nullptr);
+        Packetizer(PID pid = PID_NULL, SectionProviderInterface* provider = nullptr, Report* report = nullptr);
 
         //!
         //! Destructor
@@ -155,6 +157,15 @@ namespace ts {
         }
 
         //!
+        //! Get a reference to the debugging report.
+        //! @return A reference to the debugging report.
+        //!
+        Report& report() const
+        {
+            return _report;
+        }
+
+        //!
         //! Reset the content of a packetizer.
         //! The packetizer becomes empty.
         //! If the last returned packet contained an unfinished section, this section will be lost.
@@ -170,7 +181,8 @@ namespace ts {
 
     private:
         SectionProviderInterface* _provider;
-        PID            _pid;
+        Report&        _report;            // Report object for debug.
+        PID            _pid;               // PID for injected sections.
         uint8_t        _continuity;        // Continuity counter for next packet
         SectionPtr     _section;           // Current section to insert
         size_t         _next_byte;         // Next byte to insert in current section
