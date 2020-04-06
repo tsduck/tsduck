@@ -562,6 +562,10 @@ ts::SocketErrorCode ts::UDPSocket::receiveOne(void* data, size_t max_size, size_
         return LastSocketErrorCode();
     }
 
+    // Because of invalid definition of CMSG_NXTHDR in musl libc (Alpine Linux)
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(zero-as-null-pointer-constant)
+
     // Browse returned ancillary data.
     for (::cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr); cmsg != nullptr; cmsg = CMSG_NXTHDR(&hdr, cmsg)) {
         if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::in_pktinfo)) {
@@ -569,6 +573,8 @@ ts::SocketErrorCode ts::UDPSocket::receiveOne(void* data, size_t max_size, size_
             destination = SocketAddress(info->ipi_addr, _local_address.port());
         }
     }
+
+    TS_POP_WARNING()
 
 #endif // Windows vs. UNIX
 
