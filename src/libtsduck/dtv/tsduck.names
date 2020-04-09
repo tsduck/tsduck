@@ -103,6 +103,7 @@ Bits = 8
 0xD4 = DCCSCT (ATSC)
 0xD8 = Cable Emergency Alert (ATSC)
 0xFC = SCTE 35 Splice Information
+0xFE = AMT (ISDB)
 0xFF = Forbidden TID 0xFF
 # CAS-specific values, most significant byte is a CAS family.
 0x0180 = MediaGuard ECM (even)
@@ -388,6 +389,7 @@ Bits = 8
 0x37 = Transport Profile
 0x38 = HEVC Video
 0x3F = MPEG-2 Extension
+0xFF = Forbidden Descriptor Id 0xFF
 # DVB-defined:
 0x40 = Network Name
 0x41 = Service List
@@ -478,7 +480,6 @@ Bits = 8
 0xB3 = Mesh Logon initialize (ETSI EN 301 790)
 0xB5 = Implementation type (ETSI EN 301 790)
 0xB6 = LL FEC identifier (ETSI EN 301 790)
-0xFF = Forbidden Descriptor Id 0xFF
 # Valid in a UNT (0x4B, Update Notification Table, ETSI TS 102 006):
 0x4BFFFFFFFF01 = UNT Scheduling
 0x4BFFFFFFFF02 = UNT Update
@@ -706,6 +707,10 @@ Bits = 8
 0x49534442DE = ISDB Content Availability
 0x49534442DF = ISDB Extension
 0x49534442E0 = ISDB Service Group
+0x49534442F3 = ISDB Wired Multi-Carrier Transmission Distribution System
+0x49534442F4 = ISDB Advanced Wired Distribution System
+0x49534442F5 = ISDB Scramble Method
+0x49534442F6 = ISDB Access Control
 0x49534442F7 = ISDB Carousel Compatible Composite
 0x49534442F8 = ISDB Conditional Playback
 0x49534442F9 = ISDB Cable TS Division System
@@ -767,8 +772,8 @@ Bits = 16
 0x0001 = IPDC SPP Open Security Framework Generic Roaming
 0x0002 = 18Crypt
 0x0004 = OMA DRM Content Format
-0x0005 = OMA BCAST 1.0 (U)SIM Smartcard Profile using 3GPP GBA_U
-0x0006 = OMA BCAST 1.0 (U)SIM Smartcard Profile using 3GPP GBA_ME
+0x0005 = OMA BCAST / 3GPP GBA_U
+0x0006 = OMA BCAST / 3GPP GBA_ME
 0x0007 = Open IPTV Forum
 0x0008 = Open Mobile Alliance
 0x0100-0x01FF = Canal Plus
@@ -917,6 +922,25 @@ Bits = 16
 0x7BE0-0x7BE1 = OOO
 0xAA00 = Best CAS
 0xAA01 = BestCAS
+
+[ARIBCASystemId]
+# CA_system_id for Japanese ISDB systems
+Bits = 16
+0x0001 = SKY Perfect Communications
+0x0003 = Hitachi
+0x0004 = Secure Navi
+0x0005 = ARIB CAS
+0x0006 = Matsushita CATV
+0x0007 = Cable Labs
+0x0008 = u-CAS
+0x0009 = PowerKEY
+0x000A = ARIB CAS B
+0x000B = PIsys CAS
+0x000C = MULTI2-Nagra
+0x000D = Marlin
+0x000E = ARIB Content Protection
+0x000F = ConPas
+0x0010 = MULTI2-Nagra (Merlin)
 
 [CPSystemId]
 Bits = 16
@@ -3675,3 +3699,9 @@ Bits = 4
 3-7  = reserved for future use
 8-14 = private use
 15   = reserved
+
+[ISDBCATransmissionType]
+# In ISDB access_control_descriptor
+Bits = 3
+0-6 = Undefined
+7   = Broadcast route

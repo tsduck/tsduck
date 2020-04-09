@@ -2,13 +2,14 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.21-1701
+VERSION 3.21-1707
 
 [IMP] Improvements on existing commands and plugins:
 
   * Added option --initial-input-packets to "tsp".
   * Added options --reopen-on-error, --max-retry and --retry-interval to
     output plugin "file".
+  * Partial ISDB signalization, as defined in ARIB STD-B10, is now supported.
 
 [BUG] Bug fixes:
 

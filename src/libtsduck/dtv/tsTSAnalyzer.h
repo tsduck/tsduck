@@ -378,6 +378,18 @@ namespace ts {
             //! @return The PID description.
             //!
             UString fullDescription(bool include_attributes) const;
+
+        private:
+            // Description of a few known PID's
+            struct KnownPID
+            {
+                const UChar* name;
+                bool optional;
+                bool sections;
+            };
+            typedef std::map<PID, KnownPID> KnownPIDMap;
+            static KnownPIDMap::value_type KPID(PID, const UChar* name, bool optional = true, bool sections = true);
+            static const KnownPIDMap KNOWN_PIDS;
         };
 
         //!

@@ -130,7 +130,7 @@ void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
     while (size >= 2) {
         uint16_t cas_id = GetUInt16(data);
         data += 2; size -= 2;
-        strm << margin << "CA System Id: " << names::CASId(cas_id, names::FIRST) << std::endl;
+        strm << margin << "CA System Id: " << names::CASId(display.duck(), cas_id, names::FIRST) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);

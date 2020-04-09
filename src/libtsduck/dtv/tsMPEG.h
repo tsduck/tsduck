@@ -332,12 +332,18 @@ namespace ts {
         // Valid in ISDB context:
 
         PID_DCT        = 0x0017, //!< PID for ISDB Download Control Table
+        PID_LIT        = 0x0020, //!< PID for ISDB Local Event Information Table
+        PID_ERT        = 0x0021, //!< PID for ISDB Event Relation Table
         PID_PCAT       = 0x0022, //!< PID for ISDB Partial Content Announcement Table
         PID_SDTT       = 0x0023, //!< PID for ISDB Software Download Trigger Table
         PID_BIT        = 0x0024, //!< PID for ISDB Broadcaster Information Table
         PID_NBIT       = 0x0025, //!< PID for ISDB Network Board Information Table
         PID_LDT        = 0x0025, //!< PID for ISDB Linked Description Table
+        PID_ISDB_EIT_2 = 0x0026, //!< Additional PID for ISDB Event Information Table
+        PID_ISDB_EIT_3 = 0x0027, //!< Additional PID for ISDB Event Information Table
+        PID_SDTT_TER   = 0x0028, //!< PID for ISDB Software Download Trigger Table (terrestrial)
         PID_CDT        = 0x0029, //!< PID for ISDB Common Data Table
+        PID_AMT        = 0x002E, //!< PID for ISDB Address Map Table
 
         // Valid in all MPEG contexts:
 
@@ -943,6 +949,7 @@ namespace ts {
         TID_LIT           = 0xD0, //!< Table id for Local Event Information Table (ISDB)
         TID_ERT           = 0xD1, //!< Table id for Event Relation Table (ISDB)
         TID_ITT           = 0xD2, //!< Table id for Index Transmission Table (ISDB)
+        TID_AMT           = 0xFE, //!< Table id for Address Map Table (ISDB)
     };
 
     constexpr size_t TID_MAX = 0x100; //!< Maximum number of TID values.
@@ -1319,6 +1326,54 @@ namespace ts {
 
         DID_LOGICAL_CHANNEL_SKY = 0xB1, //!< DID for BskyB logical_channel_number_by_region_descriptor
         DID_SERVICE_SKY         = 0xB2, //!< DID for BskyB service_descriptor
+
+        // Valid in ISDB context:
+
+        DID_ISDB_HIERARCH_TRANS = 0xC0, //!< DID for ISDB Hierarchical transmission descriptor
+        DID_ISDB_COPY_CONTROL   = 0xC1, //!< DID for ISDB Digital copy control descriptor
+        DID_ISDB_NETWORK_ID     = 0xC2, //!< DID for ISDB Network identification descriptor
+        DID_ISDB_PART_TS_TIME   = 0xC3, //!< DID for ISDB Partial Transport Stream time descriptor
+        DID_ISDB_AUDIO_COMP     = 0xC4, //!< DID for ISDB Audio component descriptor
+        DID_ISDB_HYPERLINK      = 0xC5, //!< DID for ISDB Hyperlink descriptor
+        DID_ISDB_TARGET_REGION  = 0xC6, //!< DID for ISDB Target region descriptor
+        DID_ISDB_DATA_CONTENT   = 0xC7, //!< DID for ISDB Data content descriptor
+        DID_ISDB_VIDEO_CONTROL  = 0xC8, //!< DID for ISDB Video decode control descriptor
+        DID_ISDB_DOWNLOAD_CONT  = 0xC9, //!< DID for ISDB Download content descriptor
+        DID_ISDB_CA_EMM_TS      = 0xCA, //!< DID for ISDB CA_EMM_TS descriptor
+        DID_ISDB_CA_CONTRACT    = 0xCB, //!< DID for ISDB CA contract information descriptor
+        DID_ISDB_CA_SERVICE     = 0xCC, //!< DID for ISDB CA service descriptor
+        DID_ISDB_TS_INFO        = 0xCD, //!< DID for ISDB TS information descriptor
+        DID_ISDB_EXT_BROADCAST  = 0xCE, //!< DID for ISDB Extended broadcaster descriptor
+        DID_ISDB_LOGO_TRANSM    = 0xCF, //!< DID for ISDB Logo transmission descriptor
+        DID_ISDB_BASIC_LOCAL_EV = 0xD0, //!< DID for ISDB Basic local event descriptor
+        DID_ISDB_REFERENCE      = 0xD1, //!< DID for ISDB Reference descriptor
+        DID_ISDB_NODE_RELATION  = 0xD2, //!< DID for ISDB Node relation descriptor
+        DID_ISDB_SHROT_NODE_INF = 0xD3, //!< DID for ISDB Short node information descriptor
+        DID_ISDB_STC_REF        = 0xD4, //!< DID for ISDB STC reference descriptor
+        DID_ISDB_SERIES         = 0xD5, //!< DID for ISDB Series descriptor
+        DID_ISDB_EVENT8GROUP    = 0xD6, //!< DID for ISDB Event group descriptor
+        DID_ISDB_SI_PARAM       = 0xD7, //!< DID for ISDB SI parameter descriptor
+        DID_ISDB_BROADCAST_NAME = 0xD8, //!< DID for ISDB Broadcaster name descriptor
+        DID_ISDB_COMP_GROUP     = 0xD9, //!< DID for ISDB Component group descriptor
+        DID_ISDB_SI_PRIME_TS    = 0xDA, //!< DID for ISDB SI prime TS descriptor
+        DID_ISDB_BOARD_INFO     = 0xDB, //!< DID for ISDB Board information descriptor
+        DID_ISDB_LDT_LINKAGE    = 0xDC, //!< DID for ISDB LDT linkage descriptor
+        DID_ISDB_CONNECT_TRANSM = 0xDD, //!< DID for ISDB Connected transmission descriptor
+        DID_ISDB_CONTENT_AVAIL  = 0xDE, //!< DID for ISDB Content availability descriptor
+        DID_ISDB_EXTENSION      = 0xDF, //!< DID for ISDB extension descriptor
+        DID_ISDB_SERVICE_GROUP  = 0xE0, //!< DID for ISDB Service group descriptor
+        DID_ISDB_WMCTDS         = 0xF3, //!< DID for ISDB Wired multi-carrier transmission distribution system descriptor
+        DID_ISDB_ADV_WDS        = 0xF4, //!< DID for ISDB Advanced wired distribution system descriptor
+        DID_ISDB_SCRAMBLE_METH  = 0xF5, //!< DID for ISDB Scramble method descriptor
+        DID_ISDB_CA             = 0xF6, //!< DID for ISDB Access control descriptor
+        DID_ISDB_CAROUSEL_COMP  = 0xF7, //!< DID for ISDB Carousel compatible composite descriptor
+        DID_ISDB_CNOD_PLAYBACK  = 0xF8, //!< DID for ISDB Conditional playback descriptor
+        DID_ISDB_CABLE_TS_DIV   = 0xF9, //!< DID for ISDB Cable TS division system descriptor
+        DID_ISDB_TERRES_DELIV   = 0xFA, //!< DID for ISDB Terrestrial delivery system descriptor
+        DID_ISDB_PARTIAL_RECP   = 0xFB, //!< DID for ISDB Partial reception descriptor
+        DID_ISDB_EMERGENCY_INFO = 0xFC, //!< DID for ISDB Emergency information descriptor
+        DID_ISDB_DATA_COMP      = 0xFD, //!< DID for ISDB Data component descriptor
+        DID_ISDB_SYSTEM_MGMT    = 0xFE, //!< DID for ISDB System management descriptor
     };
 
     //---------------------------------------------------------------------

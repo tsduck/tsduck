@@ -112,9 +112,10 @@ ts::UString ts::names::CASFamily(ts::CASFamily cas)
     return NamesMain::Instance()->nameFromSection(u"CASFamily", Names::Value(cas), NAME | DECIMAL);
 }
 
-ts::UString ts::names::CASId(uint16_t id, Flags flags)
+ts::UString ts::names::CASId(const DuckContext& duck, uint16_t id, Flags flags)
 {
-    return NamesMain::Instance()->nameFromSection(u"CASystemId", Names::Value(id), flags, 16);
+    const UChar* section = (duck.standards() & STD_ISDB) != 0 ? u"ARIBCASystemId" : u"CASystemId";
+    return NamesMain::Instance()->nameFromSection(section, Names::Value(id), flags, 16);
 }
 
 ts::UString ts::names::BouquetId(uint16_t id, Flags flags)

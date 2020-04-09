@@ -36,6 +36,7 @@
 #pragma once
 #include "tsUString.h"
 #include "tsCASFamily.h"
+#include "tsDuckContext.h"
 #include "tsMPEG.h"
 #include "tsReport.h"
 #include "tsSingletonManager.h"
@@ -195,11 +196,12 @@ namespace ts {
 
         //!
         //! Name of Conditional Access System Id (in CA Descriptor).
+        //! @param [in] duck TSDuck execution context (used to select from other standards).
         //! @param [in] casid Conditional Access System Id (in CA Descriptor).
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString CASId(uint16_t casid, Flags flags = NAME);
+        TSDUCKDLL UString CASId(const DuckContext& duck, uint16_t casid, Flags flags = NAME);
 
         //!
         //! Name of Conditional Access Families.

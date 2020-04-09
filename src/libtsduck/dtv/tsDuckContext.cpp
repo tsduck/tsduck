@@ -165,7 +165,7 @@ ts::PDS ts::DuckContext::actualPDS(PDS pds) const
         return PDS_ATSC;
     }
     else if ((_accStandards & STD_ISDB) != 0) {
-        // Same principle fir ISDB.
+        // Same principle for ISDB.
         return PDS_ISDB;
     }
     else {
@@ -446,6 +446,9 @@ bool ts::DuckContext::loadArgs(Args& args)
     if (_definedCmdOptions & CMD_STANDARDS) {
         if (args.present(u"atsc")) {
             _cmdStandards |= STD_ATSC;
+        }
+        if (args.present(u"isdb")) {
+            _cmdStandards |= STD_ISDB;
         }
     }
 

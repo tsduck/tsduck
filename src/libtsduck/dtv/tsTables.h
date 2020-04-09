@@ -153,6 +153,7 @@
 #include "tsIPMACPlatformProviderNameDescriptor.h"
 #include "tsIPMACStreamLocationDescriptor.h"
 #include "tsIPSignallingDescriptor.h"
+#include "tsISDBAccessControlDescriptor.h"
 #include "tsISO639LanguageDescriptor.h"
 #include "tsISPAccessModeDescriptor.h"
 #include "tsJ2KVideoDescriptor.h"
