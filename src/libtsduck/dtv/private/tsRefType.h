@@ -119,6 +119,7 @@
     REF_TYPE(IPMACPlatformProviderNameDescriptor);
     REF_TYPE(IPMACStreamLocationDescriptor);
     REF_TYPE(IPSignallingDescriptor);
+    REF_TYPE(ISDBAccessControlDescriptor);
     REF_TYPE(ISO639LanguageDescriptor);
     REF_TYPE(ISPAccessModeDescriptor);
     REF_TYPE(J2KVideoDescriptor);

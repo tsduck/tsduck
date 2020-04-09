@@ -205,8 +205,9 @@ void NamesTest::testCASFamily()
 
 void NamesTest::testCASId()
 {
-    TSUNIT_EQUAL(u"Viaccess", ts::names::CASId(0x500));
-    TSUNIT_EQUAL(u"Irdeto", ts::names::CASId(0x601));
+    ts::DuckContext duck;
+    TSUNIT_EQUAL(u"Viaccess", ts::names::CASId(duck, 0x500));
+    TSUNIT_EQUAL(u"Irdeto", ts::names::CASId(duck, 0x601));
 }
 
 void NamesTest::testBouquetId()

@@ -270,6 +270,7 @@
 #include "tsIPSignallingDescriptor.h"
 #include "tsIPUtils.h"
 #include "tsIPv6Address.h"
+#include "tsISDBAccessControlDescriptor.h"
 #include "tsISO639LanguageDescriptor.h"
 #include "tsISPAccessModeDescriptor.h"
 #include "tsJ2KVideoDescriptor.h"

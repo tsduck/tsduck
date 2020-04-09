@@ -191,6 +191,45 @@ void ts::TSAnalyzer::resetSectionDemux()
 
 
 //----------------------------------------------------------------------------
+// Description of a few known PID's
+//----------------------------------------------------------------------------
+
+ts::TSAnalyzer::PIDContext::KnownPIDMap::value_type ts::TSAnalyzer::PIDContext::KPID(PID pid, const UChar* name, bool optional, bool sections)
+{
+    return std::pair<PID,KnownPID>(pid, {name, optional, sections});
+}
+
+const ts::TSAnalyzer::PIDContext::KnownPIDMap ts::TSAnalyzer::PIDContext::KNOWN_PIDS({
+    KPID(PID_NULL, u"Stuffing", true, false),
+    KPID(PID_PAT, u"PAT", false),
+    KPID(PID_CAT, u"CAT"),
+    KPID(PID_TSDT, u"TSDT"),
+    KPID(PID_NIT, u"NIT"),
+    KPID(PID_SDT, u"SDT/BAT"),
+    KPID(PID_EIT, u"EIT"),
+    KPID(PID_ISDB_EIT_2, u"ISDB EIT"),
+    KPID(PID_ISDB_EIT_3, u"ISDB EIT"),
+    KPID(PID_RST, u"RST"),
+    KPID(PID_TDT, u"TDT/TOT"),
+    KPID(PID_NETSYNC, u"Network Synchronization", true, false),
+    KPID(PID_RNT, u"RNT (TV-Anytime)", true, false),
+    KPID(PID_INBSIGN, u"Inband Signalling", true, false),
+    KPID(PID_MEASURE, u"Measurement", true, false),
+    KPID(PID_DIT, u"DIT"),
+    KPID(PID_SIT, u"SIT"),
+    KPID(PID_PSIP, u"ATSC PSIP"),
+    KPID(PID_DCT, u"ISDB DCT"),
+    KPID(PID_PCAT, u"ISDB PCAT"),
+    KPID(PID_SDTT, u"ISDB SDTT"),
+    KPID(PID_SDTT_TER, u"ISDB SDTT"),
+    KPID(PID_BIT, u"BIT"),
+    KPID(PID_NBIT, u"ISDB NBIT/LDT"),
+    KPID(PID_CDT, u"ISDB CDT"),
+    KPID(PID_AMT, u"ISDB AMT"),
+});
+
+
+//----------------------------------------------------------------------------
 // Constructor for the PID context
 //----------------------------------------------------------------------------
 
@@ -251,133 +290,12 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     // should never be considered as orphan PID's. Optional PID's are known
     // PID's which should not appear in the report if no packet are found.
 
-    switch (pid) {
-        case PID_NULL:
-            description = u"Stuffing";
-            referenced = true;
-            optional = true;
-            break;
-        case PID_PAT:
-            description = u"PAT";
-            referenced = true;
-            carry_section = true;
-            break;
-        case PID_CAT:
-            description = u"CAT";
-            referenced = true;
-            optional = true;
-            carry_section = true;
-            break;
-        case PID_TSDT:
-            description = u"TSDT";
-            referenced = true;
-            optional = true;
-            carry_section = true;
-            break;
-        case PID_NIT:
-            description = u"DVB-NIT";
-            referenced = true;
-            optional = true;
-            carry_section = true;
-            break;
-        case PID_SDT:
-            description = u"SDT/BAT";
-            referenced = true;
-            optional = true;
-            carry_section = true;
-            break;
-        case PID_EIT:
-            description = u"EIT";
-            referenced = true;
-            optional = true;
-            carry_section = true;
-            break;
-        case PID_RST:
-            description = u"RST";
-            referenced = true;
-            optional = true;
-            carry_section = true;
-            break;
-        case PID_TDT:
-            description = u"TDT/TOT";
-            referenced = true;
-            optional = true;
-            carry_section = true;
-            break;
-        case PID_NETSYNC:
-            description = u"Network Synchronization";
-            referenced = true;
-            optional = true;
-            break;
-        case PID_RNT:
-            description = u"RNT (TV-Anytime)";
-            referenced = true;
-            optional = true;
-            break;
-        case PID_INBSIGN:
-            description = u"Inband Signalling";
-            referenced = true;
-            optional = true;
-            break;
-        case PID_MEASURE:
-            description = u"Measurement";
-            referenced = true;
-            optional = true;
-            break;
-        case PID_DIT:
-            description = u"DIT";
-            referenced = true;
-            optional = true;
-            break;
-        case PID_SIT:
-            description = u"SIT";
-            referenced = true;
-            optional = true;
-            break;
-        case PID_PSIP:
-            description = u"ATSC PSIP";
-            referenced = true;
-            optional = true;
-            carry_section = true;
-            break;
-        case PID_DCT:
-            description = u"ISDB DCT";
-            referenced = true;
-            optional = true;
-            carry_section = true;
-            break;
-        case PID_PCAT:
-            description = u"ISDB PCAT";
-            referenced = true;
-            optional = true;
-            carry_section = true;
-            break;
-        case PID_SDTT:
-            description = u"ISDB SDTT";
-            referenced = true;
-            optional = true;
-            carry_section = true;
-            break;
-        case PID_BIT:
-            description = u"ISDB BIT";
-            referenced = true;
-            optional = true;
-            carry_section = true;
-            break;
-        case PID_NBIT:
-            description = u"ISDB NBIT/LDT";
-            referenced = true;
-            optional = true;
-            carry_section = true;
-            break;
-        case PID_CDT:
-            description = u"ISDB CDT";
-            referenced = true;
-            optional = true;
-            carry_section = true;
-            break;
-        default:
-            break;
+    const auto it = KNOWN_PIDS.find(pid);
+    if (it != KNOWN_PIDS.end()) {
+        description = it->second.name;
+        referenced = true;
+        optional = it->second.optional;
+        carry_section = it->second.sections;
     }
 }
 
@@ -714,7 +632,7 @@ void ts::TSAnalyzer::analyzePAT(const PAT& pat)
 
 void ts::TSAnalyzer::analyzeCAT(const CAT& cat)
 {
-    // Analyze the CA descritors to find EMM PIDs
+    // Analyze the CA descriptors to find EMM PIDs
     analyzeDescriptors(cat.descs);
 }
 
@@ -953,7 +871,36 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
 
         switch (descs[di]->tag()) {
             case DID_CA: {
+                // MPEG standard CA descriptor.
                 analyzeCADescriptor(*descs[di], svp, ps);
+                break;
+            }
+            case DID_ISDB_CA: {
+                // ISDB specific CA descriptor.
+                if (size >= 4) {
+                    // Get the ECM or EMM PID. For some reason, it is sometimes the NULL PID.
+                    // More details for ISDB ARIB STB-B10 are required (Japanese version only for now).
+                    const PID pid = GetUInt16(data + 2) & 0x1FFF;
+                    if (pid != PID_NULL) {
+                        const uint16_t casid = GetUInt16(data);
+                        const PIDContextPtr eps(getPID(pid));
+                        eps->referenced = true;
+                        eps->carry_section = true;
+                        _demux.addPID(pid);
+
+                        if (svp == nullptr) {
+                            // No service, this is an EMM PID
+                            eps->carry_emm = true;
+                            eps->description = names::CASId(_duck, casid) + u" EMM (ISDB)";
+                        }
+                        else {
+                            // Found an ECM PID for the service
+                            eps->carry_ecm = true;
+                            eps->addService(svp->service_id);
+                            eps->description = names::CASId(_duck, casid) + u" ECM (ISDB)";
+                        }
+                    }
+                }
                 break;
             }
             case DID_LANGUAGE: {
@@ -1161,6 +1108,11 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
     const PID ca_pid = GetUInt16(data + 2) & 0x1FFF;
     data += 4; size -= 4;
 
+    // On ISDB streams, we sometimes see the NULL PID as CA PID.
+    if (ca_pid == PID_NULL) {
+        return;
+    }
+
     // Process CA descriptor private data
     if (cas == CAS_MEDIAGUARD && svp != nullptr && size >= 13) {
 
@@ -1304,13 +1256,13 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         if (svp == nullptr) {
             // No service, this is an EMM PID
             eps->carry_emm = true;
-            eps->description = names::CASId(ca_sysid) + u" EMM";
+            eps->description = names::CASId(_duck, ca_sysid) + u" EMM";
         }
         else {
             // Found an ECM PID for the service
             eps->carry_ecm = true;
             eps->addService(svp->service_id);
-            eps->description = names::CASId(ca_sysid) + u" ECM";
+            eps->description = names::CASId(_duck, ca_sysid) + u" ECM";
         }
     }
 }
