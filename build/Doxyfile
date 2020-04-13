@@ -54,7 +54,7 @@ EXCLUDE          = ../src/libtsduck/dtv/private \
                    ../src/libtsduck/plugin/private
 INCLUDE_PATH     = ../src/libtsduck \
                    ../src/libtsduck/base \
-                   ../src/libtsduck/base/dvbcharset \
+                   ../src/libtsduck/base/charset \
                    ../src/libtsduck/base/json \
                    ../src/libtsduck/base/linux \
                    ../src/libtsduck/base/mac \

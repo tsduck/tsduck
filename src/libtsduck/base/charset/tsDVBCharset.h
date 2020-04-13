@@ -33,8 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsCharset.h"
 #include "tsException.h"
-#include "tsUString.h"
 
 namespace ts {
     //!
@@ -42,7 +42,7 @@ namespace ts {
     //! @see ETSI EN 300 468, Annex A.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL DVBCharset
+    class TSDUCKDLL DVBCharset: public Charset
     {
         TS_NOBUILD_NOCOPY(DVBCharset);
     public:
@@ -87,12 +87,6 @@ namespace ts {
         static bool GetCharCodeTable(uint32_t& code, size_t& codeSize, const uint8_t* dvb, size_t dvbSize);
 
         //!
-        //! Get the character set name.
-        //! @return The name.
-        //!
-        UString name() const {return _name;}
-
-        //!
         //! Get the DVB table code for the character set.
         //! @return DVB table code.
         //!
@@ -119,25 +113,6 @@ namespace ts {
         static UStringList GetAllNames();
 
         //!
-        //! Decode a DVB string from the specified byte buffer.
-        //!
-        //! @param [out] str Returned decoded string.
-        //! @param [in] dvb Address of a DVB string.
-        //! @param [in] dvbSize Size in bytes of the DVB string.
-        //! @return True on success, false on error (truncated, unsupported format, etc.)
-        //!
-        virtual bool decode(UString& str, const uint8_t* dvb, size_t dvbSize) const = 0;
-
-        //!
-        //! Check if a string can be encoded using the charset (ie all characters can be represented).
-        //! @param [in] str The string to encode.
-        //! @param [in] start Starting offset in @a str.
-        //! @param [in] count Maximum number of characters to encode.
-        //! @return True if all characters can be encoded.
-        //!
-        virtual bool canEncode(const UString& str, size_t start = 0, size_t count = NPOS) const = 0;
-
-        //!
         //! Encode the character set table code.
         //!
         //! Stop either when the specified number of characters are serialized or
@@ -149,35 +124,6 @@ namespace ts {
         //! @return The number of serialized byte.
         //!
         virtual size_t encodeTableCode(uint8_t*& buffer, size_t& size) const;
-
-        //!
-        //! Encode a C++ Unicode string into a DVB string.
-        //!
-        //! Unmappable characters are skipped. Stop either when
-        //! the specified number of characters are serialized or
-        //! when the buffer is full, whichever comes first.
-        //!
-        //! @param [in,out] buffer Address of the buffer.
-        //! The address is updated to point after the encoded value.
-        //! @param [in,out] size Size of the buffer. Updated to remaining size.
-        //! @param [in] str The string to encode.
-        //! @param [in] start Starting offset in @a str.
-        //! @param [in] count Maximum number of characters to encode.
-        //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
-        //!
-        virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const = 0;
-
-        //!
-        //! Encode a C++ Unicode string into a DVB string as a ByteBlock.
-        //!
-        //! Unmappable characters are skipped.
-        //!
-        //! @param [in] str The string to encode.
-        //! @param [in] start Starting offset in @a str.
-        //! @param [in] count Maximum number of characters to encode.
-        //! @return A ByteBlock containing the encoded string.
-        //!
-        ByteBlock encoded(const UString& str, size_t start = 0, size_t count = NPOS) const;
 
         //!
         //! Virtual destructor.
@@ -199,7 +145,6 @@ namespace ts {
         static void Unregister(const DVBCharset* charset);
 
     private:
-        UString  _name;  //!< Character set name.
         uint32_t _code;  //!< Table code.
     };
 }

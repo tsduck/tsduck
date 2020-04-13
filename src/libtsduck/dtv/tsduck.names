@@ -1523,8 +1523,9 @@ Bits = 8
 35 = tl_switching_point
 
 [ServiceType]
-# In Service Descriptor
+# In service descriptor (DVB)
 Bits = 8
+0x00 = Undefined
 0x01 = Digital television service
 0x02 = Digital radio sound service
 0x03 = Teletext service
@@ -1552,6 +1553,23 @@ Bits = 8
 0x1D = H.264/AVC frame compatible plano-stereoscopic HD NVOD time-shifted
 0x1E = H.264/AVC frame compatible plano-stereoscopic HD NVOD reference service
 0x1F = HEVC digital television service
+# Additional values from ARIB STD-B10 (Japan ISDB):
+0xA1 = Special video service
+0xA2 = Special audio service
+0xA3 = Special data service
+0xA4 = Engineering service
+0xA5 = Promotion video service
+0xA6 = Promotion audio service
+0xA7 = Promotion data service
+0xA8 = Data service for accumulation in advance
+0xA9 = Data service exclusive for accumulation
+0xAA = Book mark list service
+0xAB = Server-type simultaneous service
+0xAC = Independent file service
+0xAD = Ultra-high-definition 4K TV service
+0xC0 = Data service
+0xC1 = Storage type service using TLV
+0xC2 = Multimedia services
 
 [LinkageType]
 # In linkage_descriptor

@@ -26,22 +26,46 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsCharset.h"
+#include "tsByteBlock.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor / destructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 21
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1708
+ts::Charset::Charset(const UString& name) :
+    _name(name)
+{
+}
+
+ts::Charset::~Charset()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Encode a C++ Unicode string into a DVB string as a ByteBlock.
+//----------------------------------------------------------------------------
+
+ts::ByteBlock ts::Charset::encoded(const UString& str, size_t start, size_t count) const
+{
+    const size_t length = str.length();
+    start = std::min(start, length);
+
+    // Assume maximum number of bytes per character is 6 (max 4 in UTF-8 for instance).
+    // Use 6 in case there are charset changes in the middle (eg. Japanese ARIB STD-B24)
+    ByteBlock bb(6 * std::min(length - start, count));
+
+    // Convert the string.
+    uint8_t* buffer = bb.data();
+    size_t size = bb.size();
+    encode(buffer, size, str, start, count);
+
+    // Truncate unused bytes.
+    assert(size <= bb.size());
+    bb.resize(bb.size() - size);
+    return bb;
+}
