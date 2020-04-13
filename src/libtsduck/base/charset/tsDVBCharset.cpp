@@ -159,27 +159,6 @@ size_t ts::DVBCharset::encodeTableCode(uint8_t*& buffer, size_t& size) const
 
 
 //----------------------------------------------------------------------------
-// Encode a C++ Unicode string into a DVB string as a ByteBlock.
-//----------------------------------------------------------------------------
-
-ts::ByteBlock ts::DVBCharset::encoded(const UString& str, size_t start, size_t count) const
-{
-    // The maximum number of DVB bytes per character is 4 (worst case in UTF-8).
-    ByteBlock bb(UString::UTF8_CHAR_MAX_SIZE * std::min(str.length() - start, count));
-
-    // Convert the string.
-    uint8_t* buffer = bb.data();
-    size_t size = bb.size();
-    encode(buffer, size, str, start, count);
-
-    // Truncate unused bytes.
-    assert(size <= bb.size());
-    bb.resize(bb.size() - size);
-    return bb;
-}
-
-
-//----------------------------------------------------------------------------
 // Repository of character sets.
 //----------------------------------------------------------------------------
 
@@ -189,7 +168,7 @@ namespace {
         TS_DECLARE_SINGLETON(CharSetRepo);
     public:
         std::map<ts::UString, ts::DVBCharset*> byName;
-        std::map<uint32_t,   ts::DVBCharset*> byCode;
+        std::map<uint32_t, ts::DVBCharset*> byCode;
     };
     TS_DEFINE_SINGLETON(CharSetRepo);
     CharSetRepo::CharSetRepo() : byName(), byCode() {}
@@ -233,20 +212,20 @@ void ts::DVBCharset::Unregister(const DVBCharset* charset)
 //----------------------------------------------------------------------------
 
 ts::DVBCharset::DVBCharset(const UString& name, uint32_t tableCode) :
-    _name(name),
+    Charset(name),
     _code(tableCode)
 {
     // Register the character set.
     CharSetRepo* repo = CharSetRepo::Instance();
-    const std::map<UString, DVBCharset*>::const_iterator itName = repo->byName.find(_name);
+    const std::map<UString, DVBCharset*>::const_iterator itName = repo->byName.find(name);
     const std::map<uint32_t, DVBCharset*>::const_iterator itCode = repo->byCode.find(_code);
     if (itName == repo->byName.end() && itCode == repo->byCode.end()) {
         // Charset not yet registered.
-        repo->byName.insert(std::make_pair(_name, this));
+        repo->byName.insert(std::make_pair(name, this));
         repo->byCode.insert(std::make_pair(_code, this));
     }
     else {
-        throw DuplicateDVBCharset(_name);
+        throw DuplicateDVBCharset(name);
     }
 }
 

@@ -302,10 +302,11 @@ namespace ts {
         PID_PAT        = 0x0000, //!< PID for Program Association Table PAT
         PID_CAT        = 0x0001, //!< PID for Conditional Access Table
         PID_TSDT       = 0x0002, //!< PID for Transport Stream Description Table
-        PID_MPEG_LAST  = 0x000F, //!< Last reserved PID for MPEG.
+        PID_MPEG_LAST  = 0x000F, //!< Last reserved PID for MPEG
 
         // Valid in DVB context:
 
+        PID_DVB_FIRST  = 0x0010, //!< First reserved PID for DVB
         PID_NIT        = 0x0010, //!< PID for Network Information Table
         PID_SDT        = 0x0011, //!< PID for Service Description Table
         PID_BAT        = 0x0011, //!< PID for Bouquet Association Table
@@ -319,19 +320,12 @@ namespace ts {
         PID_MEASURE    = 0x001D, //!< PID for Measurement
         PID_DIT        = 0x001E, //!< PID for Discontinuity Information Table
         PID_SIT        = 0x001F, //!< PID for Selection Information Table
-        PID_DVB_LAST   = 0x001F, //!< Last reserved PID for DVB.
-
-        // Valid in ATSC context:
-
-        PID_ATSC_FIRST = 0x1FF0, //!< First reserved PID for ATSC.
-        PID_ATSC_PAT_E = 0x1FF7, //!< PID for ATSC PAT-E
-        PID_PSIP_TS_E  = 0x1FF9, //!< PID for ATSC Program and System Information Protocol in TS-E
-        PID_PSIP       = 0x1FFB, //!< PID for ATSC Program and System Information Protocol (contains most ATSC tables)
-        PID_ATSC_LAST  = 0x1FFE, //!< Last reserved PID for ATSC.
+        PID_DVB_LAST   = 0x001F, //!< Last reserved PID for DVB
 
         // Valid in ISDB context:
 
         PID_DCT        = 0x0017, //!< PID for ISDB Download Control Table
+        PID_ISDB_FIRST = 0x0020, //!< First reserved PID for ISDB
         PID_LIT        = 0x0020, //!< PID for ISDB Local Event Information Table
         PID_ERT        = 0x0021, //!< PID for ISDB Event Relation Table
         PID_PCAT       = 0x0022, //!< PID for ISDB Partial Content Announcement Table
@@ -344,6 +338,15 @@ namespace ts {
         PID_SDTT_TER   = 0x0028, //!< PID for ISDB Software Download Trigger Table (terrestrial)
         PID_CDT        = 0x0029, //!< PID for ISDB Common Data Table
         PID_AMT        = 0x002E, //!< PID for ISDB Address Map Table
+        PID_ISDB_LAST  = 0x002F, //!< Last reserved PID for ISDB
+
+        // Valid in ATSC context:
+
+        PID_ATSC_FIRST = 0x1FF0, //!< First reserved PID for ATSC.
+        PID_ATSC_PAT_E = 0x1FF7, //!< PID for ATSC PAT-E
+        PID_PSIP_TS_E  = 0x1FF9, //!< PID for ATSC Program and System Information Protocol in TS-E
+        PID_PSIP       = 0x1FFB, //!< PID for ATSC Program and System Information Protocol (contains most ATSC tables)
+        PID_ATSC_LAST  = 0x1FFE, //!< Last reserved PID for ATSC.
 
         // Valid in all MPEG contexts:
 

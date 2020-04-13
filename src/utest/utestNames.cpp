@@ -299,7 +299,7 @@ void NamesTest::testAVCProfile()
 void NamesTest::testServiceType()
 {
     TSUNIT_EQUAL(u"Data broadcast service", ts::names::ServiceType(0x0C));
-    TSUNIT_EQUAL(u"unknown (0x00)", ts::names::ServiceType(0));
+    TSUNIT_EQUAL(u"unknown (0x80)", ts::names::ServiceType(128));
 }
 
 void NamesTest::testScramblingControl()
