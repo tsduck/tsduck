@@ -81,18 +81,22 @@ namespace ts {
         int             _max_splice;         // Maximum splice_countdown value (<-128: no filter)
         PacketCounter   _after_packets;      // Number of initial packets to skip
         PacketCounter   _every_packets;      // Filter 1 out of this number of packets
-        PIDSet          _pid;                // PID values to filter
+        PIDSet          _explicit_pid;       // Explicit PID values to filter
         ByteBlock       _pattern;            // Byte pattern to search.
         bool            _search_payload;     // Search pattern in payload only.
         bool            _use_search_offset;  // Search at specified offset only.
         size_t          _search_offset;      // Offset where to search.
         PacketRangeList _ranges;             // Ranges of packets to filter.
-        PacketCounter   _filtered_packets;   // Number of filtered packets
+        std::set<uint8_t>          _stream_ids;        // PES stream ids to filter
         TSPacketMetadata::LabelSet _labels;            // Select packets with any of these labels
         TSPacketMetadata::LabelSet _set_labels;        // Labels to set on filtered packets
         TSPacketMetadata::LabelSet _reset_labels;      // Labels to reset on filtered packets
         TSPacketMetadata::LabelSet _set_perm_labels;   // Labels to set on all packets after getting one packet
         TSPacketMetadata::LabelSet _reset_perm_labels; // Labels to reset on all packets after getting one packet
+
+        // Working data:
+        PacketCounter   _filtered_packets;   // Number of filtered packets
+        PIDSet          _stream_id_pid;      // PID values selected from stream ids.
     };
 }
 
@@ -127,18 +131,20 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     _max_splice(0),
     _after_packets(0),
     _every_packets(0),
-    _pid(),
+    _explicit_pid(),
     _pattern(),
     _search_payload(false),
     _use_search_offset(false),
     _search_offset(0),
     _ranges(),
-    _filtered_packets(0),
+    _stream_ids(),
     _labels(),
     _set_labels(),
     _reset_labels(),
     _set_perm_labels(),
-    _reset_perm_labels()
+    _reset_perm_labels(),
+    _filtered_packets(0),
+    _stream_id_pid()
 {
     option(u"adaptation-field");
     help(u"adaptation-field", u"Select packets with an adaptation field.");
@@ -252,6 +258,13 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Select packets with the specified scrambling control value. Valid "
          u"values are 0 (clear), 1 (reserved), 2 (even key), 3 (odd key).");
 
+    option(u"stream-id", 0, UINT8, 0, UNLIMITED_COUNT);
+    help(u"stream-id", u"id1[-id2]",
+         u"Select PES PID's with any of the specified stream ids. "
+         u"A PID starts to be selected when a specified stream id appears. "
+         u"Such a PID is no longer selected when non-specified stream id is found. "
+         u"Several --stream-id options may be specified.");
+
     option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
     help(u"set-label", u"label1[-label2]",
          u"Set the specified labels on the selected packets. "
@@ -333,7 +346,8 @@ bool ts::FilterPlugin::getOptions()
     getIntValue(_max_splice, u"max-splice-countdown", INT_MIN);
     getIntValue(_after_packets, u"after-packets");
     getIntValue(_every_packets, u"every");
-    getIntValues(_pid, u"pid");
+    getIntValues(_explicit_pid, u"pid");
+    getIntValues(_stream_ids, u"stream-id");
     getIntValues(_labels, u"label");
     getIntValues(_set_labels, u"set-label");
     getIntValues(_reset_labels, u"reset-label");
@@ -401,6 +415,7 @@ bool ts::FilterPlugin::getOptions()
 bool ts::FilterPlugin::start()
 {
     _filtered_packets = 0;
+    _stream_id_pid.reset();
     return true;
 }
 
@@ -422,14 +437,25 @@ bool ts::FilterPlugin::stop()
 
 ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
+    const PID pid = pkt.getPID();
+
     // Pass initial packets without filtering.
     const PacketCounter packetIndex = tsp->pluginPackets();
     if (packetIndex < _after_packets) {
         return TSP_OK;
     }
 
+    // Check stream ids of PES packets. The stream id is in the fourth byte of
+    // the payload of a TS packet containing the start of a PES packet.
+    if (!_stream_ids.empty() && pkt.startPES() && pkt.getPayloadSize() >= 4) {
+        const uint8_t id = pkt.getPayload()[3];
+        const bool selected = _stream_ids.find(id) != _stream_ids.end();
+        _stream_id_pid.set(pid, selected);
+    }
+
     // Check if the packet matches one of the selected criteria.
-    bool ok = _pid[pkt.getPID()] ||
+    bool ok = _explicit_pid[pid] ||
+        _stream_id_pid[pid] ||
         (_with_payload && pkt.hasPayload()) ||
         (_with_af && pkt.hasAF()) ||
         (_unit_start && pkt.getPUSI()) ||
