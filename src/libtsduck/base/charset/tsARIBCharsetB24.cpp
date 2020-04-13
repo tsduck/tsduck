@@ -27,18 +27,6 @@
 //
 //----------------------------------------------------------------------------
 //
-// Initial state
-// -------------
-// ARIB STD-B24, part 3, chapter 8
-//
-//   Designation:  G0 Kanji system set (2 bytes) JIS X 0213:2004 8-bit code vs Unicode mapping table
-//                 G1 Alphanumeric set (1 byte)
-//                 G2 Hiragana set (1 byte)
-//                 G3 Macro code set
-//
-//   Invocation:   LS0  (G0 => GL)
-//                 LS2R (G2 => GR)
-//
 //
 // Invocation of code elements
 // ---------------------------
@@ -151,6 +139,11 @@ ts::ARIBCharsetB24::ARIBCharsetB24() :
 
 bool ts::ARIBCharsetB24::decode(UString& str, const uint8_t* data, size_t size) const
 {
+    // Try to minimize reallocation.
+    str.clear();
+    str.reserve(size);
+
+    // Perform decoding.
     Decoder dec(str, data, size);
     return dec.success();
 }
@@ -160,28 +153,50 @@ bool ts::ARIBCharsetB24::decode(UString& str, const uint8_t* data, size_t size) 
 // An internal decoder class. Using ARIB STD-B24 notation.
 //----------------------------------------------------------------------------
 
-ts::ARIBCharsetB24::Decoder::Decoder(UString& str, const uint8_t* data0, size_t size0) :
+ts::ARIBCharsetB24::Decoder::Decoder(UString& str, const uint8_t* data, size_t size) :
     _success(true),
     _str(str),
-    _data(data0),
-    _size(size0),
-    _G0(&KANJI_MAP),
-    _G1(&ALPHANUMERIC_MAP),
-    _G2(&HIRAGANA_MAP),
+    _data(data),
+    _size(size),
+    _G0(&KANJI_ADDITIONAL_MAP),  // The initial state for G0-G3 and GL-GR is unclear.
+    _G1(&ALPHANUMERIC_MAP),      // No clear specification found in STD-B24.
+    _G2(&HIRAGANA_MAP),          // This state is based on other implementations and experimentation.
     _G3(&KATAKANA_MAP),
     _GL(_G0),
     _GR(_G2),
     _lockedGL(_GL)
+{
+    decodeAll();
+}
+
+ts::ARIBCharsetB24::Decoder::Decoder(const Decoder& other, const uint8_t* data, size_t size) :
+    _success(true),
+    _str(other._str),
+    _data(data),
+    _size(size),
+    _G0(other._G0),
+    _G1(other._G1),
+    _G2(other._G2),
+    _G3(other._G3),
+    _GL(other._GL),
+    _GR(other._GR),
+    _lockedGL(_GL)
+{
+    decodeAll();
+}
+
+
+//----------------------------------------------------------------------------
+// Check if next character matches c. If yes, update data and size.
+//----------------------------------------------------------------------------
+
+void ts::ARIBCharsetB24::Decoder::decodeAll()
 {
     // Filter out invalid parameters.
     if (_data == nullptr) {
         _success = false;
         return;
     }
-
-    // Try to minimize reallocation.
-    _str.clear();
-    _str.reserve(_size);
 
     // Loop in input byte sequences.
     while (_size > 0) {
@@ -256,36 +271,32 @@ bool ts::ARIBCharsetB24::Decoder::decodeOneChar(const CharMap* gset)
     }
 
     // Get first and optional second byte, transform them as index in slice.
-    size_t b1 = (*_data++ & 0x7F);
-    _size--;
-    size_t b2 = 0;
+    size_t b1 = GL_FIRST;
     if (gset->byte2) {
-        // Need a second byte.
+        // Need a row index in first byte.
+        b1 = (*_data++ & 0x7F);
+        _size--;
         if (_size == 0) {
             return false; // truncated data
         }
-        b2 = (*_data++ & 0x7F);
-        _size--;
-        if (b2 < GL_FIRST || b2 > GL_LAST) {
-            return false; // out of range
-        }
-        b2 -= GL_FIRST;
     }
-    if (b1 < GL_FIRST || b1 > GL_LAST) {
+    // Get second byte, index in the row.
+    size_t b2 = (*_data++ & 0x7F);
+    _size--;
+    // Check byte values.
+    if (b1 < GL_FIRST || b1 > GL_LAST || b2 < GL_FIRST || b2 > GL_LAST) {
         return false; // out of range
     }
     b1 -= GL_FIRST;
+    b2 -= GL_FIRST;
 
     // Get the 32-bit code point from the map.
     char32_t cp = 0;
-    if (gset->slices != nullptr && gset->slice_count > 0) {
-        if (!gset->byte2) {
-            // 1-byte character.
-            cp = gset->slices[0][b1];
-        }
-        else if (b1 < gset->slice_count) {
-            // 2-byte character.
-            cp = gset->slices[b1][b2];
+    for (size_t i = 0; i < MAX_ROWS; ++i) {
+        const CharRows& rows(gset->rows[i]);
+        if (b1 >= rows.first && b1 < rows.first + rows.count && rows.rows != nullptr) {
+            cp = rows.rows[b1 - rows.first][b2];
+            break;
         }
     }
 
@@ -417,9 +428,11 @@ const ts::ARIBCharsetB24::CharMap* ts::ARIBCharsetB24::Decoder::finalToCharMap(u
     if (gset_not_drcs) {
         switch (f) {
             case 0x42: // Kanji, 2-byte code
+            case 0x3B: // Additional symbols, 2-byte code
+                return &KANJI_ADDITIONAL_MAP;
             case 0x39: // JIS comp. Kanji Plane 1, 2-byte code (is this the right map here?)
             case 0x3A: // JIS comp. Kanji Plane 2, 2-byte code (is this the right map here?)
-                return &KANJI_MAP;
+                return &KANJI_STANDARD_MAP;
             case 0x4A: // Alphanumeric, 1-byte code
             case 0x36: // Proportional alphanumeric, 1-byte code
                 return &ALPHANUMERIC_MAP;
@@ -435,11 +448,10 @@ const ts::ARIBCharsetB24::CharMap* ts::ARIBCharsetB24::Decoder::finalToCharMap(u
             case 0x33: // Mosaic B, 1-byte code
             case 0x34: // Mosaic C, 1-byte code, non-spacing
             case 0x35: // Mosaic D, 1-byte code, non-spacing
+                // No unicode points defined for STD-B24 mosaic characters.
                 return &UNSUPPORTED_1BYTE;
-            case 0x3B: // Additional symbols, 2-byte code
-                return &UNSUPPORTED_2BYTE;
-            default:
-                return &UNSUPPORTED_1BYTE; // Invalid F, assume 1-byte character set
+            default: // Invalid F, assume 1-byte character set
+                return &UNSUPPORTED_1BYTE;
         }
     }
     else {
@@ -463,8 +475,8 @@ const ts::ARIBCharsetB24::CharMap* ts::ARIBCharsetB24::Decoder::finalToCharMap(u
             case 0x4F: // DRCS-15, 1-byte code
             case 0x70: // Macro, 1-byte code
                 return &UNSUPPORTED_1BYTE;
-            default:
-                return &UNSUPPORTED_1BYTE; // Invalid F, assume 1-byte character set
+            default: // Invalid F, assume 1-byte character set
+                return &UNSUPPORTED_1BYTE;
         }
     }
 }

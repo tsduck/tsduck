@@ -62,18 +62,6 @@ namespace ts {
         virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const override;
 
     private:
-        // Characters are grouped in set of 94 characters which are mapped in
-        // ranges 0x21-0x7E (GL) or 0xA1-0xFE (GR). We store unicode code points
-        // as 32-bit values because a small portion of the mapped character
-        // sets used 17 bits. When stored in UString, they will use
-        // surrogate pairs.
-
-        static constexpr uint8_t GL_FIRST = 0x21;
-        static constexpr uint8_t GL_LAST  = 0x7E;
-        static constexpr uint8_t GR_FIRST = 0xA1;
-        static constexpr uint8_t GR_LAST  = 0xFE;
-        static constexpr size_t  CHAR_SLICE_SIZE = 94;
-
         // A few control codes.
         static constexpr uint8_t ESC = 0x1B;
         static constexpr uint8_t LS0 = 0x0F;
@@ -81,35 +69,54 @@ namespace ts {
         static constexpr uint8_t SS2 = 0x19;
         static constexpr uint8_t SS3 = 0x1D;
 
-        // Mapping of a slice value (0-93) to a UTF-32 code.
-        typedef char32_t CharSlice[CHAR_SLICE_SIZE];
+        // Characters are grouped in rows of 94 characters which are mapped in
+        // ranges 0x21-0x7E (GL) or 0xA1-0xFE (GR). We store unicode code points
+        // as 32-bit values because a small portion of the mapped character sets
+        // used 17 bits. When stored in UString, they will use surrogate pairs.
+
+        static constexpr uint8_t GL_FIRST = 0x21;
+        static constexpr uint8_t GL_LAST  = 0x7E;
+        static constexpr uint8_t GR_FIRST = 0xA1;
+        static constexpr uint8_t GR_LAST  = 0xFE;
+        static constexpr size_t  CHAR_ROW_SIZE = 94;
+
+        typedef char32_t CharRow[CHAR_ROW_SIZE];
+
+        // Several contiguous rows are described in a structure.
+        struct CharRows
+        {
+            size_t         first;  // First row (starting at 0).
+            size_t         count;  // Number of 94-byte rows.
+            const CharRow* rows;   // Address of first (or only) character row.
+        };
+
+        // Max number of CharRows in a character map.
+        static constexpr size_t MAX_ROWS = 4;
 
         // Description of a character mapping.
         struct CharMap
         {
-            bool             byte2;        // True: 2-byte mapping, false: 1-byte mapping.
-            size_t           slice_count;  // Number of 94-byte slices.
-            const CharSlice* slices;       // Address of first (or only) character slice.
+            bool     byte2;           // True: 2-byte mapping, false: 1-byte mapping.
+            CharRows rows[MAX_ROWS];  // A list of contiguous rows.
         };
 
-        // Definition of known 1-byte character maps.
-        static const CharMap   ALPHANUMERIC_MAP;
-        static const CharSlice ALPHANUMERIC_SLICE;
-        static const CharMap   HIRAGANA_MAP;
-        static const CharSlice HIRAGANA_SLICE;
-        static const CharMap   KATAKANA_MAP;
-        static const CharSlice KATAKANA_SLICE;
-        static const CharMap   JIS_X0201_KATAKANA_MAP;
-        static const CharSlice JIS_X0201_KATAKANA_SLICE;
+        // Definition of known character maps.
+        static const CharMap UNSUPPORTED_1BYTE;  // empty map for unsupported 1-byte character sets
+        static const CharMap UNSUPPORTED_2BYTE;  // empty map for unsupported 2-byte character sets
+        static const CharMap ALPHANUMERIC_MAP;
+        static const CharMap HIRAGANA_MAP;
+        static const CharMap KATAKANA_MAP;
+        static const CharMap JIS_X0201_KATAKANA_MAP;
+        static const CharMap KANJI_STANDARD_MAP;
+        static const CharMap KANJI_ADDITIONAL_MAP;
 
-        // Definition of known 2-byte character maps.
-        static constexpr size_t KANJI_SLICES_COUNT = 94;
-        static const CharMap    KANJI_MAP;
-        static const CharSlice  KANJI_SLICES[KANJI_SLICES_COUNT];
-
-        // Dummy mappings for unsupported character sets.
-        static const CharMap UNSUPPORTED_1BYTE;
-        static const CharMap UNSUPPORTED_2BYTE;
+        static const CharRow ALPHANUMERIC_ROW;
+        static const CharRow HIRAGANA_ROW;
+        static const CharRow KATAKANA_ROW;
+        static const CharRow JIS_X0201_KATAKANA_ROW;
+        static const CharRow KANJI_BASE_ROWS[86];
+        static const CharRow KANJI_STANDARD_ROWS[5];
+        static const CharRow KANJI_ADDITIONAL_ROWS[5];
 
         // An internal decoder class. Using ARIB STD-B24 notation.
         class Decoder
@@ -117,6 +124,7 @@ namespace ts {
             TS_NOBUILD_NOCOPY(Decoder);
         public:
             // The decoding is done in the constructor.
+            // The decoded characters are appended in str.
             Decoder(UString& str, const uint8_t* data, size_t size);
 
             // Get the decoding status.
@@ -134,6 +142,12 @@ namespace ts {
             const CharMap* _GL;       // current left character set
             const CharMap* _GR;       // current right character set
             const CharMap* _lockedGL; // locked left character set
+
+            // Nested decoding for macros: use the current mappings of another decoder.
+            Decoder(const Decoder& other, const uint8_t* data, size_t size);
+
+            // Decode all characters.
+            void decodeAll();
 
             // Decode one character and append to str. Update data and size.
             bool decodeOneChar(const CharMap* gset);
