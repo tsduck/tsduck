@@ -103,6 +103,7 @@ namespace ts {
         struct CharMap
         {
             bool     byte2;           // True: 2-byte mapping, false: 1-byte mapping.
+            bool     macro;           // True: this is the macro character set, not a table-based one.
             uint8_t  selector1;       // Selector byte (escape sequence final F). Preferred one for encoding.
             uint8_t  selector2;       // Alternate selector byte (escape sequence final F).
             CharRows rows[MAX_ROWS];  // A list of contiguous rows.
@@ -113,11 +114,13 @@ namespace ts {
         // When a Unicode point is shared by several character sets
         // (base rows of Kanji map for instance), the first one is used.
         // The last address in the array is a null pointer.
+        // Note: the macro map is not table-based and not stored here.
         static const CharMap* const ALL_MAPS[];
 
         // Definition of known character maps.
         static const CharMap UNSUPPORTED_1BYTE;  // empty map for unsupported 1-byte character sets
         static const CharMap UNSUPPORTED_2BYTE;  // empty map for unsupported 2-byte character sets
+        static const CharMap MACRO_MAP;          // dummy map for the macro character set
         static const CharMap ALPHANUMERIC_MAP;
         static const CharMap HIRAGANA_MAP;
         static const CharMap KATAKANA_MAP;
@@ -159,6 +162,16 @@ namespace ts {
         // Return NPOS when none is found.
         static size_t FindEncoderEntry(char32_t code_point, size_t hint = NPOS);
 
+        // Predefined macro sequences.
+        static constexpr uint8_t PREDEF_MACRO_BASE = 0x60;
+        static constexpr size_t PREDEF_MACRO_COUNT = 16;
+        struct PredefMacro
+        {
+            size_t  size;         // Number of bytes in content.
+            uint8_t content[19];  // Macro content (19 is the size of longest predefined macro).
+        };
+        static const PredefMacro PREDEF_MACROS[PREDEF_MACRO_COUNT];
+
         // An internal decoder class. Using ARIB STD-B24 notation.
         class Decoder
         {
@@ -168,8 +181,8 @@ namespace ts {
             // The decoded characters are appended in str.
             Decoder(UString& str, const uint8_t* data, size_t size);
 
-            // Get the decoding status.
-            bool success() const {return _success;}
+            // Get the decoding status from the constructor.
+            bool success() const { return _success; }
 
         private:
             bool           _success;
@@ -187,8 +200,8 @@ namespace ts {
             // Nested decoding for macros: use the current mappings of another decoder.
             Decoder(const Decoder& other, const uint8_t* data, size_t size);
 
-            // Decode all characters.
-            void decodeAll();
+            // Decode all characters in memory area.
+            void decodeAll(const uint8_t* data, size_t size);
 
             // Decode one character and append to str. Update data and size.
             bool decodeOneChar(const CharMap* gset);

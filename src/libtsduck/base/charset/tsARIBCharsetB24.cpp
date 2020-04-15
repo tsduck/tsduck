@@ -156,8 +156,8 @@ bool ts::ARIBCharsetB24::decode(UString& str, const uint8_t* data, size_t size) 
 ts::ARIBCharsetB24::Decoder::Decoder(UString& str, const uint8_t* data, size_t size) :
     _success(true),
     _str(str),
-    _data(data),
-    _size(size),
+    _data(nullptr),
+    _size(0),
     _G0(&KANJI_ADDITIONAL_MAP),  // The initial state for G0-G3 and GL-GR is unclear.
     _G1(&ALPHANUMERIC_MAP),      // No clear specification found in STD-B24.
     _G2(&HIRAGANA_MAP),          // This state is based on other implementations and experimentation.
@@ -166,23 +166,7 @@ ts::ARIBCharsetB24::Decoder::Decoder(UString& str, const uint8_t* data, size_t s
     _GR(_G2),
     _lockedGL(_GL)
 {
-    decodeAll();
-}
-
-ts::ARIBCharsetB24::Decoder::Decoder(const Decoder& other, const uint8_t* data, size_t size) :
-    _success(true),
-    _str(other._str),
-    _data(data),
-    _size(size),
-    _G0(other._G0),
-    _G1(other._G1),
-    _G2(other._G2),
-    _G3(other._G3),
-    _GL(other._GL),
-    _GR(other._GR),
-    _lockedGL(_GL)
-{
-    decodeAll();
+    decodeAll(data, size);
 }
 
 
@@ -190,13 +174,19 @@ ts::ARIBCharsetB24::Decoder::Decoder(const Decoder& other, const uint8_t* data, 
 // Check if next character matches c. If yes, update data and size.
 //----------------------------------------------------------------------------
 
-void ts::ARIBCharsetB24::Decoder::decodeAll()
+void ts::ARIBCharsetB24::Decoder::decodeAll(const uint8_t* data, size_t size)
 {
     // Filter out invalid parameters.
-    if (_data == nullptr) {
+    if (data == nullptr) {
         _success = false;
         return;
     }
+
+    // Save previous state, setup new state.
+    const uint8_t* const saved_data = _data;
+    const size_t saved_size = _size;
+    _data = data;
+    _size = size;
 
     // Loop in input byte sequences.
     while (_size > 0) {
@@ -239,6 +229,10 @@ void ts::ARIBCharsetB24::Decoder::decodeAll()
             _success = false;
         }
     }
+
+    // Restore previous state.
+    _data = saved_data;
+    _size = saved_size;
 }
 
 
@@ -290,28 +284,46 @@ bool ts::ARIBCharsetB24::Decoder::decodeOneChar(const CharMap* gset)
     b1 -= GL_FIRST;
     b2 -= GL_FIRST;
 
-    // Get the 32-bit code point from the map.
-    char32_t cp = 0;
-    for (size_t i = 0; i < MAX_ROWS; ++i) {
-        const CharRows& rows(gset->rows[i]);
-        if (rows.count == 0) {
-            // End of map.
-            break;
+    // Now interpret the [b1]-b2 bytes.
+    if (gset->macro) {
+        // This is the macro character set.
+        // Currently, we only support the predefined macros.
+        if (b1 == 0 && b2 >= PREDEF_MACRO_BASE && b2 < PREDEF_MACRO_BASE + PREDEF_MACRO_COUNT) {
+            // This is a predefined macro.
+            const size_t index = b2 - PREDEF_MACRO_BASE;
+            decodeAll(PREDEF_MACROS[index].content, PREDEF_MACROS[index].size);
+            return true;
         }
-        if (b1 >= rows.first && b1 < rows.first + rows.count && rows.rows != nullptr) {
-            // The character is in this row.
-            cp = rows.rows[b1 - rows.first][b2];
-            break;
+        else {
+            // This is an unknown macro.
+            return false;
         }
-    }
-
-    // Insert code point, if one was found.
-    if (cp != 0) {
-        _str.append(cp);
-        return true;
     }
     else {
-        return false;
+        // This is a table-based character set.
+        // Get the 32-bit code point from the map.
+        char32_t cp = 0;
+        for (size_t i = 0; i < MAX_ROWS; ++i) {
+            const CharRows& rows(gset->rows[i]);
+            if (rows.count == 0) {
+                // End of map.
+                break;
+            }
+            if (b1 >= rows.first && b1 < rows.first + rows.count && rows.rows != nullptr) {
+                // The character is in this row.
+                cp = rows.rows[b1 - rows.first][b2];
+                break;
+            }
+        }
+
+        // Insert code point, if one was found.
+        if (cp != 0) {
+            _str.append(cp);
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 }
 
