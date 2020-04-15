@@ -34,4 +34,4 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 TSDIRS = $$system(find . -type d -name ts\\* -prune)
-SUBDIRS += libtsduck $$sorted(TSDIRS) utest
+SUBDIRS += libtsduck $$sorted(TSDIRS) utest aribb24codegen

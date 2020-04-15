@@ -294,7 +294,12 @@ bool ts::ARIBCharsetB24::Decoder::decodeOneChar(const CharMap* gset)
     char32_t cp = 0;
     for (size_t i = 0; i < MAX_ROWS; ++i) {
         const CharRows& rows(gset->rows[i]);
+        if (rows.count == 0) {
+            // End of map.
+            break;
+        }
         if (b1 >= rows.first && b1 < rows.first + rows.count && rows.rows != nullptr) {
+            // The character is in this row.
             cp = rows.rows[b1 - rows.first][b2];
             break;
         }
@@ -422,63 +427,77 @@ bool ts::ARIBCharsetB24::Decoder::escape()
 
 const ts::ARIBCharsetB24::CharMap* ts::ARIBCharsetB24::Decoder::finalToCharMap(uint8_t f, bool gset_not_drcs) const
 {
-    // Note: this function must evolve when new character sets are implemented.
-
-    // ARIB STD-B24, part 2, chapter 7, table 7-3
-    if (gset_not_drcs) {
-        switch (f) {
-            case 0x42: // Kanji, 2-byte code
-            case 0x3B: // Additional symbols, 2-byte code
-                return &KANJI_ADDITIONAL_MAP;
-            case 0x39: // JIS comp. Kanji Plane 1, 2-byte code (is this the right map here?)
-            case 0x3A: // JIS comp. Kanji Plane 2, 2-byte code (is this the right map here?)
-                return &KANJI_STANDARD_MAP;
-            case 0x4A: // Alphanumeric, 1-byte code
-            case 0x36: // Proportional alphanumeric, 1-byte code
-                return &ALPHANUMERIC_MAP;
-            case 0x30: // Hiragana, 1-byte code
-            case 0x37: // Proportional hiragana, 1-byte code
-                return &HIRAGANA_MAP;
-            case 0x31: // Katakana, 1-byte code
-            case 0x38: // Proportional katakana, 1-byte code
-                return &KATAKANA_MAP;
-            case 0x49: // JIS X 0201 katakana, 1-byte code
-                return &JIS_X0201_KATAKANA_MAP;
-            case 0x32: // Mosaic A, 1-byte code
-            case 0x33: // Mosaic B, 1-byte code
-            case 0x34: // Mosaic C, 1-byte code, non-spacing
-            case 0x35: // Mosaic D, 1-byte code, non-spacing
-                // No unicode points defined for STD-B24 mosaic characters.
-                return &UNSUPPORTED_1BYTE;
-            default: // Invalid F, assume 1-byte character set
-                return &UNSUPPORTED_1BYTE;
+    if (f == 0) {
+        // Invalid value, used as marker in tables, so filter it now.
+        return &UNSUPPORTED_1BYTE;
+    }
+    else if (gset_not_drcs) {
+        // Look for known character sets in the list of tables.
+        for (auto it = ALL_MAPS; *it != nullptr; ++it) {
+            const CharMap& cm(**it);
+            if (f == cm.selector1 || f == cm.selector2) {
+                return *it;
+            }
         }
+        // Not found, either a Mosaic 1-byte code or an unvalid F value.
+        return &UNSUPPORTED_1BYTE;
+    }
+    else if (f == 0x70) {
+        // Macro 1-byte code (not yet supported here)
+        return &UNSUPPORTED_1BYTE;
+    }
+    else if (f == 0x40) {
+        // DRCS-0 2-byte code
+        return &UNSUPPORTED_2BYTE;
     }
     else {
-        switch (f) {
-            case 0x40: // DRCS-0, 2-byte code
-                return &UNSUPPORTED_2BYTE;
-            case 0x41: // DRCS-1, 1-byte code
-            case 0x42: // DRCS-2, 1-byte code
-            case 0x43: // DRCS-3, 1-byte code
-            case 0x44: // DRCS-4, 1-byte code
-            case 0x45: // DRCS-5, 1-byte code
-            case 0x46: // DRCS-6, 1-byte code
-            case 0x47: // DRCS-7, 1-byte code
-            case 0x48: // DRCS-8, 1-byte code
-            case 0x49: // DRCS-9, 1-byte code
-            case 0x4A: // DRCS-10, 1-byte code
-            case 0x4B: // DRCS-11, 1-byte code
-            case 0x4C: // DRCS-12, 1-byte code
-            case 0x4D: // DRCS-13, 1-byte code
-            case 0x4E: // DRCS-14, 1-byte code
-            case 0x4F: // DRCS-15, 1-byte code
-            case 0x70: // Macro, 1-byte code
-                return &UNSUPPORTED_1BYTE;
-            default: // Invalid F, assume 1-byte character set
-                return &UNSUPPORTED_1BYTE;
+        // DRCS-1 to DRCS-15 1-byte code or an unvalid F value.
+        return &UNSUPPORTED_1BYTE;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Find the encoding entry for a Unicode point.
+//----------------------------------------------------------------------------
+
+size_t ts::ARIBCharsetB24::FindEncoderEntry(char32_t code_point, size_t hint)
+{
+    // If a hint is specified, tried this slice, its next and its previous.
+    if (hint < ENCODING_COUNT) {
+        if (ENCODING_TABLE[hint].contains(code_point)) {
+            // Found in same slice.
+            return hint;
+        }
+        else if (hint + 1 < ENCODING_COUNT && ENCODING_TABLE[hint + 1].contains(code_point)) {
+            // Found in next slice.
+            return hint + 1;
+        }
+        else if (hint > 0 && ENCODING_TABLE[hint - 1].contains(code_point)) {
+            // Found in previous slice.
+            return hint - 1;
+        }
+        // Code point is too far, hint was useless, try standard method.
+    }
+
+    // Dichotomic search.
+    size_t begin = 0;
+    size_t end = ENCODING_COUNT;
+
+    while (begin < end) {
+        const size_t mid = begin + (end - begin) / 2;
+        if (ENCODING_TABLE[mid].contains(code_point)) {
+            return mid;
+        }
+        else if (code_point < ENCODING_TABLE[mid].code_point) {
+            end = mid;
+        }
+        else {
+            begin = mid + 1;
         }
     }
+
+    return NPOS;
 }
 
 
@@ -488,9 +507,34 @@ const ts::ARIBCharsetB24::CharMap* ts::ARIBCharsetB24::Decoder::finalToCharMap(u
 
 bool ts::ARIBCharsetB24::canEncode(const UString& str, size_t start, size_t count) const
 {
-    // All Japanese characters and can always be encoded in ARIB STD-B24.
-    // Currently, we just say "yes" but we should really test that all
-    // characters are Japanese characters or representable in ARIB STD-B24.
+    const size_t len = str.length();
+    const size_t end = count > len ? len : std::min(len, start + count);
+
+    // Look for an encoding entry for each character.
+    size_t index = 0;
+    for (size_t i = start; i < end; ++i) {
+        const UChar c = str[i];
+
+        // Space is not in the encoding table but is always valid.
+        if (c != u' ') {
+            if (!IsLeadingSurrogate(c)) {
+                // 16-bit code point
+                index = FindEncoderEntry(c, index);
+            }
+            else if (++i >= len) {
+                // Truncated surrogate pair.
+                return false;
+            }
+            else {
+                // Rebuilt 32-bit code point from surrogate pair.
+                index = FindEncoderEntry(FromSurrogatePair(c, str[i]), index);
+            }
+            // Stop when a character cannot be encoded.
+            if (index == NPOS) {
+                return false;
+            }
+        }
+    }
     return true;
 }
 

@@ -39,7 +39,7 @@
 
   By default, installers are built for 32-bit and 64-bit systems, full
   executable binary installers, standalone binaries (without admin rights),
-  source code and wintools archives.
+  source code archive.
 
  .PARAMETER GitPull
 
