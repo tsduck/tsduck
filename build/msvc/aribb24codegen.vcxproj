@@ -6,18 +6,18 @@
   </ImportGroup>
 
   <ItemGroup>
-    <ClCompile Include="..\..\src\utils\setpath.cpp" />
+    <ClCompile Include="..\..\src\utils\aribb24codegen.cpp" />
   </ItemGroup>
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{C932660E-56D0-40FD-9A90-A7DAD8C93F73}</ProjectGuid>
+    <ProjectGuid>{C68FB125-B7FC-435F-8D7A-0BDAC4966B54}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>setpath</RootNamespace>
   </PropertyGroup>
 
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-target-exe.props" />
-    <Import Project="msvc-use-tsducklib.props" />
+    <Import Project="msvc-use-tsduckdll.props" />
     <Import Project="msvc-common-end.props" />
   </ImportGroup>
 

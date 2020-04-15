@@ -101,6 +101,12 @@ tstool {
     TEMPLATE = app
     SOURCES += $$SRCROOT/tstools/$${TARGET}.cpp
 }
+util {
+    # TSDuck utils shall use "CONFIG += utils"
+    CONFIG += libtsduck
+    TEMPLATE = app
+    SOURCES += $$SRCROOT/utils/$${TARGET}.cpp
+}
 tsplugin {
     # TSP plugins shall use "CONFIG += tsplugin"
     CONFIG += libtsduck plugin

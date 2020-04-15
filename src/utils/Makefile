@@ -27,16 +27,28 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  Makefile for wintools.
+#  Makefile for utils.
 #
 #-----------------------------------------------------------------------------
 
-DONT_BUILD_DEPS := TRUE
 include ../../Makefile.tsduck
 
-# Nothing to build on non-Windows systems.
-default:
+# Filter out Windows-only tools.
+EXECS := $(filter-out $(OBJDIR)/setpath,$(EXECS))
+
+default: execs $(OBJDIR)/setenv.sh
 	@true
+
+.PHONY: execs
+execs: $(EXECS)
+
+# Use dynamic or static library.
+ifndef STATIC
+    $(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
+else
+    LDFLAGS_EXTRA = -static
+    $(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
+endif
 
 .PHONY: install install-devel
 install install-devel:

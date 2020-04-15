@@ -271,6 +271,17 @@ namespace ts {
     }
 
     //!
+    //! Build a 32-bit Unicode code point from a surrogate pair.
+    //! @param [in] lead First part of the surrogate pair.
+    //! @param [in] trail Second part of the surrogate pair.
+    //! @return A 32-bit Unicode code point.
+    //!
+    TSDUCKDLL inline char32_t FromSurrogatePair(UChar lead, UChar trail)
+    {
+        return 0x10000 + (((uint32_t(lead) & 0x03FF) << 10) | (uint32_t(trail) & 0x03FF));
+    }
+
+    //!
     //! Convert a character into its corresponding HTML sequence.
     //! @param [in] c A character.
     //! @return A string containing the html sequence for @a c.

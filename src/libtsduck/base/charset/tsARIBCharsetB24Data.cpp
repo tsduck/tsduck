@@ -32,11 +32,26 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
+// All supported character maps are placed in a static array.
+//----------------------------------------------------------------------------
+
+const ts::ARIBCharsetB24::CharMap* const ts::ARIBCharsetB24::ALL_MAPS[] = {
+    &KANJI_ADDITIONAL_MAP,     // initial G0 and GL
+    &HIRAGANA_MAP,             // initial G2 and GR
+    &ALPHANUMERIC_MAP,         // initial G1
+    &KATAKANA_MAP,             // initial G3
+    &JIS_X0201_KATAKANA_MAP,
+    &KANJI_STANDARD_MAP,
+    nullptr
+};
+
+
+//----------------------------------------------------------------------------
 // Empty maps for unsupported character sets
 //----------------------------------------------------------------------------
 
 const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::UNSUPPORTED_1BYTE = {
-    false,
+    false, 0x00, 0x00,
     {
         {0, 0, nullptr},
         {0, 0, nullptr},
@@ -46,7 +61,7 @@ const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::UNSUPPORTED_1BYTE = {
 };
 
 const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::UNSUPPORTED_2BYTE = {
-    true,
+    true, 0x00, 0x00,
     {
         {0, 0, nullptr},
         {0, 0, nullptr},
@@ -62,6 +77,8 @@ const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::UNSUPPORTED_2BYTE = {
 
 const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::ALPHANUMERIC_MAP = {
     false,
+    0x4A,  // Alphanumeric, 1-byte code
+    0x36,  // Proportional alphanumeric, 1-byte code
     {
         {0, 1, &ALPHANUMERIC_ROW},
         {0, 0, nullptr},
@@ -87,6 +104,8 @@ const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::ALPHANUMERIC_ROW = {
 
 const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::HIRAGANA_MAP = {
     false,
+    0x30,  // Hiragana, 1-byte code
+    0x37,  // Proportional hiragana, 1-byte code
     {
         {0, 1, &HIRAGANA_ROW},
         {0, 0, nullptr},
@@ -112,6 +131,8 @@ const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::HIRAGANA_ROW = {
 
 const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::KATAKANA_MAP = {
     false,
+    0x31,  // Katakana, 1-byte code
+    0x38,  // Proportional katakana, 1-byte code
     {
         {0, 1, &KATAKANA_ROW},
         {0, 0, nullptr},
@@ -137,6 +158,8 @@ const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::KATAKANA_ROW = {
 
 const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::JIS_X0201_KATAKANA_MAP = {
     false,
+    0x49,  // JIS X 0201 katakana, 1-byte code
+    0x00,
     {
         {0, 1, &JIS_X0201_KATAKANA_ROW},
         {0, 0, nullptr},
@@ -163,21 +186,25 @@ const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::JIS_X0201_KATAKANA_ROW = {
 
 const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::KANJI_STANDARD_MAP = {
     true,
+    0x39,  // JIS comp. Kanji Plane 1, 2-byte code (is this the right map here?)
+    0x3A,  // JIS comp. Kanji Plane 2, 2-byte code (is this the right map here?)
     {
         {0, 86, &KANJI_BASE_ROWS[0]},
         {89, 5, &KANJI_STANDARD_ROWS[0]},
-        {0, 0, nullptr},
-        {0, 0, nullptr},
+        {0,  0, nullptr},
+        {0 , 0, nullptr},
     }
 };
 
 const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::KANJI_ADDITIONAL_MAP = {
     true,
+    0x42,  // Kanji, 2-byte code
+    0x3B,  // Additional symbols, 2-byte code
     {
         {0, 86, &KANJI_BASE_ROWS[0]},
         {89, 5, &KANJI_ADDITIONAL_ROWS[0]},
-        {0, 0, nullptr},
-        {0, 0, nullptr},
+        {0,  0, nullptr},
+        {0,  0, nullptr},
     }
 };
 

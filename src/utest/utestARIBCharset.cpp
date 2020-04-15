@@ -48,10 +48,14 @@ public:
     virtual void afterTest() override;
 
     void testDecode();
+    void testEncode();
+    void testCanEncode();
     void generatePatterns(); // not a real unitary test, generate patterns in debug mode
 
     TSUNIT_TEST_BEGIN(ARIBCharsetTest);
     TSUNIT_TEST(testDecode);
+    TSUNIT_TEST(testEncode);
+    TSUNIT_TEST(testCanEncode);
     TSUNIT_TEST(generatePatterns);
     TSUNIT_TEST_END();
 };
@@ -224,6 +228,24 @@ void ARIBCharsetTest::testDecode()
 #undef B
 #undef U
 #undef T
+}
+
+void ARIBCharsetTest::testEncode()
+{
+    ///@@@@@
+}
+
+void ARIBCharsetTest::testCanEncode()
+{
+    const ts::Charset* cset = ts::ARIBCharsetB24::Instance();
+
+    TSUNIT_ASSERT(cset->canEncode(u""));
+    TSUNIT_ASSERT(cset->canEncode(u"alpha num 09"));
+    TSUNIT_ASSERT(cset->canEncode(ts::UString({u'a', u'b'})));
+    TSUNIT_ASSERT(!cset->canEncode(ts::UString({u'a', ts::LATIN_SMALL_LETTER_A_WITH_ACUTE, u'b'})));
+    TSUNIT_ASSERT(cset->canEncode(ts::UString({0x004E, 0x0048, 0x004B, 0x7DCF, 0x5408, 0x0031, 0x30FB, 0x79CB, 0x7530})));
+    TSUNIT_ASSERT(cset->canEncode(ts::UString({0x004E, 0x30E5, 0x30FC, 0xD83C, 0xDE14, 0xD83C, 0xDE11, 0x7DCF})));
+    TSUNIT_ASSERT(!cset->canEncode(ts::UString({0x004E, 0x30E5, 0x30FC, 0xDBFF, 0xDFFF, 0xD83C, 0xDE11, 0x7DCF})));
 }
 
 
