@@ -49,6 +49,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class ARIBCharsetB24CodeGenerator
     {
+        TS_NOBUILD_NOCOPY(ARIBCharsetB24CodeGenerator);
     public:
         // Generate the ARIB STD-24 encoding tables in the constructor.
         ARIBCharsetB24CodeGenerator(std::ostream& out);
@@ -79,11 +80,10 @@ namespace ts {
 
         // Generation steps.
         void buildTable();
-        void generateFile();
+        void generateFile(std::ostream& out);
 
         // Private members.
-        std::ostream& _out;
-        SliceMap      _slices;          // Map of character slices index per Unicode point base.
+        SliceMap _slices;   // Map of character slices index per Unicode point base.
     };
 }
 
@@ -93,11 +93,10 @@ namespace ts {
 //-----------------------------------------------------------------------------
 
 ts::ARIBCharsetB24CodeGenerator::ARIBCharsetB24CodeGenerator(std::ostream& out) :
-    _out(out),
     _slices()
 {
     buildTable();
-    generateFile();
+    generateFile(out);
 }
 
 
@@ -237,17 +236,17 @@ void ts::ARIBCharsetB24CodeGenerator::buildSlice(const CharMap& cmap, const Char
 // Generate the C++ source code for the encoder table.
 //-----------------------------------------------------------------------------
 
-void ts::ARIBCharsetB24CodeGenerator::generateFile()
+void ts::ARIBCharsetB24CodeGenerator::generateFile(std::ostream& out)
 {
     // Source file header.
-    _out << "// Automatically generated file, do not modify." << std::endl
-         << "// See internal tool aribb24codegen in src/utils." << std::endl
-         << "// Generated " << Time::CurrentLocalTime().format(Time::DATE) << std::endl
-         << std::endl
-         << "#include \"tsARIBCharsetB24.h\""<< std::endl
-         << std::endl
-         << "const size_t ts::ARIBCharsetB24::ENCODING_COUNT = " << _slices.size() << ";" << std::endl
-         << "const ts::ARIBCharsetB24::EncoderEntry ts::ARIBCharsetB24::ENCODING_TABLE[" << _slices.size() << "] = {" << std::endl;
+    out << "// Automatically generated file, do not modify." << std::endl
+        << "// See internal tool aribb24codegen in src/utils." << std::endl
+        << "// Generated " << Time::CurrentLocalTime().format(Time::DATE) << std::endl
+        << std::endl
+        << "#include \"tsARIBCharsetB24.h\""<< std::endl
+        << std::endl
+        << "const size_t ts::ARIBCharsetB24::ENCODING_COUNT = " << _slices.size() << ";" << std::endl
+        << "const ts::ARIBCharsetB24::EncoderEntry ts::ARIBCharsetB24::ENCODING_TABLE[" << _slices.size() << "] = {" << std::endl;
 
     const uint32_t entries_per_line = 4;
     uint32_t count = 0;
@@ -267,11 +266,11 @@ void ts::ARIBCharsetB24CodeGenerator::generateFile()
             uint32_t(it->second.count);
 
         if (count++ % entries_per_line == 0) {
-            _out << "   ";
+            out << "   ";
         }
-        _out << UString::Format(u" {0x%X, 0x%X},", {it->first, entry});
+        out << UString::Format(u" {0x%X, 0x%X},", {it->first, entry});
         if (count % entries_per_line == 0) {
-            _out << std::endl;
+            out << std::endl;
         }
 
         // Keep statistics on slice sizes.
@@ -284,14 +283,14 @@ void ts::ARIBCharsetB24CodeGenerator::generateFile()
 
     // Final statistics.
     if (count % entries_per_line != 0) {
-        _out << std::endl;
+        out << std::endl;
     }
-    _out << "};" << std::endl
-         << std::endl
-         << "// Number of encodable characters: " << char_total << std::endl
-         << "// Number of slices of contiguous Unicode points: " << _slices.size() << std::endl
-         << "// Number of single-character slices: " << single_slices << std::endl
-         << "// Maximum slice size: " << max_slice_size << std::endl;
+    out << "};" << std::endl
+        << std::endl
+        << "// Number of encodable characters: " << char_total << std::endl
+        << "// Number of slices of contiguous Unicode points: " << _slices.size() << std::endl
+        << "// Number of single-character slices: " << single_slices << std::endl
+        << "// Maximum slice size: " << max_slice_size << std::endl;
 }
 
 
