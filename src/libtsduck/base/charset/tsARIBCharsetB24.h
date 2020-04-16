@@ -40,7 +40,15 @@ namespace ts {
     //!
     //! Definition of the ARIB STD-B24 character set (ISDB Japan).
     //!
-    //! Note: this implementation is not complete but it decodes most Japanese TV programs.
+    //! Limitations:
+    //! - The decoding operation produces a Unicode string (UString).
+    //!   All non-Unicode concepts in ARIB STD-B24 are dropped (colors,
+    //!   placemenent, Mosaic and DRCS character sets).
+    //! - User-defined macros are ignored, only predefined macros are
+    //!   decoded.
+    //! - The encoding operation is character-based and not optimized.
+    //!   The resulting data could be shorter with a prior global analysis
+    //!   of the input string.
     //!
     //! @see ARIB STD-B24, chapter 7
     //! @see ARIB STD-B62, fascicle 1, part 2, chapter 5
@@ -136,6 +144,16 @@ namespace ts {
         static const CharRow KANJI_STANDARD_ROWS[5];
         static const CharRow KANJI_ADDITIONAL_ROWS[5];
 
+        // Predefined macro sequences.
+        static constexpr uint8_t PREDEF_MACRO_BASE = 0x60;
+        static constexpr size_t PREDEF_MACRO_COUNT = 16;
+        struct PredefMacro
+        {
+            size_t  size;         // Number of bytes in content.
+            uint8_t content[19];  // Macro content (19 is the size of longest predefined macro).
+        };
+        static const PredefMacro PREDEF_MACROS[PREDEF_MACRO_COUNT];
+
         // Definition of an entry in the encoding table.
         // This table is used by the ARIB STD-B24 encoder.
         // There is one entry per slice of contiguous code points.
@@ -149,8 +167,12 @@ namespace ts {
             char32_t code_point;  // Base code point of a slice.
             uint32_t entry;       // 32-bit encoded entry.
 
-            bool contains(char32_t cp) const { return cp >= code_point && cp < code_point + count(); }
+            bool byte2() const { return (entry & 0x80000000) != 0; }
+            uint8_t selectorF() const { return (entry >> 24) & 0x7F; }
+            uint8_t row() const { return (entry >> 16) & 0x7F; }
+            uint8_t index() const { return (entry >> 8) & 0x7F; }
             uint32_t count() const { return entry & 0x000000FF; }
+            bool contains(char32_t cp) const { return cp >= code_point && cp < code_point + count(); }
         };
 
         // Encoding table.
@@ -161,16 +183,6 @@ namespace ts {
         // Use a hint for where to start the search (typically from a previous search).
         // Return NPOS when none is found.
         static size_t FindEncoderEntry(char32_t code_point, size_t hint = NPOS);
-
-        // Predefined macro sequences.
-        static constexpr uint8_t PREDEF_MACRO_BASE = 0x60;
-        static constexpr size_t PREDEF_MACRO_COUNT = 16;
-        struct PredefMacro
-        {
-            size_t  size;         // Number of bytes in content.
-            uint8_t content[19];  // Macro content (19 is the size of longest predefined macro).
-        };
-        static const PredefMacro PREDEF_MACROS[PREDEF_MACRO_COUNT];
 
         // An internal decoder class. Using ARIB STD-B24 notation.
         class Decoder
@@ -214,6 +226,36 @@ namespace ts {
 
             // Get a character set from an ESC sequence "final byte" F.
             const CharMap* finalToCharMap(uint8_t f, bool gset_not_drcs) const;
+        };
+
+        // An internal encoder class.
+        class Encoder
+        {
+            TS_NOBUILD_NOCOPY(Encoder);
+        public:
+            // The encoding is done in the constructor.
+            Encoder(uint8_t*& out, size_t& out_size, const UChar*& in, size_t&in_count);
+
+        private:
+            uint8_t  _G[4];       // G0-G3 escape sequence final selector F for the character set.
+            uint8_t  _GL;         // current left character set
+            uint8_t  _GR;         // current right character set
+            bool     _GL_last;    // true if GL was used last (ie. not GR)
+            uint16_t _Gn_history; // 4 nibbles with values 0,1,2,3, MSB=oldest, LSB=last-used
+
+            // Switch to a given character set (from selector F).
+            // If a switch needs to be made, insert the switch sequence in the
+            // output buffer and make sure there is room for at least one character.
+            // Return false if there is not enough room in the output buffer.
+            bool selectCharSet(uint8_t*& out, size_t& out_size, const EncoderEntry& enc);
+
+            // Select GL/GR from G0-3 for a given selector F. Return escape sequence size.
+            // Escape sequence buffer must be at least 2 characters long.
+            size_t selectGLR(uint8_t* seq, uint8_t F);
+
+            // Set G0-3 to a given selector F. Return escape sequence size.
+            // Escape sequence buffer must be at least 5 characters long.
+            size_t selectG0123(uint8_t* seq, uint8_t F, bool byte2);
         };
     };
 }
