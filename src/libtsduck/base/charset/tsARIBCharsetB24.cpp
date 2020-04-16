@@ -764,7 +764,7 @@ size_t ts::ARIBCharsetB24::Encoder::selectG0123(uint8_t* seq, uint8_t F, bool by
 {
     // Get index oldest used charset. Reuse it. Mark it as last used.
     const uint8_t index = uint8_t(_Gn_history >> 12) & 0x0F;
-    _Gn_history = (_Gn_history << 4) | index;
+    _Gn_history = uint16_t(_Gn_history << 4) | index;
 
     // Assign the new character set.
     _G[index] = F;
