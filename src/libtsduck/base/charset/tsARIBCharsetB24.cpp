@@ -153,14 +153,21 @@ bool ts::ARIBCharsetB24::decode(UString& str, const uint8_t* data, size_t size) 
 // An internal decoder class. Using ARIB STD-B24 notation.
 //----------------------------------------------------------------------------
 
+// The initial state for G0-G3 and GL-GR is unclear.
+// There is no clear specification found in STD-B24 part 2.
+// This state is based on other implementations and experimentation.
+// Note: In STD-B24 part 3, chapter 8, an initialization state is described
+// but it applies to captions only and is slightly different (G3 = Macro
+// character set instead of Katakana).
+
 ts::ARIBCharsetB24::Decoder::Decoder(UString& str, const uint8_t* data, size_t size) :
     _success(true),
     _str(str),
     _data(nullptr),
     _size(0),
-    _G0(&KANJI_ADDITIONAL_MAP),  // The initial state for G0-G3 and GL-GR is unclear.
-    _G1(&ALPHANUMERIC_MAP),      // No clear specification found in STD-B24.
-    _G2(&HIRAGANA_MAP),          // This state is based on other implementations and experimentation.
+    _G0(&KANJI_ADDITIONAL_MAP),
+    _G1(&ALPHANUMERIC_MAP),
+    _G2(&HIRAGANA_MAP),
     _G3(&KATAKANA_MAP),
     _GL(_G0),
     _GR(_G2),
@@ -355,7 +362,7 @@ bool ts::ARIBCharsetB24::Decoder::escape()
     _size--;
 
     // Now the escape sequence has been properly removed from the string.
-
+    // Execute the command from the sequence.
     switch (seq) {
         case 0x00000000: {
             // No intermediate sequence, just ESC F, assign GL or GR.
@@ -557,6 +564,233 @@ bool ts::ARIBCharsetB24::canEncode(const UString& str, size_t start, size_t coun
 
 size_t ts::ARIBCharsetB24::encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start, size_t count) const
 {
-    //@@@@@
-    return 0;
+    const size_t len = str.length();
+    if (buffer == nullptr || size == 0 || start >= len) {
+        return 0;
+    }
+    else {
+        const UChar* const initial = str.data() + start;
+        const UChar* in = initial;
+        size_t in_count = count >= len || start + count >= len ? (len - start) : count;
+        Encoder enc(buffer, size, in, in_count);
+        return in - initial;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// An internal encoder class.
+//----------------------------------------------------------------------------
+
+ts::ARIBCharsetB24::Encoder::Encoder(uint8_t*& out, size_t& out_size, const UChar*& in, size_t& in_count) :
+    _G{KANJI_ADDITIONAL_MAP.selector1,   // Same initial state as decoding engine
+       ALPHANUMERIC_MAP.selector1,
+       HIRAGANA_MAP.selector1,
+       KATAKANA_MAP.selector1},
+    _GL(_G[0]),
+    _GR(_G[2]),
+    _GL_last(true),
+    _Gn_history(0x3210) // G3=oldest, G0=last-used
+{
+    // Previous index in encoding table.
+    size_t prev_index = NPOS;
+
+    // Loop on input UTF-16 characters.
+    while (in_count > 0) {
+
+        // Get unicode code point (1 or 2 UChar from input).
+        char32_t cp = *in;
+        size_t cp_size = 1;
+        if (IsLeadingSurrogate(*in)) {
+            // Need a second UChar.
+            if (in_count < 2) {
+                // End of string, truncated surrogate pair. Consume the first char so that
+                // the caller does not infinitely try to decode the rest of the string.
+                ++in;
+                in_count = 0;
+                return;
+            }
+            else {
+                // Rebuild the Unicode point from the pair.
+                cp = FromSurrogatePair(in[0], in[1]);
+                cp_size = 2;
+            }
+        }
+
+        // Find the entry for this code point in the encoding table.
+        const size_t index = FindEncoderEntry(cp, prev_index);
+        if (index != NPOS) {
+
+            // This character is encodable.
+            assert(index < ENCODING_COUNT);
+            const EncoderEntry& enc(ENCODING_TABLE[index]);
+            prev_index = index;
+
+            // Make sure the right character set is selected.
+            // Insert the corresponding escape sequence if necessary.
+            if (!selectCharSet(out, out_size, enc)) {
+                // Cannot insert the right sequence. Do not attempt to encode the code point.
+                return;
+            }
+
+            // Insert the encoded code point (1 or 2 bytes).
+            assert(cp >= enc.code_point);
+            assert(cp < enc.code_point + enc.count());
+            assert(cp - enc.code_point + enc.index() <= GL_LAST);
+            const uint8_t mask = enc.selectorF() == _GR ? 0x80 : 0x00;
+            if (enc.byte2()) {
+                // 2-byte character set, insert row first.
+                assert(out_size >= 2);
+                *out++ = enc.row() | mask;
+                --out_size;
+            }
+            assert(out_size >= 1);
+            *out++ = uint8_t(cp - enc.code_point + enc.index()) | mask;
+            --out_size;
+        }
+
+        // Now, the character has been successfully encoded (or ignored if not encodable).
+        // Remove it from the input buffer.
+        in += cp_size;
+        in_count -= cp_size;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Switch to a given character set (from selector F).
+// Not really optimized. We always keep the same character set in G0.
+//----------------------------------------------------------------------------
+
+bool ts::ARIBCharsetB24::Encoder::selectCharSet(uint8_t*& out, size_t& out_size, const EncoderEntry& enc)
+{
+    // The final selector character F for the target character set.
+    const uint8_t F = enc.selectorF();
+
+    // Required space for one character after escape sequence.
+    const size_t char_size = enc.byte2() ? 2 : 1;
+
+    // An escape sequence is up to 7 bytes.
+    uint8_t seq[7];
+    size_t seq_size = 0;
+
+    // There is some switching sequence to add only if the charset is neither in GL nor GR.
+    if (F != _GL && F != _GR) {
+        // If the charset is not in G0-G3, we need to load it in one of them.
+        if (F != _G[0] && F != _G[1] && F != _G[2] && F != _G[3]) {
+            seq_size = selectG0123(seq, F, enc.byte2());
+        }
+        // Route the right Gx in either GL or GR.
+        seq_size += selectGLR(seq + seq_size, F);
+    }
+
+    // Finally, insert the escape sequence if there is enough room for it plus one character.
+    if (seq_size + char_size > out_size) {
+        return false;
+    }
+    if (seq_size > 0) {
+        assert(seq_size < sizeof(seq));
+        ::memcpy(out, seq, seq_size);
+        out += seq_size;
+        out_size -= seq_size;
+    }
+
+    // Keep track of last GL/GR used.
+    _GL_last = _GL == F;
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Select GL/GR from G0-3 for a given selector F. Return escape sequence size.
+//----------------------------------------------------------------------------
+
+size_t ts::ARIBCharsetB24::Encoder::selectGLR(uint8_t* seq, uint8_t F)
+{
+    // If GL was last used, use GR and vice versa.
+    if (F == _G[0]) {
+        // G0 can be routed to GL only.
+        _GL = F;
+        seq[0] = LS0;
+        return 1;
+    }
+    else if (F == _G[1]) {
+        if (_GL_last) {
+            _GR = F;
+            seq[0] = ESC; seq[1] = 0x7E;
+            return 2;
+
+        }
+        else {
+            _GL = F;
+            seq[0] = LS1;
+            return 1;
+        }
+    }
+    else if (F == _G[2]) {
+        if (_GL_last) {
+            _GR = F;
+            seq[0] = ESC; seq[1] = 0x7D;
+            return 2;
+
+        }
+        else {
+            _GL = F;
+            seq[0] = ESC; seq[1] = 0x6E;
+            return 2;
+        }
+    }
+    else {
+        assert(F == _G[3]);
+        if (_GL_last) {
+            _GR = F;
+            seq[0] = ESC; seq[1] = 0x7C;
+            return 2;
+        }
+        else {
+            _GL = F;
+            seq[0] = ESC; seq[1] = 0x6F;
+            return 2;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Set G0-3 to a given selector F. Return escape sequence size.
+//----------------------------------------------------------------------------
+
+size_t ts::ARIBCharsetB24::Encoder::selectG0123(uint8_t* seq, uint8_t F, bool byte2)
+{
+    // Get index oldest used charset. Reuse it. Mark it as last used.
+    const uint8_t index = uint8_t(_Gn_history >> 12) & 0x0F;
+    _Gn_history = (_Gn_history << 4) | index;
+
+    // Assign the new character set.
+    _G[index] = F;
+
+    // Generate the escape sequence.
+    // ARIB STD-B24, part 2, chapter 7, table 7-2
+    if (!byte2) {
+        // 1-byte G set in G0-3
+        seq[0] = ESC;
+        seq[1] = 0x28 + index;
+        seq[2] = F;
+        return 3;
+    }
+    else if (index == 0) {
+        // 2-byte G set in G0
+        seq[0] = ESC;
+        seq[1] = 0x24;
+        seq[2] = F;
+        return 3;
+    }
+    else {
+        // 2-byte G set in G1-3
+        seq[0] = ESC;
+        seq[1] = 0x24;
+        seq[2] = 0x28 + index;
+        seq[3] = F;
+        return 4;
+    }
 }
