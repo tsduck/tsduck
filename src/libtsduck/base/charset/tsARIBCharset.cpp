@@ -114,30 +114,30 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsARIBCharsetB24.h"
+#include "tsARIBCharset.h"
 #include "tsUString.h"
 #include "tsByteBlock.h"
 TSDUCK_SOURCE;
 
-// Define singleton instance
-TS_DEFINE_SINGLETON(ts::ARIBCharsetB24);
+// Define single instance
+const ts::ARIBCharset ts::ARIBCharset::B24;
 
 
 //----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::ARIBCharsetB24::ARIBCharsetB24() :
-    Charset(u"ARIB-STD-B24")
+ts::ARIBCharset::ARIBCharset() :
+    Charset({u"ARIB-STD-B24", u"ARIB"})
 {
 }
 
 
 //----------------------------------------------------------------------------
-// Decode a DVB string from the specified byte buffer.
+// Decode a string from the specified byte buffer.
 //----------------------------------------------------------------------------
 
-bool ts::ARIBCharsetB24::decode(UString& str, const uint8_t* data, size_t size) const
+bool ts::ARIBCharset::decode(UString& str, const uint8_t* data, size_t size) const
 {
     // Try to minimize reallocation.
     str.clear();
@@ -160,7 +160,7 @@ bool ts::ARIBCharsetB24::decode(UString& str, const uint8_t* data, size_t size) 
 // but it applies to captions only and is slightly different (G3 = Macro
 // character set instead of Katakana).
 
-ts::ARIBCharsetB24::Decoder::Decoder(UString& str, const uint8_t* data, size_t size) :
+ts::ARIBCharset::Decoder::Decoder(UString& str, const uint8_t* data, size_t size) :
     _success(true),
     _str(str),
     _data(nullptr),
@@ -181,7 +181,7 @@ ts::ARIBCharsetB24::Decoder::Decoder(UString& str, const uint8_t* data, size_t s
 // Check if next character matches c. If yes, update data and size.
 //----------------------------------------------------------------------------
 
-void ts::ARIBCharsetB24::Decoder::decodeAll(const uint8_t* data, size_t size)
+void ts::ARIBCharset::Decoder::decodeAll(const uint8_t* data, size_t size)
 {
     // Filter out invalid parameters.
     if (data == nullptr) {
@@ -247,7 +247,7 @@ void ts::ARIBCharsetB24::Decoder::decodeAll(const uint8_t* data, size_t size)
 // Check if next character matches c. If yes, update data and size.
 //----------------------------------------------------------------------------
 
-bool ts::ARIBCharsetB24::Decoder::match(uint8_t c)
+bool ts::ARIBCharset::Decoder::match(uint8_t c)
 {
     if (_size > 0 && *_data == c) {
         _data++;
@@ -264,7 +264,7 @@ bool ts::ARIBCharsetB24::Decoder::match(uint8_t c)
 // Decode one character and append to str.
 //----------------------------------------------------------------------------
 
-bool ts::ARIBCharsetB24::Decoder::decodeOneChar(const CharMap* gset)
+bool ts::ARIBCharset::Decoder::decodeOneChar(const CharMap* gset)
 {
     // Filter truncated data.
     if (gset == nullptr || _size == 0) {
@@ -339,7 +339,7 @@ bool ts::ARIBCharsetB24::Decoder::decodeOneChar(const CharMap* gset)
 // Process an escape sequence starting at current byte.
 //----------------------------------------------------------------------------
 
-bool ts::ARIBCharsetB24::Decoder::escape()
+bool ts::ARIBCharset::Decoder::escape()
 {
     // The ESC character is already consumed.
     // Get all intermediate sequence characters, in range 0x20-0x2F, and final byte F.
@@ -444,7 +444,7 @@ bool ts::ARIBCharsetB24::Decoder::escape()
 // Get a character set from an ESC sequence "final byte" F.
 //----------------------------------------------------------------------------
 
-const ts::ARIBCharsetB24::CharMap* ts::ARIBCharsetB24::Decoder::finalToCharMap(uint8_t f, bool gset_not_drcs) const
+const ts::ARIBCharset::CharMap* ts::ARIBCharset::Decoder::finalToCharMap(uint8_t f, bool gset_not_drcs) const
 {
     if (f == 0) {
         // Invalid value, used as marker in tables, so filter it now.
@@ -480,7 +480,7 @@ const ts::ARIBCharsetB24::CharMap* ts::ARIBCharsetB24::Decoder::finalToCharMap(u
 // Find the encoding entry for a Unicode point.
 //----------------------------------------------------------------------------
 
-size_t ts::ARIBCharsetB24::FindEncoderEntry(char32_t code_point, size_t hint)
+size_t ts::ARIBCharset::FindEncoderEntry(char32_t code_point, size_t hint)
 {
     // If a hint is specified, tried this slice, its next and its previous.
     if (hint < ENCODING_COUNT) {
@@ -524,7 +524,7 @@ size_t ts::ARIBCharsetB24::FindEncoderEntry(char32_t code_point, size_t hint)
 // Check if a string can be encoded using the charset.
 //----------------------------------------------------------------------------
 
-bool ts::ARIBCharsetB24::canEncode(const UString& str, size_t start, size_t count) const
+bool ts::ARIBCharset::canEncode(const UString& str, size_t start, size_t count) const
 {
     const size_t len = str.length();
     const size_t end = count > len ? len : std::min(len, start + count);
@@ -559,10 +559,10 @@ bool ts::ARIBCharsetB24::canEncode(const UString& str, size_t start, size_t coun
 
 
 //----------------------------------------------------------------------------
-// Encode a C++ Unicode string into a DVB string.
+// Encode a C++ Unicode string into an ARIB string.
 //----------------------------------------------------------------------------
 
-size_t ts::ARIBCharsetB24::encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start, size_t count) const
+size_t ts::ARIBCharset::encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start, size_t count) const
 {
     const size_t len = str.length();
     if (buffer == nullptr || size == 0 || start >= len) {
@@ -582,7 +582,7 @@ size_t ts::ARIBCharsetB24::encode(uint8_t*& buffer, size_t& size, const UString&
 // An internal encoder class.
 //----------------------------------------------------------------------------
 
-ts::ARIBCharsetB24::Encoder::Encoder(uint8_t*& out, size_t& out_size, const UChar*& in, size_t& in_count) :
+ts::ARIBCharset::Encoder::Encoder(uint8_t*& out, size_t& out_size, const UChar*& in, size_t& in_count) :
     _G{KANJI_ADDITIONAL_MAP.selector1,   // Same initial state as decoding engine
        ALPHANUMERIC_MAP.selector1,
        HIRAGANA_MAP.selector1,
@@ -662,7 +662,7 @@ ts::ARIBCharsetB24::Encoder::Encoder(uint8_t*& out, size_t& out_size, const UCha
 // Not really optimized. We always keep the same character set in G0.
 //----------------------------------------------------------------------------
 
-bool ts::ARIBCharsetB24::Encoder::selectCharSet(uint8_t*& out, size_t& out_size, const EncoderEntry& enc)
+bool ts::ARIBCharset::Encoder::selectCharSet(uint8_t*& out, size_t& out_size, const EncoderEntry& enc)
 {
     // The final selector character F for the target character set.
     const uint8_t F = enc.selectorF();
@@ -705,7 +705,7 @@ bool ts::ARIBCharsetB24::Encoder::selectCharSet(uint8_t*& out, size_t& out_size,
 // Select GL/GR from G0-3 for a given selector F. Return escape sequence size.
 //----------------------------------------------------------------------------
 
-size_t ts::ARIBCharsetB24::Encoder::selectGLR(uint8_t* seq, uint8_t F)
+size_t ts::ARIBCharset::Encoder::selectGLR(uint8_t* seq, uint8_t F)
 {
     // If GL was last used, use GR and vice versa.
     if (F == _G[0]) {
@@ -760,7 +760,7 @@ size_t ts::ARIBCharsetB24::Encoder::selectGLR(uint8_t* seq, uint8_t F)
 // Set G0-3 to a given selector F. Return escape sequence size.
 //----------------------------------------------------------------------------
 
-size_t ts::ARIBCharsetB24::Encoder::selectG0123(uint8_t* seq, uint8_t F, bool byte2)
+size_t ts::ARIBCharset::Encoder::selectG0123(uint8_t* seq, uint8_t F, bool byte2)
 {
     // Get index oldest used charset. Reuse it. Mark it as last used.
     const uint8_t index = uint8_t(_Gn_history >> 12) & 0x0F;

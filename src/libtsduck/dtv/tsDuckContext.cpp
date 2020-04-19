@@ -29,10 +29,10 @@
 
 #include "tsDuckContext.h"
 #include "tsDuckConfigFile.h"
-#include "tsDVBCharsetSingleByte.h"
+#include "tsDVBCharTableSingleByte.h"
 #include "tsHFBand.h"
 #include "tsCerrReport.h"
-#include "tsDVBCharset.h"
+#include "tsDVBCharTable.h"
 #include "tsArgs.h"
 TSDUCK_SOURCE;
 
@@ -46,8 +46,8 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
     _initial_out(output != nullptr ? output : &std::cout),
     _out(_initial_out),
     _outFile(),
-    _dvbCharsetIn(nullptr),
-    _dvbCharsetOut(nullptr),
+    _charsetIn(nullptr),
+    _charsetOut(nullptr),
     _casId(CASID_NULL),
     _defaultPDS(0),
     _cmdStandards(STD_NONE),
@@ -77,7 +77,7 @@ void ts::DuckContext::reset()
     }
 
     _out = _initial_out;
-    _dvbCharsetIn = _dvbCharsetOut = nullptr;
+    _charsetIn = _charsetOut = nullptr;
     _casId = CASID_NULL;
     _defaultPDS = 0;
     _cmdStandards = _accStandards = STD_NONE;
@@ -99,14 +99,14 @@ void ts::DuckContext::setReport(Report* report)
 // Set the DVB character sets.
 //----------------------------------------------------------------------------
 
-void ts::DuckContext::setDefaultDVBCharsetIn(const DVBCharset* charset)
+void ts::DuckContext::setDefaultCharsetIn(const DVBCharTable* charset)
 {
-    _dvbCharsetIn = charset;
+    _charsetIn = charset;
 }
 
-void ts::DuckContext::setDefaultDVBCharsetOut(const DVBCharset* charset)
+void ts::DuckContext::setDefaultCharsetOut(const DVBCharTable* charset)
 {
-    _dvbCharsetOut = charset;
+    _charsetOut = charset;
 }
 
 
@@ -337,7 +337,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     }
 
     // Options relating to default DVB character sets.
-    if (cmdOptionsMask & CMD_DVB_CHARSET) {
+    if (cmdOptionsMask & CMD_CHARSET) {
 
         args.option(u"default-charset", 0, Args::STRING);
         args.help(u"default-charset", u"name",
@@ -347,7 +347,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"signalization may assume that the default character set is different, "
                   u"typically the usual local character table for the region. This option "
                   u"forces a non-standard character table. The available table names are " +
-                  UString::Join(DVBCharset::GetAllNames()) + u".");
+                  UString::Join(DVBCharTable::GetAllNames()) + u".");
 
         args.option(u"europe", 0);
         args.help(u"europe",
@@ -425,13 +425,13 @@ bool ts::DuckContext::loadArgs(Args& args)
     }
 
     // Options relating to default DVB character sets.
-    if (_definedCmdOptions & CMD_DVB_CHARSET) {
+    if (_definedCmdOptions & CMD_CHARSET) {
         if (args.present(u"europe")) {
-            _dvbCharsetIn = _dvbCharsetOut = &DVBCharsetSingleByte::ISO_8859_15;
+            _charsetIn = _charsetOut = &DVBCharTableSingleByte::ISO_8859_15;
         }
         else {
             const UString name(args.value(u"default-charset"));
-            if (!name.empty() && (_dvbCharsetIn = _dvbCharsetOut = DVBCharset::GetCharset(name)) == nullptr) {
+            if (!name.empty() && (_charsetIn = _charsetOut = DVBCharTable::GetCharset(name)) == nullptr) {
                 args.error(u"invalid character set name '%s", {name});
             }
         }

@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsDVBCharsetSingleByte.h"
+#include "tsDVBCharTableSingleByte.h"
 #include "tsByteBlock.h"
 #include "tsUString.h"
 TSDUCK_SOURCE;
@@ -37,8 +37,8 @@ TSDUCK_SOURCE;
 // Protected constructor.
 //----------------------------------------------------------------------------
 
-ts::DVBCharsetSingleByte::DVBCharsetSingleByte(const UString& name, uint32_t tableCode, std::initializer_list<uint16_t> init, std::initializer_list<uint8_t> revDiac) :
-    DVBCharset(name, tableCode),
+ts::DVBCharTableSingleByte::DVBCharTableSingleByte(const UChar* name, uint32_t tableCode, std::initializer_list<uint16_t> init, std::initializer_list<uint8_t> revDiac) :
+    DVBCharTable(name, tableCode),
     _upperCodePoints(init),
     _bytesMap(),
     _reversedDiacritical()
@@ -46,7 +46,7 @@ ts::DVBCharsetSingleByte::DVBCharsetSingleByte(const UString& name, uint32_t tab
     // Check the size of the upper code point table.
     if (_upperCodePoints.size() != (0x100 - 0xA0)) {
         Unregister(this);
-        throw InvalidDVBCharset(UString::Format(u"%s (%d entries)", {name, _upperCodePoints.size()}));
+        throw InvalidCharset(UString::Format(u"%s (%d entries)", {name, _upperCodePoints.size()}));
     }
 
     // Code point to byte mapping for ASCII range
@@ -77,7 +77,7 @@ ts::DVBCharsetSingleByte::DVBCharsetSingleByte(const UString& name, uint32_t tab
 // Decode a DVB string from the specified byte buffer.
 //----------------------------------------------------------------------------
 
-bool ts::DVBCharsetSingleByte::decode(UString& str, const uint8_t* dvb, size_t dvbSize) const
+bool ts::DVBCharTableSingleByte::decode(UString& str, const uint8_t* dvb, size_t dvbSize) const
 {
     str.clear();
     str.reserve(dvbSize);
@@ -133,7 +133,7 @@ bool ts::DVBCharsetSingleByte::decode(UString& str, const uint8_t* dvb, size_t d
 // Check if a string can be encoded using the charset.
 //----------------------------------------------------------------------------
 
-bool ts::DVBCharsetSingleByte::canEncode(const UString& str, size_t start, size_t count) const
+bool ts::DVBCharTableSingleByte::canEncode(const UString& str, size_t start, size_t count) const
 {
     for (size_t i = 0; i < str.length(); ++i) {
         const UChar cp = str[i];
@@ -150,7 +150,7 @@ bool ts::DVBCharsetSingleByte::canEncode(const UString& str, size_t start, size_
 // Encode a C++ Unicode string into a DVB string.
 //----------------------------------------------------------------------------
 
-size_t ts::DVBCharsetSingleByte::encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start, size_t count) const
+size_t ts::DVBCharTableSingleByte::encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start, size_t count) const
 {
     uint8_t* const base = buffer;
     size_t result = 0;
@@ -182,7 +182,7 @@ size_t ts::DVBCharsetSingleByte::encode(uint8_t*& buffer, size_t& size, const US
 // Character sets.
 //----------------------------------------------------------------------------
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_6937(u"ISO-6937", 0x00, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_6937(u"ISO-6937", 0x00, {
     0x00A0, 0x00A1, 0x00A2, 0x00A3, 0x20AC, 0x00A5, 0x0000, 0x00A7,
     0x00A4, 0x2018, 0x201C, 0x00AB, 0x2190, 0x2191, 0x2192, 0x2193,
     0x00B0, 0x00B1, 0x00B2, 0x00B3, 0x00D7, 0x00B5, 0x00B6, 0x00B7,
@@ -201,7 +201,7 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_6937(u"ISO-6937", 0
     0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF
 });
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_1(u"ISO-8859-1", 0x100001, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_8859_1(u"ISO-8859-1", 0x100001, {
     0x00A0, 0x00A1, 0x00A2, 0x00A3, 0x00A4, 0x00A5, 0x00A6, 0x00A7,
     0x00A8, 0x00A9, 0x00AA, 0x00AB, 0x00AC, 0x00AD, 0x00AE, 0x00AF,
     0x00B0, 0x00B1, 0x00B2, 0x00B3, 0x00B4, 0x00B5, 0x00B6, 0x00B7,
@@ -216,7 +216,7 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_1(u"ISO-8859-1
     0x00F8, 0x00F9, 0x00FA, 0x00FB, 0x00FC, 0x00FD, 0x00FE, 0x00FF
 });
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_2(u"ISO-8859-2", 0x100002, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_8859_2(u"ISO-8859-2", 0x100002, {
     0x00A0, 0x0104, 0x02D8, 0x0141, 0x00A4, 0x013D, 0x015A, 0x00A7,
     0x00A8, 0x0160, 0x015E, 0x0164, 0x0179, 0x00AD, 0x017D, 0x017B,
     0x00B0, 0x0105, 0x02DB, 0x0142, 0x00B4, 0x013E, 0x015B, 0x02C7,
@@ -231,7 +231,7 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_2(u"ISO-8859-2
     0x0159, 0x016F, 0x00FA, 0x0171, 0x00FC, 0x00FD, 0x0163, 0x02D9
 });
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_3(u"ISO-8859-3", 0x100003, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_8859_3(u"ISO-8859-3", 0x100003, {
     0x00A0, 0x0126, 0x02D8, 0x00A3, 0x00A4, 0x0000, 0x0124, 0x00A7,
     0x00A8, 0x0130, 0x015E, 0x011E, 0x0134, 0x00AD, 0x0000, 0x017B,
     0x00B0, 0x0127, 0x00B2, 0x00B3, 0x00B4, 0x00B5, 0x0125, 0x00B7,
@@ -246,7 +246,7 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_3(u"ISO-8859-3
     0x011D, 0x00F9, 0x00FA, 0x00FB, 0x00FC, 0x016D, 0x015D, 0x02D9
 });
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_4(u"ISO-8859-4", 0x100004, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_8859_4(u"ISO-8859-4", 0x100004, {
     0x00A0, 0x0104, 0x0138, 0x0156, 0x00A4, 0x0128, 0x013B, 0x00A7,
     0x00A8, 0x0160, 0x0112, 0x0122, 0x0166, 0x00AD, 0x017D, 0x00AF,
     0x00B0, 0x0105, 0x02DB, 0x0157, 0x00B4, 0x0129, 0x013C, 0x02C7,
@@ -261,7 +261,7 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_4(u"ISO-8859-4
     0x00F8, 0x0173, 0x00FA, 0x00FB, 0x00FC, 0x0169, 0x016B, 0x02D9
 });
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_5(u"ISO-8859-5", 0x01, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_8859_5(u"ISO-8859-5", 0x01, {
     0x00A0, 0x0401, 0x0402, 0x0403, 0x0404, 0x0405, 0x0406, 0x0407,
     0x0408, 0x0409, 0x040A, 0x040B, 0x040C, 0x00AD, 0x040E, 0x040F,
     0x0410, 0x0411, 0x0412, 0x0413, 0x0414, 0x0415, 0x0416, 0x0417,
@@ -276,7 +276,7 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_5(u"ISO-8859-5
     0x0458, 0x0459, 0x045A, 0x045B, 0x045C, 0x00A7, 0x045E, 0x045F
 });
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_6(u"ISO-8859-6", 0x02, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_8859_6(u"ISO-8859-6", 0x02, {
     0x00A0, 0x0000, 0x0000, 0x0000, 0x00A4, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x060C, 0x00AD, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -291,7 +291,7 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_6(u"ISO-8859-6
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
 });
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_7(u"ISO-8859-7", 0x03, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_8859_7(u"ISO-8859-7", 0x03, {
     0x00A0, 0x2018, 0x2019, 0x00A3, 0x20AC, 0x20AF, 0x00A6, 0x00A7,
     0x00A8, 0x00A9, 0x037A, 0x00AB, 0x00AC, 0x00AD, 0x0000, 0x2015,
     0x00B0, 0x00B1, 0x00B2, 0x00B3, 0x0384, 0x0385, 0x0386, 0x00B7,
@@ -306,7 +306,7 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_7(u"ISO-8859-7
     0x03C8, 0x03C9, 0x03CA, 0x03CB, 0x03CC, 0x03CD, 0x03CE, 0x0000
 });
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_8(u"ISO-8859-8", 0x04, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_8859_8(u"ISO-8859-8", 0x04, {
     0x00A0, 0x0000, 0x00A2, 0x00A3, 0x00A4, 0x00A5, 0x00A6, 0x00A7,
     0x00A8, 0x00A9, 0x00D7, 0x00AB, 0x00AC, 0x00AD, 0x00AE, 0x00AF,
     0x00B0, 0x00B1, 0x00B2, 0x00B3, 0x00B4, 0x00B5, 0x00B6, 0x00B7,
@@ -321,7 +321,7 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_8(u"ISO-8859-8
     0x05E8, 0x05E9, 0x05EA, 0x0000, 0x0000, 0x200E, 0x200F, 0x0000
 });
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_9(u"ISO-8859-9", 0x05, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_8859_9(u"ISO-8859-9", 0x05, {
     0x00A0, 0x00A1, 0x00A2, 0x00A3, 0x00A4, 0x00A5, 0x00A6, 0x00A7,
     0x00A8, 0x00A9, 0x00AA, 0x00AB, 0x00AC, 0x00AD, 0x00AE, 0x00AF,
     0x00B0, 0x00B1, 0x00B2, 0x00B3, 0x00B4, 0x00B5, 0x00B6, 0x00B7,
@@ -336,7 +336,7 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_9(u"ISO-8859-9
     0x00F8, 0x00F9, 0x00FA, 0x00FB, 0x00FC, 0x0131, 0x015F, 0x00FF
 });
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_10(u"ISO-8859-10", 0x06, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_8859_10(u"ISO-8859-10", 0x06, {
     0x00A0, 0x0104, 0x0112, 0x0122, 0x012A, 0x0128, 0x0136, 0x00A7,
     0x013B, 0x0110, 0x0160, 0x0166, 0x017D, 0x00AD, 0x016A, 0x014A,
     0x00B0, 0x0105, 0x0113, 0x0123, 0x012B, 0x0129, 0x0137, 0x00B7,
@@ -351,7 +351,7 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_10(u"ISO-8859-
     0x00F8, 0x0173, 0x00FA, 0x00FB, 0x00FC, 0x00FD, 0x00FE, 0x0138
 });
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_11(u"ISO-8859-11", 0x07, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_8859_11(u"ISO-8859-11", 0x07, {
     0x00A0, 0x0E01, 0x0E02, 0x0E03, 0x0E04, 0x0E05, 0x0E06, 0x0E07,
     0x0E08, 0x0E09, 0x0E0A, 0x0E0B, 0x0E0C, 0x0E0D, 0x0E0E, 0x0E0F,
     0x0E10, 0x0E11, 0x0E12, 0x0E13, 0x0E14, 0x0E15, 0x0E16, 0x0E17,
@@ -366,7 +366,7 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_11(u"ISO-8859-
     0x0E58, 0x0E59, 0x0E5A, 0x0E5B, 0x0000, 0x0000, 0x0000, 0x0000
 });
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_13(u"ISO-8859-13", 0x09, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_8859_13(u"ISO-8859-13", 0x09, {
     0x00A0, 0x201D, 0x00A2, 0x00A3, 0x00A4, 0x201E, 0x00A6, 0x00A7,
     0x00D8, 0x00A9, 0x0156, 0x00AB, 0x00AC, 0x00AD, 0x00AE, 0x00C6,
     0x00B0, 0x00B1, 0x00B2, 0x00B3, 0x201C, 0x00B5, 0x00B6, 0x00B7,
@@ -381,7 +381,7 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_13(u"ISO-8859-
     0x0173, 0x0142, 0x015B, 0x016B, 0x00FC, 0x017C, 0x017E, 0x2019
 });
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_14(u"ISO-8859-14", 0x0A, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_8859_14(u"ISO-8859-14", 0x0A, {
     0x00A0, 0x1E02, 0x1E03, 0x00A3, 0x010A, 0x010B, 0x1E0A, 0x00A7,
     0x1E80, 0x00A9, 0x1E82, 0x1E0B, 0x1EF2, 0x00AD, 0x00AE, 0x0178,
     0x1E1E, 0x1E1F, 0x0120, 0x0121, 0x1E40, 0x1E41, 0x00B6, 0x1E56,
@@ -396,7 +396,7 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_14(u"ISO-8859-
     0x00F8, 0x00F9, 0x00FA, 0x00FB, 0x00FC, 0x00FD, 0x0177, 0x00FF
 });
 
-const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_15(u"ISO-8859-15", 0x0B, {
+const ts::DVBCharTableSingleByte ts::DVBCharTableSingleByte::ISO_8859_15(u"ISO-8859-15", 0x0B, {
     0x00A0, 0x00A1, 0x00A2, 0x00A3, 0x20AC, 0x00A5, 0x0160, 0x00A7,
     0x0161, 0x00A9, 0x00AA, 0x00AB, 0x00AC, 0x00AD, 0x00AE, 0x00AF,
     0x00B0, 0x00B1, 0x00B2, 0x00B3, 0x017D, 0x00B5, 0x00B6, 0x00B7,

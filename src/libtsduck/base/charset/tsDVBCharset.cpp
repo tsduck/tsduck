@@ -28,209 +28,124 @@
 //----------------------------------------------------------------------------
 
 #include "tsDVBCharset.h"
-#include "tsAlgorithm.h"
-#include "tsSingletonManager.h"
+#include "tsUString.h"
 #include "tsByteBlock.h"
+#include "tsDVBCharTableSingleByte.h"
+#include "tsDVBCharTableUTF8.h"
 TSDUCK_SOURCE;
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-constexpr uint8_t  ts::DVBCharset::DVB_SINGLE_BYTE_CRLF;
-constexpr uint16_t ts::DVBCharset::DVB_CODEPOINT_CRLF;
-#endif
+// Default predefined DVB character set (using ISO-6937 as default table).
+const ts::DVBCharset ts::DVBCharset::DVB(u"DVB");
 
 
 //----------------------------------------------------------------------------
-// Get the character coding table at the beginning of a DVB string.
+// Constructor.
 //----------------------------------------------------------------------------
 
-bool ts::DVBCharset::GetCharCodeTable(uint32_t& code, size_t& codeSize, const uint8_t* dvb, size_t dvbSize)
-{
-    // Null or empty buffer is a valid empty string.
-    if (dvb == nullptr || dvbSize == 0) {
-        code = 0;
-        codeSize = 0;
-        return true;
-    }
-    else if (*dvb >= 0x20) {
-        // Default character set.
-        code = 0;
-        codeSize = 0;
-        return true;
-    }
-    else if (*dvb == 0x1F) {
-        if (dvbSize >= 2) {
-            // Second byte is encoding_type_id.
-            // Value          Owner/Charset
-            // 0x00 to 0x04 - BBC
-            // 0x05 to 0x06 - MYTV (Malaysian TV broadcasting company)
-            // See: https://www.dvbservices.com/identifiers/encoding_type_id
-            // Currently unsupported, Huffmann decoding table not publicly
-            // available.
-            code = 0xFFFFFFFF;
-            codeSize = 2;
-            return false;
-        }
-    }
-    else if (*dvb == 0x10) {
-        if (dvbSize >= 3) {
-            code = GetUInt24(dvb);
-            codeSize = 3;
-            /*
-             * Here are the values for ISO 8859 charsets both present in one
-             * byte and three-bytes sets.
-             *
-             * ISO 8859-5    0x01    0x100005
-             * ISO 8859-6    0x02    0x100006
-             * ISO 8859-7    0x03    0x100007
-             * ISO 8859-8    0x04    0x100008
-             * ISO 8859-9    0x05    0x100009
-             * ISO 8859-10   0x06    0x10000A
-             * ISO 8859-11   0x07    0x10000B
-             * (ISO 8859-12   n/a     n/a)
-             * ISO 8859-13   0x09    0x10000D
-             * ISO 8859-14   0x0A    0x10000E
-             * ISO 8859-15   0x0B    0x10000F
-             *
-             * In this line we translate the three-bytes forms to the one byte
-             * already coded in tsDVBCharsetSingleByte.cpp
-             */
-            if (code >= 0x100005 && code <= 0x10000F) {
-                code = (code & 0xFF) - 4;
-            }
-            return true;
-        }
-    }
-    else {
-        code = *dvb;
-        codeSize = 1;
-        return true;
-    }
-
-    // Invalid format
-    code = 0xFFFFFFFF;
-    codeSize = 0;
-    return false;
-}
-
-
-//----------------------------------------------------------------------------
-// Encode the character set table code.
-//----------------------------------------------------------------------------
-
-size_t ts::DVBCharset::encodeTableCode(uint8_t*& buffer, size_t& size) const
-{
-    // Intermediate buffer, just in case the output buffer is too small.
-    uint8_t buf[4] = {0};
-    size_t codeSize = 0;
-
-    if (buffer == nullptr || size == 0 || _code == 0) {
-        // Empty buffer or default character set.
-        return 0;
-    }
-    else if (_code < 0x1F && _code != 0x10) {
-        // On byte code.
-        buf[0] = uint8_t(_code);
-        codeSize = 1;
-    }
-    else if ((_code & 0xFFFFFF00) == 0x00001F00) {
-        // Two bytes, 0x1F followed by encoding_type_id.
-        PutUInt16(buf, uint16_t(_code));
-        codeSize = 2;
-    }
-    else if ((_code & 0xFFFF0000) == 0x00100000) {
-        // Three bytes, 0x10 followed by 16-bit code.
-        PutUInt24(buf, _code);
-        codeSize = 3;
-    }
-    else {
-        // Invalid table code.
-        return 0;
-    }
-
-    // Now copy the table code.
-    if (codeSize > size) {
-        codeSize = size;
-    }
-    ::memcpy(buffer, buf, codeSize);
-    buffer += codeSize;
-    size -= codeSize;
-    return codeSize;
-}
-
-
-//----------------------------------------------------------------------------
-// Repository of character sets.
-//----------------------------------------------------------------------------
-
-namespace {
-    class CharSetRepo
-    {
-        TS_DECLARE_SINGLETON(CharSetRepo);
-    public:
-        std::map<ts::UString, ts::DVBCharset*> byName;
-        std::map<uint32_t, ts::DVBCharset*> byCode;
-    };
-    TS_DEFINE_SINGLETON(CharSetRepo);
-    CharSetRepo::CharSetRepo() : byName(), byCode() {}
-}
-
-// Get a DVB character set by name.
-ts::DVBCharset* ts::DVBCharset::GetCharset(const UString& name)
-{
-    const CharSetRepo* repo = CharSetRepo::Instance();
-    const std::map<UString, DVBCharset*>::const_iterator it = repo->byName.find(name);
-    return it == repo->byName.end() ? nullptr : it->second;
-}
-
-// Get a DVB character set by table code.
-ts::DVBCharset* ts::DVBCharset::GetCharset(uint32_t tableCode)
-{
-    const CharSetRepo* repo = CharSetRepo::Instance();
-    const std::map<uint32_t, DVBCharset*>::const_iterator it = repo->byCode.find(tableCode);
-    return it == repo->byCode.end() ? nullptr : it->second;
-}
-
-// Find all registered character set names.
-ts::UStringList ts::DVBCharset::GetAllNames()
-{
-    return MapKeys(CharSetRepo::Instance()->byName);
-}
-
-// Remove the specified charset
-void ts::DVBCharset::Unregister(const DVBCharset* charset)
-{
-    if (charset != nullptr) {
-        CharSetRepo* repo = CharSetRepo::Instance();
-        repo->byName.erase(charset->name());
-        repo->byCode.erase(charset->tableCode());
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Constructor / destructor.
-//----------------------------------------------------------------------------
-
-ts::DVBCharset::DVBCharset(const UString& name, uint32_t tableCode) :
+ts::DVBCharset::DVBCharset(const UChar* name, const DVBCharTable* default_table) :
     Charset(name),
-    _code(tableCode)
+    _default_table(default_table != nullptr ? default_table : &DVBCharTableSingleByte::ISO_6937)
 {
-    // Register the character set.
-    CharSetRepo* repo = CharSetRepo::Instance();
-    const std::map<UString, DVBCharset*>::const_iterator itName = repo->byName.find(name);
-    const std::map<uint32_t, DVBCharset*>::const_iterator itCode = repo->byCode.find(_code);
-    if (itName == repo->byName.end() && itCode == repo->byCode.end()) {
-        // Charset not yet registered.
-        repo->byName.insert(std::make_pair(name, this));
-        repo->byCode.insert(std::make_pair(_code, this));
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a string can be encoded using the charset.
+//----------------------------------------------------------------------------
+
+bool ts::DVBCharset::canEncode(const UString& str, size_t start, size_t count) const
+{
+    // Everything is encodable using DVB character set because UTF-8 and UTF-16
+    // are part of the DVB character tables and they can encode everything.
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Decode a DVB string from the specified byte buffer.
+//----------------------------------------------------------------------------
+
+bool ts::DVBCharset::decode(UString& str, const uint8_t* data, size_t size) const
+{
+    // Try to minimize reallocation.
+    str.clear();
+    str.reserve(size);
+
+    // Null or empty buffer is a valid empty string.
+    if (data == nullptr || size == 0) {
+        return true;
+    }
+
+    // Get the DVB character set code from the beginning of the string.
+    uint32_t code = 0;
+    size_t codeSize = 0;
+    if (!DVBCharTable::GetTableCode(code, codeSize, data, size)) {
+        return false;
+    }
+
+    // Skip the character code.
+    assert(codeSize <= size);
+    data += codeSize;
+    size -= codeSize;
+
+    // Get the character set for this DVB string.
+    const DVBCharTable* table = code == 0 ? _default_table : DVBCharTable::GetTableFromLeadingCode(code);
+    if (table == nullptr) {
+        // Unsupported character table. Collect all ANSI characters, replace others by '.'.
+        for (size_t i = 0; i < size; i++) {
+            str.push_back(data[i] >= 0x20 && data[i] <= 0x7E ? UChar(data[i]) : FULL_STOP);
+        }
+        return false;
     }
     else {
-        throw DuplicateDVBCharset(name);
+        // Convert the DVB string using the character table.
+        table->decode(str, data, size);
+        return true;
     }
 }
 
-ts::DVBCharset::~DVBCharset()
+
+//----------------------------------------------------------------------------
+// Encode a C++ Unicode string into a DVB string.
+//----------------------------------------------------------------------------
+
+size_t ts::DVBCharset::encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start, size_t count) const
 {
-    // Remove charset from repository.
-    Unregister(this);
+    // Sanitize start and count.
+    const size_t length = str.length();
+    start = std::min(start, length);
+    count = std::min(count, length - start);
+
+    // Skip cases where there is nothing to do.
+    if (buffer == nullptr || size == 0 || count == 0) {
+        return 0;
+    }
+
+    // Try to encode using these character tables in order
+    const DVBCharTable* const lookup_tables[] = {
+        _default_table,                            // default table for this charset
+        &ts::DVBCharTableSingleByte::ISO_6937,     // default DVB table, same as previous in most cases
+        &ts::DVBCharTableSingleByte::ISO_8859_15,  // most european characters and Euro currency sign
+        &ts::DVBCharTableUTF8::UTF_8,              // last chance, used when no other match
+        nullptr                                    // end of list
+    };
+
+    // Look for a character set which can encode the string.
+    const DVBCharTable* table = nullptr;
+    for (size_t i = 0; lookup_tables[i] != nullptr; ++i) {
+        if (lookup_tables[i]->canEncode(str, start, count)) {
+            table = lookup_tables[i];
+            break;
+        }
+    }
+    if (table == nullptr) {
+        // Should not happen since UTF-8 can encode everything.
+        return 0;
+    }
+
+    // Serialize the table code.
+    table->encodeTableCode(buffer, size);
+
+    // Encode the string.
+    return table->encode(buffer, size, str, start, count);
 }

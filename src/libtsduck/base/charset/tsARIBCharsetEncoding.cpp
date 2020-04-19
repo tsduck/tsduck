@@ -31,10 +31,10 @@
 // See internal tool aribb24codegen in src/utils.
 // Generated 2020/04/15
 
-#include "tsARIBCharsetB24.h"
+#include "tsARIBCharset.h"
 
-const size_t ts::ARIBCharsetB24::ENCODING_COUNT = 6647;
-const ts::ARIBCharsetB24::EncoderEntry ts::ARIBCharsetB24::ENCODING_TABLE[6647] = {
+const size_t ts::ARIBCharset::ENCODING_COUNT = 6647;
+const ts::ARIBCharset::EncoderEntry ts::ARIBCharset::ENCODING_TABLE[6647] = {
     {0x00000021, 0x4A21213B}, {0x0000005C, 0xC2214001}, {0x0000005D, 0x4A215D21}, {0x000000A2, 0xC2217102},
     {0x000000A5, 0x4A215C01}, {0x000000A7, 0xC2217801}, {0x000000A8, 0xC2212F01}, {0x000000AC, 0xC2224C01},
     {0x000000B0, 0xC2216B01}, {0x000000B1, 0xC2215E01}, {0x000000B2, 0xC27C5502}, {0x000000B4, 0xC2212D01},

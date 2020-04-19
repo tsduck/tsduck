@@ -42,7 +42,7 @@
 namespace ts {
 
     class TablesDisplay;
-    class DVBCharset;
+    class DVBCharTable;
 
     //!
     //! A factory class which creates tables and descriptors based on id or name.

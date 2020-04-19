@@ -39,7 +39,7 @@
 #include "tsSection.h"
 #include "tsBinaryTable.h"
 #include "tsUString.h"
-#include "tsDVBCharset.h"
+#include "tsDVBCharTable.h"
 #include "tsxmlTweaks.h"
 #include "tsTablesPtr.h"
 #include "tsCerrReport.h"

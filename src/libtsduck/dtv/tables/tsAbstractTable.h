@@ -42,7 +42,7 @@ namespace ts {
 
     class tsBinaryTable;
     class TablesDisplay;
-    class DVBCharset;
+    class DVBCharTable;
 
     //!
     //! Abstract base class for MPEG PSI/SI tables.

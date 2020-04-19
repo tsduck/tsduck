@@ -28,12 +28,12 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Declaration of class DVBCharsetSingleByte.
+//!  Declaration of class DVBCharTableSingleByte.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsDVBCharset.h"
+#include "tsDVBCharTable.h"
 
 namespace ts {
     //!
@@ -48,42 +48,42 @@ namespace ts {
     //! @see ETSI EN 300 468, Annex A.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL DVBCharsetSingleByte: public DVBCharset
+    class TSDUCKDLL DVBCharTableSingleByte: public DVBCharTable
     {
-        TS_NOBUILD_NOCOPY(DVBCharsetSingleByte);
+        TS_NOBUILD_NOCOPY(DVBCharTableSingleByte);
     public:
         // Predefined character sets.
-        static const DVBCharsetSingleByte ISO_6937;    //!< Modified ISO 6937, DVB default charset.
-        static const DVBCharsetSingleByte ISO_8859_1;  //!< ISO 8859-1 character set.
-        static const DVBCharsetSingleByte ISO_8859_2;  //!< ISO 8859-2 character set.
-        static const DVBCharsetSingleByte ISO_8859_3;  //!< ISO 8859-3 character set.
-        static const DVBCharsetSingleByte ISO_8859_4;  //!< ISO 8859-4 character set.
-        static const DVBCharsetSingleByte ISO_8859_5;  //!< ISO 8859-5 character set.
-        static const DVBCharsetSingleByte ISO_8859_6;  //!< ISO 8859-6 character set.
-        static const DVBCharsetSingleByte ISO_8859_7;  //!< ISO 8859-7 character set.
-        static const DVBCharsetSingleByte ISO_8859_8;  //!< ISO 8859-8 character set.
-        static const DVBCharsetSingleByte ISO_8859_9;  //!< ISO 8859-9 character set.
-        static const DVBCharsetSingleByte ISO_8859_10; //!< ISO 8859-10 character set.
-        static const DVBCharsetSingleByte ISO_8859_11; //!< ISO 8859-11 character set.
-        static const DVBCharsetSingleByte ISO_8859_13; //!< ISO 8859-13 character set.
-        static const DVBCharsetSingleByte ISO_8859_14; //!< ISO 8859-14 character set.
-        static const DVBCharsetSingleByte ISO_8859_15; //!< ISO 8859-15 character set.
+        static const DVBCharTableSingleByte ISO_6937;    //!< Modified ISO 6937, DVB default charset.
+        static const DVBCharTableSingleByte ISO_8859_1;  //!< ISO 8859-1 character set.
+        static const DVBCharTableSingleByte ISO_8859_2;  //!< ISO 8859-2 character set.
+        static const DVBCharTableSingleByte ISO_8859_3;  //!< ISO 8859-3 character set.
+        static const DVBCharTableSingleByte ISO_8859_4;  //!< ISO 8859-4 character set.
+        static const DVBCharTableSingleByte ISO_8859_5;  //!< ISO 8859-5 character set.
+        static const DVBCharTableSingleByte ISO_8859_6;  //!< ISO 8859-6 character set.
+        static const DVBCharTableSingleByte ISO_8859_7;  //!< ISO 8859-7 character set.
+        static const DVBCharTableSingleByte ISO_8859_8;  //!< ISO 8859-8 character set.
+        static const DVBCharTableSingleByte ISO_8859_9;  //!< ISO 8859-9 character set.
+        static const DVBCharTableSingleByte ISO_8859_10; //!< ISO 8859-10 character set.
+        static const DVBCharTableSingleByte ISO_8859_11; //!< ISO 8859-11 character set.
+        static const DVBCharTableSingleByte ISO_8859_13; //!< ISO 8859-13 character set.
+        static const DVBCharTableSingleByte ISO_8859_14; //!< ISO 8859-14 character set.
+        static const DVBCharTableSingleByte ISO_8859_15; //!< ISO 8859-15 character set.
 
         // Inherited methods.
         virtual bool decode(UString& str, const uint8_t* dvb, size_t dvbSize) const override;
         virtual bool canEncode(const UString& str, size_t start = 0, size_t count = NPOS) const override;
         virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const override;
 
-    protected:
+    private:
         //!
-        //! Protected constructor.
+        //! Private constructor since no external instance can be defined.
         //! @param [in] name charset name.
         //! @param [in] tableCode DVB table code.
         //! @param [in] init Initializer list. 96 code point values for 0xA0-0xFF range, zero means unused.
         //! @param [in] revDiac Optional list of byte values in range 0xA0-0xFF of combining diacritical
         //! marks which precede their base letter (and must be reversed from Unicode).
         //!
-        DVBCharsetSingleByte(const UString& name, uint32_t tableCode, std::initializer_list<uint16_t> init, std::initializer_list<uint8_t> revDiac = std::initializer_list<uint8_t>());
+        DVBCharTableSingleByte(const UChar* name, uint32_t tableCode, std::initializer_list<uint16_t> init, std::initializer_list<uint8_t> revDiac = std::initializer_list<uint8_t>());
 
     private:
         // List of code points for byte values 0xA0-0xFF. Always contain 96 values.

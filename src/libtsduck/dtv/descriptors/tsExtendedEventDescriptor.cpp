@@ -75,7 +75,7 @@ ts::ExtendedEventDescriptor::ExtendedEventDescriptor(DuckContext& duck, const De
 // Update all descriptor_number and last_descriptor_number.
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::NormalizeNumbering(uint8_t* desc_base, size_t desc_size, const DVBCharset* charset)
+void ts::ExtendedEventDescriptor::NormalizeNumbering(uint8_t* desc_base, size_t desc_size, const DVBCharTable* charset)
 {
     typedef std::map<UString, size_t> SizeMap; // key=language_code
     SizeMap desc_last;

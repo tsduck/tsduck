@@ -32,7 +32,7 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
-#include "tsDVBCharsetSingleByte.h"
+#include "tsDVBCharTableSingleByte.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"telephone_descriptor"
@@ -75,11 +75,11 @@ ts::TelephoneDescriptor::TelephoneDescriptor(DuckContext& duck, const Descriptor
 void ts::TelephoneDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     // ETSI EN 300 468 says that encoding shall be done using ISO/IEC 8859-1.
-    const ByteBlock bb_country_prefix(DVBCharsetSingleByte::ISO_8859_1.encoded(country_prefix));
-    const ByteBlock bb_international_area_code(DVBCharsetSingleByte::ISO_8859_1.encoded(international_area_code));
-    const ByteBlock bb_operator_code(DVBCharsetSingleByte::ISO_8859_1.encoded(operator_code));
-    const ByteBlock bb_national_area_code(DVBCharsetSingleByte::ISO_8859_1.encoded(national_area_code));
-    const ByteBlock bb_core_number(DVBCharsetSingleByte::ISO_8859_1.encoded(core_number));
+    const ByteBlock bb_country_prefix(DVBCharTableSingleByte::ISO_8859_1.encoded(country_prefix));
+    const ByteBlock bb_international_area_code(DVBCharTableSingleByte::ISO_8859_1.encoded(international_area_code));
+    const ByteBlock bb_operator_code(DVBCharTableSingleByte::ISO_8859_1.encoded(operator_code));
+    const ByteBlock bb_national_area_code(DVBCharTableSingleByte::ISO_8859_1.encoded(national_area_code));
+    const ByteBlock bb_core_number(DVBCharTableSingleByte::ISO_8859_1.encoded(core_number));
 
     // Check that all string length match constraints.
     if (bb_country_prefix.size() > MAX_COUNTRY_PREFIX_LENGTH ||
@@ -135,11 +135,11 @@ void ts::TelephoneDescriptor::deserialize(DuckContext& duck, const Descriptor& d
         // ETSI EN 300 468 says that encoding shall be done using ISO/IEC 8859-1.
         _is_valid =
             size == country_len + inter_len + oper_len + nat_len + core_len &&
-            DVBCharsetSingleByte::ISO_8859_1.decode(country_prefix, data, country_len) &&
-            DVBCharsetSingleByte::ISO_8859_1.decode(international_area_code, data + country_len, inter_len) &&
-            DVBCharsetSingleByte::ISO_8859_1.decode(operator_code, data + country_len + inter_len, oper_len) &&
-            DVBCharsetSingleByte::ISO_8859_1.decode(national_area_code, data + country_len + inter_len + oper_len, nat_len) &&
-            DVBCharsetSingleByte::ISO_8859_1.decode(core_number, data + country_len + inter_len + oper_len + nat_len, core_len);
+            DVBCharTableSingleByte::ISO_8859_1.decode(country_prefix, data, country_len) &&
+            DVBCharTableSingleByte::ISO_8859_1.decode(international_area_code, data + country_len, inter_len) &&
+            DVBCharTableSingleByte::ISO_8859_1.decode(operator_code, data + country_len + inter_len, oper_len) &&
+            DVBCharTableSingleByte::ISO_8859_1.decode(national_area_code, data + country_len + inter_len + oper_len, nat_len) &&
+            DVBCharTableSingleByte::ISO_8859_1.decode(core_number, data + country_len + inter_len + oper_len + nat_len, core_len);
     }
 }
 
@@ -165,23 +165,23 @@ void ts::TelephoneDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
         data += 3; size -= 3;
 
         UString str;
-        if (size >= country_len && DVBCharsetSingleByte::ISO_8859_1.decode(str, data, country_len)) {
+        if (size >= country_len && DVBCharTableSingleByte::ISO_8859_1.decode(str, data, country_len)) {
             data += country_len; size -= country_len;
             strm << margin << "Country prefix: \"" << str << "\"" << std::endl;
 
-            if (size >= inter_len && DVBCharsetSingleByte::ISO_8859_1.decode(str, data, inter_len)) {
+            if (size >= inter_len && DVBCharTableSingleByte::ISO_8859_1.decode(str, data, inter_len)) {
                 data += inter_len; size -= inter_len;
                 strm << margin << "International area code: \"" << str << "\"" << std::endl;
 
-                if (size >= oper_len && DVBCharsetSingleByte::ISO_8859_1.decode(str, data, oper_len)) {
+                if (size >= oper_len && DVBCharTableSingleByte::ISO_8859_1.decode(str, data, oper_len)) {
                     data += oper_len; size -= oper_len;
                     strm << margin << "Operator code: \"" << str << "\"" << std::endl;
 
-                    if (size >= nat_len && DVBCharsetSingleByte::ISO_8859_1.decode(str, data, nat_len)) {
+                    if (size >= nat_len && DVBCharTableSingleByte::ISO_8859_1.decode(str, data, nat_len)) {
                         data += nat_len; size -= nat_len;
                         strm << margin << "National area code: \"" << str << "\"" << std::endl;
 
-                        if (size >= core_len && DVBCharsetSingleByte::ISO_8859_1.decode(str, data, core_len)) {
+                        if (size >= core_len && DVBCharTableSingleByte::ISO_8859_1.decode(str, data, core_len)) {
                             data += core_len; size -= core_len;
                             strm << margin << "Core number: \"" << str << "\"" << std::endl;
                         }

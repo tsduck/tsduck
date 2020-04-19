@@ -31,7 +31,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsDVBCharset.h"
+#include "tsDVBCharTable.h"
+#include "tsByteBlock.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
 
@@ -46,9 +47,11 @@ public:
     virtual void afterTest() override;
 
     void testRepository();
+    void testDVB();
 
     TSUNIT_TEST_BEGIN(DVBCharsetTest);
     TSUNIT_TEST(testRepository);
+    TSUNIT_TEST(testDVB);
     TSUNIT_TEST_END();
 };
 
@@ -76,6 +79,16 @@ void DVBCharsetTest::afterTest()
 
 void DVBCharsetTest::testRepository()
 {
-    debug() << "DVBCharsetTest::testRepository: charsets: " << ts::UString::Join(ts::DVBCharset::GetAllNames()) << std::endl;
-    TSUNIT_EQUAL(17, ts::DVBCharset::GetAllNames().size());
+    debug() << "DVBCharsetTest::testRepository: charsets: " << ts::UString::Join(ts::DVBCharTable::GetAllNames()) << std::endl;
+    TSUNIT_EQUAL(17, ts::DVBCharTable::GetAllNames().size());
+}
+
+void DVBCharsetTest::testDVB()
+{
+    TSUNIT_EQUAL(u"abCD 89#()", ts::UString::FromDVB(std::string("abCD 89#()")));
+
+    static const uint8_t dvb1[] = {0x30, 0xC2, 0x65, 0xC3, 0x75};
+    const ts::UString str1{u'0', ts::LATIN_SMALL_LETTER_E_WITH_ACUTE, ts::LATIN_SMALL_LETTER_U_WITH_CIRCUMFLEX};
+    TSUNIT_EQUAL(str1, ts::UString::FromDVB(dvb1, sizeof(dvb1)));
+    TSUNIT_ASSERT(ts::ByteBlock(dvb1, sizeof(dvb1)) == str1.toDecomposedDiacritical().toDVB());
 }

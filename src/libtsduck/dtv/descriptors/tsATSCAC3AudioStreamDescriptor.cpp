@@ -33,8 +33,8 @@
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
-#include "tsDVBCharsetUTF16.h"
-#include "tsDVBCharsetSingleByte.h"
+#include "tsDVBCharTableUTF16.h"
+#include "tsDVBCharTableSingleByte.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"ATSC_AC3_audio_stream_descriptor"
@@ -124,10 +124,10 @@ void ts::ATSCAC3AudioStreamDescriptor::serialize(DuckContext& duck, Descriptor& 
     }
 
     // Check if text shall be encoded in ISO Latin-1 (ISO 8859-1) or UTF-16.
-    const bool latin1 = DVBCharsetSingleByte::ISO_8859_1.canEncode(text);
+    const bool latin1 = DVBCharTableSingleByte::ISO_8859_1.canEncode(text);
 
     // Encode the text. The resultant size must fit on 7 bits. The max size is then 127 characters with Latin-1 and 63 with UTF-16.
-    const ByteBlock bb(latin1 ? DVBCharsetSingleByte::ISO_8859_1.encoded(text, 0, 127) : DVBCharsetUTF16::UNICODE.encoded(text, 0, 63));
+    const ByteBlock bb(latin1 ? DVBCharTableSingleByte::ISO_8859_1.encoded(text, 0, 127) : DVBCharTableUTF16::UNICODE.encoded(text, 0, 63));
 
     // Serialize the text.
     bbp->appendUInt8(uint8_t((bb.size() << 1) | (latin1 ? 0x01 : 0x00)));
@@ -221,8 +221,8 @@ void ts::ATSCAC3AudioStreamDescriptor::deserialize(DuckContext& duck, const Desc
         return;
     }
     _is_valid = latin1 ?
-                DVBCharsetSingleByte::ISO_8859_1.decode(text, data, textlen) :
-                DVBCharsetUTF16::UNICODE.decode(text, data, textlen);
+                DVBCharTableSingleByte::ISO_8859_1.decode(text, data, textlen) :
+                DVBCharTableUTF16::UNICODE.decode(text, data, textlen);
     data += textlen; size -= textlen;
 
     // End of descriptor allowed here
@@ -317,10 +317,10 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& display,
             }
             UString text;
             if (latin1) {
-                DVBCharsetSingleByte::ISO_8859_1.decode(text, data, textlen);
+                DVBCharTableSingleByte::ISO_8859_1.decode(text, data, textlen);
             }
             else {
-                DVBCharsetUTF16::UNICODE.decode(text, data, textlen);
+                DVBCharTableUTF16::UNICODE.decode(text, data, textlen);
             }
             data += textlen; size -= textlen;
             strm << margin << "Text: \"" << text << "\"" << std::endl;

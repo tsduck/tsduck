@@ -39,7 +39,7 @@
 
 namespace ts {
 
-    class DVBCharset;
+    class DVBCharTable;
     class HFBand;
     class Report;
     class Args;
@@ -55,7 +55,7 @@ namespace ts {
     //! Context information include:
     //! - Report for log and error messages.
     //! - Text output stream.
-    //! - Default DVB character sets (input and output).
+    //! - Default character sets (input and output).
     //! - Default CAS id.
     //! - Default Private Data Specifier (PDS) for DVB private descriptors.
     //! - Accumulated standards from the signalization (MPEG, DVB, ATSC, etc.)
@@ -149,19 +149,19 @@ namespace ts {
         std::ostream& displayIfASCII(const void *data, size_t size, const UString& prefix = UString(), const UString& suffix = UString());
 
         //!
-        //! Get the default input DVB character set for DVB strings without table code.
+        //! Get the default input character set for strings without table code.
         //! The default is the DVB superset of ISO/IEC 6937 as defined in ETSI EN 300 468.
         //! Other defaults can be used in the context of an operator using an incorrect
         //! signalization, assuming another default character set (usually from its own country).
-        //! @return The default input DVB character set or the null pointer if none is defined.
+        //! @return The default input character set or the null pointer if none is defined.
         //!
-        const DVBCharset* dvbCharsetIn() const { return _dvbCharsetIn; }
+        const DVBCharTable* charsetIn() const { return _charsetIn; }
 
         //!
-        //! Get the preferred output DVB character set for DVB strings.
-        //! @return The preferred output DVB character set or the null pointer if none is defined.
+        //! Get the preferred output character set for strings.
+        //! @return The preferred output character set or the null pointer if none is defined.
         //!
-        const DVBCharset* dvbCharsetOut() const { return _dvbCharsetOut; }
+        const DVBCharTable* charsetOut() const { return _charsetOut; }
 
         //!
         //! Convert a DVB string into UTF-16 using the default input DVB character set.
@@ -172,7 +172,7 @@ namespace ts {
         //!
         UString fromDVB(const std::string& dvb) const
         {
-            return UString::FromDVB(dvb, _dvbCharsetIn);
+            return UString::FromDVB(dvb, _charsetIn);
         }
 
         //!
@@ -185,7 +185,7 @@ namespace ts {
         //!
         UString fromDVB(const uint8_t* dvb, size_t dvbSize) const
         {
-            return UString::FromDVB(dvb, dvbSize, _dvbCharsetIn);
+            return UString::FromDVB(dvb, dvbSize, _charsetIn);
         }
 
         //!
@@ -201,7 +201,7 @@ namespace ts {
         //!
         UString fromDVBWithByteLength(const uint8_t*& buffer, size_t& size) const
         {
-            return UString::FromDVBWithByteLength(buffer, size, _dvbCharsetIn);
+            return UString::FromDVBWithByteLength(buffer, size, _charsetIn);
         }
 
         //!
@@ -217,7 +217,7 @@ namespace ts {
         //!
         size_t toDVB(const UString& str, uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS) const
         {
-            return str.toDVB(buffer, size, start, count, _dvbCharsetOut);
+            return str.toDVB(buffer, size, start, count, _charsetOut);
         }
 
         //!
@@ -229,7 +229,7 @@ namespace ts {
         //!
         ByteBlock toDVB(const UString& str, size_t start = 0, size_t count = NPOS) const
         {
-            return str.toDVB(start, count, _dvbCharsetOut);
+            return str.toDVB(start, count, _charsetOut);
         }
 
         //!
@@ -246,7 +246,7 @@ namespace ts {
         //!
         size_t toDVBWithByteLength(const UString& str, uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS) const
         {
-            return str.toDVBWithByteLength(buffer, size, start, count, _dvbCharsetOut);
+            return str.toDVBWithByteLength(buffer, size, start, count, _charsetOut);
         }
 
         //!
@@ -258,25 +258,25 @@ namespace ts {
         //!
         ByteBlock toDVBWithByteLength(const UString& str, size_t start = 0, size_t count = NPOS) const
         {
-            return str.toDVBWithByteLength(start, count, _dvbCharsetOut);
+            return str.toDVBWithByteLength(start, count, _charsetOut);
         }
 
         //!
-        //! Set the default input DVB character set for DVB strings without table code.
+        //! Set the default input character set for strings without table code.
         //! The default should be the DVB superset of ISO/IEC 6937 as defined in ETSI EN 300 468.
         //! Use another default in the context of an operator using an incorrect signalization,
         //! assuming another default character set (usually from its own country).
-        //! @param [in] charset The new default input DVB character set or a null pointer to revert
+        //! @param [in] charset The new default input character set or a null pointer to revert
         //! to the default.
         //!
-        void setDefaultDVBCharsetIn(const DVBCharset* charset);
+        void setDefaultCharsetIn(const DVBCharTable* charset);
 
         //!
-        //! Set the preferred output DVB character set for DVB strings.
-        //! @param [in] charset The new preferred output DVB character set or a null pointer to revert
+        //! Set the preferred output character set for strings.
+        //! @param [in] charset The new preferred output character set or a null pointer to revert
         //! to the default.
         //!
-        void setDefaultDVBCharsetOut(const DVBCharset* charset);
+        void setDefaultCharsetOut(const DVBCharTable* charset);
 
         //!
         //! Set the default CAS id to use.
@@ -347,12 +347,12 @@ namespace ts {
         const HFBand* uhfBand() const;
 
         //!
-        //! Define DVB character set command line options in an Args.
+        //! Define character set command line options in an Args.
         //! Defined options: @c -\-default-charset, @c -\-europe.
         //! The context keeps track of defined options so that loadOptions() can parse the appropriate options.
         //! @param [in,out] args Command line arguments to update.
         //!
-        void defineArgsForDVBCharset(Args& args) { defineOptions(args, CMD_DVB_CHARSET); }
+        void defineArgsForCharset(Args& args) { defineOptions(args, CMD_CHARSET); }
 
         //!
         //! Define default CAS command line options in an Args.
@@ -395,27 +395,27 @@ namespace ts {
         bool loadArgs(Args& args);
 
     private:
-        Report*           _report;            // Pointer to a report for error messages. Never null.
-        std::ostream*     _initial_out;       // Initial text output stream. Never null.
-        std::ostream*     _out;               // Pointer to text output stream. Never null.
-        std::ofstream     _outFile;           // Open stream when redirected to a file by name.
-        const DVBCharset* _dvbCharsetIn;      // DVB character set to interpret strings without prefix code.
-        const DVBCharset* _dvbCharsetOut;     // Preferred DVB character set to generate strings.
-        uint16_t          _casId;             // Preferred CAS id.
-        PDS               _defaultPDS;        // Default PDS value if undefined.
-        Standards         _cmdStandards;      // Forced standards from the command line.
-        Standards         _accStandards;      // Accumulated list of standards in the context.
-        UString           _hfDefaultRegion;   // Default region for UHF/VHF band. Empty until used for the first time.
-        int               _definedCmdOptions; // Defined command line options.
+        Report*             _report;            // Pointer to a report for error messages. Never null.
+        std::ostream*       _initial_out;       // Initial text output stream. Never null.
+        std::ostream*       _out;               // Pointer to text output stream. Never null.
+        std::ofstream       _outFile;           // Open stream when redirected to a file by name.
+        const DVBCharTable* _charsetIn;         // DVB character set to interpret strings without prefix code.
+        const DVBCharTable* _charsetOut;        // Preferred DVB character set to generate strings.
+        uint16_t            _casId;             // Preferred CAS id.
+        PDS                 _defaultPDS;        // Default PDS value if undefined.
+        Standards           _cmdStandards;      // Forced standards from the command line.
+        Standards           _accStandards;      // Accumulated list of standards in the context.
+        UString             _hfDefaultRegion;   // Default region for UHF/VHF band. Empty until used for the first time.
+        int                 _definedCmdOptions; // Defined command line options.
         const std::map<uint16_t, const UChar*> _predefined_cas;  // Predefined CAS names, index by CAS id (first in range).
 
         // List of command line options to define and analyze.
         enum CmdOptions {
-            CMD_DVB_CHARSET = 0x0001,
-            CMD_HF_REGION   = 0x0002,
-            CMD_STANDARDS   = 0x0004,
-            CMD_PDS         = 0x0008,
-            CMD_CAS         = 0x0010,
+            CMD_CHARSET   = 0x0001,
+            CMD_HF_REGION = 0x0002,
+            CMD_STANDARDS = 0x0004,
+            CMD_PDS       = 0x0008,
+            CMD_CAS       = 0x0010,
         };
 
         // Define several classes of command line options in an Args.
