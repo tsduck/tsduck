@@ -89,7 +89,7 @@ namespace ts {
         //! @param [in] desc_list_size Descriptor list size in bytes.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        static void NormalizeNumbering(uint8_t* desc_list_addr, size_t desc_list_size, const DVBCharset* charset = nullptr);
+        static void NormalizeNumbering(uint8_t* desc_list_addr, size_t desc_list_size, const DVBCharTable* charset = nullptr);
 
         //!
         //! An item entry.

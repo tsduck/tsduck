@@ -31,7 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsARIBCharsetB24.h"
+#include "tsARIBCharset.h"
 #include "tsByteBlock.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
@@ -109,30 +109,30 @@ void ARIBCharsetTest::dump(const ts::UString& title, const ts::UString& str)
 
 void ARIBCharsetTest::testCanEncode()
 {
-    const ts::Charset* cset = ts::ARIBCharsetB24::Instance();
+    const ts::Charset& cset(ts::ARIBCharset::B24);
 
-    TSUNIT_ASSERT(cset->canEncode(u""));
-    TSUNIT_ASSERT(cset->canEncode(u"alpha num 09"));
-    TSUNIT_ASSERT(cset->canEncode(ts::UString({ u'a', u'b' })));
-    TSUNIT_ASSERT(!cset->canEncode(ts::UString({ u'a', ts::LATIN_SMALL_LETTER_A_WITH_ACUTE, u'b' })));
-    TSUNIT_ASSERT(cset->canEncode(ts::UString({ 0x004E, 0x0048, 0x004B, 0x7DCF, 0x5408, 0x0031, 0x30FB, 0x79CB, 0x7530 })));
-    TSUNIT_ASSERT(cset->canEncode(ts::UString({ 0x004E, 0x30E5, 0x30FC, 0xD83C, 0xDE14, 0xD83C, 0xDE11, 0x7DCF })));
-    TSUNIT_ASSERT(!cset->canEncode(ts::UString({ 0x004E, 0x30E5, 0x30FC, 0xDBFF, 0xDFFF, 0xD83C, 0xDE11, 0x7DCF })));
+    TSUNIT_ASSERT(cset.canEncode(u""));
+    TSUNIT_ASSERT(cset.canEncode(u"alpha num 09"));
+    TSUNIT_ASSERT(cset.canEncode(ts::UString({ u'a', u'b' })));
+    TSUNIT_ASSERT(!cset.canEncode(ts::UString({ u'a', ts::LATIN_SMALL_LETTER_A_WITH_ACUTE, u'b' })));
+    TSUNIT_ASSERT(cset.canEncode(ts::UString({ 0x004E, 0x0048, 0x004B, 0x7DCF, 0x5408, 0x0031, 0x30FB, 0x79CB, 0x7530 })));
+    TSUNIT_ASSERT(cset.canEncode(ts::UString({ 0x004E, 0x30E5, 0x30FC, 0xD83C, 0xDE14, 0xD83C, 0xDE11, 0x7DCF })));
+    TSUNIT_ASSERT(!cset.canEncode(ts::UString({ 0x004E, 0x30E5, 0x30FC, 0xDBFF, 0xDFFF, 0xD83C, 0xDE11, 0x7DCF })));
 }
 
 void ARIBCharsetTest::testDecode()
 {
-    const ts::Charset* cset = ts::ARIBCharsetB24::Instance();
+    const ts::Charset& cset(ts::ARIBCharset::B24);
 
 #define B(N,...) const ts::ByteBlock b##N({__VA_ARGS__})
 #define U(N,...) const ts::UString   u##N({__VA_ARGS__})
-#define T(N)                                                          \
-    dump(u"Input:", b##N);                                            \
-    ts::UString dec##N;                                               \
-    const bool s##N = cset->decode(dec##N, b##N.data(), b##N.size()); \
-    dump(u"Decoded:", dec##N);                                        \
-    debug() << std::endl;                                             \
-    TSUNIT_ASSERT(s##N);                                              \
+#define T(N)                                                         \
+    dump(u"Input:", b##N);                                           \
+    ts::UString dec##N;                                              \
+    const bool s##N = cset.decode(dec##N, b##N.data(), b##N.size()); \
+    dump(u"Decoded:", dec##N);                                       \
+    debug() << std::endl;                                            \
+    TSUNIT_ASSERT(s##N);                                             \
     TSUNIT_EQUAL(u##N, dec##N)
 
     debug() << std::endl;
@@ -276,21 +276,21 @@ void ARIBCharsetTest::testDecode()
 
 void ARIBCharsetTest::testEncode()
 {
-    const ts::Charset* cset = ts::ARIBCharsetB24::Instance();
+    const ts::Charset& cset(ts::ARIBCharset::B24);
 
 #define U(N,...) const ts::UString   u##N({__VA_ARGS__})
 #define B(N,...) const ts::ByteBlock b##N({__VA_ARGS__})
-#define T(N)                                                              \
-    dump(u"Input:", u##N);                                                \
-    dump(u"Expected:", b##N);                                             \
-    const ts::ByteBlock enc##N(cset->encoded(u##N));                      \
-    dump(u"Encoded:", enc##N);                                            \
-    ts::UString dec##N;                                                   \
-    const bool s##N = cset->decode(dec##N, enc##N.data(), enc##N.size()); \
-    dump(u"Decoded:", dec##N);                                            \
-    debug() << std::endl;                                                 \
-    TSUNIT_ASSERT(b##N == enc##N);                                        \
-    TSUNIT_ASSERT(s##N);                                                  \
+#define T(N)                                                             \
+    dump(u"Input:", u##N);                                               \
+    dump(u"Expected:", b##N);                                            \
+    const ts::ByteBlock enc##N(cset.encoded(u##N));                      \
+    dump(u"Encoded:", enc##N);                                           \
+    ts::UString dec##N;                                                  \
+    const bool s##N = cset.decode(dec##N, enc##N.data(), enc##N.size()); \
+    dump(u"Decoded:", dec##N);                                           \
+    debug() << std::endl;                                                \
+    TSUNIT_ASSERT(b##N == enc##N);                                       \
+    TSUNIT_ASSERT(s##N);                                                 \
     TSUNIT_EQUAL(u##N, dec##N)
 
     debug() << std::endl;

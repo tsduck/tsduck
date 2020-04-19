@@ -29,6 +29,7 @@
 
 #include "tsCharset.h"
 #include "tsByteBlock.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 
@@ -36,18 +37,173 @@ TSDUCK_SOURCE;
 // Constructor / destructor.
 //----------------------------------------------------------------------------
 
-ts::Charset::Charset(const UString& name) :
+ts::Charset::Charset(const UChar* name) :
     _name(name)
 {
+    // Character sets with non empty names are registered.
+    if (name != nullptr && *name != CHAR_NULL) {
+        Repository::Instance()->add(name, this);
+    }
+}
+
+ts::Charset::Charset(std::initializer_list<const UChar*> names) :
+    _name()
+{
+    for (auto it = names.begin(); it != names.end(); ++it) {
+        if (*it != nullptr && **it != CHAR_NULL) {
+            Repository::Instance()->add(*it, this);
+            if (_name.empty()) {
+                _name = *it;
+            }
+        }
+    }
 }
 
 ts::Charset::~Charset()
 {
+    // Automatically unregister character set on destruction.
+    Repository::Instance()->remove(this);
 }
 
 
 //----------------------------------------------------------------------------
-// Encode a C++ Unicode string into a DVB string as a ByteBlock.
+// Repository of character sets.
+//----------------------------------------------------------------------------
+
+TS_DEFINE_SINGLETON(ts::Charset::Repository);
+
+ts::Charset::Repository::Repository() :
+    _map()
+{
+}
+
+ts::Charset* ts::Charset::Repository::get(const UString& name) const
+{
+    const auto it = _map.find(name);
+    return it == _map.end() ? nullptr : it->second;
+}
+
+ts::UStringList ts::Charset::Repository::getAllNames() const
+{
+    return MapKeys(_map);
+}
+
+void ts::Charset::Repository::add(const UString& name, Charset* charset)
+{
+    const auto it = _map.find(name);
+    if (it == _map.end()) {
+        // Charset not yet registered.
+        _map.insert(std::make_pair(name, charset));
+    }
+    else {
+        throw DuplicateCharset(name);
+    }
+}
+
+void ts::Charset::Repository::remove(Charset* charset)
+{
+    auto it = _map.begin();
+    while (it != _map.end()) {
+        if (it->second == charset) {
+            it = _map.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get a character set by name or all names.
+//----------------------------------------------------------------------------
+
+ts::Charset* ts::Charset::GetCharset(const UString& name)
+{
+    return Repository::Instance()->get(name);
+}
+
+ts::UStringList ts::Charset::GetAllNames()
+{
+    return Repository::Instance()->getAllNames();
+}
+
+
+//----------------------------------------------------------------------------
+// Decode a string from the specified byte buffer and return a UString.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Charset::decoded(const uint8_t* data, size_t size) const
+{
+    UString str;
+    decode(str, data, size);
+    return str;
+}
+
+
+//----------------------------------------------------------------------------
+// Decode a string (preceded by its one-byte length) and return a UString.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Charset::decodedWithByteLength(const uint8_t*& buffer, size_t& size) const
+{
+    // We need one byte for the length
+    if (size == 0) {
+        return UString();
+    }
+
+    // Get the length of the encoded string.
+    const size_t len = std::min<size_t>(buffer[0], size - 1);
+
+    // Update the buffer and size to point after the encoded string.
+    const uint8_t* const start = buffer + 1;
+    buffer += 1 + len;
+    size -= 1 + len;
+
+    // Decode and return the string.
+    UString str;
+    decode(str, start, len);
+    return str;
+}
+
+
+//----------------------------------------------------------------------------
+// Encode a C++ Unicode string preceded by its one-byte length.
+//----------------------------------------------------------------------------
+
+size_t ts::Charset::encodeWithByteLength(uint8_t*& buffer, size_t& size, const UString& str, size_t start, size_t count) const
+{
+    // We need one byte for the length
+    if (size == 0) {
+        return 0;
+    }
+
+    // Reserve one byte for the length
+    uint8_t* const len = buffer;
+    buffer++;
+    size--;
+
+    // We cannot encode more than 255 bytes to store the length in a byte.
+    // We may need to truncate the size variable and restore the truncation later.
+    const size_t truncation = size <= 255 ? 0 : size - 255;
+    size -= truncation;
+
+    // Encode the string. Return the number of encoded characters.
+    const size_t result = encode(buffer, size, str, start, count);
+
+    // Store length in first byte.
+    assert(buffer > len);
+    assert(buffer <= len + 256);
+    *len = uint8_t(buffer - len - 1);
+
+    // Restore size truncation before returning.
+    size += truncation;
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Encode a C++ Unicode string as a ByteBlock.
 //----------------------------------------------------------------------------
 
 ts::ByteBlock ts::Charset::encoded(const UString& str, size_t start, size_t count) const
@@ -67,5 +223,34 @@ ts::ByteBlock ts::Charset::encoded(const UString& str, size_t start, size_t coun
     // Truncate unused bytes.
     assert(size <= bb.size());
     bb.resize(bb.size() - size);
+    return bb;
+}
+
+
+//----------------------------------------------------------------------------
+// Encode a C++ Unicode string as a ByteBlock with preceding byte length.
+//----------------------------------------------------------------------------
+
+ts::ByteBlock ts::Charset::encodedWithByteLength(const UString& str, size_t start, size_t count) const
+{
+    const size_t length = str.length();
+    start = std::min(start, length);
+
+    // Assume maximum number of bytes per character is 6 (max 4 in UTF-8 for instance).
+    // Use 6 in case there are charset changes in the middle (eg. Japanese ARIB STD-B24).
+    // But since we need to store the length on one byte, it cannot be more than 255.
+    ByteBlock bb(std::min<size_t>(256, 6 * std::min(length - start, count) + 1));
+
+    // Convert the string.
+    uint8_t* buffer = bb.data() + 1;
+    size_t size = bb.size() - 1;
+    encode(buffer, size, str, start, count);
+
+    // Truncate unused bytes.
+    assert(size < bb.size());
+    bb.resize(bb.size() - size);
+
+    // Store length in first byte.
+    bb[0] = uint8_t(bb.size() - 1);
     return bb;
 }

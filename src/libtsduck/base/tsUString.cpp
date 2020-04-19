@@ -40,8 +40,8 @@
 #include "tsUString.h"
 #include "tsByteBlock.h"
 #include "tsSysUtils.h"
-#include "tsDVBCharsetSingleByte.h"
-#include "tsDVBCharsetUTF8.h"
+#include "tsDVBCharTableSingleByte.h"
+#include "tsDVBCharTableUTF8.h"
 TSDUCK_SOURCE;
 
 // The UTF-8 Byte Order Mark
@@ -1765,7 +1765,7 @@ void ts::UString::appendDump(const void *data,
 // Convert a DVB string into UTF-16.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::FromDVB(const uint8_t* dvb, size_type dvbSize, const DVBCharset* charset)
+ts::UString ts::UString::FromDVB(const uint8_t* dvb, size_type dvbSize, const DVBCharTable* charset)
 {
     // Null or empty buffer is a valid empty string.
     if (dvb == nullptr || dvbSize == 0) {
@@ -1775,7 +1775,7 @@ ts::UString ts::UString::FromDVB(const uint8_t* dvb, size_type dvbSize, const DV
     // Get the DVB character set code from the beginning of the string.
     uint32_t code = 0;
     size_type codeSize = 0;
-    if (!DVBCharset::GetCharCodeTable(code, codeSize, dvb, dvbSize)) {
+    if (!DVBCharTable::GetTableCode(code, codeSize, dvb, dvbSize)) {
         return UString();
     }
 
@@ -1786,7 +1786,7 @@ ts::UString ts::UString::FromDVB(const uint8_t* dvb, size_type dvbSize, const DV
 
     // Get the character set for this DVB string.
     if (code != 0 || charset == nullptr) {
-        charset = DVBCharset::GetCharset(code);
+        charset = DVBCharTable::GetTableFromLeadingCode(code);
     }
     if (charset == nullptr) {
         // Unsupported charset. Collect all ANSI characters, replace others by '.'.
@@ -1811,7 +1811,7 @@ ts::UString ts::UString::FromDVB(const uint8_t* dvb, size_type dvbSize, const DV
 // Convert a DVB string (preceded by its one-byte length) into UTF-16.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::FromDVBWithByteLength(const uint8_t*& buffer, size_t& size, const DVBCharset* charset)
+ts::UString ts::UString::FromDVBWithByteLength(const uint8_t*& buffer, size_t& size, const DVBCharTable* charset)
 {
     // Null or empty buffer is a valid empty string.
     if (buffer == nullptr || size == 0) {
@@ -1835,7 +1835,7 @@ ts::UString ts::UString::FromDVBWithByteLength(const uint8_t*& buffer, size_t& s
 // Convert a UTF-16 string into DVB representation.
 //----------------------------------------------------------------------------
 
-ts::UString::size_type ts::UString::toDVB(uint8_t*& buffer, size_t& size, size_type start, size_type count, const DVBCharset* charset) const
+ts::UString::size_type ts::UString::toDVB(uint8_t*& buffer, size_t& size, size_type start, size_type count, const DVBCharTable* charset) const
 {
     // Skip degenerated cases where there is nothing to do.
     if (buffer == nullptr || size == 0 || start >= length()) {
@@ -1843,10 +1843,10 @@ ts::UString::size_type ts::UString::toDVB(uint8_t*& buffer, size_t& size, size_t
     }
 
     // Try to encode using these charsets in order
-    static const DVBCharset* const dvbEncoders[] = {
-        &ts::DVBCharsetSingleByte::ISO_6937,     // default charset
-        &ts::DVBCharsetSingleByte::ISO_8859_15,  // most european characters and Euro currency sign
-        &ts::DVBCharsetUTF8::UTF_8,              // last chance, used when no other match
+    static const DVBCharTable* const dvbEncoders[] = {
+        &ts::DVBCharTableSingleByte::ISO_6937,     // default charset
+        &ts::DVBCharTableSingleByte::ISO_8859_15,  // most european characters and Euro currency sign
+        &ts::DVBCharTableUTF8::UTF_8,              // last chance, used when no other match
         nullptr                                  // end of list
     };
 
@@ -1876,7 +1876,7 @@ ts::UString::size_type ts::UString::toDVB(uint8_t*& buffer, size_t& size, size_t
 // Convert a UTF-16 string into DVB representation in a byte block.
 //----------------------------------------------------------------------------
 
-ts::ByteBlock ts::UString::toDVB(size_type start, size_type count, const DVBCharset* charset) const
+ts::ByteBlock ts::UString::toDVB(size_type start, size_type count, const DVBCharTable* charset) const
 {
     if (start >= length()) {
         return ByteBlock();
@@ -1902,7 +1902,7 @@ ts::ByteBlock ts::UString::toDVB(size_type start, size_type count, const DVBChar
 // Convert a UTF-16 string into DVB (preceded by its one-byte length).
 //----------------------------------------------------------------------------
 
-ts::UString::size_type ts::UString::toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_type start, size_type count, const DVBCharset* charset) const
+ts::UString::size_type ts::UString::toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_type start, size_type count, const DVBCharTable* charset) const
 {
     // Skip degenerated cases where there is nothing to do.
     if (buffer == nullptr || size == 0 || start >= length()) {
@@ -1940,7 +1940,7 @@ ts::UString::size_type ts::UString::toDVBWithByteLength(uint8_t*& buffer, size_t
 // Encode this UTF-16 string into a DVB string (preceded by its one-byte length).
 //----------------------------------------------------------------------------
 
-ts::ByteBlock ts::UString::toDVBWithByteLength(size_type start, size_type count, const DVBCharset* charset) const
+ts::ByteBlock ts::UString::toDVBWithByteLength(size_type start, size_type count, const DVBCharTable* charset) const
 {
     if (start >= length()) {
         // Empty string, return one byte containing 0 (the length).

@@ -28,123 +28,66 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Declaration of abstract class DVBCharset.
+//!  Declaration of class DVBCharset.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsCharset.h"
-#include "tsException.h"
 
 namespace ts {
+
+    class DVBCharTable;
+
     //!
-    //! Definition of a character set for DVB encoding.
-    //! @see ETSI EN 300 468, Annex A.
+    //! Definition of the generic DVB character sets.
+    //!
+    //! An instance of this class encodes and decodes DVB strings.
+    //! DVB strings can use various DVB character tables. Each DVB string is
+    //! is encoded using one single DVB character table. Which table is used
+    //! is indicated by an optional "table code" at the beginning of the
+    //! string.
+    //!
+    //! According to DVB standard ETSI EN 300 468, the default DVB character table
+    //! (without leading table code) is ISO-6937. However, some bogus signalization
+    //! may assume that the default character table is different, typically the usual
+    //! local character table for the region.
+    //!
+    //! There are several static instances of DVBCharset. The one named DVB
+    //! is the standard one. It can use any DVB character tables and uses ISO-6937
+    //! by default. All other instances are identical, except that they use another
+    //! character table by default.
+    //!
+    //! @see ETSI EN 300 468, annex A
     //! @ingroup mpeg
     //!
     class TSDUCKDLL DVBCharset: public Charset
     {
-        TS_NOBUILD_NOCOPY(DVBCharset);
+        TS_NOCOPY(DVBCharset);
     public:
         //!
-        //! Exception thrown when registering duplicate charsets.
+        //! Default predefined DVB character set (using ISO-6937 as default table).
         //!
-        TS_DECLARE_EXCEPTION(DuplicateDVBCharset);
-        //!
-        //! Exception thrown when registering invalid charsets.
-        //!
-        TS_DECLARE_EXCEPTION(InvalidDVBCharset);
+        static const DVBCharset DVB;
 
         //!
-        //! DVB-encoded CR/LF in single-byte character sets.
+        //! Constructor.
+        //! @param [in] name Character set name.
+        //! @param [in] default_table Default character table to use without leading "table code".
         //!
-        static constexpr uint8_t DVB_SINGLE_BYTE_CRLF = 0x8A;
+        explicit DVBCharset(const UChar* name = nullptr, const DVBCharTable* default_table = nullptr);
 
         //!
-        //! Code point for DVB-encoded CR/LF in two-byte character sets.
+        //! Destructor
         //!
-        static constexpr uint16_t DVB_CODEPOINT_CRLF = 0xE08A;
+        virtual ~DVBCharset() = default;
 
-        //!
-        //! This static function gets the character coding table at the beginning of a DVB string.
-        //!
-        //! The character coding table is encoded on up to 3 bytes at the beginning of a DVB string.
-        //! The following encodings are recognized, based on the first byte of the DVB string:
-        //! - First byte >= 0x20: The first byte is a character. The default encoding is ISO-6937.
-        //!   We return zero as @a code.
-        //! - First byte == 0x10: The next two bytes indicate an ISO-8859 encoding.
-        //!   We return 0x10xxyy as @a code.
-        //! - First byte == 0x1F: The second byte is an @e encoding_type_id.
-        //!   This encoding is not supported here.
-        //! - Other value: One byte encoding.
-        //!
-        //! @param [out] code Returned character coding table value.
-        //! @param [out] codeSize Size in bytes of character coding table in @a dvb.
-        //! @param [in] dvb Address of a DVB string.
-        //! @param [in] dvbSize Size in bytes of the DVB string.
-        //! @return True on success, false on error (truncated, unsupported format, etc.)
-        //!
-        static bool GetCharCodeTable(uint32_t& code, size_t& codeSize, const uint8_t* dvb, size_t dvbSize);
-
-        //!
-        //! Get the DVB table code for the character set.
-        //! @return DVB table code.
-        //!
-        uint32_t tableCode() const {return _code;}
-
-        //!
-        //! Get a DVB character set by name.
-        //! @param [in] name Name of the requested character set.
-        //! @return Address of the character or zero if not found.
-        //!
-        static DVBCharset* GetCharset(const UString& name);
-
-        //!
-        //! Get a DVB character set by table code.
-        //! @param [in] tableCode Table code of the requested character set.
-        //! @return Address of the character or zero if not found.
-        //!
-        static DVBCharset* GetCharset(uint32_t tableCode);
-
-        //!
-        //! Find all registered character set names.
-        //! @return List of all registered names.
-        //!
-        static UStringList GetAllNames();
-
-        //!
-        //! Encode the character set table code.
-        //!
-        //! Stop either when the specified number of characters are serialized or
-        //! when the buffer is full, whichever comes first.
-        //!
-        //! @param [in,out] buffer Address of the buffer.
-        //! The address is updated to point after the encoded value.
-        //! @param [in,out] size Size of the buffer. Updated to remaining size.
-        //! @return The number of serialized byte.
-        //!
-        virtual size_t encodeTableCode(uint8_t*& buffer, size_t& size) const;
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~DVBCharset();
-
-    protected:
-        //!
-        //! Protected constructor.
-        //! @param [in] name charset name
-        //! @param [in] tableCode DVB table code
-        //!
-        DVBCharset(const UString& name, uint32_t tableCode);
-
-        //!
-        //! Remove the specified charset
-        //! @param [in] charset The charset to remove.
-        //!
-        static void Unregister(const DVBCharset* charset);
+        // Inherited methods.
+        virtual bool decode(UString& str, const uint8_t* data, size_t size) const override;
+        virtual bool canEncode(const UString& str, size_t start = 0, size_t count = NPOS) const override;
+        virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const override;
 
     private:
-        uint32_t _code;  //!< Table code.
+        const DVBCharTable* const _default_table; // Default character table, never null.
     };
 }

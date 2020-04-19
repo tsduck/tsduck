@@ -98,7 +98,6 @@ public:
     void testCommonPrefix();
     void testCommonSuffix();
     void testPrecombined();
-    void testDVB();
     void testQuoted();
     void testToQuotedLine();
     void testFromQuotedLine();
@@ -152,7 +151,6 @@ public:
     TSUNIT_TEST(testCommonPrefix);
     TSUNIT_TEST(testCommonSuffix);
     TSUNIT_TEST(testPrecombined);
-    TSUNIT_TEST(testDVB);
     TSUNIT_TEST(testQuoted);
     TSUNIT_TEST(testToQuotedLine);
     TSUNIT_TEST(testFromQuotedLine);
@@ -2078,16 +2076,6 @@ void UStringTest::testPrecombined()
     TSUNIT_EQUAL(u"abcdef", ts::UString(u"abcdef").toDecomposedDiacritical());
     TSUNIT_EQUAL(str1, ref1.toDecomposedDiacritical());
     TSUNIT_EQUAL(str2, ref2.toDecomposedDiacritical());
-}
-
-void UStringTest::testDVB()
-{
-    TSUNIT_EQUAL(u"abCD 89#()", ts::UString::FromDVB(std::string("abCD 89#()")));
-
-    static const uint8_t dvb1[] = {0x30, 0xC2, 0x65, 0xC3, 0x75};
-    const ts::UString str1{u'0', ts::LATIN_SMALL_LETTER_E_WITH_ACUTE, ts::LATIN_SMALL_LETTER_U_WITH_CIRCUMFLEX};
-    TSUNIT_EQUAL(str1, ts::UString::FromDVB(dvb1, sizeof(dvb1)));
-    TSUNIT_ASSERT(ts::ByteBlock(dvb1, sizeof(dvb1)) == str1.toDecomposedDiacritical().toDVB());
 }
 
 void UStringTest::testQuoted()

@@ -29,9 +29,9 @@
 
 #include "tsStaticReferencesDVB.h"
 #include "tsTables.h"
-#include "tsDVBCharsetSingleByte.h"
-#include "tsDVBCharsetUTF16.h"
-#include "tsDVBCharsetUTF8.h"
+#include "tsDVBCharTableSingleByte.h"
+#include "tsDVBCharTableUTF16.h"
+#include "tsDVBCharTableUTF8.h"
 TSDUCK_SOURCE;
 
 // Macros to generate a unique symbol name.
@@ -55,9 +55,9 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
 
     // References to all object files containing DVB character sets.
 
-    REF_OBJECT(DVBCharsetSingleByte::ISO_6937);
-    REF_OBJECT(DVBCharsetUTF16::UNICODE);
-    REF_OBJECT(DVBCharsetUTF8::UTF_8);
+    REF_OBJECT(DVBCharTableSingleByte::ISO_6937);
+    REF_OBJECT(DVBCharTableUTF16::UNICODE);
+    REF_OBJECT(DVBCharTableUTF8::UTF_8);
 
     // References to all DVB tables and descriptors.
     // The file tsRefType.h is automatically generated.

@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsARIBCharsetB24.h"
+#include "tsARIBCharset.h"
 TSDUCK_SOURCE;
 
 
@@ -35,7 +35,7 @@ TSDUCK_SOURCE;
 // All supported character maps are placed in a static array.
 //----------------------------------------------------------------------------
 
-const ts::ARIBCharsetB24::CharMap* const ts::ARIBCharsetB24::ALL_MAPS[] = {
+const ts::ARIBCharset::CharMap* const ts::ARIBCharset::ALL_MAPS[] = {
     &KANJI_ADDITIONAL_MAP,     // initial G0 and GL
     &HIRAGANA_MAP,             // initial G2 and GR
     &ALPHANUMERIC_MAP,         // initial G1
@@ -50,7 +50,7 @@ const ts::ARIBCharsetB24::CharMap* const ts::ARIBCharsetB24::ALL_MAPS[] = {
 // Empty maps for unsupported character sets
 //----------------------------------------------------------------------------
 
-const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::UNSUPPORTED_1BYTE = {
+const ts::ARIBCharset::CharMap ts::ARIBCharset::UNSUPPORTED_1BYTE = {
     false, // 1-byte charset
     false, // Not macro
     0x00,
@@ -63,7 +63,7 @@ const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::UNSUPPORTED_1BYTE = {
     }
 };
 
-const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::UNSUPPORTED_2BYTE = {
+const ts::ARIBCharset::CharMap ts::ARIBCharset::UNSUPPORTED_2BYTE = {
     true,  // 2-byte charset
     false, // Not macro
     0x00,
@@ -81,7 +81,7 @@ const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::UNSUPPORTED_2BYTE = {
 // 1-byte encoding character sets
 //----------------------------------------------------------------------------
 
-const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::MACRO_MAP = {
+const ts::ARIBCharset::CharMap ts::ARIBCharset::MACRO_MAP = {
     false, // 1-byte charset
     true,  // Macro-based charset
     0x70,  // Macro, 1-byte code
@@ -94,7 +94,7 @@ const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::MACRO_MAP = {
     }
 };
 
-const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::ALPHANUMERIC_MAP = {
+const ts::ARIBCharset::CharMap ts::ARIBCharset::ALPHANUMERIC_MAP = {
     false, // 1-byte charset
     false, // Not macro
     0x4A,  // Alphanumeric, 1-byte code
@@ -107,7 +107,7 @@ const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::ALPHANUMERIC_MAP = {
     }
 };
 
-const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::ALPHANUMERIC_ROW = {
+const ts::ARIBCharset::CharRow ts::ARIBCharset::ALPHANUMERIC_ROW = {
     0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x0027, 0x0028,
     0x0029, 0x002A, 0x002B, 0x002C, 0x002D, 0x002E, 0x002F, 0x0030,
     0x0031, 0x0032, 0x0033, 0x0034, 0x0035, 0x0036, 0x0037, 0x0038,
@@ -122,7 +122,7 @@ const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::ALPHANUMERIC_ROW = {
     0x0079, 0x007A, 0x007B, 0x007C, 0x007D, 0x203E,
 };
 
-const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::HIRAGANA_MAP = {
+const ts::ARIBCharset::CharMap ts::ARIBCharset::HIRAGANA_MAP = {
     false, // 1-byte charset
     false, // Not macro
     0x30,  // Hiragana, 1-byte code
@@ -135,7 +135,7 @@ const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::HIRAGANA_MAP = {
     }
 };
 
-const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::HIRAGANA_ROW = {
+const ts::ARIBCharset::CharRow ts::ARIBCharset::HIRAGANA_ROW = {
     0x3041, 0x3042, 0x3043, 0x3044, 0x3045, 0x3046, 0x3047, 0x3048,
     0x3049, 0x304A, 0x304B, 0x304C, 0x304D, 0x304E, 0x304F, 0x3050,
     0x3051, 0x3052, 0x3053, 0x3054, 0x3055, 0x3056, 0x3057, 0x3058,
@@ -150,7 +150,7 @@ const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::HIRAGANA_ROW = {
     0x30FC, 0x3002, 0x300C, 0x300D, 0x3001, 0x30FB,
 };
 
-const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::KATAKANA_MAP = {
+const ts::ARIBCharset::CharMap ts::ARIBCharset::KATAKANA_MAP = {
     false, // 1-byte charset
     false, // Not macro
     0x31,  // Katakana, 1-byte code
@@ -163,7 +163,7 @@ const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::KATAKANA_MAP = {
     }
 };
 
-const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::KATAKANA_ROW = {
+const ts::ARIBCharset::CharRow ts::ARIBCharset::KATAKANA_ROW = {
     0x30A1, 0x30A2, 0x30A3, 0x30A4, 0x30A5, 0x30A6, 0x30A7, 0x30A8,
     0x30A9, 0x30AA, 0x30AB, 0x30AC, 0x30AD, 0x30AE, 0x30AF, 0x30B0,
     0x30B1, 0x30B2, 0x30B3, 0x30B4, 0x30B5, 0x30B6, 0x30B7, 0x30B8,
@@ -178,7 +178,7 @@ const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::KATAKANA_ROW = {
     0x30FC, 0x3002, 0x300C, 0x300D, 0x3001, 0x30FB,
 };
 
-const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::JIS_X0201_KATAKANA_MAP = {
+const ts::ARIBCharset::CharMap ts::ARIBCharset::JIS_X0201_KATAKANA_MAP = {
     false, // 1-byte charset
     false, // Not macro
     0x49,  // JIS X 0201 katakana, 1-byte code
@@ -191,7 +191,7 @@ const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::JIS_X0201_KATAKANA_MAP = {
     }
 };
 
-const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::JIS_X0201_KATAKANA_ROW = {
+const ts::ARIBCharset::CharRow ts::ARIBCharset::JIS_X0201_KATAKANA_ROW = {
     0xFF61, 0xFF62, 0xFF63, 0xFF64, 0xFF65, 0xFF66, 0xFF67, 0xFF68,
     0xFF69, 0xFF6A, 0xFF6B, 0xFF6C, 0xFF6D, 0xFF6E, 0xFF6F, 0xFF70,
     0xFF71, 0xFF72, 0xFF73, 0xFF74, 0xFF75, 0xFF76, 0xFF77, 0xFF78,
@@ -207,7 +207,7 @@ const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::JIS_X0201_KATAKANA_ROW = {
 // 2-byte encoding Kanji character sets (standard set and STD-B24-defined)
 //----------------------------------------------------------------------------
 
-const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::KANJI_STANDARD_MAP = {
+const ts::ARIBCharset::CharMap ts::ARIBCharset::KANJI_STANDARD_MAP = {
     true,  // 2-byte charset
     false, // Not macro
     0x39,  // JIS comp. Kanji Plane 1, 2-byte code (is this the right map here?)
@@ -220,7 +220,7 @@ const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::KANJI_STANDARD_MAP = {
     }
 };
 
-const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::KANJI_ADDITIONAL_MAP = {
+const ts::ARIBCharset::CharMap ts::ARIBCharset::KANJI_ADDITIONAL_MAP = {
     true,  // 2-byte charset
     false, // Not macro
     0x42,  // Kanji, 2-byte code
@@ -234,7 +234,7 @@ const ts::ARIBCharsetB24::CharMap ts::ARIBCharsetB24::KANJI_ADDITIONAL_MAP = {
 };
 
 // Last 5 rows of the Kanji character map.
-const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::KANJI_BASE_ROWS[86] = {
+const ts::ARIBCharset::CharRow ts::ARIBCharset::KANJI_BASE_ROWS[86] = {
     { // Row 1 (index 0)
         0x3000, 0x3001, 0x3002, 0xFF0C, 0xFF0E, 0x30FB, 0xFF1A, 0xFF1B,
         0xFF1F, 0xFF01, 0x309B, 0x309C, 0x00B4, 0xFF40, 0x00A8, 0xFF3E,
@@ -1308,7 +1308,7 @@ const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::KANJI_BASE_ROWS[86] = {
 };
 
 // Last 5 rows of the standard Kanji character map.
-const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::KANJI_STANDARD_ROWS[5] = {
+const ts::ARIBCharset::CharRow ts::ARIBCharset::KANJI_STANDARD_ROWS[5] = {
     { // Row 90 (index 89)
         0xE0C9, 0xE0CA, 0xE0CB, 0xE0CC, 0xE0CD, 0xE0CE, 0x0000, 0xE0D0,
         0xE0D1, 0xE0D2, 0xE0D3, 0x0000, 0x0000, 0x0000, 0x0000, 0xE0D8,
@@ -1376,7 +1376,7 @@ const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::KANJI_STANDARD_ROWS[5] = {
 };
 
 // Last 5 rows of the ARB STD-B24 defined Kanji character map with additional characters.
-const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::KANJI_ADDITIONAL_ROWS[5] = {
+const ts::ARIBCharset::CharRow ts::ARIBCharset::KANJI_ADDITIONAL_ROWS[5] = {
     { // Row 90 (index 89)
         /* SP */ 0x026CC, 0x026CD, 0x02757, 0x026CF, 0x026D0, 0x026D1, 0x00000,
         0x026D2, 0x026D5, 0x026D3, 0x026D4, 0x026D0, 0x026D0, 0x026D0, 0x026D0,
@@ -1449,7 +1449,7 @@ const ts::ARIBCharsetB24::CharRow ts::ARIBCharsetB24::KANJI_ADDITIONAL_ROWS[5] =
 // ARIB STD-B24, part 2, section 7.1, table 7-18 Default macro code strings
 //----------------------------------------------------------------------------
 
-const ts::ARIBCharsetB24::PredefMacro ts::ARIBCharsetB24::PREDEF_MACROS[PREDEF_MACRO_COUNT] = {
+const ts::ARIBCharset::PredefMacro ts::ARIBCharset::PREDEF_MACROS[PREDEF_MACRO_COUNT] = {
     /* 60 */ {16, {0x1B, 0x24, 0x42, 0x1B, 0x29, 0x4A, 0x1B, 0x2A, 0x30, 0x1B, 0x2B, 0x20, 0x70, 0x0F, 0x1B, 0x7D}},
     /* 61 */ {16, {0x1B, 0x24, 0x42, 0x1B, 0x29, 0x31, 0x1B, 0x2A, 0x30, 0x1B, 0x2B, 0x20, 0x70, 0x0F, 0x1B, 0x7D}},
     /* 62 */ {17, {0x1B, 0x24, 0x42, 0x1B, 0x29, 0x20, 0x41, 0x1B, 0x2A, 0x30, 0x1B, 0x2B, 0x20, 0x70, 0x0F, 0x1B, 0x7D}},

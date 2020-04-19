@@ -35,7 +35,7 @@
 #include "tsSysUtils.h"
 #include "tsBinaryTable.h"
 #include "tsSectionFile.h"
-#include "tsDVBCharset.h"
+#include "tsDVBCharTable.h"
 #include "tsxmlTweaks.h"
 #include "tsReportWithPrefix.h"
 #include "tsInputRedirector.h"
@@ -71,7 +71,7 @@ namespace {
         bool                  xmlModel;        // Display XML model instead of compilation.
         bool                  withExtensions;  // XML model with extensions.
         ts::xml::Tweaks       xmlTweaks;       // XML formatting options.
-        const ts::DVBCharset* defaultCharset;  // Default DVB character set to interpret strings.
+        const ts::DVBCharTable* defaultCharset;  // Default DVB character set to interpret strings.
     };
 }
 
@@ -90,7 +90,7 @@ Options::Options(int argc, char *argv[]) :
     defaultCharset(nullptr)
 {
     duck.defineArgsForStandards(*this);
-    duck.defineArgsForDVBCharset(*this);
+    duck.defineArgsForCharset(*this);
     xmlTweaks.defineArgs(*this);
 
     option(u"", 0, STRING);
@@ -160,7 +160,7 @@ Options::Options(int argc, char *argv[]) :
 
     // Get default character set.
     const ts::UString csName(value(u"default-charset"));
-    if (!csName.empty() && (defaultCharset = ts::DVBCharset::GetCharset(csName)) == nullptr) {
+    if (!csName.empty() && (defaultCharset = ts::DVBCharTable::GetCharset(csName)) == nullptr) {
         error(u"invalid character set name '%s", {csName});
     }
 

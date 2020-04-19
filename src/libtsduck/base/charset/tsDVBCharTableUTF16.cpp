@@ -27,22 +27,31 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsDVBCharsetUTF8.h"
+#include "tsDVBCharTableUTF16.h"
+#include "tsMemory.h"
 #include "tsUString.h"
 TSDUCK_SOURCE;
 
-// UTF-8 character set singleton
-const ts::DVBCharsetUTF8 ts::DVBCharsetUTF8::UTF_8;
+// UNICODE character set singleton
+const ts::DVBCharTableUTF16 ts::DVBCharTableUTF16::UNICODE;
 
 
 //----------------------------------------------------------------------------
 // Decode a DVB string from the specified byte buffer.
 //----------------------------------------------------------------------------
 
-bool ts::DVBCharsetUTF8::decode(UString& str, const uint8_t* dvb, size_t dvbSize) const
+bool ts::DVBCharTableUTF16::decode(UString& str, const uint8_t* dvb, size_t dvbSize) const
 {
-    str = UString::FromUTF8(reinterpret_cast<const char*>(dvb), dvbSize);
-    return true;
+    // We simply copy 2 bytes per character.
+    str.clear();
+    str.reserve(dvbSize / 2);
+    for (size_t i = 0; dvb != nullptr && i + 1 < dvbSize; i += 2) {
+        const uint16_t cp = GetUInt16(dvb + i);
+        str.push_back(cp == DVB_CODEPOINT_CRLF ? ts::LINE_FEED : UChar(cp));
+    }
+
+    // Truncated string if odd number of bytes.
+    return dvbSize % 2 == 0;
 }
 
 
@@ -50,9 +59,9 @@ bool ts::DVBCharsetUTF8::decode(UString& str, const uint8_t* dvb, size_t dvbSize
 // Check if a string can be encoded using the charset.
 //----------------------------------------------------------------------------
 
-bool ts::DVBCharsetUTF8::canEncode(const UString& str, size_t start, size_t count) const
+bool ts::DVBCharTableUTF16::canEncode(const UString& str, size_t start, size_t count) const
 {
-    // All characters and can always be encoded in UTF-8.
+    // All characters and can always be encoded in UTF-16.
     return true;
 }
 
@@ -61,31 +70,17 @@ bool ts::DVBCharsetUTF8::canEncode(const UString& str, size_t start, size_t coun
 // Encode a C++ Unicode string into a DVB string.
 //----------------------------------------------------------------------------
 
-size_t ts::DVBCharsetUTF8::encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start, size_t count) const
+size_t ts::DVBCharTableUTF16::encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start, size_t count) const
 {
     size_t result = 0;
-
     // Serialize characters as long as there is free space.
-    while (buffer != nullptr && size > 0 && start < str.length() && count > 0) {
-        if (str[start] != ts::CARRIAGE_RETURN) {
-
-            // Convert a 1-character string to UTF-8.
-            const std::string utf8(str.substr(start, 1).toUTF8());
-            const size_t len = utf8.length();
-            if (len > size) {
-                // Won't fit in the buffer, stop now.
-                break;
-            }
-
-            // Small optimization.
-            if (len == 1) {
-                *buffer = uint8_t(utf8[0]);
-            }
-            else {
-                ::memcpy(buffer, utf8.data(), len);
-            }
-            buffer += len;
-            size -= len;
+    while (buffer != nullptr && size > 1 && start < str.length() && count > 0) {
+        const UChar cp = str[start];
+        if (cp != ts::CARRIAGE_RETURN) {
+            // Encode character.
+            PutUInt16(buffer, cp == ts::LINE_FEED ? DVB_CODEPOINT_CRLF : uint16_t(cp));
+            buffer += 2;
+            size -= 2;
             result++;
         }
         start++;

@@ -28,12 +28,12 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Declaration of class DVBCharsetUTF16.
+//!  Declaration of class DVBCharTableUTF8.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsDVBCharset.h"
+#include "tsDVBCharTable.h"
 
 namespace ts {
     //!
@@ -41,25 +41,22 @@ namespace ts {
     //! @see ETSI EN 300 468, Annex A.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL DVBCharsetUTF16 : public DVBCharset
+    class TSDUCKDLL DVBCharTableUTF8: public DVBCharTable
     {
-        TS_NOCOPY(DVBCharsetUTF16);
+        TS_NOCOPY(DVBCharTableUTF8);
     public:
         //!
-        //! UNICODE character set singleton
+        //! UTF-8 character set singleton
         //!
-        static const DVBCharsetUTF16 UNICODE;
+        static const DVBCharTableUTF8 UTF_8;
 
         // Inherited methods.
         virtual bool decode(UString& str, const uint8_t* dvb, size_t dvbSize) const override;
         virtual bool canEncode(const UString& str, size_t start = 0, size_t count = NPOS) const override;
         virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const override;
 
-    protected:
-        //!
-        //! Constructor.
-        //! There is only one definition for such DVB character sets.
-        //!
-        DVBCharsetUTF16() : DVBCharset(u"UNICODE", 0x000011) {}
+    private:
+        // Private constructor since only one instance is available.
+        DVBCharTableUTF8() : DVBCharTable(u"UTF-8", 0x000015) {}
     };
 }

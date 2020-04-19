@@ -76,7 +76,7 @@ ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
     duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);
     duck.defineArgsForStandards(*this);
-    duck.defineArgsForDVBCharset(*this);
+    duck.defineArgsForCharset(*this);
     _logger.defineArgs(*this);
     _display.defineArgs(*this);
 }

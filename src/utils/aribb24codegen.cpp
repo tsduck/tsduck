@@ -28,35 +28,35 @@
 //----------------------------------------------------------------------------
 //
 //  This program is used to generate the encoding tables for ARIB STD-B24
-//  character sets. See class ts::ARIBCharsetB24.
+//  character sets. See class ts::ARIBCharset.
 //
 //  Running aribb24codegen is done only once or each time the decoding tables
-//  are updated in ARIBCharsetB24. The output of aribb24codegen is C++ source
+//  are updated in ARIBCharset. The output of aribb24codegen is C++ source
 //  code which is archived in the git repository and never modified.
 //
 //----------------------------------------------------------------------------
 
-#include "tsARIBCharsetB24.h"
+#include "tsARIBCharset.h"
 #include "tsTime.h"
 TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------
-// The class ARIBCharsetB24CodeGenerator has access to private members
-// of ARIBCharsetB24.
+// The class ARIBCharsetCodeGenerator has access to private members
+// of ARIBCharset.
 //-----------------------------------------------------------------------------
 
 namespace ts {
-    class ARIBCharsetB24CodeGenerator
+    class ARIBCharsetCodeGenerator
     {
-        TS_NOBUILD_NOCOPY(ARIBCharsetB24CodeGenerator);
+        TS_NOBUILD_NOCOPY(ARIBCharsetCodeGenerator);
     public:
         // Generate the ARIB STD-24 encoding tables in the constructor.
-        ARIBCharsetB24CodeGenerator(std::ostream& out);
+        ARIBCharsetCodeGenerator(std::ostream& out);
 
     private:
-        typedef ARIBCharsetB24::CharMap CharMap;
-        typedef ARIBCharsetB24::CharRows CharRows;
+        typedef ARIBCharset::CharMap CharMap;
+        typedef ARIBCharset::CharRows CharRows;
 
         // A slice of contiguous Unicode points.
         struct Slice
@@ -92,7 +92,7 @@ namespace ts {
 // Code generator constructor.
 //-----------------------------------------------------------------------------
 
-ts::ARIBCharsetB24CodeGenerator::ARIBCharsetB24CodeGenerator(std::ostream& out) :
+ts::ARIBCharsetCodeGenerator::ARIBCharsetCodeGenerator(std::ostream& out) :
     _slices()
 {
     buildTable();
@@ -104,19 +104,19 @@ ts::ARIBCharsetB24CodeGenerator::ARIBCharsetB24CodeGenerator(std::ostream& out) 
 // Build the table of characters from all character sets.
 //-----------------------------------------------------------------------------
 
-void ts::ARIBCharsetB24CodeGenerator::buildTable()
+void ts::ARIBCharsetCodeGenerator::buildTable()
 {
     // Loop on all supported character sets.
-    for (auto itmap = ARIBCharsetB24::ALL_MAPS; *itmap != nullptr; ++itmap) {
-        const ARIBCharsetB24::CharMap& cmap(**itmap);
+    for (auto itmap = ARIBCharset::ALL_MAPS; *itmap != nullptr; ++itmap) {
+        const ARIBCharset::CharMap& cmap(**itmap);
 
         // Loop on all contiguous sets of rows in the character set.
-        for (uint32_t i = 0; i < ARIBCharsetB24::MAX_ROWS; ++i) {
-            const ARIBCharsetB24::CharRows& rows(cmap.rows[i]);
+        for (uint32_t i = 0; i < ARIBCharset::MAX_ROWS; ++i) {
+            const ARIBCharset::CharRows& rows(cmap.rows[i]);
 
             // Loop on all rows in the contiguous set of rows.
             for (uint32_t row_index = 0; row_index < rows.count; row_index++) {
-                const ARIBCharsetB24::CharRow& row(rows.rows[row_index]);
+                const ARIBCharset::CharRow& row(rows.rows[row_index]);
 
                 // Locate slices of contiguous characters in the rows.
                 char32_t slice_base_value = 0;
@@ -124,7 +124,7 @@ void ts::ARIBCharsetB24CodeGenerator::buildTable()
                 uint32_t slice_size = 0;
 
                 // Loop on all characters in the row.
-                for (uint32_t char_index = 0; char_index < ARIBCharsetB24::CHAR_ROW_SIZE; ++char_index) {
+                for (uint32_t char_index = 0; char_index < ARIBCharset::CHAR_ROW_SIZE; ++char_index) {
                     if (row[char_index] == 0) {
                         // There is no valid Unicode point here, close previous slice if still open.
                         buildSlice(cmap, rows, row_index, slice_base_index, slice_size);
@@ -157,7 +157,7 @@ void ts::ARIBCharsetB24CodeGenerator::buildTable()
 // Build a slice of contiguous Unicode points.
 //-----------------------------------------------------------------------------
 
-void ts::ARIBCharsetB24CodeGenerator::buildSlice(const CharMap& cmap, const CharRows& rows, uint32_t row_index, uint32_t char_index, uint32_t& count)
+void ts::ARIBCharsetCodeGenerator::buildSlice(const CharMap& cmap, const CharRows& rows, uint32_t row_index, uint32_t char_index, uint32_t& count)
 {
     // Build a slice only if non empty.
     if (count > 0) {
@@ -236,17 +236,17 @@ void ts::ARIBCharsetB24CodeGenerator::buildSlice(const CharMap& cmap, const Char
 // Generate the C++ source code for the encoder table.
 //-----------------------------------------------------------------------------
 
-void ts::ARIBCharsetB24CodeGenerator::generateFile(std::ostream& out)
+void ts::ARIBCharsetCodeGenerator::generateFile(std::ostream& out)
 {
     // Source file header.
     out << "// Automatically generated file, do not modify." << std::endl
         << "// See internal tool aribb24codegen in src/utils." << std::endl
         << "// Generated " << Time::CurrentLocalTime().format(Time::DATE) << std::endl
         << std::endl
-        << "#include \"tsARIBCharsetB24.h\""<< std::endl
+        << "#include \"tsARIBCharset.h\""<< std::endl
         << std::endl
-        << "const size_t ts::ARIBCharsetB24::ENCODING_COUNT = " << _slices.size() << ";" << std::endl
-        << "const ts::ARIBCharsetB24::EncoderEntry ts::ARIBCharsetB24::ENCODING_TABLE[" << _slices.size() << "] = {" << std::endl;
+        << "const size_t ts::ARIBCharset::ENCODING_COUNT = " << _slices.size() << ";" << std::endl
+        << "const ts::ARIBCharset::EncoderEntry ts::ARIBCharset::ENCODING_TABLE[" << _slices.size() << "] = {" << std::endl;
 
     const uint32_t entries_per_line = 4;
     uint32_t count = 0;
@@ -300,6 +300,6 @@ void ts::ARIBCharsetB24CodeGenerator::generateFile(std::ostream& out)
 
 int main(int argc, char* argv[])
 {
-    ts::ARIBCharsetB24CodeGenerator gen(std::cout);
+    ts::ARIBCharsetCodeGenerator gen(std::cout);
     return EXIT_SUCCESS;
 }

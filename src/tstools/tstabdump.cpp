@@ -88,7 +88,7 @@ Options::Options(int argc, char *argv[]) :
     duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);
     duck.defineArgsForStandards(*this);
-    duck.defineArgsForDVBCharset(*this);
+    duck.defineArgsForCharset(*this);
     pager.defineArgs(*this);
     display.defineArgs(*this);
     udp.defineArgs(*this);

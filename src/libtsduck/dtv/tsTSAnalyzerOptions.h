@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsArgsSupplierInterface.h"
-#include "tsDVBCharset.h"
+#include "tsDVBCharTable.h"
 
 namespace ts {
     //!
