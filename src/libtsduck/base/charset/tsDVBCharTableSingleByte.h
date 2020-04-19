@@ -74,9 +74,9 @@ namespace ts {
         virtual bool canEncode(const UString& str, size_t start = 0, size_t count = NPOS) const override;
         virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const override;
 
-    private:
+    protected:
         //!
-        //! Private constructor since no external instance can be defined.
+        //! Protected constructor since no external instance can be defined.
         //! @param [in] name charset name.
         //! @param [in] tableCode DVB table code.
         //! @param [in] init Initializer list. 96 code point values for 0xA0-0xFF range, zero means unused.
