@@ -327,7 +327,8 @@ void ts::INT::addSection(BinaryTable& table,
 
 bool ts::INT::DisplayDescriptorList(TablesDisplay& display, const Section& section, const uint8_t*& data, size_t& remain, int indent)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (remain < 2) {
@@ -360,8 +361,10 @@ bool ts::INT::DisplayDescriptorList(TablesDisplay& display, const Section& secti
 
 void ts::INT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 

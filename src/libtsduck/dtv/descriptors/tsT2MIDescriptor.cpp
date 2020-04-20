@@ -143,8 +143,10 @@ void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, cons
     // See ts::TablesDisplay::displayDescriptorData()
 
     if (size >= 3) {
-        std::ostream& strm(display.duck().out());
+        DuckContext& duck(display.duck());
+        std::ostream& strm(duck.out());
         const std::string margin(indent, ' ');
+
         strm << margin << "T2-MI stream id: " << int(data[0] & 0x07)
              << ", T2-MI stream count: " << int((data[1] & 0x07) + 1)
              << ", PCR/ISCR common clock: " << UString::YesNo(data[2] & 0x01)

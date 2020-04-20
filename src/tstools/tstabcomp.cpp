@@ -61,17 +61,16 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext       duck;            // Execution context.
-        ts::UStringVector     infiles;         // Input file names.
-        ts::UString           outfile;         // Output file path.
-        bool                  outdir;          // Output name is a directory.
-        bool                  compile;         // Explicit compilation.
-        bool                  decompile;       // Explicit decompilation.
-        bool                  packAndFlush;    // Pack and flush incomplete tables before exiting.
-        bool                  xmlModel;        // Display XML model instead of compilation.
-        bool                  withExtensions;  // XML model with extensions.
-        ts::xml::Tweaks       xmlTweaks;       // XML formatting options.
-        const ts::DVBCharTable* defaultCharset;  // Default DVB character set to interpret strings.
+        ts::DuckContext   duck;            // Execution context.
+        ts::UStringVector infiles;         // Input file names.
+        ts::UString       outfile;         // Output file path.
+        bool              outdir;          // Output name is a directory.
+        bool              compile;         // Explicit compilation.
+        bool              decompile;       // Explicit decompilation.
+        bool              packAndFlush;    // Pack and flush incomplete tables before exiting.
+        bool              xmlModel;        // Display XML model instead of compilation.
+        bool              withExtensions;  // XML model with extensions.
+        ts::xml::Tweaks   xmlTweaks;       // XML formatting options.
     };
 }
 
@@ -86,8 +85,7 @@ Options::Options(int argc, char *argv[]) :
     packAndFlush(false),
     xmlModel(false),
     withExtensions(false),
-    xmlTweaks(),
-    defaultCharset(nullptr)
+    xmlTweaks()
 {
     duck.defineArgsForStandards(*this);
     duck.defineArgsForCharset(*this);
@@ -156,12 +154,6 @@ Options::Options(int argc, char *argv[]) :
     }
     if (compile && decompile) {
         error(u"specify either --compile or --decompile but not both");
-    }
-
-    // Get default character set.
-    const ts::UString csName(value(u"default-charset"));
-    if (!csName.empty() && (defaultCharset = ts::DVBCharTable::GetCharset(csName)) == nullptr) {
-        error(u"invalid character set name '%s", {csName});
     }
 
     exitOnError();

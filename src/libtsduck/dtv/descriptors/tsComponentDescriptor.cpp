@@ -91,7 +91,7 @@ void ts::ComponentDescriptor::serialize(DuckContext& duck, Descriptor& desc) con
         desc.invalidate();
         return;
     }
-    bbp->append(duck.toDVB(text));
+    bbp->append(duck.encoded(text));
 
     serializeEnd(desc, bbp);
 }
@@ -113,8 +113,8 @@ void ts::ComponentDescriptor::deserialize(DuckContext& duck, const Descriptor& d
         stream_content = data[0] & 0x0F;
         component_type = data[1];
         component_tag = data[2];
-        language_code.assign(duck.fromDVB(data + 3, 3));
-        text.assign(duck.fromDVB(data + 6, size - 6));
+        language_code = DeserializeLanguageCode(data + 3);
+        duck.decode(text, data + 6, size - 6);
     }
 }
 
@@ -125,7 +125,8 @@ void ts::ComponentDescriptor::deserialize(DuckContext& duck, const Descriptor& d
 
 void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 6) {
@@ -133,10 +134,10 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
         const uint8_t tag = data[2];
         strm << margin << "Content/type: " << names::ComponentType(type, names::FIRST) << std::endl
              << margin << UString::Format(u"Component tag: %d (0x%X)", {tag, tag}) << std::endl
-             << margin << "Language: " << display.duck().fromDVB(data + 3, 3) << std::endl;
+             << margin << "Language: " << DeserializeLanguageCode(data + 3) << std::endl;
         data += 6; size -= 6;
         if (size > 0) {
-            strm << margin << "Description: \"" << display.duck().fromDVB(data, size) << "\"" << std::endl;
+            strm << margin << "Description: \"" << duck.decoded(data, size) << "\"" << std::endl;
         }
         data += size; size = 0;
     }

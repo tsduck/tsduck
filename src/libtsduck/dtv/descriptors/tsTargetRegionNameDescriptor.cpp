@@ -85,7 +85,7 @@ void ts::TargetRegionNameDescriptor::serialize(DuckContext& duck, Descriptor& de
         return;
     }
     for (auto it = regions.begin(); it != regions.end(); ++it) {
-        ByteBlock name(duck.toDVBWithByteLength(it->region_name));
+        ByteBlock name(duck.encodedWithByteLength(it->region_name));
         assert(!name.empty());
         if (name[0] > 0x3F) {
             return;
@@ -128,7 +128,7 @@ void ts::TargetRegionNameDescriptor::deserialize(DuckContext& duck, const Descri
 
         _is_valid = size > len;
         if (_is_valid) {
-            region.region_name = duck.fromDVB(data, len);
+            duck.decode(region.region_name, data, len);
             region.primary_region_code = data[len];
             data += len + 1; size -= len + 1;
         }
@@ -166,7 +166,8 @@ void ts::TargetRegionNameDescriptor::DisplayDescriptor(TablesDisplay& display, D
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
     bool ok = size >= 6;
     int index = 0;
@@ -185,7 +186,7 @@ void ts::TargetRegionNameDescriptor::DisplayDescriptor(TablesDisplay& display, D
 
         ok = size > len;
         if (ok) {
-            strm << margin << "  Region name: \"" << display.duck().fromDVB(data, len) << "\"" << std::endl
+            strm << margin << "  Region name: \"" << duck.decoded(data, len) << "\"" << std::endl
                  << margin << UString::Format(u"  Primary region code: 0x%X (%d)", {data[len], data[len]}) << std::endl;
             data += len + 1; size -= len + 1;
         }

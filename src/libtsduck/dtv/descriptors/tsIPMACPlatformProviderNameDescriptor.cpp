@@ -76,7 +76,7 @@ void ts::IPMACPlatformProviderNameDescriptor::serialize(DuckContext& duck, Descr
 {
     ByteBlockPtr bbp(serializeStart());
     if (SerializeLanguageCode(*bbp, language_code)) {
-        bbp->append(duck.toDVB(text));
+        bbp->append(duck.encoded(text));
         serializeEnd(desc, bbp);
     }
     else {
@@ -98,7 +98,7 @@ void ts::IPMACPlatformProviderNameDescriptor::deserialize(DuckContext& duck, con
 
     if (_is_valid) {
         language_code = DeserializeLanguageCode(data);
-        text = duck.fromDVB(data + 3, size - 3);
+        duck.decode(text, data + 3, size - 3);
     }
 }
 
@@ -109,12 +109,13 @@ void ts::IPMACPlatformProviderNameDescriptor::deserialize(DuckContext& duck, con
 
 void ts::IPMACPlatformProviderNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 3) {
         strm << margin << "Language: " << DeserializeLanguageCode(data) << std::endl
-             << margin << "Platform name: " << display.duck().fromDVB(data + 3, size - 3) << std::endl;
+             << margin << "Platform name: " << duck.decoded(data + 3, size - 3) << std::endl;
         size = 0;
     }
 

@@ -69,7 +69,7 @@ ts::SimpleApplicationLocationDescriptor::SimpleApplicationLocationDescriptor(Duc
 void ts::SimpleApplicationLocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.toDVB(initial_path));
+    bbp->append(duck.encoded(initial_path));
     serializeEnd(desc, bbp);
 }
 
@@ -83,7 +83,7 @@ void ts::SimpleApplicationLocationDescriptor::deserialize(DuckContext& duck, con
     _is_valid = desc.isValid() && desc.tag() == _tag;
 
     if (_is_valid) {
-        initial_path = duck.fromDVB(desc.payload(), desc.payloadSize());
+        duck.decode(initial_path, desc.payload(), desc.payloadSize());
     }
 }
 
@@ -94,9 +94,11 @@ void ts::SimpleApplicationLocationDescriptor::deserialize(DuckContext& duck, con
 
 void ts::SimpleApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
-    strm << margin << "Initial path: \"" << display.duck().fromDVB(data, size) << "\"" << std::endl;
+
+    strm << margin << "Initial path: \"" << duck.decoded(data, size) << "\"" << std::endl;
 }
 
 

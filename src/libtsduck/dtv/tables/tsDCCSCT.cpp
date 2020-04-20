@@ -312,8 +312,10 @@ void ts::DCCSCT::serializeContent(DuckContext& duck, BinaryTable& table) const
 
 void ts::DCCSCT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 

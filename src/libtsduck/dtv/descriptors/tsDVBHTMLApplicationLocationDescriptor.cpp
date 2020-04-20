@@ -75,8 +75,8 @@ ts::DVBHTMLApplicationLocationDescriptor::DVBHTMLApplicationLocationDescriptor(D
 void ts::DVBHTMLApplicationLocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.toDVBWithByteLength(physical_root));
-    bbp->append(duck.toDVB(initial_path));
+    bbp->append(duck.encodedWithByteLength(physical_root));
+    bbp->append(duck.encoded(initial_path));
     serializeEnd(desc, bbp);
 }
 
@@ -99,8 +99,8 @@ void ts::DVBHTMLApplicationLocationDescriptor::deserialize(DuckContext& duck, co
         const size_t len = data[0];
         _is_valid = len + 1 <= size;
         if (_is_valid) {
-            physical_root = duck.fromDVB(data + 1, len);
-            initial_path = duck.fromDVB(data + 1 + len, size - len - 1);
+            duck.decode(physical_root, data + 1, len);
+            duck.decode(initial_path, data + 1 + len, size - len - 1);
         }
     }
 }
@@ -112,13 +112,14 @@ void ts::DVBHTMLApplicationLocationDescriptor::deserialize(DuckContext& duck, co
 
 void ts::DVBHTMLApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
         size_t len = std::min<size_t>(data[0], size - 1);
-        strm << margin << "Physical root: \"" << display.duck().fromDVB(data + 1, len) << "\"" << std::endl
-             << margin << "Initial path: \"" << display.duck().fromDVB(data + 1 + len, size - len - 1) << "\"" << std::endl;
+        strm << margin << "Physical root: \"" << duck.decoded(data + 1, len) << "\"" << std::endl
+             << margin << "Initial path: \"" << duck.decoded(data + 1 + len, size - len - 1) << "\"" << std::endl;
         size = 0;
     }
 

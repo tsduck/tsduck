@@ -80,7 +80,11 @@ ts::DSMCCStreamDescriptorsTable& ts::DSMCCStreamDescriptorsTable::operator=(cons
 
 void ts::DSMCCStreamDescriptorsTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    display.duck().out() << UString::Format(u"%*sTable id extension: 0x%X (%d)", {indent, u"", section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const std::string margin(indent, ' ');
+
+    strm << margin << UString::Format(u"Table id extension: 0x%X (%d)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
     AbstractDescriptorsTable::DisplaySection(display, section, indent);
 }
 

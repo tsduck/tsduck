@@ -507,8 +507,10 @@ void ts::UNT::addSection(BinaryTable& table,
 
 void ts::UNT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
@@ -559,7 +561,8 @@ void ts::UNT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 
 bool ts::UNT::DisplayDescriptorList(TablesDisplay& display, const Section& section, const uint8_t*& data, size_t& remain, int indent)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (remain < 2) {
@@ -593,7 +596,8 @@ bool ts::UNT::DisplayDescriptorList(TablesDisplay& display, const Section& secti
 
 bool ts::UNT::DisplayCompatibilityDescriptorList(TablesDisplay& display, const Section& section, const uint8_t*& data, size_t& remain, int indent)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     // Need fixed part.
@@ -672,7 +676,8 @@ bool ts::UNT::DisplayCompatibilityDescriptorList(TablesDisplay& display, const S
 
 bool ts::UNT::DisplayDevices(TablesDisplay& display, const Section& section, const uint8_t*& data, size_t& remain, int indent)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     // Display compatibility descriptor.

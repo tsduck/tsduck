@@ -102,8 +102,10 @@ void ts::TransportProfileDescriptor::deserialize(DuckContext& duck, const Descri
 void ts::TransportProfileDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     if (size > 0) {
-        std::ostream& strm(display.duck().out());
+        DuckContext& duck(display.duck());
+        std::ostream& strm(duck.out());
         const std::string margin(indent, ' ');
+
         strm << margin << "Transport profile: " << NameFromSection(u"TransportProfile", data[0], names::HEXA_FIRST) << std::endl;
         if (size > 1) {
             strm << margin << "Private data:" << std::endl

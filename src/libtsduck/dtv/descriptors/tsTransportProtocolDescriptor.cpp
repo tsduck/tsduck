@@ -158,16 +158,16 @@ void ts::TransportProtocolDescriptor::serialize(DuckContext& duck, Descriptor& d
             }
             bbp->appendUInt8(mpe.alignment_indicator ? 0xFF : 0x7F);
             for (auto it = mpe.urls.begin(); it != mpe.urls.end(); ++it) {
-                bbp->append(duck.toDVBWithByteLength(*it));
+                bbp->append(duck.encodedWithByteLength(*it));
             }
             break;
         }
         case MHP_PROTO_HTTP: {
             for (auto it1 = http.begin(); it1 != http.end(); ++it1) {
-                bbp->append(duck.toDVBWithByteLength(it1->URL_base));
+                bbp->append(duck.encodedWithByteLength(it1->URL_base));
                 bbp->appendUInt8(uint8_t(it1->URL_extensions.size()));
                 for (auto it2 = it1->URL_extensions.begin(); it2 != it1->URL_extensions.end(); ++it2) {
-                    bbp->append(duck.toDVBWithByteLength(*it2));
+                    bbp->append(duck.encodedWithByteLength(*it2));
                 }
             }
             break;
@@ -239,7 +239,7 @@ bool ts::TransportProtocolDescriptor::transferSelectorBytes(DuckContext& duck)
                 if (size < 1 + len) {
                     return false;
                 }
-                mpe.urls.push_back(duck.fromDVB(data + 1, len));
+                mpe.urls.push_back(duck.decoded(data + 1, len));
                 data += 1 + len; size -= 1 + len;
             }
             break;
@@ -253,7 +253,7 @@ bool ts::TransportProtocolDescriptor::transferSelectorBytes(DuckContext& duck)
                 if (size < 2 + len) {
                     return false;
                 }
-                e.URL_base = duck.fromDVB(data + 1, len);
+                duck.decode(e.URL_base, data + 1, len);
                 size_t count = data[1 + len];
                 data += 2 + len; size -= 2 + len;
                 // Loop on all URL extensions.
@@ -265,7 +265,7 @@ bool ts::TransportProtocolDescriptor::transferSelectorBytes(DuckContext& duck)
                     if (size < 1 + extlen) {
                         return false;
                     }
-                    e.URL_extensions.push_back(duck.fromDVB(data + 1, extlen));
+                    e.URL_extensions.push_back(duck.decoded(data + 1, extlen));
                     data += 1 + extlen; size -= 1 + extlen;
                 }
                 // URL entry completed.
@@ -313,7 +313,8 @@ void ts::TransportProtocolDescriptor::deserialize(DuckContext& duck, const Descr
 
 void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 3) {
@@ -368,7 +369,7 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, 
                         const size_t len = data[0];
                         ok = size >= 1 + len;
                         if (ok) {
-                            strm << margin << "URL: \"" << display.duck().fromDVB(data + 1, len) << "\"" << std::endl;
+                            strm << margin << "URL: \"" << duck.decoded(data + 1, len) << "\"" << std::endl;
                             data += 1 + len; size -= 1 + len;
                         }
                     }
@@ -381,14 +382,14 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, 
                     const size_t len = data[0];
                     ok = size >= 2 + len;
                     if (ok) {
-                        strm << margin << "URL base: \"" << display.duck().fromDVB(data + 1, len) << "\"" << std::endl;
+                        strm << margin << "URL base: \"" << duck.decoded(data + 1, len) << "\"" << std::endl;
                         size_t count = data[1 + len];
                         data += 2 + len; size -= 2 + len;
                         while (count-- > 0) {
                             const size_t extlen = data[0];
                             ok = size >= 1 + extlen;
                             if (ok) {
-                                strm << margin << "  Extension: \"" << display.duck().fromDVB(data + 1, extlen) << "\"" << std::endl;
+                                strm << margin << "  Extension: \"" << duck.decoded(data + 1, extlen) << "\"" << std::endl;
                                 data += 1 + extlen; size -= 1 + extlen;
                             }
                         }

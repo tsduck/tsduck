@@ -82,7 +82,8 @@ ts::DataBroadcastDescriptor::DataBroadcastDescriptor(DuckContext& duck, const De
 
 void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
@@ -101,7 +102,7 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
         if (size >= 3) {
             strm << margin << "Language: " << DeserializeLanguageCode(data) << std::endl;
             data += 3; size -= 3;
-            strm << margin << "Description: \"" << display.duck().fromDVBWithByteLength(data, size) << "\"" << std::endl;
+            strm << margin << "Description: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
         }
     }
 
@@ -125,7 +126,7 @@ void ts::DataBroadcastDescriptor::serialize(DuckContext& duck, Descriptor& desc)
         desc.invalidate();
         return;
     }
-    bbp->append(duck.toDVBWithByteLength(text));
+    bbp->append(duck.encodedWithByteLength(text));
 
     serializeEnd(desc, bbp);
 }
@@ -162,7 +163,7 @@ void ts::DataBroadcastDescriptor::deserialize(DuckContext& duck, const Descripto
 
     language_code = DeserializeLanguageCode(data);
     data += 3; size -= 3;
-    text = duck.fromDVBWithByteLength(data, size);
+    duck.decodeWithByteLength(text, data, size);
     _is_valid = size == 0;
 }
 

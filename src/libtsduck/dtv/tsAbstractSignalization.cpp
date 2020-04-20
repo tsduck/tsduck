@@ -207,7 +207,7 @@ bool ts::AbstractSignalization::deserializeBool(bool& value, const uint8_t*& dat
 
 bool ts::AbstractSignalization::SerializeFixedLength(DuckContext& duck, ByteBlock& bb, const UString& str, const size_t size)
 {
-    const ByteBlock dvb(duck.toDVB(str));
+    const ByteBlock dvb(duck.encoded(str));
     if (dvb.size() == size) {
         bb.append(dvb);
         return true;

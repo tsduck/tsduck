@@ -88,7 +88,7 @@ void ts::AbstractMultilingualDescriptor::serialize(DuckContext& duck, Descriptor
             desc.invalidate();
             return;
         }
-        bbp->append(duck.toDVBWithByteLength(it->name));
+        bbp->append(duck.encodedWithByteLength(it->name));
     }
 
     serializeEnd(desc, bbp);
@@ -117,7 +117,7 @@ void ts::AbstractMultilingualDescriptor::deserialize(DuckContext& duck, const De
         data += 4; size -= 4;
         _is_valid = len <= size;
         if (_is_valid) {
-            entries.push_back(Entry(lang, duck.fromDVB(data, len)));
+            entries.push_back(Entry(lang, duck.decoded(data, len)));
             data += len; size -= len;
         }
     }
@@ -131,14 +131,15 @@ void ts::AbstractMultilingualDescriptor::deserialize(DuckContext& duck, const De
 
 void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     while (size >= 4) {
         const size_t len = std::min<size_t>(data[3], size - 4);
         strm << margin
              << "Language: " << DeserializeLanguageCode(data)
-             << ", name: \"" << display.duck().fromDVB(data + 4, len) << "\""
+             << ", name: \"" << duck.decoded(data + 4, len) << "\""
              << std::endl;
         data += 4 + len; size -= 4 + len;
     }

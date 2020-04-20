@@ -30,9 +30,9 @@
 #include "tsDuckContext.h"
 #include "tsDuckConfigFile.h"
 #include "tsDVBCharTableSingleByte.h"
+#include "tsARIBCharset.h"
 #include "tsHFBand.h"
 #include "tsCerrReport.h"
-#include "tsDVBCharTable.h"
 #include "tsArgs.h"
 TSDUCK_SOURCE;
 
@@ -46,8 +46,8 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
     _initial_out(output != nullptr ? output : &std::cout),
     _out(_initial_out),
     _outFile(),
-    _charsetIn(nullptr),
-    _charsetOut(nullptr),
+    _charsetIn(&DVBCharTableSingleByte::DVB_ISO_6937),  // default DVB charset
+    _charsetOut(&DVBCharTableSingleByte::DVB_ISO_6937),
     _casId(CASID_NULL),
     _defaultPDS(0),
     _cmdStandards(STD_NONE),
@@ -77,7 +77,7 @@ void ts::DuckContext::reset()
     }
 
     _out = _initial_out;
-    _charsetIn = _charsetOut = nullptr;
+    _charsetIn = _charsetOut = &DVBCharTableSingleByte::DVB_ISO_6937;
     _casId = CASID_NULL;
     _defaultPDS = 0;
     _cmdStandards = _accStandards = STD_NONE;
@@ -96,17 +96,17 @@ void ts::DuckContext::setReport(Report* report)
 
 
 //----------------------------------------------------------------------------
-// Set the DVB character sets.
+// Set the DVB character sets (default DVB character set if null).
 //----------------------------------------------------------------------------
 
-void ts::DuckContext::setDefaultCharsetIn(const DVBCharTable* charset)
+void ts::DuckContext::setDefaultCharsetIn(const Charset* charset)
 {
-    _charsetIn = charset;
+    _charsetIn = charset != nullptr ? charset : &DVBCharTableSingleByte::DVB_ISO_6937;
 }
 
-void ts::DuckContext::setDefaultCharsetOut(const DVBCharTable* charset)
+void ts::DuckContext::setDefaultCharsetOut(const Charset* charset)
 {
-    _charsetOut = charset;
+    _charsetOut = charset != nullptr ? charset : &DVBCharTableSingleByte::DVB_ISO_6937;
 }
 
 
@@ -336,18 +336,15 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"The PDS value can be an integer or one of (not case-sensitive) names.");
     }
 
-    // Options relating to default DVB character sets.
+    // Options relating to default character sets.
     if (cmdOptionsMask & CMD_CHARSET) {
 
         args.option(u"default-charset", 0, Args::STRING);
         args.help(u"default-charset", u"name",
-                  u"Default character set to use when interpreting DVB strings without "
-                  u"explicit character table code. According to DVB standard ETSI EN 300 468, "
-                  u"the default DVB character set is ISO-6937. However, some bogus "
-                  u"signalization may assume that the default character set is different, "
-                  u"typically the usual local character table for the region. This option "
-                  u"forces a non-standard character table. The available table names are " +
-                  UString::Join(DVBCharTable::GetAllNames()) + u".");
+                  u"Default character set to use when interpreting strings from tables and descriptors. "
+                  u"By default, DVB encoding using ISO-6937 as default table is used. "
+                  u"The available table names are " +
+                  UString::Join(DVBCharset::GetAllNames()) + u".");
 
         args.option(u"europe", 0);
         args.help(u"europe",
@@ -359,16 +356,6 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"strings, which is not the case with some operators. Using this option, "
                   u"all DVB strings without explicit table code are assumed to use ISO-8859-15 "
                   u"instead of the standard ISO-6937 encoding.");
-    }
-
-    // Options relating to default UHF/VHF region.
-    if (cmdOptionsMask & CMD_HF_REGION) {
-
-        args.option(u"hf-band-region", 'r', Args::STRING);
-        args.help(u"hf-band-region", u"name",
-                  u"Specify the region for UHF/VHF band frequency layout. "
-                  u"The available regions are " +
-                  UString::Join(HFBand::GetAllRegions(*_report)) + u".");
     }
 
     // Options relating to default standards.
@@ -388,6 +375,34 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"automatically detected from their signalization. This option is only "
                   u"useful when ISDB-related stuff are found in the TS before the first "
                   u"ISDB-specific table.");
+    }
+
+    // Options which can be used as character sets and/or standards.
+    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS)) {
+
+        UString syn;
+        if ((_definedCmdOptions | cmdOptionsMask) & CMD_STANDARDS) {
+            syn.append(u" --isdb");
+        }
+        if (cmdOptionsMask & CMD_CHARSET) {
+            syn.append(u" --default-charset ARIB-STD-B24");
+        }
+        syn.trim();
+
+        args.option(u"japan", 0);
+        args.help(u"japan",
+            u"A synonym for '" + syn + u"'. "
+            u"This is a handy shortcut when working on Japanese transport streams.");
+    }
+
+    // Options relating to default UHF/VHF region.
+    if (cmdOptionsMask & CMD_HF_REGION) {
+
+        args.option(u"hf-band-region", 'r', Args::STRING);
+        args.help(u"hf-band-region", u"name",
+            u"Specify the region for UHF/VHF band frequency layout. "
+            u"The available regions are " +
+            UString::Join(HFBand::GetAllRegions(*_report)) + u".");
     }
 
     // Options relating to default CAS identification.
@@ -427,7 +442,10 @@ bool ts::DuckContext::loadArgs(Args& args)
     // Options relating to default DVB character sets.
     if (_definedCmdOptions & CMD_CHARSET) {
         if (args.present(u"europe")) {
-            _charsetIn = _charsetOut = &DVBCharTableSingleByte::ISO_8859_15;
+            _charsetIn = _charsetOut = &DVBCharTableSingleByte::DVB_ISO_8859_15;
+        }
+        else if (args.present(u"japan")) {
+            _charsetIn = _charsetOut = &ARIBCharset::B24;
         }
         else {
             const UString name(args.value(u"default-charset"));
@@ -447,7 +465,7 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (args.present(u"atsc")) {
             _cmdStandards |= STD_ATSC;
         }
-        if (args.present(u"isdb")) {
+        if (args.present(u"isdb") || args.present(u"japan")) {
             _cmdStandards |= STD_ISDB;
         }
     }

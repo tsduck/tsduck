@@ -154,7 +154,8 @@ void ts::CellListDescriptor::deserialize(DuckContext& duck, const Descriptor& de
 
 void ts::CellListDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     while (size >= 10) {
@@ -183,7 +184,8 @@ void ts::CellListDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
 
 void ts::CellListDescriptor::DisplayCoordinates(TablesDisplay& display, const uint8_t* data, size_t size, int indent)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     int32_t latitude = GetInt16(data);

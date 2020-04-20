@@ -68,7 +68,7 @@ ts::ServiceIdentifierDescriptor::ServiceIdentifierDescriptor(DuckContext& duck, 
 void ts::ServiceIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.toDVB(identifier));
+    bbp->append(duck.encoded(identifier));
     serializeEnd(desc, bbp);
 }
 
@@ -82,7 +82,7 @@ void ts::ServiceIdentifierDescriptor::deserialize(DuckContext& duck, const Descr
     _is_valid = desc.isValid() && desc.tag() == _tag;
 
     if (_is_valid) {
-        identifier.assign(duck.fromDVB(desc.payload(), desc.payloadSize()));
+        duck.decode(identifier, desc.payload(), desc.payloadSize());
     }
     else {
         identifier.clear();
@@ -96,9 +96,11 @@ void ts::ServiceIdentifierDescriptor::deserialize(DuckContext& duck, const Descr
 
 void ts::ServiceIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
-    strm << margin << "Service identifier: \"" << display.duck().fromDVB(payload, size) << "\"" << std::endl;
+
+    strm << margin << "Service identifier: \"" << duck.decoded(payload, size) << "\"" << std::endl;
 }
 
 

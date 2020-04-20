@@ -86,7 +86,7 @@ void ts::NorDigLogicalChannelDescriptorV2::serialize(DuckContext& duck, Descript
     ByteBlockPtr bbp(serializeStart());
     for (auto it1 = entries.begin(); it1 != entries.end(); ++it1) {
         bbp->appendUInt8(it1->channel_list_id);
-        bbp->append(duck.toDVBWithByteLength(it1->channel_list_name));
+        bbp->append(duck.encodedWithByteLength(it1->channel_list_name));
         if (!SerializeLanguageCode(*bbp, it1->country_code)) {
             desc.invalidate();
             return;
@@ -115,7 +115,7 @@ void ts::NorDigLogicalChannelDescriptorV2::deserialize(DuckContext& duck, const 
     while (_is_valid && size >= 2) {
         ChannelList clist(data[0]);
         data++; size--;
-        clist.channel_list_name = duck.fromDVBWithByteLength(data, size);
+        duck.decodeWithByteLength(clist.channel_list_name, data, size);
         _is_valid = size >= 4;
         if (_is_valid) {
             clist.country_code = DeserializeLanguageCode(data);
@@ -138,13 +138,14 @@ void ts::NorDigLogicalChannelDescriptorV2::deserialize(DuckContext& duck, const 
 
 void ts::NorDigLogicalChannelDescriptorV2::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     while (size >= 2) {
         const uint8_t id = data[0];
         data++; size--;
-        const UString name(display.duck().fromDVBWithByteLength(data, size));
+        const UString name(duck.decodedWithByteLength(data, size));
         strm << margin << UString::Format(u"- Channel list id: 0x%X (%d), name: \"%s\"", {id, id, name});
         if (size < 3) {
             strm << std::endl;

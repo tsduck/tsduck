@@ -75,7 +75,7 @@ void ts::URILinkageDescriptor::serialize(DuckContext& duck, Descriptor& desc) co
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MY_EDID);
     bbp->appendUInt8(uri_linkage_type);
-    bbp->append(duck.toDVBWithByteLength(uri));
+    bbp->append(duck.encodedWithByteLength(uri));
     if (uri_linkage_type == 0x00 || uri_linkage_type == 0x01) {
         bbp->appendUInt16(min_polling_interval);
     }
@@ -98,7 +98,7 @@ void ts::URILinkageDescriptor::deserialize(DuckContext& duck, const Descriptor& 
     if (_is_valid) {
         uri_linkage_type = data[1];
         data += 2; size -= 2;
-        uri = duck.fromDVBWithByteLength(data, size);
+        duck.decodeWithByteLength(uri, data, size);
         if (uri_linkage_type == 0x00 || uri_linkage_type == 0x01) {
             _is_valid = size >= 2;
             if (_is_valid) {
@@ -122,13 +122,14 @@ void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
     // See ts::TablesDisplay::displayDescriptorData()
 
     if (size >= 2) {
-        std::ostream& strm(display.duck().out());
+        DuckContext& duck(display.duck());
+        std::ostream& strm(duck.out());
         const std::string margin(indent, ' ');
 
         const uint8_t type = data[0];
         strm << margin << "URI linkage type: " << NameFromSection(u"URILinkageType", type, names::HEXA_FIRST) << std::endl;
         data++; size--;
-        strm << margin << "URI: " << display.duck().fromDVBWithByteLength(data, size) << std::endl;
+        strm << margin << "URI: " << duck.decodedWithByteLength(data, size) << std::endl;
 
         if ((type == 0x00 || type == 0x01) && size >= 2) {
             const int interval = GetUInt16(data);

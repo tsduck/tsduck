@@ -127,7 +127,8 @@ void ts::C2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, D
     // See ts::TablesDisplay::displayDescriptorData()
 
     if (size >= 7) {
-        std::ostream& strm(display.duck().out());
+        DuckContext& duck(display.duck());
+        std::ostream& strm(duck.out());
         const std::string margin(indent, ' ');
 
         const uint8_t plp = data[0];

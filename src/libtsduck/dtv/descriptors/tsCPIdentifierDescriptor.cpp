@@ -142,7 +142,8 @@ void ts::CPIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     while (size >= 2) {

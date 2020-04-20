@@ -160,7 +160,7 @@ bool ts::PSILogger::open()
     _demux.setCurrentNext(_use_current, _use_next);
 
     // Initial blank line
-    _display.duck().out() << std::endl;
+    _duck.out() << std::endl;
     return true;
 }
 
@@ -208,7 +208,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
 {
     assert(table.sectionCount() > 0);
 
-    std::ostream& strm(_display.duck().out());
+    std::ostream& strm(_duck.out());
     const TID tid = table.tableId();
     const PID pid = table.sourcePID();
 
@@ -381,7 +381,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
 
 void ts::PSILogger::handleSection(SectionDemux&, const Section& sect)
 {
-    sect.dump(_display.duck().out()) << std::endl;
+    sect.dump(_duck.out()) << std::endl;
 }
 
 
@@ -393,7 +393,7 @@ void ts::PSILogger::reportDemuxErrors ()
 {
     if (_demux.hasErrors()) {
         SectionDemux::Status status(_demux);
-        _display.duck().out() << "* PSI/SI analysis errors:" << std::endl;
-        status.display(_display.duck().out(), 4, true);
+        _duck.out() << "* PSI/SI analysis errors:" << std::endl;
+        status.display(_duck.out(), 4, true);
     }
 }

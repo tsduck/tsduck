@@ -93,7 +93,7 @@ void ts::ApplicationRecordingDescriptor::serialize(DuckContext& duck, Descriptor
                      0x03);
     bbp->appendUInt8(uint8_t(labels.size()));
     for (auto it = labels.begin(); it != labels.end(); ++it) {
-        bbp->append(duck.toDVBWithByteLength(it->label));
+        bbp->append(duck.encodedWithByteLength(it->label));
         bbp->appendUInt8(uint8_t(it->storage_properties << 6) | 0x3F);
     }
     bbp->appendUInt8(uint8_t(component_tags.size()));
@@ -137,7 +137,7 @@ void ts::ApplicationRecordingDescriptor::deserialize(DuckContext& duck, const De
         _is_valid = size >= 1 && size >= size_t(data[0] + 2);
         if (_is_valid) {
             const size_t len = data[0];
-            labels.push_back(RecodingLabel(duck.fromDVB(data + 1, len), (data[len + 1] >> 6) & 0x03));
+            labels.push_back(RecodingLabel(duck.decoded(data + 1, len), (data[len + 1] >> 6) & 0x03));
             data += len + 2;
             size -= len + 2;
             labelCount--;
@@ -175,7 +175,8 @@ void ts::ApplicationRecordingDescriptor::deserialize(DuckContext& duck, const De
 
 void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     // Flags in first byte.
@@ -199,7 +200,7 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& displa
             valid = size >= 1 && size >= size_t(data[0] + 2);
             if (valid) {
                 const size_t len = data[0];
-                strm << margin << UString::Format(u"Label: \"%s\", storage properties: 0x%X", {display.duck().fromDVB(data + 1, len), uint8_t((data[len + 1] >> 6) & 0x03)}) << std::endl;
+                strm << margin << UString::Format(u"Label: \"%s\", storage properties: 0x%X", {duck.decoded(data + 1, len), uint8_t((data[len + 1] >> 6) & 0x03)}) << std::endl;
                 data += len + 2;
                 size -= len + 2;
                 labelCount--;

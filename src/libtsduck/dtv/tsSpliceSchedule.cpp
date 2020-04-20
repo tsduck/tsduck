@@ -80,7 +80,8 @@ void ts::SpliceSchedule::clear()
 
 void ts::SpliceSchedule::display(TablesDisplay& display, int indent) const
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     for (EventList::const_iterator ev = events.begin(); ev != events.end(); ++ev) {

@@ -280,7 +280,8 @@ void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, con
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -323,7 +324,8 @@ bool ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& display, bool pres
     data += 3;
     size -= length + 3;
 
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     strm << margin << "Substream " << name << ":" << std::endl

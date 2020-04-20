@@ -557,7 +557,8 @@ void ts::ATSCMultipleString::Display(TablesDisplay& display, const UString& titl
 {
     if (buffer != nullptr && buffer_size > 0 && mss_size > 0) {
 
-        std::ostream& strm(display.duck().out());
+        DuckContext& duck(display.duck());
+        std::ostream& strm(duck.out());
         const std::string margin(indent, ' ');
         StringElement elem;
 

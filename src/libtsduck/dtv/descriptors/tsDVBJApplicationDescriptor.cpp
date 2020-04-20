@@ -75,7 +75,7 @@ void ts::DVBJApplicationDescriptor::serialize(DuckContext& duck, Descriptor& des
 {
     ByteBlockPtr bbp(serializeStart());
     for (auto it = parameters.begin(); it != parameters.end(); ++it) {
-        bbp->append(duck.toDVBWithByteLength(*it));
+        bbp->append(duck.encodedWithByteLength(*it));
     }
     serializeEnd(desc, bbp);
 }
@@ -98,7 +98,7 @@ void ts::DVBJApplicationDescriptor::deserialize(DuckContext& duck, const Descrip
         data += 1; size -= 1;
         _is_valid = len <= size;
         if (_is_valid) {
-            parameters.push_back(duck.fromDVB(data, len));
+            parameters.push_back(duck.decoded(data, len));
             data += len; size -= len;
         }
     }
@@ -113,12 +113,13 @@ void ts::DVBJApplicationDescriptor::deserialize(DuckContext& duck, const Descrip
 
 void ts::DVBJApplicationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     while (size >= 1) {
         const size_t len = std::min<size_t>(data[0], size - 1);
-        strm << margin << "Parameter: \"" << display.duck().fromDVB(data + 1, len) << "\"" << std::endl;
+        strm << margin << "Parameter: \"" << duck.decoded(data + 1, len) << "\"" << std::endl;
         data += 1 + len; size -= 1 + len;
     }
 

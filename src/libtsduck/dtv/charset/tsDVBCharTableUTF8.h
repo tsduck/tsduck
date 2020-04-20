@@ -28,66 +28,36 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Declaration of class DVBCharset.
+//!  Declaration of class DVBCharTableUTF8.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsCharset.h"
+#include "tsDVBCharTable.h"
+#include "tsDVBCharset.h"
 
 namespace ts {
-
-    class DVBCharTable;
-
     //!
-    //! Definition of the generic DVB character sets.
-    //!
-    //! An instance of this class encodes and decodes DVB strings.
-    //! DVB strings can use various DVB character tables. Each DVB string is
-    //! is encoded using one single DVB character table. Which table is used
-    //! is indicated by an optional "table code" at the beginning of the
-    //! string.
-    //!
-    //! According to DVB standard ETSI EN 300 468, the default DVB character table
-    //! (without leading table code) is ISO-6937. However, some bogus signalization
-    //! may assume that the default character table is different, typically the usual
-    //! local character table for the region.
-    //!
-    //! There are several static instances of DVBCharset. The one named DVB
-    //! is the standard one. It can use any DVB character tables and uses ISO-6937
-    //! by default. All other instances are identical, except that they use another
-    //! character table by default.
-    //!
-    //! @see ETSI EN 300 468, annex A
+    //! Definition of the UTF-8 DVB character set.
+    //! @see ETSI EN 300 468, Annex A.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL DVBCharset: public Charset
+    class TSDUCKDLL DVBCharTableUTF8: public DVBCharTable
     {
-        TS_NOCOPY(DVBCharset);
+        TS_NOCOPY(DVBCharTableUTF8);
     public:
-        //!
-        //! Default predefined DVB character set (using ISO-6937 as default table).
-        //!
-        static const DVBCharset DVB;
+        static const DVBCharTableUTF8 RAW_UTF_8;  //!< Raw UTF-8 character set.
+        static const DVBCharset DVB_UTF_8;        //!< Non-standard DVB encoding using UTF-8 character set as default.
 
         //!
         //! Constructor.
         //! @param [in] name Character set name.
-        //! @param [in] default_table Default character table to use without leading "table code".
         //!
-        explicit DVBCharset(const UChar* name = nullptr, const DVBCharTable* default_table = nullptr);
-
-        //!
-        //! Destructor
-        //!
-        virtual ~DVBCharset() = default;
+        DVBCharTableUTF8(const UChar* name = nullptr);
 
         // Inherited methods.
-        virtual bool decode(UString& str, const uint8_t* data, size_t size) const override;
+        virtual bool decode(UString& str, const uint8_t* dvb, size_t dvbSize) const override;
         virtual bool canEncode(const UString& str, size_t start = 0, size_t count = NPOS) const override;
         virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const override;
-
-    private:
-        const DVBCharTable* const _default_table; // Default character table, never null.
     };
 }

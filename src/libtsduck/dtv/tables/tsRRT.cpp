@@ -250,8 +250,10 @@ void ts::RRT::serializeContent(DuckContext& duck, BinaryTable& table) const
 
 void ts::RRT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 

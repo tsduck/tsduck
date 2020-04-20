@@ -79,7 +79,7 @@ void ts::SSUEnhancedMessageDescriptor::serialize(DuckContext& duck, Descriptor& 
         return;
     }
     bbp->appendUInt8(0xE0 | message_index);
-    bbp->append(duck.toDVB(text));
+    bbp->append(duck.encoded(text));
     serializeEnd(desc, bbp);
 }
 
@@ -100,7 +100,7 @@ void ts::SSUEnhancedMessageDescriptor::deserialize(DuckContext& duck, const Desc
         last_descriptor_number = data[0] & 0x0F;
         ISO_639_language_code = DeserializeLanguageCode(data + 1);
         message_index = data[4] & 0x1F;
-        text.assign(duck.fromDVB(data + 5, size - 5));
+        duck.decode(text, data + 5, size - 5);
     }
     else {
         text.clear();
@@ -114,14 +114,15 @@ void ts::SSUEnhancedMessageDescriptor::deserialize(DuckContext& duck, const Desc
 
 void ts::SSUEnhancedMessageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 5) {
         strm << margin << UString::Format(u"Descriptor number: %d, last: %d", {(data[0] >> 4) & 0x0F, data[0] & 0x0F}) << std::endl
              << margin << "Language: " << DeserializeLanguageCode(data + 1) << std::endl
              << margin << UString::Format(u"Message index: %d", {data[4] & 0x1F}) << std::endl
-             << margin << "Text: \"" << display.duck().fromDVB(data + 5, size - 5) << "\"" << std::endl;
+             << margin << "Text: \"" << duck.decoded(data + 5, size - 5) << "\"" << std::endl;
     }
     else {
         display.displayExtraData(data, size, indent);

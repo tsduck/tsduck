@@ -91,13 +91,13 @@ void ts::ImageIconDescriptor::serialize(DuckContext& duck, Descriptor& desc) con
         else {
             bbp->appendUInt8(uint8_t(icon_transport_mode << 6) | 0x1F);
         }
-        bbp->append(duck.toDVBWithByteLength(icon_type));
+        bbp->append(duck.encodedWithByteLength(icon_type));
         if (icon_transport_mode == 0) {
             bbp->appendUInt8(uint8_t(icon_data.size()));
             bbp->append(icon_data);
         }
         else if (icon_transport_mode == 1) {
-            bbp->append(duck.toDVBWithByteLength(url));
+            bbp->append(duck.encodedWithByteLength(url));
         }
     }
     else {
@@ -143,7 +143,7 @@ void ts::ImageIconDescriptor::deserialize(DuckContext& duck, const Descriptor& d
                 }
             }
             if (_is_valid) {
-                icon_type = duck.fromDVBWithByteLength(data, size);
+                duck.decodeWithByteLength(icon_type, data, size);
                 if (icon_transport_mode == 0x00 ) {
                     const size_t len = data[0];
                     _is_valid = size > len;
@@ -153,7 +153,7 @@ void ts::ImageIconDescriptor::deserialize(DuckContext& duck, const Descriptor& d
                     }
                 }
                 else if (icon_transport_mode == 0x01) {
-                    url = duck.fromDVBWithByteLength(data, size);
+                    duck.decodeWithByteLength(url, data, size);
                 }
             }
         }
@@ -182,7 +182,8 @@ void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
     bool ok = size >= 3;
 
@@ -210,7 +211,7 @@ void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
                 }
             }
             if (ok) {
-                strm << margin << "Icon type: \"" << display.duck().fromDVBWithByteLength(data, size) << "\"" << std::endl;
+                strm << margin << "Icon type: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
                 if (transport == 0x00 ) {
                     const size_t len = data[0];
                     ok = size > len;
@@ -221,7 +222,7 @@ void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
                     }
                 }
                 else if (transport == 0x01) {
-                    strm << margin << "URL: \"" << display.duck().fromDVBWithByteLength(data, size) << "\"" << std::endl;
+                    strm << margin << "URL: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
                 }
             }
         }

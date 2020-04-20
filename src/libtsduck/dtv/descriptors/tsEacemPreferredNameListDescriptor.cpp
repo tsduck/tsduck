@@ -92,7 +92,7 @@ void ts::EacemPreferredNameListDescriptor::serialize(DuckContext& duck, Descript
         bbp->appendUInt8(uint8_t(it1->second.size()));  // name_count
         for (NameByIdMap::const_iterator it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
             bbp->appendUInt8(it2->first);  // name_id
-            bbp->append(duck.toDVBWithByteLength(it2->second));
+            bbp->append(duck.encodedWithByteLength(it2->second));
         }
     }
     serializeEnd(desc, bbp);
@@ -130,7 +130,7 @@ void ts::EacemPreferredNameListDescriptor::deserialize(DuckContext& duck, const 
                 if (length > size) {
                     length = size;
                 }
-                names[id] = duck.fromDVB(data, length);
+                duck.decode(names[id], data, length);
                 data += length; size -= length;
             }
         }
@@ -144,7 +144,8 @@ void ts::EacemPreferredNameListDescriptor::deserialize(DuckContext& duck, const 
 
 void ts::EacemPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     while (size >= 4) {
@@ -160,7 +161,7 @@ void ts::EacemPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& disp
             if (length > size) {
                 length = size;
             }
-            strm << margin << "Id: " << int(id) << ", Name: \"" << display.duck().fromDVB(data, length) << "\"" << std::endl;
+            strm << margin << "Id: " << int(id) << ", Name: \"" << duck.decoded(data, length) << "\"" << std::endl;
             data += length; size -= length;
         }
     }

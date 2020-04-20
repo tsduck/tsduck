@@ -111,7 +111,8 @@ void ts::DataBroadcastIdDescriptor::deserialize(DuckContext& duck, const Descrip
 
 void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 2) {
@@ -158,9 +159,13 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& display,
 
 void ts::DataBroadcastIdDescriptor::DisplaySelectorGeneric(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
 {
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const std::string margin(indent, ' ');
+
     if (size > 0) {
-        display.duck().out() << std::string(indent, ' ') << "Data Broadcast selector:" << std::endl
-                      << UString::Dump(data, size, UString::HEXA | UString::ASCII, indent);
+        strm << margin << "Data Broadcast selector:" << std::endl
+             << UString::Dump(data, size, UString::HEXA | UString::ASCII, indent);
         data += size; size = 0;
     }
 }
@@ -173,7 +178,8 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorGeneric(TablesDisplay& displa
 
 void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     // OUI_data_length:
@@ -250,8 +256,10 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorMPE(TablesDisplay& display, c
 {
     // Fixed length: 2 bytes.
     if (size >= 2) {
-        std::ostream& strm(display.duck().out());
+        DuckContext& duck(display.duck());
+        std::ostream& strm(duck.out());
         const std::string margin(indent, ' ');
+
         strm << margin << UString::Format(u"MAC address range: %d, MAC/IP mapping: %d, alignment: %d bits",
                                           {(data[0] >> 5) & 0x07, (data[0] >> 4) & 0x01, (data[0] & 0x08) == 0 ? 8 : 32})
              << std::endl
@@ -269,7 +277,8 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorMPE(TablesDisplay& display, c
 
 void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     // platform_id_data_length:

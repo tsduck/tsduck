@@ -271,7 +271,8 @@ void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, D
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {

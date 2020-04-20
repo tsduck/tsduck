@@ -18,7 +18,7 @@ TS_FACTORY_REGISTER(foo::DisplayFooCASCADescriptor, foo::CASID_FOO_MIN, foo::CAS
 
 void foo::DisplayFooCASECM(ts::TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.duck().out());
+    std::ostream& strm(duck.out());
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
@@ -36,7 +36,7 @@ void foo::DisplayFooCASECM(ts::TablesDisplay& display, const ts::Section& sectio
 
 void foo::DisplayFooCASEMM(ts::TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.duck().out());
+    std::ostream& strm(duck.out());
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
@@ -82,7 +82,7 @@ ts::UString foo::LogFooCASEMM(const ts::Section& section, size_t max_bytes)
 
 void foo::DisplayFooCASCADescriptor(ts::TablesDisplay& display, const uint8_t* data, size_t size, int indent, ts::TID tid)
 {
-    std::ostream& strm(display.duck().out());
+    std::ostream& strm(duck.out());
 
     if (size >= 2) {
         // The private part of a FooCAS CA-descriptor starts with a 2-byte foo_id.

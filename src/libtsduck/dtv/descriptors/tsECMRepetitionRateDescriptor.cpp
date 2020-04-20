@@ -135,11 +135,12 @@ void ts::ECMRepetitionRateDescriptor::fromXML(DuckContext& duck, const xml::Elem
 
 void ts::ECMRepetitionRateDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
-        strm << margin << UString::Format(u"CA System Id: %s", {names::CASId(display.duck(), GetUInt16(data), names::FIRST)}) << std::endl
+        strm << margin << UString::Format(u"CA System Id: %s", {names::CASId(duck, GetUInt16(data), names::FIRST)}) << std::endl
              << margin << UString::Format(u"ECM repetition rate: %d ms", {GetUInt16(data + 2)}) << std::endl;
         data += 4; size -= 4;
         if (size > 0) {

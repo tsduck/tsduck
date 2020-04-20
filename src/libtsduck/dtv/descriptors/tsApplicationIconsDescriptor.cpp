@@ -77,7 +77,7 @@ ts::ApplicationIconsDescriptor::ApplicationIconsDescriptor(DuckContext& duck, co
 void ts::ApplicationIconsDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.toDVBWithByteLength(icon_locator));
+    bbp->append(duck.encodedWithByteLength(icon_locator));
     bbp->appendUInt16(icon_flags);
     bbp->append(reserved_future_use);
     serializeEnd(desc, bbp);
@@ -99,7 +99,7 @@ void ts::ApplicationIconsDescriptor::deserialize(DuckContext& duck, const Descri
     _is_valid = desc.isValid() && desc.tag() == _tag && size >= 1 && size >= size_t(data[0]) + 3;
 
     if (_is_valid) {
-        icon_locator = duck.fromDVBWithByteLength(data, size);
+        duck.decodeWithByteLength(icon_locator, data, size);
         assert(size >= 2);
         icon_flags = GetUInt16(data);
         reserved_future_use.copy(data + 2, size - 2);
@@ -113,11 +113,12 @@ void ts::ApplicationIconsDescriptor::deserialize(DuckContext& duck, const Descri
 
 void ts::ApplicationIconsDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size > 0) {
-        strm << margin << "Icon locator: \"" << display.duck().fromDVBWithByteLength(data, size) << "\"" << std::endl;
+        strm << margin << "Icon locator: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
         if (size >= 2) {
             const uint16_t flags = GetUInt16(data);
             strm << margin << UString::Format(u"Icon flags: 0x%X", {flags}) << std::endl;
