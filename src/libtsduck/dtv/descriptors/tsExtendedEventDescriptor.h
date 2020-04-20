@@ -85,11 +85,11 @@ namespace ts {
         //!
         //! Normalize all ExtendedEventDescriptor in a descriptor list.
         //! Update all descriptor_number and last_descriptor_number per language.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] desc_list_addr Address of a serialized descriptor list.
         //! @param [in] desc_list_size Descriptor list size in bytes.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        static void NormalizeNumbering(uint8_t* desc_list_addr, size_t desc_list_size, const DVBCharTable* charset = nullptr);
+        static void NormalizeNumbering(DuckContext& duck, uint8_t* desc_list_addr, size_t desc_list_size);
 
         //!
         //! An item entry.

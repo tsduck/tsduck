@@ -79,7 +79,7 @@ void ts::DVBHTMLApplicationDescriptor::serialize(DuckContext& duck, Descriptor& 
     for (size_t i = 0; i < application_ids.size(); ++i) {
         bbp->appendUInt16(application_ids[i]);
     }
-    bbp->append(duck.toDVB(parameter));
+    bbp->append(duck.encoded(parameter));
     serializeEnd(desc, bbp);
 }
 
@@ -107,7 +107,7 @@ void ts::DVBHTMLApplicationDescriptor::deserialize(DuckContext& duck, const Desc
                 application_ids.push_back(GetUInt16(data));
                 data += 2; size -= 2; len -= 2;
             }
-            parameter = duck.fromDVB(data, size);
+            duck.decode(parameter, data, size);
         }
     }
 }
@@ -119,7 +119,8 @@ void ts::DVBHTMLApplicationDescriptor::deserialize(DuckContext& duck, const Desc
 
 void ts::DVBHTMLApplicationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -131,7 +132,7 @@ void ts::DVBHTMLApplicationDescriptor::DisplayDescriptor(TablesDisplay& display,
                 data += 2; size -= 2; len -= 2;
                 strm << margin << UString::Format(u"Application id: 0x%X (%d)", {id, id}) << std::endl;
             }
-            strm << margin << "Parameter: \"" << display.duck().fromDVB(data, size) << "\"" << std::endl;
+            strm << margin << "Parameter: \"" << duck.decoded(data, size) << "\"" << std::endl;
             size = 0;
         }
     }

@@ -28,8 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsDVBCharTable.h"
-#include "tsAlgorithm.h"
-#include "tsSingletonManager.h"
 #include "tsByteBlock.h"
 TSDUCK_SOURCE;
 
@@ -40,10 +38,88 @@ constexpr uint16_t ts::DVBCharTable::DVB_CODEPOINT_CRLF;
 
 
 //----------------------------------------------------------------------------
+// Constructor / destructor.
+//----------------------------------------------------------------------------
+
+ts::DVBCharTable::DVBCharTable(const UChar* name, uint32_t tableCode) :
+    Charset(name),
+    _code(tableCode)
+{
+    // Register the character set.
+    TableCodeRepository::Instance()->add(_code, this);
+}
+
+ts::DVBCharTable::~DVBCharTable()
+{
+    // Automatically unregister character set on destruction.
+    unregister();
+}
+
+
+//----------------------------------------------------------------------------
+// Repository of DVB character tables by table code.
+//----------------------------------------------------------------------------
+
+TS_DEFINE_SINGLETON(ts::DVBCharTable::TableCodeRepository);
+
+ts::DVBCharTable::TableCodeRepository::TableCodeRepository() :
+    _map()
+{
+}
+
+const ts::DVBCharTable* ts::DVBCharTable::TableCodeRepository::get(uint32_t code) const
+{
+    const auto it = _map.find(code);
+    return it == _map.end() ? nullptr : it->second;
+}
+
+void ts::DVBCharTable::TableCodeRepository::add(uint32_t code, const DVBCharTable* charset)
+{
+    const auto it = _map.find(code);
+    if (it == _map.end()) {
+        // Charset not yet registered.
+        _map.insert(std::make_pair(code, charset));
+    }
+    else {
+        throw DuplicateCharset(charset->name());
+    }
+}
+
+void ts::DVBCharTable::TableCodeRepository::remove(const DVBCharTable* charset)
+{
+    auto it = _map.begin();
+    while (it != _map.end()) {
+        if (it->second == charset) {
+            it = _map.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Public access to the repository.
+//----------------------------------------------------------------------------
+
+const ts::DVBCharTable* ts::DVBCharTable::GetTableFromLeadingCode(uint32_t code)
+{
+    return TableCodeRepository::Instance()->get(code);
+}
+
+void ts::DVBCharTable::unregister() const
+{
+    TableCodeRepository::Instance()->remove(this);
+    Charset::unregister(); // invoke superclass
+}
+
+
+//----------------------------------------------------------------------------
 // Get the character coding table at the beginning of a DVB string.
 //----------------------------------------------------------------------------
 
-bool ts::DVBCharTable::GetTableCode(uint32_t& code, size_t& codeSize, const uint8_t* dvb, size_t dvbSize)
+bool ts::DVBCharTable::DecodeTableCode(uint32_t& code, size_t& codeSize, const uint8_t* dvb, size_t dvbSize)
 {
     // Null or empty buffer is a valid empty string.
     if (dvb == nullptr || dvbSize == 0) {
@@ -155,82 +231,4 @@ size_t ts::DVBCharTable::encodeTableCode(uint8_t*& buffer, size_t& size) const
     buffer += codeSize;
     size -= codeSize;
     return codeSize;
-}
-
-
-//----------------------------------------------------------------------------
-// Repository of character sets.
-//----------------------------------------------------------------------------
-
-namespace {
-    class CharSetRepo
-    {
-        TS_DECLARE_SINGLETON(CharSetRepo);
-    public:
-        std::map<ts::UString, ts::DVBCharTable*> byName;
-        std::map<uint32_t, ts::DVBCharTable*> byCode;
-    };
-    TS_DEFINE_SINGLETON(CharSetRepo);
-    CharSetRepo::CharSetRepo() : byName(), byCode() {}
-}
-
-// Get a DVB character set by name.
-ts::DVBCharTable* ts::DVBCharTable::GetCharset(const UString& name)
-{
-    const CharSetRepo* repo = CharSetRepo::Instance();
-    const std::map<UString, DVBCharTable*>::const_iterator it = repo->byName.find(name);
-    return it == repo->byName.end() ? nullptr : it->second;
-}
-
-// Get a DVB character set by table code.
-ts::DVBCharTable* ts::DVBCharTable::GetTableFromLeadingCode(uint32_t tableCode)
-{
-    const CharSetRepo* repo = CharSetRepo::Instance();
-    const std::map<uint32_t, DVBCharTable*>::const_iterator it = repo->byCode.find(tableCode);
-    return it == repo->byCode.end() ? nullptr : it->second;
-}
-
-// Find all registered character set names.
-ts::UStringList ts::DVBCharTable::GetAllNames()
-{
-    return MapKeys(CharSetRepo::Instance()->byName);
-}
-
-// Remove the specified charset
-void ts::DVBCharTable::Unregister(const DVBCharTable* charset)
-{
-    if (charset != nullptr) {
-        CharSetRepo* repo = CharSetRepo::Instance();
-        repo->byName.erase(charset->name());
-        repo->byCode.erase(charset->tableCode());
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Constructor / destructor.
-//----------------------------------------------------------------------------
-
-ts::DVBCharTable::DVBCharTable(const UChar* name, uint32_t tableCode) :
-    Charset(name),
-    _code(tableCode)
-{
-    // Register the character set.
-    CharSetRepo* repo = CharSetRepo::Instance();
-    const std::map<UString, DVBCharTable*>::const_iterator itName = repo->byName.find(name);
-    const std::map<uint32_t, DVBCharTable*>::const_iterator itCode = repo->byCode.find(_code);
-    if (itName == repo->byName.end() && itCode == repo->byCode.end()) {
-        // Charset not yet registered.
-        repo->byName.insert(std::make_pair(name, this));
-        repo->byCode.insert(std::make_pair(_code, this));
-    }
-    else {
-        throw DuplicateCharset(name);
-    }
-}
-
-ts::DVBCharTable::~DVBCharTable()
-{
-    // Remove charset from repository.
-    Unregister(this);
 }

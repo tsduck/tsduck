@@ -111,7 +111,8 @@ void ts::EASInbandExceptionChannelsDescriptor::deserialize(DuckContext& duck, co
 
 void ts::EASInbandExceptionChannelsDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size > 0) {

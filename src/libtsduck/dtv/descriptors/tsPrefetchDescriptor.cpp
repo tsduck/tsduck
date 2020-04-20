@@ -78,7 +78,7 @@ void ts::PrefetchDescriptor::serialize(DuckContext& duck, Descriptor& desc) cons
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(transport_protocol_label);
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->append(duck.toDVBWithByteLength(it->label));
+        bbp->append(duck.encodedWithByteLength(it->label));
         bbp->appendUInt8(it->prefetch_priority);
     }
     serializeEnd(desc, bbp);
@@ -106,7 +106,7 @@ void ts::PrefetchDescriptor::deserialize(DuckContext& duck, const Descriptor& de
             data++; size--;
             _is_valid = len + 1 <= size;
             if (_is_valid) {
-                entries.push_back(Entry(duck.fromDVB(data, len), data[len]));
+                entries.push_back(Entry(duck.decoded(data, len), data[len]));
                 data += len + 1; size -= len + 1;
             }
         }
@@ -122,7 +122,8 @@ void ts::PrefetchDescriptor::deserialize(DuckContext& duck, const Descriptor& de
 
 void ts::PrefetchDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -134,7 +135,7 @@ void ts::PrefetchDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
                 break;
             }
             strm << margin
-                 << UString::Format(u"Label: \"%s\", prefetch priority: %d", {display.duck().fromDVB(data + 1, len), data[len + 1]})
+                 << UString::Format(u"Label: \"%s\", prefetch priority: %d", {duck.decoded(data + 1, len), data[len + 1]})
                  << std::endl;
             data += len + 2; size -= len + 2;
         }

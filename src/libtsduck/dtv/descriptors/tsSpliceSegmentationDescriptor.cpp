@@ -258,7 +258,8 @@ void ts::SpliceSegmentationDescriptor::deserialize(DuckContext& duck, const Desc
 
 void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     bool ok = size >= 9;
@@ -269,7 +270,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
 
     if (ok) {
         strm << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
-        display.duck().displayIfASCII(data, 4, u" (\"", u"\")");
+        duck.displayIfASCII(data, 4, u" (\"", u"\")");
         strm << std::endl
              << margin << UString::Format(u"Segmentation event id: 0x%X, cancel: %d", {GetUInt32(data + 4), cancel})
              << std::endl;

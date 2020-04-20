@@ -106,7 +106,8 @@ void ts::GenreDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 void ts::GenreDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     if (size > 0) {
-        std::ostream& strm(display.duck().out());
+        DuckContext& duck(display.duck());
+        std::ostream& strm(duck.out());
         const std::string margin(indent, ' ');
 
         size_t count = data[0] & 0x1F;

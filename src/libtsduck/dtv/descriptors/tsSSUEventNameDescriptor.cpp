@@ -75,8 +75,8 @@ void ts::SSUEventNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) 
         desc.invalidate();
         return;
     }
-    bbp->append(duck.toDVBWithByteLength(name));
-    bbp->append(duck.toDVBWithByteLength(text));
+    bbp->append(duck.encodedWithByteLength(name));
+    bbp->append(duck.encodedWithByteLength(text));
     serializeEnd(desc, bbp);
 }
 
@@ -95,8 +95,8 @@ void ts::SSUEventNameDescriptor::deserialize(DuckContext& duck, const Descriptor
     if (_is_valid) {
         ISO_639_language_code = DeserializeLanguageCode(data);
         data += 3; size -= 3;
-        name = duck.fromDVBWithByteLength(data, size);
-        text = duck.fromDVBWithByteLength(data, size);
+        duck.decodeWithByteLength(name, data, size);
+        duck.decodeWithByteLength(text, data, size);
     }
     else {
         ISO_639_language_code.clear();
@@ -112,14 +112,15 @@ void ts::SSUEventNameDescriptor::deserialize(DuckContext& duck, const Descriptor
 
 void ts::SSUEventNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
         const UString lang(DeserializeLanguageCode(data));
         data += 3; size -= 3;
-        const UString name(display.duck().fromDVBWithByteLength(data, size));
-        const UString text(display.duck().fromDVBWithByteLength(data, size));
+        const UString name(duck.decodedWithByteLength(data, size));
+        const UString text(duck.decodedWithByteLength(data, size));
         strm << margin << "Language: " << lang << std::endl
              << margin << "Event name: \"" << name << "\"" << std::endl
              << margin << "Event text: \"" << text << "\"" << std::endl;

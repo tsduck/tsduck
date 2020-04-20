@@ -73,7 +73,7 @@ void ts::SSUURIDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(max_holdoff_time);
     bbp->appendUInt8(min_polling_interval);
-    bbp->append(duck.toDVB(uri));
+    bbp->append(duck.encoded(uri));
     serializeEnd(desc, bbp);
 }
 
@@ -92,7 +92,7 @@ void ts::SSUURIDescriptor::deserialize(DuckContext& duck, const Descriptor& desc
     if (_is_valid) {
         max_holdoff_time = data[0];
         min_polling_interval = data[1];
-        uri.assign(duck.fromDVB(data + 2, size - 2));
+        duck.decode(uri, data + 2, size - 2);
     }
     else {
         uri.clear();
@@ -106,13 +106,14 @@ void ts::SSUURIDescriptor::deserialize(DuckContext& duck, const Descriptor& desc
 
 void ts::SSUURIDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 2) {
         strm << margin << UString::Format(u"Max holdoff time: %d minutes", {data[0]}) << std::endl
              << margin << UString::Format(u"Min polling interval: %d hours", {data[1]}) << std::endl
-             << margin << "URI: \"" << display.duck().fromDVB(data + 2, size - 2) << "\"" << std::endl;
+             << margin << "URI: \"" << duck.decoded(data + 2, size - 2) << "\"" << std::endl;
     }
     else {
         display.displayExtraData(data, size, indent);

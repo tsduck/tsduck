@@ -225,7 +225,8 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& 
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
     bool ok = true;
 
@@ -296,7 +297,8 @@ bool ts::S2XSatelliteDeliverySystemDescriptor::DisplayChannel(TablesDisplay& dis
         return false;
     }
 
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     const bool east = (data[6] & 0x80) != 0;

@@ -161,7 +161,8 @@ uint64_t ts::SpliceInsert::lowestPTS() const
 
 void ts::SpliceInsert::display(TablesDisplay& display, int indent) const
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     strm << margin << UString::Format(u"Splice event id: 0x%X, cancel: %d", {event_id, canceled}) << std::endl;

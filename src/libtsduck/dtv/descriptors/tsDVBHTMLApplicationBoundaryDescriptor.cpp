@@ -75,8 +75,8 @@ ts::DVBHTMLApplicationBoundaryDescriptor::DVBHTMLApplicationBoundaryDescriptor(D
 void ts::DVBHTMLApplicationBoundaryDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.toDVBWithByteLength(label));
-    bbp->append(duck.toDVB(regular_expression));
+    bbp->append(duck.encodedWithByteLength(label));
+    bbp->append(duck.encoded(regular_expression));
     serializeEnd(desc, bbp);
 }
 
@@ -99,8 +99,8 @@ void ts::DVBHTMLApplicationBoundaryDescriptor::deserialize(DuckContext& duck, co
         const size_t len = data[0];
         _is_valid = len + 1 <= size;
         if (_is_valid) {
-            label = duck.fromDVB(data + 1, len);
-            regular_expression = duck.fromDVB(data + 1 + len, size - len - 1);
+            duck.decode(label, data + 1, len);
+            duck.decode(regular_expression, data + 1 + len, size - len - 1);
         }
     }
 }
@@ -112,13 +112,14 @@ void ts::DVBHTMLApplicationBoundaryDescriptor::deserialize(DuckContext& duck, co
 
 void ts::DVBHTMLApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
         size_t len = std::min<size_t>(data[0], size - 1);
-        strm << margin << "Label: \"" << display.duck().fromDVB(data + 1, len) << "\"" << std::endl
-             << margin << "Regexp: \"" << display.duck().fromDVB(data + 1 + len, size - len - 1) << "\"" << std::endl;
+        strm << margin << "Label: \"" << duck.decoded(data + 1, len) << "\"" << std::endl
+             << margin << "Regexp: \"" << duck.decoded(data + 1 + len, size - len - 1) << "\"" << std::endl;
         size = 0;
     }
 

@@ -68,7 +68,7 @@ void foo::FooTable::deserializeContent(ts::DuckContext& duck, const ts::BinaryTa
         size_t remain = sect.payloadSize();
 
         // Get name (accumulated in all sections)
-        name.append(ts::UString::FromDVBWithByteLength(data, remain, duck.dvbCharsetIn()));
+        name.append(duck.decodedWithByteLength(data, remain));
 
         // Get descriptor list
         if (remain < 2) {
@@ -104,7 +104,7 @@ void foo::FooTable::serializeContent(ts::DuckContext& duck, ts::BinaryTable& tab
         size_t remain = sizeof(payload);
 
         // Serialize at most 255 bytes of the name.
-        name_index += name.toDVBWithByteLength(data, remain, name_index, ts::NPOS, duck.dvbCharsetOut());
+        name_index += duck.encodeWithByteLength(data, remain, name, name_index);
 
         // Serialize as many descriptors as we can.
         desc_index = descs.lengthSerialize(data, remain, desc_index);
@@ -133,12 +133,13 @@ void foo::FooTable::serializeContent(ts::DuckContext& duck, ts::BinaryTable& tab
 
 void foo::FooTable::DisplaySection(ts::TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
     const uint16_t id = section.tableIdExtension();
-    const ts::UString name(ts::UString::FromDVBWithByteLength(data, size, display.duck().dvbCharsetIn()));
+    const ts::UString name(duck.decodedWithByteLength(data, size));
 
     strm << ts::UString::Format(u"%*sFoo id: 0x%X (%d), name: \"%s\"", {indent, u"", id, id, name}) << std::endl;
 

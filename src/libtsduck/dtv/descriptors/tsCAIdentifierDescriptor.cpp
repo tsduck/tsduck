@@ -124,13 +124,14 @@ void ts::CAIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor
 
 void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     while (size >= 2) {
         uint16_t cas_id = GetUInt16(data);
         data += 2; size -= 2;
-        strm << margin << "CA System Id: " << names::CASId(display.duck(), cas_id, names::FIRST) << std::endl;
+        strm << margin << "CA System Id: " << names::CASId(duck, cas_id, names::FIRST) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);

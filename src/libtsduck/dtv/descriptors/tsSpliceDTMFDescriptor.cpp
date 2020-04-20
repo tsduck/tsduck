@@ -71,7 +71,7 @@ ts::SpliceDTMFDescriptor::SpliceDTMFDescriptor(DuckContext& duck, const Descript
 
 void ts::SpliceDTMFDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    const ByteBlock binDTMF(duck.toDVB(DTMF));
+    const ByteBlock binDTMF(duck.encoded(DTMF));
     if (_is_valid && binDTMF.size() <= DTMF_MAX_SIZE) {
         ByteBlockPtr bbp(serializeStart());
         bbp->appendUInt32(identifier);
@@ -103,7 +103,7 @@ void ts::SpliceDTMFDescriptor::deserialize(DuckContext& duck, const Descriptor& 
         const size_t len = (GetUInt8(data + 5) >> 5) & 0x07;
         _is_valid = len + 6 == size;
         if (_is_valid) {
-            DTMF = duck.fromDVB(data + 6, len);
+            duck.decode(DTMF, data + 6, len);
         }
     }
 }
@@ -115,12 +115,13 @@ void ts::SpliceDTMFDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 
 void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 6) {
         strm << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
-        display.duck().displayIfASCII(data, 4, u" (\"", u"\")");
+        duck.displayIfASCII(data, 4, u" (\"", u"\")");
         strm << std::endl
              << margin << UString::Format(u"Pre-roll: %d x 1/10 second", {GetUInt8(data + 4)})
              << std::endl;
@@ -130,7 +131,7 @@ void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
         if (len > size) {
             len = size;
         }
-        strm << margin << "DTMF: \"" << display.duck().fromDVB(data, len) << "\"" << std::endl;
+        strm << margin << "DTMF: \"" << duck.decoded(data, len) << "\"" << std::endl;
         data += len; size -= len;
     }
 

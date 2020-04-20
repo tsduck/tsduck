@@ -48,7 +48,7 @@ foo::FooDescriptor::FooDescriptor(ts::DuckContext& duck, const ts::Descriptor& d
 void foo::FooDescriptor::serialize(ts::DuckContext& duck, ts::Descriptor& desc) const
 {
     ts::ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.toDVB(name));
+    bbp->append(duck.encoded(name));
     serializeEnd(desc, bbp);
 }
 
@@ -62,7 +62,7 @@ void foo::FooDescriptor::deserialize(ts::DuckContext& duck, const ts::Descriptor
     _is_valid = desc.isValid() && desc.tag() == _tag;
 
     if (_is_valid) {
-        name.assign(duck.fromDVB(desc.payload(), desc.payloadSize()));
+        duck.decode(name, desc.payload(), desc.payloadSize());
     }
     else {
         name.clear();
@@ -76,9 +76,11 @@ void foo::FooDescriptor::deserialize(ts::DuckContext& duck, const ts::Descriptor
 
 void foo::FooDescriptor::DisplayDescriptor(ts::TablesDisplay& display, ts::DID did, const uint8_t* payload, size_t size, int indent, ts::TID tid, ts::PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
-    strm << margin << "Name: \"" << display.duck().fromDVB(payload, size) << "\"" << std::endl;
+
+    strm << margin << "Name: \"" << duck.decoded(payload, size) << "\"" << std::endl;
 }
 
 

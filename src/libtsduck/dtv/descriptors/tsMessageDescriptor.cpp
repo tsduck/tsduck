@@ -91,7 +91,7 @@ void ts::MessageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
         desc.invalidate();
         return;
     }
-    bbp->append(duck.toDVB(message));
+    bbp->append(duck.encoded(message));
     serializeEnd(desc, bbp);
 }
 
@@ -111,7 +111,7 @@ void ts::MessageDescriptor::deserialize(DuckContext& duck, const Descriptor& des
 
     message_id = data[1];
     language_code = DeserializeLanguageCode(data + 2);
-    message = duck.fromDVB(data + 5, size - 5);
+    duck.decode(message, data + 5, size - 5);
 }
 
 
@@ -152,11 +152,13 @@ void ts::MessageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
     // See ts::TablesDisplay::displayDescriptorData()
 
     if (size >= 4) {
-        std::ostream& strm(display.duck().out());
+        DuckContext& duck(display.duck());
+        std::ostream& strm(duck.out());
         const std::string margin(indent, ' ');
+
         strm << margin << "Message id: " << int(data[0])
              << ", language: " << DeserializeLanguageCode(data + 1) << std::endl
-             << margin << "Message: \"" << display.duck().fromDVB(data + 4, size - 4) << "\"" << std::endl;
+             << margin << "Message: \"" << duck.decoded(data + 4, size - 4) << "\"" << std::endl;
     }
     else {
         display.displayExtraData(data, size, indent);

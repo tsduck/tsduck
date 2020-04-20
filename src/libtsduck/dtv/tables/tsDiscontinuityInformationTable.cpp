@@ -103,7 +103,8 @@ void ts::DiscontinuityInformationTable::serializeContent(DuckContext& duck, Bina
 
 void ts::DiscontinuityInformationTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 

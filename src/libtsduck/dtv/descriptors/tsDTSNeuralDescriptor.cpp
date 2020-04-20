@@ -132,8 +132,10 @@ void ts::DTSNeuralDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
     // See ts::TablesDisplay::displayDescriptorData()
 
     if (size > 0) {
-        std::ostream& strm(display.duck().out());
+        DuckContext& duck(display.duck());
+        std::ostream& strm(duck.out());
         const std::string margin(indent, ' ');
+
         strm << margin << UString::Format(u"Config Id: 0x%X (%d))", {data[0], data[0]}) << std::endl;
         if (size > 1) {
             strm << margin << "Additional info:" << std::endl

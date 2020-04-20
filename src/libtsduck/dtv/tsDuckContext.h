@@ -35,11 +35,11 @@
 #pragma once
 #include "tsUString.h"
 #include "tsByteBlock.h"
+#include "tsCharset.h"
 #include "tsMPEG.h"
 
 namespace ts {
 
-    class DVBCharTable;
     class HFBand;
     class Report;
     class Args;
@@ -149,48 +149,61 @@ namespace ts {
         std::ostream& displayIfASCII(const void *data, size_t size, const UString& prefix = UString(), const UString& suffix = UString());
 
         //!
-        //! Get the default input character set for strings without table code.
+        //! Get the default input character set for strings from tables and descriptors.
         //! The default is the DVB superset of ISO/IEC 6937 as defined in ETSI EN 300 468.
-        //! Other defaults can be used in the context of an operator using an incorrect
+        //! Other defaults can be used in non-DVB contexts or when a DVB operator uses an incorrect
         //! signalization, assuming another default character set (usually from its own country).
-        //! @return The default input character set or the null pointer if none is defined.
+        //! @return The default input character set (never null).
         //!
-        const DVBCharTable* charsetIn() const { return _charsetIn; }
+        const Charset* charsetIn() const { return _charsetIn; }
 
         //!
-        //! Get the preferred output character set for strings.
-        //! @return The preferred output character set or the null pointer if none is defined.
+        //! Get the preferred output character set for strings to insert in tables and descriptors.
+        //! @return The preferred output character set (never null).
         //!
-        const DVBCharTable* charsetOut() const { return _charsetOut; }
+        const Charset* charsetOut() const { return _charsetOut; }
 
         //!
-        //! Convert a DVB string into UTF-16 using the default input DVB character set.
-        //! @param [in] dvb A string in DVB representation.
-        //! The first bytes of the string indicate the DVB character set to use.
-        //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
+        //! Convert a signalization string into UTF-16 using the default input character set.
+        //! @param [out] str Returned decoded string.
+        //! @param [in] data Address of an encoded string.
+        //! @param [in] size Size in bytes of the encoded string.
+        //! @return True on success, false on error (truncated, unsupported format, etc.)
         //! @see ETSI EN 300 468, Annex A.
         //!
-        UString fromDVB(const std::string& dvb) const
+        bool decode(UString& str, const uint8_t* data, size_t size) const
         {
-            return UString::FromDVB(dvb, _charsetIn);
+            return _charsetIn->decode(str, data, size);
         }
 
         //!
-        //! Convert a DVB string into UTF-16 using the default input DVB character set.
-        //! @param [in] dvb Address of a string in DVB representation.
-        //! The first bytes of the string indicate the DVB character set to use.
-        //! @param [in] dvbSize Size in bytes of the DVB string.
+        //! Convert a signalization string into UTF-16 using the default input character set.
+        //! @param [in] data Address of a string in in binary representation (DVB or similar).
+        //! @param [in] size Size in bytes of the string.
         //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
         //! @see ETSI EN 300 468, Annex A.
         //!
-        UString fromDVB(const uint8_t* dvb, size_t dvbSize) const
+        UString decoded(const uint8_t* data, size_t size) const
         {
-            return UString::FromDVB(dvb, dvbSize, _charsetIn);
+            return _charsetIn->decoded(data, size);
         }
 
         //!
-        //! Convert a DVB string into UTF-16 (preceded by its one-byte length) using the default input DVB character set.
-        //! @param [in,out] buffer Address of a buffer containing a DVB string to read.
+        //! Convert a signalization string (preceded by its one-byte length) into UTF-16 using the default input character set.
+        //! @param [out] str Returned decoded string.
+        //! @param [in,out] data Address of an encoded string. The address is updated to point after the decoded value.
+        //! @param [in,out] size Size of the buffer. Updated to remaining size.
+        //! @return True on success, false on error (truncated, unsupported format, etc.)
+        //! @see ETSI EN 300 468, Annex A.
+        //!
+        bool decodeWithByteLength(UString& str, const uint8_t*& data, size_t& size) const
+        {
+            return _charsetIn->decodeWithByteLength(str, data, size);
+        }
+
+        //!
+        //! Convert a signalization string (preceded by its one-byte length) into UTF-16 using the default input character set.
+        //! @param [in,out] data Address of a buffer containing a string to read.
         //! The first byte in the buffer is the length in bytes of the string.
         //! Upon return, @a buffer is updated to point after the end of the string.
         //! @param [in,out] size Size in bytes of the buffer, which may be larger than
@@ -199,84 +212,84 @@ namespace ts {
         //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
         //! @see ETSI EN 300 468, Annex A.
         //!
-        UString fromDVBWithByteLength(const uint8_t*& buffer, size_t& size) const
+        UString decodedWithByteLength(const uint8_t*& data, size_t& size) const
         {
-            return UString::FromDVBWithByteLength(buffer, size, _charsetIn);
+            return _charsetIn->decodedWithByteLength(data, size);
         }
 
         //!
-        //! Encode an UTF-16 string into a DVB string using the preferred output DVB character set.
+        //! Encode an UTF-16 string into a signalization string using the preferred output character set.
         //! Stop either when this string is serialized or when the buffer is full, whichever comes first.
-        //! @param [in] str The UTF-16 string to encode.
-        //! @param [in,out] buffer Address of the buffer where the DVB string is written.
+        //! @param [in,out] buffer Address of the buffer where the signalization string is written.
         //! The address is updated to point after the encoded value.
         //! @param [in,out] size Size of the buffer. Updated to remaining size.
+        //! @param [in] str The UTF-16 string to encode.
         //! @param [in] start Starting offset to convert in this UTF-16 string.
         //! @param [in] count Maximum number of characters to convert.
         //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
         //!
-        size_t toDVB(const UString& str, uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS) const
+        size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const
         {
-            return str.toDVB(buffer, size, start, count, _charsetOut);
+            return _charsetOut->encode(buffer, size, str, start, count);
         }
 
         //!
-        //! Encode an UTF-16 string into a DVB string using the preferred output DVB character set.
+        //! Encode an UTF-16 string into a signalization string using the preferred output character set.
         //! @param [in] str The UTF-16 string to encode.
         //! @param [in] start Starting offset to convert in this UTF-16 string.
         //! @param [in] count Maximum number of characters to convert.
         //! @return The DVB string.
         //!
-        ByteBlock toDVB(const UString& str, size_t start = 0, size_t count = NPOS) const
+        ByteBlock encoded(const UString& str, size_t start = 0, size_t count = NPOS) const
         {
-            return str.toDVB(start, count, _charsetOut);
+            return _charsetOut->encoded(str, start, count);
         }
 
         //!
-        //! Encode an UTF-16 string into a DVB string (preceded by its one-byte length) using the preferred output DVB character set.
+        //! Encode an UTF-16 string into a signalization string (preceded by its one-byte length) using the preferred output character set.
         //! Stop either when this string is serialized or when the buffer is full or when 255 bytes are written, whichever comes first.
-        //! @param [in] str The UTF-16 string to encode.
         //! @param [in,out] buffer Address of the buffer where the DVB string is written.
         //! The first byte will receive the size in bytes of the DVB string.
         //! The address is updated to point after the encoded value.
         //! @param [in,out] size Size of the buffer. Updated to remaining size.
+        //! @param [in] str The UTF-16 string to encode.
         //! @param [in] start Starting offset to convert in this UTF-16 string.
         //! @param [in] count Maximum number of characters to convert.
         //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
         //!
-        size_t toDVBWithByteLength(const UString& str, uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS) const
+        size_t encodeWithByteLength(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const
         {
-            return str.toDVBWithByteLength(buffer, size, start, count, _charsetOut);
+            return _charsetOut->encodeWithByteLength(buffer, size, str, start, count);
         }
 
         //!
-        //! Encode an UTF-16 string into a DVB string (preceded by its one-byte length) using the preferred output DVB character set.
+        //! Encode an UTF-16 string into a signalization string (preceded by its one-byte length) using the preferred output character set.
         //! @param [in] str The UTF-16 string to encode.
         //! @param [in] start Starting offset to convert in this UTF-16 string.
         //! @param [in] count Maximum number of characters to convert.
         //! @return The DVB string with the initial length byte.
         //!
-        ByteBlock toDVBWithByteLength(const UString& str, size_t start = 0, size_t count = NPOS) const
+        ByteBlock encodedWithByteLength(const UString& str, size_t start = 0, size_t count = NPOS) const
         {
-            return str.toDVBWithByteLength(start, count, _charsetOut);
+            return _charsetOut->encodedWithByteLength(str, start, count);
         }
 
         //!
-        //! Set the default input character set for strings without table code.
+        //! Set the default input character set for strings.
         //! The default should be the DVB superset of ISO/IEC 6937 as defined in ETSI EN 300 468.
         //! Use another default in the context of an operator using an incorrect signalization,
         //! assuming another default character set (usually from its own country).
         //! @param [in] charset The new default input character set or a null pointer to revert
         //! to the default.
         //!
-        void setDefaultCharsetIn(const DVBCharTable* charset);
+        void setDefaultCharsetIn(const Charset* charset);
 
         //!
         //! Set the preferred output character set for strings.
         //! @param [in] charset The new preferred output character set or a null pointer to revert
         //! to the default.
         //!
-        void setDefaultCharsetOut(const DVBCharTable* charset);
+        void setDefaultCharsetOut(const Charset* charset);
 
         //!
         //! Set the default CAS id to use.
@@ -395,18 +408,18 @@ namespace ts {
         bool loadArgs(Args& args);
 
     private:
-        Report*             _report;            // Pointer to a report for error messages. Never null.
-        std::ostream*       _initial_out;       // Initial text output stream. Never null.
-        std::ostream*       _out;               // Pointer to text output stream. Never null.
-        std::ofstream       _outFile;           // Open stream when redirected to a file by name.
-        const DVBCharTable* _charsetIn;         // DVB character set to interpret strings without prefix code.
-        const DVBCharTable* _charsetOut;        // Preferred DVB character set to generate strings.
-        uint16_t            _casId;             // Preferred CAS id.
-        PDS                 _defaultPDS;        // Default PDS value if undefined.
-        Standards           _cmdStandards;      // Forced standards from the command line.
-        Standards           _accStandards;      // Accumulated list of standards in the context.
-        UString             _hfDefaultRegion;   // Default region for UHF/VHF band. Empty until used for the first time.
-        int                 _definedCmdOptions; // Defined command line options.
+        Report*        _report;            // Pointer to a report for error messages. Never null.
+        std::ostream*  _initial_out;       // Initial text output stream. Never null.
+        std::ostream*  _out;               // Pointer to text output stream. Never null.
+        std::ofstream  _outFile;           // Open stream when redirected to a file by name.
+        const Charset* _charsetIn;         // DVB character set to interpret strings without prefix code.
+        const Charset* _charsetOut;        // Preferred DVB character set to generate strings.
+        uint16_t       _casId;             // Preferred CAS id.
+        PDS            _defaultPDS;        // Default PDS value if undefined.
+        Standards      _cmdStandards;      // Forced standards from the command line.
+        Standards      _accStandards;      // Accumulated list of standards in the context.
+        UString        _hfDefaultRegion;   // Default region for UHF/VHF band. Empty until used for the first time.
+        int            _definedCmdOptions; // Defined command line options.
         const std::map<uint16_t, const UChar*> _predefined_cas;  // Predefined CAS names, index by CAS id (first in range).
 
         // List of command line options to define and analyze.

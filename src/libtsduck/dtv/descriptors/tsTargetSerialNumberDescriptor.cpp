@@ -100,9 +100,13 @@ void ts::TargetSerialNumberDescriptor::deserialize(DuckContext& duck, const Desc
 
 void ts::TargetSerialNumberDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    display.duck().out() << margin
-                  << UString::Format(u"%*sSerial number (%d bytes): %s", {indent, u"", size, UString::Dump(data, size, UString::SINGLE_LINE)})
-                  << std::endl;
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const std::string margin(indent, ' ');
+
+    strm << margin
+         << UString::Format(u"Serial number (%d bytes): %s", {size, UString::Dump(data, size, UString::SINGLE_LINE)})
+         << std::endl;
 }
 
 

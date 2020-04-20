@@ -66,7 +66,7 @@ namespace ts {
         //! @param [in] name Name of the requested character set.
         //! @return Address of the character set or zero if not found.
         //!
-        static Charset* GetCharset(const UString& name);
+        static const Charset* GetCharset(const UString& name);
 
         //!
         //! Find all registered character set names.
@@ -96,7 +96,17 @@ namespace ts {
         UString decoded(const uint8_t* data, size_t size) const;
 
         //!
-        //! Decode a string (preceded by its one-byte length) from the specified byte buffer and return a UString.
+        //! Decode a string (preceded by its one-byte length) from the specified byte buffer.
+        //!
+        //! @param [out] str Returned decoded string.
+        //! @param [in,out] data Address of an encoded string. The address is updated to point after the decoded value.
+        //! @param [in,out] size Size of the buffer. Updated to remaining size.
+        //! @return True on success, false on error (truncated, unsupported format, etc.)
+        //!
+        bool decodeWithByteLength(UString& str, const uint8_t*& data, size_t& size) const;
+
+        //!
+        //! Decode a string (preceded by its one-byte length) from the specified byte buffer.
         //!
         //! Errors (truncation, unsupported format, etc) are ignored.
         //!
@@ -170,6 +180,13 @@ namespace ts {
         ByteBlock encodedWithByteLength(const UString& str, size_t start = 0, size_t count = NPOS) const;
 
         //!
+        //! Unregister the character set from the repository of character sets.
+        //! This is done automatically when the object is destructed.
+        //! Can be called earlier to make sure a character set is no longer referenced.
+        //!
+        virtual void unregister() const;
+
+        //!
         //! Virtual destructor.
         //!
         virtual ~Charset();
@@ -193,12 +210,12 @@ namespace ts {
         {
             TS_DECLARE_SINGLETON(Repository);
         public:
-            Charset* get(const UString& name) const;
+            const Charset* get(const UString& name) const;
             UStringList getAllNames() const;
-            void add(const UString& name, Charset* charset);
-            void remove(Charset* charset);
+            void add(const UString& name, const Charset* charset);
+            void remove(const Charset* charset);
         private:
-            std::map<UString,Charset*> _map;
+            std::map<UString, const Charset*> _map;
         };
 
         UString _name;  // Character set name.

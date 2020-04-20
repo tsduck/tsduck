@@ -44,7 +44,7 @@ const ts::DVBCharset ts::DVBCharset::DVB(u"DVB");
 
 ts::DVBCharset::DVBCharset(const UChar* name, const DVBCharTable* default_table) :
     Charset(name),
-    _default_table(default_table != nullptr ? default_table : &DVBCharTableSingleByte::ISO_6937)
+    _default_table(default_table != nullptr ? default_table : &DVBCharTableSingleByte::RAW_ISO_6937)
 {
 }
 
@@ -79,7 +79,7 @@ bool ts::DVBCharset::decode(UString& str, const uint8_t* data, size_t size) cons
     // Get the DVB character set code from the beginning of the string.
     uint32_t code = 0;
     size_t codeSize = 0;
-    if (!DVBCharTable::GetTableCode(code, codeSize, data, size)) {
+    if (!DVBCharTable::DecodeTableCode(code, codeSize, data, size)) {
         return false;
     }
 
@@ -123,17 +123,17 @@ size_t ts::DVBCharset::encode(uint8_t*& buffer, size_t& size, const UString& str
 
     // Try to encode using these character tables in order
     const DVBCharTable* const lookup_tables[] = {
-        _default_table,                            // default table for this charset
-        &ts::DVBCharTableSingleByte::ISO_6937,     // default DVB table, same as previous in most cases
-        &ts::DVBCharTableSingleByte::ISO_8859_15,  // most european characters and Euro currency sign
-        &ts::DVBCharTableUTF8::UTF_8,              // last chance, used when no other match
-        nullptr                                    // end of list
+        _default_table,                                // default table for this charset
+        &ts::DVBCharTableSingleByte::RAW_ISO_6937,     // default DVB table, same as previous in most cases
+        &ts::DVBCharTableSingleByte::RAW_ISO_8859_15,  // most european characters and Euro currency sign
+        &ts::DVBCharTableUTF8::RAW_UTF_8,              // last chance, used when no other match
+        nullptr                                        // end of list
     };
 
     // Look for a character set which can encode the string.
     const DVBCharTable* table = nullptr;
     for (size_t i = 0; lookup_tables[i] != nullptr; ++i) {
-        if (lookup_tables[i]->canEncode(str, start, count)) {
+        if ((i == 0 || lookup_tables[i] != _default_table) && lookup_tables[i]->canEncode(str, start, count)) {
             table = lookup_tables[i];
             break;
         }

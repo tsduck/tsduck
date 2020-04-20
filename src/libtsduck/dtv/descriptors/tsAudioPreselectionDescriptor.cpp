@@ -176,7 +176,7 @@ void ts::AudioPreselectionDescriptor::deserialize(DuckContext& duck, const Descr
             if (hasLanguage) {
                 _is_valid = size >= 3;
                 if (_is_valid) {
-                    sel.ISO_639_language_code = duck.fromDVB(data, 3);
+                    sel.ISO_639_language_code = DeserializeLanguageCode(data);
                     data += 3;
                     size -= 3;
                 }
@@ -231,7 +231,8 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -258,7 +259,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
             if (hasLanguage) {
                 valid = size >= 3;
                 if (valid) {
-                    strm << margin << "  Language code: \"" << display.duck().fromDVB(data, 3) << '"' << std::endl;
+                    strm << margin << "  Language code: \"" << DeserializeLanguageCode(data) << '"' << std::endl;
                     data += 3;
                     size -= 3;
                 }

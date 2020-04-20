@@ -76,8 +76,8 @@ void ts::ServiceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(service_type);
-    bbp->append(duck.toDVBWithByteLength(provider_name));
-    bbp->append(duck.toDVBWithByteLength(service_name));
+    bbp->append(duck.encodedWithByteLength(provider_name));
+    bbp->append(duck.encodedWithByteLength(service_name));
     serializeEnd(desc, bbp);
 }
 
@@ -95,8 +95,8 @@ void ts::ServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& des
         size_t size = desc.payloadSize();
         service_type = data[0];
         data++; size--;
-        provider_name.assign(duck.fromDVBWithByteLength(data, size));
-        service_name.assign(duck.fromDVBWithByteLength(data, size));
+        duck.decodeWithByteLength(provider_name, data, size);
+        duck.decodeWithByteLength(service_name, data, size);
         _is_valid = size == 0;
     }
 }
@@ -108,7 +108,8 @@ void ts::ServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& des
 
 void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -118,8 +119,8 @@ void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         strm << margin << "Service type: " << names::ServiceType(stype, names::FIRST) << std::endl;
 
         // Provider and service names (data and size are updated by FromDVBWithByteLength).
-        const UString provider(display.duck().fromDVBWithByteLength(data, size));
-        const UString service(display.duck().fromDVBWithByteLength(data, size));
+        const UString provider(duck.decodedWithByteLength(data, size));
+        const UString service(duck.decodedWithByteLength(data, size));
         strm << margin << "Service: \"" << service << "\", Provider: \"" << provider << "\"" << std::endl;
     }
 

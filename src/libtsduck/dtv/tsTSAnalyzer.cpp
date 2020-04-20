@@ -906,7 +906,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
             case DID_LANGUAGE: {
                 if (size >= 4 && ps != nullptr) {
                     // First 3 bytes contains the audio language
-                    ps->language = UString::FromDVB(data, 3);
+                    _duck.decode(ps->language, data, 3);
                     // Next byte contains audio type, 0 is the default
                     uint8_t audio_type(data[3]);
                     if (audio_type == 0) {
@@ -953,7 +953,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
             case DID_SUBTITLING: {
                 if (size >= 4 && ps != nullptr) {
                     // First 3 bytes contains the language
-                    ps->language = UString::FromDVB(data, 3);
+                    _duck.decode(ps->language, data, 3);
                     // Next byte contains subtitling type
                     uint8_t type = data[3];
                     ps->description = u"Subtitles";
@@ -965,7 +965,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
             case DID_TELETEXT: {
                 if (size >= 4 && ps != nullptr) {
                     // First 3 bytes contains the language
-                    ps->language = UString::FromDVB(data, 3);
+                    _duck.decode(ps->language, data, 3);
                     // Next byte contains teletext type
                     uint8_t type(data[3] >> 3);
                     ps->description = u"Teletext";

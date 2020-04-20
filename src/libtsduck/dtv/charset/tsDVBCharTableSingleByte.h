@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsDVBCharTable.h"
+#include "tsDVBCharset.h"
 
 namespace ts {
     //!
@@ -53,21 +54,37 @@ namespace ts {
         TS_NOBUILD_NOCOPY(DVBCharTableSingleByte);
     public:
         // Predefined character sets.
-        static const DVBCharTableSingleByte ISO_6937;    //!< Modified ISO 6937, DVB default charset.
-        static const DVBCharTableSingleByte ISO_8859_1;  //!< ISO 8859-1 character set.
-        static const DVBCharTableSingleByte ISO_8859_2;  //!< ISO 8859-2 character set.
-        static const DVBCharTableSingleByte ISO_8859_3;  //!< ISO 8859-3 character set.
-        static const DVBCharTableSingleByte ISO_8859_4;  //!< ISO 8859-4 character set.
-        static const DVBCharTableSingleByte ISO_8859_5;  //!< ISO 8859-5 character set.
-        static const DVBCharTableSingleByte ISO_8859_6;  //!< ISO 8859-6 character set.
-        static const DVBCharTableSingleByte ISO_8859_7;  //!< ISO 8859-7 character set.
-        static const DVBCharTableSingleByte ISO_8859_8;  //!< ISO 8859-8 character set.
-        static const DVBCharTableSingleByte ISO_8859_9;  //!< ISO 8859-9 character set.
-        static const DVBCharTableSingleByte ISO_8859_10; //!< ISO 8859-10 character set.
-        static const DVBCharTableSingleByte ISO_8859_11; //!< ISO 8859-11 character set.
-        static const DVBCharTableSingleByte ISO_8859_13; //!< ISO 8859-13 character set.
-        static const DVBCharTableSingleByte ISO_8859_14; //!< ISO 8859-14 character set.
-        static const DVBCharTableSingleByte ISO_8859_15; //!< ISO 8859-15 character set.
+        static const DVBCharTableSingleByte RAW_ISO_6937;    //!< Raw modified ISO 6937, DVB default character table.
+        static const DVBCharTableSingleByte RAW_ISO_8859_1;  //!< Raw ISO 8859-1 character set.
+        static const DVBCharTableSingleByte RAW_ISO_8859_2;  //!< Raw ISO 8859-2 character set.
+        static const DVBCharTableSingleByte RAW_ISO_8859_3;  //!< Raw ISO 8859-3 character set.
+        static const DVBCharTableSingleByte RAW_ISO_8859_4;  //!< Raw ISO 8859-4 character set.
+        static const DVBCharTableSingleByte RAW_ISO_8859_5;  //!< Raw ISO 8859-5 character set.
+        static const DVBCharTableSingleByte RAW_ISO_8859_6;  //!< Raw ISO 8859-6 character set.
+        static const DVBCharTableSingleByte RAW_ISO_8859_7;  //!< Raw ISO 8859-7 character set.
+        static const DVBCharTableSingleByte RAW_ISO_8859_8;  //!< Raw ISO 8859-8 character set.
+        static const DVBCharTableSingleByte RAW_ISO_8859_9;  //!< Raw ISO 8859-9 character set.
+        static const DVBCharTableSingleByte RAW_ISO_8859_10; //!< Raw ISO 8859-10 character set.
+        static const DVBCharTableSingleByte RAW_ISO_8859_11; //!< Raw ISO 8859-11 character set.
+        static const DVBCharTableSingleByte RAW_ISO_8859_13; //!< Raw ISO 8859-13 character set.
+        static const DVBCharTableSingleByte RAW_ISO_8859_14; //!< Raw ISO 8859-14 character set.
+        static const DVBCharTableSingleByte RAW_ISO_8859_15; //!< Raw ISO 8859-15 character set.
+
+        static const DVBCharset DVB_ISO_6937;    //!< Standard DVB encoding using modified ISO 6937 character set as default.
+        static const DVBCharset DVB_ISO_8859_1;  //!< Non-standard DVB encoding using 8859-1 character set as default.
+        static const DVBCharset DVB_ISO_8859_2;  //!< Non-standard DVB encoding using ISO 8859-2 character set as default.
+        static const DVBCharset DVB_ISO_8859_3;  //!< Non-standard DVB encoding using ISO 8859-3 character set as default.
+        static const DVBCharset DVB_ISO_8859_4;  //!< Non-standard DVB encoding using ISO 8859-4 character set as default.
+        static const DVBCharset DVB_ISO_8859_5;  //!< Non-standard DVB encoding using ISO 8859-5 character set as default.
+        static const DVBCharset DVB_ISO_8859_6;  //!< Non-standard DVB encoding using ISO 8859-6 character set as default.
+        static const DVBCharset DVB_ISO_8859_7;  //!< Non-standard DVB encoding using ISO 8859-7 character set as default.
+        static const DVBCharset DVB_ISO_8859_8;  //!< Non-standard DVB encoding using ISO 8859-8 character set as default.
+        static const DVBCharset DVB_ISO_8859_9;  //!< Non-standard DVB encoding using ISO 8859-9 character set as default.
+        static const DVBCharset DVB_ISO_8859_10; //!< Non-standard DVB encoding using ISO 8859-10 character set as default.
+        static const DVBCharset DVB_ISO_8859_11; //!< Non-standard DVB encoding using ISO 8859-11 character set as default.
+        static const DVBCharset DVB_ISO_8859_13; //!< Non-standard DVB encoding using ISO 8859-13 character set as default.
+        static const DVBCharset DVB_ISO_8859_14; //!< Non-standard DVB encoding using ISO 8859-14 character set as default.
+        static const DVBCharset DVB_ISO_8859_15; //!< Non-standard DVB encoding using ISO 8859-15 character set as default.
 
         // Inherited methods.
         virtual bool decode(UString& str, const uint8_t* dvb, size_t dvbSize) const override;

@@ -120,7 +120,8 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
         display.displayExtraData(data, size, indent);
     }
     else {
-        std::ostream& strm(display.duck().out());
+        DuckContext& duck(display.duck());
+        std::ostream& strm(duck.out());
         const std::string margin(indent, ' ');
 
         // Extract common part
@@ -129,7 +130,7 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
         const UChar* const dtype = tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA");
         data += 4; size -= 4;
 
-        strm << margin << UString::Format(u"CA System Id: %s, %s PID: %d (0x%X)", {names::CASId(display.duck(), sysid, names::FIRST), dtype, pid, pid}) << std::endl;
+        strm << margin << UString::Format(u"CA System Id: %s, %s PID: %d (0x%X)", {names::CASId(duck, sysid, names::FIRST), dtype, pid, pid}) << std::endl;
 
         // CA private part.
         if (size > 0) {

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.21-1710
+VERSION 3.21-1719
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -10,6 +10,9 @@ VERSION 3.21-1710
   * Added options --reopen-on-error, --max-retry and --retry-interval to
     output plugin "file".
   * Added option --stream-id to plugin "filter".
+  * Added option --japan to "tsanalyze", "tspsi", "tstabcomp", "tstabdump",
+    "tstables" and plugins "analyze", "psi", "tables".
+  * Added support for Japanese character sets as defined in ARIB STD-B24.
   * Partial ISDB signalization, as defined in ARIB STD-B10, is now supported.
 
 [BUG] Bug fixes:

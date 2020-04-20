@@ -77,7 +77,7 @@ ts::TransportStreamDescriptor::TransportStreamDescriptor(DuckContext& duck, cons
 void ts::TransportStreamDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.toDVB(compliance));
+    bbp->append(duck.encoded(compliance));
     serializeEnd(desc, bbp);
 }
 
@@ -91,7 +91,7 @@ void ts::TransportStreamDescriptor::deserialize(DuckContext& duck, const Descrip
     _is_valid = desc.isValid() && desc.tag() == _tag;
 
     if (_is_valid) {
-        compliance.assign(duck.fromDVB(desc.payload(), desc.payloadSize()));
+        duck.decode(compliance, desc.payload(), desc.payloadSize());
     }
     else {
         compliance.clear();
@@ -105,9 +105,11 @@ void ts::TransportStreamDescriptor::deserialize(DuckContext& duck, const Descrip
 
 void ts::TransportStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
-    strm << margin << "Compliance: \"" << display.duck().fromDVB(payload, size) << "\"" << std::endl;
+
+    strm << margin << "Compliance: \"" << duck.decoded(payload, size) << "\"" << std::endl;
 }
 
 

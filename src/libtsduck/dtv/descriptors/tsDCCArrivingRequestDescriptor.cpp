@@ -102,12 +102,17 @@ void ts::DCCArrivingRequestDescriptor::deserialize(DuckContext& duck, const Desc
 
 void ts::DCCArrivingRequestDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const std::string margin(indent, ' ');
+
     if (size >= 2) {
-        display.duck().out() << UString::Format(u"%*sDCC arriving request type: 0x%X (%d)", {indent, u"", data[0], data[0]}) << std::endl;
+        strm << margin << UString::Format(u"DCC arriving request type: 0x%X (%d)", {data[0], data[0]}) << std::endl;
         const size_t len = data[1];
         data += 2; size -= 2;
         ATSCMultipleString::Display(display, u"DCC arriving request text: ", indent, data, size, len);
     }
+
     display.displayExtraData(data, size, indent);
 }
 

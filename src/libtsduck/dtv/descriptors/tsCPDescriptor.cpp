@@ -137,7 +137,8 @@ void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
     // See ts::TablesDisplay::displayDescriptorData()
 
     if (size >= 4) {
-        std::ostream& strm(display.duck().out());
+        DuckContext& duck(display.duck());
+        std::ostream& strm(duck.out());
         const std::string margin(indent, ' ');
 
         uint16_t id = GetUInt16(data);

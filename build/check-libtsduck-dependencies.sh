@@ -34,7 +34,7 @@
 #
 #  The current dependency order of src/libtsduck subdirectories is:
 #
-#     core <--- crypto <-- dtv <-- plugin
+#     base <--- crypto <-- dtv <-- plugin
 #
 #-----------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ cd $(dirname ${BASH_SOURCE[0]})/../src/libtsduck
 
 # Loop on all subdirectories in reverse order of dependency.
 DEPDIRS=
-for subdir in core crypto dtv plugin; do
+for subdir in base crypto dtv plugin; do
 
     echo "==== Checking subtree $subdir"
 

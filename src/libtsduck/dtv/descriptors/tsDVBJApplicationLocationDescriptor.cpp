@@ -76,9 +76,9 @@ ts::DVBJApplicationLocationDescriptor::DVBJApplicationLocationDescriptor(DuckCon
 void ts::DVBJApplicationLocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.toDVBWithByteLength(base_directory));
-    bbp->append(duck.toDVBWithByteLength(classpath_extension));
-    bbp->append(duck.toDVB(initial_class));
+    bbp->append(duck.encodedWithByteLength(base_directory));
+    bbp->append(duck.encodedWithByteLength(classpath_extension));
+    bbp->append(duck.encoded(initial_class));
     serializeEnd(desc, bbp);
 }
 
@@ -103,13 +103,13 @@ void ts::DVBJApplicationLocationDescriptor::deserialize(DuckContext& duck, const
         data += 1; size -= 1;
         _is_valid = len1 + 1 <= size;
         if (_is_valid) {
-            base_directory = duck.fromDVB(data, len1);
+            duck.decode(base_directory, data, len1);
             const size_t len2 = data[len1];
             data += len1 + 1; size -= len1 + 1;
             _is_valid = len2 <= size;
             if (_is_valid) {
-                classpath_extension = duck.fromDVB(data, len2);
-                initial_class = duck.fromDVB(data + len2, size - len2);
+                duck.decode(classpath_extension, data, len2);
+                duck.decode(initial_class, data + len2, size - len2);
             }
         }
     }
@@ -122,17 +122,18 @@ void ts::DVBJApplicationLocationDescriptor::deserialize(DuckContext& duck, const
 
 void ts::DVBJApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
         size_t len = std::min<size_t>(data[0], size - 1);
-        strm << margin << "Base directory: \"" << display.duck().fromDVB(data + 1, len) << "\"" << std::endl;
+        strm << margin << "Base directory: \"" << duck.decoded(data + 1, len) << "\"" << std::endl;
         data += 1 + len; size -= 1 + len;
         if (size >= 1) {
             len = std::min<size_t>(data[0], size - 1);
-            strm << margin << "Classpath ext: \"" << display.duck().fromDVB(data + 1, len) << "\"" << std::endl
-                 << margin << "Initial class: \"" << display.duck().fromDVB(data + 1 + len, size - len - 1) << "\"" << std::endl;
+            strm << margin << "Classpath ext: \"" << duck.decoded(data + 1, len) << "\"" << std::endl
+                 << margin << "Initial class: \"" << duck.decoded(data + 1 + len, size - len - 1) << "\"" << std::endl;
             size = 0;
         }
     }

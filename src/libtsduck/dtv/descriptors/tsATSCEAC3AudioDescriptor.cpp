@@ -287,7 +287,8 @@ void ts::ATSCEAC3AudioDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 {
     if (size >= 2) {
 
-        std::ostream& strm(display.duck().out());
+        DuckContext& duck(display.duck());
+        std::ostream& strm(duck.out());
         const std::string margin(indent, ' ');
 
         // Fixed initial size: 2 bytes.

@@ -62,7 +62,7 @@ ts::Charset::Charset(std::initializer_list<const UChar*> names) :
 ts::Charset::~Charset()
 {
     // Automatically unregister character set on destruction.
-    Repository::Instance()->remove(this);
+    unregister();
 }
 
 
@@ -77,7 +77,7 @@ ts::Charset::Repository::Repository() :
 {
 }
 
-ts::Charset* ts::Charset::Repository::get(const UString& name) const
+const ts::Charset* ts::Charset::Repository::get(const UString& name) const
 {
     const auto it = _map.find(name);
     return it == _map.end() ? nullptr : it->second;
@@ -88,7 +88,7 @@ ts::UStringList ts::Charset::Repository::getAllNames() const
     return MapKeys(_map);
 }
 
-void ts::Charset::Repository::add(const UString& name, Charset* charset)
+void ts::Charset::Repository::add(const UString& name, const Charset* charset)
 {
     const auto it = _map.find(name);
     if (it == _map.end()) {
@@ -100,7 +100,7 @@ void ts::Charset::Repository::add(const UString& name, Charset* charset)
     }
 }
 
-void ts::Charset::Repository::remove(Charset* charset)
+void ts::Charset::Repository::remove(const Charset* charset)
 {
     auto it = _map.begin();
     while (it != _map.end()) {
@@ -115,10 +115,10 @@ void ts::Charset::Repository::remove(Charset* charset)
 
 
 //----------------------------------------------------------------------------
-// Get a character set by name or all names.
+// Public access to the repository.
 //----------------------------------------------------------------------------
 
-ts::Charset* ts::Charset::GetCharset(const UString& name)
+const ts::Charset* ts::Charset::GetCharset(const UString& name)
 {
     return Repository::Instance()->get(name);
 }
@@ -126,6 +126,11 @@ ts::Charset* ts::Charset::GetCharset(const UString& name)
 ts::UStringList ts::Charset::GetAllNames()
 {
     return Repository::Instance()->getAllNames();
+}
+
+void ts::Charset::unregister() const
+{
+    Repository::Instance()->remove(this);
 }
 
 
@@ -142,27 +147,32 @@ ts::UString ts::Charset::decoded(const uint8_t* data, size_t size) const
 
 
 //----------------------------------------------------------------------------
-// Decode a string (preceded by its one-byte length) and return a UString.
+// Decode a string (preceded by its one-byte length).
 //----------------------------------------------------------------------------
 
-ts::UString ts::Charset::decodedWithByteLength(const uint8_t*& buffer, size_t& size) const
+bool ts::Charset::decodeWithByteLength(UString& str, const uint8_t*& data, size_t& size) const
 {
     // We need one byte for the length
     if (size == 0) {
-        return UString();
+        return false;
     }
 
     // Get the length of the encoded string.
-    const size_t len = std::min<size_t>(buffer[0], size - 1);
+    const size_t len = std::min<size_t>(data[0], size - 1);
 
     // Update the buffer and size to point after the encoded string.
-    const uint8_t* const start = buffer + 1;
-    buffer += 1 + len;
+    const uint8_t* const start = data + 1;
+    data += 1 + len;
     size -= 1 + len;
 
     // Decode and return the string.
+    return decode(str, start, len); 
+}
+
+ts::UString ts::Charset::decodedWithByteLength(const uint8_t*& data, size_t& size) const
+{
     UString str;
-    decode(str, start, len);
+    decodeWithByteLength(str, data, size);
     return str;
 }
 

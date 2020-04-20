@@ -105,7 +105,7 @@ size_t ts::ShortEventDescriptor::splitAndAdd(DuckContext& duck, DescriptorList& 
 
         // Insert as much as possible of event name.
         uint8_t* addr = buffer;
-        const size_t name_size = duck.toDVBWithByteLength(event_name, addr, remain, name_index);
+        const size_t name_size = duck.encodeWithByteLength(addr, remain, event_name, name_index);
         sed.event_name = event_name.substr(name_index, name_size);
         name_index += name_size;
 
@@ -113,7 +113,7 @@ size_t ts::ShortEventDescriptor::splitAndAdd(DuckContext& duck, DescriptorList& 
         remain++;
 
         // Insert as much as possible of event text.
-        const size_t text_size = duck.toDVBWithByteLength(text, addr, remain, text_index);
+        const size_t text_size = duck.encodeWithByteLength(addr, remain, text, text_index);
         sed.text = text.substr(text_index, text_size);
         text_index += text_size;
 
@@ -137,8 +137,8 @@ void ts::ShortEventDescriptor::serialize(DuckContext& duck, Descriptor& desc) co
         desc.invalidate();
         return;
     }
-    bbp->append(duck.toDVBWithByteLength(event_name));
-    bbp->append(duck.toDVBWithByteLength(text));
+    bbp->append(duck.encodedWithByteLength(event_name));
+    bbp->append(duck.encodedWithByteLength(text));
     serializeEnd(desc, bbp);
 }
 
@@ -159,8 +159,8 @@ void ts::ShortEventDescriptor::deserialize(DuckContext& duck, const Descriptor& 
     language_code = DeserializeLanguageCode(data);
     data += 3; size -= 3;
 
-    event_name = duck.fromDVBWithByteLength(data, size);
-    text = duck.fromDVBWithByteLength(data, size);
+    duck.decodeWithByteLength(event_name, data, size);
+    duck.decodeWithByteLength(text, data, size);
     _is_valid = size == 0;
 }
 
@@ -171,14 +171,15 @@ void ts::ShortEventDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 
 void ts::ShortEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
         const UString lang(DeserializeLanguageCode(data));
         data += 3; size -= 3;
-        const UString name(display.duck().fromDVBWithByteLength(data, size));
-        const UString text(display.duck().fromDVBWithByteLength(data, size));
+        const UString name(duck.decodedWithByteLength(data, size));
+        const UString text(duck.decodedWithByteLength(data, size));
         strm << margin << "Language: " << lang << std::endl
              << margin << "Event name: \"" << name << "\"" << std::endl
              << margin << "Description: \"" << text << "\"" << std::endl;

@@ -71,7 +71,7 @@ void ts::SimpleApplicationBoundaryDescriptor::serialize(DuckContext& duck, Descr
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(uint8_t(boundary_extension.size()));
     for (auto it = boundary_extension.begin(); it != boundary_extension.end(); ++it) {
-        bbp->append(duck.toDVBWithByteLength(*it));
+        bbp->append(duck.encodedWithByteLength(*it));
     }
     serializeEnd(desc, bbp);
 }
@@ -93,7 +93,7 @@ void ts::SimpleApplicationBoundaryDescriptor::deserialize(DuckContext& duck, con
         const size_t count = data[0];
         data++; size--;
         while (size > 0) {
-            boundary_extension.push_back(duck.fromDVBWithByteLength(data, size));
+            boundary_extension.push_back(duck.decodedWithByteLength(data, size));
         }
         _is_valid = count == boundary_extension.size();
     }
@@ -106,7 +106,8 @@ void ts::SimpleApplicationBoundaryDescriptor::deserialize(DuckContext& duck, con
 
 void ts::SimpleApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
     if (size > 0) {
@@ -115,7 +116,7 @@ void ts::SimpleApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& d
     }
 
     while (size > 0) {
-        strm << margin << "Boundary extension: \"" << display.duck().fromDVBWithByteLength(data, size) << "\"" << std::endl;
+        strm << margin << "Boundary extension: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
     }
 }
 

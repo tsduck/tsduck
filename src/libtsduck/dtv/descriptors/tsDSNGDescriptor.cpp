@@ -68,7 +68,7 @@ ts::DSNGDescriptor::DSNGDescriptor(DuckContext& duck, const Descriptor& desc) :
 void ts::DSNGDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.toDVB(station_identification));
+    bbp->append(duck.encoded(station_identification));
     serializeEnd(desc, bbp);
 }
 
@@ -82,7 +82,7 @@ void ts::DSNGDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
     _is_valid = desc.isValid() && desc.tag() == _tag;
 
     if (_is_valid) {
-        station_identification.assign(duck.fromDVB(desc.payload(), desc.payloadSize()));
+        duck.decode(station_identification, desc.payload(), desc.payloadSize());
     }
     else {
         station_identification.clear();
@@ -96,9 +96,11 @@ void ts::DSNGDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 
 void ts::DSNGDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
-    strm << margin << "Station identification: \"" << display.duck().fromDVB(payload, size) << "\"" << std::endl;
+
+    strm << margin << "Station identification: \"" << duck.decoded(payload, size) << "\"" << std::endl;
 }
 
 

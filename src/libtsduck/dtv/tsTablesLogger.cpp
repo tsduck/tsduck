@@ -991,7 +991,7 @@ bool ts::TablesLogger::isFiltered(const Section& sect, uint16_t cas)
 
 void ts::TablesLogger::preDisplay(PacketCounter first, PacketCounter last)
 {
-    std::ostream& strm(_display.duck().out());
+    std::ostream& strm(_duck.out());
 
     // Initial spacing
     if (_table_count == 0 && !_logger) {
