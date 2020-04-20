@@ -133,7 +133,7 @@ void foo::FooTable::serializeContent(ts::DuckContext& duck, ts::BinaryTable& tab
 
 void foo::FooTable::DisplaySection(ts::TablesDisplay& display, const ts::Section& section, int indent)
 {
-    DuckContext& duck(display.duck());
+    ts::DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();

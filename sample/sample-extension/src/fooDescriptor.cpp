@@ -76,7 +76,7 @@ void foo::FooDescriptor::deserialize(ts::DuckContext& duck, const ts::Descriptor
 
 void foo::FooDescriptor::DisplayDescriptor(ts::TablesDisplay& display, ts::DID did, const uint8_t* payload, size_t size, int indent, ts::TID tid, ts::PDS pds)
 {
-    DuckContext& duck(display.duck());
+    ts::DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
