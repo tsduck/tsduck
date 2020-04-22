@@ -197,7 +197,7 @@ void ts::ARIBCharset::Decoder::decodeAll(const uint8_t* data, size_t size)
 
     // Loop in input byte sequences.
     while (_size > 0) {
-        if (match(0x20)) {
+        if (match(0x20) || match(0xA0)) {
             // Always a space in all character sets.
             _str.push_back(u' ');
         }
@@ -232,8 +232,8 @@ void ts::ARIBCharset::Decoder::decodeAll(const uint8_t* data, size_t size)
             _success = escape() && _success;
         }
         else {
-            // Unsupported character.
-            _success = false;
+            // Character in C0 or C1 area.
+            _success = processControl() && _success;
         }
     }
 
@@ -473,6 +473,65 @@ const ts::ARIBCharset::CharMap* ts::ARIBCharset::Decoder::finalToCharMap(uint8_t
         // DRCS-1 to DRCS-15 1-byte code or an unvalid F value.
         return &UNSUPPORTED_1BYTE;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Process a character in C0 or C1 areas.
+//----------------------------------------------------------------------------
+
+bool ts::ARIBCharset::Decoder::processControl()
+{
+    // We currently support none of these sequences.
+    // But we need to properly skip the right number of bytes in the sequence.
+    size_t len = 0;
+
+    switch (*_data) {
+        case PAPF:
+        case COL:
+        case POL:
+        case SZX:
+        case FLC:
+        case WMM:
+        case RPC:
+        case HLC:
+            // 2-byte sequences (P1 parameter)
+            len = 2;
+            break;
+        case APS:
+        case TIME:
+            // 3-byte sequences (P1, P2 parameters)
+            len = 3;
+            break;
+        case CDC:
+            // Variable length.
+            len = _size >= 2 && _data[1] == 0x20 ? 3 : 2;
+            break;
+        case MACRO:
+            // Variable length, end with MACRO 0x4F.
+            for (len = 1; len < _size && (_data[len-1] != MACRO || _data[len] != 0x4F); ++len) {
+            }
+            ++len;
+            break;
+        case CSI:
+            // Variable length, end with code > 0x40.
+            for (len = 1; len < _size && _data[len] < 0x40; ++len) {
+            }
+            ++len;
+            break;
+        default:
+            // By default, other characters are 1-byte commands.
+            len = 1;
+            break;
+    }
+
+    // Skip the sequence.
+    len = std::min(len, _size);
+    _data += len;
+    _size -= len;
+
+    // All sequences are unsupported.
+    return false;
 }
 
 
