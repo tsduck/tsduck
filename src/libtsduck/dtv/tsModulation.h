@@ -425,9 +425,9 @@ namespace ts {
         TM_C3780 = -11,
 #else
         TM_AUTO,  //!< Transmission mode automatically set.
-        TM_2K,    //!< 2K transmission mode.
-        TM_4K,    //!< 4K transmission mode.
-        TM_8K,    //!< 8K transmission mode.
+        TM_2K,    //!< 2K transmission mode, aka ISDB-T "mode 1".
+        TM_4K,    //!< 4K transmission mode, aka ISDB-T "mode 2".
+        TM_8K,    //!< 8K transmission mode, aka ISDB-T "mode 3".
         TM_2KI,   //!< 2K-interleaved transmission mode.
         TM_4KI,   //!< 4K-interleaved transmission mode.
         TM_1K,    //!< 1K transmission mode, DVB-T2 (use 1K FFT).

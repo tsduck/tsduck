@@ -1418,10 +1418,17 @@
       </private_data>
     </ISDB_access_control_descriptor>
 
+    <ISDB_terrestrial_delivery_system_descriptor
+        area_code="uint12, required"
+        guard_interval="1/32|1/16|1/8|1/4, required"
+        transmission_mode="2k|4k|8k|mode1|mode2|mode3, required">
+      <!-- More than one frequency in case of MFN -->
+      <frequency value="FrequencyHz, required"/>
+    </ISDB_terrestrial_delivery_system_descriptor>
+
     <ISO_639_language_descriptor>
       <!-- One per language -->
-      <language code="char3, required"
-                audio_type="uint8, required"/>
+      <language code="char3, required" audio_type="uint8, required"/>
     </ISO_639_language_descriptor>
 
     <ISP_access_mode_descriptor access_mode="unused|dialup|uint8, required">
@@ -1649,6 +1656,10 @@
       <country country_code="char3, required"
                rating="uint8, required"/>
     </parental_rating_descriptor>
+
+    <partial_reception_descriptor>
+      <service id="uint16, required"/>
+    </partial_reception_descriptor>
 
     <partial_transport_stream_descriptor
         peak_rate="uint22, required"
