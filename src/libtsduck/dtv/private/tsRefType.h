@@ -122,6 +122,7 @@
     REF_TYPE(IPMACStreamLocationDescriptor);
     REF_TYPE(IPSignallingDescriptor);
     REF_TYPE(ISDBAccessControlDescriptor);
+    REF_TYPE(ISDBTerrestrialDeliverySystemDescriptor);
     REF_TYPE(ISO639LanguageDescriptor);
     REF_TYPE(ISPAccessModeDescriptor);
     REF_TYPE(J2KVideoDescriptor);
@@ -151,6 +152,7 @@
     REF_TYPE(NPTReferenceDescriptor);
     REF_TYPE(NVODReferenceDescriptor);
     REF_TYPE(ParentalRatingDescriptor);
+    REF_TYPE(PartialReceptionDescriptor);
     REF_TYPE(PartialTransportStreamDescriptor);
     REF_TYPE(PDCDescriptor);
     REF_TYPE(PrefetchDescriptor);

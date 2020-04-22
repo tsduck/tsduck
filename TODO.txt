@@ -86,7 +86,6 @@ TSDuck - List of features to be implemented or fixed
     - 5.2.3    node_relation_descriptor
     - 5.2.4    short_node_information_descriptor
     - 5.2.5    STC_reference_descriptor
-    - 5.2.6    
 
   ARIB STD-B21 (ISDB Receiver for Digital Broadcasting)
   - 9.1.8.3   partial_transport_stream_time_descriptor
