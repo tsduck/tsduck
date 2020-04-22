@@ -70,10 +70,12 @@
     REF_TYPE(CueIdentifierDescriptor);
     REF_TYPE(DataBroadcastDescriptor);
     REF_TYPE(DataBroadcastIdDescriptor);
+    REF_TYPE(DataComponentDescriptor);
     REF_TYPE(DataStreamAlignmentDescriptor);
     REF_TYPE(DCCArrivingRequestDescriptor);
     REF_TYPE(DCCDepartingRequestDescriptor);
     REF_TYPE(DeferredAssociationTagsDescriptor);
+    REF_TYPE(DigitalCopyControlDescriptor);
     REF_TYPE(DIILocationDescriptor);
     REF_TYPE(DSNGDescriptor);
     REF_TYPE(DTSDescriptor);

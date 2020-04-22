@@ -28,42 +28,58 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an ISDB access_control_descriptor.
+//!  Representation of an ISDB digital_copy_control_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsVariable.h"
 
 namespace ts {
 
     //!
-    //! Representation of an ISDB access_control_descriptor.
-    //! @see ARIB STD-B10, Part 2, 6.2.54
+    //! Representation of an ISDB digital_copy_control_descriptor.
+    //! @see ARIB STD-B10, Part 2, 6.2.23
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL ISDBAccessControlDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DigitalCopyControlDescriptor : public AbstractDescriptor
     {
     public:
-        // ISDBAccessControlDescriptor public members:
-        uint16_t  CA_system_id;       //!< Conditional access system id as defined in ARIB STD-B10, Part 2, Annex M.
-        uint8_t   transmission_type;  //!< Transmission type (broadcast by default).
-        PID       pid;                //!< PID for CA tables (ECM or EMM).
-        ByteBlock private_data;       //!< CA-specific private data.
+        //!
+        //! Component control entry.
+        //!
+        struct TSDUCKDLL Component
+        {
+            Component();                                       //!< Constructor.
+            uint8_t           component_tag;                   //!< Component tag.
+            uint8_t           digital_recording_control_data;  //!< 2 bits, copy control.
+            uint8_t           user_defined;                    //!< 4 bits, user-defined.
+            Variable<uint8_t> maximum_bitrate;                 //!< Optional bitrate, in units of 1/4 Mb/s.
+        };
+
+        //!
+        //! List of service entries.
+        //!
+        typedef std::list<Component> ComponentList;
+
+        // DigitalCopyControlDescriptor public members:
+        uint8_t           digital_recording_control_data;  //!< 2 bits, copy control.
+        uint8_t           user_defined;                    //!< 4 bits, user-defined.
+        Variable<uint8_t> maximum_bitrate;                 //!< Optional bitrate, in units of 1/4 Mb/s.
+        ComponentList     components;                      //!< List of components.
 
         //!
         //! Default constructor.
-        //! @param [in] id CA system id.
-        //! @param [in] pid PID for CA tables (ECM or EMM).
         //!
-        ISDBAccessControlDescriptor(uint16_t id = 0, PID pid = PID_NULL);
+        DigitalCopyControlDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        ISDBAccessControlDescriptor(DuckContext& duck, const Descriptor& bin);
+        DigitalCopyControlDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;

@@ -956,6 +956,12 @@
       <selector_bytes>Hexadecimal content</selector_bytes>
     </data_broadcast_id_descriptor>
 
+    <data_component_descriptor data_component_id="uint16, required">
+      <additional_data_component_info>
+        Hexadecimal content
+      </additional_data_component_info>
+    </data_component_descriptor>
+
     <data_stream_alignment_descriptor alignment_type="uint8, required"/>
 
     <dcc_arriving_request_descriptor dcc_arriving_request_type="uint8, required">
@@ -981,6 +987,18 @@
         Hexadecimal content
       </private_data>
     </deferred_association_tags_descriptor>
+
+    <digital_copy_control_descriptor
+        digital_recording_control_data="uint2, required"
+        user_defined="uint4, default=0"
+        maximum_bitrate="uint8, optional">
+      <!-- One per component in the service -->
+      <component_control
+          component_tag="uint8, required"
+          digital_recording_control_data="uint2, required"
+          user_defined="uint4, default=0"
+          maximum_bitrate="uint8, optional"/>
+    </digital_copy_control_descriptor>
 
     <DII_location_descriptor transport_protocol_label="uint8, required">
       <!-- Must be in an AIT (table id 0x74) -->
