@@ -206,13 +206,10 @@ namespace ts {
             UString&       _str;
             const uint8_t* _data;
             size_t         _size;
-            const CharMap* _G0;
-            const CharMap* _G1;
-            const CharMap* _G2;
-            const CharMap* _G3;
-            const CharMap* _GL;       // current left character set
-            const CharMap* _GR;       // current right character set
-            const CharMap* _lockedGL; // locked left character set
+            const CharMap* _G[4];     // G0-G3 character sets.
+            uint8_t        _GL;       // 0-3 index in _G[], current left character set
+            uint8_t        _GR;       // 0-3 index in _G[], current right character set
+            uint8_t        _lockedGL; // 0-3 index in _G[], locked left character set
 
             // Nested decoding for macros: use the current mappings of another decoder.
             Decoder(const Decoder& other, const uint8_t* data, size_t size);
@@ -243,8 +240,8 @@ namespace ts {
 
         private:
             uint8_t  _G[4];       // G0-G3 escape sequence final selector F for the character set.
-            uint8_t  _GL;         // current left character set
-            uint8_t  _GR;         // current right character set
+            uint8_t  _GL;         // 0-3 index in _G[], current left character set
+            uint8_t  _GR;         // 0-3 index in _G[], current right character set
             bool     _GL_last;    // true if GL was used last (ie. not GR)
             uint16_t _Gn_history; // 4 nibbles with values 0,1,2,3, MSB=oldest, LSB=last-used
 

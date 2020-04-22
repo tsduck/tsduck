@@ -165,13 +165,13 @@ ts::ARIBCharset::Decoder::Decoder(UString& str, const uint8_t* data, size_t size
     _str(str),
     _data(nullptr),
     _size(0),
-    _G0(&KANJI_ADDITIONAL_MAP),
-    _G1(&ALPHANUMERIC_MAP),
-    _G2(&HIRAGANA_MAP),
-    _G3(&KATAKANA_MAP),
-    _GL(_G0),
-    _GR(_G2),
-    _lockedGL(_GL)
+    _G{&KANJI_ADDITIONAL_MAP,
+       &ALPHANUMERIC_MAP,
+       &HIRAGANA_MAP,
+       &KATAKANA_MAP},
+    _GL(0),
+    _GR(2),
+    _lockedGL(0)
 {
     decodeAll(data, size);
 }
@@ -203,29 +203,29 @@ void ts::ARIBCharset::Decoder::decodeAll(const uint8_t* data, size_t size)
         }
         else if (*_data >= GL_FIRST && *_data <= GL_LAST) {
             // A left-side code.
-            _success = decodeOneChar(_GL) && _success;
+            _success = decodeOneChar(_G[_GL]) && _success;
             // Restore locked shift if a single shift was used.
             _GL = _lockedGL;
         }
         else if (*_data >= GR_FIRST && *_data <= GR_LAST) {
             // A right-side code.
-            _success = decodeOneChar(_GR) && _success;
+            _success = decodeOneChar(_G[_GR]) && _success;
         }
         else if (match(LS0)) {
             // Locking shift G0.
-            _GL = _lockedGL = _G0;
+            _GL = _lockedGL = 0;
         }
         else if (match(LS1)) {
             // Locking shift G1.
-            _GL = _lockedGL = _G1;
+            _GL = _lockedGL = 1;
         }
         else if (match(SS2)) {
             // Single shift G2.
-            _GL = _G2;
+            _GL = 2;
         }
         else if (match(SS3)) {
             // Single shift G3.
-            _GL = _G3;
+            _GL = 3;
         }
         else if (match(ESC)) {
             // Escape sequence.
@@ -369,23 +369,23 @@ bool ts::ARIBCharset::Decoder::escape()
             switch (F) {
                 case 0x6E:
                     // LS2: Locking shift G2.
-                    _GL = _lockedGL = _G2;
+                    _GL = _lockedGL = 2;
                     return true;
                 case 0x6F:
                     // LS3: Locking shift G3.
-                    _GL = _lockedGL = _G3;
+                    _GL = _lockedGL = 3;
                     return true;
                 case 0x7E:
                     // LS1R: Locking shift G1R.
-                    _GR = _G1;
+                    _GR = 1;
                     return true;
                 case 0x7D:
                     // LS2R: Locking shift G2R.
-                    _GR = _G2;
+                    _GR = 2;
                     return true;
                 case 0x7C:
                     // LS3R: Locking shift G3R.
-                    _GR = _G3;
+                    _GR = 3;
                     return true;
                 default:
                     // Unsupported function.
@@ -394,42 +394,42 @@ bool ts::ARIBCharset::Decoder::escape()
         }
         case 0x00000028:   // 1-byte G set -> G0
         case 0x00000024: { // 2-byte G set -> G0
-            _G0 = finalToCharMap(F, true);
+            _G[0] = finalToCharMap(F, true);
             return true;
         }
         case 0x00000029:   // 1-byte G set -> G1
         case 0x00002429: { // 2-byte G set -> G1
-            _G1 = finalToCharMap(F, true);
+            _G[1] = finalToCharMap(F, true);
             return true;
         }
         case 0x0000002A:   // 1-byte G set -> G2
         case 0x0000242A: { // 2-byte G set -> G2
-            _G2 = finalToCharMap(F, true);
+            _G[2] = finalToCharMap(F, true);
             return true;
         }
         case 0x0000002B:   // 1-byte G set -> G3
         case 0x0000242B: { // 2-byte G set -> G3
-            _G3 = finalToCharMap(F, true);
+            _G[3] = finalToCharMap(F, true);
             return true;
         }
         case 0x00002820:   // 1-byte DRCS -> G0
         case 0x00242820: { // 2-byte DRCS -> G0
-            _G0 = finalToCharMap(F, false);
+            _G[0] = finalToCharMap(F, false);
             return true;
         }
         case 0x00002920:   // 1-byte DRCS -> G1
         case 0x00242920: { // 2-byte DRCS -> G1
-            _G1 = finalToCharMap(F, false);
+            _G[1] = finalToCharMap(F, false);
             return true;
         }
         case 0x00002A20:   // 1-byte DRCS -> G2
         case 0x00242A20: { // 2-byte DRCS -> G2
-            _G2 = finalToCharMap(F, false);
+            _G[2] = finalToCharMap(F, false);
             return true;
         }
         case 0x00002B20:   // 1-byte DRCS -> G3
         case 0x00242B20: { // 2-byte DRCS -> G3
-            _G3 = finalToCharMap(F, false);
+            _G[3] = finalToCharMap(F, false);
             return true;
         }
         default: {
@@ -587,8 +587,8 @@ ts::ARIBCharset::Encoder::Encoder(uint8_t*& out, size_t& out_size, const UChar*&
        ALPHANUMERIC_MAP.selector1,
        HIRAGANA_MAP.selector1,
        KATAKANA_MAP.selector1},
-    _GL(_G[0]),
-    _GR(_G[2]),
+    _GL(0),  // G0 -> GL
+    _GR(2),  // G2 -> GR
     _GL_last(true),
     _Gn_history(0x3210) // G3=oldest, G0=last-used
 {
@@ -637,7 +637,7 @@ ts::ARIBCharset::Encoder::Encoder(uint8_t*& out, size_t& out_size, const UChar*&
             assert(cp >= enc.code_point);
             assert(cp < enc.code_point + enc.count());
             assert(cp - enc.code_point + enc.index() <= GL_LAST);
-            const uint8_t mask = enc.selectorF() == _GR ? 0x80 : 0x00;
+            const uint8_t mask = enc.selectorF() == _G[_GR] ? 0x80 : 0x00;
             if (enc.byte2()) {
                 // 2-byte character set, insert row first.
                 assert(out_size >= 2);
@@ -675,7 +675,7 @@ bool ts::ARIBCharset::Encoder::selectCharSet(uint8_t*& out, size_t& out_size, co
     size_t seq_size = 0;
 
     // There is some switching sequence to add only if the charset is neither in GL nor GR.
-    if (F != _GL && F != _GR) {
+    if (F != _G[_GL] && F != _G[_GR]) {
         // If the charset is not in G0-G3, we need to load it in one of them.
         if (F != _G[0] && F != _G[1] && F != _G[2] && F != _G[3]) {
             seq_size = selectG0123(seq, F, enc.byte2());
@@ -696,7 +696,7 @@ bool ts::ARIBCharset::Encoder::selectCharSet(uint8_t*& out, size_t& out_size, co
     }
 
     // Keep track of last GL/GR used.
-    _GL_last = _GL == F;
+    _GL_last = _G[_GL] == F;
     return true;
 }
 
@@ -710,32 +710,32 @@ size_t ts::ARIBCharset::Encoder::selectGLR(uint8_t* seq, uint8_t F)
     // If GL was last used, use GR and vice versa.
     if (F == _G[0]) {
         // G0 can be routed to GL only.
-        _GL = F;
+        _GL = 0;
         seq[0] = LS0;
         return 1;
     }
     else if (F == _G[1]) {
         if (_GL_last) {
-            _GR = F;
+            _GR = 1;
             seq[0] = ESC; seq[1] = 0x7E;
             return 2;
 
         }
         else {
-            _GL = F;
+            _GL = 1;
             seq[0] = LS1;
             return 1;
         }
     }
     else if (F == _G[2]) {
         if (_GL_last) {
-            _GR = F;
+            _GR = 2;
             seq[0] = ESC; seq[1] = 0x7D;
             return 2;
 
         }
         else {
-            _GL = F;
+            _GL = 2;
             seq[0] = ESC; seq[1] = 0x6E;
             return 2;
         }
@@ -743,12 +743,12 @@ size_t ts::ARIBCharset::Encoder::selectGLR(uint8_t* seq, uint8_t F)
     else {
         assert(F == _G[3]);
         if (_GL_last) {
-            _GR = F;
+            _GR = 3;
             seq[0] = ESC; seq[1] = 0x7C;
             return 2;
         }
         else {
-            _GL = F;
+            _GL = 3;
             seq[0] = ESC; seq[1] = 0x6F;
             return 2;
         }
