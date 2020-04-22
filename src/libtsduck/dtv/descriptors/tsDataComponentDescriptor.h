@@ -28,20 +28,47 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an ISDB data_component_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 21
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1721
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+
+    //!
+    //! Representation of an ISDB data_component_descriptor.
+    //! @see ARIB STD-B10, Part 2, 6.2.20
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL DataComponentDescriptor : public AbstractDescriptor
+    {
+    public:
+        // DataComponentDescriptor public members:
+        uint16_t  data_component_id;               //!< Data componenent id as defined in ARIB STD-B10, Part 2, Annex J.
+        ByteBlock additional_data_component_info;  //!< Additional info, depends on id.
+
+        //!
+        //! Default constructor.
+        //!
+        DataComponentDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        DataComponentDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+    };
+}

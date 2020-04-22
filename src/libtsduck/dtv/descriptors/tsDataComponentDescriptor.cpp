@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsISDBAccessControlDescriptor.h"
+#include "tsDataComponentDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
@@ -35,32 +35,30 @@
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"ISDB_access_control_descriptor"
-#define MY_DID ts::DID_ISDB_CA
+#define MY_XML_NAME u"data_component_descriptor"
+#define MY_DID ts::DID_ISDB_DATA_COMP
 #define MY_PDS ts::PDS_ISDB
 #define MY_STD ts::STD_ISDB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::ISDBAccessControlDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::ISDBAccessControlDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_FACTORY_REGISTER(ts::ISDBAccessControlDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_XML_DESCRIPTOR_FACTORY(ts::DataComponentDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::DataComponentDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_FACTORY_REGISTER(ts::DataComponentDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
 
 
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::ISDBAccessControlDescriptor::ISDBAccessControlDescriptor(uint16_t method, PID p) :
+ts::DataComponentDescriptor::DataComponentDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    CA_system_id(method),
-    transmission_type(7), // broadcast route
-    pid(p),
-    private_data()
+    data_component_id(0),
+    additional_data_component_info()
 {
     _is_valid = true;
 }
 
-ts::ISDBAccessControlDescriptor::ISDBAccessControlDescriptor(DuckContext& duck, const Descriptor& desc) :
-    ISDBAccessControlDescriptor()
+ts::DataComponentDescriptor::DataComponentDescriptor(DuckContext& duck, const Descriptor& desc) :
+    DataComponentDescriptor()
 {
     deserialize(duck, desc);
 }
@@ -70,12 +68,11 @@ ts::ISDBAccessControlDescriptor::ISDBAccessControlDescriptor(DuckContext& duck, 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ISDBAccessControlDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DataComponentDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(CA_system_id);
-    bbp->appendUInt16(uint16_t(uint16_t(transmission_type & 0x07) << 13) | pid);
-    bbp->append(private_data);
+    bbp->appendUInt16(data_component_id);
+    bbp->append(additional_data_component_info);
     serializeEnd(desc, bbp);
 }
 
@@ -84,17 +81,15 @@ void ts::ISDBAccessControlDescriptor::serialize(DuckContext& duck, Descriptor& d
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISDBAccessControlDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DataComponentDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4;
+    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 2;
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();
         size_t size = desc.payloadSize();
-        CA_system_id = GetUInt16(data);
-        transmission_type = (data[2] >> 5) & 0x07;
-        pid = GetUInt16(data + 2) & 0x1FFF;
-        private_data.copy(data + 4, size - 4);
+        data_component_id = GetUInt16(data);
+        additional_data_component_info.copy(data + 2, size - 2);
     }
 }
 
@@ -103,9 +98,9 @@ void ts::ISDBAccessControlDescriptor::deserialize(DuckContext& duck, const Descr
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ISDBAccessControlDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DataComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    if (size < 4) {
+    if (size < 2) {
         display.displayExtraData(data, size, indent);
     }
     else {
@@ -113,21 +108,10 @@ void ts::ISDBAccessControlDescriptor::DisplayDescriptor(TablesDisplay& display, 
         std::ostream& strm(duck.out());
         const std::string margin(indent, ' ');
 
-        // Extract common part
-        const uint16_t casid = GetUInt16(data);
-        const uint8_t type = (data[2] >> 5) & 0x07;
-        uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
-        const UChar* const dtype = tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA");
-        data += 4; size -= 4;
-
-        strm << margin << "CA System Id: " << names::CASId(duck, casid, names::FIRST) << std::endl
-             << margin << "Transmission type: " << NameFromSection(u"ISDBCATransmissionType", type, names::DECIMAL_FIRST) << std::endl
-             << margin << UString::Format(u"%s PID: 0x%X (%d)", {dtype, pid, pid}) << std::endl;
-
-        // CA private part.
-        if (size > 0) {
-            strm << margin << "Private CA data:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
+        strm << margin << "Data component id: " << NameFromSection(u"ISDBDataComponentId", GetUInt16(data), names::HEXA_FIRST) << std::endl;
+        if (size > 2) {
+            strm << margin << "Additional data component info:" << std::endl
+                 << UString::Dump(data + 2, size - 2, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
         }
     }
 }
@@ -137,13 +121,11 @@ void ts::ISDBAccessControlDescriptor::DisplayDescriptor(TablesDisplay& display, 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ISDBAccessControlDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::DataComponentDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"CA_system_id", CA_system_id, true);
-    root->setIntAttribute(u"transmission_type", transmission_type);
-    root->setIntAttribute(u"PID", pid, true);
-    if (!private_data.empty()) {
-        root->addElement(u"private_data")->addHexaText(private_data);
+    root->setIntAttribute(u"data_component_id", data_component_id, true);
+    if (!additional_data_component_info.empty()) {
+        root->addElement(u"additional_data_component_info")->addHexaText(additional_data_component_info);
     }
 }
 
@@ -152,12 +134,10 @@ void ts::ISDBAccessControlDescriptor::buildXML(DuckContext& duck, xml::Element* 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISDBAccessControlDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::DataComponentDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
-        element->getIntAttribute<uint8_t>(transmission_type, u"transmission_type", false, 7, 0, 7) &&
-        element->getIntAttribute<PID>(pid, u"PID", true, 0, 0x0000, 0x1FFF) &&
-        element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 4);
+        element->getIntAttribute<uint16_t>(data_component_id, u"data_component_id", true) &&
+        element->getHexaTextChild(additional_data_component_info, u"additional_data_component_info", false, 0, MAX_DESCRIPTOR_SIZE - 2);
 }
