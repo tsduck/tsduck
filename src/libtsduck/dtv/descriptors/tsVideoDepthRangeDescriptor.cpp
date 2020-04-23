@@ -187,9 +187,8 @@ void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& display, DI
                 break;
             default:
                 ok = size >= len;
-                if (ok && len > 0) {
-                    strm << margin << "  Range selector bytes:" << std::endl
-                         << UString::Dump(data, len, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
+                if (ok) {
+                    display.displayPrivateData(u"Range selector bytes", data, len, indent + 2);
                     data += len; size -= len;
                 }
                 break;

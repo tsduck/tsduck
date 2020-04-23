@@ -171,21 +171,14 @@ void ts::DVBAC4Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, co
         }
         if ((flags & 0x40) != 0 && size >= 1) {
             const size_t toc_size = std::min<size_t>(data[0], size - 1);
-            if (toc_size > 0) {
-                strm << margin << "AC-4 TOC (in DSI):" << std::endl
-                     << UString::Dump(data + 1, toc_size, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
-
-            }
+            display.displayPrivateData(u"AC-4 TOC (in DSI)", data + 1, toc_size, indent);
             data += 1 + toc_size; size -= 1 + toc_size;
         }
-        if (size > 0) {
-            strm << margin << "Additional information:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
-            data += size; size = 0;
-        }
+        display.displayPrivateData(u"Additional information", data, size, indent);
     }
-
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }
 
 

@@ -105,15 +105,12 @@ void ts::CarouselIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display,
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
-        strm << margin << UString::Format(u"Carousel id: 0x%X (%d)", {GetUInt32(data), GetUInt32(data)}) << std::endl;
-        if (size > 4) {
-            strm << margin << "Private data:" << std::endl
-                 << UString::Dump(data + 4, size - 4, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-        }
-        size = 0;
+        strm << margin << UString::Format(u"Carousel id: 0x%X (%d)", { GetUInt32(data), GetUInt32(data) }) << std::endl;
+        display.displayPrivateData(u"Private data", data + 4, size - 4, indent);
     }
-
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }
 
 

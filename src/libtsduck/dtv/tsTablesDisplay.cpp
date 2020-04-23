@@ -141,6 +141,29 @@ std::ostream& ts::TablesDisplay::displayExtraData(const void* data, size_t size,
 
 
 //----------------------------------------------------------------------------
+// A utility method to dump private binary data in a descriptor or section.
+//----------------------------------------------------------------------------
+
+std::ostream& ts::TablesDisplay::displayPrivateData(const UString& title, const void* data, size_t size, int indent, size_t single_line_max)
+{
+    std::ostream& strm(_duck.out());
+    const std::string margin(indent, ' ');
+
+    if (size > single_line_max) {
+        strm << margin << title << " (" << size << " bytes):" << std::endl
+             << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, indent + 2, 16);
+    }
+    else if (size > 0) {
+        strm << margin << title << " (" << size << " bytes): "
+             << UString::Dump(data, size, UString::SINGLE_LINE)
+             << std::endl;
+    }
+
+    return strm;
+}
+
+
+//----------------------------------------------------------------------------
 // Display a table on the output stream.
 //----------------------------------------------------------------------------
 

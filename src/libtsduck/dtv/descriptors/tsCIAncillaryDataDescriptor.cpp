@@ -126,12 +126,5 @@ void ts::CIAncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& display, DI
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-
-    if (size > 0) {
-        strm << margin << "Ancillary data:" << std::endl
-             << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-    }
+    display.displayPrivateData(u"Ancillary data", data, size, indent);
 }

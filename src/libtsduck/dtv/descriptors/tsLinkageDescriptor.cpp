@@ -369,14 +369,11 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         }
 
         // Remaining private data
-        if (size > 0) {
-            strm << margin << "Private data:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-            data += size; size = 0;
-        }
+        display.displayPrivateData(u"Private data", data, size, indent);
     }
-
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }
 
 
@@ -451,10 +448,7 @@ void ts::LinkageDescriptor::DisplayPrivateSSU(TablesDisplay& display, const uint
         }
         data += slength; size -= slength; dlength -= slength;
         strm << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl;
-        if (slength > 0) {
-            strm << margin << "Selector data:" << std::endl
-                 << UString::Dump(sdata, slength, UString::HEXA | UString::ASCII, indent);
-        }
+        display.displayPrivateData(u"Selector data", sdata, slength, indent);
     }
 }
 

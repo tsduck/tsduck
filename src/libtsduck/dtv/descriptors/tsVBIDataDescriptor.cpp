@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a VBI_data_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsVBIDataDescriptor.h"
 #include "tsDescriptor.h"
@@ -125,9 +121,8 @@ void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
                 strm << margin << "Field parity: " << int(field_parity) << ", line offset: " << int(line_offset) << std::endl;
             }
         }
-        else if (length > 0) {
-            strm << margin << "Associated data:" << std::endl
-                << UString::Dump(data, length, UString::HEXA | UString::ASCII, indent);
+        else {
+            display.displayPrivateData(u"Associated data", data, length, indent);
             data += length; size -= length;
         }
     }

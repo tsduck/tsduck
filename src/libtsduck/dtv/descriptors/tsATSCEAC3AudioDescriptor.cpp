@@ -361,8 +361,7 @@ void ts::ATSCEAC3AudioDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
             data += 3; size -= 3;
         }
         if (size > 0) {
-            strm << margin << "Additional information:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
+            display.displayPrivateData(u"Additional information", data, size, indent);
             data += size; size = 0;
         }
     }

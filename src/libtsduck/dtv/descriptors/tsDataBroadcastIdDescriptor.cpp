@@ -159,15 +159,8 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& display,
 
 void ts::DataBroadcastIdDescriptor::DisplaySelectorGeneric(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-
-    if (size > 0) {
-        strm << margin << "Data Broadcast selector:" << std::endl
-             << UString::Dump(data, size, UString::HEXA | UString::ASCII, indent);
-        data += size; size = 0;
-    }
+    display.displayPrivateData(u"Data Broadcast selector", data, size, indent);
+    data += size; size = 0;
 }
 
 
@@ -225,23 +218,18 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& display, c
             strm << UString::Format(u"%d (0x%02X)", {upd_version, upd_version});
         }
         strm << std::endl;
-        if (slength > 0) {
-            strm << margin << "  Selector data:" << std::endl
-                << UString::Dump(sdata, slength, UString::HEXA | UString::ASCII, indent + 2);
-        }
+        display.displayPrivateData(u"Selector data", sdata, slength, indent + 2);
     }
 
     // Extraneous data in OUI_loop:
     if (dlength > 0) {
-        strm << margin << "Extraneous data in OUI loop:" << std::endl
-             << UString::Dump(data, dlength, UString::HEXA | UString::ASCII, indent);
+        display.displayPrivateData(u"Extraneous data in OUI loop", data, dlength, indent);
         data += dlength; size -= dlength;
     }
 
     // Private data
     if (size > 0) {
-        strm << margin << "Private data:" << std::endl
-             << UString::Dump(data, size, UString::HEXA | UString::ASCII, indent);
+        display.displayPrivateData(u"Private data", data, size, indent);
         data += size; size = 0;
     }
 }
@@ -307,17 +295,12 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& display, c
 
     // Extraneous data in Platform id loop:
     if (dlength > 0) {
-        strm << margin << "Extraneous data in platform_id loop:" << std::endl
-             << UString::Dump(data, dlength, UString::HEXA | UString::ASCII, indent);
+        display.displayPrivateData(u"Extraneous data in platform_id loop", data, dlength, indent);
         data += dlength; size -= dlength;
     }
 
     // Private data
-    if (size > 0) {
-        strm << margin << "Private data:" << std::endl
-             << UString::Dump(data, size, UString::HEXA | UString::ASCII, indent);
-        data += size; size = 0;
-    }
+    display.displayPrivateData(u"Private data", data, size, indent);
 }
 
 

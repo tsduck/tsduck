@@ -137,9 +137,6 @@ void ts::DTSNeuralDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
         const std::string margin(indent, ' ');
 
         strm << margin << UString::Format(u"Config Id: 0x%X (%d))", {data[0], data[0]}) << std::endl;
-        if (size > 1) {
-            strm << margin << "Additional info:" << std::endl
-                 << UString::Dump(data + 1, size - 1, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-        }
+        display.displayPrivateData(u"Additional info", data + 1, size - 1, indent);
     }
 }

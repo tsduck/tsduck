@@ -135,14 +135,11 @@ void ts::IPMACGenericStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& 
              << margin << UString::Format(u"Modulation system type: 0x%X (%s)", {systype, ModulationTypeNames.name(systype)}) << std::endl
              << margin << UString::Format(u"Modulation system id: 0x%X (%d)", {sysid, sysid}) << std::endl
              << margin << UString::Format(u"Physical stream id: 0x%X (%d)", {strid, strid}) << std::endl;
-        if (size > 7) {
-            strm << margin << "Selector bytes:" << std::endl
-                 << UString::Dump(data + 7, size - 7, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-        }
-        data += size; size = 0;
+        display.displayPrivateData(u"Selector bytes", data + 7, size - 7, indent);
     }
-
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }
 
 

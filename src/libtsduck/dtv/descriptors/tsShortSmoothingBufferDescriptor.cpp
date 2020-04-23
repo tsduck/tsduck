@@ -108,10 +108,7 @@ void ts::ShortSmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& displa
     if (size >= 1) {
         strm << margin << UString::Format(u"Smoothing buffer size: %s", {NameFromSection(u"SmoothingBufferSize", (data[0] >> 6) & 0x03, names::FIRST)}) << std::endl
              << margin << UString::Format(u"Smoothing buffer leak rate: %s", {NameFromSection(u"SmoothingBufferLeakRate", data[0] & 0x3F, names::FIRST)}) << std::endl;
-        if (size > 1) {
-            strm << margin << "DVB-reserved data:" << std::endl
-                 << UString::Dump(data + 1, size - 1, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-        }
+        display.displayPrivateData(u"DVB-reserved data", data + 1, size - 1, indent);
     }
 }
 

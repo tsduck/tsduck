@@ -136,12 +136,11 @@ void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
             data += 2; size -= 2;
             strm << margin << UString::Format(u"Min polling interval: %d (%d seconds)", {interval, 2 * interval}) << std::endl;
         }
-        if (size > 0) {
-            strm << margin << "Private data:" << std::endl << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-            size = 0;
-        }
+        display.displayPrivateData(u"Private data", data, size, indent);
     }
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }
 
 

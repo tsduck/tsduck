@@ -141,9 +141,7 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
                 disp(display, data, size, indent, tid);
             }
             else {
-                // Hexa display of the private part.
-                strm << margin << "Private CA data:" << std::endl
-                     << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
+                display.displayPrivateData(u"Private CA data", data, size, indent);
             }
         }
     }

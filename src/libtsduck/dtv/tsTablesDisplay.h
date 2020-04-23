@@ -183,6 +183,18 @@ namespace ts {
         virtual std::ostream& displayExtraData(const void *data, size_t size, int indent = 0);
 
         //!
+        //! A utility method to dump private binary data in a descriptor or section.
+        //! @param [in] title Name of the private data to display.
+        //! @param [in] data Address of data to dump.
+        //! @param [in] size Size of data to dump.
+        //! @param [in] indent Indentation width.
+        //! @param [in] single_line_max Below that size, private data are displayed on one
+        //! line after the title. Above that size, a multi-line hexa/ascii display is used.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displayPrivateData(const UString& title, const void* data, size_t size, int indent = 0, size_t single_line_max = 8);
+
+        //!
         //! Display the content of an unknown section.
         //! The command-line formatting options are used to analyze the content.
         //! @param [in] section The section to display.

@@ -151,10 +151,7 @@ void ts::SchedulingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
              << margin << UString::Format(u"Period: %d %ss", {data[11], SchedulingUnitNames.name((data[10] >> 4) & 0x03)}) << std::endl
              << margin << UString::Format(u"Duration: %d %ss", {data[12], SchedulingUnitNames.name((data[10] >> 2) & 0x03)}) << std::endl
              << margin << UString::Format(u"Estimated cycle time: %d %ss", {data[13], SchedulingUnitNames.name(data[10] & 0x03)}) << std::endl;
-        if (size > 14) {
-            strm << margin << "Private data:" << std::endl
-                 << UString::Dump(data + 14, size - 14, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-        }
+        display.displayPrivateData(u"Private data", data + 14, size - 14, indent);
     }
     else {
         display.displayExtraData(data, size, indent);

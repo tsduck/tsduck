@@ -141,15 +141,10 @@ void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
         std::ostream& strm(duck.out());
         const std::string margin(indent, ' ');
 
-        uint16_t id = GetUInt16(data);
-        uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
+        const uint16_t id = GetUInt16(data);
+        const uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
         strm << margin << UString::Format(u"CP System Id: %s, CP PID: %d (0x%X)", {NameFromSection(u"CPSystemId", id, names::FIRST), pid, pid}) << std::endl;
-
-        // CA private part.
-        if (size > 4) {
-            strm << margin << "Private CP data:" << std::endl
-                 << UString::Dump(data + 4, size - 4, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-        }
+        display.displayPrivateData(u"Private CP data", data + 4, size - 4, indent);
     }
     else {
         display.displayExtraData(data, size, indent);

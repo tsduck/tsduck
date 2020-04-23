@@ -130,11 +130,7 @@ void ts::SSULocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
             data += 2; size -= 2;
             strm << margin << UString::Format(u"Association tag: 0x%X (%d)", {tag, tag}) << std::endl;
         }
-
-        if (size > 0) {
-            strm << margin << "Private data:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-        }
+        display.displayPrivateData(u"Private data", data, size, indent);
     }
     else {
         display.displayExtraData(data, size, indent);

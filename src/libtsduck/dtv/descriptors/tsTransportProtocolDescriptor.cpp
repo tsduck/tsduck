@@ -398,11 +398,8 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, 
                 break;
             }
             default: {
-                strm << margin << UString::Format(u"Selector: %d bytes", {size}) << std::endl;
-                if (size > 0) {
-                    strm << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
-                    data += size; size = 0;
-                }
+                display.displayPrivateData(u"Selector", data, size, indent);
+                break;
             }
         }
     }

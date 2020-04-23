@@ -140,15 +140,11 @@ void ts::ECMRepetitionRateDescriptor::DisplayDescriptor(TablesDisplay& display, 
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
-        strm << margin << UString::Format(u"CA System Id: %s", {names::CASId(duck, GetUInt16(data), names::FIRST)}) << std::endl
-             << margin << UString::Format(u"ECM repetition rate: %d ms", {GetUInt16(data + 2)}) << std::endl;
-        data += 4; size -= 4;
-        if (size > 0) {
-            strm << margin << "Private data:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-            data += size; size = 0;
-        }
+        strm << margin << UString::Format(u"CA System Id: %s", { names::CASId(duck, GetUInt16(data), names::FIRST) }) << std::endl
+             << margin << UString::Format(u"ECM repetition rate: %d ms", { GetUInt16(data + 2) }) << std::endl;
+        display.displayPrivateData(u"Private data", data + 4, size - 4, indent);
     }
-
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }
