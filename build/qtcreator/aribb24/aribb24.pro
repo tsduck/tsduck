@@ -1,3 +1,3 @@
 CONFIG += util
-TARGET = aribb24codegen
+TARGET = aribb24
 include(../tsduck.pri)

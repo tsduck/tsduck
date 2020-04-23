@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 // Automatically generated file, do not modify.
-// See internal tool aribb24codegen in src/utils.
+// See internal tool aribb24 in src/utils.
 // Generated 2020/04/15
 
 #include "tsARIBCharset.h"
