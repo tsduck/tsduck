@@ -30,8 +30,8 @@
 //  This program is used to generate the encoding tables for ARIB STD-B24
 //  character sets. See class ts::ARIBCharset.
 //
-//  Running aribb24codegen is done only once or each time the decoding tables
-//  are updated in ARIBCharset. The output of aribb24codegen is C++ source
+//  Running aribb24 is done only once or each time the decoding tables
+//  are updated in ARIBCharset. The output of aribb24 is C++ source
 //  code which is archived in the git repository and never modified.
 //
 //----------------------------------------------------------------------------
@@ -240,7 +240,7 @@ void ts::ARIBCharsetCodeGenerator::generateFile(std::ostream& out)
 {
     // Source file header.
     out << "// Automatically generated file, do not modify." << std::endl
-        << "// See internal tool aribb24codegen in src/utils." << std::endl
+        << "// See internal tool aribb24 in src/utils." << std::endl
         << "// Generated " << Time::CurrentLocalTime().format(Time::DATE) << std::endl
         << std::endl
         << "#include \"tsARIBCharset.h\""<< std::endl

@@ -6,7 +6,7 @@
   </ImportGroup>
 
   <ItemGroup>
-    <ClCompile Include="..\..\src\utils\aribb24codegen.cpp" />
+    <ClCompile Include="..\..\src\utils\aribb24.cpp" />
   </ItemGroup>
 
   <PropertyGroup Label="Globals">
