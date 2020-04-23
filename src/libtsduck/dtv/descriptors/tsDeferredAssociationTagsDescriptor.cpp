@@ -134,7 +134,7 @@ void ts::DeferredAssociationTagsDescriptor::DisplayDescriptor(TablesDisplay& dis
         if (size >= 4 && len == 0) {
             strm << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
                  << margin << UString::Format(u"Program number: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl;
-            display.displayPrivateData(u"Private data", data + 4, size + 4, indent);
+            display.displayPrivateData(u"Private data", data + 4, size - 4, indent);
             size = 0;
         }
     }
@@ -154,9 +154,7 @@ void ts::DeferredAssociationTagsDescriptor::buildXML(DuckContext& duck, xml::Ele
     for (auto it = association_tags.begin(); it != association_tags.end(); ++it) {
         root->addElement(u"association")->setIntAttribute(u"tag", *it, true);
     }
-    if (!private_data.empty()) {
-        root->addElement(u"private_data")->addHexaText(private_data);
-    }
+    root->addHexaTextChild(u"private_data", private_data, true);
 }
 
 

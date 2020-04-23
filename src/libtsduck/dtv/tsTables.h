@@ -260,6 +260,7 @@
 #include "tsTransportProfileDescriptor.h"
 #include "tsTransportProtocolDescriptor.h"
 #include "tsTransportStreamDescriptor.h"
+#include "tsTSInformationDescriptor.h"
 #include "tsUpdateDescriptor.h"
 #include "tsURILinkageDescriptor.h"
 #include "tsVBIDataDescriptor.h"

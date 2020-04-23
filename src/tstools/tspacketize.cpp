@@ -76,6 +76,8 @@ Options::Options(int argc, char *argv[]) :
     infiles(),
     inType(ts::SectionFile::UNSPECIFIED)
 {
+    duck.defineArgsForCharset(*this);
+
     option(u"", 0, STRING);
     help(u"",
          u"Input binary or XML files containing one or more sections or tables. By default, "
@@ -123,6 +125,7 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
+    duck.loadArgs(*this);
     continuous = present(u"continuous");
     if (present(u"stuffing")) {
         stuffing_policy = ts::CyclingPacketizer::ALWAYS;

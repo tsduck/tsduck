@@ -302,6 +302,24 @@ ts::xml::Text* ts::xml::Element::addHexaText(const void* data, size_t size)
 
 
 //----------------------------------------------------------------------------
+// Add a new child element containing an hexadecimal data text.
+//----------------------------------------------------------------------------
+
+ts::xml::Text* ts::xml::Element::addHexaTextChild(const UString& name, const void* data, size_t size, bool onlyNotEmpty)
+{
+    if (data == nullptr) {
+        size = 0;
+    }
+    return size == 0 && onlyNotEmpty ? nullptr : addElement(name)->addHexaText(data, size);
+}
+
+ts::xml::Text* ts::xml::Element::addHexaTextChild(const UString& name, const ByteBlock& data, bool onlyNotEmpty)
+{
+    return data.empty() && onlyNotEmpty ? nullptr : addElement(name)->addHexaText(data.data(), data.size());
+}
+
+
+//----------------------------------------------------------------------------
 // Attribute map management.
 //----------------------------------------------------------------------------
 
