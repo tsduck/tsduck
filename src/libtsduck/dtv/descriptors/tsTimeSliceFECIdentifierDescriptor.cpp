@@ -199,12 +199,9 @@ void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp
         }
         strm << std::endl
              << margin << UString::Format(u"Time slice FEC id: 0x%X (%d)", {time_slice_fec_id, time_slice_fec_id}) << std::endl;
-        if (size > 0) {
-            strm << margin << "Id selector bytes:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-            data += size; size = 0;
-        }
+        display.displayPrivateData(u"Id selector bytes", data, size, indent);
     }
-
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }

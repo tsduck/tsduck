@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a supplementary_audio_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsSupplementaryAudioDescriptor.h"
 #include "tsDescriptor.h"
@@ -201,12 +197,9 @@ void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& display,
             strm << margin << "Language: " << DeserializeLanguageCode(data) << std::endl;
             data += 3; size -= 3;
         }
-        if (size > 0) {
-            strm << margin << "Private data:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-            data += size; size = 0;
-        }
+        display.displayPrivateData(u"Private data", data, size, indent);
     }
-
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }

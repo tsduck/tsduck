@@ -348,9 +348,8 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& display,
         }
 
         // Trailing info.
-        if (ok && size > 0) {
-            strm << margin << "Additional information:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
+        if (ok) {
+            display.displayPrivateData(u"Additional information", data, size, indent);
             data += size; size = 0;
         }
     }

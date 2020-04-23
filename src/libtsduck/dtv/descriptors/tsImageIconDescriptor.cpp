@@ -216,8 +216,7 @@ void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
                     const size_t len = data[0];
                     ok = size > len;
                     if (ok) {
-                        strm << margin << "Icon data: " << len << " bytes:" << std::endl
-                             << UString::Dump(data + 1, len, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
+                        display.displayPrivateData(u"Icon data", data + 1, len, indent);
                         data += len + 1; size -= len + 1;
                     }
                 }
@@ -230,8 +229,7 @@ void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
             const size_t len = data[0];
             ok = size > len;
             if (ok) {
-                strm << margin << "Icon data: " << len << " bytes:" << std::endl
-                     << UString::Dump(data + 1, len, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
+                display.displayPrivateData(u"Icon data", data + 1, len, indent);
                 data += len + 1; size -= len + 1;
             }
         }

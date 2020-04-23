@@ -109,10 +109,7 @@ void ts::DataComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
         const std::string margin(indent, ' ');
 
         strm << margin << "Data component id: " << NameFromSection(u"ISDBDataComponentId", GetUInt16(data), names::HEXA_FIRST) << std::endl;
-        if (size > 2) {
-            strm << margin << "Additional data component info:" << std::endl
-                 << UString::Dump(data + 2, size - 2, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-        }
+        display.displayPrivateData(u"Additional data component info", data + 2, size - 2, indent);
     }
 }
 

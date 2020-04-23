@@ -255,14 +255,11 @@ void ts::DVBEnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID
             data++; size--;
             strm << margin << "Substream 3: " << names::AC3ComponentType(type, names::FIRST) << std::endl;
         }
-        if (size > 0) {
-            strm << margin << "Additional information:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-            data += size; size = 0;
-        }
+        display.displayPrivateData(u"Additional information", data, size, indent);
     }
-
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }
 
 

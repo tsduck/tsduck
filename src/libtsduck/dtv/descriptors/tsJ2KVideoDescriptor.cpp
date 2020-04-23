@@ -157,10 +157,7 @@ void ts::J2KVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
              << margin << UString::Format(u"Still mode: %s", {still_mode}) << std::endl
              << margin << UString::Format(u"Interlaced video: %s", {interlaced_video}) << std::endl;
 
-        if (size > 0) {
-            strm << margin << "Private data:" << std::endl
-                 << UString::Dump(data + 24, size - 24, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-        }
+        display.displayPrivateData(u"Private data", data + 24, size - 24, indent);
     }
     else {
         display.displayExtraData(data, size, indent);

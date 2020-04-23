@@ -117,26 +117,17 @@ void ts::StreamEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
+    const std::string margin(indent, ' ');
 
     if (size >= 10) {
-        const std::string margin(indent, ' ');
-
-        // Extract common part
         const uint16_t id = GetUInt16(data);
         const uint64_t npt = GetUInt64(data + 2) & TS_UCONST64(0x00000001FFFFFFFF);
-        data += 10; size -= 10;
-
         strm << margin << UString::Format(u"Event id: 0x%X (%d), NPT: 0x%09X (%d)", {id, id, npt, npt}) << std::endl;
-
-        // Private part.
-        if (size > 0) {
-            strm << margin << "Private data:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-            data += size; size = 0;
-        }
+        display.displayPrivateData(u"Private data", data + 10, size - 10, indent);
     }
-
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }
 
 

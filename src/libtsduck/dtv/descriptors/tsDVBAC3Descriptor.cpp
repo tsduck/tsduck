@@ -168,7 +168,7 @@ void ts::DVBAC3Descriptor::deserialize(DuckContext& duck, const Descriptor& desc
             asvc = *data;
             data++; size--;
         }
-        additional_info.copy (data, size);
+        additional_info.copy(data, size);
     }
 }
 
@@ -206,14 +206,11 @@ void ts::DVBAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, co
             data++; size--;
             strm << margin << UString::Format(u"Associated to: 0x%X", {asvc}) << std::endl;
         }
-        if (size > 0) {
-            strm << margin << "Additional information:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-            data += size; size = 0;
-        }
+        display.displayPrivateData(u"Additional information", data, size, indent);
     }
-
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }
 
 

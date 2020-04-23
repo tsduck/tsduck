@@ -128,18 +128,12 @@ void ts::AssociationTagDescriptor::DisplayDescriptor(TablesDisplay& display, DID
         data += 5; size -= 5;
 
         strm << margin << UString::Format(u"Association tag: 0x%X (%d), use: 0x%X (%d)", {tag, tag, use, use}) << std::endl;
-        if (len > 0) {
-            strm << margin << "Selector bytes:" << std::endl
-                 << UString::Dump(data, len, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-        }
-        if (size > len) {
-            strm << margin << "Private data:" << std::endl
-                 << UString::Dump(data + len, size - len, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-        }
-        size = 0;
+        display.displayPrivateData(u"Selector bytes", data, len, indent);
+        display.displayPrivateData(u"Private data", data + len, size - len, indent);
     }
-
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }
 
 

@@ -127,10 +127,7 @@ void ts::ApplicationIconsDescriptor::DisplayDescriptor(TablesDisplay& display, D
                     strm << margin << "  - " << NameFromSection(u"ApplicationIconFlags", mask) << std::endl;
                 }
             }
-            if (size > 2) {
-                strm << margin << "Reserved bytes:" << std::endl
-                     << UString::Dump(data + 2, size - 2, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
-            }
+            display.displayPrivateData(u"Reserved bytes", data + 2, size - 2, indent);
         }
     }
 }

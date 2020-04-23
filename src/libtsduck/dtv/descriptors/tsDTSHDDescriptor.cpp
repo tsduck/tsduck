@@ -291,11 +291,9 @@ void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, con
             DisplaySubstreamInfo(display, (flags & 0x40) != 0, indent, u"0", data, size) &&
             DisplaySubstreamInfo(display, (flags & 0x20) != 0, indent, u"1", data, size) &&
             DisplaySubstreamInfo(display, (flags & 0x10) != 0, indent, u"2", data, size) &&
-            DisplaySubstreamInfo(display, (flags & 0x08) != 0, indent, u"3", data, size) &&
-            size > 0)
+            DisplaySubstreamInfo(display, (flags & 0x08) != 0, indent, u"3", data, size))
         {
-            strm << margin << "Additional information:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
+            display.displayPrivateData(u"Additional information", data, size, indent);
             data += size; size = 0;
         }
     }

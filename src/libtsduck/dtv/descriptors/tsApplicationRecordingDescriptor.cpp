@@ -226,17 +226,9 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& displa
     if (valid) {
         uint8_t count = data[0];
         data++; size--;
-        if (count > 0) {
-            strm << margin << "Private data:" << std::endl
-                 << UString::Dump(data, count, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
-        }
-        data += count;
-        size -= count;
-    }
-
-    if (valid && size > 0) {
-        strm << margin << "Reserved bytes:" << std::endl
-             << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
+        display.displayPrivateData(u"Private data", data, count, indent);
+        data += count; size -= count;
+        display.displayPrivateData(u"Reserved bytes", data, size, indent);
         size = 0;
     }
 

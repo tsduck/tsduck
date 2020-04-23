@@ -124,11 +124,7 @@ void ts::ISDBAccessControlDescriptor::DisplayDescriptor(TablesDisplay& display, 
              << margin << "Transmission type: " << NameFromSection(u"ISDBCATransmissionType", type, names::DECIMAL_FIRST) << std::endl
              << margin << UString::Format(u"%s PID: 0x%X (%d)", {dtype, pid, pid}) << std::endl;
 
-        // CA private part.
-        if (size > 0) {
-            strm << margin << "Private CA data:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-        }
+        display.displayPrivateData(u"Private CA data", data, size, indent);
     }
 }
 

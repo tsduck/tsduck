@@ -279,15 +279,11 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& 
                     (!num || DisplayChannel(display, u"Channel bond 1", data, size, indent));
             }
         }
-
-        if (size > 0) {
-            strm << margin << "Reserved for future use: " << size << " bytes:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-            data += size; size = 0;
-        }
+        display.displayPrivateData(u"Reserved for future use", data, size, indent);
     }
-
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }
 
 // Display a channel description.

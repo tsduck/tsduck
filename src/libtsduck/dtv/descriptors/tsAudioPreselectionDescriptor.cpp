@@ -290,8 +290,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
                 const size_t len = valid ? (data[0] & 0x1F) : 0;
                 valid = valid && size >= 1 + len;
                 if (valid) {
-                    strm << margin << "  Future extension:" << std::endl
-                         << UString::Dump(data + 1, len, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 4);
+                    display.displayPrivateData(u"Future extension", data + 1, len, indent + 2);
                     data += 1 + len;
                     size -= 1 + len;
                 }
