@@ -540,6 +540,7 @@
 #include "tsTSFile.h"
 #include "tsTSFileInputBuffered.h"
 #include "tsTSFileOutputResync.h"
+#include "tsTSInformationDescriptor.h"
 #include "tsTSPacket.h"
 #include "tsTSPacketMetadata.h"
 #include "tsTSPacketQueue.h"

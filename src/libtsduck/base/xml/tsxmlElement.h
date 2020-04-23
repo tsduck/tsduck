@@ -220,6 +220,25 @@ namespace ts {
             }
 
             //!
+            //! Add a new child element containing an hexadecimal data text.
+            //! @param [in] name Name of the child element to search.
+            //! @param [in] data Address of binary data.
+            //! @param [in] size Size in bytes of binary data.
+            //! @param [in] onlyNotEmpty When true, do not add the child element if the data is empty.
+            //! @return New child element or null on error or empty data.
+            //!
+            Text* addHexaTextChild(const UString& name, const void* data, size_t size, bool onlyNotEmpty = false);
+
+            //!
+            //! Add a new child element containing an hexadecimal data text.
+            //! @param [in] name Name of the child element to search.
+            //! @param [in] data Binary data.
+            //! @param [in] onlyNotEmpty When true, do not add the child element if the data is empty.
+            //! @return New child element or null on error or empty data.
+            //!
+            Text* addHexaTextChild(const UString& name, const ByteBlock& data, bool onlyNotEmpty = false);
+
+            //!
             //! Check if an attribute exists in the element.
             //! @param [in] attributeName Attribute name.
             //! @return True if the attribute exists.

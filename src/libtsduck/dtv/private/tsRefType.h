@@ -226,6 +226,7 @@
     REF_TYPE(TransportProfileDescriptor);
     REF_TYPE(TransportProtocolDescriptor);
     REF_TYPE(TransportStreamDescriptor);
+    REF_TYPE(TSInformationDescriptor);
     REF_TYPE(UpdateDescriptor);
     REF_TYPE(URILinkageDescriptor);
     REF_TYPE(VBIDataDescriptor);

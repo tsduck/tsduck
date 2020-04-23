@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.21-1719
+VERSION 3.21-1726
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -14,6 +14,7 @@ VERSION 3.21-1719
     "tstables" and plugins "analyze", "psi", "tables".
   * Added support for Japanese character sets as defined in ARIB STD-B24.
   * Partial ISDB signalization, as defined in ARIB STD-B10, is now supported.
+  * Added options --default-charset, --europe and --japan to "tspacketize".
 
 [BUG] Bug fixes:
 

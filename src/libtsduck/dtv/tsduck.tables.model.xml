@@ -2214,6 +2214,18 @@
 
     <transport_stream_descriptor compliance="string, required"/>
 
+    <TS_information_descriptor
+        remote_control_key_id="uint8, required"
+        ts_name="string, required">
+      <!-- Up to 3 transmission types -->
+      <transmission_type transmission_type_info="uint8, required">
+        <service id="uint16, required"/>
+      </transmission_type>
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </TS_information_descriptor>
+
     <update_descriptor
         update_flag="uint2, required"
         update_method="uint4, required"
