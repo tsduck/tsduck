@@ -55,7 +55,7 @@ namespace ts {
         uint8_t  temporal_id_end;               //!< 3 bits
         bool     no_sei_nal_unit_present;       //!< 1 bit
         bool     no_prefix_nal_unit_present;    //!< 1 bit
-            
+
         //!
         //! Default constructor.
         //!

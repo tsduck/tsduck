@@ -197,7 +197,7 @@ void ts::NetworkChangeNotifyDescriptor::DisplayDescriptor(TablesDisplay& display
             Time start;
             DecodeMJD(data + 2, 5, start);
             strm << margin
-                 << UString::Format(u"  - Network change id: 0x%X, version: 0x%X", {data[0], data[1]}) 
+                 << UString::Format(u"  - Network change id: 0x%X, version: 0x%X", {data[0], data[1]})
                  << std::endl
                  << margin
                  << UString::Format(u"    Start: %s, duration: %02d:%02d:%02d", {start.format(Time::DATE | Time::TIME), DecodeBCD(data[7]), DecodeBCD(data[8]), DecodeBCD(data[9])})
@@ -217,7 +217,7 @@ void ts::NetworkChangeNotifyDescriptor::DisplayDescriptor(TablesDisplay& display
                 ok = len >= 4;
                 if (ok) {
                     strm << margin
-                         << UString::Format(u"    Invariant TS id: 0x%X, orig. net. id: 0x%X", {GetUInt16(data), GetUInt16(data + 2)}) 
+                         << UString::Format(u"    Invariant TS id: 0x%X, orig. net. id: 0x%X", {GetUInt16(data), GetUInt16(data + 2)})
                          << std::endl;
                     data += 4; size -= 4; len -= 4;
                 }

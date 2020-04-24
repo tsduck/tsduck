@@ -139,8 +139,8 @@ bool ts::TimeShiftBuffer::open(Report& report)
         if (!_file.open(filename, TSFile::READ | TSFile::WRITE | TSFile::TEMPORARY, report)) {
             return false;
         }
- 
-        // The read and write buffers use half of memory quota each. 
+
+        // The read and write buffers use half of memory quota each.
         // Since the size of the file is larger than the sum of the two,
         // the read and write caches neve overlap when the buffer is full.
         _wcache.resize(_mem_packets / 2);

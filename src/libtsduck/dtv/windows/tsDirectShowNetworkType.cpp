@@ -322,14 +322,14 @@ bool ts::DirectShowNetworkType::initDVBTuningSpace(::IDVBTuningSpace* tspace, ::
 
 bool ts::DirectShowNetworkType::initDVBTuningSpace2(::IDVBTuningSpace2* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report)
 {
-    return initDVBTuningSpace(tspace, name, nullptr, report) && 
+    return initDVBTuningSpace(tspace, name, nullptr, report) &&
         PUT(tspace, NetworkID, -1) &&   // -1 = "not set"
         initDefaultLocator(tspace, dlocator, report);
 }
 
 bool ts::DirectShowNetworkType::initDVBSTuningSpace(::IDVBSTuningSpace* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report)
 {
-    return initDVBTuningSpace2(tspace, name, nullptr, report) && 
+    return initDVBTuningSpace2(tspace, name, nullptr, report) &&
         PUT(tspace, LNBSwitch, long(LNB::UNIVERSAL_LNB_SWITCH_FREQUENCY / 1000)) &&     // in kHz
         PUT(tspace, LowOscillator, long(LNB::UNIVERSAL_LNB_LOW_FREQUENCY / 1000)) &&    // in kHz
         PUT(tspace, HighOscillator, long(LNB::UNIVERSAL_LNB_HIGH_FREQUENCY / 1000)) &&  // in kHz

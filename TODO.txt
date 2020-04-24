@@ -106,6 +106,6 @@ TSDuck - List of features to be implemented or fixed
   ARIB STD-B16 (ISDB Standard Digital Receiver for Satellite - not available in English)
   - DCT (Download Control Table)
   - DLT (DownLoad Table)
-  
+
   JCTEA STD-007 (ISDB Digital Cable Television Receiver)
   - 7.3.1   cable_TS_division_system_descriptor

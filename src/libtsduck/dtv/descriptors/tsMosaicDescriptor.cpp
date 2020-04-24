@@ -323,7 +323,7 @@ void ts::MosaicDescriptor::fromXML(DuckContext& duck, const xml::Element* elemen
     cells.clear();
 
     xml::ElementVector xcells;
-    _is_valid = 
+    _is_valid =
         checkXMLName(element) &&
         element->getBoolAttribute(mosaic_entry_point, u"mosaic_entry_point", true) &&
         element->getIntAttribute<uint8_t>(number_of_horizontal_elementary_cells, u"number_of_horizontal_elementary_cells", true, 0, 0, 7) &&

@@ -206,7 +206,7 @@ void ts::CellListDescriptor::DisplayCoordinates(TablesDisplay& display, const ui
 
 ts::UString ts::CellListDescriptor::ToDegrees(int32_t value, bool is_latitude)
 {
-    // Convert value as a positive value, in 2^15 degrees. 
+    // Convert value as a positive value, in 2^15 degrees.
     UChar orientation = CHAR_NULL;
     if (is_latitude) {
         if (value >= 0) {

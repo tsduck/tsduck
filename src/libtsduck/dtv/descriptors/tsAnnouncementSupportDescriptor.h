@@ -56,10 +56,10 @@ namespace ts {
             uint16_t service_id;           //!< When reference_type == 1, 2 or 3
             uint8_t  component_tag;        //!< When reference_type == 1, 2 or 3
 
-            //! 
+            //!
             //! Constructor.
             //! @param [in] type Announcement type.
-            //! 
+            //!
             Announcement(uint8_t type = 0);
         };
 

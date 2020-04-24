@@ -671,7 +671,7 @@ ifdef M32
     LDFLAGS_M32 := -m32
 else ifndef MAIN_ARCH
     MAIN_ARCH    := $(shell uname -m | $(SED) -e 's/i.86/i386/' -e 's/arm.*/arm/')
-    TARGET_FLAGS := 
+    TARGET_FLAGS :=
     CFLAGS_M32   :=
     LDFLAGS_M32  :=
 endif

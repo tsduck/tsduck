@@ -48,7 +48,7 @@ namespace ts {
         uint16_t FCR_ES_ID;      //!< ES_ID associated with this clock reference stream.
         uint32_t FCRResolution;  //!< Resolution of the object time base in cycles per second.
         uint8_t  FCRLength;      //!< Length of the fmxClockReference field in FlexMux packets with index = 238.
-        uint8_t  FmxRateLength;  //!< Length of the fmxRate field in FlexMux packets with index = 238.   
+        uint8_t  FmxRateLength;  //!< Length of the fmxRate field in FlexMux packets with index = 238.
 
         //!
         //! Default constructor.
