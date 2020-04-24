@@ -188,7 +188,7 @@ void ts::DTSHDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
     if (_is_valid) {
         const uint8_t flags = data[1];
         data += 2; size -= 2;
-        _is_valid = 
+        _is_valid =
             DeserializeSubstreamInfo(substream_core, (flags & 0x80) != 0, data, size) &&
             DeserializeSubstreamInfo(substream_0, (flags & 0x40) != 0, data, size) &&
             DeserializeSubstreamInfo(substream_1, (flags & 0x20) != 0, data, size) &&
@@ -280,10 +280,6 @@ void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, con
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-
     if (size >= 1) {
         const uint8_t flags = data[0];
         data++; size--;
@@ -297,7 +293,6 @@ void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, con
             data += size; size = 0;
         }
     }
-
     display.displayExtraData(data, size, indent);
 }
 
@@ -470,7 +465,7 @@ bool ts::DTSHDDescriptor::SubstreamInfoFromXML(Variable<SubstreamInfo>& info, co
         const xml::Element* const x = children[0];
         xml::ElementVector xassets;
 
-        bool valid = 
+        bool valid =
             x->getIntAttribute<uint8_t>(si.channel_count, u"channel_count", true, 0, 0, 0x1F) &&
             x->getBoolAttribute(si.LFE, u"LFE", true) &&
             x->getIntAttribute<uint8_t>(si.sampling_frequency, u"sampling_frequency", true, 0, 0, 0x0F) &&

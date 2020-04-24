@@ -34,6 +34,9 @@
 //  are updated in ARIBCharset. The output of aribb24 is C++ source
 //  code which is archived in the git repository and never modified.
 //
+//  Other options were later added to use this program as a generic test
+//  tool for ARIB STD-B24.
+//
 //----------------------------------------------------------------------------
 
 #include "tsARIBCharset.h"

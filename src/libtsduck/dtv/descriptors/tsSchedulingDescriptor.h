@@ -59,7 +59,7 @@ namespace ts {
         uint8_t   estimated_cycle_time_unit;  //!< 2 bits, unit of @a estimated.
         uint8_t   period;                     //!< SSU repetition period.
         uint8_t   duration;                   //!< SSU duration.
-        uint8_t   estimated_cycle_time;       //!< Duration of one cycle.  
+        uint8_t   estimated_cycle_time;       //!< Duration of one cycle.
         ByteBlock private_data;               //!< Private data
 
         //!

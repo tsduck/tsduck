@@ -377,7 +377,7 @@ void ts::T2DeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Eleme
             ext[0]->getChildren(xcells, u"cell");
 
         for (size_t i1 = 0; _is_valid && i1 < xcells.size(); ++i1) {
-            
+
             xml::ElementVector xfreq;
             xml::ElementVector xsub;
             Cell cell;

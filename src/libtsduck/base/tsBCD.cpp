@@ -63,7 +63,7 @@ void ts::EncodeBCD(uint8_t* bcd, size_t bcd_count, uint32_t value, bool left_jus
 {
     if (bcd_count > 0 && bcd != nullptr) {
         const size_t offset = (bcd_count % 2) == 0 || left_justified ? 0 : 1;
- 
+
         // Preset first nibble with right-justified even number of digits.
         if (offset == 1) {
             *bcd = uint8_t(pad_nibble << 4);

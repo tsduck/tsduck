@@ -121,7 +121,7 @@ void ts::TSInformationDescriptor::deserialize(DuckContext& duck, const Descripto
 
         duck.decode(ts_name, data, nlen);
         data += nlen; size -= nlen;
-    
+
         for (size_t i1 = 0; i1 < tcount; ++i1) {
             if (size < 2) {
                 _is_valid = false;

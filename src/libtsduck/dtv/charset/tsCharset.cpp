@@ -166,7 +166,7 @@ bool ts::Charset::decodeWithByteLength(UString& str, const uint8_t*& data, size_
     size -= 1 + len;
 
     // Decode and return the string.
-    return decode(str, start, len); 
+    return decode(str, start, len);
 }
 
 ts::UString ts::Charset::decodedWithByteLength(const uint8_t*& data, size_t& size) const
