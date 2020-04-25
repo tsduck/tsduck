@@ -6,8 +6,8 @@
   </ImportGroup>
 
   <ItemGroup>
-    <ClInclude      Include="$(TSDuckRootDir)src\libtsduck\**\*.h"   Exclude="**\unix\**;**\linux\**;**\mac\**"/>
-    <ClCompile      Include="$(TSDuckRootDir)src\libtsduck\**\*.cpp" Exclude="**\unix\**;**\linux\**;**\mac\**"/>
+    <ClInclude      Include="$(TSDuckRootDir)src\libtsduck\**\*.h"   Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;$(TSDuckRootDir)src\libtsduck\**\linux\**;$(TSDuckRootDir)src\libtsduck\**\mac\**"/>
+    <ClCompile      Include="$(TSDuckRootDir)src\libtsduck\**\*.cpp" Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;$(TSDuckRootDir)src\libtsduck\**\linux\**;$(TSDuckRootDir)src\libtsduck\**\mac\**"/>
     <LibConfigXML   Include="$(TSDuckRootDir)src\libtsduck\**\*.xml"/>
     <LibConfigNames Include="$(TSDuckRootDir)src\libtsduck\**\*.names"/>
     <Xml            Include="@(LibConfigXML)"/>
