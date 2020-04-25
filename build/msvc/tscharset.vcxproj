@@ -6,7 +6,7 @@
   </ImportGroup>
 
   <ItemGroup>
-    <ClCompile Include="..\..\src\utils\tscharset.cpp" />
+    <ClCompile Include="..\..\src\tstools\tscharset.cpp" />
   </ItemGroup>
 
   <PropertyGroup Label="Globals">
