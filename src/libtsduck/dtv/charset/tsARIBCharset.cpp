@@ -325,7 +325,7 @@ bool ts::ARIBCharset::Decoder::decodeOneChar(const CharMap* gset)
 
         // Insert code point, if one was found.
         if (cp != 0) {
-            _str.append(cp);
+            _str.append(static_cast<uint32_t>(cp));
             return true;
         }
         else {
