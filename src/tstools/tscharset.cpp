@@ -27,21 +27,278 @@
 //
 //----------------------------------------------------------------------------
 //
-//  This program is used to generate the encoding tables for ARIB STD-B24
-//  character sets. See class ts::ARIBCharset.
+//  A utility program to encode and decode strings using various DVB and
+//  and ARIB character sets.
 //
-//  Running aribb24 is done only once or each time the decoding tables
-//  are updated in ARIBCharset. The output of aribb24 is C++ source
-//  code which is archived in the git repository and never modified.
-//
-//  Other options were later added to use this program as a generic test
-//  tool for ARIB STD-B24.
+//  This program is also used to generate the encoding tables for ARIB STD-B24
+//  character sets. This feature is normally used only once. The generated
+//  C++ source code is integrated in class ts::ARIBCharset, archived in the
+//  git repository and never modified. See source file
+//  src/libtsduck/dtv/charset/tsARIBCharsetEncoding.cpp
 //
 //----------------------------------------------------------------------------
 
+#include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsARIBCharset.h"
+#include "tsOutputRedirector.h"
 #include "tsTime.h"
 TSDUCK_SOURCE;
+TS_MAIN(MainCode);
+
+
+//----------------------------------------------------------------------------
+//  Command line options
+//----------------------------------------------------------------------------
+
+namespace ts {
+    class CharsetOptions: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(CharsetOptions);
+    public:
+        DuckContext duck;          // TSDuck execution context.
+        bool        list;          // List all character sets names.
+        bool        generate_b24;  // Generate encoding tables for ARIB STD-B24.
+        bool        c_style;       // Output binary data in C/C++ syntax.
+        bool        to_utf8;       // Output decoded string as UTF-8.
+        bool        to_utf16;      // Output decoded string as UTF-16.
+        UString     outfile;       // Output file.
+        UString     encode;        // String to encode.
+        ByteBlock   decode;        // Hexadecimal content to decode.
+
+        // Print string and binary data according to formatting options.
+        void printBinary(const UString& title, const ByteBlock& bin) const;
+        void printString(const UString& title, const UString& str) const;
+
+        // Constructors and destructor.
+        CharsetOptions(int argc, char *argv[]);
+        virtual ~CharsetOptions();
+
+    private:
+        // Build flags for UString::Dump().
+        uint32_t dumpFlags() const;
+        void printUTF8(const UString& str) const;
+        void printUTF16(const UString& str) const;
+    };
+}
+
+
+//----------------------------------------------------------------------------
+//  Command line options constructors and destructor.
+//----------------------------------------------------------------------------
+
+ts::CharsetOptions::CharsetOptions(int argc, char *argv[]) :
+    Args(u"Test tool for DVB and ARIB character sets", u"[options]"),
+    duck(this),
+    list(false),
+    generate_b24(false),
+    c_style(false),
+    to_utf8(false),
+    to_utf16(false),
+    outfile(),
+    encode(),
+    decode()
+{
+    duck.defineArgsForCharset(*this);
+
+    option(u"c-style", 'c');
+    help(u"c-style",
+         u"Output binary data in C/C++ syntax, using 0x prefix.");
+
+    option(u"decode", 'd', STRING);
+    help(u"decode", u"hexa-digits",
+         u"Decode the specified binary data according to the default character set. "
+         u"The encoded data shall be represented as binary digits. Spaces are ignored.");
+
+    option(u"encode", 'e', STRING);
+    help(u"encode", u"'string'",
+         u"Encode the specified string according to the default character set.");
+
+    option(u"from-utf-8", '8');
+    help(u"from-utf-8",
+         u"With --encode, specify that the parameter value is a suite of binary digits representing "
+         u"the string in UTF-8 format.");
+
+    option(u"from-utf-16", '6');
+    help(u"from-utf-16",
+         u"With --encode, specify that the parameter value is a suite of binary digits representing "
+         u"the string in UTF-16 format. There must be an even number of bytes.");
+
+    option(u"generate-arib-b24-encoding-table");
+    help(u"generate-arib-b24-encoding-table",
+         u"Generate the encoding table for ARIB STD-B24. "
+         u"This is a TSDuck bootstrap tool which is used only once. "
+         u"The output is C++ source code for class ts::ARIBCharset.");
+
+    option(u"list-charsets", 'l');
+    help(u"list-charsets", u"List all known character set names");
+
+    option(u"output", 'o', STRING);
+    help(u"output", u"Output file name. By default, use standard output.");
+
+    option(u"to-utf-8");
+    help(u"to-utf-8",
+         u"With --decode (and without --verbose), display an hexadecimal representation "
+         u"of the decoded string in UTF-8 format.");
+
+    option(u"to-utf-16");
+    help(u"to-utf-16",
+         u"With --decode (and without --verbose), display an hexadecimal representation "
+         u"of the decoded string in UTF-16 format.");
+
+    // Analyze command line arguments.
+    analyze(argc, argv);
+
+    // Get parameter values.
+    duck.loadArgs(*this);
+    getValue(outfile, u"output");
+    getValue(encode, u"encode");
+    const UString decodeHex(value(u"decode"));
+    list = present(u"list-charsets");
+    generate_b24 = present(u"generate-arib-b24-encoding-table");
+    c_style = present(u"c-style");
+    to_utf8 = present(u"to-utf-8");
+    to_utf16 = present(u"to-utf-16");
+    const bool from_utf8 = present(u"from-utf-8");
+    const bool from_utf16 = present(u"from-utf-16");
+
+    // Convert input string to encode into a plain string.
+    if (!encode.empty() && (from_utf8 || from_utf16)) {
+        ByteBlock hex;
+        if (from_utf8 && from_utf16) {
+            error(u"cannot use --from-utf-8 and --from-utf-16 at the same time");
+        }
+        else if (!encode.hexaDecode(hex)) {
+            error(u"invalid hexadecimal string for --encode");
+        }
+        else if (from_utf16 && hex.size() % 2 != 0) {
+            error(u"--from-utf-16 needs an even number of bytes");
+        }
+        else if (from_utf8) {
+            encode.assignFromUTF8(reinterpret_cast<const char*>(hex.data()), hex.size());
+        }
+        else { // from_utf16
+            encode.resize(hex.size() / 2);
+            for (size_t i = 0; i < encode.size(); ++i) {
+                encode[i] = ts::UChar((uint16_t(hex[2*i]) << 8) | hex[2*i + 1]);
+            }
+        }
+    }
+
+    // Convert data to decode into byte block.
+    if (!decodeHex.empty() && !decodeHex.hexaDecode(decode)) {
+        error(u"invalid hexadecimal string for --decode");
+    }
+
+    exitOnError();
+}
+
+ts::CharsetOptions::~CharsetOptions()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+// Print string and binary data according to formatting options.
+//-----------------------------------------------------------------------------
+
+// Build flags for UString::Dump().
+uint32_t ts::CharsetOptions::dumpFlags() const
+{
+    uint32_t flags = UString::HEXA;
+    if (!verbose()) {
+        flags |= UString::SINGLE_LINE;
+    }
+    if (c_style) {
+        flags |= UString::C_STYLE;
+    }
+    else if (verbose()) {
+        flags |= UString::OFFSET;
+    }
+    return flags;
+}
+
+// Print encoded binary data.
+void ts::CharsetOptions::printBinary(const UString& title, const ByteBlock& bin) const
+{
+    if (verbose()) {
+        std::cout << title << " (" << bin.size() << " bytes):" << std::endl << UString::Dump(bin, dumpFlags() | UString::BPL, 2, 16);
+    }
+    else {
+        std::cout << UString::Dump(bin, dumpFlags()) << std::endl;
+    }
+}
+
+// Print string in UTF-8 hexadecimal.
+void ts::CharsetOptions::printUTF8(const UString& str) const
+{
+    std::string u8;
+    str.toUTF8(u8);
+    std::cout << UString::Dump(u8.data(), u8.size(), dumpFlags() | UString::BPL, 2, 16);
+    if (!verbose()) {
+        std::cout << std::endl;
+    }
+}
+
+// Print string in UTF-16 hexadecimal.
+void ts::CharsetOptions::printUTF16(const UString& str) const
+{
+    const bool multi_line = verbose();
+
+    for (size_t i = 0; i < str.length(); ++i) {
+        if (!multi_line) {
+            // Single line, add separator character.
+            if (i > 0) {
+                std::cout << " ";
+            }
+        }
+        else if (i % 8 != 0) {
+            // Multi-line, in the middle of a line.
+            std::cout << " ";
+        }
+        else if (c_style) {
+            // At start of a line, no offset.
+            std::cout << "  ";
+        }
+        else {
+            // At start of a line, with byte offset.
+            std::cout << UString::Format(u"  %04X:  ", {2 * i});
+        }
+        std::cout << UString::Hexa(str[i], 4, UString(), c_style);
+        if (c_style) {
+            std::cout << (c_style ? "," : "");
+        }
+        if (multi_line && (i % 8 == 7 || i == str.length() - 1)) {
+            std::cout << std::endl;
+        }
+    }
+    if (!multi_line) {
+        std::cout << std::endl;
+    }
+}
+
+// Print plain / decoded string.
+void ts::CharsetOptions::printString(const UString& title, const UString& str) const
+{
+    if (verbose()) {
+        std::cout << title << " (" << str.size() << " characters): \"" << str << "\"" << std::endl;
+        if (to_utf8) {
+            printUTF8(str);
+        }
+        else {
+            printUTF16(str);
+        }
+    }
+    else if (to_utf8) {
+        printUTF8(str);
+    }
+    else if (to_utf16) {
+        printUTF16(str);
+    }
+    else {
+        std::cout << str << std::endl;
+    }
+}
 
 
 //-----------------------------------------------------------------------------
@@ -301,8 +558,39 @@ void ts::ARIBCharsetCodeGenerator::generateFile(std::ostream& out)
 // Program entry point
 //-----------------------------------------------------------------------------
 
-int main(int argc, char* argv[])
+int MainCode(int argc, char *argv[])
 {
-    ts::ARIBCharsetCodeGenerator gen(std::cout);
+    ts::CharsetOptions opt(argc, argv);
+    ts::OutputRedirector output(opt.outfile, opt);
+
+    // List of character sets names.
+    if (opt.list) {
+        const ts::UStringList names(ts::Charset::GetAllNames());
+        for (auto it = names.begin(); it != names.end(); ++it) {
+            std::cout << *it << std::endl;
+        }
+    }
+
+    // Encode a string.
+    if (!opt.encode.empty()) {
+        if (opt.verbose()) {
+            opt.printString(u"Input", opt.encode);
+        }
+        opt.printBinary(u"Encoded", opt.duck.encoded(opt.encode));
+    }
+
+    // Decode a string.
+    if (!opt.decode.empty()) {
+        if (opt.verbose()) {
+            opt.printBinary(u"Input", opt.decode);
+        }
+        opt.printString(u"Decoded", opt.duck.decoded(opt.decode.data(), opt.decode.size()));
+    }
+
+    // Generate the ARIB STD-B24 large encoding table from the various decoding tables.
+    if (opt.generate_b24) {
+        ts::ARIBCharsetCodeGenerator gen(std::cout);
+    }
+
     return EXIT_SUCCESS;
 }

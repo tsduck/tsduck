@@ -2,7 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.21-1726
+VERSION 3.21-1729
+
+[NEW] New commands and plugins:
+
+  * Added command "tscharset" to perform manual string encoding and decoding
+    using various DVB and ARIB character sets.
 
 [IMP] Improvements on existing commands and plugins:
 
