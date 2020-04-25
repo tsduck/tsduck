@@ -6,7 +6,7 @@
   </ImportGroup>
 
   <ItemGroup>
-    <ClCompile Include="..\..\src\utils\aribb24.cpp" />
+    <ClCompile Include="..\..\src\utils\tscharset.cpp" />
   </ItemGroup>
 
   <PropertyGroup Label="Globals">

@@ -29,7 +29,7 @@
 
 // Automatically generated file, do not modify.
 // See internal tool aribb24 in src/utils.
-// Generated 2020/04/15
+// Generated 2020/04/24
 
 #include "tsARIBCharset.h"
 
