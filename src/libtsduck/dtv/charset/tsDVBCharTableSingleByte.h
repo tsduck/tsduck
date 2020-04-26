@@ -36,6 +36,9 @@
 #include "tsDVBCharTable.h"
 #include "tsDVBCharset.h"
 
+TS_PUSH_WARNING()
+TS_GCC_NOWARNING(ctor-dtor-privacy) // private constructor here
+
 namespace ts {
     //!
     //! Definition of a DVB character set using a single byte per character.
@@ -92,8 +95,6 @@ namespace ts {
         virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const override;
 
     private:
-        TS_PUSH_WARNING()
-        TS_GCC_NOWARNING(ctor-dtor-privacy)
         //!
         //! Private constructor since no external instance can be defined.
         //! @param [in] name charset name.
@@ -103,7 +104,6 @@ namespace ts {
         //! marks which precede their base letter (and must be reversed from Unicode).
         //!
         DVBCharTableSingleByte(const UChar* name, uint32_t tableCode, std::initializer_list<uint16_t> init, std::initializer_list<uint8_t> revDiac = std::initializer_list<uint8_t>());
-        TS_POP_WARNING()
 
         // List of code points for byte values 0xA0-0xFF. Always contain 96 values.
         const std::vector<uint16_t> _upperCodePoints;
@@ -116,3 +116,5 @@ namespace ts {
         std::bitset<96> _reversedDiacritical;
     };
 }
+
+TS_POP_WARNING()

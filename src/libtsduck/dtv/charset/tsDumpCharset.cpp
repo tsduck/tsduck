@@ -33,15 +33,15 @@
 TSDUCK_SOURCE;
 
 // Default predefined character set.
-const ts::DumpCharset ts::DumpCharset::DUMP;
+const ts::DumpCharset ts::DumpCharset::DUMP(u"DUMP");
 
 
 //----------------------------------------------------------------------------
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::DumpCharset::DumpCharset() :
-    Charset(u"DUMP")
+ts::DumpCharset::DumpCharset(const UChar* name) :
+    Charset(name)
 {
 }
 

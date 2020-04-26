@@ -36,6 +36,9 @@
 #include "tsDVBCharTable.h"
 #include "tsDVBCharset.h"
 
+TS_PUSH_WARNING()
+TS_GCC_NOWARNING(ctor-dtor-privacy) // private constructor here
+
 namespace ts {
     //!
     //! Definition of the UTF-8 DVB character set.
@@ -56,9 +59,8 @@ namespace ts {
 
     private:
         // Private constructor since only local instances are available.
-        TS_PUSH_WARNING()
-        TS_GCC_NOWARNING(ctor-dtor-privacy)
         explicit DVBCharTableUTF8(const UChar* name = nullptr);
-        TS_POP_WARNING()
     };
 }
+
+TS_POP_WARNING()

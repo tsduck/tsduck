@@ -35,6 +35,9 @@
 #pragma once
 #include "tsCharset.h"
 
+TS_PUSH_WARNING()
+TS_GCC_NOWARNING(ctor-dtor-privacy) // private constructor here
+
 namespace ts {
     //!
     //! Definition of the fake character set to dump string binary data.
@@ -64,9 +67,8 @@ namespace ts {
 
     private:
         // Private constructor since only one instance is available.
-        TS_PUSH_WARNING()
-        TS_GCC_NOWARNING(ctor-dtor-privacy)
-        DumpCharset();
-        TS_POP_WARNING()
+        explicit DumpCharset(const UChar* name = nullptr);
     };
 }
+
+TS_POP_WARNING()
