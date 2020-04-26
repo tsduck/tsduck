@@ -6,7 +6,7 @@
   </ImportGroup>
 
   <ItemGroup>
-    <ClCompile Include="$(TSDuckRootDir)src\utest\**\*.cpp" Exclude="**\dependenciesForStaticLib.cpp"/>
+    <ClCompile Include="$(TSDuckRootDir)src\utest\**\*.cpp" Exclude="$(TSDuckRootDir)src\utest\**\dependenciesForStaticLib.cpp"/>
     <ClInclude Include="$(TSDuckRootDir)src\utest\**\*.h"/>
   </ItemGroup>
 
