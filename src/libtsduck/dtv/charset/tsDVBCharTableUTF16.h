@@ -49,15 +49,16 @@ namespace ts {
         static const DVBCharTableUTF16 RAW_UNICODE;  //!< Raw UNICODE (UTF-16) character set.
         static const DVBCharset DVB_UNICODE;         //!< Non-standard DVB encoding using UNICODE (UTF-16) character set as default.
 
-        //!
-        //! Constructor.
-        //! @param [in] name Character set name.
-        //!
-        DVBCharTableUTF16(const UChar* name = nullptr);
-
         // Inherited methods.
         virtual bool decode(UString& str, const uint8_t* dvb, size_t dvbSize) const override;
         virtual bool canEncode(const UString& str, size_t start = 0, size_t count = NPOS) const override;
-        virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const override;
-    };
+        virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const override; 
+
+    private:
+        // Private constructor since only local instances are available.
+        TS_PUSH_WARNING()
+        TS_GCC_NOWARNING(ctor-dtor-privacy)
+        explicit DVBCharTableUTF16(const UChar* name = nullptr);
+        TS_POP_WARNING()
+   };
 }

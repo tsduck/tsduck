@@ -117,7 +117,12 @@ size_t ts::DumpCharset::encode(uint8_t*& buffer, size_t& size, const UString& st
             }
         }
         else if (!IsSpace(c)) {
+            // Stop at first non-encodable character.
             break;
+        }
+        else if (!got_nibble) {
+            // Include / skip inter-bytes spaces in encoded characters.
+            after_encode = i + 1;
         }
     }
 

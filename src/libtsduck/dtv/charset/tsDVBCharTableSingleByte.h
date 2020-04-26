@@ -91,9 +91,11 @@ namespace ts {
         virtual bool canEncode(const UString& str, size_t start = 0, size_t count = NPOS) const override;
         virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const override;
 
-    protected:
+    private:
+        TS_PUSH_WARNING()
+        TS_GCC_NOWARNING(ctor-dtor-privacy)
         //!
-        //! Protected constructor since no external instance can be defined.
+        //! Private constructor since no external instance can be defined.
         //! @param [in] name charset name.
         //! @param [in] tableCode DVB table code.
         //! @param [in] init Initializer list. 96 code point values for 0xA0-0xFF range, zero means unused.
@@ -101,8 +103,8 @@ namespace ts {
         //! marks which precede their base letter (and must be reversed from Unicode).
         //!
         DVBCharTableSingleByte(const UChar* name, uint32_t tableCode, std::initializer_list<uint16_t> init, std::initializer_list<uint8_t> revDiac = std::initializer_list<uint8_t>());
+        TS_POP_WARNING()
 
-    private:
         // List of code points for byte values 0xA0-0xFF. Always contain 96 values.
         const std::vector<uint16_t> _upperCodePoints;
 

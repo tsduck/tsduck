@@ -64,6 +64,9 @@ namespace ts {
 
     private:
         // Private constructor since only one instance is available.
+        TS_PUSH_WARNING()
+        TS_GCC_NOWARNING(ctor-dtor-privacy)
         DumpCharset();
+        TS_POP_WARNING()
     };
 }
