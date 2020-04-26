@@ -1573,6 +1573,12 @@ void ts::UString::appendDump(const void *data,
                              size_type init_offset,
                              size_type inner_indent)
 {
+    // Do nothing in case of invalid or empty data.
+    if (data == nullptr || size == 0) {
+        return;
+    }
+
+    // Work an area of bytes.
     const uint8_t* raw = static_cast<const uint8_t*>(data);
 
     // Make sure we have something to display (default is hexa)

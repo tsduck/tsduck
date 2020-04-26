@@ -497,6 +497,9 @@ namespace tsunit {
     template<typename T, typename std::enable_if<std::is_unsigned<typename underlying_type<T>::type>::value>::type* = nullptr>
     std::string toString(T value) { return toStringImpl<unsigned long long>(value, "%llu"); }
 
+    template<typename T>
+    std::string toString(const T* value) { return toStringImpl<size_t>(reinterpret_cast<size_t>(value), "0x%zX"); }
+
     // Explicitly convert UTF-16 to UTF-8
     std::string convertFromUTF16(const std::u16string& u16);
 
@@ -548,6 +551,22 @@ namespace tsunit {
                  typename std::enable_if<std::is_convertible<ETYPE, std::u16string>::value>::type* = nullptr,
                  typename std::enable_if<std::is_convertible<ATYPE, std::u16string>::value>::type* = nullptr>
         static void equal(const ETYPE& expected, const ATYPE& actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
+        {
+            equalString(std::u16string(expected), std::u16string(actual), sourcefile, linenumber);
+        }
+
+        // Assert equal for pointer types.
+        template<typename T>
+        static void equal(const T* expected, const T* actual, const std::string& estring, const std::string& vstring, const char* sourcefile, int linenumber);
+
+        template<>
+        static void equal<char>(const char* expected, const char* actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
+        {
+            equalString(std::string(expected), std::string(actual), sourcefile, linenumber);
+        }
+
+        template<>
+        static void equal<char16_t>(const char16_t* expected, const char16_t* actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
         {
             equalString(std::u16string(expected), std::u16string(actual), sourcefile, linenumber);
         }
@@ -634,6 +653,26 @@ void tsunit::Assertions::equal(const ETYPE& expected, const ATYPE& actual, const
         ++_failedAssertionsCount;
         const std::string details1("expected: " + toString(expected) + " (\"" + estr + "\")");
         const std::string details2("actual:   " + toString(actual) + " (\"" + astr + "\")");
+        throw Failure("incorrect value", details1 + "\n" + details2, file, line);
+    }
+}
+
+template<typename T>
+void tsunit::Assertions::equal(const T* expected, const T* actual, const std::string& estr, const std::string& astr, const char* file, int line)
+{
+    if (expected == actual) {
+        ++_passedCount;
+    }
+    else {
+        ++_failedAssertionsCount;
+        const long long addrdiff = static_cast<long long>(reinterpret_cast<const char*>(actual) - reinterpret_cast<const char*>(expected));
+        const long long typediff = static_cast<long long>(actual - expected);
+        const std::string details1("expected: " + toString(expected) + " (\"" + estr + "\")");
+        std::string details2("actual:   " + toString(actual) + toStringImpl(addrdiff, " (%+lld bytes"));
+        if (addrdiff != typediff) {
+            details2.append(toStringImpl(typediff, ", %+'lld elements"));
+        }
+        details2.append(", \"" + astr + "\")");
         throw Failure("incorrect value", details1 + "\n" + details2, file, line);
     }
 }
