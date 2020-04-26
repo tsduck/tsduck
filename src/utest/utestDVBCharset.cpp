@@ -80,7 +80,7 @@ void DVBCharsetTest::afterTest()
 void DVBCharsetTest::testRepository()
 {
     debug() << "DVBCharsetTest::testRepository: charsets: " << ts::UString::Join(ts::Charset::GetAllNames()) << std::endl;
-    TSUNIT_EQUAL(37, ts::Charset::GetAllNames().size());
+    TSUNIT_EQUAL(38, ts::Charset::GetAllNames().size());
 
     // ARIB, ARIB-STD-B24,
     // DVB, ISO-6937, UNICODE, UTF-8,
@@ -90,7 +90,7 @@ void DVBCharsetTest::testRepository()
     // RAW-ISO-8859-1, RAW-ISO-8859-2, RAW-ISO-8859-3, RAW-ISO-8859-4, RAW-ISO-8859-5, RAW-ISO-8859-6, RAW-ISO-8859-7, RAW-ISO-8859-8, RAW-ISO-8859-9,
     // RAW-ISO-8859-10, RAW-ISO-8859-11, RAW-ISO-8859-13, RAW-ISO-8859-14, RAW-ISO-8859-15,
     // RAW-UNICODE, RAW-UTF-8
-
+    // DUMP
 }
 
 void DVBCharsetTest::testDVB()

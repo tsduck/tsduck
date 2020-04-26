@@ -179,6 +179,7 @@
 #include "tsDuckExtension.h"
 #include "tsDuckExtensionRepository.h"
 #include "tsDuckProtocol.h"
+#include "tsDumpCharset.h"
 #include "tsDVBAC3Descriptor.h"
 #include "tsDVBAC4Descriptor.h"
 #include "tsDVBCharset.h"
