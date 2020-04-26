@@ -120,15 +120,15 @@
 TSDUCK_SOURCE;
 
 // Define single instance
-const ts::ARIBCharset ts::ARIBCharset::B24;
+const ts::ARIBCharset ts::ARIBCharset::B24({u"ARIB-STD-B24", u"ARIB"});
 
 
 //----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::ARIBCharset::ARIBCharset() :
-    Charset({u"ARIB-STD-B24", u"ARIB"})
+ts::ARIBCharset::ARIBCharset(std::initializer_list<const UChar*> names) :
+    Charset(names)
 {
 }
 

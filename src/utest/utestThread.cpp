@@ -334,11 +334,10 @@ void ThreadTest::testMutexTimeout()
     const ts::Time dueTime1(start + 50 - _msPrecision);
     const ts::Time dueTime2(start + 100 - _msPrecision);
 
-    TSUNIT_ASSERT(!mutex.acquire(50));
+    // Use assumptions instead of assertions for time-dependent checks.
+    // Timing can be very weird on virtual machines which are used for unitary tests.
+    TSUNIT_ASSUME(!mutex.acquire(50));
     TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime1);
-    // The next assert may fail on a very busy system (when you compile while running
-    // your tests for instance). The test process may be suspended longer than expected
-    // and the final dueTime2 may have already passed.
     TSUNIT_ASSUME(ts::Time::CurrentUTC() < dueTime2);
     TSUNIT_ASSERT(mutex.acquire(1000));
     TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime2);

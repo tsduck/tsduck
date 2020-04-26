@@ -558,18 +558,6 @@ namespace tsunit {
         // Assert equal for pointer types.
         template<typename T>
         static void equal(const T* expected, const T* actual, const std::string& estring, const std::string& vstring, const char* sourcefile, int linenumber);
-
-        template<>
-        static void equal<char>(const char* expected, const char* actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
-        {
-            equalString(std::string(expected), std::string(actual), sourcefile, linenumber);
-        }
-
-        template<>
-        static void equal<char16_t>(const char16_t* expected, const char16_t* actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
-        {
-            equalString(std::u16string(expected), std::u16string(actual), sourcefile, linenumber);
-        }
     };
 }
 
@@ -655,6 +643,18 @@ void tsunit::Assertions::equal(const ETYPE& expected, const ATYPE& actual, const
         const std::string details2("actual:   " + toString(actual) + " (\"" + astr + "\")");
         throw Failure("incorrect value", details1 + "\n" + details2, file, line);
     }
+}
+
+template<>
+inline void tsunit::Assertions::equal<char>(const char* expected, const char* actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
+{
+    equalString(std::string(expected), std::string(actual), sourcefile, linenumber);
+}
+
+template<>
+inline void tsunit::Assertions::equal<char16_t>(const char16_t* expected, const char16_t* actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
+{
+    equalString(std::u16string(expected), std::u16string(actual), sourcefile, linenumber);
 }
 
 template<typename T>
