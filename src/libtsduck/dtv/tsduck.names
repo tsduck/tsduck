@@ -3751,3 +3751,41 @@ Bits = 2
 1 = Defined by service provider
 2 = Copy can be made for only one generation
 3 = Copy is forbidden
+
+[LogoTransmissionType]
+# In ISDB logo_transmission_descriptor
+Bits = 8
+0x01 = CDT transmission scheme 1: direct download data identification
+0x02 = CDT transmission scheme 2: indirectly with download data identification
+0x03 = Simple logo system
+
+[SystemManagementBroadcasting]
+# In ISDB system_management_descriptor
+Bits = 2
+0   = Broadcasting
+1-2 = Non-broadcasting
+3   = Undefined
+
+[SystemManagementIdentifier]
+# In ISDB system_management_descriptor
+Bits = 6
+0x00 = Undefined
+0x01 = Satellite using 27 MHz bandwidth in 12.2 to 12.75 GHz band
+0x02 = Satellite using 34.5 MHz bandwidth in 11.7 to 12.2 GHz band
+0x03 = Terrestrial television
+0x04 = Satellite using 34.5 MHz bandwidth in 12.2 to 12.75 GHz band
+0x05 = Terrestrial sound
+0x06 = Satellites or broadcasting stations in 2630 to 2655 MHz band
+0x07 = Satellite advanced narrow-band using 27 MHz bandwidth in 12.2 to 12.75 GHz band
+
+[VideoEncodeFormat]
+# In ISDB video_decode_control_descriptor
+Bits = 4
+0 = 1080p
+1 = 1080i
+2 = 720p
+3 = 480p
+4 = 480i
+5 = 240p
+6 = 120p
+7 = Reserved

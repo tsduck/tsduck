@@ -282,16 +282,24 @@ namespace ts {
 
         private:
             uint8_t  _G[4];       // G0-G3 escape sequence final selector F for the character set.
+            bool     _byte2[4];   // G0-G3 is 2-byte encoding (vs. 1-byte).
             uint8_t  _GL;         // 0-3 index in _G[], current left character set
             uint8_t  _GR;         // 0-3 index in _G[], current right character set
             bool     _GL_last;    // true if GL was used last (ie. not GR)
             uint16_t _Gn_history; // 4 nibbles with values 0,1,2,3, MSB=oldest, LSB=last-used
 
+            // Check if Gn (n=0-3) is alphanumeric.
+            bool isAlphaNumeric(uint8_t index) const;
+
+            // Encode a space, alphanumeric or ideographic.
+            // Return false if there is not enough room in the output buffer.
+            bool encodeSpace(uint8_t*& out, size_t& out_size, bool ideographic);
+
             // Switch to a given character set (from selector F).
             // If a switch needs to be made, insert the switch sequence in the
             // output buffer and make sure there is room for at least one character.
             // Return false if there is not enough room in the output buffer.
-            bool selectCharSet(uint8_t*& out, size_t& out_size, const EncoderEntry& enc);
+            bool selectCharSet(uint8_t*& out, size_t& out_size, uint8_t selectorF, bool byte2);
 
             // Select GL/GR from G0-3 for a given selector F. Return escape sequence size.
             // Escape sequence buffer must be at least 2 characters long.

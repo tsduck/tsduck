@@ -1503,6 +1503,17 @@
                visible_service="bool, default=true"/>
     </logical_channel_number_descriptor>
 
+    <logo_transmission_descriptor
+        logo_transmission_type="uint8, required"
+        logo_id="uint9, optional"
+        logo_version="uint12, optional"
+        download_data_id="uint16, optional"
+        logo_char="string, optional">
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </logo_transmission_descriptor>
+
     <maximum_bitrate_descriptor maximum_bitrate="uint32, in bits/second, required"/>
 
     <metadata_STD_descriptor
@@ -1993,6 +2004,15 @@
         clock_accuracy_integer="uint6, required"
         clock_accuracy_exponent="uint3, required"/>
 
+    <system_management_descriptor
+        broadcasting_flag="uint2, required"
+        broadcasting_identifier="uint6, required"
+        additional_broadcasting_identification="uint8, required">
+      <additional_identification_info>
+        Hexadecimal content
+      </additional_identification_info>
+    </system_management_descriptor>
+
     <T2MI_descriptor
         t2mi_stream_id="uint3, required"
         num_t2mi_streams_minus_one="uint3, default=0"
@@ -2263,9 +2283,15 @@
                 page_number="uint16, required"/>
     </VBI_teletext_descriptor>
 
+    <video_decode_control_descriptor
+        still_picture="bool, required"
+        sequence_end_code="bool, required"
+        video_encode_format="uint4, required"
+        reserved_future_use="uint2, default=3"/>
+
     <video_depth_range_descriptor>
       <!-- One per video range -->
-      <range range_type="uint8_t, required"
+      <range range_type="uint8, required"
              video_max_disparity_hint="int12, required when range_type == 0"
              video_min_disparity_hint="int12, required when range_type == 0">
         <range_selector>

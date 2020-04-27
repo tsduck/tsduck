@@ -197,9 +197,15 @@ void ts::ARIBCharset::Decoder::decodeAll(const uint8_t* data, size_t size)
 
     // Loop in input byte sequences.
     while (_size > 0) {
-        if (match(0x20) || match(0xA0)) {
+        if (match(0x20)) {
             // Always a space in all character sets.
-            _str.push_back(u' ');
+            // Use a "Japanese space" when GL set is not alphanumeric.
+            _str.push_back(_G[_GL] == &ALPHANUMERIC_MAP ? SPACE : IDEOGRAPHIC_SPACE);
+        }
+        else if (match(0xA0)) {
+            // Always a space in all character sets.
+            // Use a "Japanese space" when GR set is not alphanumeric.
+            _str.push_back(_G[_GR] == &ALPHANUMERIC_MAP ? SPACE : IDEOGRAPHIC_SPACE);
         }
         else if (*_data >= GL_FIRST && *_data <= GL_LAST) {
             // A left-side code.
@@ -594,7 +600,7 @@ bool ts::ARIBCharset::canEncode(const UString& str, size_t start, size_t count) 
         const UChar c = str[i];
 
         // Space is not in the encoding table but is always valid.
-        if (c != u' ') {
+        if (c != SPACE && c != IDEOGRAPHIC_SPACE) {
             if (!IsLeadingSurrogate(c)) {
                 // 16-bit code point
                 index = FindEncoderEntry(c, index);
@@ -646,6 +652,10 @@ ts::ARIBCharset::Encoder::Encoder(uint8_t*& out, size_t& out_size, const UChar*&
        ALPHANUMERIC_MAP.selector1,
        HIRAGANA_MAP.selector1,
        KATAKANA_MAP.selector1},
+    _byte2{KANJI_ADDITIONAL_MAP.byte2,   // Same order as _G
+           ALPHANUMERIC_MAP.byte2,
+           HIRAGANA_MAP.byte2,
+           KATAKANA_MAP.byte2},
     _GL(0),  // G0 -> GL
     _GR(2),  // G2 -> GR
     _GL_last(true),
@@ -655,7 +665,7 @@ ts::ARIBCharset::Encoder::Encoder(uint8_t*& out, size_t& out_size, const UChar*&
     size_t prev_index = NPOS;
 
     // Loop on input UTF-16 characters.
-    while (in_count > 0) {
+    while (in_count > 0 && out_size > 0) {
 
         // Get unicode code point (1 or 2 UChar from input).
         char32_t cp = *in;
@@ -679,7 +689,6 @@ ts::ARIBCharset::Encoder::Encoder(uint8_t*& out, size_t& out_size, const UChar*&
         // Find the entry for this code point in the encoding table.
         const size_t index = FindEncoderEntry(cp, prev_index);
         if (index != NPOS) {
-
             // This character is encodable.
             assert(index < ENCODING_COUNT);
             const EncoderEntry& enc(ENCODING_TABLE[index]);
@@ -687,7 +696,8 @@ ts::ARIBCharset::Encoder::Encoder(uint8_t*& out, size_t& out_size, const UChar*&
 
             // Make sure the right character set is selected.
             // Insert the corresponding escape sequence if necessary.
-            if (!selectCharSet(out, out_size, enc)) {
+            // Also make sure that the encoded sequence will fit in output buffer.
+            if (!selectCharSet(out, out_size, enc.selectorF(), enc.byte2())) {
                 // Cannot insert the right sequence. Do not attempt to encode the code point.
                 return;
             }
@@ -707,6 +717,10 @@ ts::ARIBCharset::Encoder::Encoder(uint8_t*& out, size_t& out_size, const UChar*&
             *out++ = uint8_t(cp - enc.code_point + enc.index()) | mask;
             --out_size;
         }
+        else if ((cp == SPACE || cp == IDEOGRAPHIC_SPACE) && !encodeSpace(out, out_size, cp == IDEOGRAPHIC_SPACE)) {
+            // Tried to encode a space but failed.
+            return;
+        }
 
         // Now, the character has been successfully encoded (or ignored if not encodable).
         // Remove it from the input buffer.
@@ -717,30 +731,103 @@ ts::ARIBCharset::Encoder::Encoder(uint8_t*& out, size_t& out_size, const UChar*&
 
 
 //----------------------------------------------------------------------------
+// Check if Gn (n=0-3) is alphanumeric.
+//----------------------------------------------------------------------------
+
+bool ts::ARIBCharset::Encoder::isAlphaNumeric(uint8_t index) const
+{
+    return _G[index] == ALPHANUMERIC_MAP.selector1 || _G[index] == ALPHANUMERIC_MAP.selector2;
+}
+
+
+//----------------------------------------------------------------------------
+// Encode a space, alphanumeric or ideographic.
+//----------------------------------------------------------------------------
+
+bool ts::ARIBCharset::Encoder::encodeSpace(uint8_t*& out, size_t& out_size, bool ideographic)
+{
+    uint8_t code = 0;
+    size_t count = 0;
+
+    if (ideographic) {
+        // Insert a space SP (0x20) in any ideographic (non-alphanumeric) character set.
+        // We assume that at least GL or GR is not alphanumeric, so there is not need to switch character set.
+        // If the two are ideographic, try to find one which uses 1-byte encoding.
+        if (!_byte2[_GL] && !isAlphaNumeric(_GL)) {
+            code = SP;
+            count = 1;
+        }
+        else if (!_byte2[_GR] && !isAlphaNumeric(_GR)) {
+            code = SP | 0x80;
+            count = 1;
+        }
+        else if (!isAlphaNumeric(_GL)) {
+            assert(_byte2[_GL]);
+            code = SP;
+            count = 2;
+        }
+        else {
+            assert(_byte2[_GR] && !isAlphaNumeric(_GR));
+            code = SP | 0x80;
+            count = 2;
+        }
+    }
+    else {
+        // Insert a space SP (0x20) in alphanumeric character set.
+        if (isAlphaNumeric(_GL)) {
+            code = SP;
+            count = 1;
+        }
+        else if (isAlphaNumeric(_GR)) {
+            code = SP | 0x80;
+            count = 1;
+        }
+        else if (selectCharSet(out, out_size, ALPHANUMERIC_MAP.selector1, false)) {
+            code = ALPHANUMERIC_MAP.selector1 == _G[_GR] ? (SP | 0x80) : SP;
+            count = 1;
+        }
+        else {
+            // Cannot insert the sequence to switch to alphanumeric character set.
+            return false;
+        }
+    }
+
+    // Insert the encoded space.
+    if (count > out_size) {
+        return false;
+    }
+    else {
+        while (count-- > 0) {
+            *out++ = code;
+            --out_size;
+        }
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Switch to a given character set (from selector F).
 // Not really optimized. We always keep the same character set in G0.
 //----------------------------------------------------------------------------
 
-bool ts::ARIBCharset::Encoder::selectCharSet(uint8_t*& out, size_t& out_size, const EncoderEntry& enc)
+bool ts::ARIBCharset::Encoder::selectCharSet(uint8_t*& out, size_t& out_size, uint8_t selectorF, bool byte2)
 {
-    // The final selector character F for the target character set.
-    const uint8_t F = enc.selectorF();
-
     // Required space for one character after escape sequence.
-    const size_t char_size = enc.byte2() ? 2 : 1;
+    const size_t char_size = byte2 ? 2 : 1;
 
     // An escape sequence is up to 7 bytes.
     uint8_t seq[7];
     size_t seq_size = 0;
 
     // There is some switching sequence to add only if the charset is neither in GL nor GR.
-    if (F != _G[_GL] && F != _G[_GR]) {
+    if (selectorF != _G[_GL] && selectorF != _G[_GR]) {
         // If the charset is not in G0-G3, we need to load it in one of them.
-        if (F != _G[0] && F != _G[1] && F != _G[2] && F != _G[3]) {
-            seq_size = selectG0123(seq, F, enc.byte2());
+        if (selectorF != _G[0] && selectorF != _G[1] && selectorF != _G[2] && selectorF != _G[3]) {
+            seq_size = selectG0123(seq, selectorF, byte2);
         }
         // Route the right Gx in either GL or GR.
-        seq_size += selectGLR(seq + seq_size, F);
+        seq_size += selectGLR(seq + seq_size, selectorF);
     }
 
     // Finally, insert the escape sequence if there is enough room for it plus one character.
@@ -755,7 +842,7 @@ bool ts::ARIBCharset::Encoder::selectCharSet(uint8_t*& out, size_t& out_size, co
     }
 
     // Keep track of last GL/GR used.
-    _GL_last = _G[_GL] == F;
+    _GL_last = _G[_GL] == selectorF;
     return true;
 }
 
@@ -822,11 +909,12 @@ size_t ts::ARIBCharset::Encoder::selectGLR(uint8_t* seq, uint8_t F)
 size_t ts::ARIBCharset::Encoder::selectG0123(uint8_t* seq, uint8_t F, bool byte2)
 {
     // Get index oldest used charset. Reuse it. Mark it as last used.
-    const uint8_t index = uint8_t(_Gn_history >> 12) & 0x0F;
+    const uint8_t index = uint8_t(_Gn_history >> 12) & 0x03;
     _Gn_history = uint16_t(_Gn_history << 4) | index;
 
     // Assign the new character set.
     _G[index] = F;
+    _byte2[index] = byte2;
 
     // Generate the escape sequence.
     // ARIB STD-B24, part 2, chapter 7, table 7-2
