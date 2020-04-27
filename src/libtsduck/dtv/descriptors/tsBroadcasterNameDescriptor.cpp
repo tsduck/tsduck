@@ -27,40 +27,36 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsSystemManagementDescriptor.h"
+#include "tsBroadcasterNameDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"system_management_descriptor"
-#define MY_DID ts::DID_ISDB_SYSTEM_MGMT
+#define MY_XML_NAME u"broadcaster_name_descriptor"
+#define MY_DID ts::DID_ISDB_BROADCAST_NAME
 #define MY_PDS ts::PDS_ISDB
 #define MY_STD ts::STD_ISDB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::SystemManagementDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::SystemManagementDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_FACTORY_REGISTER(ts::SystemManagementDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_XML_DESCRIPTOR_FACTORY(ts::BroadcasterNameDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::BroadcasterNameDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_FACTORY_REGISTER(ts::BroadcasterNameDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
 
 
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::SystemManagementDescriptor::SystemManagementDescriptor() :
+ts::BroadcasterNameDescriptor::BroadcasterNameDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    broadcasting_flag(0),
-    broadcasting_identifier(0),
-    additional_broadcasting_identification(0),
-    additional_identification_info()
+    name()
 {
     _is_valid = true;
 }
 
-ts::SystemManagementDescriptor::SystemManagementDescriptor(DuckContext& duck, const Descriptor& desc) :
-    SystemManagementDescriptor()
+ts::BroadcasterNameDescriptor::BroadcasterNameDescriptor(DuckContext& duck, const Descriptor& desc) :
+    BroadcasterNameDescriptor()
 {
     deserialize(duck, desc);
 }
@@ -70,12 +66,10 @@ ts::SystemManagementDescriptor::SystemManagementDescriptor(DuckContext& duck, co
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SystemManagementDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::BroadcasterNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(broadcasting_flag << 6) | (broadcasting_identifier & 0x3F));
-    bbp->appendUInt8(additional_broadcasting_identification);
-    bbp->append(additional_identification_info);
+    bbp->append(duck.encoded(name));
     serializeEnd(desc, bbp);
 }
 
@@ -84,19 +78,19 @@ void ts::SystemManagementDescriptor::serialize(DuckContext& duck, Descriptor& de
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SystemManagementDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::BroadcasterNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
     _is_valid = desc.isValid() && desc.tag() == _tag && size >= 2;
 
-    additional_identification_info.clear();
+    name.clear();
 
     if (_is_valid) {
-        broadcasting_flag = (data[0] >> 6) & 0x03;
-        broadcasting_identifier = data[0] & 0x3F;
-        additional_broadcasting_identification = data[1];
-        additional_identification_info.copy(data + 2, size - 2);
+        duck.decode(name, data, size);
+    }
+    else {
+        name.clear();
     }
 }
 
@@ -105,21 +99,13 @@ void ts::SystemManagementDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SystemManagementDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::BroadcasterNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
-    if (size < 2) {
-        display.displayExtraData(data, size, indent);
-    }
-    else {
-        strm << margin << "Broadcasting flag: " << NameFromSection(u"SystemManagementBroadcasting", (data[0] >> 6) & 0x03, names::DECIMAL_FIRST) << std::endl
-             << margin << "Broadcasting identifier: " << NameFromSection(u"SystemManagementIdentifier", data[0] & 0x3F, names::DECIMAL_FIRST) << std::endl
-             << margin << UString::Format(u"Additional broadcasting id: 0x%X (%d)", {data[1], data[1]}) << std::endl;
-        display.displayPrivateData(u"Additional identification info", data + 2, size - 2, indent);
-    }
+    strm << margin << "Broadcaster name: \"" << duck.decoded(data, size) << "\"" << std::endl;
 }
 
 
@@ -127,12 +113,9 @@ void ts::SystemManagementDescriptor::DisplayDescriptor(TablesDisplay& display, D
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SystemManagementDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::BroadcasterNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"broadcasting_flag", broadcasting_flag);
-    root->setIntAttribute(u"broadcasting_identifier", broadcasting_identifier, true);
-    root->setIntAttribute(u"additional_broadcasting_identification", additional_broadcasting_identification, true);
-    root->addHexaTextChild(u"additional_identification_info", additional_identification_info, true);
+    root->setAttribute(u"name", name);
 }
 
 
@@ -140,14 +123,11 @@ void ts::SystemManagementDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SystemManagementDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::BroadcasterNameDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
-    additional_identification_info.clear();
+    name.clear();
 
     _is_valid =
         checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(broadcasting_flag, u"broadcasting_flag", true, 0, 0, 3) &&
-        element->getIntAttribute<uint8_t>(broadcasting_identifier, u"broadcasting_identifier", true, 0, 0, 0x3F) &&
-        element->getIntAttribute<uint8_t>(additional_broadcasting_identification, u"additional_broadcasting_identification", true) &&
-        element->getHexaTextChild(additional_identification_info, u"additional_identification_info", false, 0, 253);
+        element->getAttribute(name, u"name");
 }

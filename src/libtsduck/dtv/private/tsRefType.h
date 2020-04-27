@@ -49,6 +49,7 @@
     REF_TYPE(AVCTimingAndHRDDescriptor);
     REF_TYPE(AVCVideoDescriptor);
     REF_TYPE(BouquetNameDescriptor);
+    REF_TYPE(BroadcasterNameDescriptor);
     REF_TYPE(C2BundleDeliverySystemDescriptor);
     REF_TYPE(C2DeliverySystemDescriptor);
     REF_TYPE(CableDeliverySystemDescriptor);
@@ -62,6 +63,7 @@
     REF_TYPE(ComponentDescriptor);
     REF_TYPE(ComponentNameDescriptor);
     REF_TYPE(ContentAdvisoryDescriptor);
+    REF_TYPE(ContentAvailabilityDescriptor);
     REF_TYPE(ContentDescriptor);
     REF_TYPE(CopyrightDescriptor);
     REF_TYPE(CountryAvailabilityDescriptor);

@@ -796,6 +796,8 @@
 
     <bouquet_name_descriptor bouquet_name="string, required"/>
 
+    <broadcaster_name_descriptor name="string, required"/>
+
     <CA_descriptor
         CA_system_id="uint16, required"
         CA_PID="uint13, required">
@@ -895,6 +897,17 @@
         <string language="char3, required" text="string, required"/>
       </component_name_string>
     </component_name_descriptor>
+
+    <content_availability_descriptor
+        copy_restriction_mode="bool, required"
+        image_constraint_token="bool, required"
+        retention_mode="bool, required"
+        retention_state="uint3, required"
+        encryption_mode="bool, required">
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </content_availability_descriptor>
 
     <content_descriptor>
       <!-- One per classification -->

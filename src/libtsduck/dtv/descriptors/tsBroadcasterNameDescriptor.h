@@ -28,20 +28,45 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an ISDB broadcaster_name_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 21
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1741
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of an ISDB broadcaster_name_descriptor.
+    //! @see ARIB STD-B10, Part 2, 6.2.36
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL BroadcasterNameDescriptor : public AbstractDescriptor
+    {
+    public:
+        // BroadcasterNameDescriptor public members:
+        UString name;   //!< Broadcaster name.
+
+        //!
+        //! Default constructor.
+        //!
+        BroadcasterNameDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        BroadcasterNameDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+    };
+}
