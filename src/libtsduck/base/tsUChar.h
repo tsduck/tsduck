@@ -1229,4 +1229,5 @@ namespace ts {
     static constexpr UChar BLACK_CLUB_SUIT                             = UChar(0x2663); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar BLACK_HEART_SUIT                            = UChar(0x2665); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar BLACK_DIAMOND_SUIT                          = UChar(0x2666); //!< Non-ISO-8859 Unicode character.
+    static constexpr UChar IDEOGRAPHIC_SPACE                           = UChar(0x3000); //!< CJK character for space. 
 }

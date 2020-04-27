@@ -129,6 +129,7 @@
     REF_TYPE(LinkageDescriptor);
     REF_TYPE(LocalTimeOffsetDescriptor);
     REF_TYPE(LogicalChannelNumberDescriptor);
+    REF_TYPE(LogoTransmissionDescriptor);
     REF_TYPE(MaximumBitrateDescriptor);
     REF_TYPE(MessageDescriptor);
     REF_TYPE(MetadataSTDDescriptor);
@@ -203,6 +204,7 @@
     REF_TYPE(SupplementaryAudioDescriptor);
     REF_TYPE(SVCExtensionDescriptor);
     REF_TYPE(SystemClockDescriptor);
+    REF_TYPE(SystemManagementDescriptor);
     REF_TYPE(T2DeliverySystemDescriptor);
     REF_TYPE(T2MIDescriptor);
     REF_TYPE(TargetBackgroundGridDescriptor);
@@ -231,6 +233,7 @@
     REF_TYPE(URILinkageDescriptor);
     REF_TYPE(VBIDataDescriptor);
     REF_TYPE(VBITeletextDescriptor);
+    REF_TYPE(VideoDecodeControlDescriptor);
     REF_TYPE(VideoDepthRangeDescriptor);
     REF_TYPE(VideoStreamDescriptor);
     REF_TYPE(VideoWindowDescriptor);

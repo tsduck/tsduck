@@ -1483,13 +1483,13 @@ bool ts::UString::toTristate(Tristate& value) const
 // Interpret this string as a sequence of hexadecimal digits (ignore blanks).
 //----------------------------------------------------------------------------
 
-bool ts::UString::hexaDecode(ts::ByteBlock& result) const
+bool ts::UString::hexaDecode(ByteBlock& result, bool c_style) const
 {
     result.clear();
-    return hexaDecodeAppend(result);
+    return hexaDecodeAppend(result, c_style);
 }
 
-bool ts::UString::hexaDecodeAppend(ts::ByteBlock& result) const
+bool ts::UString::hexaDecodeAppend(ts::ByteBlock& result, bool c_style) const
 {
     // Oversize the prereservation in output buffer.
     result.reserve(result.size() + size() / 2);
@@ -1499,8 +1499,13 @@ bool ts::UString::hexaDecodeAppend(ts::ByteBlock& result) const
     uint8_t nibble = 0;
 
     for (const UChar* p = data(); p < last(); ++p) {
-        if (IsSpace(*p)) {
-            // Ignore spaces.
+        if (IsSpace(*p) || (c_style && (*p == ',' || *p == ';' || *p == '[' || *p == ']' || *p == '{' || *p == '}'))) {
+            // Ignore spaces and C-style separators.
+            continue;
+        }
+        else if (c_style && *p == '0' && p + 1 < last() && (p[1] == 'x' || p[1] == 'X')) {
+            // Ignore C-style 0x prefix.
+            ++p;
             continue;
         }
         else if ((nibble = uint8_t(ToDigit(*p, 16, 0xFF))) == 0xFF) {

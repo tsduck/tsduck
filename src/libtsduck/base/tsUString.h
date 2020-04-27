@@ -1803,18 +1803,20 @@ namespace ts {
         //!
         //! Interpret this string as a sequence of hexadecimal digits (ignore blanks).
         //! @param [out] result Decoded bytes.
+        //! @param [in] c_style If true, allow "C-style" aggregate (ignore commas, braces and "0x").
         //! @return True on success, false on error (invalid hexa format).
         //! When returning false, the result contains everything that could be decoded before getting the error.
         //!
-        bool hexaDecode(ByteBlock& result) const;
+        bool hexaDecode(ByteBlock& result, bool c_style = false) const;
 
         //!
         //! Interpret this string as a sequence of hexadecimal digits (ignore blanks).
         //! @param [in,out] result The decoded bytes are added at the end of the previous content.
+        //! @param [in] c_style If true, allow "C-style" aggregate (ignore commas, braces and "0x").
         //! @return True on success, false on error (invalid hexa format).
         //! When returning false, the result contains everything that could be decoded before getting the error.
         //!
-        bool hexaDecodeAppend(ByteBlock& result) const;
+        bool hexaDecodeAppend(ByteBlock& result, bool c_style = false) const;
 
         //!
         //! Append an array of C-strings to a container of strings.

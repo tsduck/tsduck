@@ -1158,6 +1158,12 @@ void UStringTest::testHexaDecode()
 
     TSUNIT_ASSERT(!ts::UString(u"X 0 1234 56 - 789 ABC DEF ").hexaDecode(bytes));
     TSUNIT_ASSERT(bytes.empty());
+
+    TSUNIT_ASSERT(!ts::UString(u"01 23 {0x45, 0x67};").hexaDecode(bytes));
+    TSUNIT_ASSERT(bytes == ts::ByteBlock({0x01, 0x23}));
+
+    TSUNIT_ASSERT(ts::UString(u"01 23 {0x45, 0x67};").hexaDecode(bytes, true));
+    TSUNIT_ASSERT(bytes == ts::ByteBlock({0x01, 0x23, 0x45, 0x67}));
 }
 
 void UStringTest::testAppendContainer()

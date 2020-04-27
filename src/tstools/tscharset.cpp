@@ -168,7 +168,7 @@ ts::CharsetOptions::CharsetOptions(int argc, char *argv[]) :
         if (from_utf8 && from_utf16) {
             error(u"cannot use --from-utf-8 and --from-utf-16 at the same time");
         }
-        else if (!encode.hexaDecode(hex)) {
+        else if (!encode.hexaDecode(hex, true)) {
             error(u"invalid hexadecimal string for --encode");
         }
         else if (from_utf16 && hex.size() % 2 != 0) {
