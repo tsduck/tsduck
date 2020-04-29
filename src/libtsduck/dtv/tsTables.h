@@ -79,6 +79,7 @@
 #include "tsATSCEAC3AudioDescriptor.h"
 #include "tsATSCStuffingDescriptor.h"
 #include "tsATSCTimeShiftedServiceDescriptor.h"
+#include "tsAudioComponentDescriptor.h"
 #include "tsAudioPreselectionDescriptor.h"
 #include "tsAudioStreamDescriptor.h"
 #include "tsAVCTimingAndHRDDescriptor.h"

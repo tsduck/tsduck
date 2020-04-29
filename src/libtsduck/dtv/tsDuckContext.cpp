@@ -380,19 +380,27 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     // Options which can be used as character sets and/or standards.
     if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS)) {
 
-        UString syn;
-        if ((_definedCmdOptions | cmdOptionsMask) & CMD_STANDARDS) {
-            syn.append(u" --isdb");
+        // Build help text for --japan option. It depends on whether CMD_CHARSET or
+        // CMD_STANDARDS or both are defined. Use _definedCmdOptions instead of
+        // cmdOptionsMask to include previous options.
+        UString japan(u"A synonym for '");
+        if (_definedCmdOptions & CMD_STANDARDS) {
+            japan.append(u"--isdb");
         }
-        if (cmdOptionsMask & CMD_CHARSET) {
-            syn.append(u" --default-charset ARIB-STD-B24");
+        if ((_definedCmdOptions & (CMD_CHARSET | CMD_STANDARDS)) == (CMD_CHARSET | CMD_STANDARDS)) {
+            japan.append(u" ");
         }
-        syn.trim();
+        if (_definedCmdOptions & CMD_CHARSET) {
+            japan.append(u"--default-charset ARIB-STD-B24");
+        }
+        japan.append(u"'. ");
+        if (_definedCmdOptions & CMD_STANDARDS) {
+            japan.append(u"This option also activates some specificities for Japan such as the use of JST time instead of UTC. ");
+        }
+        japan.append(u"This is a handy shortcut when working on Japanese transport streams.");
 
         args.option(u"japan", 0);
-        args.help(u"japan",
-            u"A synonym for '" + syn + u"'. "
-            u"This is a handy shortcut when working on Japanese transport streams.");
+        args.help(u"japan", japan);
     }
 
     // Options relating to default UHF/VHF region.
@@ -465,8 +473,11 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (args.present(u"atsc")) {
             _cmdStandards |= STD_ATSC;
         }
-        if (args.present(u"isdb") || args.present(u"japan")) {
+        if (args.present(u"isdb")) {
             _cmdStandards |= STD_ISDB;
+        }
+        if (args.present(u"japan")) {
+            _cmdStandards |= STD_ISDB | STD_JAPAN;
         }
     }
 

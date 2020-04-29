@@ -170,6 +170,11 @@ void ts::TOT::deserializeContent(DuckContext& duck, const BinaryTable& table)
     remain -= MJD_SIZE + 2;
     remain = std::min(length, remain);
 
+    // In Japan, the time field is in fact a JST time, convert it to UTC.
+    if (duck.standards() & STD_JAPAN) {
+        utc_time = utc_time.JSTToUTC();
+    }
+
     // Get descriptor list.
     // Build a descriptor list.
     DescriptorList dlist(nullptr);
@@ -192,7 +197,13 @@ void ts::TOT::serializeContent(DuckContext& duck, BinaryTable& table) const
     size_t remain = sizeof(payload);
 
     // Encode the data in MJD in the payload (5 bytes)
-    EncodeMJD (utc_time, data, MJD_SIZE);
+    // In Japan, the time field is in fact a JST time, convert UTC to JST before serialization.
+    if (duck.standards() & STD_JAPAN) {
+        EncodeMJD(utc_time.UTCToJST(), data, MJD_SIZE);
+    }
+    else {
+        EncodeMJD(utc_time, data, MJD_SIZE);
+    }
     data += MJD_SIZE;
     remain -= MJD_SIZE;
 

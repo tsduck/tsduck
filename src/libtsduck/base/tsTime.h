@@ -289,6 +289,18 @@ namespace ts {
         Time UTCToLocal() const;
 
         //!
+        //! Convert a JST (Japan Standard Time) to UTC time.
+        //! @return A UTC time from this object time, interpreted as a JST time.
+        //!
+        Time JSTToUTC() const;
+
+        //!
+        //! Convert a UTC time to JST (Japan Standard Time).
+        //! @return A JST time from this object time, interpreted as a UTC time.
+        //!
+        Time UTCToJST() const;
+
+        //!
         //! Flags indicating the list of time fields to display.
         //!
         enum FieldMask {

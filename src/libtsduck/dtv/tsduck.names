@@ -1797,6 +1797,41 @@ Bits = 16
 0xBF04 = HLG10 HDR
 0xBF05 = HEVC temporal video subset for a frame rate of 100 Hz, 120 000/1 001 Hz, or 120 Hz
 
+[ComponentTypeJapan]
+# In component_descriptor (Japanese version). See [ComponentType]
+Bits = 16
+0x1F01 = Video 480i(525i), 4:3 aspect ratio
+0x1F02 = Video 480i(525i), 16:9 aspect ratio, with pan vectors
+0x1F03 = Video 480i(525i), 16:9 aspect ratio, without pan vectors
+0x1F04 = Video 480i(525i), >16:9 aspect ratio
+0x1FA1 = Video 480p(525p), 4:3 aspect ratio
+0x1FA2 = Video 480p(525p), 16:9 aspect ratio, with pan vectors
+0x1FA3 = Video 480p(525p), 16:9 aspect ratio, without pan vectors
+0x1FA4 = Video 480p(525p), >16:9 aspect ratio
+0x1FB1 = Video 1080i(1125i), 4:3 aspect ratio
+0x1FB2 = Video 1080i(1125i), 16:9 aspect ratio, with pan vectors
+0x1FB3 = Video 1080i(1125i), 16:9 aspect ratio, without pan vectors
+0x1FB4 = Video 1080i(1125i), >16:9 aspect ratio
+0x1FC1 = Video 720p(750p), 4:3 aspect ratio
+0x1FC2 = Video 720p(750p), 16:9 aspect ratio, with pan vectors
+0x1FC3 = Video 720p(750p), 16:9 aspect ratio, without pan vectors
+0x1FC4 = Video 720p(750p), >16:9 aspect ratio
+0x1FD1 = Video 240p, 4:3 aspect ratio
+0x1FD2 = Video 240p, 4:3 aspect ratio, with pan vectors
+0x1FD3 = Video 240p, 4:3 aspect ratio, without pan vector
+0x1FD4 = Video 240p, 4:3 aspect ratio > 16:9
+0x2F01 = Audio, 1/0 mode (single mono)
+0x2F02 = Audio, 1/0+1/0 mode (dual mono)
+0x2F03 = Audio, 2/0 mode (stereo)
+0x2F04 = Audio, 2/1 mode
+0x2F05 = Audio, 3/0 mode
+0x2F06 = Audio, 2/2 mode
+0x2F07 = Audio, 3/1 mode
+0x2F08 = Audio, 3/2 mode
+0x2F09 = Audio, 3/2+LFE mode
+0x2F40 = Audio description for the visually impaired
+0x2F41 = Audio for the hard of hearing
+
 [DTSSampleRate]
 Bits = 4
 0 = invalid
@@ -3801,3 +3836,43 @@ Bits = 3
 5 = 6 hours
 6 = 3 hours
 7 = 1 hour and half
+
+[ISDBAudioComponentType]
+# In ISDB audio_component_descriptor
+Bits = 8
+0x00 = Reserved for future use
+0x01 = 1/0 mode (single monaural channel)
+0x02 = 1/0 + 1/0 mode (dual monaural channel)
+0x03 = 2/0 mode (stereo)
+0x04 = 2/1 mode
+0x05 = 3/0 mode
+0x06 = 2/2 mode
+0x07 = 3/1 mode
+0x08 = 3/2 mode
+0x09 = 3/2 + LFE mode
+0x0A-0x3F = Reserved for future use
+0x40 = Commentary for visually disabled persons
+0x41 = Voice for audibly disabled persons
+0x42-0xAF = Reserved for future use
+0xB0-0xFE = Defined by the broadcaster
+0xFF = Reserved for future use
+
+[ISDBAudioSampling]
+# In ISDB audio_component_descriptor
+Bits = 3
+0 = Reserved
+1 = 16 kHz
+2 = 22.05 kHz
+3 = 24 kHz
+4 = Reserved
+5 = 32 kHz
+6 = 44.1k Hz
+7 = 48 kHz
+
+[ISDBAudioQuality]
+# In ISDB audio_component_descriptor
+Bits = 2
+0 = Reserved
+1 = Mode 1
+2 = Mode 2
+3 = Mode 3

@@ -228,12 +228,13 @@ namespace ts {
 
         //!
         //! Name of Component Type (in Component Descriptor).
+        //! @param [in] duck TSDuck execution context (used to select from other standards).
         //! @param [in] ct Component Type (in Component Descriptor).
         //! Combination of stream_content_ext (4 bits), stream_content (4 bits) and component_type (8 bits).
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString ComponentType(uint16_t ct, Flags flags = NAME);
+        TSDUCKDLL UString ComponentType(const DuckContext& duck, uint16_t ct, Flags flags = NAME);
 
         //!
         //! Name of AC-3 Component Type.

@@ -59,6 +59,7 @@ public:
     void testUnixTime();
     void testDaylightSavingTime();
     void testCAS();
+    void testJST();
 
     TSUNIT_TEST_BEGIN(TimeTest);
     TSUNIT_TEST(testTime);
@@ -73,6 +74,7 @@ public:
     TSUNIT_TEST(testUnixTime);
     TSUNIT_TEST(testDaylightSavingTime);
     TSUNIT_TEST(testCAS);
+    TSUNIT_TEST(testJST);
     TSUNIT_TEST_END();
 };
 
@@ -106,7 +108,7 @@ void TimeTest::testTime()
 
 void TimeTest::testFormat()
 {
-    ts::Time t1 (2006, 7, 24, 10, 25, 12, 20);
+    ts::Time t1(2006, 7, 24, 10, 25, 12, 20);
     TSUNIT_EQUAL(u"2006/07/24 10:25:12.020", t1.format());
     TSUNIT_EQUAL(u"2006/07/24 10:25:12.020", t1.format(ts::Time::ALL));
     TSUNIT_EQUAL(u"2006", t1.format(ts::Time::YEAR));
@@ -123,9 +125,9 @@ void TimeTest::testFormat()
 
 void TimeTest::testOperators()
 {
-    ts::Time t1 (2006, 7, 24, 10, 25, 12, 900);
-    ts::Time t2 (2006, 7, 24, 10, 25, 12, 901);
-    ts::Time t3 (t1);
+    ts::Time t1(2006, 7, 24, 10, 25, 12, 900);
+    ts::Time t2(2006, 7, 24, 10, 25, 12, 901);
+    ts::Time t3(t1);
     ts::Time t4;
     t4 = t2;
 
@@ -152,13 +154,13 @@ void TimeTest::testOperators()
 
 void TimeTest::testLocalTime()
 {
-    const ts::Time t (2012, 8, 24, 10, 25, 12, 100);
+    const ts::Time t(2012, 8, 24, 10, 25, 12, 100);
 
     TSUNIT_ASSERT(t.localToUTC().UTCToLocal() == t);
     TSUNIT_ASSERT(t.UTCToLocal().localToUTC() == t);
 
-    const ts::Time nowUtc (ts::Time::CurrentUTC());
-    const ts::Time nowLocal (ts::Time::CurrentLocalTime());
+    const ts::Time nowUtc(ts::Time::CurrentUTC());
+    const ts::Time nowLocal(ts::Time::CurrentLocalTime());
 
     debug() << "TimeTest: Current local time: " << nowLocal << std::endl;
     debug() << "TimeTest: Current UTC time: " << nowUtc << std::endl;
@@ -174,21 +176,21 @@ void TimeTest::testLocalTime()
 
 void TimeTest::testThisNext()
 {
-    const ts::Time t (2012, 8, 24, 10, 25, 12, 100);
+    const ts::Time t(2012, 8, 24, 10, 25, 12, 100);
 
-    TSUNIT_ASSERT(t.thisHour()  == ts::Time (2012, 8, 24, 10, 0, 0, 0));
-    TSUNIT_ASSERT(t.nextHour()  == ts::Time (2012, 8, 24, 11, 0, 0, 0));
-    TSUNIT_ASSERT(t.thisDay()   == ts::Time (2012, 8, 24,  0, 0, 0, 0));
-    TSUNIT_ASSERT(t.nextDay()   == ts::Time (2012, 8, 25,  0, 0, 0, 0));
-    TSUNIT_ASSERT(t.thisMonth() == ts::Time (2012, 8,  1,  0, 0, 0, 0));
-    TSUNIT_ASSERT(t.nextMonth() == ts::Time (2012, 9,  1,  0, 0, 0, 0));
-    TSUNIT_ASSERT(t.thisYear()  == ts::Time (2012, 1,  1,  0, 0, 0, 0));
-    TSUNIT_ASSERT(t.nextYear()  == ts::Time (2013, 1,  1,  0, 0, 0, 0));
+    TSUNIT_ASSERT(t.thisHour()  == ts::Time(2012, 8, 24, 10, 0, 0, 0));
+    TSUNIT_ASSERT(t.nextHour()  == ts::Time(2012, 8, 24, 11, 0, 0, 0));
+    TSUNIT_ASSERT(t.thisDay()   == ts::Time(2012, 8, 24,  0, 0, 0, 0));
+    TSUNIT_ASSERT(t.nextDay()   == ts::Time(2012, 8, 25,  0, 0, 0, 0));
+    TSUNIT_ASSERT(t.thisMonth() == ts::Time(2012, 8,  1,  0, 0, 0, 0));
+    TSUNIT_ASSERT(t.nextMonth() == ts::Time(2012, 9,  1,  0, 0, 0, 0));
+    TSUNIT_ASSERT(t.thisYear()  == ts::Time(2012, 1,  1,  0, 0, 0, 0));
+    TSUNIT_ASSERT(t.nextYear()  == ts::Time(2013, 1,  1,  0, 0, 0, 0));
 }
 
 void TimeTest::testFields()
 {
-    ts::Time::Fields f1 (2012, 8, 24, 10, 25, 12, 100);
+    ts::Time::Fields f1(2012, 8, 24, 10, 25, 12, 100);
 
     ts::Time::Fields f2;
     f2.year = 2012;
@@ -202,11 +204,11 @@ void TimeTest::testFields()
     TSUNIT_ASSERT(f1 == f2);
     TSUNIT_ASSERT(!(f1 != f2));
 
-    ts::Time t1 (2012, 8, 24, 10, 25, 12, 100);
-    ts::Time t2 (f2);
+    ts::Time t1(2012, 8, 24, 10, 25, 12, 100);
+    ts::Time t2(f2);
     TSUNIT_ASSERT(t1 == t2);
 
-    ts::Time::Fields f3 (t1);
+    ts::Time::Fields f3(t1);
     TSUNIT_ASSERT(f3 == f1);
 }
 
@@ -272,7 +274,7 @@ void TimeTest::testUnixTime()
         << "TimeTest: UNIX Epoch: " << ts::Time::UnixEpoch << std::endl
         << "TimeTest: " << ts::Time(2018, 4, 13, 12, 54, 34) << " is "
         << ((ts::Time(2018, 4, 13, 12, 54, 34) - ts::Time::Epoch) / ts::MilliSecPerDay) << " days from Epoch" << std::endl
-        << "          and " << (1523624074 / (24 * 3600)) << " days from UNIX Epoch" << std::endl;
+        << "          and " <<(1523624074 / (24 * 3600)) << " days from UNIX Epoch" << std::endl;
 
     TSUNIT_ASSERT(ts::Time::UnixTimeToUTC(0) == ts::Time::UnixEpoch);
     TSUNIT_EQUAL(u"2018/04/13 12:54:34.000", ts::Time::UnixTimeToUTC(1523624074));
@@ -432,4 +434,12 @@ void TimeTest::testCAS()
 
     md.invalidate();
     TSUNIT_ASSERT(!md.isValid());
+}
+
+void TimeTest::testJST()
+{
+    TSUNIT_EQUAL(u"2020/04/30 21:00:00.000", ts::Time(2020, 4, 30,  12,  0,  0).UTCToJST().format());
+    TSUNIT_EQUAL(u"2020/04/30 03:00:00.000", ts::Time(2020, 4, 30,  12,  0,  0).JSTToUTC().format());
+    TSUNIT_EQUAL(u"2020/05/01 05:00:00.000", ts::Time(2020, 4, 30,  20,  0,  0).UTCToJST().format());
+    TSUNIT_EQUAL(u"2020/04/29 19:00:00.000", ts::Time(2020, 4, 30,   4,  0,  0).JSTToUTC().format());
 }

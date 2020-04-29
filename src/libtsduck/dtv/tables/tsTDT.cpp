@@ -84,6 +84,11 @@ void ts::TDT::deserializeContent(DuckContext& duck, const BinaryTable& table)
     if (sect.payloadSize() >= MJD_SIZE) {
         DecodeMJD(sect.payload(), MJD_SIZE, utc_time);
         _is_valid = true;
+
+        // In Japan, the time field is in fact a JST time, convert it to UTC.
+        if (duck.standards() & STD_JAPAN) {
+            utc_time = utc_time.JSTToUTC();
+        }
     }
 }
 
@@ -95,8 +100,14 @@ void ts::TDT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 void ts::TDT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Encode the data in MJD in the payload (5 bytes)
+    // In Japan, the time field is in fact a JST time, convert UTC to JST before serialization.
     uint8_t payload[MJD_SIZE];
-    EncodeMJD(utc_time, payload, MJD_SIZE);
+    if (duck.standards() & STD_JAPAN) {
+        EncodeMJD(utc_time.UTCToJST(), payload, MJD_SIZE);
+    }
+    else {
+        EncodeMJD(utc_time, payload, MJD_SIZE);
+    }
 
     // Add the section in the table
     table.addSection(new Section(MY_TID, // tid
