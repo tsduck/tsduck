@@ -124,7 +124,7 @@ INCLUDED_BY_GRAPH      = NO
 CALL_GRAPH             = NO
 CALLER_GRAPH           = NO
 UML_LOOK               = NO
-DOT_GRAPH_MAX_NODES    = 200
+DOT_GRAPH_MAX_NODES    = 400
 HAVE_DOT               = $(HAVE_DOT)
 DOT_PATH               = $(DOT_PATH)
 

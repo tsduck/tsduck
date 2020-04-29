@@ -46,9 +46,9 @@ namespace ts {
     {
     public:
         // ISDBTerrestrialDeliverySystemDescriptor public members:
-        uint16_t              area_code;          //! Area code, 12 bits.
-        uint8_t               guard_interval;     //! Guard interval, 2 bits.
-        uint8_t               transmission_mode;  //! Transmission mode, 2 bits.
+        uint16_t              area_code;          //!< Area code, 12 bits.
+        uint8_t               guard_interval;     //!< Guard interval, 2 bits.
+        uint8_t               transmission_mode;  //!< Transmission mode, 2 bits.
         std::vector<uint64_t> frequencies;        //!< Frequencies in Hz (warning: coded in 1/7 MHz units in descriptor).
 
         //!
