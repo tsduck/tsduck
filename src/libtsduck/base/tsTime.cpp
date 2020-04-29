@@ -302,6 +302,11 @@ bool ts::Time::decode(const ts::UString& str, int fields)
 
 ts::Time ts::Time::localToUTC() const
 {
+    // Don't convert specific values.
+    if (_value == Epoch._value || _value == Apocalypse._value) {
+        return *this;
+    }
+
 #if defined(TS_WINDOWS)
 
     FileTime local, utc;
@@ -339,6 +344,11 @@ ts::Time ts::Time::localToUTC() const
 
 ts::Time ts::Time::UTCToLocal() const
 {
+    // Don't convert specific values.
+    if (_value == Epoch._value || _value == Apocalypse._value) {
+        return *this;
+    }
+
 #if defined(TS_WINDOWS)
 
     FileTime local, utc;
@@ -368,6 +378,32 @@ ts::Time ts::Time::UTCToLocal() const
     return Time(_value + int64_t(gmt_offset) * 1000 * TICKS_PER_MS);
 
 #endif
+}
+
+
+//----------------------------------------------------------------------------
+// Convert between UTC and JST (Japan Standard Time).
+// Don't convert specific values. JST is 9 hours ahead from UTC.
+//----------------------------------------------------------------------------
+
+ts::Time ts::Time::JSTToUTC() const
+{
+    if (_value == Epoch._value || _value == Apocalypse._value) {
+        return *this;
+    }
+    else {
+        return Time(_value - 9 * MilliSecPerHour * TICKS_PER_MS);
+    }
+}
+
+ts::Time ts::Time::UTCToJST() const
+{
+    if (_value == Epoch._value || _value == Apocalypse._value) {
+        return *this;
+    }
+    else {
+        return Time(_value + 9 * MilliSecPerHour * TICKS_PER_MS);
+    }
 }
 
 

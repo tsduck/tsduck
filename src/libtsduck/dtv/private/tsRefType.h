@@ -45,6 +45,7 @@
     REF_TYPE(ATSCEAC3AudioDescriptor);
     REF_TYPE(ATSCStuffingDescriptor);
     REF_TYPE(ATSCTimeShiftedServiceDescriptor);
+    REF_TYPE(AudioComponentDescriptor);
     REF_TYPE(AudioPreselectionDescriptor);
     REF_TYPE(AudioStreamDescriptor);
     REF_TYPE(AVCTimingAndHRDDescriptor);

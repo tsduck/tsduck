@@ -243,7 +243,7 @@ ts::UString ts::names::T2MIPacketType(uint8_t type, Flags flags)
 // Component Type (in Component Descriptor)
 //----------------------------------------------------------------------------
 
-ts::UString ts::names::ComponentType(uint16_t type, Flags flags)
+ts::UString ts::names::ComponentType(const DuckContext& duck, uint16_t type, Flags flags)
 {
     // There is a special case here. The binary layout of the 16 bits are:
     //   stream_content_ext (4 bits)
@@ -270,7 +270,11 @@ ts::UString ts::names::ComponentType(uint16_t type, Flags flags)
     // Value to display:
     const uint16_t dType = sc >= 1 && sc <= 8 ? (type & 0x0FFF) : type;
 
-    if ((nType & 0xFF00) == 0x3F00) {
+    if (duck.standards() & STD_JAPAN) {
+        // Japan / ISDB uses a completely different mapping.
+        return NamesMain::Instance()->nameFromSection(u"ComponentTypeJapan", Names::Value(nType), flags | names::ALTERNATE, 16, dType);
+    }
+    else if ((nType & 0xFF00) == 0x3F00) {
         return SubtitlingType(nType & 0x00FF, flags);
     }
     else if ((nType & 0xFF00) == 0x4F00) {

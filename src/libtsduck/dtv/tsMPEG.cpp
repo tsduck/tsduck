@@ -61,11 +61,12 @@ const ts::Enumeration ts::PrivateDataSpecifierEnum({
 });
 
 const ts::Enumeration ts::StandardsEnum({
-    {u"MPEG", ts::STD_MPEG},
-    {u"DVB",  ts::STD_DVB},
-    {u"SCTE", ts::STD_SCTE},
-    {u"ATSC", ts::STD_ATSC},
-    {u"ISDB", ts::STD_ISDB},
+    {u"MPEG",  ts::STD_MPEG},
+    {u"DVB",   ts::STD_DVB},
+    {u"SCTE",  ts::STD_SCTE},
+    {u"ATSC",  ts::STD_ATSC},
+    {u"ISDB",  ts::STD_ISDB},
+    {u"Japan", ts::STD_JAPAN},
 });
 
 

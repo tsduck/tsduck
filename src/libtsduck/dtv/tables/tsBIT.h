@@ -72,6 +72,7 @@ namespace ts {
         typedef EntryWithDescriptorsMap<uint8_t, Broadcaster> BroadcasterMap;
 
         // BIT public members:
+        uint16_t       original_network_id;       //!< Original network id.
         bool           broadcast_view_propriety;  //!< User indication with a unit of broadcaster name is appropriate.
         DescriptorList descs;                     //!< Top-level descriptor list.
         BroadcasterMap broadcasters;              //!< List of broadcasters descriptions.
@@ -101,7 +102,7 @@ namespace ts {
         //! @param [in] other Other instance to copy.
         //! @return A reference to this object.
         //!
-        BIT& operator=(const BIT& other);
+        BIT& operator=(const BIT& other) = default;
 
         // Inherited methods
         virtual void fromXML(DuckContext&, const xml::Element*) override;
@@ -112,5 +113,13 @@ namespace ts {
         virtual void serializeContent(DuckContext&, BinaryTable&) const override;
         virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
+
+    private:
+        // Add a new section to a table being serialized.
+        // Session number is incremented. Data and remain are reinitialized.
+        void addSection(BinaryTable& table, int& section_number, uint8_t* payload, uint8_t*& data, size_t& remain) const;
+
+        // Create an empty main descriptor loop. Data and remain are updated.
+        void createEmptyMainDescriptorLoop(uint8_t*& data, size_t& remain) const;
     };
 }

@@ -76,7 +76,7 @@ namespace ts {
         public:
             // Public members
             uint16_t event_id;           //!< Event id.
-            Time     start_time;         //!< Event start_time.
+            Time     start_time;         //!< Event start_time in UTC (or JST in Japan).
             Second   duration;           //!< Event duration in seconds.
             uint8_t  running_status;     //!< Running status code.
             bool     CA_controlled;      //!< Controlled by a CA_system.

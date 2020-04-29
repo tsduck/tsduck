@@ -335,9 +335,16 @@ void NamesTest::testAC3ComponentType()
 
 void NamesTest::testComponentType()
 {
-    TSUNIT_EQUAL(u"MPEG-2 video, 4:3 aspect ratio, 30 Hz", ts::names::ComponentType(0x0105));
-    TSUNIT_EQUAL(u"DVB subtitles, no aspect ratio", ts::names::ComponentType(0x0310));
-    TSUNIT_EQUAL(u"Enhanced AC-3, combined, visually impaired, 2 channels", ts::names::ComponentType(0x0492));
+    ts::DuckContext duck;
+    TSUNIT_EQUAL(u"MPEG-2 video, 4:3 aspect ratio, 30 Hz", ts::names::ComponentType(duck, 0x0105));
+    TSUNIT_EQUAL(u"DVB subtitles, no aspect ratio", ts::names::ComponentType(duck, 0x0310));
+    TSUNIT_EQUAL(u"Enhanced AC-3, combined, visually impaired, 2 channels", ts::names::ComponentType(duck, 0x0492));
+    TSUNIT_EQUAL(u"MPEG-2 high definition video, > 16:9 aspect ratio, 30 Hz", ts::names::ComponentType(duck, 0x0110));
+    TSUNIT_EQUAL(u"MPEG-2 video", ts::names::ComponentType(duck, 0x01B4));
+
+    duck.addStandards(ts::STD_JAPAN);
+    TSUNIT_EQUAL(u"unknown (0x0110)", ts::names::ComponentType(duck, 0x0110));
+    TSUNIT_EQUAL(u"Video 1080i(1125i), >16:9 aspect ratio", ts::names::ComponentType(duck, 0x01B4));
 }
 
 void NamesTest::testSubtitlingType()

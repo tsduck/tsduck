@@ -132,7 +132,7 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
     if (size >= 6) {
         const uint16_t type = GetUInt16(data);
         const uint8_t tag = data[2];
-        strm << margin << "Content/type: " << names::ComponentType(type, names::FIRST) << std::endl
+        strm << margin << "Content/type: " << names::ComponentType(duck, type, names::FIRST) << std::endl
              << margin << UString::Format(u"Component tag: %d (0x%X)", {tag, tag}) << std::endl
              << margin << "Language: " << DeserializeLanguageCode(data + 3) << std::endl;
         data += 6; size -= 6;

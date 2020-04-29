@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Bouquet Association Table (BAT)
-//
-//----------------------------------------------------------------------------
 
 #include "tsBAT.h"
 #include "tsBinaryTable.h"

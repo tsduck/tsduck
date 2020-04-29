@@ -276,13 +276,14 @@ namespace ts {
     //! Bit masks for standards, used to qualify the signalization.
     //---------------------------------------------------------------------
 
-    enum Standards : uint8_t {
-        STD_NONE = 0x00,  //!< No known standard
-        STD_MPEG = 0x01,  //!< Defined by MPEG, common to all standards
-        STD_DVB  = 0x02,  //!< Defined by ETSI/DVB.
-        STD_SCTE = 0x04,  //!< Defined by ANSI/SCTE.
-        STD_ATSC = 0x08,  //!< Defined by ATSC.
-        STD_ISDB = 0x10,  //!< Defined by ISDB.
+    enum Standards : uint16_t {
+        STD_NONE  = 0x00,  //!< No known standard
+        STD_MPEG  = 0x01,  //!< Defined by MPEG, common to all standards
+        STD_DVB   = 0x02,  //!< Defined by ETSI/DVB.
+        STD_SCTE  = 0x04,  //!< Defined by ANSI/SCTE.
+        STD_ATSC  = 0x08,  //!< Defined by ATSC.
+        STD_ISDB  = 0x10,  //!< Defined by ISDB.
+        STD_JAPAN = 0x20,  //!< Defined in Japan only (typically in addition to ISDB).
     };
 
     //!

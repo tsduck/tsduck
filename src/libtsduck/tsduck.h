@@ -82,6 +82,7 @@
 #include "tsATSCStuffingDescriptor.h"
 #include "tsATSCTimeShiftedServiceDescriptor.h"
 #include "tsAudioAttributes.h"
+#include "tsAudioComponentDescriptor.h"
 #include "tsAudioLanguageOptions.h"
 #include "tsAudioPreselectionDescriptor.h"
 #include "tsAudioStreamDescriptor.h"

@@ -514,6 +514,9 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
              << names::TID(last_tid) << std::endl;
     }
 
+    // The time reference is UTC as defined by DVB, but JST in Japan.
+    const char* const zone = (duck.standards() & STD_JAPAN) ? "JST" : "UTC";
+
     while (size >= 12) {
         uint16_t evid = GetUInt16(data);
         Time start;
@@ -529,7 +532,7 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             loop_length = size;
         }
         strm << margin << UString::Format(u"Event Id: %d (0x%X)", {evid, evid}) << std::endl
-             << margin << "Start UTC: " << start.format(Time::DATE | Time::TIME) << std::endl
+             << margin << "Start " << zone << ": " << start.format(Time::DATE | Time::TIME) << std::endl
              << margin << UString::Format(u"Duration: %02d:%02d:%02d", {hour, min, sec}) << std::endl
              << margin << "Running status: " << names::RunningStatus(run) << std::endl
              << margin << "CA mode: " << (ca_mode ? "controlled" : "free") << std::endl;
