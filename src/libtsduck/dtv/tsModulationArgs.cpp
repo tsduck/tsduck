@@ -810,6 +810,30 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(const Descriptor& desc)
             }
             break;
         }
+        case DID_ISDB_TERRES_DELIV:  {
+            status = size >= 4;
+            if (status) {
+                const uint8_t guard = (data[1] >> 2) & 0x03;
+                const uint8_t transm = data[1] & 0x03;
+                delivery_system = DS_ISDB_T;
+                // The frequency in the descriptor is in units of 1/7 MHz.
+                frequency = (1000000 * uint64_t(GetUInt16(data + 2))) / 7;
+                switch (transm) {
+                    case 0:  transmission_mode = TM_2K; break;
+                    case 1:  transmission_mode = TM_8K; break;
+                    case 2:  transmission_mode = TM_4K; break;
+                    default: transmission_mode = TM_AUTO; break;
+                }
+                switch (guard) {
+                    case 0:  guard_interval = GUARD_1_32; break;
+                    case 1:  guard_interval = GUARD_1_16; break;
+                    case 2:  guard_interval = GUARD_1_8; break;
+                    case 3:  guard_interval = GUARD_1_4; break;
+                    default: guard_interval = GUARD_AUTO; break;
+                }
+            }
+            break;
+        }
         default: {
             // Not a valid delivery descriptor.
             status = false;

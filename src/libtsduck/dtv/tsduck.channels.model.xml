@@ -46,8 +46,7 @@
 -->
 <tsduck>
   <!-- Several networks in an XML file -->
-  <network id="uint16, required"
-           type="ATSC|DVB-C|DVB-S|DVB-T, required">
+  <network id="uint16, required" type="ATSC|DVB-C|DVB-S|DVB-T|ISDB-T, required">
 
     <!-- Description of one transport stream -->
     <ts id="uint16, required" onid="uint16, optional">
@@ -88,6 +87,12 @@
             guard="1/4|1/8|1/16|1/32|1/128|19/128|19/256|auto, default=auto"
             hierarchy="1|2|4|auto|none, default=auto"
             PLP="uint8, optional"/>
+
+      <isdbt frequency="uint64, required"
+             inversion="on|off|auto, default=auto"
+             bandwidth="5-MHz|6-MHz|7-MHz|8-MHz|auto, default=auto"
+             transmission="2K|4K|8K|auto, default=auto"
+             guard="1/4|1/8|1/16|1/32|auto, default=auto"/>
 
       <!-- Description of one service in the TS -->
       <service id="uint16, required"
