@@ -641,6 +641,15 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
             elem->getVariableIntEnumAttribute(mod.modulation, ModulationEnum, u"modulation", false, VSB_8) &&
             elem->getOptionalIntEnumAttribute(mod.inversion, SpectralInversionEnum, u"inversion");
     }
+    else if (elem->name().similar(u"isdbt")) {
+        mod.delivery_system = DS_ISDB_T;
+        return
+            elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
+            elem->getOptionalIntEnumAttribute(mod.bandwidth, BandWidthEnum, u"bandwidth") &&
+            elem->getOptionalIntEnumAttribute(mod.transmission_mode, TransmissionModeEnum, u"transmission") &&
+            elem->getOptionalIntEnumAttribute(mod.guard_interval, GuardIntervalEnum, u"guard") &&
+            elem->getOptionalIntEnumAttribute(mod.inversion, SpectralInversionEnum, u"inversion");
+    }
     else {
         // Not a valid modulation parameters node.
         return false;
@@ -744,8 +753,24 @@ ts::xml::Element* ts::ChannelFile::toXML(const ModulationArgs& mod, xml::Element
             }
             return e;
         }
+        case TT_ISDB_T: {
+            xml::Element* e = parent->addElement(u"isdbt");
+            e->setOptionalIntAttribute(u"frequency", mod.frequency, false);
+            if (mod.bandwidth != BW_AUTO) {
+                e->setOptionalEnumAttribute(BandWidthEnum, u"bandwidth", mod.bandwidth);
+            }
+            if (mod.transmission_mode != TM_AUTO) {
+                e->setOptionalEnumAttribute(TransmissionModeEnum, u"transmission", mod.transmission_mode);
+            }
+            if (mod.guard_interval != GUARD_AUTO) {
+                e->setOptionalEnumAttribute(GuardIntervalEnum, u"guard", mod.guard_interval);
+            }
+            if (mod.inversion != SPINV_AUTO) {
+                e->setOptionalEnumAttribute(SpectralInversionEnum, u"inversion", mod.inversion);
+            }
+            return e;
+        }
         case TT_ISDB_S:
-        case TT_ISDB_T:
         case TT_ISDB_C:
         case TT_UNDEFINED:
         default: {
