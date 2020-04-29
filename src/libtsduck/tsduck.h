@@ -96,6 +96,7 @@
 #include "tsBCD.h"
 #include "tsBetterSystemRandomGenerator.h"
 #include "tsBinaryTable.h"
+#include "tsBIT.h"
 #include "tsBitrateDifferenceDVBT.h"
 #include "tsBitRateRegulator.h"
 #include "tsBitStream.h"

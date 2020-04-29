@@ -1,6 +1,7 @@
     REF_TYPE(AIT);
     REF_TYPE(ATSCEIT);
     REF_TYPE(BAT);
+    REF_TYPE(BIT);
     REF_TYPE(CableEmergencyAlertTable);
     REF_TYPE(CAT);
     REF_TYPE(CVCT);
