@@ -35,6 +35,7 @@
 #include "tsAIT.h"
 #include "tsATSCEIT.h"
 #include "tsBAT.h"
+#include "tsBIT.h"
 #include "tsCableEmergencyAlertTable.h"
 #include "tsCAT.h"
 #include "tsCVCT.h"
