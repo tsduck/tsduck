@@ -138,7 +138,7 @@ void ts::SIParameterDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
              << margin << "Update time: " << update.format(Time::DATE) << std::endl;
 
         while (size >= 2) {
-            strm << margin << "- Table id: " << names::TID(data[0], CASID_NULL, names::HEXA_FIRST) << std::endl;
+            strm << margin << "- Table id: " << names::TID(duck, data[0], CASID_NULL, names::HEXA_FIRST) << std::endl;
             const size_t len = std::min<size_t>(data[1], size - 2);
             display.displayPrivateData(u"Table description", data + 2, len, indent + 2);
             data += 2 + len; size -= 2 + len;

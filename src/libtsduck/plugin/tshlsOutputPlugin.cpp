@@ -415,7 +415,7 @@ void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& 
 
     // If we need to packetize the table, do it now.
     if (packets != nullptr) {
-        OneShotPacketizer pzer(table.sourcePID());
+        OneShotPacketizer pzer(duck, table.sourcePID());
         pzer.addTable(table);
         pzer.getPackets(*packets);
     }

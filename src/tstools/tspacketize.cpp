@@ -169,7 +169,7 @@ int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
     ts::OutputRedirector output(opt.outfile, opt);
-    ts::CyclingPacketizer pzer(opt.pid, opt.stuffing_policy, opt.bitrate);
+    ts::CyclingPacketizer pzer(opt.duck, opt.pid, opt.stuffing_policy, opt.bitrate);
     ts::SectionFile file(opt.duck);
     file.setCRCValidation(opt.crc_op);
 

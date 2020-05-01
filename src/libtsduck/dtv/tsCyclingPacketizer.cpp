@@ -40,8 +40,8 @@ TSDUCK_SOURCE;
 // Constructors and destructors
 //----------------------------------------------------------------------------
 
-ts::CyclingPacketizer::CyclingPacketizer(PID pid, StuffingPolicy stuffing, BitRate bitrate, Report* report) :
-    Packetizer(pid, this, report),
+ts::CyclingPacketizer::CyclingPacketizer(const DuckContext& duck, PID pid, StuffingPolicy stuffing, BitRate bitrate, Report* report) :
+    Packetizer(duck, pid, this, report),
     _stuffing(stuffing),
     _bitrate(bitrate),
     _section_count(0),
@@ -427,10 +427,10 @@ bool ts::CyclingPacketizer::atCycleBoundary() const
 // Display the internal state of the packetizer SectionDesc, mainly for debug
 //----------------------------------------------------------------------------
 
-std::ostream& ts::CyclingPacketizer::SectionDesc::display(std::ostream& strm) const
+std::ostream& ts::CyclingPacketizer::SectionDesc::display(const DuckContext& duck, std::ostream& strm) const
 {
     return strm
-        << "    - " << names::TID(section->tableId()) << std::endl
+        << "    - " << names::TID(duck, section->tableId()) << std::endl
         << "      Repetition rate: " << repetition << " ms" << std::endl
         << "      Last provided at cycle: " << last_cycle << std::endl
         << "      Last provided at packet: " << last_packet << std::endl
@@ -454,11 +454,11 @@ std::ostream& ts::CyclingPacketizer::display(std::ostream& strm) const
         << "  Scheduled sections: " << _sched_sections.size() << std::endl
         << "  Scheduled packets max: " << _sched_packets << std::endl;
     for (SectionDescList::const_iterator it = _sched_sections.begin(); it != _sched_sections.end(); ++it) {
-        (*it)->display(strm);
+        (*it)->display(_duck, strm);
     }
     strm << "  Unscheduled sections: " << _other_sections.size() << std::endl;
     for (SectionDescList::const_iterator it = _other_sections.begin(); it != _other_sections.end(); ++it) {
-        (*it)->display(strm);
+        (*it)->display(_duck, strm);
     }
     return strm;
 }

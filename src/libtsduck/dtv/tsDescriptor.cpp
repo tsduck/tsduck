@@ -296,7 +296,10 @@ bool ts::Descriptor::fromXML(DuckContext& duck, const xml::Element* node, TID ti
 
     // If the table is specified and the XML descriptor is not allowed in this table, this is an error.
     if (!TablesFactory::Instance()->isDescriptorAllowed(node->name(), tid)) {
-        node->report().error(u"<%s>, line %d, is not allowed here, must be in %s", {node->name(), node->lineNumber(), TablesFactory::Instance()->descriptorTables(node->name())});
+        node->report().error(u"<%s>, line %d, is not allowed here, must be in %s", {
+                             node->name(),
+                             node->lineNumber(),
+                             TablesFactory::Instance()->descriptorTables(duck, node->name())});
         return false;
     }
 

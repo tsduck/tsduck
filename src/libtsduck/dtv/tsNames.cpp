@@ -50,6 +50,65 @@ ts::NamesOUI::~NamesOUI() {}
 
 
 //----------------------------------------------------------------------------
+// Tables ids: specific standards processing
+//----------------------------------------------------------------------------
+
+ts::UString ts::names::TID(const DuckContext& duck, uint8_t tid, uint16_t cas, Flags flags)
+{
+    // Where to search table ids.
+    const Names* const repo = NamesMain::Instance();
+    const UString section(u"TableId");
+
+    // Check without standard, then with all known standards in TSDuck context.
+    // In all cases, use version with CAS first, then without CAS.
+    // Return the first name which is found.
+    // If no name is found in the list of supported standards but some with
+    // other standards, use the first one that was found.
+
+    const Names::Value casMask = Names::Value(CASFamilyOf(cas)) << 8;
+    Names::Value finalValue = Names::Value(tid);
+
+    if (repo->nameExists(section, finalValue | casMask)) {
+        // Found without standard, with CAS.
+        finalValue |= casMask;
+    }
+    else if (repo->nameExists(section, finalValue)) {
+        // Found without standard, without CAS. Nothing to do. Keep this value.
+    }
+    else {
+        // Loop on all possible standards.
+        bool foundOnce = false;
+        for (std::underlying_type<Standards>::type mask = 1; mask != 0; mask <<= 1) {
+            // TID value with mask for this standard:
+            const Names::Value value = Names::Value(tid) | (Names::Value(mask) << 16);
+            // Check if this standard is currently in TSDuck context.
+            const bool supportedStandard = (duck.standards() & mask) != 0;
+            // Lookup name only if supported standard or no previous standard was found.
+            if (!foundOnce || supportedStandard) {
+                bool foundHere = repo->nameExists(section, value | casMask);
+                if (foundHere) {
+                    // Found with that standard, with CAS.
+                    finalValue = value | casMask;
+                    foundOnce = true;
+                }
+                else if (repo->nameExists(section, value)) {
+                    // Found with that standard, without CAS.
+                    finalValue = value;
+                    foundHere = foundOnce = true;
+                }
+                if (foundHere && supportedStandard) {
+                    break;
+                }
+            }
+        }
+    }
+
+    // Return the name for best matched value.
+    return repo->nameFromSection(section, finalValue, flags, 8);
+}
+
+
+//----------------------------------------------------------------------------
 // Descriptor ids: specific processing for table-specific descriptors.
 //----------------------------------------------------------------------------
 
@@ -80,12 +139,6 @@ ts::UString ts::names::DID(uint8_t did, uint32_t pds, uint8_t tid, Flags flags)
 //----------------------------------------------------------------------------
 // Public functions returning names.
 //----------------------------------------------------------------------------
-
-ts::UString ts::names::TID(uint8_t tid, uint16_t cas, Flags flags)
-{
-    // Use version with CAS first, then without CAS.
-    return NamesMain::Instance()->nameFromSectionWithFallback(u"TableId", (Names::Value(CASFamilyOf(cas)) << 8) | Names::Value(tid), Names::Value(tid), flags, 8);
-}
 
 ts::UString ts::names::EDID(uint8_t edid, Flags flags)
 {

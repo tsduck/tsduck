@@ -44,11 +44,11 @@ ts::PSIMerger::PSIMerger(DuckContext& duck, Options options, Report& report) :
     _main_eit_demux(_duck, nullptr, this),   // Section handler only, do not accumulate incomplete sections.
     _merge_demux(_duck, this),               // Complete table handler only
     _merge_eit_demux(_duck, nullptr, this),  // Section handler only, do not accumulate incomplete sections.
-    _pat_pzer(),
-    _cat_pzer(),
-    _nit_pzer(),
-    _sdt_bat_pzer(),
-    _eit_pzer(PID_EIT, this),
+    _pat_pzer(duck),
+    _cat_pzer(duck),
+    _nit_pzer(duck),
+    _sdt_bat_pzer(duck),
+    _eit_pzer(duck, PID_EIT, this),
     _main_tsid(),
     _main_pat(),
     _merge_pat(),

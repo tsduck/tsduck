@@ -273,26 +273,6 @@ namespace ts {
     constexpr size_t MACROBLOCK_HEIGHT = 16;
 
     //---------------------------------------------------------------------
-    //! Bit masks for standards, used to qualify the signalization.
-    //---------------------------------------------------------------------
-
-    enum Standards : uint16_t {
-        STD_NONE  = 0x00,  //!< No known standard
-        STD_MPEG  = 0x01,  //!< Defined by MPEG, common to all standards
-        STD_DVB   = 0x02,  //!< Defined by ETSI/DVB.
-        STD_SCTE  = 0x04,  //!< Defined by ANSI/SCTE.
-        STD_ATSC  = 0x08,  //!< Defined by ATSC.
-        STD_ISDB  = 0x10,  //!< Defined by ISDB.
-        STD_JAPAN = 0x20,  //!< Defined in Japan only (typically in addition to ISDB).
-    };
-
-    //!
-    //! Enumeration description of standard values.
-    //! Typically using StandardsEnum::bitMaskNames().
-    //!
-    TSDUCKDLL extern const Enumeration StandardsEnum;
-
-    //---------------------------------------------------------------------
     //! Predefined PID values
     //---------------------------------------------------------------------
 
@@ -1713,5 +1693,3 @@ namespace ts {
         ATSC_STYPE_SOFTWARE  = 0x05,  //!< ATSC Software Download Service
     };
 }
-
-TS_FLAGS_OPERATORS(ts::Standards)

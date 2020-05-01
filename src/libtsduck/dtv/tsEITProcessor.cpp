@@ -46,7 +46,7 @@ ts::EITProcessor::EITProcessor(DuckContext& duck, PID pid) :
     _start_time_offset(0),
     _date_only(false),
     _demux(_duck, nullptr, this),
-    _packetizer(pid, this),
+    _packetizer(duck, pid, this),
     _sections(),
     _removed_tids(),
     _removed(),

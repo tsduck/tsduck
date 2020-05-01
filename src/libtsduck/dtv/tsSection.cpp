@@ -551,6 +551,10 @@ std::ostream& ts::Section::dump(std::ostream& strm, int indent, uint16_t cas, bo
     const std::string margin(indent, ' ');
     const TID tid(tableId());
 
+    // Build a fake context based on the standards which define this section.
+    DuckContext duck;
+    duck.addStandards(definingStandards());
+
     // Filter invalid section
     if (!_is_valid) {
         return strm;
@@ -560,7 +564,7 @@ std::ostream& ts::Section::dump(std::ostream& strm, int indent, uint16_t cas, bo
     // If PID is the null PID, this means "unknown PID"
     if (!no_header) {
         strm << margin << ""
-             << UString::Format(u"* Section dump, PID 0x%X (%d), TID %d", {_source_pid, _source_pid, names::TID(tid, cas, names::BOTH_FIRST)})
+             << UString::Format(u"* Section dump, PID 0x%X (%d), TID %d", {_source_pid, _source_pid, names::TID(duck, tid, cas, names::BOTH_FIRST)})
              << std::endl
              << margin << "  Section size: " << size() << " bytes, header: " << (isLongSection() ? "long" : "short")
              << std::endl;

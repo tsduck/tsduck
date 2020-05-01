@@ -460,7 +460,7 @@ int MainCode(int argc, char *argv[])
     EMMGOptions opt(argc, argv);
 
     // An object to manage the TCP connection with the MUX.
-    ts::EMMGClient client;
+    ts::EMMGClient client(opt.duck);
     ts::emmgmux::ChannelStatus channelStatus;
     ts::emmgmux::StreamStatus streamStatus;
 
@@ -500,7 +500,7 @@ int MainCode(int argc, char *argv[])
     EMMGSectionProvider sectionProvider(opt);
 
     // When working in packet mode, we need a packetizer.
-    ts::Packetizer packetizer(ts::PID_NULL, &sectionProvider);
+    ts::Packetizer packetizer(opt.duck, ts::PID_NULL, &sectionProvider);
 
     // Start time.
     const ts::Monotonic startTime(true);

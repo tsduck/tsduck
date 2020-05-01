@@ -41,6 +41,7 @@
 
 namespace ts {
 
+    class DuckContext;
     class TablesDisplay;
     class DVBCharTable;
 
@@ -116,11 +117,12 @@ namespace ts {
 
         //!
         //! Get the list of tables where a descriptor is allowed.
+        //! @param [in] duck TSDuck execution context to interpret table names.
         //! @param [in] nodeName Name of the XML node for the descriptor.
         //! @return Human-readable list of tables where the descriptor is allowed.
         //! Empty string for non-table-specific descriptors.
         //!
-        UString descriptorTables(const UString& nodeName) const;
+        UString descriptorTables(const DuckContext& duck, const UString& nodeName) const;
 
         //!
         //! Get the display function for a given table id.
