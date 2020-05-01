@@ -124,6 +124,11 @@ void ts::xml::Attribute::setDateTime(const Time& value)
     setString(DateTimeToString(value));
 }
 
+void ts::xml::Attribute::setDate(const Time& value)
+{
+    setString(DateToString(value));
+}
+
 void ts::xml::Attribute::setTime(Second value)
 {
     setString(TimeToString(value));
@@ -140,6 +145,12 @@ ts::UString ts::xml::Attribute::DateTimeToString(const Time& value)
     return UString::Format(u"%04d-%02d-%02d %02d:%02d:%02d", {f.year, f.month, f.day, f.hour, f.minute, f.second});
 }
 
+ts::UString ts::xml::Attribute::DateToString(const Time& value)
+{
+    const Time::Fields f(value);
+    return UString::Format(u"%04d-%02d-%02d", {f.year, f.month, f.day});
+}
+
 ts::UString ts::xml::Attribute::TimeToString(Second value)
 {
     return UString::Format(u"%02d:%02d:%02d", {value / 3600, (value / 60) % 60, value % 60});
@@ -149,6 +160,12 @@ bool ts::xml::Attribute::DateTimeFromString(Time& value, const UString& str)
 {
     // We are tolerant on syntax, decode 6 fields, regardless of separators.
     return value.decode(str, Time::YEAR | Time::MONTH | Time::DAY | Time::HOUR | Time::MINUTE | Time::SECOND);
+}
+
+bool ts::xml::Attribute::DateFromString(Time& value, const UString& str)
+{
+    // We are tolerant on syntax, decode 3 fields, regardless of separators.
+    return value.decode(str, Time::YEAR | Time::MONTH | Time::DAY);
 }
 
 bool ts::xml::Attribute::TimeFromString(Second& value, const UString& str)

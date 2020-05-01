@@ -1283,6 +1283,18 @@
                eutelsat_channel_number="uint10, required"/>
     </eutelsat_channel_number_descriptor>
 
+    <extended_broadcaster_descriptor
+        broadcaster_type="uint4, required"
+        terrestrial_broadcaster_id="uint16, optional">
+      <!-- Any number of affiliations, when broadcaster_type == 0x01 or 0x2 -->
+      <affiliation id="uint8, required"/>
+      <!-- Any number of broadcasters, when broadcaster_type == 0x01 or 0x2 -->
+      <broadcaster original_network_id="uint16, required" broadcaster_id="uint8, required"/>
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </extended_broadcaster_descriptor>
+
     <extended_channel_name_descriptor>
       <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
       <long_channel_name_text>
@@ -1881,6 +1893,15 @@
         sb_leak_rate="uint6, required">
       Hexadecimal content (optional DVB-reserved data)
     </short_smoothing_buffer_descriptor>
+
+    <SI_parameter_descriptor
+        parameter_version="uint8, required"
+        update_time="YYYY-MM-DD, required">
+      <!-- One per SI table -->
+      <table id="uint8, required">
+        Hexadecimal content (table description bytes)
+      </table>
+    </SI_parameter_descriptor>
 
     <simple_application_boundary_descriptor>
       <!-- Must be in an AIT (table id 0x74) -->

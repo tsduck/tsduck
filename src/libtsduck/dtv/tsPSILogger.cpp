@@ -149,7 +149,8 @@ bool ts::PSILogger::open()
     if (!_cat_only) {
         _demux.addPID(PID_PAT);   // MPEG
         _demux.addPID(PID_TSDT);  // MPEG
-        _demux.addPID(PID_SDT);   // DVB
+        _demux.addPID(PID_SDT);   // DVB, ISDB
+        _demux.addPID(PID_BIT);   // ISDB
         _demux.addPID(PID_PSIP);  // ATSC
     }
     if (!_clear) {
@@ -339,9 +340,22 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             break;
         }
 
+        case TID_BIT: {
+            if (pid != PID_BIT) {
+                // An ISDB BIT is only expected on PID 0x0024
+                strm << UString::Format(u"* Got unexpected ISDB BIT on PID %d (0x%X)", {pid, pid}) << std::endl;
+            }
+            else if (!_all_versions) {
+                _demux.removePID(pid);
+            }
+            _display.displayTable(table);
+            strm << std::endl;
+            break;
+        }
+
         case TID_MGT: {
             if (pid != PID_PSIP) {
-                // An MGT is only expected on PID 0x1FFB
+                // An ATSC MGT is only expected on PID 0x1FFB
                 strm << UString::Format(u"* Got unexpected ATSC MGT on PID %d (0x%X)", {pid, pid}) << std::endl;
                 _display.displayTable(table);
                 strm << std::endl;

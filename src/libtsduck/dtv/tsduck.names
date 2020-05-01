@@ -3876,3 +3876,10 @@ Bits = 2
 1 = Mode 1
 2 = Mode 2
 3 = Mode 3
+
+[ISDBBroadcasterType]
+# In ISDB extended_broadcaster_descriptor
+Bits = 4
+0 = Reserved
+1 = Digital terrestrial television broadcast
+2 = Digital terrestrial sound broadcast
