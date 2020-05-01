@@ -237,7 +237,7 @@ ts::ProcessorPlugin::Status ts::MPEInjectPlugin::processPacket(TSPacket& pkt, TS
     SectionQueue::MessagePtr section;
     if (_packet_index >= _mpe_packets.size() && _section_queue.dequeue(section, 0) && !section.isNull() && section->isValid()) {
         // Packetize the section.
-        OneShotPacketizer zer(_mpe_pid, true);
+        OneShotPacketizer zer(duck, _mpe_pid, true);
         zer.addSection(section.changeMutex<NullMutex>());
         zer.getPackets(_mpe_packets);
         _packet_index = 0;

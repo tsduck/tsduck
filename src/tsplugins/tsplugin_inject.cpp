@@ -128,7 +128,7 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     _pid_packet_count(0),
     _eval_interval(0),
     _cycle_count(0),
-    _pzer(PID_NULL, CyclingPacketizer::NEVER, 0, tsp),
+    _pzer(duck, PID_NULL, CyclingPacketizer::NEVER, 0, tsp),
     _stuffing_policy(CyclingPacketizer::NEVER)
 {
     option(u"", 0, STRING, 1, UNLIMITED_COUNT);

@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Common definition for MPEG level
-//
-//----------------------------------------------------------------------------
 
 #include "tsMPEG.h"
 TSDUCK_SOURCE;
@@ -58,15 +54,6 @@ const ts::Enumeration ts::PrivateDataSpecifierEnum({
     {u"Logiways",  ts::PDS_LOGIWAYS},
     {u"CanalPlus", ts::PDS_CANALPLUS},
     {u"Eutelsat",  ts::PDS_EUTELSAT},
-});
-
-const ts::Enumeration ts::StandardsEnum({
-    {u"MPEG",  ts::STD_MPEG},
-    {u"DVB",   ts::STD_DVB},
-    {u"SCTE",  ts::STD_SCTE},
-    {u"ATSC",  ts::STD_ATSC},
-    {u"ISDB",  ts::STD_ISDB},
-    {u"Japan", ts::STD_JAPAN},
 });
 
 

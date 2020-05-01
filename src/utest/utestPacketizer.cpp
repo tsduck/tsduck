@@ -135,7 +135,7 @@ void PacketizerTest::testPacketizer()
 
     const ts::BitRate bitrate = ts::PKT_SIZE * 8 * 10; // 10 packets per second
 
-    ts::CyclingPacketizer pzer(ts::PID_PAT, ts::CyclingPacketizer::ALWAYS, bitrate);
+    ts::CyclingPacketizer pzer(duck, ts::PID_PAT, ts::CyclingPacketizer::ALWAYS, bitrate);
     pzer.addTable(duck, pat);        // unscheduled
     pzer.addTable(duck, pmt, 1000);  // 1000 ms => 1 table / second
     pzer.addTable(duck, sdt, 250);   // 250 ms => 4 tables / second
@@ -154,7 +154,7 @@ void PacketizerTest::testPacketizer()
         TSUNIT_EQUAL(ts::SYNC_BYTE, pkt.b[0]);
         TSUNIT_EQUAL(0, pkt.b[4]); // pointer field
         ts::TID tid = pkt.b[5];
-        debug() << "PacketizerTest:   " << pi << ": " << ts::names::TID(tid) << std::endl;
+        debug() << "PacketizerTest:   " << pi << ": " << ts::names::TID(duck, tid) << std::endl;
         switch (tid) {
             case ts::TID_PAT:
                 pat_count++;

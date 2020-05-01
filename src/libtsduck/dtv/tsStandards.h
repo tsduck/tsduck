@@ -28,55 +28,33 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Packetization of MPEG sections into Transport Stream packets in one shot
+//!  Definition of the various DTV standards which are used in TSDuck.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsCyclingPacketizer.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
-    //! Packetization of MPEG sections into Transport Stream packets in one shot.
-    //! @ingroup mpeg
+    //! Bit masks for standards, used to qualify the signalization.
     //!
-    class TSDUCKDLL OneShotPacketizer: public CyclingPacketizer
-    {
-        TS_NOBUILD_NOCOPY(OneShotPacketizer);
-    public:
-        //!
-        //! Default constructor.
-        //! @param [in] duck TSDuck execution context. The reference is kept inside the packetizer.
-        //! @param [in] pid PID for generated TS packets.
-        //! @param [in] do_stuffing TS packet stuffing at end of section.
-        //! @param [in] bitrate Output bitrate, zero if undefined.
-        //! Useful only when using specific repetition rates for sections
-        //!
-        OneShotPacketizer(const DuckContext& duck, PID pid = PID_NULL, bool do_stuffing = false, BitRate bitrate = 0);
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~OneShotPacketizer();
-
-        //!
-        //! Set the stuffing policy.
-        //! @param [in] do_stuffing TS packet stuffing at end of section.
-        //!
-        void setStuffingPolicy(bool do_stuffing)
-        {
-            CyclingPacketizer::setStuffingPolicy(do_stuffing ? ALWAYS : AT_END);
-        }
-
-        //!
-        //! Get a complete cycle as one list of packets.
-        //! @param [out] packets Returned list of TS packets containing a complete cycle.
-        //!
-        void getPackets(TSPacketVector& packets);
-
-    private:
-        // Hide these methods
-        void setStuffingPolicy(StuffingPolicy) = delete;
-        bool getNextPacket(TSPacket&) = delete;
+    enum Standards : uint16_t {
+        STD_NONE  = 0x00,  //!< No known standard
+        STD_MPEG  = 0x01,  //!< Defined by MPEG, common to all standards
+        STD_DVB   = 0x02,  //!< Defined by ETSI/DVB.
+        STD_SCTE  = 0x04,  //!< Defined by ANSI/SCTE.
+        STD_ATSC  = 0x08,  //!< Defined by ATSC.
+        STD_ISDB  = 0x10,  //!< Defined by ISDB.
+        STD_JAPAN = 0x20,  //!< Defined in Japan only (typically in addition to ISDB).
     };
+
+    //!
+    //! Return a string representing a list of standards.
+    //! @param [in] standards A bit mask of standards.
+    //! @return A string representing the standards.
+    //!
+    TSDUCKDLL UString StandardsNames(Standards standards);
 }
+
+TS_FLAGS_OPERATORS(ts::Standards)

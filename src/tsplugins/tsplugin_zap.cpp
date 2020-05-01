@@ -151,9 +151,9 @@ ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
     _sdt_version(0),
     _service(),
     _demux(duck, this),
-    _pzer_sdt(PID_SDT, CyclingPacketizer::ALWAYS),
-    _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
-    _pzer_pmt(PID_NULL, CyclingPacketizer::ALWAYS),
+    _pzer_sdt(duck, PID_SDT, CyclingPacketizer::ALWAYS),
+    _pzer_pat(duck, PID_PAT, CyclingPacketizer::ALWAYS),
+    _pzer_pmt(duck, PID_NULL, CyclingPacketizer::ALWAYS),
     _eit_process(duck, PID_EIT),
     _pid_state()
 {

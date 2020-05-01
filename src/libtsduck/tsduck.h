@@ -457,6 +457,7 @@
 #include "tsSSUSubgroupAssociationDescriptor.h"
 #include "tsSSUURIDescriptor.h"
 #include "tsStandaloneTableDemux.h"
+#include "tsStandards.h"
 #include "tsStaticInstance.h"
 #include "tsSTDDescriptor.h"
 #include "tsStereoscopicProgramInfoDescriptor.h"

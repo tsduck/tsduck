@@ -45,8 +45,9 @@ const ts::MilliSecond ts::EMMGClient::RESPONSE_TIMEOUT;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::EMMGClient::EMMGClient() :
+ts::EMMGClient::EMMGClient(const DuckContext& duck) :
     Thread(ThreadAttributes().setStackSize(RECEIVER_STACK_SIZE)),
+    _duck(duck),
     _state(INITIAL),
     _udp_address(),
     _total_bytes(0),
@@ -459,7 +460,7 @@ bool ts::EMMGClient::dataProvision(const SectionPtrVector& sections)
 {
     if (_channel_status.section_TSpkt_flag) {
         // Send data in TS packet format, packetize the sections.
-        ts::OneShotPacketizer zer;
+        ts::OneShotPacketizer zer(_duck);
         zer.addSections(sections);
 
         ts::TSPacketVector packets;

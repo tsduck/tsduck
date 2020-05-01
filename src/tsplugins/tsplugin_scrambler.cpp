@@ -266,7 +266,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     _current_cw(0),
     _current_ecm(0),
     _scrambling(*tsp),
-    _pzer_pmt()
+    _pzer_pmt(duck)
 {
     option(u"", 0, STRING, 0, 1);
     help(u"",
@@ -975,7 +975,7 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
             return;
         }
         // Packetize the section
-        OneShotPacketizer pzer(_plugin->_ecm_pid, true);
+        OneShotPacketizer pzer(_plugin->duck, _plugin->_ecm_pid, true);
         pzer.addSection(sp);
         pzer.getPackets(_ecm);
 

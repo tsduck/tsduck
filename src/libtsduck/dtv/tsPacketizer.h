@@ -37,6 +37,7 @@
 #include "tsTSPacket.h"
 #include "tsSectionProviderInterface.h"
 #include "tsReport.h"
+#include "tsDuckContext.h"
 
 namespace ts {
     //!
@@ -47,15 +48,16 @@ namespace ts {
     //!
     class TSDUCKDLL Packetizer
     {
-        TS_NOCOPY(Packetizer);
+        TS_NOBUILD_NOCOPY(Packetizer);
     public:
         //!
-        //! Default constructor.
+        //! Constructor.
+        //! @param [in] duck TSDuck execution context. The reference is kept inside the packetizer.
         //! @param [in] pid PID for generated TS packets.
         //! @param [in] provider An object which will be called each time a section is required.
         //! @param [in] report Optional address of a Report object for debug and trace messages.
         //!
-        Packetizer(PID pid = PID_NULL, SectionProviderInterface* provider = nullptr, Report* report = nullptr);
+        Packetizer(const DuckContext& duck, PID pid = PID_NULL, SectionProviderInterface* provider = nullptr, Report* report = nullptr);
 
         //!
         //! Destructor
@@ -178,6 +180,10 @@ namespace ts {
         //! @return A reference to @a strm.
         //!
         virtual std::ostream& display(std::ostream& strm) const;
+
+    protected:
+        // Protected directly accessible to subclasses.
+        const DuckContext& _duck;  //!< The TSDuck execution context is accessible to all subclasses.
 
     private:
         SectionProviderInterface* _provider;

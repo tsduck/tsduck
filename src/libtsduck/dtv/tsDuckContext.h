@@ -36,6 +36,7 @@
 #include "tsUString.h"
 #include "tsByteBlock.h"
 #include "tsCharset.h"
+#include "tsStandards.h"
 #include "tsMPEG.h"
 
 namespace ts {

@@ -195,7 +195,7 @@ void ts::PSILogger::feedPacket(const TSPacket& pkt)
     // Check if the list of standards has changed.
     const Standards new_standards = _duck.standards();
     if (new_standards != _standards) {
-        _duck.report().debug(u"standards are now %s", {StandardsEnum.bitMaskNames(new_standards, u", ", true)});
+        _duck.report().debug(u"standards are now %s", {StandardsNames(new_standards)});
         _standards = new_standards;
     }
 }

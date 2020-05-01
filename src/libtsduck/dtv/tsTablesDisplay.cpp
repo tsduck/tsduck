@@ -196,7 +196,7 @@ std::ostream& ts::TablesDisplay::displayTable(const BinaryTable& table, int inde
     }
 
     // Display common header lines.
-    strm << margin << UString::Format(u"* %s, TID %d (0x%X)", {names::TID(tid, cas), table.tableId(), table.tableId()});
+    strm << margin << UString::Format(u"* %s, TID %d (0x%X)", {names::TID(_duck, tid, cas), table.tableId(), table.tableId()});
     if (table.sourcePID() != PID_NULL) {
         // If PID is the null PID, this means "unknown PID"
         strm << UString::Format(u", PID %d (0x%X)", {table.sourcePID(), table.sourcePID()});
@@ -250,7 +250,7 @@ std::ostream& ts::TablesDisplay::displaySection(const Section& section, int inde
 
     // Display common header lines.
     if (!no_header) {
-        strm << margin << UString::Format(u"* %s, TID %d (0x%X)", {names::TID(tid, cas), tid, tid});
+        strm << margin << UString::Format(u"* %s, TID %d (0x%X)", {names::TID(_duck, tid, cas), tid, tid});
         if (section.sourcePID() != PID_NULL) {
             // If PID is the null PID, this means "unknown PID"
             strm << UString::Format(u", PID %d (0x%X)", {section.sourcePID(), section.sourcePID()});

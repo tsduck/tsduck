@@ -199,7 +199,7 @@ ts::DataInjectPlugin::DataInjectPlugin(TSP* tsp_) :
     _client_id(0),
     _data_id(0),
     _section_mode(false),
-    _packetizer(PID_NULL, this),
+    _packetizer(duck, PID_NULL, this),
     _req_bitrate(0),
     _lost_packets(0)
 {

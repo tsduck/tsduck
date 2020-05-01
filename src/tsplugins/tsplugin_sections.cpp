@@ -96,7 +96,7 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
     _removed_tids(),
     _removed_etids(),
     _demux(duck, nullptr, this),
-    _packetizer(PID_NULL, this)
+    _packetizer(duck, PID_NULL, this)
 {
     option(u"etid-remove", 'e', UINT32, 0, UNLIMITED_COUNT, 0, 0x00FFFFFF);
     help(u"etid-remove", u"id1[-id2]",

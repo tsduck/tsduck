@@ -76,7 +76,7 @@ namespace ts {
     //!
     class TSDUCKDLL CyclingPacketizer: public Packetizer, private SectionProviderInterface
     {
-        TS_NOCOPY(CyclingPacketizer);
+        TS_NOBUILD_NOCOPY(CyclingPacketizer);
     public:
         //!
         //! Specify where stuffing applies.
@@ -89,13 +89,14 @@ namespace ts {
 
         //!
         //! Default constructor.
+        //! @param [in] duck TSDuck execution context. The reference is kept inside the packetizer.
         //! @param [in] pid PID for generated TS packets.
         //! @param [in] policy TS packet stuffing policy at end of packet.
         //! @param [in] bitrate Output bitrate, zero if undefined.
         //! Useful only when using specific repetition rates for sections
         //! @param [in] report Optional address of a Report object for debug and trace messages.
         //!
-        CyclingPacketizer(PID pid = PID_NULL, StuffingPolicy policy = AT_END, BitRate bitrate = 0, Report* report = nullptr);
+        CyclingPacketizer(const DuckContext& duck, PID pid = PID_NULL, StuffingPolicy policy = AT_END, BitRate bitrate = 0, Report* report = nullptr);
 
         //!
         //! Destructor
@@ -231,7 +232,7 @@ namespace ts {
             bool insertAfter(const SectionDesc& other) const;
 
             // Display the internal state, mainly for debug.
-            std::ostream& display(std::ostream&) const;
+            std::ostream& display(const DuckContext&, std::ostream&) const;
         };
 
         // Safe pointer for SectionDesc (not thread-safe)

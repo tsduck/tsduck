@@ -117,9 +117,9 @@ ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
     _drop_pids(),
     _ref_pids(),
     _demux(duck, this),
-    _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
-    _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
-    _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS),
+    _pzer_pat(duck, PID_PAT, CyclingPacketizer::ALWAYS),
+    _pzer_sdt_bat(duck, PID_SDT, CyclingPacketizer::ALWAYS),
+    _pzer_nit(duck, PID_NIT, CyclingPacketizer::ALWAYS),
     _eit_process(duck, PID_EIT)
 {
     option(u"", 0, STRING, 1, 1);
@@ -223,7 +223,7 @@ void ts::SVRemovePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 {
     if (tsp->debug()) {
         tsp->debug(u"Got %s v%d, PID %d (0x%X), TIDext %d (0x%X)",
-                   {names::TID(table.tableId()), table.version(),
+                   {names::TID(duck, table.tableId()), table.version(),
                     table.sourcePID(), table.sourcePID(),
                     table.tableIdExtension(), table.tableIdExtension()});
     }

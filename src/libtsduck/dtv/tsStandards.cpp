@@ -26,41 +26,31 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Packetization of MPEG sections into Transport Stream packets in one shot
-//
-//----------------------------------------------------------------------------
 
-#include "tsOneShotPacketizer.h"
+#include "tsStandards.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
+// Return a string representing a list of standards.
 //----------------------------------------------------------------------------
 
-ts::OneShotPacketizer::OneShotPacketizer(const DuckContext& duck, PID pid, bool do_stuffing, BitRate bitrate) :
-    CyclingPacketizer(duck, pid, do_stuffing ? ALWAYS : AT_END, bitrate)
+ts::UString ts::StandardsNames(Standards standards)
 {
-}
-
-ts::OneShotPacketizer::~OneShotPacketizer()
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Get complete cycle as one list of packets
-//----------------------------------------------------------------------------
-
-void ts::OneShotPacketizer::getPackets (TSPacketVector& packets)
-{
-    packets.clear();
-
-    if (storedSectionCount() > 0) {
-        do {
-            packets.resize (packets.size() + 1);
-            CyclingPacketizer::getNextPacket (packets[packets.size() - 1]);
-        } while (!atCycleBoundary());
+    if (standards == 0) {
+        return NameFromSection(u"Standards", 0, names::NAME);
+    }
+    else {
+        UString list;
+        for (std::underlying_type<Standards>::type mask = 1; mask != 0; mask <<= 1) {
+            if ((standards & mask) != 0) {
+                if (!list.empty()) {
+                    list.append(u", ");
+                }
+                list.append(NameFromSection(u"Standards", mask, names::NAME));
+            }
+        }
+        return list;
     }
 }

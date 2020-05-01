@@ -335,7 +335,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_NIT_ACT:
         case TID_NIT_OTH: {
             if (table.sourcePID() == PID_NIT) {
-                report(u"%s v%d, network 0x%X", {names::TID(table.tableId()), table.version(), table.tableIdExtension()});
+                report(u"%s v%d, network 0x%X", {names::TID(duck, table.tableId()), table.version(), table.tableIdExtension()});
             }
             break;
         }
@@ -343,7 +343,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_SDT_ACT:
         case TID_SDT_OTH: {
             if (table.sourcePID() == PID_SDT) {
-                report(u"%s v%d, TS 0x%X", {names::TID(table.tableId()), table.version(), table.tableIdExtension()});
+                report(u"%s v%d, TS 0x%X", {names::TID(duck, table.tableId()), table.version(), table.tableIdExtension()});
             }
             break;
         }
@@ -358,7 +358,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_CAT:
         case TID_TSDT: {
             // Long sections without TID extension
-            report(u"%s v%d", {names::TID(table.tableId()), table.version()});
+            report(u"%s v%d", {names::TID(duck, table.tableId()), table.version()});
             break;
         }
 
@@ -373,7 +373,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         }
 
         default: {
-            const UString name(names::TID(table.tableId()));
+            const UString name(names::TID(duck, table.tableId()));
             if (table.tableId() >= TID_EIT_MIN && table.tableId() <= TID_EIT_MAX) {
                 report(u"%s v%d, service 0x%X", {name, table.version(), table.tableIdExtension()});
             }

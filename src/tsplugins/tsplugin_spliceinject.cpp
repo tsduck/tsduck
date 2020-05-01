@@ -256,7 +256,7 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
     _file_listener(this),
     _udp_listener(this),
     _queue(),
-    _packetizer(PID_NULL, this),
+    _packetizer(duck, PID_NULL, this),
     _last_pts(INVALID_PTS),
     _wait_first_batch(false),
     _wfb_received(false),
@@ -716,7 +716,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
         SectionPtr sec(*it);
         if (!sec.isNull()) {
             if (sec->tableId() != TID_SCTE35_SIT) {
-                tsp->error(u"unexpected section, %s, ignored", {names::TID(sec->tableId(), CASID_NULL, names::VALUE)});
+                tsp->error(u"unexpected section, %s, ignored", {names::TID(duck, sec->tableId(), CASID_NULL, names::VALUE)});
             }
             else {
                 CommandPtr cmd(new SpliceCommand(this, sec));

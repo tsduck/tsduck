@@ -511,7 +511,7 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
              << margin << UString::Format(u"Original Network Id: %d (0x%X)", {onid, onid}) << std::endl
              << margin << UString::Format(u"Segment last section: %d (0x%X)", {seg_last, seg_last}) << std::endl
              << margin << UString::Format(u"Last Table Id: %d (0x%X), ", {last_tid, last_tid})
-             << names::TID(last_tid) << std::endl;
+             << names::TID(duck, last_tid) << std::endl;
     }
 
     // The time reference is UTC as defined by DVB, but JST in Japan.
