@@ -90,6 +90,7 @@ namespace {
 
 ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     ts::Args(u"Minimal generic DVB SimulCrypt-compliant ECMG", u"[options]"),
+    duck(this),
     log_protocol(ts::Severity::Debug),
     log_data(ts::Severity::Debug),
     once(false),

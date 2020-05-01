@@ -222,7 +222,7 @@ const ts::TSAnalyzer::PIDContext::KnownPIDMap ts::TSAnalyzer::PIDContext::KNOWN_
     KPID(PID_PCAT, u"ISDB PCAT"),
     KPID(PID_SDTT, u"ISDB SDTT"),
     KPID(PID_SDTT_TER, u"ISDB SDTT"),
-    KPID(PID_BIT, u"BIT"),
+    KPID(PID_BIT, u"ISDB BIT"),
     KPID(PID_NBIT, u"ISDB NBIT/LDT"),
     KPID(PID_CDT, u"ISDB CDT"),
     KPID(PID_AMT, u"ISDB AMT"),
