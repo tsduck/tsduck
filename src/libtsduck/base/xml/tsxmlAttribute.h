@@ -153,6 +153,12 @@ namespace ts {
             void setDateTime(const Time& value);
 
             //!
+            //! Set a date (without hours) attribute of an XML element.
+            //! @param [in] value Attribute value.
+            //!
+            void setDate(const Time& value);
+
+            //!
             //! Set a time attribute of an XML element in "hh:mm:ss" format.
             //! @param [in] value Attribute value.
             //!
@@ -164,6 +170,13 @@ namespace ts {
             //! @return The corresponding string.
             //!
             static UString DateTimeToString(const Time& value);
+
+            //!
+            //! Convert a date (without time) into a string, as required in attributes.
+            //! @param [in] value Time value.
+            //! @return The corresponding string.
+            //!
+            static UString DateToString(const Time& value);
 
             //!
             //! Convert a time into a string, as required in attributes.
@@ -179,6 +192,14 @@ namespace ts {
             //! @return True on success, false on error.
             //!
             static bool DateTimeFromString(Time& value, const UString& str);
+
+            //!
+            //! Convert a string into a date (without hours), as required in attributes.
+            //! @param [in,out] value Date value. Unmodified in case of error.
+            //! @param [in] str Date value as a string.
+            //! @return True on success, false on error.
+            //!
+            static bool DateFromString(Time& value, const UString& str);
 
             //!
             //! Convert a string into a time, as required in attributes.

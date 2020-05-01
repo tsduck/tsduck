@@ -284,12 +284,17 @@ ts::xml::Text* ts::xml::Element::addText(const UString& text)
 // Add a new text containing hexadecimal data inside this node.
 //----------------------------------------------------------------------------
 
-ts::xml::Text* ts::xml::Element::addHexaText(const void* data, size_t size)
+ts::xml::Text* ts::xml::Element::addHexaText(const void* data, size_t size, bool onlyNotEmpty)
 {
     // Filter incorrect parameters.
     if (data == nullptr) {
         data = "";
         size = 0;
+    }
+
+    // Do nothing if empty.
+    if (size == 0 && onlyNotEmpty) {
+        return nullptr;
     }
 
     // Format the data.
@@ -532,6 +537,30 @@ bool ts::xml::Element::getDateTimeAttribute(Time& value, const UString& name, bo
     const bool ok = Attribute::DateTimeFromString(value, str);
     if (!ok) {
         _report.error(u"'%s' is not a valid date/time for attribute '%s' in <%s>, line %d, use \"YYYY-MM-DD hh:mm:ss\"", {str, name, this->name(), lineNumber()});
+    }
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Get a date attribute of an XML element.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::getDateAttribute(Time& value, const UString& name, bool required, const Time& defValue) const
+{
+    UString str;
+    if (!getAttribute(str, name, required)) {
+        return false;
+    }
+    if (!required && str.empty()) {
+        value = defValue;
+        return true;
+    }
+
+    // Analyze the time string.
+    const bool ok = Attribute::DateFromString(value, str);
+    if (!ok) {
+        _report.error(u"'%s' is not a valid date for attribute '%s' in <%s>, line %d, use \"YYYY-MM-DD\"", {str, name, this->name(), lineNumber()});
     }
     return ok;
 }

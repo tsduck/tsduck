@@ -1356,7 +1356,7 @@ namespace ts {
         DID_ISDB_STC_REF        = 0xD4, //!< DID for ISDB STC reference descriptor
         DID_ISDB_SERIES         = 0xD5, //!< DID for ISDB Series descriptor
         DID_ISDB_EVENT_GROUP    = 0xD6, //!< DID for ISDB Event group descriptor
-        DID_ISDB_SI_PARAM       = 0xD7, //!< DID for ISDB SI parameter descriptor
+        DID_ISDB_SI_PARAMETER   = 0xD7, //!< DID for ISDB SI parameter descriptor
         DID_ISDB_BROADCAST_NAME = 0xD8, //!< DID for ISDB Broadcaster name descriptor
         DID_ISDB_COMP_GROUP     = 0xD9, //!< DID for ISDB Component group descriptor
         DID_ISDB_SI_PRIME_TS    = 0xDA, //!< DID for ISDB SI prime TS descriptor

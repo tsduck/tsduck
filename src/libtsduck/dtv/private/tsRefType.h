@@ -104,6 +104,7 @@
     REF_TYPE(EASMetadataDescriptor);
     REF_TYPE(ECMRepetitionRateDescriptor);
     REF_TYPE(EutelsatChannelNumberDescriptor);
+    REF_TYPE(ExtendedBroadcasterDescriptor);
     REF_TYPE(ExtendedChannelNameDescriptor);
     REF_TYPE(ExtendedEventDescriptor);
     REF_TYPE(ExternalApplicationAuthorizationDescriptor);
@@ -183,6 +184,7 @@
     REF_TYPE(ShortSmoothingBufferDescriptor);
     REF_TYPE(SimpleApplicationBoundaryDescriptor);
     REF_TYPE(SimpleApplicationLocationDescriptor);
+    REF_TYPE(SIParameterDescriptor);
     REF_TYPE(SkyLogicalChannelNumberDescriptor);
     REF_TYPE(SLDescriptor);
     REF_TYPE(SmoothingBufferDescriptor);
