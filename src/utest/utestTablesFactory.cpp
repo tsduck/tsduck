@@ -32,6 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsTablesFactory.h"
+#include "tsAbstractTable.h"
+#include "tsMGT.h"
+#include "tsLDT.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
 
@@ -47,9 +50,11 @@ public:
     virtual void afterTest() override;
 
     void testRegistrations();
+    void testSharedTID();
 
     TSUNIT_TEST_BEGIN(TablesFactoryTest);
     TSUNIT_TEST(testRegistrations);
+    TSUNIT_TEST(testSharedTID);
     TSUNIT_TEST_END();
 };
 
@@ -91,4 +96,35 @@ void TablesFactoryTest::testRegistrations()
 
     TSUNIT_ASSERT(!names.empty());
     TSUNIT_ASSERT(ts::UString(u"ca_descriptor").containSimilar(names));
+}
+
+void TablesFactoryTest::testSharedTID()
+{
+    // Shared table ids between ATSC and ISDB.
+    TSUNIT_EQUAL(ts::TID_MGT, ts::TID_LDT);
+    TSUNIT_EQUAL(ts::TID_TVCT, ts::TID_CDT);
+
+    // When the same TID is used by two distinct standards, they have no standard in common
+    // (meaning encountering this TID in a TS is not sufficient to determine a standard).
+    TSUNIT_EQUAL(ts::STD_NONE, ts::TablesFactory::Instance()->getTableStandards(ts::TID_MGT));
+    TSUNIT_EQUAL(ts::STD_ATSC, ts::TablesFactory::Instance()->getTableStandards(ts::TID_CVCT));
+
+    ts::TablesFactory::TableFactory factory = ts::TablesFactory::Instance()->getTableFactory(ts::TID_LDT, ts::STD_ATSC);
+    TSUNIT_ASSERT(factory != nullptr);
+    ts::AbstractTablePtr table(factory());
+    TSUNIT_ASSERT(!table.isNull());
+    TSUNIT_EQUAL(ts::TID_MGT, table->tableId());
+    TSUNIT_EQUAL(ts::STD_ATSC, table->definingStandards());
+    TSUNIT_EQUAL(u"MGT", table->xmlName());
+
+    factory = ts::TablesFactory::Instance()->getTableFactory(ts::TID_LDT, ts::STD_ISDB);
+    TSUNIT_ASSERT(factory != nullptr);
+    table = factory();
+    TSUNIT_ASSERT(!table.isNull());
+    TSUNIT_EQUAL(ts::TID_LDT, table->tableId());
+    TSUNIT_EQUAL(ts::STD_ISDB, table->definingStandards());
+    TSUNIT_EQUAL(u"LDT", table->xmlName());
+
+    TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::TablesFactory::Instance()->getSectionDisplay(ts::TID_LDT, ts::STD_ATSC));
+    TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::TablesFactory::Instance()->getSectionDisplay(ts::TID_LDT, ts::STD_ISDB));
 }

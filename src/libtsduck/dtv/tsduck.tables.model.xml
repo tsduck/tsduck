@@ -545,6 +545,18 @@
       </broadcaster>
     </BIT>
 
+    <!-- ISDB Linked Description Table -->
+    <LDT version="uint5, default=0"
+         current="bool, default=true"
+         original_service_id="uint16, required"
+         transport_stream_id="uint16, required"
+         original_network_id="uint16, required">
+      <!-- One per description -->
+      <description description_id="uint16, required">
+        <_any in="_descriptors"/>
+      </description>
+    </LDT>
+
     <!-- Generic short table -->
     <generic_short_table
         table_id="uint8, required"

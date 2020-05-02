@@ -44,23 +44,44 @@ TS_MAC    := $(if $(subst darwin,,$(TS_SYSTEM)),,true)
 
 # The TSDuck include directory is the one that contains the currently included makefile.
 TS_INCLUDE_DIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
+TS_INCLUDES += -I$(TS_INCLUDE_DIR)
 
-# Build options
+# The root directory of the TSDuck installation is two levels above (eg. /usr/include/tsduck -> /usr).
+# Useful when TSDuck was installed in a local directory (not system-wide).
+TS_ROOT_DIR := $(abspath $(TS_INCLUDE_DIR)/../..)
+
+# Default root directory for the platform.
+TS_SYSROOT_DIR := $(if $(TS_MAC),/usr/local,/usr)
+
+# Options to link with TSDuck library (either dynamic or static).
+# If the library file is present in TS_ROOT_DIR, use it. Otherwise, use from TS_SYSROOT_DIR.
+ifdef TS_STATIC
+    TS_LIBFILE := $(wildcard $(TS_ROOT_DIR)/lib/libtsduck.a)
+    TS_LIBOPT := $(if $(TS_LIBFILE),-L$(dir $(TS_LIBFILE)),) -ltsduck
+else
+    TS_LIBFILE := $(wildcard $(TS_ROOT_DIR)/bin/tsduck.so)
+    TS_LIBOPT := $(if $(TS_LIBFILE),$(TS_LIBFILE),$(TS_SYSROOT_DIR)/bin/tsduck.so)
+endif
+
+# Libraries to link with.
 CFLAGS_CURL := $(shell curl-config --cflags)
 LDLIBS_CURL := $(shell curl-config --libs)
+LDLIBS += $(TS_LIBOPT) $(LDLIBS_CURL)
+
+# Additional system-dependent options
 ifdef TS_MAC
-    TS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC -I$(TS_INCLUDE_DIR)
-    LDLIBS += $(if $(TS_STATIC),-L/usr/local/lib -ltsduck,/usr/local/bin/tsduck.so) $(LDLIBS_CURL) -L/usr/local/opt/pcsc-lite/lib -lpcsclite -lsrt -lpthread -ldl -lm -lstdc++
+    TS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC
+    LDLIBS += -L/usr/local/opt/pcsc-lite/lib -lpcsclite -lsrt -lpthread -ldl -lm -lstdc++
     ifndef TS_STATIC
         LDFLAGS += -Wl,-rpath,@executable_path,-rpath,/usr/local/bin
         SOFLAGS = -install_name '@rpath/$(notdir $@)'
     endif
 else
-    TS_INCLUDES += -I/usr/include/PCSC -I$(TS_INCLUDE_DIR)
+    TS_INCLUDES += -I/usr/include/PCSC
     ifneq ($(wildcard /usr/include/srt/*.h)$(wildcard /usr/local/include/srt/*.h),)
         LDLIBS += -lsrt
     endif
-    LDLIBS += $(if $(TS_STATIC),-ltsduck,/usr/bin/tsduck.so) $(LDLIBS_CURL) -lpcsclite -lpthread -lrt -ldl -lm -lstdc++
+    LDLIBS += -lpcsclite -lpthread -lrt -ldl -lm -lstdc++
     ifndef TS_STATIC
         LDFLAGS += -Wl,-rpath,'$$ORIGIN',-rpath,/usr/bin
         SOFLAGS = -Wl,-soname=$(notdir $@)

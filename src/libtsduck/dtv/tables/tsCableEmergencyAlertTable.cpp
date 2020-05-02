@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 
 TS_XML_TABLE_FACTORY(ts::CableEmergencyAlertTable, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::CableEmergencyAlertTable, MY_TID, MY_STD);
-TS_FACTORY_REGISTER(ts::CableEmergencyAlertTable::DisplaySection, MY_TID);
+TS_FACTORY_REGISTER(ts::CableEmergencyAlertTable::DisplaySection, MY_TID, MY_STD);
 
 
 //----------------------------------------------------------------------------

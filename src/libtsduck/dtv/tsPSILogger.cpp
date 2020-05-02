@@ -61,7 +61,6 @@ ts::PSILogger::PSILogger(TablesDisplay& display) :
     _cat_ok(_clear),
     _sdt_ok(_cat_only),
     _bat_ok(false),
-    _mgt_ok(false),
     _expected_pmt(0),
     _received_pmt(0),
     _clear_packets_cnt(0),
@@ -151,6 +150,7 @@ bool ts::PSILogger::open()
         _demux.addPID(PID_TSDT);  // MPEG
         _demux.addPID(PID_SDT);   // DVB, ISDB
         _demux.addPID(PID_BIT);   // ISDB
+        _demux.addPID(PID_LDT);   // ISDB
         _demux.addPID(PID_PSIP);  // ATSC
     }
     if (!_clear) {
@@ -353,21 +353,18 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             break;
         }
 
+        // case TID_LDT: (same value as TID_MGT)
         case TID_MGT: {
-            if (pid != PID_PSIP) {
-                // An ATSC MGT is only expected on PID 0x1FFB
-                strm << UString::Format(u"* Got unexpected ATSC MGT on PID %d (0x%X)", {pid, pid}) << std::endl;
-                _display.displayTable(table);
-                strm << std::endl;
+            // ATSC MGT and ISDB LDT use the same table id, so it can be any.
+            if (pid != PID_PSIP && pid != PID_LDT) {
+                // An ATSC MGT is only expected on PID 0x1FFB.
+                // An ISDB LDT is only expected on PID 0x0025.
+                strm << UString::Format(u"* Got unexpected ATSC MGT / ISDB LDT on PID %d (0x%X)", {pid, pid}) << std::endl;
             }
-            else if (_all_versions || !_mgt_ok) {
-                // Got the MGT.
-                _mgt_ok = true;
-                // We cannot stop filtering this PID if we don't need all versions
-                // since the TVCT or CVCT can also be found here.
-                _display.displayTable(table);
-                strm << std::endl;
-            }
+            // We cannot stop filtering this PID if we don't need all versions
+            // since the TVCT or CVCT can also be found here.
+            _display.displayTable(table);
+            strm << std::endl;
             break;
         }
 

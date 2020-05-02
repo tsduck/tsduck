@@ -49,6 +49,12 @@ namespace ts {
     //! A factory class which creates tables and descriptors based on id or name.
     //!
     //! This class is a singleton. Use static Instance() method to access the single instance.
+    //!
+    //! Multi-threading considerations: The singleton is built and modified using static
+    //! registration instances during the initialization of the application (ie. in one
+    //! single thread). Then, the singleton is only read during the execution of the
+    //! application. So, no explicit synchronization is required.
+    //!
     //! @ingroup mpeg
     //!
     class TSDUCKDLL TablesFactory
@@ -70,14 +76,22 @@ namespace ts {
         //!
         //! Get the table factory for a given table id.
         //! @param [in] id Table id.
+        //! @param [in] standards List of current active standards in the application.
+        //! If there are several factories for this table id, return only a factory for
+        //! which the standard is active. For instance, if the same table id is used by
+        //! ATSC and ISDB but the application runs in an ISDB context, return the factory
+        //! for the ISDB version of this table id.
+        //! @param [in] cas Current CAS id.
         //! @return Corresponding factory or zero if there is none.
         //!
-        TableFactory getTableFactory(TID id) const;
+        TableFactory getTableFactory(TID id, Standards standards, uint16_t cas = CASID_NULL) const;
 
         //!
-        //! Get the list of standards which define a given table id.
+        //! Get the list of standards which are defined for a given table id.
         //! @param [in] id Table id.
-        //! @return Corresponding list of standards.
+        //! @return Corresponding list of standards.If multiple definitions exist for this
+        //! table id, return the common subset of all definitions. This means that only
+        //! standards which are used in all cases are returned.
         //!
         Standards getTableStandards(TID id) const;
 
@@ -127,18 +141,28 @@ namespace ts {
         //!
         //! Get the display function for a given table id.
         //! @param [in] id Table id.
+        //! @param [in] standards List of current active standards in the application.
+        //! If there are several display functions for this table id, return only a
+        //! function for which the standard is active. For instance, if the same table
+        //! id is used by ATSC and ISDB but the application runs in an ISDB context,
+        //! return the display function for the ISDB version of this table id.
         //! @param [in] cas Current CAS id.
         //! @return Corresponding display function or zero if there is none.
         //!
-        DisplaySectionFunction getSectionDisplay(TID id, uint16_t cas = CASID_NULL) const;
+        DisplaySectionFunction getSectionDisplay(TID id, Standards standards, uint16_t cas = CASID_NULL) const;
 
         //!
         //! Get the log function for a given table id.
         //! @param [in] id Table id.
+        //! @param [in] standards List of current active standards in the application.
+        //! If there are several log functions for this table id, return only a
+        //! function for which the standard is active. For instance, if the same table
+        //! id is used by ATSC and ISDB but the application runs in an ISDB context,
+        //! return the log function for the ISDB version of this table id.
         //! @param [in] cas Current CAS id.
         //! @return Corresponding log function or zero if there is none.
         //!
-        LogSectionFunction getSectionLog(TID id, uint16_t cas = CASID_NULL) const;
+        LogSectionFunction getSectionLog(TID id, Standards standards, uint16_t cas = CASID_NULL) const;
 
         //!
         //! Get the display function for a given extended descriptor id.
@@ -250,47 +274,51 @@ namespace ts {
             //! The constructor registers a section display function for a given table id.
             //! @param [in] func Display function for the corresponding sections.
             //! @param [in] id Table id for this type.
+            //! @param [in] standards List of standards which define this table.
             //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
             //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
             //! Same @a minCAS when set as CASID_NULL.
             //! @see TS_FACTORY_REGISTER
             //!
-            Register(DisplaySectionFunction func, TID id, uint16_t minCAS = CASID_NULL, uint16_t maxCAS = CASID_NULL);
+            Register(DisplaySectionFunction func, TID id, Standards standards, uint16_t minCAS = CASID_NULL, uint16_t maxCAS = CASID_NULL);
 
             //!
             //! The constructor registers a section display function for a given range of ids.
             //! @param [in] func Display function for the corresponding sections.
             //! @param [in] minId Minimum table id for this type.
             //! @param [in] maxId Maximum table id for this type.
+            //! @param [in] standards List of standards which define this table.
             //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
             //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
             //! Same @a minCAS when set as CASID_NULL.
             //! @see TS_FACTORY_REGISTER
             //!
-            Register(DisplaySectionFunction func, TID minId, TID maxId, uint16_t minCAS, uint16_t maxCAS);
+            Register(DisplaySectionFunction func, TID minId, TID maxId, Standards standards, uint16_t minCAS, uint16_t maxCAS);
 
             //!
             //! The constructor registers a section log function for a given table id.
             //! @param [in] func Log function for the corresponding sections.
             //! @param [in] id Table id for this type.
+            //! @param [in] standards List of standards which define this table.
             //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
             //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
             //! Same @a minCAS when set as CASID_NULL.
             //! @see TS_FACTORY_REGISTER
             //!
-            Register(LogSectionFunction func, TID id, uint16_t minCAS = CASID_NULL, uint16_t maxCAS = CASID_NULL);
+            Register(LogSectionFunction func, TID id, Standards standards, uint16_t minCAS = CASID_NULL, uint16_t maxCAS = CASID_NULL);
 
             //!
             //! The constructor registers a section log function for a given range of ids.
             //! @param [in] func Log function for the corresponding sections.
             //! @param [in] minId Minimum table id for this type.
             //! @param [in] maxId Maximum table id for this type.
+            //! @param [in] standards List of standards which define this table.
             //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
             //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
             //! Same @a minCAS when set as CASID_NULL.
             //! @see TS_FACTORY_REGISTER
             //!
-            Register(LogSectionFunction func, TID minId, TID maxId, uint16_t minCAS, uint16_t maxCAS);
+            Register(LogSectionFunction func, TID minId, TID maxId, Standards standards, uint16_t minCAS, uint16_t maxCAS);
 
             //!
             //! The constructor registers a descriptor display function for a given descriptor id.
@@ -355,27 +383,39 @@ namespace ts {
         };
 
     private:
-        std::map<TID, TableFactory>                      _tableIds;
-        std::map<TID, Standards>                         _tableStandards;
-        std::map<EDID, DescriptorFactory>                _descriptorIds;
-        std::map<UString, TableFactory>                  _tableNames;
-        std::map<UString, DescriptorFactory>             _descriptorNames;
-        std::multimap<UString, TID>                      _descriptorTablesIds;       // For table-specific descriptors
-        std::map<uint32_t, DisplaySectionFunction>       _sectionDisplays;           // Key includes TID and CAS.
-        std::map<uint32_t, LogSectionFunction>           _sectionLogs;               // Key includes TID and CAS.
-        std::map<EDID, DisplayDescriptorFunction>        _descriptorDisplays;
-        std::map<uint16_t, DisplayCADescriptorFunction>  _casIdDescriptorDisplays;   // Key is CAS system id.
-        UStringList                                      _xmlModelFiles;             // Additional XML model files for tables.
-        UStringList                                      _namesFiles;                // Additional names files.
+        // Description of a table id. Several descriptions can be used for the same table id,
+        // for instance for distinct DTV standards or disctinct CA systems.
+        class TableDescription
+        {
+        public:
+            TableDescription();                // Constructor.
+            Standards              standards;  // Standards for this table id.
+            uint16_t               minCAS;     // Minimum CAS id for this table id (CASID_NULL if none).
+            uint16_t               maxCAS;     // Maximum CAS id for this table id (CASID_NULL if none).
+            TableFactory           factory;    // Function to build an instance of the table.
+            DisplaySectionFunction display;    // Function to display a section.
+            LogSectionFunction     log;        // Function to log a section.
+        };
 
-        // Build a key in _sectionDisplays and _sectionLogs.
-        static uint32_t SectionDisplayIndex(TID id, uint16_t cas);
+        std::multimap<TID, TableDescription>             _tables;                   // Description of all table ids, potential multiple entries per table idx
+        std::map<EDID, DescriptorFactory>                _descriptorIds;            // Extended descriptor id to descriptor factory
+        std::map<UString, TableFactory>                  _tableNames;               // XML table name to table factory
+        std::map<UString, DescriptorFactory>             _descriptorNames;          // XML descriptor name to descriptor factory
+        std::multimap<UString, TID>                      _descriptorTablesIds;      // XML descriptor name to table id for table-specific descriptors
+        std::map<EDID, DisplayDescriptorFunction>        _descriptorDisplays;       // Extended descriptor id to descriptor display
+        std::map<uint16_t, DisplayCADescriptorFunction>  _casIdDescriptorDisplays;  // Key is CAS system id.
+        UStringList                                      _xmlModelFiles;            // Additional XML model files for tables.
+        UStringList                                      _namesFiles;               // Additional names files.
 
-        // Common code for getSectionDisplay and getSectionLog.
-        template <typename FUNCTION>
-        FUNCTION getSectionFunction(TID id, uint16_t cas, const std::map<uint32_t,FUNCTION>& funcMap) const;
+        // Register a new table id which matches standards and CAS ids.
+        // Always return a non-null pointer (existing or newly created structure).
+        TableDescription* registerTable(TID id, Standards standards, uint16_t minCAS, uint16_t maxCAS);
 
-        // Common code for getDescriptorFactory and getDescriptorDisplay.
+        // Common code to lookup a table function.
+        template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type* = nullptr>
+        FUNCTION getTableFunction(TID tid, Standards standards, uint16_t cas, FUNCTION TableDescription::* member) const;
+
+        // Common code to lookup a descriptor function.
         template <typename FUNCTION>
         FUNCTION getDescriptorFunction(const EDID& edid, TID tid, const std::map<EDID,FUNCTION>& funcMap) const;
     };

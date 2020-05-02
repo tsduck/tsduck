@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 
 TS_XML_TABLE_FACTORY(ts::DCCSCT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::DCCSCT, MY_TID, MY_STD);
-TS_FACTORY_REGISTER(ts::DCCSCT::DisplaySection, MY_TID);
+TS_FACTORY_REGISTER(ts::DCCSCT::DisplaySection, MY_TID, MY_STD);
 
 const ts::Enumeration ts::DCCSCT::UpdateTypeNames({
     {u"new_genre_category", ts::DCCSCT::new_genre_category},

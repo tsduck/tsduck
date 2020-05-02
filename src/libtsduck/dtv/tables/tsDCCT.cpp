@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 
 TS_XML_TABLE_FACTORY(ts::DCCT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::DCCT, MY_TID, MY_STD);
-TS_FACTORY_REGISTER(ts::DCCT::DisplaySection, MY_TID);
+TS_FACTORY_REGISTER(ts::DCCT::DisplaySection, MY_TID, MY_STD);
 
 const ts::Enumeration ts::DCCT::DCCContextNames({
     {u"temporary_retune", ts::DCCT::temporary_retune},
