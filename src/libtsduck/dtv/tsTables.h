@@ -46,6 +46,7 @@
 #include "tsEIT.h"
 #include "tsETT.h"
 #include "tsINT.h"
+#include "tsLDT.h"
 #include "tsMGT.h"
 #include "tsNIT.h"
 #include "tsPAT.h"

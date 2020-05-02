@@ -6,9 +6,9 @@ default: all
 
 # TSDuck definitions.
 ifeq ($(shell uname -s),Darwin) # Mac
-    SYSPREFIX := /usr/local
+    SYSPREFIX ?= /usr/local
 else # Linux
-    SYSPREFIX := /usr
+    SYSPREFIX ?= /usr
 endif
 include $(SYSPREFIX)/include/tsduck/tsduck.mk
 

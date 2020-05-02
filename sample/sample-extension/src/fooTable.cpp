@@ -6,12 +6,12 @@
 // Characteristics of a FOOT
 #define MY_XML_NAME u"FOOT"      // XML name is <FOOT>
 #define MY_TID foo::TID_FOOT     // Table id
-#define MY_STD ts::STD_NONE      // Not defined in any standard.
+#define MY_STD foo::STD          // DTV standards for FOOT.
 
 // Registration of the table in TSDuck library
 TS_XML_TABLE_FACTORY(foo::FooTable, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(foo::FooTable, MY_TID, MY_STD);
-TS_FACTORY_REGISTER(foo::FooTable::DisplaySection, MY_TID);
+TS_FACTORY_REGISTER(foo::FooTable::DisplaySection, MY_TID, MY_STD);
 
 
 //----------------------------------------------------------------------------

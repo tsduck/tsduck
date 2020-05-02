@@ -40,18 +40,15 @@ TS_DEFINE_SINGLETON(ts::TablesFactory);
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors.
 //----------------------------------------------------------------------------
 
 ts::TablesFactory::TablesFactory() :
-    _tableIds(),
-    _tableStandards(),
+    _tables(),
     _descriptorIds(),
     _tableNames(),
     _descriptorNames(),
     _descriptorTablesIds(),
-    _sectionDisplays(),
-    _sectionLogs(),
     _descriptorDisplays(),
     _casIdDescriptorDisplays(),
     _xmlModelFiles(),
@@ -59,32 +56,95 @@ ts::TablesFactory::TablesFactory() :
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Build a key in _sectionDisplays and _sectionLogs.
-//----------------------------------------------------------------------------
-
-uint32_t ts::TablesFactory::SectionDisplayIndex(TID id, uint16_t cas)
+ts::TablesFactory::TableDescription::TableDescription() :
+    standards(STD_NONE),
+    minCAS(CASID_NULL),
+    maxCAS(CASID_NULL),
+    factory(nullptr),
+    display(nullptr),
+    log(nullptr)
 {
-    return uint32_t(uint32_t(cas) << 8) | uint32_t(id & 0x00FF);
 }
 
 
 //----------------------------------------------------------------------------
-// Registrations.
+// Register a new table id which matches standards and CAS ids.
+//----------------------------------------------------------------------------
+
+ts::TablesFactory::TableDescription* ts::TablesFactory::registerTable(TID tid, Standards standards, uint16_t minCAS, uint16_t maxCAS)
+{
+    // Try to find a matching existing table.
+    for (auto it = _tables.lower_bound(tid); it != _tables.end() && it->first == tid; ++it) {
+        // Found an entry with same table id.
+        if ((standards & it->second.standards) == standards && minCAS >= it->second.minCAS && maxCAS <= it->second.maxCAS) {
+            // Found an entry which includes all required standards and CAS id.
+            return &it->second;
+        }
+    }
+
+    // No existing entry found, create a new one.
+    TableDescription td;
+    td.standards = standards;
+    td.minCAS = minCAS;
+    td.maxCAS = maxCAS;
+    auto it = _tables.insert(std::make_pair(tid, td));
+    return &it->second;
+}
+
+
+//----------------------------------------------------------------------------
+// Lookup a table function by table id, using standards and CAS id.
+//----------------------------------------------------------------------------
+
+template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type*>
+FUNCTION ts::TablesFactory::getTableFunction(TID tid, Standards standards, uint16_t cas, FUNCTION TableDescription::* member) const
+{
+    // Try to find an exact match with standard and CAS id.
+    // Otherwise, will use a fallback one for same tid.
+    FUNCTION fallbackFunc = nullptr;
+    size_t fallbackCount = 0;
+
+    // Look for an exact match.
+    for (auto it = _tables.lower_bound(tid); it != _tables.end() && it->first == tid; ++it) {
+        // Ignore entris for which the searched function is not present.
+        if (it->second.*member != nullptr) {
+
+            // CAS match: either a CAS is specified and is in range, or no CAS specified and CAS-agnostic table (all CASID_NULL).
+            const bool casMatch = cas >= it->second.minCAS && cas <= it->second.maxCAS;
+
+            // Standard match: at least one standard of the table is current, or standard-agnostic table (STD_NONE).
+            const bool stdMatch = (standards & it->second.standards) != 0 || it->second.standards == STD_NONE;
+
+            if (stdMatch && casMatch) {
+                // Found an exact match, no need to search further.
+                return it->second.*member;
+            }
+            else if (it->second.minCAS == CASID_NULL) {
+                // Not the right standard but a CAS-agnostic table, use as potential fallback.
+                fallbackFunc = it->second.*member;
+                fallbackCount++;
+            }
+        }
+    }
+
+    // If no exact match was found, use a fallback if there is only one (no ambiguity).
+    return fallbackCount == 1 ? fallbackFunc : nullptr;
+}
+
+
+//----------------------------------------------------------------------------
+// Registrations using constructors of Register objects.
 //----------------------------------------------------------------------------
 
 ts::TablesFactory::Register::Register(TID id, TableFactory factory, Standards standards)
 {
-    TablesFactory::Instance()->_tableIds.insert(std::make_pair(id, factory));
-    TablesFactory::Instance()->_tableStandards[id] |= standards;
+    TablesFactory::Instance()->registerTable(id, standards, CASID_NULL, CASID_NULL)->factory = factory;
 }
 
 ts::TablesFactory::Register::Register(TID minId, TID maxId, TableFactory factory, Standards standards)
 {
     for (TID id = minId; id <= maxId; ++id) {
-        TablesFactory::Instance()->_tableIds.insert(std::make_pair(id, factory));
-        TablesFactory::Instance()->_tableStandards[id] |= standards;
+        TablesFactory::Instance()->registerTable(id, standards, CASID_NULL, CASID_NULL)->factory = factory;
     }
 }
 
@@ -106,36 +166,28 @@ ts::TablesFactory::Register::Register(const UString& node_name, DescriptorFactor
     }
 }
 
-ts::TablesFactory::Register::Register(DisplaySectionFunction func, TID id, uint16_t minCAS, uint16_t maxCAS)
+ts::TablesFactory::Register::Register(DisplaySectionFunction func, TID id, Standards standards, uint16_t minCAS, uint16_t maxCAS)
 {
-    do {
-        TablesFactory::Instance()->_sectionDisplays.insert(std::make_pair(SectionDisplayIndex(id, minCAS), func));
-    } while (minCAS++ < maxCAS);
+    TablesFactory::Instance()->registerTable(id, standards, minCAS, maxCAS)->display = func;
 }
 
-ts::TablesFactory::Register::Register(DisplaySectionFunction func, TID minId, TID maxId, uint16_t minCAS, uint16_t maxCAS)
+ts::TablesFactory::Register::Register(DisplaySectionFunction func, TID minId, TID maxId, Standards standards, uint16_t minCAS, uint16_t maxCAS)
 {
-    do {
-        for (TID id = minId; id <= maxId; ++id) {
-            TablesFactory::Instance()->_sectionDisplays.insert(std::make_pair(SectionDisplayIndex(id, minCAS), func));
-        }
-    } while (minCAS++ < maxCAS);
+    for (TID id = minId; id <= maxId; ++id) {
+        TablesFactory::Instance()->registerTable(id, standards, minCAS, maxCAS)->display = func;
+    }
 }
 
-ts::TablesFactory::Register::Register(LogSectionFunction func, TID id, uint16_t minCAS, uint16_t maxCAS)
+ts::TablesFactory::Register::Register(LogSectionFunction func, TID id, Standards standards, uint16_t minCAS, uint16_t maxCAS)
 {
-    do {
-        TablesFactory::Instance()->_sectionLogs.insert(std::make_pair(SectionDisplayIndex(id, minCAS), func));
-    } while (minCAS++ < maxCAS);
+    TablesFactory::Instance()->registerTable(id, standards, minCAS, maxCAS)->log = func;
 }
 
-ts::TablesFactory::Register::Register(LogSectionFunction func, TID minId, TID maxId, uint16_t minCAS, uint16_t maxCAS)
+ts::TablesFactory::Register::Register(LogSectionFunction func, TID minId, TID maxId, Standards standards, uint16_t minCAS, uint16_t maxCAS)
 {
-    do {
-        for (TID id = minId; id <= maxId; ++id) {
-            TablesFactory::Instance()->_sectionLogs.insert(std::make_pair(SectionDisplayIndex(id, minCAS), func));
-        }
-    } while (minCAS++ < maxCAS);
+    for (TID id = minId; id <= maxId; ++id) {
+        TablesFactory::Instance()->registerTable(id, standards, minCAS, maxCAS)->log = func;
+    }
 }
 
 ts::TablesFactory::Register::Register(DisplayDescriptorFunction func, const EDID& edid)
@@ -165,64 +217,59 @@ ts::TablesFactory::RegisterNames::RegisterNames(const UString& filename)
 // Get registered items.
 //----------------------------------------------------------------------------
 
-ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(TID id) const
+ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(TID id, Standards standards, uint16_t cas) const
 {
-    auto it = _tableIds.find(id);
-    return it != _tableIds.end() ? it->second : nullptr;
+    return getTableFunction(id, standards, cas, &TableDescription::factory);
 }
 
-ts::Standards ts::TablesFactory::getTableStandards(TID id) const
+ts::DisplaySectionFunction ts::TablesFactory::getSectionDisplay(TID id, Standards standards, uint16_t cas) const
 {
-    auto it = _tableStandards.find(id);
-    return it != _tableStandards.end() ? it->second : STD_NONE;
+    return getTableFunction(id, standards, cas, &TableDescription::display);
+}
+
+ts::LogSectionFunction ts::TablesFactory::getSectionLog(TID id, Standards standards, uint16_t cas) const
+{
+    return getTableFunction(id, standards, cas, &TableDescription::log);
 }
 
 ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(const UString& node_name) const
 {
-    auto it = node_name.findSimilar(_tableNames);
+    const auto it = node_name.findSimilar(_tableNames);
     return it != _tableNames.end() ? it->second : nullptr;
 }
 
 ts::TablesFactory::DescriptorFactory ts::TablesFactory::getDescriptorFactory(const UString& node_name) const
 {
-    auto it = node_name.findSimilar(_descriptorNames);
+    const auto it = node_name.findSimilar(_descriptorNames);
     return it != _descriptorNames.end() ? it->second : nullptr;
 }
 
 ts::DisplayCADescriptorFunction ts::TablesFactory::getCADescriptorDisplay(uint16_t cas_id) const
 {
-    // Try exact CA_system_id.
     const auto it = _casIdDescriptorDisplays.find(cas_id);
     return it != _casIdDescriptorDisplays.end() ? it->second : nullptr;
 }
 
 
 //----------------------------------------------------------------------------
-// Common code for getSectionDisplay and getSectionLog.
+// Get the list of standards which are defined for a given table id.
 //----------------------------------------------------------------------------
 
-template <typename FUNCTION>
-FUNCTION ts::TablesFactory::getSectionFunction(TID id, uint16_t cas, const std::map<uint32_t,FUNCTION>& funcMap) const
+ts::Standards ts::TablesFactory::getTableStandards(TID tid) const
 {
-    // Try with current CAS.
-    typename std::map<uint32_t, FUNCTION>::const_iterator it = funcMap.find(SectionDisplayIndex(id, cas));
-
-    // Try CAS-independent value if not found.
-    if (cas != CASID_NULL && it == funcMap.end()) {
-        it = funcMap.find(SectionDisplayIndex(id, CASID_NULL));
+    // Accumulate the common subset of all standards for this table id.
+    Standards standards = STD_NONE;
+    for (auto it = _tables.lower_bound(tid); it != _tables.end() && it->first == tid; ++it) {
+        if (standards == STD_NONE) {
+            // No standard found yet, use all standards from first definition.
+            standards = it->second.standards;
+        }
+        else {
+            // Some standards were already found, keep only the common subset.
+            standards &= it->second.standards;
+        }
     }
-
-    return it != funcMap.end() ? it->second : nullptr;
-}
-
-ts::DisplaySectionFunction ts::TablesFactory::getSectionDisplay(TID id, uint16_t cas) const
-{
-    return getSectionFunction(id, cas, _sectionDisplays);
-}
-
-ts::LogSectionFunction ts::TablesFactory::getSectionLog(TID id, uint16_t cas) const
-{
-    return getSectionFunction(id, cas, _sectionLogs);
+    return standards;
 }
 
 
@@ -314,15 +361,20 @@ ts::DisplayDescriptorFunction ts::TablesFactory::getDescriptorDisplay(const EDID
 void ts::TablesFactory::getRegisteredTableIds(std::vector<TID>& ids) const
 {
     ids.clear();
-    for (std::map<TID,TableFactory>::const_iterator it = _tableIds.begin(); it != _tableIds.end(); ++it) {
-        ids.push_back(it->first);
+    TID previous = TID_NULL;
+    for (auto it = _tables.begin(); it != _tables.end(); ++it) {
+        // This is a multimap, the same key can be reused, use it once only.
+        if (it->first != previous) {
+            ids.push_back(it->first);
+            previous = it->first;
+        }
     }
 }
 
 void ts::TablesFactory::getRegisteredDescriptorIds(std::vector<EDID>& ids) const
 {
     ids.clear();
-    for (std::map<EDID,DescriptorFactory>::const_iterator it = _descriptorIds.begin(); it != _descriptorIds.end(); ++it) {
+    for (auto it = _descriptorIds.begin(); it != _descriptorIds.end(); ++it) {
         ids.push_back(it->first);
     }
 }
@@ -330,7 +382,7 @@ void ts::TablesFactory::getRegisteredDescriptorIds(std::vector<EDID>& ids) const
 void ts::TablesFactory::getRegisteredTableNames(UStringList& names) const
 {
     names.clear();
-    for (std::map<UString,TableFactory>::const_iterator it = _tableNames.begin(); it != _tableNames.end(); ++it) {
+    for (auto it = _tableNames.begin(); it != _tableNames.end(); ++it) {
         names.push_back(it->first);
     }
 }
@@ -338,7 +390,7 @@ void ts::TablesFactory::getRegisteredTableNames(UStringList& names) const
 void ts::TablesFactory::getRegisteredDescriptorNames(UStringList& names) const
 {
     names.clear();
-    for (std::map<UString,DescriptorFactory>::const_iterator it = _descriptorNames.begin(); it != _descriptorNames.end(); ++it) {
+    for (auto it = _descriptorNames.begin(); it != _descriptorNames.end(); ++it) {
         names.push_back(it->first);
     }
 }

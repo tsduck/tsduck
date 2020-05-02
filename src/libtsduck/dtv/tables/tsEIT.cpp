@@ -47,7 +47,7 @@ TSDUCK_SOURCE;
 
 TS_XML_TABLE_FACTORY(ts::EIT, MY_XML_NAME);
 TS_ID_TABLE_RANGE_FACTORY(ts::EIT, ts::TID_EIT_MIN, ts::TID_EIT_MAX, MY_STD);
-TS_FACTORY_REGISTER(ts::EIT::DisplaySection, ts::TID_EIT_MIN, ts::TID_EIT_MAX, ts::CASID_NULL, ts::CASID_NULL);
+TS_FACTORY_REGISTER(ts::EIT::DisplaySection, ts::TID_EIT_MIN, ts::TID_EIT_MAX, MY_STD, ts::CASID_NULL, ts::CASID_NULL);
 
 
 //----------------------------------------------------------------------------

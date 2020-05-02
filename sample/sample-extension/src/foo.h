@@ -1,7 +1,7 @@
 // Base definitions for the sample TSDuck "foo" extension.
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsduck.h"
 
 // Attribute to declare a class or function from tslibext_foo.dll on Windows.
 // When building tslibext_foo.dll on Windows, define _FOODLL_IMPL in the project options.
@@ -34,4 +34,7 @@ namespace foo {
         CASID_FOO_MIN = 0xF001,  // Minimum CAS Id value for FooCAS.
         CASID_FOO_MAX = 0xF008,  // Maximum CAS Id value for FooCAS.
     };
+
+    // Digital TV standards to which the "foo" signalization belongs (no defined standard).
+    constexpr ts::Standards STD = ts::STD_NONE;
 }

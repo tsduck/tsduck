@@ -12,6 +12,7 @@
     REF_TYPE(EIT);
     REF_TYPE(ETT);
     REF_TYPE(INT);
+    REF_TYPE(LDT);
     REF_TYPE(MGT);
     REF_TYPE(NIT);
     REF_TYPE(PAT);

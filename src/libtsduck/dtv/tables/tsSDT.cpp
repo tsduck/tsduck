@@ -46,8 +46,8 @@ TSDUCK_SOURCE;
 TS_XML_TABLE_FACTORY(ts::SDT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::SDT, ts::TID_SDT_ACT, MY_STD);
 TS_ID_TABLE_FACTORY(ts::SDT, ts::TID_SDT_OTH, MY_STD);
-TS_FACTORY_REGISTER(ts::SDT::DisplaySection, ts::TID_SDT_ACT);
-TS_FACTORY_REGISTER(ts::SDT::DisplaySection, ts::TID_SDT_OTH);
+TS_FACTORY_REGISTER(ts::SDT::DisplaySection, ts::TID_SDT_ACT, MY_STD);
+TS_FACTORY_REGISTER(ts::SDT::DisplaySection, ts::TID_SDT_OTH, MY_STD);
 
 
 //----------------------------------------------------------------------------

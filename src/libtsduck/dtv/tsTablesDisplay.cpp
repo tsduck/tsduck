@@ -286,7 +286,7 @@ std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int 
     cas = _duck.casId(cas);
 
     // Find the display handler for this table id (and maybe CAS).
-    DisplaySectionFunction handler = TablesFactory::Instance()->getSectionDisplay(section.tableId(), cas);
+    DisplaySectionFunction handler = TablesFactory::Instance()->getSectionDisplay(section.tableId(), _duck.standards(), cas);
 
     if (handler != nullptr) {
         handler(*this, section, indent);
@@ -308,7 +308,7 @@ std::ostream& ts::TablesDisplay::logSectionData(const Section& section, const US
     cas = _duck.casId(cas);
 
     // Find the log handler for this table id (and maybe CAS).
-    LogSectionFunction handler = TablesFactory::Instance()->getSectionLog(section.tableId(), cas);
+    LogSectionFunction handler = TablesFactory::Instance()->getSectionLog(section.tableId(), _duck.standards(), cas);
     if (handler == nullptr) {
         handler = LogUnknownSectionData;
     }

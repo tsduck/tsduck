@@ -123,7 +123,6 @@ namespace ts {
         bool             _cat_ok;        // Got a CAT or not interested in CAT
         bool             _sdt_ok;        // Got an SDT
         bool             _bat_ok;        // Got a BAT
-        bool             _mgt_ok;        // Got an MGT
         int              _expected_pmt;  // Expected PMT count
         int              _received_pmt;  // Received PMT count
         PacketCounter    _clear_packets_cnt;

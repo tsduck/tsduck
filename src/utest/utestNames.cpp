@@ -50,6 +50,7 @@ public:
 
     void testConfigFile();
     void testTID();
+    void testSharedTID();
     void testDID();
     void testEDID();
     void testStreamType();
@@ -87,6 +88,7 @@ public:
     TSUNIT_TEST_BEGIN(NamesTest);
     TSUNIT_TEST(testConfigFile);
     TSUNIT_TEST(testTID);
+    TSUNIT_TEST(testSharedTID);
     TSUNIT_TEST(testDID);
     TSUNIT_TEST(testEDID);
     TSUNIT_TEST(testStreamType);
@@ -148,7 +150,7 @@ void NamesTest::afterTest()
 void NamesTest::testConfigFile()
 {
     debug() << "NamesTest: DVB configuration file: " << ts::NamesMain::Instance()->configurationFile() << std::endl
-                 << "NamesTest: OUI configuration file: " << ts::NamesOUI::Instance()->configurationFile() << std::endl;
+            << "NamesTest: OUI configuration file: " << ts::NamesOUI::Instance()->configurationFile() << std::endl;
 
     TSUNIT_ASSERT(!ts::NamesMain::Instance()->configurationFile().empty());
     TSUNIT_ASSERT(ts::FileExists(ts::NamesMain::Instance()->configurationFile()));
@@ -172,6 +174,23 @@ void NamesTest::testTID()
     TSUNIT_EQUAL(u"SafeAccess EMM-A (0x86)", ts::names::TID(duck, ts::TID_SA_EMM_A, ts::CASID_SAFEACCESS, ts::names::VALUE));
     TSUNIT_EQUAL(u"Logiways DMT", ts::names::TID(duck, ts::TID_LW_DMT, ts::CASID_SAFEACCESS));
     TSUNIT_EQUAL(u"unknown (0x90)", ts::names::TID(duck, ts::TID_LW_DMT));
+}
+
+void NamesTest::testSharedTID()
+{
+    // Shared table ids between ATSC and ISDB.
+
+    ts::DuckContext duck;
+    TSUNIT_EQUAL(ts::TID_MGT, ts::TID_LDT);
+    TSUNIT_EQUAL(ts::TID_TVCT, ts::TID_CDT);
+
+    duck.addStandards(ts::STD_ISDB);
+    TSUNIT_EQUAL(u"LDT (ISDB)", ts::names::TID(duck, ts::TID_MGT));
+    TSUNIT_EQUAL(u"CDT (ISDB)", ts::names::TID(duck, ts::TID_TVCT));
+
+    duck.resetStandards(ts::STD_ATSC);
+    TSUNIT_EQUAL(u"MGT (ATSC)", ts::names::TID(duck, ts::TID_MGT));
+    TSUNIT_EQUAL(u"TVCT (ATSC)", ts::names::TID(duck, ts::TID_TVCT));
 }
 
 void NamesTest::testPrivateDataSpecifier()
