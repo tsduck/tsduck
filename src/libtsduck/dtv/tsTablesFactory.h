@@ -81,19 +81,21 @@ namespace ts {
         //! which the standard is active. For instance, if the same table id is used by
         //! ATSC and ISDB but the application runs in an ISDB context, return the factory
         //! for the ISDB version of this table id.
+        //! @param [in] pid PID on which the section is found.
         //! @param [in] cas Current CAS id.
         //! @return Corresponding factory or zero if there is none.
         //!
-        TableFactory getTableFactory(TID id, Standards standards, uint16_t cas = CASID_NULL) const;
+        TableFactory getTableFactory(TID id, Standards standards, PID pid = PID_NULL, uint16_t cas = CASID_NULL) const;
 
         //!
         //! Get the list of standards which are defined for a given table id.
         //! @param [in] id Table id.
-        //! @return Corresponding list of standards.If multiple definitions exist for this
+        //! @return Corresponding list of standards. If multiple definitions exist for this
         //! table id, return the common subset of all definitions. This means that only
         //! standards which are used in all cases are returned.
+        //! @param [in] pid PID on which the section is found.
         //!
-        Standards getTableStandards(TID id) const;
+        Standards getTableStandards(TID id, PID pid = PID_NULL) const;
 
         //!
         //! Get the descriptor factory for a given descriptor tag.
@@ -122,12 +124,12 @@ namespace ts {
         //!
         //! Check if a descriptor is allowed in a table.
         //! @param [in] nodeName Name of the XML node for the descriptor.
-        //! @param [in] table_id Table id of the table to check.
+        //! @param [in] tid Table id of the table to check.
         //! @return True if the descriptor is allowed, false otherwise.
         //! Non-table-specific descriptors are allowed everywhere.
         //! Table-specific descriptors are allowed only in a set of specific tables.
         //!
-        bool isDescriptorAllowed(const UString& nodeName, TID table_id) const;
+        bool isDescriptorAllowed(const UString& nodeName, TID tid) const;
 
         //!
         //! Get the list of tables where a descriptor is allowed.
@@ -146,10 +148,11 @@ namespace ts {
         //! function for which the standard is active. For instance, if the same table
         //! id is used by ATSC and ISDB but the application runs in an ISDB context,
         //! return the display function for the ISDB version of this table id.
+        //! @param [in] pid PID on which the section is found.
         //! @param [in] cas Current CAS id.
         //! @return Corresponding display function or zero if there is none.
         //!
-        DisplaySectionFunction getSectionDisplay(TID id, Standards standards, uint16_t cas = CASID_NULL) const;
+        DisplaySectionFunction getSectionDisplay(TID id, Standards standards, PID pid = PID_NULL, uint16_t cas = CASID_NULL) const;
 
         //!
         //! Get the log function for a given table id.
@@ -159,10 +162,11 @@ namespace ts {
         //! function for which the standard is active. For instance, if the same table
         //! id is used by ATSC and ISDB but the application runs in an ISDB context,
         //! return the log function for the ISDB version of this table id.
+        //! @param [in] pid PID on which the section is found.
         //! @param [in] cas Current CAS id.
         //! @return Corresponding log function or zero if there is none.
         //!
-        LogSectionFunction getSectionLog(TID id, Standards standards, uint16_t cas = CASID_NULL) const;
+        LogSectionFunction getSectionLog(TID id, Standards standards, PID pid = PID_NULL, uint16_t cas = CASID_NULL) const;
 
         //!
         //! Get the display function for a given extended descriptor id.
@@ -231,9 +235,14 @@ namespace ts {
             //! @param [in] id Table id for this type.
             //! @param [in] factory Function which creates a table of the appropriate type.
             //! @param [in] standards List of standards which define this table.
+            //! @param [in] pids List of PID's which are defined by the standards for this table.
+            //! The PID can be used to resolve conflicting table ids between standards. For instance,
+            //! a table id 0xC7 on PID 0x0025 is interpreted as an ISDB-defined LDT while the same
+            //! table id on PID 0x1FFB is interpreted as an ATSC-defined MGT.
             //! @see TS_ID_TABLE_FACTORY
+            //! @see TS_ID_TABLE_PIDS_FACTORY
             //!
-            Register(TID id, TableFactory factory, Standards standards);
+            Register(TID id, TableFactory factory, Standards standards, std::initializer_list<PID> pids = std::initializer_list<PID>());
 
             //!
             //! The constructor registers a table factory for a given range of ids.
@@ -241,9 +250,10 @@ namespace ts {
             //! @param [in] maxId Maximum table id for this type.
             //! @param [in] factory Function which creates a table of the appropriate type.
             //! @param [in] standards List of standards which define this table.
+            //! @param [in] pids List of PID's which are defined by the standards for this table.
             //! @see TS_ID_TABLE_RANGE_FACTORY
             //!
-            Register(TID minId, TID maxId, TableFactory factory, Standards standards);
+            Register(TID minId, TID maxId, TableFactory factory, Standards standards, std::initializer_list<PID> pids = std::initializer_list<PID>());
 
             //!
             //! The constructor registers a descriptor factory for a given descriptor tag.
@@ -278,9 +288,10 @@ namespace ts {
             //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
             //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
             //! Same @a minCAS when set as CASID_NULL.
+            //! @param [in] pids List of PID's which are defined by the standards for this table.
             //! @see TS_FACTORY_REGISTER
             //!
-            Register(DisplaySectionFunction func, TID id, Standards standards, uint16_t minCAS = CASID_NULL, uint16_t maxCAS = CASID_NULL);
+            Register(DisplaySectionFunction func, TID id, Standards standards, uint16_t minCAS = CASID_NULL, uint16_t maxCAS = CASID_NULL, std::initializer_list<PID> pids = std::initializer_list<PID>());
 
             //!
             //! The constructor registers a section display function for a given range of ids.
@@ -291,9 +302,10 @@ namespace ts {
             //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
             //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
             //! Same @a minCAS when set as CASID_NULL.
+            //! @param [in] pids List of PID's which are defined by the standards for this table.
             //! @see TS_FACTORY_REGISTER
             //!
-            Register(DisplaySectionFunction func, TID minId, TID maxId, Standards standards, uint16_t minCAS, uint16_t maxCAS);
+            Register(DisplaySectionFunction func, TID minId, TID maxId, Standards standards, uint16_t minCAS, uint16_t maxCAS, std::initializer_list<PID> pids = std::initializer_list<PID>());
 
             //!
             //! The constructor registers a section log function for a given table id.
@@ -303,9 +315,10 @@ namespace ts {
             //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
             //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
             //! Same @a minCAS when set as CASID_NULL.
+            //! @param [in] pids List of PID's which are defined by the standards for this table.
             //! @see TS_FACTORY_REGISTER
             //!
-            Register(LogSectionFunction func, TID id, Standards standards, uint16_t minCAS = CASID_NULL, uint16_t maxCAS = CASID_NULL);
+            Register(LogSectionFunction func, TID id, Standards standards, uint16_t minCAS = CASID_NULL, uint16_t maxCAS = CASID_NULL, std::initializer_list<PID> pids = std::initializer_list<PID>());
 
             //!
             //! The constructor registers a section log function for a given range of ids.
@@ -316,9 +329,10 @@ namespace ts {
             //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
             //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
             //! Same @a minCAS when set as CASID_NULL.
+            //! @param [in] pids List of PID's which are defined by the standards for this table.
             //! @see TS_FACTORY_REGISTER
             //!
-            Register(LogSectionFunction func, TID minId, TID maxId, Standards standards, uint16_t minCAS, uint16_t maxCAS);
+            Register(LogSectionFunction func, TID minId, TID maxId, Standards standards, uint16_t minCAS, uint16_t maxCAS, std::initializer_list<PID> pids = std::initializer_list<PID>());
 
             //!
             //! The constructor registers a descriptor display function for a given descriptor id.
@@ -385,16 +399,26 @@ namespace ts {
     private:
         // Description of a table id. Several descriptions can be used for the same table id,
         // for instance for distinct DTV standards or disctinct CA systems.
+        // We use a fixed-size array for 'pids' instead of a PIDSet for storage efficiency.
         class TableDescription
         {
         public:
-            TableDescription();                // Constructor.
             Standards              standards;  // Standards for this table id.
             uint16_t               minCAS;     // Minimum CAS id for this table id (CASID_NULL if none).
             uint16_t               maxCAS;     // Maximum CAS id for this table id (CASID_NULL if none).
             TableFactory           factory;    // Function to build an instance of the table.
             DisplaySectionFunction display;    // Function to display a section.
             LogSectionFunction     log;        // Function to log a section.
+            std::array<PID,8>      pids;       // Standard PID's for the standard, stop at first PID_NULL.
+
+            // Constructor.
+            TableDescription();
+
+            // Add PIDs in the list.
+            void addPIDs(std::initializer_list<PID> morePIDs);
+
+            // Check if a PID is present.
+            bool hasPID(PID pid) const;
         };
 
         std::multimap<TID, TableDescription>             _tables;                   // Description of all table ids, potential multiple entries per table idx
@@ -409,11 +433,11 @@ namespace ts {
 
         // Register a new table id which matches standards and CAS ids.
         // Always return a non-null pointer (existing or newly created structure).
-        TableDescription* registerTable(TID id, Standards standards, uint16_t minCAS, uint16_t maxCAS);
+        TableDescription* registerTable(TID id, Standards standards, uint16_t minCAS, uint16_t maxCAS, std::initializer_list<PID> pids);
 
         // Common code to lookup a table function.
         template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type* = nullptr>
-        FUNCTION getTableFunction(TID tid, Standards standards, uint16_t cas, FUNCTION TableDescription::* member) const;
+        FUNCTION getTableFunction(TID tid, Standards standards, PID pid, uint16_t cas, FUNCTION TableDescription::* member) const;
 
         // Common code to lookup a descriptor function.
         template <typename FUNCTION>
@@ -459,28 +483,36 @@ namespace ts {
 //! Registration of the table id of a subclass of ts::AbstractTable.
 //! This macro is typically used in the .cpp file of a table.
 //!
-#define TS_ID_TABLE_FACTORY(classname,id,std) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER((id), TS_UNIQUE_NAME(_Factory), std)
+#define TS_ID_TABLE_FACTORY(classname,id,std) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER((id), TS_UNIQUE_NAME(_Factory), (std))
+
+//!
+//! @hideinitializer
+//! Registration of the table id of a subclass of ts::AbstractTable.
+//! The table is defined by its standard to be on a given set of PID's.
+//! This macro is typically used in the .cpp file of a table.
+//!
+#define TS_ID_TABLE_PIDS_FACTORY(classname, id, std, ...) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER((id), TS_UNIQUE_NAME(_Factory), (std), {__VA_ARGS__})
 
 //!
 //! @hideinitializer
 //! Registration of a range of table ids of a subclass of ts::AbstractTable.
 //! This macro is typically used in the .cpp file of a table.
 //!
-#define TS_ID_TABLE_RANGE_FACTORY(classname,minId,maxId,std) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER((minId), (maxId), TS_UNIQUE_NAME(_Factory), std)
+#define TS_ID_TABLE_RANGE_FACTORY(classname, minId, maxId, std) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER((minId), (maxId), TS_UNIQUE_NAME(_Factory), (std))
 
 //!
 //! @hideinitializer
 //! Registration of the descriptor tag of a subclass of ts::AbstractDescriptor.
 //! This macro is typically used in the .cpp file of a descriptor.
 //!
-#define TS_ID_DESCRIPTOR_FACTORY(classname,id) _TS_DESCRIPTOR_FACTORY(classname) TS_FACTORY_REGISTER((id), TS_UNIQUE_NAME(_Factory))
+#define TS_ID_DESCRIPTOR_FACTORY(classname, id) _TS_DESCRIPTOR_FACTORY(classname) TS_FACTORY_REGISTER((id), TS_UNIQUE_NAME(_Factory))
 
 //!
 //! @hideinitializer
 //! Registration of the XML name of a subclass of ts::AbstractTable.
 //! This macro is typically used in the .cpp file of a table.
 //!
-#define TS_XML_TABLE_FACTORY(classname,xmlname) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER(xmlname, TS_UNIQUE_NAME(_Factory))
+#define TS_XML_TABLE_FACTORY(classname, xmlname) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER(xmlname, TS_UNIQUE_NAME(_Factory))
 
 //!
 //! @hideinitializer
