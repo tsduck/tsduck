@@ -62,8 +62,49 @@ ts::TablesFactory::TableDescription::TableDescription() :
     maxCAS(CASID_NULL),
     factory(nullptr),
     display(nullptr),
-    log(nullptr)
+    log(nullptr),
+    pids()
 {
+    for (size_t i = 0; i < pids.size(); ++i) {
+        pids[i] = PID_NULL;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a PID is present in a table description.
+//----------------------------------------------------------------------------
+
+bool ts::TablesFactory::TableDescription::hasPID(PID pid) const
+{
+    if (pid != PID_NULL) {
+        for (size_t i = 0; i < pids.size() && pids[i] != PID_NULL; ++i) {
+            if (pid == pids[i]) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
+// Add more PIDs in a table description.
+//----------------------------------------------------------------------------
+
+void ts::TablesFactory::TableDescription::addPIDs(std::initializer_list<PID> morePIDs)
+{
+    for (auto it = morePIDs.begin(); it != morePIDs.end(); ++it) {
+        if (*it != PID_NULL) {
+            size_t i = 0;
+            while (i < pids.size() && pids[i] != PID_NULL && pids[i] != *it) {
+                ++i;
+            }
+            if (i < pids.size()) {
+                pids[i] = *it;
+            }
+        }
+    }
 }
 
 
@@ -71,13 +112,14 @@ ts::TablesFactory::TableDescription::TableDescription() :
 // Register a new table id which matches standards and CAS ids.
 //----------------------------------------------------------------------------
 
-ts::TablesFactory::TableDescription* ts::TablesFactory::registerTable(TID tid, Standards standards, uint16_t minCAS, uint16_t maxCAS)
+ts::TablesFactory::TableDescription* ts::TablesFactory::registerTable(TID tid, Standards standards, uint16_t minCAS, uint16_t maxCAS, std::initializer_list<PID> pids)
 {
     // Try to find a matching existing table.
     for (auto it = _tables.lower_bound(tid); it != _tables.end() && it->first == tid; ++it) {
         // Found an entry with same table id.
         if ((standards & it->second.standards) == standards && minCAS >= it->second.minCAS && maxCAS <= it->second.maxCAS) {
             // Found an entry which includes all required standards and CAS id.
+            it->second.addPIDs(pids);
             return &it->second;
         }
     }
@@ -87,6 +129,7 @@ ts::TablesFactory::TableDescription* ts::TablesFactory::registerTable(TID tid, S
     td.standards = standards;
     td.minCAS = minCAS;
     td.maxCAS = maxCAS;
+    td.addPIDs(pids);
     auto it = _tables.insert(std::make_pair(tid, td));
     return &it->second;
 }
@@ -97,10 +140,10 @@ ts::TablesFactory::TableDescription* ts::TablesFactory::registerTable(TID tid, S
 //----------------------------------------------------------------------------
 
 template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type*>
-FUNCTION ts::TablesFactory::getTableFunction(TID tid, Standards standards, uint16_t cas, FUNCTION TableDescription::* member) const
+FUNCTION ts::TablesFactory::getTableFunction(TID tid, Standards standards, PID pid, uint16_t cas, FUNCTION TableDescription::* member) const
 {
     // Try to find an exact match with standard and CAS id.
-    // Otherwise, will use a fallback one for same tid.
+    // Otherwise, will use a fallback once for same tid.
     FUNCTION fallbackFunc = nullptr;
     size_t fallbackCount = 0;
 
@@ -108,6 +151,11 @@ FUNCTION ts::TablesFactory::getTableFunction(TID tid, Standards standards, uint1
     for (auto it = _tables.lower_bound(tid); it != _tables.end() && it->first == tid; ++it) {
         // Ignore entris for which the searched function is not present.
         if (it->second.*member != nullptr) {
+
+            // If the table in a standard PID, this is an exact match.
+            if (it->second.hasPID(pid)) {
+                return it->second.*member;
+            }
 
             // CAS match: either a CAS is specified and is in range, or no CAS specified and CAS-agnostic table (all CASID_NULL).
             const bool casMatch = cas >= it->second.minCAS && cas <= it->second.maxCAS;
@@ -136,15 +184,15 @@ FUNCTION ts::TablesFactory::getTableFunction(TID tid, Standards standards, uint1
 // Registrations using constructors of Register objects.
 //----------------------------------------------------------------------------
 
-ts::TablesFactory::Register::Register(TID id, TableFactory factory, Standards standards)
+ts::TablesFactory::Register::Register(TID id, TableFactory factory, Standards standards, std::initializer_list<PID> pids)
 {
-    TablesFactory::Instance()->registerTable(id, standards, CASID_NULL, CASID_NULL)->factory = factory;
+    TablesFactory::Instance()->registerTable(id, standards, CASID_NULL, CASID_NULL, pids)->factory = factory;
 }
 
-ts::TablesFactory::Register::Register(TID minId, TID maxId, TableFactory factory, Standards standards)
+ts::TablesFactory::Register::Register(TID minId, TID maxId, TableFactory factory, Standards standards, std::initializer_list<PID> pids)
 {
     for (TID id = minId; id <= maxId; ++id) {
-        TablesFactory::Instance()->registerTable(id, standards, CASID_NULL, CASID_NULL)->factory = factory;
+        TablesFactory::Instance()->registerTable(id, standards, CASID_NULL, CASID_NULL, pids)->factory = factory;
     }
 }
 
@@ -166,27 +214,27 @@ ts::TablesFactory::Register::Register(const UString& node_name, DescriptorFactor
     }
 }
 
-ts::TablesFactory::Register::Register(DisplaySectionFunction func, TID id, Standards standards, uint16_t minCAS, uint16_t maxCAS)
+ts::TablesFactory::Register::Register(DisplaySectionFunction func, TID id, Standards standards, uint16_t minCAS, uint16_t maxCAS, std::initializer_list<PID> pids)
 {
-    TablesFactory::Instance()->registerTable(id, standards, minCAS, maxCAS)->display = func;
+    TablesFactory::Instance()->registerTable(id, standards, minCAS, maxCAS, pids)->display = func;
 }
 
-ts::TablesFactory::Register::Register(DisplaySectionFunction func, TID minId, TID maxId, Standards standards, uint16_t minCAS, uint16_t maxCAS)
+ts::TablesFactory::Register::Register(DisplaySectionFunction func, TID minId, TID maxId, Standards standards, uint16_t minCAS, uint16_t maxCAS, std::initializer_list<PID> pids)
 {
     for (TID id = minId; id <= maxId; ++id) {
-        TablesFactory::Instance()->registerTable(id, standards, minCAS, maxCAS)->display = func;
+        TablesFactory::Instance()->registerTable(id, standards, minCAS, maxCAS, pids)->display = func;
     }
 }
 
-ts::TablesFactory::Register::Register(LogSectionFunction func, TID id, Standards standards, uint16_t minCAS, uint16_t maxCAS)
+ts::TablesFactory::Register::Register(LogSectionFunction func, TID id, Standards standards, uint16_t minCAS, uint16_t maxCAS, std::initializer_list<PID> pids)
 {
-    TablesFactory::Instance()->registerTable(id, standards, minCAS, maxCAS)->log = func;
+    TablesFactory::Instance()->registerTable(id, standards, minCAS, maxCAS, pids)->log = func;
 }
 
-ts::TablesFactory::Register::Register(LogSectionFunction func, TID minId, TID maxId, Standards standards, uint16_t minCAS, uint16_t maxCAS)
+ts::TablesFactory::Register::Register(LogSectionFunction func, TID minId, TID maxId, Standards standards, uint16_t minCAS, uint16_t maxCAS, std::initializer_list<PID> pids)
 {
     for (TID id = minId; id <= maxId; ++id) {
-        TablesFactory::Instance()->registerTable(id, standards, minCAS, maxCAS)->log = func;
+        TablesFactory::Instance()->registerTable(id, standards, minCAS, maxCAS, pids)->log = func;
     }
 }
 
@@ -217,19 +265,19 @@ ts::TablesFactory::RegisterNames::RegisterNames(const UString& filename)
 // Get registered items.
 //----------------------------------------------------------------------------
 
-ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(TID id, Standards standards, uint16_t cas) const
+ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(TID id, Standards standards, PID pid, uint16_t cas) const
 {
-    return getTableFunction(id, standards, cas, &TableDescription::factory);
+    return getTableFunction(id, standards, pid, cas, &TableDescription::factory);
 }
 
-ts::DisplaySectionFunction ts::TablesFactory::getSectionDisplay(TID id, Standards standards, uint16_t cas) const
+ts::DisplaySectionFunction ts::TablesFactory::getSectionDisplay(TID id, Standards standards, PID pid, uint16_t cas) const
 {
-    return getTableFunction(id, standards, cas, &TableDescription::display);
+    return getTableFunction(id, standards, pid, cas, &TableDescription::display);
 }
 
-ts::LogSectionFunction ts::TablesFactory::getSectionLog(TID id, Standards standards, uint16_t cas) const
+ts::LogSectionFunction ts::TablesFactory::getSectionLog(TID id, Standards standards, PID pid, uint16_t cas) const
 {
-    return getTableFunction(id, standards, cas, &TableDescription::log);
+    return getTableFunction(id, standards, pid, cas, &TableDescription::log);
 }
 
 ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(const UString& node_name) const
@@ -255,12 +303,16 @@ ts::DisplayCADescriptorFunction ts::TablesFactory::getCADescriptorDisplay(uint16
 // Get the list of standards which are defined for a given table id.
 //----------------------------------------------------------------------------
 
-ts::Standards ts::TablesFactory::getTableStandards(TID tid) const
+ts::Standards ts::TablesFactory::getTableStandards(TID tid, PID pid) const
 {
     // Accumulate the common subset of all standards for this table id.
     Standards standards = STD_NONE;
     for (auto it = _tables.lower_bound(tid); it != _tables.end() && it->first == tid; ++it) {
-        if (standards == STD_NONE) {
+        if (it->second.hasPID(pid)) {
+            // We are in a standard PID for this table id, return the corresponding standards only.
+            return it->second.standards;
+        }
+        else if (standards == STD_NONE) {
             // No standard found yet, use all standards from first definition.
             standards = it->second.standards;
         }

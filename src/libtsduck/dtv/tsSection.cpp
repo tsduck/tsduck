@@ -368,7 +368,7 @@ void ts::Section::recomputeCRC()
 ts::Standards ts::Section::definingStandards() const
 {
     // The defining standard is taken from table id.
-    return TablesFactory::Instance()->getTableStandards(tableId());
+    return TablesFactory::Instance()->getTableStandards(tableId(), _source_pid);
 }
 
 

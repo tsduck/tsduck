@@ -234,7 +234,7 @@ const ts::SectionPtr& ts::BinaryTable::sectionAt(size_t index) const
 ts::Standards ts::BinaryTable::definingStandards() const
 {
     // The defining standard is taken from table id.
-    return TablesFactory::Instance()->getTableStandards(tableId());
+    return TablesFactory::Instance()->getTableStandards(tableId(), _source_pid);
 }
 
 
@@ -502,7 +502,7 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
     // Try to generate a specialized XML structure.
     if (!forceGeneric) {
         // Do we know how to deserialize this table?
-        TablesFactory::TableFactory fac = TablesFactory::Instance()->getTableFactory(_tid, duck.standards());
+        TablesFactory::TableFactory fac = TablesFactory::Instance()->getTableFactory(_tid, duck.standards(), _source_pid);
         if (fac != nullptr) {
             // We know how to deserialize this table.
             AbstractTablePtr tp = fac();

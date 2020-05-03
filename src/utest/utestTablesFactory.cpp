@@ -107,6 +107,8 @@ void TablesFactoryTest::testSharedTID()
     // When the same TID is used by two distinct standards, they have no standard in common
     // (meaning encountering this TID in a TS is not sufficient to determine a standard).
     TSUNIT_EQUAL(ts::STD_NONE, ts::TablesFactory::Instance()->getTableStandards(ts::TID_MGT));
+    TSUNIT_EQUAL(ts::STD_ATSC, ts::TablesFactory::Instance()->getTableStandards(ts::TID_MGT, ts::PID_PSIP));
+    TSUNIT_EQUAL(ts::STD_ISDB, ts::TablesFactory::Instance()->getTableStandards(ts::TID_MGT, ts::PID_LDT));
     TSUNIT_EQUAL(ts::STD_ATSC, ts::TablesFactory::Instance()->getTableStandards(ts::TID_CVCT));
 
     ts::TablesFactory::TableFactory factory = ts::TablesFactory::Instance()->getTableFactory(ts::TID_LDT, ts::STD_ATSC);
@@ -125,6 +127,16 @@ void TablesFactoryTest::testSharedTID()
     TSUNIT_EQUAL(ts::STD_ISDB, table->definingStandards());
     TSUNIT_EQUAL(u"LDT", table->xmlName());
 
+    factory = ts::TablesFactory::Instance()->getTableFactory(ts::TID_LDT, ts::STD_NONE, ts::PID_PSIP);
+    TSUNIT_ASSERT(factory != nullptr);
+    table = factory();
+    TSUNIT_ASSERT(!table.isNull());
+    TSUNIT_EQUAL(ts::TID_MGT, table->tableId());
+    TSUNIT_EQUAL(ts::STD_ATSC, table->definingStandards());
+    TSUNIT_EQUAL(u"MGT", table->xmlName());
+
     TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::TablesFactory::Instance()->getSectionDisplay(ts::TID_LDT, ts::STD_ATSC));
     TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::TablesFactory::Instance()->getSectionDisplay(ts::TID_LDT, ts::STD_ISDB));
+    TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::TablesFactory::Instance()->getSectionDisplay(ts::TID_LDT, ts::STD_NONE, ts::PID_PSIP));
+    TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::TablesFactory::Instance()->getSectionDisplay(ts::TID_LDT, ts::STD_NONE, ts::PID_LDT));
 }

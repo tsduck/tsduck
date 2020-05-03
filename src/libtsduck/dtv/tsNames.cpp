@@ -490,9 +490,12 @@ bool ts::Names::decodeDefinition(const UString& line, ConfigSection* section)
     UString value(line, equal + 1, line.length() - equal - 1);
     value.trim();
 
+    // Allowed "thousands separators" (ignored characters)
+    const UString ignore(u".,_");
+
     // Special case: specification of size in bits of values in this section.
     if (range.similar(u"bits")) {
-        return value.toInteger(section->bits);
+        return value.toInteger(section->bits, ignore, 0, UString());
     }
 
     // Decode "first[-last]"
@@ -502,11 +505,11 @@ bool ts::Names::decodeDefinition(const UString& line, ConfigSection* section)
     bool valid = false;
 
     if (dash == NPOS) {
-        valid = range.toInteger(first);
+        valid = range.toInteger(first, ignore, 0, UString());
         last = first;
     }
     else {
-        valid = range.substr(0, dash).toInteger(first) && range.substr(dash + 1).toInteger(last) && last >= first;
+        valid = range.substr(0, dash).toInteger(first, ignore, 0, UString()) && range.substr(dash + 1).toInteger(last, ignore, 0, UString()) && last >= first;
     }
 
     // Add the definition.
