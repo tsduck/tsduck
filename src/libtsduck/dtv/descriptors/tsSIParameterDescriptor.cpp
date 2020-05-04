@@ -31,19 +31,18 @@
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 #include "tsMJD.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"SI_parameter_descriptor"
+#define MY_CLASS ts::SIParameterDescriptor
 #define MY_DID ts::DID_ISDB_SI_PARAMETER
 #define MY_PDS ts::PDS_ISDB
 #define MY_STD ts::STD_ISDB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::SIParameterDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::SIParameterDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_FACTORY_REGISTER(ts::SIParameterDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

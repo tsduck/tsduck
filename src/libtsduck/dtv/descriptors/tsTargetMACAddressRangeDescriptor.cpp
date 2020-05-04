@@ -30,18 +30,17 @@
 #include "tsTargetMACAddressRangeDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_MAC_address_range_descriptor"
+#define MY_CLASS ts::TargetMACAddressRangeDescriptor
 #define MY_DID ts::DID_INT_MAC_ADDR_RANGE
 #define MY_TID ts::TID_INT
 #define MY_STD ts::STD_DVB
 
-TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetMACAddressRangeDescriptor, MY_XML_NAME, MY_TID);
-TS_ID_DESCRIPTOR_FACTORY(ts::TargetMACAddressRangeDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
-TS_FACTORY_REGISTER(ts::TargetMACAddressRangeDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

@@ -32,18 +32,17 @@
 #include "tsSCTE35.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"splice_segmentation_descriptor"
+#define MY_CLASS ts::SpliceSegmentationDescriptor
 #define MY_DID ts::DID_SPLICE_SEGMENT
 #define MY_TID ts::TID_SCTE35_SIT
 #define MY_STD ts::STD_SCTE
 
-TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::SpliceSegmentationDescriptor, MY_XML_NAME, MY_TID);
-TS_ID_DESCRIPTOR_FACTORY(ts::SpliceSegmentationDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
-TS_FACTORY_REGISTER(ts::SpliceSegmentationDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

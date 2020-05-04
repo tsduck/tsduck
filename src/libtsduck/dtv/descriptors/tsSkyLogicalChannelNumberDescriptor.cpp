@@ -26,28 +26,22 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a sky_logical_channel_number_descriptor.
-//  Private descriptor, must be preceeded by the BskyB PDS.
-//
-//----------------------------------------------------------------------------
 
 #include "tsSkyLogicalChannelNumberDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"sky_logical_channel_number_descriptor"
+#define MY_CLASS ts::SkyLogicalChannelNumberDescriptor
 #define MY_DID ts::DID_LOGICAL_CHANNEL_SKY
 #define MY_PDS ts::PDS_BSKYB
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::SkyLogicalChannelNumberDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::SkyLogicalChannelNumberDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_FACTORY_REGISTER(ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

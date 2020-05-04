@@ -7,7 +7,6 @@
 // (FOOT) and ECM's or EMM's from FooCAS.
 
 #pragma once
-#include "tsduck.h"
 #include "foo.h"
 
 namespace foo {

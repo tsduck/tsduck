@@ -29,16 +29,15 @@
 
 #include "tsMultilingualBouquetNameDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"multilingual_bouquet_name_descriptor"
 #define MY_XML_ATTR u"bouquet_name"
+#define MY_CLASS ts::MultilingualBouquetNameDescriptor
 #define MY_DID ts::DID_MLINGUAL_BOUQUET
 
-TS_XML_DESCRIPTOR_FACTORY(ts::MultilingualBouquetNameDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::MultilingualBouquetNameDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::MultilingualBouquetNameDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

@@ -30,18 +30,17 @@
 #include "tsMosaicDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"mosaic_descriptor"
+#define MY_CLASS ts::MosaicDescriptor
 #define MY_DID ts::DID_MOSAIC
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::MosaicDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::MosaicDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::MosaicDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

@@ -2,14 +2,25 @@
 // Some display handlers for the FooCAS data.
 
 #include "fooCAS.h"
-#include "tsTablesFactory.h"
 
 // Register the display handlers in TSDuck.
-TS_FACTORY_REGISTER(foo::DisplayFooCASECM, ts::TID_ECM_80, ts::TID_ECM_81, foo::STD, foo::CASID_FOO_MIN, foo::CASID_FOO_MAX);
-TS_FACTORY_REGISTER(foo::DisplayFooCASEMM, ts::TID_EMM_FIRST, ts::TID_EMM_LAST, foo::STD, foo::CASID_FOO_MIN, foo::CASID_FOO_MAX);
-TS_FACTORY_REGISTER(foo::LogFooCASECM, ts::TID_ECM_80, ts::TID_ECM_81, foo::STD, foo::CASID_FOO_MIN, foo::CASID_FOO_MAX);
-TS_FACTORY_REGISTER(foo::LogFooCASEMM, ts::TID_EMM_FIRST, ts::TID_EMM_LAST, foo::STD, foo::CASID_FOO_MIN, foo::CASID_FOO_MAX);
-TS_FACTORY_REGISTER(foo::DisplayFooCASCADescriptor, foo::CASID_FOO_MIN, foo::CASID_FOO_MAX);
+TS_REGISTER_CA_DESCRIPTOR(foo::DisplayFooCASCADescriptor, foo::CASID_FOO_MIN, foo::CASID_FOO_MAX);
+
+TS_REGISTER_SECTION({ts::TID_ECM_80, ts::TID_ECM_81},
+                    foo::STD,
+                    foo::DisplayFooCASECM,
+                    foo::LogFooCASECM,
+                    {}, // no predefined PID
+                    foo::CASID_FOO_MIN,
+                    foo::CASID_FOO_MAX);
+
+TS_REGISTER_SECTION(ts::Range<ts::TID>(ts::TID_EMM_FIRST, ts::TID_EMM_LAST),
+                    foo::STD,
+                    foo::DisplayFooCASEMM,
+                    foo::LogFooCASEMM,
+                    {}, // no predefined PID
+                    foo::CASID_FOO_MIN,
+                    foo::CASID_FOO_MAX);
 
 
 //----------------------------------------------------------------------------

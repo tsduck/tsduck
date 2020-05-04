@@ -26,24 +26,20 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Conditional Access Table (CAT)
-//
-//----------------------------------------------------------------------------
 
 #include "tsCAT.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"CAT"
+#define MY_CLASS ts::CAT
 #define MY_TID ts::TID_CAT
+#define MY_PID ts::PID_CAT
 #define MY_STD ts::STD_MPEG
 
-TS_XML_TABLE_FACTORY(ts::CAT, MY_XML_NAME);
-TS_ID_TABLE_PIDS_FACTORY(ts::CAT, MY_TID, MY_STD, ts::PID_CAT);
-TS_FACTORY_REGISTER(ts::CAT::DisplaySection, MY_TID, MY_STD);
+TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 
 
 //----------------------------------------------------------------------------

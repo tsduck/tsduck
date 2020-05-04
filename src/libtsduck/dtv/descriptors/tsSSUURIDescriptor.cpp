@@ -30,18 +30,17 @@
 #include "tsSSUURIDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"SSU_uri_descriptor"
+#define MY_CLASS ts::SSUURIDescriptor
 #define MY_DID ts::DID_UNT_SSU_URI
 #define MY_TID ts::TID_UNT
 #define MY_STD ts::STD_DVB
 
-TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::SSUURIDescriptor, MY_XML_NAME, MY_TID);
-TS_ID_DESCRIPTOR_FACTORY(ts::SSUURIDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
-TS_FACTORY_REGISTER(ts::SSUURIDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

@@ -25,7 +25,6 @@
 //    CRC_32
 
 #pragma once
-#include "tsduck.h"
 #include "foo.h"
 
 namespace foo {

@@ -26,25 +26,20 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a network_name_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsNetworkNameDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"network_name_descriptor"
+#define MY_CLASS ts::NetworkNameDescriptor
 #define MY_DID ts::DID_NETWORK_NAME
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::NetworkNameDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::NetworkNameDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::NetworkNameDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

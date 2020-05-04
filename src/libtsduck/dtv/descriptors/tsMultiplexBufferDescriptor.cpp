@@ -30,17 +30,16 @@
 #include "tsMultiplexBufferDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"multiplex_buffer_descriptor"
+#define MY_CLASS ts::MultiplexBufferDescriptor
 #define MY_DID ts::DID_MUX_BUFFER
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::MultiplexBufferDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::MultiplexBufferDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::MultiplexBufferDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

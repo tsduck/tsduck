@@ -27,11 +27,11 @@
 //
 //----------------------------------------------------------------------------
 //
-//  TSUnit test suite for ts::TablesFactory.
+//  TSUnit test suite for ts::PSIRepository.
 //
 //----------------------------------------------------------------------------
 
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsAbstractTable.h"
 #include "tsMGT.h"
 #include "tsLDT.h"
@@ -43,7 +43,7 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class TablesFactoryTest: public tsunit::Test
+class PSIRepositoryTest: public tsunit::Test
 {
 public:
     virtual void beforeTest() override;
@@ -52,13 +52,13 @@ public:
     void testRegistrations();
     void testSharedTID();
 
-    TSUNIT_TEST_BEGIN(TablesFactoryTest);
+    TSUNIT_TEST_BEGIN(PSIRepositoryTest);
     TSUNIT_TEST(testRegistrations);
     TSUNIT_TEST(testSharedTID);
     TSUNIT_TEST_END();
 };
 
-TSUNIT_REGISTER(TablesFactoryTest);
+TSUNIT_REGISTER(PSIRepositoryTest);
 
 
 //----------------------------------------------------------------------------
@@ -66,12 +66,12 @@ TSUNIT_REGISTER(TablesFactoryTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void TablesFactoryTest::beforeTest()
+void PSIRepositoryTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void TablesFactoryTest::afterTest()
+void PSIRepositoryTest::afterTest()
 {
 }
 
@@ -80,25 +80,25 @@ void TablesFactoryTest::afterTest()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void TablesFactoryTest::testRegistrations()
+void PSIRepositoryTest::testRegistrations()
 {
     ts::UStringList names;
 
-    ts::TablesFactory::Instance()->getRegisteredTableNames(names);
-    debug() << "TablesFactoryTest::testRegistrations: table names: " << ts::UString::Join(names) << std::endl;
+    ts::PSIRepository::Instance()->getRegisteredTableNames(names);
+    debug() << "PSIRepositoryTest::testRegistrations: table names: " << ts::UString::Join(names) << std::endl;
 
     TSUNIT_ASSERT(!names.empty());
     TSUNIT_ASSERT(ts::UString(u"PAT").containSimilar(names));
     TSUNIT_ASSERT(ts::UString(u"PMT").containSimilar(names));
 
-    ts::TablesFactory::Instance()->getRegisteredDescriptorNames(names);
-    debug() << "TablesFactoryTest::testRegistrations: descriptor names: " << ts::UString::Join(names) << std::endl;
+    ts::PSIRepository::Instance()->getRegisteredDescriptorNames(names);
+    debug() << "PSIRepositoryTest::testRegistrations: descriptor names: " << ts::UString::Join(names) << std::endl;
 
     TSUNIT_ASSERT(!names.empty());
     TSUNIT_ASSERT(ts::UString(u"ca_descriptor").containSimilar(names));
 }
 
-void TablesFactoryTest::testSharedTID()
+void PSIRepositoryTest::testSharedTID()
 {
     // Shared table ids between ATSC and ISDB.
     TSUNIT_EQUAL(ts::TID_MGT, ts::TID_LDT);
@@ -106,12 +106,12 @@ void TablesFactoryTest::testSharedTID()
 
     // When the same TID is used by two distinct standards, they have no standard in common
     // (meaning encountering this TID in a TS is not sufficient to determine a standard).
-    TSUNIT_EQUAL(ts::STD_NONE, ts::TablesFactory::Instance()->getTableStandards(ts::TID_MGT));
-    TSUNIT_EQUAL(ts::STD_ATSC, ts::TablesFactory::Instance()->getTableStandards(ts::TID_MGT, ts::PID_PSIP));
-    TSUNIT_EQUAL(ts::STD_ISDB, ts::TablesFactory::Instance()->getTableStandards(ts::TID_MGT, ts::PID_LDT));
-    TSUNIT_EQUAL(ts::STD_ATSC, ts::TablesFactory::Instance()->getTableStandards(ts::TID_CVCT));
+    TSUNIT_EQUAL(ts::STD_NONE, ts::PSIRepository::Instance()->getTableStandards(ts::TID_MGT));
+    TSUNIT_EQUAL(ts::STD_ATSC, ts::PSIRepository::Instance()->getTableStandards(ts::TID_MGT, ts::PID_PSIP));
+    TSUNIT_EQUAL(ts::STD_ISDB, ts::PSIRepository::Instance()->getTableStandards(ts::TID_MGT, ts::PID_LDT));
+    TSUNIT_EQUAL(ts::STD_ATSC, ts::PSIRepository::Instance()->getTableStandards(ts::TID_CVCT));
 
-    ts::TablesFactory::TableFactory factory = ts::TablesFactory::Instance()->getTableFactory(ts::TID_LDT, ts::STD_ATSC);
+    ts::PSIRepository::TableFactory factory = ts::PSIRepository::Instance()->getTableFactory(ts::TID_LDT, ts::STD_ATSC);
     TSUNIT_ASSERT(factory != nullptr);
     ts::AbstractTablePtr table(factory());
     TSUNIT_ASSERT(!table.isNull());
@@ -119,7 +119,7 @@ void TablesFactoryTest::testSharedTID()
     TSUNIT_EQUAL(ts::STD_ATSC, table->definingStandards());
     TSUNIT_EQUAL(u"MGT", table->xmlName());
 
-    factory = ts::TablesFactory::Instance()->getTableFactory(ts::TID_LDT, ts::STD_ISDB);
+    factory = ts::PSIRepository::Instance()->getTableFactory(ts::TID_LDT, ts::STD_ISDB);
     TSUNIT_ASSERT(factory != nullptr);
     table = factory();
     TSUNIT_ASSERT(!table.isNull());
@@ -127,7 +127,7 @@ void TablesFactoryTest::testSharedTID()
     TSUNIT_EQUAL(ts::STD_ISDB, table->definingStandards());
     TSUNIT_EQUAL(u"LDT", table->xmlName());
 
-    factory = ts::TablesFactory::Instance()->getTableFactory(ts::TID_LDT, ts::STD_NONE, ts::PID_PSIP);
+    factory = ts::PSIRepository::Instance()->getTableFactory(ts::TID_LDT, ts::STD_NONE, ts::PID_PSIP);
     TSUNIT_ASSERT(factory != nullptr);
     table = factory();
     TSUNIT_ASSERT(!table.isNull());
@@ -135,8 +135,8 @@ void TablesFactoryTest::testSharedTID()
     TSUNIT_EQUAL(ts::STD_ATSC, table->definingStandards());
     TSUNIT_EQUAL(u"MGT", table->xmlName());
 
-    TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::TablesFactory::Instance()->getSectionDisplay(ts::TID_LDT, ts::STD_ATSC));
-    TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::TablesFactory::Instance()->getSectionDisplay(ts::TID_LDT, ts::STD_ISDB));
-    TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::TablesFactory::Instance()->getSectionDisplay(ts::TID_LDT, ts::STD_NONE, ts::PID_PSIP));
-    TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::TablesFactory::Instance()->getSectionDisplay(ts::TID_LDT, ts::STD_NONE, ts::PID_LDT));
+    TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::PSIRepository::Instance()->getSectionDisplay(ts::TID_LDT, ts::STD_ATSC));
+    TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::PSIRepository::Instance()->getSectionDisplay(ts::TID_LDT, ts::STD_ISDB));
+    TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::PSIRepository::Instance()->getSectionDisplay(ts::TID_LDT, ts::STD_NONE, ts::PID_PSIP));
+    TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::PSIRepository::Instance()->getSectionDisplay(ts::TID_LDT, ts::STD_NONE, ts::PID_LDT));
 }

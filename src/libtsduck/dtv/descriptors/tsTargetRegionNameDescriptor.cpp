@@ -30,18 +30,17 @@
 #include "tsTargetRegionNameDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_region_name_descriptor"
+#define MY_CLASS ts::TargetRegionNameDescriptor
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_TARGET_REGION_NAME
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::TargetRegionNameDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::TargetRegionNameDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
-TS_FACTORY_REGISTER(ts::TargetRegionNameDescriptor::DisplayDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

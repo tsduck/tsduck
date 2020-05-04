@@ -30,19 +30,18 @@
 #include "tsGenreDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"genre_descriptor"
+#define MY_CLASS ts::GenreDescriptor
 #define MY_DID ts::DID_ATSC_GENRE
 #define MY_PDS ts::PDS_ATSC
 #define MY_STD ts::STD_ATSC
 
-TS_XML_DESCRIPTOR_FACTORY(ts::GenreDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::GenreDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_FACTORY_REGISTER(ts::GenreDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

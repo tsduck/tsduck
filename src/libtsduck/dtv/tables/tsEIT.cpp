@@ -26,28 +26,27 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an Event Information Table (EIT)
-//
-//----------------------------------------------------------------------------
 
 #include "tsEIT.h"
+#include "tsAlgorithm.h"
 #include "tsNames.h"
 #include "tsRST.h"
 #include "tsBCD.h"
 #include "tsMJD.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"EIT"
+#define MY_CLASS ts::EIT
 #define MY_STD ts::STD_DVB
 
-TS_XML_TABLE_FACTORY(ts::EIT, MY_XML_NAME);
-TS_ID_TABLE_RANGE_FACTORY(ts::EIT, ts::TID_EIT_MIN, ts::TID_EIT_MAX, MY_STD);
-TS_FACTORY_REGISTER(ts::EIT::DisplaySection, ts::TID_EIT_MIN, ts::TID_EIT_MAX, MY_STD, ts::CASID_NULL, ts::CASID_NULL);
+TS_REGISTER_TABLE(MY_CLASS, ts::Range<ts::TID>(ts::TID_EIT_MIN, ts::TID_EIT_MAX),
+                  MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr,
+                  // DVB has only one standard PID for EIT, ISDB adds two others.
+                  {ts::PID_EIT, ts::PID_ISDB_EIT_2, ts::PID_ISDB_EIT_3});
 
 
 //----------------------------------------------------------------------------

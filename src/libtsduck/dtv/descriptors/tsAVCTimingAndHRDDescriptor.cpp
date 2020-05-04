@@ -30,17 +30,16 @@
 #include "tsAVCTimingAndHRDDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"AVC_timing_and_HRD_descriptor"
+#define MY_CLASS ts::AVCTimingAndHRDDescriptor
 #define MY_DID ts::DID_AVC_TIMING_HRD
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::AVCTimingAndHRDDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::AVCTimingAndHRDDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::AVCTimingAndHRDDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

@@ -30,18 +30,17 @@
 #include "tsAnnouncementSupportDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"announcement_support_descriptor"
+#define MY_CLASS ts::AnnouncementSupportDescriptor
 #define MY_DID ts::DID_ANNOUNCE_SUPPORT
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::AnnouncementSupportDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::AnnouncementSupportDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::AnnouncementSupportDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

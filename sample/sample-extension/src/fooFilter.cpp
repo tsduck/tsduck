@@ -4,7 +4,7 @@
 #include "fooFilter.h"
 
 // Register this section filter in the reposity.
-TS_SECTION_FILTER_REGISTER(foo::FooFilter);
+TS_REGISTER_SECTION_FILTER(foo::FooFilter);
 
 
 //----------------------------------------------------------------------------

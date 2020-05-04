@@ -26,31 +26,24 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an eacem_preferred_name_list_descriptor.
-//  Private descriptor, must be preceeded by the EACEM/EICTA PDS.
-//
-//----------------------------------------------------------------------------
 
 #include "tsEacemPreferredNameListDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"eacem_preferred_name_list_descriptor"
+#define MY_CLASS ts::EacemPreferredNameListDescriptor
 #define MY_DID ts::DID_PREF_NAME_LIST
 #define MY_PDS ts::PDS_EACEM
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::EacemPreferredNameListDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::EacemPreferredNameListDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_FACTORY_REGISTER(ts::EacemPreferredNameListDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 // Incorrect use of TPS private data, TPS broadcasters should use EACEM/EICTA PDS instead.
-TS_ID_DESCRIPTOR_FACTORY(ts::EacemPreferredNameListDescriptor, ts::EDID::Private(MY_DID, ts::PDS_TPS));
-TS_FACTORY_REGISTER(ts::EacemPreferredNameListDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, ts::PDS_TPS));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, ts::PDS_TPS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

@@ -29,16 +29,15 @@
 
 #include "tsMultilingualNetworkNameDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"multilingual_network_name_descriptor"
 #define MY_XML_ATTR u"network_name"
+#define MY_CLASS ts::MultilingualNetworkNameDescriptor
 #define MY_DID ts::DID_MLINGUAL_NETWORK
 
-TS_XML_DESCRIPTOR_FACTORY(ts::MultilingualNetworkNameDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::MultilingualNetworkNameDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::MultilingualNetworkNameDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

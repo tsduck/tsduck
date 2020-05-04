@@ -181,3 +181,23 @@ std::list<typename MAP::mapped_type> ts::MapValues(const MAP& container)
     }
     return values;
 }
+
+//----------------------------------------------------------------------------
+// Build a vector of integers containing all values in a range.
+//----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+std::vector<INT> ts::Range(INT first, INT last)
+{
+    std::vector<INT> vec;
+    while (first <= last) {
+        vec.push_back(first);
+        if (first == std::numeric_limits<INT>::max()) {
+            break;
+        }
+        else {
+            first++;
+        }
+    }
+    return vec;
+}

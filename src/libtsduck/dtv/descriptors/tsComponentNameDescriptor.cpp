@@ -30,18 +30,17 @@
 #include "tsComponentNameDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"component_name_descriptor"
+#define MY_CLASS ts::ComponentNameDescriptor
 #define MY_DID ts::DID_ATSC_COMPONENT_NAME
 #define MY_PDS ts::PDS_ATSC
 #define MY_STD ts::STD_ATSC
 
-TS_XML_DESCRIPTOR_FACTORY(ts::ComponentNameDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::ComponentNameDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_FACTORY_REGISTER(ts::ComponentNameDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

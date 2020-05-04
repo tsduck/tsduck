@@ -30,18 +30,17 @@
 #include "tsEutelsatChannelNumberDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"eutelsat_channel_number_descriptor"
+#define MY_CLASS ts::EutelsatChannelNumberDescriptor
 #define MY_DID ts::DID_EUTELSAT_CHAN_NUM
 #define MY_PDS ts::PDS_EUTELSAT
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::EutelsatChannelNumberDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::EutelsatChannelNumberDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_FACTORY_REGISTER(ts::EutelsatChannelNumberDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

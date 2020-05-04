@@ -30,19 +30,18 @@
 #include "tsServiceLocationDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"service_location_descriptor"
+#define MY_CLASS ts::ServiceLocationDescriptor
 #define MY_DID ts::DID_ATSC_SERVICE_LOC
 #define MY_PDS ts::PDS_ATSC
 #define MY_STD ts::STD_ATSC
 
-TS_XML_DESCRIPTOR_FACTORY(ts::ServiceLocationDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::ServiceLocationDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_FACTORY_REGISTER(ts::ServiceLocationDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

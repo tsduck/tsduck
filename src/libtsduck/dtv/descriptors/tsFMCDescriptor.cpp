@@ -30,17 +30,16 @@
 #include "tsFMCDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"FMC_descriptor"
+#define MY_CLASS ts::FMCDescriptor
 #define MY_DID ts::DID_FMC
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::FMCDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::FMCDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::FMCDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

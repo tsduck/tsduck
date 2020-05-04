@@ -31,16 +31,15 @@
 #include "tsDescriptor.h"
 #include "tsVariable.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"S2_satellite_delivery_system_descriptor"
+#define MY_CLASS ts::S2SatelliteDeliverySystemDescriptor
 #define MY_DID ts::DID_S2_SAT_DELIVERY
 
-TS_XML_DESCRIPTOR_FACTORY(ts::S2SatelliteDeliverySystemDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::S2SatelliteDeliverySystemDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

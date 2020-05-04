@@ -32,7 +32,7 @@
 #include "tsBinaryTable.h"
 #include "tsStreamIdentifierDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
@@ -40,9 +40,7 @@ TSDUCK_SOURCE;
 #define MY_TID ts::TID_MGT
 #define MY_STD ts::STD_ATSC
 
-TS_XML_TABLE_FACTORY(ts::MGT, MY_XML_NAME);
-TS_ID_TABLE_PIDS_FACTORY(ts::MGT, MY_TID, MY_STD, ts::PID_PSIP);
-TS_FACTORY_REGISTER(ts::MGT::DisplaySection, MY_TID, MY_STD);
+TS_REGISTER_TABLE(ts::MGT, {MY_TID}, MY_STD, MY_XML_NAME, ts::MGT::DisplaySection, nullptr, {ts::PID_PSIP});
 
 
 //----------------------------------------------------------------------------

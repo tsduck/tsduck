@@ -852,6 +852,20 @@ namespace ts {
         TID_ECM_80        = 0x80, //!< Table id for ECM 80
         TID_ECM_81        = 0x81, //!< Table id for ECM 81
         TID_EMM_FIRST     = 0x82, //!< Start of Table id range for EMM's
+        TID_EMM_82        = 0x82, //!< Table id for EMM 82
+        TID_EMM_83        = 0x83, //!< Table id for EMM 83
+        TID_EMM_84        = 0x84, //!< Table id for EMM 84
+        TID_EMM_85        = 0x85, //!< Table id for EMM 85
+        TID_EMM_86        = 0x86, //!< Table id for EMM 86
+        TID_EMM_87        = 0x87, //!< Table id for EMM 87
+        TID_EMM_88        = 0x88, //!< Table id for EMM 88
+        TID_EMM_89        = 0x89, //!< Table id for EMM 89
+        TID_EMM_8A        = 0x8A, //!< Table id for EMM 8A
+        TID_EMM_8B        = 0x8B, //!< Table id for EMM 8B
+        TID_EMM_8C        = 0x8C, //!< Table id for EMM 8C
+        TID_EMM_8D        = 0x8D, //!< Table id for EMM 8D
+        TID_EMM_8E        = 0x8E, //!< Table id for EMM 8E
+        TID_EMM_8F        = 0x8F, //!< Table id for EMM 8F
         TID_EMM_LAST      = 0x8F, //!< End of Table id range for EMM's
 
         // Ranges by type

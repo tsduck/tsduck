@@ -31,18 +31,17 @@
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"cue_identifier_descriptor"
+#define MY_CLASS ts::CueIdentifierDescriptor
 #define MY_DID ts::DID_CUE_IDENTIFIER
 #define MY_STD ts::STD_SCTE
 
 // This is a non-DVB descriptor with DID >= 0x80 => must set PDS to zero in EDID.
-TS_XML_DESCRIPTOR_FACTORY(ts::CueIdentifierDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::CueIdentifierDescriptor, ts::EDID::Private(MY_DID, 0));
-TS_FACTORY_REGISTER(ts::CueIdentifierDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, 0));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, 0), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

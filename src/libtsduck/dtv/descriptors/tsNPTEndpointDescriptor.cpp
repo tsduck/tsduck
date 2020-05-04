@@ -30,17 +30,16 @@
 #include "tsNPTEndpointDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"NPT_endpoint_descriptor"
+#define MY_CLASS ts::NPTEndpointDescriptor
 #define MY_DID ts::DID_NPT_ENDPOINT
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::NPTEndpointDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::NPTEndpointDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::NPTEndpointDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

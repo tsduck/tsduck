@@ -30,17 +30,16 @@
 #include "tsMultilingualServiceNameDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"multilingual_service_name_descriptor"
+#define MY_CLASS ts::MultilingualServiceNameDescriptor
 #define MY_DID ts::DID_MLINGUAL_SERVICE
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::MultilingualServiceNameDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::MultilingualServiceNameDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::MultilingualServiceNameDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

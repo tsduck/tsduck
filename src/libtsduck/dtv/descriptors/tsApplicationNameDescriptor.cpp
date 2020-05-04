@@ -29,17 +29,16 @@
 
 #include "tsApplicationNameDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"application_name_descriptor"
 #define MY_XML_ATTR u"application_name"
+#define MY_CLASS ts::ApplicationNameDescriptor
 #define MY_DID ts::DID_AIT_APP_NAME
 #define MY_TID ts::TID_AIT
 
-TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::ApplicationNameDescriptor, MY_XML_NAME, MY_TID);
-TS_ID_DESCRIPTOR_FACTORY(ts::ApplicationNameDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
-TS_FACTORY_REGISTER(ts::ApplicationNameDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

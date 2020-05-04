@@ -31,17 +31,16 @@
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"carousel_identifier_descriptor"
+#define MY_CLASS ts::CarouselIdentifierDescriptor
 #define MY_DID ts::DID_CAROUSEL_IDENTIFIER
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::CarouselIdentifierDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::CarouselIdentifierDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::CarouselIdentifierDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

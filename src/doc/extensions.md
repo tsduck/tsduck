@@ -89,20 +89,20 @@ be installed in the same directory as the rest of the extension (and TSDuck
 in general).
 
 For each additional XML file, there must be one C++ module inside the `tslibext_XXX`
-library which invokes the macro @link TS_FACTORY_REGISTER_XML @endlink as illustrated below:
+library which invokes the macro @link TS_REGISTER_XML_FILE @endlink as illustrated below:
 
 ~~~
-TS_FACTORY_REGISTER_XML(u"tslibext_foo.xml");
+TS_REGISTER_XML_FILE(u"tslibext_foo.xml");
 ~~~
 
 ## Providing a names files for additional identifiers
 
 The usage rules and conventions are identical to the XML file above.
-The declaration macro for each names file is @link TS_FACTORY_REGISTER_NAMES @endlink
+The declaration macro for each names file is @link TS_REGISTER_NAMES_FILE @endlink
 as illustrated below:
 
 ~~~
-TS_FACTORY_REGISTER_NAMES(u"tslibext_foo.names");
+TS_REGISTER_NAMES_FILE(u"tslibext_foo.names");
 ~~~
 
 Here is an example, from the sample "foo" extension, which defines additional names
@@ -129,18 +129,16 @@ class FooTable : public ts::AbstractLongTable { ... };
 ~~~
 
 In the implementation of the table, register hooks for the various features you support.
-In this example, we register a class factory for a `FooTable` object from an XML description
-and from a binary table:
+In this example, we register a C++ class for `FooTable`:
 ~~~
-TS_XML_TABLE_FACTORY(FooTable, u"FOOT");             // XML name is <FOOT>
-TS_ID_TABLE_FACTORY(FooTable, 0xF0, ts::STD_NONE);   // Table id 0xF0, not defined in any standard
+TS_REGISTER_TABLE(FooTable,        // C++ class name
+                  {0xF0},          // table id 0xF0
+                  ts::STD_NONE,    // not defined in any standard
+                  u"FOOT",         // XML name is <FOOT>
+                  FooTable::DisplaySection);
 ~~~
-
-We also register a static method of the class named `DisplaySection` as a handler
-for displaying the content of a section of table id `0xF0`:
-~~~
-TS_FACTORY_REGISTER(FooTable::DisplaySection, 0xF0);
-~~~
+The last argument to @link TS_REGISTER_TABLE @endlink is a static method of the class which
+displays the content of a section of this table type.
 
 The XML model for the table is included in the XML file:
 ~~~
@@ -188,15 +186,13 @@ In the implementation of the descriptor, we register hooks for the various featu
 Since this is a non-DVB descriptor with descriptor tag `0xE8`, greater than `0x80`, we must
 set the private data specifier to zero in the ts::EDID ("extended descriptor id").
 ~~~
-TS_XML_DESCRIPTOR_FACTORY(FooDescriptor, u"foo_descriptor");  // XML name is <foo_descriptor>
-TS_ID_DESCRIPTOR_FACTORY(FooDescriptor, ts::EDID::Private(0xE8, 0));
+TS_REGISTER_DESCRIPTOR(FooDescriptor,                 // C++ class name
+                       ts::EDID::Private(0xE8, 0),    // "extended" descriptor id
+                       u"foo_descriptor",             // XML name is <foo_descriptor>
+                       FooDescriptor::DisplayDescriptor);
 ~~~
-
-We also register a static method of the class named `DisplayDescriptor` as a handler
-for displaying the content of a binary descriptor with tag `0xE8`:
-~~~
-TS_FACTORY_REGISTER(FooDescriptor::DisplayDescriptor, ts::EDID::Private(0xE8, 0));
-~~~
+The last argument to @link TS_REGISTER_DESCRIPTOR @endlink is a static method of the class which
+displays the content of a descriptor.
 
 The XML model for the descriptor is included in the XML file:
 ~~~
@@ -236,7 +232,7 @@ See the documentation of ts::TablesLoggerFilterInterface for more details.
 
 In the implementation of the class, we register it as a section filter for `tstables`:
 ~~~
-TS_SECTION_FILTER_REGISTER(FooFilter);
+TS_REGISTER_SECTION_FILTER(FooFilter);
 ~~~
 
 ## Providing support for additional Conditional Access Systems
@@ -275,12 +271,23 @@ See the documentation for ts::DisplaySectionFunction, ts::LogSectionFunction and
 
 To register the display handlers in TSDuck:
 ~~~
-TS_FACTORY_REGISTER(DisplayFooCASECM, ts::TID_ECM_80,    ts::TID_ECM_81,   CASID_FOO_MIN, CASID_FOO_MAX);
-TS_FACTORY_REGISTER(DisplayFooCASEMM, ts::TID_EMM_FIRST, ts::TID_EMM_LAST, CASID_FOO_MIN, CASID_FOO_MAX);
-TS_FACTORY_REGISTER(LogFooCASECM,     ts::TID_ECM_80,    ts::TID_ECM_81,   CASID_FOO_MIN, CASID_FOO_MAX);
-TS_FACTORY_REGISTER(LogFooCASEMM,     ts::TID_EMM_FIRST, ts::TID_EMM_LAST, CASID_FOO_MIN, CASID_FOO_MAX);
+TS_REGISTER_SECTION({ts::TID_ECM_80, ts::TID_ECM_81},
+                    ts::STD_NONE,         // not defined in any standard
+                    DisplayFooCASECM,     // display function
+                    LogFooCASECM,         // one-line log function
+                    {},                   // no predefined PID
+                    CASID_FOO_MIN,        // range of CA_system_id
+                    CASID_FOO_MAX);
 
-TS_FACTORY_REGISTER(DisplayFooCASCADescriptor, CASID_FOO_MIN, CASID_FOO_MAX);
+TS_REGISTER_SECTION(ts::Range<ts::TID>(ts::TID_EMM_FIRST, ts::TID_EMM_LAST),
+                    ts::STD_NONE,         // not defined in any standard
+                    DisplayFooCASEMM,     // display function
+                    LogFooCASEMM,         // one-line log function
+                    {},                   // no predefined PID
+                    CASID_FOO_MIN,        // range of CA_system_id
+                    CASID_FOO_MAX);
+
+TS_REGISTER_CA_DESCRIPTOR(DisplayFooCASCADescriptor, CASID_FOO_MIN, CASID_FOO_MAX);
 ~~~
 
 # Building cross-platform binary installers for an extension.

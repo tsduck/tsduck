@@ -30,18 +30,17 @@
 #include "tsTargetIPSourceSlashDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_IP_source_slash_descriptor"
+#define MY_CLASS ts::TargetIPSourceSlashDescriptor
 #define MY_DID ts::DID_INT_IP_SRC_SLASH
 #define MY_TID ts::TID_INT
 #define MY_STD ts::STD_DVB
 
-TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetIPSourceSlashDescriptor, MY_XML_NAME, MY_TID);
-TS_ID_DESCRIPTOR_FACTORY(ts::TargetIPSourceSlashDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
-TS_FACTORY_REGISTER(ts::TargetIPSourceSlashDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

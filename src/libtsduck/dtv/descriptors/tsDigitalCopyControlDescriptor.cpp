@@ -31,18 +31,17 @@
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"digital_copy_control_descriptor"
+#define MY_CLASS ts::DigitalCopyControlDescriptor
 #define MY_DID ts::DID_ISDB_COPY_CONTROL
 #define MY_PDS ts::PDS_ISDB
 #define MY_STD ts::STD_ISDB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::DigitalCopyControlDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::DigitalCopyControlDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_FACTORY_REGISTER(ts::DigitalCopyControlDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

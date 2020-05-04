@@ -46,6 +46,9 @@ VIAddVersionKey FileDescription "${FullName}"
     OutFile "${RootDir}\installers\${ShortName}-Win32-${tsduckVersion}.exe"
 !endif
 
+; Generate a Unicode installer (default is ANSI).
+Unicode true
+
 ; Registry entry for product info and uninstallation info.
 !define ProductKey "Software\${ShortName}"
 !define UninstallKey "Software\Microsoft\Windows\CurrentVersion\Uninstall\${ShortName}"

@@ -30,17 +30,16 @@
 #include "tsMPEG2StereoscopicVideoFormatDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"MPEG2_stereoscopic_video_format_descriptor"
+#define MY_CLASS ts::MPEG2StereoscopicVideoFormatDescriptor
 #define MY_DID ts::DID_STEREO_VIDEO_FORMAT
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::MPEG2StereoscopicVideoFormatDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::MPEG2StereoscopicVideoFormatDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::MPEG2StereoscopicVideoFormatDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

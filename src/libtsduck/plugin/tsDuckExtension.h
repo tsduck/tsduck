@@ -105,6 +105,7 @@ namespace ts {
 
 
 //!
+//! @hideinitializer
 //! Export the TSDuck extension out of the shared library.
 //! All TSDuck extension shared libraries must invoke this macro once.
 //! The parameters are the same as the ts::DuckExtension constructor.

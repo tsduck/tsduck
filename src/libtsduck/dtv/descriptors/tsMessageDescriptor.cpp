@@ -26,27 +26,22 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a message_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsMessageDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"message_descriptor"
+#define MY_CLASS ts::MessageDescriptor
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_MESSAGE
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::MessageDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::MessageDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
-TS_FACTORY_REGISTER(ts::MessageDescriptor::DisplayDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

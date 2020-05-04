@@ -32,16 +32,15 @@
 #include "tsNames.h"
 #include "tsxmlElement.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"cable_emergency_alert_table"
+#define MY_CLASS ts::CableEmergencyAlertTable
 #define MY_TID ts::TID_SCTE18_EAS
 #define MY_STD (ts::STD_SCTE | ts::STD_ATSC)
 
-TS_XML_TABLE_FACTORY(ts::CableEmergencyAlertTable, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::CableEmergencyAlertTable, MY_TID, MY_STD);
-TS_FACTORY_REGISTER(ts::CableEmergencyAlertTable::DisplaySection, MY_TID, MY_STD);
+TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection);
 
 
 //----------------------------------------------------------------------------

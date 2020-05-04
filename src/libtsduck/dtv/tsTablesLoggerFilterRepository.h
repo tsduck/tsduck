@@ -85,5 +85,5 @@ namespace ts {
 // Implementation note: Take care before modifying the following macro.
 // It must be defined on one single line each because of the use of __LINE__ to create unique identifiers.
 //
-#define TS_SECTION_FILTER_REGISTER(classname) \
+#define TS_REGISTER_SECTION_FILTER(classname) \
     namespace { ts::TablesLoggerFilterInterface* TS_UNIQUE_NAME(_Factory)() {return new classname;} } static ts::TablesLoggerFilterRepository::Register TS_UNIQUE_NAME(_Registrar)(TS_UNIQUE_NAME(_Factory))

@@ -26,25 +26,21 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Program Association Table (PAT)
-//
-//----------------------------------------------------------------------------
 
 #include "tsPAT.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"PAT"
+#define MY_CLASS ts::PAT
 #define MY_TID ts::TID_PAT
+#define MY_PID ts::PID_PAT
 #define MY_STD ts::STD_MPEG
 
-TS_XML_TABLE_FACTORY(ts::PAT, MY_XML_NAME);
-TS_ID_TABLE_PIDS_FACTORY(ts::PAT, MY_TID, MY_STD, ts::PID_PAT);
-TS_FACTORY_REGISTER(ts::PAT::DisplaySection, MY_TID, MY_STD);
+TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 
 
 //----------------------------------------------------------------------------

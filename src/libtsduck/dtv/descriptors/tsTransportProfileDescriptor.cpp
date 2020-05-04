@@ -31,17 +31,16 @@
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"transport_profile_descriptor"
+#define MY_CLASS ts::TransportProfileDescriptor
 #define MY_DID ts::DID_TRANSPORT_PROFILE
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::TransportProfileDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::TransportProfileDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::TransportProfileDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

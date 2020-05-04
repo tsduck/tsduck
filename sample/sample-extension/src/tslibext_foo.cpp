@@ -8,7 +8,7 @@
 TS_DECLARE_EXTENSION(u"foo", u"Sample foo extension", {u"foot"}, {u"footool"});
 
 // Register our XML file as an extension to the global model for tables and descriptors.
-TS_FACTORY_REGISTER_XML(u"tslibext_foo.xml");
+TS_REGISTER_XML_FILE(u"tslibext_foo.xml");
 
 // Register our names file as an extension to the global names file.
-TS_FACTORY_REGISTER_NAMES(u"tslibext_foo.names");
+TS_REGISTER_NAMES_FILE(u"tslibext_foo.names");

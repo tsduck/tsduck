@@ -30,17 +30,16 @@
 #include "tsMPEG2AACAudioDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"MPEG2_AAC_audio_descriptor"
+#define MY_CLASS ts::MPEG2AACAudioDescriptor
 #define MY_DID ts::DID_MPEG2_AAC_AUDIO
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::MPEG2AACAudioDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::MPEG2AACAudioDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::MPEG2AACAudioDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

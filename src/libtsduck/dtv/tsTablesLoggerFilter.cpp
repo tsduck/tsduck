@@ -36,7 +36,7 @@
 TSDUCK_SOURCE;
 
 // Register this section filter in the reposity.
-TS_SECTION_FILTER_REGISTER(ts::TablesLoggerFilter);
+TS_REGISTER_SECTION_FILTER(ts::TablesLoggerFilter);
 
 
 //----------------------------------------------------------------------------

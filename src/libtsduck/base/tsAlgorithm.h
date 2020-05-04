@@ -153,6 +153,17 @@ namespace ts {
     std::list<typename MAP::mapped_type> MapValues(const MAP& container);
 
     //!
+    //! Build a vector of integers containing all values in a range.
+    //!
+    //! @tparam INT An integral type.
+    //! @param [in] first First value of the range.
+    //! @param [in] last Last value of the range.
+    //! @return A vector of @a INT containing all values from @a min to @a max, inclusive.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    std::vector<INT> Range(INT first, INT last);
+
+    //!
     //! I/O manipulator for subclasses of <code>std::basic_ostream</code>.
     //!
     //! The standard C++ library contains support for I/O manipulators on <code>std::basic_ios</code>,

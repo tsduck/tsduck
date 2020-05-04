@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Tables and descriptor factory.
+//!  A repository for known PSI/SI tables and descriptors.
 //!
 //----------------------------------------------------------------------------
 
@@ -46,7 +46,7 @@ namespace ts {
     class DVBCharTable;
 
     //!
-    //! A factory class which creates tables and descriptors based on id or name.
+    //! A repository for known PSI/SI tables and descriptors.
     //!
     //! This class is a singleton. Use static Instance() method to access the single instance.
     //!
@@ -57,9 +57,9 @@ namespace ts {
     //!
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL TablesFactory
+    class TSDUCKDLL PSIRepository
     {
-        TS_DECLARE_SINGLETON(TablesFactory);
+        TS_DECLARE_SINGLETON(PSIRepository);
     public:
         //!
         //! Profile of a function which creates a table.
@@ -222,135 +222,90 @@ namespace ts {
         void getRegisteredNamesFiles(UStringList& names) const;
 
         //!
-        //! A class to register factories and display functions.
+        //! A class to register fully implemented tables.
         //! The registration is performed using constructors.
         //! Thus, it is possible to perform a registration in the declaration of a static object.
         //!
-        class TSDUCKDLL Register
+        class TSDUCKDLL RegisterTable
         {
-            TS_NOBUILD_NOCOPY(Register);
+            TS_NOBUILD_NOCOPY(RegisterTable);
         public:
             //!
-            //! The constructor registers a table factory for a given id.
-            //! @param [in] id Table id for this type.
-            //! @param [in] factory Function which creates a table of the appropriate type.
+            //! Register a fully implemented table.
+            //! @param [in] factory Function which creates a table of this type.
+            //! @param [in] tids List of table ids for this type. Usually there is only one (notable exception: EIT, SDT, NIT).
             //! @param [in] standards List of standards which define this table.
+            //! @param [in] xmlName XML node name for this table type.
+            //! @param [in] displayFunction Display function for the corresponding sections. Can be null.
+            //! @param [in] logFunction Log function for the corresponding sections. Can be null.
             //! @param [in] pids List of PID's which are defined by the standards for this table.
-            //! The PID can be used to resolve conflicting table ids between standards. For instance,
-            //! a table id 0xC7 on PID 0x0025 is interpreted as an ISDB-defined LDT while the same
-            //! table id on PID 0x1FFB is interpreted as an ATSC-defined MGT.
-            //! @see TS_ID_TABLE_FACTORY
-            //! @see TS_ID_TABLE_PIDS_FACTORY
+            //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
+            //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only. Same as @a minCAS when set as CASID_NULL.
+            //! @see TS_REGISTER_TABLE
             //!
-            Register(TID id, TableFactory factory, Standards standards, std::initializer_list<PID> pids = std::initializer_list<PID>());
+            RegisterTable(TableFactory factory,
+                          const std::vector<TID>& tids,
+                          Standards standards,
+                          const UString& xmlName,
+                          DisplaySectionFunction displayFunction = nullptr,
+                          LogSectionFunction logFunction = nullptr, 
+                          const std::initializer_list<PID>& pids = std::initializer_list<PID>(),
+                          uint16_t minCAS = CASID_NULL,
+                          uint16_t maxCAS = CASID_NULL);
 
             //!
-            //! The constructor registers a table factory for a given range of ids.
-            //! @param [in] minId Minimum table id for this type.
-            //! @param [in] maxId Maximum table id for this type.
-            //! @param [in] factory Function which creates a table of the appropriate type.
+            //! Register a known table with display functions but no full C++ class.
+            //! @param [in] tids List of table ids for this type. Usually there is only one (notable exception: EIT, SDT, NIT).
             //! @param [in] standards List of standards which define this table.
+            //! @param [in] displayFunction Display function for the corresponding sections. Can be null.
+            //! @param [in] logFunction Log function for the corresponding sections. Can be null.
             //! @param [in] pids List of PID's which are defined by the standards for this table.
-            //! @see TS_ID_TABLE_RANGE_FACTORY
+            //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
+            //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only. Same as @a minCAS when set as CASID_NULL.
+            //! @see TS_REGISTER_SECTION
             //!
-            Register(TID minId, TID maxId, TableFactory factory, Standards standards, std::initializer_list<PID> pids = std::initializer_list<PID>());
+            RegisterTable(const std::vector<TID>& tids,
+                          Standards standards,
+                          DisplaySectionFunction displayFunction = nullptr,
+                          LogSectionFunction logFunction = nullptr, 
+                          const std::initializer_list<PID>& pids = std::initializer_list<PID>(),
+                          uint16_t minCAS = CASID_NULL,
+                          uint16_t maxCAS = CASID_NULL);
+        };
 
+        //!
+        //! A class to register fully implemented descriptors.
+        //! The registration is performed using constructors.
+        //! Thus, it is possible to perform a registration in the declaration of a static object.
+        //!
+        class TSDUCKDLL RegisterDescriptor
+        {
+            TS_NOBUILD_NOCOPY(RegisterDescriptor);
+        public:
             //!
-            //! The constructor registers a descriptor factory for a given descriptor tag.
+            //! Register a descriptor factory for a given descriptor tag.
+            //! @param [in] factory Function which creates a descriptor of this type.
             //! @param [in] edid Exended descriptor id.
-            //! @param [in] factory Function which creates a descriptor of the appropriate type.
-            //! @see TS_ID_DESCRIPTOR_FACTORY
+            //! @param [in] xmlName XML node name for this descriptor type.
+            //! @param [in] displayFunction Display function for the corresponding descriptors. Can be null.
+            //! @param [in] xmlNameLegacy Legacy XML node name for this descriptor type (optional).
+            //! @see TS_REGISTER_DESCRIPTOR
             //!
-            Register(const EDID& edid, DescriptorFactory factory);
+            RegisterDescriptor(DescriptorFactory factory,
+                               const EDID& edid,
+                               const UString& xmlName,
+                               DisplayDescriptorFunction displayFunction = nullptr,
+                               const UString& xmlNameLegacy = UString());
 
             //!
-            //! The constructor registers a table factory for a given XML node name.
-            //! @param [in] nodeName Name of XML nodes implementing this table.
-            //! @param [in] factory Function which creates a table of the appropriate type.
-            //! @see TS_XML_TABLE_FACTORY
-            //!
-            Register(const UString& nodeName, TableFactory factory);
-
-            //!
-            //! The constructor registers a descriptor factory for a given XML node name.
-            //! @param [in] nodeName Name of XML nodes implementing this descriptor.
-            //! @param [in] factory Function which creates a descriptor of the appropriate type.
-            //! @param [in] tids For table-specific descriptors, list of table ids where the descriptor is allowed to appear.
-            //! @see TS_XML_DESCRIPTOR_FACTORY
-            //!
-            Register(const UString& nodeName, DescriptorFactory factory, std::initializer_list<TID> tids = std::initializer_list<TID>());
-
-            //!
-            //! The constructor registers a section display function for a given table id.
-            //! @param [in] func Display function for the corresponding sections.
-            //! @param [in] id Table id for this type.
-            //! @param [in] standards List of standards which define this table.
+            //! Registers a CA_descriptor display function for a given range of CA_system_id.
+            //! @param [in] displayFunction Display function for the corresponding descriptors.
             //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
             //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
             //! Same @a minCAS when set as CASID_NULL.
-            //! @param [in] pids List of PID's which are defined by the standards for this table.
-            //! @see TS_FACTORY_REGISTER
+            //! @see TS_REGISTER_CA_DESCRIPTOR
             //!
-            Register(DisplaySectionFunction func, TID id, Standards standards, uint16_t minCAS = CASID_NULL, uint16_t maxCAS = CASID_NULL, std::initializer_list<PID> pids = std::initializer_list<PID>());
-
-            //!
-            //! The constructor registers a section display function for a given range of ids.
-            //! @param [in] func Display function for the corresponding sections.
-            //! @param [in] minId Minimum table id for this type.
-            //! @param [in] maxId Maximum table id for this type.
-            //! @param [in] standards List of standards which define this table.
-            //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
-            //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
-            //! Same @a minCAS when set as CASID_NULL.
-            //! @param [in] pids List of PID's which are defined by the standards for this table.
-            //! @see TS_FACTORY_REGISTER
-            //!
-            Register(DisplaySectionFunction func, TID minId, TID maxId, Standards standards, uint16_t minCAS, uint16_t maxCAS, std::initializer_list<PID> pids = std::initializer_list<PID>());
-
-            //!
-            //! The constructor registers a section log function for a given table id.
-            //! @param [in] func Log function for the corresponding sections.
-            //! @param [in] id Table id for this type.
-            //! @param [in] standards List of standards which define this table.
-            //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
-            //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
-            //! Same @a minCAS when set as CASID_NULL.
-            //! @param [in] pids List of PID's which are defined by the standards for this table.
-            //! @see TS_FACTORY_REGISTER
-            //!
-            Register(LogSectionFunction func, TID id, Standards standards, uint16_t minCAS = CASID_NULL, uint16_t maxCAS = CASID_NULL, std::initializer_list<PID> pids = std::initializer_list<PID>());
-
-            //!
-            //! The constructor registers a section log function for a given range of ids.
-            //! @param [in] func Log function for the corresponding sections.
-            //! @param [in] minId Minimum table id for this type.
-            //! @param [in] maxId Maximum table id for this type.
-            //! @param [in] standards List of standards which define this table.
-            //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
-            //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
-            //! Same @a minCAS when set as CASID_NULL.
-            //! @param [in] pids List of PID's which are defined by the standards for this table.
-            //! @see TS_FACTORY_REGISTER
-            //!
-            Register(LogSectionFunction func, TID minId, TID maxId, Standards standards, uint16_t minCAS, uint16_t maxCAS, std::initializer_list<PID> pids = std::initializer_list<PID>());
-
-            //!
-            //! The constructor registers a descriptor display function for a given descriptor id.
-            //! @param [in] func Display function for the corresponding descriptors.
-            //! @param [in] edid Exended descriptor id.
-            //! @see TS_FACTORY_REGISTER
-            //!
-            Register(DisplayDescriptorFunction func, const EDID& edid);
-
-            //!
-            //! The constructor registers a CA_descriptor display function for a given range of CA_system_id.
-            //! @param [in] func Display function for the corresponding descriptors.
-            //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
-            //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
-            //! Same @a minCAS when set as CASID_NULL.
-            //! @see TS_FACTORY_REGISTER
-            //!
-            Register(DisplayCADescriptorFunction func, uint16_t minCAS, uint16_t maxCAS);
+            RegisterDescriptor(DisplayCADescriptorFunction displayFunction, uint16_t minCAS, uint16_t maxCAS = CASID_NULL);
         };
 
         //!
@@ -369,11 +324,10 @@ namespace ts {
             //! without directory. This file will be searched in the same directory as the executable,
             //! then in all directories from $TSPLUGINS_PATH, then from $LD_LIBRARY_PATH (Linux only),
             //! then from $PATH.
-            //! @see TS_FACTORY_REGISTER_XML
+            //! @see TS_REGISTER_XML_FILE
             //!
             RegisterXML(const UString& filename);
         };
-
 
         //!
         //! A class to register additional names files to merge with the names file.
@@ -391,7 +345,7 @@ namespace ts {
             //! without directory. This file will be searched in the same directory as the executable,
             //! then in all directories from $TSPLUGINS_PATH, then from $LD_LIBRARY_PATH (Linux only),
             //! then from $PATH.
-            //! @see TS_FACTORY_REGISTER_NAMES
+            //! @see TS_REGISTER_NAMES_FILE
             //!
             RegisterNames(const UString& filename);
         };
@@ -415,33 +369,41 @@ namespace ts {
             TableDescription();
 
             // Add PIDs in the list.
-            void addPIDs(std::initializer_list<PID> morePIDs);
+            void addPIDs(const std::initializer_list<PID>& morePIDs);
 
             // Check if a PID is present.
             bool hasPID(PID pid) const;
         };
 
+        // Description of a descriptor extended id.
+        // Only one description can be used per extended descriptor id,
+        class DescriptorDescription
+        {
+        public:
+            DescriptorFactory         factory;    // Function to build an instance of the descriptor.
+            DisplayDescriptorFunction display;    // Function to display a descriptor.
+
+            // Constructor.
+            DescriptorDescription(DescriptorFactory fact = nullptr, DisplayDescriptorFunction disp = nullptr);
+        };
+
+        // PSIRepository instance private members.
         std::multimap<TID, TableDescription>             _tables;                   // Description of all table ids, potential multiple entries per table idx
-        std::map<EDID, DescriptorFactory>                _descriptorIds;            // Extended descriptor id to descriptor factory
+        std::map<EDID, DescriptorDescription>            _descriptors;              // Description of all descriptors, by extended id.
         std::map<UString, TableFactory>                  _tableNames;               // XML table name to table factory
         std::map<UString, DescriptorFactory>             _descriptorNames;          // XML descriptor name to descriptor factory
         std::multimap<UString, TID>                      _descriptorTablesIds;      // XML descriptor name to table id for table-specific descriptors
-        std::map<EDID, DisplayDescriptorFunction>        _descriptorDisplays;       // Extended descriptor id to descriptor display
-        std::map<uint16_t, DisplayCADescriptorFunction>  _casIdDescriptorDisplays;  // Key is CAS system id.
+        std::map<uint16_t, DisplayCADescriptorFunction>  _casIdDescriptorDisplays;  // CA_system_id to display function for CA_descriptor.
         UStringList                                      _xmlModelFiles;            // Additional XML model files for tables.
         UStringList                                      _namesFiles;               // Additional names files.
-
-        // Register a new table id which matches standards and CAS ids.
-        // Always return a non-null pointer (existing or newly created structure).
-        TableDescription* registerTable(TID id, Standards standards, uint16_t minCAS, uint16_t maxCAS, std::initializer_list<PID> pids);
 
         // Common code to lookup a table function.
         template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type* = nullptr>
         FUNCTION getTableFunction(TID tid, Standards standards, PID pid, uint16_t cas, FUNCTION TableDescription::* member) const;
 
         // Common code to lookup a descriptor function.
-        template <typename FUNCTION>
-        FUNCTION getDescriptorFunction(const EDID& edid, TID tid, const std::map<EDID,FUNCTION>& funcMap) const;
+        template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type* = nullptr>
+        FUNCTION getDescriptorFunction(const EDID& edid, TID tid, FUNCTION DescriptorDescription::* member) const;
     };
 }
 
@@ -452,78 +414,51 @@ namespace ts {
 //
 
 //! @cond nodoxygen
-#define _TS_FACTORY(rettype,classname)    namespace { rettype TS_UNIQUE_NAME(_Factory)() {return new classname;} }
-#define _TS_TABLE_FACTORY(classname)      _TS_FACTORY(ts::AbstractTablePtr,classname)
-#define _TS_DESCRIPTOR_FACTORY(classname) _TS_FACTORY(ts::AbstractDescriptorPtr,classname)
+#define _TS_FACTORY_NAME                  TS_UNIQUE_NAME(_Factory)
+#define _TS_REGISTRAR_NAME                TS_UNIQUE_NAME(_Registrar)
+#define _TS_FACTORY(rettype,classname)    namespace { rettype _TS_FACTORY_NAME() {return new classname;} }
+#define _TS_TABLE_FACTORY(classname)      _TS_FACTORY(ts::AbstractTablePtr, classname)
+#define _TS_DESCRIPTOR_FACTORY(classname) _TS_FACTORY(ts::AbstractDescriptorPtr, classname)
 //! @endcond
 
 //!
 //! @hideinitializer
-//! Registration inside the ts::TablesFactory singleton.
-//! This macro is typically used in the .cpp file of a table or descriptor.
-//!
-#define TS_FACTORY_REGISTER static ts::TablesFactory::Register TS_UNIQUE_NAME(_Registrar)
-
-//!
-//! @hideinitializer
-//! Registration of an extension XML model file inside the ts::TablesFactory singleton.
-//! This macro is typically used in the .cpp file of a table or descriptor.
-//!
-#define TS_FACTORY_REGISTER_XML static ts::TablesFactory::RegisterXML TS_UNIQUE_NAME(_Registrar)
-
-//!
-//! @hideinitializer
-//! Registration of an extension names file inside the ts::TablesFactory singleton.
-//! This macro is typically used in the .cpp file of a table or descriptor.
-//!
-#define TS_FACTORY_REGISTER_NAMES static ts::TablesFactory::RegisterNames TS_UNIQUE_NAME(_Registrar)
-
-//!
-//! @hideinitializer
-//! Registration of the table id of a subclass of ts::AbstractTable.
+//! Registration of a fully implemented table inside the ts::PSIRepository singleton.
 //! This macro is typically used in the .cpp file of a table.
 //!
-#define TS_ID_TABLE_FACTORY(classname,id,std) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER((id), TS_UNIQUE_NAME(_Factory), (std))
+#define TS_REGISTER_TABLE(classname, ...) _TS_TABLE_FACTORY(classname) static ts::PSIRepository::RegisterTable _TS_REGISTRAR_NAME(_TS_FACTORY_NAME, __VA_ARGS__)
 
 //!
 //! @hideinitializer
-//! Registration of the table id of a subclass of ts::AbstractTable.
-//! The table is defined by its standard to be on a given set of PID's.
-//! This macro is typically used in the .cpp file of a table.
+//! Registration of a known table with display functions but no full C++ class.
+//! This macro is typically used in the .cpp file of a CAS-specific module or TSDuck extension.
 //!
-#define TS_ID_TABLE_PIDS_FACTORY(classname, id, std, ...) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER((id), TS_UNIQUE_NAME(_Factory), (std), {__VA_ARGS__})
+#define TS_REGISTER_SECTION(...) static ts::PSIRepository::RegisterTable _TS_REGISTRAR_NAME(__VA_ARGS__)
 
 //!
 //! @hideinitializer
-//! Registration of a range of table ids of a subclass of ts::AbstractTable.
-//! This macro is typically used in the .cpp file of a table.
-//!
-#define TS_ID_TABLE_RANGE_FACTORY(classname, minId, maxId, std) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER((minId), (maxId), TS_UNIQUE_NAME(_Factory), (std))
-
-//!
-//! @hideinitializer
-//! Registration of the descriptor tag of a subclass of ts::AbstractDescriptor.
+//! Registration of a fully implemented descriptor inside the ts::PSIRepository singleton.
 //! This macro is typically used in the .cpp file of a descriptor.
 //!
-#define TS_ID_DESCRIPTOR_FACTORY(classname, id) _TS_DESCRIPTOR_FACTORY(classname) TS_FACTORY_REGISTER((id), TS_UNIQUE_NAME(_Factory))
+#define TS_REGISTER_DESCRIPTOR(classname, ...) _TS_DESCRIPTOR_FACTORY(classname) static ts::PSIRepository::RegisterDescriptor _TS_REGISTRAR_NAME(_TS_FACTORY_NAME, __VA_ARGS__)
 
 //!
 //! @hideinitializer
-//! Registration of the XML name of a subclass of ts::AbstractTable.
-//! This macro is typically used in the .cpp file of a table.
+//! Registration of a display function for a CA_descriptor inside the ts::PSIRepository singleton.
+//! This macro is typically used in the .cpp file of a CAS-specific module or TSDuck extension.
 //!
-#define TS_XML_TABLE_FACTORY(classname, xmlname) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER(xmlname, TS_UNIQUE_NAME(_Factory))
+#define TS_REGISTER_CA_DESCRIPTOR(func, ...) static ts::PSIRepository::RegisterDescriptor _TS_REGISTRAR_NAME(func, __VA_ARGS__)
 
 //!
 //! @hideinitializer
-//! Registration of the XML name of a subclass of ts::AbstractDescriptor.
-//! This macro is typically used in the .cpp file of a descriptor.
+//! Registration of an extension XML model file inside the ts::PSIRepository singleton.
+//! This macro is typically used in the .cpp file of a TSDuck extension.
 //!
-#define TS_XML_DESCRIPTOR_FACTORY(classname, xmlname) _TS_DESCRIPTOR_FACTORY(classname) TS_FACTORY_REGISTER(xmlname, TS_UNIQUE_NAME(_Factory))
+#define TS_REGISTER_XML_FILE static ts::PSIRepository::RegisterXML _TS_REGISTRAR_NAME
 
 //!
 //! @hideinitializer
-//! Registration of the XML name of a subclass of ts::AbstractDescriptor for a table-specific descriptor.
-//! This macro is typically used in the .cpp file of a descriptor.
+//! Registration of an extension names file inside the ts::PSIRepository singleton.
+//! This macro is typically used in the .cpp file of a TSDuck extension.
 //!
-#define TS_XML_TABSPEC_DESCRIPTOR_FACTORY(classname, xmlname, ...) _TS_DESCRIPTOR_FACTORY(classname) TS_FACTORY_REGISTER(xmlname, TS_UNIQUE_NAME(_Factory), {__VA_ARGS__})
+#define TS_REGISTER_NAMES_FILE static ts::PSIRepository::RegisterNames _TS_REGISTRAR_NAME

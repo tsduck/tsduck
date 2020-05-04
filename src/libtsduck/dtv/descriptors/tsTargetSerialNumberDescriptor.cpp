@@ -30,21 +30,18 @@
 #include "tsTargetSerialNumberDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_serial_number_descriptor"
+#define MY_CLASS ts::TargetSerialNumberDescriptor
 #define MY_DID ts::DID_INT_SERIAL_NUM
 #define MY_STD ts::STD_DVB
 
-TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetSerialNumberDescriptor, MY_XML_NAME, ts::TID_INT, ts::TID_UNT);
-
-TS_ID_DESCRIPTOR_FACTORY(ts::TargetSerialNumberDescriptor, ts::EDID::TableSpecific(MY_DID, ts::TID_INT));
-TS_ID_DESCRIPTOR_FACTORY(ts::TargetSerialNumberDescriptor, ts::EDID::TableSpecific(MY_DID, ts::TID_UNT));
-
-TS_FACTORY_REGISTER(ts::TargetSerialNumberDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, ts::TID_INT));
-TS_FACTORY_REGISTER(ts::TargetSerialNumberDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, ts::TID_UNT));
+// Table-specific descriptor which is allowed in two distinct tables.
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, ts::TID_INT), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, ts::TID_UNT), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

@@ -31,17 +31,16 @@
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"MPEG4_video_descriptor"
+#define MY_CLASS ts::MPEG4VideoDescriptor
 #define MY_DID ts::DID_MPEG4_VIDEO
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::MPEG4VideoDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::MPEG4VideoDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::MPEG4VideoDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

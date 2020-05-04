@@ -26,25 +26,20 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a stream_identifier_descriptor.
-//
-//----------------------------------------------------------------------------
 
 #include "tsStreamIdentifierDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"stream_identifier_descriptor"
+#define MY_CLASS ts::StreamIdentifierDescriptor
 #define MY_DID ts::DID_STREAM_ID
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::StreamIdentifierDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::StreamIdentifierDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::StreamIdentifierDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
