@@ -42,6 +42,7 @@ Currently, the script supports the following operating systems:
 - Fedora
 - Red Hat Enterprise Linux
 - CentOS
+- Arch
 - Alpine Linux
 
 Dektec DTAPI: The command `make` at the top level will automatically
