@@ -39,6 +39,7 @@
 #  - Fedora
 #  - Red Hat
 #  - CentOS
+#  - Arch
 #  - Alpine Linux
 #
 #-----------------------------------------------------------------------------
@@ -112,6 +113,12 @@ elif [[ -f /etc/redhat-release ]]; then
     # Red Hat or CentOS
     pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz pcsc-tools pcsc-lite-devel libcurl libcurl-devel rpmdevtools jq"
     sudo yum -y install $pkglist
+
+elif [[ -f /etc/arch-release ]]; then
+
+    # Arch Linux
+    pkglist="gcc dos2unix curl tar zip doxygen graphviz pcsclite jq srt"
+    sudo pacman -Sy $pkglist
 
 elif [[ -f /etc/alpine-release ]]; then
 
