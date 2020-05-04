@@ -30,18 +30,17 @@
 #include "tsEASInbandExceptionChannelsDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"EAS_inband_exception_channels_descriptor"
+#define MY_CLASS ts::EASInbandExceptionChannelsDescriptor
 #define MY_DID ts::DID_EAS_INBAND_EXCEPTS
 #define MY_TID ts::TID_SCTE18_EAS
 #define MY_STD ts::STD_SCTE
 
-TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::EASInbandExceptionChannelsDescriptor, MY_XML_NAME, MY_TID);
-TS_ID_DESCRIPTOR_FACTORY(ts::EASInbandExceptionChannelsDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
-TS_FACTORY_REGISTER(ts::EASInbandExceptionChannelsDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const size_t ts::EASInbandExceptionChannelsDescriptor::MAX_ENTRIES;

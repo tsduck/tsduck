@@ -31,18 +31,17 @@
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"supplementary_audio_descriptor"
+#define MY_CLASS ts::SupplementaryAudioDescriptor
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_SUPPL_AUDIO
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
-TS_FACTORY_REGISTER(ts::SupplementaryAudioDescriptor::DisplayDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

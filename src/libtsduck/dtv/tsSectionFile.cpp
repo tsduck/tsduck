@@ -36,7 +36,7 @@
 #include "tsAbstractDescriptor.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -344,7 +344,7 @@ bool ts::SectionFile::LoadModel(xml::Document& doc)
 
     // Get the list of all registered extension files.
     UStringList extfiles;
-    TablesFactory::Instance()->getRegisteredTablesModels(extfiles);
+    PSIRepository::Instance()->getRegisteredTablesModels(extfiles);
 
     // Load all extension files. Only report a warning in case of failure.
     for (auto name = extfiles.begin(); name != extfiles.end(); ++name) {

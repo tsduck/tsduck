@@ -26,26 +26,21 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Program Map Table (PMT)
-//
-//----------------------------------------------------------------------------
 
 #include "tsPMT.h"
 #include "tsNames.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"PMT"
+#define MY_CLASS ts::PMT
 #define MY_TID ts::TID_PMT
 #define MY_STD ts::STD_MPEG
 
-TS_XML_TABLE_FACTORY(ts::PMT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::PMT, MY_TID, MY_STD);
-TS_FACTORY_REGISTER(ts::PMT::DisplaySection, MY_TID, MY_STD);
+TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection);
 
 
 //----------------------------------------------------------------------------

@@ -30,18 +30,17 @@
 #include "tsAFExtensionsDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"af_extensions_descriptor"
+#define MY_CLASS ts::AFExtensionsDescriptor
 #define MY_DID ts::DID_MPEG_EXTENSION
 #define MY_EDID ts::MPEG_EDID_AF_EXT
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::AFExtensionsDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::AFExtensionsDescriptor, ts::EDID::ExtensionMPEG(MY_EDID));
-TS_FACTORY_REGISTER(ts::AFExtensionsDescriptor::DisplayDescriptor, ts::EDID::ExtensionMPEG(MY_EDID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

@@ -30,18 +30,17 @@
 #include "tsCaptionServiceDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"caption_service_descriptor"
+#define MY_CLASS ts::CaptionServiceDescriptor
 #define MY_DID ts::DID_ATSC_CAPTION
 #define MY_PDS ts::PDS_ATSC
 #define MY_STD ts::STD_ATSC
 
-TS_XML_DESCRIPTOR_FACTORY(ts::CaptionServiceDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::CaptionServiceDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_FACTORY_REGISTER(ts::CaptionServiceDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

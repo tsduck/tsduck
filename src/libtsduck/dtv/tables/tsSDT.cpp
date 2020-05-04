@@ -26,28 +26,22 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Service Description Table (SDT)
-//
-//----------------------------------------------------------------------------
 
 #include "tsSDT.h"
 #include "tsRST.h"
 #include "tsNames.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"SDT"
+#define MY_CLASS ts::SDT
+#define MY_PID ts::PID_SDT
 #define MY_STD ts::STD_DVB
 
-TS_XML_TABLE_FACTORY(ts::SDT, MY_XML_NAME);
-TS_ID_TABLE_PIDS_FACTORY(ts::SDT, ts::TID_SDT_ACT, MY_STD, ts::PID_SDT);
-TS_ID_TABLE_PIDS_FACTORY(ts::SDT, ts::TID_SDT_OTH, MY_STD, ts::PID_SDT);
-TS_FACTORY_REGISTER(ts::SDT::DisplaySection, ts::TID_SDT_ACT, MY_STD);
-TS_FACTORY_REGISTER(ts::SDT::DisplaySection, ts::TID_SDT_OTH, MY_STD);
+TS_REGISTER_TABLE(MY_CLASS, {ts::TID_SDT_ACT, ts::TID_SDT_OTH}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 
 
 //----------------------------------------------------------------------------

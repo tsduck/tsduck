@@ -26,24 +26,20 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Transport Stream Description Table (TSDT)
-//
-//----------------------------------------------------------------------------
 
 #include "tsTSDT.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"TSDT"
+#define MY_CLASS ts::TSDT
 #define MY_TID ts::TID_TSDT
+#define MY_PID ts::PID_TSDT
 #define MY_STD ts::STD_MPEG
 
-TS_XML_TABLE_FACTORY(ts::TSDT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::TSDT, MY_TID, MY_STD);
-TS_FACTORY_REGISTER(ts::TSDT::DisplaySection, MY_TID, MY_STD);
+TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 
 
 //----------------------------------------------------------------------------

@@ -2,7 +2,6 @@
 // This file is included in the shared library.
 // It exports the required symbol for this shared library to be recognized as a valid TSDuck extension.
 
-#include "tsduck.h"
 #include "fooTable.h"
 
 //----------------------------------------------------------------------------

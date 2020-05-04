@@ -30,18 +30,17 @@
 #include "tsIPMACStreamLocationDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"IPMAC_stream_location_descriptor"
+#define MY_CLASS ts::IPMACStreamLocationDescriptor
 #define MY_DID ts::DID_INT_STREAM_LOC
 #define MY_TID ts::TID_INT
 #define MY_STD ts::STD_DVB
 
-TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::IPMACStreamLocationDescriptor, MY_XML_NAME, MY_TID);
-TS_ID_DESCRIPTOR_FACTORY(ts::IPMACStreamLocationDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
-TS_FACTORY_REGISTER(ts::IPMACStreamLocationDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

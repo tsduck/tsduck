@@ -31,17 +31,16 @@
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_background_grid_descriptor"
+#define MY_CLASS ts::TargetBackgroundGridDescriptor
 #define MY_DID ts::DID_TGT_BG_GRID
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::TargetBackgroundGridDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::TargetBackgroundGridDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::TargetBackgroundGridDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

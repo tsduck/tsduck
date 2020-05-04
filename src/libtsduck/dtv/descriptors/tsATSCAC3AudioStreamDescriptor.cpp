@@ -30,7 +30,7 @@
 #include "tsATSCAC3AudioStreamDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
 #include "tsDVBCharTableUTF16.h"
@@ -38,13 +38,12 @@
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"ATSC_AC3_audio_stream_descriptor"
+#define MY_CLASS ts::ATSCAC3AudioStreamDescriptor
 #define MY_DID ts::DID_ATSC_AC3
 #define MY_PDS ts::PDS_ATSC
 #define MY_STD ts::STD_ATSC
 
-TS_XML_DESCRIPTOR_FACTORY(ts::ATSCAC3AudioStreamDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::ATSCAC3AudioStreamDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_FACTORY_REGISTER(ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

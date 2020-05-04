@@ -28,16 +28,16 @@
 //----------------------------------------------------------------------------
 
 #include "tsTVCT.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"TVCT"
+#define MY_CLASS ts::TVCT
 #define MY_TID ts::TID_TVCT
+#define MY_PID ts::PID_PSIP
 #define MY_STD ts::STD_ATSC
 
-TS_XML_TABLE_FACTORY(ts::TVCT, MY_XML_NAME);
-TS_ID_TABLE_PIDS_FACTORY(ts::TVCT, MY_TID, MY_STD, ts::PID_PSIP);
-TS_FACTORY_REGISTER(ts::TVCT::DisplaySection, MY_TID, MY_STD);
+TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 
 
 //----------------------------------------------------------------------------

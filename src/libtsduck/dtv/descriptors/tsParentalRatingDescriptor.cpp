@@ -26,27 +26,22 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an parental_rating_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsParentalRatingDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"parental_rating_descriptor"
+#define MY_CLASS ts::ParentalRatingDescriptor
 #define MY_DID ts::DID_PARENTAL_RATING
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::ParentalRatingDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::ParentalRatingDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::ParentalRatingDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

@@ -26,31 +26,24 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a HD_simulcast_logical_channel_descriptor.
-//  Private descriptor, must be preceeded by the EACEM/EICTA PDS.
-//
-//----------------------------------------------------------------------------
 
 #include "tsHDSimulcastLogicalChannelDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"HD_simulcast_logical_channel_descriptor"
+#define MY_CLASS ts::HDSimulcastLogicalChannelDescriptor
 #define MY_DID ts::DID_HD_SIMULCAST_LCN
 #define MY_PDS ts::PDS_EACEM
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_FACTORY_REGISTER(ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 // Incorrect use of TPS private data, TPS broadcasters should use EACEM/EICTA PDS instead.
-TS_ID_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, ts::EDID::Private(MY_DID, ts::PDS_TPS));
-TS_FACTORY_REGISTER(ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, ts::PDS_TPS));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, ts::PDS_TPS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

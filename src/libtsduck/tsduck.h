@@ -487,7 +487,7 @@
 #include "tsTableHandlerInterface.h"
 #include "tsTables.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsTablesLogger.h"
 #include "tsTablesLoggerFilter.h"
 #include "tsTablesLoggerFilterInterface.h"

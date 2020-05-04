@@ -30,17 +30,16 @@
 #include "tsSTT.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"STT"
+#define MY_CLASS ts::STT
 #define MY_TID ts::TID_STT
 #define MY_STD ts::STD_ATSC
 
-TS_XML_TABLE_FACTORY(ts::STT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::STT, MY_TID, MY_STD);
-TS_FACTORY_REGISTER(ts::STT::DisplaySection, MY_TID, MY_STD);
+TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection);
 
 
 //----------------------------------------------------------------------------

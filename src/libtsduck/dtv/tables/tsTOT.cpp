@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Time Offset Table (TOT)
-//
-//----------------------------------------------------------------------------
 
 #include "tsTOT.h"
 #include "tsMJD.h"
@@ -37,17 +33,17 @@
 #include "tsCRC32.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"TOT"
+#define MY_CLASS ts::TOT
 #define MY_TID ts::TID_TOT
+#define MY_PID ts::PID_TOT
 #define MY_STD ts::STD_DVB
 
-TS_XML_TABLE_FACTORY(ts::TOT, MY_XML_NAME);
-TS_ID_TABLE_PIDS_FACTORY(ts::TOT, MY_TID, MY_STD, ts::PID_TOT);
-TS_FACTORY_REGISTER(ts::TOT::DisplaySection, MY_TID, MY_STD);
+TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 
 
 //----------------------------------------------------------------------------

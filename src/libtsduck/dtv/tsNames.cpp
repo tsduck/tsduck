@@ -32,7 +32,7 @@
 #include "tsSysUtils.h"
 #include "tsFatal.h"
 #include "tsCerrReport.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 TSDUCK_SOURCE;
 
 
@@ -400,7 +400,7 @@ ts::Names::Names(const UString& fileName, bool mergeExtensions) :
     if (mergeExtensions) {
         // Get list of extension names.
         UStringList files;
-        TablesFactory::Instance()->getRegisteredNamesFiles(files);
+        PSIRepository::Instance()->getRegisteredNamesFiles(files);
         for (auto name = files.begin(); name != files.end(); ++name) {
             const UString path(SearchConfigurationFile(*name));
             if (path.empty()) {

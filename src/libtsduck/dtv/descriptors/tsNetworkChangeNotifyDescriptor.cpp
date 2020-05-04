@@ -31,20 +31,19 @@
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 #include "tsBCD.h"
 #include "tsMJD.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"network_change_notify_descriptor"
+#define MY_CLASS ts::NetworkChangeNotifyDescriptor
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_NETW_CHANGE_NOTIFY
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::NetworkChangeNotifyDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::NetworkChangeNotifyDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
-TS_FACTORY_REGISTER(ts::NetworkChangeNotifyDescriptor::DisplayDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

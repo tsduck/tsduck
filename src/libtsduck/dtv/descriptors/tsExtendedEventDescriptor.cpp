@@ -26,26 +26,21 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an extended_event_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsExtendedEventDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"extended_event_descriptor"
+#define MY_CLASS ts::ExtendedEventDescriptor
 #define MY_DID ts::DID_EXTENDED_EVENT
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::ExtendedEventDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::ExtendedEventDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::ExtendedEventDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

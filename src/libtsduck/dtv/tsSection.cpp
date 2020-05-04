@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSection.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsCRC32.h"
 #include "tsNames.h"
 #include "tsMemory.h"
@@ -368,7 +368,7 @@ void ts::Section::recomputeCRC()
 ts::Standards ts::Section::definingStandards() const
 {
     // The defining standard is taken from table id.
-    return TablesFactory::Instance()->getTableStandards(tableId(), _source_pid);
+    return PSIRepository::Instance()->getTableStandards(tableId(), _source_pid);
 }
 
 

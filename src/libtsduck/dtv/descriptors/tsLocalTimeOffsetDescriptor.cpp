@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a local_time_offset_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsLocalTimeOffsetDescriptor.h"
 #include "tsDescriptor.h"
@@ -37,17 +33,16 @@
 #include "tsBCD.h"
 #include "tsMJD.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"local_time_offset_descriptor"
+#define MY_CLASS ts::LocalTimeOffsetDescriptor
 #define MY_DID ts::DID_LOCAL_TIME_OFFSET
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::LocalTimeOffsetDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::LocalTimeOffsetDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::LocalTimeOffsetDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

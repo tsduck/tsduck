@@ -26,28 +26,22 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a generic CA_descriptor.
-//  Specialized classes exist, depending on the CA_system_id.
-//
-//----------------------------------------------------------------------------
 
 #include "tsCADescriptor.h"
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 #include "tsDescriptorList.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"CA_descriptor"
+#define MY_CLASS ts::CADescriptor
 #define MY_DID ts::DID_CA
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::CADescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::CADescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::CADescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -135,7 +129,7 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
         // CA private part.
         if (size > 0) {
             // Check if a specific CAS registered its own display routine.
-            DisplayCADescriptorFunction disp = TablesFactory::Instance()->getCADescriptorDisplay(sysid);
+            DisplayCADescriptorFunction disp = PSIRepository::Instance()->getCADescriptorDisplay(sysid);
             if (disp != nullptr) {
                 // Use a CAS-specific display routine.
                 disp(display, data, size, indent, tid);

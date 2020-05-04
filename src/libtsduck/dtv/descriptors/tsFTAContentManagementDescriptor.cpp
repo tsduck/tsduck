@@ -30,18 +30,17 @@
 #include "tsFTAContentManagementDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"FTA_content_management_descriptor"
+#define MY_CLASS ts::FTAContentManagementDescriptor
 #define MY_DID ts::DID_FTA_CONTENT_MGMT
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::FTAContentManagementDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::FTAContentManagementDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::FTAContentManagementDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

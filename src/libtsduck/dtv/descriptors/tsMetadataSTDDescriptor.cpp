@@ -30,17 +30,16 @@
 #include "tsMetadataSTDDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"metadata_STD_descriptor"
+#define MY_CLASS ts::MetadataSTDDescriptor
 #define MY_DID ts::DID_METADATA_STD
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::MetadataSTDDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::MetadataSTDDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::MetadataSTDDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

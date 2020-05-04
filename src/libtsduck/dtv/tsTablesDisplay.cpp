@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsBinaryTable.h"
 #include "tsSection.h"
 #include "tsDescriptor.h"
@@ -286,7 +286,7 @@ std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int 
     cas = _duck.casId(cas);
 
     // Find the display handler for this table id (and maybe CAS).
-    DisplaySectionFunction handler = TablesFactory::Instance()->getSectionDisplay(section.tableId(), _duck.standards(), section.sourcePID(), cas);
+    DisplaySectionFunction handler = PSIRepository::Instance()->getSectionDisplay(section.tableId(), _duck.standards(), section.sourcePID(), cas);
 
     if (handler != nullptr) {
         handler(*this, section, indent);
@@ -308,7 +308,7 @@ std::ostream& ts::TablesDisplay::logSectionData(const Section& section, const US
     cas = _duck.casId(cas);
 
     // Find the log handler for this table id (and maybe CAS).
-    LogSectionFunction handler = TablesFactory::Instance()->getSectionLog(section.tableId(), _duck.standards(), section.sourcePID(), cas);
+    LogSectionFunction handler = PSIRepository::Instance()->getSectionLog(section.tableId(), _duck.standards(), section.sourcePID(), cas);
     if (handler == nullptr) {
         handler = LogUnknownSectionData;
     }
@@ -611,7 +611,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* p
     }
 
     // Locate the display handler for this descriptor payload.
-    DisplayDescriptorFunction handler = TablesFactory::Instance()->getDescriptorDisplay(edid, tid);
+    DisplayDescriptorFunction handler = PSIRepository::Instance()->getDescriptorDisplay(edid, tid);
 
     if (handler != nullptr) {
         handler(*this, did, payload, size, indent, tid, _duck.actualPDS(pds));

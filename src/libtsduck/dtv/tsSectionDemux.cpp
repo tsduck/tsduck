@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSectionDemux.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsEIT.h"
 TSDUCK_SOURCE;
 
@@ -459,7 +459,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         if (section_ok) {
 
             // Get the list of standards which define this table id and add them in context.
-            _duck.addStandards(TablesFactory::Instance()->getTableStandards(etid.tid(), pid));
+            _duck.addStandards(PSIRepository::Instance()->getTableStandards(etid.tid(), pid));
 
             // Get reference to the ETID context for this PID.
             // The ETID context is created if did not exist.

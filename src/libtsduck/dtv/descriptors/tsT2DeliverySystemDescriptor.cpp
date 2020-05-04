@@ -31,17 +31,16 @@
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"T2_delivery_system_descriptor"
+#define MY_CLASS ts::T2DeliverySystemDescriptor
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_T2_DELIVERY
 
-TS_XML_DESCRIPTOR_FACTORY(ts::T2DeliverySystemDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::T2DeliverySystemDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
-TS_FACTORY_REGISTER(ts::T2DeliverySystemDescriptor::DisplayDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

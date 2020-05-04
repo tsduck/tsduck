@@ -30,18 +30,16 @@
 #include "tsNIT.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"NIT"
+#define MY_CLASS ts::NIT
+#define MY_PID ts::PID_NIT
 #define MY_STD ts::STD_DVB
 
-TS_XML_TABLE_FACTORY(ts::NIT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::NIT, ts::TID_NIT_ACT, MY_STD);
-TS_ID_TABLE_FACTORY(ts::NIT, ts::TID_NIT_OTH, MY_STD);
-TS_FACTORY_REGISTER(ts::NIT::DisplaySection, ts::TID_NIT_ACT, MY_STD);
-TS_FACTORY_REGISTER(ts::NIT::DisplaySection, ts::TID_NIT_OTH, MY_STD);
+TS_REGISTER_TABLE(MY_CLASS, {ts::TID_NIT_ACT, ts::TID_NIT_OTH}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 
 
 //----------------------------------------------------------------------------

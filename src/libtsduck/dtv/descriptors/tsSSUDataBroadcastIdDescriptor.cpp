@@ -26,16 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a data_broadcast_id_descriptor for system software update
-//  (data_broadcast_id 0x000A).
-//
-//----------------------------------------------------------------------------
 
 #include "tsSSUDataBroadcastIdDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 

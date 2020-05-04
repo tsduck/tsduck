@@ -30,18 +30,17 @@
 #include "tsNorDigLogicalChannelDescriptorV1.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"nordig_logical_channel_descriptor_v1"
+#define MY_CLASS ts::NorDigLogicalChannelDescriptorV1
 #define MY_DID ts::DID_NORDIG_CHAN_NUM_V1
 #define MY_PDS ts::PDS_NORDIG
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::NorDigLogicalChannelDescriptorV1, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::NorDigLogicalChannelDescriptorV1, ts::EDID::Private(MY_DID, MY_PDS));
-TS_FACTORY_REGISTER(ts::NorDigLogicalChannelDescriptorV1::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

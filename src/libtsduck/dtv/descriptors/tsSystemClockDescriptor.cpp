@@ -31,17 +31,16 @@
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"system_clock_descriptor"
+#define MY_CLASS ts::SystemClockDescriptor
 #define MY_DID ts::DID_SYS_CLOCK
 #define MY_STD ts::STD_MPEG
 
-TS_XML_DESCRIPTOR_FACTORY(ts::SystemClockDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::SystemClockDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::SystemClockDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

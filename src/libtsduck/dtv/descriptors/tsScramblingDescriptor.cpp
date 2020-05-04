@@ -30,18 +30,17 @@
 #include "tsScramblingDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"scrambling_descriptor"
+#define MY_CLASS ts::ScramblingDescriptor
 #define MY_DID ts::DID_SCRAMBLING
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::ScramblingDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::ScramblingDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::ScramblingDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

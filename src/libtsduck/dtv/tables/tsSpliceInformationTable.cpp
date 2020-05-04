@@ -32,16 +32,15 @@
 #include "tsNames.h"
 #include "tsxmlElement.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"splice_information_table"
+#define MY_CLASS ts::SpliceInformationTable
 #define MY_TID ts::TID_SCTE35_SIT
 #define MY_STD ts::STD_SCTE
 
-TS_XML_TABLE_FACTORY(ts::SpliceInformationTable, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::SpliceInformationTable, MY_TID, MY_STD);
-TS_FACTORY_REGISTER(ts::SpliceInformationTable::DisplaySection, MY_TID, MY_STD);
+TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection);
 
 
 //----------------------------------------------------------------------------

@@ -1,7 +1,6 @@
 // Sample TSDuck extension.
 // This is a sample tool main code.
 
-#include "tsduck.h"
 #include "foo.h"
 TS_MAIN(MainCode);
 

@@ -31,16 +31,15 @@
 #include "tsDescriptor.h"
 #include "tsBCD.h"
 #include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
+#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"cable_delivery_system_descriptor"
+#define MY_CLASS ts::CableDeliverySystemDescriptor
 #define MY_DID ts::DID_CABLE_DELIVERY
 
-TS_XML_DESCRIPTOR_FACTORY(ts::CableDeliverySystemDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::CableDeliverySystemDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::CableDeliverySystemDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
