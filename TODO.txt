@@ -83,14 +83,6 @@ TSDuck - List of features to be implemented or fixed
   - 12.2.1.1  download_content_descriptor
   - 12.2.2.2  CDT (Common Data Table)
 
-  ARIB STD-B25 (ISDB Conditional Access)
-  - Part 1:
-    - 4.7.1     CA_EMM_TS_descriptor
-    - 4.7.2     CA_contract_info_descriptor
-    - 4.7.3     CA_service_descriptor
-  - Part 2:
-    - 2.3.2.6.4 conditional_playback_descriptor
-
   ARIB STD-B16 (ISDB Standard Digital Receiver for Satellite - not available in English)
   - DCT (Download Control Table)
   - DLT (DownLoad Table)

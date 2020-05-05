@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an ISDB access_control_descriptor.
+//!  Representation of an ISDB conditional_playback_descriptor.
 //!
 //----------------------------------------------------------------------------
 
@@ -37,32 +37,29 @@
 
 namespace ts {
     //!
-    //! Representation of an ISDB access_control_descriptor.
-    //! @see ARIB STD-B10, Part 2, 6.2.54
+    //! Representation of an ISDB conditional_playback_descriptor.
+    //! @see ARIB STD-B25, Part 2, 2.3.2.6.4
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL ISDBAccessControlDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ConditionalPlaybackDescriptor : public AbstractDescriptor
     {
     public:
-        // ISDBAccessControlDescriptor public members:
+        // ConditionalPlaybackDescriptor public members:
         uint16_t  CA_system_id;       //!< Conditional access system id as defined in ARIB STD-B10, Part 2, Annex M.
-        uint8_t   transmission_type;  //!< Transmission type (broadcast by default).
-        PID       pid;                //!< PID for CA tables (ECM or EMM).
+        PID       CA_pid;             //!< PID for CA tables (ECM or EMM).
         ByteBlock private_data;       //!< CA-specific private data.
 
         //!
         //! Default constructor.
-        //! @param [in] id CA system id.
-        //! @param [in] pid PID for CA tables (ECM or EMM).
         //!
-        ISDBAccessControlDescriptor(uint16_t id = 0, PID pid = PID_NULL);
+        ConditionalPlaybackDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        ISDBAccessControlDescriptor(DuckContext& duck, const Descriptor& bin);
+        ConditionalPlaybackDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;
