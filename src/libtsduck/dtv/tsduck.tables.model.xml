@@ -844,10 +844,35 @@
       </private_data>
     </CA_descriptor>
 
+    <CA_contract_info_descriptor
+        CA_system_id="uint16, required"
+        CA_unit_id="uint4, required"
+        fee_name="string, optional">
+      <!-- One per component -->
+      <component tag="uint8, required"/>
+      <contract_verification_info>
+        Hexadecimal content
+      </contract_verification_info>
+    </CA_contract_info_descriptor>
+
+    <CA_EMM_TS_descriptor
+        CA_system_id="uint16, required"
+        transport_stream_id="uint16, required"
+        original_network_id="uint16, required"
+        power_supply_period="uint8, required"/>
+
     <CA_identifier_descriptor>
       <!-- One per CAS -->
       <CA_system_id value="uint16, required"/>
     </CA_identifier_descriptor>
+
+    <CA_service_descriptor
+        CA_system_id="uint16, required"
+        ca_broadcaster_group_id="uint8, required"
+        message_control="uint8, required">
+      <!-- One per service -->
+      <service id="uint16, required"/>
+    </CA_service_descriptor>
 
     <cable_delivery_system_descriptor
         frequency="FrequencyHz, required"
@@ -935,6 +960,14 @@
         <string language="char3, required" text="string, required"/>
       </component_name_string>
     </component_name_descriptor>
+
+    <conditional_playback_descriptor
+        CA_system_id="uint16, required"
+        CA_PID="uint13, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </conditional_playback_descriptor>
 
     <content_availability_descriptor
         copy_restriction_mode="bool, required"

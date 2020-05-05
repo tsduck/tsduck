@@ -1365,7 +1365,7 @@ namespace ts {
         DID_ISDB_SCRAMBLE_METH  = 0xF5, //!< DID for ISDB Scramble method descriptor
         DID_ISDB_CA             = 0xF6, //!< DID for ISDB Access control descriptor
         DID_ISDB_CAROUSEL_COMP  = 0xF7, //!< DID for ISDB Carousel compatible composite descriptor
-        DID_ISDB_CNOD_PLAYBACK  = 0xF8, //!< DID for ISDB Conditional playback descriptor
+        DID_ISDB_COND_PLAYBACK  = 0xF8, //!< DID for ISDB Conditional playback descriptor
         DID_ISDB_CABLE_TS_DIV   = 0xF9, //!< DID for ISDB Cable TS division system descriptor
         DID_ISDB_TERRES_DELIV   = 0xFA, //!< DID for ISDB Terrestrial delivery system descriptor
         DID_ISDB_PARTIAL_RECP   = 0xFB, //!< DID for ISDB Partial reception descriptor

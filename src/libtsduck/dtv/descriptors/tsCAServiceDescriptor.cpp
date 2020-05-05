@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsISDBAccessControlDescriptor.h"
+#include "tsCAServiceDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
@@ -35,9 +35,9 @@
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"ISDB_access_control_descriptor"
-#define MY_CLASS ts::ISDBAccessControlDescriptor
-#define MY_DID ts::DID_ISDB_CA
+#define MY_XML_NAME u"CA_service_descriptor"
+#define MY_CLASS ts::CAServiceDescriptor
+#define MY_DID ts::DID_ISDB_CA_SERVICE
 #define MY_PDS ts::PDS_ISDB
 #define MY_STD ts::STD_ISDB
 
@@ -48,18 +48,18 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::ISDBAccessControlDescriptor::ISDBAccessControlDescriptor(uint16_t id, PID p) :
+ts::CAServiceDescriptor::CAServiceDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    CA_system_id(id),
-    transmission_type(7), // broadcast route
-    pid(p),
-    private_data()
+    CA_system_id(0),
+    ca_broadcaster_group_id(0),
+    message_control(0),
+    service_ids()
 {
     _is_valid = true;
 }
 
-ts::ISDBAccessControlDescriptor::ISDBAccessControlDescriptor(DuckContext& duck, const Descriptor& desc) :
-    ISDBAccessControlDescriptor()
+ts::CAServiceDescriptor::CAServiceDescriptor(DuckContext& duck, const Descriptor& desc) :
+    CAServiceDescriptor()
 {
     deserialize(duck, desc);
 }
@@ -69,12 +69,15 @@ ts::ISDBAccessControlDescriptor::ISDBAccessControlDescriptor(DuckContext& duck, 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ISDBAccessControlDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CAServiceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16(CA_system_id);
-    bbp->appendUInt16(uint16_t(uint16_t(transmission_type & 0x07) << 13) | pid);
-    bbp->append(private_data);
+    bbp->appendUInt8(ca_broadcaster_group_id);
+    bbp->appendUInt8(message_control);
+    for (auto it = service_ids.begin(); it != service_ids.end(); ++it) {
+        bbp->appendUInt16(*it);
+    }
     serializeEnd(desc, bbp);
 }
 
@@ -83,17 +86,22 @@ void ts::ISDBAccessControlDescriptor::serialize(DuckContext& duck, Descriptor& d
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISDBAccessControlDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::CAServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4;
+    service_ids.clear();
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 4 && size % 2 == 0;
 
     if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
         CA_system_id = GetUInt16(data);
-        transmission_type = (data[2] >> 5) & 0x07;
-        pid = GetUInt16(data + 2) & 0x1FFF;
-        private_data.copy(data + 4, size - 4);
+        ca_broadcaster_group_id = data[2];
+        message_control = data[3];
+        data += 4; size -= 4;
+        while (size >= 2) {
+            service_ids.push_back(GetUInt16(data));
+            data += 2; size -= 2;
+        }
     }
 }
 
@@ -102,29 +110,24 @@ void ts::ISDBAccessControlDescriptor::deserialize(DuckContext& duck, const Descr
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ISDBAccessControlDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CAServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    if (size < 4) {
-        display.displayExtraData(data, size, indent);
-    }
-    else {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const std::string margin(indent, ' ');
 
-        // Extract common part
-        const uint16_t casid = GetUInt16(data);
-        const uint8_t type = (data[2] >> 5) & 0x07;
-        uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
-        const UChar* const dtype = tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA");
+    if (size >= 4) {
+        strm << margin << "CA System Id: " << names::CASId(duck, GetUInt16(data), names::FIRST) << std::endl
+             << margin << UString::Format(u"CA broadcaster group id: 0x%X (%d)", {data[2], data[2]}) << std::endl
+             << margin << UString::Format(u"Delay time: %d days", {data[3]}) << std::endl;
         data += 4; size -= 4;
-
-        strm << margin << "CA System Id: " << names::CASId(duck, casid, names::FIRST) << std::endl
-             << margin << "Transmission type: " << NameFromSection(u"ISDBCATransmissionType", type, names::DECIMAL_FIRST) << std::endl
-             << margin << UString::Format(u"%s PID: 0x%X (%d)", {dtype, pid, pid}) << std::endl;
-
-        display.displayPrivateData(u"Private CA data", data, size, indent);
+        while (size >= 2) {
+            strm << margin << UString::Format(u"Service id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl;
+            data += 2; size -= 2;
+        }
     }
+
+    display.displayExtraData(data, size, indent);
 }
 
 
@@ -132,12 +135,14 @@ void ts::ISDBAccessControlDescriptor::DisplayDescriptor(TablesDisplay& display, 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ISDBAccessControlDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::CAServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"CA_system_id", CA_system_id, true);
-    root->setIntAttribute(u"transmission_type", transmission_type);
-    root->setIntAttribute(u"PID", pid, true);
-    root->addElement(u"private_data")->addHexaText(private_data, true);
+    root->setIntAttribute(u"ca_broadcaster_group_id", ca_broadcaster_group_id, true);
+    root->setIntAttribute(u"message_control", message_control);
+    for (auto it = service_ids.begin(); it != service_ids.end(); ++it) {
+        root->addElement(u"service")->setIntAttribute(u"id", *it, true);
+    }
 }
 
 
@@ -145,12 +150,23 @@ void ts::ISDBAccessControlDescriptor::buildXML(DuckContext& duck, xml::Element* 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISDBAccessControlDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::CAServiceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
+    service_ids.clear();
+
+    xml::ElementVector xserv;
     _is_valid =
         checkXMLName(element) &&
         element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
-        element->getIntAttribute<uint8_t>(transmission_type, u"transmission_type", false, 7, 0, 7) &&
-        element->getIntAttribute<PID>(pid, u"PID", true, 0, 0x0000, 0x1FFF) &&
-        element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 4);
+        element->getIntAttribute<uint8_t>(ca_broadcaster_group_id, u"ca_broadcaster_group_id", true) &&
+        element->getIntAttribute<uint8_t>(message_control, u"message_control", true) &&
+        element->getChildren(xserv, u"service", 0, 125);
+
+    for (auto it = xserv.begin(); _is_valid && it != xserv.end(); ++it) {
+        uint16_t id = 0;
+        _is_valid = (*it)->getIntAttribute<uint16_t>(id, u"id", true);
+        if (_is_valid) {
+            service_ids.push_back(id);
+        }
+    }
 }

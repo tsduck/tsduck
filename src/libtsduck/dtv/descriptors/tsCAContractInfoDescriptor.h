@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an ISDB access_control_descriptor.
+//!  Representation of an ISDB CA_contract_info_descriptor.
 //!
 //----------------------------------------------------------------------------
 
@@ -37,32 +37,31 @@
 
 namespace ts {
     //!
-    //! Representation of an ISDB access_control_descriptor.
-    //! @see ARIB STD-B10, Part 2, 6.2.54
+    //! Representation of an ISDB CA_contract_info_descriptor.
+    //! @see ARIB STD-B25, Part 1, 4.7.2
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL ISDBAccessControlDescriptor : public AbstractDescriptor
+    class TSDUCKDLL CAContractInfoDescriptor : public AbstractDescriptor
     {
     public:
-        // ISDBAccessControlDescriptor public members:
-        uint16_t  CA_system_id;       //!< Conditional access system id as defined in ARIB STD-B10, Part 2, Annex M.
-        uint8_t   transmission_type;  //!< Transmission type (broadcast by default).
-        PID       pid;                //!< PID for CA tables (ECM or EMM).
-        ByteBlock private_data;       //!< CA-specific private data.
+        // CAContractInfoDescriptor public members:
+        uint16_t  CA_system_id;               //!< Conditional access system id as defined in ARIB STD-B10, Part 2, Annex M.
+        uint8_t   CA_unit_id;                 //!< 4 bits, billing unit group.
+        ByteBlock component_tags;             //!< One byte per component tag.
+        ByteBlock contract_verification_info; //!< Contract description data.
+        UString   fee_name;                   //!< Contract description.
 
-        //!
+            //!
         //! Default constructor.
-        //! @param [in] id CA system id.
-        //! @param [in] pid PID for CA tables (ECM or EMM).
         //!
-        ISDBAccessControlDescriptor(uint16_t id = 0, PID pid = PID_NULL);
+        CAContractInfoDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        ISDBAccessControlDescriptor(DuckContext& duck, const Descriptor& bin);
+        CAContractInfoDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;
