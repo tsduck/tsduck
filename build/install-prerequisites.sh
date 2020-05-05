@@ -111,7 +111,7 @@ elif [[ -f /etc/fedora-release ]]; then
 elif [[ -f /etc/redhat-release ]]; then
 
     # Red Hat or CentOS
-    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz pcsc-tools pcsc-lite-devel libcurl libcurl-devel rpmdevtools jq"
+    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz pcsc-lite pcsc-lite-devel libcurl libcurl-devel rpmdevtools jq"
     sudo yum -y install $pkglist
 
 elif [[ -f /etc/arch-release ]]; then
