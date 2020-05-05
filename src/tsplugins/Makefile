@@ -50,7 +50,7 @@ $(SHLIBS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
 
 install: $(SHLIBS)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
-	install -m 755 $(SHLIBS) $(SYSROOT)$(SYSPREFIX)/bin
+	install -m 644 $(SHLIBS) $(SYSROOT)$(SYSPREFIX)/bin
 install-devel:
 	@true
 
