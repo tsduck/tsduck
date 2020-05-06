@@ -28,81 +28,118 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an ISDB Linked Description Table (LDT).
+//!  Representation of an ISDB Network Board Information Table (NBIT).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractLongTable.h"
-#include "tsDescriptorList.h"
 
 namespace ts {
     //!
-    //! Representation of an ISDB Linked Description Table (LDT).
-    //! @see ARIB STD-B10, Part 2, 5.2.15
+    //! Representation of an ISDB Network Board Information Table (NBIT).
+    //! @see ARIB STD-B10, Part 2, 5.2.14
     //! @ingroup table
     //!
-    class TSDUCKDLL LDT : public AbstractLongTable
+    class TSDUCKDLL NBIT : public AbstractLongTable
     {
     public:
         //!
-        //! Description entry.
+        //! Information entry.
         //!
         //! Note: by inheriting from EntryWithDescriptors, there is a
         //! public field "DescriptorList descs".
         //!
-        class TSDUCKDLL Description : public EntryWithDescriptors
+        class TSDUCKDLL Information : public EntryWithDescriptors
         {
         public:
+            uint8_t information_type;           //!< 4 bits, information type
+            uint8_t description_body_location;  //!< 2 bits, where to find the description.
+            uint8_t user_defined;               //!< No predefined interpretation.
+            std::vector<uint16_t> key_ids;      //!< List of key ids, depends on information_type.
+
             //!
             //! Constructor.
             //! @param [in] table Parent table.
             //!
-            Description(const AbstractTable* table);
+            Information(const AbstractTable* table);
 
         private:
             // Inaccessible operations.
-            Description() = delete;
-            Description(const Description&) = delete;
+            Information() = delete;
+            Information(const Information&) = delete;
         };
 
         //!
-        //! List of descriptions, indexed by description_id.
+        //! List of informations, indexed by information_id.
         //!
-        typedef EntryWithDescriptorsMap<uint16_t, Description> DescriptionMap;
+        typedef EntryWithDescriptorsMap<uint16_t, Information> InformationMap;
 
-        // LDT public members:
-        uint16_t       original_service_id;       //!< Original service id.
-        uint16_t       transport_stream_id;       //!< Transport stream id.
-        uint16_t       original_network_id;       //!< Original network id.
-        DescriptionMap descriptions;              //!< List of descriptions.
+        // NBIT public members:
+        uint16_t       original_network_id;  //!< Original network id.
+        InformationMap informations;         //!< List of informations.
 
         //!
         //! Default constructor.
+        //! @param [in] is_body True for an NBIT carrying actual information body, false when carrying reference to information.
         //! @param [in] vers Table version number.
         //! @param [in] cur True if table is current, false if table is next.
         //!
-        LDT(uint8_t vers = 0, bool cur = true);
+        NBIT(bool is_body = true, uint8_t vers = 0, bool cur = true);
 
         //!
         //! Constructor from a binary table.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table Binary table to deserialize.
         //!
-        LDT(DuckContext& duck, const BinaryTable& table);
+        NBIT(DuckContext& duck, const BinaryTable& table);
 
         //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
-        LDT(const LDT& other);
+        NBIT(const NBIT& other);
 
         //!
         //! Assignment operator.
         //! @param [in] other Other instance to copy.
         //! @return A reference to this object.
         //!
-        LDT& operator=(const LDT& other) = default;
+        NBIT& operator=(const NBIT& other) = default;
+
+        //!
+        //! Check if this is an NBIT carrying actual information body.
+        //! @return True for an NBIT carrying actual information body.
+        //!
+        bool isBody() const
+        {
+            return _table_id == TID_NBIT_BODY;
+        }
+
+        //!
+        //! Check if this is an NBIT carrying reference to information body.
+        //! @return True for an NBIT carrying reference to information body.
+        //!
+        bool isReference() const
+        {
+            return _table_id == TID_NBIT_REF;
+        }
+
+        //!
+        //! Set the NBIT as carrying actual information body.
+        //!
+        void setBody()
+        {
+            _table_id = TID_NBIT_BODY;
+        }
+
+        //!
+        //! Set the NBIT as carrying reference to information body.
+        //!
+        void setReference()
+        {
+            _table_id = TID_NBIT_REF;
+        }
 
         // Inherited methods
         virtual void fromXML(DuckContext&, const xml::Element*) override;
@@ -110,6 +147,7 @@ namespace ts {
 
     protected:
         // Inherited methods
+        virtual bool isValidTableId(TID tid) const override;
         virtual void serializeContent(DuckContext&, BinaryTable&) const override;
         virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;

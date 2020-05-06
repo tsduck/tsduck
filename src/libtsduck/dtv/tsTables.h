@@ -48,6 +48,7 @@
 #include "tsINT.h"
 #include "tsLDT.h"
 #include "tsMGT.h"
+#include "tsNBIT.h"
 #include "tsNIT.h"
 #include "tsPAT.h"
 #include "tsPMT.h"

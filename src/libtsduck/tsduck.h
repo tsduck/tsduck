@@ -339,6 +339,7 @@
 #include "tsMutexInterface.h"
 #include "tsMVCExtensionDescriptor.h"
 #include "tsNames.h"
+#include "tsNBIT.h"
 #include "tsNetworkChangeNotifyDescriptor.h"
 #include "tsNetworkNameDescriptor.h"
 #include "tsNIT.h"
