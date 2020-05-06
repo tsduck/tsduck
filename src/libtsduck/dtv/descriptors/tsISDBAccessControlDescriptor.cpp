@@ -137,7 +137,7 @@ void ts::ISDBAccessControlDescriptor::buildXML(DuckContext& duck, xml::Element* 
     root->setIntAttribute(u"CA_system_id", CA_system_id, true);
     root->setIntAttribute(u"transmission_type", transmission_type);
     root->setIntAttribute(u"PID", pid, true);
-    root->addElement(u"private_data")->addHexaText(private_data, true);
+    root->addHexaTextChild(u"private_data", private_data, true);
 }
 
 

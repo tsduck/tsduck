@@ -72,7 +72,7 @@ void ts::ConditionalPlaybackDescriptor::serialize(DuckContext& duck, Descriptor&
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16(CA_system_id);
-    bbp->appendUInt16(0xE0 | CA_pid);
+    bbp->appendUInt16(0xE000 | CA_pid);
     bbp->append(private_data);
     serializeEnd(desc, bbp);
 }
@@ -84,12 +84,13 @@ void ts::ConditionalPlaybackDescriptor::serialize(DuckContext& duck, Descriptor&
 
 void ts::ConditionalPlaybackDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 4;
+
     private_data.clear();
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4;
 
     if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
         CA_system_id = GetUInt16(data);
         CA_pid = GetUInt16(data + 2) & 0x1FFF;
         private_data.copy(data + 4, size - 4);
@@ -133,7 +134,7 @@ void ts::ConditionalPlaybackDescriptor::buildXML(DuckContext& duck, xml::Element
 {
     root->setIntAttribute(u"CA_system_id", CA_system_id, true);
     root->setIntAttribute(u"CA_PID", CA_pid, true);
-    root->addElement(u"private_data")->addHexaText(private_data, true);
+    root->addHexaTextChild(u"private_data", private_data, true);
 }
 
 

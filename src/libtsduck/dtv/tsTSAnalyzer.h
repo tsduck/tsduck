@@ -502,7 +502,7 @@ namespace ts {
         // If svp is not 0, we are in the PMT of the specified service.
         // If ps is not 0, we are in the description of this PID in a PMT.
         // If svp is 0, we are in the CAT.
-        void analyzeCADescriptor(const Descriptor& desc, ServiceContext* svp = nullptr, PIDContext* ps = nullptr);
+        void analyzeCADescriptor(const Descriptor& desc, ServiceContext* svp = nullptr, PIDContext* ps = nullptr, const UString& suffix = UString());
 
         // Implementation of TableHandlerInterface
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
