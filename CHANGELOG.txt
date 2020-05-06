@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.21-1729
+VERSION 3.21-1763
 
 [NEW] New commands and plugins:
 
@@ -17,6 +17,7 @@ VERSION 3.21-1729
   * Added option --stream-id to plugin "filter".
   * Added option --japan to "tsanalyze", "tspsi", "tstabcomp", "tstabdump",
     "tstables" and plugins "analyze", "psi", "tables".
+  * Added options --default-charset, --europe and --japan to plugin "inject".
   * Added support for Japanese character sets as defined in ARIB STD-B24.
   * Partial ISDB signalization, as defined in ARIB STD-B10, is now supported.
   * Added options --default-charset, --europe and --japan to "tspacketize".

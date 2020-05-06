@@ -444,7 +444,8 @@ bool ts::DuckContext::loadArgs(Args& args)
 
     // Options relating to default PDS.
     if (_definedCmdOptions & CMD_PDS) {
-        args.getIntValue(_defaultPDS, u"default-pds");
+        // Keep previous value unchanged if unspecified.
+        args.getIntValue(_defaultPDS, u"default-pds", _defaultPDS);
     }
 
     // Options relating to default DVB character sets.
@@ -465,7 +466,8 @@ bool ts::DuckContext::loadArgs(Args& args)
 
     // Options relating to default UHF/VHF region.
     if (_definedCmdOptions & CMD_HF_REGION) {
-        args.getValue(_hfDefaultRegion, u"hf-band-region");
+        // Keep previous value unchanged if unspecified.
+        args.getValue(_hfDefaultRegion, u"hf-band-region", _hfDefaultRegion.c_str());
     }
 
     // Options relating to default standards.
@@ -473,12 +475,12 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (args.present(u"atsc")) {
             _cmdStandards |= STD_ATSC;
         }
-        if (args.present(u"isdb")) {
+        if (args.present(u"isdb") || args.present(u"japan")) {
             _cmdStandards |= STD_ISDB;
         }
-        if (args.present(u"japan")) {
-            _cmdStandards |= STD_ISDB | STD_JAPAN;
-        }
+    }
+    if ((_definedCmdOptions & (CMD_STANDARDS | CMD_CHARSET)) && args.present(u"japan")) {
+        _cmdStandards |= STD_JAPAN;
     }
 
     // Options relating to default CAS.
