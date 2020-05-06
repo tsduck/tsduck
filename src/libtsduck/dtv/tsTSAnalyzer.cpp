@@ -875,31 +875,11 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 analyzeCADescriptor(*descs[di], svp, ps);
                 break;
             }
-            case DID_ISDB_CA: {
-                // ISDB specific CA descriptor.
-                if (size >= 4) {
-                    // Get the ECM or EMM PID. For some reason, it is sometimes the NULL PID.
-                    // More details for ISDB ARIB STB-B10 are required (Japanese version only for now).
-                    const PID pid = GetUInt16(data + 2) & 0x1FFF;
-                    if (pid != PID_NULL) {
-                        const uint16_t casid = GetUInt16(data);
-                        const PIDContextPtr eps(getPID(pid));
-                        eps->referenced = true;
-                        eps->carry_section = true;
-                        _demux.addPID(pid);
-
-                        if (svp == nullptr) {
-                            // No service, this is an EMM PID
-                            eps->carry_emm = true;
-                            eps->description = names::CASId(_duck, casid) + u" EMM (ISDB)";
-                        }
-                        else {
-                            // Found an ECM PID for the service
-                            eps->carry_ecm = true;
-                            eps->addService(svp->service_id);
-                            eps->description = names::CASId(_duck, casid) + u" ECM (ISDB)";
-                        }
-                    }
+            case DID_ISDB_CA:
+            case DID_ISDB_COND_PLAYBACK: {
+                // ISDB specific CA descriptors.
+                if (_duck.actualPDS(descs.privateDataSpecifier(di)) == PDS_ISDB) {
+                    analyzeCADescriptor(*descs[di], svp, ps, u" (ISDB)");
                 }
                 break;
             }
@@ -1094,7 +1074,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
 //  If svp is 0, we are in the CAT.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext* svp, PIDContext* ps)
+void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext* svp, PIDContext* ps, const UString& suffix)
 {
     const uint8_t* data(desc.payload());
     size_t size(desc.payloadSize());
@@ -1256,13 +1236,13 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         if (svp == nullptr) {
             // No service, this is an EMM PID
             eps->carry_emm = true;
-            eps->description = names::CASId(_duck, ca_sysid) + u" EMM";
+            eps->description = names::CASId(_duck, ca_sysid) + u" EMM" + suffix;
         }
         else {
             // Found an ECM PID for the service
             eps->carry_ecm = true;
             eps->addService(svp->service_id);
-            eps->description = names::CASId(_duck, ca_sysid) + u" ECM";
+            eps->description = names::CASId(_duck, ca_sysid) + u" ECM" + suffix;
         }
     }
 }

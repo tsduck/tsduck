@@ -86,11 +86,11 @@ void ts::CAEMMTSDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 
 void ts::CAEMMTSDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 7;
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+    _is_valid = desc.isValid() && desc.tag() == _tag && size == 7;
 
     if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
         CA_system_id = GetUInt16(data);
         transport_stream_id = GetUInt16(data + 2);
         original_network_id = GetUInt16(data + 4);

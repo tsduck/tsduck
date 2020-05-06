@@ -139,8 +139,8 @@ void ts::CAContractInfoDescriptor::DisplayDescriptor(TablesDisplay& display, DID
         }
         if (size > 0) {
             count = std::min<size_t>(data[0], size - 1);
-            display.displayPrivateData(u"Contract verification info", data, count, indent);
-            data += count + 1; size -= count - 1;
+            display.displayPrivateData(u"Contract verification info", data + 1, count, indent);
+            data += count + 1; size -= count + 1;
         }
         if (size > 0) {
             strm << margin << "Fee name: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
@@ -163,7 +163,7 @@ void ts::CAContractInfoDescriptor::buildXML(DuckContext& duck, xml::Element* roo
     for (auto it = component_tags.begin(); it != component_tags.end(); ++it) {
         root->addElement(u"component")->setIntAttribute(u"tag", *it, true);
     }
-    root->addElement(u"contract_verification_info")->addHexaText(contract_verification_info, true);
+    root->addHexaTextChild(u"contract_verification_info", contract_verification_info, true);
 }
 
 
