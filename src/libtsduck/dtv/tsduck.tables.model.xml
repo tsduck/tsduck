@@ -557,6 +557,23 @@
       </description>
     </LDT>
 
+    <!-- ISDB Network Board Information Table -->
+    <NBIT version="uint5, default=0"
+          current="bool, default=true"
+          original_network_id="uint16, required"
+          body="bool, default=true">
+      <!-- One per information set -->
+      <information
+          information_id="uint16, required"
+          information_type="uint4, required"
+          description_body_location="uint2, required"
+          user_defined="uint8, default=0xFF">
+        <!-- One per key_id entry -->
+        <key id="uint16, required"/>
+        <_any in="_descriptors"/>
+      </information>
+    </NBIT>
+
     <!-- Generic short table -->
     <generic_short_table
         table_id="uint8, required"

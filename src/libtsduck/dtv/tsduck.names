@@ -114,7 +114,7 @@ Bits = 8
 0x0010_00_C3 = SDTT (ISDB)
 0x0010_00_C4 = BIT (ISDB)
 0x0010_00_C5 = NBIT (Network board information body, ISDB)
-0x0010_00_C6 = NBIT (Reference information to gain network board information, ISDB)
+0x0010_00_C6 = NBIT (Reference to network board information, ISDB)
 0x0010_00_C7 = LDT (ISDB)
 0x0010_00_C8 = CDT (ISDB)
 0x0010_00_D0 = LIT (ISDB)
@@ -3905,3 +3905,20 @@ Bits = 4
 0 = Reserved
 1 = Digital terrestrial television broadcast
 2 = Digital terrestrial sound broadcast
+
+[ISDBInformationType]
+# In ISDB NBIT section
+Bits = 4
+0x0 = Undefined
+0x1 = Information
+0x2 = Information with service_id
+0x3 = Information with genre
+0x04-0x0F = Reserved for future use
+
+[ISDBDescriptionBodyLocation]
+# In ISDB NBIT section
+Bits = 2
+0 = Undefined
+1 = Info is in actual TS table
+2 = Info is in SI prime TS table
+3 = Reserved for future use
