@@ -377,23 +377,22 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"ISDB-specific table.");
     }
 
-    // Options which can be used as character sets and/or standards.
-    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS)) {
+    // Option --japan triggers different options.
+    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION)) {
 
-        // Build help text for --japan option. It depends on whether CMD_CHARSET or
-        // CMD_STANDARDS or both are defined. Use _definedCmdOptions instead of
-        // cmdOptionsMask to include previous options.
-        UString japan(u"A synonym for '");
+        // Build help text for --japan option. It depends on which set of options is requested.
+        // Use _definedCmdOptions instead of cmdOptionsMask to include previous options.
+        UStringList options;
         if (_definedCmdOptions & CMD_STANDARDS) {
-            japan.append(u"--isdb");
-        }
-        if ((_definedCmdOptions & (CMD_CHARSET | CMD_STANDARDS)) == (CMD_CHARSET | CMD_STANDARDS)) {
-            japan.append(u" ");
+            options.push_back(u"--isdb");
         }
         if (_definedCmdOptions & CMD_CHARSET) {
-            japan.append(u"--default-charset ARIB-STD-B24");
+            options.push_back(u"--default-charset ARIB-STD-B24");
         }
-        japan.append(u"'. ");
+        if (_definedCmdOptions & CMD_HF_REGION) {
+            options.push_back(u"--hf-band-region japan");
+        }
+        UString japan(u"A synonym for '" + UString::Join(options, u" ") + u"'. ");
         if (_definedCmdOptions & CMD_STANDARDS) {
             japan.append(u"This option also activates some specificities for Japan such as the use of JST time instead of UTC. ");
         }
@@ -466,6 +465,9 @@ bool ts::DuckContext::loadArgs(Args& args)
 
     // Options relating to default UHF/VHF region.
     if (_definedCmdOptions & CMD_HF_REGION) {
+        if (args.present(u"japan")) {
+            _hfDefaultRegion = u"japan";
+        }
         // Keep previous value unchanged if unspecified.
         args.getValue(_hfDefaultRegion, u"hf-band-region", _hfDefaultRegion.c_str());
     }

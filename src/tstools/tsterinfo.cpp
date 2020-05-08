@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsHFBand.h"
 #include "tsBitrateDifferenceDVBT.h"
 TSDUCK_SOURCE;
@@ -86,6 +87,7 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
+        ts::DuckContext   duck;            // TSDuck execution contexts
         uint64_t          frequency;       // Carrier frequency from which to get UHF channel
         uint32_t          uhf_channel;     // UHF channel from which to compute frequency
         uint32_t          vhf_channel;     // VHF channel from which to compute frequency
@@ -98,12 +100,12 @@ namespace {
         ts::BandWidth     bandwidth;
         bool              simple;          // Simple output
         bool              default_region;  // Display the default region for UHF/VHF band frequency layout
-        ts::UString       hfband_region;   // Region for UHF/VHF band frequency layout
     };
 }
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Compute or convert DVB-Terrestrial information", u"[options]"),
+    duck(this),
     frequency(0),
     uhf_channel(0),
     vhf_channel(0),
@@ -115,9 +117,10 @@ Options::Options(int argc, char *argv[]) :
     guard_interval(ts::GUARD_AUTO),
     bandwidth(ts::BW_AUTO),
     simple(false),
-    default_region(false),
-    hfband_region()
+    default_region(false)
 {
+    duck.defineArgsForHFBand(*this);
+
     option(u"bandwidth", 'w', DVBTBandWidthEnum);
     help(u"bandwidth", u"Specify the OFMD bandwith, used to compute the resulting bitrate.");
 
@@ -156,10 +159,6 @@ Options::Options(int argc, char *argv[]) :
          u"Specify the number of offsets from the UHF or VHF channel. The default "
          u"is zero. See options --uhf-channel and --vhf-channel.");
 
-    option(u"hf-band-region", 'r', STRING);
-    help(u"hf-band-region", u"name",
-         u"Specify the region for UHF/VHF band frequency layout.");
-
     option(u"simple", 's');
     help(u"simple",
          u"Produce simple output: only numbers, no comment, typically useful "
@@ -176,6 +175,7 @@ Options::Options(int argc, char *argv[]) :
          u"--offset-count option. The resulting frequency will be displayed.");
 
     analyze(argc, argv);
+    duck.loadArgs(*this);
 
     frequency      = intValue<uint64_t>(u"frequency", 0);
     uhf_channel    = intValue<uint32_t>(u"uhf-channel", 0);
@@ -189,7 +189,6 @@ Options::Options(int argc, char *argv[]) :
     bandwidth      = enumValue(u"bandwidth", ts::BW_8_MHZ);
     simple         = present(u"simple");
     default_region = present(u"default-region");
-    hfband_region  = value(u"hf-band-region");
 
     if ((fec_hp == ts::FEC_AUTO && guard_interval != ts::GUARD_AUTO) ||
         (fec_hp != ts::FEC_AUTO && guard_interval == ts::GUARD_AUTO))
@@ -222,16 +221,15 @@ int MainCode(int argc, char *argv[])
     Options opt(argc, argv);
 
     // Get UHF/VHF frequency layout.
-    ts::HFBand::SetDefaultRegion(opt.hfband_region);
-    const ts::HFBand* uhf = ts::HFBand::GetBand(opt.hfband_region, ts::HFBand::UHF, opt);
-    const ts::HFBand* vhf = ts::HFBand::GetBand(opt.hfband_region, ts::HFBand::VHF, opt);
+    const ts::HFBand* uhf = opt.duck.uhfBand();
+    const ts::HFBand* vhf = opt.duck.vhfBand();
 
     // Display the default region for UHF/VHF band frequency layout
     if (opt.default_region) {
         if (!opt.simple) {
             std::cout << "Default region for UHF/VHF: ";
         }
-        std::cout << ts::HFBand::DefaultRegion(opt) << std::endl;
+        std::cout << opt.duck.defaultHFRegion() << std::endl;
     }
 
     // Convert UHF channel to frequency
