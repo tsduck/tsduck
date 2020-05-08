@@ -148,9 +148,10 @@ bool ts::PSILogger::open()
     if (!_cat_only) {
         _demux.addPID(PID_PAT);   // MPEG
         _demux.addPID(PID_TSDT);  // MPEG
-        _demux.addPID(PID_SDT);   // DVB, ISDB
+        _demux.addPID(PID_SDT);   // DVB, ISDB (also contain BAT)
+        _demux.addPID(PID_PCAT);  // ISDB
         _demux.addPID(PID_BIT);   // ISDB
-        _demux.addPID(PID_LDT);   // ISDB
+        _demux.addPID(PID_LDT);   // ISDB (also contain NBIT)
         _demux.addPID(PID_PSIP);  // ATSC
     }
     if (!_clear) {
@@ -305,8 +306,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             }
             else if (_all_versions || !_sdt_ok) {
                 _sdt_ok = true;
-                // We cannot stop filtering this PID if we don't need all versions
-                // since a BAT can also be found here.
+                // We cannot stop filtering this PID if we don't need all versions since a BAT can also be found here.
                 _display.displayTable(table);
                 strm << std::endl;
             }
@@ -332,11 +332,23 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             else if (_all_versions || !_bat_ok) {
                 // Got the BAT.
                 _bat_ok = true;
-                // We cannot stop filtering this PID if we don't need all versions
-                // since the SDT can also be found here.
+                // We cannot stop filtering this PID if we don't need all versions since the SDT can also be found here.
                 _display.displayTable(table);
                 strm << std::endl;
             }
+            break;
+        }
+
+        case TID_PCAT: {
+            if (pid != PID_PCAT) {
+                // An ISDB PCAT is only expected on PID 0x0022
+                strm << UString::Format(u"* Got unexpected ISDB PCAT on PID %d (0x%X)", {pid, pid}) << std::endl;
+            }
+            else if (!_all_versions) {
+                _demux.removePID(pid);
+            }
+            _display.displayTable(table);
+            strm << std::endl;
             break;
         }
 
@@ -353,6 +365,18 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             break;
         }
 
+        case TID_NBIT_REF:
+        case TID_NBIT_BODY: {
+            if (pid != PID_NBIT) {
+                // An ISDB BIT is only expected on PID 0x0025
+                strm << UString::Format(u"* Got unexpected ISDB NBIT on PID %d (0x%X)", {pid, pid}) << std::endl;
+            }
+            // We cannot stop filtering this PID if we don't need all versions since the LDT can also be found here.
+            _display.displayTable(table);
+            strm << std::endl;
+            break;
+        }
+
         // case TID_LDT: (same value as TID_MGT)
         case TID_MGT: {
             // ATSC MGT and ISDB LDT use the same table id, so it can be any.
@@ -362,7 +386,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 strm << UString::Format(u"* Got unexpected ATSC MGT / ISDB LDT on PID %d (0x%X)", {pid, pid}) << std::endl;
             }
             // We cannot stop filtering this PID if we don't need all versions
-            // since the TVCT or CVCT can also be found here.
+            // since the TVCT or CVCT (ATSC) and NBIT (ISDB) can also be found here.
             _display.displayTable(table);
             strm << std::endl;
             break;
