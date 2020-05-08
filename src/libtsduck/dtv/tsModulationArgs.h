@@ -165,7 +165,7 @@ namespace ts {
         //!
         //! Default value for bandwidth on ISDB-T.
         //!
-        static constexpr BandWidth DEFAULT_BANDWIDTH_ISDBT = BW_7_MHZ;
+        static constexpr BandWidth DEFAULT_BANDWIDTH_ISDBT = BW_6_MHZ;
         //!
         //! High priority stream code rate.
         //! Applies to: DVB-T/T2.
