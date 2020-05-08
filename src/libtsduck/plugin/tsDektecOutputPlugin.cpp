@@ -39,7 +39,7 @@
 TSDUCK_SOURCE;
 
 #define DEFAULT_PRELOAD_FIFO_PERCENTAGE 80
-#define DEFAULT_MAINTAIN_PRELOAD_THRESHOLD_SIZE 20000
+#define DEFAULT_MAINTAIN_PRELOAD_THRESHOLD_SIZE 20116 // a little over 20k in packets, byte size for exactly 107 packets
 
 
 //----------------------------------------------------------------------------
@@ -1008,14 +1008,14 @@ bool ts::DektecOutputPlugin::start()
 
     if (!_guts->preload_fifo_size) {
         int preloadFifoPercentage = intValue(u"preload-fifo-percentage", DEFAULT_PRELOAD_FIFO_PERCENTAGE);
-        _guts->preload_fifo_size = (_guts->fifo_size * preloadFifoPercentage) / 100;
+        _guts->preload_fifo_size = RoundDown((_guts->fifo_size * preloadFifoPercentage) / 100, int(PKT_SIZE));
         if (_guts->maintain_preload && _guts->drop_to_maintain) {
             _guts->maintain_threshold = DEFAULT_MAINTAIN_PRELOAD_THRESHOLD_SIZE;
             if ((_guts->preload_fifo_size + _guts->maintain_threshold) > _guts->fifo_size) {
                 // Want at least the DEFAULT_MAINTAIN_PRELOAD_THRESHOLD_SIZE threshold when using a percentage of
                 // the FIFO and wanting to drop packets.  Note that the preload-fifo-delay approach is preferable
                 // when preloading the fifo because it takes the bit rate into question.
-                int new_preload_size = _guts->fifo_size - _guts->maintain_threshold;
+                int new_preload_size = RoundDown(_guts->fifo_size - _guts->maintain_threshold, int(PKT_SIZE));
                 tsp->verbose(u"For --preload-fifo-percentage (%d), reducing calculated preload size from %'d bytes to %'d bytes to account for %'d byte threshold "
                     u"because both maintaining preload and dropping packets to maintain preload as necessary.",
                     {preloadFifoPercentage, _guts->preload_fifo_size, new_preload_size, _guts->maintain_threshold});
@@ -1786,16 +1786,16 @@ bool ts::DektecOutputPlugin::setPreloadFIFOSizeBasedOnDelay()
         // to calculate the size, in bytes, based on the bit rate and the requested delay, it is:
         // <bit rate (in bits/s)> / <8 bytes / bit> * <delay (in ms)> / <1000 ms / s>
         // converting to uint64_t because multiplying the current bit rate by the delay may exceed the max value for a uint32_t
-        uint64_t prelimPreloadFifoSize = (uint64_t(_guts->cur_bitrate) * _guts->preload_fifo_delay) / 8000ULL;
+        uint64_t prelimPreloadFifoSize = RoundDown((uint64_t(_guts->cur_bitrate) * _guts->preload_fifo_delay) / 8000ULL, uint64_t(PKT_SIZE));
 
         _guts->maintain_threshold = 0;
         if (_guts->maintain_preload && _guts->drop_to_maintain) {
             // use a threshold of 10 ms, which seems to work pretty well in practice
-            _guts->maintain_threshold = int((uint64_t(_guts->cur_bitrate) * 10ULL) / 8000ULL);
+            _guts->maintain_threshold = RoundDown(int((uint64_t(_guts->cur_bitrate) * 10ULL) / 8000ULL), int(PKT_SIZE));
         }
 
-        if ((prelimPreloadFifoSize + _guts->maintain_threshold) > uint64_t(_guts->fifo_size)) {
-            _guts->preload_fifo_size = _guts->fifo_size - _guts->maintain_threshold;
+        if ((prelimPreloadFifoSize + uint64_t(_guts->maintain_threshold)) > uint64_t(_guts->fifo_size)) {
+            _guts->preload_fifo_size = RoundDown(_guts->fifo_size - _guts->maintain_threshold, int(PKT_SIZE));
             if (_guts->maintain_threshold) {
                 tsp->verbose(u"For --preload-fifo-delay, delay (%d ms) too large (%'d bytes), based on bit rate (%'d b/s) and FIFO size (%'d bytes). Using FIFO size - 10 ms maintain preload threshold for preload size instead (%'d bytes).",
                 {_guts->preload_fifo_delay, prelimPreloadFifoSize, _guts->cur_bitrate, _guts->fifo_size, _guts->preload_fifo_size});
