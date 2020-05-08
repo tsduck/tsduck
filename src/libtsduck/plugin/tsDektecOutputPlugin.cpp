@@ -1725,7 +1725,7 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
                 }
             }
 
-            if ((fifo_load + cursize) >= _guts->fifo_size) {
+            if ((fifo_load + cursize) > _guts->fifo_size) {
                 // Wait for the FIFO to be partially cleared to make room for
                 // new packets.  Sleep for a short amount of time to minimize the chance
                 // that packets are written slightly later than they ought to be written
