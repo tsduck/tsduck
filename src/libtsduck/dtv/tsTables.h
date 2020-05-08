@@ -51,6 +51,7 @@
 #include "tsNBIT.h"
 #include "tsNIT.h"
 #include "tsPAT.h"
+#include "tsPCAT.h"
 #include "tsPMT.h"
 #include "tsRRT.h"
 #include "tsRST.h"

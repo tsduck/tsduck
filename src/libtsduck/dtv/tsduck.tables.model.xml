@@ -574,6 +574,24 @@
       </information>
     </NBIT>
 
+    <!-- ISDB Partial Content Announcement Table -->
+    <PCAT version="uint5, default=0"
+          current="bool, default=true"
+          service_id="uint16, required"
+          transport_stream_id="uint16, required"
+          original_network_id="uint16, required"
+          content_id="uint32, required">
+      <!-- One per content version -->
+      <version content_version="uint16, required"
+               content_minor_version="uint16, required"
+               version_indicator="uint2, required">
+        <!-- One per schedule entry -->
+        <schedule start_time="YYYY-MM-DD hh:mm:ss, required"
+                  duration="hh:mm:ss, required"/>
+        <_any in="_descriptors"/>
+      </version>
+    </PCAT>
+
     <!-- Generic short table -->
     <generic_short_table
         table_id="uint8, required"

@@ -3922,3 +3922,11 @@ Bits = 2
 1 = Info is in actual TS table
 2 = Info is in SI prime TS table
 3 = Reserved for future use
+
+[PCATVersionIndicator]
+# In ISDB PCAT
+Bits = 2
+0 = Whole version is target (designation of contents version is invalid)
+1 = Target is the version after the designated version
+2 = Target is the version before the designated version
+3 = Target is only the designated version

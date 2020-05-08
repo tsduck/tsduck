@@ -362,6 +362,7 @@
 #include "tsPartialReceptionDescriptor.h"
 #include "tsPartialTransportStreamDescriptor.h"
 #include "tsPAT.h"
+#include "tsPCAT.h"
 #include "tsPCR.h"
 #include "tsPCRAnalyzer.h"
 #include "tsPCRRegulator.h"
