@@ -35,6 +35,7 @@
 
 #pragma once
 #include "tsEnumeration.h"
+#include "tsStandards.h"
 
 namespace ts {
     //!
@@ -133,6 +134,13 @@ namespace ts {
     TSDUCKDLL TunerType TunerTypeOf(DeliverySystem system);
 
     //!
+    //! Get the list of standards for a delivery system.
+    //! @param [in] system Delivery system.
+    //! @return Corresponding standards.
+    //!
+    TSDUCKDLL Standards StandardsOf(DeliverySystem system);
+
+    //!
     //! Check if a delivery system is a satellite one.
     //! This can be used to check if dish manipulations are required.
     //! @param [in] sys The delivery system to check.
@@ -183,6 +191,12 @@ namespace ts {
         //! @return A list of all delivery systems in the set, in decreasing order of preference.
         //!
         DeliverySystemList toList() const;
+
+        //!
+        //! Get the list of standards for the set of delivery systems.
+        //! @return Corresponding standards.
+        //!
+        Standards standards() const;
 
         //!
         //! Convert to a string object.

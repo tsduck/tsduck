@@ -116,6 +116,7 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     default_channel_file(false)
 {
     duck.defineArgsForHFBand(*this);
+    duck.defineArgsForCharset(*this);
     tuner_args.defineArgs(*this);
 
     option(u"best-quality");

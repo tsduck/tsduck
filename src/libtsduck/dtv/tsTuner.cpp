@@ -29,6 +29,7 @@
 
 #include "tsTuner.h"
 #include "tsNullReport.h"
+#include "tsDuckContext.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -105,7 +106,7 @@ bool ts::Tuner::checkTuneParameters(ModulationArgs& params, Report& report) cons
     }
 
     // Get default (preferred) delivery system from tuner when needed.
-    if (!params.delivery_system.set()) {
+    if (params.delivery_system.value(DS_UNDEFINED) == DS_UNDEFINED) {
         params.delivery_system = _delivery_systems.preferred();
         if (params.delivery_system == DS_UNDEFINED) {
             report.error(u"no tuning delivery system specified");
@@ -124,6 +125,9 @@ bool ts::Tuner::checkTuneParameters(ModulationArgs& params, Report& report) cons
 
     // Set all unset tuning parameters to their default value.
     params.setDefaultValues();
+
+    // Add the tuner's standards to the execution context.
+    _duck.addStandards(StandardsOf(params.delivery_system.value()));
 
     // Check if all specified values are supported on the operating system.
     return
