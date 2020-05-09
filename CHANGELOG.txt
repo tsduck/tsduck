@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.21-1765
+VERSION 3.21-1766
 
 [NEW] New commands and plugins:
 
@@ -11,18 +11,19 @@ VERSION 3.21-1765
 
 [IMP] Improvements on existing commands and plugins:
 
-  * Added option --initial-input-packets to "tsp".
-  * Added options --reopen-on-error, --max-retry and --retry-interval to
-    output plugin "file".
-  * Added option --stream-id to plugin "filter".
-  * Added option --japan to "tsanalyze", "tspsi", "tstabcomp", "tstabdump",
-    "tstables", "tsscan", "tsterinfo" and plugins "analyze", "psi", "tables",
-    "dvb".
-  * Added options --default-charset, --europe and --japan to plugin "inject".
-  * Added support for Japanese character sets as defined in ARIB STD-B24.
-  * Partial ISDB signalization, as defined in ARIB STD-B10, is now supported.
-  * Added options --default-charset, --europe and --japan to "tspacketize"
-    and plugin "inject".
+  * General improvement of Japanese TV support:
+    - Japanese character sets as defined in ARIB STD-B24.
+    - Partial ISDB signalization, as defined in ARIB STD-B10.
+    - Option --japan triggers suitable defaults for Japanese TV.
+  * New options in exiting commands and plugins:
+    - Option --initial-input-packets in "tsp".
+    - Options --reopen-on-error, --max-retry and --retry-interval in
+      output plugin "file".
+    - Option --stream-id in plugin "filter".
+    - Option --japan in "tsanalyze", "tspsi", "tstabcomp", "tstabdump",
+      "tstables", "tsterinfo" and plugins "analyze", "psi", "tables", "dvb".
+    - Options --default-charset, --europe and --japan to "tspacketize",
+      "tsscan" and plugin "inject".
 
 [BUG] Bug fixes:
 
