@@ -1664,7 +1664,8 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
                     }
                     _guts->starting = true;
                     tsp->verbose(u"Pausing transmission temporarily in order to maintain preload.");
-                } else if (_guts->drop_to_maintain) {
+                }
+                else if (_guts->drop_to_maintain) {
                     if ((_guts->drop_to_preload && ((fifo_load + cursize) > _guts->preload_fifo_size)) ||
                         ((fifo_load + cursize) > (_guts->preload_fifo_size + _guts->maintain_threshold))) {
                         if (!_guts->drop_to_preload) {
@@ -1717,7 +1718,8 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
                         // set remain to cursize so that it doesn't attempt this again with subsequent runs through the loop
                         cursize = new_cursize;
                         remain = cursize;
-                    } else if (_guts->drop_to_preload && ((fifo_load + cursize) <= _guts->preload_fifo_size)) {
+                    }
+                    else if (_guts->drop_to_preload && ((fifo_load + cursize) <= _guts->preload_fifo_size)) {
                         tsp->verbose(u"Got FIFO load (%'d bytes) + new packet data (%'d bytes) back down to preload FIFO size (%'d bytes) by dropping packets.",
                         {fifo_load, cursize, _guts->preload_fifo_size});
                         _guts->drop_to_preload = false;
@@ -1761,7 +1763,6 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
                     if ((latched & DTAPI_TX_FIFO_UFL) != 0) {
                         tsp->verbose(u"Got FIFO underflow.");
                     }
-
                     _guts->chan.ClearFlags(latched);
                 }
             }
@@ -1786,7 +1787,7 @@ bool ts::DektecOutputPlugin::setPreloadFIFOSizeBasedOnDelay()
         // to calculate the size, in bytes, based on the bit rate and the requested delay, it is:
         // <bit rate (in bits/s)> / <8 bytes / bit> * <delay (in ms)> / <1000 ms / s>
         // converting to uint64_t because multiplying the current bit rate by the delay may exceed the max value for a uint32_t
-        uint64_t prelimPreloadFifoSize = RoundDown((uint64_t(_guts->cur_bitrate) * _guts->preload_fifo_delay) / 8000ULL, uint64_t(PKT_SIZE));
+        uint64_t prelimPreloadFifoSize = RoundDown<uint64_t>((uint64_t(_guts->cur_bitrate) * _guts->preload_fifo_delay) / 8000, PKT_SIZE);
 
         _guts->maintain_threshold = 0;
         if (_guts->maintain_preload && _guts->drop_to_maintain) {

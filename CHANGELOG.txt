@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.21-1766
+VERSION 3.21-1770
 
 [NEW] New commands and plugins:
 
@@ -24,6 +24,7 @@ VERSION 3.21-1766
       "tstables", "tsterinfo" and plugins "analyze", "psi", "tables", "dvb".
     - Options --default-charset, --europe and --japan to "tspacketize",
       "tsscan" and plugin "inject".
+    - Option --drop-to-maintain-preload in output plugin "dektec".
 
 [BUG] Bug fixes:
 
