@@ -39,7 +39,10 @@
 TSDUCK_SOURCE;
 
 #define DEFAULT_PRELOAD_FIFO_PERCENTAGE 80
+
+#if !defined(TS_NO_DTAPI)
 #define DEFAULT_MAINTAIN_PRELOAD_THRESHOLD_SIZE 20116 // a little over 20k in packets, byte size for exactly 107 packets
+#endif
 
 
 //----------------------------------------------------------------------------
