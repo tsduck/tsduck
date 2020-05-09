@@ -39,6 +39,7 @@
 TSDUCK_SOURCE;
 
 #define DEFAULT_PRELOAD_FIFO_PERCENTAGE 80
+#define DEFAULT_MAINTAIN_PRELOAD_THRESHOLD_SIZE 20116 // a little over 20k in packets, byte size for exactly 107 packets
 
 
 //----------------------------------------------------------------------------
@@ -75,6 +76,9 @@ public:
     int                  preload_fifo_size;  // Size of FIFO to preload before starting transmission
     uint64_t             preload_fifo_delay; // Preload FIFO such that it starts transmission after specified delay in ms
     bool                 maintain_preload;   // Roughly maintain the buffer size if the FIFO is preloaded prior to starting transmission
+    bool                 drop_to_maintain;   // Drop packets as necessary to maintain preload
+    int                  maintain_threshold; // Threshold in FIFO beyond preload_fifo_size before it starts dropping packets if drop_to_maintain enabled
+    bool                 drop_to_preload;    // Drop sufficient packets to get back to preload FIFO size--only set to true at run-time if would exceed preload plus threshold
     int                  power_mode;         // Power mode to set on DTU-315
 };
 
@@ -96,6 +100,9 @@ ts::DektecOutputPlugin::Guts::Guts() :
     preload_fifo_size(0),
     preload_fifo_delay(0),
     maintain_preload(false),
+    drop_to_maintain(false),
+    maintain_threshold(0),
+    drop_to_preload(false),
     power_mode(-1)
 {
 }
@@ -276,6 +283,12 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     help(u"dmb-interleaver",
          u"DMB-T/H, ADTB-T modulators: indicate the interleaver mode. Must be one "
          u"1 (B=54, M=240) or 2 (B=54, M=720). The default is 1.");
+
+    option(u"drop-to-maintain-preload");
+    help(u"drop-to-maintain-preload",
+        u"If the FIFO were preloaded, and maintaining the preload via option "
+        u"--maintain-preload, drop any packets that would exceed the preload "
+        u"FIFO size plus a small threshold.");
 
     option(u"fef");
     help(u"fef",
@@ -829,6 +842,7 @@ bool ts::DektecOutputPlugin::start()
     _guts->mute_on_stop = false;
     _guts->preload_fifo = present(u"preload-fifo");
     _guts->maintain_preload = present(u"maintain-preload");
+    _guts->drop_to_maintain = present(u"drop-to-maintain-preload");
     _guts->power_mode = intValue(u"power-mode", -1);
 
     // Get initial bitrate
@@ -994,7 +1008,20 @@ bool ts::DektecOutputPlugin::start()
 
     if (!_guts->preload_fifo_size) {
         int preloadFifoPercentage = intValue(u"preload-fifo-percentage", DEFAULT_PRELOAD_FIFO_PERCENTAGE);
-        _guts->preload_fifo_size = (_guts->fifo_size * preloadFifoPercentage) / 100;
+        _guts->preload_fifo_size = RoundDown((_guts->fifo_size * preloadFifoPercentage) / 100, int(PKT_SIZE));
+        if (_guts->maintain_preload && _guts->drop_to_maintain) {
+            _guts->maintain_threshold = DEFAULT_MAINTAIN_PRELOAD_THRESHOLD_SIZE;
+            if ((_guts->preload_fifo_size + _guts->maintain_threshold) > _guts->fifo_size) {
+                // Want at least the DEFAULT_MAINTAIN_PRELOAD_THRESHOLD_SIZE threshold when using a percentage of
+                // the FIFO and wanting to drop packets.  Note that the preload-fifo-delay approach is preferable
+                // when preloading the fifo because it takes the bit rate into question.
+                int new_preload_size = RoundDown(_guts->fifo_size - _guts->maintain_threshold, int(PKT_SIZE));
+                tsp->verbose(u"For --preload-fifo-percentage (%d), reducing calculated preload size from %'d bytes to %'d bytes to account for %'d byte threshold "
+                    u"because both maintaining preload and dropping packets to maintain preload as necessary.",
+                    {preloadFifoPercentage, _guts->preload_fifo_size, new_preload_size, _guts->maintain_threshold});
+                _guts->preload_fifo_size = new_preload_size;
+            }
+        }
     }
 
     // Set output bitrate
@@ -1565,6 +1592,9 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
 
             if (setPreloadFIFOSizeBasedOnDelay()) {
                 tsp->verbose(u"Due to new bit rate and specified delay of %d ms, preload FIFO size adjusted: %'d bytes.", {_guts->preload_fifo_delay, _guts->preload_fifo_size});
+                if (_guts->maintain_threshold) {
+                    tsp->verbose(u"Further, maintain preload threshold for dropping packets set to %'d bytes based on bit rate.", {_guts->maintain_threshold});
+                }
             }
         }
     }
@@ -1614,28 +1644,88 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
                 return false;
             }
 
-            if (_guts->preload_fifo && _guts->maintain_preload && (fifo_load == 0)) {
-                // the approach of waiting till the FIFO size hits zero won't handle all cases
-                // in which it gets closer to real-time due to losing data temporarily. If it only
-                // loses data for a short amount of time and doesn't fully drain the FIFO as a result,
-                // the FIFO load won't hit zero, and it won't activate this code in that case.
-                // More intelligent schemes are possible, such as noticing that the FIFO
-                // size is decreasing below the preload FIFO size, and then recognizing when
-                // it levels out, which is an indication that new packets are starting to show up, and,
-                // at this point, it is reasonable to pause transmission. It is preferable not to simply
-                // pause transmission when the FIFO load, say, goes to 1/2 the preload FIFO size, because
-                // those packets that are still in the FIFO are likely connected with those that were just
-                // drained, and we want to keep them together in terms of when they are transmitted if possible.
-                status = _guts->chan.SetTxControl(DTAPI_TXCTRL_HOLD);
-                if (status != DTAPI_OK) {
-                    tsp->error(u"output device start send error: " + DektecStrError(status));
-                    return false;
+            if (_guts->preload_fifo && _guts->maintain_preload) {
+                if (fifo_load == 0) {
+                    // the approach of waiting till the FIFO size hits zero won't handle all cases
+                    // in which it gets closer to real-time due to losing data temporarily. If it only
+                    // loses data for a short amount of time and doesn't fully drain the FIFO as a result,
+                    // the FIFO load won't hit zero, and it won't activate this code in that case.
+                    // More intelligent schemes are possible, such as noticing that the FIFO
+                    // size is decreasing below the preload FIFO size, and then recognizing when
+                    // it levels out, which is an indication that new packets are starting to show up, and,
+                    // at this point, it is reasonable to pause transmission. It is preferable not to simply
+                    // pause transmission when the FIFO load, say, goes to 1/2 the preload FIFO size, because
+                    // those packets that are still in the FIFO are likely connected with those that were just
+                    // drained, and we want to keep them together in terms of when they are transmitted if possible.
+                    status = _guts->chan.SetTxControl(DTAPI_TXCTRL_HOLD);
+                    if (status != DTAPI_OK) {
+                        tsp->error(u"output device start send error: " + DektecStrError(status));
+                        return false;
+                    }
+                    _guts->starting = true;
+                    tsp->verbose(u"Pausing transmission temporarily in order to maintain preload.");
+                } else if (_guts->drop_to_maintain) {
+                    if ((_guts->drop_to_preload && ((fifo_load + cursize) > _guts->preload_fifo_size)) ||
+                        ((fifo_load + cursize) > (_guts->preload_fifo_size + _guts->maintain_threshold))) {
+                        if (!_guts->drop_to_preload) {
+                            // we would have exceeded the threshold--now drop sufficient packets to get back to
+                            // the preload FIFO size
+                            _guts->drop_to_preload = true;
+                            tsp->verbose(u"Would have exceeded preload FIFO size (%'d bytes) + threshold (%'d bytes).  Dropping packets to get back to preload FIFO size.",
+                            {_guts->preload_fifo_size, _guts->maintain_threshold});
+                        }
+
+                        // Want to try to get FIFO back to preload_fifo_size, not preload_fifo_size + the threshold.
+                        // Note:  the only reason a user would configure the plug-in to maintain the preload and drop packets
+                        // is in the case that packets are being delivered to the output plug-in in a real-time fashion.
+                        // If packets are, instead, being delivered from a file (i.e. not real-time, in general), then there is no
+                        // point in using any of the preload options, as the FIFO can be fully filled up and utilized immediately for
+                        // playback.  Because the various preload options would only be used for real-time packet delivery, there is no
+                        // need to consider the case that send() is called with a huge buffer, as that can't realistically happen when
+                        // dealing with real-time packet delivery.  That is, with real-time packet delivery, you can only deliver packets
+                        // to the output plug-in no faster than the TS bit rate.
+                        // In that case, how could you ever get to the drop code?  The only realistic situation when this could occur is
+                        // if the real-time packets are being received over the network, network connectivity is lost temporarily, and
+                        // then restored and delivers all the packets that should have been received during the lost connectivity all at
+                        // once, which is possible with some network protocols.  In that case, the FIFO might be drained, depending on how
+                        // long network connectivity were temporarily lost.  For example, let's say the FIFO size corrsponds to 3 seconds of
+                        // TS media.  Network connectivity is temporarily lost for 4 seconds, which causes the FIFO to be fully drained.  In
+                        // addition, the output plug-in, and Dektec hardware, aren't outputting any packets for an additional 1 second.
+                        // After the 4 second network connectivity loss, all the missing packets are sent at once such that there are no gaps.
+                        // Because maintain_preload is set, however, it will pause playback and prefill the FIFO (which will happen really
+                        // quickly) to 3 seconds and then restart playback.  But, the caller of send() will continue to deliver packets, at least
+                        // an additional second worth of media plus all packets that arrive afterwards associated with real-time packet delivery.
+                        // In this sort of situation, unless packets are dropped, we will get further and further away from real-time.  Due to the
+                        // existence of the 3.0 second preload FIFO, the output session is already configured to be 3 seconds behind real-time, but
+                        // it would get worse and worse over time without dropping packets.
+                        // The threshold is needed to make sure the code doesn't unnecessarily drop packets.  Under normal circumstances, some
+                        // calls to send() may exceed the preload FIFO size slightly.
+                        int excess = (fifo_load + cursize) - _guts->preload_fifo_size;
+                        if (excess >= cursize) {
+                            tsp->verbose(u"Dropping all remaining packets (%'d bytes) to maintain preload FIFO size (%'d, %'d, %'d).",
+                            {remain, cursize, fifo_load, _guts->preload_fifo_size});
+                            return true;
+                        }
+
+                        int new_cursize = RoundDown(cursize - excess, int(PKT_SIZE));
+                        int discard = remain - new_cursize;
+
+                        tsp->verbose(u"Dropping %'d bytes worth of packets to maintain preload FIFO size (%'d, %'d, %'d, %'d).",
+                        {discard, fifo_load, cursize, remain, _guts->preload_fifo_size});
+
+                        // just deliver as many packets as possible and drop the rest
+                        // set remain to cursize so that it doesn't attempt this again with subsequent runs through the loop
+                        cursize = new_cursize;
+                        remain = cursize;
+                    } else if (_guts->drop_to_preload && ((fifo_load + cursize) <= _guts->preload_fifo_size)) {
+                        tsp->verbose(u"Got FIFO load (%'d bytes) + new packet data (%'d bytes) back down to preload FIFO size (%'d bytes) by dropping packets.",
+                        {fifo_load, cursize, _guts->preload_fifo_size});
+                        _guts->drop_to_preload = false;
+                    }
                 }
-                _guts->starting = true;
-                tsp->verbose(u"Pausing transmission temporarily in order to maintain preload.");
             }
 
-            if ((fifo_load + cursize) >= _guts->fifo_size) {
+            if ((fifo_load + cursize) > _guts->fifo_size) {
                 // Wait for the FIFO to be partially cleared to make room for
                 // new packets.  Sleep for a short amount of time to minimize the chance
                 // that packets are written slightly later than they ought to be written
@@ -1696,11 +1786,24 @@ bool ts::DektecOutputPlugin::setPreloadFIFOSizeBasedOnDelay()
         // to calculate the size, in bytes, based on the bit rate and the requested delay, it is:
         // <bit rate (in bits/s)> / <8 bytes / bit> * <delay (in ms)> / <1000 ms / s>
         // converting to uint64_t because multiplying the current bit rate by the delay may exceed the max value for a uint32_t
-        uint64_t prelimPreloadFifoSize = (uint64_t(_guts->cur_bitrate) * _guts->preload_fifo_delay) / 8000ULL;
-        if (prelimPreloadFifoSize > uint64_t(_guts->fifo_size)) {
-            _guts->preload_fifo_size = _guts->fifo_size;
-            tsp->verbose(u"For --preload-fifo-delay, delay (%d ms) too large (%'d bytes), based on bit rate (%'d b/s) and FIFO size (%'d bytes). Using FIFO size for preload size instead.",
+        uint64_t prelimPreloadFifoSize = RoundDown((uint64_t(_guts->cur_bitrate) * _guts->preload_fifo_delay) / 8000ULL, uint64_t(PKT_SIZE));
+
+        _guts->maintain_threshold = 0;
+        if (_guts->maintain_preload && _guts->drop_to_maintain) {
+            // use a threshold of 10 ms, which seems to work pretty well in practice
+            _guts->maintain_threshold = RoundDown(int((uint64_t(_guts->cur_bitrate) * 10ULL) / 8000ULL), int(PKT_SIZE));
+        }
+
+        if ((prelimPreloadFifoSize + uint64_t(_guts->maintain_threshold)) > uint64_t(_guts->fifo_size)) {
+            _guts->preload_fifo_size = RoundDown(_guts->fifo_size - _guts->maintain_threshold, int(PKT_SIZE));
+            if (_guts->maintain_threshold) {
+                tsp->verbose(u"For --preload-fifo-delay, delay (%d ms) too large (%'d bytes), based on bit rate (%'d b/s) and FIFO size (%'d bytes). Using FIFO size - 10 ms maintain preload threshold for preload size instead (%'d bytes).",
+                {_guts->preload_fifo_delay, prelimPreloadFifoSize, _guts->cur_bitrate, _guts->fifo_size, _guts->preload_fifo_size});
+            }
+            else {
+                tsp->verbose(u"For --preload-fifo-delay, delay (%d ms) too large (%'d bytes), based on bit rate (%'d b/s) and FIFO size (%'d bytes). Using FIFO size for preload size instead.",
                 {_guts->preload_fifo_delay, prelimPreloadFifoSize, _guts->cur_bitrate, _guts->fifo_size});
+            }
         }
         else {
             _guts->preload_fifo_size = int(prelimPreloadFifoSize);
