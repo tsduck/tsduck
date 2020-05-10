@@ -166,6 +166,9 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
     _videoPID(PID_NULL),
     _ccFixer(NoPID, tsp)
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"", 0, STRING, 0, 1);
     help(u"",
          u"Specifies the service to modify. If the argument is an integer value (either "
@@ -212,6 +215,7 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
 
 bool ts::RMSplicePlugin::getOptions()
 {
+    duck.loadArgs(*this);
     _service.set(value(u""));
     _dropStatus = present(u"stuffing") ? TSP_NULL : TSP_DROP;
     _continue = present(u"continue");

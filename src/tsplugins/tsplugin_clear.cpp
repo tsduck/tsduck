@@ -105,6 +105,9 @@ ts::ClearPlugin::ClearPlugin(TSP* tsp_) :
     _clear_pids(),
     _demux(duck, this)
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"audio", 'a');
     help(u"audio",
          u"Check only audio PIDs for clear packets. By default, audio and video "
@@ -147,6 +150,7 @@ ts::ClearPlugin::ClearPlugin(TSP* tsp_) :
 bool ts::ClearPlugin::start()
 {
     // Get option values
+    duck.loadArgs(*this);
     _service.set (value(u"service"));
     _video_only = present(u"video");
     _audio_only = present(u"audio");
