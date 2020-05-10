@@ -651,7 +651,7 @@ void ScanContext::nitScan()
         for (size_t i = 0; i < dlist.count(); ++i) {
             // Try to get delivery system information from current descriptor
             ts::ModulationArgs params;
-            if (params.fromDeliveryDescriptor(*dlist[i])) {
+            if (params.fromDeliveryDescriptor(_opt.duck, *dlist[i])) {
                 // Got a delivery descriptor, this is the description of one transponder.
                 // Tune to this transponder.
                 _opt.debug(u"* tuning to " + params.toPluginOptions(true));

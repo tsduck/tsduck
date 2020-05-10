@@ -316,6 +316,11 @@ void ts::ModulationArgs::setDefaultValues()
             // Unsupported so far.
             break;
     }
+
+    // Erase unused values.
+    if (delivery_system.set() && delivery_system.value() != DS_DVB_S2) {
+        roll_off.reset();
+    }
 }
 
 
@@ -640,7 +645,7 @@ bool ts::ModulationArgs::convertToDektecModulation(int& modulation_type, int& pa
 // Fill modulation parameters from a delivery system descriptor.
 //----------------------------------------------------------------------------
 
-bool ts::ModulationArgs::fromDeliveryDescriptor(const Descriptor& desc)
+bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descriptor& desc)
 {
     // Completely clear previous content.
     reset();
@@ -657,6 +662,11 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(const Descriptor& desc)
 
     switch (desc.tag()) {
         case DID_SAT_DELIVERY: {
+            // DVB or ISDB satellite delivery network.
+            // The descriptor can be used in either DVB or ISDB context. It has the same size
+            // in both cases but a slightly different binary layout and semantics of fields.
+            // There is no way to distinguish a DVB and an ISDB version without context.
+            const bool isDVB = (duck.standards() & STD_ISDB) == 0;
             // TODO: Check S2_satellite_delivery_system_descriptor to get multistream id and PLS code. What about PLS mode?
             status = size >= 11;
             if (status) {
@@ -670,52 +680,87 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(const Descriptor& desc)
                     case 3: polarity = POL_RIGHT; break;
                     default: assert(false);
                 }
-                // Inner FEC.
-                switch (data[10] & 0x0F) {
-                    case 1:  inner_fec = FEC_1_2; break;
-                    case 2:  inner_fec = FEC_2_3; break;
-                    case 3:  inner_fec = FEC_3_4; break;
-                    case 4:  inner_fec = FEC_5_6; break;
-                    case 5:  inner_fec = FEC_7_8; break;
-                    case 6:  inner_fec = FEC_8_9; break;
-                    case 7:  inner_fec = FEC_3_5; break;
-                    case 8:  inner_fec = FEC_4_5; break;
-                    case 9:  inner_fec = FEC_9_10; break;
-                    case 15: inner_fec = FEC_NONE; break;
-                    default: inner_fec = FEC_AUTO; break;
+                if (isDVB) {
+                    // DVB-S/S2 variant.
+                    // Inner FEC.
+                    switch (data[10] & 0x0F) {
+                        case 1:  inner_fec = FEC_1_2; break;
+                        case 2:  inner_fec = FEC_2_3; break;
+                        case 3:  inner_fec = FEC_3_4; break;
+                        case 4:  inner_fec = FEC_5_6; break;
+                        case 5:  inner_fec = FEC_7_8; break;
+                        case 6:  inner_fec = FEC_8_9; break;
+                        case 7:  inner_fec = FEC_3_5; break;
+                        case 8:  inner_fec = FEC_4_5; break;
+                        case 9:  inner_fec = FEC_9_10; break;
+                        case 15: inner_fec = FEC_NONE; break;
+                        default: inner_fec = FEC_AUTO; break;
+                    }
+                    // Modulation type.
+                    switch (data[6] & 0x03) {
+                        case 0: modulation = QAM_AUTO; break;
+                        case 1: modulation = QPSK; break;
+                        case 2: modulation = PSK_8; break;
+                        case 3: modulation = QAM_16; break;
+                        default: assert(false);
+                    }
+                    // Modulation system.
+                    switch ((data[6] >> 2) & 0x01) {
+                        case 0:
+                            delivery_system = DS_DVB_S;
+                            roll_off.reset();
+                            break;
+                        case 1:
+                            delivery_system = DS_DVB_S2;
+                            // Roll off.
+                            switch ((data[6] >> 3) & 0x03) {
+                                case 0: roll_off = ROLLOFF_35; break;
+                                case 1: roll_off = ROLLOFF_25; break;
+                                case 2: roll_off = ROLLOFF_20; break;
+                                case 3: roll_off = ROLLOFF_AUTO; break;
+                                default: assert(false);
+                            }
+                            break;
+                        default:
+                            assert(false);
+                    }
                 }
-                // Modulation type.
-                switch (data[6] & 0x03) {
-                    case 0: modulation = QAM_AUTO; break;
-                    case 1: modulation = QPSK; break;
-                    case 2: modulation = PSK_8; break;
-                    case 3: modulation = QAM_16; break;
-                    default: assert(false);
-                }
-                // Modulation system.
-                switch ((data[6] >> 2) & 0x01) {
-                    case 0:
-                        delivery_system = DS_DVB_S;
-                        roll_off = ROLLOFF_AUTO;
-                        break;
-                    case 1:
-                        delivery_system = DS_DVB_S2;
-                        // Roll off.
-                        switch ((data[6] >> 3) & 0x03) {
-                            case 0: roll_off = ROLLOFF_35; break;
-                            case 1: roll_off = ROLLOFF_25; break;
-                            case 2: roll_off = ROLLOFF_20; break;
-                            case 3: roll_off = ROLLOFF_AUTO; break;
-                            default: assert(false);
-                        }
-                        break;
-                    default:
-                        assert(false);
+                else {
+                    // ISDB variant.
+                    delivery_system = DS_ISDB_S;
+                    roll_off.reset();
+                    // Inner FEC.
+                    switch (data[10] & 0x0F) {
+                        case 1:  inner_fec = FEC_1_2; break;
+                        case 2:  inner_fec = FEC_2_3; break;
+                        case 3:  inner_fec = FEC_3_4; break;
+                        case 4:  inner_fec = FEC_5_6; break;
+                        case 5:  inner_fec = FEC_7_8; break;
+                        // 8  = ISDB-S system (refer to TMCC signal)
+                        // 9  = 2.6GHz band digital satellite sound broadcasting
+                        // 10 = Advanced narrow-band CS digital broadcasting
+                        // Don't really know how to translate this...
+                        case 15: inner_fec = FEC_NONE; break;
+                        default: inner_fec = FEC_AUTO; break;
+                    }
+                    // Modulation type.
+                    switch (data[6] & 0x03) {
+                        case 0: modulation = QAM_AUTO; break;
+                        case 1: modulation = QPSK; break;
+                        case 8: modulation.reset(); break;
+                        // ??? case 8: modulation = PSK_8; break;
+                        // 8  = "ISDB-S system (refer to TMCC signal)", TC8PSK?, is this the same as PSK_8?
+                        // 9  = 2.6GHz band digital satellite sound broadcasting
+                        // 10 = Advanced narrow-band CS digital broadcasting
+                        // Don't really know how to translate this...
+                        default: modulation.reset(); break;
+                    }
                 }
             }
             break;
         }
         case DID_CABLE_DELIVERY: {
+            // DVB cable delivery network.
             status = size >= 11;
             if (status) {
                 delivery_system = DS_DVB_C;
@@ -746,6 +791,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(const Descriptor& desc)
             break;
         }
         case DID_TERREST_DELIVERY:  {
+            // DVB terrestrial delivery network.
             status = size >= 11;
             if (status) {
                 uint64_t freq = GetUInt32(data);
@@ -811,6 +857,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(const Descriptor& desc)
             break;
         }
         case DID_ISDB_TERRES_DELIV:  {
+            // ISDB terrestrial delivery network.
             status = size >= 4;
             if (status) {
                 const uint8_t guard = (data[1] >> 2) & 0x03;
@@ -1188,15 +1235,16 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             opt += UString::Format(u" --symbol-rate %'d"
                                    u" --fec-inner %s"
                                    u" --polarity %s"
-                                   u" --modulation %s"
-                                   u" --pilots %s"
-                                   u" --roll-off %s", {
+                                   u" --modulation %s", {
                                    symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBS),
                                    InnerFECEnum.name(inner_fec.value(DEFAULT_INNER_FEC)),
                                    PolarizationEnum.name(polarity.value(DEFAULT_POLARITY)),
-                                   ModulationEnum.name(modulation.value(DEFAULT_MODULATION_DVBS)),
-                                   PilotEnum.name(pilots.value(DEFAULT_PILOTS)),
-                                   RollOffEnum.name(roll_off.value(DEFAULT_ROLL_OFF))});
+                                   ModulationEnum.name(modulation.value(DEFAULT_MODULATION_DVBS))});
+            if (delivery_system == DS_DVB_S2) {
+                opt += UString::Format(u" --pilots %s --roll-off %s", {
+                                       PilotEnum.name(pilots.value(DEFAULT_PILOTS)),
+                                       RollOffEnum.name(roll_off.value(DEFAULT_ROLL_OFF))});
+            }
             if (isi.set() && isi != DEFAULT_ISI) {
                 opt += UString::Format(u" --isi %d", {isi.value()});
             }

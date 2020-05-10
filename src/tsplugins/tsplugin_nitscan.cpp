@@ -365,7 +365,7 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
         for (size_t i = 0; i < dlist.count(); ++i) {
             // Try to get delivery system information from current descriptor
             ModulationArgs tp;
-            if (tp.fromDeliveryDescriptor(*dlist[i])) {
+            if (tp.fromDeliveryDescriptor(duck, *dlist[i])) {
 
                 // Output --dvb-options.
                 if (_dvb_options) {

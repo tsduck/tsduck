@@ -41,7 +41,7 @@ ts::AbstractDeliverySystemDescriptor::~AbstractDeliverySystemDescriptor()
 {
 }
 
-ts::DeliverySystem ts::AbstractDeliverySystemDescriptor::deliverySystem() const
+ts::DeliverySystem ts::AbstractDeliverySystemDescriptor::deliverySystem(const DuckContext& duck) const
 {
     // Default implementation.
     return _system;
