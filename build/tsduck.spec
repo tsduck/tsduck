@@ -17,9 +17,8 @@ BuildRequires:  pcsc-lite-devel
 BuildRequires:  libcurl-devel
 
 %description
-The MPEG Transport Stream Toolkit provides some simple utilities to process
-MPEG Transport Streams (TS), either as recorded files or live streams. The
-structure of an MPEG TS is defined in ISO 13818-1.
+TSDuck, the MPEG Transport Stream Toolkit, provides some simple utilities to
+process MPEG Transport Streams (TS), either as recorded files or live streams.
 
 %package        devel
 Summary:        Development files for %{name}
@@ -51,7 +50,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %{_bindir}/ts*
-%{_sysconfdir}/udev/rules.d/80-tsduck.rules
+/lib/udev/rules.d/80-tsduck.rules
 %{_sysconfdir}/security/console.perms.d/80-tsduck.perms
 %doc CHANGELOG.txt LICENSE.txt doc/tsduck.pdf
 

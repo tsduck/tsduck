@@ -551,6 +551,9 @@
 #  TEXI2PDF_FLAGS
 #    Texi2dvi flags used in .texi to .pdf transformation.
 #
+#  UDEVDIR
+#    Name of the directory for system-defined udev rules.
+#
 #  USRLIBDIR
 #    Name of the library directory for the target architecture. This is
 #    $(SYSPREFIX)/lib64 for Linux x86_64 and $(SYSPREFIX)/lib elsewhere.
@@ -868,6 +871,7 @@ endif
 SYSPREFIX ?= $(if $(MACOS),/usr/local,/usr)
 ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
 USRLIBDIR ?= $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),$(SYSPREFIX)/lib,$(SYSPREFIX)/lib64)
+UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib/udev/rules.d)
 
 # RPM building.
 RPMBUILD     ?= rpmbuild
