@@ -26,16 +26,13 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a component_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsComponentDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 

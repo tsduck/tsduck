@@ -34,14 +34,15 @@
 
 #pragma once
 #include "tsAbstractDefinedByStandards.h"
-#include "tsDuckContext.h"
-#include "tsSection.h"
-#include "tsUString.h"
 #include "tsTablesPtr.h"
 #include "tsTLVSyntax.h"
 #include "tsxml.h"
 
 namespace ts {
+
+    class DuckContext;
+    class Section;
+
     //!
     //! Representation of MPEG PSI/SI tables in binary form (ie. list of sections).
     //! @ingroup mpeg

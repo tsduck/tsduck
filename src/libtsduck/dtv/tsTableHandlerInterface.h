@@ -33,10 +33,11 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsBinaryTable.h"
+#include "tsPlatform.h"
 
 namespace ts {
 
+    class BinaryTable;
     class SectionDemux;
 
     //!

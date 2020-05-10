@@ -29,6 +29,7 @@
 
 #include "tsPSIMerger.h"
 #include "tsCADescriptor.h"
+#include "tsTSPacket.h"
 TSDUCK_SOURCE;
 
 

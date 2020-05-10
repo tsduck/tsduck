@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for MPEG PSI/SI descriptors
-//
-//----------------------------------------------------------------------------
 
 #include "tsAbstractDescriptor.h"
 #include "tsDescriptor.h"

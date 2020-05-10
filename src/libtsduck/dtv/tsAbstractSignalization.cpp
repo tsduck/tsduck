@@ -28,6 +28,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractSignalization.h"
+#include "tsDuckContext.h"
+#include "tsByteBlock.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 

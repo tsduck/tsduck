@@ -29,6 +29,7 @@
 
 #include "tsCVCT.h"
 #include "tsPSIRepository.h"
+#include "tsDuckContext.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"CVCT"

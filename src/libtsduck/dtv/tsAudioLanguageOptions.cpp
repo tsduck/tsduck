@@ -26,12 +26,9 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Options to update the language of an audio stream in a PMT.
-//
-//----------------------------------------------------------------------------
 
 #include "tsAudioLanguageOptions.h"
+#include "tsDuckContext.h"
 TSDUCK_SOURCE;
 
 

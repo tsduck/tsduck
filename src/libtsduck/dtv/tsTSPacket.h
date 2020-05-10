@@ -53,8 +53,9 @@ namespace ts {
     //! For performance reason, there is no constructor. Uninitialized packets have undefined
     //! binary content.
     //!
-    struct TSDUCKDLL TSPacket
+    class TSDUCKDLL TSPacket
     {
+    public:
         //!
         //! The public content is the 188-byte array representing the TS packet.
         //!

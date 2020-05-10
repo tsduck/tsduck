@@ -26,15 +26,12 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  List of MPEG PSI/SI descriptors
-//
-//----------------------------------------------------------------------------
 
 #include "tsDescriptorList.h"
 #include "tsAbstractDescriptor.h"
 #include "tsAbstractTable.h"
 #include "tsPrivateDataSpecifierDescriptor.h"
+#include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 

@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsDescriptorList.h"
 TSDUCK_SOURCE;

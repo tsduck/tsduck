@@ -34,11 +34,11 @@
 
 #pragma once
 #include "tsDescriptor.h"
-#include "tsDuckContext.h"
 
 namespace ts {
 
     class AbstractTable;
+    class DuckContext;
 
     //!
     //! List of MPEG PSI/SI descriptors.

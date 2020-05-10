@@ -30,6 +30,7 @@
 #include "tsT2MIDemux.h"
 #include "tsT2MIPacket.h"
 #include "tsT2MIDescriptor.h"
+#include "tsBinaryTable.h"
 #include "tsPAT.h"
 TSDUCK_SOURCE;
 

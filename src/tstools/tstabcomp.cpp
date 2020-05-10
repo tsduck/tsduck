@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsSysUtils.h"
 #include "tsBinaryTable.h"
 #include "tsSectionFile.h"

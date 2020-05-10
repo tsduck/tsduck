@@ -26,13 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Packetization of MPEG sections into Transport Stream packets.
-//
-//----------------------------------------------------------------------------
 
 #include "tsPacketizer.h"
 #include "tsNullReport.h"
+#include "tsTSPacket.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 

@@ -33,6 +33,7 @@
 #include "tsSection.h"
 #include "tsDescriptor.h"
 #include "tsDescriptorList.h"
+#include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsIntegerUtils.h"
 TSDUCK_SOURCE;

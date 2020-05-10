@@ -28,6 +28,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsPESDemux.h"
+#include "tsBinaryTable.h"
+#include "tsTSPacket.h"
 #include "tsMemory.h"
 #include "tsPAT.h"
 #include "tsPMT.h"

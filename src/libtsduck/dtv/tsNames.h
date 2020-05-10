@@ -36,12 +36,14 @@
 #pragma once
 #include "tsUString.h"
 #include "tsCASFamily.h"
-#include "tsDuckContext.h"
 #include "tsMPEG.h"
 #include "tsReport.h"
 #include "tsSingletonManager.h"
 
 namespace ts {
+
+    class DuckContext;
+
     //!
     //! Namespace for functions returning MPEG/DVB names.
     //!

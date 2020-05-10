@@ -29,6 +29,8 @@
 
 #include "tsAbstractTable.h"
 #include "tsBinaryTable.h"
+#include "tsSection.h"
+#include "tsDuckContext.h"
 TSDUCK_SOURCE;
 
 

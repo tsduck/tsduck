@@ -34,6 +34,8 @@
 #include "tsSectionDemux.h"
 #include "tsStandaloneTableDemux.h"
 #include "tsOneShotPacketizer.h"
+#include "tsDuckContext.h"
+#include "tsTSPacket.h"
 #include "tsPAT.h"
 #include "tsCAT.h"
 #include "tsPMT.h"

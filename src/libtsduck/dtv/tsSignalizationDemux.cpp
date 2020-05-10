@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSignalizationDemux.h"
+#include "tsBinaryTable.h"
 TSDUCK_SOURCE;
 
 

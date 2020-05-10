@@ -34,11 +34,13 @@
 
 #pragma once
 #include "tsAbstractDefinedByStandards.h"
-#include "tsDuckContext.h"
-#include "tsByteBlock.h"
 #include "tsxml.h"
 
 namespace ts {
+
+    class DuckContext;
+    class ByteBlock;
+
     //!
     //! Abstract base class for MPEG PSI/SI tables and descriptors.
     //! @ingroup mpeg

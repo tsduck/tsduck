@@ -29,6 +29,7 @@
 
 #include "tsAbstractTransportListTable.h"
 #include "tsBinaryTable.h"
+#include "tsSection.h"
 #include "tsTablesDisplay.h"
 TSDUCK_SOURCE;
 

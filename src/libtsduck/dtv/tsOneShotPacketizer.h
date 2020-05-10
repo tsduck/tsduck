@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsCyclingPacketizer.h"
+#include "tsTSPacket.h"
 
 namespace ts {
     //!

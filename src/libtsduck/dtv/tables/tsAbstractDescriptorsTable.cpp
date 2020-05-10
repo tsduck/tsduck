@@ -26,13 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Base class for MPEG tables containing only a list of descriptors.
-//
-//----------------------------------------------------------------------------
 
 #include "tsAbstractDescriptorsTable.h"
 #include "tsBinaryTable.h"
+#include "tsSection.h"
 #include "tsTablesDisplay.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;

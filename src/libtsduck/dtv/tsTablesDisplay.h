@@ -37,7 +37,6 @@
 #include "tsMPEG.h"
 #include "tsCASFamily.h"
 #include "tsTLVSyntax.h"
-#include "tsDuckContext.h"
 
 namespace ts {
 
@@ -46,6 +45,7 @@ namespace ts {
     class Section;
     class Descriptor;
     class DescriptorList;
+    class DuckContext;
 
     //!
     //! A class to display PSI/SI tables.

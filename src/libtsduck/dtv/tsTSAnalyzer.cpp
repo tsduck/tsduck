@@ -26,13 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class analyzes a complete transport stream.
-//
-//----------------------------------------------------------------------------
 
 #include "tsTSAnalyzer.h"
 #include "tsT2MIPacket.h"
+#include "tsBinaryTable.h"
+#include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsAlgorithm.h"
 TSDUCK_SOURCE;

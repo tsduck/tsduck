@@ -26,15 +26,13 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  A class which scans the services of a transport stream.
-//
-//----------------------------------------------------------------------------
 
 #include "tsTSScanner.h"
+#include "tsBinaryTable.h"
 #include "tsTime.h"
 #include "tsTVCT.h"
 #include "tsCVCT.h"
+#include "tsDuckContext.h"
 TSDUCK_SOURCE;
 
 #define BUFFER_PACKET_COUNT  10000 // packets

@@ -33,10 +33,13 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTSPacket.h"
-#include "tsDuckContext.h"
+#include "tsMPEG.h"
 
 namespace ts {
+
+    class TSPacket;
+    class DuckContext;
+
     //!
     //! Abstract base class for all sorts of demux from TS packets.
     //!

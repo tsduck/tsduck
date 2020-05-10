@@ -33,6 +33,7 @@
 #include "tsxmlElement.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsDuckContext.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"cable_emergency_alert_table"

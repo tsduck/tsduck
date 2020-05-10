@@ -26,12 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class logs sections and tables.
-//
-//----------------------------------------------------------------------------
 
 #include "tsPSILogger.h"
+#include "tsDuckContext.h"
+#include "tsBinaryTable.h"
+#include "tsTSPacket.h"
 #include "tsNames.h"
 #include "tsPAT.h"
 TSDUCK_SOURCE;

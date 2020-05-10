@@ -36,6 +36,8 @@
 #include "tsTDT.h"
 #include "tsSysUtils.h"
 #include "tsBinaryTable.h"
+#include "tsDuckContext.h"
+#include "tsTSPacket.h"
 #include "tsCerrReport.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;

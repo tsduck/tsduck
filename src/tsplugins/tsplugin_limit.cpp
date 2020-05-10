@@ -35,6 +35,7 @@
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
+#include "tsBinaryTable.h"
 #include "tsMonotonic.h"
 #include "tsPAT.h"
 #include "tsPMT.h"

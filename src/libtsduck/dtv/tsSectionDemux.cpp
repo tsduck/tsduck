@@ -26,13 +26,12 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class rebuilds MPEG tables and sections from TS packets
-//
-//----------------------------------------------------------------------------
 
 #include "tsSectionDemux.h"
 #include "tsPSIRepository.h"
+#include "tsDuckContext.h"
+#include "tsBinaryTable.h"
+#include "tsTSPacket.h"
 #include "tsEIT.h"
 TSDUCK_SOURCE;
 
