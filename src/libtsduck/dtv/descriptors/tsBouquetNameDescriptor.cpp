@@ -26,15 +26,12 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a bouquet_name_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsBouquetNameDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 

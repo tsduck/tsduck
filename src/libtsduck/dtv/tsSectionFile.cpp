@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  XML files containing PSI/SI tables.
-//
-//----------------------------------------------------------------------------
 
 #include "tsSectionFile.h"
 #include "tsAbstractTable.h"
@@ -37,6 +33,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsDuckContext.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 

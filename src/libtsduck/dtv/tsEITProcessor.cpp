@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsEITProcessor.h"
+#include "tsDuckContext.h"
 #include "tsSection.h"
 #include "tsTime.h"
 #include "tsMJD.h"

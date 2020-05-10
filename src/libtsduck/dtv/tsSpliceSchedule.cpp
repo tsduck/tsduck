@@ -29,6 +29,7 @@
 
 #include "tsSpliceSchedule.h"
 #include "tsTablesDisplay.h"
+#include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;

@@ -29,6 +29,7 @@
 
 #include "tsMPEDemux.h"
 #include "tsMPEPacket.h"
+#include "tsBinaryTable.h"
 #include "tsPAT.h"
 #include "tsDataBroadcastIdDescriptor.h"
 #include "tsIPMACStreamLocationDescriptor.h"

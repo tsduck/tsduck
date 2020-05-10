@@ -34,12 +34,14 @@
 
 #pragma once
 #include "tsMPEG.h"
-#include "tsTSPacket.h"
 #include "tsSectionProviderInterface.h"
 #include "tsReport.h"
-#include "tsDuckContext.h"
 
 namespace ts {
+
+    class TSPacket;
+    class DuckContext;
+
     //!
     //! Packetization of MPEG sections into Transport Stream packets.
     //! @ingroup mpeg

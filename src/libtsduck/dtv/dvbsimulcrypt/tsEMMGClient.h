@@ -43,10 +43,11 @@
 #include "tsCondition.h"
 #include "tsMutex.h"
 #include "tsThread.h"
-#include "tsMessageQueue.h"
-#include "tsDuckContext.h"
 
 namespace ts {
+
+    class DuckContext;
+
     //!
     //! A DVB-EMMG client which connects to any MUX to inject data.
     //!

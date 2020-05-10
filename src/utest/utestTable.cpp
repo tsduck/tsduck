@@ -47,6 +47,8 @@
 #include "tsEacemPreferredNameIdentifierDescriptor.h"
 #include "tsLogicalChannelNumberDescriptor.h"
 #include "tsEutelsatChannelNumberDescriptor.h"
+#include "tsDuckContext.h"
+#include "tsTSPacket.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
 

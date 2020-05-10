@@ -35,6 +35,7 @@
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsCASSelectionArgs.h"
+#include "tsBinaryTable.h"
 #include "tsSectionDemux.h"
 #include "tsDescriptorList.h"
 #include "tsPIDOperator.h"

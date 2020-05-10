@@ -34,8 +34,8 @@
 
 #pragma once
 #include "tsAbstractSignalization.h"
-#include "tsDuckContext.h"
 #include "tsTablesPtr.h"
+#include "tsByteBlock.h"
 #include "tsMPEG.h"
 
 namespace ts {

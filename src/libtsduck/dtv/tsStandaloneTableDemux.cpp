@@ -26,12 +26,9 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  A SectionDemux which extracts MPEG tables without external handler.
-//
-//----------------------------------------------------------------------------
 
 #include "tsStandaloneTableDemux.h"
+#include "tsBinaryTable.h"
 TSDUCK_SOURCE;
 
 

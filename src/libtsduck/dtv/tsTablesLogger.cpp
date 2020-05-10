@@ -26,16 +26,14 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class logs sections and tables.
-//
-//----------------------------------------------------------------------------
 
 #include "tsTablesLogger.h"
 #include "tsTablesLoggerFilterRepository.h"
+#include "tsBinaryTable.h"
 #include "tsPAT.h"
 #include "tstlv.h"
 #include "tsTime.h"
+#include "tsDuckContext.h"
 #include "tsSimulCryptDate.h"
 #include "tsDuckProtocol.h"
 #include "tsxmlComment.h"

@@ -36,6 +36,7 @@
 #include "tsInputRedirector.h"
 #include "tsPagerArgs.h"
 #include "tsPSILogger.h"
+#include "tsTSPacket.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 

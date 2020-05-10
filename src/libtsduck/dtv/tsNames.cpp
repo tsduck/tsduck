@@ -29,6 +29,7 @@
 
 #include "tsNames.h"
 #include "tsMPEG.h"
+#include "tsDuckContext.h"
 #include "tsSysUtils.h"
 #include "tsFatal.h"
 #include "tsCerrReport.h"

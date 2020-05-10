@@ -35,11 +35,13 @@
 #pragma once
 #include "tsByteBlock.h"
 #include "tsTablesPtr.h"
-#include "tsDuckContext.h"
 #include "tsEDID.h"
 #include "tsxml.h"
 
 namespace ts {
+
+    class DuckContext;
+
     //!
     //! Representation of a MPEG PSI/SI descriptors in binary format.
     //! @ingroup mpeg

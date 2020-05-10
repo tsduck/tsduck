@@ -32,7 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsSectionFile.h"
+#include "tsTSPacket.h"
 #include "tsFileNameRate.h"
 #include "tsOutputRedirector.h"
 #include "tsCyclingPacketizer.h"

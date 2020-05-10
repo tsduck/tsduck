@@ -26,13 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of MPEG PSI/SI sections
-//
-//----------------------------------------------------------------------------
 
 #include "tsSection.h"
 #include "tsPSIRepository.h"
+#include "tsDuckContext.h"
 #include "tsCRC32.h"
 #include "tsNames.h"
 #include "tsMemory.h"

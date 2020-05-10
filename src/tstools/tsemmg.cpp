@@ -32,12 +32,14 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsIntegerUtils.h"
 #include "tsEMMGClient.h"
 #include "tsUDPSocket.h"
 #include "tsPacketizer.h"
 #include "tsMonotonic.h"
 #include "tsSectionFile.h"
+#include "tsTSPacket.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 

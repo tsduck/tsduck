@@ -36,7 +36,6 @@
 #include "tsAbstractDemux.h"
 #include "tsTableHandlerInterface.h"
 #include "tsSectionHandlerInterface.h"
-#include "tsDuckContext.h"
 #include "tsETID.h"
 
 namespace ts {

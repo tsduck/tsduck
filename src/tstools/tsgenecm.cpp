@@ -32,10 +32,12 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsECMGClient.h"
 #include "tsECMGSCS.h"
 #include "tsStandaloneTableDemux.h"
 #include "tsSectionFile.h"
+#include "tsTSPacket.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 

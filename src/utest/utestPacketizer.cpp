@@ -34,6 +34,8 @@
 #include "tsPacketizer.h"
 #include "tsCyclingPacketizer.h"
 #include "tsStandaloneTableDemux.h"
+#include "tsDuckContext.h"
+#include "tsTSPacket.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsSDT.h"

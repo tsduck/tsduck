@@ -26,16 +26,14 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class maps PID's with CA system ids.
-//
-//----------------------------------------------------------------------------
 
 #include "tsCASMapper.h"
+#include "tsBinaryTable.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsCAT.h"
 #include "tsNames.h"
+#include "tsDuckContext.h"
 TSDUCK_SOURCE;
 
 

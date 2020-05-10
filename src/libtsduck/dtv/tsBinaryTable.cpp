@@ -26,15 +26,13 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of MPEG PSI/SI tables in binary form (ie. list of sections)
-//
-//----------------------------------------------------------------------------
 
 #include "tsBinaryTable.h"
 #include "tsReportWithPrefix.h"
 #include "tsAbstractTable.h"
 #include "tsPSIRepository.h"
+#include "tsDuckContext.h"
+#include "tsSection.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
