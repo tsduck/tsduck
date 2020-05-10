@@ -100,6 +100,9 @@ ts::TeletextPlugin::TeletextPlugin(TSP* tsp_) :
     _srtOutput(),
     _pages()
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"colors", 'c');
     help(u"colors",
          u"Add font color tags in the subtitles. By default, no color is specified.");
@@ -151,6 +154,7 @@ ts::TeletextPlugin::TeletextPlugin(TSP* tsp_) :
 bool ts::TeletextPlugin::start()
 {
     // Get command line arguments.
+    duck.loadArgs(*this);
     _service.set(value(u"service"));
     _pid = intValue<PID>(u"pid", PID_NULL);
     _page = intValue<int>(u"page", -1);

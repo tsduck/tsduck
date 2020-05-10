@@ -59,6 +59,9 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP* tsp_, const UString& descripti
     _ecm_thread(this),
     _stop_thread(false)
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     // Generic scrambling options.
     _scrambling.defineArgs(*this);
 
@@ -104,7 +107,7 @@ bool ts::AbstractDescrambler::getOptions()
     _synchronous = present(u"synchronous") || !tsp->realtime();
     _swap_cw = present(u"swap-cw");
     getIntValues(_pids, u"pid");
-    if (!_scrambling.loadArgs(duck, *this)) {
+    if (!duck.loadArgs(*this) || !_scrambling.loadArgs(duck, *this)) {
         return false;
     }
 

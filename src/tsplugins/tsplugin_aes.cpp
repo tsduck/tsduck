@@ -121,6 +121,9 @@ ts::AESPlugin::AESPlugin(TSP* tsp_) :
     _service(),
     _demux(duck, this)
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"", 0, STRING, 0, 1);
     help(u"",
          u"Specifies the service to scramble. If the argument is an integer value "
@@ -194,6 +197,7 @@ ts::AESPlugin::AESPlugin(TSP* tsp_) :
 
 bool ts::AESPlugin::getOptions()
 {
+    duck.loadArgs(*this);
     _descramble = present(u"descramble");
     getIntValues(_scrambled, u"pid");
     if (present(u"")) {

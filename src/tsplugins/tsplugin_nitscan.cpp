@@ -121,6 +121,9 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
     _update_channel_file(false),
     _default_channel_file(false)
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"all-nits", 'a');
     help(u"all-nits",
          u"Analyze all NIT's (NIT actual and NIT other). By default, only the "
@@ -190,6 +193,7 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
 bool ts::NITScanPlugin::getOptions()
 {
     // Get option values
+    duck.loadArgs(*this);
     _output_name = value(u"output-file");
     _all_nits = present(u"all-nits");
     _terminate = present(u"terminate");

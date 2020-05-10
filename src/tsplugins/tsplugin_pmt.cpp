@@ -145,6 +145,9 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     _add_pid_descs(),
     _languages()
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"ac3-atsc2dvb");
     help(u"ac3-atsc2dvb",
          u"Change the description of AC-3 audio streams from ATSC to DVB method. "
@@ -374,6 +377,7 @@ bool ts::PMTPlugin::start()
     _add_pid_descs.clear();
 
     // Get option values
+    duck.loadArgs(*this);
     _set_servid = present(u"new-service-id");
     _new_servid = intValue<uint16_t>(u"new-service-id");
     _set_pcrpid = present(u"pcr-pid");

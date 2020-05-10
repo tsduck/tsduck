@@ -268,6 +268,9 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     _scrambling(*tsp),
     _pzer_pmt(duck)
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"", 0, STRING, 0, 1);
     help(u"",
          u"Specifies the optional service to scramble. If no service is specified, a "
@@ -355,6 +358,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
 bool ts::ScramblerPlugin::getOptions()
 {
     // Plugin parameters.
+    duck.loadArgs(*this);
     _use_service = present(u"");
     _service.set(value(u""));
     getIntValues(_scrambled_pids, u"pid");

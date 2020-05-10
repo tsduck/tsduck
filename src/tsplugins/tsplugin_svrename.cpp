@@ -114,6 +114,9 @@ ts::SVRenamePlugin::SVRenamePlugin(TSP* tsp_) :
     _pzer_nit(duck, PID_NIT, CyclingPacketizer::ALWAYS),
     _eit_process(duck, PID_EIT)
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"", 0, STRING, 0, 1);
     help(u"",
          u"Specifies the service to rename. If the argument is an integer value "
@@ -161,6 +164,7 @@ ts::SVRenamePlugin::SVRenamePlugin(TSP* tsp_) :
 bool ts::SVRenamePlugin::start()
 {
     // Get option values
+    duck.loadArgs(*this);
     _old_service.set(value(u""));
     _ignore_bat = present(u"ignore-bat");
     _ignore_eit = present(u"ignore-eit");

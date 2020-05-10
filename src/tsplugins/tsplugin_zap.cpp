@@ -157,6 +157,9 @@ ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
     _eit_process(duck, PID_EIT),
     _pid_state()
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"", 0, STRING, 1, 1);
     help(u"",
          u"Specifies the service to keep. If the argument is an integer value (either "
@@ -225,6 +228,8 @@ ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
 
 bool ts::ZapPlugin::getOptions()
 {
+    duck.loadArgs(*this);
+
     if (present(u"audio") + present(u"audio-pid") > 1) {
         tsp->error(u"options --audio and --audio-pid are mutually exclusive");
         return false;

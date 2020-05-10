@@ -82,6 +82,9 @@ ts::SDTPlugin::SDTPlugin(TSP* tsp_) :
     _remove_serv(),
     _cleanup_priv_desc(false)
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"cleanup-private-descriptors");
     help(u"cleanup-private-descriptors",
          u"Remove all private descriptors without preceding private_data_specifier descriptor.");
@@ -152,6 +155,7 @@ ts::SDTPlugin::SDTPlugin(TSP* tsp_) :
 bool ts::SDTPlugin::start()
 {
     // Get option values
+    duck.loadArgs(*this);
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
     _use_other = present(u"other");
     _other_ts_id = intValue<uint16_t>(u"other");

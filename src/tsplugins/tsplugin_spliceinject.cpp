@@ -263,6 +263,9 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
     _wfb_mutex(),
     _wfb_condition()
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     setIntro(u"The splice commands are injected as splice information sections, as defined by "
              u"the SCTE 35 standard. All forms of splice information sections can be injected. "
              u"The sections shall be provided by some external equipment, in real time. The "
@@ -394,6 +397,7 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
 bool ts::SpliceInjectPlugin::start()
 {
     // Decode command line options.
+    duck.loadArgs(*this);
     _files = value(u"files");
     const UString udpName(value(u"udp"));
     _service.set(value(u"service"));
