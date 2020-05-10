@@ -408,6 +408,37 @@ namespace ts {
         //!
         bool loadArgs(Args& args);
 
+        //!
+        //! An opaque class to save all command line options, as loaded by loadArgs().
+        //!
+        class TSDUCKDLL SavedArgs
+        {
+        public:
+            //! Default constructor.
+            SavedArgs();
+        private:
+            friend class DuckContext;
+            int       _definedCmdOptions; // Defined command line options, indicate which fields are valid.
+            Standards _cmdStandards;      // Forced standards from the command line.
+            UString   _charsetInName;     // Character set to interpret strings without prefix code.
+            UString   _charsetOutName;    // Preferred character set to generate strings.
+            uint16_t  _casId;             // Preferred CAS id.
+            PDS       _defaultPDS;        // Default PDS value if undefined.
+            UString   _hfDefaultRegion;   // Default region for UHF/VHF band.
+        };
+
+        //!
+        //! Save all command line options, as loaded by loadArgs().
+        //! @param [out] args Saved arguments.
+        //!
+        void saveArgs(SavedArgs& args) const;
+
+        //!
+        //! Restore all command line options, as loaded by loadArgs() in another DuckContext.
+        //! @param [in] args Saved arguments to restore.
+        //!
+        void restoreArgs(const SavedArgs& args);
+
     private:
         Report*        _report;            // Pointer to a report for error messages. Never null.
         std::ostream*  _initial_out;       // Initial text output stream. Never null.
@@ -419,7 +450,7 @@ namespace ts {
         PDS            _defaultPDS;        // Default PDS value if undefined.
         Standards      _cmdStandards;      // Forced standards from the command line.
         Standards      _accStandards;      // Accumulated list of standards in the context.
-        UString        _hfDefaultRegion;   // Default region for UHF/VHF band. Empty until used for the first time.
+        UString        _hfDefaultRegion;   // Default region for UHF/VHF band.
         int            _definedCmdOptions; // Defined command line options.
         const std::map<uint16_t, const UChar*> _predefined_cas;  // Predefined CAS names, index by CAS id (first in range).
 

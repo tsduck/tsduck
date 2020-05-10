@@ -457,8 +457,14 @@ bool ts::DuckContext::loadArgs(Args& args)
         }
         else {
             const UString name(args.value(u"default-charset"));
-            if (!name.empty() && (_charsetIn = _charsetOut = DVBCharTable::GetCharset(name)) == nullptr) {
-                args.error(u"invalid character set name '%s", {name});
+            if (!name.empty()) {
+                const Charset* cset = DVBCharTable::GetCharset(name);
+                if (cset == nullptr) {
+                    args.error(u"invalid character set name '%s'", {name});
+                }
+                else {
+                    _charsetIn = _charsetOut = cset;
+                }
             }
         }
     }
@@ -468,8 +474,9 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (args.present(u"japan")) {
             _hfDefaultRegion = u"japan";
         }
-        // Keep previous value unchanged if unspecified.
-        args.getValue(_hfDefaultRegion, u"hf-band-region", _hfDefaultRegion.c_str());
+        else if (args.present(u"hf-band-region")) {
+            args.getValue(_hfDefaultRegion, u"hf-band-region");
+        }
     }
 
     // Options relating to default standards.
@@ -508,4 +515,55 @@ bool ts::DuckContext::loadArgs(Args& args)
     _accStandards |= _cmdStandards;
 
     return args.valid();
+}
+
+
+//----------------------------------------------------------------------------
+// An opaque class to save all command line options, as loaded by loadArgs().
+//----------------------------------------------------------------------------
+
+ts::DuckContext::SavedArgs::SavedArgs() :
+    _definedCmdOptions(0),
+    _cmdStandards(STD_NONE),
+    _charsetInName(),
+    _charsetOutName(),
+    _casId(CASID_NULL),
+    _defaultPDS(0),
+    _hfDefaultRegion()
+{
+}
+
+void ts::DuckContext::saveArgs(SavedArgs& args) const
+{
+    args._definedCmdOptions = _definedCmdOptions;
+    args._cmdStandards = _cmdStandards;
+    args._charsetInName = _charsetIn->name();
+    args._charsetOutName = _charsetOut->name();
+    args._casId = _casId;
+    args._defaultPDS = _defaultPDS;
+    args._hfDefaultRegion = _hfDefaultRegion;
+}
+
+void ts::DuckContext::restoreArgs(const SavedArgs& args)
+{
+    if (args._definedCmdOptions & CMD_STANDARDS) {
+        // Reset accumulated standards if a list of standards was saved.
+        _accStandards = _cmdStandards = args._cmdStandards;
+    }
+    if (args._definedCmdOptions & CMD_CHARSET) {
+        const Charset* in = DVBCharTable::GetCharset(args._charsetInName);
+        const Charset* out = DVBCharTable::GetCharset(args._charsetOutName);
+        if (in != nullptr) {
+            _charsetIn = in;
+        }
+        if (out != nullptr) {
+            _charsetOut = out;
+        }
+    }
+    if (_definedCmdOptions & CMD_CAS) {
+        _casId = args._casId;
+    }
+    if (_definedCmdOptions & CMD_HF_REGION) {
+        _hfDefaultRegion = args._hfDefaultRegion;
+    }
 }

@@ -72,6 +72,7 @@ ts::TSProcessorArgs::TSProcessorArgs() :
     control_reuse(false),
     control_sources(),
     control_timeout(DEF_CONTROL_TIMEOUT),
+    duck_args(),
     input(),
     plugins(),
     output()
@@ -280,6 +281,9 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
         output.set(u"file");
         plugins.clear();
     }
+
+    // Get default options for TSDuck contexts in each plugin.
+    duck.saveArgs(duck_args);
 
     return args.valid();
 }

@@ -58,6 +58,11 @@ ts::tsp::PluginExecutor::PluginExecutor(const TSProcessorArgs& options,
     _restart(false),
     _restart_data()
 {
+    // Preset common default options.
+    if (plugin() != nullptr) {
+        plugin()->resetContext(options.duck_args);
+    }
+
 }
 
 ts::tsp::PluginExecutor::~PluginExecutor()
@@ -282,6 +287,9 @@ bool ts::tsp::PluginExecutor::processPendingRestart()
 
     // First, stop the current execution.
     plugin()->stop();
+
+    // Reset the execution context to cleanup previous plugin-specific options or accumulated data.
+    plugin()->resetContext(_options.duck_args);
 
     // Redirect error messages from command line analysis to the remote tspcontrol.
     Report* previous_report = plugin()->redirectReport(&_restart_data->report);
