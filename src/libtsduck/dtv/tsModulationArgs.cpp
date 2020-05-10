@@ -747,7 +747,6 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
                     switch (data[6] & 0x03) {
                         case 0: modulation = QAM_AUTO; break;
                         case 1: modulation = QPSK; break;
-                        case 8: modulation.reset(); break;
                         // ??? case 8: modulation = PSK_8; break;
                         // 8  = "ISDB-S system (refer to TMCC signal)", TC8PSK?, is this the same as PSK_8?
                         // 9  = 2.6GHz band digital satellite sound broadcasting

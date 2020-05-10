@@ -650,6 +650,16 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
             elem->getOptionalIntEnumAttribute(mod.guard_interval, GuardIntervalEnum, u"guard") &&
             elem->getOptionalIntEnumAttribute(mod.inversion, SpectralInversionEnum, u"inversion");
     }
+    else if (elem->name().similar(u"isdbs")) {
+        mod.delivery_system = DS_ISDB_S;
+        return
+            elem->getOptionalIntAttribute<size_t>(mod.satellite_number, u"satellite", 0, 3) &&
+            elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
+            elem->getVariableIntAttribute<uint32_t>(mod.symbol_rate, u"symbolrate", false, 27500000) &&
+            elem->getOptionalIntEnumAttribute(mod.inner_fec, InnerFECEnum, u"FEC") &&
+            elem->getOptionalIntEnumAttribute(mod.inversion, SpectralInversionEnum, u"inversion") &&
+            elem->getOptionalIntEnumAttribute(mod.polarity, PolarizationEnum, u"polarity");
+    }
     else {
         // Not a valid modulation parameters node.
         return false;
@@ -770,7 +780,24 @@ ts::xml::Element* ts::ChannelFile::toXML(const ModulationArgs& mod, xml::Element
             }
             return e;
         }
-        case TT_ISDB_S:
+        case TT_ISDB_S: {
+            xml::Element* e = parent->addElement(u"isdbs");
+            if (mod.satellite_number != 0) {
+                e->setOptionalIntAttribute(u"satellite", mod.satellite_number, false);
+            }
+            e->setOptionalIntAttribute(u"frequency", mod.frequency, false);
+            e->setOptionalIntAttribute(u"symbolrate", mod.symbol_rate, false);
+            if (mod.polarity != POL_AUTO) {
+                e->setOptionalEnumAttribute(PolarizationEnum, u"polarity", mod.polarity);
+            }
+            if (mod.inversion != SPINV_AUTO) {
+                e->setOptionalEnumAttribute(SpectralInversionEnum, u"inversion", mod.inversion);
+            }
+            if (mod.inner_fec != FEC_AUTO) {
+                e->setOptionalEnumAttribute(InnerFECEnum, u"FEC", mod.inner_fec);
+            }
+            return e;
+        }
         case TT_ISDB_C:
         case TT_UNDEFINED:
         default: {
