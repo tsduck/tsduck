@@ -456,11 +456,12 @@ namespace ts {
 
         //!
         //! Fill modulation parameters from a delivery system descriptor.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] desc A descriptor. Must be a valid delivery system descriptor.
         //! @return True on success, false if the descriptor was not correctly analyzed or is not
         //! a delivery system descriptor.
         //!
-        bool fromDeliveryDescriptor(const Descriptor& desc);
+        bool fromDeliveryDescriptor(DuckContext& duck, const Descriptor& desc);
 
         //!
         //! Attempt to get a "modulation type" for Dektec modulator cards.

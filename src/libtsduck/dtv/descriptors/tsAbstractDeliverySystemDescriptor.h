@@ -48,9 +48,10 @@ namespace ts {
     public:
         //!
         //! Get the delivery system.
+        //! @param [in] duck TSDuck execution context.
         //! @return The delivery system.
         //!
-        virtual DeliverySystem deliverySystem() const;
+        virtual DeliverySystem deliverySystem(const DuckContext& duck) const;
 
         //!
         //! Virtual destructor
