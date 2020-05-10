@@ -111,6 +111,17 @@ ts::TSPacketMetadata::LabelSet ts::ProcessorPlugin::getOnlyLabelOption() const
 
 
 //----------------------------------------------------------------------------
+// Reset the internal TSDuck execution context of this plugin.
+//----------------------------------------------------------------------------
+
+void ts::Plugin::resetContext(const DuckContext::SavedArgs& state)
+{
+    duck.reset();
+    duck.restoreArgs(state);
+}
+
+
+//----------------------------------------------------------------------------
 // Default implementations of virtual methods.
 //----------------------------------------------------------------------------
 

@@ -82,6 +82,11 @@ TSPOptions::TSPOptions(int argc, char *argv[]) :
               u"    [-P processor-name [processor-options]] ... \\\n"
               u"    [-O output-name [output-options]]");
 
+    duck.defineArgsForCAS(*this);
+    duck.defineArgsForCharset(*this);
+    duck.defineArgsForHFBand(*this);
+    duck.defineArgsForPDS(*this);
+    duck.defineArgsForStandards(*this);
     log_args.defineArgs(*this);
     tsp_args.defineArgs(*this);
 
@@ -93,6 +98,7 @@ TSPOptions::TSPOptions(int argc, char *argv[]) :
 
     // Load option values.
     list_proc_flags = present(u"list-processors") ? intValue<int>(u"list-processors", ts::PluginRepository::LIST_ALL) : 0;
+    duck.loadArgs(*this);
     log_args.loadArgs(duck, *this);
     tsp_args.loadArgs(duck, *this);
 

@@ -35,6 +35,7 @@
 #pragma once
 #include "tsArgsSupplierInterface.h"
 #include "tsPluginOptions.h"
+#include "tsDuckContext.h"
 #include "tsIPAddress.h"
 
 namespace ts {
@@ -66,9 +67,10 @@ namespace ts {
         bool            control_reuse;    //!< Set the 'reuse port' socket option on the control TCP server port.
         IPAddressVector control_sources;  //!< Remote IP addresses which are allowed to send control commands.
         MilliSecond     control_timeout;  //!< Reception timeout in milliseconds for control commands.
-        PluginOptions       input;        //!< Input plugin description.
-        PluginOptionsVector plugins;      //!< Packet processor plugins descriptions.
-        PluginOptions       output;       //!< Output plugin description.
+        DuckContext::SavedArgs duck_args; //!< Default TSDuck context options for all plugins. Each plugin can override them in its context.
+        PluginOptions          input;     //!< Input plugin description.
+        PluginOptionsVector    plugins;   //!< Packet processor plugins descriptions.
+        PluginOptions          output;    //!< Output plugin description.
 
         static constexpr size_t DEFAULT_BUFFER_SIZE = 16 * 1000000;  //!< Default size in bytes of global TS buffer.
         static constexpr size_t MIN_BUFFER_SIZE = 18800;             //!< Minimum size in bytes of global TS buffer.

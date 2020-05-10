@@ -332,6 +332,14 @@ namespace ts {
         //!
         virtual bool handlePacketTimeout();
 
+        //!
+        //! Reset the internal TSDuck execution context of this plugin.
+        //! This can be done to set default option values before getOptions() and start().
+        //! This can also be done between stop() and start() to enforce a clean restart.
+        //! @param [in] state Initial state to set or restore.
+        //!
+        void resetContext(const DuckContext::SavedArgs& state);
+
     protected:
         TSP*        tsp;   //!< The TSP callback structure can be directly accessed by subclasses.
         DuckContext duck;  //!< The TSDuck context with various MPEG/DV features.
