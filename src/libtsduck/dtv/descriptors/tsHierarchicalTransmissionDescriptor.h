@@ -28,20 +28,46 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an ISDB hierarchical_transmission_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 21
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1780
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of an ISDB hierarchical_transmission_descriptor.
+    //! @see ARIB STD-B10, Part 2, 6.2.22
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL HierarchicalTransmissionDescriptor : public AbstractDescriptor
+    {
+    public:
+        // HierarchicalTransmissionDescriptor public members:
+        bool high_quality;   //!< True when high quality, false for low quality.
+        PID  reference_PID;  //!< Reference PID.
+
+        //!
+        //! Default constructor.
+        //!
+        HierarchicalTransmissionDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        HierarchicalTransmissionDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+    };
+}
