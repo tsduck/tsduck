@@ -867,6 +867,10 @@
         AVC_still_present="bool, required"
         AVC_24_hour_picture="bool, required"/>
 
+    <board_information_descriptor
+        title="string, required"
+        text="string, required"/>
+
     <bouquet_name_descriptor bouquet_name="string, required"/>
 
     <broadcaster_name_descriptor name="string, required"/>
@@ -1363,6 +1367,21 @@
                eutelsat_channel_number="uint10, required"/>
     </eutelsat_channel_number_descriptor>
 
+    <event_group_descriptor group_type="uint4, required">
+      <!-- One per event in actual network -->
+      <actual service_id="uint16, required"
+              event_id="uint16, required"/>
+      <!-- One per event in other networks (group_type == 4 or 5) -->
+      <other original_network_id="uint16, required"
+             transport_stream_id="uint16, required"
+             service_id="uint16, required"
+             event_id="uint16, required"/>
+      <!-- Optional private data for other group types -->
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </event_group_descriptor>
+
     <extended_broadcaster_descriptor
         broadcaster_type="uint4, required"
         terrestrial_broadcaster_id="uint16, optional">
@@ -1475,6 +1494,10 @@
         HDR_WCG_idc="uint2, default=3"
         temporal_id_min="uint3, optional, specify both min and max or none"
         temporal_id_max="uint3, optional, specify both min and max or none"/>
+
+    <hierarchical_transmission_descriptor
+        high_quality="bool, required"
+        reference_PID="uint13, required"/>
 
     <hierarchy_descriptor
         temporal_scalability="bool, required"
@@ -1982,6 +2005,17 @@
         Hexadecimal content (table description bytes)
       </table>
     </SI_parameter_descriptor>
+
+    <SI_prime_TS_descriptor
+        parameter_version="uint8, required"
+        update_time="YYYY-MM-DD, required"
+        SI_prime_TS_network_id="uint16, required"
+        SI_prime_transport_stream_id="uint16, required">
+      <!-- One per SI table -->
+      <table id="uint8, required">
+        Hexadecimal content (table description bytes)
+      </table>
+    </SI_prime_TS_descriptor>
 
     <simple_application_boundary_descriptor>
       <!-- Must be in an AIT (table id 0x74) -->

@@ -76,7 +76,7 @@
 
   <hfband type="UHF">
     <region name="japan"/>
-    <channels first_channel="13" last_channel="62" base_frequency="473,000,000" channel_width="6,000,000"/>
+    <channels first_channel="13" last_channel="62" base_frequency="473,142,857" channel_width="6,000,000"/>
   </hfband>
 
 </tsduck>

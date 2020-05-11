@@ -3992,3 +3992,13 @@ Bits = 4
 9  = 2.6GHz band digital satellite sound broadcasting
 10 = Advanced narrow-band CS digital broadcasting
 15 = none
+
+[ISDBEventGroupType]
+# In ISDB event_group_descriptor
+Bits = 4
+0 = undefined
+1 = Event common
+2 = Event relay
+3 = Event movement
+4 = Event relay to other networks
+5 = Event movement from other networks

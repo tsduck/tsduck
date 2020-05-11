@@ -53,6 +53,7 @@
     REF_TYPE(AudioStreamDescriptor);
     REF_TYPE(AVCTimingAndHRDDescriptor);
     REF_TYPE(AVCVideoDescriptor);
+    REF_TYPE(BoardInformationDescriptor);
     REF_TYPE(BouquetNameDescriptor);
     REF_TYPE(BroadcasterNameDescriptor);
     REF_TYPE(C2BundleDeliverySystemDescriptor);
@@ -111,6 +112,7 @@
     REF_TYPE(EASMetadataDescriptor);
     REF_TYPE(ECMRepetitionRateDescriptor);
     REF_TYPE(EutelsatChannelNumberDescriptor);
+    REF_TYPE(EventGroupDescriptor);
     REF_TYPE(ExtendedBroadcasterDescriptor);
     REF_TYPE(ExtendedChannelNameDescriptor);
     REF_TYPE(ExtendedEventDescriptor);
@@ -125,6 +127,7 @@
     REF_TYPE(HDSimulcastLogicalChannelDescriptor);
     REF_TYPE(HEVCTimingAndHRDDescriptor);
     REF_TYPE(HEVCVideoDescriptor);
+    REF_TYPE(HierarchicalTransmissionDescriptor);
     REF_TYPE(HierarchyDescriptor);
     REF_TYPE(IBPDescriptor);
     REF_TYPE(ImageIconDescriptor);
@@ -192,6 +195,7 @@
     REF_TYPE(SimpleApplicationBoundaryDescriptor);
     REF_TYPE(SimpleApplicationLocationDescriptor);
     REF_TYPE(SIParameterDescriptor);
+    REF_TYPE(SIPrimeTSDescriptor);
     REF_TYPE(SkyLogicalChannelNumberDescriptor);
     REF_TYPE(SLDescriptor);
     REF_TYPE(SmoothingBufferDescriptor);
