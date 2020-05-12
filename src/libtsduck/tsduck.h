@@ -158,6 +158,7 @@
 #include "tsDataBroadcastDescriptor.h"
 #include "tsDataBroadcastIdDescriptor.h"
 #include "tsDataComponentDescriptor.h"
+#include "tsDataContentDescriptor.h"
 #include "tsDataStreamAlignmentDescriptor.h"
 #include "tsDCCArrivingRequestDescriptor.h"
 #include "tsDCCDepartingRequestDescriptor.h"

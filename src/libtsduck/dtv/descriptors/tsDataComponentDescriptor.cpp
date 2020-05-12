@@ -121,9 +121,7 @@ void ts::DataComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 void ts::DataComponentDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"data_component_id", data_component_id, true);
-    if (!additional_data_component_info.empty()) {
-        root->addElement(u"additional_data_component_info")->addHexaText(additional_data_component_info);
-    }
+    root->addHexaTextChild(u"additional_data_component_info", additional_data_component_info, true);
 }
 
 
