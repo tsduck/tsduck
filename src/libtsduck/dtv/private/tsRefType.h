@@ -83,6 +83,7 @@
     REF_TYPE(DataBroadcastDescriptor);
     REF_TYPE(DataBroadcastIdDescriptor);
     REF_TYPE(DataComponentDescriptor);
+    REF_TYPE(DataContentDescriptor);
     REF_TYPE(DataStreamAlignmentDescriptor);
     REF_TYPE(DCCArrivingRequestDescriptor);
     REF_TYPE(DCCDepartingRequestDescriptor);

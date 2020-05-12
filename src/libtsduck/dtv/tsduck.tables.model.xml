@@ -1085,6 +1085,16 @@
       </additional_data_component_info>
     </data_component_descriptor>
 
+    <data_content_descriptor
+        data_component_id="uint16, required"
+        entry_component="uint8, required"
+        ISO_639_language_code="char3, required"
+        text="string, required">
+      <selector_bytes>Hexadecimal content</selector_bytes>
+      <!-- One per component_ref -->
+      <component ref="uint8, required"/>
+    </data_content_descriptor>
+
     <data_stream_alignment_descriptor alignment_type="uint8, required"/>
 
     <dcc_arriving_request_descriptor dcc_arriving_request_type="uint8, required">
