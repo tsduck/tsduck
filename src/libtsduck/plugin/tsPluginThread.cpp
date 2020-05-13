@@ -113,7 +113,18 @@ ts::PluginThread::~PluginThread()
 
 
 //----------------------------------------------------------------------------
-// Invoked by shared library to log messages. Inherited from Report (via TSP).
+// Get the plugin name. Inherited from TSP.
+//----------------------------------------------------------------------------
+
+ts::UString ts::PluginThread::pluginName() const
+{
+    return _name;
+}
+
+
+//----------------------------------------------------------------------------
+// Invoked by the plugin shared library to log messages.
+// Inherited from Report via TSP.
 //----------------------------------------------------------------------------
 
 void ts::PluginThread::writeLog(int severity, const UString& msg)

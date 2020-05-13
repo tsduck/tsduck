@@ -68,10 +68,7 @@ namespace ts {
         //! Change the report object.
         //! @param [in] rep Address of new report instance.
         //!
-        void setReport(Report* rep)
-        {
-            _report = rep;
-        }
+        void setReport(Report* rep) { _report = rep; }
 
         //!
         //! Plugin stack size overhead.
@@ -84,20 +81,7 @@ namespace ts {
         //! Access the shared library API.
         //! @return Address of the plugin interface.
         //!
-        Plugin* plugin() const
-        {
-            return _shlib;
-        }
-
-        //!
-        //! Get the plugin name.
-        //! @return The plugin name.
-        //!
-        UString pluginName() const
-        {
-            return _name;
-        }
-
+        Plugin* plugin() const { return _shlib; }
 
         //!
         //! Set the plugin name as displayed in log messages.
@@ -105,19 +89,19 @@ namespace ts {
         //! @param [in] name The name to use in log messages.
         //! When empty, revert to the real plugin name.
         //!
-        void setLogName(const UString& name)
-        {
-            _logname = name;
-        }
+        void setLogName(const UString& name) { _logname = name; }
+
+        // Implementation of TSP virtual methods.
+        virtual UString pluginName() const override;
 
     protected:
         // Inherited from Report (via TSP)
         virtual void writeLog(int severity, const UString& msg) override;
 
     private:
-        Report* _report;  // Common report interface for all plugins
-        UString _name;    // Plugin name.
-        UString _logname; // Plugin name as displayed in log messages.
-        Plugin* _shlib;   // Shared library API.
+        Report*       _report;  // Common report interface for all plugins
+        const UString _name;    // Plugin name.
+        UString       _logname; // Plugin name as displayed in log messages.
+        Plugin*       _shlib;   // Shared library API.
     };
 }

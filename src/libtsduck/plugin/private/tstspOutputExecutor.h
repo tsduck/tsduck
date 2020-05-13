@@ -65,7 +65,10 @@ namespace ts {
             //! Override ts::tsp::PluginExecutor::plugin() with a specialized returned class.
             //! @return Address of the plugin interface.
             //!
-            OutputPlugin* plugin() {return _output;}
+            OutputPlugin* plugin() { return _output; }
+
+            // Overridden methods.
+            virtual size_t pluginIndex() const override;
 
         private:
             OutputPlugin* _output;

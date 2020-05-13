@@ -95,6 +95,17 @@ void ts::tsp::PluginExecutor::initBuffer(PacketBuffer* buffer,
 
 
 //----------------------------------------------------------------------------
+// Number of plugins in the chain. Inherited from TSP.
+//----------------------------------------------------------------------------
+
+size_t ts::tsp::PluginExecutor::pluginCount() const
+{
+    // Input plugin, all processor plugins, output plugin.
+    return _options.plugins.size() + 2;
+}
+
+
+//----------------------------------------------------------------------------
 // Signal that the specified number of packets have been processed.
 //----------------------------------------------------------------------------
 

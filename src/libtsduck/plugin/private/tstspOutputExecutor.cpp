@@ -48,6 +48,17 @@ ts::tsp::OutputExecutor::OutputExecutor(const TSProcessorArgs& options,
 
 
 //----------------------------------------------------------------------------
+// Implementation of TSP: return the packet index in the chain.
+//----------------------------------------------------------------------------
+
+size_t ts::tsp::OutputExecutor::pluginIndex() const
+{
+    // An input plugin is always last.
+    return pluginCount() - 1;
+}
+
+
+//----------------------------------------------------------------------------
 // Output plugin thread
 //----------------------------------------------------------------------------
 

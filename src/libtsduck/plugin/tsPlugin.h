@@ -106,13 +106,33 @@ namespace ts {
         //! @c int data named @c tspInterfaceVersion which contains the current
         //! interface version at the time the library is built.
         //!
-        static const int API_VERSION = 13;
+        static const int API_VERSION = 14;
 
         //!
         //! Get the current input bitrate in bits/seconds.
         //! @return The current input bitrate in bits/seconds or zero if unknown.
         //!
         BitRate bitrate() const { return _tsp_bitrate; }
+
+        //!
+        //! Get the plugin name.
+        //! @return The plugin name. This is typically the name which is used in the commmand line.
+        //!
+        virtual UString pluginName() const = 0;
+
+        //!
+        //! Get the plugin index in the processing chain.
+        //! @return The plugin index. For a TS processor, this is typically 0 for the input plugin
+        //! and the number of plugins minus one for the output plugin. For an input switcher, this
+        //! is in input index for input plugins and the number of plugins minus one for the output plugin.
+        //!
+        virtual size_t pluginIndex() const = 0;
+
+        //!
+        //! Get the number of plugins in the processing chain.
+        //! @return The number of plugins in the processing chain.
+        //!
+        virtual size_t pluginCount() const = 0;
 
         //!
         //! Get total number of packets previously processed in the plugin object.
