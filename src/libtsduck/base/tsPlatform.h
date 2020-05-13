@@ -720,9 +720,9 @@
     TS_POP_WARNING()
 #endif
 
-// Enforce assertions, even in optimized mode.
+// Enforce assertions, even in optimized mode, if TS_KEEP_ASSERTIONS is defined.
 
-#if defined(NDEBUG)
+#if defined(NDEBUG) && defined(TS_KEEP_ASSERTIONS)
     #undef NDEBUG
 #endif
 
