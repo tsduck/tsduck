@@ -104,6 +104,7 @@ const ts::TSPacket ts::EmptyPacket = {{
 
 void ts::TSPacket::SanityCheck()
 {
+#if !defined(NDEBUG)
     assert(sizeof(TSPacket) == PKT_SIZE);
     TSPacket p;
     assert(reinterpret_cast<uint8_t*>(&p) == p.b);
@@ -111,6 +112,7 @@ void ts::TSPacket::SanityCheck()
     assert(reinterpret_cast<char*>(&(pa[1])) == reinterpret_cast<char*>(&(pa[0])) + PKT_SIZE);
     TSPacketVector pv(2);
     assert(reinterpret_cast<char*>(&(pv[1])) == reinterpret_cast<char*>(&(pv[0])) + PKT_SIZE);
+#endif
 }
 
 //----------------------------------------------------------------------------

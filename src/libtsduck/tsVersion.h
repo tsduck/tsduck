@@ -44,4 +44,4 @@
 //!
 //! TSDuck commit number (automatically updated by Git hooks).
 //!
-#define TS_COMMIT 1785
+#define TS_COMMIT 1786

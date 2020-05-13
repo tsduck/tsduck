@@ -899,10 +899,10 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck, int strength
 {
     // Strength and quality as a string.
     UString qual_string;
-    if (strength >= 0) {
+    if (strength > 0) {
         qual_string = UString::Format(u"strength: %d%%", {strength});
     }
-    if (quality >= 0) {
+    if (quality > 0) {
         if (!qual_string.empty()) {
             qual_string += u", ";
         }
