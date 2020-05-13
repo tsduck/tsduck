@@ -89,6 +89,7 @@ The following `make` variables can be defined:
 - `NOPCSC`  : No smartcard support, remove dependency to `pcsc-lite`.
 - `NOSRT`   : No SRT (Secure Reliable Transport), remove dependency to `libsrt`.
 - `NOTELETEXT` : No Teletext support, remove teletext handling code.
+- `ASSERTIONS` : Keep assertions in production mode (slower code).
 
 The following command, for instance, builds TSDuck without dependency
 to `pcsc-lite`, `libcurl` and Dektec `DTAPI`:

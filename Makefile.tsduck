@@ -99,6 +99,10 @@ ifdef NOTELETEXT
     CFLAGS_INCLUDES += -DTS_NOTELETEXT=1
 endif
 
+ifdef ASSERTIONS
+    CFLAGS_INCLUDES += -DTS_KEEP_ASSERTIONS=1
+endif
+
 ifeq ($(MACOS)$(NOSRT),)
     # Not on macOS and SRT not disabled, check if libsrt is available.
     NOSRT = $(if $(wildcard /usr/include/srt/*.h)$(wildcard /usr/local/include/srt/*.h),,true)
