@@ -324,10 +324,10 @@ ts::UString ts::HFBand::description(uint32_t channel, int32_t offset, int streng
         desc += UString::Format(u".%03d", {khz});
     }
     desc += u" MHz)";
-    if (strength >= 0) {
+    if (strength > 0) {
         desc += UString::Format(u", strength: %d%%", {strength});
     }
-    if (quality >= 0) {
+    if (quality > 0) {
         desc += UString::Format(u", quality: %d%%", {quality});
     }
     return desc;
