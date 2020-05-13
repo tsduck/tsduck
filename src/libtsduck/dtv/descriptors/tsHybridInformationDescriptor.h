@@ -28,20 +28,50 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an ISDB hybrid_information_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 21
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1787
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of an ISDB hybrid_information_descriptor.
+    //! @see ARIB STD-B10, Part 2, 6.2.58
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL HybridInformationDescriptor : public AbstractDescriptor
+    {
+    public:
+        // HybridInformationDescriptor public members:
+        bool     has_location;   //!< A location is present in the descriptor.
+        bool     location_type;  //!< Type: false = broadcast, true = connected
+        uint8_t  format;         //!< Location format, 4 bits.
+        uint8_t  component_tag;  //!< Service component tag (when has_location && !location_type).
+        uint16_t module_id;      //!< Module id (when has_location && !location_type).
+        UString  URL;            //!< URL (when has_location && location_type).
+
+        //!
+        //! Default constructor.
+        //!
+        HybridInformationDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        HybridInformationDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+    };
+}

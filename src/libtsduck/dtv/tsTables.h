@@ -164,6 +164,7 @@
 #include "tsHEVCVideoDescriptor.h"
 #include "tsHierarchicalTransmissionDescriptor.h"
 #include "tsHierarchyDescriptor.h"
+#include "tsHybridInformationDescriptor.h"
 #include "tsIBPDescriptor.h"
 #include "tsImageIconDescriptor.h"
 #include "tsIPMACGenericStreamLocationDescriptor.h"
