@@ -76,11 +76,14 @@ namespace ts {
             virtual void jointTerminate() override;
             virtual bool useJointTermination() const override;
             virtual bool thisJointTerminated() const override;
+            virtual size_t pluginIndex() const override;
+            virtual size_t pluginCount() const override;
 
         private:
-            Core&         _core;       // Application core.
-            OutputPlugin* _output;     // Plugin API.
-            volatile bool _terminate;  // Termination request.
+            Core&                    _core;       // Application core.
+            const InputSwitcherArgs& _opt;        // Command line options.
+            OutputPlugin*            _output;     // Plugin API.
+            volatile bool            _terminate;  // Termination request.
 
             // Implementation of Thread.
             virtual void main() override;

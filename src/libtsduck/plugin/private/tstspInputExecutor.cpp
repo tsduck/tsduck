@@ -169,6 +169,17 @@ void ts::tsp::InputExecutor::setAbort()
 
 
 //----------------------------------------------------------------------------
+// Implementation of TSP: return the packet index in the chain.
+//----------------------------------------------------------------------------
+
+size_t ts::tsp::InputExecutor::pluginIndex() const
+{
+    // An input plugin is always first.
+    return 0;
+}
+
+
+//----------------------------------------------------------------------------
 // Implementation of WatchDogHandlerInterface
 //----------------------------------------------------------------------------
 

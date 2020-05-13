@@ -90,6 +90,17 @@ bool ts::tsswitch::InputExecutor::thisJointTerminated() const
     return false;
 }
 
+size_t ts::tsswitch::InputExecutor::pluginIndex() const
+{
+    return _pluginIndex;
+}
+
+size_t ts::tsswitch::InputExecutor::pluginCount() const
+{
+    // All inputs plus one output.
+    return _opt.inputs.size() + 1;
+}
+
 
 //----------------------------------------------------------------------------
 // Start input.

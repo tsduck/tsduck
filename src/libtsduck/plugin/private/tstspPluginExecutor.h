@@ -96,10 +96,7 @@ namespace ts {
             //! Inform if all plugins should use defaults for real-time.
             //! @param [in] on True if all plugins should use defaults for real-time.
             //!
-            void setRealTimeForAll(bool on)
-            {
-                _use_realtime = on;
-            }
+            void setRealTimeForAll(bool on) { _use_realtime = on; }
 
             //!
             //! This method sets the current packet processor in an abort state.
@@ -142,6 +139,9 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //!
             void restart(Report& report);
+
+            // Implementation of TSP virtual methods.
+            virtual size_t pluginCount() const override;
 
         protected:
             PacketBuffer*         _buffer;    //!< Description of shared packet buffer.

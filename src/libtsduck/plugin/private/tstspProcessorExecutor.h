@@ -49,13 +49,13 @@ namespace ts {
             //!
             //! Constructor.
             //! @param [in] options Command line options for tsp.
-            //! @param [in] pl_options Command line options for this plugin.
+            //! @param [in] plugin_index Index of command line options for this plugin in @a options.
             //! @param [in] attributes Creation attributes for the thread executing this plugin.
             //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
             //! @param [in,out] report Where to report logs.
             //!
             ProcessorExecutor(const TSProcessorArgs& options,
-                              const PluginOptions& pl_options,
+                              size_t plugin_index,
                               const ThreadAttributes& attributes,
                               Mutex& global_mutex,
                               Report* report);
@@ -65,10 +65,14 @@ namespace ts {
             //! Override ts::tsp::PluginExecutor::plugin() with a specialized returned class.
             //! @return Address of the plugin interface.
             //!
-            ProcessorPlugin* plugin() {return _processor;}
+            ProcessorPlugin* plugin() { return _processor; }
+
+            // Overridden methods.
+            virtual size_t pluginIndex() const override;
 
         private:
             ProcessorPlugin* _processor;
+            const size_t     _plugin_index;
 
             // Inherited from Thread
             virtual void main() override;

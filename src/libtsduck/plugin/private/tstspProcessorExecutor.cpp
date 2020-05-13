@@ -36,14 +36,25 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::tsp::ProcessorExecutor::ProcessorExecutor(const TSProcessorArgs& options,
-                                              const PluginOptions& pl_options,
+                                              size_t plugin_index,
                                               const ThreadAttributes& attributes,
                                               Mutex& global_mutex,
                                               Report* report) :
 
-    PluginExecutor(options, PROCESSOR_PLUGIN, pl_options, attributes, global_mutex, report),
-    _processor(dynamic_cast<ProcessorPlugin*>(PluginThread::plugin()))
+    PluginExecutor(options, PROCESSOR_PLUGIN, options.plugins[plugin_index], attributes, global_mutex, report),
+    _processor(dynamic_cast<ProcessorPlugin*>(PluginThread::plugin())),
+    _plugin_index(1 + plugin_index) // include first input plugin in the count
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of TSP: return the packet index in the chain.
+//----------------------------------------------------------------------------
+
+size_t ts::tsp::ProcessorExecutor::pluginIndex() const
+{
+    return _plugin_index;
 }
 
 

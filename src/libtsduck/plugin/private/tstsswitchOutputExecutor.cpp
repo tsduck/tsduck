@@ -39,6 +39,7 @@ TSDUCK_SOURCE;
 ts::tsswitch::OutputExecutor::OutputExecutor(Core& core, const InputSwitcherArgs& opt, Report& log) :
     PluginThread(&log, opt.appName, OUTPUT_PLUGIN, opt.output, ThreadAttributes()),
     _core(core),
+    _opt(opt),
     _output(dynamic_cast<OutputPlugin*>(plugin())),
     _terminate(false)
 {
@@ -71,6 +72,18 @@ bool ts::tsswitch::OutputExecutor::useJointTermination() const
 bool ts::tsswitch::OutputExecutor::thisJointTerminated() const
 {
     return false;
+}
+
+size_t ts::tsswitch::OutputExecutor::pluginIndex() const
+{
+    // The output plugin comes last.
+    return _opt.inputs.size();
+}
+
+size_t ts::tsswitch::OutputExecutor::pluginCount() const
+{
+    // All inputs plus one output.
+    return _opt.inputs.size() + 1;
 }
 
 
