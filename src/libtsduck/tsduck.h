@@ -426,6 +426,7 @@
 #include "tsServiceAvailabilityDescriptor.h"
 #include "tsServiceDescriptor.h"
 #include "tsServiceDiscovery.h"
+#include "tsServiceGroupDescriptor.h"
 #include "tsServiceIdentifierDescriptor.h"
 #include "tsServiceListDescriptor.h"
 #include "tsServiceLocationDescriptor.h"

@@ -185,6 +185,7 @@
     REF_TYPE(ScramblingDescriptor);
     REF_TYPE(ServiceAvailabilityDescriptor);
     REF_TYPE(ServiceDescriptor);
+    REF_TYPE(ServiceGroupDescriptor);
     REF_TYPE(ServiceIdentifierDescriptor);
     REF_TYPE(ServiceListDescriptor);
     REF_TYPE(ServiceLocationDescriptor);

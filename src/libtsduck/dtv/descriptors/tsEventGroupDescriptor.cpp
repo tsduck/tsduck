@@ -241,7 +241,7 @@ void ts::EventGroupDescriptor::fromXML(DuckContext& duck, const xml::Element* el
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(group_type, u"group_type", true, 0, 0, 15) &&
         element->getChildren(xactual, u"actual", 0, 15) &&
-        element->getChildren(xother, u"other", 0, group_type == 4 || group_type == 5 ? 63 : 0) &&
+        element->getChildren(xother, u"other", 0, group_type == 4 || group_type == 5 ? 31 : 0) &&
         element->getHexaTextChild(private_data, u"private_data", false, 0, group_type == 4 || group_type == 5 ? 0 : 254);
 
     for (auto it = xactual.begin(); _is_valid && it != xactual.end(); ++it) {
