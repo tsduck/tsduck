@@ -368,7 +368,11 @@ OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, uint32_t channe
 
     // If signal was found, select best offset
     if (_signal_found) {
-        if (_opt.use_best_quality && _best_quality > 0) {
+        if (_opt.no_offset) {
+            // No offset search, the best and only offset is zero.
+            _best_offset = 0;
+        }
+        else if (_opt.use_best_quality && _best_quality > 0) {
             // Signal quality indicator is valid, use offset with best signal quality
             _best_offset = _best_quality_offset;
         }
@@ -431,7 +435,11 @@ bool OffsetScanner::tryOffset(int32_t offset)
     // Double-check that the signal was locked.
     bool ok = _tuner.signalLocked(_opt);
 
-    if (ok) {
+    // If we get a signal and we wee need to scan offsets, check signal strength and quality.
+    // Note that if we don't scan offsets, there is no need to consider signal strength
+    // and quality, just use the central offset.
+    if (ok && !_opt.no_offset) {
+
         // Get signal quality & strength
         const int strength = _tuner.signalStrength(_opt);
         const int quality = _tuner.signalQuality(_opt);
