@@ -130,6 +130,7 @@
     REF_TYPE(HEVCVideoDescriptor);
     REF_TYPE(HierarchicalTransmissionDescriptor);
     REF_TYPE(HierarchyDescriptor);
+    REF_TYPE(HybridInformationDescriptor);
     REF_TYPE(IBPDescriptor);
     REF_TYPE(ImageIconDescriptor);
     REF_TYPE(IPMACGenericStreamLocationDescriptor);

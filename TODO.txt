@@ -55,7 +55,6 @@ TSDuck - List of features to be implemented or fixed
     - 6.2.41   connected_transmission_descriptor
     - 6.2.46   carousel_compatible_composite_descriptor
     - 6.2.55   area_broadcasting_information_descriptor (B10 Japanese edition)
-    - 6.2.58   hybrid_information_descriptor (B10 Japanese edition)
   - Part 3:
     - 5.1.1    LIT (Local Event Information Table)
     - 5.1.2    ERT (Event Relation Table)

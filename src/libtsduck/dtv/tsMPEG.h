@@ -1326,7 +1326,8 @@ namespace ts {
         DID_SERVICE_SKY         = 0xB2, //!< DID for BskyB service_descriptor
 
         // Valid in ISDB context:
-
+        DID_ISDB_MATERIAL_INFO  = 0x67, //!< DID for ISDB Material information descriptor, in LIT only (WARNING: conflict with DVB)
+        DID_ISDB_HYBRID_INFO    = 0x68, //!< DID for ISDB Hybrid information descriptor (WARNING: conflict with DVB)
         DID_ISDB_HIERARCH_TRANS = 0xC0, //!< DID for ISDB Hierarchical transmission descriptor
         DID_ISDB_COPY_CONTROL   = 0xC1, //!< DID for ISDB Digital copy control descriptor
         DID_ISDB_NETWORK_ID     = 0xC2, //!< DID for ISDB Network identification descriptor
@@ -1360,6 +1361,10 @@ namespace ts {
         DID_ISDB_CONTENT_AVAIL  = 0xDE, //!< DID for ISDB Content availability descriptor
         DID_ISDB_EXTENSION      = 0xDF, //!< DID for ISDB extension descriptor
         DID_ISDB_SERVICE_GROUP  = 0xE0, //!< DID for ISDB Service group descriptor
+        DID_ISDB_AREA_BCAST_INF = 0xE1, //!< DID for ISDB Area broadcast information descriptor
+        DID_ISDB_NETW_DOWNLOAD  = 0xE2, //!< DID for ISDB Network download content descriptor
+        DID_ISDB_DOWNLOAD_PROT  = 0xE3, //!< DID for ISDB Download protection descriptor
+        DID_ISDB_CA_ACTIVATION  = 0xE4, //!< DID for ISDB CA activation descriptor
         DID_ISDB_WMCTDS         = 0xF3, //!< DID for ISDB Wired multi-carrier transmission distribution system descriptor
         DID_ISDB_ADV_WDS        = 0xF4, //!< DID for ISDB Advanced wired distribution system descriptor
         DID_ISDB_SCRAMBLE_METH  = 0xF5, //!< DID for ISDB Scramble method descriptor

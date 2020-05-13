@@ -696,6 +696,8 @@ Bits = 8
 0x41545343_AD = ATSC Private Information
 0x41545343_CC = ATSC E-AC-3 Audio Stream
 # ISDB descriptors, using the fake PDS for ISDB.
+# 0x67 = ISDB Material Information (WARNING: conflict with DVB)
+# 0x68 = ISDB Hybrid Information (WARNING: conflict with DVB)
 0x49534442_C0 = ISDB Hierarchical Transmission
 0x49534442_C1 = ISDB Digital Copy Control
 0x49534442_C2 = ISDB Network Identification
@@ -729,6 +731,10 @@ Bits = 8
 0x49534442_DE = ISDB Content Availability
 0x49534442_DF = ISDB Extension
 0x49534442_E0 = ISDB Service Group
+0x49534442_E1 = ISDB Area Broadcast Information
+0x49534442_E2 = ISDB Network Download Content
+0x49534442_E3 = ISDB Download Protection
+0x49534442_E4 = ISDB CA Activation
 0x49534442_F3 = ISDB Wired Multi-Carrier Transmission Distribution System
 0x49534442_F4 = ISDB Advanced Wired Distribution System
 0x49534442_F5 = ISDB Scramble Method
@@ -4008,3 +4014,10 @@ Bits = 4
 Bits = 4
 0 = undefined
 1 = Server type simultaneous service
+
+[ISDBHybridInformationFormat]
+# In ISDB hybrid_information_descriptor
+Bits = 4
+0 = MPD (Media Presentation Descriptor) in MPEG-DASH (ISO/IEC 23009-1)
+1 = Playback control descriptor in IPTV VOD spec (IPTV FJ STD-0002)
+2 = With a TS time stamp according to IPTV VOD spec (IPTV FJ STD-0002)

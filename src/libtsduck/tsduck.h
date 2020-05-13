@@ -269,6 +269,7 @@
 #include "tshlsOutputPlugin.h"
 #include "tshlsPlayList.h"
 #include "tshlsTagAttributes.h"
+#include "tsHybridInformationDescriptor.h"
 #include "tsIBPDescriptor.h"
 #include "tsIDSA.h"
 #include "tsImageIconDescriptor.h"
