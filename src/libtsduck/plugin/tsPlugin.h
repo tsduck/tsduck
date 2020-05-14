@@ -43,6 +43,8 @@
 
 namespace ts {
 
+    class Plugin;
+
     //!
     //! Each plugin has one of the following types
     //! @ingroup plugin
@@ -106,13 +108,19 @@ namespace ts {
         //! @c int data named @c tspInterfaceVersion which contains the current
         //! interface version at the time the library is built.
         //!
-        static const int API_VERSION = 14;
+        static const int API_VERSION = 15;
 
         //!
         //! Get the current input bitrate in bits/seconds.
         //! @return The current input bitrate in bits/seconds or zero if unknown.
         //!
         BitRate bitrate() const { return _tsp_bitrate; }
+
+        //!
+        //! Access the shared library through the plugin interface.
+        //! @return Address of the plugin interface.
+        //!
+        virtual Plugin* plugin() const = 0;
 
         //!
         //! Get the plugin name.
@@ -361,7 +369,7 @@ namespace ts {
         void resetContext(const DuckContext::SavedArgs& state);
 
     protected:
-        TSP*        tsp;   //!< The TSP callback structure can be directly accessed by subclasses.
+        TSP* const  tsp;   //!< The TSP callback structure can be directly accessed by subclasses.
         DuckContext duck;  //!< The TSDuck context with various MPEG/DV features.
 
         //!

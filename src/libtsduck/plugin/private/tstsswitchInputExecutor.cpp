@@ -134,6 +134,16 @@ void ts::tsswitch::InputExecutor::stopInput()
 
 
 //----------------------------------------------------------------------------
+// Abort the input operation currently in progress in the plugin.
+//----------------------------------------------------------------------------
+
+bool ts::tsswitch::InputExecutor::abortInput()
+{
+    return _input != nullptr && _input->abortInput();
+}
+
+
+//----------------------------------------------------------------------------
 // Set/reset as current input plugin. Do not start or stop it.
 //----------------------------------------------------------------------------
 

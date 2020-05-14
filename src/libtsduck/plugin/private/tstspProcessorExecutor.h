@@ -60,13 +60,6 @@ namespace ts {
                               Mutex& global_mutex,
                               Report* report);
 
-            //!
-            //! Access the shared library API.
-            //! Override ts::tsp::PluginExecutor::plugin() with a specialized returned class.
-            //! @return Address of the plugin interface.
-            //!
-            ProcessorPlugin* plugin() { return _processor; }
-
             // Overridden methods.
             virtual size_t pluginIndex() const override;
 

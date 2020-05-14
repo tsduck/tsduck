@@ -381,7 +381,7 @@ void ts::tsswitch::Core::execute(const Action& event)
             }
             case ABORT_INPUT: {
                 // Abort only if flag is set in action.
-                if (action.flag && !_inputs[action.index]->plugin()->abortInput()) {
+                if (action.flag && !_inputs[action.index]->abortInput()) {
                     _log.warning(u"input plugin %s does not support interruption, blocking may occur", {_inputs[action.index]->pluginName()});
                 }
                 break;

@@ -70,15 +70,6 @@ namespace ts {
             virtual ~InputExecutor();
 
             //!
-            //! Access the shared library API.
-            //! @return Address of the plugin interface.
-            //!
-            InputPlugin* plugin() const
-            {
-                return _input;
-            }
-
-            //!
             //! Tell the input executor thread to start an input session.
             //! @param [in] isCurrent True if the plugin immediately becomes the current one.
             //!
@@ -89,6 +80,14 @@ namespace ts {
             //! The thread is not terminated. It waits for another session.
             //!
             void stopInput();
+
+            //!
+            //! Abort the input operation currently in progress in the plugin.
+            //! This is a relay to InputPlugin::abortInput().
+            //! @return True when the operation was properly handled. False in case
+            //! of fatal error or if not supported by the plugin.
+            //!
+            bool abortInput();
 
             //!
             //! Notify the input executor thread that it becomes or is no longer the current input plugin.
