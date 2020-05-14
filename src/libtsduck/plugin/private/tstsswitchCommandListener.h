@@ -38,9 +38,6 @@
 #include "tsUDPReceiver.h"
 
 namespace ts {
-    //!
-    //! Input switch (tsswitch) namespace.
-    //!
     namespace tsswitch {
 
         class Core;

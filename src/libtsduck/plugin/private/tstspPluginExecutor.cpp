@@ -39,6 +39,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::tsp::PluginExecutor::PluginExecutor(const TSProcessorArgs& options,
+                                        const PluginEventHandlerRegistry& handlers,
                                         PluginType type,
                                         const PluginOptions& pl_options,
                                         const ThreadAttributes& attributes,
@@ -50,6 +51,7 @@ ts::tsp::PluginExecutor::PluginExecutor(const TSProcessorArgs& options,
     _buffer(nullptr),
     _metadata(nullptr),
     _suspended(false),
+    _handlers(handlers),
     _to_do(),
     _pkt_first(0),
     _pkt_cnt(0),
@@ -102,6 +104,17 @@ size_t ts::tsp::PluginExecutor::pluginCount() const
 {
     // Input plugin, all processor plugins, output plugin.
     return _options.plugins.size() + 2;
+}
+
+
+//----------------------------------------------------------------------------
+// Signal a plugin event.
+//----------------------------------------------------------------------------
+
+void ts::tsp::PluginExecutor::signalPluginEvent(uint32_t event_code, Object* plugin_data) const
+{
+    const PluginEventContext ctx(event_code, pluginName(), pluginIndex(), pluginCount(), plugin(), plugin_data, bitrate(), pluginPackets(), totalPacketsInThread());
+    _handlers.callEventHandlers(ctx);
 }
 
 

@@ -33,37 +33,31 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tstsswitchPluginExecutor.h"
 #include "tsInputSwitcherArgs.h"
-#include "tsPluginThread.h"
+#include "tsOutputPlugin.h"
 
 namespace ts {
-    //!
-    //! Input switch (tsswitch) namespace.
-    //!
     namespace tsswitch {
-
-        class Core;
-
         //!
         //! Execution context of a tsswitch output plugin.
         //! @ingroup plugin
         //!
-        class OutputExecutor : public PluginThread
+        class OutputExecutor : public PluginExecutor
         {
             TS_NOBUILD_NOCOPY(OutputExecutor);
         public:
             //!
             //! Constructor.
-            //! @param [in,out] core Command core instance.
             //! @param [in] opt Command line options.
+            //! @param [in] handlers Registry of event handlers.
+            //! @param [in,out] core Command core instance.
             //! @param [in,out] log Log report.
             //!
-            OutputExecutor(Core& core, const InputSwitcherArgs& opt, Report& log);
-
-            //!
-            //! Destructor.
-            //!
-            virtual ~OutputExecutor();
+            OutputExecutor(const InputSwitcherArgs& opt,
+                           const PluginEventHandlerRegistry& handlers,
+                           Core& core,
+                           Report& log);
 
             //!
             //! Request the termination of the thread.
@@ -71,19 +65,12 @@ namespace ts {
             //!
             void terminateOutput() { _terminate = true; }
 
-            // Implementation of TSP. We do not use "joint termination" in tsswitch.
-            virtual void useJointTermination(bool) override;
-            virtual void jointTerminate() override;
-            virtual bool useJointTermination() const override;
-            virtual bool thisJointTerminated() const override;
+            // Implementation of TSP.
             virtual size_t pluginIndex() const override;
-            virtual size_t pluginCount() const override;
 
         private:
-            Core&                    _core;       // Application core.
-            const InputSwitcherArgs& _opt;        // Command line options.
-            OutputPlugin*            _output;     // Plugin API.
-            volatile bool            _terminate;  // Termination request.
+            OutputPlugin* _output;     // Plugin API.
+            volatile bool _terminate;  // Termination request.
 
             // Implementation of Thread.
             virtual void main() override;

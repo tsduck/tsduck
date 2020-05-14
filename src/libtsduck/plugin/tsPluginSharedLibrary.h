@@ -33,7 +33,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlugin.h"
+#include "tsInputPlugin.h"
+#include "tsProcessorPlugin.h"
+#include "tsOutputPlugin.h"
 #include "tsApplicationSharedLibrary.h"
 #include "tsCerrReport.h"
 #include "tsNullMutex.h"

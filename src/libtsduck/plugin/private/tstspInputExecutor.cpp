@@ -42,12 +42,13 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::tsp::InputExecutor::InputExecutor(const TSProcessorArgs& options,
+                                      const PluginEventHandlerRegistry& handlers,
                                       const PluginOptions& pl_options,
                                       const ThreadAttributes& attributes,
                                       Mutex& global_mutex,
                                       Report* report) :
 
-    PluginExecutor(options, INPUT_PLUGIN, pl_options, attributes, global_mutex, report),
+    PluginExecutor(options, handlers, INPUT_PLUGIN, pl_options, attributes, global_mutex, report),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
     _in_sync_lost(false),
     _instuff_start_remain(options.instuff_start),

@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsPluginEventHandlerRegistry.h"
 #include "tsInputSwitcherArgs.h"
 
 namespace ts {
@@ -42,7 +43,7 @@ namespace ts {
     //! It can also be used in other applications to switch between input plugins.
     //! @ingroup plugin
     //!
-    class TSDUCKDLL InputSwitcher
+    class TSDUCKDLL InputSwitcher: public PluginEventHandlerRegistry
     {
         TS_NOBUILD_NOCOPY(InputSwitcher);
     public:

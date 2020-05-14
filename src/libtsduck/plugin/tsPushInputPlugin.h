@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlugin.h"
+#include "tsInputPlugin.h"
 #include "tsThread.h"
 #include "tsTSPacketQueue.h"
 

@@ -33,11 +33,12 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTSProcessorArgs.h"
 #include "tstspJointTermination.h"
+#include "tsRingNode.h"
+#include "tsTSProcessorArgs.h"
+#include "tsPluginEventHandlerRegistry.h"
 #include "tsPlugin.h"
 #include "tsUserInterrupt.h"
-#include "tsRingNode.h"
 #include "tsCondition.h"
 #include "tsMutex.h"
 #include "tsThread.h"
@@ -55,6 +56,7 @@ namespace ts {
             //!
             //! Constructor.
             //! @param [in] options Command line options for tsp.
+            //! @param [in] handlers Registry of event handlers.
             //! @param [in] type Plugin type.
             //! @param [in] pl_options Command line options for this plugin.
             //! @param [in] attributes Creation attributes for the thread executing this plugin.
@@ -62,6 +64,7 @@ namespace ts {
             //! @param [in,out] report Where to report logs.
             //!
             PluginExecutor(const TSProcessorArgs& options,
+                           const PluginEventHandlerRegistry& handlers,
                            PluginType type,
                            const PluginOptions& pl_options,
                            const ThreadAttributes& attributes,
@@ -142,6 +145,7 @@ namespace ts {
 
             // Implementation of TSP virtual methods.
             virtual size_t pluginCount() const override;
+            virtual void signalPluginEvent(uint32_t event_code, Object* plugin_data = nullptr) const override;
 
         protected:
             PacketBuffer*         _buffer;    //!< Description of shared packet buffer.
@@ -198,6 +202,9 @@ namespace ts {
             bool processPendingRestart();
 
         private:
+            // Registry of plugin event handlers.
+            const PluginEventHandlerRegistry& _handlers;
+
             // A structure which is used to handle a restart of the plugin.
             class RestartData;
             typedef SafePtr<RestartData,Mutex> RestartDataPtr;

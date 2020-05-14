@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlugin.h"
+#include "tsProcessorPlugin.h"
 #include "tsSafePtr.h"
 #include "tsSection.h"
 #include "tsServiceDiscovery.h"

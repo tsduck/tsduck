@@ -30,49 +30,23 @@
 #include "tsPlugin.h"
 TSDUCK_SOURCE;
 
+// Displayable names of plugin types.
+const ts::Enumeration ts::PluginTypeNames({
+    {u"input",            ts::INPUT_PLUGIN},
+    {u"output",           ts::OUTPUT_PLUGIN},
+    {u"packet processor", ts::PROCESSOR_PLUGIN},
+});
+
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
 //----------------------------------------------------------------------------
-
-ts::TSP::TSP(int max_severity) :
-    Report(max_severity),
-    _use_realtime(false),
-    _tsp_bitrate(0),
-    _tsp_timeout(Infinite),
-    _tsp_aborting(false),
-    _total_packets(0),
-    _plugin_packets(0)
-{
-}
 
 ts::Plugin::Plugin(TSP* to_tsp, const UString& description, const UString& syntax) :
     Args(description, syntax, NO_DEBUG | NO_VERBOSE | NO_VERSION | NO_CONFIG_FILE),
     tsp(to_tsp),
     duck(to_tsp)
 {
-}
-
-ts::InputPlugin::InputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
-    Plugin(tsp_, description, syntax)
-{
-}
-
-ts::OutputPlugin::OutputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
-    Plugin(tsp_, description, syntax)
-{
-}
-
-ts::ProcessorPlugin::ProcessorPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
-    Plugin(tsp_, description, syntax)
-{
-    // The option --label is defined in all packet processing plugins.
-    option(u"only-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
-    help(u"only-label", u"label1[-label2]",
-         u"Invoke this plugin only for packets with any of the specified labels. "
-         u"Other packets are transparently passed to the next plugin, without going through this one. "
-         u"Several --only-label options may be specified. "
-         u"This is a generic option which is defined in all packet processing plugins.");
 }
 
 
@@ -84,29 +58,6 @@ void ts::Plugin::writeLog(int severity, const UString& message)
 {
     // Force message to go through tsp
     tsp->log(severity, message);
-}
-
-
-//----------------------------------------------------------------------------
-// Displayable names of plugin types.
-//----------------------------------------------------------------------------
-
-const ts::Enumeration ts::PluginTypeNames({
-    {u"input",            ts::INPUT_PLUGIN},
-    {u"output",           ts::OUTPUT_PLUGIN},
-    {u"packet processor", ts::PROCESSOR_PLUGIN},
-});
-
-
-//----------------------------------------------------------------------------
-// Get the content of the --only-label options (packet processing plugins).
-//----------------------------------------------------------------------------
-
-ts::TSPacketMetadata::LabelSet ts::ProcessorPlugin::getOnlyLabelOption() const
-{
-    TSPacketMetadata::LabelSet labels;
-    getIntValues(labels, u"only-label");
-    return labels;
 }
 
 
@@ -124,11 +75,6 @@ void ts::Plugin::resetContext(const DuckContext::SavedArgs& state)
 //----------------------------------------------------------------------------
 // Default implementations of virtual methods.
 //----------------------------------------------------------------------------
-
-bool ts::TSP::aborting() const
-{
-    return _tsp_aborting;
-}
 
 size_t ts::Plugin::stackUsage() const
 {
@@ -163,29 +109,4 @@ bool ts::Plugin::isRealTime()
 bool ts::Plugin::handlePacketTimeout()
 {
     return false;
-}
-
-bool ts::InputPlugin::setReceiveTimeout(MilliSecond timeout)
-{
-    return false;
-}
-
-bool ts::InputPlugin::abortInput()
-{
-    return false;
-}
-
-ts::PluginType ts::InputPlugin::type() const
-{
-    return INPUT_PLUGIN;
-}
-
-ts::PluginType ts::OutputPlugin::type() const
-{
-    return OUTPUT_PLUGIN;
-}
-
-ts::PluginType ts::ProcessorPlugin::type() const
-{
-    return PROCESSOR_PLUGIN;
 }

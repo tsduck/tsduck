@@ -36,54 +36,26 @@ TSDUCK_SOURCE;
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsswitch::OutputExecutor::OutputExecutor(Core& core, const InputSwitcherArgs& opt, Report& log) :
-    PluginThread(&log, opt.appName, OUTPUT_PLUGIN, opt.output, ThreadAttributes()),
-    _core(core),
-    _opt(opt),
+ts::tsswitch::OutputExecutor::OutputExecutor(const InputSwitcherArgs& opt,
+                                             const PluginEventHandlerRegistry& handlers,
+                                             Core& core,
+                                             Report& log) :
+
+    PluginExecutor(opt, handlers, OUTPUT_PLUGIN, opt.output, ThreadAttributes(), core, log),
     _output(dynamic_cast<OutputPlugin*>(plugin())),
     _terminate(false)
 {
 }
 
-ts::tsswitch::OutputExecutor::~OutputExecutor()
-{
-    // Wait for thread termination.
-    waitForTermination();
-}
-
 
 //----------------------------------------------------------------------------
-// Implementation of TSP. We do not use "joint termination" in tsswitch.
+// Implementation of TSP.
 //----------------------------------------------------------------------------
-
-void ts::tsswitch::OutputExecutor::useJointTermination(bool)
-{
-}
-
-void ts::tsswitch::OutputExecutor::jointTerminate()
-{
-}
-
-bool ts::tsswitch::OutputExecutor::useJointTermination() const
-{
-    return false;
-}
-
-bool ts::tsswitch::OutputExecutor::thisJointTerminated() const
-{
-    return false;
-}
 
 size_t ts::tsswitch::OutputExecutor::pluginIndex() const
 {
     // The output plugin comes last.
     return _opt.inputs.size();
-}
-
-size_t ts::tsswitch::OutputExecutor::pluginCount() const
-{
-    // All inputs plus one output.
-    return _opt.inputs.size() + 1;
 }
 
 

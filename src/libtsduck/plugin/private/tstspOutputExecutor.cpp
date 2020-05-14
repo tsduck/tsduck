@@ -36,12 +36,13 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::tsp::OutputExecutor::OutputExecutor(const TSProcessorArgs& options,
+                                        const PluginEventHandlerRegistry& handlers,
                                         const PluginOptions& pl_options,
                                         const ThreadAttributes& attributes,
                                         Mutex& global_mutex,
                                         Report* report) :
 
-    PluginExecutor(options, OUTPUT_PLUGIN, pl_options, attributes, global_mutex, report),
+    PluginExecutor(options, handlers, OUTPUT_PLUGIN, pl_options, attributes, global_mutex, report),
     _output(dynamic_cast<OutputPlugin*>(PluginThread::plugin()))
 {
 }

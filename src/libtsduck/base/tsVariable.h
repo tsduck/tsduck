@@ -200,6 +200,16 @@ namespace ts {
         //! is not equal to @a obj.
         //!
         bool operator!=(const T& obj) const;
+
+        //!
+        //! Identity.
+        //!
+        //! @param [in] other An other instance to compare with.
+        //! @return True if both instances are initialized and
+        //! contain equal values or if both instance and not initialized.
+        //!
+        bool identical(const Variable<T>& other) const;
+
     };
 }
 

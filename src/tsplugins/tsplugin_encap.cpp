@@ -33,7 +33,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsPacketEncapsulation.h"
 TSDUCK_SOURCE;
