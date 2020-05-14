@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsPluginEventHandlerRegistry.h"
 #include "tsTSProcessorArgs.h"
 #include "tsTSPacketMetadata.h"
 #include "tsSystemMonitor.h"
@@ -55,7 +56,7 @@ namespace ts {
     //! It can also be used in other applications to run a chain of plugins.
     //! @ingroup plugin
     //!
-    class TSDUCKDLL TSProcessor
+    class TSDUCKDLL TSProcessor: public PluginEventHandlerRegistry
     {
         TS_NOBUILD_NOCOPY(TSProcessor);
     public:

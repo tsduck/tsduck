@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsPESDemux.h"
 #include "tsAVCSequenceParameterSet.h"

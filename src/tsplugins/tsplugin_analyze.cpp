@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsTSAnalyzerReport.h"
 #include "tsTSSpeedMetrics.h"

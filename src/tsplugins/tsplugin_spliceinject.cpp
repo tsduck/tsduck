@@ -31,7 +31,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsSpliceInformationTable.h"
 #include "tsServiceDiscovery.h"

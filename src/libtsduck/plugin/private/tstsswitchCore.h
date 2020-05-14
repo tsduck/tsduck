@@ -56,9 +56,10 @@ namespace ts {
             //!
             //! Constructor.
             //! @param [in] opt Command line options.
+            //! @param [in] handlers Registry of event handlers.
             //! @param [in,out] log Log report.
             //!
-            Core(const InputSwitcherArgs& opt, Report& log);
+            Core(const InputSwitcherArgs& opt, const PluginEventHandlerRegistry& handlers, Report& log);
 
             //!
             //! Destructor.

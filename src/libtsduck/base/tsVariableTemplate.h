@@ -160,6 +160,14 @@ T ts::Variable<T>::value(const T& def) const
 //----------------------------------------------------------------------------
 
 template <typename T>
+bool ts::Variable<T>::identical(const Variable<T>& other) const
+{
+    return (_access == nullptr && other._access == nullptr ) ||
+           (_access != nullptr && other._access != nullptr && *_access == *other._access);
+}
+
+
+template <typename T>
 bool ts::Variable<T>::operator==(const Variable<T>& other) const
 {
     return _access != nullptr && other._access != nullptr && *_access == *other._access;

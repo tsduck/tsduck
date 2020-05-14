@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlugin.h"
+#include "tsOutputPlugin.h"
 #include "tsSectionDemux.h"
 #include "tsTSFile.h"
 #include "tsPCRAnalyzer.h"

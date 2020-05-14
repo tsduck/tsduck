@@ -39,13 +39,14 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::InputSwitcher::InputSwitcher(const InputSwitcherArgs& args, Report& report) :
+    PluginEventHandlerRegistry(),
     _success(false)
 {
     // Clear errors on the report, used to check further initialisation errors.
     report.resetErrors();
 
     // Create the tsswitch core instance.
-    tsswitch::Core core(args, report);
+    tsswitch::Core core(args, *this, report);
     if (report.gotErrors()) {
         return; // error
     }

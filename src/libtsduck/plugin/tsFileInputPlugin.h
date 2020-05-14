@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlugin.h"
+#include "tsInputPlugin.h"
 #include "tsTSFile.h"
 
 namespace ts {

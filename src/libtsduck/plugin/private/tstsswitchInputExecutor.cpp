@@ -38,11 +38,14 @@ TSDUCK_SOURCE;
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsswitch::InputExecutor::InputExecutor(size_t index, Core& core, const InputSwitcherArgs& opt, Report& log) :
+ts::tsswitch::InputExecutor::InputExecutor(const InputSwitcherArgs& opt,
+                                           const PluginEventHandlerRegistry& handlers,
+                                           size_t index,
+                                           Core& core,
+                                           Report& log) :
+
     // Input threads have a high priority to be always ready to load incoming packets in the buffer.
-    PluginThread(&log, opt.appName, INPUT_PLUGIN, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority())),
-    _core(core),
-    _opt(opt),
+    PluginExecutor(opt, handlers, INPUT_PLUGIN, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority()), core, log),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
     _pluginIndex(index),
     _buffer(opt.bufferedPackets),
@@ -61,44 +64,14 @@ ts::tsswitch::InputExecutor::InputExecutor(size_t index, Core& core, const Input
     setLogName(UString::Format(u"%s[%d]", {pluginName(), _pluginIndex}));
 }
 
-ts::tsswitch::InputExecutor::~InputExecutor()
-{
-    // Wait for thread termination.
-    waitForTermination();
-}
-
 
 //----------------------------------------------------------------------------
-// Implementation of TSP. We do not use "joint termination" in tsswitch.
+// Implementation of TSP.
 //----------------------------------------------------------------------------
-
-void ts::tsswitch::InputExecutor::useJointTermination(bool)
-{
-}
-
-void ts::tsswitch::InputExecutor::jointTerminate()
-{
-}
-
-bool ts::tsswitch::InputExecutor::useJointTermination() const
-{
-    return false;
-}
-
-bool ts::tsswitch::InputExecutor::thisJointTerminated() const
-{
-    return false;
-}
 
 size_t ts::tsswitch::InputExecutor::pluginIndex() const
 {
     return _pluginIndex;
-}
-
-size_t ts::tsswitch::InputExecutor::pluginCount() const
-{
-    // All inputs plus one output.
-    return _opt.inputs.size() + 1;
 }
 
 

@@ -38,11 +38,11 @@ TSDUCK_SOURCE;
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsswitch::Core::Core(const InputSwitcherArgs& opt, Report& log) :
+ts::tsswitch::Core::Core(const InputSwitcherArgs& opt, const PluginEventHandlerRegistry& handlers, Report& log) :
     _log(log),
     _opt(opt), // consistency enforced by copy constructor
     _inputs(_opt.inputs.size(), nullptr),
-    _output(*this, opt, log), // load output plugin and analyze options
+    _output(opt, handlers, *this, log), // load output plugin and analyze options
     _receiveWatchDog(this, _opt.receiveTimeout, 0, _log),
     _mutex(),
     _gotInput(),
@@ -54,7 +54,7 @@ ts::tsswitch::Core::Core(const InputSwitcherArgs& opt, Report& log) :
 {
     // Load all input plugins, analyze their options.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        _inputs[i] = new InputExecutor(i, *this, opt, log);
+        _inputs[i] = new InputExecutor(opt, handlers, i, *this, log);
         CheckNonNull(_inputs[i]);
         // Set the asynchronous logger as report method for all executors.
         _inputs[i]->setReport(&_log);

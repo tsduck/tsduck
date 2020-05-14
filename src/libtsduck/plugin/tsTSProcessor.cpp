@@ -42,6 +42,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::TSProcessor::TSProcessor(Report& report) :
+    PluginEventHandlerRegistry(),
     _report(report),
     _mutex(),
     _terminating(false),
@@ -145,10 +146,10 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         // plugin has a hight priority to make room in the buffer, but not as
         // high as the input which must remain the top-most priority?
 
-        _input = new tsp::InputExecutor(_args, _args.input, ThreadAttributes().setPriority(ts::ThreadAttributes::GetMaximumPriority()), _mutex, &_report);
+        _input = new tsp::InputExecutor(_args, *this, _args.input, ThreadAttributes().setPriority(ts::ThreadAttributes::GetMaximumPriority()), _mutex, &_report);
         CheckNonNull(_input);
 
-        _output = new tsp::OutputExecutor(_args, _args.output, ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()), _mutex, &_report);
+        _output = new tsp::OutputExecutor(_args, *this, _args.output, ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()), _mutex, &_report);
         CheckNonNull(_output);
 
         _output->ringInsertAfter(_input);
@@ -157,7 +158,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         bool realtime = _args.realtime == ts::TRUE || _input->isRealTime() || _output->isRealTime();
 
         for (size_t i = 0; i < _args.plugins.size(); ++i) {
-            tsp::PluginExecutor* p = new tsp::ProcessorExecutor(_args, i, ThreadAttributes(), _mutex, &_report);
+            tsp::PluginExecutor* p = new tsp::ProcessorExecutor(_args, *this, i, ThreadAttributes(), _mutex, &_report);
             CheckNonNull(p);
             p->ringInsertBefore(_output);
             realtime = realtime || p->isRealTime();
