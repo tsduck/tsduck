@@ -77,13 +77,6 @@ namespace ts {
             //!
             bool initAllBuffers(PacketBuffer* buffer, PacketMetadataBuffer* metadata);
 
-            //!
-            //! Access the shared library API.
-            //! Override ts::tsp::PluginExecutor::plugin() with a specialized returned class.
-            //! @return Address of the plugin interface.
-            //!
-            InputPlugin* plugin() { return _input; }
-
             // Overridden methods.
             virtual void setAbort() override;
             virtual size_t pluginIndex() const override;

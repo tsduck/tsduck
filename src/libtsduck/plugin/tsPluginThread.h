@@ -78,12 +78,6 @@ namespace ts {
         static const size_t STACK_SIZE_OVERHEAD = 32 * 1024; // 32 kB
 
         //!
-        //! Access the shared library API.
-        //! @return Address of the plugin interface.
-        //!
-        Plugin* plugin() const { return _shlib; }
-
-        //!
         //! Set the plugin name as displayed in log messages.
         //! By default, used the real plugin name.
         //! @param [in] name The name to use in log messages.
@@ -93,6 +87,7 @@ namespace ts {
 
         // Implementation of TSP virtual methods.
         virtual UString pluginName() const override;
+        virtual Plugin* plugin() const override;
 
     protected:
         // Inherited from Report (via TSP)

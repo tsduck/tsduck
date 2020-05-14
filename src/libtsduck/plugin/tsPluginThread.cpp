@@ -113,12 +113,17 @@ ts::PluginThread::~PluginThread()
 
 
 //----------------------------------------------------------------------------
-// Get the plugin name. Inherited from TSP.
+// Implementation of TSP interface.
 //----------------------------------------------------------------------------
 
 ts::UString ts::PluginThread::pluginName() const
 {
     return _name;
+}
+
+ts::Plugin* ts::PluginThread::plugin() const
+{
+    return _shlib;
 }
 
 
