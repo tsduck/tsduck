@@ -43,6 +43,14 @@ ts::PluginEventHandlerRegistry::PluginEventHandlerRegistry() :
 {
 }
 
+ts::PluginEventHandlerRegistry::Criteria::Criteria() :
+    plugin_name(),
+    plugin_index(),
+    plugin_type(),
+    event_code()
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Register an event handler.
