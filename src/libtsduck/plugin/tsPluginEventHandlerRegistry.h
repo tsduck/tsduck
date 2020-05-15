@@ -65,7 +65,7 @@ namespace ts {
         class Criteria
         {
         public:
-            Criteria() = default;               //!< Default constructor.
+            Criteria();                         //!< Default constructor.
             Variable<UString>    plugin_name;   //!< When specified, the plugin must match that name.
             Variable<size_t>     plugin_index;  //!< When specified, the plugin must be at that index in the chain.
             Variable<PluginType> plugin_type;   //!< When specified, the plugin must be of this type.
