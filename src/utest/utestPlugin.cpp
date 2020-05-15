@@ -85,10 +85,10 @@ void PluginTest::afterTest()
 void PluginTest::display(const ts::PluginSharedLibrary& lib)
 {
     debug() << "* File: " << lib.fileName() << std::endl
-                 << "  isLoaded: " << lib.isLoaded() << std::endl
-                 << "  input: " << ts::UString::YesNo(lib.new_input != nullptr) << std::endl
-                 << "  output: " << ts::UString::YesNo(lib.new_output != nullptr) << std::endl
-                 << "  processor: " << ts::UString::YesNo(lib.new_processor != nullptr) << std::endl;
+            << "  isLoaded: " << lib.isLoaded() << std::endl
+            << "  input: " << ts::UString::YesNo(lib.new_input != nullptr) << std::endl
+            << "  output: " << ts::UString::YesNo(lib.new_output != nullptr) << std::endl
+            << "  processor: " << ts::UString::YesNo(lib.new_processor != nullptr) << std::endl;
 }
 
 void PluginTest::testInput()
