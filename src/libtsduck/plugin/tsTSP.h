@@ -172,11 +172,7 @@ namespace ts {
         //!
         //! If the application has registered plugin events for this kind of events, they will be invoked.
         //! @param [in] event_code A plugin-defined 32-bit code describing the event type.
-        //! There is no predefined list of event codes. Plugin should define their own codes
-        //! based on meaningful 4-char literals in order to avoid value clashes, for instance:
-        //! @code
-        //! static constexpr uint32_t FAIL_EVENT = 'FAIL';
-        //! @endcode
+        //! There is no predefined list of event codes. Plugin should define their own codes.
         //! @param [in] plugin_data Address of optional plugin-specific data. It can be a null pointer.
         //! Each plugin may defined subclasses of Object to pass specific data to application handlers
         //! which are aware of this plugin.

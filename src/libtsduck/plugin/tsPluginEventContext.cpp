@@ -44,6 +44,7 @@ ts::PluginEventContext::PluginEventContext(uint32_t      event_code,
                                            BitRate       bitrate,
                                            PacketCounter plugin_packets,
                                            PacketCounter total_packets) :
+    _event_code(event_code),
     _plugin_name(plugin_name),
     _plugin_index(plugin_index),
     _plugin_count(plugin_count),
