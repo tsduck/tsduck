@@ -58,6 +58,11 @@ namespace ts {
         virtual bool isRealTime() override;
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
+        //! @cond nodoxygen
+        // A dummy storage value to force inclusion of this module when using the static library.
+        static const int REFERENCE;
+        //! @endcond
+
     private:
         UString        _destination;        // Destination address/port.
         UString        _local_addr;         // Local address.

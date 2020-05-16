@@ -66,6 +66,11 @@ namespace ts {
             virtual void processInput() override;
             virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
+            //! @cond nodoxygen
+            // A dummy storage value to force inclusion of this module when using the static library.
+            static const int REFERENCE;
+            //! @endcond
+
         private:
             URL            _url;
             BitRate        _minRate;

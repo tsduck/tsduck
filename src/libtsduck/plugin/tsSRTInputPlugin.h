@@ -57,6 +57,11 @@ namespace ts {
         virtual bool stop(void) override;
         virtual bool abortInput(void) override;
 
+        //! @cond nodoxygen
+        // A dummy storage value to force inclusion of this module when using the static library.
+        static const int REFERENCE;
+        //! @endcond
+
     protected:
         // Implementation of AbstractDatagramInputPlugin.
         virtual bool receiveDatagram(void* buffer, size_t buffer_size, size_t& ret_size) override;

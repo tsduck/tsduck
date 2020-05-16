@@ -33,6 +33,9 @@ TSDUCK_SOURCE;
 
 TS_REGISTER_PROCESSOR_PLUGIN(u"file", ts::FilePacketPlugin);
 
+// A dummy storage value to force inclusion of this module when using the static library.
+const int ts::FilePacketPlugin::REFERENCE = 0;
+
 
 //----------------------------------------------------------------------------
 // Packet processor constructor

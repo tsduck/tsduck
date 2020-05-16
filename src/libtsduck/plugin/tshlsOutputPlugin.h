@@ -68,6 +68,11 @@ namespace ts {
             virtual bool isRealTime() override;
             virtual bool send(const TSPacket*, const TSPacketMetadata* pkt_data, size_t) override;
 
+            //! @cond nodoxygen
+            // A dummy storage value to force inclusion of this module when using the static library.
+            static const int REFERENCE;
+            //! @endcond
+
         private:
             UString            _segmentTemplate;       // Command line segment file names template.
             UString            _segmentTemplateHead;   // Head of segment file names.

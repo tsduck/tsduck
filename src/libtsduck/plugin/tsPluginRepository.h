@@ -204,7 +204,7 @@ namespace ts {
         //! The registration is performed using constructors.
         //! Thus, it is possible to perform a registration in the declaration of a static object.
         //!
-        class Register
+        class TSDUCKDLL Register
         {
             TS_NOBUILD_NOCOPY(Register);
         public:

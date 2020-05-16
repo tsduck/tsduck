@@ -58,6 +58,11 @@ namespace ts {
         virtual bool abortInput() override;
         virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
+        //! @cond nodoxygen
+        // A dummy storage value to force inclusion of this module when using the static library.
+        static const int REFERENCE;
+        //! @endcond
+
     protected:
         // Implementation of AbstractDatagramInputPlugin.
         virtual bool receiveDatagram(void* buffer, size_t buffer_size, size_t& ret_size) override;
