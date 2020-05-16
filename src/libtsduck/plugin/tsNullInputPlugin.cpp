@@ -26,49 +26,22 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor shared library:
-//  Null packets input
-//
-//----------------------------------------------------------------------------
 
+#include "tsNullInputPlugin.h"
 #include "tsPluginRepository.h"
 TSDUCK_SOURCE;
 
+TS_REGISTER_INPUT_PLUGIN(u"null", ts::NullInputPlugin);
 
-//----------------------------------------------------------------------------
-// Plugin definition
-//----------------------------------------------------------------------------
-
-namespace ts {
-    class NullInput: public InputPlugin
-    {
-        TS_NOBUILD_NOCOPY(NullInput);
-    public:
-        // Implementation of plugin API
-        NullInput(TSP*);
-        virtual bool getOptions() override;
-        virtual bool start() override;
-        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
-        virtual bool abortInput() override;
-        virtual bool setReceiveTimeout(MilliSecond timeout) override;
-
-    private:
-        PacketCounter _max_count;   // Number of packets to generate
-        PacketCounter _count;       // Number of generated packets
-        PacketCounter _limit;       // Current max number of packets
-    };
-}
-
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(null, ts::NullInput)
+// A dummy storage value to force inclusion of this module when using the static library.
+const int ts::NullInputPlugin::REFERENCE = 0;
 
 
 //----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::NullInput::NullInput(TSP* tsp_) :
+ts::NullInputPlugin::NullInputPlugin(TSP* tsp_) :
     InputPlugin(tsp_, u"Generate null packets", u"[options] [count]"),
     _max_count(0),
     _count(0),
@@ -92,7 +65,7 @@ ts::NullInput::NullInput(TSP* tsp_) :
 // Command line options method
 //----------------------------------------------------------------------------
 
-bool ts::NullInput::getOptions()
+bool ts::NullInputPlugin::getOptions()
 {
     tsp->useJointTermination(present(u"joint-termination"));
     _max_count = intValue<PacketCounter>(u"", std::numeric_limits<PacketCounter>::max());
@@ -104,7 +77,7 @@ bool ts::NullInput::getOptions()
 // Start method
 //----------------------------------------------------------------------------
 
-bool ts::NullInput::start()
+bool ts::NullInputPlugin::start()
 {
     _count = 0;
     _limit = _max_count;
@@ -116,12 +89,12 @@ bool ts::NullInput::start()
 // Input is never blocking.
 //----------------------------------------------------------------------------
 
-bool ts::NullInput::setReceiveTimeout(MilliSecond timeout)
+bool ts::NullInputPlugin::setReceiveTimeout(MilliSecond timeout)
 {
     return true;
 }
 
-bool ts::NullInput::abortInput()
+bool ts::NullInputPlugin::abortInput()
 {
     return true;
 }
@@ -131,7 +104,7 @@ bool ts::NullInput::abortInput()
 // Input method
 //----------------------------------------------------------------------------
 
-size_t ts::NullInput::receive (TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
+size_t ts::NullInputPlugin::receive (TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
     // If "joint termination" reached for this plugin
     if (_count >= _limit && tsp->useJointTermination()) {

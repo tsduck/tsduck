@@ -29,7 +29,7 @@
 
 #include "tsPluginRepository.h"
 #include "tsApplicationSharedLibrary.h"
-#include "tsPluginSharedLibrary.h"
+#include "tsAlgorithm.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -61,40 +61,40 @@ ts::PluginRepository::PluginRepository() :
 // Plugin registration.
 //----------------------------------------------------------------------------
 
-void ts::PluginRepository::registerInput(const UString& name, NewInputProfile allocator)
+void ts::PluginRepository::registerInput(const UString& name, InputPluginFactory allocator)
 {
     if (allocator != nullptr) {
         _inputPlugins[name] = allocator;
     }
 }
 
-void ts::PluginRepository::registerProcessor(const UString& name, NewProcessorProfile allocator)
+void ts::PluginRepository::registerProcessor(const UString& name, ProcessorPluginFactory allocator)
 {
     if (allocator != nullptr) {
         _processorPlugins[name] = allocator;
     }
 }
 
-void ts::PluginRepository::registerOutput(const UString& name, NewOutputProfile allocator)
+void ts::PluginRepository::registerOutput(const UString& name, OutputPluginFactory allocator)
 {
     if (allocator != nullptr) {
         _outputPlugins[name] = allocator;
     }
 }
 
-ts::PluginRepository::Register::Register(const char* name, NewInputProfile allocator)
+ts::PluginRepository::Register::Register(const UString& name, InputPluginFactory allocator)
 {
-    PluginRepository::Instance()->registerInput(UString::FromUTF8(name), allocator);
+    PluginRepository::Instance()->registerInput(name, allocator);
 }
 
-ts::PluginRepository::Register::Register(const char* name, NewProcessorProfile allocator)
+ts::PluginRepository::Register::Register(const UString& name, ProcessorPluginFactory allocator)
 {
-    PluginRepository::Instance()->registerProcessor(UString::FromUTF8(name), allocator);
+    PluginRepository::Instance()->registerProcessor(name, allocator);
 }
 
-ts::PluginRepository::Register::Register(const char* name, NewOutputProfile allocator)
+ts::PluginRepository::Register::Register(const UString& name, OutputPluginFactory allocator)
 {
-    PluginRepository::Instance()->registerOutput(UString::FromUTF8(name), allocator);
+    PluginRepository::Instance()->registerOutput(name, allocator);
 }
 
 
@@ -102,97 +102,71 @@ ts::PluginRepository::Register::Register(const char* name, NewOutputProfile allo
 // Get plugins by name.
 //----------------------------------------------------------------------------
 
-ts::NewInputProfile ts::PluginRepository::getInput(const UString& name, Report& report)
+template<typename FACTORY>
+FACTORY ts::PluginRepository::getFactory(const UString& plugin_name, const UString& plugin_type, const std::map<UString,FACTORY>& plugin_map, Report& report)
 {
     // Search plugin in current cache.
-    const InputMap::const_iterator it = _inputPlugins.find(name);
-    if (it != _inputPlugins.end()) {
+    auto it = plugin_map.find(plugin_name);
+
+    // Load a shared library if not found and allowed.
+    if (it == plugin_map.end() && _sharedLibraryAllowed) {
+        // Load shareable library. Use name resolution. Use permanent mapping to keep
+        // the shareable image in memory after returning from this function.
+        ApplicationSharedLibrary shlib(plugin_name, u"tsplugin_", TS_PLUGINS_PATH, true, report);
+        if (shlib.isLoaded()) {
+            // Search again if the shareable library was loaded.
+            // The shareable library is supposed to register its plugins on initialization.
+            it = plugin_map.find(plugin_name);
+        }
+        else {
+            report.error(shlib.errorMessage());
+        }
+    }
+
+    // Return the factory function if one was found.
+    if (it != plugin_map.end()) {
         assert(it->second != nullptr);
         return it->second;
     }
-
-    // Do nothing if loading dynamic libraries is disallowed.
-    if (!_sharedLibraryAllowed) {
-        report.error(u"input plugin %s not found", {name});
-        return nullptr;
-    }
-
-    // Try to load a shareable library.
-    PluginSharedLibrary shlib(name, report);
-    if (!shlib.isLoaded()) {
-        // Error message already displayed.
-        return nullptr;
-    }
-    else if (shlib.new_input != nullptr) {
-        registerInput(shlib.moduleName(), shlib.new_input);
-        return shlib.new_input;
-    }
     else {
-        report.error(u"plugin %s has no input capability", {shlib.moduleName()});
+        report.error(u"%s plugin %s not found", {plugin_type, plugin_name});
         return nullptr;
     }
 }
 
-ts::NewProcessorProfile ts::PluginRepository::getProcessor(const UString& name, Report& report)
+ts::PluginRepository::InputPluginFactory ts::PluginRepository::getInput(const UString& name, Report& report)
 {
-    // Search plugin in current cache.
-    const ProcessorMap::const_iterator it = _processorPlugins.find(name);
-    if (it != _processorPlugins.end()) {
-        assert(it->second != nullptr);
-        return it->second;
-    }
-
-    // Do nothing if loading dynamic libraries is disallowed.
-    if (!_sharedLibraryAllowed) {
-        report.error(u"processor plugin %s not found", {name});
-        return nullptr;
-    }
-
-    // Try to load a shareable library.
-    PluginSharedLibrary shlib(name, report);
-    if (!shlib.isLoaded()) {
-        // Error message already displayed.
-        return nullptr;
-    }
-    else if (shlib.new_processor != nullptr) {
-        registerProcessor(shlib.moduleName(), shlib.new_processor);
-        return shlib.new_processor;
-    }
-    else {
-        report.error(u"plugin %s has no processor capability", {shlib.moduleName()});
-        return nullptr;
-    }
+    return getFactory(name, u"input", _inputPlugins, report);
 }
 
-ts::NewOutputProfile ts::PluginRepository::getOutput(const UString& name, Report& report)
+ts::PluginRepository::ProcessorPluginFactory ts::PluginRepository::getProcessor(const UString& name, Report& report)
 {
-    // Search plugin in current cache.
-    const OutputMap::const_iterator it = _outputPlugins.find(name);
-    if (it != _outputPlugins.end()) {
-        assert(it->second != nullptr);
-        return it->second;
-    }
+    return getFactory(name, u"processor", _processorPlugins, report);
+}
 
-    // Do nothing if loading dynamic libraries is disallowed.
-    if (!_sharedLibraryAllowed) {
-        report.error(u"output plugin %s not found", {name});
-        return nullptr;
-    }
+ts::PluginRepository::OutputPluginFactory ts::PluginRepository::getOutput(const UString& name, Report& report)
+{
+    return getFactory(name, u"output", _outputPlugins, report);
+}
 
-    // Try to load a shareable library.
-    PluginSharedLibrary shlib(name, report);
-    if (!shlib.isLoaded()) {
-        // Error message already displayed.
-        return nullptr;
-    }
-    else if (shlib.new_output != nullptr) {
-        registerOutput(shlib.moduleName(), shlib.new_output);
-        return shlib.new_output;
-    }
-    else {
-        report.error(u"plugin %s has no output capability", {shlib.moduleName()});
-        return nullptr;
-    }
+
+//----------------------------------------------------------------------------
+// Get the names of all registered plugins.
+//----------------------------------------------------------------------------
+
+ts::UStringList ts::PluginRepository::inputNames() const
+{
+    return MapKeys(_inputPlugins);
+}
+
+ts::UStringList ts::PluginRepository::processorNames() const
+{
+    return MapKeys(_processorPlugins);
+}
+
+ts::UStringList ts::PluginRepository::outputNames() const
+{
+    return MapKeys(_outputPlugins);
 }
 
 
@@ -211,15 +185,10 @@ void ts::PluginRepository::loadAllPlugins(Report& report)
     UStringVector files;
     ApplicationSharedLibrary::GetPluginList(files, u"tsplugin_", TS_PLUGINS_PATH);
 
-    // Load all plugins and register allocator functions (when not zero).
+    // Load all plugins, let them register their plugins.
     for (size_t i = 0; i < files.size(); ++i) {
-        PluginSharedLibrary shlib(files[i], report);
-        if (shlib.isLoaded()) {
-            const UString name(shlib.moduleName());
-            registerInput(name, shlib.new_input);
-            registerOutput(name, shlib.new_output);
-            registerProcessor(name, shlib.new_processor);
-        }
+        // Permanent load.
+        SharedLibrary shlib(files[i], true, report);
     }
 }
 

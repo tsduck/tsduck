@@ -112,10 +112,10 @@ namespace ts {
 //!
 //! Sample usage, from one source file inside the extension library:
 //! @code
-//! TS_DECLARE_EXTENSION(u"foo", u"Manipulate FOO tables", {u"fooinject", u"fooextract"}, {u"foogen"});
+//! TS_REGISTER_EXTENSION(u"foo", u"Manipulate FOO tables", {u"fooinject", u"fooextract"}, {u"foogen"});
 //! @endcode
 //!
-#define TS_DECLARE_EXTENSION(...)                                                \
+#define TS_REGISTER_EXTENSION(...)                                                \
     namespace {                                                                  \
         const ts::DuckExtension _TSDuckExtensionId(__VA_ARGS__);                 \
     }                                                                            \

@@ -28,8 +28,11 @@
 //----------------------------------------------------------------------------
 
 #include "tsSRTInputPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
+
+TS_REGISTER_INPUT_PLUGIN(u"srt", ts::SRTInputPlugin);
 
 
 //----------------------------------------------------------------------------

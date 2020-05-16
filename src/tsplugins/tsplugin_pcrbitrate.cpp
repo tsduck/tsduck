@@ -72,8 +72,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(pcrbitrate, ts::PCRBitratePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"pcrbitrate", ts::PCRBitratePlugin);
 
 
 //----------------------------------------------------------------------------

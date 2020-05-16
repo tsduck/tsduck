@@ -81,16 +81,6 @@ namespace ts {
         TS_NOBUILD_NOCOPY(TSP);
     public:
         //!
-        //! Plugin API Version Number
-        //!
-        //! Important: Must be incremented each time the tsp plugin abstract
-        //! interfaces are modified. All shared libraries shall export a global
-        //! @c int data named @c tspInterfaceVersion which contains the current
-        //! interface version at the time the library is built.
-        //!
-        static const int API_VERSION = 15;
-
-        //!
         //! Get the current input bitrate in bits/seconds.
         //! @return The current input bitrate in bits/seconds or zero if unknown.
         //!

@@ -59,8 +59,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(psi, ts::PSIPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"psi", ts::PSIPlugin);
 
 
 //----------------------------------------------------------------------------

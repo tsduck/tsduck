@@ -143,8 +143,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(pcradjust, ts::PCRAdjustPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"pcradjust", ts::PCRAdjustPlugin);
 
 
 //----------------------------------------------------------------------------

@@ -85,8 +85,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(mpeinject, ts::MPEInjectPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"mpeinject", ts::MPEInjectPlugin);
 
 
 //----------------------------------------------------------------------------

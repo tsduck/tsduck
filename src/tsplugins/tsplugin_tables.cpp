@@ -59,8 +59,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(tables, ts::TablesPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"tables", ts::TablesPlugin);
 
 
 //----------------------------------------------------------------------------

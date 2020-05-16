@@ -28,9 +28,12 @@
 //----------------------------------------------------------------------------
 
 #include "tsFileOutputPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
+
+TS_REGISTER_OUTPUT_PLUGIN(u"file", ts::FileOutputPlugin);
 
 #define DEF_RETRY_INTERVAL 2000 // milliseconds
 

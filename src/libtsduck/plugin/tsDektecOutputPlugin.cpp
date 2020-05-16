@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDektecOutputPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsDektecUtils.h"
 #include "tsDektecDevice.h"
 #include "tsDektecVPD.h"
@@ -37,6 +38,8 @@
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
+
+TS_REGISTER_OUTPUT_PLUGIN(u"dektec", ts::DektecOutputPlugin);
 
 #define DEFAULT_PRELOAD_FIFO_PERCENTAGE 80
 

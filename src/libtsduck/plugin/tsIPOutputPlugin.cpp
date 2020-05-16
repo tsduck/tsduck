@@ -28,8 +28,11 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPOutputPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsSystemRandomGenerator.h"
 TSDUCK_SOURCE;
+
+TS_REGISTER_OUTPUT_PLUGIN(u"ip", ts::IPOutputPlugin);
 
 // Grouping TS packets in UDP packets
 

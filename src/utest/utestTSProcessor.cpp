@@ -245,6 +245,12 @@ void TSProcessorTest::testProcessing()
     // Register our custom plugin with the name "test1".
     ts::PluginRepository::Instance()->registerProcessor(u"test1", TestPlugin::CreateInstance);
 
+    // List of preregistered plugins.
+    debug() << "TSProcessorTest: pre-registered plugins: " << std::endl
+            << "  input: " << ts::UString::Join(ts::PluginRepository::Instance()->inputNames()) << std::endl
+            << "  output: " << ts::UString::Join(ts::PluginRepository::Instance()->outputNames()) << std::endl
+            << "  processor names: " << ts::UString::Join(ts::PluginRepository::Instance()->processorNames()) << std::endl;
+
     // Build tsp options.
     ts::TSProcessorArgs opt;
     opt.app_name = u"TSProcessorTest::testProcessing";

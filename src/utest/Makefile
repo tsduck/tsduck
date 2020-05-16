@@ -44,7 +44,7 @@ execs: $(OBJDIR)/utest $(OBJDIR)/utest_static
 $(OBJDIR)/utest: $(subst $(OBJDIR)/dependenciesForStaticLib.o,,$(OBJS)) $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
 
 # 2) Using static library. Skipt plugin tests since they use the shared object.
-$(OBJDIR)/utest_static: $(subst $(OBJDIR)/utestPlugin.o,,$(OBJS)) $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
+$(OBJDIR)/utest_static: $(subst $(OBJDIR)/utestPluginRepository.o,,$(OBJS)) $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
 	@echo '  [LD] $@'; \
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 

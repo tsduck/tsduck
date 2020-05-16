@@ -28,9 +28,12 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPInputPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsIPUtils.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
+
+TS_REGISTER_INPUT_PLUGIN(u"ip", ts::IPInputPlugin);
 
 
 //----------------------------------------------------------------------------

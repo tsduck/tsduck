@@ -78,8 +78,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(teletext, ts::TeletextPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"teletext", ts::TeletextPlugin);
 
 
 //----------------------------------------------------------------------------

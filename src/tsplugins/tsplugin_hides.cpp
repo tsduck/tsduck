@@ -64,8 +64,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_OUTPUT(hides, ts::HiDesOutput)
+TS_REGISTER_OUTPUT_PLUGIN(u"hides", ts::HiDesOutput);
 
 
 //----------------------------------------------------------------------------

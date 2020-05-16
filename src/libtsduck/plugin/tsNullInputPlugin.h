@@ -28,65 +28,43 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  TSP plugin shared libraries
+//!  Null packet input plugin for tsp.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsInputPlugin.h"
-#include "tsProcessorPlugin.h"
-#include "tsOutputPlugin.h"
-#include "tsApplicationSharedLibrary.h"
-#include "tsCerrReport.h"
-#include "tsNullMutex.h"
-#include "tsSafePtr.h"
 
 namespace ts {
     //!
-    //! Representation of a TSP plugin shared library.
+    //! Null packet input plugin for tsp.
     //! @ingroup plugin
     //!
-    class TSDUCKDLL PluginSharedLibrary: public ApplicationSharedLibrary
+    class TSDUCKDLL NullInputPlugin: public InputPlugin
     {
-        TS_NOBUILD_NOCOPY(PluginSharedLibrary);
+        TS_NOBUILD_NOCOPY(NullInputPlugin);
     public:
         //!
         //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
         //!
-        //! When the load is successful, the API version has been successfully checked
-        //! and the tsp plugin API has been located.
-        //!
-        //! @param [in] filename Share library file name. Directory, "tsplugin_" prefix and suffix are optional.
-        //! @param [in,out] report Where to report errors.
-        //!
-        explicit PluginSharedLibrary(const UString& filename, Report& report = CERR);
+        NullInputPlugin(TSP* tsp);
 
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~PluginSharedLibrary();
+        // Implementation of plugin API
+        virtual bool getOptions() override;
+        virtual bool start() override;
+        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
+        virtual bool abortInput() override;
+        virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
-        //!
-        //! Input plugin allocation function.
-        //! If null, the plugin either does not provide input capability or is not a valid TSP plugin.
-        //!
-        NewInputProfile new_input;
+        //! @cond nodoxygen
+        // A dummy storage value to force inclusion of this module when using the static library.
+        static const int REFERENCE;
+        //! @endcond
 
-        //!
-        //! Output plugin allocation function.
-        //! If null, the plugin either does not provide output capability or is not a valid TSP plugin.
-        //!
-        NewOutputProfile new_output;
-
-        //!
-        //! Packet processing plugin allocation function.
-        //! If null, the plugin either does not provide packet processing capability or is not a valid TSP plugin.
-        //!
-        NewProcessorProfile new_processor;
+    private:
+        PacketCounter _max_count;   // Number of packets to generate
+        PacketCounter _count;       // Number of generated packets
+        PacketCounter _limit;       // Current max number of packets
     };
-
-    //!
-    //! Safe pointer for PluginSharedLibrary (not thread-safe).
-    //!
-    typedef SafePtr <PluginSharedLibrary, NullMutex> PluginSharedLibraryPtr;
 }

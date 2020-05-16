@@ -62,8 +62,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(regulate, ts::RegulatePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"regulate", ts::RegulatePlugin);
 
 
 //----------------------------------------------------------------------------

@@ -165,8 +165,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(datainject, ts::DataInjectPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"datainject", ts::DataInjectPlugin);
 
 
 //----------------------------------------------------------------------------

@@ -95,8 +95,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(aes, ts::AESPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"aes", ts::AESPlugin);
 
 
 //----------------------------------------------------------------------------

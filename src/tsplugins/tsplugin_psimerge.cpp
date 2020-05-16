@@ -59,8 +59,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(merge, ts::PSIMergePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"psimerge", ts::PSIMergePlugin);
 
 
 //----------------------------------------------------------------------------

@@ -105,10 +105,9 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(fork, ts::ForkInput)
-TSPLUGIN_DECLARE_OUTPUT(fork, ts::ForkOutput)
-TSPLUGIN_DECLARE_PROCESSOR(fork, ts::ForkPlugin)
+TS_REGISTER_INPUT_PLUGIN(u"fork", ts::ForkInput);
+TS_REGISTER_OUTPUT_PLUGIN(u"fork", ts::ForkOutput);
+TS_REGISTER_PROCESSOR_PLUGIN(u"fork", ts::ForkPlugin);
 
 
 //----------------------------------------------------------------------------

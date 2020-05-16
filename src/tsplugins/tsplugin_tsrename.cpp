@@ -90,8 +90,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(tsrename, ts::TSRenamePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"tsrename", ts::TSRenamePlugin);
 
 
 //----------------------------------------------------------------------------

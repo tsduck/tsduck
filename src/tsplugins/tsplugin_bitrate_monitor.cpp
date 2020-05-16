@@ -95,8 +95,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(bitrate_monitor, ts::BitrateMonitorPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"bitrate_monitor", ts::BitrateMonitorPlugin);
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr ts::BitRate ts::BitrateMonitorPlugin::DEFAULT_BITRATE_MIN;

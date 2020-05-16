@@ -31,8 +31,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(sample, ts::SamplePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"sample", ts::SamplePlugin)
 
 
 //----------------------------------------------------------------------------

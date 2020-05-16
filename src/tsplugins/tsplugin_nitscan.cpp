@@ -89,8 +89,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(nitscan, ts::NITScanPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"nitscan", ts::NITScanPlugin);
 
 
 //----------------------------------------------------------------------------

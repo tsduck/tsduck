@@ -4,8 +4,8 @@
 
 #include "tsduck.h"
 
-// Declare the extension library:
-TS_DECLARE_EXTENSION(u"foo", u"Sample foo extension", {u"foot"}, {u"footool"});
+// Register the extension library:
+TS_REGISTER_EXTENSION(u"foo", u"Sample foo extension", {u"foot"}, {u"footool"});
 
 // Register our XML file as an extension to the global model for tables and descriptors.
 TS_REGISTER_XML_FILE(u"tslibext_foo.xml");
