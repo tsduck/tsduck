@@ -57,6 +57,11 @@ namespace ts {
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
+        //! @cond nodoxygen
+        // A dummy storage value to force inclusion of this module when using the static library.
+        static const int REFERENCE;
+        //! @endcond
+
     private:
         UString           _name;
         TSFile::OpenFlags _flags;

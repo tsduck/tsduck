@@ -37,6 +37,9 @@ TSDUCK_SOURCE;
 
 TS_REGISTER_OUTPUT_PLUGIN(u"hls", ts::hls::OutputPlugin);
 
+// A dummy storage value to force inclusion of this module when using the static library.
+const int ts::hls::OutputPlugin::REFERENCE = 0;
+
 #define DEFAULT_OUT_DURATION      10  // Default segment target duration for output streams.
 #define DEFAULT_OUT_LIVE_DURATION  5  // Default segment target duration for output live streams.
 #define DEFAULT_OUT_NUM_WIDTH      6  // Default size of number field in output segment files.

@@ -34,6 +34,9 @@ TSDUCK_SOURCE;
 
 TS_REGISTER_OUTPUT_PLUGIN(u"ip", ts::IPOutputPlugin);
 
+// A dummy storage value to force inclusion of this module when using the static library.
+const int ts::IPOutputPlugin::REFERENCE = 0;
+
 // Grouping TS packets in UDP packets
 
 #define DEF_PACKET_BURST    7  // 1316 B, fits (with headers) in Ethernet MTU

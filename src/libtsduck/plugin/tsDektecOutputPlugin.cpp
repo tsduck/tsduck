@@ -41,6 +41,9 @@ TSDUCK_SOURCE;
 
 TS_REGISTER_OUTPUT_PLUGIN(u"dektec", ts::DektecOutputPlugin);
 
+// A dummy storage value to force inclusion of this module when using the static library.
+const int ts::DektecOutputPlugin::REFERENCE = 0;
+
 #define DEFAULT_PRELOAD_FIFO_PERCENTAGE 80
 
 #if !defined(TS_NO_DTAPI)

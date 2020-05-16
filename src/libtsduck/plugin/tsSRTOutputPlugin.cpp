@@ -33,6 +33,9 @@ TSDUCK_SOURCE;
 
 TS_REGISTER_OUTPUT_PLUGIN(u"srt", ts::SRTOutputPlugin);
 
+// A dummy storage value to force inclusion of this module when using the static library.
+const int ts::SRTOutputPlugin::REFERENCE = 0;
+
 #define MAX_PKT_MESSAGE_MODE 7
 
 

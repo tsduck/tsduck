@@ -34,6 +34,9 @@ TSDUCK_SOURCE;
 
 TS_REGISTER_INPUT_PLUGIN(u"srt", ts::SRTInputPlugin);
 
+// A dummy storage value to force inclusion of this module when using the static library.
+const int ts::SRTInputPlugin::REFERENCE = 0;
+
 
 //----------------------------------------------------------------------------
 // Input constructor

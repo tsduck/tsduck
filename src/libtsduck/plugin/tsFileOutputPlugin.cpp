@@ -35,6 +35,9 @@ TSDUCK_SOURCE;
 
 TS_REGISTER_OUTPUT_PLUGIN(u"file", ts::FileOutputPlugin);
 
+// A dummy storage value to force inclusion of this module when using the static library.
+const int ts::FileOutputPlugin::REFERENCE = 0;
+
 #define DEF_RETRY_INTERVAL 2000 // milliseconds
 
 
