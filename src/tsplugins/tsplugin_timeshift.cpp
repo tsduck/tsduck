@@ -64,8 +64,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(timeshift, ts::TimeShiftPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"timeshift", ts::TimeShiftPlugin);
 
 
 //----------------------------------------------------------------------------

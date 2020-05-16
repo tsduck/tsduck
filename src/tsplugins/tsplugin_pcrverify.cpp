@@ -81,8 +81,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(pcrverify, ts::PCRVerifyPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"pcrverify", ts::PCRVerifyPlugin);
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr int64_t ts::PCRVerifyPlugin::PCR_PER_MICRO_SEC;

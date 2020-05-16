@@ -94,8 +94,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(svremove, ts::SVRemovePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"svremove", ts::SVRemovePlugin);
 
 
 //----------------------------------------------------------------------------

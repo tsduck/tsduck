@@ -103,25 +103,4 @@ namespace ts {
         //!
         InputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
     };
-
-    //!
-    //! Input plugin interface profile.
-    //!
-    //! All shared libraries providing input capability shall export
-    //! a global function named @c tspNewInput with the following profile.
-    //!
-    //! @param [in] tsp Associated callback to @c tsp executable.
-    //! @return A new allocated object implementing ts::InputPlugin.
-    //!
-    typedef InputPlugin* (*NewInputProfile)(TSP* tsp);
 }
-
-//!
-//! Export input plugin interface out of the shared library.
-//! This macro declares the plugin allocation routine.
-//! Shall be used by shared libraries which provide input capability.
-//! @param name Plugin name. Only used with static link.
-//! @param type Name of a subclass of ts::InputPlugin implementing the plugin.
-//! @hideinitializer
-//!
-#define TSPLUGIN_DECLARE_INPUT(name,type) _TSPLUGIN_DECLARE_PLUGIN(name,type,Input)

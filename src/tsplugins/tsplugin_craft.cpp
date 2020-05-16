@@ -125,9 +125,8 @@ namespace ts {
 // Plugin shared library interface
 //----------------------------------------------------------------------------
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(craft, ts::CraftInput)
-TSPLUGIN_DECLARE_PROCESSOR(craft, ts::CraftPlugin)
+TS_REGISTER_INPUT_PLUGIN(u"craft", ts::CraftInput);
+TS_REGISTER_PROCESSOR_PLUGIN(u"craft", ts::CraftPlugin);
 
 
 //----------------------------------------------------------------------------

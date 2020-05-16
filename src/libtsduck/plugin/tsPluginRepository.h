@@ -52,6 +52,27 @@ namespace ts {
 
     public:
         //!
+        //! Profile of a function which creates an input plugin.
+        //! @param [in] tsp Associated callback to tsp.
+        //! @return A new allocated object implementing ts::InputPlugin.
+        //!
+        typedef InputPlugin* (*InputPluginFactory)(TSP* tsp);
+
+        //!
+        //! Profile of a function which creates an output plugin.
+        //! @param [in] tsp Associated callback to tsp.
+        //! @return A new allocated object implementing ts::OutputPlugin.
+        //!
+        typedef OutputPlugin* (*OutputPluginFactory)(TSP* tsp);
+
+        //!
+        //! Profile of a function which creates a packet processor plugin.
+        //! @param [in] tsp Associated callback to tsp.
+        //! @return A new allocated object implementing ts::ProcessorPlugin.
+        //!
+        typedef ProcessorPlugin* (*ProcessorPluginFactory)(TSP* tsp);
+
+        //!
         //! Allow or disallow the loading of plugins from shareable objects.
         //! When disabled, only statically registered plugins are allowed.
         //! Loading is initially enabled by default.
@@ -64,21 +85,21 @@ namespace ts {
         //! @param [in] name Plugin name.
         //! @param [in] allocator New input plugin allocator function. Ignored when zero.
         //!
-        void registerInput(const UString& name, NewInputProfile allocator);
+        void registerInput(const UString& name, InputPluginFactory allocator);
 
         //!
         //! Register a packet processor plugin.
         //! @param [in] name Plugin name.
         //! @param [in] allocator New packet processor plugin allocator function. Ignored when zero.
         //!
-        void registerProcessor(const UString& name, NewProcessorProfile allocator);
+        void registerProcessor(const UString& name, ProcessorPluginFactory allocator);
 
         //!
         //! Register an output plugin.
         //! @param [in] name Plugin name.
         //! @param [in] allocator New output plugin allocator function. Ignored when zero.
         //!
-        void registerOutput(const UString& name, NewOutputProfile allocator);
+        void registerOutput(const UString& name, OutputPluginFactory allocator);
 
         //!
         //! Get an input plugin by name.
@@ -87,7 +108,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return Plugin allocator function. Zero when not found.
         //!
-        NewInputProfile getInput(const UString& name, Report& report);
+        InputPluginFactory getInput(const UString& name, Report& report);
 
         //!
         //! Get a packet processor plugin by name.
@@ -96,7 +117,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return Plugin allocator function. Zero when not found.
         //!
-        NewProcessorProfile getProcessor(const UString& name, Report& report);
+        ProcessorPluginFactory getProcessor(const UString& name, Report& report);
 
         //!
         //! Get an output plugin by name.
@@ -105,7 +126,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return Plugin allocator function. Zero when not found.
         //!
-        NewOutputProfile getOutput(const UString& name, Report& report);
+        OutputPluginFactory getOutput(const UString& name, Report& report);
 
         //!
         //! Get the number of registered input plugins.
@@ -124,6 +145,24 @@ namespace ts {
         //! @return The number of registered output plugins.
         //!
         size_t outputCount() const { return _outputPlugins.size(); }
+
+        //!
+        //! Get the names of all registered input plugins.
+        //! @return The names of all registered input plugins.
+        //!
+        UStringList inputNames() const;
+
+        //!
+        //! Get the names of all registered packet processor plugins.
+        //! @return The names of all registered packet processor plugins.
+        //!
+        UStringList processorNames() const;
+
+        //!
+        //! Get the names of all registered output plugins.
+        //! @return The names of all registered output plugins.
+        //!
+        UStringList outputNames() const;
 
         //!
         //! Load all available tsp processors.
@@ -174,34 +213,71 @@ namespace ts {
             //! @param [in] name Plugin name.
             //! @param [in] allocator New input plugin allocator function.
             //!
-            Register(const char* name, NewInputProfile allocator);
+            Register(const UString& name, InputPluginFactory allocator);
 
             //!
             //! The constructor registers a packet processor plugin.
             //! @param [in] name Plugin name.
             //! @param [in] allocator New packet processor plugin allocator function.
             //!
-            Register(const char* name, NewProcessorProfile allocator);
+            Register(const UString& name, ProcessorPluginFactory allocator);
 
             //!
             //! The constructor registers an output plugin.
             //! @param [in] name Plugin name.
             //! @param [in] allocator New output plugin allocator function.
             //!
-            Register(const char* name, NewOutputProfile allocator);
+            Register(const UString& name, OutputPluginFactory allocator);
         };
 
     private:
-        typedef std::map<UString, NewInputProfile>     InputMap;
-        typedef std::map<UString, NewProcessorProfile> ProcessorMap;
-        typedef std::map<UString, NewOutputProfile>    OutputMap;
+        typedef std::map<UString, InputPluginFactory>     InputMap;
+        typedef std::map<UString, ProcessorPluginFactory> ProcessorMap;
+        typedef std::map<UString, OutputPluginFactory>    OutputMap;
 
         bool         _sharedLibraryAllowed;
         InputMap     _inputPlugins;
         ProcessorMap _processorPlugins;
         OutputMap    _outputPlugins;
 
+        template<typename FACTORY>
+        FACTORY getFactory(const UString& name, const UString& type, const std::map<UString,FACTORY>&, Report&);
+
         // List one plugin.
         static void ListOnePlugin(UString& out, const UString& name, Plugin* plugin, size_t name_width, int flags);
     };
 }
+
+//
+// Implementation note: Take care before modifying the following macros.
+// Especially, these macros need to be defined on one single line
+// each because of the use of __LINE__ to create unique identifiers.
+//
+//! @cond nodoxygen
+#define _TS_PLUGIN_FACTORY(funcname,classname,suffix) namespace { ts::suffix##Plugin* funcname(ts::TSP* tsp) {return new classname(tsp);} }
+#define _TS_REGISTER_PLUGIN(name,classname,suffix) _TS_PLUGIN_FACTORY(TS_UNIQUE_NAME(_F),classname,suffix) static ts::PluginRepository::Register TS_UNIQUE_NAME(_R)(name,&TS_UNIQUE_NAME(_F))
+//! @endcond
+
+//!
+//! Register an input plugin class in the plugin repository.
+//! @param name Plugin name.
+//! @param classname Name of a subclass of ts::InputPlugin implementing the plugin.
+//! @hideinitializer
+//!
+#define TS_REGISTER_INPUT_PLUGIN(name,classname) _TS_REGISTER_PLUGIN(name,classname,Input)
+
+//!
+//! Register an output plugin class in the plugin repository.
+//! @param name Plugin name.
+//! @param classname Name of a subclass of ts::OutputPlugin implementing the plugin.
+//! @hideinitializer
+//!
+#define TS_REGISTER_OUTPUT_PLUGIN(name,classname) _TS_REGISTER_PLUGIN(name,classname,Output)
+
+//!
+//! Register a packet processing plugin class in the plugin repository.
+//! @param name Plugin name.
+//! @param classname Name of a subclass of ts::ProcessorPlugin implementing the plugin.
+//! @hideinitializer
+//!
+#define TS_REGISTER_PROCESSOR_PLUGIN(name,classname) _TS_REGISTER_PLUGIN(name,classname,Processor)

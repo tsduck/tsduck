@@ -103,25 +103,4 @@ namespace ts {
         //!
         ProcessorPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
     };
-
-    //!
-    //! Packet processing plugin interface profile.
-    //!
-    //! All shared libraries providing packet processing shall export
-    //! a global function named @c tspNewProcessor with the following profile.
-    //!
-    //! @param [in] tsp Associated callback to @c tsp executable.
-    //! @return A new allocated object implementing ts::ProcessorPlugin.
-    //!
-    typedef ProcessorPlugin* (*NewProcessorProfile)(TSP* tsp);
 }
-
-//!
-//! Export packet processing plugin interface out of the shared library.
-//! This macro declares the plugin allocation routine.
-//! Shall be used by shared libraries which provide packet processing capability.
-//! @param name Plugin name. Only used with static link.
-//! @param type Name of a subclass of ts::ProcessorPlugin implementing the plugin.
-//! @hideinitializer
-//!
-#define TSPLUGIN_DECLARE_PROCESSOR(name,type) _TSPLUGIN_DECLARE_PLUGIN(name,type,Processor)

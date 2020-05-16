@@ -59,8 +59,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(decap, ts::DecapPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"decap", ts::DecapPlugin);
 
 
 //----------------------------------------------------------------------------

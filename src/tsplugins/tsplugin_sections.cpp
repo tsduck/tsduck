@@ -76,8 +76,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(sections, ts::SectionsPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"sections", ts::SectionsPlugin);
 
 
 //----------------------------------------------------------------------------

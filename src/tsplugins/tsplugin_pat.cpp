@@ -66,8 +66,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(pat, ts::PATPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"pat", ts::PATPlugin);
 
 
 //----------------------------------------------------------------------------

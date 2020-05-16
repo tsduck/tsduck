@@ -90,8 +90,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(t2mi, ts::T2MIPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"t2mi", ts::T2MIPlugin);
 
 
 //----------------------------------------------------------------------------

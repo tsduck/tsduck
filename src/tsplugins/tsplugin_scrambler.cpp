@@ -217,8 +217,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(scrambler, ts::ScramblerPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"scrambler", ts::ScramblerPlugin);
 
 
 //----------------------------------------------------------------------------

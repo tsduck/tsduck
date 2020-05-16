@@ -102,7 +102,7 @@ ts::DuckExtensionRepository::DuckExtensionRepository() :
                 }
                 else {
                     // The returned address is the address of a pointer to ts::DuckExtension.
-                    // See macro TS_DECLARE_EXTENSION.
+                    // See macro TS_REGISTER_EXTENSION.
                     ts::DuckExtension::ConstPointer ext = *reinterpret_cast<ts::DuckExtension::ConstPointer*>(sym);
                     if (ext != nullptr) {
                         // Now the extension is fully identified.

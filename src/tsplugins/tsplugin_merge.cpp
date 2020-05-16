@@ -107,8 +107,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(merge, ts::MergePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"merge", ts::MergePlugin);
 
 
 //----------------------------------------------------------------------------

@@ -81,8 +81,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(mux, ts::MuxPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"mux", ts::MuxPlugin);
 
 
 //----------------------------------------------------------------------------

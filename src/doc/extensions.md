@@ -64,13 +64,13 @@ various hooks which implement the additional features.
 ## Identification of the extension
 
 This is an optional but recommended step. One C++ module inside the `tslibext_XXX`
-library shall invoke macro @link TS_DECLARE_EXTENSION @endlink as illustrated below:
+library shall invoke macro @link TS_REGISTER_EXTENSION @endlink as illustrated below:
 
 ~~~
-TS_DECLARE_EXTENSION(u"foo",                     // extension name
-                     u"Sample foo extension",    // short description
-                     {u"foot", u"foobar"},       // list of provided plugins for tsp
-                     {u"footool", u"foocmd"});   // list of provided command-line tools
+TS_REGISTER_EXTENSION(u"foo",                     // extension name
+                      u"Sample foo extension",    // short description
+                      {u"foot", u"foobar"},       // list of provided plugins for tsp
+                      {u"footool", u"foocmd"});   // list of provided command-line tools
 ~~~
 
 Using this declaration, the extension is identified and listed using the command `tsversion --extensions`.

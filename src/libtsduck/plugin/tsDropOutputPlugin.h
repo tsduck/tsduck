@@ -26,12 +26,36 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Drop output plugin for tsp.
+//!
+//----------------------------------------------------------------------------
 
-#include "tsDektecInputPlugin.h"
-#include "tsDektecOutputPlugin.h"
-#include "tsPluginRepository.h"
-TSDUCK_SOURCE;
+#pragma once
+#include "tsOutputPlugin.h"
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(dektec, ts::DektecInputPlugin)
-TSPLUGIN_DECLARE_OUTPUT(dektec, ts::DektecOutputPlugin)
+namespace ts {
+    //!
+    //! Drop output plugin for tsp.
+    //! @ingroup plugin
+    //!
+    class TSDUCKDLL DropOutputPlugin: public OutputPlugin
+    {
+        TS_NOBUILD_NOCOPY(DropOutputPlugin);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
+        //!
+        DropOutputPlugin(TSP* tsp);
+
+        // Implementation of plugin API
+        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
+
+        //! @cond nodoxygen
+        // A dummy storage value to force inclusion of this module when using the static library.
+        static const int REFERENCE;
+        //! @endcond
+    };
+}

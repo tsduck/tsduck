@@ -160,8 +160,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(pcrextract, ts::PCRExtractPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"pcrextract", ts::PCRExtractPlugin);
 
 
 //----------------------------------------------------------------------------

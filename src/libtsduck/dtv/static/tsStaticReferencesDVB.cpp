@@ -34,6 +34,8 @@
 #include "tsDVBCharTableUTF8.h"
 #include "tsARIBCharset.h"
 #include "tsDumpCharset.h"
+#include "tsDropOutputPlugin.h"
+#include "tsNullInputPlugin.h"
 TSDUCK_SOURCE;
 
 // Macros to generate a unique symbol name.
@@ -62,6 +64,11 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_OBJECT(DVBCharTableUTF8::DVB_UTF_8);
     REF_OBJECT(ARIBCharset::B24);
     REF_OBJECT(DumpCharset::DUMP);
+
+    // Reference to some plugins which are statically registered.
+
+    REF_OBJECT(DropOutputPlugin::REFERENCE);
+    REF_OBJECT(NullInputPlugin::REFERENCE);
 
     // References to all DVB tables and descriptors.
     // The file tsRefType.h is automatically generated.

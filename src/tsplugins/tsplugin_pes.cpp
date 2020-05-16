@@ -94,8 +94,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(pes, ts::PESPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"pes", ts::PESPlugin);
 
 
 //----------------------------------------------------------------------------

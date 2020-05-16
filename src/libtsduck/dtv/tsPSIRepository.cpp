@@ -29,6 +29,7 @@
 
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
+#include "tsAlgorithm.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
@@ -435,18 +436,12 @@ void ts::PSIRepository::getRegisteredDescriptorIds(std::vector<EDID>& ids) const
 
 void ts::PSIRepository::getRegisteredTableNames(UStringList& names) const
 {
-    names.clear();
-    for (auto it = _tableNames.begin(); it != _tableNames.end(); ++it) {
-        names.push_back(it->first);
-    }
+    names = MapKeys(_tableNames);
 }
 
 void ts::PSIRepository::getRegisteredDescriptorNames(UStringList& names) const
 {
-    names.clear();
-    for (auto it = _descriptorNames.begin(); it != _descriptorNames.end(); ++it) {
-        names.push_back(it->first);
-    }
+    names = MapKeys(_descriptorNames);
 }
 
 void ts::PSIRepository::getRegisteredTablesModels(UStringList& names) const

@@ -66,8 +66,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(http, ts::HttpInput)
+TS_REGISTER_INPUT_PLUGIN(u"http", ts::HttpInput);
 
 
 //----------------------------------------------------------------------------

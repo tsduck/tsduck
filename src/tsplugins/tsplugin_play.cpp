@@ -68,8 +68,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_OUTPUT(play, ts::PlayPlugin)
+TS_REGISTER_OUTPUT_PLUGIN(u"play", ts::PlayPlugin);
 
 
 //----------------------------------------------------------------------------

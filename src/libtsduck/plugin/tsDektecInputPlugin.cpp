@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDektecInputPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsDektecUtils.h"
 #include "tsDektecDevice.h"
 #include "tsDektecVPD.h"
@@ -37,6 +38,8 @@
 #include "tsFatal.h"
 #include "tsLNB.h"
 TSDUCK_SOURCE;
+
+TS_REGISTER_INPUT_PLUGIN(u"dektec", ts::DektecInputPlugin);
 
 
 //----------------------------------------------------------------------------

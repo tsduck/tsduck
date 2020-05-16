@@ -66,8 +66,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(sdt, ts::SDTPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"sdt", ts::SDTPlugin);
 
 
 //----------------------------------------------------------------------------

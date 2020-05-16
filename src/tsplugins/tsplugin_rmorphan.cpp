@@ -74,8 +74,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(rmorphan, ts::RMOrphanPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"rmorphan", ts::RMOrphanPlugin);
 
 
 //----------------------------------------------------------------------------

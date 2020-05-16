@@ -90,8 +90,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(time, ts::TimePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"time", ts::TimePlugin);
 
 
 //----------------------------------------------------------------------------

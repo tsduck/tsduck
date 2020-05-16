@@ -116,8 +116,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(pmt, ts::PMTPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"pmt", ts::PMTPlugin);
 
 
 //----------------------------------------------------------------------------

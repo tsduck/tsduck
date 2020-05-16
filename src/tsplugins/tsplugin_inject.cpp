@@ -95,8 +95,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(inject, ts::InjectPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"inject", ts::InjectPlugin);
 
 
 //----------------------------------------------------------------------------

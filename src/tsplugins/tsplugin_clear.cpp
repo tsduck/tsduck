@@ -81,8 +81,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(clear, ts::ClearPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"clear", ts::ClearPlugin);
 
 
 //----------------------------------------------------------------------------

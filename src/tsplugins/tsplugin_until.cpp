@@ -67,8 +67,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(until, ts::UntilPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"until", ts::UntilPlugin);
 
 
 //----------------------------------------------------------------------------

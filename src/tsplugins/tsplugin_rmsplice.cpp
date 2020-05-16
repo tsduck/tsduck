@@ -141,8 +141,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(rmsplice, ts::RMSplicePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"rmsplice", ts::RMSplicePlugin);
 
 
 //----------------------------------------------------------------------------

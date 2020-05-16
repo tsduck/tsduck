@@ -77,25 +77,4 @@ namespace ts {
         //!
         OutputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
     };
-
-    //!
-    //! Output plugin interface profile.
-    //!
-    //! All shared libraries providing output capability shall export
-    //! a global function named @c tspNewOutput with the following profile.
-    //!
-    //! @param [in] tsp Associated callback to @c tsp executable.
-    //! @return A new allocated object implementing ts::OutputPlugin.
-    //!
-    typedef OutputPlugin* (*NewOutputProfile)(TSP* tsp);
 }
-
-//!
-//! Export output plugin interface out of the shared library.
-//! This macro declares the plugin allocation routine.
-//! Shall be used by shared libraries which provide output capability.
-//! @param name Plugin name. Only used with static link.
-//! @param type Name of a subclass of ts::OutputPlugin implementing the plugin.
-//! @hideinitializer
-//!
-#define TSPLUGIN_DECLARE_OUTPUT(name,type) _TSPLUGIN_DECLARE_PLUGIN(name,type,Output)

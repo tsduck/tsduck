@@ -86,8 +86,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(count, ts::CountPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"count", ts::CountPlugin);
 
 
 //----------------------------------------------------------------------------

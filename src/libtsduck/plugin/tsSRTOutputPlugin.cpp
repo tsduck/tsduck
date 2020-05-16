@@ -28,7 +28,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsSRTOutputPlugin.h"
+#include "tsPluginRepository.h"
 TSDUCK_SOURCE;
+
+TS_REGISTER_OUTPUT_PLUGIN(u"srt", ts::SRTOutputPlugin);
 
 #define MAX_PKT_MESSAGE_MODE 7
 

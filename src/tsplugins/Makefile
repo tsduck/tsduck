@@ -34,6 +34,9 @@
 # With static link, we compile in a specific directory.
 OBJDIR_SUFFIX := $(if $(STATIC),-static,)
 
+# Obsolete plugins. They are now embedded and no longer provided as shared objects.
+OBSOLETE_PLUGINS := dektec drop file hls ip null srt
+
 include ../../Makefile.tsduck
 
 .PHONY: shlibs install install-devel
@@ -49,6 +52,7 @@ shlibs: $(SHLIBS)
 $(SHLIBS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
 
 install: $(SHLIBS)
+	rm -f $(wildcard $(addsuffix .so,$(addprefix $(SYSROOT)$(SYSPREFIX)/bin/tsplugin_,$(OBSOLETE_PLUGINS))))
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
 	install -m 644 $(SHLIBS) $(SYSROOT)$(SYSPREFIX)/bin
 install-devel:

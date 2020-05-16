@@ -27,11 +27,31 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tshlsInputPlugin.h"
-#include "tshlsOutputPlugin.h"
+#include "tsDropOutputPlugin.h"
 #include "tsPluginRepository.h"
 TSDUCK_SOURCE;
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(hls, ts::hls::InputPlugin)
-TSPLUGIN_DECLARE_OUTPUT(hls, ts::hls::OutputPlugin)
+TS_REGISTER_OUTPUT_PLUGIN(u"drop", ts::DropOutputPlugin);
+
+// A dummy storage value to force inclusion of this module when using the static library.
+const int ts::DropOutputPlugin::REFERENCE = 0;
+
+
+//----------------------------------------------------------------------------
+// Constructor
+//----------------------------------------------------------------------------
+
+ts::DropOutputPlugin::DropOutputPlugin(TSP* tsp_) :
+    OutputPlugin(tsp_, u"Drop output packets", u"[options]")
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Output plugin methods
+//----------------------------------------------------------------------------
+
+bool ts::DropOutputPlugin::send(const TSPacket*, const TSPacketMetadata* pkt_data, size_t)
+{
+    return true;
+}

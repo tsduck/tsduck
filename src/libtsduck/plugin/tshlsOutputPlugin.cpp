@@ -28,11 +28,14 @@
 //----------------------------------------------------------------------------
 
 #include "tshlsOutputPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsOneShotPacketizer.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
+
+TS_REGISTER_OUTPUT_PLUGIN(u"hls", ts::hls::OutputPlugin);
 
 #define DEFAULT_OUT_DURATION      10  // Default segment target duration for output streams.
 #define DEFAULT_OUT_LIVE_DURATION  5  // Default segment target duration for output live streams.

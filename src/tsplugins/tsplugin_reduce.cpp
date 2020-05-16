@@ -58,8 +58,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(reduce, ts::ReducePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"reduce", ts::ReducePlugin);
 
 
 //----------------------------------------------------------------------------

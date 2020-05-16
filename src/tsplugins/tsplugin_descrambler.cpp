@@ -66,8 +66,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(descrambler, ts::DescramblerPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"descrambler", ts::DescramblerPlugin);
 
 
 //----------------------------------------------------------------------------

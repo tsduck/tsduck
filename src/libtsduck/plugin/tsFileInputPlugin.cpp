@@ -28,7 +28,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsFileInputPlugin.h"
+#include "tsPluginRepository.h"
 TSDUCK_SOURCE;
+
+TS_REGISTER_INPUT_PLUGIN(u"file", ts::FileInputPlugin);
 
 
 //----------------------------------------------------------------------------

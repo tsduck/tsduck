@@ -83,8 +83,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(remap, ts::RemapPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"remap", ts::RemapPlugin);
 
 
 //----------------------------------------------------------------------------
