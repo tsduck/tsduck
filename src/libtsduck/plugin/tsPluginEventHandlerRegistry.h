@@ -62,7 +62,7 @@ namespace ts {
         //! - Event code (32-bit plugin-specific value).
         //! - All plugins (when no criteria is specified).
         //!
-        class Criteria
+        class TSDUCKDLL Criteria
         {
         public:
             Criteria();                         //!< Default constructor.
