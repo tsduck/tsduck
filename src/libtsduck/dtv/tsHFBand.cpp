@@ -39,8 +39,8 @@ TSDUCK_SOURCE;
 // Constructors and destructors
 //----------------------------------------------------------------------------
 
-ts::HFBand::HFBand(BandType t) :
-    _type(t),
+ts::HFBand::HFBand(const UString band_name) :
+    _band_name(band_name),
     _channel_count(0),
     _regions(),
     _channels()
@@ -54,18 +54,10 @@ ts::HFBand::ChannelsRange::ChannelsRange() :
     channel_width(0),
     first_offset(0),
     last_offset(0),
-    offset_width(0)
+    offset_width(0),
+    even_polarity(POL_NONE),
+    odd_polarity(POL_NONE)
 {
-}
-
-
-//----------------------------------------------------------------------------
-// Get the type of HF band as a string.
-//----------------------------------------------------------------------------
-
-ts::UString ts::HFBand::typeName() const
-{
-    return HFBandRepository::Instance()->bandTypeEnum.name(_type);
 }
 
 
@@ -73,11 +65,11 @@ ts::UString ts::HFBand::typeName() const
 // GetBand static method.
 //----------------------------------------------------------------------------
 
-const ts::HFBand* ts::HFBand::GetBand(const UString& region, BandType type, Report& report)
+const ts::HFBand* ts::HFBand::GetBand(const UString& region, const UString& band, Report& report)
 {
     HFBandRepository* repo = HFBandRepository::Instance();
     repo->load(report);
-    return repo->get(type, region, report);
+    return repo->get(band, region, report);
 }
 
 ts::UString ts::HFBand::DefaultRegion(Report& report)
@@ -99,6 +91,13 @@ ts::UStringList ts::HFBand::GetAllRegions(Report& report)
     HFBandRepository* repo = HFBandRepository::Instance();
     repo->load(report);
     return repo->allRegions();
+}
+
+ts::UStringList ts::HFBand::GetAllBands(const UString& region, Report& report)
+{
+    HFBandRepository* repo = HFBandRepository::Instance();
+    repo->load(report);
+    return repo->allBands(region);
 }
 
 
@@ -126,7 +125,7 @@ ts::HFBand::ChannelsRangeList::const_iterator ts::HFBand::getRange(uint32_t chan
 
 uint32_t ts::HFBand::nextChannel(uint32_t channel) const
 {
-    ChannelsRangeList::const_iterator it(getRange(channel));
+    auto it(getRange(channel));
     if (it == _channels.end()) {
         // Not in any range.
         return 0;
@@ -147,7 +146,7 @@ uint32_t ts::HFBand::nextChannel(uint32_t channel) const
 
 uint32_t ts::HFBand::previousChannel(uint32_t channel) const
 {
-    ChannelsRangeList::const_iterator it(getRange(channel));
+    auto it(getRange(channel));
     if (it == _channels.end()) {
         // Not in any range.
         return 0;
@@ -168,32 +167,38 @@ uint32_t ts::HFBand::previousChannel(uint32_t channel) const
 
 uint64_t ts::HFBand::frequency(uint32_t channel, int32_t offset) const
 {
-    ChannelsRangeList::const_iterator it(getRange(channel));
+    auto it(getRange(channel));
     return it == _channels.end() ? 0 : it->frequency(channel, offset);
 }
 
 uint64_t ts::HFBand::bandWidth(uint32_t channel) const
 {
-    ChannelsRangeList::const_iterator it(getRange(channel));
+    auto it(getRange(channel));
     return it == _channels.end() ? 0 : it->channel_width;
 }
 
 uint64_t ts::HFBand::offsetWidth(uint32_t channel) const
 {
-    ChannelsRangeList::const_iterator it(getRange(channel));
+    auto it(getRange(channel));
     return it == _channels.end() ? 0 : it->offset_width;
 }
 
 int32_t ts::HFBand::firstOffset(uint32_t channel) const
 {
-    ChannelsRangeList::const_iterator it(getRange(channel));
+    auto it(getRange(channel));
     return it == _channels.end() ? 0 : it->first_offset;
 }
 
 int32_t ts::HFBand::lastOffset(uint32_t channel) const
 {
-    ChannelsRangeList::const_iterator it(getRange(channel));
+    auto it(getRange(channel));
     return it == _channels.end() ? 0 : it->last_offset;
+}
+
+ts::Polarization ts::HFBand::polarization(uint32_t channel) const
+{
+    auto it(getRange(channel));
+    return it == _channels.end() ? ts::POL_NONE : (channel % 2 == 0 ? it->even_polarity : it->odd_polarity);
 }
 
 
@@ -311,15 +316,11 @@ ts::UString ts::HFBand::description(uint32_t channel, int32_t offset, int streng
     const uint64_t freq = frequency(channel, offset);
     const int mhz = int(freq / 1000000);
     const int khz = int((freq % 1000000) / 1000);
-    UString desc(HFBandRepository::Instance()->bandTypeEnum.name(_type));
-    desc += u" channel ";
-    desc += UString::Decimal(channel);
+    UString desc(UString::Format(u"%s channel %d", {_band_name, channel}));
     if (offset != 0) {
-        desc += u", offset ";
-        desc += UString::Decimal(offset, 0, true, u",", true);
+        desc += UString::Format(u", offset %+d", {offset});
     }
-    desc += u" (";
-    desc += UString::Decimal(mhz);
+    desc += UString::Format(u" (%d", {mhz});
     if (khz > 0) {
         desc += UString::Format(u".%03d", {khz});
     }
@@ -341,13 +342,13 @@ ts::UString ts::HFBand::description(uint32_t channel, int32_t offset, int streng
 ts::HFBand::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
 {
     // Get the content of the <hfband> element.
-    BandType type = UHF;
-    xml::ElementVector regions;
-    xml::ElementVector channels;
+    UString band_type;
+    xml::ElementVector xregions;
+    xml::ElementVector xchannels;
     bool success =
-        elem->getIntEnumAttribute(type, HFBandRepository::Instance()->bandTypeEnum, u"type", true) &&
-        elem->getChildren(regions, u"region", 1) &&
-        elem->getChildren(channels, u"channels", 1);
+        elem->getAttribute(band_type, u"type", true) &&
+        elem->getChildren(xregions, u"region", 1) &&
+        elem->getChildren(xchannels, u"channels", 1);
 
     if (!success) {
         elem->report().error(u"Error in <%s> at line %d", {elem->name(), elem->lineNumber()});
@@ -355,12 +356,12 @@ ts::HFBand::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
     }
 
     // Build a new HFBand object.
-    HFBandPtr hf(new HFBand(type));
+    HFBandPtr hf(new HFBand(band_type));
 
     // Build list of regions.
-    for (size_t i = 0; i < regions.size(); ++i) {
+    for (auto it = xregions.begin(); it != xregions.end(); ++it) {
         UString name;
-        if (regions[i]->getAttribute(name, u"name", true)) {
+        if ((*it)->getAttribute(name, u"name", true)) {
             hf->_regions.push_back(name);
         }
         else {
@@ -369,16 +370,18 @@ ts::HFBand::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
     }
 
     // Build ranges of channels.
-    for (size_t i = 0; i < channels.size(); ++i) {
+    for (auto it = xchannels.begin(); it != xchannels.end(); ++it) {
         ChannelsRange chan;
         const bool ok =
-            channels[i]->getIntAttribute<uint32_t>(chan.first_channel, u"first_channel", true) &&
-            channels[i]->getIntAttribute<uint32_t>(chan.last_channel, u"last_channel", true, 0, chan.first_channel) &&
-            channels[i]->getIntAttribute<uint64_t>(chan.base_frequency, u"base_frequency", true) &&
-            channels[i]->getIntAttribute<uint64_t>(chan.channel_width, u"channel_width", true) &&
-            channels[i]->getIntAttribute<int32_t>(chan.first_offset, u"first_offset", false, 0) &&
-            channels[i]->getIntAttribute<int32_t>(chan.last_offset, u"last_offset", false, 0, chan.first_offset) &&
-            channels[i]->getIntAttribute<uint64_t>(chan.offset_width, u"offset_width", false, 0);
+            (*it)->getIntAttribute<uint32_t>(chan.first_channel, u"first_channel", true) &&
+            (*it)->getIntAttribute<uint32_t>(chan.last_channel, u"last_channel", true, 0, chan.first_channel) &&
+            (*it)->getIntAttribute<uint64_t>(chan.base_frequency, u"base_frequency", true) &&
+            (*it)->getIntAttribute<uint64_t>(chan.channel_width, u"channel_width", true) &&
+            (*it)->getIntAttribute<int32_t>(chan.first_offset, u"first_offset", false, 0) &&
+            (*it)->getIntAttribute<int32_t>(chan.last_offset, u"last_offset", false, 0, chan.first_offset) &&
+            (*it)->getIntAttribute<uint64_t>(chan.offset_width, u"offset_width", false, 0) &&
+            (*it)->getIntEnumAttribute<Polarization>(chan.even_polarity, PolarizationEnum, u"even_polarity", false, POL_NONE) &&
+            (*it)->getIntEnumAttribute<Polarization>(chan.odd_polarity, PolarizationEnum, u"odd_polarity", false, POL_NONE);
         success = success && ok;
         if (ok) {
             // Insert the channels range in the list.
@@ -388,7 +391,7 @@ ts::HFBand::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
                 ++next;
             }
             if (next != hf->_channels.end() && next->first_channel <= chan.last_channel) {
-                elem->report().error(u"overlapping channel numbers, line %s", {channels[i]->lineNumber()});
+                elem->report().error(u"overlapping channel numbers, line %s", {(*it)->lineNumber()});
                 success = false;
             }
             else {
@@ -406,25 +409,25 @@ ts::HFBand::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
 // An index in the repository of HFBand.
 //----------------------------------------------------------------------------
 
-ts::HFBand::HFBandIndex::HFBandIndex(BandType typ, const UString& reg) :
-    type(typ),
+ts::HFBand::HFBandIndex::HFBandIndex(const UString& typ, const UString& reg) :
+    band(typ.toLower().toRemoved(SPACE)),
     region(reg.toLower().toRemoved(SPACE))
 {
 }
 
 ts::UString ts::HFBand::HFBandIndex::toString() const
 {
-    return UString::Format(u"%s band in region %s", {HFBandRepository::Instance()->bandTypeEnum.name(type), region});
+    return UString::Format(u"%s band in region %s", {band, region});
 }
 
 bool ts::HFBand::HFBandIndex::operator==(const HFBandIndex& other) const
 {
-    return type == other.type && region == other.region;
+    return band == other.band && region == other.region;
 }
 
 bool ts::HFBand::HFBandIndex::operator<(const HFBandIndex& other) const
 {
-    return type < other.type || (type == other.type && region < other.region);
+    return band < other.band || (band == other.band && region < other.region);
 }
 
 
@@ -435,12 +438,11 @@ bool ts::HFBand::HFBandIndex::operator<(const HFBandIndex& other) const
 TS_DEFINE_SINGLETON(ts::HFBand::HFBandRepository);
 
 ts::HFBand::HFBandRepository::HFBandRepository() :
-    bandTypeEnum({{u"VHF", ts::HFBand::VHF}, {u"UHF", ts::HFBand::UHF}}),
     _mutex(),
     _default_region(),
     _objects(),
     _allRegions(),
-    _voidBand(new HFBand)
+    _voidBand(new HFBand(u""))
 {
 }
 
@@ -498,7 +500,7 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
             // Add the object in the repository.
             for (auto it = hf->_regions.begin(); it != hf->_regions.end(); ++it) {
                 // Get band type + region name.
-                const HFBandIndex index(hf->_type, *it);
+                const HFBandIndex index(hf->_band_name, *it);
                 // Build a set of unique entries for region names.
                 regionSet.insert(*it);
                 if (_objects.find(index) != _objects.end()) {
@@ -543,12 +545,12 @@ void ts::HFBand::HFBandRepository::setDefaultRegion(const UString& region)
 // Get an object from the repository.
 //----------------------------------------------------------------------------
 
-const ts::HFBand* ts::HFBand::HFBandRepository::get(BandType type, const UString& region, Report& report) const
+const ts::HFBand* ts::HFBand::HFBandRepository::get(const UString& band, const UString& region, Report& report) const
 {
     // Lock access to the repository.
     Guard lock(_mutex);
 
-    const HFBandIndex index(type, region.empty() ? _default_region : region);
+    const HFBandIndex index(band, region.empty() ? _default_region : region);
     const auto it = _objects.find(index);
     if (it != _objects.end()) {
         return it->second.pointer();
@@ -557,4 +559,33 @@ const ts::HFBand* ts::HFBand::HFBandRepository::get(BandType type, const UString
         report.warning(u"no definition for %s", {index});
         return _voidBand.pointer();
     }
+}
+
+
+//----------------------------------------------------------------------------
+// List of available bands in a region.
+//----------------------------------------------------------------------------
+
+const ts::UStringList ts::HFBand::HFBandRepository::allBands(const UString& region) const
+{
+    // Lock access to the repository.
+    Guard lock(_mutex);
+
+    // Actual region name to seach, in HFBandIndex format.
+    UString reg(region);
+    if (reg.empty()) {
+        reg = _default_region;
+    }
+    reg.convertToLower();
+    reg.remove(SPACE);
+
+    // Browse through the list of bands/regions.
+    UStringList bands;
+    for (auto it = _objects.begin(); it != _objects.end(); ++it) {
+        if (it->first.region == reg) {
+            bands.push_back(it->second->_band_name);
+        }
+    }
+    bands.sort();
+    return bands;
 }

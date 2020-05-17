@@ -195,14 +195,19 @@ ts::UString ts::DuckContext::defaultHFRegion() const
     }
 }
 
+const ts::HFBand* ts::DuckContext::hfBand(const UString& name) const
+{
+    return HFBand::GetBand(defaultHFRegion(), name, *_report);
+}
+
 const ts::HFBand* ts::DuckContext::vhfBand() const
 {
-    return HFBand::GetBand(defaultHFRegion(), HFBand::VHF, *_report);
+    return HFBand::GetBand(defaultHFRegion(), u"VHF", *_report);
 }
 
 const ts::HFBand* ts::DuckContext::uhfBand() const
 {
-    return HFBand::GetBand(defaultHFRegion(), HFBand::UHF, *_report);
+    return HFBand::GetBand(defaultHFRegion(), u"UHF", *_report);
 }
 
 

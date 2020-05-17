@@ -349,6 +349,13 @@ namespace ts {
         UString defaultHFRegion() const;
 
         //!
+        //! Get the description of an HF band for the default region.
+        //! @param [in] name Name of the HF band to search (e.g. u"UHF", u"VHF", u"BS", u"CS").
+        //! @return The description of the band for the default region. Never null.
+        //!
+        const HFBand* hfBand(const UString& name) const;
+
+        //!
         //! Get the description of the VHF band for the default region.
         //! @return The description of the VHF band for the default region. Never null.
         //!

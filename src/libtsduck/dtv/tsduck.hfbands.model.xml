@@ -46,7 +46,7 @@
 -->
 <tsduck>
   <!-- HF band description -->
-  <hfband type="VHF|UHF, required">
+  <hfband type="string, required">
     <!-- List of regions or countries where this HF band is valid -->
     <region name="string, required"/>
     <!-- Block of contiguous channels -->
@@ -56,6 +56,8 @@
               channel_width="uint64, required"
               first_offset="int32, default=0"
               last_offset="int32, default=0"
-              offset_width="uint64, default=0"/>
+              offset_width="uint64, default=0"
+              even_polarity="horizontal|vertical|left|right|none, default=none"
+              odd_polarity="horizontal|vertical|left|right|none, default=none"/>
   </hfband>
 </tsduck>

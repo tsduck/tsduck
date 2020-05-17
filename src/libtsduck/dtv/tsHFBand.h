@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsModulation.h"
 #include "tsEnumeration.h"
 #include "tsMutex.h"
 #include "tsSafePtr.h"
@@ -48,23 +49,21 @@ namespace ts {
     //! Definition of an HF frequency band (UHF, VHF).
     //! @ingroup hardware
     //!
-    //! There is a repository of known UHF and VHF bands layout per country or region.
+    //! Each region or country has it own definitions of the frequencies bands and layouts.
+    //! The most common types of frequency bands are VHF (Very High Frequency) and UHF
+    //! (Ultra High Frequency) for terrestrial TV. Some countries also define predefined
+    //! layouts for satellite frequency bands. This is the case for Japan with the "BS"
+    //! and "CS" satellite bands.
+    //!
+    //! There is a repository of known HF bands layout per country or region.
     //! This repository is read from an XML file. There is only one instance of HFBand
     //! per country or region.
     //! @see ts::HFBand::GetBand()
     //!
     class TSDUCKDLL HFBand
     {
-        TS_NOCOPY(HFBand);
+        TS_NOBUILD_NOCOPY(HFBand);
     public:
-        //!
-        //! Type of frequency band.
-        //!
-        enum BandType {
-            VHF,  //!< VHF, Very High Frequency.
-            UHF,  //!< UHF, Ultra High Frequency.
-        };
-
         //!
         //! Get the default region.
         //! @param [in,out] report Where to report errors.
@@ -91,26 +90,28 @@ namespace ts {
         static UStringList GetAllRegions(Report& report = CERR);
 
         //!
+        //! Get a list of all available HF bands for a given region in the configuration file.
+        //! @param [in] region The region name. If empty, then use the default region.
+        //! @param [in,out] report Where to report errors.
+        //! @return The list of all available regions.
+        //!
+        static UStringList GetAllBands(const UString& region = UString(), Report& report = CERR);
+
+        //!
         //! Get the description of an HF band from the configuration file.
         //! @param [in] region Region of country name (not case sensitive).
-        //! @param [in] type HF band type.
+        //! @param [in] band HF band type (u"UHF", u"VHF", etc).
         //! @param [in,out] report Where to report errors.
         //! @return A pointer to the instance for the corresponding @a region.
         //! If the repository contains no known band for the region, return an empty object.
         //!
-        static const HFBand* GetBand(const UString& region = UString(), BandType type = UHF, Report& report = CERR);
+        static const HFBand* GetBand(const UString& region = UString(), const UString& band = u"UHF", Report& report = CERR);
 
         //!
-        //! Get the type of HF band.
-        //! @return The type of HF band.
+        //! Get the name of the HF band as a string.
+        //! @return The name of the HF band as a string.
         //!
-        BandType type() const { return _type; }
-
-        //!
-        //! Get the type of HF band as a string.
-        //! @return The type of HF band as a string.
-        //!
-        UString typeName() const;
+        UString bandName() const { return _band_name; }
 
         //!
         //! Check if there is no channel in the HF band.
@@ -207,6 +208,14 @@ namespace ts {
         int32_t lastOffset(uint32_t channel) const;
 
         //!
+        //! Get the polarization of a channel in the HF band.
+        //! @param [in] channel Channel number.
+        //! @return The polarization for @a channel.
+        //! If POL_NONE, then no polarization in defined in the band.
+        //!
+        Polarization polarization(uint32_t channel) const;
+
+        //!
         //! Compute a channel number from a frequency.
         //! @param [in] frequency Frequency in Hz.
         //! @return Channel number or zero on error.
@@ -245,13 +254,15 @@ namespace ts {
         {
         public:
             // Public members
-            uint32_t first_channel;
-            uint32_t last_channel;
-            uint64_t base_frequency;
-            uint64_t channel_width;
-            int32_t  first_offset;
-            int32_t  last_offset;
-            uint64_t offset_width;
+            uint32_t     first_channel;
+            uint32_t     last_channel;
+            uint64_t     base_frequency;
+            uint64_t     channel_width;
+            int32_t      first_offset;
+            int32_t      last_offset;
+            uint64_t     offset_width;
+            Polarization even_polarity;
+            Polarization odd_polarity;
 
             // Constructor.
             ChannelsRange();
@@ -271,15 +282,15 @@ namespace ts {
         typedef SafePtr<HFBand,NullMutex> HFBandPtr;
 
         // HFBand members.
-        const BandType    _type;          // Type of HF band.
+        const UString     _band_name;     // Type of HF band.
         uint32_t          _channel_count; // Number of channels in the band.
         UStringList       _regions;       // List of applicable regions.
         ChannelsRangeList _channels;      // Channel ranges, in order of channel numbers.
 
         // Default constructor (private only, use GetBand() from application).
-        HFBand(BandType = UHF);
+        HFBand(const UString band_name);
 
-        // Get the range of channels for a given channel number. Null pointer on error.
+        // Get the range of channels for a given channel number. Null _channels.end() on error.
         ChannelsRangeList::const_iterator getRange(uint32_t channel) const;
 
         // Create an HFBand from an XML element. Null pointer on error.
@@ -289,11 +300,11 @@ namespace ts {
         class HFBandIndex: public StringifyInterface
         {
         public:
-            BandType type;
-            UString  region; // Lower case, no space.
+            UString band;   // Lower case, no space.
+            UString region; // Lower case, no space.
 
             // Constructor.
-            HFBandIndex(BandType, const UString&);
+            HFBandIndex(const UString& b, const UString& r);
 
             // Operators for use as index.
             bool operator==(const HFBandIndex&) const;
@@ -315,17 +326,17 @@ namespace ts {
             bool load(Report&);
 
             // Get an object from the repository.
-            const HFBand* get(BandType type, const UString& region, Report& report) const;
+            const HFBand* get(const UString& band, const UString& region, Report& report) const;
 
             // Get/set the default region.
             UString defaultRegion() const;
             void setDefaultRegion(const UString&);
 
-            // An enumeration object for BandType.
-            const Enumeration bandTypeEnum;
-
             // List of available regions.
             const UStringList& allRegions() const { return _allRegions; }
+
+            // List of available bands in a region.
+            const UStringList allBands(const UString& region) const;
 
         private:
             mutable Mutex _mutex;
