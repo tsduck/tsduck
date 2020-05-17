@@ -137,6 +137,13 @@ Section "Tools & Plugins" SectionTools
     Delete "$INSTDIR\bin\tsduck.xml"
     Delete "$INSTDIR\bin\tsduck.channels.xml"
     Delete "$INSTDIR\bin\tsduck.dvb.names"
+    Delete "$INSTDIR\bin\tsplugin_dektec.dll"
+    Delete "$INSTDIR\bin\tsplugin_drop.dll"
+    Delete "$INSTDIR\bin\tsplugin_file.dll"
+    Delete "$INSTDIR\bin\tsplugin_hls.dll"
+    Delete "$INSTDIR\bin\tsplugin_ip.dll"
+    Delete "$INSTDIR\bin\tsplugin_null.dll"
+    Delete "$INSTDIR\bin\tsplugin_srt.dll"
 
     ; Create folder for binaries
     CreateDirectory "$INSTDIR\bin"
