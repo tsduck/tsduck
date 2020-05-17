@@ -79,4 +79,16 @@
     <channels first_channel="13" last_channel="62" base_frequency="473,142,857" channel_width="6,000,000"/>
   </hfband>
 
+  <hfband type="BS">
+    <region name="japan"/>
+    <channels first_channel="1" last_channel="24" base_frequency="11,727,480,000" channel_width="19,180,000"
+              even_polarity="left" odd_polarity="right"/>
+  </hfband>
+
+  <hfband type="CS">
+    <region name="japan"/>
+    <channels first_channel="1" last_channel="24" base_frequency="12,271,000,000" channel_width="20,000,000"
+              even_polarity="right" odd_polarity="left"/>
+  </hfband>
+
 </tsduck>
