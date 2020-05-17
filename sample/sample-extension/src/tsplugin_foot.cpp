@@ -36,7 +36,7 @@ namespace foo {
     };
 }
 
-TS_REGISTER_PROCESSOR_PLUGIN(u"foot", foo::FootPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"foot", foo::FootPlugin);
 
 
 //----------------------------------------------------------------------------

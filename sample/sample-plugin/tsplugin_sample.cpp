@@ -31,7 +31,7 @@ namespace ts {
     };
 }
 
-TS_REGISTER_PROCESSOR_PLUGIN(u"sample", ts::SamplePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"sample", ts::SamplePlugin);
 
 
 //----------------------------------------------------------------------------
