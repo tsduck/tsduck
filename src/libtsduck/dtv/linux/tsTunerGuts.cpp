@@ -105,7 +105,7 @@ public:
     bool tune(DTVProperties&, Report&);
 
     // Setup the dish for satellite tuners.
-    bool dishControl(const ModulationArgs&, Report&);
+    bool dishControl(const ModulationArgs&, const LNB::Transposition&, Report&);
 };
 
 
@@ -535,7 +535,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                 params.frequency = 0;
                 params.polarity = ModulationArgs::DEFAULT_POLARITY;
                 params.satellite_number = ModulationArgs::DEFAULT_SATELLITE_NUMBER;
-                params.lnb = ModulationArgs::DEFAULT_LNB;
+                params.lnb.reset();
             }
 
             props.clear();
@@ -658,7 +658,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                 params.frequency = 0;
                 params.polarity = ModulationArgs::DEFAULT_POLARITY;
                 params.satellite_number = ModulationArgs::DEFAULT_SATELLITE_NUMBER;
-                params.lnb = ModulationArgs::DEFAULT_LNB;
+                params.lnb.reset();
             }
 
             props.clear();
@@ -878,7 +878,7 @@ bool ts::Tuner::Guts::dtvClear(Report& report)
 // Setup the dish for satellite tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::Guts::dishControl(const ModulationArgs& params, Report& report)
+bool ts::Tuner::Guts::dishControl(const ModulationArgs& params, const LNB::Transposition& trans, Report& report)
 {
     // Extracted from DVB/doc/HOWTO-use-the-frontend-api:
     //
@@ -941,7 +941,7 @@ bool ts::Tuner::Guts::dishControl(const ModulationArgs& params, Report& report)
     ::nanosleep(&delay, nullptr);
 
     // Send DiSEqC commands. See DiSEqC spec ...
-    const bool high_band = params.lnb.value().useHighBand(params.frequency.value());
+    const bool high_band = trans.band_index > 0;
     ::dvb_diseqc_master_cmd cmd;
     cmd.msg_len = 4;    // Message size (meaningful bytes in msg)
     cmd.msg[0] = 0xE0;  // Command from master, no reply expected, first transmission
@@ -992,15 +992,23 @@ bool ts::Tuner::tune(ModulationArgs& params, Report& report)
     uint32_t freq = uint32_t(params.frequency.value());
 
     // In case of satellite delivery, we need to control the dish.
-    if (IsSatelliteDelivery(params.delivery_system.value())) {
-        // For satellite, Linux DVB API uses an intermediate frequency in kHz
-        freq = uint32_t(params.lnb.value().intermediateFrequency(params.frequency.value()) / 1000);
-        // Setup the dish (polarity, band).
-        if (!_guts->dishControl(params, report)) {
+    if (IsSatelliteDelivery(params.delivery_system.value()) && params.lnb.set()) {
+        // Compute transposition information from the LNB.
+        LNB::Transposition trans;
+        if (!params.lnb.value().transpose(trans, params.frequency.value(), params.polarity.value(POL_NONE), report)) {
             return false;
         }
-        // Clear tuner state again.
-        _guts->discardFrontendEvents(report);
+        // For satellite, Linux DVB API uses an intermediate frequency in kHz
+        freq = uint32_t(trans.intermediate_frequency / 1000);
+        // We need to control the dish only if this is not a "stacked" transposition.
+        if (!trans.stacked) {
+            // Setup the dish (polarity, band).
+            if (!_guts->dishControl(params, trans, report)) {
+                return false;
+            }
+            // Clear tuner state again.
+            _guts->discardFrontendEvents(report);
+        }
     }
 
     // The bandwidth, when set, is in Hz.
