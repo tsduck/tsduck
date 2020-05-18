@@ -38,7 +38,6 @@
 #include "tsDektec.h"
 TSDUCK_SOURCE;
 
-const ts::LNB&    ts::ModulationArgs::DEFAULT_LNB(ts::LNB::Universal);
 const ts::UString ts::ModulationArgs::DEFAULT_ISDBT_LAYERS(u"ABC"); // all layers
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -246,7 +245,7 @@ void ts::ModulationArgs::setDefaultValues()
             polarity.setDefault(DEFAULT_POLARITY);
             symbol_rate.setDefault(DEFAULT_SYMBOL_RATE_DVBS);
             inner_fec.setDefault(DEFAULT_INNER_FEC);
-            lnb.setDefault(DEFAULT_LNB);
+            lnb.setDefault(LNB(u"", NULLREP));
             satellite_number.setDefault(DEFAULT_SATELLITE_NUMBER);
             break;
         case DS_DVB_T2:
@@ -285,7 +284,7 @@ void ts::ModulationArgs::setDefaultValues()
         case DS_ISDB_S:
             frequency.setDefault(0);
             polarity.setDefault(DEFAULT_POLARITY);
-            lnb.setDefault(DEFAULT_LNB);
+            lnb.setDefault(LNB(u"", NULLREP));
             satellite_number.setDefault(DEFAULT_SATELLITE_NUMBER);
             inversion.setDefault(DEFAULT_INVERSION);
             symbol_rate.setDefault(DEFAULT_SYMBOL_RATE_ISDBS);
@@ -1078,8 +1077,8 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             if ((verbose || delivery_system != DS_DVB_S) && roll_off.set() && roll_off != ROLLOFF_AUTO) {
                 strm << margin << "Roll-off: " << RollOffEnum.name(roll_off.value()) << std::endl;
             }
-            if (verbose) {
-                strm << margin << "LNB: " << UString(lnb.value(DEFAULT_LNB)) << std::endl;
+            if (verbose && lnb.set()) {
+                strm << margin << "LNB: " << lnb.value() << std::endl;
             }
             if (verbose) {
                 strm << margin << "Satellite number: " << satellite_number.value(DEFAULT_SATELLITE_NUMBER) << std::endl;
@@ -1099,8 +1098,8 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             if (inner_fec.set() && inner_fec != ts::FEC_AUTO) {
                 strm << margin << "FEC inner: " << InnerFECEnum.name(inner_fec.value()) << std::endl;
             }
-            if (verbose) {
-                strm << margin << "LNB: " << UString(lnb.value(DEFAULT_LNB)) << std::endl;
+            if (verbose && lnb.set()) {
+                strm << margin << "LNB: " << lnb.value() << std::endl;
             }
             if (verbose) {
                 strm << margin << "Satellite number: " << satellite_number.value(DEFAULT_SATELLITE_NUMBER) << std::endl;
@@ -1253,8 +1252,11 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             if (pls_mode.set() && pls_mode != DEFAULT_PLS_MODE) {
                 opt += UString::Format(u" --pls-mode %s", {PLSModeEnum.name(pls_mode.value())});
             }
-            if (!no_local) {
-                opt += UString::Format(u" --lnb %s --satellite-number %d", {UString(lnb.value(DEFAULT_LNB)), satellite_number.value()});
+            if (!no_local && lnb.set()) {
+                opt += UString::Format(u" --lnb %s", {lnb.value()});
+            }
+            if (!no_local && satellite_number.set()) {
+                opt += UString::Format(u" --satellite-number %d", {satellite_number.value()});
             }
             break;
         }
@@ -1263,8 +1265,11 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
                                    symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBS),
                                    InnerFECEnum.name(inner_fec.value(DEFAULT_INNER_FEC)),
                                    PolarizationEnum.name(polarity.value(DEFAULT_POLARITY))});
-            if (!no_local) {
-                opt += UString::Format(u" --lnb %s --satellite-number %d", {UString(lnb.value(DEFAULT_LNB)), satellite_number.value()});
+            if (!no_local && lnb.set()) {
+                opt += UString::Format(u" --lnb %s", {lnb.value()});
+            }
+            if (!no_local && satellite_number.set()) {
+                opt += UString::Format(u" --satellite-number %d", {satellite_number.value()});
             }
             break;
         }
@@ -1515,13 +1520,12 @@ void ts::ModulationArgs::defineArgs(Args& args) const
               u"Polarity. The default is \"vertical\".");
 
     args.option(u"lnb", 0, Args::STRING);
-    args.help(u"lnb", u"low_freq[,high_freq,switch_freq]",
+    args.help(u"lnb", u"name",
               u"Used for satellite tuners only. "
-              u"Description of the LNB.  All frequencies are in MHz. "
-              u"low_freq and high_freq are the frequencies of the local oscillators. "
-              u"switch_freq is the limit between the low and high band. "
-              u"high_freq and switch_freq are used for dual-band LNB's only. "
-              u"The default is a universal LNB: low_freq = 9750 MHz, high_freq = 10600 MHz, switch_freq = 11700 MHz.");
+              u"Description of the LNB. The specified string is the name (or an alias for that name) "
+              u"of a preconfigured LNB in the configuration file tsduck.lnbs.xml. "
+              u"For compatibility, the legacy format 'low_freq[,high_freq,switch_freq]' is also accepted "
+              u"(all frequencies are in MHz). The default is a universal extended LNB.");
 
     args.option(u"spectral-inversion", 0, SpectralInversionEnum);
     args.help(u"spectral-inversion",

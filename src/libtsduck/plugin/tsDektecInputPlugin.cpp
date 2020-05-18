@@ -258,10 +258,11 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
     help(u"lnb",
          u"DVB-S/S2 receivers: description of the LNB which is used to convert the "
          u"--satellite-frequency into an intermediate frequency. This option is "
-         u"useless when --satellite-frequency is not specified. The format of the "
-         u"string is \"low_freq[,high_freq[,switch_freq]]\" where all frequencies "
-         u"are in MHz. The characteristics of the default universal LNB are "
-         u"low_freq = 9750 MHz, high_freq = 10600 MHz, switch_freq = 11700 MHz.");
+         u"useless when --satellite-frequency is not specified. "
+         u"The specified string is the name (or an alias for that name) "
+         u"of a preconfigured LNB in the configuration file tsduck.lnbs.xml. "
+         u"For compatibility, the legacy format 'low_freq[,high_freq,switch_freq]' is also accepted "
+         u"(all frequencies are in MHz). The default is a universal extended LNB.");
 
     option(u"modulation", 'm', Enumeration({
         {u"ATSC-VSB",      DTAPI_MOD_ATSC},
@@ -439,20 +440,6 @@ bool ts::DektecInputPlugin::getOptions()
     _guts->high_band = false;
     _guts->lnb_setup = false;
 
-    // Get LNB description, in case --satellite-frequency is used
-    LNB lnb; // Universal LNB by default
-    if (present(u"lnb")) {
-        const UString s(value(u"lnb"));
-        LNB l(s);
-        if (!l.isValid()) {
-            tsp->error(u"invalid LNB description: %s ", {s});
-            return false;
-        }
-        else {
-            lnb = l;
-        }
-    }
-
     // Compute carrier frequency
     if (present(u"frequency") && present(u"satellite-frequency")) {
         tsp->error(u"options --frequency and --satellite-frequency are mutually exclusive");
@@ -460,8 +447,15 @@ bool ts::DektecInputPlugin::getOptions()
     }
     uint64_t sat_frequency = intValue<uint64_t>(u"satellite-frequency", 0);
     if (sat_frequency > 0) {
-        _guts->demod_freq = lnb.intermediateFrequency(sat_frequency);
-        _guts->high_band = lnb.useHighBand(sat_frequency);
+        // Get LNB description.
+        const LNB lnb(value(u"lnb"), *tsp);
+        LNB::Transposition transposition;
+        if (!lnb.isValid() || !lnb.transpose(transposition, sat_frequency, _guts->polarity, *tsp)) {
+            tsp->error(u"invalid LNB / satellite frequency");
+            return false;
+        }
+        _guts->demod_freq = transposition.intermediate_frequency;
+        _guts->high_band = transposition.band_index > 0;
     }
     else {
         _guts->demod_freq = intValue<uint64_t>(u"frequency", 0);

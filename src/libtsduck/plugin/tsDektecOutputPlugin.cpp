@@ -423,13 +423,14 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"For DTA-115, OFDM, ISDB-T, the valid range is -38.0 to -3.0 dBm.");
 
     option(u"lnb", 0, Args::STRING);
-    help(u"lnb",
+    help(u"lnb", u"name",
          u"DVB-S/S2 modulators: description of the LNB which is used to convert the "
          u"--satellite-frequency into an intermediate frequency. This option is "
-         u"useless when --satellite-frequency is not specified. The format of the "
-         u"string is \"low_freq[,high_freq[,switch_freq]]\" where all frequencies "
-         u"are in MHz. The characteristics of the default universal LNB are "
-         u"low_freq = 9750 MHz, high_freq = 10600 MHz, switch_freq = 11700 MHz.");
+         u"useless when --satellite-frequency is not specified. "
+         u"The specified string is the name (or an alias for that name) "
+         u"of a preconfigured LNB in the configuration file tsduck.lnbs.xml. "
+         u"For compatibility, the legacy format 'low_freq[,high_freq,switch_freq]' is also accepted "
+         u"(all frequencies are in MHz). The default is a universal extended LNB.");
 
     option(u"maintain-preload");
     help(u"maintain-preload",
@@ -1177,19 +1178,6 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
         symbol_rate = int(input->symbol_rate.value());
     }
 
-    // Get LNB description, in case --satellite-frequency is used
-    LNB lnb; // Universal LNB by default
-    if (present(u"lnb")) {
-        const UString s(value(u"lnb"));
-        LNB l(s);
-        if (!l.isValid()) {
-            return startError(u"invalid LNB description " + s, DTAPI_OK);
-        }
-        else {
-            lnb = l;
-        }
-    }
-
     // Get UHF/VHF frequency layout.
     const UString region(value(u"hf-band-region"));
     const HFBand* uhf = duck.uhfBand();
@@ -1209,7 +1197,13 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
     else if (present(u"satellite-frequency")) {
         uint64_t sat_frequency = intValue<uint64_t>(u"satellite-frequency", 0);
         if (sat_frequency > 0) {
-            frequency = lnb.intermediateFrequency(sat_frequency);
+            // Get LNB description.
+            const LNB lnb(value(u"lnb"), *tsp);
+            LNB::Transposition transposition;
+            if (!lnb.isValid() || !lnb.transpose(transposition, sat_frequency, POL_NONE, *tsp)) {
+                return startError(u"invalid LNB / satellite frequency", DTAPI_OK);
+            }
+            frequency = transposition.intermediate_frequency;
         }
     }
     else if (present(u"frequency")) {

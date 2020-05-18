@@ -33,215 +33,226 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsStringifyInterface.h"
 #include "tsUString.h"
+#include "tsCerrReport.h"
+#include "tsModulation.h"
+#include "tsReport.h"
+#include "tsMutex.h"
+#include "tsSafePtr.h"
+#include "tsSingletonManager.h"
+#include "tsxml.h"
 
 namespace ts {
     //!
     //! Description of a Low-Noise Block (LNB) converter in a satellite dish.
     //! @ingroup hardware
     //!
+    //! The satellite carrier frequency is used to carry the signal from the
+    //! satellite to the dish. This value is public and is stored in the NIT
+    //! for instance. The intermediate frequency is used to carry the signal
+    //! from the dish's LNB to the receiver. The way this frequency is
+    //! computed depends on the characteristics of the LNB. The intermediate
+    //! frequency is the one that is used by the tuner in the satellite
+    //! receiver.
+    //!
     //! Note: all frequencies are in Hz in parameters.
     //!
-    //! Characteristics of a univeral LNB:
-    //! - Low frequency: 9.750 GHz
-    //! - High frequency: 10.600 GHz
-    //! - Switch frequency: 11.700 GHz
-    //!
-    class TSDUCKDLL LNB
+    class TSDUCKDLL LNB : public StringifyInterface
     {
     public:
-        static const uint64_t UNIVERSAL_LNB_LOW_FREQUENCY    = TS_UCONST64(9750000000);  //!< Univeral LNB low frequency.
-        static const uint64_t UNIVERSAL_LNB_HIGH_FREQUENCY   = TS_UCONST64(10600000000); //!< Univeral LNB high frequency.
-        static const uint64_t UNIVERSAL_LNB_SWITCH_FREQUENCY = TS_UCONST64(11700000000); //!< Univeral LNB switch frequency.
-
-        static const LNB Universal; //!< Universal LNB.
-        static const LNB Null;      //!< Null LNB: satellite frequency == intermediate frequency.
-
         //!
         //! Default constructor.
-        //! The object is initialized with the characteristics of a univeral LNB.
+        //! The object is initially invalid.
         //!
-        LNB() :
-            _low_frequency(UNIVERSAL_LNB_LOW_FREQUENCY),
-            _high_frequency(UNIVERSAL_LNB_HIGH_FREQUENCY),
-            _switch_frequency(UNIVERSAL_LNB_SWITCH_FREQUENCY)
-        {
-        }
+        LNB();
 
         //!
-        //! Constructor of an LNB without high band.
+        //! Constructor from an LNB name.
+        //! @param [in] name LNB name of alias as found in file tsduck.lnbs.xml.
+        //! Can also be a full specification in legacy format (frequencies in MHz):
+        //! - "freq" if the LNB has no high band.
+        //! - "low,high,switch" if the LNB has a high band.
+        //! @param [in,out] report Where to log errors.
+        //! @return True on success, false on error. In case of error, an error
+        //! is displayed and the LNB object is marked as invalid.
+        //!
+        LNB(const UString& name, Report& report = CERR);
+
+        //!
+        //! Constructor from a simple legacy LNB without high band.
         //! @param [in] frequency Low frequency.
         //!
-        LNB(uint64_t frequency) :
-            _low_frequency(frequency),
-            _high_frequency(0),
-            _switch_frequency(0)
-        {
-        }
+        LNB(uint64_t frequency);
 
         //!
-        //! Constructor of an LNB with low and high band.
+        //! Constructor from a legacy LNB with low and high band.
         //! @param [in] low_frequency Low frequency.
         //! @param [in] high_frequency High frequency.
         //! @param [in] switch_frequency Switch frequency.
         //!
-        LNB(uint64_t low_frequency, uint64_t high_frequency, uint64_t switch_frequency) :
-            _low_frequency(low_frequency),
-            _high_frequency(high_frequency),
-            _switch_frequency(switch_frequency)
-        {
-        }
+        LNB(uint64_t low_frequency, uint64_t high_frequency, uint64_t switch_frequency);
 
         //!
-        //! Constructor from a normalized string representation of an LNB.
-        //! @param [in] s Normalized string representation of the LNB.
-        //! In strings, all values are in MHz. All frequencies are set to zero in case of error.
-        //! - "freq" if the LNB has no high band.
-        //! - "low,high,switch" if the LNB has a high band.
+        //! Get a list of all available LNB's from the configuration file.
+        //! @param [in,out] report Where to report errors.
+        //! @return The list of all available LNB's and aliases.
         //!
-        LNB(const UString& s)  :
-            _low_frequency(0),
-            _high_frequency(0),
-            _switch_frequency(0)
-        {
-            set(s);
-        }
+        static UStringList GetAllNames(Report& report = CERR);
+
+        //!
+        //! Get the official name of the LNB.
+        //! @return The official name of the LNB.
+        //!
+        UString name() const { return _name; }
+
+        //!
+        //! Convert the LNB object to a string.
+        //! @return A string representing the LNB. This may be different from name().
+        //! If the official name contains spaces or other not convenient characters
+        //! to use on the command line, and a more convenient alias is defined in the
+        //! configuration file, then this alias is used.
+        //! @see StringifyInterface
+        //!
+        virtual UString toString() const override;
 
         //!
         //! Check if valid (typically after initializing or converting from string).
         //! @return True if valid.
         //!
-        bool isValid() const
-        {
-            return _low_frequency > 0;
-        }
+        bool isValid() const { return !_bands.empty(); }
 
         //!
-        //! Get the LNB low frequency.
-        //! @return The LNB low frequency.
+        //! Check if the LNB is polarization-controlled.
+        //! With such LNB's, the satellite frequencies are transposed in different bands
+        //! depending on the polarity. Also, they use "stacked" transposition: the transposed
+        //! bands don't overlap and no tone/voltage/DiSEqC command is needed.
+        //! @return True if the LNB is polarization-controlled.
         //!
-        uint64_t lowFrequency() const
-        {
-            return _low_frequency;
-        }
+        bool isPolarizationControlled() const;
 
         //!
-        //! Get the LNB high frequency.
-        //! @return The LNB high frequency.
+        //! Get the number of frequency bands in the LNB.
+        //! @return The number of frequency bands in the LNB.
         //!
-        uint64_t highFrequency() const
-        {
-            return _high_frequency;
-        }
+        size_t bandsCount() const { return _bands.size(); }
 
         //!
-        //! Get the LNB switch frequency.
-        //! @return The LNB switch frequency.
+        //! Get the legacy "low oscillator frequency" value.
+        //! @return The legacy "low oscillator frequency" or zero if there no equivalent.
         //!
-        uint64_t switchFrequency() const
-        {
-            return _switch_frequency;
-        }
+        uint64_t legacyLowOscillatorFrequency() const;
 
         //!
-        //! Check if the LNB has a high band.
-        //! @return True if the LNB has a high ban.
+        //! Get the legacy "high oscillator frequency" value.
+        //! @return The legacy "high oscillator frequency" or zero if there no equivalent.
         //!
-        bool hasHighBand() const
-        {
-            return _high_frequency > 0 && _switch_frequency > 0;
-        }
+        uint64_t legacyHighOscillatorFrequency() const;
 
         //!
-        //! Check if the specified satellite carrier frequency uses the high band of the LNB.
+        //! Get the legacy "switch frequency" value.
+        //! @return The legacy "switch frequency" or zero if there no equivalent.
+        //!
+        uint64_t legacySwitchFrequency() const;
+
+        //!
+        //! Description of the required transposition for a given satellite frequency and polarization.
+        //!
+        class TSDUCKDLL Transposition
+        {
+        public:
+            Transposition();                  //!< Constructor.
+            uint64_t satellite_frequency;     //!< Satellite frequency.
+            uint64_t intermediate_frequency;  //!< Intermediate frequency.
+            uint64_t oscillator_frequency;    //!< Oscillator frequency.
+            bool     stacked;                 //!< All transpositions are "stacked", no need to send a command to the dish.
+            size_t   band_index;              //!< Band index to switch to (e.g. 0 and 1 for low and high band of a universal LNB).
+        };
+
+        //!
+        //! Compute the intermediate frequency and transposition from a satellite carrier frequency.
+        //! @param [out] transpose Returned transposition information.
         //! @param [in] satellite_frequency Satellite carrier frequency in Hz.
-        //! @return True if @a satellite_frequency is in the high ban of the LBN.
-        //!
-        bool useHighBand(uint64_t satellite_frequency) const {return hasHighBand() && satellite_frequency >= _switch_frequency;}
-
-        //!
-        //! Compute the intermediate frequency from a satellite carrier frequency.
-        //!
-        //! The satellite carrier frequency is used to carry the signal from the
-        //! satellite to the dish. This value is public and is stored in the NIT
-        //! for instance. The intermediate frequency is used to carry the signal
-        //! from the dish's LNB to the receiver. The way this frequency is
-        //! computed depends on the characteristics of the LNB. The intermediate
-        //! frequency is the one that is used by the tuner in the satellite
-        //! receiver.
-        //!
-        //! @param [in] satellite_frequency Satellite carrier frequency in Hz.
-        //! @return Intermediate frequency between the LNB and the tuner.
-        //!
-        uint64_t intermediateFrequency(uint64_t satellite_frequency) const;
-
-        //!
-        //! Convert the LNB to a string object
-        //! @return A normalized representation of the LNB. All values are in MHz.
-        //! - "freq" if the LNB has no high band.
-        //! - "low,high,switch" if the LNB has a high band.
-        //!
-        operator UString() const;
-
-        //!
-        //! Interpret a string as an LNB value.
-        //! @param [in] s Normalized string representation of the LNB.
-        //! In strings, all values are in MHz. All frequencies are set to zero in case of error.
-        //! - "freq" if the LNB has no high band.
-        //! - "low,high,switch" if the LNB has a high band.
+        //! @param [in] polarity Carrier polarity. Used only on polarization-controlled LNB's. These LNB's
+        //! typically transpose different polarizations in different bands of intermediate frequencies.
+        //! @param [in,out] report Where to log errors.
         //! @return True on success, false on error.
+        //! Return zero on error (invalid LNB, frequency out or range).
         //!
-        bool set(const UString& s);
+        bool transpose(Transposition& transposition, uint64_t satellite_frequency, Polarization polarity, Report& report = CERR) const;
 
         //!
-        //! Set values of an LNB without high band.
+        //! Set the LNB to the specified type of LNB.
+        //! @param [in] name LNB name of alias as found in file tsduck.lnbs.xml.
+        //! Can also be a full specification in legacy format (frequencies in MHz):
+        //! - "freq" if the LNB has no high band.
+        //! - "low,high,switch" if the LNB has a high band.
+        //! @param [in,out] report Where to log errors.
+        //! @return True on success, false on error. In case of error, an error
+        //! is displayed and the LNB object is marked as invalid.
+        //!
+        bool set(const UString& name, Report& report = CERR);
+
+        //!
+        //! Set values of a simple legacy LNB without high band.
         //! @param [in] frequency Low frequency.
         //!
-        void set(uint64_t frequency)
-        {
-            _low_frequency    = frequency;
-            _high_frequency   = 0;
-            _switch_frequency = 0;
-        }
+        void set(uint64_t frequency);
 
         //!
-        //! Set values of an LNB with low and high band.
+        //! Set values of a legacy LNB with low and high band.
         //! @param [in] low_frequency Low frequency.
         //! @param [in] high_frequency High frequency.
         //! @param [in] switch_frequency Switch frequency.
         //!
-        void set(uint64_t low_frequency, uint64_t high_frequency, uint64_t switch_frequency)
-        {
-            _low_frequency    = low_frequency;
-            _high_frequency   = high_frequency;
-            _switch_frequency = switch_frequency;
-        }
-
-        //!
-        //! Set values of a univeral LNB.
-        //!
-        void setUniversalLNB()
-        {
-            _low_frequency    = UNIVERSAL_LNB_LOW_FREQUENCY;
-            _high_frequency   = UNIVERSAL_LNB_HIGH_FREQUENCY;
-            _switch_frequency = UNIVERSAL_LNB_SWITCH_FREQUENCY;
-        }
+        void set(uint64_t low_frequency, uint64_t high_frequency, uint64_t switch_frequency);
 
     private:
-        // Characteristics of an LNB.
-        uint64_t _low_frequency;
-        uint64_t _high_frequency;
-        uint64_t _switch_frequency;
-    };
-}
+        // One frequency band, as supported by the LNB.
+        class Band
+        {
+        public:
+            Band();                    // Constructor.
+            uint64_t     low;          // Lower bound of frequency band.
+            uint64_t     high;         // Higher bound of frequency band.
+            uint64_t     oscillator;   // Oscillator frequency (base of transposition).
+            uint64_t     switch_freq;  // Switch frequency (to next band). 
+            Polarization polarity;     // Polarity of this band (POL_NONE if not polarity-driven).
+        };
 
-//!
-//! Output operator for LNB.
-//! @param [in,out] strm Output text stream.
-//! @param [in] lnb LNB.
-//! @return A reference to @a strm.
-//!
-TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::LNB& lnb)
-{
-    return strm << ts::UString(lnb);
+        // LNB private members.
+        UString           _name;     // Official or rebuilt name.
+        UString           _alias;    // Convenient alias, safe for command line use.
+        std::vector<Band> _bands;    // All supported frequency bands.
+
+        // Safe pointer to an LNB object.
+        // Not thread-safe since these objects are loaded once and remain constant.
+        typedef SafePtr<LNB,NullMutex> LNBPtr;
+
+        // The repository of known LNB's.
+        class LNBRepository
+        {
+            TS_DECLARE_SINGLETON(LNBRepository);
+        public:
+            // Get an LNB by name or alias from the repository (default LNB when name is empty).
+            // Return null pointer when not found.
+            const LNB* get(const UString& name, Report& report);
+
+            // List of available LNB names. Return a constant reference to a constant object.
+            const UStringList& allNames(Report& report);
+
+        private:
+            mutable Mutex            _mutex;
+            LNBPtr                   _default_lnb;
+            std::map<UString,LNBPtr> _lnbs;
+            UStringList              _names;
+
+            // Load the repository if not already done. Return false on error.
+            bool load(Report&);
+
+            // Get name attribute of an <lnb> or <alias> element. Return false on error.
+            // Full name is added in _names. Normalized name is added in inames parameter.
+            bool getNameAttribute(const xml::Element* node, UString& name, UStringList& index_names);
+        };
+    };
 }

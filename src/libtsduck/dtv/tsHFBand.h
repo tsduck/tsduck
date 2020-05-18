@@ -42,9 +42,6 @@
 #include "tsxml.h"
 
 namespace ts {
-
-    class HFBand;
-
     //!
     //! Definition of an HF frequency band (UHF, VHF).
     //! @ingroup hardware
