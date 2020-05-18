@@ -330,9 +330,9 @@ bool ts::DirectShowNetworkType::initDVBTuningSpace2(::IDVBTuningSpace2* tspace, 
 bool ts::DirectShowNetworkType::initDVBSTuningSpace(::IDVBSTuningSpace* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report)
 {
     return initDVBTuningSpace2(tspace, name, nullptr, report) &&
-        PUT(tspace, LNBSwitch, long(LNB::UNIVERSAL_LNB_SWITCH_FREQUENCY / 1000)) &&     // in kHz
-        PUT(tspace, LowOscillator, long(LNB::UNIVERSAL_LNB_LOW_FREQUENCY / 1000)) &&    // in kHz
-        PUT(tspace, HighOscillator, long(LNB::UNIVERSAL_LNB_HIGH_FREQUENCY / 1000)) &&  // in kHz
+        PUT(tspace, LNBSwitch, -1) &&   // -1 = "not set"
+        PUT(tspace, LowOscillator, -1) &&   // -1 = "not set"
+        PUT(tspace, HighOscillator, -1) &&   // -1 = "not set"
         PUT(tspace, SpectralInversion, ::BDA_SPECTRAL_INVERSION_NOT_SET) &&
         initDefaultLocator(tspace, dlocator, report);
 }
@@ -416,9 +416,9 @@ bool ts::DirectShowNetworkType::initDVBSLocator2(::IDVBSLocator2* loc, Report& r
 {
     return initDVBSLocator(loc, report) &&
         PUT(loc, DiseqLNBSource, ::BDA_LNB_SOURCE_NOT_SET) &&
-        PUT(loc, LocalLNBSwitchOverride, long(LNB::UNIVERSAL_LNB_SWITCH_FREQUENCY / 1000)) &&     // in kHz
-        PUT(loc, LocalOscillatorOverrideLow, long(LNB::UNIVERSAL_LNB_LOW_FREQUENCY / 1000)) &&    // in kHz
-        PUT(loc, LocalOscillatorOverrideHigh, long(LNB::UNIVERSAL_LNB_HIGH_FREQUENCY / 1000)) &&  // in kHz
+        PUT(loc, LocalLNBSwitchOverride, -1) &&   // -1 = "not set"
+        PUT(loc, LocalOscillatorOverrideLow, -1) &&   // -1 = "not set"
+        PUT(loc, LocalOscillatorOverrideHigh, -1) &&   // -1 = "not set"
         PUT(loc, LocalSpectralInversionOverride, ::BDA_SPECTRAL_INVERSION_NOT_SET) &&
         PUT(loc, SignalRollOff, ::BDA_ROLL_OFF_NOT_SET) &&
         PUT(loc, SignalPilot, ::BDA_PILOT_NOT_SET);

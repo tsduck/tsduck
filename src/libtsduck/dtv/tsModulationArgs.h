@@ -85,10 +85,6 @@ namespace ts {
         //!
         Variable<LNB> lnb;
         //!
-        //! Default value for lnb.
-        //!
-        static const LNB& DEFAULT_LNB;
-        //!
         //! Spectral inversion.
         //! Applies to: DVB-T/T2, DVB-S/S2, DVB-C (A,B,C), ATSC, ISDB-T, ISDB-S.
         //!

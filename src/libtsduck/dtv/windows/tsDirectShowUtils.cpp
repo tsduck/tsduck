@@ -419,6 +419,7 @@ bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
         default: source = ::BDA_LNB_SOURCE_NOT_DEFINED; break;
     }
 
+    // 
     // Microsoft oddity, part 1...
     //
     // The locator interface for DVB-S is IDVBSLocator. However, this interface did
@@ -442,6 +443,25 @@ bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
 
     ComPtr<::IDVBSLocator2> loc(CLSID_DVBSLocator, ::IID_IDVBSLocator2, report);
 
+    //
+    // Microsoft oddity, part 3...
+    //
+    // The DirectShow classes have not evolve and are still stuck with the legacy
+    // model of low/high/switch frequencies. We try to emulate this with new LNB's.
+
+    uint64_t low_freq = params.lnb.value().legacyLowOscillatorFrequency();
+    uint64_t high_freq = params.lnb.value().legacyHighOscillatorFrequency();
+    uint64_t switch_freq = params.lnb.value().legacySwitchFrequency();
+
+    if (low_freq == 0) {
+        // Cannot even find a low oscillator frequency. Get the local oscillator
+        // frequency for this particular tune and pretend it is the low oscillator.
+        LNB::Transposition tr;
+        if (params.lnb.value().transpose(tr, params.frequency.value(), params.polarity.value(), NULLREP)) {
+            low_freq = tr.oscillator_frequency;
+        }
+    }
+
     if (loc.isNull() ||
         !CheckModVar(params.modulation, u"modulation", ModulationEnum, report) ||
         !CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, report) ||
@@ -453,9 +473,9 @@ bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
         !PUT(loc, InnerFECRate, ::BinaryConvolutionCodeRate(params.inner_fec.value())) ||
         !PUT(loc, SymbolRate, long(params.symbol_rate.value())) ||
         !PUT(loc, LocalSpectralInversionOverride, ::SpectralInversion(params.inversion.value())) ||
-        !PUT(loc, LocalOscillatorOverrideLow, long(params.lnb.value().lowFrequency() / 1000)) ||    // frequency in kHz
-        !PUT(loc, LocalOscillatorOverrideHigh, long(params.lnb.value().highFrequency() / 1000)) ||  // frequency in kHz
-        !PUT(loc, LocalLNBSwitchOverride, long(params.lnb.value().switchFrequency() / 1000)) ||     // frequency in kHz
+        !PUT(loc, LocalOscillatorOverrideLow, low_freq == 0 ? -1 : long(low_freq / 1000)) ||     // frequency in kHz, -1 means not set
+        !PUT(loc, LocalOscillatorOverrideHigh, high_freq == 0 ? -1 : long(high_freq / 1000)) ||  // frequency in kHz, -1 means not set
+        !PUT(loc, LocalLNBSwitchOverride, switch_freq == 0 ? -1 : long(switch_freq / 1000)) ||   // frequency in kHz, -1 means not set
         !PUT(loc, DiseqLNBSource, source))
     {
         return false;
