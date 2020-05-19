@@ -74,8 +74,6 @@ namespace ts {
         //! - "freq" if the LNB has no high band.
         //! - "low,high,switch" if the LNB has a high band.
         //! @param [in,out] report Where to log errors.
-        //! @return True on success, false on error. In case of error, an error
-        //! is displayed and the LNB object is marked as invalid.
         //!
         LNB(const UString& name, Report& report = CERR);
 
@@ -171,7 +169,7 @@ namespace ts {
 
         //!
         //! Compute the intermediate frequency and transposition from a satellite carrier frequency.
-        //! @param [out] transpose Returned transposition information.
+        //! @param [out] transposition Returned transposition information.
         //! @param [in] satellite_frequency Satellite carrier frequency in Hz.
         //! @param [in] polarity Carrier polarity. Used only on polarization-controlled LNB's. These LNB's
         //! typically transpose different polarizations in different bands of intermediate frequencies.
@@ -216,7 +214,7 @@ namespace ts {
             uint64_t     low;          // Lower bound of frequency band.
             uint64_t     high;         // Higher bound of frequency band.
             uint64_t     oscillator;   // Oscillator frequency (base of transposition).
-            uint64_t     switch_freq;  // Switch frequency (to next band). 
+            uint64_t     switch_freq;  // Switch frequency (to next band).
             Polarization polarity;     // Polarity of this band (POL_NONE if not polarity-driven).
         };
 
@@ -246,6 +244,9 @@ namespace ts {
             LNBPtr                   _default_lnb;
             std::map<UString,LNBPtr> _lnbs;
             UStringList              _names;
+
+            // Convert a name to an index in LNB map.
+            static UString ToIndex(const UString& name);
 
             // Load the repository if not already done. Return false on error.
             bool load(Report&);
