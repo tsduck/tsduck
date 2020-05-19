@@ -6,8 +6,10 @@
   </ImportGroup>
 
   <ItemGroup>
-    <ClCompile Include="$(TSDuckRootDir)src\utest\**\*.cpp" Exclude="$(TSDuckRootDir)src\utest\**\dependenciesForStaticLib.cpp"/>
-    <ClInclude Include="$(TSDuckRootDir)src\utest\**\*.h"/>
+    <TestSources Include="$(TSDuckRootDir)src\utest\**\*.cpp" Exclude="$(TSDuckRootDir)src\utest\**\dependenciesForStaticLib.cpp"/>
+    <TestHeaders Include="$(TSDuckRootDir)src\utest\**\*.h"/>
+    <ClInclude   Include="@(TestHeaders)"/>
+    <ClCompile   Include="@(TestSources)"/>
   </ItemGroup>
 
   <PropertyGroup Label="Globals">

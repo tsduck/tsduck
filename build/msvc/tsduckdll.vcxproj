@@ -6,12 +6,14 @@
   </ImportGroup>
 
   <ItemGroup>
-    <ClInclude      Include="$(TSDuckRootDir)src\libtsduck\**\*.h"   Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;$(TSDuckRootDir)src\libtsduck\**\linux\**;$(TSDuckRootDir)src\libtsduck\**\mac\**;$(TSDuckRootDir)src\libtsduck\**\static\**"/>
-    <ClCompile      Include="$(TSDuckRootDir)src\libtsduck\**\*.cpp" Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;$(TSDuckRootDir)src\libtsduck\**\linux\**;$(TSDuckRootDir)src\libtsduck\**\mac\**;$(TSDuckRootDir)src\libtsduck\**\static\**"/>
+    <LibHeaders     Include="$(TSDuckRootDir)src\libtsduck\**\*.h"   Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;$(TSDuckRootDir)src\libtsduck\**\linux\**;$(TSDuckRootDir)src\libtsduck\**\mac\**;$(TSDuckRootDir)src\libtsduck\**\static\**"/>
+    <LibSources     Include="$(TSDuckRootDir)src\libtsduck\**\*.cpp" Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;$(TSDuckRootDir)src\libtsduck\**\linux\**;$(TSDuckRootDir)src\libtsduck\**\mac\**;$(TSDuckRootDir)src\libtsduck\**\static\**"/>
     <LibConfigXML   Include="$(TSDuckRootDir)src\libtsduck\**\*.xml"/>
     <LibConfigNames Include="$(TSDuckRootDir)src\libtsduck\**\*.names"/>
     <Xml            Include="@(LibConfigXML)"/>
     <None           Include="@(LibConfigNames)"/>
+    <ClInclude      Include="@(LibHeaders)"/>
+    <ClCompile      Include="@(LibSources)"/>
   </ItemGroup>
 
   <PropertyGroup Label="Globals">
