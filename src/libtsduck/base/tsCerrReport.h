@@ -62,4 +62,4 @@ namespace ts {
 //!
 //! Macro for fast access to the ts::CerrReport singleton.
 //!
-#define CERR (*ts::CerrReport::Instance())
+#define CERR (*(static_cast<ts::Report*>(ts::CerrReport::Instance())))

@@ -99,10 +99,12 @@ namespace ts {
         //! @param [in] region Region of country name (not case sensitive).
         //! @param [in] band HF band type (u"UHF", u"VHF", etc).
         //! @param [in,out] report Where to report errors.
+        //! @param [in] silent_band If true, do not report error message if the band is not found in
+        //! the file. Other errors (HF band file not found, region not found) are still reported.
         //! @return A pointer to the instance for the corresponding @a region.
         //! If the repository contains no known band for the region, return an empty object.
         //!
-        static const HFBand* GetBand(const UString& region = UString(), const UString& band = u"UHF", Report& report = CERR);
+        static const HFBand* GetBand(const UString& region = UString(), const UString& band = u"UHF", Report& report = CERR, bool silent_band = false);
 
         //!
         //! Get the name of the HF band as a string.

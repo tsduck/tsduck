@@ -1352,7 +1352,6 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
 bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
 {
     bool status = true;
-    ModulationArgs::reset();
 
     // If delivery system is unspecified, will use the default one for the tuner.
     if (args.present(u"delivery-system")) {
@@ -1368,10 +1367,10 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
         frequency = args.intValue<uint64_t>(u"frequency");
     }
     else if (args.present(u"uhf-channel")) {
-        frequency = duck.uhfBand()->frequency(args.intValue<uint32_t>(u"uhf-channel"));
+        frequency = duck.uhfBand()->frequency(args.intValue<uint32_t>(u"uhf-channel"), args.intValue<int32_t>(u"offset-count", 0));
     }
     else if (args.present(u"vhf-channel")) {
-        frequency = duck.vhfBand()->frequency(args.intValue<uint32_t>(u"vhf-channel"));
+        frequency = duck.vhfBand()->frequency(args.intValue<uint32_t>(u"vhf-channel"), args.intValue<int32_t>(u"offset-count", 0));
     }
 
     // Other individual tuning options
@@ -1484,9 +1483,8 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
     // Local options (not related to transponder)
     if (args.present(u"lnb")) {
         UString s(args.value(u"lnb"));
-        LNB l(s);
+        LNB l(s, duck.report());
         if (!l.isValid()) {
-            args.error(u"invalid LNB description " + s);
             status = false;
         }
         else {
@@ -1497,6 +1495,10 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
         satellite_number = args.intValue<size_t>(u"satellite-number");
     }
 
+    // Mark arguments as invalid is some errors were found.
+    if (!status) {
+        args.invalidate();
+    }
     return status;
 }
 

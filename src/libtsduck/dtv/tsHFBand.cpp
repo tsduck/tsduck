@@ -65,11 +65,11 @@ ts::HFBand::ChannelsRange::ChannelsRange() :
 // GetBand static method.
 //----------------------------------------------------------------------------
 
-const ts::HFBand* ts::HFBand::GetBand(const UString& region, const UString& band, Report& report)
+const ts::HFBand* ts::HFBand::GetBand(const UString& region, const UString& band, Report& report, bool silent_band)
 {
     HFBandRepository* repo = HFBandRepository::Instance();
     repo->load(report);
-    return repo->get(band, region, report);
+    return repo->get(band, region, silent_band ? NULLREP : report);
 }
 
 ts::UString ts::HFBand::DefaultRegion(Report& report)
@@ -463,6 +463,7 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
 
     // Get the default region from configuration file.
     setDefaultRegion(UString());
+    report.debug(u"default HF band region: %s", {_default_region});
 
     // A set of region names (to build a list of unique names).
     std::set<UString> regionSet;

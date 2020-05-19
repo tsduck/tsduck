@@ -60,4 +60,4 @@ namespace ts {
 //!
 //! Macro for fast access to the ts::NullReport singleton.
 //!
-#define NULLREP (*ts::NullReport::Instance())
+#define NULLREP (*(static_cast<ts::Report*>(ts::NullReport::Instance())))

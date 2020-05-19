@@ -53,8 +53,6 @@ ts::TunerArgs::TunerArgs(bool info_only, bool allow_short_options) :
     demux_queue_size(Tuner::DEFAULT_SINK_QUEUE_SIZE),
     receiver_name(),
 #endif
-    channel_name(),
-    tuning_file_name(),
     _info_only(info_only)
 {
 }
@@ -75,8 +73,6 @@ void ts::TunerArgs::reset()
     demux_queue_size = Tuner::DEFAULT_SINK_QUEUE_SIZE;
     receiver_name.clear();
 #endif
-    channel_name.clear();
-    tuning_file_name.clear();
 
     // Reset superclass.
     ModulationArgs::reset();
@@ -128,20 +124,59 @@ bool ts::TunerArgs::loadArgs(DuckContext& duck, Args& args)
         demux_queue_size = args.intValue<size_t>(u"demux-queue-size", Tuner::DEFAULT_SINK_QUEUE_SIZE);
 #endif
 
-        // Tuning parameters from superclass.
-        status = ModulationArgs::loadArgs(duck, args) && status;
-
         // Locating the transponder by channel
-        channel_name = args.value(u"channel-transponder");
-        tuning_file_name = args.value(u"tuning-file");
+        const UString channel_name(args.value(u"channel-transponder"));
+        if (!channel_name.empty()) {
+            bool channel_found = false;
 
-        // Mutually exclusive methods of locating the channels
-        if (!channel_name.empty() && hasModulationArgs()) {
-            args.error(u"--channel-transponder and individual tuning options are incompatible");
-            status = false;
+            // Check if the channel has the format "name-number". Split the name in two fields.
+            UStringVector fields;
+            channel_name.split(fields, u'-', true, true);
+
+            // Try to match a channel number in an HF band.
+            uint32_t channel_number = 0;
+            const HFBand* band = nullptr;
+            if (fields.size() == 2 && fields[1].toInteger(channel_number) && (band = duck.hfBand(fields[0], true)) != nullptr) {
+                // Found a band name and channel number. Find associated frequency.
+                // The option --offset-count is defined in superclass ModulationArgs.
+                const uint64_t freq = band->frequency(channel_number, args.intValue<int32_t>(u"offset-count", 0));
+                // If the returned frequency is zero, the channel is outside the band.
+                if (freq != 0) {
+                    channel_found = true;
+                    frequency = freq;
+                    // Some satellite bands define polarization in addition to frequency.
+                    const Polarization pol = band->polarization(channel_number);
+                    if (pol != POL_NONE && pol != POL_AUTO) {
+                        polarity = pol;
+                    }
+                }
+            }
+
+            // If not found as an HF "band-number", try a "TV channel" name.
+            if (!channel_found) {
+                // To find a match, we need to know the delivery systems which are supported by the tuner.
+                // And to do that, we need to temporarily open the tuner in "info only" mode.
+                ChannelFile file;
+                Tuner tuner(duck);
+                _info_only = true;
+                if (file.load(args.value(u"tuning-file"), duck.report()) && configureTuner(tuner, duck.report())) {
+                    channel_found = file.serviceToTuning(*this, tuner.deliverySystems(), channel_name, false, duck.report());
+                    tuner.close(duck.report());
+                }
+                _info_only = false;
+            }
+
+            status = status && channel_found;
         }
+
+        // Other tuning parameters from superclass.
+        status = ModulationArgs::loadArgs(duck, args) && status;
     }
 
+    // Mark arguments as invalid is some errors were found.
+    if (!status) {
+        args.invalidate();
+    }
     return status;
 }
 
@@ -223,9 +258,13 @@ void ts::TunerArgs::defineArgs(Args& args) const
         // Tuning using a channel configuration file.
         args.option(u"channel-transponder", allowShortOptions() ? 'c' : 0, Args::STRING);
         args.help(u"channel-transponder", u"name",
-                  u"Tune to the transponder containing the specified channel. The channel name "
-                  u"is not case-sensitive and blanks are ignored. The channel is searched in a "
-                  u"\"tuning file\" and the corresponding tuning information in this file is used.");
+                  u"Tune to the transponder containing the specified channel. "
+                  u"The channel name is not case-sensitive and blanks are ignored. "
+                  u"It is either an \"HF band channel\" or a \"TV channel\".\n\n"
+                  u"An \"HF band channel\" has the format \"band-number\" such as \"UHF-22\" "
+                  u"(terrestrial) or \"BS-12\" (Japanese satellite). See also option --offset-count.\n\n"
+                  u"A \"TV channel\" name is searched in a \"tuning file\" and the corresponding "
+                  u"tuning information in this file is used. See also option --tuning-file.");
 
         args.option(u"tuning-file", 0, Args::STRING);
         args.help(u"tuning-file",
@@ -280,22 +319,4 @@ bool ts::TunerArgs::configureTuner(Tuner& tuner, Report& report) const
     }
 
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// If a channel name was specified instead of modulation parameters,
-// load its description from the channel file.
-//----------------------------------------------------------------------------
-
-bool ts::TunerArgs::resolveChannel(const DeliverySystemSet& systems, Report& report)
-{
-    if (channel_name.empty()) {
-        // No channel name to resolve.
-        return true;
-    }
-    else {
-        ChannelFile file;
-        return file.load(tuning_file_name, report) && file.serviceToTuning(*this, systems, channel_name, false, report);
-    }
 }
