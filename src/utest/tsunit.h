@@ -559,6 +559,20 @@ namespace tsunit {
         template<typename T>
         static void equal(const T* expected, const T* actual, const std::string& estring, const std::string& vstring, const char* sourcefile, int linenumber);
     };
+
+    // Specialization for char C-strings.
+    template<>
+    inline void Assertions::equal<char>(const char* expected, const char* actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
+    {
+        equalString(std::string(expected), std::string(actual), sourcefile, linenumber);
+    }
+
+    // Specialization for char16_t C-strings.
+    template<>
+    inline void Assertions::equal<char16_t>(const char16_t* expected, const char16_t* actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
+    {
+        equalString(std::u16string(expected), std::u16string(actual), sourcefile, linenumber);
+    }
 }
 
 // Out-of-line implementation of "large" templates.
@@ -608,7 +622,6 @@ void tsunit::TestExceptionWrapper<TEST,EXCEP,T1,T2>::run()
     }
 }
 
-
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
@@ -643,18 +656,6 @@ void tsunit::Assertions::equal(const ETYPE& expected, const ATYPE& actual, const
         const std::string details2("actual:   " + toString(actual) + " (\"" + astr + "\")");
         throw Failure("incorrect value", details1 + "\n" + details2, file, line);
     }
-}
-
-template<>
-inline void tsunit::Assertions::equal<char>(const char* expected, const char* actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
-{
-    equalString(std::string(expected), std::string(actual), sourcefile, linenumber);
-}
-
-template<>
-inline void tsunit::Assertions::equal<char16_t>(const char16_t* expected, const char16_t* actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
-{
-    equalString(std::u16string(expected), std::u16string(actual), sourcefile, linenumber);
 }
 
 template<typename T>
