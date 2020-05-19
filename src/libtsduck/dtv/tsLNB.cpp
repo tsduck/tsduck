@@ -32,6 +32,7 @@
 #include "tsAlgorithm.h"
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
+#include "tsDuckConfigFile.h"
 TSDUCK_SOURCE;
 
 
@@ -289,6 +290,19 @@ const ts::UStringList& ts::LNB::LNBRepository::allNames(Report& report)
 
 
 //----------------------------------------------------------------------------
+// Convert a name to an index in LNB map.
+//----------------------------------------------------------------------------
+
+ts::UString ts::LNB::LNBRepository::ToIndex(const UString& name)
+{
+    UString n(name);
+    n.convertToLower();
+    n.remove(SPACE);
+    return n;
+}
+
+
+//----------------------------------------------------------------------------
 // Get an LNB by name or alias from the repository.
 //----------------------------------------------------------------------------
 
@@ -307,7 +321,7 @@ const ts::LNB* ts::LNB::LNBRepository::get(const UString& name, Report& report)
     }
     else {
         // Lookup by name, lower case, without space.
-        const auto it(_lnbs.find(name.toLower().toRemoved(SPACE)));
+        const auto it(_lnbs.find(ToIndex(name)));
         return it == _lnbs.end() ? nullptr : it->second.pointer();
     }
 }
@@ -325,7 +339,7 @@ bool ts::LNB::LNBRepository::getNameAttribute(const xml::Element* node, UString&
     }
 
     // Check if the name is already known.
-    const UString iname(name.toLower().toRemoved(SPACE));
+    const UString iname(ToIndex(name));
     if (_lnbs.find(iname) != _lnbs.end()) {
         node->report().error(u"duplicate LNB name '%s' in <%s> line %d", {name, node->name(), node->lineNumber()});
         return false;
@@ -443,6 +457,19 @@ bool ts::LNB::LNBRepository::load(Report& report)
         }
 
         success = success && lnb_ok;
+    }
+
+    // Override the default LNB if specified in the TSDuck configuration file.
+    const UString def_name(DuckConfigFile::Instance()->value(u"default.lnb"));
+    const UString def_index(ToIndex(def_name));
+    if (!def_index.empty()) {
+        auto it = _lnbs.find(def_index);
+        if (it != _lnbs.end()) {
+            _default_lnb = it->second;
+        }
+        else {
+            report.error(u"default LNB \"%s\" not found", {def_name});
+        }
     }
 
     // Build a sorted list of LNB names and aliases.

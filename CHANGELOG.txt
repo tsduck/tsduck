@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.21-1778
+VERSION 3.21-1801
 
 [NEW] New commands and plugins:
 
@@ -11,6 +11,9 @@ VERSION 3.21-1778
 
 [IMP] Improvements on existing commands and plugins:
 
+  * LNB's for satellite reception are now preconfigured from an XML file.
+    Polarization-controlled LNB's are now supported. Added "default.lnb"
+    in global configuration file.
   * General improvement of Japanese TV support:
     - Japanese character sets as defined in ARIB STD-B24.
     - Partial ISDB signalization, as defined in ARIB STD-B10.
