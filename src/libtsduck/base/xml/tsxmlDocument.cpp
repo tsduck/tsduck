@@ -93,6 +93,7 @@ bool ts::xml::Document::load(const UString& fileName, bool search)
 
     // Parse the document from the file.
     TextParser parser(_report);
+    _report.debug(u"loading XML file %s", {actualFileName});
     return parser.loadFile(actualFileName) && parseNode(parser, nullptr);
 }
 

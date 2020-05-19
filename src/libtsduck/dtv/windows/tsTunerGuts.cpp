@@ -577,8 +577,11 @@ bool ts::Tuner::Guts::FindTuners(DuckContext& duck, Tuner* tuner, TunerPtrVector
 
     // Check if tuner device name is ":integer"
     int dvb_device_index = -1;
-    if (tuner != nullptr && !tuner->_device_name.empty() && tuner->_device_name[0] == ':') {
-        tuner->_device_name.substr(1).toInteger(dvb_device_index);
+    if (tuner != nullptr) {
+        report.debug(u"looking for DVB adapter number \"%d\"", {tuner->_device_name});
+        if (!tuner->_device_name.empty() && tuner->_device_name[0] == ':') {
+            tuner->_device_name.substr(1).toInteger(dvb_device_index);
+        }
     }
 
     // Enumerate all filters with category KSCATEGORY_BDA_NETWORK_TUNER.
@@ -632,6 +635,7 @@ bool ts::Tuner::Guts::FindTuners(DuckContext& duck, Tuner* tuner, TunerPtrVector
                 tref._info_only = true;
                 tref._device_name = tuner_name;
                 tref._device_info.clear();  // none on Windows
+                report.debug(u"found tuner device \"%s\"", {tref._device_name});
 
                 // Add tuner it to response set
                 if (tuner_list != nullptr) {

@@ -289,7 +289,6 @@ bool ts::ChannelFile::serviceToTuning(ModulationArgs& tune, const DeliverySystem
         return true;
     }
     else {
-        tune.reset();
         return false;
     }
 }

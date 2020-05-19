@@ -374,7 +374,7 @@ namespace ts {
 
         //!
         //! Get tuner parameters from a service name in any network of a given type of the file.
-        //! @param [out] tune Returned modulation parameters.
+        //! @param [out] tune Returned modulation parameters. Unmodified if the channel is not found.
         //! @param [in] delsys Search only for these delivery systems. If empty, search any network.
         //! @param [in] name Service name.
         //! @param [in] strict If true, search exactly @a name.

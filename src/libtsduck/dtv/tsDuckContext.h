@@ -351,9 +351,11 @@ namespace ts {
         //!
         //! Get the description of an HF band for the default region.
         //! @param [in] name Name of the HF band to search (e.g. u"UHF", u"VHF", u"BS", u"CS").
+        //! @param [in] silent_band If true, do not report error message if the band is not found in
+        //! the file. Other errors (HF band file not found, region not found) are still reported.
         //! @return The description of the band for the default region. Never null.
         //!
-        const HFBand* hfBand(const UString& name) const;
+        const HFBand* hfBand(const UString& name, bool silent_band = false) const;
 
         //!
         //! Get the description of the VHF band for the default region.

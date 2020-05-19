@@ -60,8 +60,6 @@ namespace ts {
         size_t      demux_queue_size;   //!< Max number of queued media samples (Windows-specific).
         UString     receiver_name;      //!< Name of the DirectShow receiver to use (Windows-specific).
 #endif
-        UString     channel_name;       //!< Use transponder containing this channel.
-        UString     tuning_file_name;   //!< Where channel_name is located.
 
         //!
         //! Default constructor.
@@ -84,14 +82,6 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool configureTuner(Tuner& tuner, Report& report) const;
-
-        //!
-        //! If a channel name was specified instead of modulation parameters, load its description from the channel file.
-        //! @param [in] systems The possible delivery systems, typically from a tuner.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
-        //!
-        bool resolveChannel(const DeliverySystemSet& systems, Report& report);
 
     private:
         bool _info_only;

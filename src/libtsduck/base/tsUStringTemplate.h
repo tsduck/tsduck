@@ -301,9 +301,16 @@ void ts::UString::splitLines(CONTAINER& lines, size_t maxWidth, const UString& o
         }
         // Perform line cut if necessary.
         if (cut) {
-            lines.push_back((marginLength == 0 ? UString() : nextMargin) + substr(start, eol - start));
-            marginLength = nextMargin.length();
+            // Add current line.
+            UString line;
+            if (marginLength > 0) {
+                line.append(nextMargin);
+            }
+            line.append(substr(start, eol - start));
+            line.trim(false, true); // trim trailing spaces
+            lines.push_back(line);
             // Start new line, skip leading spaces
+            marginLength = nextMargin.length();
             start = eol < length() && at(eol) == LINE_FEED ? eol + 1 : eol;
             while (start < length() && IsSpace(at(start)) && at(start) != LINE_FEED) {
                 start++;

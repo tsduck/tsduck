@@ -195,9 +195,9 @@ ts::UString ts::DuckContext::defaultHFRegion() const
     }
 }
 
-const ts::HFBand* ts::DuckContext::hfBand(const UString& name) const
+const ts::HFBand* ts::DuckContext::hfBand(const UString& name, bool silent_band) const
 {
-    return HFBand::GetBand(defaultHFRegion(), name, *_report);
+    return HFBand::GetBand(defaultHFRegion(), name, *_report, silent_band);
 }
 
 const ts::HFBand* ts::DuckContext::vhfBand() const
@@ -382,31 +382,6 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"ISDB-specific table.");
     }
 
-    // Option --japan triggers different options.
-    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION)) {
-
-        // Build help text for --japan option. It depends on which set of options is requested.
-        // Use _definedCmdOptions instead of cmdOptionsMask to include previous options.
-        UStringList options;
-        if (_definedCmdOptions & CMD_STANDARDS) {
-            options.push_back(u"--isdb");
-        }
-        if (_definedCmdOptions & CMD_CHARSET) {
-            options.push_back(u"--default-charset ARIB-STD-B24");
-        }
-        if (_definedCmdOptions & CMD_HF_REGION) {
-            options.push_back(u"--hf-band-region japan");
-        }
-        UString japan(u"A synonym for '" + UString::Join(options, u" ") + u"'. ");
-        if (_definedCmdOptions & CMD_STANDARDS) {
-            japan.append(u"This option also activates some specificities for Japan such as the use of JST time instead of UTC. ");
-        }
-        japan.append(u"This is a handy shortcut when working on Japanese transport streams.");
-
-        args.option(u"japan", 0);
-        args.help(u"japan", japan);
-    }
-
     // Options relating to default UHF/VHF region.
     if (cmdOptionsMask & CMD_HF_REGION) {
 
@@ -433,6 +408,31 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
             args.option(cas->second);
             args.help(cas->second, UString::Format(u"Equivalent to --default-cas-id 0x%04X.", {cas->first}));
         }
+    }
+
+    // Option --japan triggers different options in different sets of options.
+    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION)) {
+
+        // Build help text for --japan option. It depends on which set of options is requested.
+        // Use _definedCmdOptions instead of cmdOptionsMask to include previous options.
+        UStringList options;
+        if (_definedCmdOptions & CMD_STANDARDS) {
+            options.push_back(u"--isdb");
+        }
+        if (_definedCmdOptions & CMD_CHARSET) {
+            options.push_back(u"--default-charset ARIB-STD-B24");
+        }
+        if (_definedCmdOptions & CMD_HF_REGION) {
+            options.push_back(u"--hf-band-region japan");
+        }
+        UString japan(u"A synonym for '" + UString::Join(options, u" ") + u"'. ");
+        if (_definedCmdOptions & CMD_STANDARDS) {
+            japan.append(u"This option also activates some specificities for Japan such as the use of JST time instead of UTC. ");
+        }
+        japan.append(u"This is a handy shortcut when working on Japanese transport streams.");
+
+        args.option(u"japan", 0);
+        args.help(u"japan", japan);
     }
 }
 
