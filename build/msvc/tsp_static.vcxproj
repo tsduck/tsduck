@@ -6,8 +6,9 @@
   </ImportGroup>
 
   <ItemGroup>
-    <ClCompile Include="$(TSDuckRootDir)src\tsplugins\tsplugin_*.cpp"/>
+    <Plugins   Include="$(TSDuckRootDir)src\tsplugins\tsplugin_*.cpp"/>
     <ClCompile Include="..\..\src\tstools\tsp.cpp" />
+    <ClCompile Include="@(Plugins)"/>
   </ItemGroup>
 
   <PropertyGroup Label="Globals">
