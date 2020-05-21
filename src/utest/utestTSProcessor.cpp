@@ -179,7 +179,7 @@ TestPlugin::Status TestPlugin::processPacket(ts::TSPacket& pkt, ts::TSPacketMeta
 
 
 //----------------------------------------------------------------------------
-// A text plugin event handler.
+// A test plugin event handler.
 // We don't do the TSUNIT assertions in the event handler (called in plugin
 // thread, under global mutex, exceptions ignored). All events are logged
 // into an internal public vector for later test. The assertions are made
@@ -216,9 +216,9 @@ TestEventHandler::TestEventHandler() :
 
 void TestEventHandler::handlePluginEvent(const ts::PluginEventContext& ctx)
 {
-    // We cannot assert here, log a debug message. Since messages will no be
-    // logged, the posst-processing assertions will fail and the problems
-    // wil be reported.
+    // We cannot assert here, we log a debug entry in a buffer.
+    // In case of error, messages will not be logged or logged in the wrong order,
+    // the post-processing assertions will fail and the problem will be reported at that time.
 
     if (ctx.pluginData() == nullptr) {
         std::cerr << "***** TestEventHandler::handlePluginEvent: ctx.pluginData() == nullptr";

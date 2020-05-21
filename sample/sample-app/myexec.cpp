@@ -15,9 +15,23 @@
 
 
 //----------------------------------------------------------------------------
+// Plugin-specific data type used during event signalling.
+// Probably not useful in many applications, just to provide sample code.
+//----------------------------------------------------------------------------
+
+class FooBarData : public ts::Object
+{
+public:
+    FooBarData(const ts::UString& s = ts::UString()) : message(s) {}
+    ts::UString message;
+};
+
+
+
+//----------------------------------------------------------------------------
 // A sample custom packet processing plugin.
-// The plugin takes one optional parameter, a PID,
-// and counts all packets in that PID.
+// The plugin takes one optional PID parameter and counts packets in that PID.
+// Most application don't need specific plugins, just to provide sample code.
 //----------------------------------------------------------------------------
 
 class FooBarPlugin: public ts::ProcessorPlugin
@@ -86,9 +100,43 @@ bool FooBarPlugin::stop()
 ts::ProcessorPlugin::Status FooBarPlugin::processPacket(ts::TSPacket& pkt, ts::TSPacketMetadata& metadata)
 {
     if (pkt.getPID() == _pid) {
+        // Count packets in the specified PID.
         _count++;
+
+        // Signal an event to the application.
+        // Nothing useful here, this is just to illustrate the feature.
+        // The event code is plugin-specific, just use 0xDEADBEEF as example.
+        FooBarData data(u"hello from processPacket()");
+        tsp->signalPluginEvent(0xDEADBEEF, &data);
     }
     return TSP_OK;
+}
+
+
+//----------------------------------------------------------------------------
+// A plugin event handler. Invoked each time a plugin signals an event.
+//----------------------------------------------------------------------------
+
+class FooBarHandler : public ts::PluginEventHandlerInterface
+{
+public:
+    FooBarHandler() = delete;
+    FooBarHandler(ts::Report& report) : _report(report) {}
+    virtual void handlePluginEvent(const ts::PluginEventContext& context) override;
+private:
+    ts::Report& _report;
+};
+
+void FooBarHandler::handlePluginEvent(const ts::PluginEventContext& ctx)
+{
+    FooBarData* data = dynamic_cast<FooBarData*>(ctx.pluginData());
+    if (data != nullptr) {
+        _report.info(u"[HANDLER] plugin: %s, event code: 0x%X, packets: %'d, application message: %s", {
+                     ctx.pluginName(),
+                     ctx.eventCode(),
+                     ctx.pluginPackets(),
+                     data->message});
+    }
 }
 
 
@@ -130,6 +178,10 @@ int main(int argc, char* argv[])
 
     // The TS processing is performed into this object.
     ts::TSProcessor tsproc(report);
+
+    // Register an event handler for plugins.
+    FooBarHandler handler(report);
+    tsproc.registerEventHandler(&handler);
 
     // Start the TS processing.
     if (!tsproc.start(opt)) {

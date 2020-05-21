@@ -5,12 +5,17 @@
 # By default, the sample application is built against the TSDuck dynamic
 # library in /usr/bin. Define TS_STATIC to link against the TSDuck static
 # library: make TS_STATIC=true
+#
+# If you have installed TSDuck in some non-standard location, just use:
+# make SYSPREFIX=$HOME/test
 
+# TSDuck definitions.
 ifeq ($(shell uname -s),Darwin) # Mac
-    include /usr/local/include/tsduck/tsduck.mk
+    SYSPREFIX ?= /usr/local
 else # Linux
-    include /usr/include/tsduck/tsduck.mk
+    SYSPREFIX ?= /usr
 endif
+include $(SYSPREFIX)/include/tsduck/tsduck.mk
 
 default: myexec
 
