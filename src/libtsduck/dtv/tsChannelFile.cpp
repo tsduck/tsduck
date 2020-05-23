@@ -476,7 +476,7 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
                         doc.report().error(u"Invalid <%s> at line %d, at most one set of tuner parameters is allowed in <ts>", {e->name(), e->lineNumber()});
                         success = false;
                     }
-                    else if (!fromXML(ts->tune, e, net->type)) {
+                    else if (!fromXML(ts->tune, e, net->type, tsid)) {
                         doc.report().error(u"Invalid <%s> at line %d", {e->name(), e->lineNumber()});
                         success = false;
                     }
@@ -584,7 +584,7 @@ bool ts::ChannelFile::generateDocument(xml::Document& doc) const
 // Convert modulation parameters from XML.
 //----------------------------------------------------------------------------
 
-bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, TunerType tunerType)
+bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, TunerType tunerType, uint16_t ts_id)
 {
     // Clear parameter area.
     mod.reset();
@@ -651,6 +651,7 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
     }
     else if (elem->name().similar(u"isdbs")) {
         mod.delivery_system = DS_ISDB_S;
+        mod.stream_id = ts_id;
         return
             elem->getOptionalIntAttribute<size_t>(mod.satellite_number, u"satellite", 0, 3) &&
             elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&

@@ -665,6 +665,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_INVERSION);
             props.add(DTV_SYMBOL_RATE);
             props.add(DTV_INNER_FEC);
+            props.add(DTV_STREAM_ID);
 
             if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const ErrorCode err = LastErrorCode();
@@ -672,9 +673,16 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                 return false;
             }
 
+            uint32_t val = 0;
             params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
             params.symbol_rate = props.getByCommand(DTV_SYMBOL_RATE);
             params.inner_fec = InnerFEC(props.getByCommand(DTV_INNER_FEC));
+            params.stream_id.reset();
+            if ((val = props.getByCommand(DTV_STREAM_ID)) != DTVProperties::UNKNOWN) {
+                // Warning: stream id may be incorrect when returned from the driver.
+                // We should update it when possible with the actual transport stream id from the inner stream.
+                params.stream_id = val;
+            }
             return true;
         }
         case DS_ISDB_T: {
@@ -1080,6 +1088,7 @@ bool ts::Tuner::tune(ModulationArgs& params, Report& report)
             props.addVar(DTV_SYMBOL_RATE, params.symbol_rate);
             props.addVar(DTV_INNER_FEC, params.inner_fec);
             props.addVar(DTV_INVERSION, params.inversion);
+            props.addVar(DTV_STREAM_ID, params.stream_id);
             break;
         }
         case DS_ISDB_T: {

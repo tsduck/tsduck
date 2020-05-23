@@ -109,7 +109,7 @@ namespace ts {
         //!
         //! Default value for symbol_rate on ISDB-S.
         //!
-        static constexpr uint32_t DEFAULT_SYMBOL_RATE_ISDBS = 27500000;
+        static constexpr uint32_t DEFAULT_SYMBOL_RATE_ISDBS = 28860000;
         //!
         //! Error correction.
         //! Applies to: DVB-S/S2, DVB-C (A,C), ISDB-S.
@@ -404,6 +404,15 @@ namespace ts {
         //! Applies to: ISDB-T.
         //!
         Variable<int> layer_c_time_interleaving;
+        //!
+        //! Inner stream id (same as inner transport stream id).
+        //! Applies to: ISDB-S (multi-stream).
+        //!
+        Variable<uint32_t> stream_id;
+        //!
+        //! Default value for inner stream id.
+        //!
+        static constexpr uint32_t DEFAULT_STREAM_ID = STREAM_ID_DISABLE;
 
         //!
         //! Default constructor.
@@ -454,10 +463,11 @@ namespace ts {
         //! Fill modulation parameters from a delivery system descriptor.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] desc A descriptor. Must be a valid delivery system descriptor.
+        //! @param [in] ts_id Tranport stream id of the TS which is described by the delivery system descriptor.
         //! @return True on success, false if the descriptor was not correctly analyzed or is not
         //! a delivery system descriptor.
         //!
-        bool fromDeliveryDescriptor(DuckContext& duck, const Descriptor& desc);
+        bool fromDeliveryDescriptor(DuckContext& duck, const Descriptor& desc, uint16_t ts_id);
 
         //!
         //! Attempt to get a "modulation type" for Dektec modulator cards.

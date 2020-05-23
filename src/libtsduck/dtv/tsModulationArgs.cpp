@@ -70,6 +70,7 @@ constexpr ts::PLSMode           ts::ModulationArgs::DEFAULT_PLS_MODE;
 constexpr int                   ts::ModulationArgs::DEFAULT_SB_SUBCHANNEL_ID;
 constexpr int                   ts::ModulationArgs::DEFAULT_SB_SEGMENT_COUNT;
 constexpr int                   ts::ModulationArgs::DEFAULT_SB_SEGMENT_INDEX;
+constexpr uint32_t              ts::ModulationArgs::DEFAULT_STREAM_ID;
 #endif
 
 
@@ -117,6 +118,7 @@ ts::ModulationArgs::ModulationArgs(bool allow_short_options) :
     layer_c_modulation(),
     layer_c_segment_count(),
     layer_c_time_interleaving(),
+    stream_id(),
     _allow_short_options(allow_short_options)
 {
 }
@@ -167,6 +169,7 @@ void ts::ModulationArgs::reset()
     layer_c_modulation.reset();
     layer_c_segment_count.reset();
     layer_c_time_interleaving.reset();
+    stream_id.reset();
 }
 
 
@@ -215,7 +218,8 @@ bool ts::ModulationArgs::hasModulationArgs() const
         layer_c_fec.set() ||
         layer_c_modulation.set() ||
         layer_c_segment_count.set() ||
-        layer_c_time_interleaving.set();
+        layer_c_time_interleaving.set() ||
+        stream_id.set();
 }
 
 
@@ -644,7 +648,7 @@ bool ts::ModulationArgs::convertToDektecModulation(int& modulation_type, int& pa
 // Fill modulation parameters from a delivery system descriptor.
 //----------------------------------------------------------------------------
 
-bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descriptor& desc)
+bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descriptor& desc, uint16_t ts_id)
 {
     // Completely clear previous content.
     reset();
@@ -728,6 +732,8 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
                     // ISDB variant.
                     delivery_system = DS_ISDB_S;
                     roll_off.reset();
+                    // The TS id is used in ISDB-S multi-stream encapsulation.
+                    stream_id = ts_id;
                     // Inner FEC.
                     switch (data[10] & 0x0F) {
                         case 1:  inner_fec = FEC_1_2; break;
@@ -1095,6 +1101,9 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             if (symbol_rate.set() && symbol_rate != 0) {
                 strm << margin << "Symbol rate: " << UString::Decimal(symbol_rate.value()) << " symb/s" << std::endl;
             }
+            if (stream_id.set()) {
+                strm << margin << "Innert transport stream id: " << stream_id.value() << std::endl;
+            }
             if (inner_fec.set() && inner_fec != ts::FEC_AUTO) {
                 strm << margin << "FEC inner: " << InnerFECEnum.name(inner_fec.value()) << std::endl;
             }
@@ -1265,6 +1274,9 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
                                    symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBS),
                                    InnerFECEnum.name(inner_fec.value(DEFAULT_INNER_FEC)),
                                    PolarizationEnum.name(polarity.value(DEFAULT_POLARITY))});
+            if (stream_id.set() && stream_id != DEFAULT_STREAM_ID) {
+                opt += UString::Format(u" --stream-id %d", {stream_id.value()});
+            }
             if (!no_local && lnb.set()) {
                 opt += UString::Format(u" --lnb %s", {lnb.value()});
             }
@@ -1478,6 +1490,9 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
     }
     if (args.present(u"isdbt-layer-c-time-interleaving")) {
         layer_c_time_interleaving = args.intValue<int>(u"isdbt-layer-c-time-interleaving");
+    }
+    if (args.present(u"stream-id")) {
+        stream_id = args.intValue<uint32_t>(u"stream-id");
     }
 
     // Local options (not related to transponder)
@@ -1705,6 +1720,13 @@ void ts::ModulationArgs::defineArgs(Args& args) const
               u"Possible values: 0 to 3. The default is automatically detected.");
     args.help(u"isdbt-layer-b-time-interleaving", u"Same as --isdbt-layer-a-time-interleaving for layer B.");
     args.help(u"isdbt-layer-c-time-interleaving", u"Same as --isdbt-layer-a-time-interleaving for layer C.");
+
+    args.option(u"stream-id", 0, Args::UINT16);
+    args.help(u"stream-id",
+              u"Used for ISDB-S tuners only. "
+              u"In the case of multi-stream broadcasting, specify the inner transport stream id. "
+              u"By default, use the first inner transport stream, if any is found. "
+              u"Warning: this option is supported on Linux only.");
 
     // UHF/VHF frequency bands options.
     args.option(u"uhf-channel", _allow_short_options ? 'u' : 0, Args::POSITIVE);
