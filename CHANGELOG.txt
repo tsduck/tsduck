@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.21-1801
+VERSION 3.21-1806
 
 [NEW] New commands and plugins:
 
@@ -22,7 +22,7 @@ VERSION 3.21-1801
     - Option --initial-input-packets in "tsp".
     - Options --reopen-on-error, --max-retry and --retry-interval in
       output plugin "file".
-    - Option --stream-id in plugin "filter".
+    - Option --stream-id in "tsscan" and plugins "dvb", "filter".
     - Option --japan in "tsanalyze", "tspsi", "tstabcomp", "tstabdump",
       "tstables", "tsterinfo" and plugins "analyze", "psi", "tables", "dvb".
     - Options --default-charset, --europe and --japan to "tspacketize",

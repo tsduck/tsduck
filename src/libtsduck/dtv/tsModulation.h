@@ -542,13 +542,15 @@ namespace ts {
     TSDUCKDLL extern const Enumeration HierarchyEnum;
 
     //
-    // Representation of multistream in DVB-x2.
+    // Representation of multistream in DVB-T2, DVB-S2, ISDB-S.
     //
     constexpr uint32_t PLP_MAX      = 0xFF;        //!< Maximum Physical Layer Pipe (PLP) value for DVB-T2.
     constexpr uint32_t PLP_DISABLE  = 0xFFFFFFFF;  //!< Special PLP value meaning "disable PLP selection".
     constexpr uint32_t ISI_MAX      = 0xFF;        //!< Maximum Input Stream Id (ISI) value for DVB-S2.
     constexpr uint32_t ISI_DISABLE  = 0xFFFFFFFF;  //!< Special ISI value meaning "disable multistream selection".
     constexpr uint32_t PLS_CODE_MAX = 0x3FFFF;     //!< Maximum Physical Layer Scrambling (PLS) code value for DVB-S2.
+    constexpr uint32_t STREAM_ID_MAX      = 0xFFFF;      //!< Maximum Stream Id value (same as inner TS id) for ISDB-S.
+    constexpr uint32_t STREAM_ID_DISABLE  = 0xFFFFFFFF;  //!< Special Stream Id value meaning "disable multistream selection".
 
     //!
     //! Physical Layer Scrambling (PLS) modes for DVB-S2.

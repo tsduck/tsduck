@@ -397,7 +397,7 @@ namespace ts {
         bool generateDocument(xml::Document& doc) const;
 
         // Convert modulation parameters to and from XML.
-        bool fromXML(ModulationArgs& mod, const xml::Element* element, TunerType tunerType);
+        bool fromXML(ModulationArgs& mod, const xml::Element* element, TunerType tunerType, uint16_t ts_id);
         xml::Element* toXML(const ModulationArgs& mod, xml::Element* parent) const;
     };
 }

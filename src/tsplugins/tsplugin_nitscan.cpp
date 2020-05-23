@@ -360,7 +360,8 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
     _nit_count++;
 
     // Process each TS descriptor list
-    for (NIT::TransportMap::const_iterator it = nit.transports.begin(); it != nit.transports.end(); ++it) {
+    for (auto it = nit.transports.begin(); it != nit.transports.end(); ++it) {
+
         const TransportStreamId& tsid(it->first);
         const DescriptorList& dlist(it->second.descs);
 
@@ -368,7 +369,7 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
         for (size_t i = 0; i < dlist.count(); ++i) {
             // Try to get delivery system information from current descriptor
             ModulationArgs tp;
-            if (tp.fromDeliveryDescriptor(duck, *dlist[i])) {
+            if (tp.fromDeliveryDescriptor(duck, *dlist[i], tsid.transport_stream_id)) {
 
                 // Output --dvb-options.
                 if (_dvb_options) {
