@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.21-1806
+VERSION 3.21-1811
 
 [NEW] New commands and plugins:
 
@@ -30,6 +30,8 @@ VERSION 3.21-1806
       "pmt", "rmsplice", "scrambler", "sdt", "spliceinject", "svremove",
       "svrename", "teletext", "zap".
     - Option --drop-to-maintain-preload in output plugin "dektec".
+    - Option --nit-scan in "tsscan" (UHF-band scan is no longer the default,
+      exactly one of --nit-scan, --uhf-band, --vhf-band shall be specified).
 
 [BUG] Bug fixes:
 
