@@ -36,6 +36,7 @@
 #pragma once
 #include "tsEnumeration.h"
 #include "tsStandards.h"
+#include "tsStringifyInterface.h"
 
 namespace ts {
     //!
@@ -165,7 +166,7 @@ namespace ts {
     //! A set of delivery system values (ts::DeliverySystem).
     //! Typically used to indicate the list of standards which are supported by a tuner.
     //!
-    class TSDUCKDLL DeliverySystemSet : public std::set<DeliverySystem>
+    class TSDUCKDLL DeliverySystemSet : public std::set<DeliverySystem>, public StringifyInterface
     {
     public:
         //!
@@ -198,11 +199,8 @@ namespace ts {
         //!
         Standards standards() const;
 
-        //!
-        //! Convert to a string object.
-        //! @return Return all delivery systems in decreasing order of preference.
-        //!
-        UString toString() const;
+        // Implementation of StringifyInterface.
+        virtual UString toString() const override;
 
 #if !defined(DOXYGEN)
         // Trampolines to superclass constructors.

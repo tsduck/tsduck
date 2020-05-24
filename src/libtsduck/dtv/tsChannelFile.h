@@ -116,6 +116,19 @@ namespace ts {
         UString toXML(Report& report = CERR) const;
 
         //!
+        //! Get the file name from which the channel database was loaded.
+        //! @return The file name. Empty string if no file was loaded.
+        //!
+        UString fileName() const { return _fileName; }
+
+        //!
+        //! Get a description of the file from which the channel database was loaded.
+        //! Typically used in error or debug messages.
+        //! @return The file name or description. Never empty.
+        //!
+        UString fileDescription() const;
+
+        //!
         //! Default XML channel file name.
         //! @return The default file name.
         //!

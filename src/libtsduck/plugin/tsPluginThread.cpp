@@ -80,9 +80,10 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
         // Error message already displayed.
         return;
     }
-    else {
-        _shlib->setShell(appName + shellOpt);
-    }
+
+    // Configure plugin object.
+    _shlib->setShell(appName + shellOpt);
+    _shlib->setMaxSeverity(report->maxSeverity());
 
     // Submit the plugin arguments for analysis.
     // Do not process argument redirection, already done at tsp command level.

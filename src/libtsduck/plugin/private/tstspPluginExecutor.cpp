@@ -64,7 +64,6 @@ ts::tsp::PluginExecutor::PluginExecutor(const TSProcessorArgs& options,
     if (plugin() != nullptr) {
         plugin()->resetContext(options.duck_args);
     }
-
 }
 
 ts::tsp::PluginExecutor::~PluginExecutor()
