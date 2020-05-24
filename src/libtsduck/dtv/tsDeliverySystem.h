@@ -162,6 +162,11 @@ namespace ts {
     //!
     typedef std::list<DeliverySystem> DeliverySystemList;
 
+    // GCC: error: base class 'class std::set<ts::DeliverySystem>' has accessible non-virtual destructor
+    // This is harmless here since the subclass does not allocate own resources.
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(non-virtual-dtor)
+    
     //!
     //! A set of delivery system values (ts::DeliverySystem).
     //! Typically used to indicate the list of standards which are supported by a tuner.
@@ -217,4 +222,6 @@ namespace ts {
         // to build the list of supported delivery systems in order of preference.
         static const ts::DeliverySystemList _preferred_order;
     };
+
+    TS_POP_WARNING()
 }
