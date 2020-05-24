@@ -301,6 +301,8 @@ bool ts::ChannelFile::searchService(NetworkPtr& net,
                                     bool strict,
                                     Report& report) const
 {
+    report.debug(u"searching channel \"%s\" for deliverys systems %s in %s", {name, delsys, fileDescription()});
+
     // Clear output parameters.
     net.clear();
     ts.clear();
@@ -308,15 +310,18 @@ bool ts::ChannelFile::searchService(NetworkPtr& net,
 
     // Loop through all networks.
     for (size_t inet = 0; inet < _networks.size(); ++inet) {
+
         const NetworkPtr& pnet(_networks[inet]);
         assert(!pnet.isNull());
+
         // Inspect this network, loop through all transport stream.
         for (size_t its = 0; its < pnet->tsCount(); ++its) {
             const TransportStreamPtr& pts(pnet->tsByIndex(its));
             assert(!pts.isNull());
             // Check if this TS has an acceptable delivery system.
             // If the input delsys is empty, accept any delivery system.
-            if (delsys.empty() || (pts->tune.delivery_system.set() && delsys.find(pts->tune.delivery_system.value()) != delsys.end())) {
+            if (delsys.empty() || (pts->tune.delivery_system.set() && delsys.contains(pts->tune.delivery_system.value()))) {
+                report.debug(u"searching channel \"%s\" in TS id 0x%X, delivery system %s", {name, pts->id, DeliverySystemEnum.name(pts->tune.delivery_system.value(DS_UNDEFINED))});
                 srv = pts->serviceByName(name, strict);
                 if (!srv.isNull()) {
                     net = pnet;
@@ -328,13 +333,18 @@ bool ts::ChannelFile::searchService(NetworkPtr& net,
     }
 
     // Channel not found.
-    if (_fileName.empty()) {
-        report.error(u"channel \"%s\" not found in channel database", {name});
-    }
-    else {
-        report.error(u"channel \"%s\" not found in file %s", {name, _fileName});
-    }
+    report.error(u"channel \"%s\" not found in %s", {name, fileDescription()});
     return false;
+}
+
+
+//----------------------------------------------------------------------------
+// Get a description of the file from which the channel database was loaded.
+//----------------------------------------------------------------------------
+
+ts::UString ts::ChannelFile::fileDescription() const
+{
+    return _fileName.empty() ? u"channel database" : _fileName;
 }
 
 
