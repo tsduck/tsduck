@@ -301,7 +301,7 @@ bool ts::ChannelFile::searchService(NetworkPtr& net,
                                     bool strict,
                                     Report& report) const
 {
-    report.debug(u"searching channel \"%s\" for deliverys systems %s in %s", {name, delsys, fileDescription()});
+    report.debug(u"searching channel \"%s\" for delivery systems %s in %s", {name, delsys, fileDescription()});
 
     // Clear output parameters.
     net.clear();
@@ -324,6 +324,7 @@ bool ts::ChannelFile::searchService(NetworkPtr& net,
                 report.debug(u"searching channel \"%s\" in TS id 0x%X, delivery system %s", {name, pts->id, DeliverySystemEnum.name(pts->tune.delivery_system.value(DS_UNDEFINED))});
                 srv = pts->serviceByName(name, strict);
                 if (!srv.isNull()) {
+                    report.debug(u"found channel \"%s\" in TS id 0x%X", {name, pts->id});
                     net = pnet;
                     ts = pts;
                     return true;
