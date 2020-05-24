@@ -91,7 +91,7 @@ namespace {
 }
 
 ScanOptions::ScanOptions(int argc, char *argv[]) :
-    Args(u"Scan a DVB network", u"[options]"),
+    Args(u"Scan a DTV network frequencies and services", u"[options]"),
     duck(this),
     tuner_args(false, true),
     uhf_scan(false),
@@ -118,6 +118,25 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     duck.defineArgsForHFBand(*this);
     duck.defineArgsForCharset(*this);
     tuner_args.defineArgs(*this);
+
+    setIntro(u"There are three mutually exclusive types of network scanning. "
+             u"Exactly one of the following options shall be specified: "
+             u"--nit-scan, --uhf-band, --vhf-band.");
+
+    option(u"nit-scan", 'n');
+    help(u"nit-scan",
+         u"Tuning parameters for a reference transport stream must be present (frequency or channel reference). "
+         u"The NIT is read on the specified frequency and a full scan of the corresponding network is performed.");
+
+    option(u"uhf-band", 'u');
+    help(u"uhf-band",
+         u"Perform a complete UHF-band scanning (DVB-T, ISDB-T or ATSC). "
+         u"Use the predefined UHF frequency layout of the specified region (see option --hf-band-region). "
+         u"By default, scan the center frequency of each channel only. "
+         u"Use option --use-offsets to scan all predefined offsets in each channel.");
+
+    option(u"vhf-band", 'v');
+    help(u"vhf-band", u"Perform a complete VHF-band scanning. See also option --uhf-band.");
 
     option(u"best-quality");
     help(u"best-quality",
@@ -167,7 +186,7 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
          u"Minimum signal strength percentage. Frequencies with lower signal "
          u"strength are ignored (default: " + ts::UString::Decimal(DEFAULT_MIN_STRENGTH) + u"%).");
 
-    option(u"no-offset", 'n');
+    option(u"no-offset");
     help(u"no-offset",
          u"For UHF/VHF-band scanning, scan only the central frequency of each channel. "
          u"This is now the default. Specify option --use-offsets to scan all offsets.");
@@ -193,17 +212,6 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     help(u"show-modulation",
          u"Display modulation parameters when possible. Note that some tuners "
          u"cannot report correct modulation parameters, making this option useless.");
-
-    option(u"uhf-band", 'u');
-    help(u"uhf-band",
-         u"Perform a complete DVB-T or ATSC UHF-band scanning. Do not use the NIT.\n\n"
-         u"If tuning parameters are present (frequency or channel reference), the NIT is "
-         u"read on the specified frequency and a full scan of the corresponding network is "
-         u"performed. By default, without specific frequency, an UHF-band scanning is performed.");
-
-    option(u"vhf-band", 'v');
-    help(u"vhf-band",
-         u"Perform a complete DVB-T or ATSC VHF-band scanning. See also --uhf-band.");
 
     option(u"save-channels", 0, STRING);
     help(u"save-channels", u"filename",
@@ -232,14 +240,13 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     // Type of scanning
     uhf_scan = present(u"uhf-band");
     vhf_scan = present(u"vhf-band");
-    nit_scan = tuner_args.hasModulationArgs();
+    nit_scan = present(u"nit-scan");
 
-    if (nit_scan + uhf_scan + vhf_scan > 1) {
-        error(u"tuning parameters (NIT scan), --uhf-band and --vhf-band are mutually exclusive.");
+    if (nit_scan + uhf_scan + vhf_scan != 1) {
+        error(u"specify exactly one of --nit-scan, --uhf-band or --vhf-band");
     }
-    if (!uhf_scan && !vhf_scan && !nit_scan) {
-        // Default is UHF scan.
-        uhf_scan = true;
+    if (nit_scan && !tuner_args.hasModulationArgs()) {
+        error(u"specify the characteristics of the reference TS with --nit-scan");
     }
 
     // Type of HF band to use.
