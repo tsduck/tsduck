@@ -1330,6 +1330,16 @@
       </private_data>
     </ECM_repetition_rate_descriptor>
 
+    <emergency_information_descriptor>
+      <!-- One entry per event -->
+      <event service_id="uint16, required"
+             started="bool, required"
+             signal_level="uint1, required">
+        <!-- One entry per area code -->
+        <area code="uint12, required"/>
+      </event>
+    </emergency_information_descriptor>
+
     <DVB_enhanced_AC3_descriptor
         mixinfoexists="bool, required"
         component_type="uint8, optional"
@@ -1972,6 +1982,15 @@
     </scheduling_descriptor>
 
     <scrambling_descriptor scrambling_mode="uint8, required"/>
+
+    <series_descriptor
+        series_id="uint16, required"
+        repeat_label="uint4, required"
+        program_pattern="uint3, required"
+        expire_date="YYYY-MM-DD, optional"
+        episode_number="uint12, required"
+        last_episode_number="uint12, required"
+        series_name="string, optional"/>
 
     <service_descriptor
         service_type="uint8, required"
