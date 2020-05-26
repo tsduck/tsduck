@@ -347,8 +347,10 @@ namespace ts {
         //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
         //! @param [in] short_name Optional one letter short name.
         //! @param [in] type Option or parameter value type.
-        //! @param [in] min_occur Minimum number of occurences of this option on the command line.
-        //! @param [in] max_occur Maximum number of occurences. 0 means default : 1 for an option, unlimited for a parameters.
+        //! @param [in] min_occur Minimum number of occurences of this option on the command line,
+        //! ignored if @a type is @link NONE @endlink.
+        //! @param [in] max_occur Maximum number of occurences, ignored if @a type is @link NONE @endlink,
+        //! 0 means default (1 for an option, unlimited for a parameters).
         //! @param [in] min_value Minimum value, ignored if @a type is not @link INTEGER @endlink.
         //! @param [in] max_value Maximum value, ignored if @a type is not @link INTEGER @endlink.
         //! @param [in] optional  When true, the option's value is optional.
