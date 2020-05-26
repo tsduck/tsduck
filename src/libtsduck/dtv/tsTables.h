@@ -77,6 +77,7 @@
 #include "tsApplicationSignallingDescriptor.h"
 #include "tsApplicationStorageDescriptor.h"
 #include "tsApplicationUsageDescriptor.h"
+#include "tsAreaBroadcastingInformationDescriptor.h"
 #include "tsAssociationTagDescriptor.h"
 #include "tsATSCAC3AudioStreamDescriptor.h"
 #include "tsATSCEAC3AudioDescriptor.h"

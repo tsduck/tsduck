@@ -4021,3 +4021,14 @@ Bits = 4
 0 = MPD (Media Presentation Descriptor) in MPEG-DASH (ISO/IEC 23009-1)
 1 = Playback control descriptor in IPTV VOD spec (IPTV FJ STD-0002)
 2 = With a TS time stamp according to IPTV VOD spec (IPTV FJ STD-0002)
+
+[ISDBBroadcastSignalFormat]
+# In ISDB area_broadcasting_information_descriptor
+Bits = 8
+0x00 = Undefined
+0x01 = Full segment area broadcasting
+0x02 = One-segment area broadcasting
+0x03 = One-segment area broadcasting with Null
+0x04 = Undefined
+0x05 = Full segment broadcasting for multimedia transmission
+0x06 = One-segment area broadcasting dedicated to multimedia transmission
