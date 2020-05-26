@@ -281,3 +281,13 @@ namespace ts {
 //! @hideinitializer
 //!
 #define TS_REGISTER_PROCESSOR_PLUGIN(name,classname) _TS_REGISTER_PLUGIN(name,classname,Processor)
+
+//
+// Compatibility macros for old plugins.
+//
+//! @cond nodoxygen
+#define TSPLUGIN_DECLARE_VERSION
+#define TSPLUGIN_DECLARE_INPUT(name,classname) TS_REGISTER_INPUT_PLUGIN(u ## #name, classname);
+#define TSPLUGIN_DECLARE_OUTPUT(name,classname) TS_REGISTER_OUTPUT_PLUGIN(u ## #name, classname);
+#define TSPLUGIN_DECLARE_PROCESSOR(name,classname) TS_REGISTER_PROCESSOR_PLUGIN(u ## #name, classname);
+//! @endcond
