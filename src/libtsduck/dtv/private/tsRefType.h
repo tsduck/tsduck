@@ -43,6 +43,7 @@
     REF_TYPE(ApplicationSignallingDescriptor);
     REF_TYPE(ApplicationStorageDescriptor);
     REF_TYPE(ApplicationUsageDescriptor);
+    REF_TYPE(AreaBroadcastingInformationDescriptor);
     REF_TYPE(AssociationTagDescriptor);
     REF_TYPE(ATSCAC3AudioStreamDescriptor);
     REF_TYPE(ATSCEAC3AudioDescriptor);

@@ -67,6 +67,7 @@
 #include "tsApplicationSignallingDescriptor.h"
 #include "tsApplicationStorageDescriptor.h"
 #include "tsApplicationUsageDescriptor.h"
+#include "tsAreaBroadcastingInformationDescriptor.h"
 #include "tsArgMix.h"
 #include "tsArgs.h"
 #include "tsArgsSupplierInterface.h"
