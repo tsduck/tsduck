@@ -4032,3 +4032,15 @@ Bits = 8
 0x04 = Undefined
 0x05 = Full segment broadcasting for multimedia transmission
 0x06 = One-segment area broadcasting dedicated to multimedia transmission
+
+[ISDBProgramPattern]
+# In ISDB series_descriptor
+Bits = 3
+0 = Nonscheduled
+1 = Regular program (every day, every day except weekend, only weekends, etc.)
+2 = Programmed about once a week
+3 = Programmed about once a month
+4 = Programmed several events in a day
+5 = Division of long hour program
+6 = Program for regular or irregular accumulation
+7 = Undefined

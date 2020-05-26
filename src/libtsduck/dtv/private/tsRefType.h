@@ -113,6 +113,7 @@
     REF_TYPE(EASInbandExceptionChannelsDescriptor);
     REF_TYPE(EASMetadataDescriptor);
     REF_TYPE(ECMRepetitionRateDescriptor);
+    REF_TYPE(EmergencyInformationDescriptor);
     REF_TYPE(EutelsatChannelNumberDescriptor);
     REF_TYPE(EventGroupDescriptor);
     REF_TYPE(ExtendedBroadcasterDescriptor);
@@ -185,6 +186,7 @@
     REF_TYPE(SatelliteDeliverySystemDescriptor);
     REF_TYPE(SchedulingDescriptor);
     REF_TYPE(ScramblingDescriptor);
+    REF_TYPE(SeriesDescriptor);
     REF_TYPE(ServiceAvailabilityDescriptor);
     REF_TYPE(ServiceDescriptor);
     REF_TYPE(ServiceGroupDescriptor);
