@@ -10,9 +10,12 @@
     REF_TYPE(DiscontinuityInformationTable);
     REF_TYPE(DSMCCStreamDescriptorsTable);
     REF_TYPE(EIT);
+    REF_TYPE(ERT);
     REF_TYPE(ETT);
     REF_TYPE(INT);
+    REF_TYPE(ITT);
     REF_TYPE(LDT);
+    REF_TYPE(LIT);
     REF_TYPE(MGT);
     REF_TYPE(NBIT);
     REF_TYPE(NIT);

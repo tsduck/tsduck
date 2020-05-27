@@ -774,7 +774,7 @@ namespace ts {
     constexpr size_t MAX_PSI_SECTION_SIZE = 1024;
 
     //! Maximum size of a private section (including DVB-defined sections).
-    constexpr size_t MAX_PRIVATE_SECTION_SIZE  = 4096;
+    constexpr size_t MAX_PRIVATE_SECTION_SIZE = 4096;
 
     //! Minimum size of a short section.
     constexpr size_t MIN_SHORT_SECTION_SIZE = SHORT_SECTION_HEADER_SIZE;
@@ -786,13 +786,13 @@ namespace ts {
     constexpr size_t MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE = MAX_PSI_SECTION_SIZE - SHORT_SECTION_HEADER_SIZE;
 
     //! Maximum size of the payload of a PSI long section.
-    constexpr size_t MAX_PSI_LONG_SECTION_PAYLOAD_SIZE  = MAX_PSI_SECTION_SIZE - LONG_SECTION_HEADER_SIZE - SECTION_CRC32_SIZE;
+    constexpr size_t MAX_PSI_LONG_SECTION_PAYLOAD_SIZE = MAX_PSI_SECTION_SIZE - LONG_SECTION_HEADER_SIZE - SECTION_CRC32_SIZE;
 
     //! Maximum size of the payload of a private short section.
     constexpr size_t MAX_PRIVATE_SHORT_SECTION_PAYLOAD_SIZE = MAX_PRIVATE_SECTION_SIZE - SHORT_SECTION_HEADER_SIZE;
 
     //! Maximum size of the payload of a private long section.
-    constexpr size_t MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE  = MAX_PRIVATE_SECTION_SIZE - LONG_SECTION_HEADER_SIZE - SECTION_CRC32_SIZE;
+    constexpr size_t MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE = MAX_PRIVATE_SECTION_SIZE - LONG_SECTION_HEADER_SIZE - SECTION_CRC32_SIZE;
 
     //---------------------------------------------------------------------
     //! Table identification (TID) values

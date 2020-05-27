@@ -592,6 +592,42 @@
       </version>
     </PCAT>
 
+    <!-- ISDB Local event Information Table -->
+    <LIT version="uint5, default=0"
+         current="bool, default=true"
+         event_id="uint16, required"
+         service_id="uint16, required"
+         transport_stream_id="uint16, required"
+         original_network_id="uint16, required">
+      <!-- One per local event -->
+      <event local_event_id="uint16, required">
+        <_any in="_descriptors"/>
+      </event>
+    </LIT>
+
+    <!-- ISDB Event Relation Table -->
+    <ERT version="uint5, default=0"
+         current="bool, default=true"
+         event_relation_id="uint16, required"
+         information_provider_id="uint16, required"
+         relation_type="uint4, required">
+      <!-- One per event relation -->
+      <relation
+          node_id="uint16, required"
+          collection_mode="uint4, required"
+          parent_node_id="uint16, required"
+          reference_number="uint8, required">
+        <_any in="_descriptors"/>
+      </relation>
+    </ERT>
+
+    <!-- ISDB Index Transmission information Table -->
+    <ITT version="uint5, default=0"
+         current="bool, default=true"
+         event_id="uint16, required">
+      <_any in="_descriptors"/>
+    </ITT>
+
     <!-- Generic short table -->
     <generic_short_table
         table_id="uint8, required"
