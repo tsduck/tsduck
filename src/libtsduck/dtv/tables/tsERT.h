@@ -62,9 +62,9 @@ namespace ts {
             Relation(const AbstractTable* table);
 
             uint16_t node_id;           //!< Node id.
-            uint8_t  collection_mode;   //<! 4 bits, collection mode.
+            uint8_t  collection_mode;   //!< 4 bits, collection mode.
             uint16_t parent_node_id;    //!< Parent node id.
-            uint8_t  reference_number;  //<! Reference number
+            uint8_t  reference_number;  //!< Reference number
 
         private:
             // Inaccessible operations.
