@@ -1865,6 +1865,13 @@
                sky_id="uint16, required"/>
     </sky_logical_channel_number_descriptor>
 
+    <node_relation_descriptor
+        reference_type="uint4, default=0"
+        information_provider_id="uint16, optional"
+        event_relation_id="uint16, optional"
+        reference_node_id="uint16, required"
+        reference_number="uint8, required"/>
+
     <NPT_endpoint_descriptor
         start_NPT="uint33, required"
         stop_NPT="uint33, required"/>
@@ -1921,6 +1928,16 @@
         Hexadecimal content
       </rc_information>
     </redistribution_control_descriptor>
+
+    <reference_descriptor
+        information_provider_id="uint16, required"
+        event_relation_id="uint16, required">
+      <!-- One per reference -->
+      <reference
+          reference_node_id="uint16, required"
+          reference_number="uint8, required"
+          last_reference_number="uint8, required"/>
+    </reference_descriptor>
 
     <registration_descriptor format_identifier="uint32, required">
       <additional_identification_info>
@@ -2077,6 +2094,11 @@
       <event_name>String</event_name>
       <text>String</text>
     </short_event_descriptor>
+
+    <short_node_information_descriptor
+        ISO_639_language_code="char3, required"
+        node_name="string, optional"
+        text="string, optional"/>
 
     <short_smoothing_buffer_descriptor
         sb_size="uint2, required"

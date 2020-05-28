@@ -1347,7 +1347,7 @@ namespace ts {
         DID_ISDB_BASIC_LOCAL_EV = 0xD0, //!< DID for ISDB Basic local event descriptor
         DID_ISDB_REFERENCE      = 0xD1, //!< DID for ISDB Reference descriptor
         DID_ISDB_NODE_RELATION  = 0xD2, //!< DID for ISDB Node relation descriptor
-        DID_ISDB_SHROT_NODE_INF = 0xD3, //!< DID for ISDB Short node information descriptor
+        DID_ISDB_SHORT_NODE_INF = 0xD3, //!< DID for ISDB Short node information descriptor
         DID_ISDB_STC_REF        = 0xD4, //!< DID for ISDB STC reference descriptor
         DID_ISDB_SERIES         = 0xD5, //!< DID for ISDB Series descriptor
         DID_ISDB_EVENT_GROUP    = 0xD6, //!< DID for ISDB Event group descriptor

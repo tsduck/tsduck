@@ -169,6 +169,7 @@
     REF_TYPE(MVCExtensionDescriptor);
     REF_TYPE(NetworkChangeNotifyDescriptor);
     REF_TYPE(NetworkNameDescriptor);
+    REF_TYPE(NodeRelationDescriptor);
     REF_TYPE(NorDigLogicalChannelDescriptorV1);
     REF_TYPE(NorDigLogicalChannelDescriptorV2);
     REF_TYPE(NPTEndpointDescriptor);
@@ -183,6 +184,7 @@
     REF_TYPE(PrivateDataSpecifierDescriptor);
     REF_TYPE(ProtectionMessageDescriptor);
     REF_TYPE(RedistributionControlDescriptor);
+    REF_TYPE(ReferenceDescriptor);
     REF_TYPE(RegistrationDescriptor);
     REF_TYPE(S2SatelliteDeliverySystemDescriptor);
     REF_TYPE(S2XSatelliteDeliverySystemDescriptor);
@@ -200,6 +202,7 @@
     REF_TYPE(ServiceRelocatedDescriptor);
     REF_TYPE(SHDeliverySystemDescriptor);
     REF_TYPE(ShortEventDescriptor);
+    REF_TYPE(ShortNodeInformationDescriptor);
     REF_TYPE(ShortSmoothingBufferDescriptor);
     REF_TYPE(SimpleApplicationBoundaryDescriptor);
     REF_TYPE(SimpleApplicationLocationDescriptor);
