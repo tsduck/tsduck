@@ -209,7 +209,7 @@ if [[ -n "$VMX_FILE" ]]; then
         maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
         ok=1
         while [[ $(date +%s) -lt $maxdate ]]; do
-            ssh -o ConnectTimeout=5 "$HOST_NAME" cd &>/dev/null
+            ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null
             ok=$?
             [[ $ok -eq 0 ]] && break
             sleep 5
