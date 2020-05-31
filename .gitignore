@@ -48,3 +48,4 @@ cov-int
 *.trp
 .DS_Store
 ._*
+bin

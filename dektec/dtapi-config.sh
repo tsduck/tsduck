@@ -29,7 +29,7 @@
 #-----------------------------------------------------------------------------
 #
 #  Get configuration for DTAPI on current Linux system.
-#  Options: --dtapi --header --object --url --support
+#  Options: --dtapi --header --object --url --support --m32
 #
 #-----------------------------------------------------------------------------
 
@@ -131,7 +131,9 @@ get-object()
     local DIRVERS=
 
     # Get object file from platform name.
-    if [[ $(uname -m) == x86_64 ]]; then
+    if ${M32:-false}; then
+        OBJNAME=DTAPI.o
+    elif [[ $(uname -m) == x86_64 ]]; then
         OBJNAME=DTAPI64.o
     else
         OBJNAME=DTAPI.o
@@ -208,8 +210,23 @@ get-url()
     echo "$URL"
 }
 
+# Get options.
+CMD=""
+M32=false
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --m32)
+            M32=true
+            ;;
+        *)
+            CMD="$1"
+            ;;
+    esac
+    shift
+done
+
 # Main command
-case "$1" in
+case "$CMD" in
     --dtapi)
         get-dtapi
         ;;
@@ -217,7 +234,8 @@ case "$1" in
         get-header
         ;;
     --object)
-        get-object
+        shift
+        get-object "$@"
         ;;
     --url)
         get-url
@@ -229,6 +247,7 @@ case "$1" in
         error "invalid option: $1"
         ;;
     *)
+        shift
         echo "DTAPI_ROOT=$(get-dtapi)"
         echo "DTAPI_HEADER=$(get-header)"
         echo "DTAPI_OBJECT=$(get-object)"

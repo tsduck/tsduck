@@ -45,7 +45,7 @@ CXXVPATH = $(patsubst ./%,%,$(shell find . -type d ! -name . ! -name windows ! -
 # Similarly, it cross-compilation is required, skip DTAPI.
 
 ifeq ($(NODTAPI)$(CROSS)$(CROSS_TARGET),)
-    DTAPI_OBJECT := $(shell ../../dektec/dtapi-config.sh --object)
+    DTAPI_OBJECT := $(shell ../../dektec/dtapi-config.sh --object $(if $(M32),--m32,))
     DTAPI_HEADER := $(shell ../../dektec/dtapi-config.sh --header)
 endif
 
