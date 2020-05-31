@@ -68,12 +68,12 @@ param(
 
 # Get the project directories.
 $RootDir = (Split-Path -Parent $PSScriptRoot)
-$SrcDir = (Join-Path $RootDir "src")
-$DoxyDir = (Join-Path $RootDir "doxy")
+$SrcDir = "$RootDir\src"
+$DoxyDir = "$RootDir\bin\doxy"
 
 # Get the product version.
 if (-not $Version) {
-    $VersionFile = (Join-Path (Join-Path $SrcDir "libtsduck") "tsVersion.h")
+    $VersionFile = "$SrcDir\libtsduck\tsVersion.h"
     $VersionMajor = (Get-Content $VersionFile | Select-String '^ *#define  *TS_VERSION_MAJOR  *') -replace '^ *#define  *TS_VERSION_MAJOR  *' -replace ' *$'
     $VersionMinor = (Get-Content $VersionFile | Select-String '^ *#define  *TS_VERSION_MINOR  *') -replace '^ *#define  *TS_VERSION_MINOR  *' -replace ' *$'
     $VersionCommit = (Get-Content $VersionFile | Select-String '^ *#define  *TS_COMMIT  *') -replace '^ *#define  *TS_COMMIT  *' -replace ' *$'
@@ -103,8 +103,7 @@ if ($DoxyExe) {
 
     # Open the browser.
     if (-not $NoOpen) {
-        $RootDir = (Split-Path -Parent $PSScriptRoot)
-        $HtmlIndex = (Join-Path (Join-Path $DoxyDir "html") "index.html")
+        $HtmlIndex = "$DoxyDir\html\index.html"
         if (Test-Path $HtmlIndex) {
             Invoke-Item $HtmlIndex
         }
