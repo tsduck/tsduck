@@ -38,15 +38,14 @@ include $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/Makefile.common
 
 # Project specific directories and files.
 
-STATIC_LIBTSDUCK := libtsduck.a
-SHARED_LIBTSDUCK := tsduck.so
-
 INSTALLERDIR := $(ROOTDIR)/installers
 SRCROOT      := $(ROOTDIR)/src
 LIBTSDUCKDIR := $(SRCROOT)/libtsduck
 TSTOOLSDIR   := $(SRCROOT)/tstools
 TSPLUGINSDIR := $(SRCROOT)/tsplugins
-LIBTSDUCK    := $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
+
+STATIC_LIBTSDUCK := $(BINDIR)/libtsduck.a
+SHARED_LIBTSDUCK := $(BINDIR)/tsduck.so
 
 ifndef TSPLUGINS
     export TSPLUGINS := $(sort $(filter-out $(if $(NOTELETEXT),tsplugin_teletext,),\
@@ -80,11 +79,6 @@ ifdef STATIC
 else
     LDLIBS := -ldl $(LDLIBS)
 endif
-
-# A setenv.sh script to setup the environment for a binary directory.
-
-$(OBJDIR)/setenv.sh: $(ROOTDIR)/build/setenv-template.sh
-	cp -f $< $@
 
 # External include directories and libraries.
 

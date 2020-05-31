@@ -32,7 +32,8 @@
 #-----------------------------------------------------------------------------
 
 # With static link, we compile in a specific directory.
-OBJDIR_SUFFIX := $(if $(STATIC),-static,)
+BINDIR_SUFFIX := $(if $(STATIC),-static,)
+OBJSUBDIR := objs-tsplugins
 
 # Obsolete plugins. They are now embedded and no longer provided as shared objects.
 OBSOLETE_PLUGINS := dektec drop file hls ip null srt
@@ -44,12 +45,12 @@ include ../../Makefile.tsduck
 ifndef STATIC
 
 # Dynamic link (the default), we build shared objects.
-SHLIBS := $(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSPLUGINS)))
+SHLIBS := $(addprefix $(BINDIR)/,$(addsuffix .so,$(TSPLUGINS)))
 
 default: shlibs
 	@true
 shlibs: $(SHLIBS)
-$(SHLIBS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
+$(SHLIBS): $(SHARED_LIBTSDUCK)
 
 install: $(SHLIBS)
 	rm -f $(wildcard $(addsuffix .so,$(addprefix $(SYSROOT)$(SYSPREFIX)/bin/tsplugin_,$(OBSOLETE_PLUGINS))))

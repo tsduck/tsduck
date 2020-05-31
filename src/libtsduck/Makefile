@@ -57,13 +57,14 @@ else
 endif
 
 # With static link, we compile in a specific directory.
-OBJDIR_SUFFIX := $(if $(STATIC),-static,)
+BINDIR_SUFFIX := $(if $(STATIC),-static,)
+OBJSUBDIR := objs-libtsduck
 
 # Now, we can include the common makefile.
 include ../../Makefile.tsduck
 
 # Building the TSDuck library.
-default: headers libs
+default: headers libs configs
 	@true
 
 # The GEN_HEADERS headers are automatically generated from SRC_HEADERS using BUILD_PROJ_FILES.
@@ -99,6 +100,16 @@ $(OBJDIR)/tsDVBCSA2.o: CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 CFLAGS_INCLUDES += $(addprefix -I,$(shell find . -type d -name private))
 OBJS += $(DTAPI_OBJECT)
 
+# TSDuck configuration files.
+
+CONFIG_FILES = $(wildcard dtv/tsduck*.xml dtv/tsduck*.names)
+.PHONY: configs
+configs: $(addprefix $(BINDIR)/,$(notdir $(CONFIG_FILES)))
+$(BINDIR)/%: dtv/%
+	@echo '  [COPY] $<'; \
+	mkdir -p $(BINDIR); \
+	cp $< $@
+
 # Library containing all modules.
 # - Both static and dynamic libraries are created but only use the dynamic one when building
 #   tools and plugins.
@@ -108,12 +119,12 @@ OBJS += $(DTAPI_OBJECT)
 #   the dynamic library. In fact, it would only slow down application startup.
 
 .PHONY: libs
-libs: $(OBJDIR)/$(STATIC_LIBTSDUCK) $(OBJDIR)/$(SHARED_LIBTSDUCK)
+libs: $(STATIC_LIBTSDUCK) $(SHARED_LIBTSDUCK)
 
-$(OBJDIR)/$(STATIC_LIBTSDUCK): $(OBJS)
+$(STATIC_LIBTSDUCK): $(OBJS)
 	@echo '  [AR] $@'; $(AR) $(ARFLAGS) $@ $^
 
-$(OBJDIR)/$(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(OBJS))
+$(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(OBJS))
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
 	echo '  [CC] $@'; \
 	$(CC) $(CFLAGS) $(SOFLAGS) $^ $(LDLIBS) -shared -o $@
@@ -121,19 +132,19 @@ $(OBJDIR)/$(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(
 # Installing the shared library in same directory as executables
 
 .PHONY: install install-devel
-install: $(OBJDIR)/$(SHARED_LIBTSDUCK)
+install: $(SHARED_LIBTSDUCK)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
 	rm -f \
 	    $(SYSROOT)$(SYSPREFIX)/bin/tsduck.xml \
 	    $(SYSROOT)$(SYSPREFIX)/bin/tsduck.channels.xml \
 	    $(SYSROOT)$(SYSPREFIX)/bin/tsduck.dvb.names
 	install -m 644 \
-	    $(OBJDIR)/$(SHARED_LIBTSDUCK) \
-	    $(shell find . -name 'tsduck*.xml' -o -name 'tsduck*.names') \
+	    $(SHARED_LIBTSDUCK) \
+	    $(CONFIG_FILES) \
 	    $(SYSROOT)$(SYSPREFIX)/bin
-install-devel: $(OBJDIR)/$(STATIC_LIBTSDUCK) tsduck.h
+install-devel: $(STATIC_LIBTSDUCK) tsduck.h
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
-	install -m 644 $(OBJDIR)/$(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
+	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -m 644 tsduck.mk \
 	    $(filter-out $(if $(NOTELETEXT),%/tsTeletextCharset.h %/tsTeletextDemux.h,),$(shell find . -name 'ts*.h' ! -path '*/private/*' ! -path '*/windows/*' ! -path '*/$(SKIPDIR)/*')) \

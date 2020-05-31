@@ -121,6 +121,9 @@ Project files for Linux and macOS
 - install-prerequisites.sh : This script downloads and installs all
   pre-requisite packages to build TSDuck on Linux or macOS.
 
+- setenv.sh : This script builds the path of the binary directory and sets the
+  PATH (or simply displays the binary directory).
+
 - check-libtsduck-dependencies.sh : This script verifies that the source files
   are correctly organized in src/libtsduck. Specifically, it verifies that all
   included headers are strictly contained in a subdirectory or its dependencies.

@@ -1,3 +1,4 @@
+#!/bin/bash
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
@@ -27,33 +28,44 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  Makefile for unitary tests.
+#  This script builds the name of the directory which contains binaries.
+#  The typical usage is to 'source' it: it adds the binary directory to
+#  the path. Other options:
+#
+#     --display : only display the binary directory, don't set PATH
+#     --debug : use debug build
 #
 #-----------------------------------------------------------------------------
 
-OBJSUBDIR := objs-utest
-include ../../Makefile.tsduck
+# Default options.
+TARGET=release
+DISPLAY=false
 
-default: execs
-	@true
+# Decode command line options.
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --debug)
+            TARGET=debug
+            ;;
+        --display)
+            DISPLAY=true
+            ;;
+    esac
+    shift
+done
 
-.PHONY: execs
-execs: $(BINDIR)/utest $(BINDIR)/utest_static
+# Build binary directory.
+ROOTDIR=$(cd $(dirname "${BASH_SOURCE[0]}")/..; pwd)
+ARCH=$(uname -m | sed -e 's/i.86/i386/' -e 's/^arm.*$/arm/')
+HOST=$(hostname | sed -e 's/\..*//')
+BINDIR="$ROOTDIR/bin/$TARGET-$ARCH-$HOST"
 
-# Build two versions of the test executable.
-# 1) Using shared object. Skip the module which create static references.
-$(BINDIR)/utest: $(subst $(OBJDIR)/dependenciesForStaticLib.o,,$(OBJS)) $(SHARED_LIBTSDUCK)
-
-# 2) Using static library. Skipt plugin tests since they use the shared object.
-$(BINDIR)/utest_static: $(subst $(OBJDIR)/utestPluginRepository.o,,$(OBJS)) $(STATIC_LIBTSDUCK)
-	@echo '  [LD] $@'; \
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
-
-.PHONY: test
-test: execs
-	$(BINDIR)/utest $(UTESTFLAGS)
-	$(BINDIR)/utest_static $(UTESTFLAGS)
-
-.PHONY: install install-devel
-install install-devel:
-	@true
+# Display or set path.
+if $DISPLAY; then
+    echo "$BINDIR"
+elif [[ ":$PATH:" != *:$BINDIR:* ]]; then
+    export PATH="$BINDIR:$PATH"
+else
+    # Make sure to exit with success status
+    true
+fi
