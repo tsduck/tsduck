@@ -128,7 +128,9 @@ jobs:
       uses: actions/checkout@master
 
     - name: Install dependencies
-      run: build/install-prerequisites.sh
+      run: |
+        build/install-prerequisites.sh
+        sudo apt install -y jq
 
     - name: Check if rebuild is necessary
       run: |

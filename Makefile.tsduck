@@ -74,6 +74,11 @@ ifdef STATIC
     ifdef MACOS
         $(error static linking is not supported on macOS)
     else
+        NOCURL  := true
+        NOPCSC  := true
+        NODTAPI := true
+        NOSRT   := true
+        NOTEST  := true
         CFLAGS_INCLUDES += -DTSDUCK_STATIC=1
     endif
 else
@@ -84,9 +89,10 @@ endif
 
 ifdef CROSS_TARGET
     # Some libraries are bypassed in cross-compilation.
-    NOCURL := true
-    NOPCSC := true
+    NOCURL  := true
+    NOPCSC  := true
     NODTAPI := true
+    NOSRT   := true
 endif
 
 ifdef NOTELETEXT
@@ -99,7 +105,7 @@ endif
 
 ifeq ($(MACOS)$(NOSRT),)
     # Not on macOS and SRT not disabled, check if libsrt is available.
-    NOSRT = $(if $(wildcard /usr/include/srt/*.h)$(wildcard /usr/local/include/srt/*.h),,true)
+    NOSRT := $(if $(wildcard /usr/include/srt/*.h)$(wildcard /usr/local/include/srt/*.h),,true)
 endif
 
 ifneq ($(NOSRT),)
