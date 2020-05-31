@@ -49,7 +49,7 @@ EXCLUDE_PATTERNS = *Template.h tsduck.h
 INPUT            = ../src/doc ../src/libtsduck ../src/tstools
 RECURSIVE        = YES
 IMAGE_PATH       = ../images
-OUTPUT_DIRECTORY = ../doxy
+OUTPUT_DIRECTORY = ../bin/doxy
 EXCLUDE          = ../src/libtsduck/dtv/private \
                    ../src/libtsduck/plugin/private
 INCLUDE_PATH     = ../src/libtsduck \

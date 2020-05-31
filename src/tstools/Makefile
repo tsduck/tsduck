@@ -49,7 +49,7 @@ ifndef STATIC
 else
     # With static link, we compile in a specific directory and we link tsp with all plugins.
     LDFLAGS_EXTRA = -static
-    $(BINDIR)/tsp: $(addprefix $(BINDIR)/tsplugins/,$(addsuffix .o,$(TSPLUGINS)))
+    $(BINDIR)/tsp: $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS)))
     $(EXECS): $(STATIC_LIBTSDUCK)
 endif
 

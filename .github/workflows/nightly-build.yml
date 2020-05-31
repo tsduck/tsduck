@@ -214,8 +214,8 @@ jobs:
       if: env.REBUILD == 'true'
       run: |
         make doxygen
-        echo "${{ env.VERSION }}" >doxy/docversion.txt
-        zip -qr9 doxy.zip doxy
+        echo "${{ env.VERSION }}" >bin/doxy/docversion.txt
+        (cd bin; zip -qr9 ../doxy.zip doxy)
 
     - name: Upload doxygen package
       if: env.REBUILD == 'true'
