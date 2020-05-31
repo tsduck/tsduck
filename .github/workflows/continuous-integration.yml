@@ -53,7 +53,7 @@ jobs:
     - name: Build TSDuck
       run: make -j5
     - name: Check built version
-      run: source src/tstools/release-x86_64/setenv.sh && tsversion --version=all
+      run: source build/setenv.sh && tsversion --version=all
     - name: Run unitary tests
       run: make test
     - name: Download test suite
@@ -83,7 +83,7 @@ jobs:
     - name: Build TSDuck
       run: make -j5
     - name: Check built version
-      run: source src/tstools/release-x86_64/setenv.sh && tsversion --version=all
+      run: source build/setenv.sh && tsversion --version=all
     - name: Run unitary tests
       run: make test
     - name: Download test suite
@@ -128,7 +128,7 @@ jobs:
     - name: Build TSDuck
       run: make -j5
     - name: Check built version
-      run: source src/tstools/release-x86_64/setenv.sh && tsversion --version=all
+      run: source build/setenv.sh && tsversion --version=all
     - name: Run unitary tests
       run: make test
     - name: Download test suite
@@ -155,11 +155,11 @@ jobs:
     - name: Build TSDuck
       run: build/build.ps1 -Win64 -Release -Parallel 5 -NoLowPriority -NoPause
     - name: Check built version
-      run: build/msvc/Release-x64/tsversion.exe --version=all
+      run: bin/Release-x64/tsversion.exe --version=all
     - name: Run unitary tests
-      run: build/msvc/Release-x64/utests-tsduckdll.exe
+      run: bin/Release-x64/utests-tsduckdll.exe
     - name: Run unitary tests (static)
-      run: build/msvc/Release-x64/utests-tsducklib.exe
+      run: bin/Release-x64/utests-tsducklib.exe
     - name: Download test suite
       run: |
         $ProgressPreference = 'SilentlyContinue'
@@ -187,11 +187,11 @@ jobs:
     - name: Build TSDuck
       run: build/build.ps1 -Win32 -Release -Parallel 5 -NoLowPriority -NoPause
     - name: Check built version
-      run: build/msvc/Release-Win32/tsversion.exe --version=all
+      run: bin/Release-Win32/tsversion.exe --version=all
     - name: Run unitary tests
-      run: build/msvc/Release-Win32/utests-tsduckdll.exe
+      run: bin/Release-Win32/utests-tsduckdll.exe
     - name: Run unitary tests (static)
-      run: build/msvc/Release-Win32/utests-tsducklib.exe
+      run: bin/Release-Win32/utests-tsducklib.exe
     - name: Download test suite
       run: |
         $ProgressPreference = 'SilentlyContinue'
