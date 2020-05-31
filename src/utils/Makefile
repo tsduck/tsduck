@@ -31,12 +31,13 @@
 #
 #-----------------------------------------------------------------------------
 
+OBJSUBDIR := objs-utils
 include ../../Makefile.tsduck
 
 # Filter out Windows-only tools.
-EXECS := $(filter-out $(OBJDIR)/setpath,$(EXECS))
+EXECS := $(filter-out $(BINDIR)/setpath,$(EXECS))
 
-default: execs $(OBJDIR)/setenv.sh
+default: execs
 	@true
 
 .PHONY: execs
@@ -44,10 +45,10 @@ execs: $(EXECS)
 
 # Use dynamic or static library.
 ifndef STATIC
-    $(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
+    $(EXECS): $(SHARED_LIBTSDUCK)
 else
     LDFLAGS_EXTRA = -static
-    $(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
+    $(EXECS): $(STATIC_LIBTSDUCK)
 endif
 
 .PHONY: install install-devel

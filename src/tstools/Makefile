@@ -32,11 +32,12 @@
 #-----------------------------------------------------------------------------
 
 # With static link, we compile in a specific directory.
-OBJDIR_SUFFIX := $(if $(STATIC),-static,)
+BINDIR_SUFFIX := $(if $(STATIC),-static,)
+OBJSUBDIR := objs-tstools
 
 include ../../Makefile.tsduck
 
-default: execs $(OBJDIR)/setenv.sh
+default: execs
 	@true
 
 .PHONY: execs
@@ -44,12 +45,12 @@ execs: $(EXECS)
 
 ifndef STATIC
     # With dynamic link (the default), we use the shareable library.
-    $(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
+    $(EXECS): $(SHARED_LIBTSDUCK)
 else
     # With static link, we compile in a specific directory and we link tsp with all plugins.
     LDFLAGS_EXTRA = -static
-    $(OBJDIR)/tsp: $(addprefix $(TSPLUGINSDIR)/$(OBJDIR)/,$(addsuffix .o,$(TSPLUGINS)))
-    $(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
+    $(BINDIR)/tsp: $(addprefix $(BINDIR)/tsplugins/,$(addsuffix .o,$(TSPLUGINS)))
+    $(EXECS): $(STATIC_LIBTSDUCK)
 endif
 
 .PHONY: install install-devel
