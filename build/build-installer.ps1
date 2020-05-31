@@ -110,6 +110,7 @@ Import-Module -Force -Name (Join-Path $PSScriptRoot build-common.psm1)
 $RootDir = (Split-Path -Parent $PSScriptRoot)
 $MsvcDir = (Join-Path $PSScriptRoot "msvc")
 $SrcDir = (Join-Path $RootDir "src")
+$BinRoot = (Join-Path $RootDir "bin")
 $InstallerDir = (Join-Path $RootDir "installers")
 
 # Apply defaults.
@@ -181,7 +182,7 @@ function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$VCRedist, [str
     Write-Output "Building installer for $Arch..."
 
     # Full bin directory.
-    $BinDir = (Join-Path $MsvcDir "Release-${BinSuffix}")
+    $BinDir = (Join-Path $BinRoot "Release-${BinSuffix}")
 
     # NSIS script for this project.
     $NsisScript = Join-Path $PSScriptRoot "tsduck.nsi"
@@ -246,7 +247,7 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
     Write-Output "Building portable installer for $InstallerSuffix..."
 
     # Full bin directory.
-    $BinDir = (Join-Path $MsvcDir "Release-${BinSuffix}")
+    $BinDir = (Join-Path $BinRoot "Release-${BinSuffix}")
 
     # Package name.
     $ZipFile = (Join-Path $InstallerDir "TSDuck-${InstallerSuffix}-${Version}-Portable.zip")

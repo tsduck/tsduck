@@ -4,32 +4,10 @@
   <!-- Common base definition for all types of targets -->
 
   <PropertyGroup Label="Configuration">
-    <OutDir>$(SolutionDir)$(Configuration)-$(Platform)\</OutDir>
+    <TSDuckRootDir>$(SolutionDir)..\..\</TSDuckRootDir>
+    <OutDir>$(TSDuckRootDir)bin\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(OutDir)$(ProjectName)\</IntDir>
   </PropertyGroup>
-
-  <!-- Locate TSDuck root directory -->
-
-  <Choose>
-    <When Condition="Exists('$(SolutionDir)tsduck.sln')">
-      <!-- Inside TSDuck solution -->
-      <PropertyGroup Label="UserMacros">
-        <TSDuckRootDir>$(SolutionDir)..\..\</TSDuckRootDir>
-      </PropertyGroup>
-    </When>
-    <When Condition="Exists('$(SolutionDir)..\..\..\tsduck\build\msvc\tsduck.sln')">
-      <!-- Inside another solution, same structure, side by side with TSDuck -->
-      <PropertyGroup Label="UserMacros">
-        <TSDuckRootDir>$(SolutionDir)..\..\..\tsduck\</TSDuckRootDir>
-      </PropertyGroup>
-    </When>
-    <Otherwise>
-      <!-- Probably an error ... -->
-      <PropertyGroup Label="UserMacros">
-        <TSDuckRootDir>$(SolutionDir)</TSDuckRootDir>
-      </PropertyGroup>
-    </Otherwise>
-  </Choose>
 
   <!-- Locate all directories in libtsduck (for inclusion of header files) -->
 
