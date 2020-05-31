@@ -76,7 +76,8 @@ $files = @(Get-ChildItem -Recurse -Force $RootDir | Where-Object {
     ($_.FullName -notlike '*\dektec\WinSDK\*') -and
     ($_.FullName -notlike '*\dektec\LinuxSDK\*') -and
     ($_.FullName -notlike '*\installers\*') -and
-    ($_.Name -like "doxy" -or
+    ($_.Name -like "bin" -or
+    $_.Name -like "doxy" -or
     $_.Name -like "debug" -or
     $_.Name -like "debug-*" -or
     $_.Name -like "release" -or

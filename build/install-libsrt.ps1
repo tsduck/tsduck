@@ -77,8 +77,8 @@ function Exit-Script([string]$Message = "")
 }
 
 # Local file names.
-$RootDir = $PSScriptRoot
-$ExtDir = "$RootDir\msvc\tmp"
+$RootDir = (Split-Path -Parent $PSScriptRoot)
+$ExtDir = "$RootDir\bin\external"
 
 # Create the directory for external products when necessary.
 [void] (New-Item -Path $ExtDir -ItemType Directory -Force)

@@ -42,7 +42,7 @@ Currently, the script supports the following operating systems:
 - Fedora
 - Red Hat Enterprise Linux
 - CentOS
-- Arch
+- Arch Linux
 - Alpine Linux
 
 Dektec DTAPI: The command `make` at the top level will automatically
@@ -60,7 +60,7 @@ devices either.
 ## Windows {#buildwindows}
 
 Execute the PowerShell script `build\build.ps1`. The TSDuck binaries, executables and
-DLL's, are built in directories `msvc\Release-Win32` and `msvc\Release-x64`
+DLL's, are built in directories `bin\Release-Win32` and `bin\Release-x64`
 for 32-bit and 64-bit platforms respectively.
 
 ## Linux and macOS {#buildlinux}
@@ -191,22 +191,22 @@ testing or debugging.
 ## Windows {#runwindows}
 
 On Windows, the binaries and all plugins are built in a subdirectory named
-`build\msvc\<target>-<platform>`. The commands can be run using their
+`bin\<target>-<platform>`. The commands can be run using their
 complete path.
 
 For instance, to run the released 64-bit version of `tsp`, use:
 ~~~~
-D:\tsduck> build\msvc\Release-x64\tsp.exe --version
+D:\tsduck> bin\Release-x64\tsp.exe --version
 tsp: TSDuck - The MPEG Transport Stream Toolkit - version 3.12-730
 ~~~~
 
 For other combinations (release vs. debug and 32 vs. 64 bits), the paths
 from the repository root are:
 ~~~~
-build\msvc\Release-x64\tsp.exe
-build\msvc\Debug-x64\tsp.exe
-build\msvc\Release-Win32\tsp.exe
-build\msvc\Debug-Win32\tsp.exe
+bin\Release-x64\tsp.exe
+bin\Release-Win32\tsp.exe
+bin\Debug-x64\tsp.exe
+bin\Debug-Win32\tsp.exe
 ~~~~
 
 ## Linux and macOS {#rununix}
