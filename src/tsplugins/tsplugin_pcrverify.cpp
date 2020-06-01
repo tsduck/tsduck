@@ -48,6 +48,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         PCRVerifyPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
@@ -56,28 +57,35 @@ namespace ts {
         // Description of one PID
         struct PIDContext
         {
-            PIDContext() : last_pcr_value(0), last_pcr_packet(0) {}
-
-            uint64_t      last_pcr_value;   // Last PCR value in this PID
-            PacketCounter last_pcr_packet;  // Packet index containing last PCR
+            PIDContext();                   // Constructor.
+            uint64_t      last_pcr_value;   // Last PCR value in this PID.
+            PacketCounter last_pcr_packet;  // Packet index containing last PCR.
         };
 
-        // PCRVerifyPlugin private members
-        bool          _absolute;         // Use PCR absolute value, not micro-second
-        BitRate       _bitrate;          // Expected bitrate (0 if unknown)
-        int64_t       _jitter_max;       // Max jitter in PCR units
-        bool          _time_stamp;       // Display time stamps
-        PIDSet        _pid_list;         // Array of pid values to filter
-        PacketCounter _packet_count;     // Global packets count
-        PacketCounter _nb_pcr_ok;        // Number of PCR without jitter
-        PacketCounter _nb_pcr_nok;       // Number of PCR with jitter
-        PacketCounter _nb_pcr_unchecked; // Number of unchecked PCR (no previous ref)
-        PIDContext    _stats[PID_MAX];   // Per-PID statistics
+        // Command line options.
+        bool    _absolute;    // Use PCR absolute value, not micro-second
+        BitRate _bitrate;     // Expected bitrate (0 if unknown)
+        int64_t _jitter_max;  // Max jitter in PCR units
+        bool    _time_stamp;  // Display time stamps
+        PIDSet  _pid_list;    // Array of pid values to filter
 
-        // PCR units per micro-second
-        static constexpr int64_t PCR_PER_MICRO_SEC = int64_t (SYSTEM_CLOCK_FREQ) / MicroSecPerSec;
+        // Working data.
+        PacketCounter            _nb_pcr_ok;         // Number of PCR without jitter
+        PacketCounter            _nb_pcr_nok;        // Number of PCR with jitter
+        PacketCounter            _nb_pcr_unchecked;  // Number of unchecked PCR (no previous ref)
+        std::map<PID,PIDContext> _stats;             // Per-PID statistics
+
+        // PCR units per micro-second.
+        static constexpr int64_t PCR_PER_MICRO_SEC = int64_t(SYSTEM_CLOCK_FREQ) / MicroSecPerSec;
         static constexpr int64_t DEFAULT_JITTER_MAX_US = 1000; // 1000 us = 1 ms
         static constexpr int64_t DEFAULT_JITTER_MAX = DEFAULT_JITTER_MAX_US * PCR_PER_MICRO_SEC;
+
+        // Compute jitter. All value must be signed 64-bit.
+        int64_t jitter(int64_t pcr1,     // first PCR value
+                       int64_t pkt1,     // packet index of PCR1 in TS
+                       int64_t pcr2,     // seconde PCR value
+                       int64_t pkt2,     // packet index of PCR2 in TS
+                       int64_t bitrate); // TS bitrate in bits/sec
     };
 }
 
@@ -91,6 +99,17 @@ constexpr int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX;
 
 
 //----------------------------------------------------------------------------
+// PID context constructor
+//----------------------------------------------------------------------------
+
+ts::PCRVerifyPlugin::PIDContext::PIDContext() :
+    last_pcr_value(INVALID_PCR),
+    last_pcr_packet(0)
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
 
@@ -101,7 +120,6 @@ ts::PCRVerifyPlugin::PCRVerifyPlugin(TSP* tsp_) :
     _jitter_max(0),
     _time_stamp(false),
     _pid_list(),
-    _packet_count(0),
     _nb_pcr_ok(0),
     _nb_pcr_nok(0),
     _nb_pcr_unchecked(0),
@@ -137,33 +155,35 @@ ts::PCRVerifyPlugin::PCRVerifyPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get command line options.
 //----------------------------------------------------------------------------
 
-bool ts::PCRVerifyPlugin::start()
+bool ts::PCRVerifyPlugin::getOptions()
 {
     _absolute = present(u"absolute");
     _jitter_max = intValue<int64_t>(u"jitter-max", _absolute ? DEFAULT_JITTER_MAX : DEFAULT_JITTER_MAX_US);
     _bitrate = intValue<BitRate>(u"bitrate", 0);
     _time_stamp = present(u"time-stamp");
-    getIntValues(_pid_list, u"pid", true);
+    getIntValues(_pid_list, u"pid", true); // all PID's set by default
 
     if (!_absolute) {
         // Convert _jitter_max from micro-second to PCR units
         _jitter_max *= PCR_PER_MICRO_SEC;
     }
+    return true;
+}
 
-    // Reset state
-    _packet_count = 0;
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::PCRVerifyPlugin::start()
+{
     _nb_pcr_ok = 0;
     _nb_pcr_nok = 0;
     _nb_pcr_unchecked = 0;
-
-    for (size_t i = 0; i < PID_MAX; ++i) {
-        _stats[i].last_pcr_value = 0;
-        _stats[i].last_pcr_packet = 0;
-    }
-
+    _stats.clear();
     return true;
 }
 
@@ -177,51 +197,38 @@ bool ts::PCRVerifyPlugin::stop()
     // Display PCR summary
     tsp->info(u"%'d PCR OK, %'d with jitter > %'d (%'d micro-seconds), %'d unchecked",
               {_nb_pcr_ok, _nb_pcr_nok, _jitter_max, _jitter_max / PCR_PER_MICRO_SEC, _nb_pcr_unchecked});
-
     return true;
 }
-
-
 
 
 //----------------------------------------------------------------------------
 // Compute the PCR jitter
 //----------------------------------------------------------------------------
 
-namespace {
-    int64_t jitter(int64_t pcr1,     // first PCR value
-                   int64_t pkt1,     // packet index of PCR1 in TS
-                   int64_t pcr2,     // seconde PCR value
-                   int64_t pkt2,     // packet index of PCR2 in TS
-                   int64_t bitrate)  // TS bitrate in bits/sec
-    {
-        // Cannot compute jitter if bitrate is unknown
-        if (bitrate == 0) {
-            return 0;
-        }
-
-        // Adjust second PCR if PCR's have looped back after max value.
-        // Since a PCR is coded on 42 bits, adjusting the value remains within 64 bits.
-        if (ts::WrapUpPCR(pcr1, pcr2)) {
-            pcr2 += ts::PCR_SCALE;
-        }
-
-        // Formulas:
-        //
-        //   epcr2 = expected pcr2 based on bitrate
-        //
-        //   SysClock = 27 MHz = 27,000,000 = SYSTEM_CLOCK_FREQ
-        //   epcr2 = pcr1 + (seconds * SysClock)
-        //   seconds = bits / bitrate
-        //   bits = (pkt2 - pkt1) * PKT_SIZE * 8
-        //   pcr-jitter = pcr2 - epcr2
-        //       = pcr2 - pcr1 - (seconds * SysClock)
-        //       = pcr2 - pcr1 - (bits * SysClock / bitrate)
-        //       = pcr2 - pcr1 - ((pkt2 - pkt1) * PKT_SIZE * 8 * SysClock / bitrate)
-        //       = (bitate * (pcr2 - pcr1) - (pkt2 - pkt1) * PKT_SIZE * 8 * SysClock) / bitrate
-
-        return (bitrate * (pcr2 - pcr1) - (pkt2 - pkt1) * ts::PKT_SIZE * 8 * ts::SYSTEM_CLOCK_FREQ) / bitrate;
+int64_t ts::PCRVerifyPlugin::jitter(int64_t pcr1, int64_t pkt1, int64_t pcr2, int64_t pkt2, int64_t bitrate)
+{
+    // Cannot compute jitter if bitrate is unknown
+    if (bitrate == 0) {
+        return 0;
     }
+
+    // Adjust second PCR if PCR's have looped back after max value.
+    // Since a PCR is coded on 42 bits, adjusting the value remains within 64 bits.
+    if (ts::WrapUpPCR(pcr1, pcr2)) {
+        pcr2 += ts::PCR_SCALE;
+    }
+
+    // sysclock = 27 MHz = 27,000,000 = SYSTEM_CLOCK_FREQ
+    // seconds = bits / bitrate
+    // bits = (pkt2 - pkt1) * PKT_SIZE * 8
+    // epcr2 = expected pcr2 based on bitrate
+    //       = pcr1 + (seconds * sysclock)
+    //       = pcr1 + (bits * sysclock) / bitrate
+    //       = pcr1 + ((pkt2 - pkt1) * PKT_SIZE * 8 * sysclock) / bitrate
+    const int64_t epcr2 = pcr1 + ((pkt2 - pkt1) * PKT_SIZE * 8 * SYSTEM_CLOCK_FREQ) / bitrate;
+
+    // Jitter = difference between actual and expected pcr2
+    return pcr2 - epcr2;
 }
 
 
@@ -231,7 +238,7 @@ namespace {
 
 ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    const size_t pid = pkt.getPID();
+    const PID pid = pkt.getPID();
 
     // Check if this PID shall be filtered and packet has a PCR
     if (_pid_list[pid] && pkt.hasPCR()) {
@@ -240,27 +247,27 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TS
         PIDContext& pc(_stats[pid]);
 
         // Compare PCR with previous one (if there is one)
-        if (pc.last_pcr_value == 0) {
+        if (pc.last_pcr_value == INVALID_PCR) {
             _nb_pcr_unchecked++;
         }
         else {
             // Current bitrate:
-            int64_t bitrate = int64_t(_bitrate != 0 ? _bitrate : tsp->bitrate());
+            const int64_t bitrate = int64_t(_bitrate != 0 ? _bitrate : tsp->bitrate());
             // PCR jitter:
-            int64_t jit = jitter(int64_t(pc.last_pcr_value),
-                                 int64_t(pc.last_pcr_packet),
-                                 int64_t(pcr),
-                                 int64_t(_packet_count),
-                                 bitrate);
+            const int64_t jit = jitter(int64_t(pc.last_pcr_value),
+                                       int64_t(pc.last_pcr_packet),
+                                       int64_t(pcr),
+                                       int64_t(tsp->pluginPackets()),
+                                       bitrate);
             // Absolute value of PCR jitter:
-            int64_t ajit = jit >= 0 ? jit : -jit;
+            const int64_t ajit = jit >= 0 ? jit : -jit;
             if (ajit <= _jitter_max) {
                 _nb_pcr_ok++;
             }
             else {
                 _nb_pcr_nok++;
                 // Jitter in bits at current bitrate
-                int64_t bit_jit = (ajit * bitrate) / SYSTEM_CLOCK_FREQ;
+                const int64_t bit_jit = (ajit * bitrate) / SYSTEM_CLOCK_FREQ;
                 tsp->info(u"%sPID %d (0x%X), PCR jitter: %'d = %'d micro-seconds = %'d packets + %'d bytes + %'d bits",
                           {_time_stamp ? (Time::CurrentLocalTime().format(Time::DATE | Time::TIME) + u", ") : u"",
                            pid, pid, jit, ajit / PCR_PER_MICRO_SEC, bit_jit / (PKT_SIZE * 8), (bit_jit / 8) % PKT_SIZE, bit_jit % 8});
@@ -269,11 +276,8 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TS
 
         // Remember PCR position
         pc.last_pcr_value = pcr;
-        pc.last_pcr_packet = _packet_count;
+        pc.last_pcr_packet = tsp->pluginPackets();
     }
-
-    // Count packets on TS
-    _packet_count++;
 
     return TSP_OK;
 }
