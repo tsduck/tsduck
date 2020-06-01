@@ -1001,10 +1001,19 @@ NOSOURCE = \
     *~ *.bak *.autosave cov-int
 
 # Source code documentation generation.
+# - Make sure that the output directory is created (doxygen does not create parent directories).
+# - Delete empty subdirectories (many of them created for nothing in case of hierachical output).
 DOXYGEN ?= $(call F_COMMAND,doxygen,doxygen)
 .PHONY: doxygen
 doxygen:
-	@[ -e Doxyfile ] && $(DOXYGEN) $(DOXYGEN_FLAGS) || $(RECURSE)
+	@if [ -e Doxyfile ]; then \
+	    outdir=$$($(GREP) '^ *OUTPUT_DIRECTORY *=' Doxyfile | tail -1 | $(SED) -e 's/.*= *//' -e 's/ *$$//'); \
+	    [ -n "$$outdir" ] && mkdir -p "$$outdir"; \
+	    $(DOXYGEN) $(DOXYGEN_FLAGS); \
+	    [ -n "$$outdir" ] && find "$$outdir" -type d -empty -delete; \
+	else \
+	    $(RECURSE) \
+	fi
 
 # Texinfo document generation.
 MAKEINFO ?= makeinfo

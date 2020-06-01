@@ -50,6 +50,7 @@ INPUT            = ../src/doc ../src/libtsduck ../src/tstools
 RECURSIVE        = YES
 IMAGE_PATH       = ../images
 OUTPUT_DIRECTORY = ../bin/doxy
+CREATE_SUBDIRS   = YES
 EXCLUDE          = ../src/libtsduck/dtv/private \
                    ../src/libtsduck/plugin/private
 INCLUDE_PATH     = ../src/libtsduck \
