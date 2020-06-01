@@ -2,6 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.22-1827
+
+[BUG] Bug fixes:
+
+  * Fixed issue #587: Due to an intermediate integer overflow, the report PCR
+    jitters were sometimes completely incorrect.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.21-1811
 
 [NEW] New commands and plugins:
