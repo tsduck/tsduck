@@ -161,7 +161,7 @@ jobs:
         tsp --list=input &>tsp.input.txt
         tsp --list=output &>tsp.output.txt
         tsp --list=packet &>tsp.packet.txt
-        for cmd in $(find src/tstools/release-x86_64 -type f -executable -name 'ts*' ! -name '*.*' | sort); do
+        for cmd in $(find $(build/setenv.sh --display) -type f -executable -name 'ts*' ! -name '*.*' | sort); do
             echo -n $(basename $cmd):
             $cmd --help=description 2>&1
         done >tsduck.commands.txt
