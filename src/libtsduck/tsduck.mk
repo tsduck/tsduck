@@ -53,15 +53,10 @@ TS_ROOT_DIR := $(abspath $(TS_INCLUDE_DIR)/../..)
 # Default root directory for the platform.
 TS_SYSROOT_DIR := $(if $(TS_MAC),/usr/local,/usr)
 
-# Options to link with TSDuck library (either dynamic or static).
+# Options to link with TSDuck library.
 # If the library file is present in TS_ROOT_DIR, use it. Otherwise, use from TS_SYSROOT_DIR.
-ifdef TS_STATIC
-    TS_LIBFILE := $(wildcard $(TS_ROOT_DIR)/lib/libtsduck.a)
-    TS_LIBOPT := $(if $(TS_LIBFILE),-L$(dir $(TS_LIBFILE)),) -ltsduck
-else
-    TS_LIBFILE := $(wildcard $(TS_ROOT_DIR)/bin/tsduck.so)
-    TS_LIBOPT := $(if $(TS_LIBFILE),$(TS_LIBFILE),$(TS_SYSROOT_DIR)/bin/tsduck.so)
-endif
+TS_LIBFILE := $(wildcard $(TS_ROOT_DIR)/lib*/libtsduck.$(if $(TS_STATIC),a,so))
+TS_LIBOPT := $(if $(TS_LIBFILE),-L$(dir $(TS_LIBFILE)),) -ltsduck
 
 # Libraries to link with.
 CFLAGS_CURL := $(shell curl-config --cflags)
@@ -72,20 +67,12 @@ LDLIBS += $(TS_LIBOPT) $(LDLIBS_CURL)
 ifdef TS_MAC
     TS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC
     LDLIBS += -L/usr/local/opt/pcsc-lite/lib -lpcsclite -lsrt -lpthread -ldl -lm -lstdc++
-    ifndef TS_STATIC
-        LDFLAGS += -Wl,-rpath,@executable_path,-rpath,/usr/local/bin
-        SOFLAGS = -install_name '@rpath/$(notdir $@)'
-    endif
 else
     TS_INCLUDES += -I/usr/include/PCSC
     ifneq ($(wildcard /usr/include/srt/*.h)$(wildcard /usr/local/include/srt/*.h),)
         LDLIBS += -lsrt
     endif
     LDLIBS += -lpcsclite -lpthread -lrt -ldl -lm -lstdc++
-    ifndef TS_STATIC
-        LDFLAGS += -Wl,-rpath,'$$ORIGIN',-rpath,/usr/bin
-        SOFLAGS = -Wl,-soname=$(notdir $@)
-    endif
 endif
 
 # Includes may use either CFLAGS of CXXFLAGS

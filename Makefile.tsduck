@@ -45,7 +45,7 @@ TSTOOLSDIR   := $(SRCROOT)/tstools
 TSPLUGINSDIR := $(SRCROOT)/tsplugins
 
 STATIC_LIBTSDUCK := $(BINDIR)/libtsduck.a
-SHARED_LIBTSDUCK := $(BINDIR)/tsduck.so
+SHARED_LIBTSDUCK := $(BINDIR)/libtsduck.so
 
 ifndef TSPLUGINS
     export TSPLUGINS := $(sort $(filter-out $(if $(NOTELETEXT),tsplugin_teletext,),\

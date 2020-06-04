@@ -50,6 +50,8 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %{_bindir}/ts*
+%{_libdir}/libtsduck.so
+%{_libdir}/tsduck
 /lib/udev/rules.d/80-tsduck.rules
 %{_sysconfdir}/security/console.perms.d/80-tsduck.perms
 %doc CHANGELOG.txt LICENSE.txt doc/tsduck.pdf

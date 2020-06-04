@@ -62,11 +62,21 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
         // Get a list of directories from environment variable.
         UStringList dirs;
         if (!library_path.empty()) {
-            GetEnvironmentPath(dirs, library_path);
+            GetEnvironmentPathAppend(dirs, library_path);
         }
 
-        // Then, try in same directory as executable
-        dirs.push_back(DirectoryName(ExecutableFile()));
+        // Then, try in same directory as executable.
+        const UString exec_dir(DirectoryName(ExecutableFile()));
+        dirs.push_back(exec_dir);
+
+        // On Unix systens, try directory ../lib[64]/tsduck/ from main executable.
+#if defined(TS_UNIX)
+        const UString exec_parent(DirectoryName(exec_dir));
+#if TS_ADDRESS_BITS == 64
+        dirs.push_back(exec_parent + u"/lib64/tsduck");
+#endif
+        dirs.push_back(exec_parent + u"/lib/tsduck");
+#endif
 
         // Try in each directory.
         for (UStringList::const_iterator it = dirs.begin(); !isLoaded() && it != dirs.end(); ++it) {

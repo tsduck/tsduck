@@ -1,7 +1,7 @@
 CONFIG += plugin
 include(../tsduck.pri)
 TEMPLATE = lib
-TARGET = tsduck
+TARGET = libtsduck
 INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name $$NOSYSDIR ! -name release\\* ! -name debug\\*")
 
 linux|mac {
@@ -12,11 +12,10 @@ linux|mac {
 linux {
     LIBS += $$system("$$PROJROOT/dektec/dtapi-config.sh --object")
     QMAKE_CXXFLAGS += -isystem $$PROJROOT/dektec/LinuxSDK/DTAPI/Include
-    QMAKE_LFLAGS += -Wl,-soname=tsduck.so
 }
 
 mac {
-    QMAKE_POST_LINK += install_name_tool -id $$OUT_PWD/tsduck.so $$OUT_PWD/tsduck.so $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += install_name_tool -id $$OUT_PWD/libtsduck.so $$OUT_PWD/libtsduck.so $$escape_expand(\\n\\t)
 }
 
 

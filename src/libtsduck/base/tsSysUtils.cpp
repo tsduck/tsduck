@@ -716,18 +716,30 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
     }
 
     // At this point, the file name has no directory and is not found in the current directory.
-    // Build the list of directories to search.
+    // Build the list of directories to search. First, start with all directories from $TSPLUGINS_PATH.
     UStringList dirList;
-    UStringList tmp;
-    dirList.push_back(DirectoryName(ExecutableFile()));
-    GetEnvironmentPath(tmp, TS_PLUGINS_PATH);
-    dirList.insert(dirList.end(), tmp.begin(), tmp.end());
+    GetEnvironmentPathAppend(dirList, TS_PLUGINS_PATH);
+
+    // Then, try in same directory as executable.
+    const UString execDir(DirectoryName(ExecutableFile()));
+    dirList.push_back(execDir);
+
+    // On Unix systens, try etc and lib directories.
 #if defined(TS_UNIX)
-    GetEnvironmentPath(tmp, u"LD_LIBRARY_PATH");
-    dirList.insert(dirList.end(), tmp.begin(), tmp.end());
+    const UString execParent(DirectoryName(execDir));
+    const UString execGrandParent(DirectoryName(execParent));
+    dirList.push_back(execParent + u"/etc/tsduck");
+    dirList.push_back(execGrandParent + u"/etc/tsduck");
+#if TS_ADDRESS_BITS == 64
+    dirList.push_back(execParent + u"/lib64/tsduck");
 #endif
-    GetEnvironmentPath(tmp, TS_COMMAND_PATH);
-    dirList.insert(dirList.end(), tmp.begin(), tmp.end());
+    dirList.push_back(execParent + u"/lib/tsduck");
+    // Try all directories from $LD_LIBRARY_PATH.
+    GetEnvironmentPathAppend(dirList, u"LD_LIBRARY_PATH");
+#endif
+
+    // Finally try all directories from $PATH.
+    GetEnvironmentPathAppend(dirList, TS_COMMAND_PATH);
 
     // Search the file.
     for (UStringList::const_iterator it = dirList.begin(); it != dirList.end(); ++it) {

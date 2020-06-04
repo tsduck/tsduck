@@ -50,11 +50,13 @@ namespace ts {
         //! @param [in] filename Shared library file name. Directory and suffix are optional.
         //! If @a filename contains a directory, the specified file is used directly, with
         //! and without suffix (.so, .dll). If @a filename is just a name without directory,
-        //! a search algorithm is used. All directories in @a library_path are searched.
-        //! Then the same directory as the executable is searched. In each directory, a
-        //! file with @a prefix is searched. Then, if not found, without prefix.
-        //! Finally, when everything failed, @a filename is searched with the default
-        //! system lookup mechanism.
+        //! search the file in the following places:
+        //! - All directories in @a library_path environment variable (if the name is not empty).
+        //! - Directory of the current executable.
+        //! - Directory ../lib64/tsduck from current executable (64-bit UNIX only).
+        //! - Directory ../lib/tsduck from current executable (UNIX only).
+        //! In each directory, a file with @a prefix is searched. Then, if not found, without prefix.
+        //! Finally, when everything failed, @a filename is searched with the default system lookup mechanism.
         //! @param [in] prefix Prefix to add to @a filename if the file is not found.
         //! @param [in] library_path Name of an environment variable, an optional list of directories to search,
         //! similar to @c LD_LIBARY_PATH.
