@@ -21,7 +21,7 @@ been introduced.
 
 # Organization of the tests {#testorg}
 
-The code of TSDuck is divided in two parts, a large C++ library (`tsduck.dll` or `tsduck.so`)
+The code of TSDuck is divided in two parts, a large C++ library (`tsduck.dll` or `libtsduck.so`)
 and a collection of small command line tools and plugins.
 
 Similarly, the tests for TSDuck are divided in two parts.

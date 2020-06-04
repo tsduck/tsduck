@@ -820,7 +820,24 @@ namespace ts {
         //! i.e. all leading and trailing space characters are removed.
         //!
         template <class CONTAINER>
-        void split(CONTAINER& container, UChar separator = COMMA, bool trimSpaces = true, bool removeEmpty = false) const;
+        void split(CONTAINER& container, UChar separator = COMMA, bool trimSpaces = true, bool removeEmpty = false) const
+        {
+            container.clear();
+            splitAppend(container, separator, trimSpaces, removeEmpty);
+        }
+
+        //!
+        //! Split the string into segments based on a separator character (comma by default).
+        //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in,out] container A container of @c UString which receives the segments of the splitted string.
+        //! The strings are appended to the container without erasing previous content.
+        //! @param [in] separator The character which is used to separate the segments.
+        //! @param [in] trimSpaces If true (the default), each segment is trimmed,
+        //! @param [in] removeEmpty If true, empty segments are ignored
+        //! i.e. all leading and trailing space characters are removed.
+        //!
+        template <class CONTAINER>
+        void splitAppend(CONTAINER& container, UChar separator = COMMA, bool trimSpaces = true, bool removeEmpty = false) const;
 
         //!
         //! Split the string into shell-style arguments.
@@ -831,7 +848,23 @@ namespace ts {
         //! @param [out] container A container of @c UString which receives the segments of the splitted string.
         //!
         template <class CONTAINER>
-        void splitShellStyle(CONTAINER& container) const;
+        void splitShellStyle(CONTAINER& container) const
+        {
+            container.clear();
+            splitShellStyleAppend(container);
+        }
+
+        //!
+        //! Split the string into shell-style arguments.
+        //! Spaces are used as argument delimiters.
+        //! Arguments can be quoted using single or double quotes.
+        //! Any character can be escaped using a backslash.
+        //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in,out] container A container of @c UString which receives the segments of the splitted string.
+        //! The strings are appended to the container without erasing previous content.
+        //!
+        template <class CONTAINER>
+        void splitShellStyleAppend(CONTAINER& container) const;
 
         //!
         //! Split a string into segments which are identified by their starting / ending characters (respectively "[" and "]" by default).
@@ -843,7 +876,24 @@ namespace ts {
         //! i.e. all leading and trailing space characters are removed.
         //!
         template <class CONTAINER>
-        void splitBlocks(CONTAINER& container, UChar startWith = UChar('['), UChar endWith = UChar(']'), bool trimSpaces = true) const;
+        void splitBlocks(CONTAINER& container, UChar startWith = UChar('['), UChar endWith = UChar(']'), bool trimSpaces = true) const
+        {
+            container.clear();
+            splitBlocksAppend(container, startWith, endWith, trimSpaces);
+        }
+
+        //!
+        //! Split a string into segments which are identified by their starting / ending characters (respectively "[" and "]" by default).
+        //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in,out] container A container of @c UString which receives the segments of the splitted string.
+        //! The strings are appended to the container without erasing previous content.
+        //! @param [in] startWith The character which is used to identify the start of a segment of @a input.
+        //! @param [in] endWith The character which is used to identify the end of a segment of @a input.
+        //! @param [in] trimSpaces If true (the default), each segment is trimmed,
+        //! i.e. all leading and trailing space characters are removed.
+        //!
+        template <class CONTAINER>
+        void splitBlocksAppend(CONTAINER& container, UChar startWith = UChar('['), UChar endWith = UChar(']'), bool trimSpaces = true) const;
 
         //!
         //! Split a string into multiple lines which are not longer than a specified maximum width.
@@ -864,7 +914,33 @@ namespace ts {
                         size_type maxWidth,
                         const UString& otherSeparators = UString(),
                         const UString& nextMargin = UString(),
-                        bool forceSplit = false) const;
+                        bool forceSplit = false) const
+        {
+            container.clear();
+            splitLinesAppend(container, maxWidth, otherSeparators, nextMargin, forceSplit);
+        }
+
+        //!
+        //! Split a string into multiple lines which are not longer than a specified maximum width.
+        //! The splits occur on spaces or after any character in @a otherSeparators.
+        //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in,out] container A container of @c UString which receives the lines of the splitted string.
+        //! The strings are appended to the container without erasing previous content.
+        //! @param [in] maxWidth Maximum width of each resulting line.
+        //! @param [in] otherSeparators A string containing all characters which
+        //! are acceptable as line break points (in addition to space characters
+        //! which are always potential line break points).
+        //! @param [in] nextMargin A string which is prepended to all lines after the first one.
+        //! @param [in] forceSplit If true, longer lines without separators
+        //! are split at the maximum width (by default, longer lines without
+        //! separators are not split, resulting in lines longer than @a maxWidth).
+        //!
+        template <class CONTAINER>
+        void splitLinesAppend(CONTAINER& container,
+                              size_type maxWidth,
+                              const UString& otherSeparators = UString(),
+                              const UString& nextMargin = UString(),
+                              bool forceSplit = false) const;
 
         //!
         //! Split a string into multiple lines which are not longer than a specified maximum width.

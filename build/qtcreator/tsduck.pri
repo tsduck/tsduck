@@ -118,8 +118,8 @@ tsplugin {
 libtsduck {
     # Applications using libtsduck shall use "CONFIG += libtsduck".
     linux:QMAKE_LFLAGS += -Wl,--rpath=\'\$\$ORIGIN/../libtsduck\'
-    LIBS += ../libtsduck/tsduck.so
-    PRE_TARGETDEPS += ../libtsduck/tsduck.so
+    LIBS += ../libtsduck/libtsduck.so
+    PRE_TARGETDEPS += ../libtsduck/libtsduck.so
     DEPENDPATH += ../libtsduck
     INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name $$NOSYSDIR ! -name private ! -name release\\* ! -name debug\\*")
     QMAKE_POST_LINK += cp $$TS_CONFIG_FILES . $$escape_expand(\\n\\t)

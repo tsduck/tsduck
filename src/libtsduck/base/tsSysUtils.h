@@ -430,8 +430,12 @@ namespace ts {
     //! @param [in] fileName Name of the file to search.
     //! If @a fileName is not found and does not contain any directory part, search this file
     //! in the following places:
-    //! - Directory of the current executable.
     //! - All directories in @c TSPLUGINS_PATH environment variable.
+    //! - Directory of the current executable.
+    //! - Directory ../etc/tsduck from current executable (UNIX only).
+    //! - Directory ../../etc/tsduck from current executable (UNIX only).
+    //! - Directory ../lib64/tsduck from current executable (64-bit UNIX only).
+    //! - Directory ../lib/tsduck from current executable (UNIX only).
     //! - All directories in @c LD_LIBRARY_PATH environment variable (UNIX only).
     //! - All directories in @c PATH (UNIX) or @c Path (Windows) environment variable.
     //! @return The path to an existing file or an empty string if not found.
@@ -469,6 +473,24 @@ namespace ts {
     void GetEnvironmentPath(CONTAINER& container, const UString& name, const UString& def = UString())
     {
         GetEnvironment(name, def).split(container, SearchPathSeparator, true, true);
+    }
+
+    //!
+    //! Get the value of an environment variable containing a search path.
+    //!
+    //! The search path is analyzed and split into individual directory names.
+    //!
+    //! @tparam CONTAINER A container class of @c UString as defined by the
+    //! C++ Standard Template Library (STL).
+    //! @param [in,out] container A container of @c UString receiving the directory names.
+    //! The directory names are appended to the container without erasing previous content.
+    //! @param [in] name Environment variable name.
+    //! @param [in] def Default value if the specified environment variable does not exist.
+    //!
+    template <class CONTAINER>
+    void GetEnvironmentPathAppend(CONTAINER& container, const UString& name, const UString& def = UString())
+    {
+        GetEnvironment(name, def).splitAppend(container, SearchPathSeparator, true, true);
     }
 
     //!

@@ -129,23 +129,17 @@ $(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(OBJS))
 	echo '  [CC] $@'; \
 	$(CC) $(CFLAGS) $(SOFLAGS) $^ $(LDLIBS) -shared -o $@
 
-# Installing the shared library in same directory as executables
+# Installing the shared library in same directory as executables.
+# Weird note: libtsduck.so needs to be executable, otherwise rpm does not consider it as a valid dependency.
 
 .PHONY: install install-devel
 install: $(SHARED_LIBTSDUCK)
-	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
-	rm -f \
-	    $(SYSROOT)$(SYSPREFIX)/bin/tsduck.xml \
-	    $(SYSROOT)$(SYSPREFIX)/bin/tsduck.channels.xml \
-	    $(SYSROOT)$(SYSPREFIX)/bin/tsduck.dvb.names
-	install -m 644 \
-	    $(SHARED_LIBTSDUCK) \
-	    $(CONFIG_FILES) \
-	    $(SYSROOT)$(SYSPREFIX)/bin
+	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck
+	install -m 755 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
+	install -m 644 $(CONFIG_FILES) $(SYSROOT)$(USRLIBDIR)/tsduck
 install-devel: $(STATIC_LIBTSDUCK) tsduck.h
-	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
+	install -d -m 755 $(SYSROOT)$(USRLIBDIR) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
-	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -m 644 tsduck.mk \
 	    $(filter-out $(if $(NOTELETEXT),%/tsTeletextCharset.h %/tsTeletextDemux.h,),$(shell find . -name 'ts*.h' ! -path '*/private/*' ! -path '*/windows/*' ! -path '*/$(SKIPDIR)/*')) \
 	    $(SYSROOT)$(SYSPREFIX)/include/tsduck
