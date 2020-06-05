@@ -202,9 +202,9 @@ namespace ts {
         //!
         static int MissingPackets(int cc1, int cc2);
 
-    private:
+    protected:
         // PID analysis state
-        class PIDState
+        class TSDUCKDLL PIDState
         {
         public:
             PIDState();            // Constructor
@@ -217,7 +217,7 @@ namespace ts {
         // A map of PID state, indexed by PID.
         typedef std::map<PID,PIDState> PIDStateMap;
 
-        // Private members.
+        // Protected members.
         Report*       _report;            // Where to report errors, never null.
         int           _severity;          // Severity level for error messages.
         bool          _display_errors;    // Display discontinuity errors.
