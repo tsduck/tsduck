@@ -153,7 +153,7 @@ ts::UString ts::Charset::decoded(const uint8_t* data, size_t size) const
 bool ts::Charset::decodeWithByteLength(UString& str, const uint8_t*& data, size_t& size) const
 {
     // We need one byte for the length
-    if (size == 0) {
+    if (size == 0 || data == nullptr) {
         return false;
     }
 

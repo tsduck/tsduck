@@ -4021,3 +4021,41 @@ Bits = 4
 0 = MPD (Media Presentation Descriptor) in MPEG-DASH (ISO/IEC 23009-1)
 1 = Playback control descriptor in IPTV VOD spec (IPTV FJ STD-0002)
 2 = With a TS time stamp according to IPTV VOD spec (IPTV FJ STD-0002)
+
+[ISDBBroadcastSignalFormat]
+# In ISDB area_broadcasting_information_descriptor
+Bits = 8
+0x00 = Undefined
+0x01 = Full segment area broadcasting
+0x02 = One-segment area broadcasting
+0x03 = One-segment area broadcasting with Null
+0x04 = Undefined
+0x05 = Full segment broadcasting for multimedia transmission
+0x06 = One-segment area broadcasting dedicated to multimedia transmission
+
+[ISDBProgramPattern]
+# In ISDB series_descriptor
+Bits = 3
+0 = Nonscheduled
+1 = Regular program (every day, every day except weekend, only weekends, etc.)
+2 = Programmed about once a week
+3 = Programmed about once a month
+4 = Programmed several events in a day
+5 = Division of long hour program
+6 = Program for regular or irregular accumulation
+7 = Undefined
+
+[ISDBRelationType]
+# In ISDB Event Relation Table (ERT)
+Bits = 4
+0 = Reserved
+1 = Relation for the contents description (indicates tree structure to describe contents)
+2 = Relation for navigation (indicates tree structure to assist display and selection)
+
+[ISDBCollectionMode]
+# In ISDB Event Relation Table (ERT)
+Bits = 4
+0 = Group (bag)
+1 = Concatenation (sequential)
+2 = Selection (alternate)
+3 = Parallel

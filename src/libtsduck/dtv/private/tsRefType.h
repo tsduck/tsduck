@@ -10,9 +10,12 @@
     REF_TYPE(DiscontinuityInformationTable);
     REF_TYPE(DSMCCStreamDescriptorsTable);
     REF_TYPE(EIT);
+    REF_TYPE(ERT);
     REF_TYPE(ETT);
     REF_TYPE(INT);
+    REF_TYPE(ITT);
     REF_TYPE(LDT);
+    REF_TYPE(LIT);
     REF_TYPE(MGT);
     REF_TYPE(NBIT);
     REF_TYPE(NIT);
@@ -43,6 +46,7 @@
     REF_TYPE(ApplicationSignallingDescriptor);
     REF_TYPE(ApplicationStorageDescriptor);
     REF_TYPE(ApplicationUsageDescriptor);
+    REF_TYPE(AreaBroadcastingInformationDescriptor);
     REF_TYPE(AssociationTagDescriptor);
     REF_TYPE(ATSCAC3AudioStreamDescriptor);
     REF_TYPE(ATSCEAC3AudioDescriptor);
@@ -112,6 +116,7 @@
     REF_TYPE(EASInbandExceptionChannelsDescriptor);
     REF_TYPE(EASMetadataDescriptor);
     REF_TYPE(ECMRepetitionRateDescriptor);
+    REF_TYPE(EmergencyInformationDescriptor);
     REF_TYPE(EutelsatChannelNumberDescriptor);
     REF_TYPE(EventGroupDescriptor);
     REF_TYPE(ExtendedBroadcasterDescriptor);
@@ -164,6 +169,7 @@
     REF_TYPE(MVCExtensionDescriptor);
     REF_TYPE(NetworkChangeNotifyDescriptor);
     REF_TYPE(NetworkNameDescriptor);
+    REF_TYPE(NodeRelationDescriptor);
     REF_TYPE(NorDigLogicalChannelDescriptorV1);
     REF_TYPE(NorDigLogicalChannelDescriptorV2);
     REF_TYPE(NPTEndpointDescriptor);
@@ -178,12 +184,14 @@
     REF_TYPE(PrivateDataSpecifierDescriptor);
     REF_TYPE(ProtectionMessageDescriptor);
     REF_TYPE(RedistributionControlDescriptor);
+    REF_TYPE(ReferenceDescriptor);
     REF_TYPE(RegistrationDescriptor);
     REF_TYPE(S2SatelliteDeliverySystemDescriptor);
     REF_TYPE(S2XSatelliteDeliverySystemDescriptor);
     REF_TYPE(SatelliteDeliverySystemDescriptor);
     REF_TYPE(SchedulingDescriptor);
     REF_TYPE(ScramblingDescriptor);
+    REF_TYPE(SeriesDescriptor);
     REF_TYPE(ServiceAvailabilityDescriptor);
     REF_TYPE(ServiceDescriptor);
     REF_TYPE(ServiceGroupDescriptor);
@@ -194,6 +202,7 @@
     REF_TYPE(ServiceRelocatedDescriptor);
     REF_TYPE(SHDeliverySystemDescriptor);
     REF_TYPE(ShortEventDescriptor);
+    REF_TYPE(ShortNodeInformationDescriptor);
     REF_TYPE(ShortSmoothingBufferDescriptor);
     REF_TYPE(SimpleApplicationBoundaryDescriptor);
     REF_TYPE(SimpleApplicationLocationDescriptor);

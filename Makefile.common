@@ -46,6 +46,13 @@
 #  This common makefile also defines a few common targets which are usable
 #  everywhere. See the section "Common targets" below.
 #
+#  All binaries are built into one single root directory named
+#  bin/release|debug-arch-hostname where bin is located in the top-level
+#  directory, where this Makefile.common is located. The variable $(BINDIR)
+#  points to this directory. The variable $(OBJDIR) points to the directory
+#  where object files are stored. This is, by default, the same place as
+#  $(BINDIR), except when a local makefile defines $(OBJSUBDIR).
+#
 #-----------------------------------------------------------------------------
 #
 #  Common targets
@@ -129,6 +136,12 @@
 #  ARFLAGS_EXTRA
 #    Additional options for the "ar" command.
 #    This variable can be defined after inclusion of this makefile.
+#
+#  BINDIR_PREFIX
+#    Fixed prefix to add to BINDIR subdirectory name.
+#
+#  BINDIR_SUFFIX
+#    Fixed suffix to add to BINDIR subdirectory name.
 #
 #  CFLAGS_EXTRA
 #    Additional options for the C compiler.
@@ -293,11 +306,10 @@
 #    non-standard "clean" targets, it should set them in NODEPS before
 #    inclusion of this make file.
 #
-#  OBJDIR_PREFIX
-#    Fixed prefix to add to OBJDIR variable.
-#
-#  OBJDIR_SUFFIX
-#    Fixed suffix to add to OBJDIR variable.
+#  OBJSUBDIR
+#    A subdirectory name to store object files below $(BINDIR). By default,
+#    object files (compilation products, not final executable and shared
+#    binaries) are stored in $(BINDIR).
 #
 #  RECURSE_ORDER
 #    Define which subdirectories should be used in which order in the
@@ -351,6 +363,12 @@
 #  ARFLAGS
 #    Options which are applied to the archiver (ar) when adding a module into
 #    a static library.
+#
+#  BINDIR
+#    Name of the directory which receives final binary files (executable or
+#    shared binaries). Typically either "bin/release-{arch}-{hostname}" or
+#    "bin/debug-{arch}-{hostname}". See also input variables BINDIR_PREFIX and
+#    BINDIR_SUFFIX.
 #
 #  CFLAGS
 #    Options which are applied to C compilations.
@@ -436,6 +454,9 @@
 #    List of all header names, that is to say the list of all "f" for which
 #    a source file f.h exists.
 #
+#  HOSTNAME
+#    Simple name of the local host.
+#
 #  LDFLAGS
 #    Options which are applied to the linker.
 #
@@ -484,9 +505,9 @@
 #    the source files.
 #
 #  OBJDIR
-#    Name of the subdirectory which receives all generated binary files.
-#    Typically either "release-{arch}" or "debug-{arch}".
-#    See also input variables OBJDIR_PREFIX and OBJDIR_SUFFIX.
+#    Name of the directory which receives all object files (.o files, direct
+#    compilation products, not final executable or shared binaries).
+#    See also input variable OBJSUBDIR.
 #
 #  OBJS
 #    All object files (.o) to build, for all C/C++ source files.
@@ -619,10 +640,11 @@ RECURSE_SUBDIRS = $(filter $(SUBDIRS),$(filter-out $(NORECURSE_SUBDIRS),$(if $(R
 # make targets in the subdirectories (useful for "all" or "clean").
 RECURSE = for dir in $(RECURSE_SUBDIRS); do $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| exit $$?); done
 
-# Operating system, architecture.
+# Operating system, architecture, host name.
 ifndef LOCAL_OS
     export LOCAL_OS   := $(shell uname -s | tr A-Z a-z)
     export LOCAL_ARCH := $(shell uname -m)
+    export HOSTNAME   := $(shell hostname | $(SED) -e 's/\..*//')
 endif
 ifeq ($(LOCAL_OS),darwin)
     MACOS = true
@@ -850,9 +872,14 @@ ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
 # Output subdirectories in each project directory
 ifdef DEBUG
-    OBJDIR = $(OBJDIR_PREFIX)debug-$(MAIN_ARCH)$(OBJDIR_SUFFIX)
+    BINDIR = $(ROOTDIR)/bin/$(BINDIR_PREFIX)debug-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
 else
-    OBJDIR = $(OBJDIR_PREFIX)release-$(MAIN_ARCH)$(OBJDIR_SUFFIX)
+    BINDIR = $(ROOTDIR)/bin/$(BINDIR_PREFIX)release-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
+endif
+ifdef OBJSUBDIR
+    OBJDIR = $(BINDIR)/$(OBJSUBDIR)
+else
+    OBJDIR = $(BINDIR)
 endif
 
 # Implicit search directives.
@@ -886,7 +913,7 @@ MODULES_MAIN := $(sort $(filter-out $(HEADERS),$(MODULES)))
 MODULES_LIB  := $(sort $(filter-out $(MODULES_MAIN),$(MODULES)))
 OBJS_MAIN    := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_MAIN)))
 OBJS_LIB     := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_LIB)))
-EXECS        := $(addprefix $(OBJDIR)/,$(MODULES_MAIN))
+EXECS        := $(addprefix $(BINDIR)/,$(MODULES_MAIN))
 
 # Keep intermediate files, avoid using "ar" again.
 .SECONDARY:
@@ -912,10 +939,10 @@ $(OBJDIR)/%.o: %.cpp
 (%): %
 	@echo '  [AR] $<'; \
 	$(ARLOCK) $(AR) $(ARFLAGS) $@ $<
-$(OBJDIR)/%: $(OBJDIR)/%.o
+$(BINDIR)/%: $(OBJDIR)/%.o
 	@echo '  [LD] $@'; \
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
-$(OBJDIR)/%.so: $(OBJDIR)/%.o
+$(BINDIR)/%.so: $(OBJDIR)/%.o
 	@echo '  [CC] $@'; \
 	$(CC) $(CFLAGS) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS) -shared -o $@
 
@@ -974,10 +1001,19 @@ NOSOURCE = \
     *~ *.bak *.autosave cov-int
 
 # Source code documentation generation.
+# - Make sure that the output directory is created (doxygen does not create parent directories).
+# - Delete empty subdirectories (many of them created for nothing in case of hierachical output).
 DOXYGEN ?= $(call F_COMMAND,doxygen,doxygen)
 .PHONY: doxygen
 doxygen:
-	@[ -e Doxyfile ] && $(DOXYGEN) $(DOXYGEN_FLAGS) || $(RECURSE)
+	@if [ -e Doxyfile ]; then \
+	    outdir=$$($(GREP) '^ *OUTPUT_DIRECTORY *=' Doxyfile | tail -1 | $(SED) -e 's/.*= *//' -e 's/ *$$//'); \
+	    [ -n "$$outdir" ] && mkdir -p "$$outdir"; \
+	    $(DOXYGEN) $(DOXYGEN_FLAGS); \
+	    [ -n "$$outdir" ] && find "$$outdir" -type d -empty -delete; \
+	else \
+	    $(RECURSE) \
+	fi
 
 # Texinfo document generation.
 MAKEINFO ?= makeinfo
@@ -1032,7 +1068,7 @@ flawfinder:
 # Static code analysis: Run scan-build on the source code tree starting at current directory.
 SCANBUILD ?= scan-build
 SCANBUILD_SOURCES ?= $(CURDIR)
-SCANBUILD_FLAGS += -o $(OBJDIR)
+SCANBUILD_FLAGS += -o $(BINDIR)
 .PHONY: scan-build
 scan-build:
 	$(SCANBUILD) $(SCANBUILD_FLAGS) $(MAKE) -C $(SCANBUILD_SOURCES)

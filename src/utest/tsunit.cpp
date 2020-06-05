@@ -601,7 +601,7 @@ int tsunit::Main::run()
                 std::list<std::string> testNames;
                 suite->getAllTestNames(testNames);
                 for (auto tname = testNames.begin(); tname != testNames.end(); ++tname) {
-                    std::cout << suite->getName() << "::" << *tname << std::endl;
+                    std::cout << "    " << suite->getName() << "::" << *tname << std::endl;
                 }
             }
         }

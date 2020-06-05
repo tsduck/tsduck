@@ -68,12 +68,12 @@ param(
 
 # Get the project directories.
 $RootDir = (Split-Path -Parent $PSScriptRoot)
-$SrcDir = (Join-Path $RootDir "src")
-$DoxyDir = (Join-Path $RootDir "doxy")
+$SrcDir = "$RootDir\src"
+$DoxyFile = "$PSScriptRoot\Doxyfile"
 
 # Get the product version.
 if (-not $Version) {
-    $VersionFile = (Join-Path (Join-Path $SrcDir "libtsduck") "tsVersion.h")
+    $VersionFile = "$SrcDir\libtsduck\tsVersion.h"
     $VersionMajor = (Get-Content $VersionFile | Select-String '^ *#define  *TS_VERSION_MAJOR  *') -replace '^ *#define  *TS_VERSION_MAJOR  *' -replace ' *$'
     $VersionMinor = (Get-Content $VersionFile | Select-String '^ *#define  *TS_VERSION_MINOR  *') -replace '^ *#define  *TS_VERSION_MINOR  *' -replace ' *$'
     $VersionCommit = (Get-Content $VersionFile | Select-String '^ *#define  *TS_COMMIT  *') -replace '^ *#define  *TS_COMMIT  *' -replace ' *$'
@@ -94,17 +94,43 @@ else {
     $env:DOT_PATH = ""
 }
 
+# A function to remove empty directories, recursively.
+function Remove-EmptyFolder($path)
+{
+	Get-ChildItem $path -Directory | ForEach-Object { Remove-EmptyFolder $_.FullName }
+	if (@(Get-ChildItem $path).Count -eq 0) {
+		Remove-Item $path -Force
+	}
+}
+
 # Generate Doxygen documentation.
 if ($DoxyExe) {
     Push-Location $PSScriptRoot
+
+    # Get Doxygen output directory from Doxyfile.
+    $DoxyDir = (Get-Content $DoxyFile | Select-String '^ *OUTPUT_DIRECTORY *=' | Select-Object -Last 1) -replace '^.*= *' -replace ' *$'
+    if ($DoxyDir -eq "") {
+        $DoxyDir = "."
+    }
+
+    # Create the Doxygen output directory, of specified in Doxyfile.
+    # Doxygen does not create parent directories.
+    if (-not (Test-Path $DoxyDir)) {
+        [void](New-Item -Path $DoxyDir -ItemType Directory -Force)
+    }
+    $DoxyDir = (Resolve-Path $DoxyDir)
+
+    # Generate documentation.
     Write-Host "Running Doxygen..."
     & $DoxyExe.FullName
     Pop-Location
 
+    # Delete empty subdirectories (many of them created for nothing in case of hierachical output).
+    Remove-EmptyFolder $DoxyDir
+
     # Open the browser.
     if (-not $NoOpen) {
-        $RootDir = (Split-Path -Parent $PSScriptRoot)
-        $HtmlIndex = (Join-Path (Join-Path $DoxyDir "html") "index.html")
+        $HtmlIndex = "$DoxyDir\html\index.html"
         if (Test-Path $HtmlIndex) {
             Invoke-Item $HtmlIndex
         }

@@ -322,6 +322,7 @@ bool ts::CreateLocator(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, co
         case TT_ATSC:
             return CreateLocatorATSC(duck, locator, params, report);
         case TT_ISDB_S:
+            return CreateLocatorISDBS(duck, locator, params, report);
         case TT_ISDB_T:
         case TT_ISDB_C:
         case TT_UNDEFINED:
@@ -543,6 +544,34 @@ bool ts::CreateLocatorATSC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
     {
         return false;
     }
+
+    locator.assign(loc);
+    return true;
+}
+
+
+//-----------------------------------------------------------------------------
+// Create an IDigitalLocator object for ISDB-S parameters
+//-----------------------------------------------------------------------------
+
+bool ts::CreateLocatorISDBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report)
+{
+    ComPtr<::IISDBSLocator> loc(CLSID_ISDBSLocator, ::IID_IISDBSLocator, report);
+
+    if (loc.isNull() ||
+        !CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, report) ||
+        !CheckModVar(params.polarity, u"polarity", PolarizationEnum, report) ||
+        !PUT(loc, CarrierFrequency, long(params.frequency.value() / 1000)) ||  // frequency in kHz
+        !PUT(loc, SignalPolarisation, ::Polarisation(params.polarity.value())) ||
+        !PUT(loc, InnerFEC, ::BDA_FEC_VITERBI) ||
+        !PUT(loc, InnerFECRate, ::BinaryConvolutionCodeRate(params.inner_fec.value())) ||
+        !PUT(loc, SymbolRate, long(params.symbol_rate.value())))
+    {
+        return false;
+    }
+
+    // Pending questions:
+    // - No way to set params.inversion in IISDBSLocator
 
     locator.assign(loc);
     return true;

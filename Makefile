@@ -43,8 +43,8 @@
 
 include Makefile.tsduck
 
-EXTRA_DISTCLEAN   += doxy
-NORECURSE_SUBDIRS += doxy
+EXTRA_DISTCLEAN   += bin
+NORECURSE_SUBDIRS += bin
 
 # Analyze our code only, not downloaded 3rd-party code in dektec.
 CPPCHECK_SOURCES   = src

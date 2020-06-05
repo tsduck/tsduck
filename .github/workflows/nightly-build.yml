@@ -78,11 +78,11 @@ jobs:
 
     - name: Check built version (64-bit)
       if: env.REBUILD == 'true'
-      run: build/msvc/Release-x64/tsversion.exe --version=all
+      run: bin/Release-x64/tsversion.exe --version=all
 
     - name: Check built version (32-bit)
       if: env.REBUILD == 'true'
-      run: build/msvc/Release-Win32/tsversion.exe --version=all
+      run: bin/Release-Win32/tsversion.exe --version=all
 
     - name: Upload version
       if: env.REBUILD == 'true'
@@ -128,7 +128,9 @@ jobs:
       uses: actions/checkout@master
 
     - name: Install dependencies
-      run: build/install-prerequisites.sh
+      run: |
+        build/install-prerequisites.sh
+        sudo apt install -y jq
 
     - name: Check if rebuild is necessary
       run: |
@@ -149,17 +151,17 @@ jobs:
 
     - name: Check built version
       if: env.REBUILD == 'true'
-      run: source src/tstools/release-x86_64/setenv.sh && tsversion --version=all
+      run: source build/setenv.sh && tsversion --version=all
 
     - name: Prepare upload package
       if: env.REBUILD == 'true'
       run: |
-        source src/tstools/release-x86_64/setenv.sh
+        source build/setenv.sh
         tsp --version=short &>tsp.version.txt
         tsp --list=input &>tsp.input.txt
         tsp --list=output &>tsp.output.txt
         tsp --list=packet &>tsp.packet.txt
-        for cmd in $(find src/tstools/release-x86_64 -type f -executable -name 'ts*' ! -name '*.*' | sort); do
+        for cmd in $(find $(build/setenv.sh --display) -type f -executable -name 'ts*' ! -name '*.*' | sort); do
             echo -n $(basename $cmd):
             $cmd --help=description 2>&1
         done >tsduck.commands.txt
@@ -214,8 +216,8 @@ jobs:
       if: env.REBUILD == 'true'
       run: |
         make doxygen
-        echo "${{ env.VERSION }}" >doxy/docversion.txt
-        zip -qr9 doxy.zip doxy
+        echo "${{ env.VERSION }}" >bin/doxy/docversion.txt
+        (cd bin; zip -qr9 ../doxy.zip doxy)
 
     - name: Upload doxygen package
       if: env.REBUILD == 'true'

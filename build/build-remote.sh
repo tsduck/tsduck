@@ -58,6 +58,7 @@ USER_NAME=$(id -un)
 HOST_NAME=
 VMX_FILE=
 SSH_TIMEOUT=5
+SSH_PORT=22
 BOOT_TIMEOUT=120
 
 
@@ -86,6 +87,10 @@ Options:
   -h name
   --host name
       Build on this remote host. Mandatory for remote hosts. Optional for VM's.
+
+  -p number
+  --port number
+      TCP port for ssh and scp. Default: $SSH_PORT.
 
   -t seconds
   --timeout seconds
@@ -126,6 +131,10 @@ while [[ $# -gt 0 ]]; do
             [[ $# -gt 1 ]] || usage; shift
             HOST_NAME=$1
             ;;
+        -p|--port)
+            [[ $# -gt 1 ]] || usage; shift
+            SSH_PORT=$1
+            ;;
         -t|--timeout)
             [[ $# -gt 1 ]] || usage; shift
             SSH_TIMEOUT=$1
@@ -153,7 +162,8 @@ done
 # Remote build.
 #-----------------------------------------------------------------------------
 
-SSH_OPTS="-o ConnectTimeout=$SSH_TIMEOUT"
+SSH_OPTS="-o ConnectTimeout=$SSH_TIMEOUT -p $SSH_PORT"
+SCP_OPTS="-o ConnectTimeout=$SSH_TIMEOUT -P $SSH_PORT"
 NAME="$HOST_NAME"
 
 curdate()  { date +%Y%m%d-%H%M; }
@@ -199,7 +209,7 @@ if [[ -n "$VMX_FILE" ]]; then
         maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
         ok=1
         while [[ $(date +%s) -lt $maxdate ]]; do
-            ssh -o ConnectTimeout=5 "$HOST_NAME" cd &>/dev/null
+            ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null
             ok=$?
             [[ $ok -eq 0 ]] && break
             sleep 5
@@ -245,7 +255,7 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
         # Copy all installers files.
         for f in $files; do
             echo "Fetching $f"
-            scp $SSH_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/installers/$f" "$ROOTDIR/installers/"
+            scp $SCP_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/installers/$f" "$ROOTDIR/installers/"
         done
 
         # Delete the temporary timestamp.
@@ -269,7 +279,7 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
         # Copy all files from installers directory which are newer than the time stamp.
         for f in $files; do
             echo "Fetching $f"
-            scp $SSH_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/installers/$f" "$ROOTDIR/installers/"
+            scp $SCP_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/installers/$f" "$ROOTDIR/installers/"
         done
 
         # Delete the temporary timestamp.

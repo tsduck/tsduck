@@ -35,9 +35,11 @@ The git hooks are automatically installed when building TSDuck.
 Build scripts on Windows
 ------------------------
 - msvc : A subdirectory containing all project files for Visual Studio 2015,
-  2017 and 2019. These files are also valid MSBuild project files. The
-  software may be built either using MSBuild (see build.ps1) or using the
-  tsduck.sln solution file in the Visual Studio GUI.
+  2017 and 2019. All project files were manually carfted to be generic for
+  all versions of Visual Studio to avoid multiple versions of the same project.
+  These files are also valid MSBuild project files. The software may be built
+  either using MSBuild (see build.ps1) or using the tsduck.sln solution file
+  in the Visual Studio GUI.
 
 - tsduck.rc : The Microsoft resource file which is used to build the various
   TSDuck executables.
@@ -118,6 +120,9 @@ Project files for Linux and macOS
 
 - install-prerequisites.sh : This script downloads and installs all
   pre-requisite packages to build TSDuck on Linux or macOS.
+
+- setenv.sh : This script builds the path of the binary directory and sets the
+  PATH (or simply displays the binary directory).
 
 - check-libtsduck-dependencies.sh : This script verifies that the source files
   are correctly organized in src/libtsduck. Specifically, it verifies that all

@@ -167,4 +167,14 @@ namespace ts {
     //! @return True on success, false on error.
     //!
     TSDUCKDLL bool CreateLocatorATSC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report);
+
+    //!
+    //! Create an IDigitalLocator object for ISDB-S parameters.
+    //! @param [in,out] duck TSDuck execution context.
+    //! @param [out] locator COM pointer to the IDigitalLocator interface of the created object.
+    //! @param [in] params DVB-S parameters in portable format. All required parameters must be set.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool CreateLocatorISDBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report);
 }

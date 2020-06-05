@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
@@ -27,35 +28,44 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  Makefile for tstools.
+#  This script builds the name of the directory which contains binaries.
+#  The typical usage is to 'source' it: it adds the binary directory to
+#  the path. Other options:
+#
+#     --display : only display the binary directory, don't set PATH
+#     --debug : use debug build
 #
 #-----------------------------------------------------------------------------
 
-# With static link, we compile in a specific directory.
-BINDIR_SUFFIX := $(if $(STATIC),-static,)
-OBJSUBDIR := objs-tstools
+# Default options.
+TARGET=release
+DISPLAY=false
 
-include ../../Makefile.tsduck
+# Decode command line options.
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --debug)
+            TARGET=debug
+            ;;
+        --display)
+            DISPLAY=true
+            ;;
+    esac
+    shift
+done
 
-default: execs
-	@true
+# Build binary directory.
+ROOTDIR=$(cd $(dirname "${BASH_SOURCE[0]}")/..; pwd)
+ARCH=$(uname -m | sed -e 's/i.86/i386/' -e 's/^arm.*$/arm/')
+HOST=$(hostname | sed -e 's/\..*//')
+BINDIR="$ROOTDIR/bin/$TARGET-$ARCH-$HOST"
 
-.PHONY: execs
-execs: $(EXECS)
-
-ifndef STATIC
-    # With dynamic link (the default), we use the shareable library.
-    $(EXECS): $(SHARED_LIBTSDUCK)
+# Display or set path.
+if $DISPLAY; then
+    echo "$BINDIR"
+elif [[ ":$PATH:" != *:$BINDIR:* ]]; then
+    export PATH="$BINDIR:$PATH"
 else
-    # With static link, we compile in a specific directory and we link tsp with all plugins.
-    LDFLAGS_EXTRA = -static
-    $(BINDIR)/tsp: $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS)))
-    $(EXECS): $(STATIC_LIBTSDUCK)
-endif
-
-.PHONY: install install-devel
-install: $(EXECS)
-	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
-	install -m 755 $(EXECS) $(SYSROOT)$(SYSPREFIX)/bin
-install-devel:
-	@true
+    # Make sure to exit with success status
+    true
+fi

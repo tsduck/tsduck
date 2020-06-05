@@ -49,7 +49,7 @@ EXCLUDE_PATTERNS = *Template.h tsduck.h
 INPUT            = ../src/doc ../src/libtsduck ../src/tstools
 RECURSIVE        = YES
 IMAGE_PATH       = ../images
-OUTPUT_DIRECTORY = ../doxy
+OUTPUT_DIRECTORY = ../bin/doxy
 EXCLUDE          = ../src/libtsduck/dtv/private \
                    ../src/libtsduck/plugin/private
 INCLUDE_PATH     = ../src/libtsduck \
@@ -71,6 +71,11 @@ INCLUDE_PATH     = ../src/libtsduck \
                    ../src/libtsduck/dtv/tables \
                    ../src/libtsduck/dtv/windows \
                    ../src/libtsduck/plugin
+
+# Creating subdirs is useful to create a more balanced usage of the file system.
+# The problem is that it is hard to predict stable direct links to useful pages
+# such as "building TSDuck". So, this option is now disabled.
+CREATE_SUBDIRS = NO
 
 # Error reporting:
 

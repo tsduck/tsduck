@@ -38,15 +38,14 @@ include $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/Makefile.common
 
 # Project specific directories and files.
 
-STATIC_LIBTSDUCK := libtsduck.a
-SHARED_LIBTSDUCK := tsduck.so
-
 INSTALLERDIR := $(ROOTDIR)/installers
 SRCROOT      := $(ROOTDIR)/src
 LIBTSDUCKDIR := $(SRCROOT)/libtsduck
 TSTOOLSDIR   := $(SRCROOT)/tstools
 TSPLUGINSDIR := $(SRCROOT)/tsplugins
-LIBTSDUCK    := $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
+
+STATIC_LIBTSDUCK := $(BINDIR)/libtsduck.a
+SHARED_LIBTSDUCK := $(BINDIR)/tsduck.so
 
 ifndef TSPLUGINS
     export TSPLUGINS := $(sort $(filter-out $(if $(NOTELETEXT),tsplugin_teletext,),\
@@ -75,24 +74,25 @@ ifdef STATIC
     ifdef MACOS
         $(error static linking is not supported on macOS)
     else
+        NOCURL  := true
+        NOPCSC  := true
+        NODTAPI := true
+        NOSRT   := true
+        NOTEST  := true
         CFLAGS_INCLUDES += -DTSDUCK_STATIC=1
     endif
 else
     LDLIBS := -ldl $(LDLIBS)
 endif
 
-# A setenv.sh script to setup the environment for a binary directory.
-
-$(OBJDIR)/setenv.sh: $(ROOTDIR)/build/setenv-template.sh
-	cp -f $< $@
-
 # External include directories and libraries.
 
 ifdef CROSS_TARGET
     # Some libraries are bypassed in cross-compilation.
-    NOCURL := true
-    NOPCSC := true
+    NOCURL  := true
+    NOPCSC  := true
     NODTAPI := true
+    NOSRT   := true
 endif
 
 ifdef NOTELETEXT
@@ -105,7 +105,7 @@ endif
 
 ifeq ($(MACOS)$(NOSRT),)
     # Not on macOS and SRT not disabled, check if libsrt is available.
-    NOSRT = $(if $(wildcard /usr/include/srt/*.h)$(wildcard /usr/local/include/srt/*.h),,true)
+    NOSRT := $(if $(wildcard /usr/include/srt/*.h)$(wildcard /usr/local/include/srt/*.h),,true)
 endif
 
 ifneq ($(NOSRT),)
