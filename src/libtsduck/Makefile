@@ -130,13 +130,12 @@ $(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(OBJS))
 	$(CC) $(CFLAGS) $(SOFLAGS) $^ $(LDLIBS) -shared -o $@
 
 # Installing the shared library in same directory as executables.
-# Weird note: libtsduck.so needs to be executable, otherwise rpm does not consider it as a valid dependency.
 
 .PHONY: install install-devel
 install: $(SHARED_LIBTSDUCK)
-	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck
-	install -m 755 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
-	install -m 644 $(CONFIG_FILES) $(SYSROOT)$(USRLIBDIR)/tsduck
+	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck $(SYSROOT)$(SYSPREFIX)/share/tsduck
+	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
+	install -m 644 $(CONFIG_FILES) $(SYSROOT)$(SYSPREFIX)/share/tsduck
 install-devel: $(STATIC_LIBTSDUCK) tsduck.h
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)

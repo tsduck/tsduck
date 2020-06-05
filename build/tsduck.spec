@@ -43,6 +43,8 @@ make NOTEST=true %{?_smp_mflags} %{?mflags}
 rm -rf $RPM_BUILD_ROOT
 make NOTEST=true install SYSROOT=$RPM_BUILD_ROOT
 make NOTEST=true install-devel SYSROOT=$RPM_BUILD_ROOT
+# Weird note: libtsduck.so needs to be executable, otherwise rpm does not consider it as a valid dependency.
+chmod 0755 $RPM_BUILD_ROOT/usr/lib*/libtsduck.so
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -52,6 +54,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/ts*
 %{_libdir}/libtsduck.so
 %{_libdir}/tsduck
+%{_datadir}/tsduck
 /lib/udev/rules.d/80-tsduck.rules
 %{_sysconfdir}/security/console.perms.d/80-tsduck.perms
 %doc CHANGELOG.txt LICENSE.txt doc/tsduck.pdf
