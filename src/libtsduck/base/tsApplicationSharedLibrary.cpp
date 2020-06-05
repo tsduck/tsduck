@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructors
 //----------------------------------------------------------------------------
 
 ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
@@ -61,22 +61,7 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
     if (!has_directory) {
         // Get a list of directories from environment variable.
         UStringList dirs;
-        if (!library_path.empty()) {
-            GetEnvironmentPathAppend(dirs, library_path);
-        }
-
-        // Then, try in same directory as executable.
-        const UString exec_dir(DirectoryName(ExecutableFile()));
-        dirs.push_back(exec_dir);
-
-        // On Unix systens, try directory ../lib[64]/tsduck/ from main executable.
-#if defined(TS_UNIX)
-        const UString exec_parent(DirectoryName(exec_dir));
-#if TS_ADDRESS_BITS == 64
-        dirs.push_back(exec_parent + u"/lib64/tsduck");
-#endif
-        dirs.push_back(exec_parent + u"/lib/tsduck");
-#endif
+        GetSearchPath(dirs, library_path);
 
         // Try in each directory.
         for (UStringList::const_iterator it = dirs.begin(); !isLoaded() && it != dirs.end(); ++it) {
@@ -101,13 +86,40 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
     }
 }
 
-
-//----------------------------------------------------------------------------
-// Destructor.
-//----------------------------------------------------------------------------
-
 ts::ApplicationSharedLibrary::~ApplicationSharedLibrary()
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Get the list of directories where to search plugins.
+//----------------------------------------------------------------------------
+
+void ts::ApplicationSharedLibrary::GetSearchPath(UStringList& directories, const UString& library_path)
+{
+    directories.clear();
+
+    if (!library_path.empty()) {
+        GetEnvironmentPathAppend(directories, library_path);
+    }
+
+    // Then, try in same directory as executable.
+    const UString exec_dir(DirectoryName(ExecutableFile()));
+    directories.push_back(exec_dir);
+
+    // On Unix systens, try directory ../lib[64]/tsduck/ from main executable.
+#if defined(TS_UNIX)
+    const UString exec_parent(DirectoryName(exec_dir));
+#if TS_ADDRESS_BITS == 64
+    directories.push_back(exec_parent + u"/lib64/tsduck");
+#endif
+    directories.push_back(exec_parent + u"/lib/tsduck");
+#endif
+
+    // On Windows system, try the PATH.
+#if defined(TS_WINDOWS)
+    GetEnvironmentPathAppend(directories, TS_COMMAND_PATH);
+#endif
 }
 
 
@@ -131,12 +143,9 @@ void ts::ApplicationSharedLibrary::GetPluginList(UStringVector& files, const USt
     // Reset output arguments.
     files.clear();
 
-    // Get list of directories: search path, then same directory as executable.
+    // Get list of directories to search path, then same directory as executable.
     UStringList dirs;
-    if (!library_path.empty()) {
-        GetEnvironmentPath(dirs, library_path);
-    }
-    dirs.push_back(DirectoryName(ExecutableFile()));
+    GetSearchPath(dirs, library_path);
 
     // Try in each directory.
     for (UStringList::const_iterator it = dirs.begin(); it != dirs.end(); ++it) {

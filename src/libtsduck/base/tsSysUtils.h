@@ -436,6 +436,7 @@ namespace ts {
     //! - Directory ../../etc/tsduck from current executable (UNIX only).
     //! - Directory ../lib64/tsduck from current executable (64-bit UNIX only).
     //! - Directory ../lib/tsduck from current executable (UNIX only).
+    //! - Directory ../share/tsduck from current executable (UNIX only).
     //! - All directories in @c LD_LIBRARY_PATH environment variable (UNIX only).
     //! - All directories in @c PATH (UNIX) or @c Path (Windows) environment variable.
     //! @return The path to an existing file or an empty string if not found.

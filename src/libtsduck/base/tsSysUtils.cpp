@@ -734,6 +734,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
     dirList.push_back(execParent + u"/lib64/tsduck");
 #endif
     dirList.push_back(execParent + u"/lib/tsduck");
+    dirList.push_back(execParent + u"/share/tsduck");
     // Try all directories from $LD_LIBRARY_PATH.
     GetEnvironmentPathAppend(dirList, u"LD_LIBRARY_PATH");
 #endif
