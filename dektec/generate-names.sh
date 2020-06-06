@@ -28,7 +28,7 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  Format DtCaps strings from DTAPI.h.
+#  Generate a TSDuck "names file" from DTAPI.h.
 #
 #-----------------------------------------------------------------------------
 
@@ -42,23 +42,7 @@ DTAPI=$("$ROOTDIR/dtapi-config.sh" --header)
 [[ -n "$DTAPI" ]] || error "DTAPI.h not found"
 
 # Generate the output file.
+echo "# Auto-generated file"
+echo "[DtCaps]"
 grep '#define *DTAPI_CAP_.* Dtapi::DtCaps([0-9][0-9]*) *//' "$DTAPI" |
-    sed -e 's|.*Dtapi::DtCaps(||' -e 's|) *// *|:|' -e 's| *\r*$||' -e "s|\"|'|g" |
-    (
-        declare -i exp=0
-        declare -i num=-1
-        echo "// Auto-generated file"
-        echo "namespace {"
-        echo "    const ts::UChar* const DtCapsNames[] = {"
-        while read line; do
-            exp=$num+1
-            num=${line/:*/}
-            str=${line/*:/}
-            [[ $num == $exp ]] || error "DtCaps value out of sequence $num, expected $exp"
-            echo "        /* $num */ u\"$str\","
-        done
-        echo "    };"
-        echo "    const size_t DtCapsNamesCount = sizeof(DtCapsNames) / sizeof(DtCapsNames[0]);"
-        echo "}"
-    )
-exit 0
+    sed -e 's|.*Dtapi::DtCaps(||' -e 's|) *// *| = |' -e 's| *\r*$||'

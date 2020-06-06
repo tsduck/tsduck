@@ -1,4 +1,4 @@
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2020, Thierry Lelegard
@@ -25,23 +25,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
-//----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 22
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1835
+#include "tsDektecNames.h"
+TSDUCK_SOURCE;
+
+
+//-----------------------------------------------------------------------------
+// Singleton definition.
+//-----------------------------------------------------------------------------
+
+TS_DEFINE_SINGLETON(ts::DektecNames);
+ts::DektecNames::DektecNames() : Names(u"tsduck.dektec.names") {}
+ts::DektecNames::~DektecNames() {}
+
+
+//-----------------------------------------------------------------------------
+// Get the name of one DtCaps by value.
+//-----------------------------------------------------------------------------
+
+ts::UString ts::DektecNames::dtCaps(int dtcap)
+{
+    return nameFromSection(u"DtCaps", dtcap, names::NAME_OR_VALUE | names::DECIMAL);
+}

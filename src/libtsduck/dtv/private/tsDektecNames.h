@@ -1,4 +1,4 @@
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2020, Thierry Lelegard
@@ -25,23 +25,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Declare a singleton for the names file containing Dektec definitions.
 //!
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 22
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1835
+#include "tsNames.h"
+
+namespace ts {
+    //!
+    //! An instance of names repository containing all Dektec names.
+    //! The corresponding names file is automatically generated.
+    //!
+    class TSDUCKDLL DektecNames : public Names
+    {
+        TS_DECLARE_SINGLETON(DektecNames);
+    public:
+        //!
+        //! Get the name of one DtCaps by value.
+        //! @param [in] dtcap DtCaps integer value.
+        //! @return The corresponding string.
+        //!
+        UString dtCaps(int dtcap);
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~DektecNames();
+    };
+}

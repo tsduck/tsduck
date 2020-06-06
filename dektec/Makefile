@@ -35,7 +35,7 @@ include ../Makefile.tsduck
 
 # By default, download and expand LinuxSDK if necessary.
 # This SDK is only available on Windows and some flavors of Linux.
-DTAPI_TARGETS := $(if $(NODTAPI),,$(if $(shell ./dtapi-config.sh --support),dtapi dtcaps,))
+DTAPI_TARGETS := $(if $(NODTAPI),,$(if $(shell ./dtapi-config.sh --support),dtapi dtnames,))
 
 default: $(DTAPI_TARGETS)
 	@true
@@ -43,7 +43,7 @@ default: $(DTAPI_TARGETS)
 EXTRA_DISTCLEAN += WinSDK*.zip WinSDK LinuxSDK.zip LinuxSDK*.tar.gz LinuxSDK LinuxSDK.version
 RECURSE_ORDER = none
 
-.PHONY: copy download sdkfile geturl expand dtapi
+.PHONY: copy download sdkfile geturl expand dtapi dtnames
 
 # The file LinuxSDK.version is created to contain the actual URL name.
 DTNAME_FILE = LinuxSDK.version
@@ -82,8 +82,8 @@ dtapi: $(DTAPI_H)
 $(DTAPI_H): $(if $(wildcard $(DTAPI_FILE)),$(DTAPI_FILE),sdkfile)
 	$(MAKE) expand
 
-# There is an auto-generated file with DtCaps definitions.
-DTCAPSNAMES_H = ../src/libtsduck/dtv/private/DtCapsNames.h
-dtcaps: $(DTCAPSNAMES_H)
-$(DTCAPSNAMES_H): $(DTAPI_H) format-dtcaps.sh
-	./format-dtcaps.sh >$@
+# There is an auto-generated file with names definitions.
+DTNAMES = ../src/libtsduck/dtv/tsduck.dektec.names
+dtnames: $(DTNAMES)
+$(DTNAMES): $(DTAPI_H) generate-names.sh
+	./generate-names.sh >$@
