@@ -63,6 +63,7 @@ namespace ts {
             DECIMAL_FIRST = FIRST | DECIMAL,         //!< Value in decimal in first position.
             BOTH_FIRST    = FIRST | HEXA | DECIMAL,  //!< Value in decimal and hexadecimal in first position.
             ALTERNATE     = 0x0010,                  //!< Display an alternate integer value.
+            NAME_OR_VALUE = 0x0020,                  //!< Display name if defined or value only if not defined.
         };
 
         //!

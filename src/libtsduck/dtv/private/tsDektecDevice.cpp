@@ -29,7 +29,7 @@
 
 #include "tsDektecDevice.h"
 #include "tsDektecUtils.h"
-#include "DtCapsNames.h"
+#include "tsDektecNames.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NO_DTAPI)
@@ -201,7 +201,6 @@ ts::UString ts::DektecDevice::GetInterfaceDescription(const Dtapi::DtHwFuncDesc&
 
     // If none found, use DTAPI function
     if (desc.empty()) {
-        // Flawfinder: ignore: statically-sized arrays can be improperly restricted.
         char str[64];
         Dtapi::DTAPI_RESULT status = Dtapi::DtapiDtHwFuncDesc2String(const_cast<Dtapi::DtHwFuncDesc*>(&port),
                                                                      DTAPI_HWF2STR_ITF_TYPE,
@@ -262,7 +261,7 @@ bool ts::DektecDevice::GetAllDevices(DektecDeviceVector& devices, Report& report
         devices[dev].desc = dev_desc[dev];
         devices[dev].input.clear();
         devices[dev].output.clear();
-        devices[dev].model = GetDeviceDescription (devices[dev].desc);
+        devices[dev].model = GetDeviceDescription(devices[dev].desc);
 
         // Look for the hardware capabilities on this device.
         for (size_t hw = 0; hw < hw_desc.size(); ++hw) {
@@ -346,17 +345,6 @@ bool ts::DektecDevice::getDevice(int& dev_index, int& chan_index, bool is_input,
 
 
 //-----------------------------------------------------------------------------
-// Get a string description of one Dektec device capability by index
-//-----------------------------------------------------------------------------
-
-ts::UString ts::DektecDevice::DtCapsIndexToString(int index)
-{
-    const UChar* const str = (index < 0 || size_t(index) >= DtCapsNamesCount) ? nullptr : DtCapsNames[index];
-    return (str == nullptr || str[0] == 0) ? UString::Decimal(index) : UString(str);
-}
-
-
-//-----------------------------------------------------------------------------
 // Get a string description of a set of Dektec capabilities
 //-----------------------------------------------------------------------------
 
@@ -384,7 +372,7 @@ ts::UString ts::DektecDevice::DtCapsToString(const Dtapi::DtCaps& flags)
             if (!caps.empty()) {
                 caps += u", ";
             }
-            caps += DtCapsIndexToString(c);
+            caps += DektecNames::Instance()->dtCaps(c);
         }
     }
     return caps;

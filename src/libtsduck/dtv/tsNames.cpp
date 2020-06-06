@@ -681,12 +681,24 @@ ts::UString ts::Names::Formatted(Value value, const UString& name, names::Flags 
     value &= DisplayMask(bits);
 
     // Default name.
-    const UString defaultName(u"unknown");
+    UString defaultName;
     const UString* displayName = &name;
     if (name.empty()) {
-        // Name not found, force value display.
-        flags |= names::VALUE;
-        displayName = &defaultName;
+        // Name not found.
+        if ((flags & names::NAME_OR_VALUE) == 0) {
+            // Force value display with a default name.
+            flags |= names::VALUE;
+            defaultName = u"unknown";
+            displayName = &defaultName;
+        }
+        else if ((flags & names::DECIMAL) != 0) {
+            // Display decimal value only.
+            return UString::Format(u"%d", {value});
+        }
+        else {
+            // Display hexadecimal value only.
+            return UString::Format(u"0x%0*X", {HexaDigits(bits), value});
+        }
     }
 
     if ((flags & (names::VALUE | names::FIRST)) == 0) {
@@ -699,18 +711,14 @@ ts::UString ts::Names::Formatted(Value value, const UString& name, names::Flags 
             return UString::Format(u"%s (%d)", {*displayName, value});
         case names::HEXA:
             return UString::Format(u"%s (0x%0*X)", {*displayName, HexaDigits(bits), value});
-        case names::BOTH:
+        case names::HEXA | names::DECIMAL:
             return UString::Format(u"%s (0x%0*X, %d)", {*displayName, HexaDigits(bits), value, value});
-        case names::DECIMAL_FIRST:
+        case names::DECIMAL | names::FIRST:
             return UString::Format(u"%d (%s)", {value, *displayName});
-        case names::HEXA_FIRST:
+        case names::HEXA | names::FIRST:
             return UString::Format(u"0x%0*X (%s)", {HexaDigits(bits), value, *displayName});
-        case names::BOTH_FIRST:
+        case names::HEXA | names::DECIMAL | names::FIRST:
             return UString::Format(u"0x%0*X (%d, %s)", {HexaDigits(bits), value, value, *displayName});
-        case names::NAME:
-        case names::VALUE:
-        case names::FIRST:
-        case names::ALTERNATE:
         default:
             assert(false);
             return UString();
