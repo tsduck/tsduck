@@ -707,7 +707,8 @@ ts::UString ts::Names::Formatted(Value value, const UString& name, names::Flags 
     }
 
     TS_PUSH_WARNING()
-    TS_LLVM_NOWARNING(switch-enum)
+    TS_LLVM_NOWARNING(switch-enum) // enumeration values not explicitly handled in switch
+    TS_MSC_NOWARNING(4061)         // enumerator in switch of enum is not explicitly handled by a case label
 
     switch (flags & (names::FIRST | names::DECIMAL | names::HEXA)) {
         case names::DECIMAL:
