@@ -706,6 +706,9 @@ ts::UString ts::Names::Formatted(Value value, const UString& name, names::Flags 
         return *displayName;
     }
 
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(switch-enum)
+
     switch (flags & (names::FIRST | names::DECIMAL | names::HEXA)) {
         case names::DECIMAL:
             return UString::Format(u"%s (%d)", {*displayName, value});
@@ -723,6 +726,8 @@ ts::UString ts::Names::Formatted(Value value, const UString& name, names::Flags 
             assert(false);
             return UString();
     }
+
+    TS_POP_WARNING()
 }
 
 
