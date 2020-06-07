@@ -126,7 +126,17 @@ jobs:
         ggrep --version
         dos2unix --version
     - name: Build TSDuck
-      run: make -j5
+      run: |
+        build/setenv.sh --display
+        make -j5
+        build/setenv.sh --display
+    - name: Temporary troubleshooting step for intermittent issue on GitHub macOS runners
+      run: |
+        build/setenv.sh --display
+        ls $(build/setenv.sh --display)
+        ls -l $(build/setenv.sh --display)/tsversion
+        source build/setenv.sh; echo $PATH; which tsversion
+        source build/setenv.sh; tsversion --version=all
     - name: Check built version
       run: source build/setenv.sh && tsversion --version=all
     - name: Run unitary tests
