@@ -136,9 +136,11 @@ jobs:
       run: |
         remote_version=$(curl -sL https://tsduck.io/download/prerelease/get-versions | jq -r '.latest?'; true)
         version=$(build/get-version-from-sources.sh)
+        fullversion=$(build/get-version-from-sources.sh --full)
         [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
         echo "Current version: $version, latest on tsduck.io: $remote_version"
         echo "::set-env name=VERSION::$version"
+        echo "::set-env name=FULLVERSION::$fullversion"
         echo "::set-env name=REBUILD::$rebuild"
 
     - name: Check same version
@@ -179,14 +181,14 @@ jobs:
       uses: actions/upload-artifact@master
       with:
         name: ubuntu-package
-        path: installers/tsduck_${{ env.VERSION }}_amd64.deb
+        path: installers/tsduck_${{ env.FULLVERSION }}_amd64.deb
         
     - name: Upload Ubuntu dev package
       if: env.REBUILD == 'true'
       uses: actions/upload-artifact@master
       with:
         name: ubuntu-dev-package
-        path: installers/tsduck-dev_${{ env.VERSION }}_amd64.deb
+        path: installers/tsduck-dev_${{ env.FULLVERSION }}_amd64.deb
         
   doc:
     name: Documentation build
