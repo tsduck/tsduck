@@ -353,6 +353,11 @@
 #    Contains the absolute path of the texi2dvi utility (part of Texinfo).
 #    If empty, texi2dvi is searched in $PATH.
 #
+#  USRLIBDIR
+#    Optional name of the library directory for the target architecture.
+#    The default is either $(SYSPREFIX)/lib or $(SYSPREFIX)/lib64.
+#    See USRLIBDIR in "Output variables".
+#
 #-----------------------------------------------------------------------------
 #
 #  Output variables
@@ -577,7 +582,8 @@
 #
 #  USRLIBDIR
 #    Name of the library directory for the target architecture. This is
-#    $(SYSPREFIX)/lib64 for Linux x86_64 and $(SYSPREFIX)/lib elsewhere.
+#    $(SYSPREFIX)/lib64 for Linux x86_64 where /usr/lib64/libc.so* exists
+#    and $(SYSPREFIX)/lib elsewhere.
 #
 #-----------------------------------------------------------------------------
 
@@ -893,11 +899,15 @@ ifneq ($(CVPATH)$(CXXVPATH),)
     vpath %.h $(CVPATH) $(CXXVPATH)
 endif
 
+# Check if we are on a x86_64 Linux distro using /usr/lib64 as library path.
+# Define USELIB64 as "true" or empty.
+USELIB64 := $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),,$(if $(wildcard /usr/lib64/libc.so*),true,))
+
 # On macOS, /usr/local is used without system privileges.
 # On some x86_64 distros, the libraries are installed in lib64, not lib.
 SYSPREFIX ?= $(if $(MACOS),/usr/local,/usr)
 ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
-USRLIBDIR ?= $(if $(subst linux-x86_64-/usr/lib64,,$(LOCAL_OS)-$(MAIN_ARCH)-$(wildcard /usr/lib64)),$(SYSPREFIX)/lib,$(SYSPREFIX)/lib64)
+USRLIBDIR ?= $(if $(USELIB64),$(SYSPREFIX)/lib64,$(SYSPREFIX)/lib)
 UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib/udev/rules.d)
 
 # RPM building.
@@ -992,7 +1002,7 @@ distclean: clean
 
 # List of file and directory patterns for non-source files.
 NOSOURCE = \
-    .git .svn *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* doxy doxygen *.t2d \
+    .git .svn *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* [Bb]in doxy doxygen *.t2d \
     *.o *.so *.ko *.a *.lib *.obj *.exe *.dll *.gcov *.dep .kdbgrc.* \
     tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
     .vs ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user *.user.* \
