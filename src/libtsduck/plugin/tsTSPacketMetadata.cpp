@@ -39,6 +39,7 @@ const ts::TSPacketMetadata::LabelSet ts::TSPacketMetadata::AllLabels(~NoLabel);
 //----------------------------------------------------------------------------
 
 ts::TSPacketMetadata::TSPacketMetadata() :
+    _input_ts(INVALID_PCR),
     _labels(),
     _flush(false),
     _bitrate_changed(false),
@@ -54,6 +55,7 @@ ts::TSPacketMetadata::TSPacketMetadata() :
 
 void ts::TSPacketMetadata::reset()
 {
+    _input_ts = INVALID_PCR;
     _labels.reset();
     _flush = false;
     _bitrate_changed = false;
@@ -89,4 +91,39 @@ void ts::TSPacketMetadata::setLabels(const LabelSet& mask)
 void ts::TSPacketMetadata::clearLabels(const LabelSet& mask)
 {
     _labels &= ~mask;
+}
+
+
+//----------------------------------------------------------------------------
+// Input time stamp operations
+//----------------------------------------------------------------------------
+
+void ts::TSPacketMetadata::setInputTS(uint64_t time_stamp, uint64_t ticks_per_second)
+{
+    if (ticks_per_second == 0) {
+        // Clear the time stamp.
+        _input_ts = INVALID_PCR;
+    }
+    else {
+        // Convert into PCR units only when needed.
+        if (ticks_per_second != SYSTEM_CLOCK_FREQ) {
+            // Generic conversion: (time_stamp / ticks_per_second) * SYSTEM_CLOCK_FREQ;
+            // Try to avoid losing intermediate accuracy and avoid intermediate overflow at the same time.
+            const uint64_t intermediate = time_stamp * SYSTEM_CLOCK_FREQ;
+            if (intermediate >= time_stamp) {
+                // No intermediate overflow. No accuracy is lost.
+                time_stamp = intermediate / ticks_per_second;
+            }
+            else {
+                // Intermediate overflow. Do it the opposite way, possibly loosing intermediate accuracy.
+                // But, because there was an overflow, the time_stamp value but be already very large,
+                // reducing the impact of intermediate accuracy loss.
+                time_stamp = (time_stamp / ticks_per_second) * SYSTEM_CLOCK_FREQ;
+            }
+        }
+        // Make sure we remain in the usual PCR range.
+        // This can create an issue if the input value wraps up at 2^64.
+        // In which case, the PCR value will warp at another value than PCR_SCALE.
+        _input_ts = time_stamp % PCR_SCALE;
+    }
 }

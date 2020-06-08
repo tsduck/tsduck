@@ -396,13 +396,8 @@ The class ts::SharedLibrary manipulates any type of shared library.
 The subclass ts::ApplicationSharedLibrary searches a shared library using
 TSDuck rules: if the file is not found "as it is", an optional prefix and
 a list of directories are used. This is how, for instance, searching the
-shared library named @e "ip" will end up loading the file @e tsplugin_ip.dll
+shared library named @e "zap" will end up loading the file @e tsplugin_zap.dll
 in the same directory as the application executable file.
-
-Finally, the subclass ts::PluginSharedLibrary adds the resolution of the
-@e tsp plugin interface for input, output and packet processor plugins.
-This class is probably useless for third-party application, unless they
-want to use @e tsp plugins.
 
 ## Smart-card interface {#pcscinterface}
 

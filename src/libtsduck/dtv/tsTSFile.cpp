@@ -530,6 +530,51 @@ bool ts::TSFile::close(Report& report)
 
 
 //----------------------------------------------------------------------------
+// Read internal implementation.
+//----------------------------------------------------------------------------
+
+bool ts::TSFile::readInternal(void* buffer, size_t buffer_size, size_t& read_size, ErrorCode& error_code)
+{
+    read_size = 0;
+    error_code = SYS_SUCCESS;
+
+#if defined(TS_WINDOWS)
+    // Windows implementation
+    ::DWORD insize = 0;
+    if (::ReadFile(_handle, buffer, ::DWORD(buffer_size), &insize, NULL)) {
+        // Normal case: some data were read
+        read_size = size_t(insize);
+        assert(read_size <= buffer_size);
+        _at_eof = _at_eof || insize == 0;
+        return true;
+    }
+    else {
+        // Error case.
+        error_code = LastErrorCode();
+        _at_eof = _at_eof || error_code == ERROR_HANDLE_EOF || error_code == ERROR_BROKEN_PIPE;
+        return _at_eof; // reaching EOF is not an error.
+    }
+#else
+    // UNIX implementation
+    ssize_t insize = ::read(_fd, buffer, buffer_size);
+    if (insize > 0) {
+        // Normal case: some data were read
+        read_size = size_t(insize);
+        assert(read_size <= buffer_size);
+    }
+    else if (insize == 0) {
+        _at_eof = true;
+    }
+    else if ((error_code = LastErrorCode()) != EINTR) {
+        // Actual error (not an interrupt)
+        return false;
+    }
+    return true;
+#endif
+}
+
+
+//----------------------------------------------------------------------------
 // Read TS packets. Return the actual number of read packets.
 //----------------------------------------------------------------------------
 
@@ -556,36 +601,15 @@ size_t ts::TSFile::read(TSPacket* buffer, size_t max_packets, Report& report)
     // Loop on read until we get enough
     while (got_size < req_size && !_at_eof && !got_error) {
 
-#if defined(TS_WINDOWS)
-        // Windows implementation
-        ::DWORD insize;
-        if (::ReadFile(_handle, data + got_size, ::DWORD (req_size - got_size), &insize, NULL)) {
-            // Normal case: some data were read
-            got_size += insize;
-            assert(got_size <= req_size);
-            _at_eof = _at_eof || insize == 0;
+        // Actually read packets.
+        size_t size = 0;
+        got_error = !readInternal(data + got_size, req_size - got_size, size, error_code);
+        got_size += size;
+
+        if (got_error) {
+            report.log(_severity, u"error reading file %s: %s (%d)", {getDisplayFileName(), ErrorCodeMessage(error_code), error_code});
+            return 0;
         }
-        else {
-            error_code = LastErrorCode ();
-            _at_eof = _at_eof || error_code == ERROR_HANDLE_EOF || error_code == ERROR_BROKEN_PIPE;
-            got_error = !_at_eof;
-        }
-#else
-        // UNIX implementation
-        ssize_t insize = ::read(_fd, data + got_size, req_size - got_size);
-        if (insize > 0) {
-            // Normal case: some data were read
-            got_size += insize;
-            assert(got_size <= req_size);
-        }
-        else if (insize == 0) {
-            _at_eof = true;
-        }
-        else if ((error_code = LastErrorCode()) != EINTR) {
-            // Actual error (not an interrupt)
-            got_error = true;
-        }
-#endif
 
         // At end-of-file, truncate partial packet.
         if (_at_eof) {
@@ -600,11 +624,6 @@ size_t ts::TSFile::read(TSPacket* buffer, size_t max_packets, Report& report)
         }
     }
 
-    if (got_error) {
-        report.log(_severity, u"error reading file %s: %s (%d)", {_filename, ErrorCodeMessage(error_code), error_code});
-        return 0;
-    }
-
     // Return the number of input packets.
     const size_t count = got_size / PKT_SIZE;
     _total_read += count;
@@ -613,7 +632,79 @@ size_t ts::TSFile::read(TSPacket* buffer, size_t max_packets, Report& report)
 
 
 //----------------------------------------------------------------------------
-// Write method
+// Write internal implementation.
+//----------------------------------------------------------------------------
+
+bool ts::TSFile::writeInternal(const void* buffer, size_t data_size, size_t& written_size, ErrorCode& error_code)
+{
+    written_size = 0;
+    error_code = SYS_SUCCESS;
+
+#if defined(TS_WINDOWS)
+
+    // Windows implementation
+    const char* data = reinterpret_cast<const char*>(buffer);
+    ::DWORD remain = ::DWORD(data_size);
+    ::DWORD outsize = 0;
+
+    // Loop on write until everything is gone
+    while (remain > 0) {
+        if (::WriteFile(_handle, data, remain, &outsize, NULL) != 0)  {
+            // Normal case, some data were written
+            outsize = std::min(outsize, remain);
+            data += outsize;
+            remain -= outsize;
+            written_size += size_t(outsize);
+        }
+        else if ((error_code = LastErrorCode()) == ERROR_BROKEN_PIPE || error_code == ERROR_NO_DATA) {
+            // Broken pipe: error state but don't report error.
+            // Note that ERROR_NO_DATA (= 232) means "the pipe is being closed"
+            // and this is the actual error code which is returned when the pipe
+            // is closing, not ERROR_BROKEN_PIPE.
+            error_code = SYS_SUCCESS;
+            return false;
+        }
+        else {
+            // Write error
+            return false;
+        }
+    }
+    return true;
+
+#else
+
+    // UNIX implementation
+    const char* data = reinterpret_cast<const char*>(buffer);
+    size_t remain = data_size;
+    ssize_t outsize = 0;
+
+    // Loop on write until everything is gone
+    while (remain > 0) {
+        outsize = ::write(_fd, data, remain);
+        if (outsize > 0) {
+            // Normal case, some data were written
+            outsize = std::min<ssize_t>(outsize, remain);
+            data += outsize;
+            remain -= outsize;
+            written_size += size_t(outsize);
+        }
+        else if ((error_code = LastErrorCode()) != EINTR) {
+            // Actual error (not an interrupt)
+            if (error_code == EPIPE) {
+                // Broken pipe: keep the error state but don't report error.
+                error_code = SYS_SUCCESS;
+            }
+            return false;
+        }
+    }
+    return true;
+
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Write TS packets.
 //----------------------------------------------------------------------------
 
 bool ts::TSFile::write(const TSPacket* buffer, size_t packet_count, Report& report)
@@ -631,71 +722,17 @@ bool ts::TSFile::write(const TSPacket* buffer, size_t packet_count, Report& repo
     }
 
     // Loop on write until everything is gone
-    bool got_error = false;
     ErrorCode error_code = SYS_SUCCESS;
-    const char* const data_buffer = reinterpret_cast<const char*>(buffer);
-    const char* data = data_buffer;
+    size_t written_size = 0;
+    const bool success = writeInternal(buffer, packet_count * PKT_SIZE, written_size, error_code);
 
-#if defined(TS_WINDOWS)
-
-    // Windows implementation
-    ::DWORD remain = ::DWORD(packet_count) * PKT_SIZE;
-    ::DWORD outsize;
-
-    while (remain > 0 && !got_error) {
-        if (::WriteFile(_handle, data, remain, &outsize, NULL) != 0)  {
-            // Normal case, some data were written
-            outsize = std::min(outsize, remain);
-            data += outsize;
-            remain -= std::max(remain, outsize);
-        }
-        else if ((error_code = LastErrorCode()) == ERROR_BROKEN_PIPE || error_code == ERROR_NO_DATA) {
-            // Broken pipe: error state but don't report error.
-            // Note that ERROR_NO_DATA (= 232) means "the pipe is being closed"
-            // and this is the actual error code which is returned when the pipe
-            // is closing, not ERROR_BROKEN_PIPE.
-            error_code = SYS_SUCCESS;
-            got_error = true;
-        }
-        else {
-            // Write error
-            got_error = true;
-        }
-    }
-
-#else
-
-    // UNIX implementation
-    size_t remain = packet_count * PKT_SIZE;
-    ssize_t outsize = 0;
-
-    while (remain > 0 && !got_error) {
-        outsize = ::write(_fd, data, remain);
-        if (outsize > 0) {
-            // Normal case, some data were written
-            assert(size_t(outsize) <= remain);
-            data += outsize;
-            remain -= std::max(remain, size_t (outsize));
-        }
-        else if ((error_code = LastErrorCode()) != EINTR) {
-            // Actual error (not an interrupt)
-            report.debug(u"write error on %s, fd=%d, error_code=%d", {getDisplayFileName(), _fd, error_code});
-            got_error = true;
-            if (error_code == EPIPE) {
-                // Broken pipe: keep the error state but don't report error.
-                error_code = SYS_SUCCESS;
-            }
-        }
-    }
-
-#endif
-
-    if (got_error && error_code != SYS_SUCCESS) {
+    if (!success && error_code != SYS_SUCCESS) {
         report.log(_severity, u"error writing %s: %s (%d)", {getDisplayFileName(), ErrorCodeMessage(error_code), error_code});
     }
 
-    _total_write += (data - data_buffer) / PKT_SIZE;
-    return !got_error;
+    // Accumulate number of output packets.
+    _total_write += written_size / PKT_SIZE;
+    return success;
 }
 
 
