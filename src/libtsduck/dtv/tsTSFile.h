@@ -246,6 +246,8 @@ namespace ts {
         bool openInternal(bool reopen, Report& report);
         bool seekCheck(Report& report);
         bool seekInternal(uint64_t index, Report& report);
+        bool readInternal(void* buffer, size_t buffer_size, size_t& read_size, ErrorCode& error_code);
+        bool writeInternal(const void* data, size_t data_size, size_t& written_size, ErrorCode& error_code);
 
         // Inaccessible operations.
         TSFile& operator=(TSFile&) = delete;

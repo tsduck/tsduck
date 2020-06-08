@@ -194,7 +194,38 @@ namespace ts {
         //!
         void clearAllLabels() { _labels.reset(); }
 
+        //!
+        //! Get the optional input time stamp of the packet.
+        //! @return The input time stamp in PCR units (27 MHz) or INVALID_PCR if there is none.
+        //! - The input time stamp is optional. It may be set by the input plugin or by @c tsp
+        //!   or not set at all.
+        //! - Its precision, accuracy and reliability are unspecified. It may be set by @c tsp
+        //!   software (based on internal clock), by the receiving hardware (the NIC for instance)
+        //!   or by some external source (RTP or M2TS time stamp).
+        //! - It is a monotonic clock which wraps up after MAX_PCR (at least).
+        //! - It can also wrap up at any other input-specific value. For instance, M2TS files use 30-bit
+        //!   timestamps in PCR units. So, for M2TS the input time stamps wrap up every 39 seconds.
+        //! - Although expressed in PCR units, it does not share the same reference clock with the
+        //!   various PCR in the transport stream. You can compare time stamp differences, not
+        //!   absolute values.
+        //!
+        uint64_t getInputTS() const { return _input_ts; }
+
+        //!
+        //! Set the optional input time stamp of the packet.
+        //! @param [in] time_stamp Input time stamp value. This value should be taken from a
+        //! monotonic clock. The time unit is specified in @a ticks_per_second.
+        //! @param [in] ticks_per_second Base unit of the @a time_stamp value.
+        //! This is the number of units per second. For instance, @a ticks_per_second
+        //! should be 1000 when @a time_stamp is in milliseconds and it should be
+        //! @link SYSTEM_CLOCK_FREQ @endlink when @a time_stamp is in PCR units.
+        //! If @a ticks_per_second is zero, then the input time stamp is cleared.
+        //! @see getInputTS()
+        //!
+        void setInputTS(uint64_t time_stamp, uint64_t ticks_per_second);
+
     private:
+        uint64_t _input_ts;         // Input timestamp in PCR units, INVALID_PCR if unknown.
         LabelSet _labels;           // Bit mask of labels.
         bool     _flush;            // Flush the packet buffer asap.
         bool     _bitrate_changed;  // Call getBitrate() callback as soon as possible.
