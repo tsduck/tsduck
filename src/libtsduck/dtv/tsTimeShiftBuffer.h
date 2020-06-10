@@ -38,6 +38,9 @@
 #include "tsReport.h"
 
 namespace ts {
+
+    class TSPacketMetadata;
+
     //!
     //! A TS packet buffer for time shift.
     //! The buffer is partly implemented in virtual memory and partly on disk.
@@ -161,16 +164,18 @@ namespace ts {
         //! is not full, a null packet is returned. When the buffer is full,
         //! the oldest packet is returned and removed from the buffer.
         //! @param [in,out] report Where to report errors.
+        //! @param [in,out] metadata Optional packet metadata. To include metadata in time shift,
+        //! be sure to provide this parameters in all calls.
         //! @return True on success, false on error.
         //!
-        bool shift(TSPacket& pkt, Report& report);
+        bool shift(TSPacket& pkt, Report& report, TSPacketMetadata* metadata = nullptr);
 
     private:
         bool           _is_open;       // Buffer is open.
         size_t         _cur_packets;   // Current number of packets in the buffer.
         size_t         _total_packets; // Total capacity of the buffer.
         size_t         _mem_packets;   // Max packets in memory.
-        UString        _directory;     // Where to store the nackup file.
+        UString        _directory;     // Where to store the backup file.
         TSFile         _file;          // Backup file on disk.
         TSPacketVector _wcache;        // Write cache (or complete buffer if in memory).
         TSPacketVector _rcache;        // Read cache.

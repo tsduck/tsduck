@@ -60,7 +60,7 @@ namespace ts {
         virtual ~TSFileOutputResync();
 
         // Overrides TSFile methods
-        virtual bool open(const UString& filename, OpenFlags flags, Report& report) override;
+        virtual bool open(const UString& filename, OpenFlags flags, Report& report, Format format = FMT_AUTODETECT) override;
 
         //!
         //! Write TS packets to the file.
@@ -68,9 +68,12 @@ namespace ts {
         //! The continuity counters of all packets are modified.
         //! @param [in] packet_count Number of packets to write.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] metadata Optional packet metadata containing time stamps.
+        //! If the file format requires time stamps, @a metadata must not be a null
+        //! pointer and all packets must have a time stamp.
         //! @return True on success, false on error.
         //!
-        bool write(TSPacket* buffer, size_t packet_count, Report& report);
+        bool write(TSPacket* buffer, size_t packet_count, Report& report, const TSPacketMetadata* metadata = nullptr);
 
         //!
         //! Write TS packets to the file.
@@ -79,9 +82,12 @@ namespace ts {
         //! @param [in] packet_count Number of packets to write.
         //! @param [in] pid The PID of all packets is forced to this value.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] metadata Optional packet metadata containing time stamps.
+        //! If the file format requires time stamps, @a metadata must not be a null
+        //! pointer and all packets must have a time stamp.
         //! @return True on success, false on error.
         //!
-        bool write(TSPacket* buffer, size_t packet_count, PID pid, Report& report);
+        bool write(TSPacket* buffer, size_t packet_count, PID pid, Report& report, const TSPacketMetadata* metadata = nullptr);
 
     private:
         ContinuityAnalyzer _ccFixer;

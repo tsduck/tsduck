@@ -65,6 +65,7 @@ namespace ts {
     private:
         UString           _name;
         TSFile::OpenFlags _flags;
+        TSFile::Format    _file_format;
         TSFile            _file;
     };
 }

@@ -65,6 +65,7 @@ namespace ts {
     private:
         UString           _name;
         TSFile::OpenFlags _flags;
+        TSFile::Format    _file_format;
         bool              _reopen;
         MilliSecond       _retry_interval;
         size_t            _retry_max;

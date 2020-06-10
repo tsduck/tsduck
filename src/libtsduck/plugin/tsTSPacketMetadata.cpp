@@ -33,6 +33,11 @@ TSDUCK_SOURCE;
 const ts::TSPacketMetadata::LabelSet ts::TSPacketMetadata::NoLabel;
 const ts::TSPacketMetadata::LabelSet ts::TSPacketMetadata::AllLabels(~NoLabel);
 
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+constexpr size_t ts::TSPacketMetadata::SERIALIZATION_SIZE;
+constexpr uint8_t ts::TSPacketMetadata::SERIALIZATION_MAGIC;
+#endif
+
 
 //----------------------------------------------------------------------------
 // Constructor.
@@ -98,7 +103,7 @@ void ts::TSPacketMetadata::clearLabels(const LabelSet& mask)
 // Input time stamp operations
 //----------------------------------------------------------------------------
 
-void ts::TSPacketMetadata::setInputTS(uint64_t time_stamp, uint64_t ticks_per_second)
+void ts::TSPacketMetadata::setInputTimeStamp(uint64_t time_stamp, uint64_t ticks_per_second)
 {
     if (ticks_per_second == 0) {
         // Clear the time stamp.
@@ -125,5 +130,81 @@ void ts::TSPacketMetadata::setInputTS(uint64_t time_stamp, uint64_t ticks_per_se
         // This can create an issue if the input value wraps up at 2^64.
         // In which case, the PCR value will warp at another value than PCR_SCALE.
         _input_ts = time_stamp % PCR_SCALE;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Serialization.
+//----------------------------------------------------------------------------
+
+void ts::TSPacketMetadata::serialize(ByteBlock& bin) const
+{
+    bin.resize(SERIALIZATION_SIZE);
+    serialize(bin.data(), bin.size());
+}
+
+size_t ts::TSPacketMetadata::serialize(void* bin, size_t size) const
+{
+    // Make sure a LabelSet can be converted into an unsigned long.
+    assert(8 * sizeof(unsigned long) >= LABEL_COUNT);
+
+    if (size < SERIALIZATION_SIZE) {
+        Zero(bin, size);
+        return 0; // too short
+    }
+    else {
+        uint8_t* data = reinterpret_cast<uint8_t*>(bin);
+        data[0] = SERIALIZATION_MAGIC;
+        PutUInt64(data + 1, _input_ts);
+        PutUInt32(data + 9, uint32_t(_labels.to_ulong()));
+        data[13] = (_input_stuffing ? 0x80 : 0x00) | (_nullified ? 0x40 : 0x00);
+        return SERIALIZATION_SIZE;
+    }
+}
+
+bool ts::TSPacketMetadata::deserialize(const void* bin, size_t size)
+{
+    const uint8_t* data = reinterpret_cast<const uint8_t*>(bin);
+
+    // We need a valid binary structure.
+    if (data == nullptr || size == 0 || data[0] != SERIALIZATION_MAGIC) {
+        size = 0;
+    }
+
+    _input_ts = size >= 9 ? GetUInt64(data + 1) : INVALID_PCR;
+    if (size >= 13) {
+        _labels = LabelSet(GetUInt32(data + 9));
+    }
+    else {
+        _labels.reset();
+    }
+    _flush = false;
+    _bitrate_changed = false;
+    _input_stuffing = size > 13 && (data[13] & 0x80) != 0;
+    _nullified = size > 13 && (data[13] & 0x40) != 0;
+
+    return size >= 14;
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to copy or reset contiguous TS packet metadata.
+//----------------------------------------------------------------------------
+
+void ts::TSPacketMetadata::Copy(TSPacketMetadata* dest, const TSPacketMetadata* source, size_t count)
+{
+    assert(dest != nullptr);
+    assert(source != nullptr);
+    for (size_t i = 0; i < count; ++i) {
+        dest[i] = source[i];
+    }
+}
+
+void ts::TSPacketMetadata::Reset(TSPacketMetadata* dest, size_t count)
+{
+    assert(dest != nullptr);
+    for (size_t i = 0; i < count; ++i) {
+        dest[i].reset();
     }
 }

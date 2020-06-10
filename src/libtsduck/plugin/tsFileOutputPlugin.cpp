@@ -49,6 +49,7 @@ ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Write packets to a file", u"[options] [file-name]"),
     _name(),
     _flags(TSFile::NONE),
+    _file_format(TSFile::FMT_TS),
     _reopen(false),
     _retry_interval(DEF_RETRY_INTERVAL),
     _retry_max(0),
@@ -59,6 +60,11 @@ ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
 
     option(u"append", 'a');
     help(u"append", u"If the file already exists, append to the end of the file. By default, existing files are overwritten.");
+
+    option(u"format", 0, TSFile::FormatEnum);
+    help(u"format", u"name",
+         u"Specify the format of the created file. "
+         u"By default, the format is a standard TS file.");
 
     option(u"keep", 'k');
     help(u"keep", u"Keep existing file (abort if the specified file already exists). By default, existing files are overwritten.");
@@ -100,6 +106,7 @@ bool ts::FileOutputPlugin::getOptions()
     _reopen = present(u"reopen-on-error");
     _retry_max = intValue<size_t>(u"max-retry", 0);
     _retry_interval = intValue<MilliSecond>(u"retry-interval", DEF_RETRY_INTERVAL);
+    _file_format = enumValue<TSFile::Format>(u"format", TSFile::FMT_TS);
     return true;
 }
 
@@ -124,7 +131,7 @@ bool ts::FileOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
 
         // Write some packets.
         const PacketCounter where = _file.getWriteCount();
-        const bool success = _file.write(buffer, packet_count, *tsp);
+        const bool success = _file.write(buffer, packet_count, *tsp, pkt_data);
 
         // In case of success or no retry, return now.
         if (success || !_reopen || tsp->aborting()) {
@@ -134,6 +141,7 @@ bool ts::FileOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
         // Update counters of actually written packets.
         const size_t written = std::min(size_t(_file.getWriteCount() - where), packet_count);
         buffer += written;
+        pkt_data += written;
         packet_count -= written;
 
         // Close the file and try to reopen it a number of times.
@@ -166,7 +174,7 @@ bool ts::FileOutputPlugin::openAndRetry(bool initial_wait, size_t& retry_allowed
 
         // Try to open the file.
         tsp->debug(u"opening output file %s", {_name});
-        const bool success = _file.open(_name, _flags, *tsp);
+        const bool success = _file.open(_name, _flags, *tsp, _file_format);
 
         // Update remaining open count.
         if (retry_allowed > 0) {
