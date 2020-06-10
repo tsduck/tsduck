@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsTSFile.h"
+#include "tsTSPacketMetadata.h"
 
 namespace ts {
     //!
@@ -102,9 +103,10 @@ namespace ts {
         //! @param [in] start_offset Offset in bytes from the beginning of the file
         //! where to start reading packets at each iteration.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] format Expected format of the TS file.
         //! @return True on success, false on error.
         //!
-        bool openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report);
+        bool openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, Format format = FMT_AUTODETECT);
 
         //!
         //! Read TS packets.
@@ -114,10 +116,12 @@ namespace ts {
         //! @param [out] buffer Address of reception packet buffer.
         //! @param [in] max_packets Size of @a buffer in packets.
         //! @param [in,out] report Where to report errors.
+        //! @param [in,out] metadata Optional packet metadata. If the file format provides
+        //! time stamps, they are set in the metadata. Ignored if null pointer.
         //! @return The actual number of read packets. Returning zero means
         //! error or end of file repetition.
         //!
-        size_t read(TSPacket* buffer, size_t max_packets, Report& report);
+        size_t read(TSPacket* buffer, size_t max_packets, Report& report, TSPacketMetadata* metadata = nullptr);
 
         //!
         //! Get the backward seekable distance inside the buffer.
@@ -175,13 +179,14 @@ namespace ts {
         bool seek(PacketCounter position, Report& report);
 
     private:
-        TSPacketVector _buffer;         // Seekable packet circular buffer.
-        size_t         _first_index;    // Index of first packet in buffer.
-        size_t         _current_offset; // Offset from _first_index of "current" readable packet
-        size_t         _total_count;    // Total count of valid packets in buffer.
+        TSPacketVector         _buffer;         // Seekable packet circular buffer.
+        TSPacketMetadataVector _metadata;       // Seekable packet metadata circular buffer.
+        size_t                 _first_index;    // Index of first packet in buffer.
+        size_t                 _current_offset; // Offset from _first_index of "current" readable packet
+        size_t                 _total_count;    // Total count of valid packets in buffer.
 
         // Make sure that the generic open() returns an error.
-        virtual bool open(const UString& filename, OpenFlags flags, Report& report) override;
+        virtual bool open(const UString& filename, OpenFlags flags, Report& report, Format format) override;
 
         // Make rewind inaccessible.
         bool rewind(Report&) = delete;

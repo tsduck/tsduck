@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsMPEG.h"
+#include "tsByteBlock.h"
 #include "tsTSPacket.h"
 #include "tsResidentBuffer.h"
 
@@ -209,7 +210,18 @@ namespace ts {
         //!   various PCR in the transport stream. You can compare time stamp differences, not
         //!   absolute values.
         //!
-        uint64_t getInputTS() const { return _input_ts; }
+        uint64_t getInputTimeStamp() const { return _input_ts; }
+
+        //!
+        //! Check if the packet has an input time stamp.
+        //! @return True if the packet has an input time stamp.
+        //!
+        bool hasInputTimeStamp() const { return _input_ts != INVALID_PCR; }
+
+        //!
+        //! Clear the input time stamp.
+        //!
+        void clearInputTimeStamp() { _input_ts = INVALID_PCR; }
 
         //!
         //! Set the optional input time stamp of the packet.
@@ -220,9 +232,68 @@ namespace ts {
         //! should be 1000 when @a time_stamp is in milliseconds and it should be
         //! @link SYSTEM_CLOCK_FREQ @endlink when @a time_stamp is in PCR units.
         //! If @a ticks_per_second is zero, then the input time stamp is cleared.
-        //! @see getInputTS()
+        //! @see getInputTimeStamp()
         //!
-        void setInputTS(uint64_t time_stamp, uint64_t ticks_per_second);
+        void setInputTimeStamp(uint64_t time_stamp, uint64_t ticks_per_second);
+
+        //!
+        //! Copy contiguous TS packet metadata.
+        //! @param [out] dest Address of the first contiguous TS packet metadata to write.
+        //! @param [in] source Address of the first contiguous TS packet metadata to read.
+        //! @param [in] count Number of TS packet metadata to copy.
+        //!
+        static void Copy(TSPacketMetadata* dest, const TSPacketMetadata* source, size_t count);
+
+        //!
+        //! Reset contiguous TS packet metadata.
+        //! @param [out] dest Address of the first contiguous TS packet metadata to reset.
+        //! @param [in] count Number of TS packet metadata to copy.
+        //!
+        static void Reset(TSPacketMetadata* dest, size_t count);
+
+        //!
+        //! Size in bytes of the structure into which a TSPacketMetadata can be serialized.
+        //!
+        static constexpr size_t SERIALIZATION_SIZE = 14;
+
+        //!
+        //! First "magic" byte of the structure into which a TSPacketMetadata was serialized.
+        //! Intentionally the opposite of the TS packet synchro byte.
+        //!
+        static constexpr uint8_t SERIALIZATION_MAGIC = SYNC_BYTE ^ 0xFF;
+
+        //!
+        //! Serialize the content of this instance into a byteblock.
+        //! The serialized data is a fixed size block of @link SERIALIZATION_SIZE @endlink bytes.
+        //! @param [out] bin Returned binary data.
+        //!
+        void serialize(ByteBlock& bin) const;
+
+        //!
+        //! Serialize the content of this instance into a memory area.
+        //! The serialized data is a fixed size block of @link SERIALIZATION_SIZE @endlink bytes.
+        //! @param [out] data Address of the memory area.
+        //! @param [in] size Size in bytes of the memory area.
+        //! @return Size in bytes of the data, zero on error (buffer too short).
+        //!
+        size_t serialize(void* data, size_t size) const;
+
+        //!
+        //! Deserialize the content of this instance from a byteblock.
+        //! @param [in] bin Binary data containing a serialized instance of TSPacketMetadata.
+        //! @return True if everything has been deserialized. False if the input data block is
+        //! too short. In the latter case, the missing field get their default value.
+        //!
+        bool deserialize(const ByteBlock& bin) { return deserialize(bin.data(), bin.size()); }
+
+        //!
+        //! Deserialize the content of this instance from a byteblock.
+        //! @param [in] data Address of binary data containing a serialized instance of TSPacketMetadata.
+        //! @param [in] size Size in bytes of these data.
+        //! @return True if everything has been deserialized. False if the input data block is
+        //! too short. In the latter case, the missing field get their default value.
+        //!
+        bool deserialize(const void* data, size_t size);
 
     private:
         uint64_t _input_ts;         // Input timestamp in PCR units, INVALID_PCR if unknown.

@@ -35,8 +35,12 @@
 #pragma once
 #include "tsTSPacket.h"
 #include "tsReport.h"
+#include "tsEnumeration.h"
 
 namespace ts {
+
+    class TSPacketMetadata;
+
     //!
     //! Transport stream file, input and/or output.
     //! @ingroup mpeg
@@ -44,6 +48,21 @@ namespace ts {
     class TSDUCKDLL TSFile
     {
     public:
+        //!
+        //! Transport stream file formats.
+        //!
+        enum Format {
+            FMT_AUTODETECT,  //!< Try to detect format (read), default to TS. 
+            FMT_TS,          //!< Raw transport stream format.
+            FMT_M2TS,        //!< Bluray compatible, 4-byte timestamp header before each TS packet (30-bit time stamp in PCR units).
+            FMT_DUCK,        //!< Proprietary, 14-byte header before each TS packet (packet metadata).
+        };
+
+        //!
+        //! Enumeration description of ts::TSFile::Format.
+        //!
+        static const Enumeration FormatEnum;
+
         //!
         //! Default constructor.
         //!
@@ -79,9 +98,10 @@ namespace ts {
         //! @param [in] start_offset Offset in bytes from the beginning of the file
         //! where to start reading packets at each iteration.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] format Expected format of the TS file.
         //! @return True on success, false on error.
         //!
-        bool openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report);
+        bool openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, Format format = FMT_AUTODETECT);
 
         //!
         //! Open the file for read in rewindable mode.
@@ -91,11 +111,12 @@ namespace ts {
         //! @param [in] start_offset Offset in bytes from the beginning of the file
         //! where to start reading packets.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] format Expected format of the TS file.
         //! @return True on success, false on error.
         //! @see rewind()
         //! @see seek()
         //!
-        bool openRead(const UString& filename, uint64_t start_offset, Report& report);
+        bool openRead(const UString& filename, uint64_t start_offset, Report& report, Format format = FMT_AUTODETECT);
 
         //!
         //! Flags for open().
@@ -119,9 +140,10 @@ namespace ts {
         //! If @a filename is empty, @a flags cannot contain both READ and WRITE.
         //! @param [in] flags Bit mask of open flags.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] format Format of the TS file.
         //! @return True on success, false on error.
         //!
-        virtual bool open(const UString& filename, OpenFlags flags, Report& report);
+        virtual bool open(const UString& filename, OpenFlags flags, Report& report, Format format = FMT_AUTODETECT);
 
         //!
         //! Check if the file is open.
@@ -167,20 +189,28 @@ namespace ts {
         //! reading packets transparently loops back at end if file.
         //! @param [out] buffer Address of reception packet buffer.
         //! @param [in] max_packets Size of @a buffer in packets.
+        //! Also size of @a metadata in number of objects (when specified).
         //! @param [in,out] report Where to report errors.
+        //! @param [in,out] metadata Optional packet metadata. If the file format provides
+        //! time stamps, they are set in the metadata. Ignored if null pointer.
         //! @return The actual number of read packets. Returning zero means
         //! error or end of file repetition.
         //!
-        size_t read(TSPacket* buffer, size_t max_packets, Report& report);
+        size_t read(TSPacket* buffer, size_t max_packets, Report& report, TSPacketMetadata* metadata = nullptr);
 
         //!
         //! Write TS packets to the file.
         //! @param [in] buffer Address of first packet to write.
         //! @param [in] packet_count Number of packets to write.
+        //! Also size of @a metadata in number of objects (when specified).
         //! @param [in,out] report Where to report errors.
+        //! @param [in] metadata Optional packet metadata containing time stamps.
+        //! If the file format requires time stamps, @a metadata must not be a null
+        //! pointer and all packets must have a time stamp. Otherwise, the last
+        //! written timestamp is repeated.
         //! @return True on success, false on error.
         //!
-        bool write(const TSPacket* buffer, size_t packet_count, Report& report);
+        bool write(const TSPacket* buffer, size_t packet_count, Report& report, const TSPacketMetadata* metadata = nullptr);
 
         //!
         //! Abort any currenly read/write operation in progress.
@@ -220,34 +250,49 @@ namespace ts {
         //!
         PacketCounter getWriteCount() const { return _total_write; }
 
+        //!
+        //! Get the file format.
+        //! @return The file format.
+        //!
+        Format getFormat() const { return _format; }
+
+        //!
+        //! Get the file format as a string.
+        //! @return The file format as a string.
+        //!
+        UString getFormatString() const { return FormatEnum.name(_format); }
+
     protected:
-        UString       _filename;        //!< Input file name.
-        PacketCounter _total_read;      //!< Total read packets.
-        PacketCounter _total_write;     //!< Total written packets.
+        UString       _filename;       //!< Input file name.
+        PacketCounter _total_read;     //!< Total read packets.
+        PacketCounter _total_write;    //!< Total written packets.
 
     private:
-        size_t        _repeat;        //!< Repeat count (0 means infinite)
-        size_t        _counter;       //!< Current repeat count
-        uint64_t      _start_offset;  //!< Initial byte offset in file
-        volatile bool _is_open;       //!< Check if file is actually open
-        OpenFlags     _flags;         //!< Flags which were specified at open
-        int           _severity;      //!< Severity level for error reporting
-        volatile bool _at_eof;        //!< End of file has been reached
-        volatile bool _aborted;       //!< Operation has been aborted, no operation available
-        bool          _rewindable;    //!< Opened in rewindable mode
-        bool          _regular;       //!< Is a regular file (ie. not a pipe or special device)
+        size_t        _repeat;         //!< Repeat count (0 means infinite)
+        size_t        _counter;        //!< Current repeat count
+        uint64_t      _start_offset;   //!< Initial byte offset in file
+        volatile bool _is_open;        //!< Check if file is actually open
+        OpenFlags     _flags;          //!< Flags which were specified at open
+        int           _severity;       //!< Severity level for error reporting
+        volatile bool _at_eof;         //!< End of file has been reached
+        volatile bool _aborted;        //!< Operation has been aborted, no operation available
+        bool          _rewindable;     //!< Opened in rewindable mode
+        bool          _regular;        //!< Is a regular file (ie. not a pipe or special device)
+        Format        _format;         //!< File format.
+        uint64_t      _last_timestamp; //!< Last write time stamp in PCR units (M2TS files).
 #if defined(TS_WINDOWS)
-        ::HANDLE      _handle;        //!< File handle
+        ::HANDLE      _handle;         //!< File handle
 #else
-        int           _fd;            //!< File descriptor
+        int           _fd;             //!< File descriptor
 #endif
 
         // Internal methods
+        static size_t HeaderSize(Format);
         bool openInternal(bool reopen, Report& report);
         bool seekCheck(Report& report);
         bool seekInternal(uint64_t index, Report& report);
-        bool readInternal(void* buffer, size_t buffer_size, size_t& read_size, ErrorCode& error_code);
-        bool writeInternal(const void* data, size_t data_size, size_t& written_size, ErrorCode& error_code);
+        bool readInternal(void* buffer, size_t buffer_size, size_t& read_size, Report& report);
+        bool writeInternal(const void* data, size_t data_size, size_t& written_size, Report& report);
 
         // Inaccessible operations.
         TSFile& operator=(TSFile&) = delete;

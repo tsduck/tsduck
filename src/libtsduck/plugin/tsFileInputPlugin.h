@@ -64,17 +64,18 @@ namespace ts {
         //! @endcond
 
     private:
-        volatile bool _aborted;            // Set when abortInput() is set.
-        bool          _interleave;         // Read all files simultaneously with interleaving.
-        bool          _first_terminate;    // With _interleave, terminate when the first file terminates.
-        size_t        _interleave_chunk;   // Number of packets per chunk when _interleave.
-        size_t        _interleave_remain;  // Remaining packets to read in current chunk of current file.
-        size_t        _current_filename;   // Current file index in _filenames.
-        size_t        _current_file;       // Current file index in _files. Depends on _interleave.
-        size_t        _repeat_count;
-        uint64_t      _start_offset;
-        size_t        _base_label;
-        UStringVector _filenames;
+        volatile bool  _aborted;            // Set when abortInput() is set.
+        bool           _interleave;         // Read all files simultaneously with interleaving.
+        bool           _first_terminate;    // With _interleave, terminate when the first file terminates.
+        size_t         _interleave_chunk;   // Number of packets per chunk when _interleave.
+        size_t         _interleave_remain;  // Remaining packets to read in current chunk of current file.
+        size_t         _current_filename;   // Current file index in _filenames.
+        size_t         _current_file;       // Current file index in _files. Depends on _interleave.
+        size_t         _repeat_count;
+        uint64_t       _start_offset;
+        size_t         _base_label;
+        TSFile::Format _file_format;
+        UStringVector  _filenames;
         std::set<size_t>    _eof;          // Set of file indexes having reached end of file.
         std::vector<TSFile> _files;        // Array of open files, only one without interleave.
 

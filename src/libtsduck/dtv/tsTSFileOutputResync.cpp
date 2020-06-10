@@ -53,7 +53,7 @@ ts::TSFileOutputResync::~TSFileOutputResync()
 // Open method
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::open(const UString& filename, OpenFlags flags, Report& report)
+bool ts::TSFileOutputResync::open(const UString& filename, OpenFlags flags, Report& report, Format format)
 {
     // Forbid input access.
     if ((flags & READ) != 0) {
@@ -62,7 +62,7 @@ bool ts::TSFileOutputResync::open(const UString& filename, OpenFlags flags, Repo
     }
 
     // Invoke superclass for actual file opening. Force write mode.
-    const bool ok = TSFile::open(filename, flags | WRITE, report);
+    const bool ok = TSFile::open(filename, flags | WRITE, report, format);
 
     // Reset continuity counters.
     if (ok) {
@@ -77,7 +77,7 @@ bool ts::TSFileOutputResync::open(const UString& filename, OpenFlags flags, Repo
 // Write packets, update their continuity counters (packets are modified)
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::write(TSPacket* buffer, size_t packet_count, Report& report)
+bool ts::TSFileOutputResync::write(TSPacket* buffer, size_t packet_count, Report& report, const TSPacketMetadata* metadata)
 {
     // Update continuity counters
     for (size_t n = 0; n < packet_count; ++n) {
@@ -85,7 +85,7 @@ bool ts::TSFileOutputResync::write(TSPacket* buffer, size_t packet_count, Report
     }
 
     // Invoke superclass
-    return TSFile::write(buffer, packet_count, report);
+    return TSFile::write(buffer, packet_count, report, metadata);
 }
 
 
@@ -93,10 +93,10 @@ bool ts::TSFileOutputResync::write(TSPacket* buffer, size_t packet_count, Report
 // Write packets, force PID value
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::write(TSPacket* buffer, size_t packet_count, PID pid, Report& report)
+bool ts::TSFileOutputResync::write(TSPacket* buffer, size_t packet_count, PID pid, Report& report, const TSPacketMetadata* metadata)
 {
     for (size_t n = 0; n < packet_count; ++n) {
         buffer[n].setPID(pid);
     }
-    return write(buffer, packet_count, report);
+    return write(buffer, packet_count, report, metadata);
 }

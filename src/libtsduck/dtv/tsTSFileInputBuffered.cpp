@@ -42,6 +42,7 @@ const size_t ts::TSFileInputBuffered::MIN_BUFFER_SIZE;
 ts::TSFileInputBuffered::TSFileInputBuffered(size_t buffer_size) :
     TSFile(),
     _buffer(std::max(buffer_size, MIN_BUFFER_SIZE)),
+    _metadata(_buffer.size()),
     _first_index(0),
     _current_offset(0),
     _total_count(0)
@@ -70,6 +71,7 @@ bool ts::TSFileInputBuffered::setBufferSize(size_t buffer_size, Report& report)
     }
     else {
         _buffer.resize(std::max<size_t>(buffer_size, MIN_BUFFER_SIZE));
+        _metadata.resize(_buffer.size());
         return true;
     }
 }
@@ -79,7 +81,7 @@ bool ts::TSFileInputBuffered::setBufferSize(size_t buffer_size, Report& report)
 // Open file. Override TSFile::openRead().
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report)
+bool ts::TSFileInputBuffered::openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, Format format)
 {
     if (isOpen()) {
         report.error(u"file %s is already open", {getFileName()});
@@ -89,7 +91,7 @@ bool ts::TSFileInputBuffered::openRead(const UString& filename, size_t repeat_co
         _first_index = 0;
         _current_offset = 0;
         _total_count = 0;
-        return TSFile::openRead(filename, repeat_count, start_offset, report);
+        return TSFile::openRead(filename, repeat_count, start_offset, report, format);
     }
 }
 
@@ -98,10 +100,10 @@ bool ts::TSFileInputBuffered::openRead(const UString& filename, size_t repeat_co
 // Make sure that the generic open() returns an error.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::open(const UString& filename, OpenFlags flags, Report& report)
+bool ts::TSFileInputBuffered::open(const UString& filename, OpenFlags flags, Report& report, Format format)
 {
     // Accept read-only mode only.
-    return (flags & (READ | WRITE | APPEND)) == READ && openRead(filename, 1, 0, report);
+    return (flags & (READ | WRITE | APPEND)) == READ && openRead(filename, 1, 0, report, format);
 }
 
 
@@ -189,7 +191,7 @@ bool ts::TSFileInputBuffered::seekForward(size_t packet_count, Report& report)
 // Read TS packets. Override TSFile::read().
 //----------------------------------------------------------------------------
 
-size_t ts::TSFileInputBuffered::read(TSPacket* user_buffer, size_t max_packets, Report& report)
+size_t ts::TSFileInputBuffered::read(TSPacket* user_buffer, size_t max_packets, Report& report, TSPacketMetadata* user_metadata)
 {
     if (!isOpen()) {
         report.error(u"file not open");
@@ -201,6 +203,7 @@ size_t ts::TSFileInputBuffered::read(TSPacket* user_buffer, size_t max_packets, 
     assert(_first_index < buffer_size);
     assert(_current_offset <= _total_count);
     assert(_total_count <= buffer_size);
+    assert(_metadata.size() == buffer_size);
 
     // Total number of read packets (future returned value)
     size_t _in_packets = 0;
@@ -212,6 +215,10 @@ size_t ts::TSFileInputBuffered::read(TSPacket* user_buffer, size_t max_packets, 
         const size_t count = std::min(max_packets, buffer_size - current_index);
         assert(count > 0);
         TSPacket::Copy(user_buffer, &_buffer[current_index], count);
+        if (user_metadata != nullptr) {
+            TSPacketMetadata::Copy(user_metadata, &_metadata[current_index], count);
+            user_metadata += count;
+        }
         user_buffer += count;
         max_packets -= count;
         _current_offset += count;
@@ -219,16 +226,24 @@ size_t ts::TSFileInputBuffered::read(TSPacket* user_buffer, size_t max_packets, 
     }
 
     // Then, read the rest directly from the file into the user's buffer.
-    size_t user_count = TSFile::read(user_buffer, max_packets, report);
+    size_t user_count = TSFile::read(user_buffer, max_packets, report, user_metadata);
     _in_packets += user_count;
 
-    // Finally, read back the rest into our buffer. We do the exchanges that way
-    // to optimize the transfer. If the number of read packets is greater than
-    // our buffer size, it would be pointless to do many intermediate copies
-    // into our buffer.
+    // Finally, read back the rest into our buffer. We do the exchanges that way to
+    // optimize the transfer. If the number of read packets is greater than our buffer
+    // size, it would be pointless to do many intermediate copies into our buffer.
+    // Important: If the caller did not provide a metadata buffer, we reset the internal
+    // metadata. So, if the caller requests metadata in the next call, it won't get them.
+    // This means that an application shall always or never use metadata when reading a file.
     if (user_count >= buffer_size) {
         // Completely replace the buffer content.
         TSPacket::Copy(&_buffer[0], user_buffer + user_count - buffer_size, buffer_size);
+        if (user_metadata != nullptr) {
+            TSPacketMetadata::Copy(&_metadata[0], user_metadata + user_count - buffer_size, buffer_size);
+        }
+        else {
+            TSPacketMetadata::Reset(&_metadata[0], buffer_size);
+        }
         _first_index = 0;
         _current_offset = _total_count = buffer_size;
     }
@@ -238,9 +253,16 @@ size_t ts::TSFileInputBuffered::read(TSPacket* user_buffer, size_t max_packets, 
         while (user_count > 0 && _total_count < buffer_size) {
             assert(_current_offset == _total_count);
             const size_t index = (_first_index + _total_count) % buffer_size;
-            const size_t count = std::min (user_count, buffer_size - index);
+            const size_t count = std::min(user_count, buffer_size - index);
             assert (count > 0);
             TSPacket::Copy(&_buffer[index], user_buffer, count);
+            if (user_metadata != nullptr) {
+                TSPacketMetadata::Copy(&_metadata[index], user_metadata, count);
+                user_metadata += count;
+            }
+            else {
+                TSPacketMetadata::Reset(&_metadata[index], count);
+            }
             user_buffer += count;
             user_count -= count;
             _total_count += count;
@@ -254,6 +276,13 @@ size_t ts::TSFileInputBuffered::read(TSPacket* user_buffer, size_t max_packets, 
             const size_t count = std::min(user_count, buffer_size - _first_index);
             assert(count > 0);
             TSPacket::Copy(&_buffer[_first_index], user_buffer, count);
+            if (user_metadata != nullptr) {
+                TSPacketMetadata::Copy(&_metadata[_first_index], user_metadata, count);
+                user_metadata += count;
+            }
+            else {
+                TSPacketMetadata::Reset(&_metadata[_first_index], count);
+            }
             user_buffer += count;
             user_count -= count;
             _first_index = (_first_index + count) % buffer_size;

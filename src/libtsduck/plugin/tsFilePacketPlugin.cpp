@@ -45,6 +45,7 @@ ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Write packets to a file and pass them to next plugin", u"[options] file-name"),
     _name(),
     _flags(TSFile::NONE),
+    _file_format(TSFile::FMT_TS),
     _file()
 {
     option(u"", 0, STRING, 1, 1);
@@ -52,6 +53,11 @@ ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
 
     option(u"append", 'a');
     help(u"append", u"If the file already exists, append to the end of the file. By default, existing files are overwritten.");
+
+    option(u"format", 0, TSFile::FormatEnum);
+    help(u"format", u"name",
+         u"Specify the format of the created file. "
+         u"By default, the format is a standard TS file.");
 
     option(u"keep", 'k');
     help(u"keep", u"Keep existing file (abort if the specified file already exists). By default, existing files are overwritten.");
@@ -65,6 +71,7 @@ ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
 bool ts::FilePacketPlugin::getOptions()
 {
     getValue(_name);
+    _file_format = enumValue<TSFile::Format>(u"format", TSFile::FMT_TS);
     _flags = TSFile::WRITE | TSFile::SHARED;
     if (present(u"append")) {
         _flags |= TSFile::APPEND;
@@ -77,7 +84,7 @@ bool ts::FilePacketPlugin::getOptions()
 
 bool ts::FilePacketPlugin::start()
 {
-    return _file.open(_name, _flags, *tsp);
+    return _file.open(_name, _flags, *tsp, _file_format);
 }
 
 bool ts::FilePacketPlugin::stop()
@@ -87,5 +94,5 @@ bool ts::FilePacketPlugin::stop()
 
 ts::ProcessorPlugin::Status ts::FilePacketPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    return _file.write(&pkt, 1, *tsp) ? TSP_OK : TSP_END;
+    return _file.write(&pkt, 1, *tsp, &pkt_data) ? TSP_OK : TSP_END;
 }

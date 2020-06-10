@@ -53,6 +53,7 @@ ts::FileInputPlugin::FileInputPlugin(TSP* tsp_) :
     _repeat_count(1),
     _start_offset(0),
     _base_label(0),
+    _file_format(TSFile::FMT_AUTODETECT),
     _filenames(),
     _eof(),
     _files()
@@ -73,6 +74,15 @@ ts::FileInputPlugin::FileInputPlugin(TSP* tsp_) :
          u"With --interleave, terminate when any file reaches the end of file. "
          u"By default, continue reading until the last file reaches the end of file "
          u"(other files are replaced with null packets after their end of file).");
+
+    option(u"format", 0, TSFile::FormatEnum);
+    help(u"format", u"name",
+         u"Specify the format of the input files. "
+         u"By default, the format is automatically and independently detected for each file. "
+         u"But the auto-detection may fail in some cases "
+         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
+         u"Using this option forces a specific format. "
+         u"If a specific format is specified, all input files must have the same format.");
 
     option(u"infinite", 'i');
     help(u"infinite",
@@ -121,6 +131,7 @@ bool ts::FileInputPlugin::getOptions()
     _interleave_chunk = intValue<size_t>(u"interleave", 1);
     _first_terminate = present(u"first-terminate");
     _base_label = intValue<size_t>(u"label-base", TSPacketMetadata::LABEL_MAX + 1);
+    _file_format = enumValue<TSFile::Format>(u"format", TSFile::FMT_AUTODETECT);
 
     // If there is no file, then this is the standard input, an empty file name.
     if (_filenames.empty()) {
@@ -161,7 +172,7 @@ bool ts::FileInputPlugin::openFile(size_t name_index, size_t file_index)
     }
 
     // Actually open the file.
-    return _files[file_index].openRead(name, _repeat_count, _start_offset, *tsp);
+    return _files[file_index].openRead(name, _repeat_count, _start_offset, *tsp, _file_format);
 }
 
 
@@ -277,7 +288,7 @@ size_t ts::FileInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data
         }
         else {
             // Read packets from the file.
-            count = _files[_current_file].read(buffer + read_count, count, *tsp);
+            count = _files[_current_file].read(buffer + read_count, count, *tsp, pkt_data + read_count);
         }
 
         // Mark all read packets with a label.

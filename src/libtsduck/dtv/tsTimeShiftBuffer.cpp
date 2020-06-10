@@ -177,8 +177,10 @@ bool ts::TimeShiftBuffer::close(Report& report)
 // Push a packet in the time-shift buffer and pull the oldest one.
 //----------------------------------------------------------------------------
 
-bool ts::TimeShiftBuffer::shift(TSPacket& pkt, Report& report)
+bool ts::TimeShiftBuffer::shift(TSPacket& pkt, Report& report, TSPacketMetadata* metadata)
 {
+    //@@@@@@@@ process metadata.
+
     if (!_is_open) {
         report.error(u"time-shift buffer not open");
         return false;
