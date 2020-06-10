@@ -605,7 +605,7 @@ bool ts::TSFile::readInternal(void* buffer, size_t request_size, size_t& read_si
 #else
 
         // UNIX implementation
-        ssize_t insize = ::read(_fd, buffer, buffer_size);
+        ssize_t insize = ::read(_fd, data, request_size);
         if (insize > 0) {
             // Normal case: some data were read
             assert(size_t(insize) <= request_size);
