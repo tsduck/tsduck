@@ -195,6 +195,20 @@ namespace ts {
         uint8_t lastCC(PID pid) const;
 
         //!
+        //! Get the last duplicate packet count for a PID.
+        //! @param [in] pid The PID to check.
+        //! @return The last duplicate packet count for the PID or ts::NPOS when the PID is not filtered.
+        //!
+        size_t dupCount(PID pid) const;
+
+        //!
+        //! Get the last transport stream packet (that was passed to @ref feedPacket) for a PID.
+        //! @param [in] pid The PID to check.
+        //! @return The last packet for the PID or ts::NullPacket when the PID is not filtered.
+        //!
+        TSPacket lastPacket(PID pid) const;
+
+        //!
         //! Compute the number of missing packets between two continuity counters.
         //! @param [in] cc1 First continuity counter.
         //! @param [in] cc2 Second continuity counter.
