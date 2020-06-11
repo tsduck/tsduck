@@ -44,7 +44,6 @@ namespace ts {
     //!
     class TSDUCKDLL ContinuityAnalyzer
     {
-        TS_NOCOPY(ContinuityAnalyzer);
     public:
         //!
         //! Constructor.
