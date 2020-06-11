@@ -89,7 +89,8 @@ namespace ts {
                              SocketAddress& sender,
                              SocketAddress& destination,
                              const AbortInterface* abort = nullptr,
-                             Report& report = CERR) override;
+                             Report& report = CERR,
+                             MicroSecond* timestamp = nullptr) override;
 
     private:
         bool                    _with_short_options;
@@ -101,6 +102,7 @@ namespace ts {
         bool                    _reuse_port;         // Reuse port socket option.
         bool                    _default_interface;  // Use default local interface.
         bool                    _use_first_source;   // Use socket address of first received packet to filter subsequent packets.
+        bool                    _recv_timestamps;    // Get receive timestamps.
         size_t                  _recv_bufsize;       // Socket receive buffer size.
         MilliSecond             _recv_timeout;       // Receive timeout.
         SocketAddress           _use_source;         // Filter on this socket address of sender (can be a simple filter of an SSM source).

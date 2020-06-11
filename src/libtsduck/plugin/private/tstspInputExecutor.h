@@ -36,6 +36,7 @@
 #include "tstspPluginExecutor.h"
 #include "tsInputPlugin.h"
 #include "tsPCRAnalyzer.h"
+#include "tsMonotonic.h"
 #include "tsWatchDog.h"
 
 namespace ts {
@@ -96,6 +97,7 @@ namespace ts {
             bool         _use_dts_analyzer;       // Use DTS analyzer, not PCR analyzer.
             WatchDog     _watchdog;               // Watchdog when plugin does not support receive timeout.
             bool         _use_watchdog;           // The watchdog shall be used.
+            Monotonic    _start_time;             // Creation time in a monotonic clock.
 
             // Inherited from Thread
             virtual void main() override;

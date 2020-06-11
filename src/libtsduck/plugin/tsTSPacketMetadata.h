@@ -196,6 +196,14 @@ namespace ts {
         void clearAllLabels() { _labels.reset(); }
 
         //!
+        //! Get the list of labels as a string, typically for debug messages.
+        //! @param [in] separator Separator between labale values.
+        //! @param [in] none String to display when there is no label set.
+        //! @return List of labels as a string.
+        //!
+        UString labelsString(const UString& separator = u" ", const UString& none = u"none") const;
+
+        //!
         //! Get the optional input time stamp of the packet.
         //! @return The input time stamp in PCR units (27 MHz) or INVALID_PCR if there is none.
         //! - The input time stamp is optional. It may be set by the input plugin or by @c tsp
@@ -235,6 +243,13 @@ namespace ts {
         //! @see getInputTimeStamp()
         //!
         void setInputTimeStamp(uint64_t time_stamp, uint64_t ticks_per_second);
+
+        //!
+        //! Get the input time stamp as a string, typically for debug messages.
+        //! @param [in] none String to display when there is no label set.
+        //! @return Input time stamp as a string.
+        //!
+        UString inputTimeStampString(const UString& none = u"none") const;
 
         //!
         //! Copy contiguous TS packet metadata.

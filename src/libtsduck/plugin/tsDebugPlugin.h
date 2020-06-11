@@ -28,20 +28,33 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Debug packet processor plugin for tsp, display various traces.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 22
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1849
+#include "tsProcessorPlugin.h"
+
+namespace ts {
+    //!
+    //! Debug packet processor plugin for tsp.
+    //! @ingroup plugin
+    //!
+    class TSDUCKDLL DebugPlugin: public ProcessorPlugin
+    {
+        TS_NOBUILD_NOCOPY(DebugPlugin);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
+        //!
+        DebugPlugin(TSP* tsp);
+
+        // Implementation of plugin API
+        virtual bool getOptions() override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+
+    private:
+        UString _tag;      // Message tag
+    };
+}

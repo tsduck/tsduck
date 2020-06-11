@@ -247,6 +247,7 @@ bool ts::SRTSocket::close(ts::Report& report) NOSRT_ERROR
 bool ts::SRTSocket::loadArgs(ts::DuckContext& duck, ts::Args& args) { return true; }
 bool ts::SRTSocket::send(const void* data, size_t size, ts::Report& report) NOSRT_ERROR
 bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, ts::Report& report) NOSRT_ERROR
+bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, MicroSecond& timestamp, ts::Report& report) NOSRT_ERROR
 bool ts::SRTSocket::getSockOpt(int optName, const char* optNameStr, void* optval, int& optlen, ts::Report& report) const NOSRT_ERROR
 int  ts::SRTSocket::getSocket() const { return -1; }
 bool ts::SRTSocket::getMessageApi() const { return false; }
@@ -779,12 +780,23 @@ bool ts::SRTSocket::Guts::send(const void* data, size_t size, const ts::SocketAd
 
 bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, ts::Report& report)
 {
-    const int ret = srt_recv(_guts->sock, reinterpret_cast<char*>(data), int(max_size));
+    MicroSecond timestamp = 0; // unused
+    return receive(data, max_size, ret_size, timestamp, report);
+}
+
+bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, MicroSecond& timestamp, ts::Report& report)
+{
+    // Message data
+    ::SRT_MSGCTRL ctrl;
+    TS_ZERO(ctrl);
+
+    const int ret = srt_recvmsg2(_guts->sock, reinterpret_cast<char*>(data), int(max_size), &ctrl);
     if (ret < 0) {
         report.error(u"error during srt_recv(), msg: %s", { srt_getlasterror_str() });
         return false;
     }
     ret_size = size_t(ret);
+    timestamp = ctrl.srctime == 0 ? -1 : MicroSecond(ctrl.srctime);
     return true;
 }
 

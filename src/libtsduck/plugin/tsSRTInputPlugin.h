@@ -64,7 +64,7 @@ namespace ts {
 
     protected:
         // Implementation of AbstractDatagramInputPlugin.
-        virtual bool receiveDatagram(void* buffer, size_t buffer_size, size_t& ret_size) override;
+        virtual bool receiveDatagram(void* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp) override;
 
     private:
         SRTSocket     _sock;

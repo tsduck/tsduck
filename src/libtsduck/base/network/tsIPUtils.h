@@ -182,7 +182,7 @@ namespace ts {
     // Real-time Transport Protocol (RTP)
     //------------------------------------------------------------------------
 
-    constexpr size_t   RTP_HEADER_SIZE =    12;  //!< Size in bytes of the fixed posrt of the RTP header.
+    constexpr size_t   RTP_HEADER_SIZE =    12;  //!< Size in bytes of the fixed part of the RTP header.
     constexpr uint8_t  RTP_PT_MP2T     =    33;  //!< RTP payload type for MPEG2-TS.
     constexpr uint64_t RTP_RATE_MP2T   = 90000;  //!< RTP clock rate for MPEG2-TS.
 }

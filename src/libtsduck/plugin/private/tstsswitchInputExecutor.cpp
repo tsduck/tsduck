@@ -58,7 +58,8 @@ ts::tsswitch::InputExecutor::InputExecutor(const InputSwitcherArgs& opt,
     _stopRequest(false),
     _terminated(false),
     _outFirst(0),
-    _outCount(0)
+    _outCount(0),
+    _start_time(true) // initialized with current system time
 {
     // Make sure that the input plugins display their index.
     setLogName(UString::Format(u"%s[%d]", {pluginName(), _pluginIndex}));
@@ -267,6 +268,15 @@ void ts::tsswitch::InputExecutor::main()
                 break;
             }
             addPluginPackets(inCount);
+
+            // Fill input time stamps with monotonic clock if none was provided by the input plugin.
+            // Only check the first returned packet. Assume that the input plugin generates time stamps for all or none.
+            if (!_metadata[inFirst].hasInputTimeStamp()) {
+                const NanoSecond current = Monotonic(true) - _start_time;
+                for (size_t n = 0; n < inCount; ++n) {
+                    _metadata[inFirst + n].setInputTimeStamp(current, NanoSecPerSec);
+                }
+            }
 
             // Signal the presence of received packets.
             {

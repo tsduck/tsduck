@@ -47,6 +47,7 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report, bool with_short_options, bool d
     _reuse_port(false),
     _default_interface(false),
     _use_first_source(false),
+    _recv_timestamps(true), // currently hardcoded, is there a reason to disable it?
     _recv_bufsize(0),
     _recv_timeout(-1),
     _use_source(),
@@ -303,6 +304,7 @@ bool ts::UDPReceiver::open(ts::Report& report)
     bool ok =
         UDPSocket::open(report) &&
         reusePort(_reuse_port, report) &&
+        setReceiveTimestamps(_recv_timestamps, report) &&
         (_recv_bufsize <= 0 || setReceiveBufferSize(_recv_bufsize, report)) &&
         (_recv_timeout < 0 || setReceiveTimeout(_recv_timeout, report)) &&
         bind(local_addr, report);
@@ -344,20 +346,21 @@ bool ts::UDPReceiver::receive(void* data,
                               ts::SocketAddress& sender,
                               ts::SocketAddress& destination,
                               const ts::AbortInterface* abort,
-                              ts::Report& report)
+                              ts::Report& report,
+                              MicroSecond* timestamp)
 {
     // Loop on packet reception until one matching filtering criteria is found.
     for (;;) {
 
         // Wait for a UDP message from the superclass.
-        if (!UDPSocket::receive(data, max_size, ret_size, sender, destination, abort, report)) {
+        if (!UDPSocket::receive(data, max_size, ret_size, sender, destination, abort, report, timestamp)) {
             return false;
         }
 
         // Debug (level 2) message for each message.
         if (report.maxSeverity() >= 2) {
             // Prior report level checking to avoid evaluating parameters when not necessary.
-            report.log(2, u"received UDP packet, source: %s, destination: %s", {sender, destination});
+            report.log(2, u"received UDP packet, source: %s, destination: %s, timestamp: %'d", {sender, destination, timestamp != nullptr ? *timestamp : -1});
         }
 
         // Check the destination address to exclude packets from other streams.
