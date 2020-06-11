@@ -44,7 +44,6 @@ namespace ts {
     //!
     class TSDUCKDLL ContinuityAnalyzer
     {
-        TS_NOCOPY(ContinuityAnalyzer);
     public:
         //!
         //! Constructor.
@@ -193,6 +192,20 @@ namespace ts {
         //! This is the output CC value, possibly modified.
         //!
         uint8_t lastCC(PID pid) const;
+
+        //!
+        //! Get the last duplicate packet count for a PID.
+        //! @param [in] pid The PID to check.
+        //! @return The last duplicate packet count for the PID or ts::NPOS when the PID is not filtered.
+        //!
+        size_t dupCount(PID pid) const;
+
+        //!
+        //! Get the last transport stream packet (that was passed to @ref feedPacket) for a PID.
+        //! @param [in] pid The PID to check.
+        //! @return The last packet for the PID or ts::NullPacket when the PID is not filtered.
+        //!
+        TSPacket lastPacket(PID pid) const;
 
         //!
         //! Compute the number of missing packets between two continuity counters.

@@ -134,7 +134,7 @@ bool ts::ContinuityAnalyzer::hasPID(PID pid) const
 
 
 //----------------------------------------------------------------------------
-// Get the first and last CC in a PID.
+// PIDState access
 //----------------------------------------------------------------------------
 
 uint8_t ts::ContinuityAnalyzer::firstCC(PID pid) const
@@ -147,6 +147,18 @@ uint8_t ts::ContinuityAnalyzer::lastCC(PID pid) const
 {
     auto it = _pid_states.find(pid);
     return it == _pid_states.end() ? INVALID_CC : it->second.last_cc_out;
+}
+
+size_t ts::ContinuityAnalyzer::dupCount(PID pid) const
+{
+    auto it = _pid_states.find(pid);
+    return it == _pid_states.end() ? NPOS : it->second.dup_count;
+}
+
+ts::TSPacket ts::ContinuityAnalyzer::lastPacket(PID pid) const
+{
+    auto it = _pid_states.find(pid);
+    return it == _pid_states.end() ? NullPacket : it->second.last_pkt_in;
 }
 
 
