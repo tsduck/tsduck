@@ -52,6 +52,24 @@ namespace ts {
         //!
         explicit ContinuityAnalyzer(const PIDSet& pid_filter = NoPID, Report* report = nullptr);
 
+        // Implementation note:
+        // "= default" definitions required for copy constructor and assignments so that
+        // the compiler understands that we know what we do with the pointer member _report.
+        // Important: take care in case of internal modification, do not break the ownership
+        // of pointers because the compiler will no longer complain.
+
+        //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        ContinuityAnalyzer(const ContinuityAnalyzer& other) = default;
+
+        //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //!
+        ContinuityAnalyzer& operator=(const ContinuityAnalyzer& other) = default;
+
         //!
         //! Reset all collected information.
         //! Do not change processing options (display and/or fix errors).
@@ -201,11 +219,18 @@ namespace ts {
         size_t dupCount(PID pid) const;
 
         //!
-        //! Get the last transport stream packet (that was passed to @ref feedPacket) for a PID.
+        //! Get the last transport stream packet that was passed to feedPacket() for a PID.
         //! @param [in] pid The PID to check.
         //! @return The last packet for the PID or ts::NullPacket when the PID is not filtered.
         //!
         TSPacket lastPacket(PID pid) const;
+
+        //!
+        //! Get the last transport stream packet that was passed to feedPacket() for a PID.
+        //! @param [in] pid The PID to check.
+        //! @param [out] packet The last packet for the PID or ts::NullPacket when the PID is not filtered.
+        //!
+        void getLastPacket(PID pid, TSPacket& packet) const;
 
         //!
         //! Compute the number of missing packets between two continuity counters.

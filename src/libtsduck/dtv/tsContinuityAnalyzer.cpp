@@ -155,10 +155,17 @@ size_t ts::ContinuityAnalyzer::dupCount(PID pid) const
     return it == _pid_states.end() ? NPOS : it->second.dup_count;
 }
 
-ts::TSPacket ts::ContinuityAnalyzer::lastPacket(PID pid) const
+void ts::ContinuityAnalyzer::getLastPacket(PID pid, TSPacket& packet) const
 {
     auto it = _pid_states.find(pid);
-    return it == _pid_states.end() ? NullPacket : it->second.last_pkt_in;
+    packet = it == _pid_states.end() ? NullPacket : it->second.last_pkt_in;
+}
+    
+ts::TSPacket ts::ContinuityAnalyzer::lastPacket(PID pid) const
+{
+    TSPacket pkt;
+    getLastPacket(pid, pkt);
+    return pkt;
 }
 
 
