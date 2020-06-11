@@ -6,9 +6,13 @@ VERSION 3.22-1843
 
 [IMP] Improvements on existing commands and plugins:
 
+  * The "tsp" command now keeps track of input time-stamps for each packet
+    and propagate the information to all plugins (see improvement in plugin
+    "pcrverify").
   * New options in exiting commands and plugins:
     - Option --format in plugin "file" (input, output and packet processor).
     - Option --size-of-packet in "tsftrunc".
+    - Options --input-synchronous and --jitter-unreal in plugin "pcrverify".
 
 [BUG] Bug fixes:
 
