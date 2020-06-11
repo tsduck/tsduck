@@ -26,22 +26,52 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsDebugPlugin.h"
+#include "tsPluginRepository.h"
+TSDUCK_SOURCE;
+
+TS_REGISTER_PROCESSOR_PLUGIN(u"debug", ts::DebugPlugin);
+
+
+//----------------------------------------------------------------------------
+// Packet processor constructor
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 22
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1849
+ts::DebugPlugin::DebugPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Debug traces", u"[options]"),
+    _tag()
+{
+    option(u"tag", 't', STRING);
+    help(u"tag", u"'string'",
+         u"Message tag to be displayed with each debug message. "
+         u"Useful when the plugin is used several times in the same process.");
+}
+
+
+//----------------------------------------------------------------------------
+// Get options methods
+//----------------------------------------------------------------------------
+
+bool ts::DebugPlugin::getOptions()
+{
+    _tag = value(u"tag");
+    if (!_tag.empty()) {
+        _tag += u": ";
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Packet processing.
+//----------------------------------------------------------------------------
+
+ts::ProcessorPlugin::Status ts::DebugPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+{
+    tsp->verbose(u"%sPID: 0x%0X, labels: %s, timestamp: %s", {
+                 _tag, pkt.getPID(),
+                 pkt_data.labelsString(),
+                 pkt_data.inputTimeStampString()});
+    return TSP_OK;
+}

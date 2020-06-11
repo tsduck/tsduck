@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsInputPlugin.h"
+#include "tsTSPacketMetadata.h"
 #include "tsByteBlock.h"
 #include "tsTime.h"
 
@@ -72,9 +73,10 @@ namespace ts {
         //! @param [out] buffer Address of the buffer for the received message.
         //! @param [in] buffer_size Size in bytes of the reception buffer.
         //! @param [out] ret_size Size in bytes of the received message. Will never be larger than @a buffer_size.
+        //! @param [out] timestamp Receive timestamp in micro-seconds or -1 if not available.
         //! @return True on success, false on error.
         //!
-        virtual bool receiveDatagram(void* buffer, size_t buffer_size, size_t& ret_size) = 0;
+        virtual bool receiveDatagram(void* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp) = 0;
 
     private:
         MilliSecond   _eval_time;          // Bitrate evaluation interval in milli-seconds
@@ -86,8 +88,10 @@ namespace ts {
         PacketCounter _packets_0;          // Number of received packets since _start_0
         Time          _start_1;            // Start of previous bitrate evaluation period
         PacketCounter _packets_1;          // Number of received packets since _start_1
-        size_t        _inbuf_count;        // Remaining TS packets in inbuf
-        size_t        _inbuf_next;         // Index in inbuf of next TS packet to return
+        size_t        _inbuf_count;        // Number of remaining TS packets in inbuf
+        size_t        _inbuf_next;         // Byte index in _inbuf of next TS packet to return
+        size_t        _mdata_next;         // Index in _mdata of next TS packet metadata to return
         ByteBlock     _inbuf;              // Input buffer
+        TSPacketMetadataVector _mdata;     // Metadata for packets in _inbuf
     };
 }

@@ -113,6 +113,17 @@ namespace ts {
         bool receive(void* data, size_t max_size, size_t& ret_size, Report& report = CERR);
 
         //!
+        //! Receive a message with timestamp.
+        //! @param [out] data Address of the buffer for the received message.
+        //! @param [in] max_size Size in bytes of the reception buffer.
+        //! @param [out] ret_size Size in bytes of the received message. Will never be larger than @a max_size.
+        //! @param [out] timestamp Source timestamp in micro-seconds, negative if not available.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
+        bool receive(void* data, size_t max_size, size_t& ret_size, MicroSecond& timestamp, Report& report = CERR);
+
+        //!
         //! Get SRT option.
         //! @param [in] optName Option name as enumeration. The possible values for @a optName are given
         //! by the enumeration type SRT_SOCKOPT in libsrt. The profile of this method uses "int" to remain

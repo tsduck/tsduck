@@ -29,6 +29,7 @@
 
 #include "tsAbstractDatagramInputPlugin.h"
 #include "tsSysUtils.h"
+#include "tsIPUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -49,7 +50,9 @@ ts::AbstractDatagramInputPlugin::AbstractDatagramInputPlugin(TSP* tsp_, size_t b
     _packets_1(0),
     _inbuf_count(0),
     _inbuf_next(0),
-    _inbuf(buffer_size)
+    _mdata_next(0),
+    _inbuf(std::max(buffer_size, 7 * PKT_SIZE)),
+    _mdata(_inbuf.size() / PKT_SIZE)
 {
     option(u"display-interval", 'd', POSITIVE);
     help(u"display-interval",
@@ -96,7 +99,7 @@ bool ts::AbstractDatagramInputPlugin::getOptions()
 bool ts::AbstractDatagramInputPlugin::start()
 {
     // Initialize working data.
-    _inbuf_count = _inbuf_next = 0;
+    _inbuf_count = _inbuf_next = _mdata_next = 0;
     _start = _start_0 = _start_1 = _next_display = Time::Epoch;
     _packets = _packets_0 = _packets_1 = 0;
     return true;
@@ -128,6 +131,8 @@ ts::BitRate ts::AbstractDatagramInputPlugin::getBitrate()
 
 size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
+    MicroSecond timestamp = -1;
+
     // Check if we receive new packets or process remain of previous buffer.
     bool new_packets = false;
 
@@ -137,7 +142,7 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
 
         // Wait for a datagram message
         size_t insize = 0;
-        if (!receiveDatagram(_inbuf.data(), _inbuf.size(), insize)) {
+        if (!receiveDatagram(_inbuf.data(), _inbuf.size(), insize, timestamp)) {
             return 0;
         }
 
@@ -145,6 +150,29 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
         new_packets = TSPacket::Locate(_inbuf.data(), insize, _inbuf_next, _inbuf_count);
 
         if (new_packets) {
+
+            // If no timestamp was returned by the kernel for the datagram, look for a RTP header before the first packet.
+            // There is no clear proof of the presence of the RTP header. We check if the header size is large enough
+            // for an RTP header and if the "RTP payload type" is MPEG-2 TS.
+            const bool use_rtp_timestamp = timestamp < 0 && _inbuf_next >= RTP_HEADER_SIZE && (_inbuf[1] & 0x7F) == RTP_PT_MP2T;
+            const uint32_t rtp_timestamp = use_rtp_timestamp ? GetUInt32(_inbuf.data() + 4) : 0;
+
+            // Build time stamps in packet metadata.
+            _mdata_next = 0;
+            for (size_t i = 0; i < _inbuf_count; ++i) {
+                if (use_rtp_timestamp) {
+                    // RTP time stamp unit is 90 kHz (RTP_RATE_MP2T)
+                    _mdata[i].setInputTimeStamp(rtp_timestamp, RTP_RATE_MP2T);
+                }
+                else if (timestamp >= 0) {
+                    // IP time stamp unit is microseconds.
+                    _mdata[i].setInputTimeStamp(uint64_t(timestamp), MicroSecPerSec);
+                }
+                else {
+                    _mdata[i].clearInputTimeStamp();
+                }
+            }
+
             break; // found packets.
         }
 
@@ -195,8 +223,10 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
     // Return packets from the input buffer
     size_t pkt_cnt = std::min(_inbuf_count, max_packets);
     TSPacket::Copy(buffer, _inbuf.data() + _inbuf_next, pkt_cnt);
+    TSPacketMetadata::Copy(pkt_data, &_mdata[_mdata_next], pkt_cnt);
     _inbuf_count -= pkt_cnt;
     _inbuf_next += pkt_cnt * PKT_SIZE;
+    _mdata_next += pkt_cnt;
 
     return pkt_cnt;
 }

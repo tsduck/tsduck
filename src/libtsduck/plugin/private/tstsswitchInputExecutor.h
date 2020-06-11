@@ -38,6 +38,7 @@
 #include "tsInputPlugin.h"
 #include "tsMutex.h"
 #include "tsCondition.h"
+#include "tsMonotonic.h"
 
 namespace ts {
     namespace tsswitch {
@@ -131,6 +132,7 @@ namespace ts {
             bool                     _terminated;    // Terminate thread.
             size_t                   _outFirst;      // Index of first packet to output in _buffer.
             size_t                   _outCount;      // Number of packets to output, not always contiguous, may wrap up.
+            Monotonic                _start_time;    // Creation time in a monotonic clock.
 
             // Implementation of Thread.
             virtual void main() override;

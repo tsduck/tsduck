@@ -100,6 +100,30 @@ void ts::TSPacketMetadata::clearLabels(const LabelSet& mask)
 
 
 //----------------------------------------------------------------------------
+// Get the list of labels as a string, typically for debug messages.
+//----------------------------------------------------------------------------
+
+ts::UString ts::TSPacketMetadata::labelsString(const UString& separator, const UString& none) const
+{
+    if (_labels.none()) {
+        return none;
+    }
+    else {
+        UString str;
+        for (size_t lab = 0; lab < _labels.size(); ++lab) {
+            if (_labels.test(lab)) {
+                if (!str.empty()) {
+                    str.append(separator);
+                }
+                str.append(UString::Decimal(lab));
+            }
+        }
+        return str;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Input time stamp operations
 //----------------------------------------------------------------------------
 
@@ -131,6 +155,11 @@ void ts::TSPacketMetadata::setInputTimeStamp(uint64_t time_stamp, uint64_t ticks
         // In which case, the PCR value will warp at another value than PCR_SCALE.
         _input_ts = time_stamp % PCR_SCALE;
     }
+}
+
+ts::UString ts::TSPacketMetadata::inputTimeStampString(const UString& none) const
+{
+    return _input_ts == INVALID_PCR ? none : UString::Decimal(_input_ts);
 }
 
 

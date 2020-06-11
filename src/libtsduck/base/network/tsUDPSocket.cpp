@@ -35,6 +35,11 @@
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 
+// Network timestampting feature in Linux.
+#if defined(TS_LINUX)
+#include <linux/net_tstamp.h>
+#endif
+
 // Furiously idiotic Windows feature, see comment in receiveOne()
 #if defined(TS_WINDOWS)
 volatile ::LPFN_WSARECVMSG ts::UDPSocket::_wsaRevcMsg = 0;
@@ -219,6 +224,26 @@ bool ts::UDPSocket::setTOS(int tos, Report& report)
         report.error(u"socket option TOS: " + SocketErrorCodeMessage());
         return false;
     }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Enable or disable the generation of receive timestamps.
+//----------------------------------------------------------------------------
+
+bool ts::UDPSocket::setReceiveTimestamps(bool on, Report& report)
+{
+    // The option exists only on Linux and is silently ignored on other systems.
+#if defined(TS_LINUX)
+    // Set SO_TIMESTAMPNS option which reports timestamps in nanoseconds (struct timespec).
+    int enable = int(on);
+    if (::setsockopt(getSocket(), SOL_SOCKET, SO_TIMESTAMPNS, &enable, sizeof(enable)) != 0) {
+        report.error(u"socket option SO_TIMESTAMPNS: " + SocketErrorCodeMessage());
+        return false;
+    }
+#endif
+
     return true;
 }
 
@@ -416,13 +441,19 @@ bool ts::UDPSocket::receive(void* data,
                             SocketAddress& sender,
                             SocketAddress& destination,
                             const AbortInterface* abort,
-                            Report& report)
+                            Report& report,
+                            MicroSecond* timestamp)
 {
+    // Clear timestamp if specified.
+    if (timestamp != nullptr) {
+        *timestamp = -1;
+    }
+
     // Loop on unsollicited interrupts
     for (;;) {
 
         // Wait for a message.
-        const SocketErrorCode err = receiveOne(data, max_size, ret_size, sender, destination, report);
+        const SocketErrorCode err = receiveOne(data, max_size, ret_size, sender, destination, report, timestamp);
 
         if (abort != nullptr && abort->aborting()) {
             // Aborting, no error message.
@@ -457,7 +488,13 @@ bool ts::UDPSocket::receive(void* data,
 // Perform one receive operation. Hide the system mud.
 //----------------------------------------------------------------------------
 
-ts::SocketErrorCode ts::UDPSocket::receiveOne(void* data, size_t max_size, size_t& ret_size, SocketAddress& sender, SocketAddress& destination, Report& report)
+ts::SocketErrorCode ts::UDPSocket::receiveOne(void* data,
+                                              size_t max_size,
+                                              size_t& ret_size,
+                                              SocketAddress& sender,
+                                              SocketAddress& destination,
+                                              Report& report,
+                                              MicroSecond* timestamp)
 {
     // Clear returned values
     ret_size = 0;
@@ -568,10 +605,25 @@ ts::SocketErrorCode ts::UDPSocket::receiveOne(void* data, size_t max_size, size_
 
     // Browse returned ancillary data.
     for (::cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr); cmsg != nullptr; cmsg = CMSG_NXTHDR(&hdr, cmsg)) {
+
+        // Look for destination IP address.
         if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::in_pktinfo)) {
             const ::in_pktinfo* info = reinterpret_cast<const ::in_pktinfo*>(CMSG_DATA(cmsg));
             destination = SocketAddress(info->ipi_addr, _local_address.port());
         }
+
+        // On Linux, look for receive timestamp.
+#if defined(TS_LINUX)
+        else if (timestamp != nullptr && cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SO_TIMESTAMPNS && cmsg->cmsg_len >= sizeof(::timespec)) {
+            // System time stamp in nanosecond.
+            const ::timespec* ts = reinterpret_cast<const ::timespec*>(CMSG_DATA(cmsg));
+            const NanoSecond nano = NanoSecond(ts->tv_sec) * NanoSecPerSec + NanoSecond(ts->tv_nsec);
+            // System time stamp is valid when not zero, convert it to micro-seconds.
+            if (nano != 0) {
+                *timestamp = nano / NanoSecPerMicroSec;
+            }
+        }
+#endif
     }
 
     TS_POP_WARNING()

@@ -59,7 +59,8 @@ ts::tsp::InputExecutor::InputExecutor(const TSProcessorArgs& options,
     _dts_analyzer(),
     _use_dts_analyzer(false),
     _watchdog(this, options.receive_timeout, 0, *this),
-    _use_watchdog(false)
+    _use_watchdog(false),
+    _start_time(true) // initialized with current system time
 {
     // Configure PTS/DTS analyze
     _dts_analyzer.resetAndUseDTS(MIN_ANALYZE_PID, MIN_ANALYZE_DTS);
@@ -244,6 +245,15 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(size_t index, size_t max_packe
     size_t count = _input->receive(pkt, data, max_packets);
     if (_use_watchdog) {
         _watchdog.suspend();
+    }
+
+    // Fill input time stamps with monotonic clock if none was provided by the input plugin.
+    // Only check the first returned packet. Assume that the input plugin generates time stamps for all or none.
+    if (count > 0 && !data[0].hasInputTimeStamp()) {
+        const NanoSecond current = Monotonic(true) - _start_time;
+        for (size_t n = 0; n < count; ++n) {
+            data[n].setInputTimeStamp(current, NanoSecPerSec);
+        }
     }
 
     // Validate sync byte (0x47) at beginning of each packet

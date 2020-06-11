@@ -165,6 +165,7 @@
 #include "tsDCCDepartingRequestDescriptor.h"
 #include "tsDCCSCT.h"
 #include "tsDCCT.h"
+#include "tsDebugPlugin.h"
 #include "tsDeferredAssociationTagsDescriptor.h"
 #include "tsDektecControl.h"
 #include "tsDektecDeviceInfo.h"
