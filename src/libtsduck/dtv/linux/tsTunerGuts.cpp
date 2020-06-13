@@ -232,7 +232,7 @@ static bool replace(ts::UString& str, const ts::UString& from, const ts::UString
 //-----------------------------------------------------------------------------
 
 
-bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, Report& report)
+bool ts::Tuner::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report)
 {
     // Reset returned vector
     tuners.clear();
@@ -259,14 +259,14 @@ bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, Report& report)
         report.debug(u"Process wildcard result '%s'", {tuner_name});
         const size_t index = tuners.size();
         tuners.resize(index + 1);
-        tuners[index] = new Tuner(*it, true, report);
-        tuners[index] = new Tuner(tuner_name, true, report);
+        tuners[index] = new Tuner(duck, tuner_name, true, report);
         if (!tuners[index]->isOpen()) {
             ok = false;
             tuners[index].clear();
             tuners.resize(index);
         }
     }
+
     return ok;
 }
 
@@ -330,14 +330,14 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 
     if (!fields[0].contain(u"adapter", ts::CASE_SENSITIVE)) {
         // Assume Android device naming
-        _frontend_name = fields[0] + UString::Format(u".frontend%d", {frontend_nb});
-        _demux_name = fields[0] + UString::Format(u".demux%d", {demux_nb});
-        _dvr_name = fields[0] + UString::Format(u".dvr%d", {dvr_nb});
+        _guts->frontend_name = fields[0] + UString::Format(u".frontend%d", {frontend_nb});
+        _guts->demux_name = fields[0] + UString::Format(u".demux%d", {demux_nb});
+        _guts->dvr_name = fields[0] + UString::Format(u".dvr%d", {dvr_nb});
     } else {
         // Linux device naming
-        _frontend_name = fields[0] + UString::Format(u"/frontend%d", {frontend_nb});
-        _demux_name = fields[0] + UString::Format(u"/demux%d", {demux_nb});
-        _dvr_name = fields[0] + UString::Format(u"/dvr%d", {dvr_nb});
+        _guts->rontend_name = fields[0] + UString::Format(u"/frontend%d", {frontend_nb});
+        _guts->demux_name = fields[0] + UString::Format(u"/demux%d", {demux_nb});
+        _guts->dvr_name = fields[0] + UString::Format(u"/dvr%d", {dvr_nb});
     }
 
     // Open DVB adapter frontend. The frontend device is opened in non-blocking mode.
