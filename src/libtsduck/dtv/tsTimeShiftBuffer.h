@@ -35,6 +35,7 @@
 #pragma once
 #include "tsUString.h"
 #include "tsTSFile.h"
+#include "tsTSPacketMetadata.h"
 #include "tsReport.h"
 
 namespace ts {
@@ -159,35 +160,41 @@ namespace ts {
 
         //!
         //! Push a packet in the time-shift buffer and pull the oldest one.
-        //! @param [in,out] pkt On input, contains the packet to push.
-        //! On output, contains the time-shifted packet. As long as the buffer
-        //! is not full, a null packet is returned. When the buffer is full,
-        //! the oldest packet is returned and removed from the buffer.
+        //!
+        //! As long as the buffer is not full, a null packet is returned.
+        //! When the buffer is full, the oldest packet is returned and removed
+        //! from the buffer. Initial null packets which are generated while the
+        //! time-shift buffer is filling can be recognized as they are marked as
+        //! "input stuffing" in their metadata, after returning from shift().
+        //!
+        //! @param [in,out] packet On input, contains the packet to push.
+        //! On output, contains the time-shifted packet.
+        //! @param [in,out] metadata Packet metadata.
         //! @param [in,out] report Where to report errors.
-        //! @param [in,out] metadata Optional packet metadata. To include metadata in time shift,
-        //! be sure to provide this parameters in all calls.
         //! @return True on success, false on error.
         //!
-        bool shift(TSPacket& pkt, Report& report, TSPacketMetadata* metadata = nullptr);
+        bool shift(TSPacket& packet, TSPacketMetadata& metadata, Report& report);
 
     private:
-        bool           _is_open;       // Buffer is open.
-        size_t         _cur_packets;   // Current number of packets in the buffer.
-        size_t         _total_packets; // Total capacity of the buffer.
-        size_t         _mem_packets;   // Max packets in memory.
-        UString        _directory;     // Where to store the backup file.
-        TSFile         _file;          // Backup file on disk.
-        TSPacketVector _wcache;        // Write cache (or complete buffer if in memory).
-        TSPacketVector _rcache;        // Read cache.
-        size_t         _next_read;     // Index in buffer of next packet to read.
-        size_t         _next_write;    // Index in buffer of next packet to write.
-        size_t         _wcache_next;   // Next index to write in _wcache (up to end of _wcache).
-        size_t         _rcache_end;    // End index in _rcache (after last loaded packet).
-        size_t         _rcache_next;   // Next index to read in _rcache.
+        bool    _is_open;                // Buffer is open.
+        size_t  _cur_packets;            // Current number of packets in the buffer.
+        size_t  _total_packets;          // Total capacity of the buffer.
+        size_t  _mem_packets;            // Max packets in memory.
+        UString _directory;              // Where to store the backup file.
+        TSFile  _file;                   // Backup file on disk.
+        size_t  _next_read;              // Index in buffer of next packet to read.
+        size_t  _next_write;             // Index in buffer of next packet to write.
+        size_t  _wcache_next;            // Next index to write in _wcache (up to end of _wcache).
+        size_t  _rcache_end;             // End index in _rcache (after last loaded packet).
+        size_t  _rcache_next;            // Next index to read in _rcache.
+        TSPacketVector         _wcache;  // Write cache (or complete buffer if in memory).
+        TSPacketVector         _rcache;  // Read cache.
+        TSPacketMetadataVector _wmdata;  // Packet metadata for _wcache.
+        TSPacketMetadataVector _rmdata;  // Packet metadata for _rcache.
 
         // Seek, read, write in the backup file.
         bool seekFile(size_t index, Report& report);
-        bool writeFile(size_t index, const TSPacket* buffer, size_t count, Report& report);
-        size_t readFile(size_t index, TSPacket* buffer, size_t count, Report& report);
+        bool writeFile(size_t index, const TSPacket* buffer, const TSPacketMetadata* mdata, size_t count, Report& report);
+        size_t readFile(size_t index, TSPacket* buffer, TSPacketMetadata* mdata, size_t count, Report& report);
     };
 }

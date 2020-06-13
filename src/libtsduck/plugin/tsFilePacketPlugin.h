@@ -63,9 +63,9 @@ namespace ts {
         //! @endcond
 
     private:
-        UString           _name;
-        TSFile::OpenFlags _flags;
-        TSFile::Format    _file_format;
-        TSFile            _file;
+        UString              _name;
+        TSFile::OpenFlags    _flags;
+        TSFile::PacketFormat _file_format;
+        TSFile               _file;
     };
 }

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.22-1843
+VERSION 3.22-1851
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -10,7 +10,8 @@ VERSION 3.22-1843
     and propagate the information to all plugins (see improvement in plugin
     "pcrverify").
   * New options in exiting commands and plugins:
-    - Option --format in plugin "file" (input, output and packet processor).
+    - Option --format in plugins "file", "fork" (input, output and packet
+      processor) and plugins "merge", "mux".
     - Option --size-of-packet in "tsftrunc".
     - Options --input-synchronous and --jitter-unreal in plugin "pcrverify".
 

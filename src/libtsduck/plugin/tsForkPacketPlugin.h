@@ -28,20 +28,50 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  File packet processor plugin for tsp.
+//!  Fork a process and send TS packets to its standard input (pipe).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 22
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1851
+#include "tsProcessorPlugin.h"
+#include "tsTSForkPipe.h"
+
+namespace ts {
+    //!
+    //! File packet processor plugin for tsp.
+    //! Fork a process and send TS packets to its standard input (pipe).
+    //! @ingroup plugin
+    //!
+    class ForkPacketPlugin: public ProcessorPlugin
+    {
+        TS_NOBUILD_NOCOPY(ForkPacketPlugin);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
+        //!
+        ForkPacketPlugin(TSP* tsp);
+
+        // Implementation of plugin API
+        virtual bool getOptions() override;
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+
+        //! @cond nodoxygen
+        // A dummy storage value to force inclusion of this module when using the static library.
+        static const int REFERENCE;
+        //! @endcond
+
+    private:
+        UString                  _command;       // The command to run.
+        bool                     _nowait;        // Don't wait for children termination.
+        TSForkPipe::PacketFormat _format;        // Packet format on the pipe
+        size_t                   _buffer_size;   // Max number of packets in buffer.
+        size_t                   _buffer_count;  // Number of packets currently in buffer.
+        TSPacketVector           _buffer;        // Packet buffer.
+        TSPacketMetadataVector   _mdata;         // Metadata for packets in buffer.
+        TSForkPipe               _pipe;          // The pipe device.
+    };
+}

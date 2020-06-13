@@ -75,6 +75,7 @@ namespace ts {
         uint64_t      _inserted_packet_count; // counts inserted packets
         uint64_t      _youngest_pts;          // stores last pcr value seen (calculated from PCR to PTS value by dividing by 300)
         uint64_t      _pts_last_inserted;     // stores nearest pts (actually pcr/300) of last packet insertion
+        TSFile::PacketFormat       _file_format;  // Input file format
         TSPacketMetadata::LabelSet _setLabels;    // Labels to set on output packets.
         TSPacketMetadata::LabelSet _resetLabels;  // Labels to reset on output packets.
         ContinuityAnalyzer         _cc_fixer;     // To fix continuity counters in mux'ed PID's
@@ -110,12 +111,13 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
     _inserted_packet_count(0),
     _youngest_pts(0),
     _pts_last_inserted(0),
+    _file_format(TSFile::FMT_AUTODETECT),
     _setLabels(),
     _resetLabels(),
     _cc_fixer(AllPIDs, tsp)
 {
     option(u"", 0, STRING, 1, 1);
-    help(u"", u"Input binary file containing 188-byte transport packets.");
+    help(u"", u"Input transport stream file.");
 
     option(u"bitrate", 'b', UINT32);
     help(u"bitrate",
@@ -127,6 +129,14 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
     help(u"byte-offset",
          u"Start reading the file at the specified byte offset (default: 0). "
          u"This option is allowed only if the input file is a regular file.");
+
+    option(u"format", 0, TSFile::FormatEnum);
+    help(u"format", u"name",
+         u"Specify the format of the input file. "
+         u"By default, the format is automatically detected. "
+         u"But the auto-detection may fail in some cases "
+         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
+         u"Using this option forces a specific format.");
 
     option(u"inter-packet", 'i', UINT32);
     help(u"inter-packet",
@@ -236,6 +246,7 @@ bool ts::MuxPlugin::start()
     _pts_last_inserted = 0;
     _inserted_packet_count = 0;
     _pts_range_ok = true;  // by default, enable packet insertion
+    _file_format = enumValue<TSFile::PacketFormat>(u"format", TSFile::FMT_AUTODETECT);
     getIntValues(_setLabels, u"set-label");
     getIntValues(_resetLabels, u"reset-label");
 
@@ -265,7 +276,8 @@ bool ts::MuxPlugin::start()
     return _file.openRead(value(u""),
                           intValue<size_t>(u"repeat", 0),
                           intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE),
-                          *tsp);
+                          *tsp,
+                          _file_format);
 }
 
 
@@ -362,7 +374,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
     }
 
     // Now, it is time to insert a new packet, read it. Directly overwrite the memory area of current stuffing pkt
-    if (_file.read(&pkt, 1, *tsp) == 0) {
+    if (_file.readPackets(&pkt, nullptr, 1, *tsp) == 0) {
         // File read error, error message already reported
         // If processing terminated, either exit or transparently pass packets
         if (tsp->useJointTermination()) {

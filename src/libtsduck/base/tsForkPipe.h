@@ -34,6 +34,8 @@
 
 #pragma once
 #include "tsAbstractOutputStream.h"
+#include "tsAbstractReadStreamInterface.h"
+#include "tsAbstractWriteStreamInterface.h"
 #include "tsSysUtils.h"
 #include "tsReport.h"
 
@@ -44,7 +46,10 @@ namespace ts {
     //!
     //! This class can be used as any output stream when the output is a pipe.
     //!
-    class TSDUCKDLL ForkPipe: public AbstractOutputStream
+    class TSDUCKDLL ForkPipe:
+        public AbstractOutputStream,
+        public AbstractReadStreamInterface,
+        public AbstractWriteStreamInterface
     {
         TS_NOCOPY(ForkPipe);
     public:
@@ -56,7 +61,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~ForkPipe();
+        virtual ~ForkPipe();
 
         //!
         //! How to wait for the created process when close() is invoked.
@@ -162,38 +167,10 @@ namespace ts {
         }
 
         //!
-        //! Write data to the pipe (received at process' standard input).
-        //! @param [in] addr Address of the data to write.
-        //! @param [in] size Size in bytes of the data to write.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
-        //!
-        bool write(const void* addr, size_t size, Report& report);
-
-        //!
-        //! Read data from the pipe (sent from process' standard output or error).
-        //! @param [out] addr Address of the buffer for the incoming data.
-        //! @param [in] max_size Maximum size in bytes of the buffer.
-        //! @param [in] unit_size If not zero, make sure that the input size is always
-        //! a multiple of @a unit_size. If the initial read ends in the middle of a @e unit,
-        //! read again and again, up to the end of the current unit or end of file.
-        //! @param [out] ret_size Returned input size in bytes.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
-        //!
-        bool read(void* addr, size_t max_size, size_t unit_size, size_t& ret_size, Report& report);
-
-        //!
         //! Abort any currenly input/output operation in the pipe.
         //! The pipe is left in a broken state and can be only closed.
         //!
         void abortPipeReadWrite();
-
-        //!
-        //! Check if the input pipe is at end of file.
-        //! @return True if the input pipe is at end of file.
-        //!
-        bool eof() const { return _eof; }
 
         //!
         //! This static method asynchronously launches a command, without pipe, without waiting for the completion of the command process.
@@ -206,6 +183,13 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         static bool Launch(const UString& command, Report& report, OutputMode out_mode = KEEP_BOTH, InputMode in_mode = STDIN_PARENT);
+
+        // Implementation of AbstractReadStreamInterface
+        virtual bool endOfStream() override;
+        virtual bool readStreamPartial(void* addr, size_t max_size, size_t& ret_size, Report& report) override;
+
+        // Implementation of AbstractWriteStreamInterface
+        virtual bool writeStream(const void* addr, size_t size, size_t& written_size, Report& report) override;
 
     protected:
         // Implementation of AbstractOutputStream

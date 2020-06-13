@@ -355,7 +355,7 @@ void ts::T2MIPlugin::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, co
         }
         else {
             // Write the packet to output file.
-            _abort = _abort || !_outfile.write(&ts, 1, *tsp);
+            _abort = _abort || !_outfile.writePackets(&ts, nullptr, 1, *tsp);
         }
     }
 }

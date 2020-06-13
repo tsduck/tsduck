@@ -97,32 +97,56 @@ void TimeShiftBufferTest::testCommon(uint8_t total, uint8_t memory)
     TSUNIT_EQUAL(memory >= total, buf.memoryResident());
 
     ts::TSPacket pkt;
+    ts::TSPacketMetadata mdata;
+    size_t in_label = 0;
+    size_t out_label = 0;
 
     // Fill the buffer, return null packets.
     for (uint8_t i = 0; i < total; i++) {
+
         pkt.init(i, i, i);
+        mdata.reset();
+        mdata.setLabel(in_label);
+        in_label = (in_label + 1) % ts::TSPacketMetadata::LABEL_COUNT;
+
         TSUNIT_EQUAL(184, pkt.getPayloadSize());
         TSUNIT_EQUAL(i, pkt.getPID());
         TSUNIT_EQUAL(i, *pkt.getPayload());
         TSUNIT_EQUAL(i, buf.count());
         TSUNIT_ASSERT(!buf.full());
-        TSUNIT_ASSERT(buf.shift(pkt, CERR));
+
+        TSUNIT_ASSERT(buf.shift(pkt, mdata, CERR));
+
         TSUNIT_EQUAL(ts::PID_NULL, pkt.getPID());
+        TSUNIT_ASSERT(mdata.getInputStuffing());
+        TSUNIT_ASSERT(!mdata.hasAnyLabel());
     }
     TSUNIT_ASSERT(buf.full());
 
     // Actual time shift by 'total' packets.
     for (uint8_t i = total; i < 3 * total; i++) {
+
         pkt.init(i, i, i);
+        mdata.reset();
+        mdata.setLabel(in_label);
+        in_label = (in_label + 1) % ts::TSPacketMetadata::LABEL_COUNT;
+
         TSUNIT_EQUAL(184, pkt.getPayloadSize());
         TSUNIT_EQUAL(i, pkt.getPID());
         TSUNIT_EQUAL(i, *pkt.getPayload());
         TSUNIT_EQUAL(total, buf.count());
         TSUNIT_ASSERT(buf.full());
-        TSUNIT_ASSERT(buf.shift(pkt, CERR));
+
+        TSUNIT_ASSERT(buf.shift(pkt, mdata, CERR));
+
         TSUNIT_EQUAL(184, pkt.getPayloadSize());
         TSUNIT_EQUAL(i - total, pkt.getPID());
         TSUNIT_EQUAL(i - total, *pkt.getPayload());
+        TSUNIT_ASSERT(!mdata.getInputStuffing());
+        TSUNIT_ASSERT(mdata.hasAnyLabel());
+        TSUNIT_ASSERT(mdata.hasLabel(out_label));
+        out_label = (out_label + 1) % ts::TSPacketMetadata::LABEL_COUNT;
+        TSUNIT_ASSERT(!mdata.hasLabel(out_label));
     }
 
     TSUNIT_ASSERT(buf.close(CERR));

@@ -26,22 +26,32 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsTSForkPipe.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor / destructor
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 22
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1851
+ts::TSForkPipe::TSForkPipe() :
+    ForkPipe(),
+    TSPacketStream(FMT_AUTODETECT, this, this)
+{
+}
+
+ts::TSForkPipe::~TSForkPipe()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Create the process, open the optional pipe.
+//----------------------------------------------------------------------------
+
+bool ts::TSForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffer_size, Report& report, OutputMode out_mode, InputMode in_mode, PacketFormat format)
+{
+    resetPacketStream(format, this, this);
+    return ForkPipe::open(command, wait_mode, buffer_size, report, out_mode, in_mode);
+}

@@ -28,20 +28,36 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Abstract interface to write raw data on a stream.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 22
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1851
+#include "tsReport.h"
+
+namespace ts {
+    //!
+    //! Abstract interface to write raw data on a stream.
+    //! @ingroup system
+    //!
+    class TSDUCKDLL AbstractWriteStreamInterface
+    {
+    public:
+        //!
+        //! Write data to the stream.
+        //! All bytes are written to the stream, blocking or retrying when necessary.
+        //! @param [in] addr Address of the data to write.
+        //! @param [in] size Size in bytes of the data to write.
+        //! @param [out] written_size Actually written size in bytes.
+        //! Can be less than @a size in case of error in the middle of the write.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        virtual bool writeStream(const void* addr, size_t size, size_t& written_size, Report& report) = 0;
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~AbstractWriteStreamInterface();
+    };
+}

@@ -33,28 +33,14 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
-// Maximum size of a packet header for non-TS format.
-// Must be lower than the TS packet size to allow auto-detection on read.
-namespace {
-    constexpr size_t MAX_HEADER_SIZE = ts::TSPacketMetadata::SERIALIZATION_SIZE;
-}
-
-const ts::Enumeration ts::TSFile::FormatEnum({
-    {u"autodetect", ts::TSFile::FMT_AUTODETECT},
-    {u"TS",         ts::TSFile::FMT_TS},
-    {u"M2TS",       ts::TSFile::FMT_M2TS},
-    {u"duck",       ts::TSFile::FMT_DUCK},
-});
-
 
 //----------------------------------------------------------------------------
 // Default constructor.
 //----------------------------------------------------------------------------
 
 ts::TSFile::TSFile() :
+    TSPacketStream(FMT_AUTODETECT, this, this),
     _filename(),
-    _total_read(0),
-    _total_write(0),
     _repeat(0),
     _counter(0),
     _start_offset(0),
@@ -65,8 +51,6 @@ ts::TSFile::TSFile() :
     _aborted(false),
     _rewindable(false),
     _regular(false),
-    _format(FMT_AUTODETECT),
-    _last_timestamp(0),
 #if defined(TS_WINDOWS)
     _handle(INVALID_HANDLE_VALUE)
 #else
@@ -81,9 +65,8 @@ ts::TSFile::TSFile() :
 //----------------------------------------------------------------------------
 
 ts::TSFile::TSFile(const TSFile& other) :
+    TSPacketStream(other.packetFormat(), this, this),
     _filename(other._filename),
-    _total_read(0),
-    _total_write(0),
     _repeat(other._repeat),
     _counter(0),
     _start_offset(other._start_offset),
@@ -94,8 +77,6 @@ ts::TSFile::TSFile(const TSFile& other) :
     _aborted(false),
     _rewindable(false),
     _regular(false),
-    _format(other._format),
-    _last_timestamp(other._last_timestamp),
 #if defined(TS_WINDOWS)
     _handle(INVALID_HANDLE_VALUE)
 #else
@@ -110,9 +91,8 @@ ts::TSFile::TSFile(const TSFile& other) :
 //----------------------------------------------------------------------------
 
 ts::TSFile::TSFile(TSFile&& other) noexcept :
+    TSPacketStream(other.packetFormat(), this, this),
     _filename(std::move(other._filename)),
-    _total_read(other._total_read),
-    _total_write(other._total_write),
     _repeat(other._repeat),
     _counter(other._counter),
     _start_offset(other._start_offset),
@@ -123,8 +103,6 @@ ts::TSFile::TSFile(TSFile&& other) noexcept :
     _aborted(other._aborted),
     _rewindable(other._rewindable),
     _regular(other._regular),
-    _format(other._format),
-    _last_timestamp(other._last_timestamp),
 #if defined(TS_WINDOWS)
     _handle(other._handle)
 #else
@@ -154,22 +132,6 @@ ts::TSFile::~TSFile()
 
 
 //----------------------------------------------------------------------------
-// Get header size in bytes before a packet.
-//----------------------------------------------------------------------------
-
-size_t ts::TSFile::HeaderSize(Format format)
-{
-    switch (format) {
-        case FMT_AUTODETECT: return 0;
-        case FMT_TS:         return 0;
-        case FMT_M2TS:       return 4;
-        case FMT_DUCK:       return TSPacketMetadata::SERIALIZATION_SIZE;
-        default:             return 0;
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Get the file name as a display string.
 //----------------------------------------------------------------------------
 
@@ -194,7 +156,7 @@ ts::UString ts::TSFile::getDisplayFileName() const
 // Open file for read in a rewindable mode.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::openRead(const UString& filename, uint64_t start_offset, Report& report, Format format)
+bool ts::TSFile::openRead(const UString& filename, uint64_t start_offset, Report& report, PacketFormat format)
 {
     if (_is_open) {
         report.log(_severity, u"already open");
@@ -207,8 +169,8 @@ bool ts::TSFile::openRead(const UString& filename, uint64_t start_offset, Report
     _start_offset = start_offset;
     _rewindable = true;
     _flags = READ;
-    _format = format;
 
+    resetPacketStream(format, this, this);
     return openInternal(false, report);
 }
 
@@ -217,7 +179,7 @@ bool ts::TSFile::openRead(const UString& filename, uint64_t start_offset, Report
 // Open file for read with optional repetition.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, Format format)
+bool ts::TSFile::openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, PacketFormat format)
 {
     if (_is_open) {
         report.log(_severity, u"already open");
@@ -230,8 +192,8 @@ bool ts::TSFile::openRead(const UString& filename, size_t repeat_count, uint64_t
     _start_offset = start_offset;
     _rewindable = false;
     _flags = READ | REOPEN_SPEC;
-    _format = format;
 
+    resetPacketStream(format, this, this);
     return openInternal(false, report);
 }
 
@@ -240,7 +202,7 @@ bool ts::TSFile::openRead(const UString& filename, size_t repeat_count, uint64_t
 // Open file, generic form.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::open(const UString& filename, OpenFlags flags, Report& report, Format format)
+bool ts::TSFile::open(const UString& filename, OpenFlags flags, Report& report, PacketFormat format)
 {
     // Enforce WRITE if APPEND is specified.
     if ((flags & APPEND) != 0) {
@@ -266,8 +228,8 @@ bool ts::TSFile::open(const UString& filename, OpenFlags flags, Report& report, 
     _start_offset = 0;
     _rewindable = true;
     _flags = flags;
-    _format = format;
 
+    resetPacketStream(format, this, this);
     return openInternal(false, report);
 }
 
@@ -457,7 +419,6 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
         _total_read = _total_write = 0;
     }
 
-    _last_timestamp = 0;
     _at_eof = _aborted = false;
     _is_open = true;
     return true;
@@ -536,7 +497,7 @@ bool ts::TSFile::seek(PacketCounter packet_index, Report& report)
         return false;
     }
     else {
-        return seekInternal(packet_index * (HeaderSize(_format) + PKT_SIZE), report);
+        return seekInternal(packet_index * (packetHeaderSize() + PKT_SIZE), report);
     }
 }
 
@@ -570,220 +531,128 @@ bool ts::TSFile::close(Report& report)
 
 
 //----------------------------------------------------------------------------
-// Read internal implementation.
+// Implementation of AbstractReadStreamInterface
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::readInternal(void* buffer, size_t request_size, size_t& read_size, Report& report)
+bool ts::TSFile::endOfStream()
+{
+    return _at_eof;
+}
+
+bool ts::TSFile::readStreamPartial(void* buffer, size_t request_size, size_t& read_size, Report& report)
 {
     read_size = 0;
-    char* data = reinterpret_cast<char*>(buffer);
-    ErrorCode error_code = SYS_SUCCESS;
-    bool success = true;
 
-    // Loop on read until we get requested size or reach EOF or error.
-    while (read_size < request_size && success && !_at_eof) {
+    if (!_is_open) {
+        report.error(u"%s is not open", {getDisplayFileName()});
+        return false;
+    }
+    if (_at_eof) {
+        // Already at end of file. Do not report error.
+        return false;
+    }
+    if (request_size == 0) {
+        // Trivial case, successfully read zero bytes.
+        return true;
+    }
 
 #if defined(TS_WINDOWS)
 
-        // Windows implementation
-        ::DWORD insize = 0;
-        if (::ReadFile(_handle, data, ::DWORD(request_size), &insize, NULL)) {
-            // Normal case: some data were read
-            assert(size_t(insize) <= request_size);
-            data += size_t(insize);
-            request_size -= size_t(insize);
-            read_size += size_t(insize);
-            _at_eof = _at_eof || insize == 0;
+    // Windows implementation
+    ::DWORD insize = 0;
+    if (::ReadFile(_handle, buffer, ::DWORD(request_size), &insize, NULL)) {
+        // Normal case: some data were read
+        assert(size_t(insize) <= request_size);
+        read_size = size_t(insize);
+        _at_eof = _at_eof || insize == 0;
+        return read_size > 0;
+    }
+    else {
+        // Error case.
+        const ErrorCode error_code = LastErrorCode();
+        _at_eof = _at_eof || error_code == ERROR_HANDLE_EOF || error_code == ERROR_BROKEN_PIPE;
+        if (!_at_eof) {
+            // Actual error, not an EOF.
+            report.error(u"error reading from %s: %s", {getDisplayFileName(), ErrorCodeMessage(error_code)});
         }
-        else {
-            // Error case.
-            error_code = LastErrorCode();
-            _at_eof = _at_eof || error_code == ERROR_HANDLE_EOF || error_code == ERROR_BROKEN_PIPE;
-            success = _at_eof; // reaching EOF is not an error.
-        }
+        return false;
+    }
 
 #else
 
-        // UNIX implementation
-        ssize_t insize = ::read(_fd, data, request_size);
-        if (insize > 0) {
-            // Normal case: some data were read
-            assert(size_t(insize) <= request_size);
-            data += size_t(insize);
-            request_size -= size_t(insize);
-            read_size += size_t(insize);
-        }
-        else if (insize == 0) {
+    // UNIX implementation
+    for (;;) {
+        const ssize_t insize = ::read(_fd, buffer, request_size);
+        if (insize == 0) {
+            // End of file.
             _at_eof = true;
+            return false;
         }
-        else if ((error_code = LastErrorCode()) != EINTR) {
-            // Actual error (not an interrupt)
-            success = false;
+        else if (insize > 0) {
+            // Normal case, some data were read.
+            assert(size_t(insize) <= request_size);
+            read_size = size_t(insize);
+            return true;
         }
+        else {
+            const ErrorCode error_code = LastErrorCode();
+            if (error_code != EINTR) {
+                // Actual error (not an interrupt)
+                report.error(u"error reading from %s: %s", {getDisplayFileName(), ErrorCodeMessage(error_code)});
+                return false;
+            }
+        }
+    }
 
 #endif
-    }
-
-    if (!success) {
-        report.log(_severity, u"error reading file %s: %s (%d)", {getDisplayFileName(), ErrorCodeMessage(error_code), error_code});
-    }
-    return success;
 }
 
 
 //----------------------------------------------------------------------------
 // Read TS packets. Return the actual number of read packets.
+// Override TSPacketStream implementation
 //----------------------------------------------------------------------------
 
-size_t ts::TSFile::read(TSPacket* buffer, size_t max_packets, Report& report, TSPacketMetadata* metadata)
+size_t ts::TSFile::readPackets(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets, Report& report)
 {
-    if (!_is_open) {
-        report.log(_severity, u"not open");
-        return 0;
-    }
-    else if ((_flags & READ) == 0) {
-        report.log(_severity, u"file %s is not open for read", {getDisplayFileName()});
-        return 0;
-    }
-    else if (_aborted || _at_eof || max_packets == 0) {
-        return 0;
-    }
-
-    // Number of read packets.
-    size_t read_packets = 0;
-    size_t read_size = 0;
-
-    // Header buffer for M2TS or M8TS formats.
-    uint8_t header[MAX_HEADER_SIZE];
-    size_t header_size = HeaderSize(_format);
-    assert(header_size <= sizeof(header));
-
-    // If format is autodetect, read one packet to check where the sync byte is.
-    if (_format == FMT_AUTODETECT) {
-
-        // Read one packet.
-        if (!readInternal(buffer, PKT_SIZE, read_size, report) || read_size < PKT_SIZE) {
-            return 0; // less than one packet in that file
-        }
-
-        // Metadata for first packet (if there is a header).
-        TSPacketMetadata mdata;
-
-        // Check the position of the 0x47 sync byte to detect a potential header.
-        if (buffer->b[0] == SYNC_BYTE) {
-            // No header (or header starting with 0x47...)
-            _format = FMT_TS;
-        }
-        else if (buffer->b[4] == SYNC_BYTE) {
-            _format = FMT_M2TS;
-            mdata.setInputTimeStamp(GetUInt32(buffer) & 0x3FFFFFFF, SYSTEM_CLOCK_FREQ);
-        }
-        else if (buffer->b[0] == TSPacketMetadata::SERIALIZATION_MAGIC && buffer->b[TSPacketMetadata::SERIALIZATION_SIZE] == SYNC_BYTE) {
-            _format = FMT_DUCK;
-            mdata.deserialize(buffer->b, TSPacketMetadata::SERIALIZATION_SIZE);
-        }
-        else {
-            report.error(u"cannot detect format for TS file %s", {getDisplayFileName()});
-            return 0;
-        }
-        report.debug(u"detected format %s for TS file %s", {getFormatString(), getDisplayFileName()});
-
-        // If there was a header, remove it and read the rest of the packet.
-        header_size = HeaderSize(_format);
-        assert(header_size <= sizeof(header));
-        if (header_size > 0) {
-            // memmove() can move overlapping areas.
-            char* data = reinterpret_cast<char*>(buffer);
-            ::memmove(data, data + header_size, PKT_SIZE - header_size);
-            if (!readInternal(data + PKT_SIZE - header_size, header_size, read_size, report) || read_size < header_size) {
-                return 0; // less than one packet in that file
-            }
-        }
-
-        // Now we have read the first packet.
-        read_packets++;
-        buffer++;
-        max_packets--;
-        if (metadata != nullptr) {
-            *metadata++ = mdata;
-        }
-    }
+    size_t ret_count = 0;
 
     // Repeat reading packets until the buffer is full or error.
     // Rewind on end of file if repeating is set.
-    bool success = true;
-    while (success && max_packets > 0 && !_at_eof) {
+    while (max_packets > 0 && !_at_eof) {
 
-        switch (_format) {
-            case FMT_AUTODETECT: {
-                // Should not get there.
-                assert(false);
-                return 0;
-            }
-            case FMT_TS: {
-                // Bulk read in TS format.
-                success = readInternal(buffer, max_packets * PKT_SIZE, read_size, report);
-                // Count packets. Truncate incomplete packets at end of file.
-                const size_t count = read_size / PKT_SIZE;
-                assert(count <= max_packets);
-                read_packets += count;
-                buffer += count;
-                max_packets -= count;
-                if (metadata != nullptr) {
-                    TSPacketMetadata::Reset(metadata, count);
-                    metadata += count;
-                }
-                break;
-            }
-            case FMT_M2TS:
-            case FMT_DUCK: {
-                // Read header + packet.
-                success = readInternal(header, header_size, read_size, report);
-                if (success && read_size == header_size) {
-                    success = readInternal(buffer, PKT_SIZE, read_size, report);
-                    if (success && read_size == PKT_SIZE) {
-                        read_packets++;
-                        buffer++;
-                        max_packets--;
-                        if (metadata != nullptr) {
-                            if (_format == FMT_M2TS) {
-                                metadata->reset();
-                                metadata->setInputTimeStamp(GetUInt32(header) & 0x3FFFFFFF, SYSTEM_CLOCK_FREQ);
-                            }
-                            else {
-                                metadata->deserialize(header, TSPacketMetadata::SERIALIZATION_SIZE);
-                            }
-                            metadata++;
-                        }
-                    }
-                }
-                break;
-            }
-            default: {
-                report.error(u"invalid format %s for file %s", {getFormatString(), getDisplayFileName()});
-                return 0;
-            }
+        // Invoke superclass.
+        const size_t count = TSPacketStream::readPackets(buffer, metadata, max_packets, report);
+
+        if (count == 0 && !_at_eof) {
+            break; // actual error
+        }
+
+        // Accumulate packets.
+        ret_count += count;
+        buffer += count;
+        max_packets -= count;
+        if (metadata != nullptr) {
+            metadata += count;
         }
 
         // At end of file, if the file must be repeated a finite number of times,
         // check if this was the last time. If the file must be repeated again,
         // rewind to original start offset.
         if (_at_eof && (_repeat == 0 || ++_counter < _repeat) && !seekInternal(0, report)) {
-            return 0; // rewind error
+            break; // rewind error
         }
     }
 
-    // Return the number of input packets.
-    _total_read += read_packets;
-    return read_packets;
+    return ret_count;
 }
 
 
 //----------------------------------------------------------------------------
-// Write internal implementation.
+// Implementation of AbstractWriteStreamInterface
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::writeInternal(const void* buffer, size_t data_size, size_t& written_size, Report& report)
+bool ts::TSFile::writeStream(const void* buffer, size_t data_size, size_t& written_size, Report& report)
 {
     written_size = 0;
     ErrorCode error_code = SYS_SUCCESS;
@@ -848,81 +717,6 @@ bool ts::TSFile::writeInternal(const void* buffer, size_t data_size, size_t& wri
     return true;
 
 #endif
-}
-
-
-//----------------------------------------------------------------------------
-// Write TS packets.
-//----------------------------------------------------------------------------
-
-bool ts::TSFile::write(const TSPacket* buffer, size_t packet_count, Report& report, const TSPacketMetadata* metadata)
-{
-    if (!_is_open) {
-        report.log(_severity, u"not open");
-        return false;
-    }
-    else if ((_flags & (WRITE | APPEND)) == 0) {
-        report.log(_severity, u"file %s is not open for write", {getDisplayFileName()});
-        return false;
-    }
-    else if (_aborted) {
-        return false;
-    }
-
-    bool success = true;
-
-    switch (_format) {
-        case FMT_AUTODETECT:
-        case FMT_TS: {
-            // If file format is not yet known, force it as TS, the default.
-            _format = FMT_TS;
-            // Bulk write in TS format.
-            size_t written_size = 0;
-            success = writeInternal(buffer, packet_count * PKT_SIZE, written_size, report);
-            _total_write += written_size / PKT_SIZE;
-            break;
-        }
-        case FMT_M2TS:
-        case FMT_DUCK: {
-            // Write header + packet, packet by packet.
-            uint8_t header[MAX_HEADER_SIZE];
-            const size_t header_size = HeaderSize(_format);
-            for (size_t i = 0; success && i < packet_count; ++i) {
-                // Get time stamp of current packet or reuse last one.
-                if (metadata != nullptr && metadata[i].hasInputTimeStamp()) {
-                    _last_timestamp = metadata[i].getInputTimeStamp();
-                }
-                // Build header.
-                if (_format == FMT_M2TS) {
-                    // 30-bit time stamp in PCR units (2 most-significant bits are copy-control).
-                    PutUInt32(header, uint32_t(_last_timestamp & 0x3FFFFFFF));
-                }
-                else if (metadata != nullptr) {
-                    // DUCK format with application-provided metadata.
-                    metadata[i].serialize(header, sizeof(header));
-                }
-                else {
-                    // DUCK format with default metadata.
-                    TSPacketMetadata mdata;
-                    mdata.serialize(header, sizeof(header));
-                }
-                // Write header, then packet.
-                size_t written_size = 0;
-                success = writeInternal(header, header_size, written_size, report) &&
-                    writeInternal(&buffer[i], PKT_SIZE, written_size, report);
-                if (success) {
-                    _total_write++;
-                }
-            }
-            break;
-        }
-        default: {
-            report.error(u"invalid format %s for file %s", {getFormatString(), getDisplayFileName()});
-            return false;
-        }
-    }
-
-    return success;
 }
 
 

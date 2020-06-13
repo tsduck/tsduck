@@ -60,7 +60,7 @@ namespace ts {
         virtual ~TSFileOutputResync();
 
         // Overrides TSFile methods
-        virtual bool open(const UString& filename, OpenFlags flags, Report& report, Format format = FMT_AUTODETECT) override;
+        virtual bool open(const UString& filename, OpenFlags flags, Report& report, PacketFormat format = FMT_AUTODETECT) override;
 
         //!
         //! Write TS packets to the file.
@@ -73,7 +73,7 @@ namespace ts {
         //! pointer and all packets must have a time stamp.
         //! @return True on success, false on error.
         //!
-        bool write(TSPacket* buffer, size_t packet_count, Report& report, const TSPacketMetadata* metadata = nullptr);
+        bool writePackets(TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, Report& report);
 
         //!
         //! Write TS packets to the file.
@@ -87,13 +87,14 @@ namespace ts {
         //! pointer and all packets must have a time stamp.
         //! @return True on success, false on error.
         //!
-        bool write(TSPacket* buffer, size_t packet_count, PID pid, Report& report, const TSPacketMetadata* metadata = nullptr);
+        bool writePackets(TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, PID pid, Report& report);
 
     private:
         ContinuityAnalyzer _ccFixer;
 
-        // Make openRead() inaccessible.
+        // Make openRead() and read-only writePackets() inaccessible.
         bool openRead(const UString&, size_t, uint64_t, Report&) = delete;
         bool openRead(const UString&, uint64_t, Report&) = delete;
+        virtual bool writePackets(const TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, Report& report) override;
     };
 }

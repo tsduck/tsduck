@@ -41,6 +41,9 @@
 #include "tsFileInputPlugin.h"
 #include "tsFileOutputPlugin.h"
 #include "tsFilePacketPlugin.h"
+#include "tsForkInputPlugin.h"
+#include "tsForkOutputPlugin.h"
+#include "tsForkPacketPlugin.h"
 #include "tsIPInputPlugin.h"
 #include "tsIPOutputPlugin.h"
 #include "tsDektecInputPlugin.h"
@@ -85,6 +88,9 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_OBJECT(FileInputPlugin::REFERENCE);
     REF_OBJECT(FileOutputPlugin::REFERENCE);
     REF_OBJECT(FilePacketPlugin::REFERENCE);
+    REF_OBJECT(ForkInputPlugin::REFERENCE);
+    REF_OBJECT(ForkOutputPlugin::REFERENCE);
+    REF_OBJECT(ForkPacketPlugin::REFERENCE);
     REF_OBJECT(IPInputPlugin::REFERENCE);
     REF_OBJECT(IPOutputPlugin::REFERENCE);
     REF_OBJECT(DektecInputPlugin::REFERENCE);

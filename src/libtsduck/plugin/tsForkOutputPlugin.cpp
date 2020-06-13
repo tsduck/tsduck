@@ -27,72 +27,76 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsFilePacketPlugin.h"
+#include "tsForkOutputPlugin.h"
 #include "tsPluginRepository.h"
 TSDUCK_SOURCE;
 
-TS_REGISTER_PROCESSOR_PLUGIN(u"file", ts::FilePacketPlugin);
+TS_REGISTER_OUTPUT_PLUGIN(u"fork", ts::ForkOutputPlugin);
 
 // A dummy storage value to force inclusion of this module when using the static library.
-const int ts::FilePacketPlugin::REFERENCE = 0;
+const int ts::ForkOutputPlugin::REFERENCE = 0;
 
 
 //----------------------------------------------------------------------------
-// Packet processor constructor
+// Constructor
 //----------------------------------------------------------------------------
 
-ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Write packets to a file and pass them to next plugin", u"[options] file-name"),
-    _name(),
-    _flags(TSFile::NONE),
-    _file_format(TSFile::FMT_TS),
-    _file()
+ts::ForkOutputPlugin::ForkOutputPlugin(TSP* tsp_) :
+    OutputPlugin(tsp_, u"Fork a process and send TS packets to its standard input", u"[options] 'command'"),
+    _command(),
+    _nowait(false),
+    _format(TSForkPipe::FMT_TS),
+    _buffer_size(0),
+    _pipe()
 {
     option(u"", 0, STRING, 1, 1);
-    help(u"", u"Name of the created output file.");
+    help(u"", u"Specifies the command line to execute in the created process.");
 
-    option(u"append", 'a');
-    help(u"append", u"If the file already exists, append to the end of the file. By default, existing files are overwritten.");
+    option(u"buffered-packets", 'b', POSITIVE);
+    help(u"buffered-packets", u"Windows only: Specifies the pipe buffer size in number of TS packets.");
 
-    option(u"format", 0, TSFile::FormatEnum);
+    option(u"format", 0, TSForkPipe::FormatEnum);
     help(u"format", u"name",
-         u"Specify the format of the created file. "
-         u"By default, the format is a standard TS file.");
+         u"Specify the format of the output TS stream. "
+         u"By default, the format is a standard TS.");
 
-    option(u"keep", 'k');
-    help(u"keep", u"Keep existing file (abort if the specified file already exists). By default, existing files are overwritten.");
+    option(u"nowait", 'n');
+    help(u"nowait", u"Do not wait for child process termination at end of input.");
 }
 
-
 //----------------------------------------------------------------------------
-// Packet processor plugin methods
+// Output methods
 //----------------------------------------------------------------------------
 
-bool ts::FilePacketPlugin::getOptions()
+bool ts::ForkOutputPlugin::getOptions()
 {
-    getValue(_name);
-    _file_format = enumValue<TSFile::PacketFormat>(u"format", TSFile::FMT_TS);
-    _flags = TSFile::WRITE | TSFile::SHARED;
-    if (present(u"append")) {
-        _flags |= TSFile::APPEND;
-    }
-    if (present(u"keep")) {
-        _flags |= TSFile::KEEP;
-    }
+    // Get command line arguments.
+    _command = value(u"");
+    _nowait = present(u"nowait");
+    _format = enumValue<TSForkPipe::PacketFormat>(u"format", TSForkPipe::FMT_TS);
+    _buffer_size = intValue<size_t>(u"buffered-packets", 0);
     return true;
 }
 
-bool ts::FilePacketPlugin::start()
+
+bool ts::ForkOutputPlugin::start()
 {
-    return _file.open(_name, _flags, *tsp, _file_format);
+    // Create pipe & process.
+    return _pipe.open(_command,
+                      _nowait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
+                      PKT_SIZE * _buffer_size,  // Pipe buffer size (Windows only), same as internal buffer size.
+                      *tsp,                     // Error reporting.
+                      ForkPipe::KEEP_BOTH,      // Output: same stdout and stderr as tsp process.
+                      ForkPipe::STDIN_PIPE,     // Input: use the pipe.
+                      _format);
 }
 
-bool ts::FilePacketPlugin::stop()
+bool ts::ForkOutputPlugin::stop()
 {
-    return _file.close(*tsp);
+    return _pipe.close(*tsp);
 }
 
-ts::ProcessorPlugin::Status ts::FilePacketPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+bool ts::ForkOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count)
 {
-    return _file.writePackets(&pkt, &pkt_data, 1, *tsp) ? TSP_OK : TSP_END;
+    return _pipe.writePackets(buffer, pkt_data, packet_count, *tsp);
 }
