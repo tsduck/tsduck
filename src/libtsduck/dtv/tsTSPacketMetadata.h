@@ -41,7 +41,7 @@
 namespace ts {
     //!
     //! Metadata of an MPEG-2 transport packet for tsp plugins.
-    //! @ingroup plugin
+    //! @ingroup mpeg
     //!
     //! An instance of this class is passed with each TS packet to packet processor plugins.
     //!
