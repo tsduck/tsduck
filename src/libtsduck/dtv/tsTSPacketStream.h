@@ -48,6 +48,7 @@ namespace ts {
     //!
     class TSDUCKDLL TSPacketStream
     {
+        TS_NOCOPY(TSPacketStream);
     public:
         //!
         //! Transport stream file formats.
