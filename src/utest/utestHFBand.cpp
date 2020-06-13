@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -49,17 +49,23 @@ public:
     virtual void afterTest() override;
 
     void testDefaultRegion();
+    void testBands();
     void testEmpty();
     void testEurope();
     void testUSA();
     void testVHF();
+    void testBS();
+    void testCS();
 
     TSUNIT_TEST_BEGIN(HFBandTest);
     TSUNIT_TEST(testDefaultRegion);
+    TSUNIT_TEST(testBands);
     TSUNIT_TEST(testEmpty);
     TSUNIT_TEST(testEurope);
     TSUNIT_TEST(testUSA);
     TSUNIT_TEST(testVHF);
+    TSUNIT_TEST(testBS);
+    TSUNIT_TEST(testCS);
     TSUNIT_TEST_END();
 
 private:
@@ -104,9 +110,15 @@ void HFBandTest::testDefaultRegion()
     TSUNIT_ASSERT(!ts::HFBand::DefaultRegion(report()).empty());
 }
 
+void HFBandTest::testBands()
+{
+    TSUNIT_EQUAL(u"UHF, VHF", ts::UString::Join(ts::HFBand::GetAllBands(u"Europe")));
+    TSUNIT_EQUAL(u"BS, CS, UHF, VHF", ts::UString::Join(ts::HFBand::GetAllBands(u"Japan")));
+}
+
 void HFBandTest::testEmpty()
 {
-    const ts::HFBand* hf = ts::HFBand::GetBand(u"zozoland", ts::HFBand::UHF, report());
+    const ts::HFBand* hf = ts::HFBand::GetBand(u"zozoland", u"UHF", report());
     TSUNIT_ASSERT(hf != nullptr);
     TSUNIT_ASSERT(hf->empty());
     TSUNIT_EQUAL(0, hf->channelCount());
@@ -114,14 +126,14 @@ void HFBandTest::testEmpty()
 
 void HFBandTest::testEurope()
 {
-    const ts::HFBand* hf = ts::HFBand::GetBand(u"Europe", ts::HFBand::UHF, report());
+    const ts::HFBand* hf = ts::HFBand::GetBand(u"Europe", u"UHF", report());
     TSUNIT_ASSERT(hf != nullptr);
     TSUNIT_ASSERT(!hf->empty());
-    TSUNIT_EQUAL(ts::HFBand::UHF, hf->type());
+    TSUNIT_EQUAL(u"UHF", hf->bandName());
     TSUNIT_EQUAL(49, hf->channelCount());
     TSUNIT_EQUAL(21, hf->firstChannel());
     TSUNIT_EQUAL(69, hf->lastChannel());
-    
+
     TSUNIT_EQUAL(25, hf->nextChannel(24));
     TSUNIT_EQUAL(23, hf->previousChannel(24));
     TSUNIT_EQUAL(498000000, hf->frequency(24));
@@ -154,10 +166,10 @@ void HFBandTest::testEurope()
 
 void HFBandTest::testUSA()
 {
-    const ts::HFBand* hf = ts::HFBand::GetBand(u"USA", ts::HFBand::UHF, report());
+    const ts::HFBand* hf = ts::HFBand::GetBand(u"USA", u"UHF", report());
     TSUNIT_ASSERT(hf != nullptr);
     TSUNIT_ASSERT(!hf->empty());
-    TSUNIT_EQUAL(ts::HFBand::UHF, hf->type());
+    TSUNIT_EQUAL(u"UHF", hf->bandName());
     TSUNIT_EQUAL(56, hf->channelCount());
     TSUNIT_EQUAL(14, hf->firstChannel());
     TSUNIT_EQUAL(69, hf->lastChannel());
@@ -183,10 +195,10 @@ void HFBandTest::testUSA()
 
 void HFBandTest::testVHF()
 {
-    const ts::HFBand* hf = ts::HFBand::GetBand(u"USA", ts::HFBand::VHF, report());
+    const ts::HFBand* hf = ts::HFBand::GetBand(u"USA", u"VHF", report());
     TSUNIT_ASSERT(hf != nullptr);
     TSUNIT_ASSERT(!hf->empty());
-    TSUNIT_EQUAL(ts::HFBand::VHF, hf->type());
+    TSUNIT_EQUAL(u"VHF", hf->bandName());
     TSUNIT_EQUAL(13, hf->channelCount());
     TSUNIT_EQUAL(1, hf->firstChannel());
     TSUNIT_EQUAL(13, hf->lastChannel());
@@ -212,4 +224,38 @@ void HFBandTest::testVHF()
 
     TSUNIT_EQUAL(0, hf->nextChannel(13));
     TSUNIT_EQUAL(12, hf->previousChannel(13));
+}
+
+void HFBandTest::testBS()
+{
+    const ts::HFBand* hf = ts::HFBand::GetBand(u"Japan", u"BS", report());
+    TSUNIT_ASSERT(hf != nullptr);
+    TSUNIT_ASSERT(!hf->empty());
+    TSUNIT_EQUAL(u"BS", hf->bandName());
+    TSUNIT_EQUAL(24, hf->channelCount());
+    TSUNIT_EQUAL(1, hf->firstChannel());
+    TSUNIT_EQUAL(24, hf->lastChannel());
+
+    TSUNIT_EQUAL(TS_UCONST64(11765840000), hf->frequency(3));
+    TSUNIT_EQUAL(3, hf->channelNumber(TS_UCONST64(11765840000)));
+    TSUNIT_EQUAL(19180000, hf->bandWidth(3));
+    TSUNIT_EQUAL(ts::POL_RIGHT, hf->polarization(17));
+    TSUNIT_EQUAL(ts::POL_LEFT, hf->polarization(12));
+}
+
+void HFBandTest::testCS()
+{
+    const ts::HFBand* hf = ts::HFBand::GetBand(u"Japan", u"CS", report());
+    TSUNIT_ASSERT(hf != nullptr);
+    TSUNIT_ASSERT(!hf->empty());
+    TSUNIT_EQUAL(u"CS", hf->bandName());
+    TSUNIT_EQUAL(24, hf->channelCount());
+    TSUNIT_EQUAL(1, hf->firstChannel());
+    TSUNIT_EQUAL(24, hf->lastChannel());
+
+    TSUNIT_EQUAL(TS_UCONST64(12311000000), hf->frequency(3));
+    TSUNIT_EQUAL(3, hf->channelNumber(TS_UCONST64(12311000000)));
+    TSUNIT_EQUAL(20000000, hf->bandWidth(3));
+    TSUNIT_EQUAL(ts::POL_LEFT, hf->polarization(17));
+    TSUNIT_EQUAL(ts::POL_RIGHT, hf->polarization(12));
 }

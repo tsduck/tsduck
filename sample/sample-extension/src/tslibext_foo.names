@@ -1,0 +1,10 @@
+# Name definitions for the sample TSDuck "foo" extension.
+
+[TableId]
+0xF0 = FOOT
+
+[DescriptorId]
+0xE8 = Foo
+
+[CASystemId]
+0xF001-0xF008 = FooCAS

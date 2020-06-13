@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@
 #include "tsInputRedirector.h"
 #include "tsPagerArgs.h"
 #include "tsPSILogger.h"
+#include "tsTSPacket.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
@@ -50,24 +51,21 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options();
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::DuckContext   duck;     // TSDuck execution context.
-    ts::TablesDisplay display;  // Table formatting options.
-    ts::PSILogger     logger;   // Table logging options
-    ts::PagerArgs     pager;    // Output paging options.
-    ts::UString       infile;   // Input file name
-};
+        ts::DuckContext   duck;     // TSDuck execution context.
+        ts::TablesDisplay display;  // Table formatting options.
+        ts::PSILogger     logger;   // Table logging options
+        ts::PagerArgs     pager;    // Output paging options.
+        ts::UString       infile;   // Input file name
+    };
+}
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Extract all standard PSI from an MPEG transport stream", u"[options] [filename]"),
     duck(this),
@@ -76,9 +74,10 @@ Options::Options(int argc, char *argv[]) :
     pager(true, true),
     infile()
 {
+    duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);
     duck.defineArgsForStandards(*this);
-    duck.defineArgsForDVBCharset(*this);
+    duck.defineArgsForCharset(*this);
     pager.defineArgs(*this);
     logger.defineArgs(*this);
     display.defineArgs(*this);
@@ -89,9 +88,9 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     duck.loadArgs(*this);
-    pager.loadArgs(*this);
-    logger.loadArgs(*this);
-    display.loadArgs(*this);
+    pager.loadArgs(duck, *this);
+    logger.loadArgs(duck, *this);
+    display.loadArgs(duck, *this);
 
     infile = value(u"");
 

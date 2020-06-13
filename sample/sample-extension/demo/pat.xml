@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <PAT transport_stream_id="0x0001">
+    <service service_id="0x0001" program_map_PID="0x0100"/>
+  </PAT>
+</tsduck>

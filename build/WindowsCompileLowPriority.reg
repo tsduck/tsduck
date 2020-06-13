@@ -1,0 +1,17 @@
+Windows Registry Editor Version 5.00
+
+; These registry definitions force the compilation and link processes to
+; get a lower priority. When running Visual Studio, there seems to be no
+; other way to avoid killing the system while compiling.
+; CpuPriorityClass: 5 ("Below Normal")
+; IoPriority: 1 ("Low")
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\cl.exe]
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\cl.exe\PerfOptions]
+"CpuPriorityClass"=dword:00000005
+"IoPriority"=dword:00000001
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\link.exe]
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\link.exe\PerfOptions]
+"CpuPriorityClass"=dword:00000005
+"IoPriority"=dword:00000001

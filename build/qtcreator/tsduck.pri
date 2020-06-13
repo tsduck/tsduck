@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2019, Thierry Lelegard
+#  Copyright (c) 2005-2020, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 #-----------------------------------------------------------------------------
 #
 #  Common definitions for using qmake.
+#  Defined only for Unix systems (Linux, macOS).
 #
 #-----------------------------------------------------------------------------
 
@@ -40,6 +41,7 @@ CONFIG *= no_plugin_name_prefix
 CONFIG -= qt
 CONFIG -= debug_and_release
 CONFIG -= app_bundle
+CONFIG += sdk_no_version_check
 DEFINES -= UNICODE
 
 # Define the symbol DEBUG in debug mode.
@@ -53,14 +55,17 @@ SRCROOT  = $$PROJROOT/src
 CONFIG -= warn_off
 CONFIG *= warn_on
 
+# The other system-specific directories to exclude
+linux: NOSYSDIR = mac
+mac:   NOSYSDIR = linux
+
+# TSDuck configuration files
+TS_CONFIG_FILES += $$system("find $$SRCROOT/libtsduck \\( -name \\*.names -o -name \\*.xml \\) ! -path \\*/release\\* ! -path \\*/debug\\*")
+
 # Other configuration.
-QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck
-INCLUDEPATH += $$SRCROOT/libtsduck
 linux|mac|mingw {
     QMAKE_CXXFLAGS_WARN_ON = -Werror -Wall -Wextra
     QMAKE_CXXFLAGS += -fno-strict-aliasing -fstack-protector-all -std=c++11
-    QMAKE_CXXFLAGS += $$system(curl-config --cflags)
-    LIBS += $$system(curl-config --libs)
 }
 linux|mingw {
     # GCC options. Some of them depend on the compiler version.
@@ -74,43 +79,49 @@ linux|mingw {
     greaterThan(GCC_MAJOR, 4): QMAKE_CXXFLAGS_WARN_ON += -Wpedantic -Weffc++ -Wshadow
 }
 linux {
-    QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/linux -I/usr/include/PCSC -isystem $$PROJROOT/dektec/LinuxSDK/DTAPI/Include
-    INCLUDEPATH += $$SRCROOT/libtsduck/linux
-    LIBS += -lrt -ldl $$PROJROOT/dektec/LinuxSDK/DTAPI/Lib/GCC4.4/DTAPI64.o
+    QMAKE_CXXFLAGS += -I/usr/include/PCSC
+    LIBS += -lrt -ldl
 }
 mac {
     QMAKE_CXXFLAGS_WARN_ON += -Weverything
-    QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/mac -I/usr/local/include -I/usr/local/opt/pcsc-lite/include/PCSC
-    INCLUDEPATH += $$SRCROOT/libtsduck/mac
+    QMAKE_CXXFLAGS += -I/usr/local/include -I/usr/local/opt/pcsc-lite/include/PCSC
     LIBS += -L/usr/local/lib -L/usr/local/opt/pcsc-lite/lib
     QMAKE_EXTENSION_SHLIB = so
     DEFINES += TS_NO_DTAPI=1
 }
-win32|win64 {
-    QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/windows
-    INCLUDEPATH += $$SRCROOT/libtsduck/windows
+exists(/usr/include/srt/*.h) | exists(/usr/local/include/srt/*.h) {
+    LIBS += -lsrt
+}
+else {
+    DEFINES += TS_NOSRT=1
 }
 tstool {
     # TSDuck tools shall use "CONFIG += tstool"
     CONFIG += libtsduck
     TEMPLATE = app
-    SOURCES += ../../../src/tstools/$${TARGET}.cpp
+    SOURCES += $$SRCROOT/tstools/$${TARGET}.cpp
+}
+util {
+    # TSDuck utils shall use "CONFIG += utils"
+    CONFIG += libtsduck
+    TEMPLATE = app
+    SOURCES += $$SRCROOT/utils/$${TARGET}.cpp
 }
 tsplugin {
     # TSP plugins shall use "CONFIG += tsplugin"
     CONFIG += libtsduck plugin
     TEMPLATE = lib
-    SOURCES += ../../../src/tsplugins/$${TARGET}.cpp
+    SOURCES += $$SRCROOT/tsplugins/$${TARGET}.cpp
     QMAKE_POST_LINK += mkdir -p ../tsp $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += cp $${TARGET}.so ../tsp $$escape_expand(\\n\\t)
 }
 libtsduck {
     # Applications using libtsduck shall use "CONFIG += libtsduck".
     linux:QMAKE_LFLAGS += -Wl,--rpath=\'\$\$ORIGIN/../libtsduck\'
-    LIBS += ../libtsduck/tsduck.so
-    PRE_TARGETDEPS += ../libtsduck/tsduck.so
+    LIBS += ../libtsduck/libtsduck.so
+    PRE_TARGETDEPS += ../libtsduck/libtsduck.so
     DEPENDPATH += ../libtsduck
-    QMAKE_POST_LINK += cp $$SRCROOT/libtsduck/tsduck.*.xml . $$escape_expand(\\n\\t)
-    QMAKE_POST_LINK += cp $$SRCROOT/libtsduck/tsduck.*.names . $$escape_expand(\\n\\t)
+    INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name $$NOSYSDIR ! -name private ! -name release\\* ! -name debug\\*")
+    QMAKE_POST_LINK += cp $$TS_CONFIG_FILES . $$escape_expand(\\n\\t)
 }
 LIBS += -lpcsclite

@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsAsyncReport.h"
 #include "tsFatal.h"
 #include "tsMutex.h"
@@ -68,29 +69,28 @@ namespace {
 //  Command line options
 //----------------------------------------------------------------------------
 
-class ECMGOptions: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(ECMGOptions);
-public:
-    ECMGOptions(int argc, char *argv[]);
-    virtual ~ECMGOptions();
+namespace {
+    class ECMGOptions: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(ECMGOptions);
+    public:
+        ECMGOptions(int argc, char *argv[]);
 
-    int                        log_protocol;   // Log level for ECMG <=> SCS protocol.
-    int                        log_data;       // Log level for CW/ECM data messages.
-    bool                       once;           // Accept only one client.
-    bool                       reusePort;      // Socket option.
-    ts::MilliSecond            ecmCompTime;    // ECM computation time.
-    ts::SocketAddress          serverAddress;  // TCP server local address.
-    ts::ecmgscs::ChannelStatus channelStatus;  // Standard parameters required by this ECMG.
-    ts::ecmgscs::StreamStatus  streamStatus;   // Standard parameters required by this ECMG.
-};
+        ts::DuckContext            duck;           // TSDuck execution context.
+        int                        log_protocol;   // Log level for ECMG <=> SCS protocol.
+        int                        log_data;       // Log level for CW/ECM data messages.
+        bool                       once;           // Accept only one client.
+        bool                       reusePort;      // Socket option.
+        ts::MilliSecond            ecmCompTime;    // ECM computation time.
+        ts::SocketAddress          serverAddress;  // TCP server local address.
+        ts::ecmgscs::ChannelStatus channelStatus;  // Standard parameters required by this ECMG.
+        ts::ecmgscs::StreamStatus  streamStatus;   // Standard parameters required by this ECMG.
+    };
+}
 
-// Destructor.
-ECMGOptions::~ECMGOptions() {}
-
-// Constructor.
 ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     ts::Args(u"Minimal generic DVB SimulCrypt-compliant ECMG", u"[options]"),
+    duck(this),
     log_protocol(ts::Severity::Debug),
     log_data(ts::Severity::Debug),
     once(false),
@@ -658,7 +658,7 @@ bool ECMGClientHandler::handleCWProvision(ts::ecmgscs::CWProvision* msg)
         if (_opt.channelStatus.section_TSpkt_flag) {
             // Send ECM as TS packets, packetize the section.
             ts::TSPacketVector ecmPackets;
-            ts::OneShotPacketizer zer;
+            ts::OneShotPacketizer zer(_opt.duck);
             zer.addSection(ecmSection);
             zer.getPackets(ecmPackets);
             if (!ecmPackets.empty()) {

@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2019, Thierry Lelegard
+#  Copyright (c) 2005-2020, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,8 @@ include ../Makefile.tsduck
 # By default, recurse make target in all subdirectories.
 # Default alphabetical order is fine here.
 
-# Do not recurse in utest when NOTEST or CROSS is defined.
-NORECURSE_SUBDIRS += $(if $(NOTEST)$(CROSS),utest,)
+# Do not recurse in utest and utils when NOTEST or CROSS is defined.
+NORECURSE_SUBDIRS += $(if $(NOTEST)$(CROSS),utest utils,)
 
 default:
 	+@$(RECURSE)

@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,8 @@
 #include "tsInputRedirector.h"
 #include "tsTablesDisplay.h"
 #include "tsSectionDemux.h"
+#include "tsBinaryTable.h"
+#include "tsTSPacket.h"
 #include "tsNames.h"
 #include "tsTDT.h"
 #include "tsTOT.h"
@@ -47,20 +49,21 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options();
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::DuckContext   duck;     // TSDuck execution context.
-    ts::TablesDisplay display;  // Table formatting options (all default values, nothing on command line).
-    bool              no_tdt;   // Do not try to get a TDT
-    bool              no_tot;   // Do not try to get a TOT
-    bool              all;      // Report all tables, not only the first one.
-    ts::UString       infile;   // Input file name
-};
+        ts::DuckContext   duck;     // TSDuck execution context.
+        ts::TablesDisplay display;  // Table formatting options (all default values, nothing on command line).
+        bool              no_tdt;   // Do not try to get a TDT
+        bool              no_tot;   // Do not try to get a TOT
+        bool              all;      // Report all tables, not only the first one.
+        ts::UString       infile;   // Input file name
+    };
+}
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Extract the date and time (TDT/TOT) from a transport stream", u"[options] [filename]"),
@@ -91,10 +94,6 @@ Options::Options(int argc, char *argv[]) :
     no_tot = present(u"notot");
 
     exitOnError();
-}
-
-Options::~Options()
-{
 }
 
 
@@ -189,7 +188,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
             if (_opt.verbose()) {
                 const ts::TID tid = table.tableId();
                 const ts::PID pid = table.sourcePID();
-                std::cout << ts::UString::Format(u"* Got unexpected %s, TID %d (0x%X) on PID %d (0x%X)", {ts::names::TID(tid), tid, tid, pid, pid}) << std::endl;
+                std::cout << ts::UString::Format(u"* Got unexpected %s, TID %d (0x%X) on PID %d (0x%X)", {ts::names::TID(_opt.duck, tid), tid, tid, pid, pid}) << std::endl;
             }
         }
     }

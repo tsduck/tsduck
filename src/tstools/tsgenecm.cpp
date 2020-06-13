@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,12 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsECMGClient.h"
 #include "tsECMGSCS.h"
 #include "tsStandaloneTableDemux.h"
 #include "tsSectionFile.h"
+#include "tsTSPacket.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
@@ -44,25 +46,22 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class GenECMOptions: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(GenECMOptions);
-public:
-    GenECMOptions(int argc, char *argv[]);
-    virtual ~GenECMOptions();
+namespace {
+    class GenECMOptions: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(GenECMOptions);
+    public:
+        GenECMOptions(int argc, char *argv[]);
 
-    ts::DuckContext    duck;       // TSDuck execution context.
-    ts::UString        outFile;    // Name of binary output file.
-    ts::ECMGClientArgs ecmg;       // ECMG parameters
-    uint16_t           cpNumber;   // Crypto-period number
-    ts::ByteBlock      cwCurrent;  // Current CW
-    ts::ByteBlock      cwNext;     // Next CW
-};
+        ts::DuckContext    duck;       // TSDuck execution context.
+        ts::UString        outFile;    // Name of binary output file.
+        ts::ECMGClientArgs ecmg;       // ECMG parameters
+        uint16_t           cpNumber;   // Crypto-period number
+        ts::ByteBlock      cwCurrent;  // Current CW
+        ts::ByteBlock      cwNext;     // Next CW
+    };
+}
 
-// Destructor.
-GenECMOptions::~GenECMOptions() {}
-
-// Constructor.
 GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     ts::Args(u"Generate one ECM using any DVB SimulCrypt compliant ECMG", u"[options] output-file"),
     duck(this),
@@ -96,7 +95,7 @@ GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     analyze(argc, argv);
 
     // Analyze parameters.
-    ecmg.loadArgs(*this);
+    ecmg.loadArgs(duck, *this);
     getValue(outFile, u"");
     cpNumber = intValue<uint16_t>(u"cp-number", 0);
     if (!value(u"cw-current").hexaDecode(cwCurrent) || !value(u"cw-next").hexaDecode(cwNext)) {

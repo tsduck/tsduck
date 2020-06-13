@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,8 @@
 #include "tsMain.h"
 #include "tsTSPacket.h"
 #include "tsPagerArgs.h"
+#include "tsDuckContext.h"
+#include "tsArgs.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
@@ -43,25 +45,28 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options();
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    uint32_t          dump_flags;  // Dump options for Hexa and Packet::dump
-    bool              raw_file;    // Raw dump of file, not TS packets
-    bool              log;         // Option --log
-    size_t            log_size;    // Size to display with --log
-    ts::PIDSet        pids;        // PID values to dump.
-    ts::PacketCounter max_packets; // Maximum number of packets to dump per file
-    ts::UStringVector infiles;     // Input file names
-    ts::PagerArgs     pager;       // Output paging options.
-};
+        ts::DuckContext   duck;        // TSDuck context
+        uint32_t          dump_flags;  // Dump options for Hexa and Packet::dump
+        bool              raw_file;    // Raw dump of file, not TS packets
+        bool              log;         // Option --log
+        size_t            log_size;    // Size to display with --log
+        ts::PIDSet        pids;        // PID values to dump.
+        ts::PacketCounter max_packets; // Maximum number of packets to dump per file
+        ts::UStringVector infiles;     // Input file names
+        ts::PagerArgs     pager;       // Output paging options.
+    };
+}
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Dump and format MPEG transport stream packets", u"[options] [filename ...]"),
+    duck(this),
     dump_flags(0),
     raw_file(false),
     log(false),
@@ -122,7 +127,7 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    pager.loadArgs(*this);
+    pager.loadArgs(duck, *this);
 
     getValues(infiles);
     raw_file = present(u"raw-file");
@@ -173,10 +178,6 @@ Options::Options(int argc, char *argv[]) :
     }
 
     exitOnError();
-}
-
-Options::~Options()
-{
 }
 
 

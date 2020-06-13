@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2019, Thierry Lelegard
+#  Copyright (c) 2005-2020, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -57,10 +57,12 @@ $(GITHOOKS_TARGETS): Makefile
 default: $(GITHOOKS_TARGETS)
 	+@$(RECURSE)
 
-# Check if dot (from Graphviz) is installed.
-# These environment variables are used in Doxyfile.
-export DOT_PATH := $(call F_SEARCH,dot)
-export HAVE_DOT := $(if $(DOT_PATH),YES,NO)
+# Doxygen needs the TSDuck version and dot (from Graphviz).
+ifneq ($(filter-out doxygen,$(MAKECMDGOALS)), $(MAKECMDGOALS))
+    export TS_FULL_VERSION := $(shell ./get-version-from-sources.sh)
+    export DOT_PATH := $(call F_SEARCH,dot)
+    export HAVE_DOT := $(if $(DOT_PATH),YES,NO)
+endif
 
 # Install system files.
 .PHONY: install install-devel
@@ -69,8 +71,8 @@ install:
 	@true
 else
 install: 80-tsduck.rules 80-tsduck.perms
-	install -d -m 755 $(SYSROOT)$(ETCDIR)/udev/rules.d
-	install -m 644 80-tsduck.rules $(SYSROOT)$(ETCDIR)/udev/rules.d/
+	install -d -m 755 $(SYSROOT)$(UDEVDIR)
+	install -m 644 80-tsduck.rules $(SYSROOT)$(UDEVDIR)/
 	install -d -m 755 $(SYSROOT)$(ETCDIR)/security/console.perms.d
 	install -m 644 80-tsduck.perms $(SYSROOT)$(ETCDIR)/security/console.perms.d/
 endif
@@ -78,7 +80,9 @@ install-devel:
 	@true
 
 # Build the source tarballs for distribution.
-TARNAME = tsduck-$(TS_FULL_VERSION)
+VERSION = $(shell ./get-version-from-sources.sh)
+DISTRO  = $(shell ./get-version-from-sources.sh --distro)
+TARNAME = tsduck-$(VERSION)
 TARFILE = $(INSTALLERDIR)/$(TARNAME).tgz
 TMPROOT = $(INSTALLERDIR)/tmp
 ifdef NOTELETEXT
@@ -92,11 +96,6 @@ tarball:
 	$(MAKE) -C $(TMPROOT)/$(TARNAME) distclean
 	tar -C $(TMPROOT) -czf $(TARFILE) -p --owner=0 --group=0 $(TARNAME)
 	rm -rf $(TMPROOT)
-
-# Linux distro version.
-FC_DISTRO = $(if $(wildcard /etc/fedora-release),$(shell grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\).*$$/\1/'),)
-RH_DISTRO = $(if $(wildcard /etc/redhat-release),$(shell grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\).*$$/\1/'),)
-DISTRO    = $(if $(FC_DISTRO),.fc$(FC_DISTRO),$(if $(RH_DISTRO),.el$(RH_DISTRO),))
 
 # Installer target: rpm or deb.
 installer: $(if $(wildcard /etc/*fedora* /etc/*redhat*),rpm,$(if $(wildcard /etc/*debian*),deb,))
@@ -114,10 +113,14 @@ DTAPI_ORIGIN = $(if $(wildcard $(ROOTDIR)/dektec/LinuxSDK.version),$(ROOTDIR)/de
 rpm: tarball $(RPMBUILDROOT)
 	cp -f $(TARFILE) $(RPMBUILDROOT)/SOURCES/
 	$(if $(wildcard $(DTAPI_ORIGIN)),MAKEFLAGS=DTAPI_ORIGIN=$(DTAPI_ORIGIN),) \
-	  $(RPMBUILD) $(RPMBUILDFLAGS) -D 'version $(TS_VERSION)' -D 'commit $(TS_COMMIT)'  -D 'distro $(DISTRO)' tsduck.spec
-	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(TS_FULL_VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
-	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(TS_FULL_VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
-	cp -uf $(RPMBUILDROOT)/SRPMS/tsduck-$(TS_FULL_VERSION)$(DISTRO).src.rpm $(INSTALLERDIR)
+	  $(RPMBUILD) $(RPMBUILDFLAGS) \
+	      -D 'version $(shell ./get-version-from-sources.sh --main)' \
+	      -D 'commit $(shell ./get-version-from-sources.sh --commit)' \
+	      -D 'distro $(DISTRO)' \
+	      tsduck.spec
+	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
+	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
+	cp -uf $(RPMBUILDROOT)/SRPMS/tsduck-$(VERSION)$(DISTRO).src.rpm $(INSTALLERDIR)
 rpm32:
 	$(MAKE) rpm M32=true
 
@@ -130,11 +133,10 @@ deb-main:
 	rm -rf $(TMPDIR)
 	$(MAKE) NOTEST=true -C $(ROOTDIR) install SYSROOT=$(TMPDIR)
 	mkdir $(TMPDIR)/DEBIAN
-	sed -e 's/{{VERSION}}/$(TS_FULL_VERSION)/g' \
+	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    tsduck.control >$(TMPDIR)/DEBIAN/control
 	sed -e 's|{{EXECS}}|$(addprefix /usr/bin/,$(TSEXECS))|g' \
-	    -e 's|{{SHLIBS}}|$(addprefix /usr/bin/,$(SHARED_LIBTSDUCK) $(addsuffix .so,$(TSPLUGINS)))|g' \
 	    tsduck.postinst >$(TMPDIR)/DEBIAN/postinst
 	chmod a+x $(TMPDIR)/DEBIAN/postinst
 	dpkg --build $(TMPDIR) $(INSTALLERDIR)
@@ -144,7 +146,7 @@ deb-dev:
 	rm -rf $(TMPDIR)
 	$(MAKE) NOTEST=true -C $(ROOTDIR) install-devel SYSROOT=$(TMPDIR)
 	mkdir $(TMPDIR)/DEBIAN
-	sed -e 's/{{VERSION}}/$(TS_FULL_VERSION)/g' \
+	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    tsduck-dev.control >$(TMPDIR)/DEBIAN/control
 	cp tsduck-dev.postinst $(TMPDIR)/DEBIAN/postinst

@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,12 +32,11 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsPESDemux.h"
 #include "tsAVCSequenceParameterSet.h"
 #include "tsNames.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 
@@ -95,8 +94,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(pes, ts::PESPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"pes", ts::PESPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -411,7 +409,7 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
 
     // Check that video packets start with either 00 00 01 (ISO 11172-2, MPEG-1, or ISO 13818-2, MPEG-2)
     // or 00 00 00 .. 01 (ISO 14496-10, MPEG-4 AVC). Don't know how ISO 14496-2 (MPEG-4 video) should start.
-    if (IsVideoSID(pkt.getStreamId()) && !pkt.isMPEG2Video() && !pkt.isAVC()) {
+    if (IsVideoSID(pkt.getStreamId()) && !pkt.isMPEG2Video() && !pkt.isAVC() && !pkt.isHEVC()) {
         out << UString::Format(u"WARNING: PID 0x%X, invalid start of video PES payload: ", {pkt.getSourcePID()})
             << UString::Dump(pkt.payload(), std::min<size_t> (8, pkt.payloadSize()), UString::SINGLE_LINE)
             << std::endl;
@@ -534,7 +532,7 @@ void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t se
 
     // Now display the SEI.
     std::ostream& out(_outfile.is_open() ? _outfile : std::cout);
-    out << UString::Format(u"* PID 0x%X, SEI type %s", {pkt.getSourcePID(), DVBNameFromSection(u"AVCSEIType", sei_type, names::FIRST)})
+    out << UString::Format(u"* PID 0x%X, SEI type %s", {pkt.getSourcePID(), NameFromSection(u"AVCSEIType", sei_type, names::FIRST)})
         << std::endl
         << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", {offset, size})
         << std::endl;

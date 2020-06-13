@@ -1,0 +1,42 @@
+// Windows resource file, used to build all applications and plugins.
+
+#include <VerRsrc.h>
+#include "tsVersion.h"
+
+#define STRINGIZE2(s) #s
+#define STRINGIZE(s) STRINGIZE2(s)
+#define VERSION_STRING STRINGIZE(TS_VERSION_MAJOR) "." STRINGIZE(TS_VERSION_MINOR) "-" STRINGIZE(TS_COMMIT)
+
+// Product icon.
+IDI_ICON1 ICON "..\\build\\tsduck-extension.ico"
+
+// Version identification.
+VS_VERSION_INFO VERSIONINFO
+  FILEVERSION    TS_VERSION_MAJOR, TS_VERSION_MINOR, TS_COMMIT, 0
+  PRODUCTVERSION TS_VERSION_MAJOR, TS_VERSION_MINOR, TS_COMMIT, 0
+  FILEFLAGSMASK  0xFFFF
+  FILEFLAGS      TS_WINVER_FILEFLAGS
+  FILEOS         VOS_NT_WINDOWS32
+  FILETYPE       TS_WINVER_FILETYPE
+  FILESUBTYPE    0x0L
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    // LangID 0x0409 = U.S. English, CharsetID 1200 (0x04B0) = Unicode
+    BLOCK "040904B0"
+    BEGIN
+      VALUE "ProductName",      "TSDuck Extension Foo\0"
+      VALUE "ProductVersion",   VERSION_STRING "\0"
+      VALUE "LegalCopyright",   "Copyright (c) 2019, Foo Company\0"
+      VALUE "FileDescription",  "TSDuck Extension Foo\0"
+      VALUE "FileVersion",      VERSION_STRING "\0"
+      VALUE "OriginalFilename", STRINGIZE(TARGET_FILENAME) "\0"
+      VALUE "InternalName",     STRINGIZE(TARGET_FILENAME) "\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    // LangID 0x0409 = U.S. English, CharsetID 1200 (0x04B0) = Unicode
+    VALUE "Translation", 0x409, 1200
+  END
+END

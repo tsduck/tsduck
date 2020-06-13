@@ -9,6 +9,7 @@
 *.cpp text linguist-language=C++
 *.c text linguist-language=C
 *.xml text linguist-language=XML
+*.yml text linguist-language=YAML
 *.pro text linguist-language=QMake
 *.pri text linguist-language=QMake
 *.names text linguist-language=Names

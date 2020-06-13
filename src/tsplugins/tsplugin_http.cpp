@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -55,18 +55,18 @@ namespace ts {
         HttpInput(TSP*);
         virtual bool getOptions() override;
         virtual void processInput() override;
+        virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
     private:
         size_t         _repeat_count;
         bool           _ignore_errors;
         MilliSecond    _reconnect_delay;
-        WebRequest     _request;
+        UString        _url;
         WebRequestArgs _web_args;
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(http, ts::HttpInput)
+TS_REGISTER_INPUT_PLUGIN(u"http", ts::HttpInput);
 
 
 //----------------------------------------------------------------------------
@@ -78,7 +78,7 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
     _repeat_count(0),
     _ignore_errors(false),
     _reconnect_delay(0),
-    _request(*tsp),
+    _url(),
     _web_args()
 {
     _web_args.defineArgs(*this);
@@ -123,19 +123,28 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
 bool ts::HttpInput::getOptions()
 {
     // Decode options.
+    _url = value(u"");
     _repeat_count = intValue<size_t>(u"repeat", present(u"infinite") ? std::numeric_limits<size_t>::max() : 1);
     _reconnect_delay = intValue<MilliSecond>(u"reconnect-delay", 0);
     _ignore_errors = present(u"ignore-errors");
-    _web_args.loadArgs(*this);
+    _web_args.loadArgs(duck, *this);
 
     // Resize the inter-thread packet queue.
     setQueueSize(intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS));
 
-    // Prepare web request.
-    _request.setURL(value(u""));
-    _request.setAutoRedirect(true);
-    _request.setArgs(_web_args);
+    return true;
+}
 
+
+//----------------------------------------------------------------------------
+// Set receive timeout from tsp.
+//----------------------------------------------------------------------------
+
+bool ts::HttpInput::setReceiveTimeout(MilliSecond timeout)
+{
+    if (timeout > 0) {
+        _web_args.receiveTimeout = _web_args.connectionTimeout = timeout;
+    }
     return true;
 }
 
@@ -148,6 +157,12 @@ void ts::HttpInput::processInput()
 {
     bool ok = true;
 
+    // Create a Web request to download the content.
+    WebRequest request(*tsp);
+    request.setURL(_url);
+    request.setAutoRedirect(true);
+    request.setArgs(_web_args);
+
     // Loop on request count.
     for (size_t count = 0; count < _repeat_count && (ok || _ignore_errors) && !tsp->aborting(); count++) {
         // Wait between reconnections.
@@ -155,6 +170,6 @@ void ts::HttpInput::processInput()
             SleepThread(_reconnect_delay);
         }
         // Perform one download.
-        ok = _request.downloadToApplication(this);
+        ok = request.downloadToApplication(this);
     }
 }

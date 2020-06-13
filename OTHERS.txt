@@ -1,0 +1,82 @@
+                        Licenses of third-party software
+
+                              --------------------
+
+The TSDuck software is released under the terms of the license which is commonly
+referred to as "BSD 2-Clause License" or "Simplified BSD License" or "FreeBSD License".
+See file LICENSE.txt and http://opensource.org/licenses/BSD-2-Clause
+
+TSDuck includes parts of other libraries, either in source or binary form. The
+license for these third-party software are described below.
+
+                                ==== DTAPI ====
+
+[[ DTAPI is proprietary software from Dektec. It is delivered in binary    ]]
+[[ form only. TSDuck source code does not include DTAPI. The build scripts ]]
+[[ of TSDuck download DTAPI and include it in TSDuck binary packages.      ]]
+[[ Reference site: https://www.dektec.com/downloads/SDK/                   ]]
+
+Copyright (C) 2000-2017 DekTec Digital Video B.V.
+
+Redistribution and use in source and binary forms, with or without modification, are
+permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list
+   of conditions and the following disclaimer.
+
+2. Redistributions in binary format must reproduce the above copyright notice, this
+   list of conditions and the following disclaimer in the documentation.
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL DEKTEC DIGITAL VIDEO BV, ITS AGENTS OR ITS EMPLOYEES BE LIABLE FOR
+ANY DIRECT, INDIRECT, CONSEQUENTIAL, INCIDENTAL, OR OTHER DAMAGES (INCLUDING DAMAGES
+FOR THE LOSS OF USE, INFORMATION, GOODWILL, PROFIT, WORK STOPPAGE, DATA, BUSINESS OR
+REVENUE) UNDER ANY CIRCUMSTANCES, OR UNDER ANY LEGAL THEORY, WHETHER IN CONTRACT, IN
+TORT, IN NEGLIGENCE, OR OTHERWISE, ARISING FROM THE USE OF, OR INABILITY TO USE THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+                             ==== LibTomCrypt ====
+
+[[ LibTomCrypt is not fully used or included by TSDuck. However, some code ]]
+[[ was directly copied and adapted from LibTomCrypt into TSDuck.           ]]
+[[ Reference site: http://www.libtom.net/LibTomCrypt/                      ]]
+
+LibTomCrypt is licensed under DUAL licensing terms.
+Choose and use the license of your needs.
+
+LICENSE #1
+
+LibTomCrypt is public domain.  As should all quality software be.
+Tom St Denis
+
+LICENSE #2
+
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+                    Version 2, December 2004
+
+Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+
+Everyone is permitted to copy and distribute verbatim or modified
+copies of this license document, and changing it is allowed as long
+as the name is changed.
+
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
+  0. You just DO WHAT THE FUCK YOU WANT TO.
+
+                                ==== LIBSRT ====
+
+[[ LIBSRT is used by TSDuck to access Secure Reliable Transport. LIBSRT is ]]
+[[ distributed according to the terms of the Mozilla Public License        ]]
+[[ Version 2.0. No source code from LIBSRT is used in TSDuck. However, on  ]]
+[[ Windows, the TSDuck binary installers include the LIBSRT binaries.      ]]
+[[ Reference site: https://github.com/Haivision/srt                        ]]
+
+Copyright (c) 2018 Haivision Systems Inc.
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.

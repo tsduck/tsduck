@@ -1,7 +1,7 @@
 ;-----------------------------------------------------------------------------
 ;
 ;  TSDuck - The MPEG Transport Stream Toolkit
-;  Copyright (c) 2005-2019, Thierry Lelegard
+;  Copyright (c) 2005-2020, Thierry Lelegard
 ;  All rights reserved.
 ;
 ;  Redistribution and use in source and binary forms, with or without
@@ -28,9 +28,17 @@
 ;-----------------------------------------------------------------------------
 ;
 ;  NSIS script to build the TSDuck binary installer for Windows.
+;  Do not invoke NSIS directly, use build-installer.ps1.
 ;
-;  Do not invoke NSIS directly, use Build-Installer.ps1.
-;  If Win64 is defined, generate a 64-bit installer (default: 32-bit).
+;  Required command-line definitions:
+;  - Version : Product version.
+;  - VersionInfo : Product version info in Windows format.
+;  - BinDir : Directory of built binaries (.exe and .dll).
+;  - Win64 : If defined, generate a 64-bit installer (default: 32-bit).
+;  - HeadersDir : Directory containing all header files (development options).
+;  - VCRedist : Full path of the MSVC redistributable installer.
+;  - VCRedistName : Base name of the MSVC redistributable installer.
+;  - NoTeletext : Disable Teletext plugins.
 ;
 ;-----------------------------------------------------------------------------
 
@@ -50,35 +58,26 @@ Caption "TSDuck Installer"
 ; Directories.
 !define RootDir ".."
 !define InstallerDir "${RootDir}\installers"
-!define ProjectDir "${RootDir}\build\msvc"
-!ifdef Win64
-    !define BinDir "${ProjectDir}\Release-x64"
-    !define MsvcRedistExe "vcredist64.exe"
-!else
-    !define BinDir "${ProjectDir}\Release-Win32"
-    !define MsvcRedistExe "vcredist32.exe"
-!endif
+!define BinRoot "${BinDir}\.."
 
-; Get TSDuck version
-!system '"${BinDir}\tsp.exe" --version=nsis 2>tsduck-tmp.nsh'
-!include tsduck-tmp.nsh
-!delfile tsduck-tmp.nsh
-
-VIProductVersion ${tsduckVersionInfo}
+VIProductVersion ${VersionInfo}
 VIAddVersionKey ProductName "TSDuck"
-VIAddVersionKey ProductVersion "${tsduckVersion}"
+VIAddVersionKey ProductVersion "${Version}"
 VIAddVersionKey Comments "TSDuck - The MPEG Transport Stream Toolkit"
 VIAddVersionKey CompanyName "Thierry Lelegard"
-VIAddVersionKey LegalCopyright "Copyright (c) 2005-2019, Thierry Lelegard"
-VIAddVersionKey FileVersion "${tsduckVersionInfo}"
+VIAddVersionKey LegalCopyright "Copyright (c) 2005-2020, Thierry Lelegard"
+VIAddVersionKey FileVersion "${VersionInfo}"
 VIAddVersionKey FileDescription "TSDuck - The MPEG Transport Stream Toolkit"
 
 ; Name of binary installer file.
 !ifdef Win64
-    OutFile "${InstallerDir}\TSDuck-Win64-${tsduckVersion}.exe"
+    OutFile "${InstallerDir}\TSDuck-Win64-${Version}.exe"
 !else
-    OutFile "${InstallerDir}\TSDuck-Win32-${tsduckVersion}.exe"
+    OutFile "${InstallerDir}\TSDuck-Win32-${Version}.exe"
 !endif
+
+; Generate a Unicode installer (default is ANSI).
+Unicode true
 
 ; Registry key for environment variables
 !define EnvironmentKey '"SYSTEM\CurrentControlSet\Control\Session Manager\Environment"'
@@ -132,6 +131,21 @@ Section "Tools & Plugins" SectionTools
     ; Work on "all users" context, not current user.
     SetShellVarContext all
 
+    ; Delete obsolete files from previous versions.
+    Delete "$INSTDIR\bin\tsgentab.exe"
+    Delete "$INSTDIR\bin\tsgentab*.dll"
+    Delete "$INSTDIR\bin\tsduck.xml"
+    Delete "$INSTDIR\bin\tsduck.channels.xml"
+    Delete "$INSTDIR\bin\tsduck.dvb.names"
+    Delete "$INSTDIR\bin\tsplugin_dektec.dll"
+    Delete "$INSTDIR\bin\tsplugin_drop.dll"
+    Delete "$INSTDIR\bin\tsplugin_file.dll"
+    Delete "$INSTDIR\bin\tsplugin_fork.dll"
+    Delete "$INSTDIR\bin\tsplugin_hls.dll"
+    Delete "$INSTDIR\bin\tsplugin_ip.dll"
+    Delete "$INSTDIR\bin\tsplugin_null.dll"
+    Delete "$INSTDIR\bin\tsplugin_srt.dll"
+
     ; Create folder for binaries
     CreateDirectory "$INSTDIR\bin"
     SetOutPath "$INSTDIR\bin"
@@ -142,14 +156,8 @@ Section "Tools & Plugins" SectionTools
     !else
         File "${BinDir}\ts*.dll"
     !endif
-    File "${RootDir}\src\libtsduck\tsduck.*.xml"
-    File "${RootDir}\src\libtsduck\tsduck.*.names"
-
-    ; Delete obsolete files from previous versions.
-    Delete "$INSTDIR\bin\tsgentab.exe"
-    Delete "$INSTDIR\bin\tsgentab*.dll"
-    Delete "$INSTDIR\bin\tsduck.xml"
-    Delete "$INSTDIR\bin\tsduck.channels.xml"
+    File "${RootDir}\src\libtsduck\dtv\tsduck*.xml"
+    File "${RootDir}\src\libtsduck\dtv\tsduck*.names"
 
 SectionEnd
 
@@ -165,7 +173,6 @@ Section "Documentation" SectionDocumentation
     SetOutPath "$INSTDIR\doc"
     File "${RootDir}\doc\tsduck.pdf"
     File "${RootDir}\CHANGELOG.txt"
-    File "${RootDir}\LICENSE.txt"
 
     ; Create shortcuts in start menu.
     CreateDirectory "$SMPROGRAMS\TSDuck"
@@ -189,34 +196,29 @@ Section /o "Development" SectionDevelopment
     ; TSDuck header files.
     CreateDirectory "$INSTDIR\include"
     SetOutPath "$INSTDIR\include"
-    !ifdef NoTeletext
-        File /x tsTeletextDemux.h /x tsTeletextCharset.h "${RootDir}\src\libtsduck\*.h"
-    !else
-        File "${RootDir}\src\libtsduck\*.h"
-    !endif
-    File "${RootDir}\src\libtsduck\windows\*.h"
+    File "${HeadersDir}\*.h"
 
     ; TSDuck libraries.
     CreateDirectory "$INSTDIR\lib"
     CreateDirectory "$INSTDIR\lib\Release-Win32"
     SetOutPath "$INSTDIR\lib\Release-Win32"
-    File "${ProjectDir}\Release-Win32\tsduck.lib"
-    File "${ProjectDir}\Release-Win32\tsduck.dll"
+    File "${BinRoot}\Release-Win32\tsduck.lib"
+    File "${BinRoot}\Release-Win32\tsduck.dll"
 
     CreateDirectory "$INSTDIR\lib\Release-Win64"
     SetOutPath "$INSTDIR\lib\Release-Win64"
-    File "${ProjectDir}\Release-x64\tsduck.lib"
-    File "${ProjectDir}\Release-x64\tsduck.dll"
+    File "${BinRoot}\Release-x64\tsduck.lib"
+    File "${BinRoot}\Release-x64\tsduck.dll"
 
     CreateDirectory "$INSTDIR\lib\Debug-Win32"
     SetOutPath "$INSTDIR\lib\Debug-Win32"
-    File "${ProjectDir}\Debug-Win32\tsduck.lib"
-    File "${ProjectDir}\Debug-Win32\tsduck.dll"
+    File "${BinRoot}\Debug-Win32\tsduck.lib"
+    File "${BinRoot}\Debug-Win32\tsduck.dll"
 
     CreateDirectory "$INSTDIR\lib\Debug-Win64"
     SetOutPath "$INSTDIR\lib\Debug-Win64"
-    File "${ProjectDir}\Debug-x64\tsduck.lib"
-    File "${ProjectDir}\Debug-x64\tsduck.dll"
+    File "${BinRoot}\Debug-x64\tsduck.lib"
+    File "${BinRoot}\Debug-x64\tsduck.dll"
 
     ; Visual Studio property files.
     SetOutPath "$INSTDIR"
@@ -232,11 +234,19 @@ Section "-Common" SectionCommon
     ; Work on "all users" context, not current user.
     SetShellVarContext all
 
+    ; Delete obsolete files from previous versions.
+    Delete "$INSTDIR\setup\vc*redist*.exe"
+
+    ; License files.
+    SetOutPath "$INSTDIR"
+    File "${RootDir}\LICENSE.txt"
+    File "${RootDir}\OTHERS.txt"
+
     ; Setup tools.
     CreateDirectory "$INSTDIR\setup"
     SetOutPath "$INSTDIR\setup"
     File "${BinDir}\setpath.exe"
-    File "${ProjectDir}\redist\${MsvcRedistExe}"
+    File "${VCRedist}"
 
     ; Add an environment variable to TSDuck root.
     WriteRegStr HKLM ${EnvironmentKey} "TSDUCK" "$INSTDIR"
@@ -245,7 +255,7 @@ Section "-Common" SectionCommon
     WriteRegStr HKLM "${ProductKey}" "InstallDir" $INSTDIR
 
     ; Install or reinstall the Visual C++ redistributable library.
-    nsExec::Exec '"$INSTDIR\setup\${MsvcRedistExe}" /q /norestart'
+    nsExec::Exec '"$INSTDIR\setup\${VCRedistName}" /q /norestart'
     Pop $0
 
     ; Create uninstaller
@@ -255,7 +265,7 @@ Section "-Common" SectionCommon
     WriteRegStr HKLM "${UninstallKey}" "DisplayName" "TSDuck"
     WriteRegStr HKLM "${UninstallKey}" "Publisher" "Thierry Lelegard"
     WriteRegStr HKLM "${UninstallKey}" "URLInfoAbout" "https://tsduck.io/"
-    WriteRegStr HKLM "${UninstallKey}" "DisplayVersion" "${tsduckVersion}"
+    WriteRegStr HKLM "${UninstallKey}" "DisplayVersion" "${Version}"
     WriteRegStr HKLM "${UninstallKey}" "DisplayIcon" "$INSTDIR\TSDuckUninstall.exe"
     WriteRegStr HKLM "${UninstallKey}" "UninstallString" "$INSTDIR\TSDuckUninstall.exe"
 
@@ -343,8 +353,10 @@ Section "Uninstall"
     RMDir /r "$0\include"
     RMDir /r "$0\lib"
     Delete "$0\tsduck.props"
+    Delete "$0\LICENSE.txt"
+    Delete "$0\OTHERS.txt"
     Delete "$0\setup\setpath.exe"
-    Delete "$0\setup\${MsvcRedistExe}"
+    Delete "$0\setup\${VCRedistName}"
     RMDir "$0\setup"
     Delete "$0\TSDuckUninstall.exe"
     RMDir "$0"

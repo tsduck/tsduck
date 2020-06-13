@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -124,6 +124,10 @@ namespace {
             utest::TSUnitThread(attributes)
         {
         }
+        virtual ~ThreadConstructor()
+        {
+            waitForTermination();
+        }
         virtual void test() override
         {
             TSUNIT_FAIL("ThreadConstructor should not have started");
@@ -136,7 +140,7 @@ void ThreadTest::testAttributes()
     const int prio = ts::ThreadAttributes::GetMinimumPriority();
     ThreadConstructor thread(ts::ThreadAttributes().setStackSize(123456).setPriority(prio));
     ts::ThreadAttributes attr;
-    thread.getAttributes (attr);
+    thread.getAttributes(attr);
     TSUNIT_ASSERT(attr.getPriority() == prio);
     TSUNIT_ASSERT(attr.getStackSize() == 123456);
 
@@ -170,9 +174,9 @@ namespace {
         virtual void test() override
         {
             TSUNIT_ASSERT(isCurrentThread());
-            const ts::Time before (ts::Time::CurrentUTC());
+            const ts::Time before(ts::Time::CurrentUTC());
             ts::SleepThread(_delay);
-            const ts::Time after (ts::Time::CurrentUTC());
+            const ts::Time after(ts::Time::CurrentUTC());
             tsunit::Test::debug() << "ThreadTest::ThreadTermination: delay = " << _delay << ", after - before = " << (after - before) << std::endl;
             TSUNIT_ASSERT(after >= before + _delay - _msPrecision);
             _report = true;
@@ -292,7 +296,6 @@ namespace {
         {
             waitForTermination();
         }
-        // Main: decrement data and signal condition every 100 ms
         virtual void test() override
         {
             // Acquire the test mutex.
@@ -331,14 +334,14 @@ void ThreadTest::testMutexTimeout()
     const ts::Time dueTime1(start + 50 - _msPrecision);
     const ts::Time dueTime2(start + 100 - _msPrecision);
 
-    TSUNIT_ASSERT(!mutex.acquire(50));
+    // Use assumptions instead of assertions for time-dependent checks.
+    // Timing can be very weird on virtual machines which are used for unitary tests.
+    TSUNIT_ASSUME(!mutex.acquire(50));
     TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime1);
-    // The next assert may fail on a very busy system (when you compile while running
-    // your tests for instance). The test process may be suspended longer than expected
-    // and the final dueTime2 may have already passed.
-    TSUNIT_ASSERT(ts::Time::CurrentUTC() < dueTime2);
+    TSUNIT_ASSUME(ts::Time::CurrentUTC() < dueTime2);
     TSUNIT_ASSERT(mutex.acquire(1000));
     TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime2);
+    TSUNIT_ASSERT(mutex.release());
 
     debug() << "ThreadTest::testMutexTimeout: type name: \"" << thread.getTypeName() << "\"" << std::endl;
 }

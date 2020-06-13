@@ -116,7 +116,7 @@ the specialized plugin processing (TS input, TS output, packet processing).
 ## Plugin Executors {#pdevexec}
 
 Each plugin executes in a separate thread. The base class for all threads is
-ts::tsp::PluginExecutor. Derived classes are used for input, output and packet
+`ts::tsp::PluginExecutor`. Derived classes are used for input, output and packet
 processing plugins.
 
 ## Transport packets buffer {#pdevbuffer}
@@ -134,12 +134,24 @@ The buffer is managed in a circular way. It is divided into logical areas, one p
 thread (including input and output). These logical areas are sliding windows which move
 when packets are processed.
 
-Inside a ts::PluginExecutor object, the sliding window which is currently assigned to the
+Inside a `ts::tsp::PluginExecutor` object, the sliding window which is currently assigned to the
 plugin thread is defined by the index of its first packet (`_pkt_first`) and its size in
 packets (`_pkt_cnt`).
 
-The documentation of class ts::tsp::PluginExecutor contains a flat (non-circular)
-@ref PacketBufferModel "view of the buffer".
+Flat (non-circular) view of the buffer:
+
+@code
+      output->_pkt_first            proc_1->_pkt_first
+      |                             |
+      |          proc_N->_pkt_first |          input->_pkt_first
+      |          |                  |          |
+      V          V                  V          V
+     +----------+----------+-------+----------+---------+
++->  |  output  |  proc N  |  ...  |  proc 1  |  input  |  ->-+
+|    +----------+----------+-------+----------+---------+     |
+|                                                             |
++-------------------------------------------------------------+
+@endcode
 
 When a thread terminates the processing of a bunch of packets, it moves up its first index
 and, consequently, decreases the size of its own area and accordingly increases the size
@@ -158,10 +170,10 @@ When a packet processor decides to drop a packet, the synchronization byte (firs
 of the packet, normally 0x47) is reset to zero. When a packet processor or the output
 executor encounters a packet starting with a zero byte, it ignores it. Note that this
 is transparent to the plugin code in the shared library. The check is performed by the
-ts::ProcessorExecutor and ts::OutputExecutor objects. When a packet is marked as dropped,
-the plugin is not invoked.
+`ts::tsp::ProcessorExecutor` and `ts::tsp::OutputExecutor` objects. When a packet is
+marked as dropped, the plugin is not invoked.
 
-All ts::PluginExecutor are chained in a ring. The first one is input and the last one
+All `ts::tsp::PluginExecutor` are chained in a ring. The first one is input and the last one
 is output. The output points back to the input so that the output executor can easily
 pass free packets to be reused by the input executor.
 

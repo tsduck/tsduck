@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
+#include "tsSectionFile.h"
 #include "tsTextFormatter.h"
 #include "tsCerrReport.h"
 #include "tsReportBuffer.h"
@@ -248,7 +249,7 @@ void XMLTest::testFileBOM()
 void XMLTest::testValidation()
 {
     ts::xml::Document model(report());
-    TSUNIT_ASSERT(model.load(u"tsduck.tables.model.xml"));
+    TSUNIT_ASSERT(model.load(TS_XML_TABLES_MODEL));
 
     const ts::UString xmlContent(
         u"<?xml version='1.0' encoding='UTF-8'?>\n"
@@ -482,5 +483,5 @@ void XMLTest::testTweaks()
 void XMLTest::testChannels()
 {
     ts::xml::Document model(report());
-    TSUNIT_ASSERT(model.load(u"tsduck.channels.model.xml"));
+    TSUNIT_ASSERT(model.load(TS_XML_TABLES_MODEL));
 }

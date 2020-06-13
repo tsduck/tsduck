@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2019, Thierry Lelegard
+#  Copyright (c) 2005-2020, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -32,34 +32,26 @@
 #-----------------------------------------------------------------------------
 
 # With static link, we compile in a specific directory.
-OBJDIR_SUFFIX := $(if $(STATIC),-static,)
+BINDIR_SUFFIX := $(if $(STATIC),-static,)
+OBJSUBDIR := objs-tstools
 
 include ../../Makefile.tsduck
 
-default: execs $(OBJDIR)/setenv.sh
+default: execs
 	@true
 
 .PHONY: execs
 execs: $(EXECS)
 
-# tsp and tswitch have additional modules
-$(OBJDIR)/tsp: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(filter tsp%,$(MODULES_LIB))))
-$(OBJDIR)/tsswitch: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(filter tsswitch%,$(MODULES_LIB))))
-
 ifndef STATIC
-# With dynamic link (the default), we use the shareable library.
-$(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
+    # With dynamic link (the default), we use the shareable library.
+    $(EXECS): $(SHARED_LIBTSDUCK)
 else
-# With static link, we compile in a specific directory and we link tsp with all plugins.
-LDFLAGS_EXTRA = -static
-$(OBJDIR)/tsp: $(addprefix $(TSPLUGINSDIR)/$(OBJDIR)/,$(addsuffix .o,$(TSPLUGINS)))
-$(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
+    # With static link, we compile in a specific directory and we link tsp with all plugins.
+    LDFLAGS_EXTRA = -static
+    $(BINDIR)/tsp: $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS)))
+    $(EXECS): $(STATIC_LIBTSDUCK)
 endif
-
-$(OBJDIR)/setenv.sh: Makefile
-	echo '[[ ":$$PATH:" != *:$(realpath $(OBJDIR)):* ]] && export PATH="$(realpath $(OBJDIR)):$$PATH"' >$@
-	echo 'export LD_LIBRARY_PATH="$(realpath $(LIBTSDUCKDIR)/$(OBJDIR))"' >>$@
-	echo 'export TSPLUGINS_PATH=$(realpath $(TSPLUGINSDIR)/$(OBJDIR)):$(realpath $(LIBTSDUCKDIR))' >>$@
 
 .PHONY: install install-devel
 install: $(EXECS)

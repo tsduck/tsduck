@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsService.h"
 #include "tsSectionDemux.h"
@@ -95,8 +94,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(svremove, ts::SVRemovePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"svremove", ts::SVRemovePlugin);
 
 
 //----------------------------------------------------------------------------
@@ -117,11 +115,14 @@ ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
     _drop_pids(),
     _ref_pids(),
     _demux(duck, this),
-    _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
-    _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
-    _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS),
+    _pzer_pat(duck, PID_PAT, CyclingPacketizer::ALWAYS),
+    _pzer_sdt_bat(duck, PID_SDT, CyclingPacketizer::ALWAYS),
+    _pzer_nit(duck, PID_NIT, CyclingPacketizer::ALWAYS),
     _eit_process(duck, PID_EIT)
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"", 0, STRING, 1, 1);
     help(u"",
          u"Specifies the service to remove. If the argument is an integer value "
@@ -157,6 +158,7 @@ ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
 bool ts::SVRemovePlugin::start()
 {
     // Get option values
+    duck.loadArgs(*this);
     _service.set(value(u""));
     _ignore_absent = present(u"ignore-absent");
     _ignore_bat = present(u"ignore-bat");
@@ -223,7 +225,7 @@ void ts::SVRemovePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 {
     if (tsp->debug()) {
         tsp->debug(u"Got %s v%d, PID %d (0x%X), TIDext %d (0x%X)",
-                   {names::TID(table.tableId()), table.version(),
+                   {names::TID(duck, table.tableId()), table.version(),
                     table.sourcePID(), table.sourcePID(),
                     table.tableIdExtension(), table.tableIdExtension()});
     }

@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
+#include "tsBinaryTable.h"
 #include "tsSectionDemux.h"
 #include "tsNames.h"
 #include "tsVariable.h"
@@ -101,8 +101,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(history, ts::HistoryPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"history", ts::HistoryPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -335,7 +334,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_NIT_ACT:
         case TID_NIT_OTH: {
             if (table.sourcePID() == PID_NIT) {
-                report(u"%s v%d, network 0x%X", {names::TID(table.tableId()), table.version(), table.tableIdExtension()});
+                report(u"%s v%d, network 0x%X", {names::TID(duck, table.tableId()), table.version(), table.tableIdExtension()});
             }
             break;
         }
@@ -343,7 +342,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_SDT_ACT:
         case TID_SDT_OTH: {
             if (table.sourcePID() == PID_SDT) {
-                report(u"%s v%d, TS 0x%X", {names::TID(table.tableId()), table.version(), table.tableIdExtension()});
+                report(u"%s v%d, TS 0x%X", {names::TID(duck, table.tableId()), table.version(), table.tableIdExtension()});
             }
             break;
         }
@@ -358,7 +357,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_CAT:
         case TID_TSDT: {
             // Long sections without TID extension
-            report(u"%s v%d", {names::TID(table.tableId()), table.version()});
+            report(u"%s v%d", {names::TID(duck, table.tableId()), table.version()});
             break;
         }
 
@@ -373,7 +372,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         }
 
         default: {
-            const UString name(names::TID(table.tableId()));
+            const UString name(names::TID(duck, table.tableId()));
             if (table.tableId() >= TID_EIT_MIN && table.tableId() <= TID_EIT_MAX) {
                 report(u"%s v%d, service 0x%X", {name, table.version(), table.tableIdExtension()});
             }
@@ -396,7 +395,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 // Analyze a list of descriptors, looking for CA descriptors.
 //----------------------------------------------------------------------------
 
-void ts::HistoryPlugin::analyzeCADescriptors (const DescriptorList& dlist, uint16_t service_id)
+void ts::HistoryPlugin::analyzeCADescriptors(const DescriptorList& dlist, uint16_t service_id)
 {
     // Loop on all CA descriptors
     for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
@@ -422,7 +421,7 @@ void ts::HistoryPlugin::analyzeCADescriptors (const DescriptorList& dlist, uint1
         // Normally, no PID should be referenced in the private part of
         // a CA descriptor. However, this rule is not followed by the
         // old format of MediaGuard CA descriptors.
-        if (CASFamilyOf (sysid) == CAS_MEDIAGUARD && size >= 13) {
+        if (CASFamilyOf(sysid) == CAS_MEDIAGUARD && size >= 13) {
             // MediaGuard CA descriptor in the PMT.
             desc += 13; size -= 13;
             while (size >= 15) {

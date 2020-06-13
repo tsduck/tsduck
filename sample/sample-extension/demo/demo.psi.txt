@@ -1,0 +1,47 @@
+
+* PAT, TID 0 (0x00), PID 0 (0x0000)
+  Version: 0, sections: 1, total size: 16 bytes
+  - Section 0:
+    TS id:       1 (0x0001)
+    Program:     1 (0x0001)  PID:  256 (0x0100)
+
+* CAT, TID 1 (0x01), PID 1 (0x0001)
+  Version: 0, sections: 1, total size: 23 bytes
+  - Section 0:
+    - Descriptor 0: CA (0x09, 9), 9 bytes
+      CA System Id: 0xF004 (FooCAS), EMM PID: 512 (0x0200)
+      Foo id: 0x0123
+      Data: ABCDEF
+
+* SDT Actual, TID 66 (0x42), PID 17 (0x0011)
+  Version: 0, sections: 1, total size: 39 bytes
+  - Section 0:
+    Transport Stream Id: 1 (0x0001)
+    Original Network Id: 4096 (0x1000)
+    Service Id: 1 (0x0001), EITs: no, EITp/f: no, CA mode: controlled
+    Running status: running
+    - Descriptor 0: Service (0x48, 72), 17 bytes
+      Service type: 0x01 (Digital television service)
+      Service: "Foo Demo", Provider: "TSDuck"
+
+* PMT, TID 2 (0x02), PID 256 (0x0100)
+  Version: 0, sections: 1, total size: 75 bytes
+  - Section 0:
+    Program: 1 (0x0001), PCR PID: 257 (0x0101)
+    Program information:
+    - Descriptor 0: CA (0x09, 9), 9 bytes
+      CA System Id: 0xF004 (FooCAS), ECM PID: 259 (0x0103)
+      Foo id: 0x0123
+      Data: 456789
+    Elementary stream: type 0x1B (AVC video), PID: 257 (0x0101)
+    Elementary stream: type 0x06 (MPEG-2 PES private data), PID: 258 (0x0102)
+    - Descriptor 0: AC-3 (0x6A, 106), 2 bytes
+      Component type: 0x42 (AC-3, full, complete main, 2 channels)
+    - Descriptor 1: ISO-639 Language (0x0A, 10), 4 bytes
+      Language: eng, Type: 0x01 (clean effects)
+    - Descriptor 2: Foo (0xE8, 232), 15 bytes
+      Name: "foolish-service"
+    Elementary stream: type 0x05 (MPEG-2 Private sections), PID: 260 (0x0104)
+    - Descriptor 0: Registration (0x05, 5), 4 bytes
+      Format identifier: 0x464F4F54 ("FOOT")
+

@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -42,8 +42,8 @@
 #include "tsStreamIdentifierDescriptor.h"
 #include "tsDataBroadcastIdDescriptor.h"
 #include "tsRegistrationDescriptor.h"
-#include "tsAC3Descriptor.h"
-#include "tsEnhancedAC3Descriptor.h"
+#include "tsDVBAC3Descriptor.h"
+#include "tsDVBEnhancedAC3Descriptor.h"
 #include "tsCueIdentifierDescriptor.h"
 TSDUCK_SOURCE;
 
@@ -116,8 +116,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(pmt, ts::PMTPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"pmt", ts::PMTPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -145,6 +144,9 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     _add_pid_descs(),
     _languages()
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"ac3-atsc2dvb");
     help(u"ac3-atsc2dvb",
          u"Change the description of AC-3 audio streams from ATSC to DVB method. "
@@ -374,6 +376,7 @@ bool ts::PMTPlugin::start()
     _add_pid_descs.clear();
 
     // Get option values
+    duck.loadArgs(*this);
     _set_servid = present(u"new-service-id");
     _new_servid = intValue<uint16_t>(u"new-service-id");
     _set_pcrpid = present(u"pcr-pid");
@@ -601,7 +604,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
                 smi->second.stream_type = ST_PES_PRIV;
                 if (smi->second.descs.search(DID_AC3) == smi->second.descs.count()) {
                     // No AC-3_descriptor present in this component, add one.
-                    smi->second.descs.add(duck, AC3Descriptor());
+                    smi->second.descs.add(duck, DVBAC3Descriptor());
                 }
             }
         }
@@ -614,7 +617,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
                 smi->second.stream_type = ST_PES_PRIV;
                 if (smi->second.descs.search (DID_ENHANCED_AC3) == smi->second.descs.count()) {
                     // No enhanced_AC-3_descriptor present in this component, add one.
-                    smi->second.descs.add(duck, EnhancedAC3Descriptor());
+                    smi->second.descs.add(duck, DVBEnhancedAC3Descriptor());
                 }
             }
         }

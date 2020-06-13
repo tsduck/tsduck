@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Jerome Leveque, Thierry Lelegard
+// Copyright (c) 2005-2020, Jerome Leveque, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsForkPipe.h"
 #include "tsTime.h"
@@ -96,8 +95,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(bitrate_monitor, ts::BitrateMonitorPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"bitrate_monitor", ts::BitrateMonitorPlugin);
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr ts::BitRate ts::BitrateMonitorPlugin::DEFAULT_BITRATE_MIN;

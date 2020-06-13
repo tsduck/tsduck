@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,10 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsService.h"
 #include "tsSectionDemux.h"
+#include "tsBinaryTable.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsSDT.h"
@@ -81,8 +81,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(clear, ts::ClearPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"clear", ts::ClearPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -104,6 +103,9 @@ ts::ClearPlugin::ClearPlugin(TSP* tsp_) :
     _clear_pids(),
     _demux(duck, this)
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"audio", 'a');
     help(u"audio",
          u"Check only audio PIDs for clear packets. By default, audio and video "
@@ -146,6 +148,7 @@ ts::ClearPlugin::ClearPlugin(TSP* tsp_) :
 bool ts::ClearPlugin::start()
 {
     // Get option values
+    duck.loadArgs(*this);
     _service.set (value(u"service"));
     _video_only = present(u"video");
     _audio_only = present(u"audio");

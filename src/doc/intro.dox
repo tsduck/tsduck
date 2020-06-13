@@ -5,7 +5,7 @@ TSDuck is a toolkit which manipulates MPEG Transport Streams (TS).
 
 As a product, TSDuck provides many different command-line tools and plugins.
 Internally, the architecture of TSDuck is made of a large shareable
-library (@c tsduck.dll on Windows, @c tsduck.so on Linux and macOS).
+library (@c tsduck.dll on Windows, @c libtsduck.so on Linux and macOS).
 Most of the valuable processing is performed by the various C++ classes
 from the TSDuck library. All command-line tools and plugins are usually
 small wrappers around this library.
@@ -32,7 +32,8 @@ For developers of third-party applications:
 For TSDuck maintainers:
 - @ref building "Building TSDuck"
 - @ref testing "Testing TSDuck"
-- @ref devplugin "A tutorial on developing TSP Plugins"
+- @ref devplugin "A tutorial on developing TSP plugins"
+- @ref extensions "Developing TSDuck extensions"
 - @ref contributing "Contributing to TSDuck development"
 
 */

@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -41,25 +41,23 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options();
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    bool         test;      // Test mode
-    bool         circular;  // Add empty packets to enforce circular continuity
-    ts::UString  filename;  // File name
-    std::fstream file;      // File buffer
+        bool         test;      // Test mode
+        bool         circular;  // Add empty packets to enforce circular continuity
+        ts::UString  filename;  // File name
+        std::fstream file;      // File buffer
 
-    // Check if there was an I/O error on the file.
-    // Print an error message if this is the case.
-    bool fileError(const ts::UChar* message);
-};
-
-// Destructor.
-Options::~Options() {}
+        // Check if there was an I/O error on the file.
+        // Print an error message if this is the case.
+        bool fileError(const ts::UChar* message);
+    };
+}
 
 // Constructor.
 Options::Options(int argc, char *argv[]) :

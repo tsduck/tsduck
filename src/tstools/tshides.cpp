@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -42,25 +42,22 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class HiDesOptions: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(HiDesOptions);
-public:
-    bool          count;       // Only display device count.
-    bool          gain_range;  // Only display output gain range.
-    int           dev_number;  // Device adapter number.
-    ts::UString   dev_name;    // Device name.
-    uint64_t      frequency;   // Carrier frequency, in Hz.
-    ts::BandWidth bandwidth;   // Bandwidth.
+namespace {
+    class HiDesOptions: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(HiDesOptions);
+    public:
+        HiDesOptions(int argc, char *argv[]);
 
-    HiDesOptions(int argc, char *argv[]);
-    virtual ~HiDesOptions();
-};
+        bool          count;       // Only display device count.
+        bool          gain_range;  // Only display output gain range.
+        int           dev_number;  // Device adapter number.
+        ts::UString   dev_name;    // Device name.
+        uint64_t      frequency;   // Carrier frequency, in Hz.
+        ts::BandWidth bandwidth;   // Bandwidth.
+    };
+}
 
-// Destructor.
-HiDesOptions::~HiDesOptions() {}
-
-// Constructor.
 HiDesOptions::HiDesOptions(int argc, char *argv[]) :
     ts::Args(u"List HiDes modulator devices", u"[options]"),
     count(false),
@@ -111,7 +108,7 @@ HiDesOptions::HiDesOptions(int argc, char *argv[]) :
     }
     else {
         // Get UHF band description in the default region.
-        const ts::HFBand* uhf = ts::HFBand::GetBand(u"", ts::HFBand::UHF, *this);
+        const ts::HFBand* uhf = ts::HFBand::GetBand(u"", u"UHF", *this);
         frequency = uhf->frequency(uhf->firstChannel());
     }
 

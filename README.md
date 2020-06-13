@@ -2,19 +2,19 @@
 
 ### Abstract
 
-[TSDuck](https://tsduck.io/) is an extensible toolkit for MPEG/DVB transport streams.
+[TSDuck](https://tsduck.io/) is an extensible toolkit for MPEG transport streams.
 
 TSDuck is used in digital television systems for test, monitoring, integration, debug, lab or demo.
 
 In practice, TSDuck is used for:
 
-- Transport stream acquisition or transmodulation, including DVB, ASI and IP multicast.
+- Transport stream acquisition or transmodulation, including DVB, ATSC, ISDB, ASI and IP multicast.
 - Analyze transport streams, PSI/SI signalization, bitrates, timestamps.
 - Monitor and report conditions on the stream (video and audio properties, bitrates, crypto-periods, signalization).
 - On-the-fly transformation or injection of content and signalization.
 - Modify, remove, rename, extract services.
-- Work on live transport streams, DVB-S/C/T, ASI, IP-TV, HTTP, HLS or offline transport stream files.
-- Use specialized hardware such as cheap DVB tuners (USB, PCI), professional Dektec devices, cheap HiDes modulators.
+- Work on live transport streams, DVB-S/C/T, ATSC, ISDB-T, ASI, IP-TV, HTTP, HLS, SRT or offline transport stream files.
+- Use specialized hardware such as cheap DVB, ATSC or ISDB tuners (USB, PCI), professional Dektec devices, cheap HiDes modulators.
 - Re-route transport streams to other applications.
 - Extract or inject Multi-Protocol Encapsulation (MPE) between TS and UDP/IP.
 - Analyze and inject SCTE 35 splice information.
@@ -41,7 +41,7 @@ TSDuck comes with a comprehensive [User's Guide](https://tsduck.io/download/docs
 All utilities and plugins accept the option `--help` to display their syntax.
 
 For programmers, TSDuck provides a large collection of C++ classes in one single library.
-These classes manipulate, in a completely portable way, MPEG transport streams, MPEG/DVB
+These classes manipulate, in a completely portable way, MPEG transport streams, MPEG/DVB/ATSC/ISDB
 signalization and many other features. See the [programming guide](https://tsduck.io/doxy/)
 and its [tutorial](https://tsduck.io/doxy/libtutorial.html).
 
@@ -60,10 +60,16 @@ The command `tsversion --check` can be used to check if a new version of TSDuck 
 online. The command `tsversion --upgrade` downloads the latest binaries for the current
 operating system and upgrades TSDuck.
 
+### Project resources
+
+TSDuck is developed by one single developer on spare time and on personal expenses.
+You may consider [contributing](https://tsduck.io/donate/) to the hardware and Web hosting costs
+using [![Donate](https://tsduck.io/images/donate-paypal.svg)](https://tsduck.io/donate/)
+
 ### License
 
 TSDuck is distributed under the terms of the Simplified BSD License.
 See the file `LICENSE.txt` for details.
 
-*Copyright (c) 2005-2019, Thierry Lelegard*<br/>
+*Copyright (c) 2005-2020, Thierry Lelegard*<br/>
 *All rights reserved*

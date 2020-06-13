@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -50,22 +50,22 @@ namespace ts {
     public:
         // Implementation of plugin API
         CATPlugin(TSP*);
-        virtual bool start() override;
-
-    private:
-        bool                  _cleanup_priv_desc; // Remove private desc without preceding PDS desc
-        std::vector<uint16_t> _remove_casid;      // Set of CAS id to remove
-        std::vector<uint16_t> _remove_pid;        // Set of EMM PID to remove
-        DescriptorList        _add_descs;         // List of descriptors to add
+        virtual bool getOptions() override;
 
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
         virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
+
+    private:
+        // Command line options:
+        bool                  _cleanup_priv_desc; // Remove private desc without preceding PDS desc
+        std::vector<uint16_t> _remove_casid;      // Set of CAS id to remove
+        std::vector<uint16_t> _remove_pid;        // Set of EMM PID to remove
+        DescriptorList        _add_descs;         // List of descriptors to add
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(cat, ts::CATPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"cat", ts::CATPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -103,10 +103,10 @@ ts::CATPlugin::CATPlugin (TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get options method
 //----------------------------------------------------------------------------
 
-bool ts::CATPlugin::start()
+bool ts::CATPlugin::getOptions()
 {
     // Get option values
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
@@ -122,7 +122,7 @@ bool ts::CATPlugin::start()
     }
 
     // Start superclass.
-    return AbstractTablePlugin::start();
+    return AbstractTablePlugin::getOptions();
 }
 
 

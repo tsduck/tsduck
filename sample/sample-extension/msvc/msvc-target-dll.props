@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Must be included in .vcxproj to create a DLL -->
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-base.props" />
+  </ImportGroup>
+
+  <PropertyGroup Label="Configuration">
+    <TargetExt>.dll</TargetExt>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>TS_WINVER_FILETYPE=VFT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ResourceCompile Include="tsduck-extension-foo.rc" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <CAT>
+    <CA_descriptor CA_system_id="0xF004" CA_PID="0x0200">
+      <private_data>
+        0123 ABCDEF
+      </private_data>
+    </CA_descriptor>
+  </CAT>
+</tsduck>

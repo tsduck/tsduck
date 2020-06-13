@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsHFBand.h"
-#include "tsTunerParametersBitrateDiffDVBT.h"
+#include "tsBitrateDifferenceDVBT.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
@@ -79,34 +80,32 @@ namespace {
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options();
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    uint64_t          frequency;     // Carrier frequency from which to get UHF channel
-    uint32_t          uhf_channel;   // UHF channel from which to compute frequency
-    uint32_t          vhf_channel;   // VHF channel from which to compute frequency
-    int32_t           hf_offset;     // UHF/VHF offset from channel
-    ts::BitRate       bitrate;       // TS bitrate from which to guess modulation parameters
-    size_t            max_guess;     // Max number of modulation parameters to guess.
-    ts::Modulation    constellation; // Modulation parameters to compute bitrate
-    ts::InnerFEC      fec_hp;
-    ts::GuardInterval guard_interval;
-    ts::BandWidth     bandwidth;
-    bool              simple;          // Simple output
-    bool              default_region;  // Display the default region for UHF/VHF band frequency layout
-    ts::UString       hfband_region;   // Region for UHF/VHF band frequency layout
-};
+        ts::DuckContext   duck;            // TSDuck execution contexts
+        uint64_t          frequency;       // Carrier frequency from which to get UHF channel
+        uint32_t          uhf_channel;     // UHF channel from which to compute frequency
+        uint32_t          vhf_channel;     // VHF channel from which to compute frequency
+        int32_t           hf_offset;       // UHF/VHF offset from channel
+        ts::BitRate       bitrate;         // TS bitrate from which to guess modulation parameters
+        size_t            max_guess;       // Max number of modulation parameters to guess.
+        ts::Modulation    constellation;   // Modulation parameters to compute bitrate
+        ts::InnerFEC      fec_hp;
+        ts::GuardInterval guard_interval;
+        ts::BandWidth     bandwidth;
+        bool              simple;          // Simple output
+        bool              default_region;  // Display the default region for UHF/VHF band frequency layout
+    };
+}
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Compute or convert DVB-Terrestrial information", u"[options]"),
+    duck(this),
     frequency(0),
     uhf_channel(0),
     vhf_channel(0),
@@ -118,9 +117,10 @@ Options::Options(int argc, char *argv[]) :
     guard_interval(ts::GUARD_AUTO),
     bandwidth(ts::BW_AUTO),
     simple(false),
-    default_region(false),
-    hfband_region()
+    default_region(false)
 {
+    duck.defineArgsForHFBand(*this);
+
     option(u"bandwidth", 'w', DVBTBandWidthEnum);
     help(u"bandwidth", u"Specify the OFMD bandwith, used to compute the resulting bitrate.");
 
@@ -159,10 +159,6 @@ Options::Options(int argc, char *argv[]) :
          u"Specify the number of offsets from the UHF or VHF channel. The default "
          u"is zero. See options --uhf-channel and --vhf-channel.");
 
-    option(u"hf-band-region", 'r', STRING);
-    help(u"hf-band-region", u"name",
-         u"Specify the region for UHF/VHF band frequency layout.");
-
     option(u"simple", 's');
     help(u"simple",
          u"Produce simple output: only numbers, no comment, typically useful "
@@ -179,6 +175,7 @@ Options::Options(int argc, char *argv[]) :
          u"--offset-count option. The resulting frequency will be displayed.");
 
     analyze(argc, argv);
+    duck.loadArgs(*this);
 
     frequency      = intValue<uint64_t>(u"frequency", 0);
     uhf_channel    = intValue<uint32_t>(u"uhf-channel", 0);
@@ -192,7 +189,6 @@ Options::Options(int argc, char *argv[]) :
     bandwidth      = enumValue(u"bandwidth", ts::BW_8_MHZ);
     simple         = present(u"simple");
     default_region = present(u"default-region");
-    hfband_region  = value(u"hf-band-region");
 
     if ((fec_hp == ts::FEC_AUTO && guard_interval != ts::GUARD_AUTO) ||
         (fec_hp != ts::FEC_AUTO && guard_interval == ts::GUARD_AUTO))
@@ -225,16 +221,15 @@ int MainCode(int argc, char *argv[])
     Options opt(argc, argv);
 
     // Get UHF/VHF frequency layout.
-    ts::HFBand::SetDefaultRegion(opt.hfband_region);
-    const ts::HFBand* uhf = ts::HFBand::GetBand(opt.hfband_region, ts::HFBand::UHF, opt);
-    const ts::HFBand* vhf = ts::HFBand::GetBand(opt.hfband_region, ts::HFBand::VHF, opt);
+    const ts::HFBand* uhf = opt.duck.uhfBand();
+    const ts::HFBand* vhf = opt.duck.vhfBand();
 
     // Display the default region for UHF/VHF band frequency layout
     if (opt.default_region) {
         if (!opt.simple) {
             std::cout << "Default region for UHF/VHF: ";
         }
-        std::cout << ts::HFBand::DefaultRegion(opt) << std::endl;
+        std::cout << opt.duck.defaultHFRegion() << std::endl;
     }
 
     // Convert UHF channel to frequency
@@ -325,7 +320,8 @@ int MainCode(int argc, char *argv[])
 
     // Compute TS bitrate from modulation parameters
     if (opt.fec_hp != ts::FEC_AUTO && opt.guard_interval != ts::GUARD_AUTO) {
-        ts::TunerParametersDVBT params;
+        ts::ModulationArgs params;
+        params.delivery_system = ts::DS_DVB_T;
         params.bandwidth = opt.bandwidth;
         params.fec_hp = opt.fec_hp;
         params.modulation = opt.constellation;
@@ -344,35 +340,35 @@ int MainCode(int argc, char *argv[])
     if (opt.bitrate > 0) {
 
         // Build a list of all possible modulation parameters for this bitrate.
-        ts::TunerParametersBitrateDiffDVBTList params_list;
-        ts::TunerParametersBitrateDiffDVBT::EvaluateToBitrate(params_list, opt.bitrate);
+        ts::BitrateDifferenceDVBTList params_list;
+        ts::BitrateDifferenceDVBT::EvaluateToBitrate(params_list, opt.bitrate);
 
         // Display all relevant parameters, up to max_guess
         // (in case of equal differences, display them all)
         int last_diff = 0;
         size_t count = 0;
-        for (ts::TunerParametersBitrateDiffDVBTList::const_iterator it = params_list.begin();
-             it != params_list.end() && (count < opt.max_guess || ::abs(it->bitrate_diff) == ::abs(last_diff));
-             ++it, ++count) {
-
+        for (auto it = params_list.begin();
+             it != params_list.end() && (count < opt.max_guess || std::abs(it->bitrate_diff) == std::abs(last_diff));
+             ++it, ++count)
+        {
             last_diff = it->bitrate_diff;
             if (opt.simple) {
-                std::cout << it->theoreticalBitrate() << std::endl
-                          << ts::BandWidthEnum.name(it->bandwidth) << std::endl
-                          << ts::InnerFECEnum.name(it->fec_hp) << std::endl
-                          << ts::ModulationEnum.name(it->modulation) << std::endl
-                          << ts::GuardIntervalEnum.name(it->guard_interval) << std::endl;
+                std::cout << it->tune.theoreticalBitrate() << std::endl
+                          << ts::BandWidthEnum.name(it->tune.bandwidth.value()) << std::endl
+                          << ts::InnerFECEnum.name(it->tune.fec_hp.value()) << std::endl
+                          << ts::ModulationEnum.name(it->tune.modulation.value()) << std::endl
+                          << ts::GuardIntervalEnum.name(it->tune.guard_interval.value()) << std::endl;
             }
             else {
                 if (count > 0) {
                     std::cout << std::endl;
                 }
-                Display(u"Nominal bitrate", ts::UString::Decimal(it->theoreticalBitrate()), u"b/s");
+                Display(u"Nominal bitrate", ts::UString::Decimal(it->tune.theoreticalBitrate()), u"b/s");
                 Display(u"Bitrate difference", ts::UString::Decimal(it->bitrate_diff), u"b/s");
-                Display(u"Bandwidth", ts::BandWidthEnum.name(it->bandwidth), u"");
-                Display(u"FEC (high priority)", ts::InnerFECEnum.name(it->fec_hp), u"");
-                Display(u"Constellation", ts::ModulationEnum.name(it->modulation), u"");
-                Display(u"Guard interval", ts::GuardIntervalEnum.name(it->guard_interval), u"");
+                Display(u"Bandwidth", ts::BandWidthEnum.name(it->tune.bandwidth.value()), u"");
+                Display(u"FEC (high priority)", ts::InnerFECEnum.name(it->tune.fec_hp.value()), u"");
+                Display(u"Constellation", ts::ModulationEnum.name(it->tune.modulation.value()), u"");
+                Display(u"Guard interval", ts::GuardIntervalEnum.name(it->tune.guard_interval.value()), u"");
             }
         }
     }

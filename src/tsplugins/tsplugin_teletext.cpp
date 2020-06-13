@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsServiceDiscovery.h"
 #include "tsSubRipGenerator.h"
@@ -50,7 +49,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class TeletextPlugin:
         public ProcessorPlugin,
-        private PMTHandlerInterface,
+        private SignalizationHandlerInterface,
         private TeletextHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TeletextPlugin);
@@ -74,13 +73,12 @@ namespace ts {
         std::set<int>    _pages;      // Set of all Teletext pages in the PID (for information only).
 
         // Implementation of interfaces.
-        virtual void handlePMT(const PMT& table) override;
-        virtual void handleTeletextMessage(TeletextDemux& demux, const TeletextFrame& frame) override;
+        virtual void handlePMT(const PMT&, PID) override;
+        virtual void handleTeletextMessage(TeletextDemux&, const TeletextFrame&) override;
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(teletext, ts::TeletextPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"teletext", ts::TeletextPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -100,6 +98,9 @@ ts::TeletextPlugin::TeletextPlugin(TSP* tsp_) :
     _srtOutput(),
     _pages()
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"colors", 'c');
     help(u"colors",
          u"Add font color tags in the subtitles. By default, no color is specified.");
@@ -151,6 +152,7 @@ ts::TeletextPlugin::TeletextPlugin(TSP* tsp_) :
 bool ts::TeletextPlugin::start()
 {
     // Get command line arguments.
+    duck.loadArgs(*this);
     _service.set(value(u"service"));
     _pid = intValue<PID>(u"pid", PID_NULL);
     _page = intValue<int>(u"page", -1);
@@ -199,7 +201,7 @@ bool ts::TeletextPlugin::stop()
 // Invoked by the service discovery when the PMT of the service is available.
 //----------------------------------------------------------------------------
 
-void ts::TeletextPlugin::handlePMT(const PMT& pmt)
+void ts::TeletextPlugin::handlePMT(const PMT& pmt, PID)
 {
     bool languageOK = _language.empty();
     bool pageOK = _page < 0;

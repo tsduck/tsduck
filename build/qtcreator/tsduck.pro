@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2019, Thierry Lelegard
+#  Copyright (c) 2005-2020, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -33,104 +33,5 @@
 
 TEMPLATE = subdirs
 CONFIG += ordered
-SUBDIRS += \
-    libtsduck \
-    tsplugin_aes \
-    tsplugin_analyze \
-    tsplugin_bat \
-    tsplugin_bitrate_monitor \
-    tsplugin_boostpid \
-    tsplugin_cat \
-    tsplugin_clear \
-    tsplugin_continuity \
-    tsplugin_count \
-    tsplugin_craft \
-    tsplugin_cutoff \
-    tsplugin_datainject \
-    tsplugin_decap \
-    tsplugin_dektec \
-    tsplugin_descrambler \
-    tsplugin_drop \
-    tsplugin_duplicate \
-    tsplugin_dvb \
-    tsplugin_eit \
-    tsplugin_encap \
-    tsplugin_file \
-    tsplugin_filter \
-    tsplugin_fork \
-    tsplugin_hides \
-    tsplugin_history \
-    tsplugin_hls \
-    tsplugin_http \
-    tsplugin_inject \
-    tsplugin_ip \
-    tsplugin_limit \
-    tsplugin_merge \
-    tsplugin_mpe  \
-    tsplugin_mpeinject \
-    tsplugin_mux \
-    tsplugin_nit \
-    tsplugin_nitscan \
-    tsplugin_null \
-    tsplugin_pat \
-    tsplugin_pattern \
-    tsplugin_pcradjust \
-    tsplugin_pcrbitrate \
-    tsplugin_pcrextract \
-    tsplugin_pcrverify \
-    tsplugin_pes \
-    tsplugin_play \
-    tsplugin_pmt \
-    tsplugin_psi \
-    tsplugin_psimerge \
-    tsplugin_reduce \
-    tsplugin_regulate \
-    tsplugin_remap \
-    tsplugin_rmorphan \
-    tsplugin_rmsplice \
-    tsplugin_scrambler \
-    tsplugin_sdt \
-    tsplugin_sections \
-    tsplugin_sifilter \
-    tsplugin_skip \
-    tsplugin_slice \
-    tsplugin_spliceinject \
-    tsplugin_stuffanalyze \
-    tsplugin_svremove \
-    tsplugin_svrename \
-    tsplugin_t2mi \
-    tsplugin_tables \
-    tsplugin_teletext \
-    tsplugin_time \
-    tsplugin_timeref \
-    tsplugin_trigger \
-    tsplugin_tsrename \
-    tsplugin_until \
-    tsplugin_zap \
-    utest \
-    tsanalyze \
-    tsbitrate \
-    tscmp \
-    tsdate \
-    tsdektec \
-    tsdump \
-    tsecmg \
-    tsemmg \
-    tsfixcc \
-    tsftrunc \
-    tsgenecm \
-    tshides \
-    tslsdvb \
-    tsp \
-    tspacketize \
-    tspsi \
-    tsresync \
-    tsscan \
-    tssmartcard \
-    tsstuff \
-    tsswitch \
-    tstabcomp \
-    tstabdump \
-    tstables \
-    tsterinfo \
-    tsversion
+TSDIRS = $$system(find . -type d -name ts\\* -prune)
+SUBDIRS += libtsduck $$sorted(TSDIRS) utest

@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsReportBuffer.h"
 #include "tsUDPReceiver.h"
@@ -77,8 +76,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(cutoff, ts::CutoffPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"cutoff", ts::CutoffPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -134,7 +132,7 @@ bool ts::CutoffPlugin::getOptions()
     }
 
     // Get UDP options.
-    return _sock.loadArgs(*this) && ok;
+    return _sock.loadArgs(duck, *this) && ok;
 }
 
 

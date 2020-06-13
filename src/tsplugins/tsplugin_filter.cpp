@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 
@@ -65,7 +64,8 @@ namespace ts {
         bool            _with_payload;       // Packets with payload
         bool            _with_af;            // Packets with adaptation field
         bool            _with_pes;           // Packets with clear PES headers
-        bool            _has_pcr;            // Packets with PCR or OPCR
+        bool            _with_pcr;           // Packets with PCR or OPCR
+        bool            _with_splice;        // Packets with splice_countdown in adaptation field
         bool            _unit_start;         // Packets with payload unit start
         bool            _nullified;          // Packets which were nullified by a previous plugin
         bool            _input_stuffing;     // Null packets which were artificially inserted
@@ -75,25 +75,31 @@ namespace ts {
         int             _max_payload;        // Maximum payload size (<0: no filter)
         int             _min_af;             // Minimum adaptation field size (<0: no filter)
         int             _max_af;             // Maximum adaptation field size (<0: no filter)
+        int             _splice;             // Exact splice_countdown value (<-128: no filter)
+        int             _min_splice;         // Minimum splice_countdown value (<-128: no filter)
+        int             _max_splice;         // Maximum splice_countdown value (<-128: no filter)
         PacketCounter   _after_packets;      // Number of initial packets to skip
         PacketCounter   _every_packets;      // Filter 1 out of this number of packets
-        PIDSet          _pid;                // PID values to filter
+        PIDSet          _explicit_pid;       // Explicit PID values to filter
         ByteBlock       _pattern;            // Byte pattern to search.
         bool            _search_payload;     // Search pattern in payload only.
         bool            _use_search_offset;  // Search at specified offset only.
         size_t          _search_offset;      // Offset where to search.
         PacketRangeList _ranges;             // Ranges of packets to filter.
-        PacketCounter   _filtered_packets;   // Number of filtered packets
+        std::set<uint8_t>          _stream_ids;        // PES stream ids to filter
         TSPacketMetadata::LabelSet _labels;            // Select packets with any of these labels
         TSPacketMetadata::LabelSet _set_labels;        // Labels to set on filtered packets
         TSPacketMetadata::LabelSet _reset_labels;      // Labels to reset on filtered packets
         TSPacketMetadata::LabelSet _set_perm_labels;   // Labels to set on all packets after getting one packet
         TSPacketMetadata::LabelSet _reset_perm_labels; // Labels to reset on all packets after getting one packet
+
+        // Working data:
+        PacketCounter   _filtered_packets;   // Number of filtered packets
+        PIDSet          _stream_id_pid;      // PID values selected from stream ids.
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(filter, ts::FilterPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"filter", ts::FilterPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -107,7 +113,8 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     _with_payload(false),
     _with_af(false),
     _with_pes(false),
-    _has_pcr(false),
+    _with_pcr(false),
+    _with_splice(false),
     _unit_start(false),
     _nullified(false),
     _input_stuffing(false),
@@ -117,20 +124,25 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     _max_payload(0),
     _min_af(0),
     _max_af(0),
+    _splice(0),
+    _min_splice(0),
+    _max_splice(0),
     _after_packets(0),
     _every_packets(0),
-    _pid(),
+    _explicit_pid(),
     _pattern(),
     _search_payload(false),
     _use_search_offset(false),
     _search_offset(0),
     _ranges(),
-    _filtered_packets(0),
+    _stream_ids(),
     _labels(),
     _set_labels(),
     _reset_labels(),
     _set_perm_labels(),
-    _reset_perm_labels()
+    _reset_perm_labels(),
+    _filtered_packets(0),
+    _stream_id_pid()
 {
     option(u"adaptation-field");
     help(u"adaptation-field", u"Select packets with an adaptation field.");
@@ -160,7 +172,7 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     option(u"label", 'l', INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
     help(u"label", u"label1[-label2]",
          u"Select packets with any of the specified labels. "
-         u"Labels should have typically be set by a previous plugin in the chain. "
+         u"Labels should have typically been set by a previous plugin in the chain. "
          u"Several --label options may be specified.\n\n"
          u"Note that the option --label is different from the generic option --only-label. "
          u"The generic option --only-label acts at tsp level and controls which packets are "
@@ -244,6 +256,13 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Select packets with the specified scrambling control value. Valid "
          u"values are 0 (clear), 1 (reserved), 2 (even key), 3 (odd key).");
 
+    option(u"stream-id", 0, UINT8, 0, UNLIMITED_COUNT);
+    help(u"stream-id", u"id1[-id2]",
+         u"Select PES PID's with any of the specified stream ids. "
+         u"A PID starts to be selected when a specified stream id appears. "
+         u"Such a PID is no longer selected when non-specified stream id is found. "
+         u"Several --stream-id options may be specified.");
+
     option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
     help(u"set-label", u"label1[-label2]",
          u"Set the specified labels on the selected packets. "
@@ -261,6 +280,22 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Set the specified labels on all packets, selected and unselected ones, after at least one was selected. "
          u"Do not drop unselected packets, simply use selected ones as trigger. "
          u"Several --set-permanent-label options may be specified.");
+
+    option(u"has-splice-countdown");
+    help(u"has-splice-countdown", u"Select packets which contain a splice_countdown value in adaptation field.");
+
+    option(u"splice-countdown", 0, INT8);
+    help(u"splice-countdown", u"Select packets with the specified splice_countdown value in adaptation field.");
+
+    option(u"min-splice-countdown", 0, INT8);
+    help(u"min-splice-countdown",
+         u"Select packets with a splice_countdown value in adaptation field which is "
+         u"greater than or equal to the specified value.");
+
+    option(u"max-splice-countdown", 0, INT8);
+    help(u"max-splice-countdown",
+         u"Select packets with a splice_countdown value in adaptation field which is "
+         u"lower than or equal to the specified value.");
 
     option(u"reset-permanent-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
     help(u"reset-permanent-label", u"label1[-label2]",
@@ -293,7 +328,8 @@ bool ts::FilterPlugin::getOptions()
     _with_payload = present(u"payload");
     _with_af = present(u"adaptation-field");
     _with_pes = present(u"pes");
-    _has_pcr = present(u"pcr");
+    _with_pcr = present(u"pcr");
+    _with_splice = present(u"has-splice-countdown");
     _unit_start = present(u"unit-start");
     _nullified = present(u"nullified");
     _input_stuffing = present(u"input-stuffing");
@@ -303,9 +339,13 @@ bool ts::FilterPlugin::getOptions()
     getIntValue(_max_payload, u"max-payload-size", -1);
     getIntValue(_min_af, u"min-adaptation-field-size", -1);
     getIntValue(_max_af, u"max-adaptation-field-size", -1);
+    getIntValue(_splice, u"splice-countdown", INT_MIN);
+    getIntValue(_min_splice, u"min-splice-countdown", INT_MIN);
+    getIntValue(_max_splice, u"max-splice-countdown", INT_MIN);
     getIntValue(_after_packets, u"after-packets");
     getIntValue(_every_packets, u"every");
-    getIntValues(_pid, u"pid");
+    getIntValues(_explicit_pid, u"pid");
+    getIntValues(_stream_ids, u"stream-id");
     getIntValues(_labels, u"label");
     getIntValues(_set_labels, u"set-label");
     getIntValues(_reset_labels, u"reset-label");
@@ -373,6 +413,7 @@ bool ts::FilterPlugin::getOptions()
 bool ts::FilterPlugin::start()
 {
     _filtered_packets = 0;
+    _stream_id_pid.reset();
     return true;
 }
 
@@ -394,14 +435,25 @@ bool ts::FilterPlugin::stop()
 
 ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
+    const PID pid = pkt.getPID();
+
     // Pass initial packets without filtering.
     const PacketCounter packetIndex = tsp->pluginPackets();
     if (packetIndex < _after_packets) {
         return TSP_OK;
     }
 
+    // Check stream ids of PES packets. The stream id is in the fourth byte of
+    // the payload of a TS packet containing the start of a PES packet.
+    if (!_stream_ids.empty() && pkt.startPES() && pkt.getPayloadSize() >= 4) {
+        const uint8_t id = pkt.getPayload()[3];
+        const bool selected = _stream_ids.find(id) != _stream_ids.end();
+        _stream_id_pid.set(pid, selected);
+    }
+
     // Check if the packet matches one of the selected criteria.
-    bool ok = _pid[pkt.getPID()] ||
+    bool ok = _explicit_pid[pid] ||
+        _stream_id_pid[pid] ||
         (_with_payload && pkt.hasPayload()) ||
         (_with_af && pkt.hasAF()) ||
         (_unit_start && pkt.getPUSI()) ||
@@ -409,29 +461,18 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
         (_input_stuffing && pkt_data.getInputStuffing()) ||
         (_valid && pkt.hasValidSync() && !pkt.getTEI()) ||
         (_scrambling_ctrl == pkt.getScrambling()) ||
-        (_has_pcr && (pkt.hasPCR() || pkt.hasOPCR())) ||
-        (_min_payload >= 0 && int (pkt.getPayloadSize()) >= _min_payload) ||
-        (int (pkt.getPayloadSize()) <= _max_payload) ||
-        (_min_af >= 0 && int (pkt.getAFSize()) >= _min_af) ||
-        (int (pkt.getAFSize()) <= _max_af) ||
+        (_with_pcr && (pkt.hasPCR() || pkt.hasOPCR())) ||
+        (_with_splice && pkt.hasSpliceCountdown()) ||
+        (_splice >= -128 && pkt.hasSpliceCountdown() && pkt.getSpliceCountdown() == _splice) ||
+        (_min_splice >= -128 && pkt.hasSpliceCountdown() && pkt.getSpliceCountdown() >= _min_splice) ||
+        (_max_splice >= -128 && pkt.hasSpliceCountdown() && pkt.getSpliceCountdown() <= _max_splice) ||
+        (_min_payload >= 0 && int(pkt.getPayloadSize()) >= _min_payload) ||
+        (int(pkt.getPayloadSize()) <= _max_payload) ||
+        (_min_af >= 0 && int(pkt.getAFSize()) >= _min_af) ||
+        (int(pkt.getAFSize()) <= _max_af) ||
         pkt_data.hasAnyLabel(_labels) ||
         (_every_packets > 0 && (tsp->pluginPackets() - _after_packets) % _every_packets == 0) ||
-
-        // Check the presence of a PES header.
-        // A PES header starts with the 3-byte prefix 0x000001. A packet has a PES
-        // header if the 'payload unit start' is set in the TS header and the
-        // payload starts with 0x000001.
-        //
-        // Note that there is no risk to misinterpret the prefix: When 'payload
-        // unit start' is set, the payload may also contains PSI/SI tables. In
-        // that case, 0x000001 is not a possible value for the beginning of the
-        // payload. With PSI/SI, a payload starting with 0x000001 would mean:
-        //  0x00 : pointer field -> a section starts at next byte
-        //  0x00 : table id -> a PAT
-        //  0x01 : section_syntax_indicator field is 0, impossible for a PAT
-
-        (_with_pes && pkt.hasValidSync() && !pkt.getTEI() && pkt.getPayloadSize() >= 3 &&
-         (GetUInt32 (pkt.b + pkt.getHeaderSize() - 1) & 0x00FFFFFF) == 0x000001);
+        (_with_pes && pkt.startPES());
 
     // Search binary patterns in packets.
     if (!ok && !_pattern.empty()) {

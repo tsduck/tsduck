@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-begin.props" />
+  </ImportGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\foo.h" />
+    <ClInclude Include="..\src\fooDescriptor.h" />
+    <ClInclude Include="..\src\fooFilter.h" />
+    <ClInclude Include="..\src\fooTable.h" />
+    <ClInclude Include="..\src\fooCAS.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\tslibext_foo.cpp" />
+    <ClCompile Include="..\src\fooDescriptor.cpp" />
+    <ClCompile Include="..\src\fooFilter.cpp" />
+    <ClCompile Include="..\src\fooTable.cpp" />
+    <ClCompile Include="..\src\fooCAS.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E9D90D07-AB06-49F0-8128-C2BCA405A930}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tslibext_foo</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetName>tslibext_foo</TargetName>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+  </ImportGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>_FOODLL_IMPL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(TSDUCK)\tsduck.props" />
+    <Import Project="msvc-target-dll.props" />
+    <Import Project="msvc-common-end.props" />
+  </ImportGroup>
+</Project>

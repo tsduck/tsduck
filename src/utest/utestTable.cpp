@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -43,10 +43,12 @@
 #include "tsAIT.h"
 #include "tsCADescriptor.h"
 #include "tsAVCVideoDescriptor.h"
-#include "tsAC3Descriptor.h"
+#include "tsDVBAC3Descriptor.h"
 #include "tsEacemPreferredNameIdentifierDescriptor.h"
 #include "tsLogicalChannelNumberDescriptor.h"
 #include "tsEutelsatChannelNumberDescriptor.h"
+#include "tsDuckContext.h"
+#include "tsTSPacket.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
 
@@ -116,7 +118,7 @@ void TableTest::testAssignPMT()
     pmt1.streams[3003].stream_type = 45;
     pmt1.streams[3003].descs.add(duck, ts::AVCVideoDescriptor());
     pmt1.streams[4004].stream_type = 149;
-    pmt1.streams[4004].descs.add(duck, ts::AC3Descriptor());
+    pmt1.streams[4004].descs.add(duck, ts::DVBAC3Descriptor());
     pmt1.streams[4004].descs.add(duck, ts::CADescriptor());
 
     const ts::PMT pmt2(pmt1);
@@ -158,7 +160,7 @@ void TableTest::testCopyPMT()
     pmt1.streams[3003].stream_type = 45;
     pmt1.streams[3003].descs.add(duck, ts::AVCVideoDescriptor());
     pmt1.streams[4004].stream_type = 149;
-    pmt1.streams[4004].descs.add(duck, ts::AC3Descriptor());
+    pmt1.streams[4004].descs.add(duck, ts::DVBAC3Descriptor());
     pmt1.streams[4004].descs.add(duck, ts::CADescriptor());
 
     ts::PMT pmt2;

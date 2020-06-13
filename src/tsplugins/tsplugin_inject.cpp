@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsCyclingPacketizer.h"
 #include "tsFileNameRate.h"
@@ -96,8 +95,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(inject, ts::InjectPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"inject", ts::InjectPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -128,9 +126,11 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     _pid_packet_count(0),
     _eval_interval(0),
     _cycle_count(0),
-    _pzer(),
+    _pzer(duck, PID_NULL, CyclingPacketizer::NEVER, 0, tsp),
     _stuffing_policy(CyclingPacketizer::NEVER)
 {
+    duck.defineArgsForCharset(*this);
+
     option(u"", 0, STRING, 1, UNLIMITED_COUNT);
     help(u"",
          u"Binary or XML files containing one or more sections or tables. By default, "
@@ -224,6 +224,7 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
 bool ts::InjectPlugin::start()
 {
     // Get command line arguments
+    duck.loadArgs(*this);
     _inject_pid = intValue<PID>(u"pid", PID_NULL);
     _repeat_count = intValue<size_t>(u"repeat", 0);
     _terminate = present(u"terminate");

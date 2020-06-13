@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsSwitchableReport.h"
 #include "tsPacketizer.h"
@@ -166,8 +165,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(datainject, ts::DataInjectPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"datainject", ts::DataInjectPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -199,7 +197,7 @@ ts::DataInjectPlugin::DataInjectPlugin(TSP* tsp_) :
     _client_id(0),
     _data_id(0),
     _section_mode(false),
-    _packetizer(PID_NULL, this),
+    _packetizer(duck, PID_NULL, this),
     _req_bitrate(0),
     _lost_packets(0)
 {

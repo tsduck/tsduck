@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
 #include "tsPacketizer.h"
@@ -77,8 +76,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(sections, ts::SectionsPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"sections", ts::SectionsPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -96,7 +94,7 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
     _removed_tids(),
     _removed_etids(),
     _demux(duck, nullptr, this),
-    _packetizer(PID_NULL, this)
+    _packetizer(duck, PID_NULL, this)
 {
     option(u"etid-remove", 'e', UINT32, 0, UNLIMITED_COUNT, 0, 0x00FFFFFF);
     help(u"etid-remove", u"id1[-id2]",

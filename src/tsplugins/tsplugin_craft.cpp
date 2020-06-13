@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsPCR.h"
 TSDUCK_SOURCE;
@@ -52,7 +51,8 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
-        virtual bool abortInput() override { return true; }
+        virtual bool abortInput() override;
+        virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
     private:
         uint8_t       _initCC;      // continuity_counter
@@ -125,9 +125,8 @@ namespace ts {
 // Plugin shared library interface
 //----------------------------------------------------------------------------
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(craft, ts::CraftInput)
-TSPLUGIN_DECLARE_PROCESSOR(craft, ts::CraftPlugin)
+TS_REGISTER_INPUT_PLUGIN(u"craft", ts::CraftInput);
+TS_REGISTER_PROCESSOR_PLUGIN(u"craft", ts::CraftPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -386,6 +385,21 @@ bool ts::CraftInput::start()
 {
     _packet.setCC(_initCC);
     _limit = _maxCount;
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Input is never blocking.
+//----------------------------------------------------------------------------
+
+bool ts::CraftInput::setReceiveTimeout(MilliSecond timeout)
+{
+    return true;
+}
+
+bool ts::CraftInput::abortInput()
+{
     return true;
 }
 

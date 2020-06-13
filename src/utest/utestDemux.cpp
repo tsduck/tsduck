@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,8 @@
 #include "tsSectionDemux.h"
 #include "tsStandaloneTableDemux.h"
 #include "tsOneShotPacketizer.h"
+#include "tsDuckContext.h"
+#include "tsTSPacket.h"
 #include "tsPAT.h"
 #include "tsCAT.h"
 #include "tsPMT.h"
@@ -396,7 +398,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
     // the reference packets.
 
     ts::TSPacketVector packets;
-    ts::OneShotPacketizer pzer(table1.sourcePID(), true);
+    ts::OneShotPacketizer pzer(duck, table1.sourcePID(), true);
 
     pzer.setNextContinuityCounter(ref_pkt[0].getCC());
     pzer.addTable(table1);
@@ -422,17 +424,17 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
     const ts::BinaryTable& table3(*demux2.tableAt(0));
     if (table2 != table3) {
         debug() << "DemuxTest: " << name << ": rebuilt tables differ" << std::endl;
-        debug() << "DemuxTest:   Re-serialized table: " << ts::names::TID(table2.tableId())
+        debug() << "DemuxTest:   Re-serialized table: " << ts::names::TID(duck, table2.tableId())
             << ", " << table2.sectionCount() << " sections" << std::endl
-            << "  Re-packetized table: " << ts::names::TID(table3.tableId())
+            << "  Re-packetized table: " << ts::names::TID(duck, table3.tableId())
             << ", " << table3.sectionCount() << " sections" << std::endl;
     }
     TSUNIT_ASSERT(table2 == table3);
 }
 
-#define TEST_TABLE(title,name) testTable(title, \
-         psi_##name##_packets, sizeof(psi_##name##_packets), \
-         psi_##name##_sections, sizeof(psi_##name##_sections));
+#define TEST_TABLE(title,name) testTable(title,               \
+         psi_##name##_packets, sizeof(psi_##name##_packets),  \
+         psi_##name##_sections, sizeof(psi_##name##_sections))
 
 void DemuxTest::testPAT()
 {

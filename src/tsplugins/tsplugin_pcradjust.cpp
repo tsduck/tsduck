@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -63,12 +63,12 @@
 //     Note: this is not ideal since it does not solve the problem of
 //         simultaneous modified packet placement (bad muxin/merging) and
 //         PCR warp (file loop for instance).
-//  
+//
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
+#include "tsBinaryTable.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsSafePtr.h"
@@ -143,8 +143,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(pcradjust, ts::PCRAdjustPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"pcradjust", ts::PCRAdjustPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -186,7 +185,7 @@ ts::PCRAdjustPlugin::PCRAdjustPlugin(TSP* tsp_) :
 
     option(u"min-ms-interval", 0, POSITIVE);
     help(u"min-ms-interval", u"milliseconds",
-         u"Specify the minimum interval between two PCR's in miliseconds. "
+         u"Specify the minimum interval between two PCR's in milliseconds. "
          u"On a given PID, if the interval between two PCR's is larger than the minimum, "
          u"the next null packet will be replaced with an empty packet with a PCR for that PID.");
 
@@ -208,7 +207,7 @@ bool ts::PCRAdjustPlugin::getOptions()
     _ignore_dts = present(u"ignore-dts");
     _ignore_pts = present(u"ignore-pts");
     _ignore_scrambled = present(u"ignore-scrambled");
-    _min_pcr_interval = intValue<uint64_t>(u"min-ms-interval", 0) * (SYSTEM_CLOCK_FREQ / MilliSecPerSec);
+    _min_pcr_interval = (intValue<uint64_t>(u"min-ms-interval", 0) * SYSTEM_CLOCK_FREQ) / MilliSecPerSec;
     return true;
 }
 
@@ -311,9 +310,11 @@ uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPDTS(PacketCounter packet_index
     // Check if the PTS/DTS and the PCR are still more or less synchronous.
     if (sync_pdts) {
         // Difference between the PTS/DTS and the PCR, in PTS units.
-        const int64_t diff = int64_t(original_pdts) - int64_t(updated_pcr / SYSTEM_CLOCK_SUBFACTOR);
+        const uint64_t diff = std::abs(int64_t(original_pdts) - int64_t(updated_pcr / SYSTEM_CLOCK_SUBFACTOR));
         // If the difference between the PTS/DTS and the PCR is less than 1/2 second, we are still sync.
-        sync_pdts = std::abs(diff) < SYSTEM_CLOCK_SUBFREQ / 2;
+        // Take in account the case where there is a wrapup at PTS_DTS_SCALE.
+        const uint64_t max_diff = SYSTEM_CLOCK_SUBFREQ / 2;
+        sync_pdts = diff < max_diff || diff > PTS_DTS_SCALE - max_diff;
     }
 
     if (sync_pdts) {
@@ -348,7 +349,7 @@ ts::PCRAdjustPlugin::PIDContextPtr ts::PCRAdjustPlugin::getContext(PID pid)
 
 
 //----------------------------------------------------------------------------
-// TableHandlerInterface implementation.
+// TableHandlerIntrface implementation.
 //----------------------------------------------------------------------------
 
 void ts::PCRAdjustPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)

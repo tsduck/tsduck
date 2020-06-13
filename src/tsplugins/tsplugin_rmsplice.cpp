@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsServiceDiscovery.h"
 #include "tsSectionDemux.h"
@@ -49,7 +48,7 @@ namespace ts {
     class RMSplicePlugin:
             public ProcessorPlugin,
             private SectionHandlerInterface,
-            private PMTHandlerInterface
+            private SignalizationHandlerInterface
     {
         TS_NOBUILD_NOCOPY(RMSplicePlugin);
     public:
@@ -137,13 +136,12 @@ namespace ts {
         ContinuityAnalyzer _ccFixer;     // To fix continuity counters in spliced PID's.
 
         // Implementation of interfaces.
-        virtual void handleSection(SectionDemux& demux, const Section& section) override;
-        virtual void handlePMT(const PMT& table) override;
+        virtual void handleSection(SectionDemux&, const Section&) override;
+        virtual void handlePMT(const PMT&, PID) override;
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(rmsplice, ts::RMSplicePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"rmsplice", ts::RMSplicePlugin);
 
 
 //----------------------------------------------------------------------------
@@ -166,6 +164,9 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
     _videoPID(PID_NULL),
     _ccFixer(NoPID, tsp)
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"", 0, STRING, 0, 1);
     help(u"",
          u"Specifies the service to modify. If the argument is an integer value (either "
@@ -212,6 +213,7 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
 
 bool ts::RMSplicePlugin::getOptions()
 {
+    duck.loadArgs(*this);
     _service.set(value(u""));
     _dropStatus = present(u"stuffing") ? TSP_NULL : TSP_DROP;
     _continue = present(u"continue");
@@ -270,7 +272,7 @@ ts::RMSplicePlugin::PIDState::PIDState(PID pid_) :
 // Invoked by the service discovery when the PMT of the service is available.
 //----------------------------------------------------------------------------
 
-void ts::RMSplicePlugin::handlePMT(const PMT& pmt)
+void ts::RMSplicePlugin::handlePMT(const PMT& pmt, PID)
 {
     // We need to find a PID carrying splice information sections.
     bool foundSpliceInfo = false;

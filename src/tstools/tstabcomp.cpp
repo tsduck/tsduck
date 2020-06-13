@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,11 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsSysUtils.h"
 #include "tsBinaryTable.h"
 #include "tsSectionFile.h"
-#include "tsDVBCharset.h"
+#include "tsDVBCharTable.h"
 #include "tsxmlTweaks.h"
 #include "tsReportWithPrefix.h"
 #include "tsInputRedirector.h"
@@ -54,29 +55,26 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options();
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::DuckContext       duck;            // Execution context.
-    ts::UStringVector     infiles;         // Input file names.
-    ts::UString           outfile;         // Output file path.
-    bool                  outdir;          // Output name is a directory.
-    bool                  compile;         // Explicit compilation.
-    bool                  decompile;       // Explicit decompilation.
-    bool                  packAndFlush;    // Pack and flush incomplete tables before exiting.
-    bool                  xmlModel;        // Display XML model instead of compilation.
-    ts::xml::Tweaks       xmlTweaks;       // XML formatting options.
-    const ts::DVBCharset* defaultCharset;  // Default DVB character set to interpret strings.
-};
+        ts::DuckContext   duck;            // Execution context.
+        ts::UStringVector infiles;         // Input file names.
+        ts::UString       outfile;         // Output file path.
+        bool              outdir;          // Output name is a directory.
+        bool              compile;         // Explicit compilation.
+        bool              decompile;       // Explicit decompilation.
+        bool              packAndFlush;    // Pack and flush incomplete tables before exiting.
+        bool              xmlModel;        // Display XML model instead of compilation.
+        bool              withExtensions;  // XML model with extensions.
+        ts::xml::Tweaks   xmlTweaks;       // XML formatting options.
+    };
+}
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"PSI/SI tables compiler", u"[options] filename ..."),
     duck(this),
@@ -87,11 +85,11 @@ Options::Options(int argc, char *argv[]) :
     decompile(false),
     packAndFlush(false),
     xmlModel(false),
-    xmlTweaks(),
-    defaultCharset(nullptr)
+    withExtensions(false),
+    xmlTweaks()
 {
     duck.defineArgsForStandards(*this);
-    duck.defineArgsForDVBCharset(*this);
+    duck.defineArgsForCharset(*this);
     xmlTweaks.defineArgs(*this);
 
     option(u"", 0, STRING);
@@ -109,6 +107,10 @@ Options::Options(int argc, char *argv[]) :
     help(u"decompile",
          u"Decompile all files as binary files into XML files. This is the default "
          u"for .bin files.");
+
+    option(u"extensions", 'e');
+    help(u"extensions",
+         u"With --xml-model, include the content of the available extensions.");
 
     option(u"pack-and-flush");
     help(u"pack-and-flush",
@@ -134,7 +136,7 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     duck.loadArgs(*this);
-    xmlTweaks.loadArgs(*this);
+    xmlTweaks.loadArgs(duck, *this);
 
     getValues(infiles, u"");
     getValue(outfile, u"output");
@@ -142,6 +144,7 @@ Options::Options(int argc, char *argv[]) :
     decompile = present(u"decompile");
     packAndFlush = present(u"pack-and-flush");
     xmlModel = present(u"xml-model");
+    withExtensions = present(u"extensions");
     outdir = !outfile.empty() && ts::IsDirectory(outfile);
 
     if (!infiles.empty() && xmlModel) {
@@ -152,12 +155,6 @@ Options::Options(int argc, char *argv[]) :
     }
     if (compile && decompile) {
         error(u"specify either --compile or --decompile but not both");
-    }
-
-    // Get default character set.
-    const ts::UString csName(value(u"default-charset"));
-    if (!csName.empty() && (defaultCharset = ts::DVBCharset::GetCharset(csName)) == nullptr) {
-        error(u"invalid character set name '%s", {csName});
     }
 
     exitOnError();
@@ -172,7 +169,7 @@ namespace {
     bool DisplayModel(Options& opt)
     {
         // Locate the model file.
-        const ts::UString inName(ts::SearchConfigurationFile(u"tsduck.tables.model.xml"));
+        const ts::UString inName(ts::SearchConfigurationFile(TS_XML_TABLES_MODEL));
         if (inName.empty()) {
             opt.error(u"XML model file not found");
             return false;
@@ -184,19 +181,35 @@ namespace {
         if (opt.outdir) {
             // Specified output is a directory, add default name.
             outName.push_back(ts::PathSeparator);
-            outName.append(u"tsduck.tables.model.xml");
+            outName.append(TS_XML_TABLES_MODEL);
         }
         if (!outName.empty()) {
             opt.verbose(u"saving model file to %s", {outName});
         }
 
-        // Redirect input and output, exit in case of error.
-        ts::InputRedirector in(inName, opt);
-        ts::OutputRedirector out(outName, opt);
-
-        // Display / copy the XML model.
-        std::cout << std::cin.rdbuf();
-        return true;
+        // Load and save the model.
+        if (opt.withExtensions) {
+            // The extensions shall be loaded, use a DOM object to load the
+            // main model and its extensions, then save it in a file.
+            ts::xml::Document doc;
+            if (!ts::SectionFile::LoadModel(doc)) {
+                return false;
+            }
+            if (outName.empty()) {
+                std::cout << doc.toString();
+                return true;
+            }
+            else {
+                return doc.save(outName);
+            }
+        }
+        else {
+            // Redirect input and output, exit in case of error.
+            ts::InputRedirector in(inName, opt);
+            ts::OutputRedirector out(outName, opt);
+            std::cout << std::cin.rdbuf();
+            return true;
+        }
     }
 }
 

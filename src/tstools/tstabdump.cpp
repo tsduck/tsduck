@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -56,27 +56,24 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options();
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::DuckContext   duck;              // TSDuck execution context.
-    ts::TablesDisplay display;           // Options about displaying tables
-    ts::PagerArgs     pager;             // Output paging options.
-    ts::UDPReceiver   udp;               // Options about receiving UDP tables
-    ts::UStringVector infiles;           // Input file names
-    size_t            max_tables;        // Max number of tables to dump.
-    size_t            max_invalid_udp;   // Max number of invalid UDP messages before giving up.
-    bool              no_encapsulation;  // Raw sections in UDP messages.
-};
+        ts::DuckContext   duck;              // TSDuck execution context.
+        ts::TablesDisplay display;           // Options about displaying tables
+        ts::PagerArgs     pager;             // Output paging options.
+        ts::UDPReceiver   udp;               // Options about receiving UDP tables
+        ts::UStringVector infiles;           // Input file names
+        size_t            max_tables;        // Max number of tables to dump.
+        size_t            max_invalid_udp;   // Max number of invalid UDP messages before giving up.
+        bool              no_encapsulation;  // Raw sections in UDP messages.
+    };
+}
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Dump PSI/SI tables, as saved by tstables", u"[options] [filename ...]"),
     duck(this),
@@ -88,9 +85,10 @@ Options::Options(int argc, char *argv[]) :
     max_invalid_udp(16),
     no_encapsulation(false)
 {
+    duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);
     duck.defineArgsForStandards(*this);
-    duck.defineArgsForDVBCharset(*this);
+    duck.defineArgsForCharset(*this);
     pager.defineArgs(*this);
     display.defineArgs(*this);
     udp.defineArgs(*this);
@@ -115,9 +113,9 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     duck.loadArgs(*this);
-    pager.loadArgs(*this);
-    display.loadArgs(*this);
-    udp.loadArgs(*this);
+    pager.loadArgs(duck, *this);
+    display.loadArgs(duck, *this);
+    udp.loadArgs(duck, *this);
 
     getValues(infiles, u"");
     max_tables = intValue<size_t>(u"max-tables", std::numeric_limits<size_t>::max());

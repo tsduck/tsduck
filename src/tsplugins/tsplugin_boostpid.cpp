@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 TSDUCK_SOURCE;
 
@@ -48,21 +47,24 @@ namespace ts {
     public:
         // Implementation of plugin API
         BoostPIDPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
+        // Command line options:
         uint16_t _pid;         // Target PID
         int      _opt_addpkt;  // addpkt in addpkt/inpkt parameter
         int      _opt_inpkt;   // inpkt in addpkt/inpkt parameter
+
+        // Working data:
         uint8_t  _last_cc;     // Last continuity counter in PID
         int      _in_count;    // Input packet countdown for next insertion
         int      _add_count;   // Current number of packets to add
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(boostpid, ts::BoostPIDPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"boostpid", ts::BoostPIDPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -88,12 +90,11 @@ ts::BoostPIDPlugin::BoostPIDPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get options method
 //----------------------------------------------------------------------------
 
-bool ts::BoostPIDPlugin::start()
+bool ts::BoostPIDPlugin::getOptions()
 {
-    // Get and verify command line arguments
     if ((_pid = intValue<uint16_t>(u"", 0xFFFF, 0)) >= PID_MAX) {
         tsp->error(u"invalid 'pid' parameter");
         return false;
@@ -106,12 +107,20 @@ bool ts::BoostPIDPlugin::start()
         tsp->error(u"invalid 'inpkt' parameter");
         return false;
     }
-    tsp->verbose(u"adding %d packets every %d packets on PID %d (0x%X)", {_opt_addpkt, _opt_inpkt, _pid, _pid});
+    return true;
+}
 
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::BoostPIDPlugin::start()
+{
+    tsp->verbose(u"adding %d packets every %d packets on PID %d (0x%X)", {_opt_addpkt, _opt_inpkt, _pid, _pid});
     _last_cc = 0;
     _in_count = 0;
     _add_count = 0;
-
     return true;
 }
 

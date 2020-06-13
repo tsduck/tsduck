@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
+#include "tsBinaryTable.h"
 #include "tsSectionDemux.h"
 #include "tsCASFamily.h"
 #include "tsDescriptorList.h"
@@ -74,8 +74,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(rmorphan, ts::RMOrphanPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"rmorphan", ts::RMOrphanPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -89,7 +88,7 @@ ts::RMOrphanPlugin::RMOrphanPlugin(TSP* tsp_) :
     _demux(duck, this)
 {
     option(u"stuffing", 's');
-    help(u"stuffing", 
+    help(u"stuffing",
          u"Replace excluded packets with stuffing (null packets) instead "
          u"of removing them. Useful to preserve bitrate.");
 }

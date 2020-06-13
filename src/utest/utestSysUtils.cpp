@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -138,7 +138,7 @@ void SysUtilsTest::beforeTest()
 
     // Request 2 milliseconds as system time precision.
     debug() << "SysUtilsTest: timer precision = " << ts::UString::Decimal(_nsPrecision) << " ns, "
-                 << ts::UString::Decimal(_msPrecision) << " ms" << std::endl;
+            << ts::UString::Decimal(_msPrecision) << " ms" << std::endl;
 }
 
 // Test suite cleanup method.
@@ -182,8 +182,8 @@ void SysUtilsTest::testCurrentProcessId()
     // Hard to make automated tests since we do not expect predictible values
 
     debug() << "SysUtilsTest: sizeof(ts::ProcessId) = " << sizeof(ts::ProcessId) << std::endl
-                 << "SysUtilsTest: ts::CurrentProcessId() = " << ts::CurrentProcessId() << std::endl
-                 << "SysUtilsTest: ts::IsPrivilegedUser() = " << ts::IsPrivilegedUser() << std::endl;
+            << "SysUtilsTest: ts::CurrentProcessId() = " << ts::CurrentProcessId() << std::endl
+            << "SysUtilsTest: ts::IsPrivilegedUser() = " << ts::IsPrivilegedUser() << std::endl;
 }
 
 void SysUtilsTest::testCurrentExecutableFile()
@@ -211,13 +211,13 @@ void SysUtilsTest::testSleep()
 void SysUtilsTest::testEnvironment()
 {
     debug() << "SysUtilsTest: EnvironmentExists(\"HOME\") = "
-                 << ts::EnvironmentExists(u"HOME") << std::endl
-                 << "SysUtilsTest: GetEnvironment(\"HOME\") = \""
-                 << ts::GetEnvironment(u"HOME", u"(default)") << "\"" << std::endl
-                 << "SysUtilsTest: EnvironmentExists(\"HOMEPATH\") = "
-                 << ts::EnvironmentExists(u"HOMEPATH") << std::endl
-                 << "SysUtilsTest: GetEnvironment(\"HOMEPATH\") = \""
-                 << ts::GetEnvironment(u"HOMEPATH", u"(default)") << "\"" << std::endl;
+            << ts::EnvironmentExists(u"HOME") << std::endl
+            << "SysUtilsTest: GetEnvironment(\"HOME\") = \""
+            << ts::GetEnvironment(u"HOME", u"(default)") << "\"" << std::endl
+            << "SysUtilsTest: EnvironmentExists(\"HOMEPATH\") = "
+            << ts::EnvironmentExists(u"HOMEPATH") << std::endl
+            << "SysUtilsTest: GetEnvironment(\"HOMEPATH\") = \""
+            << ts::GetEnvironment(u"HOMEPATH", u"(default)") << "\"" << std::endl;
 
     TSUNIT_ASSERT(ts::SetEnvironment(u"UTEST_A", u"foo"));
     TSUNIT_ASSERT(ts::EnvironmentExists(u"UTEST_A"));
@@ -277,9 +277,8 @@ void SysUtilsTest::testEnvironment()
     TSUNIT_ASSERT(ts::SetEnvironment(u"UTEST_C", u"nopqrstuvwxyz"));
     ts::DeleteEnvironment(u"UTEST_D");
 
-    debug()
-        << "SysUtilsTest: ExpandEnvironment(\"\\$UTEST_A\") = \""
-        << ts::ExpandEnvironment(u"\\$UTEST_A") << "\"" << std::endl;
+    debug() << "SysUtilsTest: ExpandEnvironment(\"\\$UTEST_A\") = \""
+            << ts::ExpandEnvironment(u"\\$UTEST_A") << "\"" << std::endl;
 
     TSUNIT_ASSERT(ts::ExpandEnvironment(u"").empty());
     TSUNIT_EQUAL(u"abc", ts::ExpandEnvironment(u"abc"));
@@ -293,9 +292,8 @@ void SysUtilsTest::testEnvironment()
 
 void SysUtilsTest::testRegistry()
 {
-    debug()
-        << "SysUtilsTest: SystemEnvironmentKey = " << ts::Registry::SystemEnvironmentKey << std::endl
-        << "SysUtilsTest: UserEnvironmentKey = " << ts::Registry::UserEnvironmentKey << std::endl;
+    debug() << "SysUtilsTest: SystemEnvironmentKey = " << ts::Registry::SystemEnvironmentKey << std::endl
+            << "SysUtilsTest: UserEnvironmentKey = " << ts::Registry::UserEnvironmentKey << std::endl;
 
 #if defined(TS_WINDOWS)
 

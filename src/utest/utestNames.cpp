@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@
 #include "tsNames.h"
 #include "tsMPEG.h"
 #include "tsSysUtils.h"
+#include "tsDuckContext.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
 
@@ -50,6 +51,7 @@ public:
 
     void testConfigFile();
     void testTID();
+    void testSharedTID();
     void testDID();
     void testEDID();
     void testStreamType();
@@ -87,6 +89,7 @@ public:
     TSUNIT_TEST_BEGIN(NamesTest);
     TSUNIT_TEST(testConfigFile);
     TSUNIT_TEST(testTID);
+    TSUNIT_TEST(testSharedTID);
     TSUNIT_TEST(testDID);
     TSUNIT_TEST(testEDID);
     TSUNIT_TEST(testStreamType);
@@ -147,12 +150,12 @@ void NamesTest::afterTest()
 
 void NamesTest::testConfigFile()
 {
-    debug() << "NamesTest: DVB configuration file: " << ts::NamesDVB::Instance()->configurationFile() << std::endl
-                 << "NamesTest: OUI configuration file: " << ts::NamesOUI::Instance()->configurationFile() << std::endl;
+    debug() << "NamesTest: DVB configuration file: " << ts::NamesMain::Instance()->configurationFile() << std::endl
+            << "NamesTest: OUI configuration file: " << ts::NamesOUI::Instance()->configurationFile() << std::endl;
 
-    TSUNIT_ASSERT(!ts::NamesDVB::Instance()->configurationFile().empty());
-    TSUNIT_ASSERT(ts::FileExists(ts::NamesDVB::Instance()->configurationFile()));
-    TSUNIT_EQUAL(0, ts::NamesDVB::Instance()->errorCount());
+    TSUNIT_ASSERT(!ts::NamesMain::Instance()->configurationFile().empty());
+    TSUNIT_ASSERT(ts::FileExists(ts::NamesMain::Instance()->configurationFile()));
+    TSUNIT_EQUAL(0, ts::NamesMain::Instance()->errorCount());
 
     TSUNIT_ASSERT(!ts::NamesOUI::Instance()->configurationFile().empty());
     TSUNIT_ASSERT(ts::FileExists(ts::NamesOUI::Instance()->configurationFile()));
@@ -161,16 +164,34 @@ void NamesTest::testConfigFile()
 
 void NamesTest::testTID()
 {
-    TSUNIT_EQUAL(u"CAT", ts::names::TID(ts::TID_CAT));
-    TSUNIT_EQUAL(u"CAT", ts::names::TID(ts::TID_CAT, ts::CAS_NAGRA));
-    TSUNIT_EQUAL(u"PMT", ts::names::TID(ts::TID_PMT, ts::CAS_VIACCESS));
-    TSUNIT_EQUAL(u"Viaccess EMM-U", ts::names::TID(ts::TID_VIA_EMM_U, ts::CAS_VIACCESS));
-    TSUNIT_EQUAL(u"EIT schedule Actual", ts::names::TID(ts::TID_EIT_S_ACT_MIN + 4));
-    TSUNIT_EQUAL(u"ECM (odd)", ts::names::TID(ts::TID_ECM_81));
-    TSUNIT_EQUAL(u"Nagravision ECM (odd)", ts::names::TID(ts::TID_ECM_81, ts::CAS_NAGRA));
-    TSUNIT_EQUAL(u"SafeAccess EMM-A (0x86)", ts::names::TID(ts::TID_SA_EMM_A, ts::CAS_SAFEACCESS, ts::names::VALUE));
-    TSUNIT_EQUAL(u"Logiways DMT", ts::names::TID(ts::TID_LW_DMT, ts::CAS_SAFEACCESS));
-    TSUNIT_EQUAL(u"unknown (0x90)", ts::names::TID(ts::TID_LW_DMT));
+    ts::DuckContext duck;
+    TSUNIT_EQUAL(u"CAT", ts::names::TID(duck, ts::TID_CAT));
+    TSUNIT_EQUAL(u"CAT", ts::names::TID(duck, ts::TID_CAT, ts::CASID_NAGRA_MIN));
+    TSUNIT_EQUAL(u"PMT", ts::names::TID(duck, ts::TID_PMT, ts::CASID_VIACCESS_MIN));
+    TSUNIT_EQUAL(u"Viaccess EMM-U", ts::names::TID(duck, ts::TID_VIA_EMM_U, ts::CASID_VIACCESS_MIN));
+    TSUNIT_EQUAL(u"EIT schedule Actual", ts::names::TID(duck, ts::TID_EIT_S_ACT_MIN + 4));
+    TSUNIT_EQUAL(u"ECM (odd)", ts::names::TID(duck, ts::TID_ECM_81));
+    TSUNIT_EQUAL(u"Nagravision ECM (odd)", ts::names::TID(duck, ts::TID_ECM_81, ts::CASID_NAGRA_MIN));
+    TSUNIT_EQUAL(u"SafeAccess EMM-A (0x86)", ts::names::TID(duck, ts::TID_SA_EMM_A, ts::CASID_SAFEACCESS, ts::names::VALUE));
+    TSUNIT_EQUAL(u"Logiways DMT", ts::names::TID(duck, ts::TID_LW_DMT, ts::CASID_SAFEACCESS));
+    TSUNIT_EQUAL(u"unknown (0x90)", ts::names::TID(duck, ts::TID_LW_DMT));
+}
+
+void NamesTest::testSharedTID()
+{
+    // Shared table ids between ATSC and ISDB.
+
+    ts::DuckContext duck;
+    TSUNIT_EQUAL(ts::TID_MGT, ts::TID_LDT);
+    TSUNIT_EQUAL(ts::TID_TVCT, ts::TID_CDT);
+
+    duck.addStandards(ts::STD_ISDB);
+    TSUNIT_EQUAL(u"LDT (ISDB)", ts::names::TID(duck, ts::TID_MGT));
+    TSUNIT_EQUAL(u"CDT (ISDB)", ts::names::TID(duck, ts::TID_TVCT));
+
+    duck.resetStandards(ts::STD_ATSC);
+    TSUNIT_EQUAL(u"MGT (ATSC)", ts::names::TID(duck, ts::TID_MGT));
+    TSUNIT_EQUAL(u"TVCT (ATSC)", ts::names::TID(duck, ts::TID_TVCT));
 }
 
 void NamesTest::testPrivateDataSpecifier()
@@ -205,8 +226,9 @@ void NamesTest::testCASFamily()
 
 void NamesTest::testCASId()
 {
-    TSUNIT_EQUAL(u"Viaccess", ts::names::CASId(0x500));
-    TSUNIT_EQUAL(u"Irdeto", ts::names::CASId(0x601));
+    ts::DuckContext duck;
+    TSUNIT_EQUAL(u"Viaccess", ts::names::CASId(duck, 0x500));
+    TSUNIT_EQUAL(u"Irdeto", ts::names::CASId(duck, 0x601));
 }
 
 void NamesTest::testBouquetId()
@@ -298,7 +320,7 @@ void NamesTest::testAVCProfile()
 void NamesTest::testServiceType()
 {
     TSUNIT_EQUAL(u"Data broadcast service", ts::names::ServiceType(0x0C));
-    TSUNIT_EQUAL(u"unknown (0x00)", ts::names::ServiceType(0));
+    TSUNIT_EQUAL(u"unknown (0x80)", ts::names::ServiceType(128));
 }
 
 void NamesTest::testScramblingControl()
@@ -334,9 +356,16 @@ void NamesTest::testAC3ComponentType()
 
 void NamesTest::testComponentType()
 {
-    TSUNIT_EQUAL(u"MPEG-2 video, 4:3 aspect ratio, 30 Hz", ts::names::ComponentType(0x0105));
-    TSUNIT_EQUAL(u"DVB subtitles, no aspect ratio", ts::names::ComponentType(0x0310));
-    TSUNIT_EQUAL(u"Enhanced AC-3, combined, visually impaired, 2 channels", ts::names::ComponentType(0x0492));
+    ts::DuckContext duck;
+    TSUNIT_EQUAL(u"MPEG-2 video, 4:3 aspect ratio, 30 Hz", ts::names::ComponentType(duck, 0x0105));
+    TSUNIT_EQUAL(u"DVB subtitles, no aspect ratio", ts::names::ComponentType(duck, 0x0310));
+    TSUNIT_EQUAL(u"Enhanced AC-3, combined, visually impaired, 2 channels", ts::names::ComponentType(duck, 0x0492));
+    TSUNIT_EQUAL(u"MPEG-2 high definition video, > 16:9 aspect ratio, 30 Hz", ts::names::ComponentType(duck, 0x0110));
+    TSUNIT_EQUAL(u"MPEG-2 video", ts::names::ComponentType(duck, 0x01B4));
+
+    duck.addStandards(ts::STD_JAPAN);
+    TSUNIT_EQUAL(u"unknown (0x0110)", ts::names::ComponentType(duck, 0x0110));
+    TSUNIT_EQUAL(u"Video 1080i(1125i), >16:9 aspect ratio", ts::names::ComponentType(duck, 0x01B4));
 }
 
 void NamesTest::testSubtitlingType()
