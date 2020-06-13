@@ -113,22 +113,22 @@ void TSFileTest::testTS()
         packets[i] = ts::NullPacket;
         packets[i].setPID(ts::PID(100 + i));
     }
-    TSUNIT_ASSERT(file.write(packets.data(), packets.size(), CERR));
+    TSUNIT_ASSERT(file.writePackets(packets.data(), nullptr, packets.size(), CERR));
     TSUNIT_ASSERT(file.rewind(CERR));
-    TSUNIT_EQUAL(ts::TSFile::FMT_TS, file.getFormat());
-    TSUNIT_EQUAL(u"TS", file.getFormatString());
+    TSUNIT_EQUAL(ts::TSFile::FMT_TS, file.packetFormat());
+    TSUNIT_EQUAL(u"TS", file.packetFormatString());
 
     ts::TSPacketVector inpackets(packets.size() / 5);
     ts::PID pid = 100;
     for (size_t i1 = 0; i1 < 5; ++i1) {
-        TSUNIT_EQUAL(inpackets.size(), file.read(&inpackets[0], inpackets.size(), CERR));
+        TSUNIT_EQUAL(inpackets.size(), file.readPackets(&inpackets[0], nullptr, inpackets.size(), CERR));
         for (size_t i2 = 0; i2 < inpackets.size(); ++i2) {
             TSUNIT_EQUAL(pid++, inpackets[i2].getPID());
         }
     }
-    TSUNIT_EQUAL(0, file.read(&inpackets[0], inpackets.size(), CERR));
-    TSUNIT_EQUAL(100, file.getWriteCount());
-    TSUNIT_EQUAL(100, file.getReadCount());
+    TSUNIT_EQUAL(0, file.readPackets(&inpackets[0], nullptr, inpackets.size(), CERR));
+    TSUNIT_EQUAL(100, file.writePacketsCount());
+    TSUNIT_EQUAL(100, file.readPacketsCount());
     TSUNIT_ASSERT(file.close(CERR));
     TSUNIT_ASSERT(ts::FileExists(_tempFileName));
     TSUNIT_EQUAL(18800, ts::GetFileSize(_tempFileName));
@@ -149,9 +149,9 @@ void TSFileTest::testM2TS()
     for (size_t i = 0; i < 5; ++i) {
         packet.setPID(ts::PID(200 + i));
         mdata.setInputTimeStamp(i, ts::SYSTEM_CLOCK_FREQ / 2);
-        TSUNIT_ASSERT(file.write(&packet, 1, CERR, &mdata));
+        TSUNIT_ASSERT(file.writePackets(&packet, &mdata, 1, CERR));
     }
-    TSUNIT_EQUAL(5, file.getWriteCount());
+    TSUNIT_EQUAL(5, file.writePacketsCount());
     TSUNIT_ASSERT(file.close(CERR));
     TSUNIT_ASSERT(ts::FileExists(_tempFileName));
     TSUNIT_EQUAL(960, ts::GetFileSize(_tempFileName));
@@ -159,28 +159,28 @@ void TSFileTest::testM2TS()
     TSUNIT_ASSERT(!file.isOpen());
     TSUNIT_ASSERT(file.openRead(_tempFileName, 2 * (4 + ts::PKT_SIZE), CERR));
     TSUNIT_ASSERT(file.isOpen());
-    TSUNIT_EQUAL(ts::TSFile::FMT_AUTODETECT, file.getFormat());
+    TSUNIT_EQUAL(ts::TSFile::FMT_AUTODETECT, file.packetFormat());
 
-    TSUNIT_EQUAL(1, file.read(&packet, 1, CERR, &mdata));
+    TSUNIT_EQUAL(1, file.readPackets(&packet, &mdata, 1, CERR));
     TSUNIT_EQUAL(202, packet.getPID());
     TSUNIT_ASSERT(mdata.hasInputTimeStamp());
     TSUNIT_EQUAL(4, mdata.getInputTimeStamp());
-    TSUNIT_EQUAL(ts::TSFile::FMT_M2TS, file.getFormat());
+    TSUNIT_EQUAL(ts::TSFile::FMT_M2TS, file.packetFormat());
 
-    TSUNIT_EQUAL(1, file.read(&packet, 1, CERR, &mdata));
+    TSUNIT_EQUAL(1, file.readPackets(&packet, &mdata, 1, CERR));
     TSUNIT_EQUAL(203, packet.getPID());
     TSUNIT_ASSERT(mdata.hasInputTimeStamp());
     TSUNIT_EQUAL(6, mdata.getInputTimeStamp());
 
-    TSUNIT_EQUAL(1, file.read(&packet, 1, CERR, &mdata));
+    TSUNIT_EQUAL(1, file.readPackets(&packet, &mdata, 1, CERR));
     TSUNIT_EQUAL(204, packet.getPID());
     TSUNIT_ASSERT(mdata.hasInputTimeStamp());
     TSUNIT_EQUAL(8, mdata.getInputTimeStamp());
 
-    TSUNIT_EQUAL(0, file.read(&packet, 1, CERR, &mdata));
+    TSUNIT_EQUAL(0, file.readPackets(&packet, &mdata, 1, CERR));
 
-    TSUNIT_EQUAL(3, file.getReadCount());
-    TSUNIT_EQUAL(0, file.read(&packet, 1, CERR, &mdata));
+    TSUNIT_EQUAL(3, file.readPacketsCount());
+    TSUNIT_EQUAL(0, file.readPackets(&packet, &mdata, 1, CERR));
     TSUNIT_ASSERT(file.close(CERR));
 }
 
@@ -199,16 +199,16 @@ void TSFileTest::testDuck()
     mdata.setLabel(1);
     mdata.setLabel(3);
     mdata.setInputTimeStamp(TS_UCONST64(0x212345678), ts::SYSTEM_CLOCK_FREQ);
-    TSUNIT_ASSERT(file.write(&packet, 1, CERR, &mdata));
+    TSUNIT_ASSERT(file.writePackets(&packet, &mdata, 1, CERR));
 
     packet.setPID(ts::PID(400));
     mdata.reset();
     mdata.setLabel(2);
     mdata.setLabel(4);
     mdata.setInputTimeStamp(TS_UCONST64(0x223456789), ts::SYSTEM_CLOCK_FREQ);
-    TSUNIT_ASSERT(file.write(&packet, 1, CERR, &mdata));
+    TSUNIT_ASSERT(file.writePackets(&packet, &mdata, 1, CERR));
 
-    TSUNIT_EQUAL(2, file.getWriteCount());
+    TSUNIT_EQUAL(2, file.writePacketsCount());
     TSUNIT_ASSERT(file.close(CERR));
     TSUNIT_ASSERT(ts::FileExists(_tempFileName));
     TSUNIT_EQUAL(404, ts::GetFileSize(_tempFileName)); // 2 packets, header size = 14 bytes
@@ -216,9 +216,9 @@ void TSFileTest::testDuck()
     TSUNIT_ASSERT(!file.isOpen());
     TSUNIT_ASSERT(file.openRead(_tempFileName, 2, 0, CERR));
     TSUNIT_ASSERT(file.isOpen());
-    TSUNIT_EQUAL(ts::TSFile::FMT_AUTODETECT, file.getFormat());
+    TSUNIT_EQUAL(ts::TSFile::FMT_AUTODETECT, file.packetFormat());
 
-    TSUNIT_EQUAL(1, file.read(&packet, 1, CERR, &mdata));
+    TSUNIT_EQUAL(1, file.readPackets(&packet, &mdata, 1, CERR));
     TSUNIT_EQUAL(300, packet.getPID());
     TSUNIT_ASSERT(!mdata.hasLabel(0));
     TSUNIT_ASSERT(mdata.hasLabel(1));
@@ -227,9 +227,9 @@ void TSFileTest::testDuck()
     TSUNIT_ASSERT(!mdata.hasLabel(4));
     TSUNIT_ASSERT(mdata.hasInputTimeStamp());
     TSUNIT_EQUAL(TS_UCONST64(0x212345678), mdata.getInputTimeStamp());
-    TSUNIT_EQUAL(ts::TSFile::FMT_DUCK, file.getFormat());
+    TSUNIT_EQUAL(ts::TSFile::FMT_DUCK, file.packetFormat());
 
-    TSUNIT_EQUAL(1, file.read(&packet, 1, CERR, &mdata));
+    TSUNIT_EQUAL(1, file.readPackets(&packet, &mdata, 1, CERR));
     TSUNIT_EQUAL(400, packet.getPID());
     TSUNIT_ASSERT(!mdata.hasLabel(0));
     TSUNIT_ASSERT(!mdata.hasLabel(1));
@@ -239,7 +239,7 @@ void TSFileTest::testDuck()
     TSUNIT_ASSERT(mdata.hasInputTimeStamp());
     TSUNIT_EQUAL(TS_UCONST64(0x223456789), mdata.getInputTimeStamp());
 
-    TSUNIT_EQUAL(1, file.read(&packet, 1, CERR, &mdata));
+    TSUNIT_EQUAL(1, file.readPackets(&packet, &mdata, 1, CERR));
     TSUNIT_EQUAL(300, packet.getPID());
     TSUNIT_ASSERT(!mdata.hasLabel(0));
     TSUNIT_ASSERT(mdata.hasLabel(1));
@@ -249,7 +249,7 @@ void TSFileTest::testDuck()
     TSUNIT_ASSERT(mdata.hasInputTimeStamp());
     TSUNIT_EQUAL(TS_UCONST64(0x212345678), mdata.getInputTimeStamp());
 
-    TSUNIT_EQUAL(1, file.read(&packet, 1, CERR, &mdata));
+    TSUNIT_EQUAL(1, file.readPackets(&packet, &mdata, 1, CERR));
     TSUNIT_EQUAL(400, packet.getPID());
     TSUNIT_ASSERT(!mdata.hasLabel(0));
     TSUNIT_ASSERT(!mdata.hasLabel(1));
@@ -259,9 +259,9 @@ void TSFileTest::testDuck()
     TSUNIT_ASSERT(mdata.hasInputTimeStamp());
     TSUNIT_EQUAL(TS_UCONST64(0x223456789), mdata.getInputTimeStamp());
 
-    TSUNIT_EQUAL(0, file.read(&packet, 1, CERR, &mdata));
+    TSUNIT_EQUAL(0, file.readPackets(&packet, &mdata, 1, CERR));
 
-    TSUNIT_EQUAL(4, file.getReadCount());
-    TSUNIT_EQUAL(0, file.read(&packet, 1, CERR, &mdata));
+    TSUNIT_EQUAL(4, file.readPacketsCount());
+    TSUNIT_EQUAL(0, file.readPackets(&packet, &mdata, 1, CERR));
     TSUNIT_ASSERT(file.close(CERR));
 }

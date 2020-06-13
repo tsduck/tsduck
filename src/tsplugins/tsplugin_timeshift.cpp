@@ -212,7 +212,7 @@ ts::ProcessorPlugin::Status ts::TimeShiftPlugin::processPacket(TSPacket& pkt, TS
     else {
         // Check if we are in the initial filling phase.
         const bool init_phase = !_buffer.full();
-        if (!_buffer.shift(pkt, *tsp, &pkt_data)) {
+        if (!_buffer.shift(pkt, pkt_data, *tsp)) {
             return TSP_END; // fatal error
         }
         return init_phase && _drop_initial ? TSP_DROP : TSP_OK;

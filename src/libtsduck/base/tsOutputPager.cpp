@@ -146,5 +146,6 @@ bool ts::OutputPager::open(bool synchronous, size_t buffer_size, Report& report)
 bool ts::OutputPager::write(const UString& text, Report& report)
 {
     const std::string utf8Text(text.toUTF8());
-    return ForkPipe::write(utf8Text.data(), utf8Text.size(), report);
+    size_t outsize = 0;
+    return ForkPipe::writeStream(utf8Text.data(), utf8Text.size(), outsize, report);
 }

@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
-#include "tsForkPipe.h"
+#include "tsTSForkPipe.h"
 #include "tsTSPacketQueue.h"
 #include "tsPSIMerger.h"
 #include "tsThread.h"
@@ -86,12 +86,13 @@ namespace ts {
         bool              _abort;             // Error, give up asap.
         bool              _got_eof;           // Got end of merged stream.
         PacketCounter     _pkt_count;         // Packet counter in the main stream.
-        ForkPipe          _pipe;              // Executed command.
+        TSForkPipe        _pipe;              // Executed command.
         TSPacketQueue     _queue;             // TS packet queur from merge to main.
         PIDSet            _main_pids;         // Set of detected PID's in main stream.
         PIDSet            _merge_pids;        // Set of detected PID's in merged stream that we pass in main stream.
         PIDContextMap     _pcr_pids;          // Description of PID's with PCR's from the merged stream.
         PSIMerger         _psi_merger;        // Used to merge PSI/SI from both streams.
+        TSForkPipe::PacketFormat   _format;       // Packet format on the pipe
         TSPacketMetadata::LabelSet _setLabels;    // Labels to set on output packets.
         TSPacketMetadata::LabelSet _resetLabels;  // Labels to reset on output packets.
 
@@ -131,6 +132,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _merge_pids(),
     _pcr_pids(),
     _psi_merger(duck, PSIMerger::NONE, *tsp),
+    _format(TSForkPipe::FMT_AUTODETECT),
     _setLabels(),
     _resetLabels()
 {
@@ -144,6 +146,14 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"default, the PID's 0x00 to 0x1F are dropped and all other PID's are "
          u"passed. This can be modified using options --drop and --pass. Several "
          u"options --drop can be specified.");
+
+    option(u"format", 0, TSForkPipe::FormatEnum);
+    help(u"format", u"name",
+         u"Specify the format of the input stream. "
+         u"By default, the format is automatically detected. "
+         u"But the auto-detection may fail in some cases "
+         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
+         u"Using this option forces a specific format.");
 
     option(u"ignore-conflicts");
     help(u"ignore-conflicts",
@@ -227,6 +237,7 @@ bool ts::MergePlugin::start()
     const bool nowait = present(u"no-wait");
     const bool transparent = present(u"transparent");
     const size_t max_queue = intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS);
+    _format = enumValue<TSForkPipe::PacketFormat>(u"format", TSForkPipe::FMT_AUTODETECT);
     _merge_psi = !transparent && !present(u"no-psi-merge");
     _pcr_restamp = !present(u"no-pcr-restamp");
     _ignore_conflicts = transparent || present(u"ignore-conflicts");
@@ -284,7 +295,8 @@ bool ts::MergePlugin::start()
                                PKT_SIZE * DEFAULT_MAX_QUEUED_PACKETS,
                                *tsp,
                                ForkPipe::STDOUT_PIPE,
-                               ForkPipe::STDIN_NONE);
+                               ForkPipe::STDIN_NONE,
+                               _format);
 
     // Start the internal thread which receives the TS to merge.
     if (ok) {
@@ -376,7 +388,7 @@ void ts::MergePlugin::main()
 
         // Read TS packets from the pipe, up to buffer size (but maybe less).
         // We request to read only multiples of 188 bytes (the packet size).
-        if (!_pipe.read(buffer, PKT_SIZE * buffer_size, PKT_SIZE, read_size, *tsp)) {
+        if (!_pipe.readStreamComplete(buffer, PKT_SIZE * buffer_size, read_size, *tsp)) {
             // Read error or end of file, cannot continue in all cases.
             // Signal end-of-file to plugin thread.
             _queue.setEOF();

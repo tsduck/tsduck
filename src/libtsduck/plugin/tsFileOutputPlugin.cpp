@@ -106,7 +106,7 @@ bool ts::FileOutputPlugin::getOptions()
     _reopen = present(u"reopen-on-error");
     _retry_max = intValue<size_t>(u"max-retry", 0);
     _retry_interval = intValue<MilliSecond>(u"retry-interval", DEF_RETRY_INTERVAL);
-    _file_format = enumValue<TSFile::Format>(u"format", TSFile::FMT_TS);
+    _file_format = enumValue<TSFile::PacketFormat>(u"format", TSFile::FMT_TS);
     return true;
 }
 
@@ -130,8 +130,8 @@ bool ts::FileOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
     for (;;) {
 
         // Write some packets.
-        const PacketCounter where = _file.getWriteCount();
-        const bool success = _file.write(buffer, packet_count, *tsp, pkt_data);
+        const PacketCounter where = _file.writePacketsCount();
+        const bool success = _file.writePackets(buffer, pkt_data, packet_count, *tsp);
 
         // In case of success or no retry, return now.
         if (success || !_reopen || tsp->aborting()) {
@@ -139,7 +139,7 @@ bool ts::FileOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
         }
 
         // Update counters of actually written packets.
-        const size_t written = std::min(size_t(_file.getWriteCount() - where), packet_count);
+        const size_t written = std::min(size_t(_file.writePacketsCount() - where), packet_count);
         buffer += written;
         pkt_data += written;
         packet_count -= written;

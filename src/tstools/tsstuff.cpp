@@ -294,7 +294,7 @@ bool Stuffer::getTimeStamp(const ts::TSPacket& pkt, uint64_t& tstamp) const
 void Stuffer::writeStuffing(uint64_t count)
 {
     while (count > 0) {
-        if (!_output.write(&ts::NullPacket, 1, _opt)) {
+        if (!_output.writePackets(&ts::NullPacket, nullptr, 1, _opt)) {
             fatalError();
         }
         count--;
@@ -308,11 +308,11 @@ void Stuffer::writeStuffing(uint64_t count)
 
 void Stuffer::simpleInterPacketStuffing(uint64_t inter_packet, uint64_t end_packet)
 {
-    assert(_input.getReadCount() < end_packet);
+    assert(_input.readPacketsCount() < end_packet);
 
     ts::TSPacket pkt;
-    while (_input.getReadCount() < end_packet && _input.read(&pkt, 1, _opt) == 1) {
-        if (!_output.write(&pkt, 1, _opt)) {
+    while (_input.readPacketsCount() < end_packet && _input.read(&pkt, 1, _opt) == 1) {
+        if (!_output.writePackets(&pkt, nullptr, 1, _opt)) {
             fatalError();
         }
         writeStuffing(inter_packet);
@@ -327,7 +327,7 @@ void Stuffer::simpleInterPacketStuffing(uint64_t inter_packet, uint64_t end_pack
 void Stuffer::evaluateNextStuffing()
 {
     // Save initial position in the file
-    const ts::PacketCounter initial_position = _input.getReadCount();
+    const ts::PacketCounter initial_position = _input.readPacketsCount();
     _opt.debug(u"evaluateNextStuffing: initial_position = %'d", {initial_position});
 
     // Initialize new search. Note that _tstamp1 and _tstamp2 may be unset.
@@ -348,7 +348,7 @@ void Stuffer::evaluateNextStuffing()
                 // Not the reference PID, skip;
                 continue;
             }
-            const TimeStamp time_stamp(tstamp, _input.getReadCount());
+            const TimeStamp time_stamp(tstamp, _input.readPacketsCount());
             if (!_tstamp1.set() || tstamp < _tstamp1.value().tstamp) {
                 // 1) Found the first time stamp in the file.
                 // 2) Or found a time stamp lower than tstamp1, may be because of a
@@ -380,7 +380,7 @@ void Stuffer::evaluateNextStuffing()
     }
 
     // Restore initial position in the file
-    if (!_input.seekBackward(size_t(_input.getReadCount() - initial_position), _opt)) {
+    if (!_input.seekBackward(size_t(_input.readPacketsCount() - initial_position), _opt)) {
         fatalError();
     }
 
@@ -468,13 +468,13 @@ void Stuffer::stuff()
 
     // Perform stuffing, segment after segment
     while (_tstamp2.set()) {
-        assert(_input.getReadCount() < _tstamp2.value().packet);
+        assert(_input.readPacketsCount() < _tstamp2.value().packet);
 
         // Perform stuffing on current segment, loop on input packets, one by one.
         ts::TSPacket pkt;
-        while (_input.getReadCount() < _tstamp2.value().packet && _input.read(&pkt, 1, _opt) == 1) {
+        while (_input.readPacketsCount() < _tstamp2.value().packet && _input.read(&pkt, 1, _opt) == 1) {
             // Write the input packet.
-            if (!_output.write(&pkt, 1, _opt)) {
+            if (!_output.writePackets(&pkt, nullptr, 1, _opt)) {
                 fatalError();
             }
             // Write stuffing packets after each input packet.
@@ -499,7 +499,7 @@ void Stuffer::stuff()
     // Write trailing stuffing packets
     writeStuffing(_opt.trailing_packets);
 
-    _opt.verbose(u"stuffing completed, read %'d packets, written %'d packets", {_input.getReadCount(), _output.getWriteCount()});
+    _opt.verbose(u"stuffing completed, read %'d packets, written %'d packets", {_input.readPacketsCount(), _output.writePacketsCount()});
 
     // Close files
     _output.close(_opt);

@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
-#include "tsForkPipe.h"
+#include "tsTSForkPipe.h"
 #include "tsSysUtils.h"
 #include "tsRegistry.h"
 TSDUCK_SOURCE;
@@ -59,9 +59,9 @@ namespace ts {
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
-        bool     _use_mplayer;
-        bool     _use_xine;
-        ForkPipe _pipe;
+        bool       _use_mplayer;
+        bool       _use_xine;
+        TSForkPipe _pipe;
 
         // Search a file in a search path. Return true is found
         bool searchInPath(UString& result, const UStringVector& path, const UString& name);
@@ -113,7 +113,7 @@ bool ts::PlayPlugin::stop()
 
 bool ts::PlayPlugin::send(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count)
 {
-    return _pipe.write(buffer, PKT_SIZE * packet_count, *tsp);
+    return _pipe.writePackets(buffer, pkt_data, packet_count, *tsp);
 }
 
 

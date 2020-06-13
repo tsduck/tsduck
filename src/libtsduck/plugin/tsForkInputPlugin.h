@@ -28,20 +28,48 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  File input plugin for tsp.
+//!  Fork a process and receive packets from its standard output (pipe).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 22
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1851
+#include "tsInputPlugin.h"
+#include "tsTSForkPipe.h"
+
+namespace ts {
+    //!
+    //! File input plugin for tsp.
+    //! Fork a process and receive packets from its standard output (pipe).
+    //! @ingroup plugin
+    //!
+    class ForkInputPlugin: public InputPlugin
+    {
+        TS_NOBUILD_NOCOPY(ForkInputPlugin);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
+        //!
+        ForkInputPlugin(TSP* tsp);
+
+        // Implementation of plugin API
+        virtual bool getOptions() override;
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
+        virtual bool abortInput() override;
+
+        //! @cond nodoxygen
+        // A dummy storage value to force inclusion of this module when using the static library.
+        static const int REFERENCE;
+        //! @endcond
+
+    private:
+        UString                  _command;      // The command to run.
+        bool                     _nowait;       // Don't wait for children termination.
+        TSForkPipe::PacketFormat _format;       // Packet format on the pipe
+        size_t                   _buffer_size;  // Pipe buffer size in packets.
+        TSForkPipe               _pipe;         // The pipe device.
+    };
+}

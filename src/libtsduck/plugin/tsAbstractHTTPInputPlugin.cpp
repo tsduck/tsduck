@@ -113,7 +113,7 @@ bool ts::AbstractHTTPInputPlugin::pushPackets(const TSPacket* buffer, size_t cou
 {
     // If an intermediate save file was specified, save the packets.
     // Display errors but do not fail, this is just auto save.
-    if (_outSave.isOpen() && !_outSave.write(buffer, count, *tsp)) {
+    if (_outSave.isOpen() && !_outSave.writePackets(buffer, nullptr, count, *tsp)) {
         _outSave.close(*tsp);
     }
 

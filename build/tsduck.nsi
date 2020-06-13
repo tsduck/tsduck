@@ -140,6 +140,7 @@ Section "Tools & Plugins" SectionTools
     Delete "$INSTDIR\bin\tsplugin_dektec.dll"
     Delete "$INSTDIR\bin\tsplugin_drop.dll"
     Delete "$INSTDIR\bin\tsplugin_file.dll"
+    Delete "$INSTDIR\bin\tsplugin_fork.dll"
     Delete "$INSTDIR\bin\tsplugin_hls.dll"
     Delete "$INSTDIR\bin\tsplugin_ip.dll"
     Delete "$INSTDIR\bin\tsplugin_null.dll"

@@ -81,7 +81,7 @@ bool ts::TSFileInputBuffered::setBufferSize(size_t buffer_size, Report& report)
 // Open file. Override TSFile::openRead().
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, Format format)
+bool ts::TSFileInputBuffered::openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, PacketFormat format)
 {
     if (isOpen()) {
         report.error(u"file %s is already open", {getFileName()});
@@ -100,7 +100,7 @@ bool ts::TSFileInputBuffered::openRead(const UString& filename, size_t repeat_co
 // Make sure that the generic open() returns an error.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::open(const UString& filename, OpenFlags flags, Report& report, Format format)
+bool ts::TSFileInputBuffered::open(const UString& filename, OpenFlags flags, Report& report, PacketFormat format)
 {
     // Accept read-only mode only.
     return (flags & (READ | WRITE | APPEND)) == READ && openRead(filename, 1, 0, report, format);
@@ -111,10 +111,10 @@ bool ts::TSFileInputBuffered::open(const UString& filename, OpenFlags flags, Rep
 // Return the number of read packets.
 //----------------------------------------------------------------------------
 
-ts::PacketCounter ts::TSFileInputBuffered::getReadCount() const
+ts::PacketCounter ts::TSFileInputBuffered::readPacketsCount() const
 {
     // Make sure we do not report packets twice.
-    return isOpen() ? TSFile::getReadCount() - (_total_count - _current_offset) : 0;
+    return isOpen() ? TSFile::readPacketsCount() - (_total_count - _current_offset) : 0;
 }
 
 
@@ -125,7 +125,7 @@ ts::PacketCounter ts::TSFileInputBuffered::getReadCount() const
 
 bool ts::TSFileInputBuffered::canSeek(PacketCounter pos) const
 {
-    const int64_t rel = int64_t(pos) - int64_t(getReadCount());
+    const int64_t rel = int64_t(pos) - int64_t(readPacketsCount());
     return isOpen() &&
         ((rel >= 0 && uint64_t(_current_offset) + uint64_t(rel) <= uint64_t(_total_count)) ||
          (rel < 0 && uint64_t(-rel) <= uint64_t(_current_offset)));
@@ -139,7 +139,7 @@ bool ts::TSFileInputBuffered::canSeek(PacketCounter pos) const
 bool ts::TSFileInputBuffered::seek(PacketCounter pos, Report& report)
 {
     if (canSeek(pos)) {
-        _current_offset = size_t(int64_t(_current_offset) + int64_t(pos) - int64_t(getReadCount()));
+        _current_offset = size_t(int64_t(_current_offset) + int64_t(pos) - int64_t(readPacketsCount()));
         return true;
     }
     else {
@@ -226,7 +226,7 @@ size_t ts::TSFileInputBuffered::read(TSPacket* user_buffer, size_t max_packets, 
     }
 
     // Then, read the rest directly from the file into the user's buffer.
-    size_t user_count = TSFile::read(user_buffer, max_packets, report, user_metadata);
+    size_t user_count = TSFile::readPackets(user_buffer, user_metadata, max_packets, report);
     _in_packets += user_count;
 
     // Finally, read back the rest into our buffer. We do the exchanges that way to

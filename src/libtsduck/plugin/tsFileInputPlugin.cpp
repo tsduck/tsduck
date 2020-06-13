@@ -131,7 +131,7 @@ bool ts::FileInputPlugin::getOptions()
     _interleave_chunk = intValue<size_t>(u"interleave", 1);
     _first_terminate = present(u"first-terminate");
     _base_label = intValue<size_t>(u"label-base", TSPacketMetadata::LABEL_MAX + 1);
-    _file_format = enumValue<TSFile::Format>(u"format", TSFile::FMT_AUTODETECT);
+    _file_format = enumValue<TSFile::PacketFormat>(u"format", TSFile::FMT_AUTODETECT);
 
     // If there is no file, then this is the standard input, an empty file name.
     if (_filenames.empty()) {
@@ -288,7 +288,7 @@ size_t ts::FileInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data
         }
         else {
             // Read packets from the file.
-            count = _files[_current_file].read(buffer + read_count, count, *tsp, pkt_data + read_count);
+            count = _files[_current_file].readPackets(buffer + read_count, pkt_data + read_count, count, *tsp);
         }
 
         // Mark all read packets with a label.
