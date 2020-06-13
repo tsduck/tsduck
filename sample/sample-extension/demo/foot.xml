@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <FOOT foo_id="0x0123" name="foolish-table">
+    <foo_descriptor name="foolish-descriptor"/>
+    <message_descriptor message_id="0x20" language_code="eng">
+      <text>The message</text>
+    </message_descriptor>
+  </FOOT>
+</tsduck>

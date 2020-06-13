@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsSectionFile.h"
+#include "tsTSPacket.h"
 #include "tsFileNameRate.h"
 #include "tsOutputRedirector.h"
 #include "tsCyclingPacketizer.h"
@@ -45,28 +47,25 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options();
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::DuckContext           duck;
-    bool                      continuous; // Continuous packetization
-    ts::CyclingPacketizer::StuffingPolicy stuffing_policy;
-    ts::CRC32::Validation     crc_op;     // Validate/recompute CRC32
-    ts::PID                   pid;        // Target PID
-    ts::BitRate               bitrate;    // Target PID bitrate
-    ts::UString               outfile;    // Output file
-    ts::FileNameRateList      infiles;    // Input file names and repetition rates
-    ts::SectionFile::FileType inType;     // Input files type
-};
+        ts::DuckContext           duck;
+        bool                      continuous; // Continuous packetization
+        ts::CyclingPacketizer::StuffingPolicy stuffing_policy;
+        ts::CRC32::Validation     crc_op;     // Validate/recompute CRC32
+        ts::PID                   pid;        // Target PID
+        ts::BitRate               bitrate;    // Target PID bitrate
+        ts::UString               outfile;    // Output file
+        ts::FileNameRateList      infiles;    // Input file names and repetition rates
+        ts::SectionFile::FileType inType;     // Input files type
+    };
+}
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Packetize PSI/SI sections in a transport stream PID", u"[options] [input-file[=rate] ...]"),
     duck(this),
@@ -79,6 +78,8 @@ Options::Options(int argc, char *argv[]) :
     infiles(),
     inType(ts::SectionFile::UNSPECIFIED)
 {
+    duck.defineArgsForCharset(*this);
+
     option(u"", 0, STRING);
     help(u"",
          u"Input binary or XML files containing one or more sections or tables. By default, "
@@ -126,6 +127,7 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
+    duck.loadArgs(*this);
     continuous = present(u"continuous");
     if (present(u"stuffing")) {
         stuffing_policy = ts::CyclingPacketizer::ALWAYS;
@@ -169,7 +171,7 @@ int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
     ts::OutputRedirector output(opt.outfile, opt);
-    ts::CyclingPacketizer pzer(opt.pid, opt.stuffing_policy, opt.bitrate);
+    ts::CyclingPacketizer pzer(opt.duck, opt.pid, opt.stuffing_policy, opt.bitrate);
     ts::SectionFile file(opt.duck);
     file.setCRCValidation(opt.crc_op);
 

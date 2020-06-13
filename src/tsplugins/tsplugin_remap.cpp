@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -83,8 +83,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(remap, ts::RemapPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"remap", ts::RemapPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -168,7 +167,7 @@ ts::RemapPlugin::CyclingPacketizerPtr ts::RemapPlugin::getPacketizer(PID pid, bo
         return it->second;
     }
     else if (create) {
-        const CyclingPacketizerPtr ptr(new CyclingPacketizer(pid, CyclingPacketizer::ALWAYS));
+        const CyclingPacketizerPtr ptr(new CyclingPacketizer(duck, pid, CyclingPacketizer::ALWAYS));
         _pzer.insert(std::make_pair(pid, ptr));
         return ptr;
     }

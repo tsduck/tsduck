@@ -1,0 +1,12 @@
+Package: tsduck-extension-foo
+Source: tsduck-extension-foo
+Version: {{VERSION}}
+Maintainer: Foo Company <foo@foo-company.com>
+Architecture: {{ARCH}}
+Section: free/video
+Priority: optional
+Depends: tsduck, libc6, libstdc++6, libgcc1
+Description: TSDuck Sample Foo Extension
+ TSDuck is the MPEG Transport Stream Toolkit which provides some simple
+ utilities to process MPEG Transport Streams (TS). This package provides
+ the sample Foo extension to TSDuck.

@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsService.h"
 #include "tsSectionDemux.h"
@@ -63,16 +62,15 @@ namespace ts {
     public:
         // Implementation of plugin API
         AESPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        // Private data
-        bool            _abort;           // Error (service not found, etc)
+        // Command line options:
         bool            _descramble;      // Descramble instead of scramble
-        Service         _service;         // Service name & id
+        Service         _service_arg;     // Service name & id
         PIDSet          _scrambled;       // List of PID's to (de)scramble
-        SectionDemux    _demux;           // Section demux
         ECB<AES>        _ecb;             // AES cipher in ECB mode
         CBC<AES>        _cbc;             // AES cipher in CBC mode
         CTS1<AES>       _cts1;            // AES cipher in CTS mode, RFC 2040 definition
@@ -81,6 +79,11 @@ namespace ts {
         CTS4<AES>       _cts4;            // AES cipher in ECB-CTS mode (ST version)
         DVS042<AES>     _dvs042;          // AES cipher in DVS 042 mode
         CipherChaining* _chain;           // Selected cipher chaining mode
+
+        // Working data:
+        bool            _abort;           // Error (service not found, etc)
+        Service         _service;         // Service name & id
+        SectionDemux    _demux;           // Section demux
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -92,8 +95,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(aes, ts::AESPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"aes", ts::AESPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -102,11 +104,9 @@ TSPLUGIN_DECLARE_PROCESSOR(aes, ts::AESPlugin)
 
 ts::AESPlugin::AESPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Experimental AES scrambling of TS packets", u"[options] [service]"),
-    _abort(false),
     _descramble(false),
-    _service(),
+    _service_arg(),
     _scrambled(),
-    _demux(duck, this),
     _ecb(),
     _cbc(),
     _cts1(),
@@ -114,8 +114,14 @@ ts::AESPlugin::AESPlugin(TSP* tsp_) :
     _cts3(),
     _cts4(),
     _dvs042(),
-    _chain(nullptr)
+    _chain(nullptr),
+    _abort(false),
+    _service(),
+    _demux(duck, this)
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"", 0, STRING, 0, 1);
     help(u"",
          u"Specifies the service to scramble. If the argument is an integer value "
@@ -184,16 +190,16 @@ ts::AESPlugin::AESPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get options method
 //----------------------------------------------------------------------------
 
-bool ts::AESPlugin::start()
+bool ts::AESPlugin::getOptions()
 {
-    // Get option values
+    duck.loadArgs(*this);
     _descramble = present(u"descramble");
     getIntValues(_scrambled, u"pid");
     if (present(u"")) {
-        _service.set(value(u""));
+        _service_arg.set(value(u""));
     }
 
     // Get chaining mode.
@@ -240,7 +246,7 @@ bool ts::AESPlugin::start()
     tsp->verbose(u"using %d bits key: %s", {key.size() * 8, UString::Dump(key, UString::SINGLE_LINE)});
 
     // Get IV
-    ByteBlock iv (_chain->minIVSize(), 0); // default IV is all zeroes
+    ByteBlock iv(_chain->minIVSize(), 0); // default IV is all zeroes
     if (present(u"iv") && !value(u"iv").hexaDecode(iv)) {
         tsp->error(u"invalid initialization vector, specify hexa digits");
         return false;
@@ -253,18 +259,29 @@ bool ts::AESPlugin::start()
         tsp->verbose(u"using %d bits IV: %s", {iv.size() * 8, UString::Dump(iv, UString::SINGLE_LINE)});
     }
 
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::AESPlugin::start()
+{
     // Initialize the demux
     // When the service id is known, we wait for the PAT. If it is not yet
     // known (only the service name is known), we wait for the SDT.
     _demux.reset();
-    if (_service.hasId()) {
-        _demux.addPID (PID_PAT);
+    if (_service_arg.hasId()) {
+        _demux.addPID(PID_PAT);
     }
-    else if (_service.hasName()) {
-        _demux.addPID (PID_SDT);
+    else if (_service_arg.hasName()) {
+        _demux.addPID(PID_SDT);
     }
 
-    // Reset other states
+    // Reset other states.
+    _service = _service_arg;
     _abort = false;
 
     return true;
@@ -320,7 +337,7 @@ void ts::AESPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 void ts::AESPlugin::processSDT(SDT& sdt)
 {
     // Look for the service by name
-    assert (_service.hasName());
+    assert(_service.hasName());
     uint16_t service_id;
     if (!sdt.findService(duck, _service.getName(), service_id)) {
         tsp->error(u"service \"%s\" not found in SDT", {_service.getName()});
@@ -329,13 +346,13 @@ void ts::AESPlugin::processSDT(SDT& sdt)
     }
 
     // Remember service id
-    _service.setId (service_id);
+    _service.setId(service_id);
     _service.clearPMTPID();
     tsp->verbose(u"found service id %d (0x%X)", {_service.getId(), _service.getId()});
 
     // No longer need the SDT, now need the PAT
-    _demux.removePID (PID_SDT);
-    _demux.addPID (PID_PAT);
+    _demux.removePID(PID_SDT);
+    _demux.addPID(PID_PAT);
 }
 
 
@@ -343,10 +360,10 @@ void ts::AESPlugin::processSDT(SDT& sdt)
 //  This method processes a Program Association Table (PAT).
 //----------------------------------------------------------------------------
 
-void ts::AESPlugin::processPAT (PAT& pat)
+void ts::AESPlugin::processPAT(PAT& pat)
 {
     // Locate the service in the PAT
-    assert (_service.hasId());
+    assert(_service.hasId());
     const PAT::ServiceMap::iterator it = pat.pmts.find (_service.getId());
 
     // If service not found, error
@@ -357,12 +374,12 @@ void ts::AESPlugin::processPAT (PAT& pat)
     }
 
     // Now filter the PMT
-    _service.setPMTPID (it->second);
-    _demux.addPID (it->second);
+    _service.setPMTPID(it->second);
+    _demux.addPID(it->second);
     tsp->verbose(u"found PMT PID %d (0x%X)", {_service.getPMTPID(), _service.getPMTPID()});
 
     // No longer need the PAT
-    _demux.removePID (PID_PAT);
+    _demux.removePID(PID_PAT);
 }
 
 
@@ -370,7 +387,7 @@ void ts::AESPlugin::processPAT (PAT& pat)
 //  This method processes a Program Map Table (PMT).
 //----------------------------------------------------------------------------
 
-void ts::AESPlugin::processPMT (PMT& pmt)
+void ts::AESPlugin::processPMT(PMT& pmt)
 {
     // Loop on all elementary streams of the PMT.
     // Mark all video, audio and subtitles PIDs for scrambling
@@ -393,7 +410,7 @@ ts::ProcessorPlugin::Status ts::AESPlugin::processPacket(TSPacket& pkt, TSPacket
     const PID pid = pkt.getPID();
 
     // Filter interesting sections
-    _demux.feedPacket (pkt);
+    _demux.feedPacket(pkt);
 
     // If a fatal error occured during section analysis, give up.
     if (_abort) {
@@ -401,7 +418,7 @@ ts::ProcessorPlugin::Status ts::AESPlugin::processPacket(TSPacket& pkt, TSPacket
     }
 
     // Leave non-service or empty packets alone
-    if (!_scrambled.test (pid) || !pkt.hasPayload()) {
+    if (!_scrambled.test(pid) || !pkt.hasPayload()) {
         return TSP_OK;
     }
 
@@ -423,7 +440,7 @@ ts::ProcessorPlugin::Status ts::AESPlugin::processPacket(TSPacket& pkt, TSPacket
         // The chaining mode does not allow a residue.
         // Round the payload size down to a multiple of the block size.
         // Leave the residue clear.
-        pl_size = RoundDown (pl_size, _chain->blockSize());
+        pl_size = RoundDown(pl_size, _chain->blockSize());
     }
     if (pl_size < _chain->minMessageSize()) {
         // The payload is too short to be scrambled, leave the packet clear
@@ -434,18 +451,18 @@ ts::ProcessorPlugin::Status ts::AESPlugin::processPacket(TSPacket& pkt, TSPacket
     uint8_t tmp[PKT_SIZE];
     assert (pl_size < sizeof(tmp));
     if (_descramble) {
-        if (!_chain->decrypt (pl, pl_size, tmp, pl_size)) {
+        if (!_chain->decrypt(pl, pl_size, tmp, pl_size)) {
             tsp->error(u"AES decrypt error");
             return TSP_END;
         }
     }
     else {
-        if (!_chain->encrypt (pl, pl_size, tmp, pl_size)) {
+        if (!_chain->encrypt(pl, pl_size, tmp, pl_size)) {
             tsp->error(u"AES encrypt error");
             return TSP_END;
         }
     }
-    ::memcpy (pl, tmp, pl_size);
+    ::memcpy(pl, tmp, pl_size);
 
     // Mark "even key" (there is only one key but we must set something).
     pkt.setScrambling(uint8_t(_descramble ? SC_CLEAR : SC_EVEN_KEY));

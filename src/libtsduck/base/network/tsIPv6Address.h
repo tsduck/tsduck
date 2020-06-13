@@ -1,0 +1,271 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2020, Thierry Lelegard
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+//    this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+// THE POSSIBILITY OF SUCH DAMAGE.
+//
+//----------------------------------------------------------------------------
+//!
+//!  @file
+//!  IP v6 address class
+//!
+//----------------------------------------------------------------------------
+
+#pragma once
+#include "tsStringifyInterface.h"
+#include "tsCerrReport.h"
+#include "tsByteBlock.h"
+#include "tsMemory.h"
+
+namespace ts {
+    //!
+    //! A basic representation of an IPv6 address.
+    //! @ingroup net
+    //!
+    //! An IPv6 address is made of 128 bits (16 bytes). It can be manipulated as
+    //! - 16 bytes
+    //! - 8 groups of 16 bits or hextets.
+    //! - 2 64-bit values, the network prefix and the network identifier.
+    //!
+    //! This class is incomplete. Currently, it does not allow IPv6 networking.
+    //! It is only designed to manipulate IPv6 addresses in DVB signalization.
+    //!
+    class TSDUCKDLL IPv6Address: public StringifyInterface
+    {
+    private:
+        uint8_t _bytes[16]; // Raw content of the IPv6 address.
+
+    public:
+        //!
+        //! Size in bytes of an IPv6 address.
+        //!
+        static constexpr size_t BYTES = 16;
+
+        //!
+        //! Wildcard integer value for "any IP address".
+        //!
+        static const IPv6Address AnyAddress;
+
+        //!
+        //! Local host address (::1).
+        //! Usually resolves to the host name "localhost".
+        //!
+        static const IPv6Address LocalHost;
+
+        //!
+        //! Default constructor.
+        //! The default value is AnyAddress.
+        //!
+        IPv6Address() { clear(); }
+
+        //!
+        //! Constructor from 16 bytes.
+        //! @param [in] addr Address of the memory area containing the IPv6 bytes.
+        //! @param [in] size Size of the memory area. If the size is shorter than 16,
+        //! the IPv6 is padded on the left (most significant bytes) with zeroes.
+        //! If the size is larger than 16, extra bytes are ignored.
+        //!
+        IPv6Address(const uint8_t *addr, size_t size) { setAddress(addr, size); }
+
+        //!
+        //! Constructor from 16 bytes.
+        //! @param [in] bb Byte block containing the IPv6 bytes. If the size is shorter
+        //! than 16, the IPv6 is padded on the left (most significant bytes) with zeroes.
+        //! If the size is larger than 16, extra bytes are ignored.
+        //!
+        IPv6Address(const ByteBlock& bb) { setAddress(bb); }
+
+        //!
+        //! Constructor from 8 hexlets.
+        //! @param [in] h1 First address hexlet.
+        //! @param [in] h2 2nd address hexlet.
+        //! @param [in] h3 3rd address hexlet.
+        //! @param [in] h4 4th address hexlet.
+        //! @param [in] h5 5th address hexlet.
+        //! @param [in] h6 6th address hexlet.
+        //! @param [in] h7 7th address hexlet.
+        //! @param [in] h8 8th address hexlet.
+        //!
+        IPv6Address(uint16_t h1, uint16_t h2, uint16_t h3, uint16_t h4, uint16_t h5, uint16_t h6, uint16_t h7, uint16_t h8)
+        {
+            setAddress(h1, h2, h3, h4, h5, h6, h7, h8);
+        }
+
+        //!
+        //! Constructor from network prefix and interface identifier.
+        //! @param [in] net Network prefix.
+        //! @param [in] ifid Interface identifier.
+        //!
+        IPv6Address(uint64_t net, uint64_t ifid) { setAddress(net, ifid); }
+
+        //!
+        //! Equality operator.
+        //! @param [in] a Another instance to compare with.
+        //! @return True if both object contains the same address, false otherwise.
+        //!
+        bool operator==(const IPv6Address& a) const { return ::memcmp(_bytes, a._bytes, sizeof(_bytes)) == 0; }
+
+        //!
+        //! Unequality operator.
+        //! @param [in] a Another instance to compare with.
+        //! @return True if both object contains distinct addresses, false otherwise.
+        //!
+        bool operator!=(const IPv6Address& a) const { return ::memcmp(_bytes, a._bytes, sizeof(_bytes)) != 0; }
+
+        //!
+        //! Constructor from a string in standard IPv6 numerical format.
+        //! If @a name cannot be resolved, the address is set to @link AnyAddress @endlink.
+        //! @param [in] name A string containing a string in standard IPv6 numerical format.
+        //! @param [in] report Where to report errors.
+        //! @see https://en.wikipedia.org/wiki/IPv6_address
+        //!
+        IPv6Address(const UString& name, Report& report = CERR) { resolve(name, report); }
+
+        //!
+        //! Get the IP address as a byte block.
+        //! @param [out] bb Byte block containing the IPv6 bytes.
+        //!
+        void getAddress(ByteBlock& bb) const { bb.copy(_bytes, sizeof(_bytes)); }
+
+        //!
+        //! Get the network prefix (64 most significant bits) of the IPv6 address.
+        //! @return The network prefix (64 most significant bits) of the IPv6 address.
+        //!
+        uint64_t networkPrefix() const { return GetUInt64(_bytes); }
+
+        //!
+        //! Get the interface identifier (64 least significant bits) of the IPv6 address.
+        //! @return The interface identifier (64 least significant bits) of the IPv6 address.
+        //!
+        uint64_t interfaceIdentifier() const { return GetUInt64(_bytes + 8); }
+
+        //!
+        //! Get one of the 16-bit hexlets in the address.
+        //! @param [in] i Hexlet index, from 0 to 7.
+        //! @return The corresponding hexlet or zero if @a i is out of range.
+        //!
+        uint16_t hexlet(size_t i) const;
+
+        //!
+        //! Set the IP address from 16 bytes.
+        //! @param [in] addr Address of the memory area containing the IPv6 bytes.
+        //! @param [in] size Size of the memory area. If the size is shorter than 16,
+        //! the IPv6 is padded on the left (most significant bytes) with zeroes.
+        //! If the size is larger than 16, extra bytes are ignored.
+        //!
+        void setAddress(const uint8_t *addr, size_t size);
+
+        //!
+        //! Set the IP address from 16 bytes.
+        //! @param [in] bb Byte block containing the IPv6 bytes. If the size is shorter
+        //! than 16, the IPv6 is padded on the left (most significant bytes) with zeroes.
+        //! If the size is larger than 16, extra bytes are ignored.
+        //!
+        void setAddress(const ByteBlock& bb) { setAddress(bb.data(), bb.size());}
+
+        //!
+        //! Set the IP address from 8 hexlets.
+        //! @param [in] h1 First address hexlet.
+        //! @param [in] h2 2nd address hexlet.
+        //! @param [in] h3 3rd address hexlet.
+        //! @param [in] h4 4th address hexlet.
+        //! @param [in] h5 5th address hexlet.
+        //! @param [in] h6 6th address hexlet.
+        //! @param [in] h7 7th address hexlet.
+        //! @param [in] h8 8th address hexlet.
+        //!
+        void setAddress(uint16_t h1, uint16_t h2, uint16_t h3, uint16_t h4, uint16_t h5, uint16_t h6, uint16_t h7, uint16_t h8);
+
+        //!
+        //! Set the IP address from network prefix and interface identifier.
+        //! @param [in] net Network prefix.
+        //! @param [in] ifid Interface identifier.
+        //!
+        void setAddress(uint64_t net, uint64_t ifid);
+
+        //!
+        //! Check if the address is a multicast address.
+        //! @return True if the address is a multicast address, false otherwise.
+        //!
+        bool isMulticast() const { return _bytes[0] == 0xFF; }
+
+        //!
+        //! Check if this object is set to a valid address (ie not AnyAddress).
+        //! @return True if this object is set to a valid address (ie not AnyAddress),
+        //! false otherwise.
+        //!
+        bool hasAddress() const { return ::memcmp(_bytes, AnyAddress._bytes, sizeof(_bytes)) != 0; }
+
+        //!
+        //! Clear address (set it to AnyAddress).
+        //!
+        void clear() { TS_ZERO(_bytes); }
+
+        //!
+        //! Decode a string in standard IPv6 numerical format.
+        //! @param [in] name A string containing a string in standard IPv6 numerical format.
+        //! @param [in] report Where to report errors.
+        //! @return True if @a name was successfully resolved, false otherwise.
+        //! In the later case, the address is set to @link AnyAddress @endlink.
+        //! @see https://en.wikipedia.org/wiki/IPv6_address
+        //!
+        bool resolve(const UString& name, Report& report = CERR);
+
+        //!
+        //! Check if this address "matches" another one.
+        //! @param [in] other Another instance to compare.
+        //! @return False if this and @a other addresses are both specified and
+        //! are different. True otherwise.
+        //!
+        bool match(const IPv6Address& other) const;
+
+        // Implementation of StringifyInterface.
+        virtual UString toString() const override;
+
+        //!
+        //! Convert to a string object in numeric format without the default compaction.
+        //! @return This object, converted as a string.
+        //!
+        UString toFullString() const;
+
+        //!
+        //! Get the IP address as a byte block.
+        //! @return Byte block containing the IPv6 bytes.
+        //!
+        ByteBlock toBytes() const { return ByteBlock(_bytes, sizeof(_bytes)); }
+
+        //!
+        //! Comparison "less than" operator.
+        //! It does not really makes sense. Only defined to allow usage in containers.
+        //! @param [in] other Other instance to compare.
+        //! @return True if this instance is less than to @a other.
+        //!
+        bool operator<(const IPv6Address& other) const { return ::memcmp(_bytes, other._bytes, sizeof(_bytes)) < 0; }
+    };
+
+    //!
+    //! Vector of IPv6 addresses.
+    //!
+    typedef std::vector<IPv6Address> IPv6AddressVector;
+}

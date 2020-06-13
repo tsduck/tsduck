@@ -16,6 +16,25 @@ More details can be found on
 Several articles also describe the GitHub standard fork & pull request workflow.
 We specifically [recommend this one](https://gist.github.com/Chaser324/ce0505fbed06b947d962).
 
+# Transparency of contributions   {#transparency}
+
+All commits in a Git pull request shall have a clear and transparent identification
+of the author. The author name shall be the true first and last names of the contributor.
+No pseudo or other forms or anonymity is allowed. Preferably (although not required),
+the author's e-mail should be a real address where the contributor can be contacted.
+
+This requirement for transparency is not arbitrary. There is a reason for it.
+The world of Digital TV is roughly divided in industries, service providers,
+TV operators and pirates. A technical toolbox such as TSDuck is useful to everyone, equally.
+But it must be clear to everyone that TSDuck is made by engineers for engineers.
+TSDuck shall remain a fully transparent project: open source, identified web sites,
+identified authors and contributors.
+
+In the world of Pay-TV, anonymity equals piracy. This may seem unfair but this
+is the way it is perceived by the industry. So, to maintain the trust in TSDuck,
+let's keep anonymity away from it. We hope that all contributors understand this
+position.
+
 # Contributor workflow   {#contributor}
 
 The first requirement is to create a GitHub account, if you do not already have one.

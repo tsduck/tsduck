@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,10 @@
 #include "tsAbstractTablePlugin.h"
 #include "tsPluginRepository.h"
 #include "tsNetworkNameDescriptor.h"
+#include "tsServiceListDescriptor.h"
 #include "tsNIT.h"
+#include "tsPAT.h"
+#include "tsSDT.h"
 TSDUCK_SOURCE;
 
 
@@ -50,26 +53,47 @@ namespace ts {
     public:
         // Implementation of plugin API
         NITPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+
+        // Implementation of AbstractTablePlugin.
+        virtual void createNewTable(BinaryTable& table) override;
+        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
+
+    protected:
+        // Implementation of TableHandlerInterface.
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
     private:
-        PID                _nit_pid;           // PID for the NIT (default: read PAT)
-        UString            _new_netw_name;     // New network name
-        bool               _set_netw_id;       // Change network id
-        uint16_t           _new_netw_id;       // New network id
-        bool               _use_nit_other;     // Use a NIT Other, not the NIT Actual
-        uint16_t           _nit_other_id;      // Network id of the NIT Other to hack
-        int                _lcn_oper;          // Operation on LCN descriptors
-        int                _sld_oper;          // Operation on service_list_descriptors
-        std::set<uint16_t> _remove_serv;       // Set of services to remove
-        std::set<uint16_t> _remove_ts;         // Set of transport streams to remove
-        std::vector<DID>   _removed_desc;      // Set of descriptor tags to remove
-        PDS                _pds;               // Private data specifier for removed descriptors
-        bool               _cleanup_priv_desc; // Remove private desc without preceding PDS desc
-        bool               _update_mpe_fec;    // In terrestrial delivery
+        // A map of service list descriptors, indexed by ts id / original netwok id.
+        typedef std::map<TransportStreamId, ServiceListDescriptor> SLDMap;
+
+        PID                _nit_pid;              // PID for the NIT (default: read PAT)
+        UString            _new_netw_name;        // New network name
+        bool               _set_netw_id;          // Change network id
+        uint16_t           _new_netw_id;          // New network id
+        bool               _use_nit_other;        // Use a NIT Other, not the NIT Actual
+        uint16_t           _nit_other_id;         // Network id of the NIT Other to hack
+        int                _lcn_oper;             // Operation on LCN descriptors
+        int                _sld_oper;             // Operation on service_list_descriptors
+        std::set<uint16_t> _remove_serv;          // Set of services to remove
+        std::set<uint16_t> _remove_ts;            // Set of transport streams to remove
+        std::vector<DID>   _removed_desc;         // Set of descriptor tags to remove
+        PDS                _pds;                  // Private data specifier for removed descriptors
+        bool               _cleanup_priv_desc;    // Remove private desc without preceding PDS desc
+        bool               _update_mpe_fec;       // In terrestrial delivery
         uint8_t            _mpe_fec;
         bool               _update_time_slicing;  // In terrestrial delivery
         uint8_t            _time_slicing;
+        bool               _build_sld;            // Build service list descriptors.
+        bool               _add_all_srv_in_sld;   // Add all services in service list descriptors, even when the type in unknown.
+        uint8_t            _default_srv_type;     // Default service type in service list descriptors.
+        SectionDemux       _demux;                // Section demux to collect PAT and SDT to build service list descriptors.
+        NIT                _last_nit;             // Last valid NIT found, after modification.
+        PAT                _last_pat;             // Last valid input PAT.
+        SDT                _last_sdt_act;         // Last valid input SDT Actual.
+        SLDMap             _collected_sld;        // A map of service list descriptors per TS id.
 
         // Values for _lcn_oper and _sld_oper.
         enum {
@@ -79,17 +103,23 @@ namespace ts {
             LCN_DUPLICATE_ODD = 3  // LCN only
         };
 
-        // Implementation of AbstractTablePlugin.
-        virtual void createNewTable(BinaryTable& table) override;
-        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
-
         // Process a list of descriptors according to the command line options.
         void processDescriptorList(DescriptorList&);
+
+        // Merge last collected PAT in the collected services.
+        // Return true if the list of collected services has been modified.
+        bool mergeLastPAT();
+
+        // Merge an SDTT in the collected services.
+        // Return true if the list of collected services has been modified.
+        bool mergeSDT(const SDT&);
+
+        // Update the service list descriptors from collected services.
+        void updateServiceList(NIT&);
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(nit, ts::NITPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"nit", ts::NITPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -114,11 +144,31 @@ ts::NITPlugin::NITPlugin(TSP* tsp_) :
     _update_mpe_fec(false),
     _mpe_fec(0),
     _update_time_slicing(false),
-    _time_slicing(0)
+    _time_slicing(0),
+    _build_sld(false),
+    _add_all_srv_in_sld(false),
+    _default_srv_type(0),
+    _demux(duck, this),
+    _last_nit(),
+    _last_pat(),
+    _last_sdt_act(),
+    _collected_sld()
 {
+    option(u"build-service-list-descriptors", 0);
+    help(u"build-service-list-descriptors",
+         u"Build service_list_descriptors in the NIT according to the information which is "
+         u"collected in the PAT and the SDT. See also option --default-service-type.");
+
     option(u"cleanup-private-descriptors", 0);
     help(u"cleanup-private-descriptors",
          u"Remove all private descriptors without preceding private_data_specifier descriptor.");
+
+    option(u"default-service-type", 0, UINT8);
+    help(u"default-service-type",
+         u"With --build-service-list-descriptors, specify the default service type of "
+         u"services which are found in the PAT but not in the SDT. "
+         u"By default, services without known service type are not added in created "
+         u"service list descriptors.");
 
     option(u"lcn", 'l', INTEGER, 0, 1, 1, 3);
     help(u"lcn",
@@ -192,12 +242,11 @@ ts::NITPlugin::NITPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get options method
 //----------------------------------------------------------------------------
 
-bool ts::NITPlugin::start()
+bool ts::NITPlugin::getOptions()
 {
-    // Get option values
     _nit_pid = intValue<PID>(u"pid", PID_NULL);
     _lcn_oper = intValue<int>(u"lcn", LCN_NONE);
     _sld_oper = intValue<int>(u"sld", LCN_NONE);
@@ -215,7 +264,14 @@ bool ts::NITPlugin::start()
     _new_netw_id = intValue<uint16_t>(u"network-id");
     _use_nit_other = present(u"other") || present(u"nit-other");
     _nit_other_id = intValue<uint16_t>(u"other", intValue<uint16_t>(u"nit-other"));
+    _build_sld = present(u"build-service-list-descriptors");
+    _add_all_srv_in_sld = present(u"default-service-type");
+    _default_srv_type = intValue<uint8_t>(u"default-service-type");
 
+    if (_use_nit_other && _build_sld) {
+        tsp->error(u"--nit-other and --build-service-list-descriptors are mutually exclusive");
+        return false;
+    }
     if (_lcn_oper != LCN_NONE && !_remove_serv.empty()) {
         tsp->error(u"--lcn and --remove-service are mutually exclusive");
         return false;
@@ -226,7 +282,164 @@ bool ts::NITPlugin::start()
     }
 
     // Start superclass.
+    return AbstractTablePlugin::getOptions();
+}
+
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::NITPlugin::start()
+{
+    // Reset state.
+    _last_nit.invalidate();
+    _last_pat.invalidate();
+    _last_sdt_act.invalidate();
+    _collected_sld.clear();
+
+    // When we need to build service list descriptors, we need to analyze the PAT and SDT.
+    _demux.reset();
+    if (_build_sld && !_use_nit_other) {
+        // If we need to add all services, including without known service type, analyze the PAT.
+        if (_add_all_srv_in_sld) {
+            _demux.addPID(PID_PAT);
+        }
+        // The service types are taken from the SDT.
+        _demux.addPID(PID_SDT);
+    }
+
+    // Start superclass.
     return AbstractTablePlugin::start();
+}
+
+
+//----------------------------------------------------------------------------
+// Packet processing method
+//----------------------------------------------------------------------------
+
+ts::ProcessorPlugin::Status ts::NITPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+{
+    // Filter incoming sections
+    _demux.feedPacket(pkt);
+
+    // Continue processing in superclass.
+    return AbstractTablePlugin::processPacket(pkt, pkt_data);
+}
+
+
+//----------------------------------------------------------------------------
+// Merge last collected PAT in the collected services.
+//----------------------------------------------------------------------------
+
+bool ts::NITPlugin::mergeLastPAT()
+{
+    bool modified = false;
+
+    // To merge the services from the PAT, we need to know the original network id.
+    // And we need the SDT Actual to know the original network id.
+    if (_last_pat.isValid() && _last_sdt_act.isValid() && _add_all_srv_in_sld) {
+
+        // Collected service list descriptor for this TS.
+        const TransportStreamId tsid(_last_pat.ts_id, _last_sdt_act.onetw_id);
+        ServiceListDescriptor& sld(_collected_sld[tsid]);
+
+        // Loop on all services in the PAT.
+        for (auto it = _last_pat.pmts.begin(); it != _last_pat.pmts.end(); ++it) {
+            if (!sld.hasService(it->first)) {
+                modified = true;
+                sld.entries.push_back(ServiceListDescriptor::Entry(it->first, _default_srv_type));
+            }
+        }
+
+        // We no longer need the last collected PAT.
+        _last_pat.invalidate();
+    }
+
+    return modified;
+}
+
+
+//----------------------------------------------------------------------------
+// Merge an SDTT in the collected services.
+//----------------------------------------------------------------------------
+
+bool ts::NITPlugin::mergeSDT(const SDT& sdt)
+{
+    bool modified = false;
+
+    // Remember last SDT Actual.
+    if (sdt.isActual()) {
+        _last_sdt_act = sdt;
+        // The SDT Actual may allow the merge of the last PAT.
+        modified = mergeLastPAT();
+    }
+
+    // Collected service list descriptor for this TS.
+    const TransportStreamId tsid(sdt.ts_id, sdt.onetw_id);
+    ServiceListDescriptor& sld(_collected_sld[tsid]);
+
+    // Loop on all services in the SDT.
+    for (auto it = sdt.services.begin(); it != sdt.services.end(); ++it) {
+        // Get service type in the SDT.
+        uint8_t type = it->second.serviceType(duck);
+        if (type == 0 && _add_all_srv_in_sld) {
+            // Service type unknown in the SDT, use default service type.
+            type = _default_srv_type;
+        }
+        if (type != 0) {
+            // Update the service in the descriptor.
+            modified = sld.addService(it->first, type) || modified;
+        }
+    }
+
+    return modified;
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of TableHandlerInterface.
+//----------------------------------------------------------------------------
+
+void ts::NITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
+{
+    // Analyze PAT and SDT when invoked from our demux.
+    if (&demux == &_demux && !_use_nit_other) {
+
+        const TID tid = table.tableId();
+        const PID pid = table.sourcePID();
+        bool modified = false;
+
+        if (tid == TID_PAT && pid == PID_PAT && _add_all_srv_in_sld) {
+            // Got a PAT, collect all service ids.
+            const PAT pat(duck, table);
+            if (pat.isValid()) {
+                _last_pat = pat;
+                modified = mergeLastPAT();
+            }
+        }
+        else if ((tid == TID_SDT_ACT || tid == TID_SDT_OTH) && pid == PID_SDT) {
+            // Got an SDT, collect service ids and types.
+            const SDT sdt(duck, table);
+            if (sdt.isValid()) {
+                modified = mergeSDT(sdt);
+            }
+        }
+
+        if (modified && _last_nit.isValid()) {
+            // The global service list has been modified and a valid NIT was already found.
+            updateServiceList(_last_nit);
+            // Make sure the updated NIT has a new version.
+            _last_nit.version = (_last_nit.version + 1) & SVERSION_MASK;
+            // We need to force the modified NIT.
+            BinaryTable bin;
+            _last_nit.serialize(duck, bin);
+            forceTableUpdate(bin);
+        }
+    }
+
+    // Call superclass.
+    AbstractTablePlugin::handleTable(demux, table);
 }
 
 
@@ -245,6 +458,9 @@ void ts::NITPlugin::createNewTable(BinaryTable& table)
     }
 
     nit.serialize(duck, table);
+
+    // Keep track of last valid NIT.
+    _last_nit = nit;
 }
 
 
@@ -276,7 +492,7 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     bool found;
     do {
         found = false;
-        for (NIT::TransportMap::iterator it = nit.transports.begin(); it != nit.transports.end(); ++it) {
+        for (auto it = nit.transports.begin(); it != nit.transports.end(); ++it) {
             if (_remove_ts.count(it->first.transport_stream_id) != 0) {
                 found = true;
                 nit.transports.erase(it->first);
@@ -302,13 +518,19 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     processDescriptorList(nit.descs);
 
     // Process each TS descriptor list
-    for (NIT::TransportMap::iterator it = nit.transports.begin(); it != nit.transports.end(); ++it) {
+    for (auto it = nit.transports.begin(); it != nit.transports.end(); ++it) {
         processDescriptorList(it->second.descs);
     }
+
+    // Update service list descriptors from collected services (if necessary).
+    updateServiceList(nit);
 
     // Reserialize modified NIT.
     nit.clearPreferredSections();
     nit.serialize(duck, table);
+
+    // Keep track of last valid NIT.
+    _last_nit = nit;
 }
 
 
@@ -472,6 +694,52 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
             }
 
             dlist[i]->resizePayload(new_data - base);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Update the service list descriptors from collected services.
+//----------------------------------------------------------------------------
+
+void ts::NITPlugin::updateServiceList(NIT& nit)
+{
+    // Loop on all collected transport streams.
+    for (auto it1 = _collected_sld.begin(); it1 != _collected_sld.end(); ++it1) {
+        const TransportStreamId& tsid(it1->first);
+        const ServiceListDescriptor& sld(it1->second);
+
+        // Only consider transport streams with collected services.
+        if (!sld.entries.empty()) {
+
+            // Get or create TS entry in the NIT.
+            NIT::Transport& ts(nit.transports[tsid]);
+
+            // Search an existing service list descriptor in this description.
+            const size_t sld_index = ts.descs.search(DID_SERVICE_LIST);
+
+            if (sld_index >= ts.descs.size()) {
+                // No service list descriptor present, just add the collected one.
+                ts.descs.add(duck, sld);
+            }
+            else {
+                // There is an existing service list descriptor, merge the collected data.
+                ServiceListDescriptor desc(duck, *ts.descs[sld_index]);
+                if (desc.isValid()) {
+                    // Merge the descriptors.
+                    for (auto it2 = sld.entries.begin(); it2 != sld.entries.end(); ++it2) {
+                        desc.addService(it2->service_id, it2->service_type);
+                    }
+                }
+                else {
+                    // Invalid existing descriptor, use the collected one.
+                    desc = sld;
+                }
+                // Remove all existing service list descriptors and add the merged one.
+                ts.descs.removeByTag(DID_SERVICE_LIST);
+                ts.descs.add(duck, desc);
+            }
         }
     }
 }

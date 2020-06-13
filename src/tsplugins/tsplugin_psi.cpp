@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsPSILogger.h"
 TSDUCK_SOURCE;
@@ -60,8 +59,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(psi, ts::PSIPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"psi", ts::PSIPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -73,9 +71,10 @@ ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
     _display(duck),
     _logger(_display)
 {
+    duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);
     duck.defineArgsForStandards(*this);
-    duck.defineArgsForDVBCharset(*this);
+    duck.defineArgsForCharset(*this);
     _logger.defineArgs(*this);
     _display.defineArgs(*this);
 }
@@ -87,7 +86,7 @@ ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
 
 bool ts::PSIPlugin::getOptions()
 {
-    return duck.loadArgs(*this) && _logger.loadArgs(*this) && _display.loadArgs(*this);
+    return duck.loadArgs(*this) && _logger.loadArgs(duck, *this) && _display.loadArgs(duck, *this);
 }
 
 

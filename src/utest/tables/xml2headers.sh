@@ -5,20 +5,16 @@
 # If first parameter is -release or -debug, use freshly built commands.
 #
 
-SRCDIR=$(cd $(dirname $0)/../..; pwd)
-ARCH=$(uname -m | sed -e 's/i.86/i386/' -e 's/arm.*/arm/')
+ROOTDIR=$(cd $(dirname $0)/../../..; pwd)
 
 case $1 in
     -rel*)
-        SETENV=$SRCDIR/tstools/release-$ARCH/setenv.sh
+        source "$ROOTDIR/build/setenv.sh"
         shift
         ;;
     -deb*)
-        SETENV=$SRCDIR/tstools/debug-$ARCH/setenv.sh
+        source "$ROOTDIR/build/setenv.sh" --debug
         shift
-        ;;
-    *)
-        SETENV=
         ;;
 esac
 

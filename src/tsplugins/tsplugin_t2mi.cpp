@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,12 +32,11 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsT2MIDemux.h"
 #include "tsT2MIDescriptor.h"
 #include "tsT2MIPacket.h"
-#include "tsTSFileOutput.h"
+#include "tsTSFile.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
@@ -53,6 +52,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         T2MIPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
@@ -65,24 +65,23 @@ namespace ts {
         typedef std::map<PID, PLPSet> IdentifiedSet;
 
         // Plugin private fields.
-        bool          _abort;           // Error, abort asap.
-        bool          _extract;         // Extract encapsulated TS.
-        bool          _replace_ts;      // Replace transferred TS.
-        bool          _log;             // Log T2-MI packets.
-        bool          _identify;        // Identify T2-MI PID's and PLP's in the TS or PID.
-        PID           _original_pid;    // Original value for --pid.
-        PID           _extract_pid;     // PID carrying the T2-MI encapsulation.
-        uint8_t       _plp;             // The PLP to extract in _pid.
-        bool          _plp_valid;       // False if PLP not yet known.
-        bool          _outfile_append;  // Append file.
-        bool          _outfile_keep;    // Keep existing output file, do not overwrite.
-        UString       _outfile_name;    // Output file name.
-        TSFileOutput  _outfile;         // Output file for extracted stream.
-        PacketCounter _t2mi_count;      // Number of input T2-MI packets.
-        PacketCounter _ts_count;        // Number of extracted TS packets.
-        T2MIDemux     _demux;           // T2-MI demux.
-        IdentifiedSet _identified;      // Map of identified PID's and PLP's.
-        std::deque<TSPacket> _ts_queue; // Queue of demuxed TS packets.
+        bool              _abort;           // Error, abort asap.
+        bool              _extract;         // Extract encapsulated TS.
+        bool              _replace_ts;      // Replace transferred TS.
+        bool              _log;             // Log T2-MI packets.
+        bool              _identify;        // Identify T2-MI PID's and PLP's in the TS or PID.
+        PID               _original_pid;    // Original value for --pid.
+        PID               _extract_pid;     // PID carrying the T2-MI encapsulation.
+        uint8_t           _plp;             // The PLP to extract in _pid.
+        bool              _plp_valid;       // False if PLP not yet known.
+        TSFile::OpenFlags _outfile_flags;   // Open flags for output file.
+        UString           _outfile_name;    // Output file name.
+        TSFile            _outfile;         // Output file for extracted stream.
+        PacketCounter     _t2mi_count;      // Number of input T2-MI packets.
+        PacketCounter     _ts_count;        // Number of extracted TS packets.
+        T2MIDemux         _demux;           // T2-MI demux.
+        IdentifiedSet     _identified;      // Map of identified PID's and PLP's.
+        std::deque<TSPacket> _ts_queue;     // Queue of demuxed TS packets.
 
         // Inherited methods.
         virtual void handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid, const T2MIDescriptor& desc) override;
@@ -91,8 +90,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(t2mi, ts::T2MIPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"t2mi", ts::T2MIPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -111,8 +109,7 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
     _extract_pid(PID_NULL),
     _plp(0),
     _plp_valid(false),
-    _outfile_append(false),
-    _outfile_keep(false),
+    _outfile_flags(TSFile::NONE),
     _outfile_name(),
     _outfile(),
     _t2mi_count(0),
@@ -166,10 +163,10 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get options method
 //----------------------------------------------------------------------------
 
-bool ts::T2MIPlugin::start()
+bool ts::T2MIPlugin::getOptions()
 {
     // Get command line arguments
     _extract = present(u"extract");
@@ -178,9 +175,16 @@ bool ts::T2MIPlugin::start()
     _extract_pid = _original_pid = intValue<PID>(u"pid", PID_NULL);
     _plp = intValue<uint8_t>(u"plp");
     _plp_valid = present(u"plp");
-    _outfile_append = present(u"append");
-    _outfile_keep = present(u"keep");
     getValue(_outfile_name, u"output-file");
+
+    // Output file open flags.
+    _outfile_flags = TSFile::WRITE | TSFile::SHARED;
+    if (present(u"append")) {
+        _outfile_flags |= TSFile::APPEND;
+    }
+    if (present(u"keep")) {
+        _outfile_flags |= TSFile::KEEP;
+    }
 
     // Extract is the default operation.
     // It is also implicit if an output file is specified.
@@ -190,7 +194,16 @@ bool ts::T2MIPlugin::start()
 
     // Replace the TS if no output file is present.
     _replace_ts = _extract && _outfile_name.empty();
+    return true;
+}
 
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::T2MIPlugin::start()
+{
     // Initialize the demux.
     _demux.reset();
     if (_extract_pid != PID_NULL) {
@@ -205,7 +218,7 @@ bool ts::T2MIPlugin::start()
     _abort = false;
 
     // Open output file if present.
-    return _outfile_name.empty() || _outfile.open(_outfile_name, _outfile_append, _outfile_keep, *tsp);
+    return _outfile_name.empty() || _outfile.open(_outfile_name, _outfile_flags , *tsp);
 }
 
 
@@ -342,7 +355,7 @@ void ts::T2MIPlugin::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, co
         }
         else {
             // Write the packet to output file.
-            _abort = _abort || !_outfile.write(&ts, 1, *tsp);
+            _abort = _abort || !_outfile.writePackets(&ts, nullptr, 1, *tsp);
         }
     }
 }

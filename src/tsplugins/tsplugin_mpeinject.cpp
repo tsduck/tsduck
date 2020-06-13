@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsUDPReceiver.h"
 #include "tsMPEPacket.h"
@@ -86,8 +85,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(mpeinject, ts::MPEInjectPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"mpeinject", ts::MPEInjectPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -162,7 +160,7 @@ bool ts::MPEInjectPlugin::start()
     const UString macAddress(value(u"mac-address"));
     const UString newDestination(value(u"new-destination"));
     const UString newSource(value(u"new-source"));
-    if (!_sock.loadArgs(*this)) {
+    if (!_sock.loadArgs(duck, *this)) {
         return false;
     }
 
@@ -237,7 +235,7 @@ ts::ProcessorPlugin::Status ts::MPEInjectPlugin::processPacket(TSPacket& pkt, TS
     SectionQueue::MessagePtr section;
     if (_packet_index >= _mpe_packets.size() && _section_queue.dequeue(section, 0) && !section.isNull() && section->isValid()) {
         // Packetize the section.
-        OneShotPacketizer zer(_mpe_pid, true);
+        OneShotPacketizer zer(duck, _mpe_pid, true);
         zer.addSection(section.changeMutex<NullMutex>());
         zer.getPackets(_mpe_packets);
         _packet_index = 0;

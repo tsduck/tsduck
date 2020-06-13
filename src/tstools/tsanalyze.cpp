@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@
 #include "tsTSAnalyzerOptions.h"
 #include "tsInputRedirector.h"
 #include "tsPagerArgs.h"
+#include "tsDuckContext.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
@@ -44,19 +45,20 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options();
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    ts::DuckContext       duck;      // TSDuck execution context.
-    ts::BitRate           bitrate;   // Expected bitrate (188-byte packets)
-    ts::UString           infile;    // Input file name
-    ts::TSAnalyzerOptions analysis;  // Analysis options.
-    ts::PagerArgs         pager;     // Output paging options.
-};
+        ts::DuckContext       duck;      // TSDuck execution context.
+        ts::BitRate           bitrate;   // Expected bitrate (188-byte packets)
+        ts::UString           infile;    // Input file name
+        ts::TSAnalyzerOptions analysis;  // Analysis options.
+        ts::PagerArgs         pager;     // Output paging options.
+    };
+}
 
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"Analyze the structure of a transport stream", u"[options] [filename]"),
@@ -68,9 +70,9 @@ Options::Options(int argc, char *argv[]) :
 {
     // Define all standard analysis options.
     duck.defineArgsForStandards(*this);
-    duck.defineArgsForDVBCharset(*this);
+    duck.defineArgsForCharset(*this);
     pager.defineArgs(*this);
-    analysis.defineOptions(*this);
+    analysis.defineArgs(*this);
 
     option(u"", 0, STRING, 0, 1);
     help(u"", u"Input MPEG capture file (standard input if omitted).");
@@ -85,17 +87,13 @@ Options::Options(int argc, char *argv[]) :
 
     // Define all standard analysis options.
     duck.loadArgs(*this);
-    pager.loadArgs(*this);
-    analysis.load(*this);
+    pager.loadArgs(duck, *this);
+    analysis.loadArgs(duck, *this);
 
     infile = value(u"");
     bitrate = intValue<ts::BitRate>(u"bitrate");
 
     exitOnError();
-}
-
-Options::~Options()
-{
 }
 
 

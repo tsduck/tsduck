@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsServiceDiscovery.h"
 #include "tsTSScrambling.h"
@@ -95,7 +94,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class ScramblerPlugin:
         public ProcessorPlugin,
-        private PMTHandlerInterface
+        private SignalizationHandlerInterface
     {
         TS_NOBUILD_NOCOPY(ScramblerPlugin);
     public:
@@ -214,12 +213,11 @@ namespace ts {
         bool tryExitDegradedMode();
 
         // Invoked when the PMT of the service is available.
-        virtual void handlePMT(const PMT&) override;
+        virtual void handlePMT(const PMT&, PID) override;
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(scrambler, ts::ScramblerPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"scrambler", ts::ScramblerPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -266,8 +264,11 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     _current_cw(0),
     _current_ecm(0),
     _scrambling(*tsp),
-    _pzer_pmt()
+    _pzer_pmt(duck)
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"", 0, STRING, 0, 1);
     help(u"",
          u"Specifies the optional service to scramble. If no service is specified, a "
@@ -344,7 +345,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
 
     // ECMG and scrambling options.
     _ecmg_args.defineArgs(*this);
-    _scrambling.defineOptions(*this);
+    _scrambling.defineArgs(*this);
 }
 
 
@@ -355,6 +356,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
 bool ts::ScramblerPlugin::getOptions()
 {
     // Plugin parameters.
+    duck.loadArgs(*this);
     _use_service = present(u"");
     _service.set(value(u""));
     getIntValues(_scrambled_pids, u"pid");
@@ -375,7 +377,7 @@ bool ts::ScramblerPlugin::getOptions()
     }
 
     // Other common parameters.
-    if (!_ecmg_args.loadArgs(*this) || !_scrambling.loadArgs(*this)) {
+    if (!_ecmg_args.loadArgs(duck, *this) || !_scrambling.loadArgs(duck, *this)) {
         return false;
     }
 
@@ -507,7 +509,7 @@ bool ts::ScramblerPlugin::stop()
 //  This method processes the PMT of the service.
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::handlePMT(const PMT& table)
+void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
 {
     assert(_use_service);
 
@@ -975,7 +977,7 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
             return;
         }
         // Packetize the section
-        OneShotPacketizer pzer(_plugin->_ecm_pid, true);
+        OneShotPacketizer pzer(_plugin->duck, _plugin->_ecm_pid, true);
         pzer.addSection(sp);
         pzer.getPackets(_ecm);
 

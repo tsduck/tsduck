@@ -4,30 +4,26 @@
   <!-- Common base definition for all types of targets -->
 
   <PropertyGroup Label="Configuration">
-    <OutDir>$(SolutionDir)$(Configuration)-$(Platform)\</OutDir>
+    <TSDuckRootDir>$(SolutionDir)..\..\</TSDuckRootDir>
+    <OutDir>$(TSDuckRootDir)bin\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(OutDir)$(ProjectName)\</IntDir>
   </PropertyGroup>
 
-  <Choose>
-    <When Condition="Exists('$(SolutionDir)tsduck.sln')">
-      <!-- Inside TSDuck solution -->
-      <PropertyGroup Label="UserMacros">
-        <TSDuckRootDir>$(SolutionDir)..\..\</TSDuckRootDir>
-      </PropertyGroup>
-    </When>
-    <When Condition="Exists('$(SolutionDir)..\..\..\tsduck\build\msvc\tsduck.sln')">
-      <!-- Inside another solution, same structure, side by side with TSDuck -->
-      <PropertyGroup Label="UserMacros">
-        <TSDuckRootDir>$(SolutionDir)..\..\..\tsduck\</TSDuckRootDir>
-      </PropertyGroup>
-    </When>
-    <Otherwise>
-      <!-- Probably an error ... -->
-      <PropertyGroup Label="UserMacros">
-        <TSDuckRootDir>$(SolutionDir)</TSDuckRootDir>
-      </PropertyGroup>
-    </Otherwise>
-  </Choose>
+  <!-- Locate all directories in libtsduck (for inclusion of header files) -->
+
+  <ItemGroup>
+    <LibPublicFiles Include="$(TSDuckRootDir)src\libtsduck\**\*" Exclude="**\unix\**;**\linux\**;**\mac\**;**\private\**"/>
+    <LibPrivateFiles Include="$(TSDuckRootDir)src\libtsduck\**\private\**\*"/>
+    <LibPublicDirs Include="@(LibPublicFiles->'%(RootDir)%(Directory)'->Distinct())"/>
+    <LibPrivateDirs Include="@(LibPrivateFiles->'%(RootDir)%(Directory)'->Distinct())"/>
+  </ItemGroup>
+
+  <PropertyGroup Label="Configuration">
+    <TSDuckLibDirs>@(LibPublicDirs)</TSDuckLibDirs>
+    <TSDuckLibDirsInternal>@(LibPrivateDirs)</TSDuckLibDirsInternal>
+  </PropertyGroup>
+
+  <!-- Common build options -->
 
   <ItemDefinitionGroup>
     <ClCompile>
@@ -59,6 +55,12 @@
   <ItemDefinitionGroup Condition="'$(TS_NO_BUILD_VERSION)'!=''">
     <ClCompile>
       <PreprocessorDefinitions>TS_NO_BUILD_VERSION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(TS_KEEP_ASSERTIONS)'!=''">
+    <ClCompile>
+      <PreprocessorDefinitions>TS_KEEP_ASSERTIONS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
 
@@ -119,6 +121,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>TS_WINVER_FILEFLAGS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -133,7 +136,7 @@
   <!-- Definition of the Windows Kits -->
   <!-- The default is 8.1, try to locate a more recent one -->
   <!-- Try various hacks, not a very generic method, better suggestions are welcome -->
-  
+
   <PropertyGroup Condition="'$(WindowsTargetPlatformVersion)'==''">
     <LatestTargetPlatformVersion>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetLatestSDKTargetPlatformVersion('Windows', '10.0'))</LatestTargetPlatformVersion>
     <WindowsTargetPlatformVersion>$(LatestTargetPlatformVersion)</WindowsTargetPlatformVersion>

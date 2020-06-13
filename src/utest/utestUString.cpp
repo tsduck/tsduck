@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -98,7 +98,10 @@ public:
     void testCommonPrefix();
     void testCommonSuffix();
     void testPrecombined();
-    void testDVB();
+    void testQuoted();
+    void testToQuotedLine();
+    void testFromQuotedLine();
+    void testIndent();
 
     TSUNIT_TEST_BEGIN(UStringTest);
     TSUNIT_TEST(testIsSpace);
@@ -148,7 +151,10 @@ public:
     TSUNIT_TEST(testCommonPrefix);
     TSUNIT_TEST(testCommonSuffix);
     TSUNIT_TEST(testPrecombined);
-    TSUNIT_TEST(testDVB);
+    TSUNIT_TEST(testQuoted);
+    TSUNIT_TEST(testToQuotedLine);
+    TSUNIT_TEST(testFromQuotedLine);
+    TSUNIT_TEST(testIndent);
     TSUNIT_TEST_END();
 
 private:
@@ -988,6 +994,7 @@ void UStringTest::testToInteger()
     uint32_t ui32;
     uint64_t ui64;
     int64_t  i64;
+    int16_t  i16;
 
     TSUNIT_ASSERT(ts::UString(u"1").toInteger(i));
     TSUNIT_EQUAL(1, i);
@@ -1025,11 +1032,35 @@ void UStringTest::testToInteger()
     TSUNIT_ASSERT(ts::UString(u" 12,345").toInteger(i, u",."));
     TSUNIT_EQUAL(12345, i);
 
-    TSUNIT_ASSERT(ts::UString(u" -12.345").toInteger(i, u",."));
+    TSUNIT_ASSERT(ts::UString(u" -12#345").toInteger(i, u",#"));
     TSUNIT_EQUAL(-12345, i);
 
-    TSUNIT_ASSERT(!ts::UString(u" -12;345").toInteger(i, u",."));
+    TSUNIT_ASSERT(!ts::UString(u" -12;345").toInteger(i, u",#"));
     TSUNIT_EQUAL(-12, i);
+
+    TSUNIT_ASSERT(ts::UString(u" -12.345").toInteger(i, u",", 3));
+    TSUNIT_EQUAL(-12345, i);
+
+    TSUNIT_ASSERT(ts::UString(u" 1  ").toInteger(ui32, u",", 3));
+    TSUNIT_EQUAL(1000, ui32);
+
+    TSUNIT_ASSERT(ts::UString(u"1.").toInteger(ui32, u",", 2));
+    TSUNIT_EQUAL(100, ui32);
+
+    TSUNIT_ASSERT(ts::UString(u" +1.23").toInteger(ui32, u",", 6));
+    TSUNIT_EQUAL(1230000, ui32);
+
+    TSUNIT_ASSERT(ts::UString(u"2.345678").toInteger(i, u",", 3));
+    TSUNIT_EQUAL(2345, i);
+
+    TSUNIT_ASSERT(ts::UString(u" -2.345678").toInteger(i, u",", 4));
+    TSUNIT_EQUAL(-23456, i);
+
+    TSUNIT_ASSERT(ts::UString(u"-32768").toInteger(i));
+    TSUNIT_EQUAL(-32768, i);
+
+    TSUNIT_ASSERT(ts::UString(u"-32768").toInteger(i16));
+    TSUNIT_EQUAL(-32768, i16);
 
     std::list<int32_t> i32List;
     std::list<int32_t> i32Ref;
@@ -1127,6 +1158,12 @@ void UStringTest::testHexaDecode()
 
     TSUNIT_ASSERT(!ts::UString(u"X 0 1234 56 - 789 ABC DEF ").hexaDecode(bytes));
     TSUNIT_ASSERT(bytes.empty());
+
+    TSUNIT_ASSERT(!ts::UString(u"01 23 {0x45, 0x67};").hexaDecode(bytes));
+    TSUNIT_ASSERT(bytes == ts::ByteBlock({0x01, 0x23}));
+
+    TSUNIT_ASSERT(ts::UString(u"01 23 {0x45, 0x67};").hexaDecode(bytes, true));
+    TSUNIT_ASSERT(bytes == ts::ByteBlock({0x01, 0x23, 0x45, 0x67}));
 }
 
 void UStringTest::testAppendContainer()
@@ -1190,6 +1227,11 @@ void UStringTest::testDecimal()
     TSUNIT_EQUAL(u"    -1,234", ts::UString::Decimal(-1234, 10, true, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, true));
     TSUNIT_EQUAL(u"    -1,234", ts::UString::Decimal(-1234, 10, true, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, false));
     TSUNIT_EQUAL(u"-1,234,567,890,123,456", ts::UString::Decimal(TS_CONST64(-1234567890123456)));
+    TSUNIT_EQUAL(u"-32,768", ts::UString::Decimal(-32768));
+    TSUNIT_EQUAL(u"-32,768", ts::UString::Decimal(int16_t(-32768)));
+    TSUNIT_EQUAL(u"-9223372036854775808", ts::UString::Decimal(std::numeric_limits<int64_t>::min(), 0, true, u""));
+    TSUNIT_EQUAL(u"-9,223,372,036,854,775,808", ts::UString::Decimal(std::numeric_limits<int64_t>::min()));
+    TSUNIT_EQUAL(u"9,223,372,036,854,775,807", ts::UString::Decimal(std::numeric_limits<int64_t>::max()));
 }
 
 void UStringTest::testHexa()
@@ -2042,12 +2084,58 @@ void UStringTest::testPrecombined()
     TSUNIT_EQUAL(str2, ref2.toDecomposedDiacritical());
 }
 
-void UStringTest::testDVB()
+void UStringTest::testQuoted()
 {
-    TSUNIT_EQUAL(u"abCD 89#()", ts::UString::FromDVB(std::string("abCD 89#()")));
+    TSUNIT_EQUAL(u"''", ts::UString().toQuoted());
+    TSUNIT_EQUAL(u"||", ts::UString().toQuoted(u'|'));
+    TSUNIT_EQUAL(u"a", ts::UString(u"a").toQuoted());
+    TSUNIT_EQUAL(u"'a b'", ts::UString(u"a b").toQuoted());
+    TSUNIT_EQUAL(u"a.b", ts::UString(u"a.b").toQuoted());
+    TSUNIT_EQUAL(u"'a?b'", ts::UString(u"a?b").toQuoted());
+    TSUNIT_EQUAL(u"'a\\nb'", ts::UString(u"a\nb").toQuoted());
+    TSUNIT_EQUAL(u"'a\\\\b'", ts::UString(u"a\\b").toQuoted());
+}
 
-    static const uint8_t dvb1[] = {0x30, 0xC2, 0x65, 0xC3, 0x75};
-    const ts::UString str1{u'0', ts::LATIN_SMALL_LETTER_E_WITH_ACUTE, ts::LATIN_SMALL_LETTER_U_WITH_CIRCUMFLEX};
-    TSUNIT_EQUAL(str1, ts::UString::FromDVB(dvb1, sizeof(dvb1)));
-    TSUNIT_ASSERT(ts::ByteBlock(dvb1, sizeof(dvb1)) == str1.toDecomposedDiacritical().toDVB());
+void UStringTest::testToQuotedLine()
+{
+    TSUNIT_EQUAL(u"", ts::UString::ToQuotedLine(ts::UStringVector()));
+    TSUNIT_EQUAL(u"''", ts::UString::ToQuotedLine(ts::UStringVector({u""})));
+    TSUNIT_EQUAL(u"''", ts::UString::ToQuotedLine(ts::UStringVector({u""})));
+    TSUNIT_EQUAL(u"|| ||", ts::UString::ToQuotedLine(ts::UStringVector({u"", u""}), u'|'));
+    TSUNIT_EQUAL(u"ab cde fghi", ts::UString::ToQuotedLine(ts::UStringVector({u"ab", u"cde", u"fghi"})));
+    TSUNIT_EQUAL(u"ab 'er ty' 'sdf?hh' ' \"vf\\ndf\" '", ts::UString::ToQuotedLine(ts::UStringVector({u"ab", u"er ty", u"sdf?hh", u" \"vf\ndf\" "})));
+    TSUNIT_EQUAL(u"ab 'er ty' 'sdf?hh' ' \\'vf\\ndf\\' '", ts::UString::ToQuotedLine(ts::UStringVector({u"ab", u"er ty", u"sdf?hh", u" 'vf\ndf' "})));
+}
+
+void UStringTest::testFromQuotedLine()
+{
+    ts::UStringVector s;
+
+    ts::UString(u"ab cd ef").fromQuotedLine(s);
+    TSUNIT_EQUAL(3, s.size());
+    TSUNIT_EQUAL(u"ab", s[0]);
+    TSUNIT_EQUAL(u"cd", s[1]);
+    TSUNIT_EQUAL(u"ef", s[2]);
+
+    ts::UString().fromQuotedLine(s);
+    TSUNIT_EQUAL(0, s.size());
+
+    ts::UString(u" a'b c'd ef    ").fromQuotedLine(s);
+    TSUNIT_EQUAL(2, s.size());
+    TSUNIT_EQUAL(u"ab cd", s[0]);
+    TSUNIT_EQUAL(u"ef", s[1]);
+
+    ts::UString(u" a\\ \\nb c[d\\ e]f    ").fromQuotedLine(s);
+    TSUNIT_EQUAL(2, s.size());
+    TSUNIT_EQUAL(u"a \nb", s[0]);
+    TSUNIT_EQUAL(u"c[d e]f", s[1]);
+}
+
+void UStringTest::testIndent()
+{
+    TSUNIT_EQUAL(u"", ts::UString().toIndented(0));
+    TSUNIT_EQUAL(u"", ts::UString().toIndented(4));
+    TSUNIT_EQUAL(u"  ", ts::UString(u"  ").toIndented(4));
+    TSUNIT_EQUAL(u"      a", ts::UString(u"  a").toIndented(4));
+    TSUNIT_EQUAL(u"    a\n\n  b\n  c d", ts::UString(u"  a\n\nb\nc d").toIndented(2));
 }

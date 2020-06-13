@@ -2,7 +2,7 @@
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2019, Thierry Lelegard
+#  Copyright (c) 2005-2020, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -29,15 +29,68 @@
 #-----------------------------------------------------------------------------
 #
 #  Get configuration for DTAPI on current Linux system.
-#  Options: --header --object
+#  Options: --dtapi --header --object --url --support --m32
 #
 #-----------------------------------------------------------------------------
 
+URL_BASE=https://www.dektec.com
+HTML_URL=$URL_BASE/downloads/SDK/
+GENERIC_URL=$URL_BASE/products/SDK/DTAPI/Downloads/LatestLinuxSDK
+
 SCRIPT=$(basename $BASH_SOURCE)
 ROOTDIR=$(cd $(dirname $BASH_SOURCE); pwd)
-DTAPIDIR="$ROOTDIR/LinuxSDK/DTAPI"
+SYSTEM=$(uname -s | tr A-Z a-z)
 
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
+
+# Get the root directory of the DTAPI.
+get-dtapi()
+{
+    local prefix=
+    case "$SYSTEM" in
+        linux)
+            header=$(find 2>/dev/null "$ROOTDIR/LinuxSDK/DTAPI" -path "*/DTAPI/Include/DTAPI.h" | head -1)
+            ;;
+        cygwin*)
+            header=$(find 2>/dev/null /cygdrive/c/Program\ Files*/Dektec -path "*/DTAPI/Include/DTAPI.h" | head -1)
+            ;;
+        mingw*|msys*)
+            header=$(find 2>/dev/null /c/Program\ Files*/Dektec -path "*/DTAPI/Include/DTAPI.h" | head -1)
+            ;;
+        *)
+            header=
+    esac
+    if [[ -n "$header" ]]; then
+        d=$(dirname "$header")
+        dirname "$d"
+    fi
+}
+
+# Check if DTAPI is supported on the current system.
+dtapi-support()
+{
+    # Environment variable NODTAPI disables the usage of DTAPI.
+    [[ -n "$NODTAPI" ]] && return -1
+
+    # DTAPI is supported on Linux and Windows only.
+    case "$SYSTEM" in
+        linux|cygwin*|mingw*|msys*)
+            ;;
+        *)
+            return -1
+    esac
+
+    # DTAPI is supported on Intel CPU only.
+    arch=$(uname -m)
+    [[ $arch == x86_64 || $arch == i?86 ]] || return -1
+
+    # DTAPI is compiled with the GNU libc and is not supported on systems not using it.
+    # Alpine Linux uses musl libc => not supported (undefined reference to __isnan).
+    [[ -e /etc/alpine-release ]] && return -1
+
+    # Seems to be a supported distro.
+    return 0
+}
 
 # Compute an integer version from a x.y.z version string.
 int-version()
@@ -52,22 +105,21 @@ int-version()
 # Get DTAPI header file.
 get-header()
 {
-    # Unsupported outside Linux/Intel.
-    [[ $(uname -s) == Linux ]] || return
-    arch=$(uname -m)
-    [[ $arch == x86_64 || $arch == i?86 ]] || return
+    # Get DTAPI support on this system.
+    dtapi-support || return 0
 
-    local HEADER="$DTAPIDIR/Include/DTAPI.h"
+    local HEADER="$(get-dtapi)/Include/DTAPI.h"
     [[ -e "$HEADER" ]] && echo "$HEADER"
 }
 
 # Get DTAPI object file.
 get-object()
 {
-    # Unsupported outside Linux/Intel.
-    [[ $(uname -s) == Linux ]] || return
-    arch=$(uname -m)
-    [[ $arch == x86_64 || $arch == i?86 ]] || return
+    # Get DTAPI support on this system.
+    dtapi-support || return 0
+
+    # Check that DTAPI binaries are present.
+    [[ -d "$(get-dtapi)/Lib" ]] || return 0
 
     # Get GCC version as an integer.
     if [[ -z "$GCCVERSION" ]]; then
@@ -79,7 +131,9 @@ get-object()
     local DIRVERS=
 
     # Get object file from platform name.
-    if [[ $(uname -m) == x86_64 ]]; then
+    if ${M32:-false}; then
+        OBJNAME=DTAPI.o
+    elif [[ $(uname -m) == x86_64 ]]; then
         OBJNAME=DTAPI64.o
     else
         OBJNAME=DTAPI.o
@@ -88,33 +142,116 @@ get-object()
     # Find the DTAPI object with highest version, lower than or equal to GCC version.
     local OBJFILE=
     local OBJVERS=0
-    for obj in $(find "$DTAPIDIR/Lib" -path "*/GCC*/$OBJNAME"); do
-        DIRVERS=$(basename $(dirname "$obj"))
-        DIRVERS=${DIRVERS#GCC}
-        DIRVERS=${DIRVERS%%_*}
-        DIRVERS=$(int-version $DIRVERS)
-        if [[ ($DIRVERS -le $GCCVERS) && ($DIRVERS -gt $OBJVERS) ]]; then
-            OBJFILE="$obj"
-            OBJVERS=$DIRVERS
-        fi
-    done
+    local DTAPIDIR=$(get-dtapi)
+    if [[ -n "$DTAPIDIR" ]]; then
+        for obj in $(find "$DTAPIDIR/Lib" -path "*/GCC*/$OBJNAME"); do
+            DIRVERS=$(basename $(dirname "$obj"))
+            DIRVERS=${DIRVERS#GCC}
+            DIRVERS=${DIRVERS%%_*}
+            DIRVERS=$(int-version $DIRVERS)
+            if [[ ($DIRVERS -le $GCCVERS) && ($DIRVERS -gt $OBJVERS) ]]; then
+                OBJFILE="$obj"
+                OBJVERS=$DIRVERS
+            fi
+        done
+    fi
     [[ -n "$OBJFILE" ]] && echo "$OBJFILE"
 }
 
+# Merge an URL with its base.
+# The base is the argument. The URL is read from stdin.
+merge-url()
+{
+    local ref="$1"
+    local url
+    read url
+
+    if [[ -n "$url" ]]; then
+        if [[ $url == *:* ]]; then
+            echo "$url"
+        elif [[ $url == /* ]]; then
+            echo "$URL_BASE$url"
+        elif [[ $ref == */ ]]; then
+            echo "$ref$url"
+        else
+            ref=$(dirname "$ref")
+            echo "$ref/$url"
+        fi
+    fi
+}
+
+# Retrieve the URL using the redirection from a fixed generic URL.
+# This should be the preferred method but Dektec may forget to update
+# the redirection in the generic URL.
+get-url-from-redirection()
+{
+    curl --silent --show-error --dump-header /dev/stdout "$GENERIC_URL" | \
+        grep -i 'Location:' | \
+        sed -e 's/.*: *//' -e 's/\r//g' | \
+        merge-url "$GENERIC_URL"
+}
+
+# Retrieve the URL by parsing the HTML from the Dektec download web page.
+get-url-from-html-page()
+{
+    curl --silent --show-error --location "$HTML_URL" | \
+        grep 'href=".*LinuxSDK' | \
+        sed -e 's/.*href="//' -e 's/".*//' | \
+        merge-url "$HTML_URL"
+}
+
+# Get Dektec LinuxSDK URL.
+get-url()
+{
+    # Try the HTML parsing first, then redirection.
+    URL=$(get-url-from-html-page)
+    [[ -z "$URL" ]] && URL=$(get-url-from-redirection)
+    [[ -z "$URL" ]] && error "cannot locate LinuxSDK location from Dektec"
+    echo "$URL"
+}
+
+# Get options.
+CMD=""
+M32=false
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --m32)
+            M32=true
+            ;;
+        *)
+            CMD="$1"
+            ;;
+    esac
+    shift
+done
+
 # Main command
-case "$1" in
+case "$CMD" in
+    --dtapi)
+        get-dtapi
+        ;;
     --header)
         get-header
         ;;
     --object)
-        get-object
+        shift
+        get-object "$@"
+        ;;
+    --url)
+        get-url
+        ;;
+    --support)
+        dtapi-support && echo supported
         ;;
     -*)
         error "invalid option: $1"
         ;;
     *)
+        shift
+        echo "DTAPI_ROOT=$(get-dtapi)"
         echo "DTAPI_HEADER=$(get-header)"
         echo "DTAPI_OBJECT=$(get-object)"
+        echo "DTAPI_URL=$(get-url)"
         ;;
 esac
 exit 0

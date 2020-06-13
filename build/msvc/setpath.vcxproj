@@ -6,7 +6,7 @@
   </ImportGroup>
 
   <ItemGroup>
-    <ClCompile Include="..\..\src\wintools\setpath.cpp" />
+    <ClCompile Include="..\..\src\utils\setpath.cpp" />
   </ItemGroup>
 
   <PropertyGroup Label="Globals">

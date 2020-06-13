@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,10 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsCASSelectionArgs.h"
 #include "tsSectionDemux.h"
+#include "tsBinaryTable.h"
 #include "tsPAT.h"
 TSDUCK_SOURCE;
 
@@ -95,8 +95,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(stuffanalyze, ts::StuffAnalyzePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"stuffanalyze", ts::StuffAnalyzePlugin);
 
 
 //----------------------------------------------------------------------------
@@ -142,7 +141,7 @@ ts::StuffAnalyzePlugin::StuffAnalyzePlugin(TSP* tsp_) :
 bool ts::StuffAnalyzePlugin::start()
 {
     // Get command line arguments
-    _cas_args.loadArgs(*this);
+    _cas_args.loadArgs(duck, *this);
     _output_name = value(u"output-file");
     getIntValues(_analyze_pids, u"pid");
 

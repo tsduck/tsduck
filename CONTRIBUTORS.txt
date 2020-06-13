@@ -1,4 +1,4 @@
-﻿The following people are contributing or have contributed to TSDuck:
+The following people are contributing or have contributed to TSDuck:
 
 Thierry Lelégard (original author, current maintainer)
 Jérôme Lévèque
@@ -8,3 +8,7 @@ Harald Jordan
 Chris Hibbert
 Aaron Levinson
 Oliver Collyer
+Anthony Delannoy
+Martin Frétigné
+
+If you wish to contribute, please see https://tsduck.io/doxy/contributing.html

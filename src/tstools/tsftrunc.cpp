@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -42,25 +42,24 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-class Options: public ts::Args
-{
-    TS_NOBUILD_NOCOPY(Options);
-public:
-    Options(int argc, char *argv[]);
-    virtual ~Options();
+namespace {
+    class Options: public ts::Args
+    {
+        TS_NOBUILD_NOCOPY(Options);
+    public:
+        Options(int argc, char *argv[]);
 
-    bool              check_only;   // check only, do not truncate
-    ts::PacketCounter trunc_pkt;    // first packet to truncate (0 means eof)
-    ts::UStringVector files;        // file names
-};
+        bool              check_only;   // check only, do not truncate
+        size_t            packet_size;  // packet size in bytes
+        ts::PacketCounter trunc_pkt;    // first packet to truncate (0 means eof)
+        ts::UStringVector files;        // file names
+    };
+}
 
-// Destructor.
-Options::~Options() {}
-
-// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Truncate an MPEG transport stream file", u"[options] filename ..."),
     check_only(false),
+    packet_size(ts::PKT_SIZE),
     trunc_pkt(0),
     files()
 {
@@ -81,16 +80,22 @@ Options::Options(int argc, char *argv[]) :
          u"packets are kept in the file. Extraneous bytes at end of file "
          u"(after last multiple of 188 bytes) are truncated.");
 
+    option(u"size-of-packet", 's', POSITIVE);
+    help(u"size-of-packet",
+         u"TS packet size in bytes. The default is " + ts::UString::Decimal(ts::PKT_SIZE) +
+         u" bytes. Alternate packet sizes are useful for M2TS or other TS file formats.");
+
     analyze(argc, argv);
 
     getValues(files);
     check_only = present(u"noaction");
+    packet_size = intValue<size_t>(u"size-of-packet", ts::PKT_SIZE);
 
     if (present(u"byte") && present(u"packet")) {
         error(u"--byte and --packet are mutually exclusive");
     }
     if (present(u"byte")) {
-        trunc_pkt = (intValue<ts::PacketCounter>(u"byte") + ts::PKT_SIZE - 1) / ts::PKT_SIZE;
+        trunc_pkt = (intValue<ts::PacketCounter>(u"byte") + packet_size - 1) / packet_size;
     }
     else {
         trunc_pkt = intValue<ts::PacketCounter>(u"packet");
@@ -117,7 +122,7 @@ int MainCode(int argc, char *argv[])
 
         // Get file size
 
-        int64_t size = GetFileSize(*file);
+        const int64_t size = GetFileSize(*file);
 
         if (size < 0) {
             err = ts::LastErrorCode();
@@ -128,16 +133,16 @@ int MainCode(int argc, char *argv[])
 
         // Compute number of packets and how many bytes to keep in file.
 
-        uint64_t file_size = uint64_t (size);
-        uint64_t pkt_count = file_size / ts::PKT_SIZE;
-        uint64_t extra = file_size % ts::PKT_SIZE;
+        const uint64_t file_size = uint64_t(size);
+        const uint64_t pkt_count = file_size / opt.packet_size;
+        const uint64_t extra = file_size % opt.packet_size;
         uint64_t keep;
 
         if (opt.trunc_pkt == 0 || opt.trunc_pkt > pkt_count) {
-            keep = pkt_count * ts::PKT_SIZE;
+            keep = pkt_count * opt.packet_size;
         }
         else {
-            keep = opt.trunc_pkt * ts::PKT_SIZE;
+            keep = opt.trunc_pkt * opt.packet_size;
         }
 
         // Display info in verbose or check mode
@@ -146,13 +151,12 @@ int MainCode(int argc, char *argv[])
             if (opt.files.size() > 1) {
                 std::cout << *file << ": ";
             }
-            std::cout << ts::UString::Decimal(file_size) << " bytes, "
-                      << ts::UString::Decimal(pkt_count) << " packets, ";
+            std::cout << ts::UString::Format(u"%'d bytes, %'d %d-byte packets, ", {file_size, pkt_count, opt.packet_size});
             if (extra > 0) {
-                std::cout << extra << " extra bytes, ";
+                std::cout << ts::UString::Format(u"%'d extra bytes, ", {extra});
             }
             if (keep < file_size) {
-                std::cout << ts::UString::Decimal(file_size - keep) << " bytes to truncate" << std::endl;
+                std::cout << ts::UString::Format(u"%'d bytes to truncate, ", {file_size - keep}) << std::endl;
             }
             else {
                 std::cout << "ok" << std::endl;

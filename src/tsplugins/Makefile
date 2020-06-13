@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2019, Thierry Lelegard
+#  Copyright (c) 2005-2020, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,8 @@
 #-----------------------------------------------------------------------------
 
 # With static link, we compile in a specific directory.
-OBJDIR_SUFFIX := $(if $(STATIC),-static,)
+BINDIR_SUFFIX := $(if $(STATIC),-static,)
+OBJSUBDIR := objs-tsplugins
 
 include ../../Makefile.tsduck
 
@@ -41,16 +42,16 @@ include ../../Makefile.tsduck
 ifndef STATIC
 
 # Dynamic link (the default), we build shared objects.
-SHLIBS := $(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSPLUGINS)))
+SHLIBS := $(addprefix $(BINDIR)/,$(addsuffix .so,$(TSPLUGINS)))
 
 default: shlibs
 	@true
 shlibs: $(SHLIBS)
-$(SHLIBS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
+$(SHLIBS): $(SHARED_LIBTSDUCK)
 
 install: $(SHLIBS)
-	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
-	install -m 755 $(SHLIBS) $(SYSROOT)$(SYSPREFIX)/bin
+	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck
+	install -m 644 $(SHLIBS) $(SYSROOT)$(USRLIBDIR)/tsduck
 install-devel:
 	@true
 

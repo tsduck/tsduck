@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -137,6 +137,15 @@ void VariableTest::testElementaryType()
     TSUNIT_ASSERT(v1 == 1);
     TSUNIT_ASSERT(v1 != 2);
     TSUNIT_ASSERT(v4 != 1);
+
+    v1.reset();
+    TSUNIT_ASSERT(!v1.set());
+    TSUNIT_ASSERT(v1.setDefault(1));
+    TSUNIT_ASSERT(v1.set());
+    TSUNIT_EQUAL(1, v1.value());
+    TSUNIT_ASSERT(!v1.setDefault(2));
+    TSUNIT_ASSERT(v1.set());
+    TSUNIT_EQUAL(1, v1.value());
 }
 
 // A class which identifies each instance by an explicit value.

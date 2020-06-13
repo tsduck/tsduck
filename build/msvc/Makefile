@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2019, Thierry Lelegard
+#  Copyright (c) 2005-2020, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -32,12 +32,6 @@
 #-----------------------------------------------------------------------------
 
 include ../../Makefile.tsduck
-
 RECURSE_ORDER = none
-
-default: libtsduck-files.props libtsduck-filters.props
+default:
 	@true
-
-libtsduck-files.props libtsduck-filters.props: $(BUILD_PROJ_FILES) $(LIB_HEADERS) $(LIB_SOURCES)
-	@echo '  [REBUILD] $@'; \
-	$(BUILD_PROJ_FILES) $@

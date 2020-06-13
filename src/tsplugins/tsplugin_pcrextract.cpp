@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
+#include "tsBinaryTable.h"
 #include "tsSectionDemux.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
@@ -160,8 +160,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(pcrextract, ts::PCRExtractPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"pcrextract", ts::PCRExtractPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -686,7 +685,7 @@ void ts::PCRExtractPlugin::processSpliceCommand(PID pid, SpliceInformationTable&
     const uint64_t command_pts = sit.splice_command_type == SPLICE_INSERT ? sit.splice_insert.lowestPTS() : INVALID_PTS;
 
     // Start of message.
-    UString msg(UString::Format(u"PID: 0x%X (%d), SCTE 35 command %s", {pid, pid, DVBNameFromSection(u"SpliceCommandType", sit.splice_command_type)}));
+    UString msg(UString::Format(u"PID: 0x%X (%d), SCTE 35 command %s", {pid, pid, NameFromSection(u"SpliceCommandType", sit.splice_command_type)}));
     if (sit.splice_command_type == SPLICE_INSERT) {
         if (sit.splice_insert.canceled) {
             msg += u" canceled";

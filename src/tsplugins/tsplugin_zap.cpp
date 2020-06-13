@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -33,19 +33,12 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
+#include "tsCASFamily.h"
 #include "tsService.h"
-#include "tsSectionDemux.h"
+#include "tsSignalizationDemux.h"
 #include "tsCyclingPacketizer.h"
 #include "tsEITProcessor.h"
-#include "tsPAT.h"
-#include "tsPMT.h"
-#include "tsCAT.h"
-#include "tsSDT.h"
-#include "tsMGT.h"
-#include "tsTVCT.h"
-#include "tsCVCT.h"
 TSDUCK_SOURCE;
 
 
@@ -54,7 +47,9 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class ZapPlugin: public ProcessorPlugin, private TableHandlerInterface
+    class ZapPlugin:
+        public ProcessorPlugin,
+        private SignalizationHandlerInterface
     {
         TS_NOBUILD_NOCOPY(ZapPlugin);
     public:
@@ -77,35 +72,47 @@ namespace ts {
             TSPID_EMM,    // EMM's, unmodified
         };
 
-        // Private data
-        bool              _abort;              // Error (service not found, etc)
-        Service           _service;            // Service name & id
-        UString           _audio;              // Audio language code to keep
-        PID               _audio_pid;          // Audio PID to keep
-        UString           _subtitles;          // Subtitles language code to keep
-        bool              _no_subtitles;       // Remove all subtitles
-        bool              _no_ecm;             // Remove all ECM PIDs
-        bool              _include_cas;        // Include CAS info (CAT & EMM)
-        bool              _include_eit;        // Include EIT's for the specified service
-        bool              _pes_only;           // Keep PES streams only
-        Status            _drop_status;        // Status for dropped packets
-        uint8_t           _pid_state[PID_MAX]; // Status of each PID.
-        SectionDemux      _demux;              // Section demux
-        CyclingPacketizer _pzer_sdt;           // Packetizer for modified SDT
-        CyclingPacketizer _pzer_pat;           // Packetizer for modified PAT
-        CyclingPacketizer _pzer_pmt;           // Packetizer for modified PMT
-        EITProcessor      _eit_process;        // Modify EIT's
+        // Command line options:
+        UString _service_spec;   // Service name or id.
+        bool    _spec_by_id;     // Sevice is specified by id (ie. not by name).
+        UString _audio;          // Audio language code to keep
+        PID     _audio_pid;      // Audio PID to keep
+        UString _subtitles;      // Subtitles language code to keep
+        bool    _no_subtitles;   // Remove all subtitles
+        bool    _no_ecm;         // Remove all ECM PIDs
+        bool    _include_cas;    // Include CAS info (CAT & EMM)
+        bool    _include_eit;    // Include EIT's for the specified service
+        bool    _pes_only;       // Keep PES streams only
+        bool    _ignore_absent;  // Do not stop if the service is not present
+        Status  _drop_status;    // Status for dropped packets
 
-        // Invoked by the demux when a complete table is available.
-        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+        // Working data:
+        bool               _abort;              // Error (service not found, etc)
+        uint8_t            _pat_version;        // Version of next PAT.
+        uint8_t            _sdt_version;        // Version of next SDT.
+        Service            _service;            // Service name & id
+        SignalizationDemux _demux;              // Section demux
+        CyclingPacketizer  _pzer_sdt;           // Packetizer for modified SDT
+        CyclingPacketizer  _pzer_pat;           // Packetizer for modified PAT
+        CyclingPacketizer  _pzer_pmt;           // Packetizer for modified PMT
+        EITProcessor       _eit_process;        // Modify EIT's
+        uint8_t            _pid_state[PID_MAX]; // Status of each PID.
 
-        // Process specific tables
-        void processPAT(PAT&);
-        void processCAT(CAT&);
-        void processPMT(PMT&);
-        void processSDT(SDT&);
-        void processMGT(MGT&);
-        void processVCT(VCT&);
+        // Implementation of SignalizationHandlerInterface.
+        virtual void handlePAT(const PAT&, PID) override;
+        virtual void handleCAT(const CAT&, PID) override;
+        virtual void handlePMT(const PMT&, PID) override;
+        virtual void handleSDT(const SDT&, PID) override;
+        virtual void handleVCT(const VCT&, PID) override;
+
+        // Send a new PAT.
+        void sendNewPAT();
+
+        // Forget all previous components of the service.
+        void forgetServiceComponents();
+
+        // Called when the service is not present in the TS.
+        void serviceNotPresent(const UChar* table_name);
 
         // Called when the service id becomes known.
         void setServiceId(uint16_t);
@@ -116,8 +123,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(zap, ts::ZapPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"zap", ts::ZapPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -126,8 +132,8 @@ TSPLUGIN_DECLARE_PROCESSOR(zap, ts::ZapPlugin)
 
 ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Zap on one service: Produce an SPTS containing only the specified service", u"[options] service"),
-    _abort(false),
-    _service(),
+    _service_spec(),
+    _spec_by_id(false),
     _audio(),
     _audio_pid(PID_NULL),
     _subtitles(),
@@ -136,13 +142,22 @@ ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
     _include_cas(false),
     _include_eit(false),
     _pes_only(false),
+    _ignore_absent(false),
     _drop_status(TSP_DROP),
+    _abort(false),
+    _pat_version(0),
+    _sdt_version(0),
+    _service(),
     _demux(duck, this),
-    _pzer_sdt(PID_SDT, CyclingPacketizer::ALWAYS),
-    _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
-    _pzer_pmt(PID_NULL, CyclingPacketizer::ALWAYS),
-    _eit_process(duck, PID_EIT)
+    _pzer_sdt(duck, PID_SDT, CyclingPacketizer::ALWAYS),
+    _pzer_pat(duck, PID_PAT, CyclingPacketizer::ALWAYS),
+    _pzer_pmt(duck, PID_NULL, CyclingPacketizer::ALWAYS),
+    _eit_process(duck, PID_EIT),
+    _pid_state()
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"", 0, STRING, 1, 1);
     help(u"",
          u"Specifies the service to keep. If the argument is an integer value (either "
@@ -175,6 +190,11 @@ ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
         u"EIT sections for other services are removed. "
         u"By default, all EIT's are removed.");
 
+    option(u"ignore-absent", 'i');
+    help(u"ignore-absent",
+         u"Do not stop if the service does not exist or disappears. "
+         u"Continue to pass an empty stream until the service appears or re-appears.");
+
     option(u"no-ecm", 'e');
     help(u"no-ecm",
          u"Remove all ECM PID's. By default, keep all ECM PID's.");
@@ -206,12 +226,14 @@ ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
 
 bool ts::ZapPlugin::getOptions()
 {
+    duck.loadArgs(*this);
+
     if (present(u"audio") + present(u"audio-pid") > 1) {
         tsp->error(u"options --audio and --audio-pid are mutually exclusive");
         return false;
     }
 
-    _service.set(value(u""));
+    _service_spec = value(u"");
     _audio = value(u"audio");
     _audio_pid = intValue<PID>(u"audio-pid", PID_NULL, 0);
     _subtitles = value(u"subtitles");
@@ -220,7 +242,12 @@ bool ts::ZapPlugin::getOptions()
     _include_cas = present(u"cas");
     _include_eit = present(u"eit");
     _pes_only = present(u"pes-only");
+    _ignore_absent = present(u"ignore-absent");
     _drop_status = present(u"stuffing") ? TSP_NULL : TSP_DROP;
+
+    // Check if service is specified by name or by id.
+    Service srv(_service_spec);
+    _spec_by_id = srv.hasId();
 
     return true;
 }
@@ -232,36 +259,52 @@ bool ts::ZapPlugin::getOptions()
 
 bool ts::ZapPlugin::start()
 {
+    // Initialize service description.
+    _service.clear();
+    _service.set(_service_spec);
+
+    // Initialize the demux
+    _demux.reset();
+
     // All PIDs are dropped by default.
     // Selected PIDs will be added when discovered.
     ::memset(_pid_state, TSPID_DROP, sizeof(_pid_state));
 
-    // The TOT and TDT are always passed.
-    assert(PID_TOT == PID_TDT);
+    // The TOT and TDT are always passed (same PID).
     _pid_state[PID_TOT] = TSPID_PASS;
 
-    // Initialize the demux
-    _demux.reset();
-    _demux.addPID(PID_SDT);
-
-    // When the service id is known, we wait for the PAT. If it is not yet
-    // known (only the service name is known), we do not know how to modify
-    // the PAT. We will wait for it after receiving the SDT.
-    // Packets from PAT PID are analyzed but not passed. When a complete
-    // PAT is read, a modified PAT will be transmitted.
+    // When the service id is known, we can immediately process the PAT.
+    // If the service id is not yet known (only the service name is known), we do not know
+    // how to modify the PAT. We will handle it after receiving the DVB-SDT or ATSC-VCT.
     if (_service.hasId()) {
-        _demux.addPID(PID_PAT);
+        _demux.addTableId(TID_PAT);
+        _demux.addServiceId(_service.getId());
     }
+
+    // Replace the PAT PID with modified PAT.
+    _pid_state[PID_PAT] = TSPID_PAT;
+
+    // Always handle the SDT Actual and replace the SDT/BAT PID with modified SDT Actual.
+    _demux.addTableId(TID_SDT_ACT);
+    _pid_state[PID_SDT] = TSPID_SDT;
+
+    // Handle the ATSC-VCT only when the service is specified by name.
+    if (!_spec_by_id) {
+        _demux.addTableId(TID_CVCT);
+        _demux.addTableId(TID_TVCT);
+    }
+
+    // Unlike the DVB-SDT, the ATSC-VCT is not modified to include only the zapped channel
+    // because the same PID contains too many distinct tables, some being cycled, some others
+    // being one-shot and we do not want to address this complexity here.
+    // So, the complete PSIP PID is passed unmodified.
+    _pid_state[PID_PSIP] = TSPID_PASS;
 
     // Include CAT and EMM if required
     if (_include_cas) {
-        _demux.addPID(PID_CAT);
+        _demux.addTableId(TID_CAT);
         _pid_state[PID_CAT] = TSPID_PASS;
     }
-
-    // ATSC PSIP PID is also always passed.
-    _demux.addPID(PID_PSIP);
-    _pid_state[PID_PSIP] = TSPID_PASS;
 
     // Configure the EIT processor to keep only the selected service.
     _eit_process.reset();
@@ -271,6 +314,8 @@ bool ts::ZapPlugin::start()
 
     // Reset other states
     _abort = false;
+    _pat_version = 0;
+    _sdt_version = 0;
     _pzer_pat.reset();
     _pzer_pmt.reset();
     _pzer_sdt.reset();
@@ -280,302 +325,238 @@ bool ts::ZapPlugin::start()
 
 
 //----------------------------------------------------------------------------
-// Invoked by the demux when a complete table is available.
+// Send a new PAT.
 //----------------------------------------------------------------------------
 
-void ts::ZapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
+void ts::ZapPlugin::sendNewPAT()
 {
-    switch (table.tableId()) {
+    // Update a new PAT version.
+    _pat_version = (_pat_version + 1) & SVERSION_MASK;
 
-        case TID_PAT: {
-            if (table.sourcePID() == PID_PAT) {
-                PAT pat(duck, table);
-                if (pat.isValid()) {
-                    processPAT(pat);
-                }
-            }
-            break;
-        }
+    // Create the new PAT. Set ID id but no NIT PID (this is an SPTS).
+    PAT pat(_pat_version, true, _service.getTSId(), PID_NULL);
 
-        case TID_CAT: {
-            if (table.sourcePID() == PID_CAT) {
-                CAT cat(duck, table);
-                if (cat.isValid()) {
-                    processCAT(cat);
-                }
-            }
-            break;
-        }
-
-        case TID_SDT_ACT: {
-            if (table.sourcePID() == PID_SDT) {
-                SDT sdt(duck, table);
-                if (sdt.isValid()) {
-                    processSDT(sdt);
-                }
-            }
-            break;
-        }
-
-        case TID_PMT: {
-            PMT pmt(duck, table);
-            if (pmt.isValid() && _service.hasId(pmt.service_id)) {
-                processPMT(pmt);
-            }
-            break;
-        }
-
-        case TID_MGT: {
-            MGT mgt(duck, table);
-            if (mgt.isValid()) {
-                processMGT(mgt);
-            }
-            break;
-        }
-
-        case TID_TVCT: {
-            TVCT tvct(duck, table);
-            if (tvct.isValid()) {
-                processVCT(tvct);
-            }
-            break;
-        }
-
-        case TID_CVCT: {
-            CVCT cvct(duck, table);
-            if (cvct.isValid()) {
-                processVCT(cvct);
-            }
-            break;
-        }
-
-        default: {
-            break;
-        }
+    // If the service is unknown, send an empty PAT (typically with --ignore-absent).
+    if (_service.hasId() && _service.hasPMTPID()) {
+        // The service is known, add it in the PAT.
+        pat.pmts[_service.getId()] = _service.getPMTPID();
     }
-}
-
-
-//----------------------------------------------------------------------------
-//  This method processes a Service Description Table (SDT).
-//  We search the service in the SDT. Once we get the service, we rebuild a
-//  new SDT containing only one section and only one service (a copy of
-//  all descriptors for the service).
-//----------------------------------------------------------------------------
-
-void ts::ZapPlugin::processSDT(SDT& sdt)
-{
-    // Look for the service by name or by service
-    bool found = false;
-    uint16_t service_id = 0xFFFF;
-
-    if (_service.hasName()) {
-        found = sdt.findService(duck, _service.getName(), service_id);
-    }
-    else {
-        service_id = _service.getId();
-        found = sdt.services.find(service_id) != sdt.services.end();
-    }
-
-    // If service not found in SDT and not already found in PAT, error
-    if (!found && !_service.hasId(service_id)) {
-        tsp->error(u"service %s not found in SDT", {_service});
-        _abort = true;
-        return;
-    }
-
-    // Set the service id, check if PAT shall be scanned.
-    setServiceId(service_id);
-
-    // Remove all other services from the SDT
-    SDT::ServiceMap::iterator it(sdt.services.find(_service.getId()));
-    if (it == sdt.services.end()) {
-        // Service not present in SDT
-        sdt.services.clear();
-    }
-    else {
-        // Remove other services before zap service
-        sdt.services.erase(sdt.services.begin(), it);
-        // Remove other services after zap service
-        it = sdt.services.begin();
-        assert(it != sdt.services.end());
-        assert(it->first == _service.getId());
-        sdt.services.erase(++it, sdt.services.end());
-        assert (sdt.services.size() == 1);
-    }
-
-    // Build the list of TS packets containing the new SDT.
-    // These packets will replace everything on the SDT/BAT PID.
-    _pzer_sdt.removeAll();
-    _pzer_sdt.addTable(duck, sdt);
-
-    // Now allow transmission of (modified) packets from SDT PID
-    _pid_state[PID_SDT] = TSPID_SDT;
-}
-
-
-//----------------------------------------------------------------------------
-//  This method processes an ATSC Virtual Channel Table (VCT).
-//  We search the service in the VCT.
-//  Currently, we do not try to rebuild a new VCT with all other services
-//  removed. The problem is not the table itself. The problem is the content
-//  of the PSIP which contains a mixture of cycled tables (MGT, VCT) and
-//  one-short tables (STT). Maybe in some future version of the plugin...
-//----------------------------------------------------------------------------
-
-void ts::ZapPlugin::processVCT(VCT& vct)
-{
-    // Look for the service if id is unknown.
-    if (!_service.hasId()) {
-        if (vct.findService(_service)) {
-            // Service found, fields updated in _service.
-            assert(_service.hasId());
-            // But need to reset service id so that setServiceId() can work.
-            const uint16_t id = _service.getId();
-            _service.clearId();
-            setServiceId(id);
-        }
-        else {
-            tsp->error(u"service %s not found in VCT", {_service});
-            _abort = true;
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// This method processes an ATSC Master Guide Table (MGT)
-//----------------------------------------------------------------------------
-
-void ts::ZapPlugin::processMGT(MGT& mgt)
-{
-    // Process all table types.
-    for (auto it = mgt.tables.begin(); it != mgt.tables.end(); ++it) {
-        // Intercept TVCT and CVCT, they contain the service names.
-        switch (it->second.table_type) {
-            case ATSC_TTYPE_TVCT_CURRENT:
-            case ATSC_TTYPE_CVCT_CURRENT:
-                _demux.addPID(it->second.table_type_PID);
-                break;
-            default:
-                break;
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
-//  This method is called when the service id becomes known.
-//----------------------------------------------------------------------------
-
-void ts::ZapPlugin::setServiceId(uint16_t service_id)
-{
-    // If the service id was previously unknown wait for the PAT.
-    // If a service id was known but was different, we need to rescan the PAT.
-    if (!_service.hasId(service_id)) {
-
-        if (_service.hasId()) {
-            // The service was previously known but has changed its service id.
-            // We need to rescan the service map. The PMT is reset.
-            // All PIDs related to the service are erased.
-            for (PID pid = 0; pid < PID_MAX; pid++) {
-                uint8_t pstate = _pid_state[pid];
-                if (pstate == TSPID_PMT) {
-                    _demux.removePID (pid);
-                    _pzer_pmt.reset();
-                    _pid_state[pid] = TSPID_DROP;
-                }
-                else if (pstate == TSPID_PES || pstate == TSPID_DATA) {
-                    _pid_state[pid] = TSPID_DROP;
-                }
-            }
-        }
-
-        _service.setId(service_id);
-        _service.clearPMTPID();
-
-        // Reset the EIT processor.
-        _eit_process.reset();
-        _eit_process.keepService(service_id);
-
-        // Packets from PAT PID are analyzed but not passed. When a complete
-        // PAT is read, a modified PAT will be transmitted.
-        _demux.addPID(PID_PAT);
-        _pid_state[PID_PAT] = TSPID_DROP;
-
-        tsp->verbose(u"found service %s", {_service});
-    }
-}
-
-
-//----------------------------------------------------------------------------
-//  This method processes a Program Association Table (PAT).
-//----------------------------------------------------------------------------
-
-void ts::ZapPlugin::processPAT(PAT& pat)
-{
-    // Locate the service in the PAT
-    assert(_service.hasId());
-    PAT::ServiceMap::iterator it = pat.pmts.find(_service.getId());
-
-    // If service not found, error
-    if (it == pat.pmts.end()) {
-        tsp->error(u"service id 0x%X not found in PAT", {_service.getId()});
-        _abort = true;
-        return;
-    }
-
-    // If the PMT PID was previously unknown wait for the PMT.
-    // If the PMT PID was known but was different, we need to rescan the PMT.
-    if (!_service.hasPMTPID(it->second)) {
-
-        if (_service.hasPMTPID()) {
-            // The PMT PID was previously known but has changed.
-            // We need to rescan the PMT. All PIDs related to the service are erased.
-            for (PID pid = 0; pid < PID_MAX; pid++) {
-                uint8_t pstate = _pid_state[pid];
-                if (pstate == TSPID_PMT) {
-                    _demux.removePID (pid);
-                    _pzer_pmt.reset();
-                    _pid_state[pid] = TSPID_DROP;
-                }
-                else if (pstate == TSPID_PES || pstate == TSPID_DATA) {
-                    _pid_state[pid] = TSPID_DROP;
-                }
-            }
-        }
-
-        _service.setPMTPID(it->second);
-        _demux.addPID(it->second);
-
-        tsp->verbose(u"found service id 0x%X, PMT PID is 0x%X", {_service.getId(), _service.getPMTPID()});
-    }
-
-    // Remove all other services from the PAT
-    pat.pmts.erase (pat.pmts.begin(), it);
-    it = pat.pmts.begin();
-    assert (it != pat.pmts.end());
-    assert (it->first == _service.getId());
-    pat.pmts.erase (++it, pat.pmts.end());
-    assert (pat.pmts.size() == 1);
-    pat.nit_pid = PID_NULL;
 
     // Build the list of TS packets containing the new PAT.
     // These packets will replace everything on the PAT PID.
     _pzer_pat.removeAll();
     _pzer_pat.addTable(duck, pat);
-
-    // Now allow transmission of (modified) packets from PAT PID
-    _pid_state[PID_PAT] = TSPID_PAT;
 }
 
 
 //----------------------------------------------------------------------------
-//  This method processes a Program Map Table (PMT).
+// Forget all previous components of the service.
 //----------------------------------------------------------------------------
 
-void ts::ZapPlugin::processPMT(PMT& pmt)
+void ts::ZapPlugin::forgetServiceComponents()
 {
+    for (PID pid = 0; pid < PID_MAX; pid++) {
+        const uint8_t state = _pid_state[pid];
+        if (state == TSPID_PMT || state == TSPID_PES || state == TSPID_DATA) {
+            _pid_state[pid] = TSPID_DROP;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Called when the service is not present in the TS.
+//----------------------------------------------------------------------------
+
+void ts::ZapPlugin::serviceNotPresent(const UChar* table_name)
+{
+    if (_ignore_absent) {
+        // Service not present is not an error, waiting for it to reappear.
+        tsp->verbose(u"service %s not found in %s, waiting for the service...", {_service_spec, table_name});
+        // Make sure the service PMT will be notified again if on the same PID.
+        _demux.removeAllServiceIds();
+        // Forget components that may change when the service reappears.
+        forgetServiceComponents();
+        _service.clearPMTPID();
+        if (_spec_by_id) {
+            _service.clearName();
+            _demux.addServiceId(_service.getId());
+        }
+        else {
+            _service.clearId();
+        }
+        // Start sending and empty PAT.
+        sendNewPAT();
+    }
+    else {
+        // Service not found is a fatal error.
+        tsp->error(u"service %s not found in %s", {_service_spec, table_name});
+        _abort = true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Called when the service id becomes known.
+//----------------------------------------------------------------------------
+
+void ts::ZapPlugin::setServiceId(uint16_t service_id)
+{
+    // Ignore case when the service id was already known with same version.
+    if (!_service.hasId(service_id)) {
+
+        // Forget previous service.
+        _demux.removeAllServiceIds();
+        if (_service.hasId()) {
+            _service.clearPMTPID();
+            forgetServiceComponents();
+        }
+
+        // Make sure the new service is monitored.
+        _service.setId(service_id);
+        _demux.addTableId(TID_PAT);
+        _demux.addServiceId(_service.getId());
+        tsp->verbose(u"found service %s", {_service});
+
+        // Reset the EIT processor on the new service.
+        _eit_process.reset();
+        _eit_process.keepService(service_id);
+
+        // If a PAT was already received, check if service is known.
+        if (_demux.hasPAT()) {
+            handlePAT(_demux.lastPAT(), PID_PAT);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// This method processes a Program Association Table (PAT).
+//----------------------------------------------------------------------------
+
+void ts::ZapPlugin::handlePAT(const PAT& pat, PID pid)
+{
+    // Remember TS id.
+    _service.setTSId(pat.ts_id);
+
+    if (_service.hasId()) {
+        // Service id is known, locate it in the PAT.
+        const auto it(pat.pmts.find(_service.getId()));
+        if (it == pat.pmts.end()) {
+            // Service not found in PAT.
+            serviceNotPresent(u"PAT");
+        }
+        else if (!_service.hasPMTPID(it->second)) {
+            // Service found with a new PMT PID.
+            if (_service.hasPMTPID()) {
+                // The PMT PID was previously known but has changed.
+                _service.clearPMTPID();
+                forgetServiceComponents();
+            }
+            _service.setPMTPID(it->second);
+            tsp->verbose(u"found service id 0x%X, PMT PID is 0x%X", {_service.getId(), _service.getPMTPID()});
+            sendNewPAT();
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// This method processes a Service Description Table (SDT).
+//----------------------------------------------------------------------------
+
+void ts::ZapPlugin::handleSDT(const SDT& sdt, PID pid)
+{
+    // Filter only SDT Actual.
+    if (!sdt.isActual()) {
+        return;
+    }
+
+    // Remember TS id.
+    _service.setTSId(sdt.ts_id);
+    _service.setONId(sdt.onetw_id);
+
+    // Lookup the VCT only if the service was originally specified by name.
+    uint16_t service_id = _service.getId();
+    if (!_spec_by_id) {
+        // Look for the service by name.
+        if (sdt.findService(duck, _service_spec, service_id)) {
+            setServiceId(service_id);
+        }
+        else {
+            serviceNotPresent(u"SDT");
+        }
+    }
+
+    // Cleanup SDT.
+    if (!_abort) {
+        // Get a modifiable copy of the SDT.
+        SDT sdt2(sdt);
+        auto it(sdt2.services.find(service_id));
+        if (it == sdt2.services.end()) {
+            // Service not present in SDT.
+            sdt2.services.clear();
+        }
+        else {
+            // Remove other services before zap service
+            sdt2.services.erase(sdt2.services.begin(), it);
+            // Remove other services after zap service
+            it = sdt2.services.begin();
+            assert(it != sdt2.services.end());
+            assert(it->first == _service.getId());
+            sdt2.services.erase(++it, sdt2.services.end());
+            assert(sdt2.services.size() == 1);
+        }
+
+        // Update a new SDT version. This is useful with --ignore-absent when the service comes and goes.
+        _sdt_version = (_sdt_version + 1) & SVERSION_MASK;
+        sdt2.version = _sdt_version;
+
+        // Build the list of TS packets containing the new SDT.
+        // These packets will replace everything on the SDT/BAT PID.
+        _pzer_sdt.removeAll();
+        _pzer_sdt.addTable(duck, sdt2);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// This method processes an ATSC Virtual Channel Table (VCT).
+//----------------------------------------------------------------------------
+
+void ts::ZapPlugin::handleVCT(const VCT& vct, PID pid)
+{
+    // Lookup the VCT only if the service was originally specified by name.
+    if (!_spec_by_id) {
+        // Look for the service by name.
+        const auto it(vct.findService(_service_spec));
+        if (it == vct.channels.end()) {
+            serviceNotPresent(u"VCT");
+        }
+        else {
+            setServiceId(it->second.program_number);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// This method processes a Program Map Table (PMT).
+//----------------------------------------------------------------------------
+
+void ts::ZapPlugin::handlePMT(const PMT& pmt_in, PID pid)
+{
+    // Filter out any unexpected PMT.
+    if (!_service.hasId() || !_service.hasPMTPID() || _service.getId() != pmt_in.service_id || _service.getPMTPID() != pid) {
+        return;
+    }
+
+    // Forget previous component PID's of the service.
+    forgetServiceComponents();
+
+    // Get a modifiable copy of the PMT.
+    PMT pmt(pmt_in);
+
     // Record the PCR PID as a PES component of the service
     if (pmt.pcr_pid != PID_NULL) {
         _pid_state[pmt.pcr_pid] = TSPID_PES;
@@ -584,11 +565,11 @@ void ts::ZapPlugin::processPMT(PMT& pmt)
     // Record or remove ECMs PIDs from the descriptor loop
     if (_no_ecm) {
         // Remove all CA_descriptors
-        pmt.descs.removeByTag (DID_CA);
+        pmt.descs.removeByTag(DID_CA);
     }
     else {
         // Locate all ECM PID's and record them
-        analyzeCADescriptors (pmt.descs, TSPID_DATA);
+        analyzeCADescriptors(pmt.descs, TSPID_DATA);
     }
 
     // Loop on all elementary streams of the PMT and remove streams we do not
@@ -596,9 +577,9 @@ void ts::ZapPlugin::processPMT(PMT& pmt)
     // iterating. Alternatively, we build a list of PID's (map keys) and
     // we will use the PID's to iterate and erase.
     std::vector<PID> pids;
-    pids.reserve (pmt.streams.size());
-    for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-        pids.push_back (it->first);
+    pids.reserve(pmt.streams.size());
+    for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
+        pids.push_back(it->first);
     }
 
     // Number of input and output audio streams
@@ -608,19 +589,19 @@ void ts::ZapPlugin::processPMT(PMT& pmt)
     // Now iterate through the list of streams
     for (size_t i = 0; i < pids.size(); ++i) {
 
-        const PID pid = pids[i];
-        PMT::Stream& stream (pmt.streams[pid]);
+        const PID cpid = pids[i];
+        PMT::Stream& stream(pmt.streams[cpid]);
 
         // Check if the component is an audio one with a language
         // other than the one specified on the command line.
         if (stream.isAudio()) {
             audio_in++;
-            if (!_audio.empty() && stream.descs.searchLanguage (_audio) >= stream.descs.count()) {
-                pmt.streams.erase (pid);
+            if (!_audio.empty() && stream.descs.searchLanguage(_audio) >= stream.descs.count()) {
+                pmt.streams.erase(cpid);
                 continue;
             }
-            else if ((_audio_pid != PID_NULL) && (pid != _audio_pid)) {
-                pmt.streams.erase(pid);
+            else if ((_audio_pid != PID_NULL) && (cpid != _audio_pid)) {
+                pmt.streams.erase(cpid);
                 continue;
             }
             else {
@@ -629,23 +610,23 @@ void ts::ZapPlugin::processPMT(PMT& pmt)
         }
 
         // Check if the component contains subtitles
-        size_t subt = stream.descs.searchSubtitle (_subtitles);
+        size_t subt = stream.descs.searchSubtitle(_subtitles);
         if ((_no_subtitles && subt != stream.descs.count()) || (!_subtitles.empty() && subt > stream.descs.count())) {
-            pmt.streams.erase (pid);
+            pmt.streams.erase(pid);
             continue;
         }
 
         // We keep this component, record component PID
-        _pid_state[pid] = uint8_t(IsPES(stream.stream_type) ? TSPID_PES : TSPID_DATA);
+        _pid_state[cpid] = uint8_t(IsPES(stream.stream_type) ? TSPID_PES : TSPID_DATA);
 
         // Record or remove ECMs PIDs from the descriptor loop
         if (_no_ecm) {
             // Remove all CA_descriptors
-            stream.descs.removeByTag (DID_CA);
+            stream.descs.removeByTag(DID_CA);
         }
         else {
             // Locate all ECM PID's and record them
-            analyzeCADescriptors (stream.descs, TSPID_DATA);
+            analyzeCADescriptors(stream.descs, TSPID_DATA);
         }
     }
 
@@ -674,26 +655,25 @@ void ts::ZapPlugin::processPMT(PMT& pmt)
 
 
 //----------------------------------------------------------------------------
-//  This method processes a Conditional Access Table (CAT).
+// This method processes a Conditional Access Table (CAT).
 //----------------------------------------------------------------------------
 
-void ts::ZapPlugin::processCAT(CAT& cat)
+void ts::ZapPlugin::handleCAT(const CAT& cat, PID pid)
 {
     // Erase all previously known EMM PIDs
-    for (size_t pid = 0; pid < PID_MAX; pid++) {
-        if (_pid_state[pid] == TSPID_EMM) {
-            _pid_state[pid] = TSPID_DROP;
+    for (size_t epid = 0; epid < PID_MAX; epid++) {
+        if (_pid_state[epid] == TSPID_EMM) {
+            _pid_state[epid] = TSPID_DROP;
         }
     }
 
     // Register all new EMM PIDs
-    analyzeCADescriptors (cat.descs, TSPID_EMM);
+    analyzeCADescriptors(cat.descs, TSPID_EMM);
 }
 
 
 //----------------------------------------------------------------------------
-// Analyze a list of descriptors, looking for CA descriptors. All PIDs which
-// are referenced in CA descriptors are set with the specified state.
+// Analyze a list of descriptors, looking for CA descriptors.
 //----------------------------------------------------------------------------
 
 void ts::ZapPlugin::analyzeCADescriptors(const DescriptorList& dlist, uint8_t pid_state)
@@ -709,12 +689,12 @@ void ts::ZapPlugin::analyzeCADescriptors(const DescriptorList& dlist, uint8_t pi
         if (size < 4) {
             continue;
         }
-        uint16_t sysid = GetUInt16 (desc);
-        uint16_t pid = GetUInt16 (desc + 2) & 0x1FFF;
+        uint16_t sysid = GetUInt16(desc);
+        uint16_t pid = GetUInt16(desc + 2) & 0x1FFF;
         desc += 4; size -= 4;
 
         // Establish context based on CAS type
-        CASFamily cas = CASFamilyOf (sysid);
+        const CASFamily cas = CASFamilyOf(sysid);
 
         // Record state of main CA pid for this descriptor
         _pid_state[pid] = pid_state;
@@ -729,7 +709,7 @@ void ts::ZapPlugin::analyzeCADescriptors(const DescriptorList& dlist, uint8_t pi
             uint8_t nb_opi = *desc;
             desc++; size --;
             while (nb_opi > 0 && size >= 4) {
-                pid = GetUInt16 (desc) & 0x1FFF;
+                pid = GetUInt16(desc) & 0x1FFF;
                 desc += 4; size -= 4; nb_opi--;
                 // Record state of secondary pid
                 _pid_state[pid] = pid_state;
@@ -739,7 +719,7 @@ void ts::ZapPlugin::analyzeCADescriptors(const DescriptorList& dlist, uint8_t pi
             // MediaGuard CA descriptor in the PMT.
             desc -= 2; size += 2;
             while (size >= 15) {
-                pid = GetUInt16 (desc) & 0x1FFF;
+                pid = GetUInt16(desc) & 0x1FFF;
                 desc += 15; size -= 15;
                 // Record state of secondary pid
                 _pid_state[pid] = pid_state;
@@ -788,23 +768,20 @@ ts::ProcessorPlugin::Status ts::ZapPlugin::processPacket(TSPacket& pkt, TSPacket
         case TSPID_DATA:
         case TSPID_PES:
         case TSPID_EMM:
-            // Packet is passed unmodified
+            // Packet is passed unmodified.
             return TSP_OK;
 
         case TSPID_PMT:
-            // Replace all PMT packets with modified PMT
-            _pzer_pmt.getNextPacket (pkt);
-            return TSP_OK;
+            // Replace all PMT packets with modified PMT.
+            return _pzer_pmt.getNextPacket(pkt) ? TSP_OK : _drop_status;
 
         case TSPID_PAT:
-            // Replace all PAT packets with modified PAT
-            _pzer_pat.getNextPacket (pkt);
-            return TSP_OK;
+            // Replace all PAT packets with modified PAT.
+            return _pzer_pat.getNextPacket(pkt) ? TSP_OK : _drop_status;
 
         case TSPID_SDT:
-            // Replace all SDT/BAT packets with modified SDT
-            _pzer_sdt.getNextPacket (pkt);
-            return TSP_OK;
+            // Replace all SDT/BAT packets with modified SDT Actual. SDT Other and BAT are overwritten.
+            return _pzer_sdt.getNextPacket(pkt) ? TSP_OK : _drop_status;
 
         default:
             // Should never get there...

@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,9 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsHiDesDevice.h"
-#include "tsModulation.h"
+#include "tsModulationArgs.h"
 TSDUCK_SOURCE;
 
 
@@ -65,8 +64,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_OUTPUT(hides, ts::HiDesOutput)
+TS_REGISTER_OUTPUT_PLUGIN(u"hides", ts::HiDesOutput);
 
 
 //----------------------------------------------------------------------------
@@ -171,7 +169,7 @@ bool ts::HiDesOutput::start()
     int dc_i = 0;
     int dc_q = 0;
 
-    TunerParametersDVBT params;
+    ModulationArgs params;
     params.bandwidth = enumValue<BandWidth>(u"bandwidth", BW_8_MHZ);
     params.modulation = enumValue<Modulation>(u"constellation", QAM_64);
     params.frequency = intValue<uint64_t>(u"frequency", 0);

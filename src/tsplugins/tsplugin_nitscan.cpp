@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,9 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
+#include "tsBinaryTable.h"
 #include "tsSysUtils.h"
 #include "tsChannelFile.h"
 #include "tsPAT.h"
@@ -89,8 +89,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(nitscan, ts::NITScanPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"nitscan", ts::NITScanPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -120,6 +119,9 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
     _update_channel_file(false),
     _default_channel_file(false)
 {
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
     option(u"all-nits", 'a');
     help(u"all-nits",
          u"Analyze all NIT's (NIT actual and NIT other). By default, only the "
@@ -189,6 +191,7 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
 bool ts::NITScanPlugin::getOptions()
 {
     // Get option values
+    duck.loadArgs(*this);
     _output_name = value(u"output-file");
     _all_nits = present(u"all-nits");
     _terminate = present(u"terminate");
@@ -357,15 +360,16 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
     _nit_count++;
 
     // Process each TS descriptor list
-    for (NIT::TransportMap::const_iterator it = nit.transports.begin(); it != nit.transports.end(); ++it) {
+    for (auto it = nit.transports.begin(); it != nit.transports.end(); ++it) {
+
         const TransportStreamId& tsid(it->first);
         const DescriptorList& dlist(it->second.descs);
 
         // Loop on all descriptors for the current TS
         for (size_t i = 0; i < dlist.count(); ++i) {
             // Try to get delivery system information from current descriptor
-            TunerParametersPtr tp(TunerParameters::FromDeliveryDescriptor(*dlist[i]));
-            if (!tp.isNull()) {
+            ModulationArgs tp;
+            if (tp.fromDeliveryDescriptor(duck, *dlist[i], tsid.transport_stream_id)) {
 
                 // Output --dvb-options.
                 if (_dvb_options) {
@@ -383,7 +387,7 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
                     if (_use_variable) {
                         *_output << _variable_prefix << int(tsid.transport_stream_id) << "=\"";
                     }
-                    *_output << tp->toPluginOptions(true);
+                    *_output << tp.toPluginOptions(true);
                     if (_use_variable) {
                         *_output << "\"";
                     }
@@ -394,7 +398,7 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
                 if (_save_channel_file || _update_channel_file) {
                     // Get or create network description in channel database.
                     // Use tuner type from delivery descriptor.
-                    ChannelFile::NetworkPtr net(_channels.networkGetOrCreate(nit.network_id, tp->tunerType()));
+                    ChannelFile::NetworkPtr net(_channels.networkGetOrCreate(nit.network_id, TunerTypeOf(tp.delivery_system.value(DS_UNDEFINED))));
                     // Get or create TS description in channel database.
                     ChannelFile::TransportStreamPtr ts(net->tsGetOrCreate(tsid.transport_stream_id));
                     // Do not reset services in TS, keep existing if any, just update tuning info.

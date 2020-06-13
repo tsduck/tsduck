@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSUnit - A simple C++ unitary test framework.
-// Copyright (c) 2019, Thierry Lelegard
+// Copyright (c) 2019-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -244,7 +244,7 @@ namespace tsunit {
 //! @see TSUNIT_TEST_BEGIN
 //!
 #define TSUNIT_TEST(method)  \
-            suite->addTestCase(new tsunit::TestCaseWrapper<_TestClass>(#method, &_TestClass::method, instance));
+            suite->addTestCase(new tsunit::TestCaseWrapper<_TestClass>(#method, &_TestClass::method, instance))
 
 //!
 //! Add a test method which should raise an exception to the test suite inside a test class.
@@ -254,7 +254,7 @@ namespace tsunit {
 //! @see TSUNIT_TEST_BEGIN
 //!
 #define TSUNIT_TEST_EXCEPTION(method, exceptclass)  \
-            suite->addTestCase(new tsunit::TestExceptionWrapper<_TestClass, exceptclass>(#method, #exceptclass, &_TestClass::method, instance, __FILE__, __LINE__));
+            suite->addTestCase(new tsunit::TestExceptionWrapper<_TestClass, exceptclass>(#method, #exceptclass, &_TestClass::method, instance, __FILE__, __LINE__))
 
 //!
 //! End of the test suite inside a test class.
@@ -289,6 +289,15 @@ namespace tsunit {
 //! @param cond A condition to assert.
 //!
 #define TSUNIT_ASSERT(cond) (tsunit::Assertions::condition((cond), #cond, __FILE__, __LINE__))
+
+//!
+//! Assume a condition, report failure but do not abort the test and do not mark as failed when false.
+//! This is a replacement for TSUNIT_ASSERT when the condition cannot always be enforced
+//! but of timing issues for instances.
+//! @hideinitializer
+//! @param cond A condition to assert.
+//!
+#define TSUNIT_ASSUME(cond) (tsunit::Assertions::assumption((cond), #cond, __FILE__, __LINE__))
 
 //!
 //! Assert that an expression has some expected value, mark the test as failed when different.
@@ -430,9 +439,9 @@ namespace tsunit {
         bool run(TestSuite* suite = nullptr, TestCase* test = nullptr);
         size_t getPassedCount() const { return _passedCount; }
         size_t getFailedCount() const { return _failedCount; }
-        std::ostream& out() { return _out; }
+        static std::string getCurrentTestName() { return _currentTestName; }
     private:
-        std::ostream& _out;
+        static std::string _currentTestName;
         size_t _passedCount;
         size_t _failedCount;
         TestRunner(TestRunner&&) = delete;
@@ -488,6 +497,9 @@ namespace tsunit {
     template<typename T, typename std::enable_if<std::is_unsigned<typename underlying_type<T>::type>::value>::type* = nullptr>
     std::string toString(T value) { return toStringImpl<unsigned long long>(value, "%llu"); }
 
+    template<typename T>
+    std::string toString(const T* value) { return toStringImpl<size_t>(reinterpret_cast<size_t>(value), "0x%zX"); }
+
     // Explicitly convert UTF-16 to UTF-8
     std::string convertFromUTF16(const std::u16string& u16);
 
@@ -502,15 +514,18 @@ namespace tsunit {
     {
     private:
         static volatile size_t _passedCount;
-        static volatile size_t _failedCount;
+        static volatile size_t _failedAssertionsCount;
+        static volatile size_t _failedAssumptionsCount;
     public:
         // Assertion counts.
         static size_t getPassedCount() { return _passedCount; }
-        static size_t getFailedCount() { return _failedCount; }
+        static size_t getFailedAssertionsCount() { return _failedAssertionsCount; }
+        static size_t getFailedAssumptionsCount() { return _failedAssumptionsCount; }
 
         // Assertion functions.
         [[noreturn]] static void fail(const std::string& message, const char* sourcefile, int linenumber);
         static void condition(bool cond, const std::string& expression, const char* sourcefile, int linenumber);
+        static void assumption(bool cond, const std::string& expression, const char* sourcefile, int linenumber);
 
         template<typename CHAR>
         static void equalString(const std::basic_string<CHAR>& expected, const std::basic_string<CHAR>& actual, const char* sourcefile, int linenumber);
@@ -539,7 +554,25 @@ namespace tsunit {
         {
             equalString(std::u16string(expected), std::u16string(actual), sourcefile, linenumber);
         }
+
+        // Assert equal for pointer types.
+        template<typename T>
+        static void equal(const T* expected, const T* actual, const std::string& estring, const std::string& vstring, const char* sourcefile, int linenumber);
     };
+
+    // Specialization for char C-strings.
+    template<>
+    inline void Assertions::equal<char>(const char* expected, const char* actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
+    {
+        equalString(std::string(expected), std::string(actual), sourcefile, linenumber);
+    }
+
+    // Specialization for char16_t C-strings.
+    template<>
+    inline void Assertions::equal<char16_t>(const char16_t* expected, const char16_t* actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
+    {
+        equalString(std::u16string(expected), std::u16string(actual), sourcefile, linenumber);
+    }
 }
 
 // Out-of-line implementation of "large" templates.
@@ -589,7 +622,6 @@ void tsunit::TestExceptionWrapper<TEST,EXCEP,T1,T2>::run()
     }
 }
 
-
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
@@ -619,9 +651,29 @@ void tsunit::Assertions::equal(const ETYPE& expected, const ATYPE& actual, const
         ++_passedCount;
     }
     else {
-        ++_failedCount;
+        ++_failedAssertionsCount;
         const std::string details1("expected: " + toString(expected) + " (\"" + estr + "\")");
         const std::string details2("actual:   " + toString(actual) + " (\"" + astr + "\")");
+        throw Failure("incorrect value", details1 + "\n" + details2, file, line);
+    }
+}
+
+template<typename T>
+void tsunit::Assertions::equal(const T* expected, const T* actual, const std::string& estr, const std::string& astr, const char* file, int line)
+{
+    if (expected == actual) {
+        ++_passedCount;
+    }
+    else {
+        ++_failedAssertionsCount;
+        const long long addrdiff = static_cast<long long>(reinterpret_cast<const char*>(actual) - reinterpret_cast<const char*>(expected));
+        const long long typediff = static_cast<long long>(actual - expected);
+        const std::string details1("expected: " + toString(expected) + " (\"" + estr + "\")");
+        std::string details2("actual:   " + toString(actual) + toStringImpl(addrdiff, " (%+lld bytes"));
+        if (addrdiff != typediff) {
+            details2.append(toStringImpl(typediff, ", %+'lld elements"));
+        }
+        details2.append(", \"" + astr + "\")");
         throw Failure("incorrect value", details1 + "\n" + details2, file, line);
     }
 }
@@ -633,7 +685,7 @@ void tsunit::Assertions::equalString(const std::basic_string<CHAR>& expected, co
         ++_passedCount;
     }
     else {
-        ++_failedCount;
+        ++_failedAssertionsCount;
         size_t diff = 0;
         while (diff < expected.size() && diff < actual.size() && expected[diff] == actual[diff]) {
             diff++;

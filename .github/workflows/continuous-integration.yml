@@ -1,0 +1,220 @@
+#-----------------------------------------------------------------------------
+#
+#  TSDuck - The MPEG Transport Stream Toolkit
+#  Copyright (c) 2005-2020, Thierry Lelegard
+#  All rights reserved.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are met:
+#
+#  1. Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+#  THE POSSIBILITY OF SUCH DAMAGE.
+#
+#-----------------------------------------------------------------------------
+#
+#  GitHub Actions configuration file : Continuous Integration
+#
+#-----------------------------------------------------------------------------
+
+name: Continuous integration
+
+# Trigger the workflow on push or pull request, for master branch only.
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  linux-gcc:
+    name: Linux with gcc
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Install dependencies
+      run: build/install-prerequisites.sh
+    - name: Build TSDuck
+      run: make -j5
+    - name: Check built version
+      run: source build/setenv.sh && tsversion --version=all
+    - name: Run unitary tests
+      run: make test
+    - name: Download test suite
+      run: |
+        mkdir -p ../tsduck-test
+        curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
+    - name: Run test suite
+      run: |
+        make test-suite && status=$? || status=$?
+        cd ../tsduck-test
+        for f in $(find tmp -name '*.diff'); do
+            echo "==== $f";
+            cat "$f"
+        done
+        exit $status
+
+  linux-clang:
+    name: Linux with clang
+    runs-on: ubuntu-latest
+    env:
+      CC: clang++
+      CXX: clang++
+    steps:
+    - uses: actions/checkout@master
+    - name: Install dependencies
+      run: build/install-prerequisites.sh
+    - name: Build TSDuck
+      run: make -j5
+    - name: Check built version
+      run: source build/setenv.sh && tsversion --version=all
+    - name: Run unitary tests
+      run: make test
+    - name: Download test suite
+      run: |
+        mkdir -p ../tsduck-test
+        curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
+    - name: Run test suite
+      run: |
+        make test-suite && status=$? || status=$?
+        cd ../tsduck-test
+        for f in $(find tmp -name '*.diff'); do
+            echo "==== $f";
+            cat "$f"
+        done
+        exit $status
+
+  doxygen:
+    name: Doxygen documentation
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Install dependencies
+      run: build/install-prerequisites.sh
+    - name: Build TSDuck documentation
+      run: make doxygen
+
+  macos-clang:
+    name: macOS with clang
+    runs-on: macos-latest
+    env:
+      CC: clang++
+      CXX: clang++
+    steps:
+    - uses: actions/checkout@master
+    - name: Install dependencies
+      run: build/install-prerequisites.sh
+    - name: Check dependencies
+      run: |
+        gsed --version
+        ggrep --version
+        dos2unix --version
+    - name: Build TSDuck
+      run: |
+        build/setenv.sh --display
+        make -j5
+        build/setenv.sh --display
+    - name: Temporary troubleshooting step for intermittent issue on GitHub macOS runners
+      run: |
+        build/setenv.sh --display
+        ls $(build/setenv.sh --display)
+        ls -l $(build/setenv.sh --display)/tsversion
+        source build/setenv.sh; echo $PATH; which tsversion
+        source build/setenv.sh; tsversion --version=all
+    - name: Check built version
+      run: source build/setenv.sh && tsversion --version=all
+    - name: Run unitary tests
+      run: make test
+    - name: Download test suite
+      run: |
+        mkdir -p ../tsduck-test
+        curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
+    - name: Run test suite
+      run: |
+        make test-suite && status=$? || status=$?
+        cd ../tsduck-test
+        for f in $(find tmp -name '*.diff'); do
+            echo "==== $f";
+            cat "$f"
+        done
+        exit $status
+
+  windows-64-msvc:
+    name: Windows 64-bit with VC++
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Install dependencies
+      run: build/install-prerequisites.ps1 -GitHubActions -NoPause
+    - name: Build TSDuck
+      run: build/build.ps1 -Win64 -Release -Parallel 5 -NoLowPriority -NoPause
+    - name: Check built version
+      run: bin/Release-x64/tsversion.exe --version=all
+    - name: Run unitary tests
+      run: bin/Release-x64/utests-tsduckdll.exe
+    - name: Run unitary tests (static)
+      run: bin/Release-x64/utests-tsducklib.exe
+    - name: Download test suite
+      run: |
+        $ProgressPreference = 'SilentlyContinue'
+        Invoke-WebRequest -UseBasicParsing -Uri https://github.com/tsduck/tsduck-test/archive/master.zip -OutFile test.zip
+        Expand-Archive test.zip -DestinationPath . -Force
+        Move-Item tsduck-test-master ../tsduck-test -Force
+    - name: Run test suite
+      shell: bash
+      run: |
+        cd ../tsduck-test
+        ./run-all-tests.sh --dev && status=$? || status=$?
+        for f in $(find tmp -name '*.diff'); do
+            echo "==== $f";
+            cat "$f"
+        done
+        exit $status
+
+  windows-32-msvc:
+    name: Windows 32-bit with VC++
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Install dependencies
+      run: build/install-prerequisites.ps1 -GitHubActions -NoPause
+    - name: Build TSDuck
+      run: build/build.ps1 -Win32 -Release -Parallel 5 -NoLowPriority -NoPause
+    - name: Check built version
+      run: bin/Release-Win32/tsversion.exe --version=all
+    - name: Run unitary tests
+      run: bin/Release-Win32/utests-tsduckdll.exe
+    - name: Run unitary tests (static)
+      run: bin/Release-Win32/utests-tsducklib.exe
+    - name: Download test suite
+      run: |
+        $ProgressPreference = 'SilentlyContinue'
+        Invoke-WebRequest -UseBasicParsing -Uri https://github.com/tsduck/tsduck-test/archive/master.zip -OutFile test.zip
+        Expand-Archive test.zip -DestinationPath . -Force
+        Move-Item tsduck-test-master ../tsduck-test -Force
+    - name: Run test suite
+      shell: bash
+      run: |
+        cd ../tsduck-test
+        ./run-all-tests.sh --dev32 && status=$? || status=$?
+        for f in $(find tmp -name '*.diff'); do
+            echo "==== $f";
+            cat "$f"
+        done
+        exit $status

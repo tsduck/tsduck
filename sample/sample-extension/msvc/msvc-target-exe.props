@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Must be included in .vcxproj to create an executable application -->
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-base.props" />
+  </ImportGroup>
+
+  <PropertyGroup Label="Configuration">
+    <TargetExt>.exe</TargetExt>
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>TS_WINVER_FILETYPE=VFT_APP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ResourceCompile Include="tsduck-extension-foo.rc" />
+  </ItemGroup>
+
+</Project>

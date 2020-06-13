@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Definition of the tables and descriptors for the TSDuck "foo" extension -->
+<tsduck>
+
+  <!-- Definitions of tables -->
+  <_tables>
+    <FOOT version="uint5, default=0"
+          current="bool, default=true"
+          foo_id="uint16, required"
+          name="string, optional">
+      <_any in="_descriptors"/>
+    </FOOT>
+  </_tables>
+
+  <!-- Definitions of descriptors -->
+  <_descriptors>
+    <foo_descriptor name="string, required"/>
+  </_descriptors>
+
+</tsduck>

@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,8 @@
 #include "tsTDT.h"
 #include "tsSysUtils.h"
 #include "tsBinaryTable.h"
+#include "tsDuckContext.h"
+#include "tsTSPacket.h"
 #include "tsCerrReport.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
@@ -174,7 +176,7 @@ void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, cons
 
 void SectionFileTest::testConfigurationFile()
 {
-    const ts::UString conf(ts::SearchConfigurationFile(u"tsduck.tables.model.xml"));
+    const ts::UString conf(ts::SearchConfigurationFile(TS_XML_TABLES_MODEL));
     debug() << "SectionFileTest::testConfigurationFile: " << conf << std::endl;
     TSUNIT_ASSERT(ts::FileExists(conf));
 }

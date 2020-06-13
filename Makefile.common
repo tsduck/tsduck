@@ -1,6 +1,6 @@
 #-----------------------------------------------------------------------------
 #
-#  Copyright (c) 2005-2019, Thierry Lelegard
+#  Copyright (c) 2005-2020, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -45,6 +45,13 @@
 #
 #  This common makefile also defines a few common targets which are usable
 #  everywhere. See the section "Common targets" below.
+#
+#  All binaries are built into one single root directory named
+#  bin/release|debug-arch-hostname where bin is located in the top-level
+#  directory, where this Makefile.common is located. The variable $(BINDIR)
+#  points to this directory. The variable $(OBJDIR) points to the directory
+#  where object files are stored. This is, by default, the same place as
+#  $(BINDIR), except when a local makefile defines $(OBJSUBDIR).
 #
 #-----------------------------------------------------------------------------
 #
@@ -129,6 +136,12 @@
 #  ARFLAGS_EXTRA
 #    Additional options for the "ar" command.
 #    This variable can be defined after inclusion of this makefile.
+#
+#  BINDIR_PREFIX
+#    Fixed prefix to add to BINDIR subdirectory name.
+#
+#  BINDIR_SUFFIX
+#    Fixed suffix to add to BINDIR subdirectory name.
 #
 #  CFLAGS_EXTRA
 #    Additional options for the C compiler.
@@ -293,11 +306,10 @@
 #    non-standard "clean" targets, it should set them in NODEPS before
 #    inclusion of this make file.
 #
-#  OBJDIR_PREFIX
-#    Fixed prefix to add to OBJDIR variable.
-#
-#  OBJDIR_SUFFIX
-#    Fixed suffix to add to OBJDIR variable.
+#  OBJSUBDIR
+#    A subdirectory name to store object files below $(BINDIR). By default,
+#    object files (compilation products, not final executable and shared
+#    binaries) are stored in $(BINDIR).
 #
 #  RECURSE_ORDER
 #    Define which subdirectories should be used in which order in the
@@ -333,13 +345,18 @@
 #    Optional installation prefix. If not defined, will be set on output.
 #    See SYSPREFIX in "Output variables".
 #
-#  TARGET_ARCH
-#    Contains the target architecture for gcc. Defaults to -march=`uname -m`.
-#    Should be overriden if your `uname -m` is not recognized by gcc.
+#  TARGET_FLAGS
+#    Contains the target architecture options for gcc. Empty for a native
+#    build.
 #
 #  TEXI2DVI
 #    Contains the absolute path of the texi2dvi utility (part of Texinfo).
 #    If empty, texi2dvi is searched in $PATH.
+#
+#  USRLIBDIR
+#    Optional name of the library directory for the target architecture.
+#    The default is either $(SYSPREFIX)/lib or $(SYSPREFIX)/lib64.
+#    See USRLIBDIR in "Output variables".
 #
 #-----------------------------------------------------------------------------
 #
@@ -351,6 +368,12 @@
 #  ARFLAGS
 #    Options which are applied to the archiver (ar) when adding a module into
 #    a static library.
+#
+#  BINDIR
+#    Name of the directory which receives final binary files (executable or
+#    shared binaries). Typically either "bin/release-{arch}-{hostname}" or
+#    "bin/debug-{arch}-{hostname}". See also input variables BINDIR_PREFIX and
+#    BINDIR_SUFFIX.
 #
 #  CFLAGS
 #    Options which are applied to C compilations.
@@ -436,6 +459,9 @@
 #    List of all header names, that is to say the list of all "f" for which
 #    a source file f.h exists.
 #
+#  HOSTNAME
+#    Simple name of the local host.
+#
 #  LDFLAGS
 #    Options which are applied to the linker.
 #
@@ -484,9 +510,9 @@
 #    the source files.
 #
 #  OBJDIR
-#    Name of the subdirectory which receives all generated binary files.
-#    Typically either "release-{arch}" or "debug-{arch}".
-#    See also input variables OBJDIR_PREFIX and OBJDIR_SUFFIX.
+#    Name of the directory which receives all object files (.o files, direct
+#    compilation products, not final executable or shared binaries).
+#    See also input variable OBJSUBDIR.
 #
 #  OBJS
 #    All object files (.o) to build, for all C/C++ source files.
@@ -551,9 +577,13 @@
 #  TEXI2PDF_FLAGS
 #    Texi2dvi flags used in .texi to .pdf transformation.
 #
+#  UDEVDIR
+#    Name of the directory for system-defined udev rules.
+#
 #  USRLIBDIR
 #    Name of the library directory for the target architecture. This is
-#    $(SYSPREFIX)/lib64 for Linux x86_64 and $(SYSPREFIX)/lib elsewhere.
+#    $(SYSPREFIX)/lib64 for Linux x86_64 where /usr/lib64/libc.so* exists
+#    and $(SYSPREFIX)/lib elsewhere.
 #
 #-----------------------------------------------------------------------------
 
@@ -606,7 +636,7 @@ ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
 SUBDIRS = $(sort $(patsubst %/,%,$(wildcard */)))
 
 # List of subdirectories to ignore in make recursion.
-NORECURSE_SUBDIRS += debug release debug-% release-% Debug Release Debug-% Release-% .vs ipch %.t2d .git cov-int
+NORECURSE_SUBDIRS += tmp bin debug release debug-% release-% Debug Release Debug-% Release-% .vs ipch %.t2d .git cov-int
 
 # Actual recurse order. If the user did not define RECURSE_ORDER, use all
 # subdirectories, except those for which we know there is nothing to make.
@@ -616,10 +646,11 @@ RECURSE_SUBDIRS = $(filter $(SUBDIRS),$(filter-out $(NORECURSE_SUBDIRS),$(if $(R
 # make targets in the subdirectories (useful for "all" or "clean").
 RECURSE = for dir in $(RECURSE_SUBDIRS); do $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| exit $$?); done
 
-# Operating system, architecture.
+# Operating system, architecture, host name.
 ifndef LOCAL_OS
     export LOCAL_OS   := $(shell uname -s | tr A-Z a-z)
     export LOCAL_ARCH := $(shell uname -m)
+    export HOSTNAME   := $(shell hostname | $(SED) -e 's/\..*//')
 endif
 ifeq ($(LOCAL_OS),darwin)
     MACOS = true
@@ -666,16 +697,16 @@ endif
 # Target architecture is skipped on ARM because of numerous variants.
 ifdef M32
     override MAIN_ARCH   := i386
-    override TARGET_ARCH := -march=i686
+    override TARGET_FLAGS := -march=i686
     CFLAGS_M32  := -m32
     LDFLAGS_M32 := -m32
 else ifndef MAIN_ARCH
-    MAIN_ARCH   := $(shell uname -m | $(SED) -e 's/i.86/i386/' -e 's/arm.*/arm/')
-    TARGET_ARCH := $(if $(subst arm,,$(MAIN_ARCH)),-march=$(LOCAL_ARCH:x86_64=x86-64),)
-    CFLAGS_M32  :=
-    LDFLAGS_M32 :=
+    MAIN_ARCH    := $(shell uname -m | $(SED) -e 's/i.86/i386/' -e 's/arm.*/arm/')
+    TARGET_FLAGS :=
+    CFLAGS_M32   :=
+    LDFLAGS_M32  :=
 endif
-export MAIN_ARCH TARGET_ARCH
+export MAIN_ARCH TARGET_FLAGS
 
 # Use $(CC) for compilation. Use $(GCC) to explicitly reference GCC.
 GCC ?= gcc
@@ -698,7 +729,7 @@ else
     $(if $(CROSS_TARGET),,$(error CROSS is defined but no cross-compilation tool-chain was found))
     # Adjust target. Use "arm" as main target if CROSS_TARGET starts with "arm".
     override MAIN_ARCH := $(if $(findstring @arm,@$(CROSS_TARGET)),arm,$(CROSS_TARGET))
-    override TARGET_ARCH :=
+    override TARGET_FLAGS :=
     override GCC_VERSION_DONE :=
     # Redirect build tools.
     CC  = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-gcc
@@ -732,6 +763,8 @@ ifeq ($(GCC_VERSION_DONE),)
         unexport GCC_6_OR_MORE
     endif
     export LLVM_VERSION := $(shell clang -dumpversion 2>/dev/null)
+    export USE_GCC := $(if $(shell $(CXX) --version 2>/dev/null | grep -i -e gcc -e g++),true,)
+    export USE_LLVM := $(if $(shell $(CXX) --version 2>/dev/null | grep -i clang),true,)
 endif
 
 # When C++ source files are present, automatically define LDCXX.
@@ -781,11 +814,11 @@ CXXFLAGS_INCLUDES += $(CFLAGS_INCLUDES)
 COMMON_WARNINGS = -Werror
 CFLAGS_WARNINGS = $(COMMON_WARNINGS)
 CXXFLAGS_WARNINGS = $(COMMON_WARNINGS)
-ifdef MACOS
-    COMMON_WARNINGS += -Weverything
+ifdef USE_LLVM
+    COMMON_WARNINGS += -Weverything -Wno-c++98-compat-pedantic
 else
     COMMON_WARNINGS += -Wall -Wextra
-    COMMON_WARNINGS += -Wformat-nonliteral -Wformat-security -Wswitch-default  -Wuninitialized \
+    COMMON_WARNINGS += -Wformat-nonliteral -Wformat-security -Wswitch-default -Wuninitialized \
                        -Wfloat-equal -Wundef -Wpointer-arith
     CFLAGS_WARNINGS += -Wstrict-prototypes -Wmissing-prototypes -Winit-self -Wtraditional \
                        -Wbad-function-cast -Wc++-compat
@@ -837,17 +870,22 @@ LDLIBS += $(if $(LDCXX),-lstdc++,) -lpthread $(if $(MACOS),,-lrt) -lm
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using FLAGS_EXTRA.
 CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_SECURITY) $(CFLAGS_INCLUDES) \
-           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CFLAGS_STANDARD) $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CFLAGS_EXTRA)
+           $(TARGET_FLAGS) $(CFLAGS_FPIC) $(CFLAGS_STANDARD) $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CFLAGS_EXTRA)
 CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) \
-           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_STANDARD) $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)
-LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA)
+           $(TARGET_FLAGS) $(CFLAGS_FPIC) $(CXXFLAGS_STANDARD) $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)
+LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_FLAGS) $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA)
 ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
 # Output subdirectories in each project directory
 ifdef DEBUG
-    OBJDIR = $(OBJDIR_PREFIX)debug-$(MAIN_ARCH)$(OBJDIR_SUFFIX)
+    BINDIR = $(ROOTDIR)/bin/$(BINDIR_PREFIX)debug-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
 else
-    OBJDIR = $(OBJDIR_PREFIX)release-$(MAIN_ARCH)$(OBJDIR_SUFFIX)
+    BINDIR = $(ROOTDIR)/bin/$(BINDIR_PREFIX)release-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
+endif
+ifdef OBJSUBDIR
+    OBJDIR = $(BINDIR)/$(OBJSUBDIR)
+else
+    OBJDIR = $(BINDIR)
 endif
 
 # Implicit search directives.
@@ -861,11 +899,16 @@ ifneq ($(CVPATH)$(CXXVPATH),)
     vpath %.h $(CVPATH) $(CXXVPATH)
 endif
 
+# Check if we are on a x86_64 Linux distro using /usr/lib64 as library path.
+# Define USELIB64 as "true" or empty.
+USELIB64 := $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),,$(if $(wildcard /usr/lib64/libc.so*),true,))
+
 # On macOS, /usr/local is used without system privileges.
-# On x86_64, the libraries are installed in lib64, not lib.
+# On some x86_64 distros, the libraries are installed in lib64, not lib.
 SYSPREFIX ?= $(if $(MACOS),/usr/local,/usr)
 ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
-USRLIBDIR ?= $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),$(SYSPREFIX)/lib,$(SYSPREFIX)/lib64)
+USRLIBDIR ?= $(if $(USELIB64),$(SYSPREFIX)/lib64,$(SYSPREFIX)/lib)
+UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib/udev/rules.d)
 
 # RPM building.
 RPMBUILD     ?= rpmbuild
@@ -880,7 +923,7 @@ MODULES_MAIN := $(sort $(filter-out $(HEADERS),$(MODULES)))
 MODULES_LIB  := $(sort $(filter-out $(MODULES_MAIN),$(MODULES)))
 OBJS_MAIN    := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_MAIN)))
 OBJS_LIB     := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_LIB)))
-EXECS        := $(addprefix $(OBJDIR)/,$(MODULES_MAIN))
+EXECS        := $(addprefix $(BINDIR)/,$(MODULES_MAIN))
 
 # Keep intermediate files, avoid using "ar" again.
 .SECONDARY:
@@ -906,10 +949,10 @@ $(OBJDIR)/%.o: %.cpp
 (%): %
 	@echo '  [AR] $<'; \
 	$(ARLOCK) $(AR) $(ARFLAGS) $@ $<
-$(OBJDIR)/%: $(OBJDIR)/%.o
+$(BINDIR)/%: $(OBJDIR)/%.o
 	@echo '  [LD] $@'; \
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
-$(OBJDIR)/%.so: $(OBJDIR)/%.o
+$(BINDIR)/%.so: $(OBJDIR)/%.o
 	@echo '  [CC] $@'; \
 	$(CC) $(CFLAGS) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS) -shared -o $@
 
@@ -944,7 +987,7 @@ endif
 clean:
 	@echo '  [CLEAN] $(CURDIR)'; \
 	rm -rf $(EXTRA_CLEAN) *~ \
-	    *.o *.ko *.a *.gcov *.dep *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
+	    *.o *.ko *.a *.gcov *.dep tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
 	    $(OBJDIR)/*.o $(OBJDIR)/*.ko $(OBJDIR)/*.a $(OBJDIR)/*.dep $(OBJDIR)/*.tmp $(OBJDIR)/*.out \
 	    $(OBJDIR)/*.log $(OBJDIR)/*.tlog $(OBJDIR)/core $(OBJDIR)/core.* $(OBJDIR)/vgcore.*
 	+@$(RECURSE)
@@ -959,7 +1002,7 @@ distclean: clean
 
 # List of file and directory patterns for non-source files.
 NOSOURCE = \
-    .git .svn *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* doxy doxygen *.t2d \
+    .git .svn *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* [Bb]in doxy doxygen *.t2d \
     *.o *.so *.ko *.a *.lib *.obj *.exe *.dll *.gcov *.dep .kdbgrc.* \
     tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
     .vs ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user *.user.* \
@@ -968,10 +1011,19 @@ NOSOURCE = \
     *~ *.bak *.autosave cov-int
 
 # Source code documentation generation.
+# - Make sure that the output directory is created (doxygen does not create parent directories).
+# - Delete empty subdirectories (many of them created for nothing in case of hierachical output).
 DOXYGEN ?= $(call F_COMMAND,doxygen,doxygen)
 .PHONY: doxygen
 doxygen:
-	@[ -e Doxyfile ] && $(DOXYGEN) || $(RECURSE)
+	@if [ -e Doxyfile ]; then \
+	    outdir=$$($(GREP) '^ *OUTPUT_DIRECTORY *=' Doxyfile | tail -1 | $(SED) -e 's/.*= *//' -e 's/ *$$//'); \
+	    [ -n "$$outdir" ] && mkdir -p "$$outdir"; \
+	    $(DOXYGEN) $(DOXYGEN_FLAGS); \
+	    [ -n "$$outdir" ] && find "$$outdir" -type d -empty -delete; \
+	else \
+	    $(RECURSE) \
+	fi
 
 # Texinfo document generation.
 MAKEINFO ?= makeinfo
@@ -1026,7 +1078,7 @@ flawfinder:
 # Static code analysis: Run scan-build on the source code tree starting at current directory.
 SCANBUILD ?= scan-build
 SCANBUILD_SOURCES ?= $(CURDIR)
-SCANBUILD_FLAGS += -o $(OBJDIR)
+SCANBUILD_FLAGS += -o $(BINDIR)
 .PHONY: scan-build
 scan-build:
 	$(SCANBUILD) $(SCANBUILD_FLAGS) $(MAKE) -C $(SCANBUILD_SOURCES)
@@ -1044,9 +1096,9 @@ cloc:
 # Utilities: display predefined macros for C and C++
 .PHONY: cmacros cxxmacros
 cmacros:
-	@$(CPP) -x c -dM /dev/null | sort
+	@$(CPP) $(CFLAGS) -x c -dM /dev/null | sort
 cxxmacros:
-	@$(CPP) -x c++ -dM /dev/null | sort
+	@$(CPP) $(CXXFLAGS) -x c++ -dM /dev/null | sort
 
 # Cleanup Windows oddities in source files.
 # Many IDE's indent with tabs, and tabs are 4 chars wide.

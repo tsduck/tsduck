@@ -2,21 +2,146 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.19-1383
+VERSION 3.22-1851
 
 [IMP] Improvements on existing commands and plugins:
 
+  * The "tsp" command now keeps track of input time-stamps for each packet
+    and propagate the information to all plugins (see improvement in plugin
+    "pcrverify").
+  * New options in exiting commands and plugins:
+    - Option --format in plugins "file", "fork" (input, output and packet
+      processor) and plugins "merge", "mux".
+    - Option --size-of-packet in "tsftrunc".
+    - Options --input-synchronous and --jitter-unreal in plugin "pcrverify".
+
+[BUG] Bug fixes:
+
+  * Fixed issue #587: Due to an intermediate integer overflow, the report PCR
+    jitters were sometimes completely incorrect.
+
+-------------------------------------------------------------------------------
+
+VERSION 3.21-1811
+
+[NEW] New commands and plugins:
+
+  * Added command "tscharset" to perform manual string encoding and decoding
+    using various DVB and ARIB character sets.
+
+[IMP] Improvements on existing commands and plugins:
+
+  * LNB's for satellite reception are now preconfigured from an XML file.
+    Polarization-controlled LNB's are now supported. Added "default.lnb"
+    in global configuration file.
+  * General improvement of Japanese TV support:
+    - Japanese character sets as defined in ARIB STD-B24.
+    - Partial ISDB signalization, as defined in ARIB STD-B10.
+    - Option --japan triggers suitable defaults for Japanese TV.
+  * New options in exiting commands and plugins:
+    - Option --initial-input-packets in "tsp".
+    - Options --reopen-on-error, --max-retry and --retry-interval in
+      output plugin "file".
+    - Option --stream-id in "tsscan" and plugins "dvb", "filter".
+    - Option --japan in "tsanalyze", "tspsi", "tstabcomp", "tstabdump",
+      "tstables", "tsterinfo" and plugins "analyze", "psi", "tables", "dvb".
+    - Options --default-charset, --europe and --japan to "tspacketize",
+      "tsscan" and plugins "aes", "clear", "descrambler", "inject", "nitscan",
+      "pmt", "rmsplice", "scrambler", "sdt", "spliceinject", "svremove",
+      "svrename", "teletext", "zap".
+    - Option --drop-to-maintain-preload in output plugin "dektec".
+    - Option --nit-scan in "tsscan" (UHF-band scan is no longer the default,
+      exactly one of --nit-scan, --uhf-band, --vhf-band shall be specified).
+
+[BUG] Bug fixes:
+
+  * Fixed issue #515: In some cases, when multi-section long tables were
+    injected, after some time, sections were not always inserted in the
+    increasing order of section numbers.
+
+-------------------------------------------------------------------------------
+
+VERSION 3.20-1686
+
+[NEW] New commands and plugins:
+
+  * Added command "tspcontrol" to send control commands to a running "tsp".
+  * Added input and output plugins "srt" for Secure Reliable Transport
+    (code contribution from Anthony Delannoy). This plugin is not compiled
+    on all platforms (subject to availability of libsrt).
+  * For developers, the features of "tsp" and "tsswitch" are now easily
+    accessible from the TSDuck library. See classes ts::TSProcessor and
+    ts::InputSwitcher.
+
+[IMP] Improvements on existing commands and plugins:
+
+  * Added option --control-port to "tsp" and other related --control options
+    for use with the new command "tspcontrol".
+  * Added option --eit-date-only to plugin "timeref".
+  * Option --buffer-size-mb of "tsp" now accepts decimal values (eg. "0.5").
+  * Added options --local-time-offset, --next-change, --next-time-offset,
+    --only-country name and --only-region to plugin "timeref".
+  * The command "tsdump" now displays the splice countdown when there is one.
+  * Added options --has-splice-countdown, --splice-countdown,
+    --min-splice-countdown and --max-splice-countdown to plugin "filter".
+  * Added option --label-close to output plugin "hls".
+  * Added option --ignore-absent to plugin "zap".
+
+[BUG] Bug fixes:
+
+  * In input plugin "hls", when the sub-playlists or media segments had
+    relative URI's with absolute file path, the sub-playlists or segments
+    were not correctly loaded.
+  * On Unix systems (Linux, macOS), the option --append was not correctly
+    handled in plugin "file". The file was rewritten from the beginning.
+  * In plugin "pes", when a NALunit contained more than one SEI message,
+    only the first one was reported.
+  * In plugin "spliceinject", the non-immediate time_signal() commands were
+    immediately injected. Now, they are processed the same way as non-immediate
+    splice_insert() commands.
+  * In command "tsp", when the number of initial null packets (--add-start-
+    stuffing) was larger than half the global buffer, the command terminated
+    before having read the input (an end of file was incorrectly assumed).
+
+-------------------------------------------------------------------------------
+
+VERSION 3.19-1516
+
+[NEW] New commands and plugins:
+
+  * Added plugin "timeshift" (delay packet transmission).
+
+[IMP] Improvements on existing commands and plugins:
+
+  * Added option --receive-timeout to "tsp".
   * Added options --aes-cbc, --aes-ctr, --iv, --ctr-counter-bits,
     --output-cw-file to plugins "scrambler" and "descrambler".
   * Added option --swap-cw to plugin "descrambler".
-  * Added default CAS selection options --conax, --irdeto, --mediaguard,
-    --nagravision, --nds, --safeaccess, --viaccess, --widevine to "tspsi",
-    "tstabdump", "tstables" and plugins "psi", "tables".
+  * Added default CAS selection options --default-cas-id, --conax, --irdeto,
+    --mediaguard, --nagravision, --nds, --safeaccess, --viaccess, --widevine
+    to "tspsi", "tstabdump", "tstables" and plugins "psi", "tables".
+  * Added option --extensions to "tsversion" and "tstabcomp".
+  * Complete ATSC signalization, as defined in A/65, is now supported.
+  * NorDig-private descriptors are supported.
+  * Added option --power-mode to "tsdektec" and output plugin "dektec".
+  * Added options --build-service-list-descriptors and --default-service-type
+    to plugin "nit".
+  * Added options --start and --stop to plugin "trigger".
+  * Added option --local-port to plugins "ip" (output) and "mpe".
+  * Service id or name is now optional in plugin "svrename". When omitted, the
+    default service is the first one in the PAT.
+  * On Linux, multi-standard tuners are now supported (for instance tuners
+    which support DVB-T and DVB-C). The options --delivery-system is used
+    to select the appropriate type. Multi-standard tuners are not supported
+    on Windows.
 
 [BUG] Bug fixes:
 
   * In plugin "hides", the bandwidth was incorrectly set to 5 MHz when 6 MHz
     was requested.
+  * In plugin "continuity", packets were incorrectly detected as duplicate
+    when they had the same continuity counter but distinct content.
+  * Fixed HEVC_video_descriptor to latest version of ISO 13818-1 standard.
 
 -------------------------------------------------------------------------------
 

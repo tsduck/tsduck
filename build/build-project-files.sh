@@ -2,7 +2,7 @@
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2019, Thierry Lelegard
+#  Copyright (c) 2005-2020, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -34,14 +34,12 @@
 #
 #  The following files are rebuilt:
 #
-#  - build/msvc/libtsduck-files.props
-#  - build/msvc/libtsduck-filters.props
 #  - build/qtcreator/libtsduck/libtsduck-files.pri
 #  - src/libtsduck/tsduck.h
-#  - src/libtsduck/tsTables.h
-#  - src/libtsduck/private/tsRefType.h
+#  - src/libtsduck/dtv/tsTables.h
+#  - src/libtsduck/dtv/private/tsRefType.h
 #
-#  See the PowerShell script Build-Project-Files.ps1 for a Windows equivalent.
+#  See the PowerShell script build-project-files.ps1 for a Windows equivalent.
 #
 #-----------------------------------------------------------------------------
 
@@ -62,9 +60,6 @@ MSVCDIR="$BUILDDIR/msvc"
 MS_RELPATH="..\\..\\src\\libtsduck\\"
 QT_RELPATH="../../../src/libtsduck/"
 
-# find(1) option to limit the search to one level.
-[[ $(uname -s) == Linux ]] && FIND1="-maxdepth 1" || FIND1="-depth 1"
-
 # On macOS, make sure that commands which were installed by Homebrew packages are in the path.
 [[ $(uname -s) == Darwin ]] && export PATH="$PATH:/usr/local/bin"
 
@@ -76,136 +71,37 @@ export LC_ALL=$LANG
 NL=$'\n'
 
 # Get all libtsduck files by type.
+# Syntax: GetSources type unix|windows|none [additional-find-arguments]
 GetSources()
 {
     local type="$1"; shift
-    local subdir="$1"; shift
+    local mode="$1"; shift
 
-    for f in $(find "$SRCDIR/$subdir" $FIND1 -type f -name "*.$type" "$@" | sort --ignore-case); do
-        echo "${PREFIX}$(basename $f)${SUFFIX}"
-    done
+    find "$SRCDIR" -type f -name "*.$type" "$@" |
+        (
+            case $mode in
+                unix)    sed -e "s|$SRCDIR/||" ;;
+                windows) sed -e "s|$SRCDIR/||" -e 's|/|\\|g' ;;
+                none)    sed -e "s|$SRCDIR/||" -e 's|.*/||' ;;
+                *)       cat ;;
+            esac
+        ) |
+        sort --ignore-case |
+        sed -e "s|^|${PREFIX}|" -e "s|\$|${SUFFIX}|"
 }
 
-# Generate includes based on doxygen group.
+# Generate includes based on doxygen group name (as in "@ingroup name").
+# Syntax: GetGroup name
 GetGroup()
 {
     local group="$1"; shift
-    local subdir="$1"; shift
     local name=""
 
-    for f in $(grep -l "@ingroup *$group" "$SRCDIR/$subdir/ts"*.h | grep -v -e /tsAbstract -e /tsVCT | sort --ignore-case); do
-        name=$(basename $f .h | sed -e 's/^ts//')
-        echo "${PREFIX}${name}${SUFFIX}"
-    done
-}
-
-# Generate the MS project file.
-GenerateMSProject()
-{
-    echo '<?xml version="1.0" encoding="utf-8"?>'
-    echo '<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">'
-    echo '  <ItemGroup>'
-    PREFIX="    <ClInclude Include=\"${MS_RELPATH}"
-    SUFFIX="\" />"
-    GetSources h "" ! -name "tsStaticReferences*"
-    PREFIX="    <ClInclude Include=\"${MS_RELPATH}private\\"
-    GetSources h private
-    PREFIX="    <ClInclude Include=\"${MS_RELPATH}windows\\"
-    GetSources h windows
-    echo '  </ItemGroup>'
-    echo '  <ItemGroup>'
-    PREFIX="    <ClCompile Include=\"${MS_RELPATH}"
-    GetSources cpp "" ! -name "tsStaticReferences*"
-    PREFIX="    <ClCompile Include=\"${MS_RELPATH}private\\"
-    GetSources cpp private
-    PREFIX="    <ClCompile Include=\"${MS_RELPATH}windows\\"
-    GetSources cpp windows
-    echo '  </ItemGroup>'
-    echo '</Project>'
-}
-
-# Generate the MS filters file.
-GenerateMSFilters()
-{
-    echo '<?xml version="1.0" encoding="utf-8"?>'
-    echo '<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">'
-    echo '  <ItemGroup>'
-    PREFIX="    <ClInclude Include=\"${MS_RELPATH}"
-    SUFFIX="\">${NL}      <Filter>Header Files</Filter>${NL}    </ClInclude>"
-    GetSources h "" ! -name "tsStaticReferences*"
-    PREFIX="    <ClInclude Include=\"${MS_RELPATH}private\\"
-    GetSources h private
-    PREFIX="    <ClInclude Include=\"${MS_RELPATH}windows\\"
-    GetSources h windows
-    echo '  </ItemGroup>'
-    echo '  <ItemGroup>'
-    PREFIX="    <ClCompile Include=\"${MS_RELPATH}"
-    SUFFIX="\">${NL}      <Filter>Source Files</Filter>${NL}    </ClCompile>"
-    GetSources cpp "" ! -name "tsStaticReferences*"
-    PREFIX="    <ClCompile Include=\"${MS_RELPATH}private\\"
-    GetSources cpp private
-    PREFIX="    <ClCompile Include=\"${MS_RELPATH}windows\\"
-    GetSources cpp windows
-    echo '  </ItemGroup>'
-    echo '</Project>'
-}
-
-# Generate the Qt Creator project file.
-GenerateQtProject()
-{
-    echo 'HEADERS += \'
-    PREFIX="    ${QT_RELPATH}"
-    SUFFIX=" \\"
-    GetSources h "" ! -name "tsStaticReferences*"
-    PREFIX="    ${QT_RELPATH}private/"
-    GetSources h private
-    echo ''
-    echo 'SOURCES += \'
-    PREFIX="    ${QT_RELPATH}"
-    GetSources cpp "" ! -name "tsStaticReferences*"
-    PREFIX="    ${QT_RELPATH}private/"
-    GetSources cpp private
-    PREFIX="        ${QT_RELPATH}"
-    echo ''
-    echo 'linux {'
-    echo '    HEADERS += \'
-    PREFIX="        ${QT_RELPATH}unix/"
-    GetSources h unix
-    PREFIX="        ${QT_RELPATH}linux/"
-    GetSources h linux
-    echo ''
-    echo '    SOURCES += \'
-    PREFIX="        ${QT_RELPATH}unix/"
-    GetSources cpp unix
-    PREFIX="        ${QT_RELPATH}linux/"
-    GetSources cpp linux
-    echo ''
-    echo '}'
-    echo ''
-    echo 'mac {'
-    echo '    HEADERS += \'
-    PREFIX="        ${QT_RELPATH}unix/"
-    GetSources h unix
-    PREFIX="        ${QT_RELPATH}mac/"
-    GetSources h mac
-    echo ''
-    echo '    SOURCES += \'
-    PREFIX="        ${QT_RELPATH}unix/"
-    GetSources cpp unix
-    PREFIX="        ${QT_RELPATH}mac/"
-    GetSources cpp mac
-    echo ''
-    echo '}'
-    echo ''
-    echo 'win32|win64 {'
-    echo '    HEADERS += \'
-    PREFIX="        ${QT_RELPATH}windows/"
-    GetSources h windows
-    echo ''
-    echo '    SOURCES += \'
-    GetSources cpp windows
-    echo ''
-    echo '}'
+    find "$SRCDIR" -name 'ts*.h' ! -path '*/tsAbstract*.h' ! -name tsVCT.h |
+        xargs grep -l "@ingroup *$group" |
+        sed -e 's|^.*/ts\(.*\)\.h|\1|' |
+        sort --ignore-case |
+        sed -e "s|^|${PREFIX}|" -e "s|\$|${SUFFIX}|"
 }
 
 # Generate the main TSDuck header file.
@@ -217,20 +113,20 @@ GenerateMainHeader()
     cat "$ROOTDIR/src/HEADER.txt"
     echo ''
     echo '#pragma once'
-    GetSources h "" ! -name "tsStaticReferences*" ! -name "*Template.h" ! -name "tsduck.h"
+    GetSources h none \
+        ! -path '*/linux/*' ! -path '*/mac/*' ! -path '*/unix/*' ! -path '*/windows/*' ! -path '*/private/*' \
+        ! -name "tsStaticReferences*" ! -name "*Template.h" ! -name "tsduck.h"
     echo ''
     echo '#if defined(TS_LINUX)'
-    GetSources h unix ! -name "*Template.h"
-    GetSources h linux ! -name "*Template.h"
+    GetSources h none \( -path '*/unix/*' -o -path '*/linux/*' \) ! -name "*Template.h"
     echo '#endif'
     echo ''
     echo '#if defined(TS_MAC)'
-    GetSources h unix ! -name "*Template.h"
-    GetSources h mac ! -name "*Template.h"
+    GetSources h none \( -path '*/unix/*' -o -path '*/mac/*' \) ! -name "*Template.h"
     echo '#endif'
     echo ''
     echo '#if defined(TS_WINDOWS)'
-    GetSources h windows ! -name "*Template.h"
+    GetSources h none -path '*/windows/*' ! -name "*Template.h"
     echo '#endif'
 }
 
@@ -264,11 +160,8 @@ GenerateRefType()
 }
 
 # Generate the files.
-[[ -z "$TARGET" || "$TARGET" == "libtsduck-files.props"   ]] && GenerateMSProject | unix2dos >"$MSVCDIR/libtsduck-files.props"
-[[ -z "$TARGET" || "$TARGET" == "libtsduck-filters.props" ]] && GenerateMSFilters | unix2dos >"$MSVCDIR/libtsduck-filters.props"
-[[ -z "$TARGET" || "$TARGET" == "libtsduck-files.pri"     ]] && GenerateQtProject  >"$ROOTDIR/build/qtcreator/libtsduck/libtsduck-files.pri"
-[[ -z "$TARGET" || "$TARGET" == "tsduck.h"                ]] && GenerateMainHeader >"$SRCDIR/tsduck.h"
-[[ -z "$TARGET" || "$TARGET" == "tsTables.h"              ]] && GenerateTablesHeader >"$SRCDIR/tsTables.h"
-[[ -z "$TARGET" || "$TARGET" == "tsRefType.h"             ]] && GenerateRefType >"$SRCDIR/private/tsRefType.h"
+[[ -z "$TARGET" || "$TARGET" == "tsduck.h"    ]] && GenerateMainHeader >"$SRCDIR/tsduck.h"
+[[ -z "$TARGET" || "$TARGET" == "tsTables.h"  ]] && GenerateTablesHeader >"$SRCDIR/dtv/tsTables.h"
+[[ -z "$TARGET" || "$TARGET" == "tsRefType.h" ]] && GenerateRefType >"$SRCDIR/dtv/private/tsRefType.h"
 
 exit 0

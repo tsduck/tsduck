@@ -3,11 +3,11 @@
 
 if [[ "$1" = "configure" ]]; then
     # Fix file permissions and ownership.
-    chown root:root {{EXECS}} {{SHLIBS}}
-    chmod 0755 {{EXECS}}
-    chmod 0644 {{SHLIBS}} /usr/bin/tsduck.*.xml /usr/bin/tsduck.*.names
-    chown root:root /etc/udev/rules.d/80-tsduck.rules /etc/security/console.perms.d/80-tsduck.perms
-    chmod 0644 /etc/udev/rules.d/80-tsduck.rules /etc/security/console.perms.d/80-tsduck.perms
+    chown root:root {{EXECS}} /usr/lib*/libtsduck.so /usr/lib*/tsduck /usr/lib*/tsduck/* /usr/share/tsduck /usr/share/tsduck/*
+    chmod 0755 {{EXECS}} /usr/lib*/tsduck /usr/share/tsduck
+    chmod 0644 /usr/lib*/libtsduck.so /usr/lib*/tsduck/* /usr/share/tsduck/*
+    chown root:root /lib/udev/rules.d/80-tsduck.rules /etc/security/console.perms.d/80-tsduck.perms
+    chmod 0644 /lib/udev/rules.d/80-tsduck.rules /etc/security/console.perms.d/80-tsduck.perms
 fi
 
 exit 0

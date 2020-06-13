@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -31,11 +31,11 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsLNB.h"
-#include "tsTunerParametersDVBS.h"
-#include "tsTunerParametersDVBC.h"
-#include "tsTunerParametersDVBT.h"
 #include "tsTunerArgs.h"
+#include "tsDuckContext.h"
+#include "tsCerrReport.h"
+#include "tsNullReport.h"
+#include "tsArgs.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
 
@@ -52,17 +52,24 @@ public:
 
     void testTunerArgs();
     void testTunerParams();
+    void testAllLNB();
     void testLNB();
+    void testUniversalLNB();
+    void testJapanLNB();
 
     TSUNIT_TEST_BEGIN(DVBTest);
     TSUNIT_TEST(testTunerArgs);
     TSUNIT_TEST(testTunerParams);
+    TSUNIT_TEST(testAllLNB);
     TSUNIT_TEST(testLNB);
+    TSUNIT_TEST(testUniversalLNB);
+    TSUNIT_TEST(testJapanLNB);
     TSUNIT_TEST_END();
 
 private:
-    static void displayLNB(const ts::LNB& lnb, const ts::UString& name);
-    static void testParameters(const ts::TunerParameters& params);
+    ts::Report& report();
+    static void displayLNB(const ts::LNB& lnb);
+    static void testParameters(ts::DeliverySystem delsys);
 };
 
 TSUNIT_REGISTER(DVBTest);
@@ -82,6 +89,16 @@ void DVBTest::afterTest()
 {
 }
 
+ts::Report& DVBTest::report()
+{
+    if (tsunit::Test::debugMode()) {
+        return CERR;
+    }
+    else {
+        return NULLREP;
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Unitary tests.
@@ -95,74 +112,146 @@ void DVBTest::testTunerArgs()
     debug() << "DVBTest:: TunerArgs: " << std::endl << args.getHelpText(ts::Args::HELP_FULL) << std::endl;
 }
 
-void DVBTest::testParameters(const ts::TunerParameters& params)
+void DVBTest::testParameters(ts::DeliverySystem delsys)
 {
-    debug() << "DVBTest: Default TunerParameters, type: " << ts::TunerTypeEnum.name(params.tunerType()) << std::endl;
+    debug() << "DVBTest: Default TunerParameters, type: " << ts::DeliverySystemEnum.name(delsys) << std::endl;
 
-    ts::TunerParametersPtr ptr(ts::TunerParameters::Factory(params.tunerType()));
-    TSUNIT_ASSERT(ptr->tunerType() == params.tunerType());
+    ts::ModulationArgs params;
+    params.delivery_system = delsys;
+    params.frequency = 1000000;
+    params.setDefaultValues();
+    TSUNIT_ASSERT(params.hasModulationArgs());
 
     const ts::UString opts(params.toPluginOptions());
     debug() << "DVBTest: Options: \"" << opts << "\"" << std::endl;
 
-    TSUNIT_ASSERT(ptr->toPluginOptions() == opts);
-
     ts::Args args;
-    ts::TunerArgs tuner_args;
-    tuner_args.defineArgs(args);
+    ts::TunerArgs targs1;
+    targs1.defineArgs(args);
+
     ts::UStringVector args_vec;
     opts.split(args_vec, u' ');
     TSUNIT_ASSERT(args.analyze(u"", args_vec));
 
-    ts::TunerArgs tuner;
     ts::DuckContext duck;
-    tuner.loadArgs(args, duck);
-    ptr = ts::TunerParameters::FromTunerArgs(params.tunerType(), tuner, args);
-    TSUNIT_ASSERT(!ptr.isNull());
-    TSUNIT_ASSERT(ptr->tunerType() == params.tunerType());
-    TSUNIT_ASSERT(ptr->toPluginOptions() == opts);
+    TSUNIT_ASSERT(targs1.loadArgs(duck, args));
+    TSUNIT_ASSERT(targs1.toPluginOptions() == opts);
 }
 
 void DVBTest::testTunerParams()
 {
-    testParameters(ts::TunerParametersDVBS());
-    testParameters(ts::TunerParametersDVBC());
-    testParameters(ts::TunerParametersDVBT());
+    testParameters(ts::DS_DVB_S);
+    testParameters(ts::DS_DVB_C);
+    testParameters(ts::DS_DVB_T);
+    testParameters(ts::DS_ATSC);
 }
 
-void DVBTest::displayLNB(const ts::LNB& lnb, const ts::UString& name)
+void DVBTest::testAllLNB()
 {
-    debug() << "DVBTest: Test LNB: " << name << std::endl
-                 << "  convert to string: " << lnb << std::endl
-                 << "  hasHighBand: " << lnb.hasHighBand() << std::endl
-                 << "  lowFrequency: " << lnb.lowFrequency() << std::endl
-                 << "  highFrequency: " << lnb.highFrequency() << std::endl
-                 << "  switchFrequency: " << lnb.switchFrequency() << std::endl
-                 << "  useHighBand (8 GHz): " << lnb.useHighBand(TS_UCONST64(8000000000)) << std::endl
-                 << "  intermediateFrequency (8 GHz): " << lnb.intermediateFrequency(TS_UCONST64(8000000000)) << std::endl
-                 << "  useHighBand (12 GHz): " << lnb.useHighBand(TS_UCONST64(12000000000)) << std::endl
-                 << "  intermediateFrequency (12 GHz): " << lnb.intermediateFrequency(TS_UCONST64(12000000000)) << std::endl;
+    ts::UStringList names(ts::LNB::GetAllNames(report()));
+    debug() << "DVBTest::testAllLNB: " << ts::UString::Join(names, u" | ") << std::endl;
+    TSUNIT_ASSERT(!names.empty());
+}
+
+void DVBTest::displayLNB(const ts::LNB& lnb)
+{
+    debug() << "DVBTest: Test LNB: name: \"" << lnb.name() << "\"" << std::endl
+            << "    convert to string: \"" << lnb << "\"" << std::endl
+            << "    valid: " << ts::UString::TrueFalse(lnb.isValid()) << std::endl
+            << "    number of bands: " << lnb.bandsCount() << std::endl
+            << "    polarization-controlled: " << ts::UString::TrueFalse(lnb.isPolarizationControlled()) << std::endl
+            << "    legacyLowOscillatorFrequency: " << lnb.legacyLowOscillatorFrequency() << std::endl
+            << "    legacyHighOscillatorFrequency: " << lnb.legacyHighOscillatorFrequency() << std::endl
+            << "    legacySwitchFrequency: " << lnb.legacySwitchFrequency() << std::endl;
 }
 
 void DVBTest::testLNB()
 {
-    ts::LNB lnb1;
-    displayLNB(lnb1, u"universal LNB");
+    ts::LNB lnb1(u"", report());
+    debug() << "DVBTest::testLNB(): default LNB:" << std::endl;
+    displayLNB(lnb1);
     TSUNIT_ASSERT(lnb1.isValid());
 
-    ts::LNB lnb2(u"9000,10000,11000");
-    displayLNB(lnb2, u"9000,10000,11000");
+    ts::LNB lnb2(u"9000,10000,11000", report());
+    displayLNB(lnb2);
     TSUNIT_ASSERT(lnb2.isValid());
 
-    ts::LNB lnb3(u"9500");
-    displayLNB(lnb3, u"9500");
+    ts::LNB lnb3(u"9500", report());
+    displayLNB(lnb3);
     TSUNIT_ASSERT(lnb3.isValid());
 
-    ts::LNB lnb4(u"9500,10000");
-    displayLNB(lnb4, u"9500,10000");
+    ts::LNB lnb4(u"9500,10000", report());
+    displayLNB(lnb4);
     TSUNIT_ASSERT(!lnb4.isValid());
 
-    ts::LNB lnb5(u"azerty");
-    displayLNB(lnb5, u"azerty");
+    ts::LNB lnb5(u"azerty", report());
+    displayLNB(lnb5);
     TSUNIT_ASSERT(!lnb5.isValid());
+}
+
+void DVBTest::testUniversalLNB()
+{
+    ts::LNB lnb(u"universal", report());
+    displayLNB(lnb);
+
+    TSUNIT_ASSERT(lnb.isValid());
+    TSUNIT_ASSERT(!lnb.isPolarizationControlled());
+    TSUNIT_EQUAL(2, lnb.bandsCount());
+    TSUNIT_EQUAL(TS_UCONST64(9750000000), lnb.legacyLowOscillatorFrequency());
+    TSUNIT_EQUAL(TS_UCONST64(10600000000), lnb.legacyHighOscillatorFrequency());
+    TSUNIT_EQUAL(TS_UCONST64(11700000000), lnb.legacySwitchFrequency());
+
+    ts::LNB::Transposition tr;
+
+    TSUNIT_ASSERT(lnb.transpose(tr, TS_UCONST64(11000000000), ts::POL_AUTO, report()));
+    TSUNIT_EQUAL(TS_UCONST64(11000000000), tr.satellite_frequency);
+    TSUNIT_EQUAL(TS_UCONST64(1250000000), tr.intermediate_frequency);
+    TSUNIT_EQUAL(TS_UCONST64(9750000000), tr.oscillator_frequency);
+    TSUNIT_ASSERT(!tr.stacked);
+    TSUNIT_EQUAL(0, tr.band_index);
+
+    TSUNIT_ASSERT(lnb.transpose(tr, TS_UCONST64(12000000000), ts::POL_AUTO, report()));
+    TSUNIT_EQUAL(TS_UCONST64(12000000000), tr.satellite_frequency);
+    TSUNIT_EQUAL(TS_UCONST64(1400000000), tr.intermediate_frequency);
+    TSUNIT_EQUAL(TS_UCONST64(10600000000), tr.oscillator_frequency);
+    TSUNIT_ASSERT(!tr.stacked);
+    TSUNIT_EQUAL(1, tr.band_index);
+
+    // Outside bands
+    TSUNIT_ASSERT(!lnb.transpose(tr, TS_UCONST64(8000000000), ts::POL_AUTO, report()));
+}
+
+void DVBTest::testJapanLNB()
+{
+    ts::LNB lnb(u"japan", report());
+    displayLNB(lnb);
+
+    TSUNIT_ASSERT(lnb.isValid());
+    TSUNIT_ASSERT(lnb.isPolarizationControlled());
+    TSUNIT_EQUAL(2, lnb.bandsCount());
+    TSUNIT_EQUAL(0, lnb.legacyLowOscillatorFrequency());
+    TSUNIT_EQUAL(0, lnb.legacyHighOscillatorFrequency());
+    TSUNIT_EQUAL(0, lnb.legacySwitchFrequency());
+
+    ts::LNB::Transposition tr;
+
+    // Channel BS-15
+    TSUNIT_ASSERT(lnb.transpose(tr, TS_UCONST64(11996000000), ts::POL_RIGHT, report()));
+    TSUNIT_EQUAL(TS_UCONST64(11996000000), tr.satellite_frequency);
+    TSUNIT_EQUAL(TS_UCONST64(1318000000), tr.intermediate_frequency);
+    TSUNIT_EQUAL(TS_UCONST64(10678000000), tr.oscillator_frequency);
+    TSUNIT_ASSERT(tr.stacked);
+
+    // Channel ND-15
+    TSUNIT_ASSERT(lnb.transpose(tr, TS_UCONST64(12551000000), ts::POL_LEFT, report()));
+    TSUNIT_EQUAL(TS_UCONST64(12551000000), tr.satellite_frequency);
+    TSUNIT_EQUAL(TS_UCONST64(3046000000), tr.intermediate_frequency);
+    TSUNIT_EQUAL(TS_UCONST64(9505000000), tr.oscillator_frequency);
+    TSUNIT_ASSERT(tr.stacked);
+
+    // Need polarization.
+    TSUNIT_ASSERT(!lnb.transpose(tr, TS_UCONST64(12551000000), ts::POL_NONE, report()));
+
+    // Outside bands
+    TSUNIT_ASSERT(!lnb.transpose(tr, TS_UCONST64(11000000000), ts::POL_RIGHT, report()));
 }

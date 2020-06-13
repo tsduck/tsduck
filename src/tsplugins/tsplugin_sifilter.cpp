@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,9 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsCASSelectionArgs.h"
+#include "tsBinaryTable.h"
 #include "tsSectionDemux.h"
 #include "tsDescriptorList.h"
 #include "tsPIDOperator.h"
@@ -71,8 +71,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(sifilter, ts::SIFilterPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"sifilter", ts::SIFilterPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -137,7 +136,7 @@ ts::SIFilterPlugin::SIFilterPlugin(TSP* tsp_) :
 bool ts::SIFilterPlugin::start()
 {
     // Get command line arguments
-    _cas_args.loadArgs(*this);
+    _cas_args.loadArgs(duck, *this);
     _pass_pmt = present(u"pmt");
     _drop_status = present(u"stuffing") ? TSP_NULL : TSP_DROP;
 

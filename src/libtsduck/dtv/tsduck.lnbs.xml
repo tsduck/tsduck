@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+ TSDuck - The MPEG Transport Stream Toolkit
+ Copyright (c) 2005-2020, Thierry Lelegard
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+ 1. Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ THE POSSIBILITY OF SUCH DAMAGE.
+
+                 - - - - - - - - - - - - - - - -
+
+ Reference XML file describing Low Noise Blocks (LNB) for satellite reception.
+
+Notes on LNB descriptions:
+- The last LNB with default="true" is the default one.
+- If there is no explicit default, the first LNB is the default one.
+- The polarization attribute must set on all bands or none.
+- Using polarization attributes indicate a polarization-controlled LNB.
+- Polarization-controlled LNB's must use "stacked" transposition: the transposed
+  bands must not overlap and no tone/voltage/DiSEqC command is needed.
+- For non-polarization-controlled multi-band LNB's, tone/voltage/DiSEqC command
+  is needed. Bands shall be sorted in increasing order of frequency.
+
+-->
+<tsduck>
+
+  <lnb name="None">
+    <!-- No or transparent LNB, no frequency transposition -->
+    <alias name="Null"/>
+    <band low="0" high="20,000,000,000" oscillator="0"/>
+  </lnb>
+
+  <lnb name="European Universal Ku (extended)" default="true">
+    <alias name="Astra 19.2E"/>
+    <alias name="Extended"/>
+    <band low="10,700,000,000" high="11,700,000,000" oscillator="9,750,000,000" switch="11,700,000,000"/>
+    <band low="11,700,000,000" high="12,750,000,000" oscillator="10,600,000,000"/>
+  </lnb>
+
+  <lnb name="European Universal (old)">
+    <alias name="Universal"/>
+    <band low="10,800,000,000" high="11,800,000,000" oscillator="9,750,000,000" switch="11,700,000,000"/>
+    <band low="11,600,000,000" high="12,700,000,000" oscillator="10,600,000,000"/>
+  </lnb>
+
+  <lnb name="Astra">
+    <alias name="Enhanced"/>
+    <band low="10,700,000,000" high="11,700,000,000" oscillator="9,750,000,000"/>
+  </lnb>
+
+  <lnb name="Expressvu">
+    <alias name="DBS"/>
+    <band low="12,200,000,000" high="12,700,000,000" oscillator="11,250,000,000"/>
+  </lnb>
+
+  <lnb name="Standard">
+    <band low="10,945,000,000" high="11,450,000,000" oscillator="10,000,000,000"/>
+  </lnb>
+
+  <lnb name="L10700">
+    <band low="11,750,000,000" high="12,750,000,000" oscillator="10,700,000,000"/>
+  </lnb>
+
+  <lnb name="L10750">
+    <band low="11,700,000,000" high="12,200,000,000" oscillator="10,750,000,000"/>
+  </lnb>
+
+  <lnb name="L11300">
+    <band low="12,250,000,000" high="12,750,000,000" oscillator="11,300,000,000"/>
+  </lnb>
+
+  <lnb name="Invacom QPH-031">
+    <alias name="QPH031"/>
+    <band low="11,700,000,000" high="12,200,000,000" oscillator="10,750,000,000" switch="12,200,000,000"/>
+    <band low="12,200,000,000" high="12,700,000,000" oscillator="11,250,000,000"/>
+  </lnb>
+
+  <lnb name="Big Dish Monopoint">
+    <alias name="C-Band"/>
+    <band low="3,700,000,000" high="4,200,000,000" oscillator="5,150,000,000"/>
+  </lnb>
+
+  <lnb name="Big Dish Multipoint">
+    <alias name="C-Multi"/>
+    <band low="3,700,000,000" high="4,200,000,000" oscillator="5,150,000,000" polarity="right"/>
+    <band low="3,700,000,000" high="4,200,000,000" oscillator="5,750,000,000" polarity="left"/>
+  </lnb>
+
+  <lnb name="DishPro">
+    <band low="12,200,000,000" high="12,700,000,000" oscillator="11,250,000,000" polarity="vertical"/>
+    <band low="12,200,000,000" high="12,700,000,000" oscillator="14,350,000,000" polarity="horizontal"/>
+  </lnb>
+
+  <lnb name="Japan 110BS/CS">
+    <alias name="Japan"/>
+    <alias name="110BS"/>
+    <alias name="110CS"/>
+    <band low="11,710,000,000" high="12,751,000,000" oscillator="10,678,000,000" polarity="right"/>
+    <band low="11,710,000,000" high="12,751,000,000" oscillator="9,505,000,000" polarity="left"/>
+  </lnb>
+
+  <lnb name="BrasilSat Stacked">
+    <alias name="Stacked-Brasilsat"/>
+    <band low="10,700,000,000" high="11,700,000,000" oscillator="9,710,000,000" polarity="horizontal"/>
+    <band low="10,700,000,000" high="11,700,000,000" oscillator="9,750,000,000" polarity="vertical"/>
+  </lnb>
+
+  <lnb name="BrasilSat Oi">
+    <alias name="Oi-BrasilSat"/>
+    <band low="10,950,000,000" high="11,200,000,000" oscillator="10,000,000,000" switch="11,700,000,000"/>
+    <band low="11,800,000,000" high="12,200,000,000" oscillator="10,445,000,000"/>
+  </lnb>
+
+  <lnb name="BrasilSat Amazonas 1/2, 3 Oscillators">
+    <alias name="Amazonas3"/>
+    <band low="11,037,000,000" high="11,450,000,000" oscillator="9,670,000,000" polarity="vertical"/>
+    <band low="11,770,000,000" high="12,070,000,000" oscillator="9,922,000,000" polarity="horizontal"/>
+    <band low="10,950,000,000" high="11,280,000,000" oscillator="10,000,000,000" polarity="horizontal"/>
+  </lnb>
+
+  <lnb name="BrasilSat Amazonas 1/2, 2 Oscillators">
+    <alias name="Amazonas2"/>
+    <band low="11,037,000,000" high="11,360,000,000" oscillator="9,670,000,000" polarity="vertical"/>
+    <band low="11,780,000,000" high="12,150,000,000" oscillator="10,000,000,000" polarity="horizontal"/>
+    <band low="10,950,000,000" high="11,280,000,000" oscillator="10,000,000,000" polarity="horizontal"/>
+  </lnb>
+
+  <lnb name="BrasilSat custom GVT">
+    <alias name="GVT-BrasilSat"/>
+    <band low="11,010,500,000" high="11,067,500,000" oscillator="12,860,000,000" polarity="vertical"/>
+    <band low="11,704,000,000" high="11,941,000,000" oscillator="13,435,000,000" polarity="vertical"/>
+    <band low="10,962,500,000" high="11,199,500,000" oscillator="13,112,000,000" polarity="horizontal"/>
+    <band low="11,704,000,000" high="12,188,000,000" oscillator="13,138,000,000" polarity="horizontal"/>
+  </lnb>
+
+</tsduck>

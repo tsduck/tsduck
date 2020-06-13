@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -50,11 +50,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
-#include "tsswitchCore.h"
-#include "tsswitchOptions.h"
-#include "tsswitchInputExecutor.h"
-#include "tsswitchOutputExecutor.h"
-#include "tsswitchCommandListener.h"
+#include "tsArgsWithPlugins.h"
+#include "tsInputSwitcher.h"
 #include "tsPluginRepository.h"
 #include "tsSystemMonitor.h"
 #include "tsAsyncReport.h"
@@ -64,51 +61,66 @@ TS_MAIN(MainCode);
 
 
 //----------------------------------------------------------------------------
+//  Command line options
+//----------------------------------------------------------------------------
+
+namespace {
+    class TSSwitchOptions: public ts::ArgsWithPlugins
+    {
+        TS_NOBUILD_NOCOPY(TSSwitchOptions);
+    public:
+        TSSwitchOptions(int argc, char *argv[]);
+
+        ts::DuckContext       duck;         // TSDuck context
+        ts::AsyncReportArgs   log_args;     // Asynchronous logger arguments.
+        ts::InputSwitcherArgs switch_args;  // TS processing arguments.
+    };
+}
+
+TSSwitchOptions::TSSwitchOptions(int argc, char *argv[]) :
+    ts::ArgsWithPlugins(0, UNLIMITED_COUNT, 0, 0, 0, 1),
+    duck(this),
+    log_args(),
+    switch_args()
+{
+    setDescription(u"TS input source switch using remote control");
+    setSyntax(u"[tsswitch-options] -I input-name [input-options] ... [-O output-name [output-options]]");
+
+    log_args.defineArgs(*this);
+    switch_args.defineArgs(*this);
+
+    // Analyze the command.
+    analyze(argc, argv);
+
+    // Load option values.
+    log_args.loadArgs(duck, *this);
+    switch_args.loadArgs(duck, *this);
+
+    // Final checking
+    exitOnError();
+}
+
+
+//----------------------------------------------------------------------------
 //  Program main code.
 //----------------------------------------------------------------------------
 
 int MainCode(int argc, char *argv[])
 {
-    // Get command line options. Exit in case of errors.
-    ts::tsswitch::Options opt(argc, argv);
-
-    // Make sure that standard error displays the same level of messages as set in options.
+    // Get command line options.
+    TSSwitchOptions opt(argc, argv);
     CERR.setMaxSeverity(opt.maxSeverity());
-
-    // Create and start an asynchronous log (separate thread).
-    ts::AsyncReport log(opt.maxSeverity(), opt.logTimeStamp, opt.logMaxBuffer, opt.logSynchronous);
-
-    // Create the tsswitch core instance.
-    ts::tsswitch::Core core(opt, log);
-    opt.exitOnError();
-
-    // Get the repository of plugins.
-    ts::PluginRepository* plugins = ts::PluginRepository::Instance();
-    ts::CheckNonNull(plugins);
 
     // If plugins were statically linked, disallow the dynamic loading of plugins.
 #if defined(TSDUCK_STATIC_PLUGINS)
-    plugins->setSharedLibraryAllowed(false);
+    ts::PluginRepository::Instance()->setSharedLibraryAllowed(false);
 #endif
 
-    // Create a monitoring thread if required.
-    ts::SystemMonitor monitor(&log);
-    if (opt.monitor) {
-        monitor.start();
-    }
+    // Create and start an asynchronous log (separate thread).
+    ts::AsyncReport report(opt.maxSeverity(), opt.log_args);
 
-    // If a remote control is specified, start a UDP listener thread.
-    ts::tsswitch::CommandListener remoteControl(core, opt, log);
-    if (opt.remoteServer.hasPort() && !remoteControl.open()) {
-        return EXIT_FAILURE;
-    }
+    // The TS input processing is performed into this object.
+    ts::InputSwitcher switcher(opt.switch_args, report);
 
-    // Start the processing.
-    if (!core.start()) {
-        return EXIT_FAILURE;
-    }
-
-    // Wait for completion.
-    core.waitForTermination();
-    return EXIT_SUCCESS;
+    return switcher.success() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -1,49 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
-    <Import Project="libtsduck-files.props" />
   </ImportGroup>
-  <!-- Other data files -->
+
   <ItemGroup>
-    <Xml Include="..\..\src\libtsduck\tsduck.tables.model.xml" />
-    <Xml Include="..\..\src\libtsduck\tsduck.channels.model.xml" />
-    <Xml Include="..\..\src\libtsduck\tsduck.keytable.model.xml" />
-    <Xml Include="..\..\src\libtsduck\tsduck.hfbands.model.xml" />
-    <Xml Include="..\..\src\libtsduck\tsduck.hfbands.xml" />
+    <LibHeaders     Include="$(TSDuckRootDir)src\libtsduck\**\*.h"   Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;$(TSDuckRootDir)src\libtsduck\**\linux\**;$(TSDuckRootDir)src\libtsduck\**\mac\**;$(TSDuckRootDir)src\libtsduck\**\static\**"/>
+    <LibSources     Include="$(TSDuckRootDir)src\libtsduck\**\*.cpp" Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;$(TSDuckRootDir)src\libtsduck\**\linux\**;$(TSDuckRootDir)src\libtsduck\**\mac\**;$(TSDuckRootDir)src\libtsduck\**\static\**"/>
+    <LibConfigXML   Include="$(TSDuckRootDir)src\libtsduck\**\*.xml"/>
+    <LibConfigNames Include="$(TSDuckRootDir)src\libtsduck\**\*.names"/>
+    <Xml            Include="@(LibConfigXML)"/>
+    <None           Include="@(LibConfigNames)"/>
+    <ClInclude      Include="@(LibHeaders)"/>
+    <ClCompile      Include="@(LibSources)"/>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\src\libtsduck\tsduck.dvb.names" />
-    <None Include="..\..\src\libtsduck\tsduck.oui.names" />
-  </ItemGroup>
+
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1AD31049-26B0-4922-89CF-778040DFC51E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tsduckdll</RootNamespace>
   </PropertyGroup>
+
   <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-target-dll.props" />
-    <Import Project="msvc-use-dtapi.props" />
+    <Import Project="msvc-target-dll.props"/>
+    <Import Project="msvc-use-dtapi.props"/>
+    <Import Project="msvc-use-libsrt.props"/>
   </ImportGroup>
+
   <PropertyGroup>
     <TargetName>tsduck</TargetName>
   </PropertyGroup>
+
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(TSDuckRootDir)\src\libtsduck;$(TSDuckRootDir)\src\libtsduck\windows;$(TSDuckRootDir)\src\libtsduck\private;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TSDuckLibDirs);$(TSDuckLibDirsInternal);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_TSDUCKDLL_IMPL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-end.props" />
   </ImportGroup>
+
   <Target Name="AfterBuild">
-    <CreateItem Include="..\..\src\libtsduck\tsduck.*.xml;..\..\src\libtsduck\tsduck.*.names">
-      <Output TaskParameter="Include" ItemName="ConfigFiles" />
-    </CreateItem>
-    <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="@(LibConfigXML);@(LibConfigNames)" DestinationFolder="$(OutDir)" />
   </Target>
+
 </Project>

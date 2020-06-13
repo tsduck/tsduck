@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsTablesLogger.h"
 TSDUCK_SOURCE;
@@ -60,8 +59,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(tables, ts::TablesPlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"tables", ts::TablesPlugin);
 
 
 //----------------------------------------------------------------------------
@@ -73,9 +71,10 @@ ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
     _display(duck),
     _logger(_display)
 {
+    duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);
     duck.defineArgsForStandards(*this);
-    duck.defineArgsForDVBCharset(*this);
+    duck.defineArgsForCharset(*this);
     _logger.defineArgs(*this);
     _display.defineArgs(*this);
 }
@@ -87,11 +86,13 @@ ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
 
 bool ts::TablesPlugin::getOptions()
 {
-    return duck.loadArgs(*this) && _logger.loadArgs(*this) && _display.loadArgs(*this);
+    duck.reset();
+    return duck.loadArgs(*this) && _logger.loadArgs(duck, *this) && _display.loadArgs(duck, *this);
 }
 
 bool ts::TablesPlugin::start()
 {
+    duck.resetStandards();  // reset accumulated standards (not command line ones).
     return _logger.open();
 }
 
@@ -108,6 +109,6 @@ bool ts::TablesPlugin::stop()
 
 ts::ProcessorPlugin::Status ts::TablesPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    _logger.feedPacket (pkt);
+    _logger.feedPacket(pkt);
     return _logger.completed() ? TSP_END : TSP_OK;
 }

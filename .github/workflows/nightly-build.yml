@@ -1,0 +1,229 @@
+#-----------------------------------------------------------------------------
+#
+#  TSDuck - The MPEG Transport Stream Toolkit
+#  Copyright (c) 2005-2020, Thierry Lelegard
+#  All rights reserved.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are met:
+#
+#  1. Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+#  THE POSSIBILITY OF SUCH DAMAGE.
+#
+#-----------------------------------------------------------------------------
+#
+#  GitHub Actions configuration file : Nightly builds
+#
+#-----------------------------------------------------------------------------
+
+name: Nightly build
+
+# Trigger the workflow every day at 01:10 GMT
+on:
+  schedule:
+    - cron:  '10 1 * * *'
+
+# We currently build on Windows only. If is easy for users to rebuild on Unix.
+jobs:
+  windows:
+    name: Windows build
+    runs-on: windows-latest
+    steps:
+
+    - name: Get TSDuck repo
+      uses: actions/checkout@master
+
+    - name: Check if rebuild is necessary
+      run: |
+        try {
+            $response = Invoke-RestMethod https://tsduck.io/download/prerelease/get-versions
+            $remote_version = $response.latest
+        }
+        catch {
+            $remote_version = ""
+        }
+        $version = (& build\get-version-from-sources.ps1)
+        $rebuild = ($version -ne $remote_version).ToString().ToLower()
+        $version | Out-File version.txt
+        Write-Output "Current version: $version, latest on tsduck.io: $remote_version"
+        Write-Output "::set-env name=VERSION::$version"
+        Write-Output "::set-env name=REBUILD::$rebuild"
+
+    - name: Check same version
+      if: env.REBUILD == 'false'
+      run: Write-Output "Same version as latest pre-release, not rebuilt"
+
+    - name: Install dependencies
+      if: env.REBUILD == 'true'
+      run: build/install-prerequisites.ps1 -GitHubActions -NoPause
+
+    - name: Build installers
+      if: env.REBUILD == 'true'
+      run: build/build-installer.ps1 -NoPause -NoLowPriority -NoSource
+
+    - name: Check built version (64-bit)
+      if: env.REBUILD == 'true'
+      run: bin/Release-x64/tsversion.exe --version=all
+
+    - name: Check built version (32-bit)
+      if: env.REBUILD == 'true'
+      run: bin/Release-Win32/tsversion.exe --version=all
+
+    - name: Upload version
+      if: env.REBUILD == 'true'
+      uses: actions/upload-artifact@master
+      with:
+        name: version
+        path: version.txt
+
+    - name: Upload 64-bit installer
+      if: env.REBUILD == 'true'
+      uses: actions/upload-artifact@master
+      with:
+        name: installer-64
+        path: installers/TSDuck-Win64-${{ env.VERSION }}.exe
+
+    - name: Upload 64-bit portable
+      if: env.REBUILD == 'true'
+      uses: actions/upload-artifact@master
+      with:
+        name: portable-64
+        path: installers/TSDuck-Win64-${{ env.VERSION }}-Portable.zip
+
+    - name: Upload 32-bit installer
+      if: env.REBUILD == 'true'
+      uses: actions/upload-artifact@master
+      with:
+        name: installer-32
+        path: installers/TSDuck-Win32-${{ env.VERSION }}.exe
+
+    - name: Upload 32-bit portable
+      if: env.REBUILD == 'true'
+      uses: actions/upload-artifact@master
+      with:
+        name: portable-32
+        path: installers/TSDuck-Win32-${{ env.VERSION }}-Portable.zip
+
+  linux:
+    name: Linux build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Get TSDuck repo
+      uses: actions/checkout@master
+
+    - name: Install dependencies
+      run: |
+        build/install-prerequisites.sh
+        sudo apt install -y jq
+
+    - name: Check if rebuild is necessary
+      run: |
+        remote_version=$(curl -sL https://tsduck.io/download/prerelease/get-versions | jq -r '.latest?'; true)
+        version=$(build/get-version-from-sources.sh)
+        fullversion=$(build/get-version-from-sources.sh --full)
+        [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
+        echo "Current version: $version, latest on tsduck.io: $remote_version"
+        echo "::set-env name=VERSION::$version"
+        echo "::set-env name=FULLVERSION::$fullversion"
+        echo "::set-env name=REBUILD::$rebuild"
+
+    - name: Check same version
+      if: env.REBUILD == 'false'
+      run: echo "Same version as latest pre-release, not rebuilt"
+
+    - name: Build TSDuck
+      if: env.REBUILD == 'true'
+      run: make -j5 && make deb
+
+    - name: Check built version
+      if: env.REBUILD == 'true'
+      run: source build/setenv.sh && tsversion --version=all
+
+    - name: Prepare upload package
+      if: env.REBUILD == 'true'
+      run: |
+        source build/setenv.sh
+        tsp --version=short &>tsp.version.txt
+        tsp --list=input &>tsp.input.txt
+        tsp --list=output &>tsp.output.txt
+        tsp --list=packet &>tsp.packet.txt
+        for cmd in $(find $(build/setenv.sh --display) -type f -executable -name 'ts*' ! -name '*.*' | sort); do
+            echo -n $(basename $cmd):
+            $cmd --help=description 2>&1
+        done >tsduck.commands.txt
+        zip -q9 tsduck.commands.zip tsp.version.txt tsp.input.txt tsp.output.txt tsp.packet.txt tsduck.commands.txt
+
+    - name: Upload command lists
+      if: env.REBUILD == 'true'
+      uses: actions/upload-artifact@master
+      with:
+        name: command-lists
+        path: tsduck.commands.zip
+
+    - name: Upload Ubuntu package
+      if: env.REBUILD == 'true'
+      uses: actions/upload-artifact@master
+      with:
+        name: ubuntu-package
+        path: installers/tsduck_${{ env.FULLVERSION }}_amd64.deb
+        
+    - name: Upload Ubuntu dev package
+      if: env.REBUILD == 'true'
+      uses: actions/upload-artifact@master
+      with:
+        name: ubuntu-dev-package
+        path: installers/tsduck-dev_${{ env.FULLVERSION }}_amd64.deb
+        
+  doc:
+    name: Documentation build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Get TSDuck repo
+      uses: actions/checkout@master
+
+    - name: Install dependencies
+      run: build/install-prerequisites.sh
+
+    - name: Check if rebuild is necessary
+      run: |
+        remote_version=$(curl -sL https://tsduck.io/doxy/docversion.txt | grep '^[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*$'; true)
+        version=$(build/get-version-from-sources.sh)
+        [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
+        echo "Current version: $version, latest on tsduck.io: $remote_version"
+        echo "::set-env name=VERSION::$version"
+        echo "::set-env name=REBUILD::$rebuild"
+
+    - name: Check same version
+      if: env.REBUILD == 'false'
+      run: echo "Same version as currently published documentation, not rebuilt"
+
+    - name: Build documentation
+      if: env.REBUILD == 'true'
+      run: |
+        make doxygen
+        echo "${{ env.VERSION }}" >bin/doxy/docversion.txt
+        (cd bin; zip -qr9 ../doxy.zip doxy)
+
+    - name: Upload doxygen package
+      if: env.REBUILD == 'true'
+      uses: actions/upload-artifact@master
+      with:
+        name: doxy-package
+        path: doxy.zip

@@ -1,0 +1,2603 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+ TSDuck - The MPEG Transport Stream Toolkit
+ Copyright (c) 2005-2020, Thierry Lelegard
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+ 1. Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ THE POSSIBILITY OF SUCH DAMAGE.
+
+                 - - - - - - - - - - - - - - - -
+
+ Template for TSDuck XML files describing PSI/SI tables.
+
+ It is used to validate user-provided XML files. Since TSDuck uses a simple
+ XML parser without DTD or XML-Schema support, there is no formal standard
+ definition. This file defines the valid structure of an XML file. Tags or
+ attributes which are not present here will be rejected. The content of
+ nodes and attributes in this file are just informative comments.
+
+ Notes on types and formats:
+ - Tags and attributes are not case-sensitive.
+ - The names of tags and attributes are copied from ISO or DVB standards.
+ - Integer values can be represented in decimal or hexadecimal (0x prefix).
+ - Booleans are "true" or "false".
+ - Hexa content is a suite of hexa digits. Spaces are ignored.
+
+-->
+<tsduck>
+
+  <!-- A valid file is composed of a suite of any number of table structures -->
+  <_any in="_tables"/>
+
+  <!-- Definitions of tables -->
+  <_tables>
+
+    <!-- Program Association Table -->
+    <PAT version="uint5, default=0"
+         current="bool, default=true"
+         transport_stream_id="uint16, required"
+         network_PID="uint13, optional">
+      <!-- One per service -->
+      <service service_id="uint16, required" program_map_PID="uint13, required"/>
+    </PAT>
+
+    <!-- Conditional Access Table -->
+    <CAT version="uint5, default=0"
+         current="bool, default=true">
+      <_any in="_descriptors"/>
+    </CAT>
+
+    <!-- Program Map Table -->
+    <PMT version="uint5, default=0"
+         current="bool, default=true"
+         service_id="uint16, required"
+         PCR_PID="uint13, default=0x1FFF">
+      <!-- Program-level descriptors -->
+      <_any in="_descriptors"/>
+      <!-- One per elementary stream -->
+      <component stream_type="uint8, required" elementary_PID="uint13, require">
+        <_any in="_descriptors"/>
+      </component>
+    </PMT>
+
+    <!-- Transport Stream Description Table -->
+    <TSDT version="uint5, default=0"
+          current="bool, default=true">
+      <_any in="_descriptors"/>
+    </TSDT>
+
+    <!-- Network Information Table -->
+    <NIT version="uint5, default=0"
+         current="bool, default=true"
+         network_id="uint16, required"
+         actual="bool, default=true">
+      <!-- Network-level descriptors -->
+      <_any in="_descriptors"/>
+      <!-- One per transport stream -->
+      <transport_stream transport_stream_id="uint16, required"
+                        original_network_id="uint16, required"
+                        preferred_section="uint8, optional">
+        <_any in="_descriptors"/>
+      </transport_stream>
+    </NIT>
+
+    <!-- Bouquet Association Table -->
+    <BAT version="uint5, default=0"
+         current="bool, default=true"
+         bouquet_id="uint16, required">
+      <!-- Bouquet-level descriptors -->
+      <_any in="_descriptors"/>
+      <!-- One per transport stream -->
+      <transport_stream transport_stream_id="uint16, required"
+                        original_network_id="uint16, required"
+                        preferred_section="uint8, optional">
+        <_any in="_descriptors"/>
+      </transport_stream>
+    </BAT>
+
+    <!-- Running Status Table -->
+    <RST>
+      <!-- One per event -->
+      <event transport_stream_id="uint16, required"
+             original_network_id="uint16, required"
+             service_id="uint16, required"
+             event_id="uint16, required"
+             running_status="undefined|not-running|starting|pausing|running|off-air, required"/>
+    </RST>
+
+    <!-- Service Description Table -->
+    <SDT version="uint5, default=0"
+         current="bool, default=true"
+         transport_stream_id="uint16, required"
+         original_network_id="uint16, required"
+         actual="bool, default=true">
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               EIT_schedule="bool, default=false"
+               EIT_present_following="bool, default=false"
+               running_status="undefined|not-running|starting|pausing|running|off-air, default=undefined"
+               CA_mode="bool, default=false">
+        <_any in="_descriptors"/>
+      </service>
+    </SDT>
+
+    <!-- Event Information Table (DVB version, ATSC uses another form of EIT) -->
+    <!-- If type="pf", this is an EITp/f -->
+    <!-- If type="uint4", this is an EITs with TID 0x50+type (actual) or 0x60+type (other) -->
+    <EIT type="pf|uint4, default=pf"
+         version="uint5, default=0"
+         current="bool, default=true"
+         actual="bool, default=true"
+         service_id="uint16, required"
+         transport_stream_id="uint16, required"
+         original_network_id="uint16, required"
+         segment_last_section_number="uint8, ignored (legacy)"
+         last_table_id="uint8, default=same as table id">
+      <!-- One per event -->
+      <event event_id="uint16, required"
+             start_time="YYYY-MM-DD hh:mm:ss, required"
+             duration="hh:mm:ss, required"
+             running_status="undefined|not-running|starting|pausing|running|off-air, default=undefined"
+             CA_mode="bool, default=false"
+             preferred_section="uint8, ignored (legacy)">
+        <_any in="_descriptors"/>
+      </event>
+    </EIT>
+
+    <!-- Time and Date Table -->
+    <TDT UTC_time="YYYY-MM-DD hh:mm:ss, required"/>
+
+    <!-- Time Offset Table -->
+    <TOT UTC_time="YYYY-MM-DD hh:mm:ss, required">
+      <_any in="_descriptors"/>
+    </TOT>
+
+    <!-- DSM-CC Stream Descriptors Table -->
+    <DSMCC_stream_descriptors_table
+        version="uint5, default=0"
+        current="bool, default=true"
+        table_id_extension="uint16, default=0xFFFF">
+      <_any in="_descriptors"/>
+    </DSMCC_stream_descriptors_table>
+
+    <!-- IP/MAC Notification Table -->
+    <INT version="uint5, default=0"
+         current="bool, default=true"
+         action_type="uint8, default=0x01"
+         processing_order="uint8, default=0x00"
+         platform_id="uint24, required">
+      <!-- Plaform-level descriptors -->
+      <_any in="_descriptors"/>
+      <!-- One per device -->
+      <device>
+        <target>
+          <_any in="_descriptors"/>
+        </target>
+        <operational>
+          <_any in="_descriptors"/>
+        </operational>
+      </device>
+    </INT>
+
+    <!-- Update Notification Table -->
+    <UNT version="uint5, default=0"
+         current="bool, default=true"
+         action_type="uint8, default=0x01"
+         OUI="uint24, required"
+         processing_order="uint8, default=0x00">
+      <!-- Common descriptors, apply to all SSU -->
+      <_any in="_descriptors"/>
+      <!-- One per set of devices -->
+      <devices>
+        <!-- More than one allowed, individual descriptor inside compatibilityDescriptor() -->
+        <compatibilityDescriptor
+            descriptorType="uint8, required"
+            specifierType="uint8, default=0x01"
+            specifierData="uint24, required"
+            model="uint16, default=0x00"
+            version="uint16, default=0x00">
+          <!-- Several subdescriptors -->
+          <subDescriptor subDescriptorType="uint8, required">
+            Hexadecimal content
+          </subDescriptor>
+        </compatibilityDescriptor>
+        <!-- One per platform -->
+        <platform>
+          <target>
+            <_any in="_descriptors"/>
+          </target>
+          <operational>
+            <_any in="_descriptors"/>
+          </operational>
+        </platform>
+      </devices>
+    </UNT>
+
+    <!-- Application Information Table -->
+    <AIT version="uint5, default=0"
+         current="bool, default=true"
+         test_application_flag="bool, default=true"
+         application_type="uint15, required">
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per application -->
+      <application control_code="uint8, required">
+        <application_identifier organization_id="uint32, required" application_id="uint16, required"/>
+        <_any in="_descriptors"/>
+      </application>
+    </AIT>
+
+    <!-- Discontinuity Information Table -->
+    <discontinuity_information_table transition="bool, required"/>
+
+    <!-- Selection Information Table -->
+    <selection_information_table version="uint5, default=0" current="bool, default=true">
+      <!-- Common descriptors loop, for transmission parameters -->
+      <_any in="_descriptors"/>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               running_status="undefined|not-running|starting|pausing|running|off-air, required">
+        <_any in="_descriptors"/>
+      </service>
+    </selection_information_table>
+
+    <!-- Splice Information Table (ANSI/SCTE 35) -->
+    <splice_information_table
+        protocol_version="uint8, default=0"
+        pts_adjustment="uint33, default=0"
+        tier="uint12, default=0xFFF">
+      <!-- Splice commands, only one of them is allowed -->
+      <splice_null/>
+      <splice_schedule>
+        <!-- One per splice event -->
+        <splice_event
+            splice_event_id="uint32, required"
+            splice_event_cancel="bool, default=false"
+            out_of_network="bool, required when splice_event_cancel is false"
+            utc_splice_time="uint32, required when splice_event_cancel is false and program_splice_flag is to be set"
+            unique_program_id="uint16, required when splice_event_cancel is false"
+            avail_num="uint8, default=0"
+            avails_expected="uint8, default=0">
+          <!-- Optional -->
+          <break_duration auto_return="bool, required" duration="uint33, required"/>
+          <!-- One per component when splice_event_cancel is false and utc_splice_time is not specified -->
+          <component component_tag="uint8, required" utc_splice_time="uint32, required"/>
+        </splice_event>
+      </splice_schedule>
+      <splice_insert
+          splice_event_id="uint32, required"
+          splice_event_cancel="bool, default=false"
+          out_of_network="bool, required when splice_event_cancel is false"
+          splice_immediate="bool, default=false"
+          pts_time="uint33, required when splice_event_cancel is false and splice_immediate is false and program_splice_flag is to be set"
+          unique_program_id="uint16, required when splice_event_cancel is false"
+          avail_num="uint8, default=0"
+          avails_expected="uint8, default=0">
+        <!-- Optional -->
+        <break_duration auto_return="bool, required" duration="uint33, required"/>
+        <!-- One per component when splice_event_cancel is false and pts_time is not specified -->
+        <component component_tag="uint8, required" pts_time="uint33, required when splice_immediate is false"/>
+      </splice_insert>
+      <time_signal pts_time="uint33, optional"/>
+      <bandwidth_reservation/>
+      <private_command identifier="uint32, required">
+        Hexadecimal content
+      </private_command>
+      <!-- Splice descriptors, depend on splice command -->
+      <_any in="_descriptors"/>
+    </splice_information_table>
+
+    <!-- Cable Emergency Alert (ANSI/SCTE 18) -->
+    <cable_emergency_alert_table
+        sequence_number="uint5, required"
+        protocol_version="uint8, default=0"
+        EAS_event_ID="uint16, required"
+        EAS_originator_code="char3, required"
+        EAS_event_code="string, required"
+        alert_message_time_remaining="uint8, optional"
+        event_start_time="YYYY-MM-DD hh:mm:ss, optional"
+        event_duration="uint16, optional"
+        alert_priority="uint4, required"
+        details_OOB_source_ID="uint16, optional"
+        details_major_channel_number="uint10, optional"
+        details_minor_channel_number="uint10, optional"
+        audio_OOB_source_ID="uint16, optional">
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <nature_of_activation_text>
+        <string language="char3, required" text="string, required"/>
+      </nature_of_activation_text>
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <alert_text>
+        <string language="char3, required" text="string, required"/>
+      </alert_text>
+      <!-- From 1 to 31 location structures -->
+      <location
+          state_code="uint8, required"
+          county_subdivision="uint4, required"
+          county_code="uint10, required"/>
+      <!-- Up to 255 exception structures -->
+      <!-- Specify either exception_major_channel_number+exception_minor_channel_number or exception_OOB_source_ID -->
+      <exception
+          major_channel_number="uint10, optional"
+          minor_channel_number="uint10, optional"
+          OOB_source_ID="uint16, optional"/>
+      <_any in="_descriptors"/>
+    </cable_emergency_alert_table>
+
+    <!-- ATSC Master Guide Table -->
+    <MGT version="uint5, default=0" protocol_version="uint8, default=0">
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per table type -->
+      <table type="TVCT-current|TVCT-next|CVCT-current|CVCT-next|ETT|DCCSCT|EIT-0..EIT-127|ETT-0..ETT-127|RRT-1..RRT-255|DCCT-0DCCT-255|uint16, required"
+             PID="uint31, required"
+             version_number="uint5, required"
+             number_bytes="uint32, required">
+        <_any in="_descriptors"/>
+      </table>
+    </MGT>
+
+    <!-- ATSC Terrestrial Virtual Channel Table -->
+    <TVCT version="uint5, default=0"
+          current="bool, default=true"
+          protocol_version="uint8, default=0"
+          transport_stream_id="uint16, required">
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per channel -->
+      <channel short_name="string, required"
+               major_channel_number="uint10, required"
+               minor_channel_number="uint10, required"
+               modulation_mode="analog|64-QAM|256-QAM|8-VSB|16-VSB|uint8, required"
+               carrier_frequency="uint32, default=0"
+               channel_TSID="uint16, required"
+               program_number="uint16, required"
+               ETM_location="uint2, default=0"
+               access_controlled="bool, default=false"
+               hidden="bool, default=false"
+               hide_guide="bool, default=false"
+               service_type="analog|dtv|audio|data|software|uint6, default=dtv"
+               source_id="uint16, required">
+        <_any in="_descriptors"/>
+      </channel>
+    </TVCT>
+
+    <!-- ATSC Cable Virtual Channel Table -->
+    <CVCT version="uint5, default=0"
+          current="bool, default=true"
+          protocol_version="uint8, default=0"
+          transport_stream_id="uint16, required">
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per channel -->
+      <channel short_name="string, required"
+               major_channel_number="uint10, required"
+               minor_channel_number="uint10, required"
+               modulation_mode="analog|64-QAM|256-QAM|8-VSB|16-VSB|uint8, required"
+               carrier_frequency="uint32, default=0"
+               channel_TSID="uint16, required"
+               program_number="uint16, required"
+               ETM_location="uint2, default=0"
+               access_controlled="bool, default=false"
+               hidden="bool, default=false"
+               path_select="uint1, default=0"
+               out_of_band="bool, default=false"
+               hide_guide="bool, default=false"
+               service_type="analog|dtv|audio|data|software|uint6, default=dtv"
+               source_id="uint16, required">
+        <_any in="_descriptors"/>
+      </channel>
+    </CVCT>
+
+    <!-- ATSC System Time Table -->
+    <STT protocol_version="uint8, default=0"
+         system_time="uint32, required"
+         GPS_UTC_offset="uint8, required"
+         DS_status="bool, required"
+         DS_day_of_month="uint5, default=0"
+         DS_hour="uint8, default=0">
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+    </STT>
+
+    <!-- ATSC Extended Text Table -->
+    <ETT version="uint5, default=0"
+         protocol_version="uint8, default=0"
+         ETT_table_id_extension="uint16, required"
+         ETM_id="uint32, required">
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <extended_text_message>
+        <string language="char3, required" text="string, required"/>
+      </extended_text_message>
+    </ETT>
+
+    <!-- ATSC Rating Region Table -->
+    <RRT version="uint5, default=0"
+         protocol_version="uint8, default=0"
+         rating_region="uint8, required">
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <rating_region_name>
+        <string language="char3, required" text="string, required"/>
+      </rating_region_name>
+      <!-- One per dimension -->
+      <dimension graduated_scale="bool, required">
+        <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+        <dimension_name>
+          <string language="char3, required" text="string, required"/>
+        </dimension_name>
+        <!-- One per rating value -->
+        <value>
+          <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+          <abbrev_rating_value>
+            <string language="char3, required" text="string, required"/>
+          </abbrev_rating_value>
+          <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+          <rating_value>
+            <string language="char3, required" text="string, required"/>
+          </rating_value>
+        </value>
+      </dimension>
+      <_any in="_descriptors"/>
+    </RRT>
+
+    <!-- ATSC Event Information Table (not the same as DVB EIT) -->
+    <ATSC_EIT version="uint5, default=0"
+              source_id="uint16, required"
+              protocol_version="uint8, default=0">
+      <!-- One per event -->
+      <event event_id="uint16, required"
+             start_time="YYYY-MM-DD hh:mm:ss, required"
+             ETM_location="uint2, required"
+             length_in_seconds="uint20, required">
+        <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+        <title_text>
+          <string language="char3, required" text="string, required"/>
+        </title_text>
+        <_any in="_descriptors"/>
+      </event>
+    </ATSC_EIT>
+
+    <!-- ATSC Directed Channel Change Table -->
+    <DCCT version="uint5, default=0"
+          protocol_version="uint8, default=0"
+          dcc_subtype="uint8, default=0"
+          dcc_id="uint8, required">
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per channel change test -->
+      <dcc_test dcc_context="temporary_retune|channel_redirect|uint1, required"
+                dcc_from_major_channel_number="uint10, required"
+                dcc_from_minor_channel_number="uint10, required"
+                dcc_to_major_channel_number="uint10, required"
+                dcc_to_minor_channel_number="uint10, required"
+                dcc_start_time="YYYY-MM-DD hh:mm:ss, required"
+                dcc_end_time="YYYY-MM-DD hh:mm:ss, required">
+        <!-- DCC test descriptors loop -->
+        <_any in="_descriptors"/>
+        <!-- One per channel change test -->
+        <dcc_term dcc_selection_type="uint8, required"
+                  dcc_selection_id="uint64, required">
+          <!-- DCC term descriptors loop -->
+          <_any in="_descriptors"/>
+        </dcc_term>
+      </dcc_test>
+    </DCCT>
+
+    <!-- ATSC DCC Selection Code Table -->
+    <DCCSCT version="uint5, default=0"
+            protocol_version="uint8, default=0"
+            dccsct_type="uint16, default=0">
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per update -->
+      <update update_type="new_genre_category|new_state|new_county|uint8, required"
+              genre_category_code="uint8, required when update_type == new_genre_category"
+              dcc_state_location_code="uint8, required when update_type == new_state"
+              state_code="uint8, required when update_type == new_county"
+              dcc_county_location_code="uint10, required when update_type == new_county">
+        <!-- Update descriptors loop -->
+        <_any in="_descriptors"/>
+        <!-- ATSC multiple_string_structure(), required when update_type == new_genre_category -->
+        <genre_category_name_text>
+          <string language="char3, required" text="string, required"/>
+        </genre_category_name_text>
+        <!-- ATSC multiple_string_structure(), required when update_type == new_state -->
+        <dcc_state_location_code_text>
+          <string language="char3, required" text="string, required"/>
+        </dcc_state_location_code_text>
+        <!-- ATSC multiple_string_structure(), required when update_type == new_county -->
+        <dcc_county_location_code_text>
+          <string language="char3, required" text="string, required"/>
+        </dcc_county_location_code_text>
+      </update>
+    </DCCSCT>
+
+    <!-- ISDB Broadcaster Information Table -->
+    <BIT version="uint5, default=0"
+         current="bool, default=true"
+         original_network_id="uint16, required"
+         broadcast_view_propriety="bool, required">
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per broadcaster -->
+      <broadcaster broadcaster_id="uint8, required">
+        <_any in="_descriptors"/>
+      </broadcaster>
+    </BIT>
+
+    <!-- ISDB Linked Description Table -->
+    <LDT version="uint5, default=0"
+         current="bool, default=true"
+         original_service_id="uint16, required"
+         transport_stream_id="uint16, required"
+         original_network_id="uint16, required">
+      <!-- One per description -->
+      <description description_id="uint16, required">
+        <_any in="_descriptors"/>
+      </description>
+    </LDT>
+
+    <!-- ISDB Network Board Information Table -->
+    <NBIT version="uint5, default=0"
+          current="bool, default=true"
+          original_network_id="uint16, required"
+          body="bool, default=true">
+      <!-- One per information set -->
+      <information
+          information_id="uint16, required"
+          information_type="uint4, required"
+          description_body_location="uint2, required"
+          user_defined="uint8, default=0xFF">
+        <!-- One per key_id entry -->
+        <key id="uint16, required"/>
+        <_any in="_descriptors"/>
+      </information>
+    </NBIT>
+
+    <!-- ISDB Partial Content Announcement Table -->
+    <PCAT version="uint5, default=0"
+          current="bool, default=true"
+          service_id="uint16, required"
+          transport_stream_id="uint16, required"
+          original_network_id="uint16, required"
+          content_id="uint32, required">
+      <!-- One per content version -->
+      <version content_version="uint16, required"
+               content_minor_version="uint16, required"
+               version_indicator="uint2, required">
+        <!-- One per schedule entry -->
+        <schedule start_time="YYYY-MM-DD hh:mm:ss, required"
+                  duration="hh:mm:ss, required"/>
+        <_any in="_descriptors"/>
+      </version>
+    </PCAT>
+
+    <!-- ISDB Local event Information Table -->
+    <LIT version="uint5, default=0"
+         current="bool, default=true"
+         event_id="uint16, required"
+         service_id="uint16, required"
+         transport_stream_id="uint16, required"
+         original_network_id="uint16, required">
+      <!-- One per local event -->
+      <event local_event_id="uint16, required">
+        <_any in="_descriptors"/>
+      </event>
+    </LIT>
+
+    <!-- ISDB Event Relation Table -->
+    <ERT version="uint5, default=0"
+         current="bool, default=true"
+         event_relation_id="uint16, required"
+         information_provider_id="uint16, required"
+         relation_type="uint4, required">
+      <!-- One per event relation -->
+      <relation
+          node_id="uint16, required"
+          collection_mode="uint4, required"
+          parent_node_id="uint16, required"
+          reference_number="uint8, required">
+        <_any in="_descriptors"/>
+      </relation>
+    </ERT>
+
+    <!-- ISDB Index Transmission information Table -->
+    <ITT version="uint5, default=0"
+         current="bool, default=true"
+         event_id="uint16, required">
+      <_any in="_descriptors"/>
+    </ITT>
+
+    <!-- Generic short table -->
+    <generic_short_table
+        table_id="uint8, required"
+        private="bool, default=true">
+
+      Generic table with binary payload of one short section,
+      to be used when a specific table is not yet implemented.
+      The body of this element shall contain an even number of
+      hexadecimal digits, the payload of the short section.
+
+      The private indicator shall be false on MPEG-defined sections
+      and preferably true on DVB-defined and user-defined sections.
+
+    </generic_short_table>
+
+    <!-- Generic long table -->
+    <generic_long_table
+        table_id="uint8, required"
+        table_id_ext="uint16, default=0xFFFF"
+        version="uint5, default=0"
+        current="bool, default=true"
+        private="bool, default=true">
+
+      Generic table with binary payload of long sections,
+      to be used when a specific table is not yet implemented.
+
+      The private indicator shall be false on MPEG-defined sections
+      and preferably true on DVB-defined and user-defined sections.
+
+      <!-- One per section -->
+      <section>
+        The body of the section elements shall contain an even number of
+        hexadecimal digits, the payload of the long section. The CRC32
+        field is not part of this payload, it will be recomputed.
+      </section>
+    </generic_long_table>
+
+  </_tables>
+
+  <!-- Definitions of descriptors -->
+  <_descriptors>
+
+    <generic_descriptor tag="uint8, required">
+      Generic descriptor with binary payload, to be used when a specific
+      descriptor is not yet implemented. The body of this element shall
+      contain an even number of hexadecimal digits.
+    </generic_descriptor>
+
+    <AAC_descriptor
+        profile_and_level="uint8, required"
+        SAOC_DE="bool, default=false"
+        AAC_type="uint8, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </AAC_descriptor>
+
+    <DVB_AC3_descriptor
+        component_type="uint8, optional"
+        bsid="uint8, optional"
+        mainid="uint8, optional"
+        asvc="uint8, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </DVB_AC3_descriptor>
+
+    <!-- Previous version, still accepted for compatibility -->
+    <AC3_descriptor
+        component_type="uint8, optional"
+        bsid="uint8, optional"
+        mainid="uint8, optional"
+        asvc="uint8, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </AC3_descriptor>
+
+    <ATSC_AC3_audio_stream_descriptor
+        sample_rate_code="uint3, required"
+        bsid="uint5, required"
+        bit_rate_code="uint6, required"
+        surround_mode="uint2, required"
+        bsmod="uint3, required"
+        num_channels="uint4, required"
+        full_svc="bool, required"
+        mainid="uint3, optional"
+        priority="uint2, optional"
+        asvcflags="uint8, optional"
+        text="string, optional"
+        language="char3, optional"
+        language_2="char3, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </ATSC_AC3_audio_stream_descriptor>
+
+    <DVB_AC4_descriptor
+        ac4_dialog_enhancement_enabled="bool, optional"
+        ac4_channel_mode="uint2, optional">
+      <ac4_dsi_toc>
+        Hexadecimal content
+      </ac4_dsi_toc>
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </DVB_AC4_descriptor>
+
+    <!-- Previous version, still accepted for compatibility -->
+    <AC4_descriptor
+        ac4_dialog_enhancement_enabled="bool, optional"
+        ac4_channel_mode="uint2, optional">
+      <ac4_dsi_toc>
+        Hexadecimal content
+      </ac4_dsi_toc>
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </AC4_descriptor>
+
+    <adaptation_field_data_descriptor adaptation_field_data_identifier="uint8, required"/>
+
+    <af_extensions_descriptor/>
+
+    <ancillary_data_descriptor ancillary_data_identifier="uint8, required"/>
+
+    <announcement_support_descriptor>
+      <!-- One per announcement type -->
+      <announcement
+          announcement_type="uint4, required"
+          reference_type="uint3, required"
+          original_network_id="uint16, optional"
+          transport_stream_id="uint16, optional"
+          service_id="uint16, optional"
+          component_tag="uint8, optional"/>
+    </announcement_support_descriptor>
+
+    <application_descriptor
+        service_bound="bool, required"
+        visibility="uint2, required"
+        application_priority="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per profile -->
+      <profile
+          application_profile="uint16, required"
+          version="string 'major.minor.micro', required"/>
+      <!-- One per transport_protocol_label -->
+      <transport_protocol label="uint8, required"/>
+    </application_descriptor>
+
+    <application_icons_descriptor
+        icon_locator="string, required"
+        icon_flags="uint16, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </application_icons_descriptor>
+
+    <application_name_descriptor>
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per language -->
+      <language code="char3, required" application_name="string, required"/>
+    </application_name_descriptor>
+
+    <application_recording_descriptor
+        scheduled_recording="bool, required"
+        trick_mode_aware="bool, required"
+        time_shift="bool, required"
+        dynamic="bool, required"
+        av_synced="bool, required"
+        initiating_replay="bool, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per label -->
+      <label label="string, required" storage_properties="uint2, required"/>
+      <!-- One per component tag -->
+      <component tag="uint8, required"/>
+      <private>
+        Hexadecimal content
+      </private>
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </application_recording_descriptor>
+
+    <application_signalling_descriptor>
+      <!-- One per application -->
+      <application application_type="uint15, required"
+                   AIT_version_number="uint5, required"/>
+    </application_signalling_descriptor>
+
+    <application_storage_descriptor
+        storage_property="uint8, required"
+        not_launchable_from_broadcast="bool, required"
+        launchable_completely_from_cache="bool, required"
+        is_launchable_with_older_version="bool, required"
+        version="uint31, required"
+        priority="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </application_storage_descriptor>
+
+    <application_usage_descriptor usage_type="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </application_usage_descriptor>
+
+    <area_broadcasting_information_descriptor>
+      <!-- One per station -->
+      <station
+          station_id="uint24, required"
+          location_code="uint16, required"
+          broadcast_signal_format="uint8, required">
+        <additional_station_info>
+          Hexadecimal content
+        </additional_station_info>
+      </station>
+    </area_broadcasting_information_descriptor>
+
+    <association_tag_descriptor
+        association_tag="uint16, required"
+        use="uint16, required">
+      <selector_bytes>
+        Hexadecimal content
+      </selector_bytes>
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </association_tag_descriptor>
+
+    <audio_component_descriptor
+        stream_content="uint4, default=2"
+        component_type="uint8, required"
+        component_tag="uint8, required"
+        stream_type="uint8, required"
+        simulcast_group_tag="uint8, default=0xFF"
+        main_component="bool, default=true"
+        quality_indicator="uint2, required"
+        sampling_rate="uint3, required"
+        ISO_639_language_code="char3, required"
+        ISO_639_language_code_2="char3, optional"
+        text="string, optional"/>
+
+    <audio_preselection_descriptor>
+      <!-- One entry per preselection, up to 31 preselections -->
+      <preselection
+          preselection_id="uint5, required"
+          audio_rendering_indication="uint3, required"
+          audio_description="bool, default=false"
+          spoken_subtitles="bool, default=false"
+          dialogue_enhancement="bool, default=false"
+          interactivity_enabled="bool, default=false"
+          ISO_639_language_code="char3, optional"
+          message_id="uint8, optional">
+        <multi_stream_info>
+          <!-- One per auxiliary component, up to 7 components -->
+          <component tag="uint8, required"/>
+        </multi_stream_info>
+        <future_extension>
+          Hexadecimal content
+        </future_extension>
+      </preselection>
+    </audio_preselection_descriptor>
+
+    <audio_stream_descriptor
+        free_format="bool, required"
+        ID="uint1, required"
+        layer="uint2, required"
+        variable_rate_audio="bool, required"/>
+
+    <AVC_timing_and_HRD_descriptor
+        hrd_management_valid="bool, required"
+        N_90khz="uint32, optional"
+        K_90khz="uint32, optional"
+        num_units_in_tick="uint32, optional"
+        fixed_frame_rate="bool, required"
+        temporal_poc="bool, required"
+        picture_to_display_conversion="bool, required"/>
+
+    <AVC_video_descriptor
+        profile_idc="uint8, required"
+        constraint_set0="bool, required"
+        constraint_set1="bool, required"
+        constraint_set2="bool, required"
+        AVC_compatible_flags="uint5, required"
+        level_idc="uint8, required"
+        AVC_still_present="bool, required"
+        AVC_24_hour_picture="bool, required"/>
+
+    <board_information_descriptor
+        title="string, required"
+        text="string, required"/>
+
+    <bouquet_name_descriptor bouquet_name="string, required"/>
+
+    <broadcaster_name_descriptor name="string, required"/>
+
+    <CA_descriptor
+        CA_system_id="uint16, required"
+        CA_PID="uint13, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </CA_descriptor>
+
+    <CA_contract_info_descriptor
+        CA_system_id="uint16, required"
+        CA_unit_id="uint4, required"
+        fee_name="string, optional">
+      <!-- One per component -->
+      <component tag="uint8, required"/>
+      <contract_verification_info>
+        Hexadecimal content
+      </contract_verification_info>
+    </CA_contract_info_descriptor>
+
+    <CA_EMM_TS_descriptor
+        CA_system_id="uint16, required"
+        transport_stream_id="uint16, required"
+        original_network_id="uint16, required"
+        power_supply_period="uint8, required"/>
+
+    <CA_identifier_descriptor>
+      <!-- One per CAS -->
+      <CA_system_id value="uint16, required"/>
+    </CA_identifier_descriptor>
+
+    <CA_service_descriptor
+        CA_system_id="uint16, required"
+        ca_broadcaster_group_id="uint8, required"
+        message_control="uint8, required">
+      <!-- One per service -->
+      <service id="uint16, required"/>
+    </CA_service_descriptor>
+
+    <cable_delivery_system_descriptor
+        frequency="FrequencyHz, required"
+        FEC_outer="undefined|none|RS, default=RS"
+        modulation="auto|16-QAM|32-QAM|64-QAM|128-QAM|256-QAM, default=16-QAM"
+        symbol_rate="SymbolRate, required"
+        FEC_inner="undefined|1/2|2/3|3/4|5/6|7/8|8/9|3/5|4/5|9/10|none, required"/>
+
+    <C2_delivery_system_descriptor
+        plp_id="uint8, required"
+        data_slice_id="uint8, required"
+        C2_system_tuning_frequency="FrequencyHz, required"
+        C2_system_tuning_frequency_type="uint2, required"
+        active_OFDM_symbol_duration="uint3, required"
+        guard_interval="1/128|1/64|uint3, required"/>
+
+    <C2_bundle_delivery_system_descriptor>
+      <!-- One per PLP -->
+      <plp plp_id="uint8, required"
+           data_slice_id="uint8, required"
+           C2_system_tuning_frequency="FrequencyHz, required"
+           C2_system_tuning_frequency_type="uint2, required"
+           active_OFDM_symbol_duration="uint3, required"
+           guard_interval="1/128|1/64|uint3, required"
+           master_channel="bool, required"/>
+    </C2_bundle_delivery_system_descriptor>
+
+    <caption_service_descriptor>
+      <!-- One per service -->
+      <service language="char3, required"
+               digital_cc="bool, required"
+               line21_field="bool, optional"
+               caption_service_number="uint6, required"
+               easy_reader="bool, required"
+               wide_aspect_ratio="bool, required"/>
+    </caption_service_descriptor>
+
+    <carousel_identifier_descriptor carousel_id="uint32, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </carousel_identifier_descriptor>
+
+    <cell_frequency_link_descriptor>
+      <!-- One per cell -->
+      <cell cell_id="uint16, required" frequency="FrequencyHz, required">
+        <!-- One per subcell -->
+        <subcell cell_id_extension="uint8, required" transposer_frequency="FrequencyHz, required"/>
+      </cell>
+    </cell_frequency_link_descriptor>
+
+    <cell_list_descriptor>
+      <!-- One per cell -->
+      <cell cell_id="uint16, required"
+            cell_latitude="int16, required"
+            cell_longitude="int16, required"
+            cell_extent_of_latitude="uint12, required"
+            cell_extent_of_longitude="uint12, required">
+        <!-- One per subcell -->
+        <subcell cell_id_extension="uint8, required"
+                 subcell_latitude="int16, required"
+                 subcell_longitude="int16, required"
+                 subcell_extent_of_latitude="uint12, required"
+                 subcell_extent_of_longitude="uint12, required"/>
+      </cell>
+    </cell_list_descriptor>
+
+    <CI_ancillary_data_descriptor>
+      <ancillary_data>
+        Hexadecimal content
+      </ancillary_data>
+    </CI_ancillary_data_descriptor>
+
+    <component_descriptor
+        stream_content="uint4, required"
+        stream_content_ext="uint4, default=0xF"
+        component_type="uint8, required"
+        component_tag="uint8, default=0"
+        language_code="char3, required"
+        text="string, optional"/>
+
+    <component_name_descriptor>
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <component_name_string>
+        <string language="char3, required" text="string, required"/>
+      </component_name_string>
+    </component_name_descriptor>
+
+    <conditional_playback_descriptor
+        CA_system_id="uint16, required"
+        CA_PID="uint13, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </conditional_playback_descriptor>
+
+    <content_availability_descriptor
+        copy_restriction_mode="bool, required"
+        image_constraint_token="bool, required"
+        retention_mode="bool, required"
+        retention_state="uint3, required"
+        encryption_mode="bool, required">
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </content_availability_descriptor>
+
+    <content_descriptor>
+      <!-- One per classification -->
+      <content content_nibble_level_1="uint4, required"
+               content_nibble_level_2="uint4, required"
+               user_byte="uint8, required"/>
+    </content_descriptor>
+
+    <content_advisory_descriptor>
+      <!-- One per rating region -->
+      <region rating_region="uint8, required">
+        <!-- One per rated dimension -->
+        <dimension rating_dimension_j="uint8, required" rating_value="uint4, required"/>
+        <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+        <rating_description>
+          <string language="char3, required" text="string, required"/>
+        </rating_description>
+      </region>
+    </content_advisory_descriptor>
+
+    <copyright_descriptor copyright_identifier="uint32, required">
+      <additional_copyright_info>
+        Hexadecimal content
+      </additional_copyright_info>
+    </copyright_descriptor>
+
+    <country_availability_descriptor country_availability="bool, required">
+      <!-- One per country -->
+      <country country_code="char3, required"/>
+    </country_availability_descriptor>
+
+    <CP_descriptor
+        CP_system_id="uint16, required"
+        CP_PID="uint13, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </CP_descriptor>
+
+    <CP_identifier_descriptor>
+      <!-- One per CP system -->
+      <CP_system_id value="uint16, required"/>
+    </CP_identifier_descriptor>
+
+    <cue_identifier_descriptor
+        cue_stream_type="insert_null_schedule|all|segmentation|tiered_splicing|tiered_segmentation|uint8, required">
+      <!-- Defined by SCTE 35 for use in PMT -->
+    </cue_identifier_descriptor>
+
+    <data_broadcast_descriptor
+        data_broadcast_id="uint16, required"
+        component_tag="uint8, required"
+        language_code="char3, required">
+      <selector_bytes>Hexadecimal content</selector_bytes>
+      <text>String</text>
+    </data_broadcast_descriptor>
+
+    <data_broadcast_id_descriptor data_broadcast_id="uint16, required">
+      <selector_bytes>Hexadecimal content</selector_bytes>
+    </data_broadcast_id_descriptor>
+
+    <data_component_descriptor data_component_id="uint16, required">
+      <additional_data_component_info>
+        Hexadecimal content
+      </additional_data_component_info>
+    </data_component_descriptor>
+
+    <data_content_descriptor
+        data_component_id="uint16, required"
+        entry_component="uint8, required"
+        ISO_639_language_code="char3, required"
+        text="string, required">
+      <selector_bytes>Hexadecimal content</selector_bytes>
+      <!-- One per component_ref -->
+      <component ref="uint8, required"/>
+    </data_content_descriptor>
+
+    <data_stream_alignment_descriptor alignment_type="uint8, required"/>
+
+    <dcc_arriving_request_descriptor dcc_arriving_request_type="uint8, required">
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <dcc_arriving_request_text>
+        <string language="char3, required" text="string, required"/>
+      </dcc_arriving_request_text>
+    </dcc_arriving_request_descriptor>
+
+    <dcc_departing_request_descriptor dcc_departing_request_type="uint8, required">
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <dcc_departing_request_text>
+        <string language="char3, required" text="string, required"/>
+      </dcc_departing_request_text>
+    </dcc_departing_request_descriptor>
+
+    <deferred_association_tags_descriptor
+        transport_stream_id="uint16, required"
+        program_number="uint16, required">
+      <!-- One per association tag -->
+      <association tag="uint16, required"/>
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </deferred_association_tags_descriptor>
+
+    <digital_copy_control_descriptor
+        digital_recording_control_data="uint2, required"
+        user_defined="uint4, default=0"
+        maximum_bitrate="uint8, optional">
+      <!-- One per component in the service -->
+      <component_control
+          component_tag="uint8, required"
+          digital_recording_control_data="uint2, required"
+          user_defined="uint4, default=0"
+          maximum_bitrate="uint8, optional"/>
+    </digital_copy_control_descriptor>
+
+    <DII_location_descriptor transport_protocol_label="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per module -->
+      <module DII_identification="uint15, required" association_tag="uint16, required"/>
+    </DII_location_descriptor>
+
+    <DSNG_descriptor station_identification="string, required"/>
+
+    <DTS_descriptor
+        sample_rate_code="uint4, required"
+        bit_rate_code="uint6, required"
+        nblks="uint7, 0x05 to 0x7F, required"
+        fsize="uint14, 0x005F to 0x2000, required"
+        surround_mode="uint6, required"
+        lfe="bool, default=false"
+        extended_surround="uint2, default=0">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </DTS_descriptor>
+
+    <DTS_HD_descriptor>
+      <!-- Each substructure is optional and may appear at most once -->
+      <substream_core
+          channel_count="uint5, required"
+          LFE="bool, required"
+          sampling_frequency="uint4, required"
+          sample_resolution="bool, required">
+        <!-- From 1 to 8 asset_info -->
+        <asset_info
+            asset_construction="uint5, required"
+            vbr="bool, required"
+            post_encode_br_scaling="bool, required"
+            bit_rate="uint13, required"
+            component_type="uint8, optional"
+            ISO_639_language_code="char3, optional"/>
+      </substream_core>
+      <substream_0
+          channel_count="uint5, required"
+          LFE="bool, required"
+          sampling_frequency="uint4, required"
+          sample_resolution="bool, required">
+        <!-- From 1 to 8 asset_info -->
+        <asset_info
+            asset_construction="uint5, required"
+            vbr="bool, required"
+            post_encode_br_scaling="bool, required"
+            bit_rate="uint13, required"
+            component_type="uint8, optional"
+            ISO_639_language_code="char3, optional"/>
+      </substream_0>
+      <substream_1
+          channel_count="uint5, required"
+          LFE="bool, required"
+          sampling_frequency="uint4, required"
+          sample_resolution="bool, required">
+        <!-- From 1 to 8 asset_info -->
+        <asset_info
+            asset_construction="uint5, required"
+            vbr="bool, required"
+            post_encode_br_scaling="bool, required"
+            bit_rate="uint13, required"
+            component_type="uint8, optional"
+            ISO_639_language_code="char3, optional"/>
+      </substream_1>
+      <substream_2
+          channel_count="uint5, required"
+          LFE="bool, required"
+          sampling_frequency="uint4, required"
+          sample_resolution="bool, required">
+        <!-- From 1 to 8 asset_info -->
+        <asset_info
+            asset_construction="uint5, required"
+            vbr="bool, required"
+            post_encode_br_scaling="bool, required"
+            bit_rate="uint13, required"
+            component_type="uint8, optional"
+            ISO_639_language_code="char3, optional"/>
+      </substream_2>
+      <substream_3
+          channel_count="uint5, required"
+          LFE="bool, required"
+          sampling_frequency="uint4, required"
+          sample_resolution="bool, required">
+        <!-- From 1 to 8 asset_info -->
+        <asset_info
+            asset_construction="uint5, required"
+            vbr="bool, required"
+            post_encode_br_scaling="bool, required"
+            bit_rate="uint13, required"
+            component_type="uint8, optional"
+            ISO_639_language_code="char3, optional"/>
+      </substream_3>
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </DTS_HD_descriptor>
+
+    <DTS_neural_descriptor config_id="uint8, required">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </DTS_neural_descriptor>
+
+    <dvb_html_application_boundary_descriptor
+        label="string, required"
+        regular_expression="string, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </dvb_html_application_boundary_descriptor>
+
+    <dvb_html_application_descriptor parameter="string, optional">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per application id: -->
+      <application id="uint16, required"/>
+    </dvb_html_application_descriptor>
+
+    <dvb_html_application_location_descriptor
+        physical_root="string, required"
+        initial_path="string, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </dvb_html_application_location_descriptor>
+
+    <dvb_j_application_descriptor>
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per parameter: -->
+      <parameter value="string, required"/>
+    </dvb_j_application_descriptor>
+
+    <dvb_j_application_location_descriptor
+        base_directory="string, required"
+        classpath_extension="string, required"
+        initial_class="string, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </dvb_j_application_location_descriptor>
+
+    <eacem_preferred_name_identifier_descriptor name_id="uint8, required"/>
+
+    <eacem_preferred_name_list_descriptor>
+      <!-- One per language -->
+      <language code="char3, required">
+        <!-- One per name -->
+        <name name_id="uint8, required" name="string, required"/>
+      </language>
+    </eacem_preferred_name_list_descriptor>
+
+    <eacem_stream_identifier_descriptor version_byte="uint8, required"/>
+
+    <EAS_audio_file_descriptor>
+      <!-- Must be in a cable_emergency_alert_table (table id 0xD8) -->
+      <!-- One entry per audio file -->
+      <file audio_format="uint7, required"
+            file_name="string, optional"
+            audio_source="uint8, required"
+            program_number="uint16, optional"
+            carousel_id="uint32, optional"
+            application_id="uint16, optional"
+            download_id="uint32, optional"
+            module_id="uint32, optional"/>
+    </EAS_audio_file_descriptor>
+
+    <EAS_inband_details_channel_descriptor
+        details_RF_channel="uint8, required"
+        details_program_number="uint16, required">
+      <!-- Must be in a cable_emergency_alert_table (table id 0xD8) -->
+    </EAS_inband_details_channel_descriptor>
+
+    <EAS_inband_exception_channels_descriptor>
+      <!-- Must be in a cable_emergency_alert_table (table id 0xD8) -->
+      <!-- One entry per exception channel -->
+      <exception RF_channel="uint8, required" program_number="uint16, required"/>
+    </EAS_inband_exception_channels_descriptor>
+
+    <EAS_metadata_descriptor fragment_number="uint8, default=1">
+      <!-- Must be in a cable_emergency_alert_table (table id 0xD8) -->
+      <!-- The text inside this element is an XML fragment -->
+    </EAS_metadata_descriptor>
+
+    <ECM_repetition_rate_descriptor
+        CA_system_id="uint16, required"
+        ECM_repetition_rate="uint16, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </ECM_repetition_rate_descriptor>
+
+    <emergency_information_descriptor>
+      <!-- One entry per event -->
+      <event service_id="uint16, required"
+             started="bool, required"
+             signal_level="uint1, required">
+        <!-- One entry per area code -->
+        <area code="uint12, required"/>
+      </event>
+    </emergency_information_descriptor>
+
+    <DVB_enhanced_AC3_descriptor
+        mixinfoexists="bool, required"
+        component_type="uint8, optional"
+        bsid="uint8, optional"
+        mainid="uint8, optional"
+        asvc="uint8, optional"
+        substream1="uint8, optional"
+        substream2="uint8, optional"
+        substream3="uint8, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </DVB_enhanced_AC3_descriptor>
+
+    <!-- Previous version, still accepted for compatibility -->
+    <enhanced_AC3_descriptor
+        mixinfoexists="bool, required"
+        component_type="uint8, optional"
+        bsid="uint8, optional"
+        mainid="uint8, optional"
+        asvc="uint8, optional"
+        substream1="uint8, optional"
+        substream2="uint8, optional"
+        substream3="uint8, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </enhanced_AC3_descriptor>
+
+    <ATSC_EAC3_audio_descriptor
+        mixinfoexists="bool, required"
+        full_service="bool, required"
+        audio_service_type="uint3, required"
+        number_of_channels="uint3, required"
+        bsid="uint5, optional"
+        priority="uint2, optional"
+        mainid="uint3, optional"
+        asvc="uint8, optional"
+        substream1="uint8, optional"
+        substream2="uint8, optional"
+        substream3="uint8, optional"
+        language="char3, optional"
+        language_2="char3, optional"
+        substream1_lang="char3, optional"
+        substream2_lang="char3, optional"
+        substream3_lang="char3, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </ATSC_EAC3_audio_descriptor>
+
+    <eutelsat_channel_number_descriptor>
+      <!-- One per service -->
+      <service original_network_id="uint16, required"
+               transport_stream_id="uint16, required"
+               service_id="uint16, required"
+               eutelsat_channel_number="uint10, required"/>
+    </eutelsat_channel_number_descriptor>
+
+    <event_group_descriptor group_type="uint4, required">
+      <!-- One per event in actual network -->
+      <actual service_id="uint16, required"
+              event_id="uint16, required"/>
+      <!-- One per event in other networks (group_type == 4 or 5) -->
+      <other original_network_id="uint16, required"
+             transport_stream_id="uint16, required"
+             service_id="uint16, required"
+             event_id="uint16, required"/>
+      <!-- Optional private data for other group types -->
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </event_group_descriptor>
+
+    <extended_broadcaster_descriptor
+        broadcaster_type="uint4, required"
+        terrestrial_broadcaster_id="uint16, optional">
+      <!-- Any number of affiliations, when broadcaster_type == 0x01 or 0x2 -->
+      <affiliation id="uint8, required"/>
+      <!-- Any number of broadcasters, when broadcaster_type == 0x01 or 0x2 -->
+      <broadcaster original_network_id="uint16, required" broadcaster_id="uint8, required"/>
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </extended_broadcaster_descriptor>
+
+    <extended_channel_name_descriptor>
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <long_channel_name_text>
+        <string language="char3, required" text="string, required"/>
+      </long_channel_name_text>
+    </extended_channel_name_descriptor>
+
+    <extended_event_descriptor
+        descriptor_number="uint8, required"
+        last_descriptor_number="uint8, required"
+        language_code="char3, required">
+      <text>String</text>
+      <!-- One per item -->
+      <item>
+        <description>String</description>
+        <name>String</name>
+      </item>
+    </extended_event_descriptor>
+
+    <external_application_authorization_descriptor>
+      <!-- One per application -->
+      <application
+          organization_id="uint32, required"
+          application_id="uint16, required"
+          application_priority="uint8, required"/>
+      <!-- Must be in an AIT (table id 0x74) -->
+    </external_application_authorization_descriptor>
+
+    <external_ES_ID_descriptor external_ES_ID="uint16, required"/>
+
+    <flexmux_timing_descriptor
+        FCR_ES_ID="uint16, required"
+        FCRResolution="uint32, required"
+        FCRLength="uint8, required"
+        FmxRateLength="uint8, required"/>
+
+    <FMC_descriptor>
+      <!-- One per  SL_packetized stream -->
+      <stream ES_ID="uint16, required" FlexMuxChannel="uint8, required"/>
+    </FMC_descriptor>
+
+    <FTA_content_management_descriptor
+        user_defined="bool, required"
+        do_not_scramble="bool, required"
+        control_remote_access_over_internet="uint2, required"
+        do_not_apply_revocation="bool, required"/>
+
+    <frequency_list_descriptor
+        coding_type="undefined|satellite|cable|terrestrial|uint2, required">
+      <!-- List of frequencies -->
+      <centre_frequency value="FrequencyHz, required"/>
+    </frequency_list_descriptor>
+
+    <genre_descriptor>
+      <!-- One per attribute -->
+      <attribute value="uint8, required"/>
+    </genre_descriptor>
+
+    <graphics_constraints_descriptor
+        can_run_without_visible_ui="bool, required"
+        handles_configuration_changed="bool, required"
+        handles_externally_controlled_video="bool, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <graphics_configuration>
+        Hexadecimal content
+      </graphics_configuration>
+    </graphics_constraints_descriptor>
+
+    <HD_simulcast_logical_channel_descriptor>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               logical_channel_number="uint10, required"
+               visible_service="bool, default=true"/>
+    </HD_simulcast_logical_channel_descriptor>
+
+    <HEVC_timing_and_HRD_descriptor
+        hrd_management_valid="bool, required"
+        target_schedule_idx="uint5, optional"
+        N_90khz="uint32, optional"
+        K_90khz="uint32, optional"
+        num_units_in_tick="uint32, optional"/>
+
+    <HEVC_video_descriptor
+        profile_space="uint2, required"
+        tier_flag="bool, required"
+        profile_idc="uint5, required"
+        profile_compatibility_indication="uint32, required"
+        progressive_source_flag="bool, required"
+        interlaced_source_flag="bool, required"
+        non_packed_constraint_flag="bool, required"
+        frame_only_constraint_flag="bool, required"
+        copied_44bits="uint44, default=0"
+        reserved_zero_44bits="uint44, default=0"
+        level_idc="uint8, required"
+        HEVC_still_present_flag="bool, required"
+        HEVC_24hr_picture_present_flag="bool, required"
+        sub_pic_hrd_params_not_present="bool, default=true"
+        HDR_WCG_idc="uint2, default=3"
+        temporal_id_min="uint3, optional, specify both min and max or none"
+        temporal_id_max="uint3, optional, specify both min and max or none"/>
+
+    <hierarchical_transmission_descriptor
+        high_quality="bool, required"
+        reference_PID="uint13, required"/>
+
+    <hierarchy_descriptor
+        temporal_scalability="bool, required"
+        spatial_scalability="bool, required"
+        quality_scalability="bool, required"
+        hierarchy_type="uint4, required"
+        hierarchy_layer_index="uint6, required"
+        tref_present="bool, required"
+        hierarchy_embedded_layer_index="uint6, required"
+        hierarchy_channel="uint6, required"/>
+
+    <IBP_descriptor
+        closed_gop="bool, required"
+        identical_gop="bool, required"
+        max_gop_length="uint14, required"/>
+
+    <image_icon_descriptor
+        descriptor_number="uint4, required"
+        last_descriptor_number="uint4, required"
+        icon_id="uint3, required"
+        icon_transport_mode="uint2, optional"
+        coordinate_system="uint3, optional"
+        icon_horizontal_origin="uint12, optional"
+        icon_vertical_origin="uint12, optional"
+        icon_type="string, optional"
+        url="string, optional">
+      <icon_data>
+        Hexadecimal content
+      </icon_data>
+    </image_icon_descriptor>
+
+    <IPMAC_generic_stream_location_descriptor
+        interactive_network_id="uint16, required"
+        modulation_system_type="DVB-S2|DVB-T2|DVB-C2|DVB-NGH|uint8, required"
+        modulation_system_id="uint16, default=0"
+        PHY_stream_id="uint16, default=0">
+      <!-- Must be in an INT (table id 0x4C) -->
+      <selector_bytes>Hexadecimal content</selector_bytes>
+    </IPMAC_generic_stream_location_descriptor>
+
+    <IPMAC_platform_name_descriptor
+        language_code="char3, required"
+        text="string, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+    </IPMAC_platform_name_descriptor>
+
+    <IPMAC_platform_provider_name_descriptor
+        language_code="char3, required"
+        text="string, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+    </IPMAC_platform_provider_name_descriptor>
+
+    <IPMAC_stream_location_descriptor
+        network_id="uint16, required"
+        original_network_id="uint16, required"
+        transport_stream_id="uint16, required"
+        service_id="uint16, required"
+        component_tag="uint8, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+    </IPMAC_stream_location_descriptor>
+
+    <ip_signalling_descriptor platform_id="uint24, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </ip_signalling_descriptor>
+
+    <ISDB_access_control_descriptor
+        CA_system_id="uint16, required"
+        transmission_type="uint3, default=7"
+        PID="uint13, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </ISDB_access_control_descriptor>
+
+    <ISDB_terrestrial_delivery_system_descriptor
+        area_code="uint12, required"
+        guard_interval="1/32|1/16|1/8|1/4, required"
+        transmission_mode="2k|4k|8k|mode1|mode2|mode3, required">
+      <!-- More than one frequency in case of MFN -->
+      <frequency value="FrequencyHz, required"/>
+    </ISDB_terrestrial_delivery_system_descriptor>
+
+    <ISO_639_language_descriptor>
+      <!-- One per language -->
+      <language code="char3, required" audio_type="uint8, required"/>
+    </ISO_639_language_descriptor>
+
+    <ISP_access_mode_descriptor access_mode="unused|dialup|uint8, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+    </ISP_access_mode_descriptor>
+
+    <J2K_video_descriptor
+        profile_and_level="uint16, required"
+        horizontal_size="uint32, required"
+        vertical_size="uint32, required"
+        max_bit_rate="uint32, required"
+        max_buffer_size="uint32, required"
+        DEN_frame_rate="uint16, required"
+        NUM_frame_rate="uint16, required"
+        color_specification="uint8, required"
+        still_mode="bool, required"
+        interlaced_video="bool, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </J2K_video_descriptor>
+
+    <linkage_descriptor
+        transport_stream_id="uint16, required"
+        original_network_id="uint16, required"
+        service_id="uint16, required"
+        linkage_type="uint8, required">
+      <!-- if linkage_type == 0x08 -->
+      <mobile_handover_info
+          handover_type="uint4, required"
+          origin_type="NIT|SDT, required"
+          network_id="uint16, required if hand-over_type is 0x01, 0x02, 0x03"
+          initial_service_id="uint16, required if origin_type is NIT"/>
+      <!-- else if linkage_type == 0x0D -->
+      <event_linkage_info
+          target_event_id="uint16, required"
+          target_listed="bool, required"
+          event_simulcast="bool, required"/>
+      <!-- else if linkage_type >= 0x0E && linkage_type <= 0x1F -->
+      <extended_event_linkage_info>
+        <!-- For each event -->
+        <event
+            target_event_id="uint16, required"
+            target_listed="bool, required"
+            event_simulcast="bool, required"
+            link_type="uint2, required"
+            target_id_type="uint2, required"
+            user_defined_id="uint16, required if target_id_type == 3"
+            target_transport_stream_id="uint16, required if target_id_type == 1"
+            target_original_network_id="uint16, optional"
+            target_service_id="uint16, optional"/>
+      </extended_event_linkage_info>
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </linkage_descriptor>
+
+    <local_time_offset_descriptor>
+      <!-- One per region -->
+      <region country_code="char3, required"
+              country_region_id="uint6, required"
+              local_time_offset="int, required"
+              time_of_change="YYYY-MM-DD hh:mm:ss, required"
+              next_time_offset="int, required"/>
+      <!-- local_time_offset and next_time_offset: -780 to +780 minutes (-13 to +13 hours) -->
+    </local_time_offset_descriptor>
+
+    <logical_channel_number_descriptor>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               logical_channel_number="uint10, required"
+               visible_service="bool, default=true"/>
+    </logical_channel_number_descriptor>
+
+    <logo_transmission_descriptor
+        logo_transmission_type="uint8, required"
+        logo_id="uint9, optional"
+        logo_version="uint12, optional"
+        download_data_id="uint16, optional"
+        logo_char="string, optional">
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </logo_transmission_descriptor>
+
+    <maximum_bitrate_descriptor maximum_bitrate="uint32, in bits/second, required"/>
+
+    <metadata_STD_descriptor
+        metadata_input_leak_rate="uint22, required"
+        metadata_buffer_size="uint22, required"
+        metadata_output_leak_rate="uint22, required"/>
+
+    <message_descriptor message_id="uint8, required"
+                        language_code="char3, required">
+      <text>String</text>
+    </message_descriptor>
+
+    <mosaic_descriptor
+        mosaic_entry_point="bool, required"
+        number_of_horizontal_elementary_cells="uint3, required"
+        number_of_vertical_elementary_cells="uint3, required">
+      <!-- One per cell in the mosaic -->
+      <cell logical_cell_id="uint6, required"
+            logical_cell_presentation_info="uint3, required"
+            cell_linkage_info="uint8, required"
+            bouquet_id="uint16, optional"
+            original_network_id="uint16, optional"
+            transport_stream_id="uint16, optional"
+            service_id="uint16, optional"
+            event_id="uint16, optional">
+        <!-- One per elementary cell -->
+        <elementary_cell id="uint6, required"/>
+      </cell>
+    </mosaic_descriptor>
+
+    <MPEG2_AAC_audio_descriptor
+        MPEG2_AAC_profile="uint8, required"
+        MPEG2_AAC_channel_configuration="uint8, required"
+        MPEG2_AAC_additional_information="uint8, required"/>
+
+    <MPEG2_stereoscopic_video_format_descriptor arrangement_type="uint7, optional"/>
+
+    <MPEG4_audio_descriptor MPEG4_audio_profile_and_level="uint8, required"/>
+
+    <MPEG4_video_descriptor MPEG4_visual_profile_and_level="uint8, required"/>
+
+    <multilingual_bouquet_name_descriptor>
+      <!-- One per language -->
+      <language code="char3, required" bouquet_name="string, required"/>
+    </multilingual_bouquet_name_descriptor>
+
+    <multilingual_component_descriptor component_tag="uint8, required">
+      <!-- One per language -->
+      <language code="char3, required" description="string, required"/>
+    </multilingual_component_descriptor>
+
+    <multilingual_network_name_descriptor>
+      <!-- One per language -->
+      <language code="char3, required" network_name="string, required"/>
+    </multilingual_network_name_descriptor>
+
+    <multilingual_service_name_descriptor>
+      <!-- One per language -->
+      <language code="char3, required"
+                service_provider_name="string, required"
+                service_name="string, required"/>
+    </multilingual_service_name_descriptor>
+
+    <multiplex_buffer_descriptor
+        MB_buffer_size="uint24, required"
+        TB_leak_rate="uint24, required"/>
+
+    <multiplex_buffer_utilization_descriptor
+        LTW_offset_lower_bound="uint15, optional"
+        LTW_offset_upper_bound="uint15, optional"/>
+
+    <MVC_extension_descriptor
+        average_bitrate="uint16, required"
+        maximum_bitrate="uint16, required"
+        view_association_not_present="bool, required"
+        base_view_is_left_eyeview="bool, required"
+        view_order_index_min="uint10, required"
+        view_order_index_max="uint10, required"
+        temporal_id_start="uint3, required"
+        temporal_id_end="uint3, required"
+        no_sei_nal_unit_present="bool, required"
+        no_prefix_nal_unit_present="bool, required"/>
+
+    <network_change_notify_descriptor>
+      <!-- One per cell -->
+      <cell cell_id="uint16, required">
+        <!-- One per network change -->
+        <change network_change_id="uint8, required"
+                network_change_version="uint8, required"
+                start_time_of_change="YYYY-MM-DD hh:mm:ss, required"
+                change_duration="hh:mm:ss, required"
+                receiver_category="uint3, required"
+                change_type="uint4, required"
+                message_id="uint8, required"
+                invariant_ts_tsid="uint16, optional"
+                invariant_ts_onid="uint16, optional"/>
+      </cell>
+    </network_change_notify_descriptor>
+
+    <network_name_descriptor network_name="string, required"/>
+
+    <nordig_logical_channel_descriptor_v1>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               logical_channel_number="uint14, required"
+               visible_service="bool, default=true"/>
+    </nordig_logical_channel_descriptor_v1>
+
+    <nordig_logical_channel_descriptor_v2>
+      <!-- One per channel list -->
+      <channel_list id="uint8, required"
+                    name="string, required"
+                    country_code="char3, required">
+        <!-- One per service in the channel list -->
+        <service service_id="uint16, required"
+                 logical_channel_number="uint10, required"
+                 visible_service="bool, default=true"/>
+      </channel_list>
+    </nordig_logical_channel_descriptor_v2>
+
+    <sky_logical_channel_number_descriptor region_id="uint16, required">
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               service_type="uint8, required"
+               channel_id="uint16, required"
+               logical_channel_number="uint16, required"
+               sky_id="uint16, required"/>
+    </sky_logical_channel_number_descriptor>
+
+    <node_relation_descriptor
+        reference_type="uint4, default=0"
+        information_provider_id="uint16, optional"
+        event_relation_id="uint16, optional"
+        reference_node_id="uint16, required"
+        reference_number="uint8, required"/>
+
+    <NPT_endpoint_descriptor
+        start_NPT="uint33, required"
+        stop_NPT="uint33, required"/>
+
+    <NPT_reference_descriptor
+        post_discontinuity="bool, default=false"
+        content_id="uint7, default=0x7F"
+        STC_reference="uint33, required"
+        NPT_reference="uint33, required"
+        scale_numerator="uint16, required"
+        scale_denominator="uint16, required"/>
+
+    <NVOD_reference_descriptor>
+      <!-- One per service -->
+      <service transport_stream_id="uint16, required"
+               original_network_id="uint16, required"
+               service_id="uint16, required"/>
+    </NVOD_reference_descriptor>
+
+    <parental_rating_descriptor>
+      <!-- One per country -->
+      <country country_code="char3, required"
+               rating="uint8, required"/>
+    </parental_rating_descriptor>
+
+    <partial_reception_descriptor>
+      <service id="uint16, required"/>
+    </partial_reception_descriptor>
+
+    <partial_transport_stream_descriptor
+        peak_rate="uint22, required"
+        minimum_overall_smoothing_rate="uint22, default=0x3FFFFF"
+        maximum_overall_smoothing_buffer="uint14, default=0x3FFF"/>
+
+    <PDC_descriptor programme_identification_label="MM-DD hh:mm, required"/>
+
+    <prefetch_descriptor transport_protocol_label="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per module -->
+      <module label="string, required" prefetch_priority="int, 1 to 100, required"/>
+    </prefetch_descriptor>
+
+    <private_data_indicator_descriptor private_data_indicator="uint32, required"/>
+
+    <private_data_specifier_descriptor private_data_specifier="uint32|eacem|eutelsat|nordig, required"/>
+
+    <protection_message_descriptor>
+      <!-- One per component, up to 15 components -->
+      <component tag="uint8, required"/>
+    </protection_message_descriptor>
+
+    <redistribution_control_descriptor>
+      <rc_information>
+        Hexadecimal content
+      </rc_information>
+    </redistribution_control_descriptor>
+
+    <reference_descriptor
+        information_provider_id="uint16, required"
+        event_relation_id="uint16, required">
+      <!-- One per reference -->
+      <reference
+          reference_node_id="uint16, required"
+          reference_number="uint8, required"
+          last_reference_number="uint8, required"/>
+    </reference_descriptor>
+
+    <registration_descriptor format_identifier="uint32, required">
+      <additional_identification_info>
+        Hexadecimal content (optional element)
+      </additional_identification_info>
+    </registration_descriptor>
+
+    <satellite_delivery_system_descriptor
+        frequency="SatelliteFrequencyHz, required"
+        orbital_position="SatelliteOrbitalPosition, eg. 19.2, required"
+        west_east_flag="east|west, required"
+        polarization="horizontal|vertical|left|right, required"
+        roll_off="0.35|0.25|0.20|reserved, default=0.35"
+        modulation_system="DVB-S|DVB-S2|ISDB-S, required"
+        modulation_type="auto|QPSK|8PSK|16-QAM|ISDB-S|2.6GHzMobile|AdvancedCS, Default=QPSK|ISDB-S"
+        symbol_rate="SatelliteSymbolRate, required"
+        FEC_inner="undefined|1/2|2/3|3/4|5/6|7/8|8/9|3/5|4/5|9/10|ISDB-S|2.6GHzMobile|AdvancedCS|none, required"/>
+
+    <S2_satellite_delivery_system_descriptor
+        backwards_compatibility="bool, required"
+        scrambling_sequence_index="uint18, optional"
+        input_stream_identifier="uint8, optional"/>
+
+    <S2X_satellite_delivery_system_descriptor
+        receiver_profiles="uint5, required"
+        S2X_mode="uint2, required"
+        TS_GS_S2X_mode="uint2, required"
+        scrambling_sequence_index="uint18, optional"
+        timeslice_number="uint8, required for S2X_mode==2">
+      <!-- Master channel is required -->
+      <master_channel
+          frequency="SatelliteFrequencyHz, required"
+          orbital_position="SatelliteOrbitalPosition, eg. 19.2, required"
+          west_east_flag="east|west, required"
+          polarization="horizontal|vertical|left|right, required"
+          roll_off="0.35|0.25|0.20|0.15|0.10|0.05|uint3, required"
+          symbol_rate="SatelliteSymbolRate, required"
+          input_stream_identifier="uint8, optional"/>
+      <!-- When S2X_mode==3, there must be exactly 1 or 2 channel_bond -->
+      <channel_bond
+          frequency="SatelliteFrequencyHz, required"
+          orbital_position="SatelliteOrbitalPosition, eg. 19.2, required"
+          west_east_flag="east|west, required"
+          polarization="horizontal|vertical|left|right, required"
+          roll_off="0.35|0.25|0.20|0.15|0.10|0.05|uint3, required"
+          symbol_rate="SatelliteSymbolRate, required"
+          input_stream_identifier="uint8, optional"/>
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </S2X_satellite_delivery_system_descriptor>
+
+    <SH_delivery_system_descriptor diversity_mode="uint4, required">
+      <!-- Number of modulations depends on the SH config, e.g. 1 in SFN, 2 in non-SFN -->
+      <modulation>
+        <!-- Modulation type: exactly one of TDM or OFDM must be present -->
+        <TDM
+            polarization="horizontal|vertical|left|right, required"
+            roll_off="0.35|0.25|0.15|reserved, required"
+            modulation_mode="QPSK|8PSK|16APSK|reserved, required"
+            code_rate="uint4, required"
+            symbol_rate="uint5, required"/>
+        <OFDM
+            bandwidth="8MHz|7MHz|6MHz|5MHz|1.7MHz|uint3, required"
+            priority="uint1, required"
+            constellation_and_hierarchy="uint3, required"
+            code_rate="uint4, required"
+            guard_interval="1/32|1/16|1/8|1/4|uint2, required"
+            transmission_mode="1k|2k|4k|8k|uint2, required"
+            common_frequency="bool, required"/>
+        <!-- At most one interleaver, optional fields must be all absent or all present -->
+        <interleaver
+            common_multiplier="uint6, required"
+            nof_late_taps="uint6, optional"
+            nof_slices="uint6, optional"
+            slice_distance="uint8, optional"
+            non_late_increments="uint6, optional"/>
+      </modulation>
+    </SH_delivery_system_descriptor>
+
+    <scheduling_descriptor
+        start_date_time="YYYY-MM-DD hh:mm:ss, required"
+        end_date_time="YYYY-MM-DD hh:mm:ss, required"
+        final_availability="bool, required"
+        periodicity="bool, required"
+        period_unit="second|minute|hour|day|uint2, required"
+        duration_unit="second|minute|hour|day|uint2, required"
+        estimated_cycle_time_unit="second|minute|hour|day|uint2, required"
+        period="uint8, required"
+        duration="uint8, required"
+        estimated_cycle_time="uint8, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </scheduling_descriptor>
+
+    <scrambling_descriptor scrambling_mode="uint8, required"/>
+
+    <series_descriptor
+        series_id="uint16, required"
+        repeat_label="uint4, required"
+        program_pattern="uint3, required"
+        expire_date="YYYY-MM-DD, optional"
+        episode_number="uint12, required"
+        last_episode_number="uint12, required"
+        series_name="string, optional"/>
+
+    <service_descriptor
+        service_type="uint8, required"
+        service_provider_name="string, required"
+        service_name="string, required"/>
+
+    <service_availability_descriptor availability="bool, required">
+      <!-- One per cell -->
+      <cell id="uint16, required"/>
+    </service_availability_descriptor>
+
+    <service_group_descriptor service_group_type="uint4, required">
+      <!-- One per service when service_group_type == 1 -->
+      <service primary_service_id="uint16, required"
+               secondary_service_id="uint16, required"/>
+      <!-- Optional private data for other group types -->
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </service_group_descriptor>
+
+    <service_identifier_descriptor service_identifier="string, required"/>
+
+    <service_list_descriptor>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               service_type="uint8, required"/>
+    </service_list_descriptor>
+
+    <service_location_descriptor PCR_PID="uint13, optional">
+      <!-- One per component -->
+      <component stream_type="uint8, required"
+                 elementary_PID="uint13, required"
+                 ISO_639_language_code="char3, optional"/>
+    </service_location_descriptor>
+
+    <service_move_descriptor
+        new_original_network_id="uint16, required"
+        new_transport_stream_id="uint16, required"
+        new_service_id="uint16, required"/>
+
+    <service_relocated_descriptor
+        old_original_network_id="uint16, required"
+        old_transport_stream_id="uint16, required"
+        old_service_id="uint16, required"/>
+
+    <short_event_descriptor language_code="char3, required">
+      <event_name>String</event_name>
+      <text>String</text>
+    </short_event_descriptor>
+
+    <short_node_information_descriptor
+        ISO_639_language_code="char3, required"
+        node_name="string, optional"
+        text="string, optional"/>
+
+    <short_smoothing_buffer_descriptor
+        sb_size="uint2, required"
+        sb_leak_rate="uint6, required">
+      Hexadecimal content (optional DVB-reserved data)
+    </short_smoothing_buffer_descriptor>
+
+    <SI_parameter_descriptor
+        parameter_version="uint8, required"
+        update_time="YYYY-MM-DD, required">
+      <!-- One per SI table -->
+      <table id="uint8, required">
+        Hexadecimal content (table description bytes)
+      </table>
+    </SI_parameter_descriptor>
+
+    <SI_prime_TS_descriptor
+        parameter_version="uint8, required"
+        update_time="YYYY-MM-DD, required"
+        SI_prime_TS_network_id="uint16, required"
+        SI_prime_transport_stream_id="uint16, required">
+      <!-- One per SI table -->
+      <table id="uint8, required">
+        Hexadecimal content (table description bytes)
+      </table>
+    </SI_prime_TS_descriptor>
+
+    <simple_application_boundary_descriptor>
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per prefix: -->
+      <prefix boundary_extension="string, required"/>
+    </simple_application_boundary_descriptor>
+
+    <simple_application_location_descriptor initial_path="string, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </simple_application_location_descriptor>
+
+    <SL_descriptor ES_ID="uint16, required"/>
+
+    <smoothing_buffer_descriptor
+        sb_leak_rate="uint22, required"
+        sb_size="uint22, required"/>
+
+    <splice_avail_descriptor
+        identifier="uint32, default=0x43554549"
+        provider_avail_id="uint32, required"/>
+
+    <splice_DTMF_descriptor
+        identifier="uint32, default=0x43554549"
+        preroll="uint8, required"
+        DTMF="string, required"/>
+
+    <splice_segmentation_descriptor
+        identifier="uint32, default=0x43554549"
+        segmentation_event_id="uint32, required"
+        segmentation_event_cancel="bool, default=false"
+        web_delivery_allowed="bool, default=true"
+        no_regional_blackout="bool, default=true"
+        archive_allowed="bool, default=true"
+        device_restrictions="uint2, default=3"
+        segmentation_duration="uint40, optional"
+        segmentation_type_id="uint8, required"
+        segment_num="uint8, required"
+        segments_expected="uint8, required"
+        sub_segment_num="uint8, required when segmentation_type_id == 0x34 or 0x36"
+        sub_segments_expected="uint8, required when segmentation_type_id == 0x34 or 0x36">
+      <segmentation_upid type="uint8, required">
+        Hexadecimal content
+      </segmentation_upid>
+      <!-- One per component when program_segmentation_flag is to be set to 0 -->
+      <component component_tag="uint8, required" pts_offset="uint33, required"/>
+    </splice_segmentation_descriptor>
+
+    <splice_time_descriptor
+        identifier="uint32, default=0x43554549"
+        TAI_seconds="uint48, required"
+        TAI_ns="uint32, required"
+        UTC_offset="uint16, required"/>
+
+    <SSU_enhanced_message_descriptor
+        descriptor_number="uint4, required"
+        last_descriptor_number="uint4, required"
+        ISO_639_language_code="char3, required"
+        message_index="uint5, required">
+      <text>String</text>
+    </SSU_enhanced_message_descriptor>
+
+    <SSU_event_name_descriptor ISO_639_language_code="char3, required">
+      <name>String</name>
+      <text>String</text>
+    </SSU_event_name_descriptor>
+
+    <SSU_location_descriptor
+        data_broadcast_id="uint16, required"
+        association_tag="uint16, optional">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </SSU_location_descriptor>
+
+    <SSU_message_descriptor
+        descriptor_number="uint4, required"
+        last_descriptor_number="uint4, required"
+        ISO_639_language_code="char3, required">
+      <text>String</text>
+    </SSU_message_descriptor>
+
+    <SSU_subgroup_association_descriptor subgroup_tag="uint40, required"/>
+
+    <SSU_uri_descriptor
+        max_holdoff_time="uint8, required"
+        min_polling_interval="uint8, required"
+        uri="string, required"/>
+
+    <STD_descriptor leak_valid="bool, required"/>
+
+    <stereoscopic_program_info_descriptor stereoscopic_service_type="uint3, required"/>
+
+    <stereoscopic_video_info_descriptor
+        base_video="bool, required"
+        leftview="bool, optional"
+        usable_as_2D="bool, optional"
+        horizontal_upsampling_factor="uint4, optional"
+        vertical_upsampling_factor="uint4, optional"/>
+
+    <stream_mode_descriptor stream_mode="uint8, required"/>
+
+    <stream_event_descriptor
+        event_id="uint16, required"
+        event_NPT="uint33, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+      <private_text>
+        ASCII string to be used instead of private_data
+      </private_text>
+    </stream_event_descriptor>
+
+    <stream_identifier_descriptor component_tag="uint8, required"/>
+
+    <DVB_stuffing_descriptor>
+      Hexadecimal content
+    </DVB_stuffing_descriptor>
+
+    <!-- Previous version, still accepted for compatibility -->
+    <stuffing_descriptor>
+      Hexadecimal content
+    </stuffing_descriptor>
+
+    <ATSC_stuffing_descriptor>
+      Hexadecimal content
+    </ATSC_stuffing_descriptor>
+
+    <subtitling_descriptor>
+      <!-- One per subtitle -->
+      <subtitling language_code="char3, required"
+                  subtitling_type="uint8, required"
+                  composition_page_id="uint16, required"
+                  ancillary_page_id="uint16, required"/>
+    </subtitling_descriptor>
+
+    <supplementary_audio_descriptor
+        mix_type="uint1, required"
+        editorial_classification="uint5, required"
+        language_code="char3, optional">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </supplementary_audio_descriptor>
+
+    <SVC_extension_descriptor
+        width="uint16, required"
+        height="uint16, required"
+        frame_rate="uint16, required"
+        average_bitrate="uint16, required"
+        maximum_bitrate="uint16, required"
+        dependency_id="uint3, required"
+        quality_id_start="uint4, required"
+        quality_id_end="uint4, required"
+        temporal_id_start="uint3, required"
+        temporal_id_end="uint3, required"
+        no_sei_nal_unit_present="bool, required"/>
+
+    <system_clock_descriptor
+        external_clock_reference="bool required"
+        clock_accuracy_integer="uint6, required"
+        clock_accuracy_exponent="uint3, required"/>
+
+    <system_management_descriptor
+        broadcasting_flag="uint2, required"
+        broadcasting_identifier="uint6, required"
+        additional_broadcasting_identification="uint8, required">
+      <additional_identification_info>
+        Hexadecimal content
+      </additional_identification_info>
+    </system_management_descriptor>
+
+    <T2MI_descriptor
+        t2mi_stream_id="uint3, required"
+        num_t2mi_streams_minus_one="uint3, default=0"
+        pcr_iscr_common_clock_flag="bool, default=false">
+      <reserved>
+        Hexadecimal content
+      </reserved>
+    </T2MI_descriptor>
+
+    <target_background_grid_descriptor
+        horizontal_size="uint14, required"
+        vertical_size="uint14, required"
+        aspect_ratio_information="uint4, required"/>
+
+    <target_IP_address_descriptor IPv4_addr_mask="IPv4 address, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+      <!-- One per IPv4 address: -->
+      <address IPv4_addr="IPv4 address, required"/>
+    </target_IP_address_descriptor>
+
+    <target_IP_slash_descriptor>
+      <!-- Must be in an INT (table id 0x4C) -->
+      <!-- One per IPv4 address: -->
+      <address
+          IPv4_addr="IPv4 address, required"
+          IPv4_slash_mask="uint8, required"/>
+    </target_IP_slash_descriptor>
+
+    <target_IP_source_slash_descriptor>
+      <!-- Must be in an INT (table id 0x4C) -->
+      <!-- One per pair of IPv4 address: -->
+      <address
+          IPv4_source_addr="IPv4 address, required"
+          IPv4_source_slash_mask="uint8, required"
+          IPv4_dest_addr="IPv4 address, required"
+          IPv4_dest_slash_mask="uint8, required"/>
+    </target_IP_source_slash_descriptor>
+
+    <target_IPv6_address_descriptor IPv6_addr_mask="IPv6 address, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+      <!-- One per IPv6 address: -->
+      <address IPv6_addr="IPv6 address, required"/>
+    </target_IPv6_address_descriptor>
+
+    <target_IPv6_slash_descriptor>
+      <!-- Must be in an INT (table id 0x4C) -->
+      <!-- One per IPv6 address: -->
+      <address
+          IPv6_addr="IPv6 address, required"
+          IPv6_slash_mask="uint8, required"/>
+    </target_IPv6_slash_descriptor>
+
+    <target_IPv6_source_slash_descriptor>
+      <!-- Must be in an INT (table id 0x4C) -->
+      <!-- One per pair of IPv6 address: -->
+      <address
+          IPv6_source_addr="IPv6 address, required"
+          IPv6_source_slash_mask="uint8, required"
+          IPv6_dest_addr="IPv6 address, required"
+          IPv6_dest_slash_mask="uint8, required"/>
+    </target_IPv6_source_slash_descriptor>
+
+    <target_MAC_address_descriptor MAC_addr_mask="MAC address, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+      <!-- One per MAC address: -->
+      <address MAC_addr="MAC address, required"/>
+    </target_MAC_address_descriptor>
+
+    <target_MAC_address_range_descriptor>
+      <!-- Must be in an INT (table id 0x4C) -->
+      <!-- One per MAC address range: -->
+      <range MAC_addr_low="MAC address, required"
+             MAC_addr_high="MAC address, required"/>
+    </target_MAC_address_range_descriptor>
+
+    <target_region_descriptor country_code="char3, required">
+      <!-- One per region -->
+      <region country_code="char3, optional"
+              primary_region_code="uint8, optional"
+              secondary_region_code="uint8, optional"
+              tertiary_region_code="uint16, optional"/>
+    </target_region_descriptor>
+
+    <target_region_name_descriptor
+        country_code="char3, required"
+        ISO_639_language_code="char3, required">
+      <!-- One per region -->
+      <region region_name="string, required"
+              primary_region_code="uint8, required"
+              secondary_region_code="uint8, optional"
+              tertiary_region_code="uint16, optional"/>
+    </target_region_name_descriptor>
+
+    <target_serial_number_descriptor>
+      <!-- Serial data bytes -->
+      Hexadecimal content
+    </target_serial_number_descriptor>
+
+    <target_smartcard_descriptor super_CA_system_id="uint32, required">
+      <!-- Private data bytes -->
+      Hexadecimal content
+    </target_smartcard_descriptor>
+
+    <telephone_descriptor
+        foreign_availability="bool, required"
+        connection_type="uint5, required"
+        country_prefix="string, 3 chars max, optional"
+        international_area_code="string, 7 chars max, optional"
+        operator_code="string, 3 chars max, optional"
+        national_area_code="string, 7 chars max, optional"
+        core_number="string, 15 chars max, optional"/>
+
+    <teletext_descriptor>
+      <!-- One per page -->
+      <teletext language_code="char3, required"
+                teletext_type="uint5, required"
+                page_number="uint16, required"/>
+    </teletext_descriptor>
+
+    <terrestrial_delivery_system_descriptor
+        centre_frequency="TerrestrialFrequencyHz, required"
+        bandwidth="8MHz|7MHz|6MHz|5MHz, required"
+        priority="HP|LP, required"
+        no_time_slicing="bool, required"
+        no_MPE_FEC="bool, required"
+        constellation="QPSK|16-QAM|64-QAM, required"
+        hierarchy_information="uint3, required"
+        code_rate_HP_stream="1/2|2/3|3/4|5/6|7/8, required"
+        code_rate_LP_stream="1/2|2/3|3/4|5/6|7/8, required"
+        guard_interval="1/32|1/16|1/8|1/4, required"
+        transmission_mode="2k|8k|4k, required"
+        other_frequency="bool, required"/>
+
+    <T2_delivery_system_descriptor
+        plp_id="uint8, required"
+        T2_system_id="uint16, required">
+      <!-- Optional extension -->
+      <extension
+          SISO_MISO="SISO|MISO|uint2, required"
+          bandwidth="8MHz|7MHz|6MHz|5MHz|10MHz|1.712MHz|uint4, required"
+          guard_interval="1/32|1/16|1/8|1/4|1/128|19/128|19/256|uint3, required"
+          transmission_mode="2k|8k|4k|1k|16k|32k|uint3, required"
+          other_frequency="bool, required"
+          tfs="bool, required">
+        <!-- One per cell -->
+        <cell cell_id="uint16, required">
+          <!-- Only one if tfs is false, any number if tfs is true -->
+          <centre_frequency value="FrequencyHz, required"/>
+          <!-- One per subcell -->
+          <subcell cell_id_extension="uint8, required"
+                   transposer_frequency="FrequencyHz, required"/>
+        </cell>
+      </extension>
+    </T2_delivery_system_descriptor>
+
+    <time_shifted_event_descriptor
+        reference_service_id="uint16, required"
+        reference_event_id="uint16, required"/>
+
+    <DVB_time_shifted_service_descriptor reference_service_id="uint16, required"/>
+
+    <!-- Previous version, still accepted for compatibility -->
+    <time_shifted_service_descriptor reference_service_id="uint16, required"/>
+
+    <ATSC_time_shifted_service_descriptor>
+      <!-- One per service -->
+      <service time_shift="uint10, required"
+               major_channel_number="uint10, required"
+               minor_channel_number="uint10, required"/>
+    </ATSC_time_shifted_service_descriptor>
+
+    <time_slice_fec_identifier_descriptor
+        time_slicing="bool, required"
+        mpe_fec="uint2, required"
+        frame_size="uint3, required"
+        max_burst_duration="uint8, required"
+        max_average_rate="uint4, required"
+        time_slice_fec_id="uint4, default=0">
+      <id_selector_bytes>Hexadecimal content</id_selector_bytes>
+    </time_slice_fec_identifier_descriptor>
+
+    <transport_profile_descriptor transport_profile="uint8, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </transport_profile_descriptor>
+
+    <transport_protocol_descriptor transport_protocol_label="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- Only one of the following shall be present -->
+      <!-- For protocol id 1: -->
+      <object_carousel
+          original_network_id="uint16, optional"
+          transport_stream_id="uint16, optional"
+          service_id="uint16, optional"
+          component_tag="uint8, required"/>
+      <!-- For protocol id 2: -->
+      <ip_mpe
+          original_network_id="uint16, optional"
+          transport_stream_id="uint16, optional"
+          service_id="uint16, optional"
+          alignment_indicator="bool, required">
+        <!-- One per URL -->
+        <url value="string, required"/>
+      </ip_mpe>
+      <!-- For protocol id 3: -->
+      <http>
+        <!-- One per URL -->
+        <url base="string, required">
+          <!-- One per URL extension -->
+          <extension value="string, required"/>
+        </url>
+      </http>
+      <!-- For other (unknown) protocol ids: -->
+      <protocol id="uint16, required">
+        Hexadecimal content
+      </protocol>
+    </transport_protocol_descriptor>
+
+    <transport_stream_descriptor compliance="string, required"/>
+
+    <TS_information_descriptor
+        remote_control_key_id="uint8, required"
+        ts_name="string, required">
+      <!-- Up to 3 transmission types -->
+      <transmission_type transmission_type_info="uint8, required">
+        <service id="uint16, required"/>
+      </transmission_type>
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </TS_information_descriptor>
+
+    <update_descriptor
+        update_flag="uint2, required"
+        update_method="uint4, required"
+        update_priority="uint2, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </update_descriptor>
+
+    <URI_linkage_descriptor
+        uri_linkage_type="uint8, required"
+        uri="string, required"
+        min_polling_interval="uint16, optional">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </URI_linkage_descriptor>
+
+    <VBI_data_descriptor>
+      <!-- One per VBI data service -->
+      <service data_service_id="uint8, required">
+        <!-- One per field in the service -->
+        <field field_parity="bool, default=false" line_offset="uint5, default=0"/>
+        <!-- Valid only when data_service_id is not any of 1, 2, 4, 5, 6, 7 -->
+        <reserved>
+          Hexadecimal content
+        </reserved>
+      </service>
+    </VBI_data_descriptor>
+
+    <VBI_teletext_descriptor>
+      <!-- One per page -->
+      <teletext language_code="char3, required"
+                teletext_type="uint5, required"
+                page_number="uint16, required"/>
+    </VBI_teletext_descriptor>
+
+    <video_decode_control_descriptor
+        still_picture="bool, required"
+        sequence_end_code="bool, required"
+        video_encode_format="uint4, required"
+        reserved_future_use="uint2, default=3"/>
+
+    <video_depth_range_descriptor>
+      <!-- One per video range -->
+      <range range_type="uint8, required"
+             video_max_disparity_hint="int12, required when range_type == 0"
+             video_min_disparity_hint="int12, required when range_type == 0">
+        <range_selector>
+          Hexadecimal content
+        </range_selector>
+      </range>
+    </video_depth_range_descriptor>
+
+    <video_stream_descriptor
+        multiple_frame_rate="bool, required"
+        frame_rate_code="uint4, required"
+        MPEG_1_only="bool, required"
+        constrained_parameter="bool, required"
+        still_picture="bool, required"
+        profile_and_level_indication="uint8, required when MPEG_1_only='false'"
+        chroma_format="uint2, required when MPEG_1_only='false'"
+        frame_rate_extension="bool, required when MPEG_1_only='false'"/>
+
+    <video_window_descriptor
+        horizontal_offset="uint14, required"
+        vertical_offset="uint14, required"
+        window_priority="uint4, required"/>
+
+  </_descriptors>
+
+</tsduck>

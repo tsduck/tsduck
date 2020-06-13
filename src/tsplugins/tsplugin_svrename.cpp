@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsService.h"
 #include "tsSectionDemux.h"
@@ -89,8 +88,7 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(svrename, ts::SVRenamePlugin)
+TS_REGISTER_PROCESSOR_PLUGIN(u"svrename", ts::SVRenamePlugin);
 
 
 //----------------------------------------------------------------------------
@@ -98,7 +96,7 @@ TSPLUGIN_DECLARE_PROCESSOR(svrename, ts::SVRenamePlugin)
 //----------------------------------------------------------------------------
 
 ts::SVRenamePlugin::SVRenamePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Rename a service, assign a new service name and/or new service id", u"[options] service"),
+    ProcessorPlugin(tsp_, u"Rename a service, assign a new service name and/or new service id", u"[options] [service]"),
     _abort(false),
     _pat_found(false),
     _ts_id(0),
@@ -108,18 +106,22 @@ ts::SVRenamePlugin::SVRenamePlugin(TSP* tsp_) :
     _ignore_eit(false),
     _ignore_nit(false),
     _demux(duck, this),
-    _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
-    _pzer_pmt(PID_NULL, CyclingPacketizer::ALWAYS),
-    _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
-    _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS),
+    _pzer_pat(duck, PID_PAT, CyclingPacketizer::ALWAYS),
+    _pzer_pmt(duck, PID_NULL, CyclingPacketizer::ALWAYS),
+    _pzer_sdt_bat(duck, PID_SDT, CyclingPacketizer::ALWAYS),
+    _pzer_nit(duck, PID_NIT, CyclingPacketizer::ALWAYS),
     _eit_process(duck, PID_EIT)
 {
-    option(u"", 0, STRING, 1, 1);
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
+    option(u"", 0, STRING, 0, 1);
     help(u"",
          u"Specifies the service to rename. If the argument is an integer value "
          u"(either decimal or hexadecimal), it is interpreted as a service id. "
          u"Otherwise, it is interpreted as a service name, as specified in the SDT. "
-         u"The name is not case sensitive and blanks are ignored.");
+         u"The name is not case sensitive and blanks are ignored. "
+         u"If no service is specified, the first service in the PAT is used.");
 
     option(u"free-ca-mode", 'f', INTEGER, 0, 1, 0, 1);
     help(u"free-ca-mode", u"Specify a new free_CA_mode to set in the SDT (0 or 1).");
@@ -160,6 +162,7 @@ ts::SVRenamePlugin::SVRenamePlugin(TSP* tsp_) :
 bool ts::SVRenamePlugin::start()
 {
     // Get option values
+    duck.loadArgs(*this);
     _old_service.set(value(u""));
     _ignore_bat = present(u"ignore-bat");
     _ignore_eit = present(u"ignore-eit");
@@ -188,9 +191,13 @@ bool ts::SVRenamePlugin::start()
         _new_service.setRunningStatus(intValue<uint8_t>(u"running-status"));
     }
 
-    // Initialize the demux
+    // Initialize the demux. When the service is unspecified or is known
+    // by id, we wait for the PAT. If it is known by service name, we do
+    // not know how to modify the PAT. We will wait for it after receiving the SDT.
+    // Packets from PAT PID are analyzed but not passed. When a complete
+    // PAT is read, a modified PAT will be transmitted.
     _demux.reset();
-    _demux.addPID(PID_SDT);
+    _demux.addPID(_old_service.hasName() ? PID_SDT : PID_PAT);
 
     // Initialize the EIT processing.
     _eit_process.reset();
@@ -198,15 +205,6 @@ bool ts::SVRenamePlugin::start()
     // No need to modify EIT's if there is no new service id.
     if (!_new_service.hasId()) {
         _ignore_eit = true;
-    }
-
-    // When the service id is known, we wait for the PAT. If it is not yet
-    // known (only the service name is known), we do not know how to modify
-    // the PAT. We will wait for it after receiving the SDT.
-    // Packets from PAT PID are analyzed but not passed. When a complete
-    // PAT is read, a modified PAT will be transmitted.
-    if (_old_service.hasId()) {
-        _demux.addPID(PID_PAT);
     }
 
     // Reset other states
@@ -233,7 +231,7 @@ void ts::SVRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 {
     if (tsp->debug()) {
         tsp->debug(u"Got %s v%d, PID %d (0x%X), TIDext %d (0x%X)",
-                   {names::TID(table.tableId()), table.version(),
+                   {names::TID(duck, table.tableId()), table.version(),
                     table.sourcePID(), table.sourcePID(),
                     table.tableIdExtension(), table.tableIdExtension()});
     }
@@ -352,18 +350,18 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
 
     // Look for the service by name or by service
     if (_old_service.hasId()) {
-        // Search service by id
+        // Search service by id. If the service is not present, this is not an error.
         found = sdt.services.find(_old_service.getId()) != sdt.services.end();
         if (!found) {
             // Informational only
-            tsp->verbose(u"service %d (0x%X) not found in SDT", {_old_service.getId(), _old_service.getId()});
+            tsp->verbose(u"service 0x%X (%d) not found in SDT", {_old_service.getId(), _old_service.getId()});
         }
     }
-    else {
-        // Search service by name
+    else if (_old_service.hasName()) {
+        // Search service by name only. The service id will be updated in _old_service.
         found = sdt.findService(duck, _old_service);
         if (!found) {
-            // Here, this is an error. A service can be searched by name only in current TS
+            // Here, this is an error. If the name is not in the SDT, then we cannot identify the service.
             tsp->error(u"service \"%s\" not found in SDT", {_old_service.getName()});
             _abort = true;
             return;
@@ -408,13 +406,27 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
 
 void ts::SVRenamePlugin::processPAT(PAT& pat)
 {
-    // Save the TS id
+    // Save the TS id.
     _ts_id = pat.ts_id;
     _old_service.setTSId(pat.ts_id);
 
-    // Locate the service in the PAT
-    assert(_old_service.hasId());
-    PAT::ServiceMap::iterator it = pat.pmts.find(_old_service.getId());
+    // Locate the service in the PAT.
+    PAT::ServiceMap::iterator it;
+    if (_old_service.hasId()) {
+        // The service id is known, find it in the PAT.
+        it = pat.pmts.find(_old_service.getId());
+    }
+    else {
+        // The service was originally unspecified, use the first service in the PAT.
+        assert(!_old_service.hasName());
+        if (pat.pmts.empty()) {
+            tsp->error(u"the PAT contains no service");
+            _abort = true;
+            return;
+        }
+        it = pat.pmts.begin();
+        _old_service.setId(it->first);
+    }
 
     // If service not found, error
     if (it == pat.pmts.end()) {
@@ -443,12 +455,13 @@ void ts::SVRenamePlugin::processPAT(PAT& pat)
         }
     }
 
-    // Replace the PAT.in the PID
+    // Replace the PAT in the PID.
     _pzer_pat.removeSections(TID_PAT);
     _pzer_pat.addTable(duck, pat);
     _pat_found = true;
 
-    // Now that we know the ts_id, we can process the NIT
+    // Now that we know the ts_id, we can process the SDT and NIT.
+    _demux.addPID(PID_SDT);
     if (!_ignore_nit) {
         const PID nit_pid = pat.nit_pid != PID_NULL ? pat.nit_pid : PID(PID_NIT);
         _pzer_nit.setPID(nit_pid);
@@ -571,21 +584,23 @@ ts::ProcessorPlugin::Status ts::SVRenamePlugin::processPacket(TSPacket& pkt, TSP
         return TSP_NULL;
     }
 
-    // Replace packets using packetizers
-    if (pid == PID_PAT) {
-        _pzer_pat.getNextPacket(pkt);
-    }
-    else if (pid == PID_SDT) {
-        _pzer_sdt_bat.getNextPacket(pkt);
-    }
-    else if (pid == _old_service.getPMTPID()) {
-        _pzer_pmt.getNextPacket(pkt);
-    }
-    else if (!_ignore_nit && pid != PID_NULL && pid == _pzer_nit.getPID()) {
-        _pzer_nit.getNextPacket(pkt);
-    }
-    else if (!_ignore_eit && pid == PID_EIT) {
-        _eit_process.processPacket(pkt);
+    // Replace packets using packetizers.
+    if (pid != PID_NULL) {
+        if (pid == PID_PAT) {
+            _pzer_pat.getNextPacket(pkt);
+        }
+        else if (pid == PID_SDT) {
+            _pzer_sdt_bat.getNextPacket(pkt);
+        }
+        else if (pid == _old_service.getPMTPID()) {
+            _pzer_pmt.getNextPacket(pkt);
+        }
+        else if (!_ignore_nit && pid == _pzer_nit.getPID()) {
+            _pzer_nit.getNextPacket(pkt);
+        }
+        else if (!_ignore_eit && pid == PID_EIT) {
+            _eit_process.processPacket(pkt);
+        }
     }
 
     return TSP_OK;

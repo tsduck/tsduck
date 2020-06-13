@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2019, Thierry Lelegard
+// Copyright (c) 2005-2020, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -127,16 +127,16 @@ void ChannelsTest::testText()
 
     TSUNIT_ASSERT(!net.isNull());
     TSUNIT_EQUAL(0x1234, net->id);
-    TSUNIT_EQUAL(ts::ATSC, net->type);
+    TSUNIT_EQUAL(ts::TT_ATSC, net->type);
 
     TSUNIT_ASSERT(!ts.isNull());
     TSUNIT_EQUAL(0x5678, ts->id);
     TSUNIT_EQUAL(0x9ABC, ts->onid);
-    TSUNIT_ASSERT(!ts->tune.isNull());
-    const ts::TunerParametersATSC* atsc = dynamic_cast<const ts::TunerParametersATSC*>(ts->tune.pointer());
-    TSUNIT_ASSERT(atsc != nullptr);
-    TSUNIT_EQUAL(123456, atsc->frequency);
-    TSUNIT_EQUAL(ts::VSB_16, atsc->modulation);
+    TSUNIT_ASSERT(ts->tune.hasModulationArgs());
+    TSUNIT_ASSERT(ts->tune.frequency.set());
+    TSUNIT_EQUAL(123456, ts->tune.frequency.value());
+    TSUNIT_ASSERT(ts->tune.modulation.set());
+    TSUNIT_EQUAL(ts::VSB_16, ts->tune.modulation.value());
 
     TSUNIT_ASSERT(!srv.isNull());
     TSUNIT_EQUAL(2, srv->id);
@@ -151,26 +151,32 @@ void ChannelsTest::testText()
     TSUNIT_ASSERT(srv->cas.set());
     TSUNIT_ASSERT(srv->cas.value());
 
-    TSUNIT_ASSERT(channels.searchService(net, ts, srv, ts::DVB_S, u"foochannel", false));
+    TSUNIT_ASSERT(channels.searchService(net, ts, srv, ts::DeliverySystemSet({ts::DS_DVB_S, ts::DS_DVB_S2}), u"foochannel", false));
 
     TSUNIT_ASSERT(!net.isNull());
     TSUNIT_EQUAL(0x8753, net->id);
-    TSUNIT_EQUAL(ts::DVB_S, net->type);
+    TSUNIT_EQUAL(ts::TT_DVB_S, net->type);
 
     TSUNIT_ASSERT(!ts.isNull());
     TSUNIT_EQUAL(0x8793, ts->id);
     TSUNIT_EQUAL(0x5896, ts->onid);
-    TSUNIT_ASSERT(!ts->tune.isNull());
-    const ts::TunerParametersDVBS* dvbs = dynamic_cast<const ts::TunerParametersDVBS*>(ts->tune.pointer());
-    TSUNIT_ASSERT(dvbs != nullptr);
-    TSUNIT_EQUAL(8523698, dvbs->frequency);
-    TSUNIT_EQUAL(1237418, dvbs->symbol_rate);
-    TSUNIT_EQUAL(ts::PSK_8, dvbs->modulation);
-    TSUNIT_EQUAL(ts::DS_DVB_S2, dvbs->delivery_system);
-    TSUNIT_EQUAL(ts::POL_HORIZONTAL, dvbs->polarity);
-    TSUNIT_EQUAL(ts::FEC_7_8, dvbs->inner_fec);
-    TSUNIT_EQUAL(ts::PILOT_ON, dvbs->pilots);
-    TSUNIT_EQUAL(ts::ROLLOFF_35, dvbs->roll_off);
+    TSUNIT_ASSERT(ts->tune.hasModulationArgs());
+    TSUNIT_ASSERT(ts->tune.frequency.set());
+    TSUNIT_EQUAL(8523698, ts->tune.frequency.value());
+    TSUNIT_ASSERT(ts->tune.symbol_rate.set());
+    TSUNIT_EQUAL(1237418, ts->tune.symbol_rate.value());
+    TSUNIT_ASSERT(ts->tune.modulation.set());
+    TSUNIT_EQUAL(ts::PSK_8, ts->tune.modulation.value());
+    TSUNIT_ASSERT(ts->tune.delivery_system.set());
+    TSUNIT_EQUAL(ts::DS_DVB_S2, ts->tune.delivery_system.value());
+    TSUNIT_ASSERT(ts->tune.polarity.set());
+    TSUNIT_EQUAL(ts::POL_HORIZONTAL, ts->tune.polarity.value());
+    TSUNIT_ASSERT(ts->tune.inner_fec.set());
+    TSUNIT_EQUAL(ts::FEC_7_8, ts->tune.inner_fec.value());
+    TSUNIT_ASSERT(ts->tune.pilots.set());
+    TSUNIT_EQUAL(ts::PILOT_ON, ts->tune.pilots.value());
+    TSUNIT_ASSERT(ts->tune.roll_off.set());
+    TSUNIT_EQUAL(ts::ROLLOFF_35, ts->tune.roll_off.value());
 
     TSUNIT_ASSERT(!srv.isNull());
     TSUNIT_EQUAL(0x4591, srv->id);
@@ -191,16 +197,16 @@ void ChannelsTest::testText()
 
     TSUNIT_ASSERT(!net.isNull());
     TSUNIT_EQUAL(0x1234, net->id);
-    TSUNIT_EQUAL(ts::ATSC, net->type);
+    TSUNIT_EQUAL(ts::TT_ATSC, net->type);
 
     TSUNIT_ASSERT(!ts.isNull());
     TSUNIT_EQUAL(0x5678, ts->id);
     TSUNIT_EQUAL(0x9ABC, ts->onid);
-    TSUNIT_ASSERT(!ts->tune.isNull());
-    atsc = dynamic_cast<const ts::TunerParametersATSC*>(ts->tune.pointer());
-    TSUNIT_ASSERT(atsc != nullptr);
-    TSUNIT_EQUAL(123456, atsc->frequency);
-    TSUNIT_EQUAL(ts::VSB_16, atsc->modulation);
+    TSUNIT_ASSERT(ts->tune.hasModulationArgs());
+    TSUNIT_ASSERT(ts->tune.frequency.set());
+    TSUNIT_EQUAL(123456, ts->tune.frequency.value());
+    TSUNIT_ASSERT(ts->tune.modulation.set());
+    TSUNIT_EQUAL(ts::VSB_16, ts->tune.modulation.value());
 
     TSUNIT_ASSERT(!srv.isNull());
     TSUNIT_EQUAL(2, srv->id);
