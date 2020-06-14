@@ -335,7 +335,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
         _guts->dvr_name = fields[0] + UString::Format(u".dvr%d", {dvr_nb});
     } else {
         // Linux device naming
-        _guts->rontend_name = fields[0] + UString::Format(u"/frontend%d", {frontend_nb});
+        _guts->frontend_name = fields[0] + UString::Format(u"/frontend%d", {frontend_nb});
         _guts->demux_name = fields[0] + UString::Format(u"/demux%d", {demux_nb});
         _guts->dvr_name = fields[0] + UString::Format(u"/dvr%d", {dvr_nb});
     }
