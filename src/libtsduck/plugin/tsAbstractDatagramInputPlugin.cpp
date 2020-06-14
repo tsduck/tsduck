@@ -37,10 +37,18 @@ TSDUCK_SOURCE;
 // Input constructor
 //----------------------------------------------------------------------------
 
-ts::AbstractDatagramInputPlugin::AbstractDatagramInputPlugin(TSP* tsp_, size_t buffer_size, const UString& description, const UString& syntax) :
+ts::AbstractDatagramInputPlugin::AbstractDatagramInputPlugin(TSP* tsp_,
+                                                             size_t buffer_size,
+                                                             const UString& description,
+                                                             const UString& syntax,
+                                                             const UString& system_time_name,
+                                                             const UString& system_time_description) :
     InputPlugin(tsp_, description, syntax),
     _eval_time(0),
     _display_time(0),
+    _time_priority_enum(),
+    _time_priority(RTP_TSP),
+    _default_time_priority(RTP_TSP),
     _next_display(Time::Epoch),
     _start(Time::Epoch),
     _packets(0),
@@ -66,6 +74,29 @@ ts::AbstractDatagramInputPlugin::AbstractDatagramInputPlugin(TSP* tsp_, size_t b
          u"basis. The value specifies the number of seconds between two evaluations. "
          u"By default, the real-time input bitrate is never evaluated and the input "
          u"bitrate is evaluated from the PCR in the input packets.");
+
+    // Order of priority for input timestamps.
+    _time_priority_enum.add(u"rtp-tsp", TimePriority::RTP_TSP);
+    _time_priority_enum.add(u"tsp", TimePriority::TSP_ONLY);
+    UString system_help;
+    if (!system_time_name.empty()) {
+        _default_time_priority = TimePriority::RTP_SYSTEM_TSP;
+        _time_priority_enum.add(u"rtp-" + system_time_name + u"-tsp", TimePriority::RTP_SYSTEM_TSP);
+        _time_priority_enum.add(system_time_name + u"-rtp-tsp", TimePriority::SYSTEM_RTP_TSP);
+        _time_priority_enum.add(system_time_name + u"-tsp", TimePriority::SYSTEM_TSP);
+        system_help = u"- " + system_time_name + u" : " + system_time_description + u".\n";
+    }
+
+    option(u"timestamp-priority", 0, _time_priority_enum);
+    help(u"timestamp-priority", u"name",
+         u"Specify how the input time-stamp of each packet is computed. "
+         u"The name specifies an ordered list. The first available time-stamp value is used as input time-stamp. "
+         u"The possible time-stamp sources are:\n"
+         u"- rtp : The RTP time stamp, when the UDP packet is an RTP packet.\n" +
+         system_help +
+         u"- tsp : A software time-stamp, provided by tsp when the input plugin returns a chunk of packets.\n"
+         u"The tsp-provided time-stamp is always available, always comes last and is less precise. "
+         u"The default is " + _time_priority_enum.name(_default_time_priority) + u".");
 }
 
 
@@ -88,6 +119,7 @@ bool ts::AbstractDatagramInputPlugin::getOptions()
     // Get command line arguments
     _eval_time = MilliSecPerSec * intValue<MilliSecond>(u"evaluation-interval", 0);
     _display_time = MilliSecPerSec * intValue<MilliSecond>(u"display-interval", 0);
+    _time_priority = enumValue<TimePriority>(u"timestamp-priority", _default_time_priority);
     return true;
 }
 
@@ -151,20 +183,46 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
 
         if (new_packets) {
 
-            // If no timestamp was returned by the kernel for the datagram, look for a RTP header before the first packet.
-            // There is no clear proof of the presence of the RTP header. We check if the header size is large enough
-            // for an RTP header and if the "RTP payload type" is MPEG-2 TS.
-            const bool use_rtp_timestamp = timestamp < 0 && _inbuf_next >= RTP_HEADER_SIZE && (_inbuf[1] & 0x7F) == RTP_PT_MP2T;
-            const uint32_t rtp_timestamp = use_rtp_timestamp ? GetUInt32(_inbuf.data() + 4) : 0;
+            // Look for an RTP header before the first packet. There is no clear proof of the presence of the RTP header.
+            // We check if the header size is large enough for an RTP header and if the "RTP payload type" is MPEG-2 TS.
+            const bool rtp = _inbuf_next >= RTP_HEADER_SIZE && (_inbuf[1] & 0x7F) == RTP_PT_MP2T;
+            const uint32_t rtp_timestamp = rtp ? GetUInt32(_inbuf.data() + 4) : 0;
+
+            // Use RTP time stamp if there is one and RTP is the preferred choice.
+            bool use_rtp = false;
+            bool use_kernel = false;
+            switch (_time_priority) {
+                case RTP_SYSTEM_TSP:
+                    use_rtp = rtp;
+                    use_kernel = !rtp && timestamp >= 0;
+                    break;
+                case SYSTEM_RTP_TSP:
+                    use_kernel = timestamp >= 0;
+                    use_rtp = !use_kernel && rtp;
+                    break;
+                case RTP_TSP:
+                    use_rtp = rtp;
+                    use_kernel = false;
+                    break;
+                case SYSTEM_TSP:
+                    use_kernel = timestamp >= 0;
+                    use_rtp = false;
+                    break;
+                case TSP_ONLY:
+                default:
+                    use_rtp = false;
+                    use_kernel = false;
+                    break;
+            }
 
             // Build time stamps in packet metadata.
             _mdata_next = 0;
             for (size_t i = 0; i < _inbuf_count; ++i) {
-                if (use_rtp_timestamp) {
+                if (use_rtp) {
                     // RTP time stamp unit is 90 kHz (RTP_RATE_MP2T)
                     _mdata[i].setInputTimeStamp(rtp_timestamp, RTP_RATE_MP2T);
                 }
-                else if (timestamp >= 0) {
+                else if (use_kernel) {
                     // IP time stamp unit is microseconds.
                     _mdata[i].setInputTimeStamp(uint64_t(timestamp), MicroSecPerSec);
                 }
