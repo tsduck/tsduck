@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.22-1851
+VERSION 3.22-1854
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -14,6 +14,7 @@ VERSION 3.22-1851
       processor) and plugins "merge", "mux".
     - Option --size-of-packet in "tsftrunc".
     - Options --input-synchronous and --jitter-unreal in plugin "pcrverify".
+    - Option --timestamp-priority in input plugins "ip" and "srt".
 
 [BUG] Bug fixes:
 

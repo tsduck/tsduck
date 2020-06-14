@@ -36,6 +36,7 @@
 #include "tsInputPlugin.h"
 #include "tsTSPacketMetadata.h"
 #include "tsByteBlock.h"
+#include "tsEnumeration.h"
 #include "tsTime.h"
 
 namespace ts {
@@ -49,16 +50,6 @@ namespace ts {
     {
         TS_NOBUILD_NOCOPY(AbstractDatagramInputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //! @param [in] buffer_size Size in bytes of input buffer.
-        //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
-        //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
-        //! Must be large enough to contain the largest datagram.
-        //!
-        AbstractDatagramInputPlugin(TSP* tsp, size_t buffer_size, const UString& description = UString(), const UString& syntax = UString());
-
         // Implementation of plugin API.
         virtual bool getOptions() override;
         virtual bool start() override;
@@ -67,6 +58,24 @@ namespace ts {
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
 
     protected:
+        //!
+        //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
+        //! @param [in] buffer_size Size in bytes of input buffer.
+        //! Must be large enough to contain the largest datagram.
+        //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
+        //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
+        //! @param [in] system_time_name When the subclass provides timestamps, this is a lowercase name
+        //! which is used in option -\-timestamp-priority. When empty, there is no timestamps from the subclass.
+        //! @param [in] system_time_description Description of @a system_time_name for help text.
+        //!
+        AbstractDatagramInputPlugin(TSP* tsp,
+                                    size_t buffer_size,
+                                    const UString& description = UString(),
+                                    const UString& syntax = UString(),
+                                    const UString& system_time_name = UString(),
+                                    const UString& system_time_description = UString());
+
         //!
         //! Receive a datagram message.
         //! Must be implemented by subclasses.
@@ -79,19 +88,25 @@ namespace ts {
         virtual bool receiveDatagram(void* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp) = 0;
 
     private:
-        MilliSecond   _eval_time;          // Bitrate evaluation interval in milli-seconds
-        MilliSecond   _display_time;       // Bitrate display interval in milli-seconds
-        Time          _next_display;       // Next bitrate display time
-        Time          _start;              // UTC date of first received packet
-        PacketCounter _packets;            // Number of received packets since _start
-        Time          _start_0;            // Start of previous bitrate evaluation period
-        PacketCounter _packets_0;          // Number of received packets since _start_0
-        Time          _start_1;            // Start of previous bitrate evaluation period
-        PacketCounter _packets_1;          // Number of received packets since _start_1
-        size_t        _inbuf_count;        // Number of remaining TS packets in inbuf
-        size_t        _inbuf_next;         // Byte index in _inbuf of next TS packet to return
-        size_t        _mdata_next;         // Index in _mdata of next TS packet metadata to return
-        ByteBlock     _inbuf;              // Input buffer
-        TSPacketMetadataVector _mdata;     // Metadata for packets in _inbuf
+        // Order of priority for input timestamps. SYSTEM means lower layer from subclass (UDP, SRT, etc).
+        enum TimePriority {RTP_SYSTEM_TSP, SYSTEM_RTP_TSP, RTP_TSP, SYSTEM_TSP, TSP_ONLY};
+
+        MilliSecond   _eval_time;             // Bitrate evaluation interval in milli-seconds
+        MilliSecond   _display_time;          // Bitrate display interval in milli-seconds
+        Enumeration   _time_priority_enum;    // Enumeration values for _time_priority
+        TimePriority  _time_priority;         // Priority of time stamps sources.
+        TimePriority  _default_time_priority; // Priority of time stamps sources.
+        Time          _next_display;          // Next bitrate display time
+        Time          _start;                 // UTC date of first received packet
+        PacketCounter _packets;               // Number of received packets since _start
+        Time          _start_0;               // Start of previous bitrate evaluation period
+        PacketCounter _packets_0;             // Number of received packets since _start_0
+        Time          _start_1;               // Start of previous bitrate evaluation period
+        PacketCounter _packets_1;             // Number of received packets since _start_1
+        size_t        _inbuf_count;           // Number of remaining TS packets in inbuf
+        size_t        _inbuf_next;            // Byte index in _inbuf of next TS packet to return
+        size_t        _mdata_next;            // Index in _mdata of next TS packet metadata to return
+        ByteBlock     _inbuf;                 // Input buffer
+        TSPacketMetadataVector _mdata;        // Metadata for packets in _inbuf
     };
 }
