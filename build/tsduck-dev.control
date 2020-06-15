@@ -6,13 +6,15 @@ Architecture: {{ARCH}}
 Section: free/video
 Priority: optional
 Depends: tsduck,
- libc6,
- libstdc++6,
- libgcc1,
+ libsrt1,
+ libsrt-dev,
  libpcsclite1,
  libpcsclite-dev,
  libcurl3 | libcurl4,
- libcurl3-dev | libcurl4-dev | libcurl4-openssl-dev | libcurl4-nss-dev | libcurl4-gnutls-dev
+ libcurl3-dev | libcurl4-dev | libcurl4-openssl-dev | libcurl4-nss-dev | libcurl4-gnutls-dev,
+ libc6,
+ libstdc++6,
+ libgcc1
 Description: MPEG Transport Stream Toolkit Development
  The MPEG Transport Stream Toolkit provides some simple utilities to process
  MPEG Transport Streams (TS). This package provides the development environment

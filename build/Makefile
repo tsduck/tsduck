@@ -135,6 +135,9 @@ deb-main:
 	mkdir $(TMPDIR)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
+	    $(if $(NOSRT),-e '/libsrt/d',) \
+	    $(if $(NOPCSC),-e '/libpcsc/d',) \
+	    $(if $(NOCURL),-e '/libcurl/d',) \
 	    tsduck.control >$(TMPDIR)/DEBIAN/control
 	sed -e 's|{{EXECS}}|$(addprefix /usr/bin/,$(TSEXECS))|g' \
 	    tsduck.postinst >$(TMPDIR)/DEBIAN/postinst
@@ -148,6 +151,9 @@ deb-dev:
 	mkdir $(TMPDIR)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
+	    $(if $(NOSRT),-e '/libsrt/d',) \
+	    $(if $(NOPCSC),-e '/libpcsc/d',) \
+	    $(if $(NOCURL),-e '/libcurl/d',) \
 	    tsduck-dev.control >$(TMPDIR)/DEBIAN/control
 	cp tsduck-dev.postinst $(TMPDIR)/DEBIAN/postinst
 	chmod a+x $(TMPDIR)/DEBIAN/postinst
