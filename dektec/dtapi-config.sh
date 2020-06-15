@@ -235,7 +235,7 @@ case "$CMD" in
         ;;
     --object)
         shift
-        get-object "$@"
+        get-object
         ;;
     --url)
         get-url
@@ -244,7 +244,7 @@ case "$CMD" in
         dtapi-support && echo supported
         ;;
     -*)
-        error "invalid option: $1"
+        error "invalid option $CMD (use --dtapi --header --object --url --support [--m32])"
         ;;
     *)
         shift
