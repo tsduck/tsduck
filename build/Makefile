@@ -117,6 +117,9 @@ rpm: tarball $(RPMBUILDROOT)
 	      -D 'version $(shell ./get-version-from-sources.sh --main)' \
 	      -D 'commit $(shell ./get-version-from-sources.sh --commit)' \
 	      -D 'distro $(DISTRO)' \
+	      $(if $(NOSRT),-D 'nosrt 1',) \
+	      $(if $(NOPCSC),-D 'nopcsc 1',) \
+	      $(if $(NOCURL),-D 'nocurl 1',) \
 	      tsduck.spec
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
