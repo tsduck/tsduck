@@ -231,12 +231,11 @@ bool ts::Tuner::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& 
 
     // Get list of all DVB adapters
     UStringVector names;
-    ExpandWildcard(names, u"/dev/dvb/adapter*");
 
-    // Android
+    // Flat naming scheme
     ExpandWildcardAndAppend(names, u"/dev/dvb*.frontend*");
 
-    // Linux
+    // DVB folder naming scheme
     ExpandWildcardAndAppend(names, u"/dev/dvb/adapter*/frontend*");
 
     // Open all tuners
@@ -321,12 +320,12 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
     }
 
     if (!fields[0].contain(u"adapter", ts::CASE_SENSITIVE)) {
-        // Assume Android device naming
+        // Flat  naming scheme
         _guts->frontend_name = fields[0] + UString::Format(u".frontend%d", {frontend_nb});
         _guts->demux_name = fields[0] + UString::Format(u".demux%d", {demux_nb});
         _guts->dvr_name = fields[0] + UString::Format(u".dvr%d", {dvr_nb});
     } else {
-        // Linux device naming
+        // DVB folder naming scheme
         _guts->frontend_name = fields[0] + UString::Format(u"/frontend%d", {frontend_nb});
         _guts->demux_name = fields[0] + UString::Format(u"/demux%d", {demux_nb});
         _guts->dvr_name = fields[0] + UString::Format(u"/dvr%d", {dvr_nb});
