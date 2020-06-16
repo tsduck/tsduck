@@ -218,14 +218,6 @@ namespace {
     }
 }
 
-// I wasn't sure where you would want to put it...
-static bool replace(ts::UString& str, const ts::UString& from, const ts::UString& to) {
-    size_t start_pos = str.find(from);
-    if(start_pos == std::string::npos)
-        return false;
-    str.replace(start_pos, from.length(), to);
-    return true;
-}
 
 //-----------------------------------------------------------------------------
 // Get the list of all existing DVB tuners.
@@ -242,10 +234,10 @@ bool ts::Tuner::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& 
     ExpandWildcard(names, u"/dev/dvb/adapter*");
 
     // Android
-    ExpandWildcard(names, u"/dev/dvb*.frontend*");
+    ExpandWildcardAndAppend(names, u"/dev/dvb*.frontend*");
 
     // Linux
-    ExpandWildcard(names, u"/dev/dvb/adapter*/frontend*");
+    ExpandWildcardAndAppend(names, u"/dev/dvb/adapter*/frontend*");
 
     // Open all tuners
     tuners.reserve(names.size());
@@ -253,8 +245,8 @@ bool ts::Tuner::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& 
     for (UStringVector::const_iterator it = names.begin(); it != names.end(); ++it) {
         UString tuner_name(*it);
 
-        replace(tuner_name, u".frontend", u":"); // Android
-        replace(tuner_name, u"/frontend", u":"); // Linux
+        tuner_name.substitute(u".frontend", u":");
+        tuner_name.substitute(u"/frontend", u":");
 
         report.debug(u"Process wildcard result '%s'", {tuner_name});
         const size_t index = tuners.size();
