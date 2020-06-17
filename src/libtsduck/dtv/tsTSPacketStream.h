@@ -35,6 +35,7 @@
 #pragma once
 #include "tsAbstractReadStreamInterface.h"
 #include "tsAbstractWriteStreamInterface.h"
+#include "tsTSPacketFormat.h"
 #include "tsTSPacket.h"
 #include "tsEnumeration.h"
 
@@ -51,27 +52,12 @@ namespace ts {
         TS_NOCOPY(TSPacketStream);
     public:
         //!
-        //! Transport stream file formats.
-        //!
-        enum PacketFormat {
-            FMT_AUTODETECT,  //!< Try to detect format (read), default to TS.
-            FMT_TS,          //!< Raw transport stream format.
-            FMT_M2TS,        //!< Bluray compatible, 4-byte timestamp header before each TS packet (30-bit time stamp in PCR units).
-            FMT_DUCK,        //!< Proprietary, 14-byte header before each TS packet (packet metadata).
-        };
-
-        //!
-        //! Enumeration description of ts::TSPacketStream::Format.
-        //!
-        static const Enumeration FormatEnum;
-
-        //!
         //! Constructor.
         //! @param [in] format Initial packet format.
         //! @param [in] reader Reader interface. If null, all read operations will fail.
         //! @param [in] writer Writer interface. If null, all write operations will fail.
         //!
-        TSPacketStream(PacketFormat format = FMT_AUTODETECT, AbstractReadStreamInterface* reader = nullptr, AbstractWriteStreamInterface* writer = nullptr);
+        TSPacketStream(TSPacketFormat format = TSPacketFormat::AUTODETECT, AbstractReadStreamInterface* reader = nullptr, AbstractWriteStreamInterface* writer = nullptr);
 
         //!
         //! Destructor.
@@ -126,13 +112,13 @@ namespace ts {
         //! Get the file format.
         //! @return The file format.
         //!
-        PacketFormat packetFormat() const { return _format; }
+        TSPacketFormat packetFormat() const { return _format; }
 
         //!
         //! Get the file format as a string.
         //! @return The file format as a string.
         //!
-        UString packetFormatString() const { return FormatEnum.name(_format); }
+        UString packetFormatString() const { return TSPacketFormatEnum.name(_format); }
 
     protected:
         //!
@@ -141,13 +127,13 @@ namespace ts {
         //! @param [in] reader Reader interface. If null, all read operations will fail.
         //! @param [in] writer Writer interface. If null, all write operations will fail.
         //!
-        void resetPacketStream(PacketFormat format, AbstractReadStreamInterface* reader, AbstractWriteStreamInterface* writer);
+        void resetPacketStream(TSPacketFormat format, AbstractReadStreamInterface* reader, AbstractWriteStreamInterface* writer);
 
         PacketCounter _total_read;   //!< Total read packets.
         PacketCounter _total_write;  //!< Total written packets.
 
     private:
-        PacketFormat                  _format;
+        TSPacketFormat                _format;
         AbstractReadStreamInterface*  _reader;
         AbstractWriteStreamInterface* _writer;
         uint64_t                      _last_timestamp; // Last write time stamp in PCR units (M2TS files).

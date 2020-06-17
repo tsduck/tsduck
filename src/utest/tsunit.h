@@ -492,10 +492,10 @@ namespace tsunit {
     std::string toStringImpl(T value, const char* format);
 
     template<typename T, typename std::enable_if<std::is_signed<typename underlying_type<T>::type>::value>::type* = nullptr>
-    std::string toString(T value) { return toStringImpl<long long>(value, "%lld"); }
+    std::string toString(T value) { return toStringImpl(static_cast<long long>(value), "%lld"); }
 
     template<typename T, typename std::enable_if<std::is_unsigned<typename underlying_type<T>::type>::value>::type* = nullptr>
-    std::string toString(T value) { return toStringImpl<unsigned long long>(value, "%llu"); }
+    std::string toString(T value) { return toStringImpl(static_cast<unsigned long long>(value), "%llu"); }
 
     template<typename T>
     std::string toString(const T* value) { return toStringImpl<size_t>(reinterpret_cast<size_t>(value), "0x%zX"); }

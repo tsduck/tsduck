@@ -68,6 +68,12 @@ namespace ts {
         //! @return True on success, false on error.
         //! Do not return on success when @a wait_mode is EXIT_PROCESS.
         //!
-        bool open(const UString& command, WaitMode wait_mode, size_t buffer_size, Report& report, OutputMode out_mode, InputMode in_mode, PacketFormat format = FMT_AUTODETECT);
+        bool open(const UString& command,
+                  WaitMode wait_mode,
+                  size_t buffer_size,
+                  Report& report,
+                  OutputMode out_mode,
+                  InputMode in_mode,
+                  TSPacketFormat format = TSPacketFormat::AUTODETECT);
     };
 }

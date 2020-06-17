@@ -65,13 +65,13 @@ namespace ts {
         //! @endcond
 
     private:
-        UString                  _command;       // The command to run.
-        bool                     _nowait;        // Don't wait for children termination.
-        TSForkPipe::PacketFormat _format;        // Packet format on the pipe
-        size_t                   _buffer_size;   // Max number of packets in buffer.
-        size_t                   _buffer_count;  // Number of packets currently in buffer.
-        TSPacketVector           _buffer;        // Packet buffer.
-        TSPacketMetadataVector   _mdata;         // Metadata for packets in buffer.
-        TSForkPipe               _pipe;          // The pipe device.
+        UString                _command;       // The command to run.
+        bool                   _nowait;        // Don't wait for children termination.
+        TSPacketFormat         _format;        // Packet format on the pipe
+        size_t                 _buffer_size;   // Max number of packets in buffer.
+        size_t                 _buffer_count;  // Number of packets currently in buffer.
+        TSPacketVector         _buffer;        // Packet buffer.
+        TSPacketMetadataVector _mdata;         // Metadata for packets in buffer.
+        TSForkPipe             _pipe;          // The pipe device.
     };
 }

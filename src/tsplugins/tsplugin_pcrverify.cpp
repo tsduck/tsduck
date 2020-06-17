@@ -92,7 +92,9 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"pcrverify", ts::PCRVerifyPlugin);
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr int64_t ts::PCRVerifyPlugin::PCR_PER_MICRO_SEC;
 constexpr int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX_US;
+constexpr int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_UNREAL_US;
 constexpr int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX;
+constexpr int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_UNREAL;
 #endif
 
 

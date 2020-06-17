@@ -57,12 +57,12 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext          duck;     // TSDuck execution context.
-        ts::TablesDisplay        display;  // Table formatting.
-        ts::TablesLogger         logger;   // Table logging.
-        ts::PagerArgs            pager;    // Output paging options.
-        ts::UString              infile;   // Input file name.
-        ts::TSFile::PacketFormat format;   // Input file format.
+        ts::DuckContext    duck;     // TSDuck execution context.
+        ts::TablesDisplay  display;  // Table formatting.
+        ts::TablesLogger   logger;   // Table logging.
+        ts::PagerArgs      pager;    // Output paging options.
+        ts::UString        infile;   // Input file name.
+        ts::TSPacketFormat format;   // Input file format.
     };
 }
 
@@ -73,7 +73,7 @@ Options::Options(int argc, char *argv[]) :
     logger(display),
     pager(true, true),
     infile(),
-    format(ts::TSFile::FMT_AUTODETECT)
+    format(ts::TSPacketFormat::AUTODETECT)
 {
     duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);
@@ -86,7 +86,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"", 0, STRING, 0, 1);
     help(u"", u"Input transport stream file (standard input if omitted).");
 
-    option(u"format", 0, ts::TSFile::FormatEnum);
+    option(u"format", 0, ts::TSPacketFormatEnum);
     help(u"format", u"name",
          u"Specify the format of the input file. "
          u"By default, the format is automatically detected. "
@@ -102,7 +102,7 @@ Options::Options(int argc, char *argv[]) :
     display.loadArgs(duck, *this);
 
     infile = value(u"");
-    format = enumValue<ts::TSFile::PacketFormat>(u"format", ts::TSFile::FMT_AUTODETECT);
+    format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::AUTODETECT);
 
     exitOnError();
 }

@@ -45,7 +45,7 @@ ts::ForkPacketPlugin::ForkPacketPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Fork a process and send TS packets to its standard input", u"[options] 'command'"),
     _command(),
     _nowait(false),
-    _format(TSForkPipe::FMT_TS),
+    _format(TSPacketFormat::FMT_TS),
     _buffer_size(0),
     _buffer_count(0),
     _buffer(),
@@ -62,7 +62,7 @@ ts::ForkPacketPlugin::ForkPacketPlugin(TSP* tsp_) :
          u"buffered and sent one by one. The default is 500 packets in real-time mode "
          u"and 1000 packets in offline mode.");
 
-    option(u"format", 0, TSForkPipe::FormatEnum);
+    option(u"format", 0, TSPacketFormatEnum);
     help(u"format", u"name",
          u"Specify the format of the output TS stream. "
          u"By default, the format is a standard TS.");
@@ -87,7 +87,7 @@ bool ts::ForkPacketPlugin::getOptions()
     // Get command line arguments
     _command = value(u"");
     _nowait = present(u"nowait");
-    _format = enumValue<TSForkPipe::PacketFormat>(u"format", TSForkPipe::FMT_TS);
+    _format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::FMT_TS);
     _buffer_size = intValue<size_t>(u"buffered-packets", tsp->realtime() ? 500 : 1000);
     _pipe.setIgnoreAbort(present(u"ignore-abort"));
 

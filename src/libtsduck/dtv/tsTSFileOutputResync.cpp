@@ -53,7 +53,7 @@ ts::TSFileOutputResync::~TSFileOutputResync()
 // Open method
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::open(const UString& filename, OpenFlags flags, Report& report, PacketFormat format)
+bool ts::TSFileOutputResync::open(const UString& filename, OpenFlags flags, Report& report, TSPacketFormat format)
 {
     // Forbid input access.
     if ((flags & READ) != 0) {

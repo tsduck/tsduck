@@ -55,28 +55,28 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::TSFile::PacketFormat format;
-        ts::UString filename1;
-        ts::UString filename2;
-        uint64_t    byte_offset;
-        size_t      buffered_packets;
-        size_t      threshold_diff;
-        bool        subset;
-        bool        dump;
-        uint32_t    dump_flags;
-        bool        normalized;
-        bool        quiet;
-        bool        payload_only;
-        bool        pcr_ignore;
-        bool        pid_ignore;
-        bool        cc_ignore;
-        bool        continue_all;
+        ts::TSPacketFormat format;
+        ts::UString        filename1;
+        ts::UString        filename2;
+        uint64_t           byte_offset;
+        size_t             buffered_packets;
+        size_t             threshold_diff;
+        bool               subset;
+        bool               dump;
+        uint32_t           dump_flags;
+        bool               normalized;
+        bool               quiet;
+        bool               payload_only;
+        bool               pcr_ignore;
+        bool               pid_ignore;
+        bool               cc_ignore;
+        bool               continue_all;
     };
 }
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Compare two transport stream files", u"[options] filename-1 filename-2"),
-    format(ts::TSFile::FMT_AUTODETECT),
+    format(ts::TSPacketFormat::AUTODETECT),
     filename1(),
     filename2(),
     byte_offset(0),
@@ -113,7 +113,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"dump", 'd');
     help(u"dump", u"Dump the content of all differing packets.");
 
-    option(u"format", 'f', ts::TSFile::FormatEnum);
+    option(u"format", 'f', ts::TSPacketFormatEnum);
     help(u"format", u"name",
          u"Specify the format of the input files. "
          u"By default, the format is automatically and independently detected for each file. "
@@ -163,7 +163,7 @@ Options::Options(int argc, char *argv[]) :
     getValue(filename1, u"", u"", 0);
     getValue(filename2, u"", u"", 1);
 
-    format = enumValue<ts::TSFile::PacketFormat>(u"format", ts::TSFile::FMT_AUTODETECT);
+    format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::AUTODETECT);
     buffered_packets = intValue<size_t>(u"buffered-packets", DEFAULT_BUFFERED_PACKETS);
     byte_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * ts::PKT_SIZE);
     threshold_diff = intValue<size_t>(u"threshold-diff", 0);

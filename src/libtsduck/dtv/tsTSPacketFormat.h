@@ -28,44 +28,26 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  File packet processor plugin for tsp.
+//!  Transport stream packet / file formats.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsProcessorPlugin.h"
-#include "tsTSFile.h"
+#include "tsTypedEnumeration.h"
 
 namespace ts {
     //!
-    //! File packet processor plugin for tsp.
-    //! @ingroup plugin
+    //! Transport stream file formats.
     //!
-    class TSDUCKDLL FilePacketPlugin: public ProcessorPlugin
-    {
-        TS_NOBUILD_NOCOPY(FilePacketPlugin);
-    public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        FilePacketPlugin(TSP* tsp);
-
-        // Implementation of plugin API
-        virtual bool getOptions() override;
-        virtual bool start() override;
-        virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
-
-        //! @cond nodoxygen
-        // A dummy storage value to force inclusion of this module when using the static library.
-        static const int REFERENCE;
-        //! @endcond
-
-    private:
-        UString           _name;
-        TSFile::OpenFlags _flags;
-        TSPacketFormat    _file_format;
-        TSFile            _file;
+    enum class TSPacketFormat {
+        AUTODETECT,  //!< Try to detect format (read), default to TS.
+        FMT_TS,          //!< Raw transport stream format.
+        FMT_M2TS,        //!< Bluray compatible, 4-byte timestamp header before each TS packet (30-bit time stamp in PCR units).
+        FMT_DUCK,        //!< Proprietary, 14-byte header before each TS packet (packet metadata).
     };
+
+    //!
+    //! Enumeration description of ts::TSPacketFormat.
+    //!
+    TSDUCKDLL extern const TypedEnumeration<TSPacketFormat> TSPacketFormatEnum;
 }

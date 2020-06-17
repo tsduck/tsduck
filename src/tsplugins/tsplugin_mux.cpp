@@ -75,7 +75,7 @@ namespace ts {
         uint64_t      _inserted_packet_count; // counts inserted packets
         uint64_t      _youngest_pts;          // stores last pcr value seen (calculated from PCR to PTS value by dividing by 300)
         uint64_t      _pts_last_inserted;     // stores nearest pts (actually pcr/300) of last packet insertion
-        TSFile::PacketFormat       _file_format;  // Input file format
+        TSPacketFormat             _file_format;  // Input file format
         TSPacketMetadata::LabelSet _setLabels;    // Labels to set on output packets.
         TSPacketMetadata::LabelSet _resetLabels;  // Labels to reset on output packets.
         ContinuityAnalyzer         _cc_fixer;     // To fix continuity counters in mux'ed PID's
@@ -111,7 +111,7 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
     _inserted_packet_count(0),
     _youngest_pts(0),
     _pts_last_inserted(0),
-    _file_format(TSFile::FMT_AUTODETECT),
+    _file_format(TSPacketFormat::AUTODETECT),
     _setLabels(),
     _resetLabels(),
     _cc_fixer(AllPIDs, tsp)
@@ -130,7 +130,7 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
          u"Start reading the file at the specified byte offset (default: 0). "
          u"This option is allowed only if the input file is a regular file.");
 
-    option(u"format", 0, TSFile::FormatEnum);
+    option(u"format", 0, TSPacketFormatEnum);
     help(u"format", u"name",
          u"Specify the format of the input file. "
          u"By default, the format is automatically detected. "
@@ -246,7 +246,7 @@ bool ts::MuxPlugin::start()
     _pts_last_inserted = 0;
     _inserted_packet_count = 0;
     _pts_range_ok = true;  // by default, enable packet insertion
-    _file_format = enumValue<TSFile::PacketFormat>(u"format", TSFile::FMT_AUTODETECT);
+    _file_format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::AUTODETECT);
     getIntValues(_setLabels, u"set-label");
     getIntValues(_resetLabels, u"reset-label");
 

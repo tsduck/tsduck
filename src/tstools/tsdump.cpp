@@ -53,16 +53,16 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext          duck;        // TSDuck context
-        uint32_t                 dump_flags;  // Dump options for Hexa and Packet::dump
-        bool                     raw_file;    // Raw dump of file, not TS packets
-        bool                     log;         // Option --log
-        size_t                   log_size;    // Size to display with --log
-        ts::PIDSet               pids;        // PID values to dump
-        ts::PacketCounter        max_packets; // Maximum number of packets to dump per file
-        ts::UStringVector        infiles;     // Input file names
-        ts::TSFile::PacketFormat format;      // Input file format
-        ts::PagerArgs            pager;       // Output paging options
+        ts::DuckContext    duck;        // TSDuck context
+        uint32_t           dump_flags;  // Dump options for Hexa and Packet::dump
+        bool               raw_file;    // Raw dump of file, not TS packets
+        bool               log;         // Option --log
+        size_t             log_size;    // Size to display with --log
+        ts::PIDSet         pids;        // PID values to dump
+        ts::PacketCounter  max_packets; // Maximum number of packets to dump per file
+        ts::UStringVector  infiles;     // Input file names
+        ts::TSPacketFormat format;      // Input file format
+        ts::PagerArgs      pager;       // Output paging options
     };
 }
 
@@ -76,7 +76,7 @@ Options::Options(int argc, char *argv[]) :
     pids(),
     max_packets(0),
     infiles(),
-    format(ts::TSFile::FMT_AUTODETECT),
+    format(ts::TSPacketFormat::AUTODETECT),
     pager(true, true)
 {
     pager.defineArgs(*this);
@@ -93,7 +93,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"c-style", 'c');
     help(u"c-style", u"Same as --raw-dump (no interpretation of packet) but dump the bytes in C-language style.");
 
-    option(u"format", 'f', ts::TSFile::FormatEnum);
+    option(u"format", 'f', ts::TSPacketFormatEnum);
     help(u"format", u"name",
          u"Specify the format of the input files. "
          u"By default, when dumping TS packets, the format is automatically and independently detected for each file. "
@@ -145,7 +145,7 @@ Options::Options(int argc, char *argv[]) :
     log = present(u"log");
     max_packets = intValue<ts::PacketCounter>(u"max-packets", std::numeric_limits<ts::PacketCounter>::max());
     log_size = intValue<size_t>(u"log-size", ts::PKT_SIZE);
-    format = enumValue<ts::TSFile::PacketFormat>(u"format", ts::TSFile::FMT_AUTODETECT);
+    format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::AUTODETECT);
     getIntValues(pids, u"pid", true);
 
     dump_flags =

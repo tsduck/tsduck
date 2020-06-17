@@ -12,7 +12,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C68FB125-B7FC-435F-8D7A-0BDAC4966B54}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>setpath</RootNamespace>
+    <RootNamespace>tscharset</RootNamespace>
   </PropertyGroup>
 
   <ImportGroup Label="PropertySheets">

@@ -106,7 +106,7 @@ namespace ts {
         //! @param [in] format Expected format of the TS file.
         //! @return True on success, false on error.
         //!
-        bool openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, PacketFormat format = FMT_AUTODETECT);
+        bool openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT);
 
         //!
         //! Read TS packets.
@@ -186,7 +186,7 @@ namespace ts {
         size_t                 _total_count;    // Total count of valid packets in buffer.
 
         // Make sure that the generic open() returns an error.
-        virtual bool open(const UString& filename, OpenFlags flags, Report& report, PacketFormat format) override;
+        virtual bool open(const UString& filename, OpenFlags flags, Report& report, TSPacketFormat format) override;
 
         // Make rewind inaccessible.
         bool rewind(Report&) = delete;
