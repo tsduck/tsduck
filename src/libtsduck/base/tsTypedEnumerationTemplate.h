@@ -26,46 +26,24 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  File packet processor plugin for tsp.
-//!
-//----------------------------------------------------------------------------
 
 #pragma once
-#include "tsProcessorPlugin.h"
-#include "tsTSFile.h"
 
-namespace ts {
-    //!
-    //! File packet processor plugin for tsp.
-    //! @ingroup plugin
-    //!
-    class TSDUCKDLL FilePacketPlugin: public ProcessorPlugin
-    {
-        TS_NOBUILD_NOCOPY(FilePacketPlugin);
-    public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        FilePacketPlugin(TSP* tsp);
+//----------------------------------------------------------------------------
+// Constructors.
+//----------------------------------------------------------------------------
 
-        // Implementation of plugin API
-        virtual bool getOptions() override;
-        virtual bool start() override;
-        virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+template<typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* N>
+ts::TypedEnumeration<ENUM,N>::TypedEnumeration() :
+    Enumeration()
+{
+}
 
-        //! @cond nodoxygen
-        // A dummy storage value to force inclusion of this module when using the static library.
-        static const int REFERENCE;
-        //! @endcond
-
-    private:
-        UString           _name;
-        TSFile::OpenFlags _flags;
-        TSPacketFormat    _file_format;
-        TSFile            _file;
-    };
+template<typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* N>
+ts::TypedEnumeration<ENUM,N>::TypedEnumeration(const std::initializer_list<TypedNameValue> values) :
+    Enumeration()
+{
+    for (auto it = values.begin(); it != values.end(); ++it) {
+        add(it->name, it->value);
+    }
 }

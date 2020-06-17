@@ -81,7 +81,7 @@ bool ts::TSFileInputBuffered::setBufferSize(size_t buffer_size, Report& report)
 // Open file. Override TSFile::openRead().
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, PacketFormat format)
+bool ts::TSFileInputBuffered::openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, TSPacketFormat format)
 {
     if (isOpen()) {
         report.error(u"file %s is already open", {getFileName()});
@@ -100,7 +100,7 @@ bool ts::TSFileInputBuffered::openRead(const UString& filename, size_t repeat_co
 // Make sure that the generic open() returns an error.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::open(const UString& filename, OpenFlags flags, Report& report, PacketFormat format)
+bool ts::TSFileInputBuffered::open(const UString& filename, OpenFlags flags, Report& report, TSPacketFormat format)
 {
     // Accept read-only mode only.
     return (flags & (READ | WRITE | APPEND)) == READ && openRead(filename, 1, 0, report, format);

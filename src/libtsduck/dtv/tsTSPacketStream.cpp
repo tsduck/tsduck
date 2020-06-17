@@ -37,19 +37,12 @@ namespace {
     constexpr size_t MAX_HEADER_SIZE = ts::TSPacketMetadata::SERIALIZATION_SIZE;
 }
 
-const ts::Enumeration ts::TSPacketStream::FormatEnum({
-    {u"autodetect", ts::TSPacketStream::FMT_AUTODETECT},
-    {u"TS",         ts::TSPacketStream::FMT_TS},
-    {u"M2TS",       ts::TSPacketStream::FMT_M2TS},
-    {u"duck",       ts::TSPacketStream::FMT_DUCK},
-});
-
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::TSPacketStream::TSPacketStream(PacketFormat format, AbstractReadStreamInterface* reader, AbstractWriteStreamInterface* writer) :
+ts::TSPacketStream::TSPacketStream(TSPacketFormat format, AbstractReadStreamInterface* reader, AbstractWriteStreamInterface* writer) :
     _total_read(0),
     _total_write(0),
     _format(format),
@@ -68,7 +61,7 @@ ts::TSPacketStream::~TSPacketStream()
 // Reset the stream format and counters.
 //----------------------------------------------------------------------------
 
-void ts::TSPacketStream::resetPacketStream(PacketFormat format, AbstractReadStreamInterface* reader, AbstractWriteStreamInterface* writer)
+void ts::TSPacketStream::resetPacketStream(TSPacketFormat format, AbstractReadStreamInterface* reader, AbstractWriteStreamInterface* writer)
 {
     _total_read = 0;
     _total_write = 0;
@@ -86,11 +79,11 @@ void ts::TSPacketStream::resetPacketStream(PacketFormat format, AbstractReadStre
 size_t ts::TSPacketStream::packetHeaderSize() const
 {
     switch (_format) {
-        case FMT_AUTODETECT: return 0;
-        case FMT_TS:         return 0;
-        case FMT_M2TS:       return 4;
-        case FMT_DUCK:       return TSPacketMetadata::SERIALIZATION_SIZE;
-        default:             return 0;
+        case TSPacketFormat::AUTODETECT: return 0;
+        case TSPacketFormat::FMT_TS:         return 0;
+        case TSPacketFormat::FMT_M2TS:       return 4;
+        case TSPacketFormat::FMT_DUCK:       return TSPacketMetadata::SERIALIZATION_SIZE;
+        default:                         return 0;
     }
 }
 
@@ -116,7 +109,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
     assert(header_size <= sizeof(header));
 
     // If format is autodetect, read one packet to check where the sync byte is.
-    if (_format == FMT_AUTODETECT) {
+    if (_format == TSPacketFormat::AUTODETECT) {
 
         // Read one packet.
         if (!_reader->readStreamComplete(buffer, PKT_SIZE, read_size, report) || read_size < PKT_SIZE) {
@@ -129,14 +122,14 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
         // Check the position of the 0x47 sync byte to detect a potential header.
         if (buffer->b[0] == SYNC_BYTE) {
             // No header (or header starting with 0x47...)
-            _format = FMT_TS;
+            _format = TSPacketFormat::FMT_TS;
         }
         else if (buffer->b[4] == SYNC_BYTE) {
-            _format = FMT_M2TS;
+            _format = TSPacketFormat::FMT_M2TS;
             mdata.setInputTimeStamp(GetUInt32(buffer) & 0x3FFFFFFF, SYSTEM_CLOCK_FREQ);
         }
         else if (buffer->b[0] == TSPacketMetadata::SERIALIZATION_MAGIC && buffer->b[TSPacketMetadata::SERIALIZATION_SIZE] == SYNC_BYTE) {
-            _format = FMT_DUCK;
+            _format = TSPacketFormat::FMT_DUCK;
             mdata.deserialize(buffer->b, TSPacketMetadata::SERIALIZATION_SIZE);
         }
         else {
@@ -172,12 +165,12 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
     while (success && max_packets > 0 && !_reader->endOfStream()) {
 
         switch (_format) {
-            case FMT_AUTODETECT: {
+            case TSPacketFormat::AUTODETECT: {
                 // Should not get there.
                 assert(false);
                 return 0;
             }
-            case FMT_TS: {
+            case TSPacketFormat::FMT_TS: {
                 // Bulk read in TS format.
                 success = _reader->readStreamComplete(buffer, max_packets * PKT_SIZE, read_size, report);
                 // Count packets. Truncate incomplete packets at end of file.
@@ -192,8 +185,8 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
                 }
                 break;
             }
-            case FMT_M2TS:
-            case FMT_DUCK: {
+            case TSPacketFormat::FMT_M2TS:
+            case TSPacketFormat::FMT_DUCK: {
                 // Read header + packet.
                 success = _reader->readStreamComplete(header, header_size, read_size, report);
                 if (success && read_size == header_size) {
@@ -203,7 +196,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
                         buffer++;
                         max_packets--;
                         if (metadata != nullptr) {
-                            if (_format == FMT_M2TS) {
+                            if (_format == TSPacketFormat::FMT_M2TS) {
                                 metadata->reset();
                                 metadata->setInputTimeStamp(GetUInt32(header) & 0x3FFFFFFF, SYSTEM_CLOCK_FREQ);
                             }
@@ -243,18 +236,18 @@ bool ts::TSPacketStream::writePackets(const TSPacket *buffer, const TSPacketMeta
     bool success = true;
 
     switch (_format) {
-        case FMT_AUTODETECT:
-        case FMT_TS: {
+        case TSPacketFormat::AUTODETECT:
+        case TSPacketFormat::FMT_TS: {
             // If file format is not yet known, force it as TS, the default.
-            _format = FMT_TS;
+            _format = TSPacketFormat::FMT_TS;
             // Bulk write in TS format.
             size_t written_size = 0;
             success = _writer->writeStream(buffer, packet_count * PKT_SIZE, written_size, report);
             _total_write += written_size / PKT_SIZE;
             break;
         }
-        case FMT_M2TS:
-        case FMT_DUCK: {
+        case TSPacketFormat::FMT_M2TS:
+        case TSPacketFormat::FMT_DUCK: {
             // Write header + packet, packet by packet.
             uint8_t header[MAX_HEADER_SIZE];
             const size_t header_size = packetHeaderSize();
@@ -264,7 +257,7 @@ bool ts::TSPacketStream::writePackets(const TSPacket *buffer, const TSPacketMeta
                     _last_timestamp = metadata[i].getInputTimeStamp();
                 }
                 // Build header.
-                if (_format == FMT_M2TS) {
+                if (_format == TSPacketFormat::FMT_M2TS) {
                     // 30-bit time stamp in PCR units (2 most-significant bits are copy-control).
                     PutUInt32(header, uint32_t(_last_timestamp & 0x3FFFFFFF));
                 }

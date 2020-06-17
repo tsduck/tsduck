@@ -36,7 +36,6 @@
 #include "tsUString.h"
 
 namespace ts {
-
     //!
     //! Enumeration of int/string pairs.
     //! @ingroup cpp

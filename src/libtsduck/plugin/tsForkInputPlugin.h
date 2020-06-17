@@ -66,10 +66,10 @@ namespace ts {
         //! @endcond
 
     private:
-        UString                  _command;      // The command to run.
-        bool                     _nowait;       // Don't wait for children termination.
-        TSForkPipe::PacketFormat _format;       // Packet format on the pipe
-        size_t                   _buffer_size;  // Pipe buffer size in packets.
-        TSForkPipe               _pipe;         // The pipe device.
+        UString        _command;      // The command to run.
+        bool           _nowait;       // Don't wait for children termination.
+        TSPacketFormat _format;       // Packet format on the pipe
+        size_t         _buffer_size;  // Pipe buffer size in packets.
+        TSForkPipe     _pipe;         // The pipe device.
     };
 }

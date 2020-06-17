@@ -52,12 +52,12 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext          duck;      // TSDuck execution context.
-        ts::BitRate              bitrate;   // Expected bitrate (188-byte packets)
-        ts::UString              infile;    // Input file name
-        ts::TSFile::PacketFormat format;    // Input file format.
-        ts::TSAnalyzerOptions    analysis;  // Analysis options.
-        ts::PagerArgs            pager;     // Output paging options.
+        ts::DuckContext       duck;      // TSDuck execution context.
+        ts::BitRate           bitrate;   // Expected bitrate (188-byte packets)
+        ts::UString           infile;    // Input file name
+        ts::TSPacketFormat    format;    // Input file format.
+        ts::TSAnalyzerOptions analysis;  // Analysis options.
+        ts::PagerArgs         pager;     // Output paging options.
     };
 }
 
@@ -66,7 +66,7 @@ Options::Options(int argc, char *argv[]) :
     duck(this),
     bitrate(0),
     infile(),
-    format(ts::TSFile::FMT_AUTODETECT),
+    format(ts::TSPacketFormat::AUTODETECT),
     analysis(),
     pager(true, true)
 {
@@ -85,7 +85,7 @@ Options::Options(int argc, char *argv[]) :
          u"(based on 188-byte packets). By default, the bitrate is "
          u"evaluated using the PCR in the transport stream.");
 
-    option(u"format", 0, ts::TSFile::FormatEnum);
+    option(u"format", 0, ts::TSPacketFormatEnum);
     help(u"format", u"name",
          u"Specify the format of the input file. "
          u"By default, the format is automatically detected. "
@@ -102,7 +102,7 @@ Options::Options(int argc, char *argv[]) :
 
     infile = value(u"");
     bitrate = intValue<ts::BitRate>(u"bitrate");
-    format = enumValue<ts::TSFile::PacketFormat>(u"format", ts::TSFile::FMT_AUTODETECT);
+    format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::AUTODETECT);
 
     exitOnError();
 }

@@ -49,7 +49,7 @@ ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Write packets to a file", u"[options] [file-name]"),
     _name(),
     _flags(TSFile::NONE),
-    _file_format(TSFile::FMT_TS),
+    _file_format(TSPacketFormat::FMT_TS),
     _reopen(false),
     _retry_interval(DEF_RETRY_INTERVAL),
     _retry_max(0),
@@ -61,7 +61,7 @@ ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
     option(u"append", 'a');
     help(u"append", u"If the file already exists, append to the end of the file. By default, existing files are overwritten.");
 
-    option(u"format", 0, TSFile::FormatEnum);
+    option(u"format", 0, TSPacketFormatEnum);
     help(u"format", u"name",
          u"Specify the format of the created file. "
          u"By default, the format is a standard TS file.");
@@ -106,7 +106,7 @@ bool ts::FileOutputPlugin::getOptions()
     _reopen = present(u"reopen-on-error");
     _retry_max = intValue<size_t>(u"max-retry", 0);
     _retry_interval = intValue<MilliSecond>(u"retry-interval", DEF_RETRY_INTERVAL);
-    _file_format = enumValue<TSFile::PacketFormat>(u"format", TSFile::FMT_TS);
+    _file_format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::FMT_TS);
     return true;
 }
 

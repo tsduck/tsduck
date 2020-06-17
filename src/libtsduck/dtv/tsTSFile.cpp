@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::TSFile::TSFile() :
-    TSPacketStream(FMT_AUTODETECT, this, this),
+    TSPacketStream(TSPacketFormat::AUTODETECT, this, this),
     _filename(),
     _repeat(0),
     _counter(0),
@@ -156,7 +156,7 @@ ts::UString ts::TSFile::getDisplayFileName() const
 // Open file for read in a rewindable mode.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::openRead(const UString& filename, uint64_t start_offset, Report& report, PacketFormat format)
+bool ts::TSFile::openRead(const UString& filename, uint64_t start_offset, Report& report, TSPacketFormat format)
 {
     if (_is_open) {
         report.log(_severity, u"already open");
@@ -179,7 +179,7 @@ bool ts::TSFile::openRead(const UString& filename, uint64_t start_offset, Report
 // Open file for read with optional repetition.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, PacketFormat format)
+bool ts::TSFile::openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, TSPacketFormat format)
 {
     if (_is_open) {
         report.log(_severity, u"already open");
@@ -202,7 +202,7 @@ bool ts::TSFile::openRead(const UString& filename, size_t repeat_count, uint64_t
 // Open file, generic form.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::open(const UString& filename, OpenFlags flags, Report& report, PacketFormat format)
+bool ts::TSFile::open(const UString& filename, OpenFlags flags, Report& report, TSPacketFormat format)
 {
     // Enforce WRITE if APPEND is specified.
     if ((flags & APPEND) != 0) {

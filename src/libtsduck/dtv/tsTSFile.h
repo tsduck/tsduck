@@ -89,7 +89,7 @@ namespace ts {
         //! @param [in] format Expected format of the TS file.
         //! @return True on success, false on error.
         //!
-        bool openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, PacketFormat format = FMT_AUTODETECT);
+        bool openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT);
 
         //!
         //! Open the file for read in rewindable mode.
@@ -104,7 +104,7 @@ namespace ts {
         //! @see rewind()
         //! @see seek()
         //!
-        bool openRead(const UString& filename, uint64_t start_offset, Report& report, PacketFormat format = FMT_AUTODETECT);
+        bool openRead(const UString& filename, uint64_t start_offset, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT);
 
         //!
         //! Flags for open().
@@ -131,7 +131,7 @@ namespace ts {
         //! @param [in] format Format of the TS file.
         //! @return True on success, false on error.
         //!
-        virtual bool open(const UString& filename, OpenFlags flags, Report& report, PacketFormat format = FMT_AUTODETECT);
+        virtual bool open(const UString& filename, OpenFlags flags, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT);
 
         //!
         //! Check if the file is open.

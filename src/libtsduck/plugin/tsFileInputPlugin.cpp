@@ -53,7 +53,7 @@ ts::FileInputPlugin::FileInputPlugin(TSP* tsp_) :
     _repeat_count(1),
     _start_offset(0),
     _base_label(0),
-    _file_format(TSFile::FMT_AUTODETECT),
+    _file_format(TSPacketFormat::AUTODETECT),
     _filenames(),
     _eof(),
     _files()
@@ -75,7 +75,7 @@ ts::FileInputPlugin::FileInputPlugin(TSP* tsp_) :
          u"By default, continue reading until the last file reaches the end of file "
          u"(other files are replaced with null packets after their end of file).");
 
-    option(u"format", 0, TSFile::FormatEnum);
+    option(u"format", 0, TSPacketFormatEnum);
     help(u"format", u"name",
          u"Specify the format of the input files. "
          u"By default, the format is automatically and independently detected for each file. "
@@ -131,7 +131,7 @@ bool ts::FileInputPlugin::getOptions()
     _interleave_chunk = intValue<size_t>(u"interleave", 1);
     _first_terminate = present(u"first-terminate");
     _base_label = intValue<size_t>(u"label-base", TSPacketMetadata::LABEL_MAX + 1);
-    _file_format = enumValue<TSFile::PacketFormat>(u"format", TSFile::FMT_AUTODETECT);
+    _file_format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::AUTODETECT);
 
     // If there is no file, then this is the standard input, an empty file name.
     if (_filenames.empty()) {

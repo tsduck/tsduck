@@ -60,7 +60,7 @@ namespace ts {
         virtual ~TSFileOutputResync();
 
         // Overrides TSFile methods
-        virtual bool open(const UString& filename, OpenFlags flags, Report& report, PacketFormat format = FMT_AUTODETECT) override;
+        virtual bool open(const UString& filename, OpenFlags flags, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT) override;
 
         //!
         //! Write TS packets to the file.

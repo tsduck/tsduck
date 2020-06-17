@@ -92,7 +92,7 @@ namespace ts {
         PIDSet            _merge_pids;        // Set of detected PID's in merged stream that we pass in main stream.
         PIDContextMap     _pcr_pids;          // Description of PID's with PCR's from the merged stream.
         PSIMerger         _psi_merger;        // Used to merge PSI/SI from both streams.
-        TSForkPipe::PacketFormat   _format;       // Packet format on the pipe
+        TSPacketFormat    _format;            // Packet format on the pipe
         TSPacketMetadata::LabelSet _setLabels;    // Labels to set on output packets.
         TSPacketMetadata::LabelSet _resetLabels;  // Labels to reset on output packets.
 
@@ -132,7 +132,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _merge_pids(),
     _pcr_pids(),
     _psi_merger(duck, PSIMerger::NONE, *tsp),
-    _format(TSForkPipe::FMT_AUTODETECT),
+    _format(TSPacketFormat::AUTODETECT),
     _setLabels(),
     _resetLabels()
 {
@@ -147,7 +147,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"passed. This can be modified using options --drop and --pass. Several "
          u"options --drop can be specified.");
 
-    option(u"format", 0, TSForkPipe::FormatEnum);
+    option(u"format", 0, TSPacketFormatEnum);
     help(u"format", u"name",
          u"Specify the format of the input stream. "
          u"By default, the format is automatically detected. "
@@ -237,7 +237,7 @@ bool ts::MergePlugin::start()
     const bool nowait = present(u"no-wait");
     const bool transparent = present(u"transparent");
     const size_t max_queue = intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS);
-    _format = enumValue<TSForkPipe::PacketFormat>(u"format", TSForkPipe::FMT_AUTODETECT);
+    _format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::AUTODETECT);
     _merge_psi = !transparent && !present(u"no-psi-merge");
     _pcr_restamp = !present(u"no-pcr-restamp");
     _ignore_conflicts = transparent || present(u"ignore-conflicts");

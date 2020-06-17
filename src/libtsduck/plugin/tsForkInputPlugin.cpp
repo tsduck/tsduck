@@ -45,7 +45,7 @@ ts::ForkInputPlugin::ForkInputPlugin(TSP* tsp_) :
     InputPlugin(tsp_, u"Fork a process and receive TS packets from its standard output", u"[options] 'command'"),
     _command(),
     _nowait(false),
-    _format(TSForkPipe::FMT_AUTODETECT),
+    _format(TSPacketFormat::AUTODETECT),
     _buffer_size(0),
     _pipe()
 {
@@ -55,7 +55,7 @@ ts::ForkInputPlugin::ForkInputPlugin(TSP* tsp_) :
     option(u"buffered-packets", 'b', POSITIVE);
     help(u"buffered-packets", u"Windows only: Specifies the pipe buffer size in number of TS packets.");
 
-    option(u"format", 0, TSForkPipe::FormatEnum);
+    option(u"format", 0, TSPacketFormatEnum);
     help(u"format", u"name",
          u"Specify the format of the input stream. "
          u"By default, the format is automatically detected. "
@@ -77,7 +77,7 @@ bool ts::ForkInputPlugin::getOptions()
     // Get command line arguments.
     _command = value(u"");
     _nowait = present(u"nowait");
-    _format = enumValue<TSForkPipe::PacketFormat>(u"format", TSForkPipe::FMT_AUTODETECT);
+    _format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::AUTODETECT);
     _buffer_size = intValue<size_t>(u"buffered-packets", 0);
     return true;
 }

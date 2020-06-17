@@ -141,7 +141,7 @@ bool ts::TimeShiftBuffer::open(Report& report)
 
         // Create the backup file. The flag temporary means that it will be deleted on close.
         // Use TSDuck proprietary format to save the packet metadata.
-        if (!_file.open(filename, TSFile::READ | TSFile::WRITE | TSFile::TEMPORARY, report, TSFile::FMT_DUCK)) {
+        if (!_file.open(filename, TSFile::READ | TSFile::WRITE | TSFile::TEMPORARY, report, TSPacketFormat::FMT_DUCK)) {
             return false;
         }
 

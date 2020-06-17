@@ -49,16 +49,16 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        uint32_t    min_pcr;              // Min # of PCR per PID
-        uint16_t    min_pid;              // Min # of PID
-        ts::UString pcr_name;             // Time stamp type name
-        bool        use_dts;              // Use DTS instead of PCR
-        bool        all;                  // All packets analysis
-        bool        full;                 // Full analysis
-        bool        value_only;           // Output value only
-        bool        ignore_errors;        // Ignore TS errors
-        ts::UString infile;               // Input file name
-        ts::TSFile::PacketFormat format;  // Input file format.
+        uint32_t           min_pcr;        // Min # of PCR per PID
+        uint16_t           min_pid;        // Min # of PID
+        ts::UString        pcr_name;       // Time stamp type name
+        bool               use_dts;        // Use DTS instead of PCR
+        bool               all;            // All packets analysis
+        bool               full;           // Full analysis
+        bool               value_only;     // Output value only
+        bool               ignore_errors;  // Ignore TS errors
+        ts::UString        infile;         // Input file name
+        ts::TSPacketFormat format;         // Input file format.
     };
 }
 
@@ -73,7 +73,7 @@ Options::Options(int argc, char *argv[]) :
     value_only(false),
     ignore_errors(false),
     infile(),
-    format(ts::TSFile::FMT_AUTODETECT)
+    format(ts::TSPacketFormat::AUTODETECT)
 {
     option(u"", 0, STRING, 0, 1);
     help(u"", u"MPEG capture file (standard input if omitted).");
@@ -88,7 +88,7 @@ Options::Options(int argc, char *argv[]) :
          u"Use DTS (Decoding Time Stamps) from video PID's instead of PCR "
          u"(Program Clock Reference) from the transport layer");
 
-    option(u"format", 0, ts::TSFile::FormatEnum);
+    option(u"format", 0, ts::TSPacketFormatEnum);
     help(u"format", u"name",
          u"Specify the format of the input file. "
          u"By default, the format is automatically detected. "
@@ -130,7 +130,7 @@ Options::Options(int argc, char *argv[]) :
     use_dts = present(u"dts");
     pcr_name = use_dts ? u"DTS" : u"PCR";
     ignore_errors = present(u"ignore-errors");
-    format = enumValue<ts::TSFile::PacketFormat>(u"format", ts::TSFile::FMT_AUTODETECT);
+    format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::AUTODETECT);
 
     exitOnError();
 }

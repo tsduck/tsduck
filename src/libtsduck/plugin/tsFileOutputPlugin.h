@@ -63,13 +63,13 @@ namespace ts {
         //! @endcond
 
     private:
-        UString              _name;
-        TSFile::OpenFlags    _flags;
-        TSFile::PacketFormat _file_format;
-        bool                 _reopen;
-        MilliSecond          _retry_interval;
-        size_t               _retry_max;
-        TSFile               _file;
+        UString           _name;
+        TSFile::OpenFlags _flags;
+        TSPacketFormat    _file_format;
+        bool              _reopen;
+        MilliSecond       _retry_interval;
+        size_t            _retry_max;
+        TSFile            _file;
 
         // Open the file, retry on error if necessary.
         // Use max number of retries. Updated with remaining number of retries.

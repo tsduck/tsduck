@@ -56,13 +56,13 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext          duck;     // TSDuck execution context.
-        ts::TablesDisplay        display;  // Table formatting options (all default values, nothing on command line).
-        bool                     no_tdt;   // Do not try to get a TDT
-        bool                     no_tot;   // Do not try to get a TOT
-        bool                     all;      // Report all tables, not only the first one.
-        ts::UString              infile;   // Input file name
-        ts::TSFile::PacketFormat format;   // Input file format.
+        ts::DuckContext    duck;     // TSDuck execution context.
+        ts::TablesDisplay  display;  // Table formatting options (all default values, nothing on command line).
+        bool               no_tdt;   // Do not try to get a TDT
+        bool               no_tot;   // Do not try to get a TOT
+        bool               all;      // Report all tables, not only the first one.
+        ts::UString        infile;   // Input file name
+        ts::TSPacketFormat format;   // Input file format.
     };
 }
 
@@ -74,7 +74,7 @@ Options::Options(int argc, char *argv[]) :
     no_tot(false),
     all(false),
     infile(),
-    format(ts::TSFile::FMT_AUTODETECT)
+    format(ts::TSPacketFormat::AUTODETECT)
 {
     option(u"", 0, STRING, 0, 1);
     help(u"", u"MPEG capture file (standard input if omitted).");
@@ -82,7 +82,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"all", 'a');
     help(u"all", u"Report all TDT/TOT tables (default: report only the first table of each type).");
 
-    option(u"format", 'f', ts::TSFile::FormatEnum);
+    option(u"format", 'f', ts::TSPacketFormatEnum);
     help(u"format", u"name",
          u"Specify the format of the input file. "
          u"By default, the format is automatically detected. "
@@ -102,7 +102,7 @@ Options::Options(int argc, char *argv[]) :
     all = present(u"all");
     no_tdt = present(u"notdt");
     no_tot = present(u"notot");
-    format = enumValue<ts::TSFile::PacketFormat>(u"format", ts::TSFile::FMT_AUTODETECT);
+    format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::AUTODETECT);
 
     exitOnError();
 }

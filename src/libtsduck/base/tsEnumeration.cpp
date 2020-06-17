@@ -46,7 +46,7 @@ ts::Enumeration::Enumeration() :
 ts::Enumeration::Enumeration(const std::initializer_list<NameValue> values) :
     _map()
 {
-    for (std::initializer_list<NameValue>::const_iterator it = values.begin(); it != values.end(); ++it) {
+    for (auto it = values.begin(); it != values.end(); ++it) {
         _map.insert(std::make_pair(it->value, it->name));
     }
 }
@@ -77,7 +77,7 @@ int ts::Enumeration::value(const UString& name, bool caseSensitive) const
     size_t previousCount = 0;
     int previous = UNKNOWN;
 
-    for (EnumMap::const_iterator it = _map.begin(); it != _map.end(); ++it) {
+    for (auto it = _map.begin(); it != _map.end(); ++it) {
         if ((caseSensitive && it->second == name) || (!caseSensitive && it->second.toLower() == lcName)) {
             // Found an exact match
             return it->first;

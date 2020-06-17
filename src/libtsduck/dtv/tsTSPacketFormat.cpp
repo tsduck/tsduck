@@ -26,46 +26,13 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  File packet processor plugin for tsp.
-//!
-//----------------------------------------------------------------------------
 
-#pragma once
-#include "tsProcessorPlugin.h"
-#include "tsTSFile.h"
+#include "tsTSPacketFormat.h"
+TSDUCK_SOURCE;
 
-namespace ts {
-    //!
-    //! File packet processor plugin for tsp.
-    //! @ingroup plugin
-    //!
-    class TSDUCKDLL FilePacketPlugin: public ProcessorPlugin
-    {
-        TS_NOBUILD_NOCOPY(FilePacketPlugin);
-    public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        FilePacketPlugin(TSP* tsp);
-
-        // Implementation of plugin API
-        virtual bool getOptions() override;
-        virtual bool start() override;
-        virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
-
-        //! @cond nodoxygen
-        // A dummy storage value to force inclusion of this module when using the static library.
-        static const int REFERENCE;
-        //! @endcond
-
-    private:
-        UString           _name;
-        TSFile::OpenFlags _flags;
-        TSPacketFormat    _file_format;
-        TSFile            _file;
-    };
-}
+const ts::TypedEnumeration<ts::TSPacketFormat> ts::TSPacketFormatEnum({
+    {u"autodetect", ts::TSPacketFormat::AUTODETECT},
+    {u"TS",         ts::TSPacketFormat::FMT_TS},
+    {u"M2TS",       ts::TSPacketFormat::FMT_M2TS},
+    {u"duck",       ts::TSPacketFormat::FMT_DUCK},
+});
