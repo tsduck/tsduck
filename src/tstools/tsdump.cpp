@@ -34,6 +34,7 @@
 
 #include "tsMain.h"
 #include "tsTSPacket.h"
+#include "tsTSFile.h"
 #include "tsPagerArgs.h"
 #include "tsDuckContext.h"
 #include "tsArgs.h"
@@ -52,15 +53,16 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext   duck;        // TSDuck context
-        uint32_t          dump_flags;  // Dump options for Hexa and Packet::dump
-        bool              raw_file;    // Raw dump of file, not TS packets
-        bool              log;         // Option --log
-        size_t            log_size;    // Size to display with --log
-        ts::PIDSet        pids;        // PID values to dump.
-        ts::PacketCounter max_packets; // Maximum number of packets to dump per file
-        ts::UStringVector infiles;     // Input file names
-        ts::PagerArgs     pager;       // Output paging options.
+        ts::DuckContext          duck;        // TSDuck context
+        uint32_t                 dump_flags;  // Dump options for Hexa and Packet::dump
+        bool                     raw_file;    // Raw dump of file, not TS packets
+        bool                     log;         // Option --log
+        size_t                   log_size;    // Size to display with --log
+        ts::PIDSet               pids;        // PID values to dump
+        ts::PacketCounter        max_packets; // Maximum number of packets to dump per file
+        ts::UStringVector        infiles;     // Input file names
+        ts::TSFile::PacketFormat format;      // Input file format
+        ts::PagerArgs            pager;       // Output paging options
     };
 }
 
@@ -74,6 +76,7 @@ Options::Options(int argc, char *argv[]) :
     pids(),
     max_packets(0),
     infiles(),
+    format(ts::TSFile::FMT_AUTODETECT),
     pager(true, true)
 {
     pager.defineArgs(*this);
@@ -89,6 +92,14 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"c-style", 'c');
     help(u"c-style", u"Same as --raw-dump (no interpretation of packet) but dump the bytes in C-language style.");
+
+    option(u"format", 'f', ts::TSFile::FormatEnum);
+    help(u"format", u"name",
+         u"Specify the format of the input files. "
+         u"By default, when dumping TS packets, the format is automatically and independently detected for each file. "
+         u"But the auto-detection may fail in some cases  (for instance when the first time-stamp of an M2TS file starts with 0x47). "
+         u"Using this option forces a specific format. If a specific format is specified, all input files must have the same format. "
+         u"This option is ignored with --raw-file: the complete raw structure of the file is dumped .");
 
     option(u"headers-only", 'h');
     help(u"headers-only", u"Dump packet headers only, not payload.");
@@ -134,6 +145,7 @@ Options::Options(int argc, char *argv[]) :
     log = present(u"log");
     max_packets = intValue<ts::PacketCounter>(u"max-packets", std::numeric_limits<ts::PacketCounter>::max());
     log_size = intValue<size_t>(u"log-size", ts::PKT_SIZE);
+    format = enumValue<ts::TSFile::PacketFormat>(u"format", ts::TSFile::FMT_AUTODETECT);
     getIntValues(pids, u"pid", true);
 
     dump_flags =
@@ -182,43 +194,82 @@ Options::Options(int argc, char *argv[]) :
 
 
 //----------------------------------------------------------------------------
-// Perform the dump on one input file.
+// Perform the dump on one transport stream file.
 //----------------------------------------------------------------------------
 
 namespace {
-    void DumpFile(Options& opt, std::istream& in, std::ostream & out)
+    void DumpTSFile(Options& opt, const ts::UString& filename, std::ostream& out)
     {
-        if (opt.raw_file) {
-            // Raw dump of file
-            const uint32_t flags = (opt.dump_flags & 0x0000FFFF) | ts::UString::BPL | ts::UString::WIDE_OFFSET;
-            const size_t MAX_RAW_BPL = 16;
-            const size_t raw_bpl = (flags & ts::UString::BINARY) ? 8 : 16;  // Bytes per line in raw mode
-            size_t offset = 0;
-            while (in) {
-                int c;
-                size_t size;
-                uint8_t buffer[MAX_RAW_BPL];
-                for (size = 0; size < raw_bpl && (c = in.get()) != EOF; size++) {
-                    buffer[size] = uint8_t(c);
+        if (opt.infiles.size() > 1 && !opt.log) {
+            out << "* File " << filename << std::endl;
+        }
+
+        // Open the TS file.
+        ts::TSFile file;
+        if (!file.openRead(filename, 1, 0, opt, opt.format)) {
+            return;
+        }
+
+        // Read all packets in the file.
+        ts::TSPacket pkt;
+        for (ts::PacketCounter packet_index = 0; packet_index < opt.max_packets && file.readPackets(&pkt, nullptr, 1, opt) > 0; packet_index++) {
+            if (opt.pids.test(pkt.getPID())) {
+                if (!opt.log) {
+                    out << std::endl << "* Packet " << ts::UString::Decimal(packet_index) << std::endl;
                 }
-                out << ts::UString::Dump(buffer, size, flags, 0, raw_bpl, offset);
-                offset += size;
+                pkt.display(out, opt.dump_flags, opt.log ? 0 : 2, opt.log_size);
             }
         }
+        file.close(opt);
+
+        if (!opt.log) {
+            out << std::endl;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Perform the raw dump on one input file.
+//----------------------------------------------------------------------------
+
+namespace {
+    void DumpRawFile(Options& opt, const ts::UString& filename, std::ostream& out)
+    {
+        std::istream* in = nullptr;
+        std::ifstream file;
+
+        // Open input file (standard input if no file is specified or file name is empty).
+        if (filename.empty()) {
+            // Use standard input.
+            in = &std::cin;
+            // Try to put standard input in binary mode
+            SetBinaryModeStdin(opt);
+        }
         else {
-            // Read all packets in the file
-            ts::TSPacket pkt;
-            for (ts::PacketCounter packet_index = 0; packet_index < opt.max_packets && pkt.read(in, true, opt); packet_index++) {
-                if (opt.pids.test(pkt.getPID())) {
-                    if (!opt.log) {
-                        out << std::endl << "* Packet " << ts::UString::Decimal(packet_index) << std::endl;
-                    }
-                    pkt.display(out, opt.dump_flags, opt.log ? 0 : 2, opt.log_size);
-                }
+            // Dump named files. Open the file in binary mode. Will be closed by destructor.
+            in = &file;
+            file.open(filename.toUTF8().c_str(), std::ios::binary);
+            if (!file) {
+                opt.error(u"cannot open file %s", {filename});
+                return;
             }
-            if (!opt.log) {
-                out << std::endl;
+        }
+
+        // Raw dump of file
+        const uint32_t flags = (opt.dump_flags & 0x0000FFFF) | ts::UString::BPL | ts::UString::WIDE_OFFSET;
+        const size_t MAX_RAW_BPL = 16;
+        const size_t raw_bpl = (flags & ts::UString::BINARY) ? 8 : 16;  // Bytes per line in raw mode
+        size_t offset = 0;
+        while (*in) {
+            int c;
+            size_t size;
+            uint8_t buffer[MAX_RAW_BPL];
+            for (size = 0; size < raw_bpl && (c = in->get()) != EOF; size++) {
+                buffer[size] = uint8_t(c);
             }
+            out << ts::UString::Dump(buffer, size, flags, 0, raw_bpl, offset);
+            offset += size;
         }
     }
 }
@@ -232,27 +283,27 @@ int MainCode(int argc, char *argv[])
 {
     // Decode command line.
     Options opt(argc, argv);
+
+    // Setup an output pager if necessary.
     std::ostream& out(opt.pager.output(opt));
 
     if (opt.infiles.empty()) {
-        // Try to put standard input in binary mode
-        SetBinaryModeStdin(opt);
         // Dump standard input.
-        DumpFile(opt, std::cin, out);
+        if (opt.raw_file) {
+            DumpRawFile(opt, ts::UString(), out);
+        }
+        else {
+            DumpTSFile(opt, ts::UString(), out);
+        }
     }
     else {
         // Dump named files.
         for (size_t i = 0; i < opt.infiles.size(); ++i) {
-            // Open the file in binary mode.
-            std::ifstream file(opt.infiles[i].toUTF8().c_str(), std::ios::binary);
-            if (file) {
-                if (opt.infiles.size() > 1 && !opt.raw_file && !opt.log) {
-                    out << "* File " << opt.infiles[i] << std::endl;
-                }
-                DumpFile(opt, file, out);
+            if (opt.raw_file) {
+                DumpRawFile(opt, opt.infiles[i], out);
             }
             else {
-                opt.error(u"cannot open file %s", {opt.infiles[i]});
+                DumpTSFile(opt, opt.infiles[i], out);
             }
         }
     }
