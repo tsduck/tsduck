@@ -656,9 +656,9 @@ ts::ARIBCharset::Encoder::Encoder(uint8_t*& out, size_t& out_size, const UChar*&
            ALPHANUMERIC_MAP.byte2,
            HIRAGANA_MAP.byte2,
            KATAKANA_MAP.byte2},
-    _GL(0),  // G0 -> GL
-    _GR(2),  // G2 -> GR
-    _GL_last(true),
+    _GL(0),             // G0 -> GL
+    _GR(2),             // G2 -> GR
+    _GL_last(false),    // First charset switch will use GL
     _Gn_history(0x3210) // G3=oldest, G0=last-used
 {
     // Previous index in encoding table.
