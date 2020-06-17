@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 // Automatically generated file, do not modify.
-// See internal tool aribb24 in src/utils.
+// See tscharset --generate-arib-b24-encoding-table
 // Generated 2020/04/24
 
 #include "tsARIBCharset.h"
