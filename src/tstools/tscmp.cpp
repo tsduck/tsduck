@@ -55,6 +55,7 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
+        ts::TSFile::PacketFormat format;
         ts::UString filename1;
         ts::UString filename2;
         uint64_t    byte_offset;
@@ -75,6 +76,7 @@ namespace {
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Compare two transport stream files", u"[options] filename-1 filename-2"),
+    format(ts::TSFile::FMT_AUTODETECT),
     filename1(),
     filename2(),
     byte_offset(0),
@@ -110,6 +112,15 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"dump", 'd');
     help(u"dump", u"Dump the content of all differing packets.");
+
+    option(u"format", 'f', ts::TSFile::FormatEnum);
+    help(u"format", u"name",
+         u"Specify the format of the input files. "
+         u"By default, the format is automatically and independently detected for each file. "
+         u"But the auto-detection may fail in some cases "
+         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
+         u"Using this option forces a specific format. "
+         u"If a specific format is specified, the two input files must have the same format.");
 
     option(u"normalized", 'n');
     help(u"normalized", u"Report in a normalized output format (useful for automatic analysis).");
@@ -152,6 +163,7 @@ Options::Options(int argc, char *argv[]) :
     getValue(filename1, u"", u"", 0);
     getValue(filename2, u"", u"", 1);
 
+    format = enumValue<ts::TSFile::PacketFormat>(u"format", ts::TSFile::FMT_AUTODETECT);
     buffered_packets = intValue<size_t>(u"buffered-packets", DEFAULT_BUFFERED_PACKETS);
     byte_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * ts::PKT_SIZE);
     threshold_diff = intValue<size_t>(u"threshold-diff", 0);
@@ -304,8 +316,8 @@ int MainCode(int argc, char *argv[])
     ts::TSFileInputBuffered file2(opt.buffered_packets);
 
     // Open files
-    file1.openRead(opt.filename1, 1, opt.byte_offset, opt);
-    file2.openRead(opt.filename2, 1, opt.byte_offset, opt);
+    file1.openRead(opt.filename1, 1, opt.byte_offset, opt, opt.format);
+    file2.openRead(opt.filename2, 1, opt.byte_offset, opt, opt.format);
     opt.exitOnError();
 
     // Display headers
@@ -322,7 +334,7 @@ int MainCode(int argc, char *argv[])
     ts::PacketCounter count1[ts::PID_MAX];
     ts::PacketCounter count2[ts::PID_MAX];
     TS_ZERO(count1);
-    TS_ZERO (count2);
+    TS_ZERO(count2);
 
     // Currently skipped packets in file1 when --subset
     ts::PacketCounter subset_skipped = 0;

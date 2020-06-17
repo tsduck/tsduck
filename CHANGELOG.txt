@@ -2,16 +2,19 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.22-1854
+VERSION 3.22-1858
 
 [IMP] Improvements on existing commands and plugins:
 
   * The "tsp" command now keeps track of input time-stamps for each packet
     and propagate the information to all plugins (see improvement in plugin
     "pcrverify").
+  * Most commands reading TS files can read M2TS files as well.
   * New options in exiting commands and plugins:
-    - Option --format in plugins "file", "fork" (input, output and packet
+    - Option --format in "tsanalyze", "tsbitrate", "tscmp", "tsdate", "tsdump",
+      "tspsi", "tstables", plugins "file", "fork" (input, output and packet
       processor) and plugins "merge", "mux".
+    - Options --input-format and --output-format in "tsstuff".
     - Option --size-of-packet in "tsftrunc".
     - Options --input-synchronous and --jitter-unreal in plugin "pcrverify".
     - Option --timestamp-priority in input plugins "ip" and "srt".

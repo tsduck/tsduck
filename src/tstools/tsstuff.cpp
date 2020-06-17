@@ -67,6 +67,8 @@ namespace {
         bool        dyn_initial_inter_packet;
         ts::UString input_file;
         ts::UString output_file;
+        ts::TSFile::PacketFormat input_format;
+        ts::TSFile::PacketFormat output_format;
     };
 }
 
@@ -84,7 +86,9 @@ Options::Options(int argc, char *argv[]) :
     dyn_final_inter_packet(false),
     dyn_initial_inter_packet(false),
     input_file(),
-    output_file()
+    output_file(),
+    input_format(ts::TSFile::FMT_AUTODETECT),
+    output_format(ts::TSFile::FMT_TS)
 {
     option(u"", 0, STRING, 0, 1);
     help(u"",
@@ -118,6 +122,19 @@ Options::Options(int argc, char *argv[]) :
          u"Number of stuffing packets to add between input packets before the first "
          u"time stamp (PCR or DTS). By default, use the same number as in the "
          u"first segment, between the first two time stamps.");
+
+    option(u"input-format", 0, ts::TSFile::FormatEnum);
+    help(u"input-format", u"name",
+         u"Specify the format of the input file. "
+         u"By default, the format is automatically detected. "
+         u"But the auto-detection may fail in some cases "
+         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
+         u"Using this option forces a specific format.");
+
+    option(u"output-format", 0, ts::TSFile::FormatEnum);
+    help(u"output-format", u"name",
+         u"Specify the format of the created output file. "
+         u"By default, the format is a standard TS file.");
 
     option(u"leading-packets", 'l', UNSIGNED);
     help(u"leading-packets",
@@ -165,6 +182,8 @@ Options::Options(int argc, char *argv[]) :
     min_interval_ms = intValue<uint64_t>(u"min-interval", DEFAULT_MIN_INTERVAL);
     dyn_final_inter_packet = !present(u"final-inter-packet");
     dyn_initial_inter_packet = !present(u"initial-inter-packet");
+    input_format = enumValue<ts::TSFile::PacketFormat>(u"format", ts::TSFile::FMT_AUTODETECT);
+    output_format = enumValue<ts::TSFile::PacketFormat>(u"format", ts::TSFile::FMT_TS);
 
     exitOnError();
 }
@@ -439,7 +458,7 @@ void Stuffer::evaluateNextStuffing()
 void Stuffer::stuff()
 {
     // Open input file
-    if (!_input.openRead(_opt.input_file, 1, 0, _opt)) {
+    if (!_input.openRead(_opt.input_file, 1, 0, _opt, _opt.input_format)) {
         fatalError();
     }
 
@@ -456,7 +475,7 @@ void Stuffer::stuff()
     assert(_tstamp2.set());
 
     // Create output file
-    if (!_output.open(_opt.output_file, ts::TSFile::WRITE | ts::TSFile::SHARED, _opt)) {
+    if (!_output.open(_opt.output_file, ts::TSFile::WRITE | ts::TSFile::SHARED, _opt, _opt.output_format)) {
         fatalError();
     }
 

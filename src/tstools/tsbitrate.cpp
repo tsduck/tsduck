@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
-#include "tsInputRedirector.h"
+#include "tsTSFile.h"
 #include "tsPCRAnalyzer.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
@@ -49,15 +49,16 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        uint32_t    min_pcr;       // Min # of PCR per PID
-        uint16_t    min_pid;       // Min # of PID
-        ts::UString pcr_name;      // Time stamp type name
-        bool        use_dts;       // Use DTS instead of PCR
-        bool        all;           // All packets analysis
-        bool        full;          // Full analysis
-        bool        value_only;    // Output value only
-        bool        ignore_errors; // Ignore TS errors
-        ts::UString infile;        // Input file name
+        uint32_t    min_pcr;              // Min # of PCR per PID
+        uint16_t    min_pid;              // Min # of PID
+        ts::UString pcr_name;             // Time stamp type name
+        bool        use_dts;              // Use DTS instead of PCR
+        bool        all;                  // All packets analysis
+        bool        full;                 // Full analysis
+        bool        value_only;           // Output value only
+        bool        ignore_errors;        // Ignore TS errors
+        ts::UString infile;               // Input file name
+        ts::TSFile::PacketFormat format;  // Input file format.
     };
 }
 
@@ -71,7 +72,8 @@ Options::Options(int argc, char *argv[]) :
     full(false),
     value_only(false),
     ignore_errors(false),
-    infile()
+    infile(),
+    format(ts::TSFile::FMT_AUTODETECT)
 {
     option(u"", 0, STRING, 0, 1);
     help(u"", u"MPEG capture file (standard input if omitted).");
@@ -85,6 +87,14 @@ Options::Options(int argc, char *argv[]) :
     help(u"dts",
          u"Use DTS (Decoding Time Stamps) from video PID's instead of PCR "
          u"(Program Clock Reference) from the transport layer");
+
+    option(u"format", 0, ts::TSFile::FormatEnum);
+    help(u"format", u"name",
+         u"Specify the format of the input file. "
+         u"By default, the format is automatically detected. "
+         u"But the auto-detection may fail in some cases "
+         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
+         u"Using this option forces a specific format.");
 
     option(u"full", 'f');
     help(u"full",
@@ -120,6 +130,7 @@ Options::Options(int argc, char *argv[]) :
     use_dts = present(u"dts");
     pcr_name = use_dts ? u"DTS" : u"PCR";
     ignore_errors = present(u"ignore-errors");
+    format = enumValue<ts::TSFile::PacketFormat>(u"format", ts::TSFile::FMT_AUTODETECT);
 
     exitOnError();
 }
@@ -131,19 +142,26 @@ Options::Options(int argc, char *argv[]) :
 
 int MainCode(int argc, char *argv[])
 {
+    // Decode command line options.
     Options opt(argc, argv);
-    ts::PCRAnalyzer zer(opt.min_pid, opt.min_pcr);
-    ts::InputRedirector input(opt.infile, opt);
-    ts::TSPacket pkt;
 
     // Configure the PCR analyzer.
+    ts::PCRAnalyzer zer(opt.min_pid, opt.min_pcr);
     zer.setIgnoreErrors(opt.ignore_errors);
     if (opt.use_dts) {
         zer.resetAndUseDTS(opt.min_pid, opt.min_pcr);
     }
 
+    // Open the TS file.
+    ts::TSFile file;
+    if (!file.openRead(opt.infile, 1, 0, opt, opt.format)) {
+        return EXIT_FAILURE;
+    }
+
     // Read all packets in the file and pass them to the PCR analyzer.
-    while (pkt.read(std::cin, true, opt) && (!zer.feedPacket(pkt) || opt.all)) {}
+    ts::TSPacket pkt;
+    while (file.readPackets(&pkt, nullptr, 1, opt) > 0 && (!zer.feedPacket(pkt) || opt.all)) {}
+    file.close(opt);
 
     // Display results.
     ts::PCRAnalyzer::Status status;

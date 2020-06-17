@@ -285,10 +285,8 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
         winflags = CREATE_ALWAYS;
     }
 
-    if (_filename.empty()) {
-        _handle = ::GetStdHandle(read_access ? STD_INPUT_HANDLE : STD_OUTPUT_HANDLE);
-    }
-    else {
+    if (!_filename.empty()) {
+        // Non-empty file name, open it.
         _handle = ::CreateFile(_filename.toUTF8().c_str(), access, shared, NULL, winflags, attrib, NULL);
         if (_handle == INVALID_HANDLE_VALUE) {
             const ErrorCode err = LastErrorCode();
@@ -302,6 +300,16 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
             ::CloseHandle(_handle);
             return false;
         }
+    }
+    else if (read_access) {
+        // Empty file name, read access, use standard input. Make it work in binary mode.
+        _handle = ::GetStdHandle(STD_INPUT_HANDLE);
+        ::_setmode(_fileno(stdin), _O_BINARY);
+    }
+    else {
+        // Empty file name, write access, use standard output. Make it work in binary mode.
+        _handle = ::GetStdHandle(STD_OUTPUT_HANDLE);
+        ::_setmode(_fileno(stdout), _O_BINARY);
     }
 
     // Check if this is a regular file.
