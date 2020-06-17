@@ -500,7 +500,7 @@ void ts::ARIBCharsetCodeGenerator::generateFile(std::ostream& out)
 {
     // Source file header.
     out << "// Automatically generated file, do not modify." << std::endl
-        << "// See internal tool aribb24 in src/utils." << std::endl
+        << "// See tscharset --generate-arib-b24-encoding-table" << std::endl
         << "// Generated " << Time::CurrentLocalTime().format(Time::DATE) << std::endl
         << std::endl
         << "#include \"tsARIBCharset.h\""<< std::endl
