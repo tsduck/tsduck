@@ -57,10 +57,11 @@ namespace ts {
         // Description of one PID
         struct PIDContext
         {
-            PIDContext();                 // Constructor.
-            uint64_t      pcr_value;      // Last PCR value in this PID.
-            PacketCounter pcr_packet;     // Packet index containing last PCR.
-            uint64_t      pcr_timestamp;  // Input timestamp of packet containing last PCR (or INVALID _PCR).
+            PIDContext();                  // Constructor.
+            uint64_t      pcr_value;       // Last PCR value in this PID.
+            PacketCounter pcr_packet;      // Packet index containing last PCR.
+            uint64_t      pcr_timestamp;   // Input timestamp of packet containing last PCR (or INVALID _PCR).
+            TimeSource    pcr_timesource;  // Source of input time stamp.
         };
 
         // Command line options.
@@ -105,7 +106,8 @@ constexpr int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_UNREAL;
 ts::PCRVerifyPlugin::PIDContext::PIDContext() :
     pcr_value(INVALID_PCR),
     pcr_packet(0),
-    pcr_timestamp(INVALID_PCR)
+    pcr_timestamp(INVALID_PCR),
+    pcr_timesource(TimeSource::UNDEFINED)
 {
 }
 
@@ -247,6 +249,7 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TS
         next_pc.pcr_value = pkt.getPCR();
         next_pc.pcr_packet = tsp->pluginPackets();
         next_pc.pcr_timestamp = pkt_data.getInputTimeStamp(); // in PCR units, INVALID_PCR if there is no timestamp
+        next_pc.pcr_timesource = pkt_data.getInputTimeSource();
 
         // Current bitrate is needed if not --input-synchronous. Use signed 64-bit for jitter computation.
         const int64_t bitrate = int64_t(_bitrate != 0 || _input_synch ? _bitrate : tsp->bitrate());
@@ -262,6 +265,10 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TS
         }
         else if (!_input_synch && bitrate == 0) {
             // Use bitrate to compute jitter but bitrate is unknown.
+            _nb_pcr_unchecked++;
+        }
+        else if (pc.pcr_timesource != next_pc.pcr_timesource) {
+            tsp->verbose(u"distinct time sources for PCR packets: %s then %s", {TimeSourceEnum.name(pc.pcr_timesource), TimeSourceEnum.name(next_pc.pcr_timesource)});
             _nb_pcr_unchecked++;
         }
         else {
@@ -309,9 +316,13 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TS
                 _nb_pcr_nok++;
                 // Jitter in bits at current bitrate
                 const int64_t bit_jit = (ajit * bitrate) / SYSTEM_CLOCK_FREQ;
-                tsp->info(u"%sPID %d (0x%X), PCR jitter: %'d = %'d micro-seconds = %'d packets + %'d bytes + %'d bits",
+                tsp->info(u"%sPID %d (0x%X), PCR jitter: %'d = %'d micro-seconds = %'d packets + %'d bytes + %'d bits, %s ref",
                           {_time_stamp ? (Time::CurrentLocalTime().format(Time::DATE | Time::TIME) + u", ") : u"",
-                           pid, pid, jitter, ajit / PCR_PER_MICRO_SEC, bit_jit / (PKT_SIZE * 8), (bit_jit / 8) % PKT_SIZE, bit_jit % 8});
+                           pid, pid,
+                          jitter,
+                          ajit / PCR_PER_MICRO_SEC,
+                          bit_jit / (PKT_SIZE * 8), (bit_jit / 8) % PKT_SIZE, bit_jit % 8,
+                          TimeSourceEnum.name(next_pc.pcr_timesource)});
             }
         }
 

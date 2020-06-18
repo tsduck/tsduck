@@ -88,7 +88,7 @@ Options::Options(int argc, char *argv[]) :
     input_file(),
     output_file(),
     input_format(ts::TSPacketFormat::AUTODETECT),
-    output_format(ts::TSPacketFormat::FMT_TS)
+    output_format(ts::TSPacketFormat::TS)
 {
     option(u"", 0, STRING, 0, 1);
     help(u"",
@@ -183,7 +183,7 @@ Options::Options(int argc, char *argv[]) :
     dyn_final_inter_packet = !present(u"final-inter-packet");
     dyn_initial_inter_packet = !present(u"initial-inter-packet");
     input_format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::AUTODETECT);
-    output_format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::FMT_TS);
+    output_format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::TS);
 
     exitOnError();
 }

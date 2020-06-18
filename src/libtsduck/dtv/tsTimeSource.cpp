@@ -27,12 +27,18 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsTSPacketFormat.h"
+#include "tsTimeSource.h"
 TSDUCK_SOURCE;
 
-const ts::TypedEnumeration<ts::TSPacketFormat> ts::TSPacketFormatEnum({
-    {u"autodetect", ts::TSPacketFormat::AUTODETECT},
-    {u"TS",         ts::TSPacketFormat::TS},
-    {u"M2TS",       ts::TSPacketFormat::M2TS},
-    {u"duck",       ts::TSPacketFormat::DUCK},
+const ts::TypedEnumeration<ts::TimeSource> ts::TimeSourceEnum({
+    {u"undefined", ts::TimeSource::UNDEFINED},
+    {u"hardware",  ts::TimeSource::HARDWARE},
+    {u"kernel",    ts::TimeSource::KERNEL},
+    {u"tsp",       ts::TimeSource::TSP},
+    {u"RTP",       ts::TimeSource::RTP},
+    {u"SRT",       ts::TimeSource::SRT},
+    {u"M2TS",      ts::TimeSource::M2TS},
+    {u"PCR",       ts::TimeSource::PCR},
+    {u"DTS",       ts::TimeSource::DTS},
+    {u"PTS",       ts::TimeSource::PTS},
 });

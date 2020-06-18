@@ -44,8 +44,9 @@ constexpr uint8_t ts::TSPacketMetadata::SERIALIZATION_MAGIC;
 //----------------------------------------------------------------------------
 
 ts::TSPacketMetadata::TSPacketMetadata() :
-    _input_ts(INVALID_PCR),
+    _input_time(INVALID_PCR),
     _labels(),
+    _time_source(TimeSource::UNDEFINED),
     _flush(false),
     _bitrate_changed(false),
     _input_stuffing(false),
@@ -60,7 +61,7 @@ ts::TSPacketMetadata::TSPacketMetadata() :
 
 void ts::TSPacketMetadata::reset()
 {
-    _input_ts = INVALID_PCR;
+    _input_time = INVALID_PCR;
     _labels.reset();
     _flush = false;
     _bitrate_changed = false;
@@ -127,11 +128,13 @@ ts::UString ts::TSPacketMetadata::labelsString(const UString& separator, const U
 // Input time stamp operations
 //----------------------------------------------------------------------------
 
-void ts::TSPacketMetadata::setInputTimeStamp(uint64_t time_stamp, uint64_t ticks_per_second)
+void ts::TSPacketMetadata::setInputTimeStamp(uint64_t time_stamp, uint64_t ticks_per_second, TimeSource source)
 {
+    _time_source = source;
+
     if (ticks_per_second == 0) {
         // Clear the time stamp.
-        _input_ts = INVALID_PCR;
+        _input_time = INVALID_PCR;
     }
     else {
         // Convert into PCR units only when needed.
@@ -153,13 +156,19 @@ void ts::TSPacketMetadata::setInputTimeStamp(uint64_t time_stamp, uint64_t ticks
         // Make sure we remain in the usual PCR range.
         // This can create an issue if the input value wraps up at 2^64.
         // In which case, the PCR value will warp at another value than PCR_SCALE.
-        _input_ts = time_stamp % PCR_SCALE;
+        _input_time = time_stamp % PCR_SCALE;
     }
+}
+
+void ts::TSPacketMetadata::clearInputTimeStamp()
+{
+    _input_time = INVALID_PCR;
+    _time_source = TimeSource::UNDEFINED;
 }
 
 ts::UString ts::TSPacketMetadata::inputTimeStampString(const UString& none) const
 {
-    return _input_ts == INVALID_PCR ? none : UString::Decimal(_input_ts);
+    return _input_time == INVALID_PCR ? none : UString::Decimal(_input_time);
 }
 
 
@@ -185,9 +194,9 @@ size_t ts::TSPacketMetadata::serialize(void* bin, size_t size) const
     else {
         uint8_t* data = reinterpret_cast<uint8_t*>(bin);
         data[0] = SERIALIZATION_MAGIC;
-        PutUInt64(data + 1, _input_ts);
+        PutUInt64(data + 1, _input_time);
         PutUInt32(data + 9, uint32_t(_labels.to_ulong()));
-        data[13] = (_input_stuffing ? 0x80 : 0x00) | (_nullified ? 0x40 : 0x00);
+        data[13] = (_input_stuffing ? 0x80 : 0x00) | (_nullified ? 0x40 : 0x00) | (static_cast<uint8_t>(_time_source) & 0x0F);
         return SERIALIZATION_SIZE;
     }
 }
@@ -201,7 +210,7 @@ bool ts::TSPacketMetadata::deserialize(const void* bin, size_t size)
         size = 0;
     }
 
-    _input_ts = size >= 9 ? GetUInt64(data + 1) : INVALID_PCR;
+    _input_time = size >= 9 ? GetUInt64(data + 1) : INVALID_PCR;
     if (size >= 13) {
         _labels = LabelSet(GetUInt32(data + 9));
     }
@@ -212,6 +221,7 @@ bool ts::TSPacketMetadata::deserialize(const void* bin, size_t size)
     _bitrate_changed = false;
     _input_stuffing = size > 13 && (data[13] & 0x80) != 0;
     _nullified = size > 13 && (data[13] & 0x40) != 0;
+    _time_source = static_cast<TimeSource>(data[13] & 0x0F);
 
     return size >= 14;
 }

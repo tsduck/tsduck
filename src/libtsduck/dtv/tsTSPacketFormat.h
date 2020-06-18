@@ -41,9 +41,9 @@ namespace ts {
     //!
     enum class TSPacketFormat {
         AUTODETECT,  //!< Try to detect format (read), default to TS.
-        FMT_TS,          //!< Raw transport stream format.
-        FMT_M2TS,        //!< Bluray compatible, 4-byte timestamp header before each TS packet (30-bit time stamp in PCR units).
-        FMT_DUCK,        //!< Proprietary, 14-byte header before each TS packet (packet metadata).
+        TS,          //!< Raw transport stream format.
+        M2TS,        //!< Bluray compatible, 4-byte timestamp header before each TS packet (30-bit time stamp in PCR units).
+        DUCK,        //!< Proprietary, 14-byte header before each TS packet (packet metadata).
     };
 
     //!
