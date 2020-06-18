@@ -176,7 +176,7 @@ bool ts::HiDesDevice::Guts::ksProperty(KSPROPERTY& prop, void *data, ::DWORD siz
     ::BOOL ok = ::DeviceIoControl(handle, IOCTL_KS_PROPERTY, &prop, sizeof(prop), data, size, &written, &overlapped);
 
     if (!ok && GetLastError() == ERROR_IO_PENDING) {
-        ok = ::GetOverlappedResult(handle, &overlapped, &written, TRUE);
+        ok = ::GetOverlappedResult(handle, &overlapped, &written, true);
     }
 
     if (!ok) {
@@ -326,7 +326,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
 
     // Create an event for overlapped operations.
     report.log(2, u"HiDesDevice: creating event for overlapped");
-    overlapped.hEvent = ::CreateEventW(NULL, TRUE, FALSE, NULL);
+    overlapped.hEvent = ::CreateEventW(NULL, true, false, NULL);
     if (overlapped.hEvent == NULL) {
         report.error(u"CreateEvent error: %s", {WinErrorMessage(::GetLastError())});
         close();

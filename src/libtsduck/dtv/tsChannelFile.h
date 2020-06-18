@@ -227,7 +227,7 @@ namespace ts {
             //! @param [in] replace If true, replace a service with same id if it already exists.
             //! @return True if the service has been added. False if @a replace is false and a service with same id already exists.
             //!
-            bool addService(const ServicePtr& srv, CopyShare copy = SHARE, bool replace = true);
+            bool addService(const ServicePtr& srv, ShareMode copy = ShareMode::SHARE, bool replace = true);
 
             //!
             //! Add a list of services in the transport stream.

@@ -150,7 +150,7 @@ bool ts::tsp::PluginExecutor::passPackets(size_t count, BitRate bitrate, bool in
     // Already done in waitWork() but force immediately.
     // Don't do that if current is output and next is input because
     // there is no propagation of packets from output back to input.
-    if (plugin()->type() != OUTPUT_PLUGIN) {
+    if (plugin()->type() != PluginType::OUTPUT) {
         aborted = aborted || next->_tsp_aborting;
     }
 
@@ -218,7 +218,7 @@ void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRa
     // Force to abort our processor when the next one is aborting.
     // Don't do that if current is output and next is input because
     // there is no propagation of packets from output back to input.
-    aborted = plugin()->type() != OUTPUT_PLUGIN && next->_tsp_aborting;
+    aborted = plugin()->type() != PluginType::OUTPUT && next->_tsp_aborting;
 
     log(10, u"waitWork(pkt_first = %'d, pkt_cnt = %'d, bitrate = %'d, input_end = %s, aborted = %s, timeout = %s)",
         {pkt_first, pkt_cnt, bitrate, input_end, aborted, timeout});

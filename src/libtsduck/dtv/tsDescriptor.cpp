@@ -74,15 +74,15 @@ ts::Descriptor::Descriptor(DID tag, const ByteBlock& data) :
     }
 }
 
-ts::Descriptor::Descriptor(const ByteBlockPtr& bbp, CopyShare mode) :
+ts::Descriptor::Descriptor(const ByteBlockPtr& bbp, ShareMode mode) :
     _data(nullptr)
 {
     if (!bbp.isNull() && bbp->size() >= 2 && bbp->size() < 258 && (*bbp)[1] == bbp->size() - 2) {
         switch (mode) {
-            case SHARE:
+            case ShareMode::SHARE:
                 _data = bbp;
                 break;
-            case COPY:
+            case ShareMode::COPY:
                 _data = new ByteBlock(*bbp);
                 break;
             default:
@@ -92,14 +92,14 @@ ts::Descriptor::Descriptor(const ByteBlockPtr& bbp, CopyShare mode) :
     }
 }
 
-ts::Descriptor::Descriptor(const Descriptor& desc, CopyShare mode) :
+ts::Descriptor::Descriptor(const Descriptor& desc, ShareMode mode) :
     _data(nullptr)
 {
     switch (mode) {
-        case SHARE:
+        case ShareMode::SHARE:
             _data = desc._data;
             break;
-        case COPY:
+        case ShareMode::COPY:
             _data = new ByteBlock(*desc._data);
             break;
         default:

@@ -263,7 +263,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     // Windows implementation
     const ::DWORD access = (read_access ? GENERIC_READ : 0) | (write_access ? GENERIC_WRITE : 0);
     const ::DWORD attrib = temporary ? (FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE) : FILE_ATTRIBUTE_NORMAL;
-    const ::DWORD shared = read_only || (_flags & SHARE) != 0 ? FILE_SHARE_READ : 0;
+    const ::DWORD shared = read_only || (_flags & SHARED) != 0 ? FILE_SHARE_READ : 0;
     ::DWORD winflags = 0;
 
     // Close first if this is a reopen.

@@ -66,5 +66,5 @@ ts::TSPacketMetadata::LabelSet ts::ProcessorPlugin::getOnlyLabelOption() const
 
 ts::PluginType ts::ProcessorPlugin::type() const
 {
-    return PROCESSOR_PLUGIN;
+    return PluginType::PROCESSOR;
 }

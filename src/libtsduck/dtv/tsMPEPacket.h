@@ -64,7 +64,7 @@ namespace ts {
         //! @param [in] other Another instance to copy.
         //! @param [in] mode The datagram contents are either shared (ts::SHARE) between the two instances or duplicated (ts::COPY).
         //!
-        MPEPacket(const MPEPacket& other, CopyShare mode);
+        MPEPacket(const MPEPacket& other, ShareMode mode);
 
         //!
         //! Move constructor.
@@ -83,7 +83,7 @@ namespace ts {
         //! IP address is multicast, the corresponding MAC address is used.
         //! @param [in] pid PID from which the DSM-CC section was read.
         //!
-        MPEPacket(ByteBlockPtr datagram, CopyShare mode, const MACAddress& mac = MACAddress(), PID pid = PID_NULL);
+        MPEPacket(ByteBlockPtr datagram, ShareMode mode, const MACAddress& mac = MACAddress(), PID pid = PID_NULL);
 
         //!
         //! Constructor from a DSM-CC MPE section.

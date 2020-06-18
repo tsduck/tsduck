@@ -55,7 +55,7 @@ ts::Section::Section() :
 // Copy constructor. The section content is either shared or referenced.
 //----------------------------------------------------------------------------
 
-ts::Section::Section(const Section& sect, CopyShare mode) :
+ts::Section::Section(const Section& sect, ShareMode mode) :
     _is_valid(sect._is_valid),
     _source_pid(sect._source_pid),
     _first_pkt(sect._first_pkt),
@@ -63,10 +63,10 @@ ts::Section::Section(const Section& sect, CopyShare mode) :
     _data()
 {
     switch (mode) {
-        case SHARE:
+        case ShareMode::SHARE:
             _data = sect._data;
             break;
-        case COPY:
+        case ShareMode::COPY:
             _data = sect._is_valid ? new ByteBlock (*sect._data) : nullptr;
             break;
         default:

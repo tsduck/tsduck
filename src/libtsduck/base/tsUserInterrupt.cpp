@@ -114,13 +114,13 @@ void ts::UserInterrupt::main()
 {
     // Only handle Ctrl+C events
     if (dwCtrlType != CTRL_C_EVENT) {
-        return FALSE;
+        return false;
     }
 
     // There should be one active instance but just check...
     UserInterrupt* ui = _active_instance;
     if (ui == 0) {
-        return FALSE;
+        return true;
     }
 
     // Set interrupted state
@@ -136,7 +136,7 @@ void ts::UserInterrupt::main()
         ui->deactivate();
     }
 
-    return TRUE;
+    return true;
 }
 #endif
 
@@ -203,7 +203,7 @@ void ts::UserInterrupt::activate()
 #if defined(TS_WINDOWS)
 
     // Install the console interrupt handler
-    if (::SetConsoleCtrlHandler(sysHandler, TRUE) == 0) {
+    if (::SetConsoleCtrlHandler(sysHandler, true) == 0) {
         // Failure
         const ErrorCode err = LastErrorCode();
         std::cerr << "* Error establishing console interrupt handler: " << ErrorCodeMessage(err) << std::endl;
@@ -279,10 +279,10 @@ void ts::UserInterrupt::deactivate()
 #if defined(TS_WINDOWS)
 
     // Remove the console interrupt handler
-    ::SetConsoleCtrlHandler(sysHandler, FALSE);
+    ::SetConsoleCtrlHandler(sysHandler, false);
 
     // Restore normal processing of Ctrl-C
-    ::SetConsoleCtrlHandler(NULL, FALSE);
+    ::SetConsoleCtrlHandler(NULL, false);
 
 #elif defined(TS_UNIX)
 

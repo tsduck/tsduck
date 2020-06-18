@@ -272,9 +272,9 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     // The default input and output are the standard input and output files.
     ArgsWithPlugins* pargs = dynamic_cast<ArgsWithPlugins*>(&args);
     if (pargs != nullptr) {
-        pargs->getPlugin(input, INPUT_PLUGIN, u"file");
-        pargs->getPlugin(output, OUTPUT_PLUGIN, u"file");
-        pargs->getPlugins(plugins, PROCESSOR_PLUGIN);
+        pargs->getPlugin(input, PluginType::INPUT, u"file");
+        pargs->getPlugin(output, PluginType::OUTPUT, u"file");
+        pargs->getPlugins(plugins, PluginType::PROCESSOR);
     }
     else {
         input.set(u"file");

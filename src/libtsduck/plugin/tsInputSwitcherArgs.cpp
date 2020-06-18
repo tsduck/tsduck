@@ -253,8 +253,8 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
     // Load all plugin descriptions. Default output is the standard output file.
     ArgsWithPlugins* pargs = dynamic_cast<ArgsWithPlugins*>(&args);
     if (pargs != nullptr) {
-        pargs->getPlugins(inputs, INPUT_PLUGIN);
-        pargs->getPlugin(output, OUTPUT_PLUGIN, u"file");
+        pargs->getPlugins(inputs, PluginType::INPUT);
+        pargs->getPlugin(output, PluginType::OUTPUT, u"file");
     }
     else {
         inputs.clear();

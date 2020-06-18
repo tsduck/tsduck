@@ -97,5 +97,5 @@ void ts::StandaloneTableDemux::resetPID(PID pid)
 
 void ts::StandaloneTableDemux::handleTable(SectionDemux&, const BinaryTable& table)
 {
-    _tables.push_back(new BinaryTable(table, SHARE));
+    _tables.push_back(new BinaryTable(table, ShareMode::SHARE));
 }

@@ -166,7 +166,7 @@ void ts::AbstractTablePlugin::handleTable(SectionDemux& demux, const BinaryTable
     }
 
     // Build a modifiable version of the table.
-    BinaryTable table(intable, SHARE);
+    BinaryTable table(intable, ShareMode::SHARE);
 
     // Call subclass to process the table.
     bool is_target = true;

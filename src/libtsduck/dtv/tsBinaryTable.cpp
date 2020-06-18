@@ -74,7 +74,7 @@ ts::BinaryTable::BinaryTable(BinaryTable&& table) noexcept :
 // two tables or duplicated.
 //----------------------------------------------------------------------------
 
-ts::BinaryTable::BinaryTable(const BinaryTable& table, CopyShare mode) :
+ts::BinaryTable::BinaryTable(const BinaryTable& table, ShareMode mode) :
     _is_valid(table._is_valid),
     _tid(table._tid),
     _tid_ext(table._tid_ext),
@@ -84,19 +84,19 @@ ts::BinaryTable::BinaryTable(const BinaryTable& table, CopyShare mode) :
     _sections()
 {
     switch (mode) {
-        case SHARE: {
+        case ShareMode::SHARE: {
             // Copy the pointers, share the pointed sections
             _sections = table._sections;
             break;
         }
-        case COPY: {
+        case ShareMode::COPY: {
             _sections.resize(table._sections.size());
             for (size_t i = 0; i < _sections.size(); ++i) {
                 if (table._sections[i].isNull()) {
                     _sections[i].clear();
                 }
                 else {
-                    _sections[i] = new Section(*table._sections[i], COPY);
+                    _sections[i] = new Section(*table._sections[i], ShareMode::COPY);
                 }
             }
             break;
@@ -185,7 +185,7 @@ ts::BinaryTable& ts::BinaryTable::copy(const BinaryTable& table)
             _sections[i].clear();
         }
         else {
-            _sections[i] = new Section(*table._sections[i], COPY);
+            _sections[i] = new Section(*table._sections[i], ShareMode::COPY);
         }
     }
     return *this;

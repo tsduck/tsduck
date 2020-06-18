@@ -144,7 +144,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         ::SECURITY_ATTRIBUTES sa;
         sa.nLength = sizeof(sa);
         sa.lpSecurityDescriptor = 0;
-        sa.bInheritHandle = TRUE;
+        sa.bInheritHandle = true;
         if (::CreatePipe(&read_handle, &write_handle, &sa, bufsize) == 0) {
             report.error(u"error creating pipe: %s", {ErrorCodeMessage()});
             return false;
@@ -248,7 +248,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
     // Create the process
     ::PROCESS_INFORMATION pi;
-    if (::CreateProcessW(NULL, cmdp, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) == 0) {
+    if (::CreateProcessW(NULL, cmdp, NULL, NULL, true, 0, NULL, NULL, &si, &pi) == 0) {
         report.error(u"error creating process: %s", {ErrorCodeMessage()});
         if (_use_pipe) {
             ::CloseHandle(read_handle);

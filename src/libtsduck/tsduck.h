@@ -562,6 +562,7 @@
 #include "tsTimeShiftBuffer.h"
 #include "tsTimeShiftedEventDescriptor.h"
 #include "tsTimeSliceFECIdentifierDescriptor.h"
+#include "tsTimeSource.h"
 #include "tsTimeTrackerDemux.h"
 #include "tstlv.h"
 #include "tstlvAnalyzer.h"

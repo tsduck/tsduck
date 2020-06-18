@@ -71,7 +71,7 @@ namespace ts {
         //! @param [in] mode The section's data are either shared (ts::SHARE) between the
         //! two instances or duplicated (ts::COPY).
         //!
-        Section(const Section& other, CopyShare mode);
+        Section(const Section& other, ShareMode mode);
 
         //!
         //! Constructor from full binary content.

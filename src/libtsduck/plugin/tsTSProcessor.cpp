@@ -155,7 +155,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         _output->ringInsertAfter(_input);
 
         // Check if at least one plugin prefers real-time defaults.
-        bool realtime = _args.realtime == ts::TRUE || _input->isRealTime() || _output->isRealTime();
+        bool realtime = _args.realtime == Tristate::TRUE || _input->isRealTime() || _output->isRealTime();
 
         for (size_t i = 0; i < _args.plugins.size(); ++i) {
             tsp::PluginExecutor* p = new tsp::ProcessorExecutor(_args, *this, i, ThreadAttributes(), _mutex, &_report);
@@ -165,7 +165,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         }
 
         // Check if realtime defaults are explicitly disabled.
-        if (_args.realtime == ts::FALSE) {
+        if (_args.realtime == Tristate::FALSE) {
             realtime = false;
         }
 

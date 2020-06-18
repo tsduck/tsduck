@@ -51,17 +51,17 @@ ts::MPEPacket::MPEPacket() :
 {
 }
 
-ts::MPEPacket::MPEPacket(const MPEPacket& other, CopyShare mode) :
+ts::MPEPacket::MPEPacket(const MPEPacket& other, ShareMode mode) :
     _is_valid(other._is_valid),
     _source_pid(other._source_pid),
     _dest_mac(other._dest_mac),
     _datagram()
 {
     switch (mode) {
-        case SHARE:
+        case ShareMode::SHARE:
             _datagram = other._datagram;
             break;
-        case COPY:
+        case ShareMode::COPY:
             if (other._is_valid) {
                 _datagram = new ByteBlock(*other._datagram);
             }
@@ -80,7 +80,7 @@ ts::MPEPacket::MPEPacket(MPEPacket&& other) noexcept :
 {
 }
 
-ts::MPEPacket::MPEPacket(ByteBlockPtr datagram, CopyShare mode, const MACAddress& mac, PID pid) :
+ts::MPEPacket::MPEPacket(ByteBlockPtr datagram, ShareMode mode, const MACAddress& mac, PID pid) :
     _is_valid(!datagram.isNull() && FindUDP(datagram->data(), datagram->size())),
     _source_pid(pid),
     _dest_mac(mac),
@@ -88,10 +88,10 @@ ts::MPEPacket::MPEPacket(ByteBlockPtr datagram, CopyShare mode, const MACAddress
 {
     if (_is_valid) {
         switch (mode) {
-            case SHARE:
+            case ShareMode::SHARE:
                 _datagram = datagram;
                 break;
-            case COPY:
+            case ShareMode::COPY:
                 _datagram = new ByteBlock(*datagram);
                 break;
             default:

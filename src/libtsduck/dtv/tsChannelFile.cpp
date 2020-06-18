@@ -135,7 +135,7 @@ ts::ChannelFile::ServicePtr ts::ChannelFile::TransportStream::serviceByName(cons
 // Add a service in a transport stream.
 //----------------------------------------------------------------------------
 
-bool ts::ChannelFile::TransportStream::addService(const ServicePtr& srv, CopyShare copy, bool replace)
+bool ts::ChannelFile::TransportStream::addService(const ServicePtr& srv, ShareMode copy, bool replace)
 {
     // Filter out null pointer.
     if (srv.isNull()) {
@@ -147,7 +147,7 @@ bool ts::ChannelFile::TransportStream::addService(const ServicePtr& srv, CopySha
         assert(!_services[i].isNull());
         if (_services[i]->id == srv->id) {
             if (replace) {
-                _services[i] = copy == SHARE ? srv : new Service(*srv);
+                _services[i] = copy == ShareMode::SHARE ? srv : new Service(*srv);
                 CheckNonNull(_services[i].pointer());
                 return true;
             }
@@ -158,7 +158,7 @@ bool ts::ChannelFile::TransportStream::addService(const ServicePtr& srv, CopySha
     }
 
     // Add new service.
-    _services.push_back(copy == SHARE ? srv : new Service(*srv));
+    _services.push_back(copy == ShareMode::SHARE ? srv : new Service(*srv));
     CheckNonNull(_services.back().pointer());
     return true;
 }
@@ -480,7 +480,7 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
                             success;
 
                         // Add the service in the transport stream.
-                        ts->addService(srv, SHARE, true);
+                        ts->addService(srv, ShareMode::SHARE, true);
                     }
                     else if (ts->tune.hasModulationArgs()) {
                         // Tuner parameters already set.

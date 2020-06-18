@@ -1085,57 +1085,57 @@ void UStringTest::testToTristate()
 {
     ts::Tristate t;
 
-    t = ts::MAYBE;
+    t = ts::Tristate::MAYBE;
     TSUNIT_ASSERT(ts::UString(u"yes").toTristate(t));
-    TSUNIT_EQUAL(ts::TRUE, t);
+    TSUNIT_EQUAL(ts::Tristate::TRUE, t);
 
-    t = ts::MAYBE;
+    t = ts::Tristate::MAYBE;
     TSUNIT_ASSERT(ts::UString(u"True").toTristate(t));
-    TSUNIT_EQUAL(ts::TRUE, t);
+    TSUNIT_EQUAL(ts::Tristate::TRUE, t);
 
-    t = ts::MAYBE;
+    t = ts::Tristate::MAYBE;
     TSUNIT_ASSERT(ts::UString(u"ON").toTristate(t));
-    TSUNIT_EQUAL(ts::TRUE, t);
+    TSUNIT_EQUAL(ts::Tristate::TRUE, t);
 
-    t = ts::MAYBE;
+    t = ts::Tristate::MAYBE;
     TSUNIT_ASSERT(ts::UString(u"NO").toTristate(t));
-    TSUNIT_EQUAL(ts::FALSE, t);
+    TSUNIT_EQUAL(ts::Tristate::FALSE, t);
 
-    t = ts::MAYBE;
+    t = ts::Tristate::MAYBE;
     TSUNIT_ASSERT(ts::UString(u"FaLsE").toTristate(t));
-    TSUNIT_EQUAL(ts::FALSE, t);
+    TSUNIT_EQUAL(ts::Tristate::FALSE, t);
 
-    t = ts::MAYBE;
+    t = ts::Tristate::MAYBE;
     TSUNIT_ASSERT(ts::UString(u"off").toTristate(t));
-    TSUNIT_EQUAL(ts::FALSE, t);
+    TSUNIT_EQUAL(ts::Tristate::FALSE, t);
 
-    t = ts::TRUE;
+    t = ts::Tristate::TRUE;
     TSUNIT_ASSERT(ts::UString(u"MayBe").toTristate(t));
-    TSUNIT_EQUAL(ts::MAYBE, t);
+    TSUNIT_EQUAL(ts::Tristate::MAYBE, t);
 
-    t = ts::TRUE;
+    t = ts::Tristate::TRUE;
     TSUNIT_ASSERT(ts::UString(u"Unknown").toTristate(t));
-    TSUNIT_EQUAL(ts::MAYBE, t);
+    TSUNIT_EQUAL(ts::Tristate::MAYBE, t);
 
-    t = ts::TRUE;
+    t = ts::Tristate::TRUE;
     TSUNIT_ASSERT(ts::UString(u"0x0000").toTristate(t));
-    TSUNIT_EQUAL(ts::FALSE, t);
+    TSUNIT_EQUAL(ts::Tristate::FALSE, t);
 
-    t = ts::MAYBE;
+    t = ts::Tristate::MAYBE;
     TSUNIT_ASSERT(ts::UString(u"1").toTristate(t));
-    TSUNIT_EQUAL(ts::TRUE, t);
+    TSUNIT_EQUAL(ts::Tristate::TRUE, t);
 
-    t = ts::MAYBE;
+    t = ts::Tristate::MAYBE;
     TSUNIT_ASSERT(ts::UString(u"56469").toTristate(t));
-    TSUNIT_EQUAL(ts::TRUE, t);
+    TSUNIT_EQUAL(ts::Tristate::TRUE, t);
 
-    t = ts::TRUE;
+    t = ts::Tristate::TRUE;
     TSUNIT_ASSERT(ts::UString(u"-1").toTristate(t));
-    TSUNIT_EQUAL(ts::MAYBE, t);
+    TSUNIT_EQUAL(ts::Tristate::MAYBE, t);
 
-    t = ts::TRUE;
+    t = ts::Tristate::TRUE;
     TSUNIT_ASSERT(ts::UString(u"-56").toTristate(t));
-    TSUNIT_EQUAL(ts::MAYBE, t);
+    TSUNIT_EQUAL(ts::Tristate::MAYBE, t);
 
     TSUNIT_ASSERT(!ts::UString(u"abcd").toTristate(t));
     TSUNIT_ASSERT(!ts::UString(u"0df").toTristate(t));

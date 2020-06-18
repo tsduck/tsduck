@@ -353,7 +353,7 @@ public:
 
 ts::SRTSocket::Guts::Guts() :
     default_address(),
-    mode(LISTENER),
+    mode(SRTSocketMode::LISTENER),
     sock(-1),  // do not use TS_SOCKET_T_INVALID, an SRT socket is not a socket, it is always an int
     transtype(SRTT_INVALID),
     packet_filter(),
@@ -483,7 +483,7 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
     _guts->sock = srt_socket(AF_INET, SOCK_DGRAM, 0);
 #endif
     if (_guts->sock < 0) {
-        report.error(u"error during srt_socket(), msg: %s", { srt_getlasterror_str() });
+        report.error(u"error during srt_socket(), msg: %s", {srt_getlasterror_str()});
         return false;
     }
 
@@ -492,26 +492,26 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
     }
 
     switch (_guts->mode) {
-        case LISTENER:
+        case SRTSocketMode::LISTENER:
             ret = _guts->srtListen(local_addr, report);
             if (ret < 0) {
                 goto fail;
             }
             _guts->sock = ret;
             break;
-        case RENDEZVOUS:
+        case SRTSocketMode::RENDEZVOUS:
             ret = _guts->srtBind(local_addr, report);
             if (ret < 0) {
                 goto fail;
             }
             TS_FALLTHROUGH
-        case CALLER:
+        case SRTSocketMode::CALLER:
             ret = _guts->srtConnect(remote_addr, report);
             if (ret < 0) {
                 goto fail;
             }
             break;
-        case LEN:
+        case SRTSocketMode::LEN:
         default:
             report.error(u"unsupported socket mode");
             goto fail;

@@ -43,7 +43,7 @@ namespace ts {
     //!
     //! Secure Reliable Transport (SRT) socket mode
     //!
-    enum SRTSocketMode: int {
+    enum class SRTSocketMode : int {
         LISTENER   = 0,  //!< Listener mode.
         CALLER     = 1,  //!< Caller mode.
         RENDEZVOUS = 2,  //!< Rendez-vous mode (unsupported).

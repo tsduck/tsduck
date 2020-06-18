@@ -47,7 +47,7 @@ ts::Condition::Condition() :
 #if defined(TS_WINDOWS)
 
     // Windows implementation.
-    if ((_handle = ::CreateEvent(NULL, FALSE, FALSE, NULL)) == NULL) {
+    if ((_handle = ::CreateEvent(NULL, false, false, NULL)) == NULL) {
         throw ConditionError(::GetLastError());
     }
 
