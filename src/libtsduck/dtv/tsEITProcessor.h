@@ -211,12 +211,56 @@ namespace ts {
         //!
         void addStartTimeOffet(MilliSecond offset, bool date_only = false);
 
+        //!
+        //! Set the maximum number of buffered sections.
+        //!
+        //! A few number of EIT sections may be temporarily buffered.
+        //!
+        //! Each EIT section is completely loaded, modified and reinjected, replacing input packets.
+        //! If the currently reinjected EIT section is very large and, at the same time, a lot of
+        //! small EIT sections are received, they must be buffered. This is normally a transient
+        //! situation. Since the number of reinjected sections is at most identical to the input
+        //! number and since EIT sections are never enlarged, there is no global overflow.
+        //!
+        //! This method is used to adjust the maximum number of buffered sections.
+        //!
+        //! @param [in] count New maximum number of buffered sections.
+        //!
+        void setMaxBufferedSections(size_t count);
+
+        //!
+        //! Minimum number of buffered sections.
+        //! @see setMaxBufferedSections()
+        //!
+        static constexpr size_t MIN_BUFFERED_SECTIONS = 10;
+
+        //!
+        //! Default number of buffered sections.
+        //! @see setMaxBufferedSections()
+        //!
+        static constexpr size_t DEFAULT_BUFFERED_SECTIONS = 1000;
+
+        //!
+        //! Get the maximum number of buffered sections.
+        //! @return The maximum number of buffered sections.
+        //! @see setMaxBufferedSections()
+        //!
+        size_t getMaxBufferedSections() const { return _max_buffered_sections; }
+
+        //!
+        //! Get the current number of buffered sections.
+        //! @return The current number of buffered sections.
+        //! @see setMaxBufferedSections()
+        //!
+        size_t getCurrentBufferedSections() const { return _sections.size(); }
+
     private:
         DuckContext&          _duck;
         PIDSet                _input_pids;
         PID                   _output_pid;
         MilliSecond           _start_time_offset;
         bool                  _date_only;
+        size_t                _max_buffered_sections;
         SectionDemux          _demux;
         Packetizer            _packetizer;
         std::list<SectionPtr> _sections;

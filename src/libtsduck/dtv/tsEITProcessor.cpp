@@ -46,6 +46,7 @@ ts::EITProcessor::EITProcessor(DuckContext& duck, PID pid) :
     _output_pid(pid),
     _start_time_offset(0),
     _date_only(false),
+    _max_buffered_sections(DEFAULT_BUFFERED_SECTIONS),
     _demux(_duck, nullptr, this),
     _packetizer(duck, pid, this),
     _sections(),
@@ -115,6 +116,16 @@ void ts::EITProcessor::addInputPID(ts::PID pid)
 {
     _demux.addPID(pid);
     _input_pids.set(pid);
+}
+
+
+//----------------------------------------------------------------------------
+// Set the maximum number of buffered sections.
+//----------------------------------------------------------------------------
+
+void ts::EITProcessor::setMaxBufferedSections(size_t count)
+{
+    _max_buffered_sections = std::max(MIN_BUFFERED_SECTIONS, count);
 }
 
 
@@ -414,6 +425,10 @@ void ts::EITProcessor::handleSection(SectionDemux& demux, const Section& section
     // However, we still may collect many small sections while serializing a very big one.
     // But it should stay within some finite limits. These limits are difficult to anticipate.
     // Just check that the queue does not become crazy.
-    assert(_sections.size() < 1000);
-    _sections.push_back(sp);
+    if (_sections.size() <_max_buffered_sections) {
+        _sections.push_back(sp);
+    }
+    else {
+        _duck.report().warning(u"dropping EIT section (%d bytes), too many buffered EIT sections (%d)", {sp->size(), _sections.size()});
+    }
 }
