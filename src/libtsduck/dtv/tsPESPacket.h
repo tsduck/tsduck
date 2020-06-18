@@ -70,7 +70,7 @@ namespace ts {
         //! @param [in] mode The packet's data are either shared (ts::SHARE) between the
         //! two instances or duplicated (ts::COPY).
         //!
-        PESPacket(const PESPacket& other, CopyShare mode);
+        PESPacket(const PESPacket& other, ShareMode mode);
 
         //!
         //! Move constructor.

@@ -88,7 +88,7 @@ bool ts::AbstractDescriptor::serializeEnd(Descriptor& desc, const ByteBlockPtr& 
         // Update descriptor tag and size.
         (*bbp)[0] = _tag;
         (*bbp)[1] = uint8_t(bbp->size() - 2);
-        desc = Descriptor(bbp, SHARE);
+        desc = Descriptor(bbp, ShareMode::SHARE);
         return true;
     }
 }

@@ -42,7 +42,7 @@ ts::tsp::OutputExecutor::OutputExecutor(const TSProcessorArgs& options,
                                         Mutex& global_mutex,
                                         Report* report) :
 
-    PluginExecutor(options, handlers, OUTPUT_PLUGIN, pl_options, attributes, global_mutex, report),
+    PluginExecutor(options, handlers, PluginType::OUTPUT, pl_options, attributes, global_mutex, report),
     _output(dynamic_cast<OutputPlugin*>(PluginThread::plugin()))
 {
 }

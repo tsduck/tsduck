@@ -213,7 +213,7 @@ void ts::SectionsPlugin::handleSection(SectionDemux& demux, const Section& secti
 
     // At this point, we need to keep the section.
     // Build a copy of it for insertion in the queue.
-    const SectionPtr sp(new Section(section, SHARE));
+    const SectionPtr sp(new Section(section, ShareMode::SHARE));
     CheckNonNull(sp.pointer());
 
     // Now insert the section in the queue for the packetizer.

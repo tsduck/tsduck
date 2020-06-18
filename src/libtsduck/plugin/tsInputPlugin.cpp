@@ -57,5 +57,5 @@ bool ts::InputPlugin::abortInput()
 
 ts::PluginType ts::InputPlugin::type() const
 {
-    return INPUT_PLUGIN;
+    return PluginType::INPUT;
 }

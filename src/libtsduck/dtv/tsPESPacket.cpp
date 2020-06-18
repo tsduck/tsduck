@@ -46,7 +46,7 @@ ts::PESPacket::PESPacket(PID source_pid) :
 {
 }
 
-ts::PESPacket::PESPacket(const PESPacket& pp, CopyShare mode) :
+ts::PESPacket::PESPacket(const PESPacket& pp, ShareMode mode) :
     _is_valid(pp._is_valid),
     _header_size(pp._header_size),
     _source_pid(pp._source_pid),
@@ -56,10 +56,10 @@ ts::PESPacket::PESPacket(const PESPacket& pp, CopyShare mode) :
     _data()
 {
     switch (mode) {
-        case SHARE:
+        case ShareMode::SHARE:
             _data = pp._data;
             break;
-        case COPY:
+        case ShareMode::COPY:
             _data = pp._is_valid ? new ByteBlock(*pp._data) : nullptr;
             break;
         default:

@@ -43,16 +43,16 @@ ts::T2MIPacket::T2MIPacket() :
 {
 }
 
-ts::T2MIPacket::T2MIPacket(const T2MIPacket& pp, CopyShare mode) :
+ts::T2MIPacket::T2MIPacket(const T2MIPacket& pp, ShareMode mode) :
     _is_valid(pp._is_valid),
     _source_pid(pp._source_pid),
     _data()
 {
     switch (mode) {
-        case SHARE:
+        case ShareMode::SHARE:
             _data = pp._data;
             break;
-        case COPY:
+        case ShareMode::COPY:
             _data = pp._is_valid ? new ByteBlock(*pp._data) : nullptr;
             break;
         default:

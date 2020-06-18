@@ -393,7 +393,7 @@ void ts::AbstractDescrambler::handleSection(SectionDemux& demux, const Section& 
 void ts::AbstractDescrambler::processECM(ECMStream& estream)
 {
     // Copy the ECM out of the protected area into local data
-    Section ecm(estream.ecm, COPY);
+    Section ecm(estream.ecm, ShareMode::COPY);
     estream.new_ecm = false;
 
     // Local data for deciphered CW's from ECM.

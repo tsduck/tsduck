@@ -60,7 +60,7 @@ ts::Mutex::Mutex() :
 #if defined(TS_WINDOWS)
 
     // Windows implementation.
-    if ((_handle = ::CreateMutex(NULL, FALSE, NULL)) == NULL) {
+    if ((_handle = ::CreateMutex(NULL, false, NULL)) == NULL) {
         throw MutexError(::GetLastError());
         return;
     }

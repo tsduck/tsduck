@@ -43,6 +43,7 @@ ts::Packetizer::Packetizer(const DuckContext& duck, PID pid, SectionProviderInte
     _provider(provider),
     _report(report == nullptr ? NULLREP : *report),
     _pid(pid),
+    _split_headers(false),
     _continuity(0),
     _section(nullptr),
     _next_byte(0),
@@ -101,14 +102,15 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
     // Check if it is possible that a new section may start in the middle
     // of the packet. We check that after adding the remaining of the
     // current section, there is room for a pointer field (5 = 4-byte TS header
-    // + 1-byte pointer field) and at least a short section header.
-    // Remember that we are kind enough not to break a section header across packets.
+    // + 1-byte pointer field) and at least a short section header if we can't
+    // split section headers.
 
-    if (remain_in_section <= PKT_SIZE - 5 - SHORT_SECTION_HEADER_SIZE) {
+    if (remain_in_section <= PKT_SIZE - 5 - (_split_headers ? 0 : SHORT_SECTION_HEADER_SIZE)) {
         // Check if next section requires stuffing before it.
         do_stuffing = _provider == nullptr ? true : _provider->doStuffing();
         if (!do_stuffing) {
-            // No stuffing before next section => get next section
+            // No stuffing before next section => get next section.
+            // Note that _provider cannot be null here.
             _provider->provideSection(_section_in_count++, next_section);
             if (next_section.isNull()) {
                 // If no next section, do stuffing anyway.
@@ -117,7 +119,7 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
             else {
                 // Now that we know the actual header size of the next section,
                 // recheck if it fits in packet
-                do_stuffing = remain_in_section > PKT_SIZE - 5 - next_section->headerSize();
+                do_stuffing = remain_in_section > PKT_SIZE - 5 - (_split_headers ? 0 : next_section->headerSize());
             }
         }
     }
@@ -186,7 +188,7 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
                 if (_provider == nullptr || _provider->doStuffing()) {
                     break;
                 }
-                _provider->provideSection (_section_in_count++, _section);
+                _provider->provideSection(_section_in_count++, _section);
                 // If no next section, stuff the end of packet
                 if (_section.isNull()) {
                     break;
@@ -195,7 +197,7 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
             // We no longer know about stuffing after current section
             do_stuffing = false;
             // If no room for new section header, stuff the end of packet
-            if (remain_in_packet < _section->headerSize()) {
+            if (!_split_headers && remain_in_packet < _section->headerSize()) {
                 break;
             }
             // Get characteristcs of new section.
@@ -210,7 +212,7 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
     // The test fixes this GCC error. However, it has not yet been tested if the behaviour
     // of the compiled code is correct with this version of GCC.
     if (remain_in_packet > 0) {
-        ::memset (data, 0xFF, remain_in_packet);
+        ::memset(data, 0xFF, remain_in_packet);
     }
     return true;
 }

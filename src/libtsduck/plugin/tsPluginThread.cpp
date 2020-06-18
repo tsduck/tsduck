@@ -48,7 +48,7 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
 
     // Create the plugin instance object
     switch (type) {
-        case INPUT_PLUGIN: {
+        case PluginType::INPUT: {
             PluginRepository::InputPluginFactory allocator = PluginRepository::Instance()->getInput(_name, *report);
             if (allocator != nullptr) {
                 _shlib = allocator(this);
@@ -56,7 +56,7 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
             }
             break;
         }
-        case OUTPUT_PLUGIN: {
+        case PluginType::OUTPUT: {
             PluginRepository::OutputPluginFactory allocator = PluginRepository::Instance()->getOutput(_name, *report);
             if (allocator != nullptr) {
                 _shlib = allocator(this);
@@ -64,7 +64,7 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
             }
             break;
         }
-        case PROCESSOR_PLUGIN: {
+        case PluginType::PROCESSOR: {
             PluginRepository::ProcessorPluginFactory allocator = PluginRepository::Instance()->getProcessor(_name, *report);
             if (allocator != nullptr) {
                 _shlib = allocator(this);

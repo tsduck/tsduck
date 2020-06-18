@@ -505,7 +505,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
     if (_no_duplicate && table.isShortSection()) {
         if (_shortSections[pid].isNull() || *_shortSections[pid] != *table.sectionAt(0)) {
             // Not the same section, keep it for next time.
-            _shortSections[pid] = new Section(*table.sectionAt(0), COPY);
+            _shortSections[pid] = new Section(*table.sectionAt(0), ShareMode::COPY);
         }
         else {
             // Same section as previously, ignore it.
@@ -596,7 +596,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     // With option --pack-all-sections, force the processing of a complete table.
     if (_pack_all_sections) {
         BinaryTable table;
-        table.addSection(new Section(sect, SHARE));
+        table.addSection(new Section(sect, ShareMode::SHARE));
         table.packSections();
         if (table.isValid()) {
             handleTable(demux, table);
@@ -618,7 +618,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     if (_no_duplicate) {
         if (_allSections[pid].isNull() || *_allSections[pid] != sect) {
             // Not the same section, keep it for next time.
-            _allSections[pid] = new Section(sect, COPY);
+            _allSections[pid] = new Section(sect, ShareMode::COPY);
         }
         else {
             // Same section as previously, ignore it.
@@ -710,7 +710,7 @@ void ts::TablesLogger::sendUDP(const ts::Section& section)
         duck::LogSection msg;
         msg.pid = section.sourcePID();
         msg.timestamp = SimulCryptDate(Time::CurrentLocalTime());
-        msg.section = new Section(section, SHARE);
+        msg.section = new Section(section, ShareMode::SHARE);
 
         // Serialize the message.
         ByteBlockPtr bin(new ByteBlock);

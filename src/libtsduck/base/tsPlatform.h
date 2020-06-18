@@ -2501,7 +2501,7 @@ namespace ts {
 namespace ts {
     //!
     //! Enumeration type used to indicate if the data referenced by a pointer shall be copied or shared.
-    enum CopyShare {
+    enum class ShareMode {
         COPY,  //!< Data shall be copied.
         SHARE  //!< Data shall be shared.
     };
@@ -2520,7 +2520,7 @@ namespace ts {
     //! - Any positive value means true.
     //! - Any negative value means "maybe" or "dont't know".
     //!
-    enum Tristate {
+    enum class Tristate {
         MAYBE = -1,  //! Undefined value (and more generally all negative values).
         FALSE =  0,  //! Built-in false.
         TRUE  =  1,  //! True value (and more generally all positive values).

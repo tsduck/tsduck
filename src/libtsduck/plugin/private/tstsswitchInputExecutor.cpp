@@ -45,7 +45,7 @@ ts::tsswitch::InputExecutor::InputExecutor(const InputSwitcherArgs& opt,
                                            Report& log) :
 
     // Input threads have a high priority to be always ready to load incoming packets in the buffer.
-    PluginExecutor(opt, handlers, INPUT_PLUGIN, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority()), core, log),
+    PluginExecutor(opt, handlers, PluginType::INPUT, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority()), core, log),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
     _pluginIndex(index),
     _buffer(opt.bufferedPackets),

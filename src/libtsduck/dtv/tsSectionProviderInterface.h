@@ -59,8 +59,8 @@ namespace ts {
         //!
         //! Shall we perform section stuffing.
         //! @return True if stuffing to the next transport packet boundary shall be
-        //! performed before the next section. In all cases, a Packetizer never splits
-        //! a section header between two packets. This is not required by the MPEG standard
+        //! performed before the next section. Unless explicitly allowed to, a Packetizer never
+        //! splits a section header between two packets. This is not required by the MPEG standard
         //! but some STB are known to have problems with that.
         //!
         virtual bool doStuffing() = 0;

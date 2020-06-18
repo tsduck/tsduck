@@ -126,7 +126,7 @@ bool ts::ArgsWithPlugins::analyze(const UString& app_name, const UStringVector& 
     }
 
     // Locate the first processor option. All preceeding options are command-specific options and must be analyzed.
-    PluginType plugin_type = PROCESSOR_PLUGIN;
+    PluginType plugin_type = PluginType::PROCESSOR;
     size_t plugin_index = nextProcOpt(args, 0, plugin_type);
 
     // Analyze the command-specifc options, not including the plugin options, not processing redirections.
@@ -161,13 +161,13 @@ bool ts::ArgsWithPlugins::analyze(const UString& app_name, const UStringVector& 
     }
 
     // Load default plugins.
-    loadDefaultPlugins(INPUT_PLUGIN, u"default.input");
-    loadDefaultPlugins(PROCESSOR_PLUGIN, u"default.plugin");
-    loadDefaultPlugins(OUTPUT_PLUGIN, u"default.output");
+    loadDefaultPlugins(PluginType::INPUT, u"default.input");
+    loadDefaultPlugins(PluginType::PROCESSOR, u"default.plugin");
+    loadDefaultPlugins(PluginType::OUTPUT, u"default.output");
 
-    const size_t in_count = pluginCount(INPUT_PLUGIN);
-    const size_t proc_count = pluginCount(PROCESSOR_PLUGIN);
-    const size_t out_count = pluginCount(OUTPUT_PLUGIN);
+    const size_t in_count = pluginCount(PluginType::INPUT);
+    const size_t proc_count = pluginCount(PluginType::PROCESSOR);
+    const size_t out_count = pluginCount(PluginType::OUTPUT);
 
     // Check min and max number of occurences of each plugin type.
     if (in_count < _min_inputs) {
@@ -208,15 +208,15 @@ size_t ts::ArgsWithPlugins::nextProcOpt(const UStringVector& args, size_t index,
     while (index < args.size()) {
         const UString& arg(args[index]);
         if (arg == u"-I" || arg == u"--input") {
-            type = INPUT_PLUGIN;
+            type = PluginType::INPUT;
             return index;
         }
         if (arg == u"-O" || arg == u"--output") {
-            type = OUTPUT_PLUGIN;
+            type = PluginType::OUTPUT;
             return index;
         }
         if (arg == u"-P" || arg == u"--processor") {
-            type = PROCESSOR_PLUGIN;
+            type = PluginType::PROCESSOR;
             return index;
         }
         index++;

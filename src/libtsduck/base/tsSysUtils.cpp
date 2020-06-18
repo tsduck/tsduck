@@ -497,7 +497,7 @@ bool ts::IsPrivilegedUser()
     ::BOOL ok = ::AllocateAndInitializeSid(&NtAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &AdministratorsGroup);
     if (ok) {
         if (!::CheckTokenMembership(nullptr, AdministratorsGroup, &ok)) {
-            ok = FALSE;
+            ok = false;
         }
         ::FreeSid(AdministratorsGroup);
     }

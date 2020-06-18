@@ -41,7 +41,7 @@ ts::tsswitch::OutputExecutor::OutputExecutor(const InputSwitcherArgs& opt,
                                              Core& core,
                                              Report& log) :
 
-    PluginExecutor(opt, handlers, OUTPUT_PLUGIN, opt.output, ThreadAttributes(), core, log),
+    PluginExecutor(opt, handlers, PluginType::OUTPUT, opt.output, ThreadAttributes(), core, log),
     _output(dynamic_cast<OutputPlugin*>(plugin())),
     _terminate(false)
 {

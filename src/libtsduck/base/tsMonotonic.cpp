@@ -47,7 +47,7 @@ ts::Monotonic::Monotonic(bool systemTime) :
 #endif
 {
 #if defined(TS_WINDOWS)
-    if ((_handle = ::CreateWaitableTimer(NULL, FALSE, NULL)) == NULL) {
+    if ((_handle = ::CreateWaitableTimer(NULL, false, NULL)) == NULL) {
         throw MonotonicError(::GetLastError());
     }
 #endif
@@ -116,7 +116,7 @@ void ts::Monotonic::wait()
 
     ::LARGE_INTEGER due_time;
     due_time.QuadPart = _value;
-    if (::SetWaitableTimer(_handle, &due_time, 0, NULL, NULL, FALSE) == 0) {
+    if (::SetWaitableTimer(_handle, &due_time, 0, NULL, NULL, false) == 0) {
         throw MonotonicError(::GetLastError());
     }
     if (::WaitForSingleObject(_handle, INFINITE) != WAIT_OBJECT_0) {

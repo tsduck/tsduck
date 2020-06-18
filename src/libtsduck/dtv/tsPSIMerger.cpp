@@ -405,7 +405,7 @@ void ts::PSIMerger::handleSection(SectionDemux& demux, const Section& section)
     if (is_eit && (_options & MERGE_EIT) != 0) {
 
         // Create a copy of the section object (shared section data).
-        const SectionPtr sp(new Section(section, SHARE));
+        const SectionPtr sp(new Section(section, ShareMode::SHARE));
         CheckNonNull(sp.pointer());
 
         if (demux.demuxId() != DEMUX_MERGE_EIT || !is_actual) {

@@ -71,7 +71,7 @@ namespace ts {
         //! @param [in] mode The sections are either shared (ts::SHARE) between the
         //! two tables or duplicated (ts::COPY).
         //!
-        BinaryTable(const BinaryTable& table, CopyShare mode);
+        BinaryTable(const BinaryTable& table, ShareMode mode);
 
         //!
         //! Move constructor.

@@ -69,7 +69,7 @@ namespace ts {
         //! @param [in] mode The packet's data are either shared (ts::SHARE) between the
         //! two instances or duplicated (ts::COPY).
         //!
-        T2MIPacket(const T2MIPacket& other, CopyShare mode);
+        T2MIPacket(const T2MIPacket& other, ShareMode mode);
 
         //!
         //! Move constructor.

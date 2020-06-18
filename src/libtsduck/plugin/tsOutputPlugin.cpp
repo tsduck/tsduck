@@ -47,5 +47,5 @@ ts::OutputPlugin::OutputPlugin(TSP* tsp_, const UString& description, const UStr
 
 ts::PluginType ts::OutputPlugin::type() const
 {
-    return OUTPUT_PLUGIN;
+    return PluginType::OUTPUT;
 }

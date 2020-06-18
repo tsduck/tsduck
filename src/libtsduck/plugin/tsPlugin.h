@@ -37,7 +37,7 @@
 #include "tsTSP.h"
 #include "tsTSPacket.h"
 #include "tsTSPacketMetadata.h"
-#include "tsEnumeration.h"
+#include "tsTypedEnumeration.h"
 #include "tsDuckContext.h"
 
 namespace ts {
@@ -45,16 +45,16 @@ namespace ts {
     //! Each plugin has one of the following types
     //! @ingroup plugin
     //!
-    enum PluginType {
-        INPUT_PLUGIN,     //!< Input plugin.
-        OUTPUT_PLUGIN,    //!< Output plugin.
-        PROCESSOR_PLUGIN  //!< Packet processor plugin.
+    enum class PluginType {
+        INPUT,     //!< Input plugin.
+        OUTPUT,    //!< Output plugin.
+        PROCESSOR  //!< Packet processor plugin.
     };
 
     //!
     //! Displayable names of plugin types.
     //!
-    TSDUCKDLL extern const Enumeration PluginTypeNames;
+    TSDUCKDLL extern const TypedEnumeration<PluginType> PluginTypeNames;
 
     //!
     //! Base class of all @c tsp plugins.
