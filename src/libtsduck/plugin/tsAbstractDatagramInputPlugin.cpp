@@ -220,11 +220,11 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
             for (size_t i = 0; i < _inbuf_count; ++i) {
                 if (use_rtp) {
                     // RTP time stamp unit is 90 kHz (RTP_RATE_MP2T)
-                    _mdata[i].setInputTimeStamp(rtp_timestamp, RTP_RATE_MP2T);
+                    _mdata[i].setInputTimeStamp(rtp_timestamp, RTP_RATE_MP2T, TimeSource::RTP);
                 }
                 else if (use_kernel) {
                     // IP time stamp unit is microseconds.
-                    _mdata[i].setInputTimeStamp(uint64_t(timestamp), MicroSecPerSec);
+                    _mdata[i].setInputTimeStamp(uint64_t(timestamp), MicroSecPerSec, TimeSource::KERNEL);
                 }
                 else {
                     _mdata[i].clearInputTimeStamp();

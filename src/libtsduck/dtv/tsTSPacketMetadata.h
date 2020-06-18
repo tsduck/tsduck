@@ -35,10 +35,17 @@
 #pragma once
 #include "tsMPEG.h"
 #include "tsByteBlock.h"
-#include "tsTSPacket.h"
+#include "tsTimeSource.h"
 #include "tsResidentBuffer.h"
 
 namespace ts {
+    // The TSPacketMetadata class is used in large arrays.
+    // We want to make sure we don't loose space:
+    // - No vtable (ie. no virtual method).
+    // - The order of private fields is carefully set to avoid padding.
+    // - Pragma pack to 1-byte alignment.
+    #pragma pack(push, 1)
+
     //!
     //! Metadata of an MPEG-2 transport packet for tsp plugins.
     //! @ingroup mpeg
@@ -218,18 +225,24 @@ namespace ts {
         //!   various PCR in the transport stream. You can compare time stamp differences, not
         //!   absolute values.
         //!
-        uint64_t getInputTimeStamp() const { return _input_ts; }
+        uint64_t getInputTimeStamp() const { return _input_time; }
+
+        //!
+        //! Get the identification of the source of the input time stamp.
+        //! @return An identifier for the source of the input time stamp.
+        //!
+        TimeSource getInputTimeSource() const { return _time_source; }
 
         //!
         //! Check if the packet has an input time stamp.
         //! @return True if the packet has an input time stamp.
         //!
-        bool hasInputTimeStamp() const { return _input_ts != INVALID_PCR; }
+        bool hasInputTimeStamp() const { return _input_time != INVALID_PCR; }
 
         //!
         //! Clear the input time stamp.
         //!
-        void clearInputTimeStamp() { _input_ts = INVALID_PCR; }
+        void clearInputTimeStamp();
 
         //!
         //! Set the optional input time stamp of the packet.
@@ -240,9 +253,10 @@ namespace ts {
         //! should be 1000 when @a time_stamp is in milliseconds and it should be
         //! @link SYSTEM_CLOCK_FREQ @endlink when @a time_stamp is in PCR units.
         //! If @a ticks_per_second is zero, then the input time stamp is cleared.
+        //! @param [in] source Identification of time stamp source.
         //! @see getInputTimeStamp()
         //!
-        void setInputTimeStamp(uint64_t time_stamp, uint64_t ticks_per_second);
+        void setInputTimeStamp(uint64_t time_stamp, uint64_t ticks_per_second, TimeSource source);
 
         //!
         //! Get the input time stamp as a string, typically for debug messages.
@@ -311,13 +325,17 @@ namespace ts {
         bool deserialize(const void* data, size_t size);
 
     private:
-        uint64_t _input_ts;         // Input timestamp in PCR units, INVALID_PCR if unknown.
-        LabelSet _labels;           // Bit mask of labels.
-        bool     _flush;            // Flush the packet buffer asap.
-        bool     _bitrate_changed;  // Call getBitrate() callback as soon as possible.
-        bool     _input_stuffing;   // Packet was artificially inserted as input stuffing.
-        bool     _nullified;        // Packet was explicitly turned into a null packet by a plugin.
+        uint64_t   _input_time;       // 64 bits: Input timestamp in PCR units, INVALID_PCR if unknown.
+        LabelSet   _labels;           // 32 bits: Bit mask of labels.
+        TimeSource _time_source;      // 8 bits: Source for time stamps.
+        bool       _flush;            // Flush the packet buffer asap.
+        bool       _bitrate_changed;  // Call getBitrate() callback as soon as possible.
+        bool       _input_stuffing;   // Packet was artificially inserted as input stuffing.
+        bool       _nullified;        // Packet was explicitly turned into a null packet by a plugin.
     };
+
+    // Restore default packing after TSPacketMetadata.
+    #pragma pack(pop)
 
     //!
     //! Vector of packet metadata.
@@ -325,13 +343,9 @@ namespace ts {
     typedef std::vector<TSPacketMetadata> TSPacketMetadataVector;
 
     //!
-    //! TS packet are accessed in a memory-resident buffer.
-    //!
-    typedef ResidentBuffer<TSPacket> PacketBuffer;
-
-    //!
     //! Metadata for TS packet are accessed in a memory-resident buffer.
     //! A packet and its metadata have the same index in their respective buffer.
     //!
     typedef ResidentBuffer<TSPacketMetadata> PacketMetadataBuffer;
 }
+

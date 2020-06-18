@@ -45,7 +45,7 @@ ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Write packets to a file and pass them to next plugin", u"[options] file-name"),
     _name(),
     _flags(TSFile::NONE),
-    _file_format(TSPacketFormat::FMT_TS),
+    _file_format(TSPacketFormat::TS),
     _file()
 {
     option(u"", 0, STRING, 1, 1);
@@ -71,7 +71,7 @@ ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
 bool ts::FilePacketPlugin::getOptions()
 {
     getValue(_name);
-    _file_format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::FMT_TS);
+    _file_format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::TS);
     _flags = TSFile::WRITE | TSFile::SHARED;
     if (present(u"append")) {
         _flags |= TSFile::APPEND;

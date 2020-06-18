@@ -45,7 +45,7 @@ ts::ForkPacketPlugin::ForkPacketPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Fork a process and send TS packets to its standard input", u"[options] 'command'"),
     _command(),
     _nowait(false),
-    _format(TSPacketFormat::FMT_TS),
+    _format(TSPacketFormat::TS),
     _buffer_size(0),
     _buffer_count(0),
     _buffer(),
@@ -87,7 +87,7 @@ bool ts::ForkPacketPlugin::getOptions()
     // Get command line arguments
     _command = value(u"");
     _nowait = present(u"nowait");
-    _format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::FMT_TS);
+    _format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::TS);
     _buffer_size = intValue<size_t>(u"buffered-packets", tsp->realtime() ? 500 : 1000);
     _pipe.setIgnoreAbort(present(u"ignore-abort"));
 
