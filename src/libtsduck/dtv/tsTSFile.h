@@ -224,6 +224,6 @@ namespace ts {
         TSFile& operator=(TSFile&) = delete;
         TSFile& operator=(TSFile&&) = delete;
     };
-
-    TS_ENABLE_BITMASK_OPERATORS(TSFile::OpenFlags);
 }
+
+TS_ENABLE_BITMASK_OPERATORS(ts::TSFile::OpenFlags);

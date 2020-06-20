@@ -250,7 +250,6 @@ namespace ts {
         LINK_RECURSE  = 0x0001,  //!< Resolve symbolic recursively.
         LINK_ABSOLUTE = 0x0002,  //!< Rebuild absolute path.
     };
-    TS_ENABLE_BITMASK_OPERATORS(ResolveSymbolicLinksFlags);
 
     //!
     //! Resolve symbolic links.
@@ -668,4 +667,5 @@ namespace ts {
     TSDUCKDLL UString ClassName(const std::type_info& info);
 }
 
+TS_ENABLE_BITMASK_OPERATORS(ts::ResolveSymbolicLinksFlags);
 #include "tsSysUtilsTemplate.h"

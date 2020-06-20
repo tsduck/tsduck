@@ -49,7 +49,6 @@ namespace ts {
         ISDB  = 0x10,  //!< Defined by ISDB.
         JAPAN = 0x20,  //!< Defined in Japan only (typically in addition to ISDB).
     };
-    TS_ENABLE_BITMASK_OPERATORS(Standards);
 
     //!
     //! Return a string representing a list of standards.
@@ -58,3 +57,5 @@ namespace ts {
     //!
     TSDUCKDLL UString StandardsNames(Standards standards);
 }
+
+TS_ENABLE_BITMASK_OPERATORS(ts::Standards);
