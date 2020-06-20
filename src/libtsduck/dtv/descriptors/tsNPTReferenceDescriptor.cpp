@@ -38,7 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"NPT_reference_descriptor"
 #define MY_CLASS ts::NPTReferenceDescriptor
 #define MY_DID ts::DID_NPT_REFERENCE
-#define MY_STD ts::STD_MPEG
+#define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

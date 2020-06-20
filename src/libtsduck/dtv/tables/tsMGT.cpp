@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"MGT"
 #define MY_TID ts::TID_MGT
-#define MY_STD ts::STD_ATSC
+#define MY_STD ts::Standards::ATSC
 
 TS_REGISTER_TABLE(ts::MGT, {MY_TID}, MY_STD, MY_XML_NAME, ts::MGT::DisplaySection, nullptr, {ts::PID_PSIP});
 

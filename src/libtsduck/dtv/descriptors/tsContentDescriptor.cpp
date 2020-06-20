@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"content_descriptor"
 #define MY_CLASS ts::ContentDescriptor
 #define MY_DID ts::DID_CONTENT
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

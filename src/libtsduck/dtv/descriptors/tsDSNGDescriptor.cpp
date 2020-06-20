@@ -38,7 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"DSNG_descriptor"
 #define MY_CLASS ts::DSNGDescriptor
 #define MY_DID ts::DID_DSNG
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"EIT"
 #define MY_CLASS ts::EIT
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_TABLE(MY_CLASS, ts::Range<ts::TID>(ts::TID_EIT_MIN, ts::TID_EIT_MAX),
                   MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr,
@@ -515,7 +515,7 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     }
 
     // The time reference is UTC as defined by DVB, but JST in Japan.
-    const char* const zone = (duck.standards() & STD_JAPAN) ? "JST" : "UTC";
+    const char* const zone = (duck.standards() & Standards::JAPAN) == Standards::JAPAN ? "JST" : "UTC";
 
     while (size >= 12) {
         uint16_t evid = GetUInt16(data);

@@ -669,7 +669,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
             // The descriptor can be used in either DVB or ISDB context. It has the same size
             // in both cases but a slightly different binary layout and semantics of fields.
             // There is no way to distinguish a DVB and an ISDB version without context.
-            const bool isDVB = (duck.standards() & STD_ISDB) == 0;
+            const bool isDVB = (duck.standards() & Standards::ISDB) == Standards::NONE;
             // TODO: Check S2_satellite_delivery_system_descriptor to get multistream id and PLS code. What about PLS mode?
             status = size >= 11;
             if (status) {

@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"NBIT"
 #define MY_CLASS ts::NBIT
 #define MY_PID ts::PID_NBIT
-#define MY_STD ts::STD_ISDB
+#define MY_STD ts::Standards::ISDB
 
 TS_REGISTER_TABLE(MY_CLASS, {ts::TID_NBIT_BODY, ts::TID_NBIT_REF}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 

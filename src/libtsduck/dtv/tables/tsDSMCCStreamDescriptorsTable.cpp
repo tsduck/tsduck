@@ -38,7 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"DSMCC_stream_descriptors_table"
 #define MY_CLASS ts::DSMCCStreamDescriptorsTable
 #define MY_TID ts::TID_DSMCC_SD
-#define MY_STD ts::STD_MPEG
+#define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection);
 

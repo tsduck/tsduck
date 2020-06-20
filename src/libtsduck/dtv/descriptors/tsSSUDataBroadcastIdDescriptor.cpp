@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u""   // No XML conversion.
 #define MY_DID ts::DID_DATA_BROADCAST_ID
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 
 //----------------------------------------------------------------------------

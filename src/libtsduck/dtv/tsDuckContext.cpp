@@ -50,8 +50,8 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
     _charsetOut(&DVBCharTableSingleByte::DVB_ISO_6937),
     _casId(CASID_NULL),
     _defaultPDS(0),
-    _cmdStandards(STD_NONE),
-    _accStandards(STD_NONE),
+    _cmdStandards(Standards::NONE),
+    _accStandards(Standards::NONE),
     _hfDefaultRegion(),
     _definedCmdOptions(0),
     _predefined_cas{{CASID_CONAX_MIN,      u"conax"},
@@ -80,7 +80,7 @@ void ts::DuckContext::reset()
     _charsetIn = _charsetOut = &DVBCharTableSingleByte::DVB_ISO_6937;
     _casId = CASID_NULL;
     _defaultPDS = 0;
-    _cmdStandards = _accStandards = STD_NONE;
+    _cmdStandards = _accStandards = Standards::NONE;
     _hfDefaultRegion.clear();
 }
 
@@ -116,12 +116,19 @@ void ts::DuckContext::setDefaultCharsetOut(const Charset* charset)
 
 void ts::DuckContext::addStandards(Standards mask)
 {
+    if (_report->debug() && (_accStandards | mask) != _accStandards) {
+        _report->debug(u"adding standards %s to %s", {StandardsNames(mask), StandardsNames(_accStandards)});
+    }
     _accStandards |= mask;
 }
 
 void ts::DuckContext::resetStandards(Standards mask)
 {
     _accStandards = _cmdStandards | mask;
+
+    if (_report->debug()) {
+        _report->debug(u"resetting standards to %s", {StandardsNames(_accStandards)});
+    }
 }
 
 
@@ -159,12 +166,12 @@ ts::PDS ts::DuckContext::actualPDS(PDS pds) const
         // A default PDS was specified.
         return _defaultPDS;
     }
-    else if ((_accStandards & STD_ATSC) != 0) {
+    else if ((_accStandards & Standards::ATSC) == Standards::ATSC) {
         // We have previously found ATSC signalization, use the fake PDS for ATSC.
         // This allows interpretation of ATSC descriptors in MPEG-defined tables (eg. PMT).
         return PDS_ATSC;
     }
-    else if ((_accStandards & STD_ISDB) != 0) {
+    else if ((_accStandards & Standards::ISDB) == Standards::ISDB) {
         // Same principle for ISDB.
         return PDS_ISDB;
     }
@@ -444,7 +451,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
 bool ts::DuckContext::loadArgs(Args& args)
 {
     // List of forced standards from the command line.
-    _cmdStandards = STD_NONE;
+    _cmdStandards = Standards::NONE;
 
     // Options relating to default PDS.
     if (_definedCmdOptions & CMD_PDS) {
@@ -487,14 +494,14 @@ bool ts::DuckContext::loadArgs(Args& args)
     // Options relating to default standards.
     if (_definedCmdOptions & CMD_STANDARDS) {
         if (args.present(u"atsc")) {
-            _cmdStandards |= STD_ATSC;
+            _cmdStandards |= Standards::ATSC;
         }
         if (args.present(u"isdb") || args.present(u"japan")) {
-            _cmdStandards |= STD_ISDB;
+            _cmdStandards |= Standards::ISDB;
         }
     }
     if ((_definedCmdOptions & (CMD_STANDARDS | CMD_CHARSET)) && args.present(u"japan")) {
-        _cmdStandards |= STD_JAPAN;
+        _cmdStandards |= Standards::JAPAN;
     }
 
     // Options relating to default CAS.
@@ -529,7 +536,7 @@ bool ts::DuckContext::loadArgs(Args& args)
 
 ts::DuckContext::SavedArgs::SavedArgs() :
     _definedCmdOptions(0),
-    _cmdStandards(STD_NONE),
+    _cmdStandards(Standards::NONE),
     _charsetInName(),
     _charsetOutName(),
     _casId(CASID_NULL),

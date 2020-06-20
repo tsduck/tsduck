@@ -38,7 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"MPEG2_stereoscopic_video_format_descriptor"
 #define MY_CLASS ts::MPEG2StereoscopicVideoFormatDescriptor
 #define MY_DID ts::DID_STEREO_VIDEO_FORMAT
-#define MY_STD ts::STD_MPEG
+#define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

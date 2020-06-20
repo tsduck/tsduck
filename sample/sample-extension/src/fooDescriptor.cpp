@@ -6,7 +6,7 @@
 #define MY_XML_NAME u"foo_descriptor"  // XML name is <foo_descriptor>
 #define MY_CLASS foo::FooDescriptor    // Fully qualified class name
 #define MY_DID foo::DID_FOO            // Descriptor id
-#define MY_STD ts::STD_NONE            // Not defined in any standard.
+#define MY_STD ts::Standards::NONE     // Not defined in any standard.
 
 // This is a non-DVB descriptor with DID >= 0x80 => must set PDS to zero in EDID.
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, 0), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

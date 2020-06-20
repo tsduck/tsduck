@@ -38,7 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"target_IP_address_descriptor"
 #define MY_CLASS ts::TargetIPAddressDescriptor
 #define MY_DID ts::DID_INT_IP_ADDR
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 // Table-specific descriptor which is allowed in two distinct tables.
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, ts::TID_INT), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

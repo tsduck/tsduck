@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 #define MY_CLASS ts::ATSCEAC3AudioDescriptor
 #define MY_DID ts::DID_ATSC_ENHANCED_AC3
 #define MY_PDS ts::PDS_ATSC
-#define MY_STD ts::STD_ATSC
+#define MY_STD ts::Standards::ATSC
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

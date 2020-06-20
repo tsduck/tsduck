@@ -38,7 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"bouquet_name_descriptor"
 #define MY_CLASS ts::BouquetNameDescriptor
 #define MY_DID ts::DID_BOUQUET_NAME
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

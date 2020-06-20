@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"service_move_descriptor"
 #define MY_CLASS ts::ServiceMoveDescriptor
 #define MY_DID ts::DID_SERVICE_MOVE
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

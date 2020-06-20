@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"SDT"
 #define MY_CLASS ts::SDT
 #define MY_PID ts::PID_SDT
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_TABLE(MY_CLASS, {ts::TID_SDT_ACT, ts::TID_SDT_OTH}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 

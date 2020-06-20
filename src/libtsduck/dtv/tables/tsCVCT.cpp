@@ -36,7 +36,7 @@ TSDUCK_SOURCE;
 #define MY_CLASS ts::CVCT
 #define MY_TID ts::TID_CVCT
 #define MY_PID ts::PID_PSIP
-#define MY_STD ts::STD_ATSC
+#define MY_STD ts::Standards::ATSC
 
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 

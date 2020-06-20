@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"cue_identifier_descriptor"
 #define MY_CLASS ts::CueIdentifierDescriptor
 #define MY_DID ts::DID_CUE_IDENTIFIER
-#define MY_STD ts::STD_SCTE
+#define MY_STD ts::Standards::SCTE
 
 // This is a non-DVB descriptor with DID >= 0x80 => must set PDS to zero in EDID.
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, 0), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

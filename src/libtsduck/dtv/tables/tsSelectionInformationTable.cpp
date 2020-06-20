@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 #define MY_CLASS ts::SelectionInformationTable
 #define MY_TID ts::TID_SIT
 #define MY_PID ts::PID_SIT
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 

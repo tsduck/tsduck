@@ -38,17 +38,17 @@ TSDUCK_SOURCE;
 
 ts::UString ts::StandardsNames(Standards standards)
 {
-    if (standards == 0) {
+    if (standards == Standards::NONE) {
         return NameFromSection(u"Standards", 0, names::NAME);
     }
     else {
         UString list;
-        for (std::underlying_type<Standards>::type mask = 1; mask != 0; mask <<= 1) {
-            if ((standards & mask) != 0) {
+        for (Standards mask = Standards(1); mask != Standards::NONE; mask <<= 1) {
+            if ((standards & mask) != Standards::NONE) {
                 if (!list.empty()) {
                     list.append(u", ");
                 }
-                list.append(NameFromSection(u"Standards", mask, names::NAME));
+                list.append(NameFromSection(u"Standards", std::underlying_type<Standards>::type(mask), names::NAME));
             }
         }
         return list;

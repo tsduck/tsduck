@@ -53,7 +53,7 @@ ts::PSIRepository::PSIRepository() :
 }
 
 ts::PSIRepository::TableDescription::TableDescription() :
-    standards(STD_NONE),
+    standards(Standards::NONE),
     minCAS(CASID_NULL),
     maxCAS(CASID_NULL),
     factory(nullptr),
@@ -135,8 +135,8 @@ FUNCTION ts::PSIRepository::getTableFunction(TID tid, Standards standards, PID p
             // CAS match: either a CAS is specified and is in range, or no CAS specified and CAS-agnostic table (all CASID_NULL).
             const bool casMatch = cas >= it->second.minCAS && cas <= it->second.maxCAS;
 
-            // Standard match: at least one standard of the table is current, or standard-agnostic table (STD_NONE).
-            const bool stdMatch = (standards & it->second.standards) != 0 || it->second.standards == STD_NONE;
+            // Standard match: at least one standard of the table is current, or standard-agnostic table (Standards::NONE).
+            const bool stdMatch = (standards & it->second.standards) != Standards::NONE || it->second.standards == Standards::NONE;
 
             if (stdMatch && casMatch) {
                 // Found an exact match, no need to search further.
@@ -344,13 +344,13 @@ ts::DisplayCADescriptorFunction ts::PSIRepository::getCADescriptorDisplay(uint16
 ts::Standards ts::PSIRepository::getTableStandards(TID tid, PID pid) const
 {
     // Accumulate the common subset of all standards for this table id.
-    Standards standards = STD_NONE;
+    Standards standards = Standards::NONE;
     for (auto it = _tables.lower_bound(tid); it != _tables.end() && it->first == tid; ++it) {
         if (it->second.hasPID(pid)) {
             // We are in a standard PID for this table id, return the corresponding standards only.
             return it->second.standards;
         }
-        else if (standards == STD_NONE) {
+        else if (standards == Standards::NONE) {
             // No standard found yet, use all standards from first definition.
             standards = it->second.standards;
         }
