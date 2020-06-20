@@ -36,5 +36,5 @@ namespace foo {
     };
 
     // Digital TV standards to which the "foo" signalization belongs (no defined standard).
-    constexpr ts::Standards STD = ts::STD_NONE;
+    constexpr ts::Standards STD = ts::Standards::NONE;
 }

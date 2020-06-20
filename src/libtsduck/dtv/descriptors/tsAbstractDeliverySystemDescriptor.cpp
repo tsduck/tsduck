@@ -32,7 +32,7 @@
 TSDUCK_SOURCE;
 
 ts::AbstractDeliverySystemDescriptor::AbstractDeliverySystemDescriptor(DID tag, DeliverySystem sys, const UChar* xml_name) :
-    AbstractDescriptor(tag, xml_name, STD_DVB, 0),
+    AbstractDescriptor(tag, xml_name, Standards::DVB, 0),
     _system(sys)
 {
 }

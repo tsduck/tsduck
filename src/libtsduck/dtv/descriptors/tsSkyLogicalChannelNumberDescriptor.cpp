@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 #define MY_CLASS ts::SkyLogicalChannelNumberDescriptor
 #define MY_DID ts::DID_LOGICAL_CHANNEL_SKY
 #define MY_PDS ts::PDS_BSKYB
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

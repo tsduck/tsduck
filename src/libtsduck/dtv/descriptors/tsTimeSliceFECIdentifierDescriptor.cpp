@@ -38,7 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"time_slice_fec_identifier_descriptor"
 #define MY_CLASS ts::TimeSliceFECIdentifierDescriptor
 #define MY_DID ts::DID_TIME_SLICE_FEC_ID
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

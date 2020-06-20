@@ -35,7 +35,7 @@
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"splice_schedule"
-#define MY_STD ts::STD_SCTE
+#define MY_STD ts::Standards::SCTE
 
 
 //----------------------------------------------------------------------------

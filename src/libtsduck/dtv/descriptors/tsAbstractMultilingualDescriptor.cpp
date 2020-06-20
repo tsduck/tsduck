@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::AbstractMultilingualDescriptor::AbstractMultilingualDescriptor(DID tag, const UChar* xml_name, const UChar* xml_attribute) :
-    AbstractDescriptor(tag, xml_name, STD_DVB, 0),
+    AbstractDescriptor(tag, xml_name, Standards::DVB, 0),
     entries(),
     _xml_attribute(xml_attribute)
 {

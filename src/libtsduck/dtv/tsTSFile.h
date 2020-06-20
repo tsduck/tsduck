@@ -36,6 +36,7 @@
 #include "tsTSPacketStream.h"
 #include "tsAbstractReadStreamInterface.h"
 #include "tsAbstractWriteStreamInterface.h"
+#include "tsEnumUtils.h"
 
 namespace ts {
 
@@ -223,6 +224,6 @@ namespace ts {
         TSFile& operator=(TSFile&) = delete;
         TSFile& operator=(TSFile&&) = delete;
     };
-}
 
-TS_FLAGS_OPERATORS(ts::TSFile::OpenFlags)
+    TS_ENABLE_BITMASK_OPERATORS(TSFile::OpenFlags);
+}

@@ -26,7 +26,7 @@ CXXFLAGS += -fPIC
 default: $(SHLIBS)
 	@true
 
-clean:
+clean distclean:
 	rm -rf *.o *.so
 
 .PHONY: install

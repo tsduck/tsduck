@@ -57,7 +57,7 @@ TSDUCK_SOURCE;
 // #define MY_CLASS ts::HybridInformationDescriptor
 #define MY_DID ts::DID_ISDB_HYBRID_INFO
 // #define MY_PDS ts::PDS_ISDB
-#define MY_STD ts::STD_ISDB
+#define MY_STD ts::Standards::ISDB
 
 
 //----------------------------------------------------------------------------

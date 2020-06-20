@@ -131,10 +131,10 @@ class FooTable : public ts::AbstractLongTable { ... };
 In the implementation of the table, register hooks for the various features you support.
 In this example, we register a C++ class for `FooTable`:
 ~~~
-TS_REGISTER_TABLE(FooTable,        // C++ class name
-                  {0xF0},          // table id 0xF0
-                  ts::STD_NONE,    // not defined in any standard
-                  u"FOOT",         // XML name is <FOOT>
+TS_REGISTER_TABLE(FooTable,                  // C++ class name
+                  {0xF0},                    // table id 0xF0
+                  ts::Standards::NONE,       // not defined in any standard
+                  u"FOOT",                   // XML name is <FOOT>
                   FooTable::DisplaySection);
 ~~~
 The last argument to @link TS_REGISTER_TABLE @endlink is a static method of the class which
@@ -272,7 +272,7 @@ See the documentation for ts::DisplaySectionFunction, ts::LogSectionFunction and
 To register the display handlers in TSDuck:
 ~~~
 TS_REGISTER_SECTION({ts::TID_ECM_80, ts::TID_ECM_81},
-                    ts::STD_NONE,         // not defined in any standard
+                    ts::Standards::NONE,  // not defined in any standard
                     DisplayFooCASECM,     // display function
                     LogFooCASECM,         // one-line log function
                     {},                   // no predefined PID
@@ -280,7 +280,7 @@ TS_REGISTER_SECTION({ts::TID_ECM_80, ts::TID_ECM_81},
                     CASID_FOO_MAX);
 
 TS_REGISTER_SECTION(ts::Range<ts::TID>(ts::TID_EMM_FIRST, ts::TID_EMM_LAST),
-                    ts::STD_NONE,         // not defined in any standard
+                    ts::Standards::NONE,  // not defined in any standard
                     DisplayFooCASEMM,     // display function
                     LogFooCASEMM,         // one-line log function
                     {},                   // no predefined PID

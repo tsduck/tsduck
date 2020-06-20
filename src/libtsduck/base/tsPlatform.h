@@ -2021,42 +2021,6 @@ namespace ts {
 
 
 //----------------------------------------------------------------------------
-// Flags operations.
-//----------------------------------------------------------------------------
-
-//!
-//! @hideinitializer
-//! This macro defines all bit-wise operators on an enumeration type.
-//!
-//! These operations are useful for enumeration values which are used as bit-masks.
-//! This macro shall be used outside namespaces.
-//!
-//! Example:
-//! @code
-//! enum E {A = 0x01, B = 0x02, C = 0x04};
-//! TS_FLAGS_OPERATORS(E)
-//!
-//! E e = A | B | C;
-//! e ^= B | C;
-//! @endcode
-//!
-//! @param [in] type The name of an enumeration type.
-//!
-#if defined(DOXYGEN)
-#define TS_FLAGS_OPERATORS(type)
-#else
-#define TS_FLAGS_OPERATORS(type)                                                      \
-    inline constexpr type operator~(type a) { return type(~int(a)); }                 \
-    inline constexpr type operator|(type a, type b) { return type(int(a) | int(b)); } \
-    inline constexpr type operator&(type a, type b) { return type(int(a) & int(b)); } \
-    inline constexpr type operator^(type a, type b) { return type(int(a) ^ int(b)); } \
-    inline type& operator|=(type& a, type b) { return a = a | b; }                    \
-    inline type& operator&=(type& a, type b) { return a = a & b; }                    \
-    inline type& operator^=(type& a, type b) { return a = a ^ b; }
-#endif
-
-
-//----------------------------------------------------------------------------
 // System error codes
 //----------------------------------------------------------------------------
 

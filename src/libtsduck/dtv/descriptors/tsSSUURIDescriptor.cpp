@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 #define MY_CLASS ts::SSUURIDescriptor
 #define MY_DID ts::DID_UNT_SSU_URI
 #define MY_TID ts::TID_UNT
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

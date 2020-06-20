@@ -5,15 +5,11 @@
 // The use of plugin events is also illustrated.
 // Most applications do not need custom plugins and use only standard ones.
 //
-// To run this test, you may need to define the following:
-//   export TSPLUGINS_PATH=/usr/lib/tsduck
-//
 // Notes:
+//   - With TSDuck 3.21 and below, use export TSPLUGINS_PATH=/usr/bin
+//   - With TSDuck 3.22 and above, use export TSPLUGINS_PATH=/usr/lib/tsduck
 //   - Use /usr/local instead of /usr on macOS.
 //   - On some 64-bit systems, use lib64 instead of lib.
-//   - With TSDuck 3.21 and below, use
-//     export TSPLUGINS_PATH=/usr/bin
-//     export LD_LIBRARY_PATH=/usr/bin
 //
 //----------------------------------------------------------------------------
 

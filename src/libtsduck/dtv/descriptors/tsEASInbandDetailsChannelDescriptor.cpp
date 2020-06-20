@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 #define MY_CLASS ts::EASInbandDetailsChannelDescriptor
 #define MY_DID ts::DID_EAS_INBAND_DETAILS
 #define MY_TID ts::TID_SCTE18_EAS
-#define MY_STD ts::STD_SCTE
+#define MY_STD ts::Standards::SCTE
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

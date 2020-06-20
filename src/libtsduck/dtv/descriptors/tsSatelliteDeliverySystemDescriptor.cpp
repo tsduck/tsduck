@@ -78,7 +78,7 @@ ts::DeliverySystem ts::SatelliteDeliverySystemDescriptor::ResolveDeliverySystem(
     if (system == DS_DVB_S || system == DS_DVB_S2 || system == DS_ISDB_S) {
         return system;
     }
-    else if (duck.standards() & STD_ISDB) {
+    else if ((duck.standards() & Standards::ISDB) == Standards::ISDB) {
         return DS_ISDB_S;
     }
     else {
@@ -144,7 +144,7 @@ void ts::SatelliteDeliverySystemDescriptor::deserialize(DuckContext& duck, const
         polarization = (data[6] >> 5) & 0x03;
         symbol_rate = 100 * uint64_t(DecodeBCD(data + 7, 7, true)); // coded in 100 sym/s units
         FEC_inner = data[10] & 0x0F;
-        if (duck.standards() & STD_ISDB) {
+        if ((duck.standards() & Standards::ISDB) == Standards::ISDB) {
             // ISDB-S variant.
             _system = DS_ISDB_S;
             roll_off = 0xFF;
@@ -314,7 +314,7 @@ void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& dis
     const std::string margin(indent, ' ');
 
     if (size >= 11) {
-        const bool isDVB = (duck.standards() & STD_ISDB) == 0;
+        const bool isDVB = (duck.standards() & Standards::ISDB) == Standards::NONE;
         const uint8_t east = data[6] >> 7;
         const uint8_t polar = (data[6] >> 5) & 0x03;
         const uint8_t roll_off = (data[6] >> 3) & 0x03;

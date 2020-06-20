@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 #define MY_CLASS ts::IPMACPlatformProviderNameDescriptor
 #define MY_DID ts::DID_INT_PF_PROVIDER
 #define MY_TID ts::TID_INT
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

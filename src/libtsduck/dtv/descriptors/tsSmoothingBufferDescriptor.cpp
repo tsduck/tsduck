@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"smoothing_buffer_descriptor"
 #define MY_CLASS ts::SmoothingBufferDescriptor
 #define MY_DID ts::DID_SMOOTH_BUF
-#define MY_STD ts::STD_MPEG
+#define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

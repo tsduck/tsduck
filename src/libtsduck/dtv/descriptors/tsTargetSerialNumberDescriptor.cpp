@@ -38,7 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"target_serial_number_descriptor"
 #define MY_CLASS ts::TargetSerialNumberDescriptor
 #define MY_DID ts::DID_INT_SERIAL_NUM
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 // Table-specific descriptor which is allowed in two distinct tables.
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, ts::TID_INT), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

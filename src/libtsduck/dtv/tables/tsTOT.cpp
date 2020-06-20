@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 #define MY_CLASS ts::TOT
 #define MY_TID ts::TID_TOT
 #define MY_PID ts::PID_TOT
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 
@@ -168,7 +168,7 @@ void ts::TOT::deserializeContent(DuckContext& duck, const BinaryTable& table)
     remain = std::min(length, remain);
 
     // In Japan, the time field is in fact a JST time, convert it to UTC.
-    if (duck.standards() & STD_JAPAN) {
+    if ((duck.standards() & Standards::JAPAN) == Standards::JAPAN) {
         utc_time = utc_time.JSTToUTC();
     }
 
@@ -195,7 +195,7 @@ void ts::TOT::serializeContent(DuckContext& duck, BinaryTable& table) const
 
     // Encode the data in MJD in the payload (5 bytes)
     // In Japan, the time field is in fact a JST time, convert UTC to JST before serialization.
-    if (duck.standards() & STD_JAPAN) {
+    if ((duck.standards() & Standards::JAPAN) == Standards::JAPAN) {
         EncodeMJD(utc_time.UTCToJST(), data, MJD_SIZE);
     }
     else {

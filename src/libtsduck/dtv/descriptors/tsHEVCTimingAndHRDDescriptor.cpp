@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 #define MY_CLASS ts::HEVCTimingAndHRDDescriptor
 #define MY_DID ts::DID_MPEG_EXTENSION
 #define MY_EDID ts::MPEG_EDID_HEVC_TIM_HRD
-#define MY_STD ts::STD_MPEG
+#define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

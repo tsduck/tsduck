@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 #define MY_CLASS ts::LDT
 #define MY_TID ts::TID_LDT
 #define MY_PID ts::PID_LDT
-#define MY_STD ts::STD_ISDB
+#define MY_STD ts::Standards::ISDB
 
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 

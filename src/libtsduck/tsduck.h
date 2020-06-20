@@ -233,6 +233,7 @@
 #include "tsEMMGClient.h"
 #include "tsEMMGMUX.h"
 #include "tsEnumeration.h"
+#include "tsEnumUtils.h"
 #include "tsERT.h"
 #include "tsETID.h"
 #include "tsETT.h"

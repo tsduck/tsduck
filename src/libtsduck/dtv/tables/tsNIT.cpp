@@ -38,7 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"NIT"
 #define MY_CLASS ts::NIT
 #define MY_PID ts::PID_NIT
-#define MY_STD ts::STD_DVB
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_TABLE(MY_CLASS, {ts::TID_NIT_ACT, ts::TID_NIT_OTH}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 

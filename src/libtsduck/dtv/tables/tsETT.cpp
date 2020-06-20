@@ -38,7 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"ETT"
 #define MY_CLASS ts::ETT
 #define MY_TID ts::TID_ETT
-#define MY_STD ts::STD_ATSC
+#define MY_STD ts::Standards::ATSC
 
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection);
 

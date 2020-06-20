@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 #define MY_CLASS ts::ExtendedBroadcasterDescriptor
 #define MY_DID ts::DID_ISDB_EXT_BROADCAST
 #define MY_PDS ts::PDS_ISDB
-#define MY_STD ts::STD_ISDB
+#define MY_STD ts::Standards::ISDB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

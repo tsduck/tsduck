@@ -334,7 +334,7 @@ namespace ts {
         //! Reset the list of standards which are present in the transport stream or context.
         //! @param [in] mask A bit mask of standards.
         //!
-        void resetStandards(Standards mask = STD_NONE);
+        void resetStandards(Standards mask = Standards::NONE);
 
         //!
         //! Set the name of the default region for UVH and VHF band frequency layout.

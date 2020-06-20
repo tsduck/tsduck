@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"ITT"
 #define MY_CLASS ts::ITT
 #define MY_TID ts::TID_ITT
-#define MY_STD ts::STD_ISDB
+#define MY_STD ts::Standards::ISDB
 
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection);
 

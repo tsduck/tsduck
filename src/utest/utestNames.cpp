@@ -185,11 +185,11 @@ void NamesTest::testSharedTID()
     TSUNIT_EQUAL(ts::TID_MGT, ts::TID_LDT);
     TSUNIT_EQUAL(ts::TID_TVCT, ts::TID_CDT);
 
-    duck.addStandards(ts::STD_ISDB);
+    duck.addStandards(ts::Standards::ISDB);
     TSUNIT_EQUAL(u"LDT (ISDB)", ts::names::TID(duck, ts::TID_MGT));
     TSUNIT_EQUAL(u"CDT (ISDB)", ts::names::TID(duck, ts::TID_TVCT));
 
-    duck.resetStandards(ts::STD_ATSC);
+    duck.resetStandards(ts::Standards::ATSC);
     TSUNIT_EQUAL(u"MGT (ATSC)", ts::names::TID(duck, ts::TID_MGT));
     TSUNIT_EQUAL(u"TVCT (ATSC)", ts::names::TID(duck, ts::TID_TVCT));
 }
@@ -363,7 +363,7 @@ void NamesTest::testComponentType()
     TSUNIT_EQUAL(u"MPEG-2 high definition video, > 16:9 aspect ratio, 30 Hz", ts::names::ComponentType(duck, 0x0110));
     TSUNIT_EQUAL(u"MPEG-2 video", ts::names::ComponentType(duck, 0x01B4));
 
-    duck.addStandards(ts::STD_JAPAN);
+    duck.addStandards(ts::Standards::JAPAN);
     TSUNIT_EQUAL(u"unknown (0x0110)", ts::names::ComponentType(duck, 0x0110));
     TSUNIT_EQUAL(u"Video 1080i(1125i), >16:9 aspect ratio", ts::names::ComponentType(duck, 0x01B4));
 }

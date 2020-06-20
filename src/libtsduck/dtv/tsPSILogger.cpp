@@ -65,7 +65,7 @@ ts::PSILogger::PSILogger(TablesDisplay& display) :
     _clear_packets_cnt(0),
     _scrambled_packets_cnt(0),
     _demux(_duck, this, _dump ? this : nullptr),
-    _standards(STD_NONE)
+    _standards(Standards::NONE)
 {
 }
 
