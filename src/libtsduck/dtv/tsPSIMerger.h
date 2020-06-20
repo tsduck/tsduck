@@ -198,6 +198,6 @@ namespace ts {
             }
         }
     };
-
-    TS_ENABLE_BITMASK_OPERATORS(PSIMerger::Options);
 }
+
+TS_ENABLE_BITMASK_OPERATORS(ts::PSIMerger::Options);

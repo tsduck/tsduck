@@ -66,10 +66,7 @@ namespace ts {
             ALTERNATE     = 0x0010,                  //!< Display an alternate integer value.
             NAME_OR_VALUE = 0x0020,                  //!< Display name if defined or value only if not defined.
         };
-    }
-    TS_ENABLE_BITMASK_OPERATORS(names::Flags);
 
-    namespace names {
         //!
         //! Name of Table ID.
         //! @param [in] duck TSDuck execution context (used to select from conflicting standards).
@@ -537,3 +534,5 @@ namespace ts {
         return NamesMain::Instance()->nameFromSection(sectionName, Names::Value(value), flags, bits, Names::Value(alternateValue));
     }
 }
+
+TS_ENABLE_BITMASK_OPERATORS(ts::names::Flags);
