@@ -36,6 +36,7 @@
 #pragma once
 #include "tsArgs.h"
 #include "tsVersionInfo.h"
+#include "tsConsoleState.h"
 #include "tsIPUtils.h"
 #include "tsCOM.h"
 
@@ -57,6 +58,7 @@
 //!
 #if !defined(TS_WINDOWS)
 #define TS_MAIN(func)                                                         \
+    static ts::ConsoleState _consoleState;                                    \
     int func(int argc, char *argv[]);                                         \
     int main(int argc, char *argv[])                                          \
     {                                                                         \
@@ -71,6 +73,7 @@
     typedef int UnusedMainType /* allow trailing semi-colon */
 #elif defined(TS_NO_BUILD_VERSION)
 #define TS_MAIN(func)                                                         \
+    static ts::ConsoleState _consoleState;                                    \
     int func(int argc, char *argv[]);                                         \
     int main(int argc, char *argv[])                                          \
     {                                                                         \
@@ -89,6 +92,7 @@
     typedef int UnusedMainType /* allow trailing semi-colon */
 #else
 #define TS_MAIN(func)                                                         \
+    static ts::ConsoleState _consoleState;                                    \
     int func(int argc, char *argv[]);                                         \
     int main(int argc, char *argv[])                                          \
     {                                                                         \

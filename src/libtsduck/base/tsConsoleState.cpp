@@ -26,31 +26,47 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class is a singleton implementing Report on std::cerr
-//  without synchronization
-//
-//----------------------------------------------------------------------------
 
-#include "tsCerrReport.h"
+#include "tsConsoleState.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
-// Define singleton instance
-TS_DEFINE_SINGLETON(ts::CerrReport);
 
-// Constructor.
-ts::CerrReport::CerrReport()
+//----------------------------------------------------------------------------
+// Constructor: save console state and configure it.
+//----------------------------------------------------------------------------
+
+ts::ConsoleState::ConsoleState(Report& report)
+#if defined(TS_WINDOWS)
+  : _input_cp(::GetConsoleCP()),
+    _output_cp(::GetConsoleOutputCP())
+#endif
 {
-    int severity = 0;
-    if (GetEnvironment(u"TS_CERR_DEBUG_LEVEL").toInteger(severity)) {
-        setMaxSeverity(severity);
+#if defined(TS_WINDOWS)
+    report.debug(u"previous code pages: input: %d, output: %d", {::GetConsoleCP(), ::GetConsoleOutputCP()});
+
+    // Set Windows console input and output to UTF-8.
+    if (::SetConsoleCP(CP_UTF8) == 0) {
+        report.error(u"SetConsoleCP error: %s", {ErrorCodeMessage()});
     }
+    if (::SetConsoleOutputCP(CP_UTF8) == 0) {
+        report.error(u"SetConsoleOutputCP error: %s", {ErrorCodeMessage()});
+    }
+
+    report.debug(u"new code pages: input: %d, output: %d", {::GetConsoleCP(), ::GetConsoleOutputCP()});
+#endif
 }
 
-// Message logging method.
-void ts::CerrReport::writeLog(int severity, const UString &msg)
+
+//----------------------------------------------------------------------------
+// Destructor: restore console state.
+//----------------------------------------------------------------------------
+
+ts::ConsoleState::~ConsoleState()
 {
-    std::cerr << "* " << Severity::Header(severity) << msg << std::endl;
-    std::cerr.flush();
+    // Restore initial console state.
+#if defined(TS_WINDOWS)
+    ::SetConsoleCP(_input_cp);
+    ::SetConsoleOutputCP(_output_cp);
+#endif
 }
