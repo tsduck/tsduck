@@ -41,6 +41,9 @@ namespace ts {
     //! A singleton implementing Report on std::cerr without synchronization.
     //! @ingroup log
     //!
+    //! If the environment variable TS_CERR_DEBUG_LEVEL is set to some integer
+    //! value, it is used as initial maximum severity level for this object.
+    //!
     //! This class is a singleton. Use static Instance() method to access the single instance.
     //!
     class TSDUCKDLL CerrReport : public Report

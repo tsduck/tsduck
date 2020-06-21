@@ -141,6 +141,7 @@
 #include "tsConditionalPlaybackDescriptor.h"
 #include "tsConfigFile.h"
 #include "tsConfigSection.h"
+#include "tsConsoleState.h"
 #include "tsContentAdvisoryDescriptor.h"
 #include "tsContentAvailabilityDescriptor.h"
 #include "tsContentDescriptor.h"
