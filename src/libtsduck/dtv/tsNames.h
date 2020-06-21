@@ -41,6 +41,11 @@
 #include "tsReport.h"
 #include "tsSingletonManager.h"
 
+// Forward declaration to allow using the '|' operator in the definition of the enum type.
+// Not needed with GCC and LLVM, only MSC complains.
+namespace ts { namespace names { enum Flags : uint16_t; }}
+TS_ENABLE_BITMASK_OPERATORS(ts::names::Flags);
+
 namespace ts {
 
     class DuckContext;
@@ -53,7 +58,7 @@ namespace ts {
         //! Flags to be used in the formating of MPEG/DVB names.
         //! Values can be or'ed.
         //!
-        enum Flags {
+        enum Flags : uint16_t {
             NAME          = 0x0000,   //!< Name only, no value. This is the default.
             VALUE         = 0x0001,   //!< Include the value: "name (value)".
             FIRST         = 0x0002,   //!< Same with value first: "value (name)".
@@ -534,5 +539,3 @@ namespace ts {
         return NamesMain::Instance()->nameFromSection(sectionName, Names::Value(value), flags, bits, Names::Value(alternateValue));
     }
 }
-
-TS_ENABLE_BITMASK_OPERATORS(ts::names::Flags);
