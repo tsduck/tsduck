@@ -36,20 +36,6 @@
 #pragma once
 #include "tsPlatform.h"
 
-// Microsoft compiler bug (the third one in the development of TSDuck...):
-// On Visual Studio 2019, the template specialization of the same template
-// class with distinct enumeration types fails ("duplicate specialization").
-// This breaks our mechanism to allow bitmask operators on selected enumeration
-// types. As a workaround, on MS C++ compiler we enable bitmask operators on
-// all enumeration types. The problem is that if you develop new code on Windows
-// first and forget to enable the bitmask operators on a given enumeration type,
-// it will compile and work. But compilation on a correct compiler will fail.
-// The fix is simple: add the missing TS_ENABLE_BITMASK_OPERATORS. But it can
-// be disconcerting at first.
-#if defined(TS_MSC)
-#define TS_BROKEN_TEMPLATE_SPECIALIZATION 1
-#endif
-
 namespace ts
 {
     //!
@@ -63,19 +49,9 @@ namespace ts
     struct EnableBitMaskOperators
     {
         //! The constant @a value enables or disables the bitmask operators on type @a T.
-#if defined(TS_BROKEN_TEMPLATE_SPECIALIZATION)
-        // With MSCV broken template specialization, we allow bitmask operators on all enumeration types.
-        static constexpr bool value = true;
-#else
         static constexpr bool value = false;
-#endif
     };
 }
-
-#if defined(TS_BROKEN_TEMPLATE_SPECIALIZATION)
-// With MSCV broken template specialization, we must disable the normal code.
-#define TS_ENABLE_BITMASK_OPERATORS(T) typedef int TS_UNIQUE_NAME(to_allow_trailing_semicolon)
-#else
 
 //!
 //! @hideinitializer
@@ -99,8 +75,6 @@ namespace ts
         static constexpr bool value = true; \
     }                                       \
     /** @endcond */
-
-#endif // TS_BROKEN_TEMPLATE_SPECIALIZATION
 
 //!
 //! Bitmask "not" unary operator on enumeration types.
