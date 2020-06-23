@@ -152,7 +152,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
     Protocol::CommandMap::const_iterator cmd_it = _protocol->_commands.find (_command_tag);
 
     // Check that the command exists
-    if (cmd_it == _protocol->_commands.end ()) {
+    if (cmd_it == _protocol->_commands.end()) {
         _error_status = UnknownCommandTag;
         _error_info_is_offset = true;
         _error_info = uint16_t (header_size); // offset in message
@@ -174,7 +174,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
         // Locate the description of this parameter tag in the protocol definition.
         Protocol::ParameterMap::const_iterator parm_it = cmd_it->second.params.find (parm_tag);
 
-        if (parm_it == cmd_it->second.params.end ()) {
+        if (parm_it == cmd_it->second.params.end()) {
             // Parameter tag not found in protocol definition
             _error_status = UnknownParameterTag;
             _error_info_is_offset = true;
@@ -219,11 +219,11 @@ void ts::tlv::MessageFactory::analyzeMessage()
         }
 
         // Advance to next parameter
-        parm_anl.next ();
+        parm_anl.next();
     }
 
     // Did we reach the end of parameter list without error ?
-    if (!parm_anl.valid ()) {
+    if (!parm_anl.valid()) {
         _error_status = InvalidMessage;
         _error_info_is_offset = true;
         _error_info = uint16_t(uint8_ptr(parm_anl.fieldAddr()) - _msg_base); // offset
@@ -237,7 +237,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
 
     Protocol::ParameterMap::const_iterator parm_it;
 
-    for (parm_it = cmd_it->second.params.begin (); parm_it != cmd_it->second.params.end (); ++parm_it) {
+    for (parm_it = cmd_it->second.params.begin(); parm_it != cmd_it->second.params.end(); ++parm_it) {
 
         // Protocol-defined parameter tag:
         TAG tag = parm_it->first;
@@ -302,7 +302,7 @@ void ts::tlv::MessageFactory::get(TAG tag, std::vector<Parameter>& param) const
 void ts::tlv::MessageFactory::get(TAG tag, std::vector<bool>& param) const
 {
     // Reinitialize result vector
-    param.clear ();
+    param.clear();
     param.reserve(_params.count(tag));
     // Fill vector with parameter values
     ParameterMultimap::const_iterator it = _params.lower_bound(tag);
@@ -321,7 +321,7 @@ void ts::tlv::MessageFactory::get(TAG tag, std::vector<bool>& param) const
 void ts::tlv::MessageFactory::get(TAG tag, std::vector<std::string>& param) const
 {
     // Reinitialize result vector
-    param.clear ();
+    param.clear();
     param.resize(_params.count(tag));
     // Fill vector with parameter values
     ParameterMultimap::const_iterator it = _params.lower_bound(tag);
@@ -358,7 +358,7 @@ void ts::tlv::MessageFactory::getCompound(TAG tag, MessagePtr& param) const
 void ts::tlv::MessageFactory::getCompound(TAG tag, std::vector<MessagePtr>& param) const
 {
     // Reinitialize result vector
-    param.clear ();
+    param.clear();
     param.resize(_params.count(tag));
     // Fill vector with parameter values
     ParameterMultimap::const_iterator it = _params.lower_bound(tag);

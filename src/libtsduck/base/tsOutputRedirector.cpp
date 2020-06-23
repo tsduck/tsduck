@@ -56,7 +56,7 @@ ts::OutputRedirector::OutputRedirector(const UString& name,
         }
         else {
             args.error(u"cannot open file %s", {name});
-            args.exitOnError ();
+            args.exitOnError();
         }
     }
     else if (&stream == &std::cout && (mode | std::ios::binary) == mode) {

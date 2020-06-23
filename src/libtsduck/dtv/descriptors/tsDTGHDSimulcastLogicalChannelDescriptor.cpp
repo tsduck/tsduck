@@ -53,3 +53,7 @@ ts::DTGHDSimulcastLogicalChannelDescriptor::DTGHDSimulcastLogicalChannelDescript
     AbstractLogicalChannelDescriptor(duck, desc, MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
 {
 }
+
+ts::DTGHDSimulcastLogicalChannelDescriptor::~DTGHDSimulcastLogicalChannelDescriptor()
+{
+}

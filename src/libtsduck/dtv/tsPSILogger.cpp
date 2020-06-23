@@ -423,7 +423,7 @@ void ts::PSILogger::handleSection(SectionDemux&, const Section& sect)
 // Report the demux errors (if any)
 //----------------------------------------------------------------------------
 
-void ts::PSILogger::reportDemuxErrors ()
+void ts::PSILogger::reportDemuxErrors()
 {
     if (_demux.hasErrors()) {
         SectionDemux::Status status(_demux);

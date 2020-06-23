@@ -44,12 +44,16 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::DTGLogicalChannelDescriptor::DTGLogicalChannelDescriptor () :
+ts::DTGLogicalChannelDescriptor::DTGLogicalChannelDescriptor() :
     AbstractLogicalChannelDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
 {
 }
 
 ts::DTGLogicalChannelDescriptor::DTGLogicalChannelDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractLogicalChannelDescriptor(duck, desc, MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+{
+}
+
+ts::DTGLogicalChannelDescriptor::~DTGLogicalChannelDescriptor()
 {
 }

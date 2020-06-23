@@ -57,3 +57,7 @@ ts::EacemLogicalChannelNumberDescriptor::EacemLogicalChannelNumberDescriptor(Duc
     AbstractLogicalChannelDescriptor(duck, desc, MY_DID, MY_XML_NAME, MY_STD, MY_PDS, MY_XML_NAME_LEGACY)
 {
 }
+
+ts::EacemLogicalChannelNumberDescriptor::~EacemLogicalChannelNumberDescriptor()
+{
+}

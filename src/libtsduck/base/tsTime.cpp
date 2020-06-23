@@ -607,7 +607,7 @@ ts::Time::operator Fields() const
     FileTime ft;
     ft.i = _value;
     if (::FileTimeToSystemTime(&ft.ft, &st) == 0) {
-        throw TimeError(::GetLastError ());
+        throw TimeError(::GetLastError());
     }
     return Fields(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 

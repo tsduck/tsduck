@@ -279,7 +279,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
     // Locate TS packet payload
     size_t header_size = pkt.getHeaderSize();
-    if (!pkt.hasPayload () || header_size >= PKT_SIZE) {
+    if (!pkt.hasPayload() || header_size >= PKT_SIZE) {
         return;
     }
 
