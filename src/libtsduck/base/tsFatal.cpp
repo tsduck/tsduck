@@ -59,7 +59,7 @@ void ts::FatalError(const char* message, size_t length)
 // memory allocation.
 //----------------------------------------------------------------------------
 
-void ts::FatalMemoryAllocation ()
+void ts::FatalMemoryAllocation()
 {
     static const char err[] = "\n\n*** Fatal virtual memory allocation failure, aborting...\n\n";
     static const size_t err_size = sizeof(err) - 1;

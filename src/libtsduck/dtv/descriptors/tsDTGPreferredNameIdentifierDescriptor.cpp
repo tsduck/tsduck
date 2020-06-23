@@ -44,12 +44,16 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::DTGPreferredNameIdentifierDescriptor::DTGPreferredNameIdentifierDescriptor(uint8_t name_id) :
-    AbstractPreferredNameIdentifierDescriptor(name_id, MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+ts::DTGPreferredNameIdentifierDescriptor::DTGPreferredNameIdentifierDescriptor(uint8_t id) :
+    AbstractPreferredNameIdentifierDescriptor(id, MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
 {
 }
 
 ts::DTGPreferredNameIdentifierDescriptor::DTGPreferredNameIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractPreferredNameIdentifierDescriptor(duck, desc, MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+{
+}
+
+ts::DTGPreferredNameIdentifierDescriptor::~DTGPreferredNameIdentifierDescriptor()
 {
 }

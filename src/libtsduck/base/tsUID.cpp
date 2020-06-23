@@ -53,7 +53,7 @@ TS_DEFINE_SINGLETON (ts::UID);
 // Default constructor
 //----------------------------------------------------------------------------
 
-ts::UID::UID () :
+ts::UID::UID() :
     _mutex(),
     _next_uid((uint64_t(CurrentProcessId()) << 40) | ((uint64_t(Time::CurrentUTC() - Time::Epoch) & 0x00FFFFFF) << 16))
 {

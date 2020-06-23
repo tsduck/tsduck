@@ -93,7 +93,7 @@ void ts::duck::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, tlv
     SafePtr<Error> errmsg(new Error);
 
     // Convert general TLV error code into protocol error_status
-    switch (fact.errorStatus ()) {
+    switch (fact.errorStatus()) {
         case tlv::OK: // should not happen
         case tlv::InvalidMessage:
             errmsg->error_status = Errors::inv_message;

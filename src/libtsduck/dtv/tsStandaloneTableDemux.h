@@ -55,7 +55,7 @@ namespace ts {
         //! Get the number of demuxed tables so far.
         //! @return The number of demuxed tables so far.
         //!
-        size_t tableCount() const { return _tables.size (); }
+        size_t tableCount() const { return _tables.size(); }
 
         //!
         //! Get a pointer to a demuxed table.

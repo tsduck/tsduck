@@ -58,5 +58,10 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //!
         EacemPreferredNameListDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~EacemPreferredNameListDescriptor();
     };
 }

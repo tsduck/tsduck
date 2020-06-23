@@ -58,5 +58,10 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //!
         DTGPreferredNameListDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~DTGPreferredNameListDescriptor();
     };
 }

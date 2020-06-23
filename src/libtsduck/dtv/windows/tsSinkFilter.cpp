@@ -223,8 +223,8 @@ STDMETHODIMP ts::SinkFilter::QueryFilterInfo(::FILTER_INFO* pInfo)
         return E_POINTER;
     }
     // Name should be the one specified by JoinFilterGraph
-    assert (sizeof (pInfo->achName) >= sizeof (FILTER_NAME));
-    ::memcpy(pInfo->achName, FILTER_NAME, sizeof (FILTER_NAME));  // Flawfinder: ignore: memcpy()
+    assert(sizeof(pInfo->achName) >= sizeof(FILTER_NAME));
+    ::memcpy(pInfo->achName, FILTER_NAME, sizeof(FILTER_NAME));  // Flawfinder: ignore: memcpy()
     pInfo->pGraph = _graph;
     if (_graph != NULL) {
         _graph->AddRef();
@@ -325,7 +325,7 @@ size_t ts::SinkFilter::Read(void* buffer, size_t buffer_size, MilliSecond timeou
             if (remain < buffer_size) {
                 // Some data were already read for the user, this call will succeed.
                 // Push eof back in queue so that eof will be reported next time.
-                _queue.push_front (NULL);
+                _queue.push_front(NULL);
             }
             // Stop filling the buffer
             break;
@@ -457,7 +457,7 @@ STDMETHODIMP ts::SinkPin::QueryInterface(REFIID riid, void** ppv)
     else if (riid == ::IID_IMemInputPin) {
         TRACE(1, u"SinkPin::QueryInterface: IMemInputPin, OK");
         AddRef();
-        *ppv = static_cast<::IMemInputPin*> (this);
+        *ppv = static_cast<::IMemInputPin*>(this);
         return S_OK;
     }
     else {
@@ -495,7 +495,7 @@ STDMETHODIMP ts::SinkPin::Connect(::IPin* pReceivePin, const ::AM_MEDIA_TYPE* pm
     if (_partner != NULL) {
         return VFW_E_ALREADY_CONNECTED;
     }
-    if (pmt != NULL && QueryAccept (pmt) != S_OK) {
+    if (pmt != NULL && QueryAccept(pmt) != S_OK) {
         return VFW_E_TYPE_NOT_ACCEPTED; // unsupported media type
     }
     TRACE(1, u"SinkPin::Connect: OK");
@@ -523,9 +523,9 @@ STDMETHODIMP ts::SinkPin::ReceiveConnection(::IPin* pConnector, const ::AM_MEDIA
 
     // Get transport packet format
     if (pmt->subtype == ::MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE && pmt->formattype == ::FORMAT_None && pmt->pbFormat != NULL) {
-        assert (pmt->cbFormat >= sizeof (::MPEG2_TRANSPORT_STRIDE)); // already checked in QueryAccept
+        assert(pmt->cbFormat >= sizeof(::MPEG2_TRANSPORT_STRIDE)); // already checked in QueryAccept
         // This is a transport stride with specific data
-        ::memcpy(&_filter->_stride, pmt->pbFormat, sizeof (_filter->_stride));  // Flawfinder: ignore: memcpy()
+        ::memcpy(&_filter->_stride, pmt->pbFormat, sizeof(_filter->_stride));  // Flawfinder: ignore: memcpy()
         _report.debug(u"new connection transport stride: offset = %d, packet length = %d, stride = %d",
                       {_filter->_stride.dwOffset,
                        _filter->_stride.dwPacketLength = PKT_SIZE,
@@ -566,7 +566,7 @@ STDMETHODIMP ts::SinkPin::Disconnect()
     return S_OK;
 }
 
-STDMETHODIMP ts::SinkPin::ConnectedTo (::IPin** pPin)
+STDMETHODIMP ts::SinkPin::ConnectedTo(::IPin** pPin)
 {
     TRACE(1, u"SinkPin::ConnectedTo");
     if (pPin == NULL) {
@@ -583,7 +583,7 @@ STDMETHODIMP ts::SinkPin::ConnectedTo (::IPin** pPin)
     }
 }
 
-STDMETHODIMP ts::SinkPin::ConnectionMediaType (::AM_MEDIA_TYPE* pmt)
+STDMETHODIMP ts::SinkPin::ConnectionMediaType(::AM_MEDIA_TYPE* pmt)
 {
     TRACE(1, u"SinkPin::ConnectionMediaType");
     if (pmt == NULL) {
@@ -593,11 +593,11 @@ STDMETHODIMP ts::SinkPin::ConnectionMediaType (::AM_MEDIA_TYPE* pmt)
         return VFW_E_NOT_CONNECTED;
     }
     else {
-        return CopyMediaType (*pmt, _cur_media_type);
+        return CopyMediaType(*pmt, _cur_media_type);
     }
 }
 
-STDMETHODIMP ts::SinkPin::QueryPinInfo (::PIN_INFO* pInfo)
+STDMETHODIMP ts::SinkPin::QueryPinInfo(::PIN_INFO* pInfo)
 {
     TRACE(1, u"SinkPin::QueryPinInfo");
     if (pInfo == NULL) {
@@ -608,12 +608,12 @@ STDMETHODIMP ts::SinkPin::QueryPinInfo (::PIN_INFO* pInfo)
     if (_filter != NULL) {
         _filter->AddRef();
     }
-    assert (sizeof (pInfo->achName) >= sizeof (PIN_NAME));
-    ::memcpy(pInfo->achName, PIN_NAME, sizeof (PIN_NAME));  // Flawfinder: ignore: memcpy()
+    assert(sizeof(pInfo->achName) >= sizeof(PIN_NAME));
+    ::memcpy(pInfo->achName, PIN_NAME, sizeof(PIN_NAME));  // Flawfinder: ignore: memcpy()
     return S_OK;
 }
 
-STDMETHODIMP ts::SinkPin::QueryDirection (::PIN_DIRECTION* pPinDir)
+STDMETHODIMP ts::SinkPin::QueryDirection(::PIN_DIRECTION* pPinDir)
 {
     TRACE(1, u"SinkPin::QueryDirection");
     if (pPinDir == NULL) {
@@ -625,22 +625,22 @@ STDMETHODIMP ts::SinkPin::QueryDirection (::PIN_DIRECTION* pPinDir)
     }
 }
 
-STDMETHODIMP ts::SinkPin::QueryId (::LPWSTR* Id)
+STDMETHODIMP ts::SinkPin::QueryId(::LPWSTR* Id)
 {
     TRACE(1, u"SinkPin::QueryId");
     if (Id == NULL) {
         return E_POINTER;
     }
-    else if ((*Id = reinterpret_cast<::WCHAR*> (::CoTaskMemAlloc (sizeof (PIN_ID)))) == NULL) {
+    else if ((*Id = reinterpret_cast<::WCHAR*>(::CoTaskMemAlloc(sizeof(PIN_ID)))) == NULL) {
         return E_OUTOFMEMORY;
     }
     else {
-        ::memcpy(*Id, PIN_ID, sizeof (PIN_ID));  // Flawfinder: ignore: memcpy()
+        ::memcpy(*Id, PIN_ID, sizeof(PIN_ID));  // Flawfinder: ignore: memcpy()
         return S_OK;
     }
 }
 
-STDMETHODIMP ts::SinkPin::QueryAccept (const ::AM_MEDIA_TYPE* pmt)
+STDMETHODIMP ts::SinkPin::QueryAccept(const ::AM_MEDIA_TYPE* pmt)
 {
     TRACE(1, u"SinkPin::QueryAccept, type %s, subtype %s, format type %s, format size %d, content: %s",
           {NameGUID(pmt->majortype),
@@ -661,10 +661,10 @@ STDMETHODIMP ts::SinkPin::QueryAccept (const ::AM_MEDIA_TYPE* pmt)
         return S_FALSE; // unsupported subtype
     }
     if (pmt->subtype == ::MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE && pmt->formattype == ::FORMAT_None && pmt->pbFormat != NULL) {
-        if (pmt->cbFormat < sizeof (::MPEG2_TRANSPORT_STRIDE)) {
+        if (pmt->cbFormat < sizeof(::MPEG2_TRANSPORT_STRIDE)) {
             return S_FALSE; // format structure too short
         }
-        const ::MPEG2_TRANSPORT_STRIDE* ts = reinterpret_cast<const ::MPEG2_TRANSPORT_STRIDE*> (pmt->pbFormat);
+        const ::MPEG2_TRANSPORT_STRIDE* ts = reinterpret_cast<const ::MPEG2_TRANSPORT_STRIDE*>(pmt->pbFormat);
         if (ts->dwPacketLength != ts::PKT_SIZE) {
             return S_FALSE; // invalid packet size
         }
@@ -672,13 +672,13 @@ STDMETHODIMP ts::SinkPin::QueryAccept (const ::AM_MEDIA_TYPE* pmt)
     return S_OK;
 }
 
-STDMETHODIMP ts::SinkPin::EnumMediaTypes (::IEnumMediaTypes** ppEnum)
+STDMETHODIMP ts::SinkPin::EnumMediaTypes(::IEnumMediaTypes** ppEnum)
 {
     TRACE(1, u"SinkPin::EnumMediaTypes");
     if (ppEnum == NULL) {
         return E_POINTER;
     }
-    else if ((*ppEnum = new SinkEnumMediaTypes (_report, NULL)) == NULL) {
+    else if ((*ppEnum = new SinkEnumMediaTypes(_report, NULL)) == NULL) {
         return E_OUTOFMEMORY;
     }
     else {
@@ -686,23 +686,23 @@ STDMETHODIMP ts::SinkPin::EnumMediaTypes (::IEnumMediaTypes** ppEnum)
     }
 }
 
-STDMETHODIMP ts::SinkPin::QueryInternalConnections (::IPin** apPin, ::ULONG *nPin)
+STDMETHODIMP ts::SinkPin::QueryInternalConnections(::IPin** apPin, ::ULONG *nPin)
 {
     TRACE(1, u"SinkPin::QueryInternalConnections");
     return E_NOTIMPL; // not implemented
 }
 
-STDMETHODIMP ts::SinkPin::EndOfStream ()
+STDMETHODIMP ts::SinkPin::EndOfStream()
 {
     TRACE(1, u"SinkPin::EndOfStream");
     // Enqueue a NULL pointer instead of an ::IMediaSample*
-    GuardCondition lock (_filter->_mutex, _filter->_not_empty);
-    _filter->_queue.push_back (NULL);
-    lock.signal ();
+    GuardCondition lock(_filter->_mutex, _filter->_not_empty);
+    _filter->_queue.push_back(NULL);
+    lock.signal();
     return S_OK;
 }
 
-STDMETHODIMP ts::SinkPin::BeginFlush ()
+STDMETHODIMP ts::SinkPin::BeginFlush()
 {
     TRACE(1, u"SinkPin::BeginFlush");
     _flushing = true;
@@ -710,7 +710,7 @@ STDMETHODIMP ts::SinkPin::BeginFlush ()
     return S_OK;
 }
 
-STDMETHODIMP ts::SinkPin::EndFlush ()
+STDMETHODIMP ts::SinkPin::EndFlush()
 {
     TRACE(1, u"SinkPin::EndFlush");
     _flushing = false;
@@ -719,7 +719,7 @@ STDMETHODIMP ts::SinkPin::EndFlush ()
     return S_OK;
 }
 
-STDMETHODIMP ts::SinkPin::NewSegment (::REFERENCE_TIME tStart, ::REFERENCE_TIME tStop, double dRate)
+STDMETHODIMP ts::SinkPin::NewSegment(::REFERENCE_TIME tStart, ::REFERENCE_TIME tStop, double dRate)
 {
     TRACE(1, u"SinkPin::NewSegment");
     // We don't care about time info
@@ -728,43 +728,43 @@ STDMETHODIMP ts::SinkPin::NewSegment (::REFERENCE_TIME tStart, ::REFERENCE_TIME 
 
 // Implementation of ::IMemInputPin
 
-STDMETHODIMP ts::SinkPin::GetAllocator (::IMemAllocator** ppAllocator)
+STDMETHODIMP ts::SinkPin::GetAllocator(::IMemAllocator** ppAllocator)
 {
     TRACE(1, u"SinkPin::GetAllocator");
     return VFW_E_NO_ALLOCATOR;  // we don't provide allocators
 }
 
-STDMETHODIMP ts::SinkPin::NotifyAllocator (::IMemAllocator* pAllocator, ::BOOL bReadOnly)
+STDMETHODIMP ts::SinkPin::NotifyAllocator(::IMemAllocator* pAllocator, ::BOOL bReadOnly)
 {
     TRACE(1, u"SinkPin::NotifyAllocator");
     return S_OK; // we don't care
 }
 
-STDMETHODIMP ts::SinkPin::GetAllocatorRequirements (::ALLOCATOR_PROPERTIES* pProps)
+STDMETHODIMP ts::SinkPin::GetAllocatorRequirements(::ALLOCATOR_PROPERTIES* pProps)
 {
     TRACE(1, u"SinkPin::GetAllocatorRequirements");
     return E_NOTIMPL; // we don't have any requirement
 }
 
-STDMETHODIMP ts::SinkPin::ReceiveCanBlock ()
+STDMETHODIMP ts::SinkPin::ReceiveCanBlock()
 {
     TRACE(1, u"SinkPin::ReceiveCanBlock");
     return S_FALSE; // we never block
 }
 
-STDMETHODIMP ts::SinkPin::ReceiveMultiple (::IMediaSample** pSamples, long nSamples, long* nSamplesProcessed)
+STDMETHODIMP ts::SinkPin::ReceiveMultiple(::IMediaSample** pSamples, long nSamples, long* nSamplesProcessed)
 {
     TRACE(2, u"SinkPin::ReceiveMultiple: samples count: %d", {nSamples});
     for (*nSamplesProcessed = 0; *nSamplesProcessed < nSamples; (*nSamplesProcessed)++) {
-        ::HRESULT hr = Receive (pSamples[*nSamplesProcessed]);
-        if (FAILED (hr)) {
+        ::HRESULT hr = Receive(pSamples[*nSamplesProcessed]);
+        if (FAILED(hr)) {
             return hr;
         }
     }
     return S_OK;
 }
 
-STDMETHODIMP ts::SinkPin::Receive (::IMediaSample* pSample)
+STDMETHODIMP ts::SinkPin::Receive(::IMediaSample* pSample)
 {
     IF_TRACE(const long length = pSample->GetActualDataLength();)
     TRACE(2, u"SinkPin::Receive: actual data length: %d bytes, %d packets + %d bytes", {length, length / PKT_SIZE, length % PKT_SIZE});
@@ -806,10 +806,10 @@ const ::GUID ts::SinkPin::MEDIA_SUBTYPES [MAX_MEDIA_SUBTYPES] = {
 // SinkEnumMediaTypes, enumerator returned by ::IPin::EnumMediaTypes
 //-----------------------------------------------------------------------------
 
-ts::SinkEnumMediaTypes::SinkEnumMediaTypes (Report& report, const SinkEnumMediaTypes* cloned) :
-    _report (report),
-    _ref_count (1),
-    _next (cloned == NULL ? 0 : cloned->_next)
+ts::SinkEnumMediaTypes::SinkEnumMediaTypes(Report& report, const SinkEnumMediaTypes* cloned) :
+    _report(report),
+    _ref_count(1),
+    _next(cloned == NULL ? 0 : cloned->_next)
 {
     TRACE(2, u"SinkEnumMediaTypes constructor, ref=%d", {_ref_count});
 }
@@ -821,12 +821,12 @@ ts::SinkEnumMediaTypes::~SinkEnumMediaTypes()
 
 // Implementation of ::IUnknown
 
-STDMETHODIMP ts::SinkEnumMediaTypes::QueryInterface (REFIID riid, void** ppv)
+STDMETHODIMP ts::SinkEnumMediaTypes::QueryInterface(REFIID riid, void** ppv)
 {
     if (riid == ::IID_IUnknown || riid == ::IID_IEnumMediaTypes) {
         TRACE(1, u"SinkEnumMediaTypes::QueryInterface: OK");
         AddRef();
-        *ppv = static_cast<::IEnumMediaTypes*> (this);
+        *ppv = static_cast<::IEnumMediaTypes*>(this);
         return S_OK;
     }
     else {
@@ -838,14 +838,14 @@ STDMETHODIMP ts::SinkEnumMediaTypes::QueryInterface (REFIID riid, void** ppv)
 
 STDMETHODIMP_(::ULONG) ts::SinkEnumMediaTypes::AddRef()
 {
-    ::LONG c = ::InterlockedIncrement (&_ref_count);
+    ::LONG c = ::InterlockedIncrement(&_ref_count);
     TRACE(2, u"SinkEnumMediaTypes::AddRef, ref=%d", {c});
     return c;
 }
 
 STDMETHODIMP_(::ULONG) ts::SinkEnumMediaTypes::Release()
 {
-    ::LONG c = ::InterlockedDecrement (&_ref_count);
+    ::LONG c = ::InterlockedDecrement(&_ref_count);
     TRACE(2, u"SinkEnumMediaTypes::Release, ref=%d", {c});
     if (c == 0) {
         delete this;
@@ -855,7 +855,7 @@ STDMETHODIMP_(::ULONG) ts::SinkEnumMediaTypes::Release()
 
 // Implementation of ::IEnumMediaTypes
 
-STDMETHODIMP ts::SinkEnumMediaTypes::Next (::ULONG cMediaTypes, ::AM_MEDIA_TYPE** ppMediaTypes, ::ULONG* pcFetched)
+STDMETHODIMP ts::SinkEnumMediaTypes::Next(::ULONG cMediaTypes, ::AM_MEDIA_TYPE** ppMediaTypes, ::ULONG* pcFetched)
 {
     TRACE(1, u"SinkEnumMediaTypes::Next");
     if (ppMediaTypes == NULL || (pcFetched == NULL && cMediaTypes > 1)) {
@@ -863,11 +863,11 @@ STDMETHODIMP ts::SinkEnumMediaTypes::Next (::ULONG cMediaTypes, ::AM_MEDIA_TYPE*
     }
     ::ULONG copied;
     for (copied = 0; copied < cMediaTypes && _next < SinkPin::MAX_MEDIA_SUBTYPES; copied++) {
-        ppMediaTypes[copied] = reinterpret_cast<::AM_MEDIA_TYPE*> (::CoTaskMemAlloc (sizeof (::AM_MEDIA_TYPE)));
+        ppMediaTypes[copied] = reinterpret_cast<::AM_MEDIA_TYPE*>(::CoTaskMemAlloc(sizeof(::AM_MEDIA_TYPE)));
         if (ppMediaTypes[copied] == NULL) {
             return E_OUTOFMEMORY;
         }
-        InitMediaType (*ppMediaTypes[copied]);
+        InitMediaType(*ppMediaTypes[copied]);
         ppMediaTypes[copied]->majortype = ::MEDIATYPE_Stream;
         ppMediaTypes[copied]->subtype = SinkPin::MEDIA_SUBTYPES [_next];
         ppMediaTypes[copied]->formattype = ::FORMAT_None;
@@ -879,9 +879,9 @@ STDMETHODIMP ts::SinkEnumMediaTypes::Next (::ULONG cMediaTypes, ::AM_MEDIA_TYPE*
     return copied == cMediaTypes ? S_OK : S_FALSE; // both are success
 }
 
-STDMETHODIMP ts::SinkEnumMediaTypes::Skip (::ULONG cMediaTypes)
+STDMETHODIMP ts::SinkEnumMediaTypes::Skip(::ULONG cMediaTypes)
 {
-    TRACE(1, u"SinkEnumMediaTypes::Skip (%d)", {cMediaTypes});
+    TRACE(1, u"SinkEnumMediaTypes::Skip(%d)", {cMediaTypes});
     _next = std::max(0, std::min(SinkPin::MAX_MEDIA_SUBTYPES, _next + int(cMediaTypes)));
     return _next < SinkPin::MAX_MEDIA_SUBTYPES ? S_OK : S_FALSE;
 }
@@ -893,13 +893,13 @@ STDMETHODIMP ts::SinkEnumMediaTypes::Reset()
     return S_OK;
 }
 
-STDMETHODIMP ts::SinkEnumMediaTypes::Clone (::IEnumMediaTypes** ppEnum)
+STDMETHODIMP ts::SinkEnumMediaTypes::Clone(::IEnumMediaTypes** ppEnum)
 {
     TRACE(1, u"SinkEnumMediaTypes::Clone");
     if (ppEnum == NULL) {
         return E_POINTER;
     }
-    else if ((*ppEnum = new SinkEnumMediaTypes (_report, this)) == NULL) {
+    else if ((*ppEnum = new SinkEnumMediaTypes(_report, this)) == NULL) {
         return E_OUTOFMEMORY;
     }
     else {
@@ -912,11 +912,11 @@ STDMETHODIMP ts::SinkEnumMediaTypes::Clone (::IEnumMediaTypes** ppEnum)
 // SinkEnumPins, enumerator returned by ::IBaseFilter::EnumPins
 //-----------------------------------------------------------------------------
 
-ts::SinkEnumPins::SinkEnumPins (Report& report, SinkFilter* filter, const SinkEnumPins* cloned) :
-    _report (report),
-    _ref_count (1),
-    _filter (filter),
-    _done (cloned == NULL ? false : cloned->_done)
+ts::SinkEnumPins::SinkEnumPins(Report& report, SinkFilter* filter, const SinkEnumPins* cloned) :
+    _report(report),
+    _ref_count(1),
+    _filter(filter),
+    _done(cloned == NULL ? false : cloned->_done)
 {
     TRACE(2, u"SinkEnumPins constructor, ref=%d, done=%s", {_ref_count, UString::TrueFalse(_done)});
     _filter->AddRef();
@@ -930,12 +930,12 @@ ts::SinkEnumPins::~SinkEnumPins()
 
 // Implementation of ::IUnknown
 
-STDMETHODIMP ts::SinkEnumPins::QueryInterface (REFIID riid, void** ppv)
+STDMETHODIMP ts::SinkEnumPins::QueryInterface(REFIID riid, void** ppv)
 {
     if (riid == ::IID_IUnknown || riid == ::IID_IEnumPins) {
         TRACE(1, u"SinkEnumPins::QueryInterface: OK");
         AddRef();
-        *ppv = static_cast<::IEnumPins*> (this);
+        *ppv = static_cast<::IEnumPins*>(this);
         return S_OK;
     }
     else {
@@ -947,14 +947,14 @@ STDMETHODIMP ts::SinkEnumPins::QueryInterface (REFIID riid, void** ppv)
 
 STDMETHODIMP_(::ULONG) ts::SinkEnumPins::AddRef()
 {
-    ::LONG c = ::InterlockedIncrement (&_ref_count);
+    ::LONG c = ::InterlockedIncrement(&_ref_count);
     TRACE(2, u"SinkEnumPins::AddRef, ref=%d", {c});
     return c;
 }
 
 STDMETHODIMP_(::ULONG) ts::SinkEnumPins::Release()
 {
-    ::LONG c = ::InterlockedDecrement (&_ref_count);
+    ::LONG c = ::InterlockedDecrement(&_ref_count);
     TRACE(2, u"SinkEnumPins::Release, ref=%d", {c});
     if (c == 0) {
         delete this;
@@ -964,7 +964,7 @@ STDMETHODIMP_(::ULONG) ts::SinkEnumPins::Release()
 
 // Implementation of ::IEnumPins
 
-STDMETHODIMP ts::SinkEnumPins::Next (::ULONG cPins, ::IPin** ppPins, ::ULONG* pcFetched)
+STDMETHODIMP ts::SinkEnumPins::Next(::ULONG cPins, ::IPin** ppPins, ::ULONG* pcFetched)
 {
     TRACE(1, u"SinkEnumPins::Next");
     if (ppPins == NULL || (pcFetched == NULL && cPins > 1)) {
@@ -982,29 +982,29 @@ STDMETHODIMP ts::SinkEnumPins::Next (::ULONG cPins, ::IPin** ppPins, ::ULONG* pc
     return copied == cPins ? S_OK : S_FALSE; // both are success
 }
 
-STDMETHODIMP ts::SinkEnumPins::Skip (::ULONG cPins)
+STDMETHODIMP ts::SinkEnumPins::Skip(::ULONG cPins)
 {
-    TRACE(1, u"SinkEnumPins::Skip (%d)", {cPins});
+    TRACE(1, u"SinkEnumPins::Skip(%d)", {cPins});
     if (cPins > 0) {
         _done = true;
     }
     return _done ? S_FALSE : S_OK;
 }
 
-STDMETHODIMP ts::SinkEnumPins::Reset ()
+STDMETHODIMP ts::SinkEnumPins::Reset()
 {
     TRACE(1, u"SinkEnumPins::Reset");
     _done = false;
     return S_OK;
 }
 
-STDMETHODIMP ts::SinkEnumPins::Clone (::IEnumPins** ppEnum)
+STDMETHODIMP ts::SinkEnumPins::Clone(::IEnumPins** ppEnum)
 {
     TRACE(1, u"SinkEnumPins::Clone");
     if (ppEnum == NULL) {
         return E_POINTER;
     }
-    else if ((*ppEnum = new SinkEnumPins (_report, _filter, this)) == NULL) {
+    else if ((*ppEnum = new SinkEnumPins(_report, _filter, this)) == NULL) {
         return E_OUTOFMEMORY;
     }
     else {

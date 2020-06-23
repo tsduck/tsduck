@@ -49,70 +49,70 @@ ts::ecmgscs::Protocol::Protocol() :
     tlv::Protocol (ts::ecmgscs::CURRENT_VERSION)
 {
     // Define the syntax of all commands:
-    // add (cmd_tag, param_tag, min_size, max_size, min_count, max_count)
+    // add(cmd_tag, param_tag, min_size, max_size, min_count, max_count)
 
-    add (Tags::channel_setup,  Tags::Super_CAS_id,           4, 4, 1, 1);
-    add (Tags::channel_setup,  Tags::ECM_channel_id,         2, 2, 1, 1);
+    add(Tags::channel_setup,  Tags::Super_CAS_id,           4, 4, 1, 1);
+    add(Tags::channel_setup,  Tags::ECM_channel_id,         2, 2, 1, 1);
 
-    add (Tags::channel_test,   Tags::ECM_channel_id,         2, 2, 1, 1);
+    add(Tags::channel_test,   Tags::ECM_channel_id,         2, 2, 1, 1);
 
-    add (Tags::channel_status, Tags::ECM_channel_id,         2, 2, 1, 1);
-    add (Tags::channel_status, Tags::section_TSpkt_flag,     1, 1, 1, 1);
-    add (Tags::channel_status, Tags::AC_delay_start,         2, 2, 0, 1);
-    add (Tags::channel_status, Tags::AC_delay_stop,          2, 2, 0, 1);
-    add (Tags::channel_status, Tags::delay_start,            2, 2, 1, 1);
-    add (Tags::channel_status, Tags::delay_stop,             2, 2, 1, 1);
-    add (Tags::channel_status, Tags::transition_delay_start, 2, 2, 0, 1);
-    add (Tags::channel_status, Tags::transition_delay_stop,  2, 2, 0, 1);
-    add (Tags::channel_status, Tags::ECM_rep_period,         2, 2, 1, 1);
-    add (Tags::channel_status, Tags::max_streams,            2, 2, 1, 1);
-    add (Tags::channel_status, Tags::min_CP_duration,        2, 2, 1, 1);
-    add (Tags::channel_status, Tags::lead_CW,                1, 1, 1, 1);
-    add (Tags::channel_status, Tags::CW_per_msg,             1, 1, 1, 1);
-    add (Tags::channel_status, Tags::max_comp_time,          2, 2, 1, 1);
+    add(Tags::channel_status, Tags::ECM_channel_id,         2, 2, 1, 1);
+    add(Tags::channel_status, Tags::section_TSpkt_flag,     1, 1, 1, 1);
+    add(Tags::channel_status, Tags::AC_delay_start,         2, 2, 0, 1);
+    add(Tags::channel_status, Tags::AC_delay_stop,          2, 2, 0, 1);
+    add(Tags::channel_status, Tags::delay_start,            2, 2, 1, 1);
+    add(Tags::channel_status, Tags::delay_stop,             2, 2, 1, 1);
+    add(Tags::channel_status, Tags::transition_delay_start, 2, 2, 0, 1);
+    add(Tags::channel_status, Tags::transition_delay_stop,  2, 2, 0, 1);
+    add(Tags::channel_status, Tags::ECM_rep_period,         2, 2, 1, 1);
+    add(Tags::channel_status, Tags::max_streams,            2, 2, 1, 1);
+    add(Tags::channel_status, Tags::min_CP_duration,        2, 2, 1, 1);
+    add(Tags::channel_status, Tags::lead_CW,                1, 1, 1, 1);
+    add(Tags::channel_status, Tags::CW_per_msg,             1, 1, 1, 1);
+    add(Tags::channel_status, Tags::max_comp_time,          2, 2, 1, 1);
 
-    add (Tags::channel_close,  Tags::ECM_channel_id,         2, 2, 1, 1);
+    add(Tags::channel_close,  Tags::ECM_channel_id,         2, 2, 1, 1);
 
-    add (Tags::channel_error,  Tags::ECM_channel_id,         2, 2, 1, 1);
-    add (Tags::channel_error,  Tags::error_status,           2, 2, 1, 0xFFFF);
-    add (Tags::channel_error,  Tags::error_information,      2, 2, 0, 0xFFFF);
+    add(Tags::channel_error,  Tags::ECM_channel_id,         2, 2, 1, 1);
+    add(Tags::channel_error,  Tags::error_status,           2, 2, 1, 0xFFFF);
+    add(Tags::channel_error,  Tags::error_information,      2, 2, 0, 0xFFFF);
 
-    add (Tags::stream_setup,   Tags::ECM_channel_id,         2, 2, 1, 1);
-    add (Tags::stream_setup,   Tags::ECM_stream_id,          2, 2, 1, 1);
-    add (Tags::stream_setup,   Tags::ECM_id,                 2, 2, 1, 1);
-    add (Tags::stream_setup,   Tags::nominal_CP_duration,    2, 2, 1, 1);
+    add(Tags::stream_setup,   Tags::ECM_channel_id,         2, 2, 1, 1);
+    add(Tags::stream_setup,   Tags::ECM_stream_id,          2, 2, 1, 1);
+    add(Tags::stream_setup,   Tags::ECM_id,                 2, 2, 1, 1);
+    add(Tags::stream_setup,   Tags::nominal_CP_duration,    2, 2, 1, 1);
 
-    add (Tags::stream_test,    Tags::ECM_channel_id,         2, 2, 1, 1);
-    add (Tags::stream_test,    Tags::ECM_stream_id,          2, 2, 1, 1);
+    add(Tags::stream_test,    Tags::ECM_channel_id,         2, 2, 1, 1);
+    add(Tags::stream_test,    Tags::ECM_stream_id,          2, 2, 1, 1);
 
-    add (Tags::stream_status,  Tags::ECM_channel_id,                2, 2, 1, 1);
-    add (Tags::stream_status,  Tags::ECM_stream_id,                 2, 2, 1, 1);
-    add (Tags::stream_status,  Tags::ECM_id,                        2, 2, 1, 1);
-    add (Tags::stream_status,  Tags::access_criteria_transfer_mode, 1, 1, 1, 1);
+    add(Tags::stream_status,  Tags::ECM_channel_id,                2, 2, 1, 1);
+    add(Tags::stream_status,  Tags::ECM_stream_id,                 2, 2, 1, 1);
+    add(Tags::stream_status,  Tags::ECM_id,                        2, 2, 1, 1);
+    add(Tags::stream_status,  Tags::access_criteria_transfer_mode, 1, 1, 1, 1);
 
-    add (Tags::stream_close_request,  Tags::ECM_channel_id,  2, 2, 1, 1);
-    add (Tags::stream_close_request,  Tags::ECM_stream_id,   2, 2, 1, 1);
+    add(Tags::stream_close_request,  Tags::ECM_channel_id,  2, 2, 1, 1);
+    add(Tags::stream_close_request,  Tags::ECM_stream_id,   2, 2, 1, 1);
 
-    add (Tags::stream_close_response, Tags::ECM_channel_id,  2, 2, 1, 1);
-    add (Tags::stream_close_response, Tags::ECM_stream_id,   2, 2, 1, 1);
+    add(Tags::stream_close_response, Tags::ECM_channel_id,  2, 2, 1, 1);
+    add(Tags::stream_close_response, Tags::ECM_stream_id,   2, 2, 1, 1);
 
-    add (Tags::stream_error,   Tags::ECM_channel_id,         2, 2, 1, 1);
-    add (Tags::stream_error,   Tags::ECM_stream_id,          2, 2, 1, 1);
-    add (Tags::stream_error,   Tags::error_status,           2, 2, 1, 0xFFFF);
-    add (Tags::stream_error,   Tags::error_information,      2, 2, 0, 0xFFFF);
+    add(Tags::stream_error,   Tags::ECM_channel_id,         2, 2, 1, 1);
+    add(Tags::stream_error,   Tags::ECM_stream_id,          2, 2, 1, 1);
+    add(Tags::stream_error,   Tags::error_status,           2, 2, 1, 0xFFFF);
+    add(Tags::stream_error,   Tags::error_information,      2, 2, 0, 0xFFFF);
 
-    add (Tags::CW_provision,   Tags::ECM_channel_id,    2, 2,      1, 1);
-    add (Tags::CW_provision,   Tags::ECM_stream_id,     2, 2,      1, 1);
-    add (Tags::CW_provision,   Tags::CP_number,         2, 2,      1, 1);
-    add (Tags::CW_provision,   Tags::CW_encryption,     0, 0xFFFF, 0, 1);
-    add (Tags::CW_provision,   Tags::CP_CW_combination, 2, 0xFFFF, 0, 0xFFFF);
-    add (Tags::CW_provision,   Tags::CP_duration,       2, 2,      0, 1);
-    add (Tags::CW_provision,   Tags::access_criteria,   0, 0xFFFF, 0, 1);
+    add(Tags::CW_provision,   Tags::ECM_channel_id,    2, 2,      1, 1);
+    add(Tags::CW_provision,   Tags::ECM_stream_id,     2, 2,      1, 1);
+    add(Tags::CW_provision,   Tags::CP_number,         2, 2,      1, 1);
+    add(Tags::CW_provision,   Tags::CW_encryption,     0, 0xFFFF, 0, 1);
+    add(Tags::CW_provision,   Tags::CP_CW_combination, 2, 0xFFFF, 0, 0xFFFF);
+    add(Tags::CW_provision,   Tags::CP_duration,       2, 2,      0, 1);
+    add(Tags::CW_provision,   Tags::access_criteria,   0, 0xFFFF, 0, 1);
 
-    add (Tags::ECM_response,   Tags::ECM_channel_id,    2, 2,      1, 1);
-    add (Tags::ECM_response,   Tags::ECM_stream_id,     2, 2,      1, 1);
-    add (Tags::ECM_response,   Tags::CP_number,         2, 2,      1, 1);
-    add (Tags::ECM_response,   Tags::ECM_datagram,      0, 0xFFFF, 1, 1);
+    add(Tags::ECM_response,   Tags::ECM_channel_id,    2, 2,      1, 1);
+    add(Tags::ECM_response,   Tags::ECM_stream_id,     2, 2,      1, 1);
+    add(Tags::ECM_response,   Tags::CP_number,         2, 2,      1, 1);
+    add(Tags::ECM_response,   Tags::ECM_datagram,      0, 0xFFFF, 1, 1);
 }
 
 
@@ -122,7 +122,7 @@ ts::ecmgscs::Protocol::Protocol() :
 
 void ts::ecmgscs::Protocol::factory (const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
 {
-    switch (fact.commandTag ()) {
+    switch (fact.commandTag()) {
         case Tags::channel_setup:
             msg = new ChannelSetup (fact);
             break;
@@ -197,7 +197,7 @@ void ts::ecmgscs::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, 
 
     // Convert general TLV error code into ECMG <=> SCS error_status
     uint16_t status;
-    switch (fact.errorStatus ()) {
+    switch (fact.errorStatus()) {
         case tlv::OK: // should not happen
         case tlv::InvalidMessage:
             status = Errors::inv_message;
@@ -225,7 +225,7 @@ void ts::ecmgscs::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, 
 
     // Copy error_status and error_information into response
     errmsg->error_status.push_back (status);
-    errmsg->error_information.push_back (fact.errorInformation ());
+    errmsg->error_information.push_back (fact.errorInformation());
 
     // Transfer ownership of safe ptr
     msg = errmsg.release();
@@ -236,7 +236,7 @@ void ts::ecmgscs::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, 
 // channel_setup
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::ChannelSetup::ChannelSetup () :
+ts::ecmgscs::ChannelSetup::ChannelSetup() :
     ChannelMessage (ecmgscs::Protocol::Instance()->version(), Tags::channel_setup),
     Super_CAS_id   (0)
 {
@@ -252,8 +252,8 @@ ts::ecmgscs::ChannelSetup::ChannelSetup (const tlv::MessageFactory& fact) :
 
 void ts::ecmgscs::ChannelSetup::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::ECM_channel_id, channel_id);
-    fact.put (Tags::Super_CAS_id,   Super_CAS_id);
+    fact.put(Tags::ECM_channel_id, channel_id);
+    fact.put(Tags::Super_CAS_id,   Super_CAS_id);
 }
 
 ts::UString ts::ecmgscs::ChannelSetup::dump (size_t indent) const
@@ -269,7 +269,7 @@ ts::UString ts::ecmgscs::ChannelSetup::dump (size_t indent) const
 // channel_test
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::ChannelTest::ChannelTest () :
+ts::ecmgscs::ChannelTest::ChannelTest() :
     ChannelMessage (ecmgscs::Protocol::Instance()->version(), Tags::channel_test)
 {
 }
@@ -283,7 +283,7 @@ ts::ecmgscs::ChannelTest::ChannelTest (const tlv::MessageFactory& fact) :
 
 void ts::ecmgscs::ChannelTest::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::ECM_channel_id, channel_id);
+    fact.put(Tags::ECM_channel_id, channel_id);
 }
 
 ts::UString ts::ecmgscs::ChannelTest::dump (size_t indent) const
@@ -346,28 +346,28 @@ ts::ecmgscs::ChannelStatus::ChannelStatus (const tlv::MessageFactory& fact) :
 
 void ts::ecmgscs::ChannelStatus::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::ECM_channel_id, channel_id);
-    fact.put (Tags::section_TSpkt_flag, section_TSpkt_flag);
+    fact.put(Tags::ECM_channel_id, channel_id);
+    fact.put(Tags::section_TSpkt_flag, section_TSpkt_flag);
     if (has_AC_delay_start) {
-        fact.put (Tags::AC_delay_start, AC_delay_start);
+        fact.put(Tags::AC_delay_start, AC_delay_start);
     }
     if (has_AC_delay_stop) {
-        fact.put (Tags::AC_delay_stop, AC_delay_stop);
+        fact.put(Tags::AC_delay_stop, AC_delay_stop);
     }
-    fact.put (Tags::delay_start, delay_start);
-    fact.put (Tags::delay_stop, delay_stop);
+    fact.put(Tags::delay_start, delay_start);
+    fact.put(Tags::delay_stop, delay_stop);
     if (has_transition_delay_start) {
-        fact.put (Tags::transition_delay_start, transition_delay_start);
+        fact.put(Tags::transition_delay_start, transition_delay_start);
     }
     if (has_transition_delay_stop) {
-        fact.put (Tags::transition_delay_stop, transition_delay_stop);
+        fact.put(Tags::transition_delay_stop, transition_delay_stop);
     }
-    fact.put (Tags::ECM_rep_period, ECM_rep_period);
-    fact.put (Tags::max_streams, max_streams);
-    fact.put (Tags::min_CP_duration, min_CP_duration);
-    fact.put (Tags::lead_CW, lead_CW);
-    fact.put (Tags::CW_per_msg, CW_per_msg);
-    fact.put (Tags::max_comp_time, max_comp_time);
+    fact.put(Tags::ECM_rep_period, ECM_rep_period);
+    fact.put(Tags::max_streams, max_streams);
+    fact.put(Tags::min_CP_duration, min_CP_duration);
+    fact.put(Tags::lead_CW, lead_CW);
+    fact.put(Tags::CW_per_msg, CW_per_msg);
+    fact.put(Tags::max_comp_time, max_comp_time);
 }
 
 ts::UString ts::ecmgscs::ChannelStatus::dump (size_t indent) const
@@ -395,7 +395,7 @@ ts::UString ts::ecmgscs::ChannelStatus::dump (size_t indent) const
 // channel_close
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::ChannelClose::ChannelClose () :
+ts::ecmgscs::ChannelClose::ChannelClose() :
     ChannelMessage (ecmgscs::Protocol::Instance()->version(), Tags::channel_close)
 {
 }
@@ -409,7 +409,7 @@ ts::ecmgscs::ChannelClose::ChannelClose (const tlv::MessageFactory& fact) :
 
 void ts::ecmgscs::ChannelClose::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::ECM_channel_id, channel_id);
+    fact.put(Tags::ECM_channel_id, channel_id);
 }
 
 ts::UString ts::ecmgscs::ChannelClose::dump (size_t indent) const
@@ -424,7 +424,7 @@ ts::UString ts::ecmgscs::ChannelClose::dump (size_t indent) const
 // channel_error
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::ChannelError::ChannelError () :
+ts::ecmgscs::ChannelError::ChannelError() :
     ChannelMessage    (ecmgscs::Protocol::Instance()->version(), Tags::channel_error),
     error_status      (),
     error_information ()
@@ -444,9 +444,9 @@ ts::ecmgscs::ChannelError::ChannelError (const tlv::MessageFactory& fact) :
 
 void ts::ecmgscs::ChannelError::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::ECM_channel_id, channel_id);
-    fact.put (Tags::error_status, error_status);
-    fact.put (Tags::error_information, error_information);
+    fact.put(Tags::ECM_channel_id, channel_id);
+    fact.put(Tags::error_status, error_status);
+    fact.put(Tags::error_information, error_information);
 }
 
 ts::UString ts::ecmgscs::ChannelError::dump (size_t indent) const
@@ -463,7 +463,7 @@ ts::UString ts::ecmgscs::ChannelError::dump (size_t indent) const
 // stream_setup
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::StreamSetup::StreamSetup () :
+ts::ecmgscs::StreamSetup::StreamSetup() :
     StreamMessage       (ecmgscs::Protocol::Instance()->version(), Tags::stream_setup),
     ECM_id              (0),
     nominal_CP_duration (0)
@@ -482,10 +482,10 @@ ts::ecmgscs::StreamSetup::StreamSetup (const tlv::MessageFactory& fact) :
 
 void ts::ecmgscs::StreamSetup::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::ECM_channel_id,      channel_id);
-    fact.put (Tags::ECM_stream_id,       stream_id);
-    fact.put (Tags::ECM_id,              ECM_id);
-    fact.put (Tags::nominal_CP_duration, nominal_CP_duration);
+    fact.put(Tags::ECM_channel_id,      channel_id);
+    fact.put(Tags::ECM_stream_id,       stream_id);
+    fact.put(Tags::ECM_id,              ECM_id);
+    fact.put(Tags::nominal_CP_duration, nominal_CP_duration);
 }
 
 ts::UString ts::ecmgscs::StreamSetup::dump (size_t indent) const
@@ -503,7 +503,7 @@ ts::UString ts::ecmgscs::StreamSetup::dump (size_t indent) const
 // stream_test
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::StreamTest::StreamTest () :
+ts::ecmgscs::StreamTest::StreamTest() :
     StreamMessage (ecmgscs::Protocol::Instance()->version(), Tags::stream_test)
 {
 }
@@ -518,8 +518,8 @@ ts::ecmgscs::StreamTest::StreamTest (const tlv::MessageFactory& fact) :
 
 void ts::ecmgscs::StreamTest::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::ECM_channel_id, channel_id);
-    fact.put (Tags::ECM_stream_id,  stream_id);
+    fact.put(Tags::ECM_channel_id, channel_id);
+    fact.put(Tags::ECM_stream_id,  stream_id);
 }
 
 ts::UString ts::ecmgscs::StreamTest::dump (size_t indent) const
@@ -535,7 +535,7 @@ ts::UString ts::ecmgscs::StreamTest::dump (size_t indent) const
 // stream_status
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::StreamStatus::StreamStatus () :
+ts::ecmgscs::StreamStatus::StreamStatus() :
     StreamMessage (ecmgscs::Protocol::Instance()->version(), Tags::stream_status),
     ECM_id        (0),
     access_criteria_transfer_mode (false)
@@ -554,10 +554,10 @@ ts::ecmgscs::StreamStatus::StreamStatus (const tlv::MessageFactory& fact) :
 
 void ts::ecmgscs::StreamStatus::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::ECM_channel_id, channel_id);
-    fact.put (Tags::ECM_stream_id,  stream_id);
-    fact.put (Tags::ECM_id,         ECM_id);
-    fact.put (Tags::access_criteria_transfer_mode, access_criteria_transfer_mode);
+    fact.put(Tags::ECM_channel_id, channel_id);
+    fact.put(Tags::ECM_stream_id,  stream_id);
+    fact.put(Tags::ECM_id,         ECM_id);
+    fact.put(Tags::access_criteria_transfer_mode, access_criteria_transfer_mode);
 }
 
 ts::UString ts::ecmgscs::StreamStatus::dump (size_t indent) const
@@ -575,7 +575,7 @@ ts::UString ts::ecmgscs::StreamStatus::dump (size_t indent) const
 // stream_close_request
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::StreamCloseRequest::StreamCloseRequest () :
+ts::ecmgscs::StreamCloseRequest::StreamCloseRequest() :
     StreamMessage (ecmgscs::Protocol::Instance()->version(), Tags::stream_close_request)
 {
 }
@@ -590,8 +590,8 @@ ts::ecmgscs::StreamCloseRequest::StreamCloseRequest (const tlv::MessageFactory& 
 
 void ts::ecmgscs::StreamCloseRequest::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::ECM_channel_id, channel_id);
-    fact.put (Tags::ECM_stream_id,  stream_id);
+    fact.put(Tags::ECM_channel_id, channel_id);
+    fact.put(Tags::ECM_stream_id,  stream_id);
 }
 
 ts::UString ts::ecmgscs::StreamCloseRequest::dump (size_t indent) const
@@ -607,7 +607,7 @@ ts::UString ts::ecmgscs::StreamCloseRequest::dump (size_t indent) const
 // stream_close_response
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::StreamCloseResponse::StreamCloseResponse () :
+ts::ecmgscs::StreamCloseResponse::StreamCloseResponse() :
     StreamMessage (ecmgscs::Protocol::Instance()->version(), Tags::stream_close_response)
 {
 }
@@ -622,8 +622,8 @@ ts::ecmgscs::StreamCloseResponse::StreamCloseResponse (const tlv::MessageFactory
 
 void ts::ecmgscs::StreamCloseResponse::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::ECM_channel_id, channel_id);
-    fact.put (Tags::ECM_stream_id,  stream_id);
+    fact.put(Tags::ECM_channel_id, channel_id);
+    fact.put(Tags::ECM_stream_id,  stream_id);
 }
 
 ts::UString ts::ecmgscs::StreamCloseResponse::dump (size_t indent) const
@@ -639,7 +639,7 @@ ts::UString ts::ecmgscs::StreamCloseResponse::dump (size_t indent) const
 // stream_error
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::StreamError::StreamError () :
+ts::ecmgscs::StreamError::StreamError() :
     StreamMessage     (ecmgscs::Protocol::Instance()->version(), Tags::stream_error),
     error_status      (),
     error_information ()
@@ -660,10 +660,10 @@ ts::ecmgscs::StreamError::StreamError (const tlv::MessageFactory& fact) :
 
 void ts::ecmgscs::StreamError::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::ECM_channel_id, channel_id);
-    fact.put (Tags::ECM_stream_id, stream_id);
-    fact.put (Tags::error_status, error_status);
-    fact.put (Tags::error_information, error_information);
+    fact.put(Tags::ECM_channel_id, channel_id);
+    fact.put(Tags::ECM_stream_id, stream_id);
+    fact.put(Tags::error_status, error_status);
+    fact.put(Tags::error_information, error_information);
 }
 
 ts::UString ts::ecmgscs::StreamError::dump (size_t indent) const
@@ -681,7 +681,7 @@ ts::UString ts::ecmgscs::StreamError::dump (size_t indent) const
 // CW_provision
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::CWProvision::CWProvision () :
+ts::ecmgscs::CWProvision::CWProvision() :
     StreamMessage       (ecmgscs::Protocol::Instance()->version(), Tags::CW_provision),
     CP_number           (0),
     has_CW_encryption   (false),
@@ -717,7 +717,7 @@ ts::ecmgscs::CWProvision::CWProvision (const tlv::MessageFactory& fact) :
     std::vector<tlv::MessageFactory::Parameter> plist;
     fact.get (Tags::CP_CW_combination, plist);
     CP_CW_combination.resize (plist.size());
-    for (size_t i = 0; i < plist.size (); ++i) {
+    for (size_t i = 0; i < plist.size(); ++i) {
         assert (plist[i].length >= 2); // already enforced in protocol def.
         CP_CW_combination[i].CP = GetUInt16 (plist[i].addr);
         CP_CW_combination[i].CW.copy (static_cast<const uint8_t*> (plist[i].addr) + 2, plist[i].length - 2);
@@ -726,25 +726,25 @@ ts::ecmgscs::CWProvision::CWProvision (const tlv::MessageFactory& fact) :
 
 void ts::ecmgscs::CWProvision::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::ECM_channel_id, channel_id);
-    fact.put (Tags::ECM_stream_id,  stream_id);
-    fact.put (Tags::CP_number,      CP_number);
+    fact.put(Tags::ECM_channel_id, channel_id);
+    fact.put(Tags::ECM_stream_id,  stream_id);
+    fact.put(Tags::CP_number,      CP_number);
     if (has_CW_encryption) {
-        fact.put (Tags::CW_encryption, CW_encryption);
+        fact.put(Tags::CW_encryption, CW_encryption);
     }
     if (has_CP_duration) {
-        fact.put (Tags::CP_duration, CP_duration);
+        fact.put(Tags::CP_duration, CP_duration);
     }
     if (has_access_criteria) {
-        fact.put (Tags::access_criteria, access_criteria);
+        fact.put(Tags::access_criteria, access_criteria);
     }
     std::vector<CPCWCombination>::const_iterator it;
     for (it = CP_CW_combination.begin(); it != CP_CW_combination.end(); ++it) {
         tlv::Serializer f (fact);
         f.openTLV (Tags::CP_CW_combination);
-        f.put (it->CP);
-        f.put (it->CW);
-        f.closeTLV ();
+        f.put(it->CP);
+        f.put(it->CW);
+        f.closeTLV();
     }
 }
 
@@ -773,7 +773,7 @@ ts::UString ts::ecmgscs::CWProvision::dump (size_t indent) const
 // ECM_response
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::ECMResponse::ECMResponse () :
+ts::ecmgscs::ECMResponse::ECMResponse() :
     StreamMessage (ecmgscs::Protocol::Instance()->version(), Tags::ECM_response),
     CP_number     (0),
     ECM_datagram  ()
@@ -793,10 +793,10 @@ ts::ecmgscs::ECMResponse::ECMResponse (const tlv::MessageFactory& fact) :
 
 void ts::ecmgscs::ECMResponse::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::ECM_channel_id, channel_id);
-    fact.put (Tags::ECM_stream_id,  stream_id);
-    fact.put (Tags::CP_number,      CP_number);
-    fact.put (Tags::ECM_datagram,   ECM_datagram);
+    fact.put(Tags::ECM_channel_id, channel_id);
+    fact.put(Tags::ECM_stream_id,  stream_id);
+    fact.put(Tags::CP_number,      CP_number);
+    fact.put(Tags::ECM_datagram,   ECM_datagram);
 }
 
 ts::UString ts::ecmgscs::ECMResponse::dump (size_t indent) const

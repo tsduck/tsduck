@@ -53,3 +53,7 @@ ts::DTGPreferredNameListDescriptor::DTGPreferredNameListDescriptor(DuckContext& 
     AbstractPreferredNameListDescriptor(duck, desc, MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
 {
 }
+
+ts::DTGPreferredNameListDescriptor::~DTGPreferredNameListDescriptor()
+{
+}

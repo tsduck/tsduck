@@ -49,72 +49,72 @@ ts::emmgmux::Protocol::Protocol() :
     tlv::Protocol(ts::emmgmux::CURRENT_VERSION)
 {
     // Define the syntax of all commands:
-    // add (cmd_tag, param_tag, min_size, max_size, min_count, max_count)
+    // add(cmd_tag, param_tag, min_size, max_size, min_count, max_count)
 
-    add (Tags::channel_setup, Tags::client_id, 4, 4, 1, 1);
-    add (Tags::channel_setup, Tags::data_channel_id, 2, 2, 1, 1);
-    add (Tags::channel_setup, Tags::section_TSpkt_flag, 1, 1, 1, 1);
+    add(Tags::channel_setup, Tags::client_id, 4, 4, 1, 1);
+    add(Tags::channel_setup, Tags::data_channel_id, 2, 2, 1, 1);
+    add(Tags::channel_setup, Tags::section_TSpkt_flag, 1, 1, 1, 1);
 
-    add (Tags::channel_test, Tags::client_id, 4, 4, 1, 1);
-    add (Tags::channel_test, Tags::data_channel_id, 2, 2, 1, 1);
+    add(Tags::channel_test, Tags::client_id, 4, 4, 1, 1);
+    add(Tags::channel_test, Tags::data_channel_id, 2, 2, 1, 1);
 
-    add (Tags::channel_status, Tags::client_id, 4, 4, 1, 1);
-    add (Tags::channel_status, Tags::data_channel_id, 2, 2, 1, 1);
-    add (Tags::channel_status, Tags::section_TSpkt_flag, 1, 1, 1, 1);
+    add(Tags::channel_status, Tags::client_id, 4, 4, 1, 1);
+    add(Tags::channel_status, Tags::data_channel_id, 2, 2, 1, 1);
+    add(Tags::channel_status, Tags::section_TSpkt_flag, 1, 1, 1, 1);
 
-    add (Tags::channel_close, Tags::client_id, 4, 4, 1, 1);
-    add (Tags::channel_close, Tags::data_channel_id, 2, 2, 1, 1);
+    add(Tags::channel_close, Tags::client_id, 4, 4, 1, 1);
+    add(Tags::channel_close, Tags::data_channel_id, 2, 2, 1, 1);
 
-    add (Tags::channel_error, Tags::client_id, 4, 4, 1, 1);
-    add (Tags::channel_error, Tags::data_channel_id, 2, 2, 1, 1);
-    add (Tags::channel_error, Tags::error_status, 2, 2, 1, 0xFFFF);
-    add (Tags::channel_error, Tags::error_information, 2, 2, 0, 0xFFFF);
+    add(Tags::channel_error, Tags::client_id, 4, 4, 1, 1);
+    add(Tags::channel_error, Tags::data_channel_id, 2, 2, 1, 1);
+    add(Tags::channel_error, Tags::error_status, 2, 2, 1, 0xFFFF);
+    add(Tags::channel_error, Tags::error_information, 2, 2, 0, 0xFFFF);
 
-    add (Tags::stream_setup, Tags::client_id, 4, 4, 1, 1);
-    add (Tags::stream_setup, Tags::data_channel_id, 2, 2, 1, 1);
-    add (Tags::stream_setup, Tags::data_stream_id, 2, 2, 1, 1);
-    add (Tags::stream_setup, Tags::data_id, 2, 2, 1, 1);
-    add (Tags::stream_setup, Tags::data_type, 1, 1, 1, 1);
+    add(Tags::stream_setup, Tags::client_id, 4, 4, 1, 1);
+    add(Tags::stream_setup, Tags::data_channel_id, 2, 2, 1, 1);
+    add(Tags::stream_setup, Tags::data_stream_id, 2, 2, 1, 1);
+    add(Tags::stream_setup, Tags::data_id, 2, 2, 1, 1);
+    add(Tags::stream_setup, Tags::data_type, 1, 1, 1, 1);
 
-    add (Tags::stream_test, Tags::client_id, 4, 4, 1, 1);
-    add (Tags::stream_test, Tags::data_channel_id, 2, 2, 1, 1);
-    add (Tags::stream_test, Tags::data_stream_id, 2, 2, 1, 1);
+    add(Tags::stream_test, Tags::client_id, 4, 4, 1, 1);
+    add(Tags::stream_test, Tags::data_channel_id, 2, 2, 1, 1);
+    add(Tags::stream_test, Tags::data_stream_id, 2, 2, 1, 1);
 
-    add (Tags::stream_status, Tags::client_id, 4, 4, 1, 1);
-    add (Tags::stream_status, Tags::data_channel_id, 2, 2, 1, 1);
-    add (Tags::stream_status, Tags::data_stream_id, 2, 2, 1, 1);
-    add (Tags::stream_status, Tags::data_id, 2, 2, 1, 1);
-    add (Tags::stream_status, Tags::data_type, 1, 1, 1, 1);
+    add(Tags::stream_status, Tags::client_id, 4, 4, 1, 1);
+    add(Tags::stream_status, Tags::data_channel_id, 2, 2, 1, 1);
+    add(Tags::stream_status, Tags::data_stream_id, 2, 2, 1, 1);
+    add(Tags::stream_status, Tags::data_id, 2, 2, 1, 1);
+    add(Tags::stream_status, Tags::data_type, 1, 1, 1, 1);
 
-    add (Tags::stream_close_request, Tags::client_id, 4, 4, 1, 1);
-    add (Tags::stream_close_request, Tags::data_channel_id, 2, 2, 1, 1);
-    add (Tags::stream_close_request, Tags::data_stream_id, 2, 2, 1, 1);
+    add(Tags::stream_close_request, Tags::client_id, 4, 4, 1, 1);
+    add(Tags::stream_close_request, Tags::data_channel_id, 2, 2, 1, 1);
+    add(Tags::stream_close_request, Tags::data_stream_id, 2, 2, 1, 1);
 
-    add (Tags::stream_close_response, Tags::client_id, 4, 4, 1, 1);
-    add (Tags::stream_close_response, Tags::data_channel_id, 2, 2, 1, 1);
-    add (Tags::stream_close_response, Tags::data_stream_id, 2, 2, 1, 1);
+    add(Tags::stream_close_response, Tags::client_id, 4, 4, 1, 1);
+    add(Tags::stream_close_response, Tags::data_channel_id, 2, 2, 1, 1);
+    add(Tags::stream_close_response, Tags::data_stream_id, 2, 2, 1, 1);
 
-    add (Tags::stream_error, Tags::client_id, 4, 4, 1, 1);
-    add (Tags::stream_error, Tags::data_channel_id, 2, 2, 1, 1);
-    add (Tags::stream_error, Tags::data_stream_id, 2, 2, 1, 1);
-    add (Tags::stream_error, Tags::error_status, 2, 2, 1, 0xFFFF);
-    add (Tags::stream_error, Tags::error_information, 2, 2, 0, 0xFFFF);
+    add(Tags::stream_error, Tags::client_id, 4, 4, 1, 1);
+    add(Tags::stream_error, Tags::data_channel_id, 2, 2, 1, 1);
+    add(Tags::stream_error, Tags::data_stream_id, 2, 2, 1, 1);
+    add(Tags::stream_error, Tags::error_status, 2, 2, 1, 0xFFFF);
+    add(Tags::stream_error, Tags::error_information, 2, 2, 0, 0xFFFF);
 
-    add (Tags::stream_BW_request, Tags::client_id, 4, 4, 1, 1);
-    add (Tags::stream_BW_request, Tags::data_channel_id, 2, 2, 1, 1);
-    add (Tags::stream_BW_request, Tags::data_stream_id, 2, 2, 1, 1);
-    add (Tags::stream_BW_request, Tags::bandwidth, 2, 2, 0, 1);
+    add(Tags::stream_BW_request, Tags::client_id, 4, 4, 1, 1);
+    add(Tags::stream_BW_request, Tags::data_channel_id, 2, 2, 1, 1);
+    add(Tags::stream_BW_request, Tags::data_stream_id, 2, 2, 1, 1);
+    add(Tags::stream_BW_request, Tags::bandwidth, 2, 2, 0, 1);
 
-    add (Tags::stream_BW_allocation, Tags::client_id, 4, 4, 1, 1);
-    add (Tags::stream_BW_allocation, Tags::data_channel_id, 2, 2, 1, 1);
-    add (Tags::stream_BW_allocation, Tags::data_stream_id, 2, 2, 1, 1);
-    add (Tags::stream_BW_allocation, Tags::bandwidth, 2, 2, 0, 1);
+    add(Tags::stream_BW_allocation, Tags::client_id, 4, 4, 1, 1);
+    add(Tags::stream_BW_allocation, Tags::data_channel_id, 2, 2, 1, 1);
+    add(Tags::stream_BW_allocation, Tags::data_stream_id, 2, 2, 1, 1);
+    add(Tags::stream_BW_allocation, Tags::bandwidth, 2, 2, 0, 1);
 
-    add (Tags::data_provision, Tags::client_id, 4, 4, 1, 1);
-    add (Tags::data_provision, Tags::data_channel_id, 2, 2, 0, 1);
-    add (Tags::data_provision, Tags::data_stream_id, 2, 2, 0, 1);
-    add (Tags::data_provision, Tags::data_id, 2, 2, 1, 1);
-    add (Tags::data_provision, Tags::datagram, 0, 0xFFFF, 1, 0xFFFF);
+    add(Tags::data_provision, Tags::client_id, 4, 4, 1, 1);
+    add(Tags::data_provision, Tags::data_channel_id, 2, 2, 0, 1);
+    add(Tags::data_provision, Tags::data_stream_id, 2, 2, 0, 1);
+    add(Tags::data_provision, Tags::data_id, 2, 2, 1, 1);
+    add(Tags::data_provision, Tags::datagram, 0, 0xFFFF, 1, 0xFFFF);
 }
 
 
@@ -124,7 +124,7 @@ ts::emmgmux::Protocol::Protocol() :
 
 void ts::emmgmux::Protocol::factory (const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
 {
-    switch (fact.commandTag ()) {
+    switch (fact.commandTag()) {
         case Tags::channel_setup:
             msg = new ChannelSetup (fact);
             break;
@@ -202,7 +202,7 @@ void ts::emmgmux::Protocol::buildErrorResponse (const tlv::MessageFactory& fact,
 
     // Convert general TLV error code into EMMG/PDG <=> MUX error_status
     uint16_t status;
-    switch (fact.errorStatus ()) {
+    switch (fact.errorStatus()) {
         case tlv::OK: // should not happen
         case tlv::InvalidMessage:
             status = Errors::inv_message;
@@ -230,7 +230,7 @@ void ts::emmgmux::Protocol::buildErrorResponse (const tlv::MessageFactory& fact,
 
     // Copy error_status and error_information into response
     errmsg->error_status.push_back (status);
-    errmsg->error_information.push_back (fact.errorInformation ());
+    errmsg->error_information.push_back (fact.errorInformation());
 
     // Transfer ownership of safe ptr
     msg = errmsg.release();
@@ -241,7 +241,7 @@ void ts::emmgmux::Protocol::buildErrorResponse (const tlv::MessageFactory& fact,
 // channel_setup
 //----------------------------------------------------------------------------
 
-ts::emmgmux::ChannelSetup::ChannelSetup () :
+ts::emmgmux::ChannelSetup::ChannelSetup() :
     ChannelMessage     (emmgmux::Protocol::Instance()->version(), Tags::channel_setup),
     client_id          (0),
     section_TSpkt_flag (false)
@@ -259,9 +259,9 @@ ts::emmgmux::ChannelSetup::ChannelSetup (const tlv::MessageFactory& fact) :
 
 void ts::emmgmux::ChannelSetup::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::data_channel_id,    channel_id);
-    fact.put (Tags::client_id,          client_id);
-    fact.put (Tags::section_TSpkt_flag, section_TSpkt_flag);
+    fact.put(Tags::data_channel_id,    channel_id);
+    fact.put(Tags::client_id,          client_id);
+    fact.put(Tags::section_TSpkt_flag, section_TSpkt_flag);
 }
 
 ts::UString ts::emmgmux::ChannelSetup::dump (size_t indent) const
@@ -278,7 +278,7 @@ ts::UString ts::emmgmux::ChannelSetup::dump (size_t indent) const
 // channel_test
 //----------------------------------------------------------------------------
 
-ts::emmgmux::ChannelTest::ChannelTest () :
+ts::emmgmux::ChannelTest::ChannelTest() :
     ChannelMessage (emmgmux::Protocol::Instance()->version(), Tags::channel_test),
     client_id      (0)
 {
@@ -294,8 +294,8 @@ ts::emmgmux::ChannelTest::ChannelTest (const tlv::MessageFactory& fact) :
 
 void ts::emmgmux::ChannelTest::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::data_channel_id, channel_id);
-    fact.put (Tags::client_id,       client_id);
+    fact.put(Tags::data_channel_id, channel_id);
+    fact.put(Tags::client_id,       client_id);
 }
 
 ts::UString ts::emmgmux::ChannelTest::dump (size_t indent) const
@@ -311,7 +311,7 @@ ts::UString ts::emmgmux::ChannelTest::dump (size_t indent) const
 // channel_status
 //----------------------------------------------------------------------------
 
-ts::emmgmux::ChannelStatus::ChannelStatus () :
+ts::emmgmux::ChannelStatus::ChannelStatus() :
     ChannelMessage     (emmgmux::Protocol::Instance()->version(), Tags::channel_status),
     client_id          (0),
     section_TSpkt_flag (false)
@@ -329,9 +329,9 @@ ts::emmgmux::ChannelStatus::ChannelStatus (const tlv::MessageFactory& fact) :
 
 void ts::emmgmux::ChannelStatus::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::data_channel_id,    channel_id);
-    fact.put (Tags::client_id,          client_id);
-    fact.put (Tags::section_TSpkt_flag, section_TSpkt_flag);
+    fact.put(Tags::data_channel_id,    channel_id);
+    fact.put(Tags::client_id,          client_id);
+    fact.put(Tags::section_TSpkt_flag, section_TSpkt_flag);
 }
 
 ts::UString ts::emmgmux::ChannelStatus::dump (size_t indent) const
@@ -348,7 +348,7 @@ ts::UString ts::emmgmux::ChannelStatus::dump (size_t indent) const
 // channel_close
 //----------------------------------------------------------------------------
 
-ts::emmgmux::ChannelClose::ChannelClose () :
+ts::emmgmux::ChannelClose::ChannelClose() :
     ChannelMessage (emmgmux::Protocol::Instance()->version(), Tags::channel_close),
     client_id      (0)
 {
@@ -364,8 +364,8 @@ ts::emmgmux::ChannelClose::ChannelClose (const tlv::MessageFactory& fact) :
 
 void ts::emmgmux::ChannelClose::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::data_channel_id, channel_id);
-    fact.put (Tags::client_id,       client_id);
+    fact.put(Tags::data_channel_id, channel_id);
+    fact.put(Tags::client_id,       client_id);
 }
 
 ts::UString ts::emmgmux::ChannelClose::dump (size_t indent) const
@@ -381,7 +381,7 @@ ts::UString ts::emmgmux::ChannelClose::dump (size_t indent) const
 // channel_error
 //----------------------------------------------------------------------------
 
-ts::emmgmux::ChannelError::ChannelError () :
+ts::emmgmux::ChannelError::ChannelError() :
     ChannelMessage    (emmgmux::Protocol::Instance()->version(), Tags::channel_error),
     client_id         (0),
     error_status      (),
@@ -397,16 +397,16 @@ ts::emmgmux::ChannelError::ChannelError (const tlv::MessageFactory& fact) :
     error_status      (),
     error_information ()
 {
-    fact.get (Tags::error_status, error_status);
-    fact.get (Tags::error_information, error_information);
+    fact.get(Tags::error_status, error_status);
+    fact.get(Tags::error_information, error_information);
 }
 
 void ts::emmgmux::ChannelError::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::data_channel_id, channel_id);
-    fact.put (Tags::client_id, client_id);
-    fact.put (Tags::error_status, error_status);
-    fact.put (Tags::error_information, error_information);
+    fact.put(Tags::data_channel_id, channel_id);
+    fact.put(Tags::client_id, client_id);
+    fact.put(Tags::error_status, error_status);
+    fact.put(Tags::error_information, error_information);
 }
 
 ts::UString ts::emmgmux::ChannelError::dump (size_t indent) const
@@ -424,7 +424,7 @@ ts::UString ts::emmgmux::ChannelError::dump (size_t indent) const
 // stream_setup
 //----------------------------------------------------------------------------
 
-ts::emmgmux::StreamSetup::StreamSetup () :
+ts::emmgmux::StreamSetup::StreamSetup() :
     StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_setup),
     client_id     (0),
     data_id       (0),
@@ -445,11 +445,11 @@ ts::emmgmux::StreamSetup::StreamSetup (const tlv::MessageFactory& fact) :
 
 void ts::emmgmux::StreamSetup::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::data_channel_id, channel_id);
-    fact.put (Tags::data_stream_id,  stream_id);
-    fact.put (Tags::client_id,       client_id);
-    fact.put (Tags::data_id,         data_id);
-    fact.put (Tags::data_type,       data_type);
+    fact.put(Tags::data_channel_id, channel_id);
+    fact.put(Tags::data_stream_id,  stream_id);
+    fact.put(Tags::client_id,       client_id);
+    fact.put(Tags::data_id,         data_id);
+    fact.put(Tags::data_type,       data_type);
 }
 
 ts::UString ts::emmgmux::StreamSetup::dump (size_t indent) const
@@ -468,7 +468,7 @@ ts::UString ts::emmgmux::StreamSetup::dump (size_t indent) const
 // stream_test
 //----------------------------------------------------------------------------
 
-ts::emmgmux::StreamTest::StreamTest () :
+ts::emmgmux::StreamTest::StreamTest() :
     StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_test),
     client_id     (0)
 {
@@ -485,9 +485,9 @@ ts::emmgmux::StreamTest::StreamTest (const tlv::MessageFactory& fact) :
 
 void ts::emmgmux::StreamTest::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::data_channel_id, channel_id);
-    fact.put (Tags::data_stream_id,  stream_id);
-    fact.put (Tags::client_id,       client_id);
+    fact.put(Tags::data_channel_id, channel_id);
+    fact.put(Tags::data_stream_id,  stream_id);
+    fact.put(Tags::client_id,       client_id);
 }
 
 ts::UString ts::emmgmux::StreamTest::dump (size_t indent) const
@@ -504,7 +504,7 @@ ts::UString ts::emmgmux::StreamTest::dump (size_t indent) const
 // stream_status
 //----------------------------------------------------------------------------
 
-ts::emmgmux::StreamStatus::StreamStatus () :
+ts::emmgmux::StreamStatus::StreamStatus() :
     StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_status),
     client_id     (0),
     data_id       (0),
@@ -525,11 +525,11 @@ ts::emmgmux::StreamStatus::StreamStatus (const tlv::MessageFactory& fact) :
 
 void ts::emmgmux::StreamStatus::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::data_channel_id, channel_id);
-    fact.put (Tags::data_stream_id,  stream_id);
-    fact.put (Tags::client_id,       client_id);
-    fact.put (Tags::data_id,         data_id);
-    fact.put (Tags::data_type,       data_type);
+    fact.put(Tags::data_channel_id, channel_id);
+    fact.put(Tags::data_stream_id,  stream_id);
+    fact.put(Tags::client_id,       client_id);
+    fact.put(Tags::data_id,         data_id);
+    fact.put(Tags::data_type,       data_type);
 }
 
 ts::UString ts::emmgmux::StreamStatus::dump (size_t indent) const
@@ -548,7 +548,7 @@ ts::UString ts::emmgmux::StreamStatus::dump (size_t indent) const
 // stream_close_request
 //----------------------------------------------------------------------------
 
-ts::emmgmux::StreamCloseRequest::StreamCloseRequest () :
+ts::emmgmux::StreamCloseRequest::StreamCloseRequest() :
     StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_close_request),
     client_id     (0)
 {
@@ -565,9 +565,9 @@ ts::emmgmux::StreamCloseRequest::StreamCloseRequest (const tlv::MessageFactory& 
 
 void ts::emmgmux::StreamCloseRequest::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::data_channel_id, channel_id);
-    fact.put (Tags::data_stream_id,  stream_id);
-    fact.put (Tags::client_id,       client_id);
+    fact.put(Tags::data_channel_id, channel_id);
+    fact.put(Tags::data_stream_id,  stream_id);
+    fact.put(Tags::client_id,       client_id);
 }
 
 ts::UString ts::emmgmux::StreamCloseRequest::dump (size_t indent) const
@@ -584,7 +584,7 @@ ts::UString ts::emmgmux::StreamCloseRequest::dump (size_t indent) const
 // stream_close_response
 //----------------------------------------------------------------------------
 
-ts::emmgmux::StreamCloseResponse::StreamCloseResponse () :
+ts::emmgmux::StreamCloseResponse::StreamCloseResponse() :
     StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_close_response),
     client_id     (0)
 {
@@ -601,9 +601,9 @@ ts::emmgmux::StreamCloseResponse::StreamCloseResponse (const tlv::MessageFactory
 
 void ts::emmgmux::StreamCloseResponse::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::data_channel_id, channel_id);
-    fact.put (Tags::data_stream_id,  stream_id);
-    fact.put (Tags::client_id,       client_id);
+    fact.put(Tags::data_channel_id, channel_id);
+    fact.put(Tags::data_stream_id,  stream_id);
+    fact.put(Tags::client_id,       client_id);
 }
 
 ts::UString ts::emmgmux::StreamCloseResponse::dump (size_t indent) const
@@ -620,7 +620,7 @@ ts::UString ts::emmgmux::StreamCloseResponse::dump (size_t indent) const
 // stream_error
 //----------------------------------------------------------------------------
 
-ts::emmgmux::StreamError::StreamError () :
+ts::emmgmux::StreamError::StreamError() :
     StreamMessage     (emmgmux::Protocol::Instance()->version(), Tags::stream_error),
     client_id         (0),
     error_status      (),
@@ -643,11 +643,11 @@ ts::emmgmux::StreamError::StreamError (const tlv::MessageFactory& fact) :
 
 void ts::emmgmux::StreamError::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::data_channel_id, channel_id);
-    fact.put (Tags::data_stream_id, stream_id);
-    fact.put (Tags::client_id, client_id);
-    fact.put (Tags::error_status, error_status);
-    fact.put (Tags::error_information, error_information);
+    fact.put(Tags::data_channel_id, channel_id);
+    fact.put(Tags::data_stream_id, stream_id);
+    fact.put(Tags::client_id, client_id);
+    fact.put(Tags::error_status, error_status);
+    fact.put(Tags::error_information, error_information);
 }
 
 ts::UString ts::emmgmux::StreamError::dump (size_t indent) const
@@ -666,7 +666,7 @@ ts::UString ts::emmgmux::StreamError::dump (size_t indent) const
 // stream_BW_request
 //----------------------------------------------------------------------------
 
-ts::emmgmux::StreamBWRequest::StreamBWRequest () :
+ts::emmgmux::StreamBWRequest::StreamBWRequest() :
     StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_BW_request),
     client_id     (0),
     has_bandwidth (false),
@@ -687,11 +687,11 @@ ts::emmgmux::StreamBWRequest::StreamBWRequest (const tlv::MessageFactory& fact) 
 
 void ts::emmgmux::StreamBWRequest::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::data_channel_id, channel_id);
-    fact.put (Tags::data_stream_id, stream_id);
-    fact.put (Tags::client_id, client_id);
+    fact.put(Tags::data_channel_id, channel_id);
+    fact.put(Tags::data_stream_id, stream_id);
+    fact.put(Tags::client_id, client_id);
     if (has_bandwidth) {
-        fact.put (Tags::bandwidth, bandwidth);
+        fact.put(Tags::bandwidth, bandwidth);
     }
 }
 
@@ -710,7 +710,7 @@ ts::UString ts::emmgmux::StreamBWRequest::dump (size_t indent) const
 // stream_BW_allocation
 //----------------------------------------------------------------------------
 
-ts::emmgmux::StreamBWAllocation::StreamBWAllocation () :
+ts::emmgmux::StreamBWAllocation::StreamBWAllocation() :
     StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_BW_allocation),
     client_id     (0),
     has_bandwidth (false),
@@ -731,11 +731,11 @@ ts::emmgmux::StreamBWAllocation::StreamBWAllocation (const tlv::MessageFactory& 
 
 void ts::emmgmux::StreamBWAllocation::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::data_channel_id, channel_id);
-    fact.put (Tags::data_stream_id, stream_id);
-    fact.put (Tags::client_id, client_id);
+    fact.put(Tags::data_channel_id, channel_id);
+    fact.put(Tags::data_stream_id, stream_id);
+    fact.put(Tags::client_id, client_id);
     if (has_bandwidth) {
-        fact.put (Tags::bandwidth, bandwidth);
+        fact.put(Tags::bandwidth, bandwidth);
     }
 }
 

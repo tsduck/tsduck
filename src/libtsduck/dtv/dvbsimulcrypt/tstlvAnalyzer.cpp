@@ -59,7 +59,7 @@ ts::tlv::Analyzer::Analyzer (const void* addr, size_t size) :
 //  This method analyzes the next TLV field in the stream
 //----------------------------------------------------------------------------
 
-void ts::tlv::Analyzer::next ()
+void ts::tlv::Analyzer::next()
 {
     // Don't change if already at end of message or structure error found
     if (_eom || !_valid) {

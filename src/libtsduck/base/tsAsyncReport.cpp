@@ -46,7 +46,7 @@ ts::AsyncReport::AsyncReport(int max_severity, const AsyncReportArgs& args) :
     _terminated(false)
 {
     // Start the logging thread
-    start ();
+    start();
 }
 
 

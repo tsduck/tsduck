@@ -232,7 +232,7 @@ void SafePtrTest::testSafePtr()
 
     {
         // Object pointed by p2 no longer managed but still valid
-        TestData* px = p2.release ();
+        TestData* px = p2.release();
 
         TSUNIT_ASSERT(p1.count() == 2);
         TSUNIT_ASSERT(p2.count() == 1);
