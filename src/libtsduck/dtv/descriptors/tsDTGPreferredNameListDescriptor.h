@@ -28,8 +28,8 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an eacem_preferred_name_list_descriptor.
-//!  This is a private descriptor, must be preceded by the EACEM/EICTA PDS.
+//!  Representation of a DTG preferred_name_list_descriptor.
+//!  This is a private descriptor, must be preceded by the DTG/OFCOM PDS.
 //!
 //----------------------------------------------------------------------------
 
@@ -38,25 +38,25 @@
 
 namespace ts {
     //!
-    //! Representation of an eacem_preferred_name_list_descriptor.
+    //! Representation of a DTG preferred_name_list_descriptor.
     //!
-    //! This is a private descriptor, must be preceded by the EACEM/EICTA PDS.
-    //! @see EACEM Technical Report Number TR-030, 9.2.11.2.
+    //! This is a private descriptor, must be preceded by the DTG/OFCOM PDS.
+    //! @see The D-Book 7 Part A (DTG), section 8.5.3.7
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL EacemPreferredNameListDescriptor : public AbstractPreferredNameListDescriptor
+    class TSDUCKDLL DTGPreferredNameListDescriptor : public AbstractPreferredNameListDescriptor
     {
     public:
         //!
         //! Default constructor.
         //!
-        EacemPreferredNameListDescriptor();
+        DTGPreferredNameListDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        EacemPreferredNameListDescriptor(DuckContext& duck, const Descriptor& bin);
+        DTGPreferredNameListDescriptor(DuckContext& duck, const Descriptor& bin);
     };
 }

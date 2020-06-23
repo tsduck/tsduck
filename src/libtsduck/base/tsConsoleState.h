@@ -50,9 +50,9 @@ namespace ts {
     //! one instance of this class properly configures the console.
     //!
     //! Important: To restore the previous state, the destructor must be called.
-    //! Be aware that a premature call to ::exit() for instance only calls the
+    //! Be aware that a premature call to exit() for instance only calls the
     //! destructors of the static objects, not the destructors of objects in the
-    //! stack frames at the time ::exit() was called. To make sure that the previous
+    //! stack frames at the time exit() was called. To make sure that the previous
     //! state of the console is properly restore, you should declare a static
     //! instance of this class, not an object in the main() function.
     //!

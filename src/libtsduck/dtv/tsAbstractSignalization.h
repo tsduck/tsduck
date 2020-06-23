@@ -152,6 +152,11 @@ namespace ts {
         const UChar* const _xml_name;
 
         //!
+        //! Optional XML table or descriptor legacy name. Ignored if null pointer.
+        //!
+        const UChar* const _xml_legacy_name;
+
+        //!
         //! It is the responsibility of the subclasses to set the valid flag
         //!
         bool _is_valid;
@@ -160,8 +165,9 @@ namespace ts {
         //! Protected constructor for subclasses.
         //! @param [in] xml_name Table or descriptor name, as used in XML structures.
         //! @param [in] standards A bit mask of standards which define this structure.
+        //! @param [in] xml_legacy_name Table or descriptor legacy XML name. Ignored if null pointer.
         //!
-        AbstractSignalization(const UChar* xml_name, Standards standards);
+        AbstractSignalization(const UChar* xml_name, Standards standards, const UChar* xml_legacy_name = nullptr);
 
         //!
         //! Copy constructor.
@@ -197,10 +203,9 @@ namespace ts {
         //!
         //! Check that an XML element has the right name for this table.
         //! @param [in] element XML element to check.
-        //! @param [in] legacy_name If not null, specifies an alternate legacy name.
         //! @return True on success, false on error.
         //!
-        bool checkXMLName(const xml::Element* element, const UChar* legacy_name = nullptr) const;
+        bool checkXMLName(const xml::Element* element) const;
 
         //!
         //! Deserialize a 3-byte language or country code.

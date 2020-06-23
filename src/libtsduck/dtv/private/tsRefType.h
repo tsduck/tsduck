@@ -95,6 +95,13 @@
     REF_TYPE(DigitalCopyControlDescriptor);
     REF_TYPE(DIILocationDescriptor);
     REF_TYPE(DSNGDescriptor);
+    REF_TYPE(DTGGuidanceDescriptor);
+    REF_TYPE(DTGHDSimulcastLogicalChannelDescriptor);
+    REF_TYPE(DTGLogicalChannelDescriptor);
+    REF_TYPE(DTGPreferredNameIdentifierDescriptor);
+    REF_TYPE(DTGPreferredNameListDescriptor);
+    REF_TYPE(DTGServiceAttributeDescriptor);
+    REF_TYPE(DTGShortServiceNameDescriptor);
     REF_TYPE(DTSDescriptor);
     REF_TYPE(DTSHDDescriptor);
     REF_TYPE(DTSNeuralDescriptor);
@@ -108,6 +115,8 @@
     REF_TYPE(DVBJApplicationLocationDescriptor);
     REF_TYPE(DVBStuffingDescriptor);
     REF_TYPE(DVBTimeShiftedServiceDescriptor);
+    REF_TYPE(EacemHDSimulcastLogicalChannelDescriptor);
+    REF_TYPE(EacemLogicalChannelNumberDescriptor);
     REF_TYPE(EacemPreferredNameIdentifierDescriptor);
     REF_TYPE(EacemPreferredNameListDescriptor);
     REF_TYPE(EacemStreamIdentifierDescriptor);
@@ -130,7 +139,6 @@
     REF_TYPE(FTAContentManagementDescriptor);
     REF_TYPE(GenreDescriptor);
     REF_TYPE(GraphicsConstraintsDescriptor);
-    REF_TYPE(HDSimulcastLogicalChannelDescriptor);
     REF_TYPE(HEVCTimingAndHRDDescriptor);
     REF_TYPE(HEVCVideoDescriptor);
     REF_TYPE(HierarchicalTransmissionDescriptor);
@@ -150,7 +158,6 @@
     REF_TYPE(J2KVideoDescriptor);
     REF_TYPE(LinkageDescriptor);
     REF_TYPE(LocalTimeOffsetDescriptor);
-    REF_TYPE(LogicalChannelNumberDescriptor);
     REF_TYPE(LogoTransmissionDescriptor);
     REF_TYPE(MaximumBitrateDescriptor);
     REF_TYPE(MessageDescriptor);

@@ -29,27 +29,24 @@
 //!
 //!  @file
 //!  Representation of an eacem_preferred_name_identifier_descriptor.
-//!  This is a private descriptor, must be preceeded by the EACEM/EICTA PDS.
+//!  This is a private descriptor, must be preceded by the EACEM/EICTA PDS.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractDescriptor.h"
+#include "tsAbstractPreferredNameIdentifierDescriptor.h"
 
 namespace ts {
     //!
     //! Representation of an eacem_preferred_name_identifier_descriptor.
     //!
-    //! This is a private descriptor, must be preceeded by the EACEM/EICTA PDS.
+    //! This is a private descriptor, must be preceded by the EACEM/EICTA PDS.
     //! @see EACEM Technical Report Number TR-030, 9.2.11.2.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL EacemPreferredNameIdentifierDescriptor : public AbstractDescriptor
+    class TSDUCKDLL EacemPreferredNameIdentifierDescriptor : public AbstractPreferredNameIdentifierDescriptor
     {
     public:
-        // EacemPreferredNameIdentifierDescriptor public members:
-        uint8_t name_id;  //!< Service name id from an EacemPreferredNameListDescriptor.
-
         //!
         //! Default constructor.
         //! @param [in] name_id Service name id from an EacemPreferredNameListDescriptor.
@@ -62,15 +59,5 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //!
         EacemPreferredNameIdentifierDescriptor(DuckContext& duck, const Descriptor& bin);
-
-        // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
-        virtual void fromXML(DuckContext&, const xml::Element*) override;
-        DeclareDisplayDescriptor();
-
-    protected:
-        // Inherited methods
-        virtual void buildXML(DuckContext&, xml::Element*) const override;
     };
 }

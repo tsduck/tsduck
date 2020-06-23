@@ -29,7 +29,7 @@
 //!
 //!  @file
 //!  Representation of an eacem_stream_identifier_descriptor.
-//!  This is a private descriptor, must be preceeded by the EACEM/EICTA PDS.
+//!  This is a private descriptor, must be preceded by the EACEM/EICTA PDS.
 //!
 //----------------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ namespace ts {
     //!
     //! Representation of an eacem_stream_identifier_descriptor.
     //!
-    //! This is a private descriptor, must be preceeded by the EACEM/EICTA PDS.
+    //! This is a private descriptor, must be preceded by the EACEM/EICTA PDS.
     //! @see EACEM Technical Report Number TR-030, 9.2.11.2.
     //! @ingroup descriptor
     //!

@@ -67,14 +67,14 @@ namespace ts
 //! e ^= B | C;
 //! @endcode
 //!
-#define TS_ENABLE_BITMASK_OPERATORS(T)      \
-    /** @cond nodoxygen */                  \
-    template<>                              \
-    struct ts::EnableBitMaskOperators<T>    \
-    {                                       \
-        static constexpr bool value = true; \
-    }                                       \
-    /** @endcond */
+#define TS_ENABLE_BITMASK_OPERATORS(T)       \
+    /** Template specialization on type T */ \
+    template<>                               \
+    struct ts::EnableBitMaskOperators<T>     \
+    {                                        \
+        /** Enable bitmask operators on T */ \
+        static constexpr bool value = true;  \
+    }
 
 //!
 //! Bitmask "not" unary operator on enumeration types.

@@ -26,37 +26,30 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Representation of an eacem_preferred_name_list_descriptor.
-//!  This is a private descriptor, must be preceded by the EACEM/EICTA PDS.
-//!
+
+#include "tsDTGPreferredNameListDescriptor.h"
+#include "tsPSIRepository.h"
+TSDUCK_SOURCE;
+
+#define MY_XML_NAME u"dtg_preferred_name_list_descriptor"
+#define MY_CLASS ts::DTGPreferredNameListDescriptor
+#define MY_DID ts::DID_OFCOM_PREF_NAME_LST
+#define MY_PDS ts::PDS_OFCOM
+#define MY_STD ts::Standards::DVB
+
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+
+
+//----------------------------------------------------------------------------
+// Constructors
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsAbstractPreferredNameListDescriptor.h"
+ts::DTGPreferredNameListDescriptor::DTGPreferredNameListDescriptor() :
+    AbstractPreferredNameListDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+{
+}
 
-namespace ts {
-    //!
-    //! Representation of an eacem_preferred_name_list_descriptor.
-    //!
-    //! This is a private descriptor, must be preceded by the EACEM/EICTA PDS.
-    //! @see EACEM Technical Report Number TR-030, 9.2.11.2.
-    //! @ingroup descriptor
-    //!
-    class TSDUCKDLL EacemPreferredNameListDescriptor : public AbstractPreferredNameListDescriptor
-    {
-    public:
-        //!
-        //! Default constructor.
-        //!
-        EacemPreferredNameListDescriptor();
-
-        //!
-        //! Constructor from a binary descriptor
-        //! @param [in,out] duck TSDuck execution context.
-        //! @param [in] bin A binary descriptor to deserialize.
-        //!
-        EacemPreferredNameListDescriptor(DuckContext& duck, const Descriptor& bin);
-    };
+ts::DTGPreferredNameListDescriptor::DTGPreferredNameListDescriptor(DuckContext& duck, const Descriptor& desc) :
+    AbstractPreferredNameListDescriptor(duck, desc, MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+{
 }

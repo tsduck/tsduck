@@ -266,8 +266,9 @@ namespace ts {
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.
         //! @param [in] standards A bit mask of standards which define this structure.
+        //! @param [in] xml_legacy_name Table or descriptor legacy XML name. Ignored if null pointer.
         //!
-        AbstractTable(TID tid, const UChar* xml_name, Standards standards);
+        AbstractTable(TID tid, const UChar* xml_name, Standards standards, const UChar* xml_legacy_name = nullptr);
 
         //!
         //! This method checks if a table id is valid for this object.

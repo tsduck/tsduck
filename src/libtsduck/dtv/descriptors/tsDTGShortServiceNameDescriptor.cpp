@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsDVBTimeShiftedServiceDescriptor.h"
+#include "tsDTGShortServiceNameDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
@@ -35,28 +35,28 @@
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"DVB_time_shifted_service_descriptor"
-#define MY_XML_NAME_LEGACY u"time_shifted_service_descriptor"
-#define MY_CLASS ts::DVBTimeShiftedServiceDescriptor
-#define MY_DID ts::DID_TIME_SHIFT_SERVICE
+#define MY_XML_NAME u"dtg_short_service_name_descriptor"
+#define MY_CLASS ts::DTGShortServiceNameDescriptor
+#define MY_DID ts::DID_OFCOM_SHORT_SRV_NAM
+#define MY_PDS ts::PDS_OFCOM
 #define MY_STD ts::Standards::DVB
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor, MY_XML_NAME_LEGACY);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::DVBTimeShiftedServiceDescriptor::DVBTimeShiftedServiceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY),
-    reference_service_id(0)
+ts::DTGShortServiceNameDescriptor::DTGShortServiceNameDescriptor(const UString& name_) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+    name(name_)
 {
     _is_valid = true;
 }
 
-ts::DVBTimeShiftedServiceDescriptor::DVBTimeShiftedServiceDescriptor(DuckContext& duck, const Descriptor& desc) :
-    DVBTimeShiftedServiceDescriptor()
+ts::DTGShortServiceNameDescriptor::DTGShortServiceNameDescriptor(DuckContext& duck, const Descriptor& desc) :
+    DTGShortServiceNameDescriptor()
 {
     deserialize(duck, desc);
 }
@@ -66,10 +66,10 @@ ts::DVBTimeShiftedServiceDescriptor::DVBTimeShiftedServiceDescriptor(DuckContext
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBTimeShiftedServiceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DTGShortServiceNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(reference_service_id);
+    bbp->append(duck.encoded(name));
     serializeEnd(desc, bbp);
 }
 
@@ -78,13 +78,15 @@ void ts::DVBTimeShiftedServiceDescriptor::serialize(DuckContext& duck, Descripto
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBTimeShiftedServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DTGShortServiceNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 2;
+    _is_valid = desc.isValid() && desc.tag() == _tag;
 
     if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        reference_service_id = GetUInt16(data);
+        duck.decode(name, desc.payload(), desc.payloadSize());
+    }
+    else {
+        name.clear();
     }
 }
 
@@ -93,19 +95,12 @@ void ts::DVBTimeShiftedServiceDescriptor::deserialize(DuckContext& duck, const D
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DTGShortServiceNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
-
-    if (size >= 2) {
-        const uint16_t service = GetUInt16(data);
-        data += 2; size -= 2;
-        strm << margin << UString::Format(u"Reference service id: 0x%X (%d)", {service, service}) << std::endl;
-    }
-
-    display.displayExtraData(data, size, indent);
+    strm << margin << "Name: \"" << duck.decoded(payload, size) << "\"" << std::endl;
 }
 
 
@@ -113,9 +108,9 @@ void ts::DVBTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& displ
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBTimeShiftedServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::DTGShortServiceNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"reference_service_id", reference_service_id, true);
+    root->setAttribute(u"name", name);
 }
 
 
@@ -123,9 +118,9 @@ void ts::DVBTimeShiftedServiceDescriptor::buildXML(DuckContext& duck, xml::Eleme
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBTimeShiftedServiceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::DTGShortServiceNameDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(reference_service_id, u"reference_service_id", true);
+        element->getAttribute(name, u"name", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
 }

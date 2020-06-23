@@ -99,14 +99,14 @@
       </item>
     </extended_event_descriptor>
     <private_data_specifier_descriptor private_data_specifier="EACEM"/>
-    <HD_simulcast_logical_channel_descriptor>
+    <eacem_HD_simulcast_logical_channel_descriptor>
       <service service_id="0x9687" logical_channel_number="78" visible_service="true"/>
       <service service_id="0x9877" logical_channel_number="12" visible_service="false"/>
-    </HD_simulcast_logical_channel_descriptor>
-    <logical_channel_number_descriptor>
+    </eacem_HD_simulcast_logical_channel_descriptor>
+    <eacem_logical_channel_number_descriptor>
       <service service_id="0xBF46" logical_channel_number="45" visible_service="true"/>
       <service service_id="0x2195" logical_channel_number="789" visible_service="false"/>
-    </logical_channel_number_descriptor>
+    </eacem_logical_channel_number_descriptor>
     <linkage_descriptor transport_stream_id="0x1345" original_network_id="0x987F" service_id="0xCDFE" linkage_type="0x08">
       <mobile_handover_info handover_type="0x02" origin_type="NIT" network_id="0x3434" initial_service_id="0x8764"/>
       <private_data>

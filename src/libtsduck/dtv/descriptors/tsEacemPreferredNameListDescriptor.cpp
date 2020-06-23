@@ -28,11 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsEacemPreferredNameListDescriptor.h"
-#include "tsDescriptor.h"
-#include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
-#include "tsDuckContext.h"
-#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"eacem_preferred_name_list_descriptor"
@@ -48,160 +44,15 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, ts::PDS_TPS), MY_XML_
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::EacemPreferredNameListDescriptor::EacemPreferredNameListDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
-    entries()
+    AbstractPreferredNameListDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::EacemPreferredNameListDescriptor::EacemPreferredNameListDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
-    entries()
+    AbstractPreferredNameListDescriptor(duck, desc, MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
 {
-    deserialize(duck, desc);
-}
-
-
-//----------------------------------------------------------------------------
-// Serialization
-//----------------------------------------------------------------------------
-
-void ts::EacemPreferredNameListDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
-{
-    ByteBlockPtr bbp(serializeStart());
-    for (LanguageMap::const_iterator it1 = entries.begin(); it1 != entries.end(); ++it1) {
-        if (!SerializeLanguageCode(*bbp, it1->first)) {
-            desc.invalidate();
-            return;
-        }
-        bbp->appendUInt8(uint8_t(it1->second.size()));  // name_count
-        for (NameByIdMap::const_iterator it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
-            bbp->appendUInt8(it2->first);  // name_id
-            bbp->append(duck.encodedWithByteLength(it2->second));
-        }
-    }
-    serializeEnd(desc, bbp);
-}
-
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::EacemPreferredNameListDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
-{
-    _is_valid = desc.isValid() && desc.tag() == _tag;
-    entries.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-
-        // Loop on languages.
-        while (size >= 4) {
-            // Get language and name count.
-            const UString lang(DeserializeLanguageCode(data));
-            uint8_t count = data[3];
-            data += 4; size -= 4;
-
-            // Force the creation of a language entry.
-            NameByIdMap& names(entries[lang]);
-
-            // Get all names for the lanuage.
-            while (count-- > 0 && size >= 2) {
-                uint8_t id = data[0];
-                size_t length = data[1];
-                data += 2; size -= 2;
-                if (length > size) {
-                    length = size;
-                }
-                duck.decode(names[id], data, length);
-                data += length; size -= length;
-            }
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Static method to display a descriptor.
-//----------------------------------------------------------------------------
-
-void ts::EacemPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
-{
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-
-    while (size >= 4) {
-        const UString lang(DeserializeLanguageCode(data));
-        uint8_t count = data[3];
-        data += 4; size -= 4;
-
-        strm << margin << "Language: " << lang << ", name count: " << int(count) << std::endl;
-        while (count-- > 0 && size >= 2) {
-            uint8_t id = data[0];
-            size_t length = data[1];
-            data += 2; size -= 2;
-            if (length > size) {
-                length = size;
-            }
-            strm << margin << "Id: " << int(id) << ", Name: \"" << duck.decoded(data, length) << "\"" << std::endl;
-            data += length; size -= length;
-        }
-    }
-
-    display.displayExtraData(data, size, indent);
-}
-
-
-//----------------------------------------------------------------------------
-// XML serialization
-//----------------------------------------------------------------------------
-
-void ts::EacemPreferredNameListDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
-{
-    for (LanguageMap::const_iterator it1 = entries.begin(); it1 != entries.end(); ++it1) {
-        xml::Element* e1 = root->addElement(u"language");
-        e1->setAttribute(u"code", it1->first);
-        for (NameByIdMap::const_iterator it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
-            xml::Element* e2 = e1->addElement(u"name");
-            e2->setIntAttribute(u"name_id", it2->first, true);
-            e2->setAttribute(u"name", it2->second);
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
-void ts::EacemPreferredNameListDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
-{
-    xml::ElementVector children1;
-    _is_valid = checkXMLName(element) && element->getChildren(children1, u"language");
-
-    for (size_t i1 = 0; _is_valid && i1 < children1.size(); ++i1) {
-        xml::ElementVector children2;
-        UString lang;
-        _is_valid = children1[i1]->getAttribute(lang, u"code", true, u"", 3, 3) && children1[i1]->getChildren(children2, u"name");
-        if (_is_valid) {
-            // Force the creation of a language entry.
-            NameByIdMap& names(entries[lang]);
-            for (size_t i2 = 0; _is_valid && i2 < children2.size(); ++i2) {
-                uint8_t id = 0;
-                _is_valid = children2[i2]->getIntAttribute(id, u"name_id", true) && children2[i2]->getAttribute(names[id], u"name");
-            }
-        }
-    }
 }

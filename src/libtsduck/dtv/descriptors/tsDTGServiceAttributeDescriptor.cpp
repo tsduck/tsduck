@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsLogicalChannelNumberDescriptor.h"
+#include "tsDTGServiceAttributeDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
@@ -35,33 +35,37 @@
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"logical_channel_number_descriptor"
-#define MY_CLASS ts::LogicalChannelNumberDescriptor
-#define MY_DID ts::DID_LOGICAL_CHANNEL_NUM
-#define MY_PDS ts::PDS_EACEM
+#define MY_XML_NAME u"dtg_service_attribute_descriptor"
+#define MY_CLASS ts::DTGServiceAttributeDescriptor
+#define MY_DID ts::DID_OFCOM_SERVICE_ATTR
+#define MY_PDS ts::PDS_OFCOM
 #define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-
-// Incorrect use of TPS private data, TPS broadcasters should use EACEM/EICTA PDS instead.
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, ts::PDS_TPS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor() :
+ts::DTGServiceAttributeDescriptor::DTGServiceAttributeDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     entries()
 {
     _is_valid = true;
 }
 
-ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor(DuckContext& duck, const Descriptor& desc) :
-    LogicalChannelNumberDescriptor()
+ts::DTGServiceAttributeDescriptor::DTGServiceAttributeDescriptor(DuckContext& duck, const Descriptor& desc) :
+    DTGServiceAttributeDescriptor()
 {
     deserialize(duck, desc);
+}
+
+ts::DTGServiceAttributeDescriptor::Entry::Entry(uint16_t id, bool numeric, bool visible) :
+    service_id(id),
+    numeric_selection(numeric),
+    visible_service(visible)
+{
 }
 
 
@@ -69,12 +73,12 @@ ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor(DuckContext& 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DTGServiceAttributeDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     for (auto it = entries.begin(); it != entries.end(); ++it) {
         bbp->appendUInt16(it->service_id);
-        bbp->appendUInt16((it->visible ? 0xFC00 : 0x7C00) | (it->lcn & 0x03FF));
+        bbp->appendUInt8((it->numeric_selection ? 0xFE : 0xFC) | (it->visible_service ? 0x01 : 0x00));
     }
     serializeEnd(desc, bbp);
 }
@@ -84,18 +88,17 @@ void ts::LogicalChannelNumberDescriptor::serialize(DuckContext& duck, Descriptor
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DTGServiceAttributeDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+    _is_valid = desc.isValid() && desc.tag() == _tag && size % 3 == 0;
     entries.clear();
 
     if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        while (size >= 4) {
-            entries.push_back(Entry(GetUInt16(data), (data[2] & 0x80) != 0, GetUInt16(data + 2) & 0x03FF));
-            data += 4;
-            size -= 4;
+        while (size >= 3) {
+            entries.push_back(Entry(GetUInt16(data), (data[2] & 0x02) != 0, (data[2] & 0x01) != 0));
+            data += 3; size -= 3;
         }
     }
 }
@@ -105,20 +108,17 @@ void ts::LogicalChannelNumberDescriptor::deserialize(DuckContext& duck, const De
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DTGServiceAttributeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
-    while (size >= 4) {
-        const uint16_t service = GetUInt16(data);
-        const uint8_t visible = (data[2] >> 7) & 0x01;
-        const uint16_t channel = GetUInt16(data + 2) & 0x03FF;
-        data += 4; size -= 4;
+    while (size >= 3) {
         strm << margin
-             << UString::Format(u"Service Id: %5d (0x%04X), Visible: %1d, Channel number: %3d", {service, service, visible, channel})
+             << UString::Format(u"Service Id: %5d (0x%04X), numeric selection: %s, visible: %s", {GetUInt16(data), GetUInt16(data), (data[2] & 0x02) != 0, (data[2] & 0x01) != 0})
              << std::endl;
+        data += 3; size -= 3;
     }
 
     display.displayExtraData(data, size, indent);
@@ -129,13 +129,13 @@ void ts::LogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& displa
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::DTGServiceAttributeDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"service");
         e->setIntAttribute(u"service_id", it->service_id, true);
-        e->setIntAttribute(u"logical_channel_number", it->lcn, false);
-        e->setBoolAttribute(u"visible_service", it->visible);
+        e->setBoolAttribute(u"numeric_selection", it->numeric_selection);
+        e->setBoolAttribute(u"visible_service", it->visible_service);
     }
 }
 
@@ -144,21 +144,18 @@ void ts::LogicalChannelNumberDescriptor::buildXML(DuckContext& duck, xml::Elemen
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::DTGServiceAttributeDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
+    xml::ElementVector xservice;
+    _is_valid = checkXMLName(element) && element->getChildren(xservice, u"service", 0, MAX_ENTRIES);
 
-    xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"service", 0, MAX_ENTRIES);
-
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (auto it = xservice.begin(); it != xservice.end(); ++it) {
         Entry entry;
         _is_valid =
-            children[i]->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-            children[i]->getIntAttribute<uint16_t>(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0x03FF) &&
-            children[i]->getBoolAttribute(entry.visible, u"visible_service", false, true);
+            (*it)->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true) &&
+            (*it)->getBoolAttribute(entry.numeric_selection, u"numeric_selection", true) &&
+            (*it)->getBoolAttribute(entry.visible_service, u"visible_service", true);
         if (_is_valid) {
             entries.push_back(entry);
         }

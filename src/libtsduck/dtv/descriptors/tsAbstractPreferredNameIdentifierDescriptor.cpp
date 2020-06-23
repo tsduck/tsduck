@@ -27,36 +27,39 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsDVBTimeShiftedServiceDescriptor.h"
+#include "tsAbstractPreferredNameIdentifierDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
-
-#define MY_XML_NAME u"DVB_time_shifted_service_descriptor"
-#define MY_XML_NAME_LEGACY u"time_shifted_service_descriptor"
-#define MY_CLASS ts::DVBTimeShiftedServiceDescriptor
-#define MY_DID ts::DID_TIME_SHIFT_SERVICE
-#define MY_STD ts::Standards::DVB
-
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor, MY_XML_NAME_LEGACY);
 
 
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::DVBTimeShiftedServiceDescriptor::DVBTimeShiftedServiceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY),
-    reference_service_id(0)
+ts::AbstractPreferredNameIdentifierDescriptor::AbstractPreferredNameIdentifierDescriptor(uint8_t id,
+                                                                                         DID tag,
+                                                                                         const UChar* xml_name,
+                                                                                         Standards standards,
+                                                                                         PDS pds,
+                                                                                         const UChar* xml_legacy_name) :
+    AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name),
+    name_id(id)
 {
     _is_valid = true;
 }
 
-ts::DVBTimeShiftedServiceDescriptor::DVBTimeShiftedServiceDescriptor(DuckContext& duck, const Descriptor& desc) :
-    DVBTimeShiftedServiceDescriptor()
+ts::AbstractPreferredNameIdentifierDescriptor::AbstractPreferredNameIdentifierDescriptor(DuckContext& duck,
+                                                                                         const Descriptor& desc,
+                                                                                         DID tag,
+                                                                                         const UChar* xml_name,
+                                                                                         Standards standards,
+                                                                                         PDS pds,
+                                                                                         const UChar* xml_legacy_name) :
+    AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name),
+    name_id(0)
 {
     deserialize(duck, desc);
 }
@@ -66,10 +69,10 @@ ts::DVBTimeShiftedServiceDescriptor::DVBTimeShiftedServiceDescriptor(DuckContext
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBTimeShiftedServiceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::AbstractPreferredNameIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(reference_service_id);
+    bbp->appendUInt8(name_id);
     serializeEnd(desc, bbp);
 }
 
@@ -78,13 +81,13 @@ void ts::DVBTimeShiftedServiceDescriptor::serialize(DuckContext& duck, Descripto
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBTimeShiftedServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AbstractPreferredNameIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 2;
+    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();
-        reference_service_id = GetUInt16(data);
+        name_id = data[0];
     }
 }
 
@@ -93,16 +96,16 @@ void ts::DVBTimeShiftedServiceDescriptor::deserialize(DuckContext& duck, const D
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AbstractPreferredNameIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
 
-    if (size >= 2) {
-        const uint16_t service = GetUInt16(data);
-        data += 2; size -= 2;
-        strm << margin << UString::Format(u"Reference service id: 0x%X (%d)", {service, service}) << std::endl;
+    if (size >= 1) {
+        uint8_t id = data[0];
+        data += 1; size -= 1;
+        strm << margin << "Name identifier: " << int(id) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);
@@ -113,9 +116,9 @@ void ts::DVBTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& displ
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBTimeShiftedServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::AbstractPreferredNameIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"reference_service_id", reference_service_id, true);
+    root->setIntAttribute(u"name_id", name_id, true);
 }
 
 
@@ -123,9 +126,9 @@ void ts::DVBTimeShiftedServiceDescriptor::buildXML(DuckContext& duck, xml::Eleme
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBTimeShiftedServiceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::AbstractPreferredNameIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(reference_service_id, u"reference_service_id", true);
+        element->getIntAttribute<uint8_t>(name_id, u"name_id", true, 0, 0x00, 0xFF);
 }

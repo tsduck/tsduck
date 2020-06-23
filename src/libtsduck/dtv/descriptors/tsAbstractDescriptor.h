@@ -122,8 +122,9 @@ namespace ts {
         //! @param [in] xml_name Descriptor name, as used in XML structures.
         //! @param [in] standards A bit mask of standards which define this structure.
         //! @param [in] pds Required private data specifier if this is a private descriptor.
+        //! @param [in] xml_legacy_name Table or descriptor legacy XML name. Ignored if null pointer.
         //!
-        AbstractDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds);
+        AbstractDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds, const UChar* xml_legacy_name = nullptr);
 
         //!
         //! Tool for serialization: get a byte buffer for serialization.

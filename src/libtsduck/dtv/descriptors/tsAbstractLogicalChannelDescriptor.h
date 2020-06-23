@@ -28,8 +28,8 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a logical_channel_number_descriptor.
-//!  This is a private descriptor, must be preceeded by the EACEM/EICTA PDS.
+//!  Abstract representation of a logical_channel_descriptor
+//!  for different private data specifiers.
 //!
 //----------------------------------------------------------------------------
 
@@ -38,13 +38,10 @@
 
 namespace ts {
     //!
-    //! Representation of a logical_channel_number_descriptor.
-    //!
-    //! This is a private descriptor, must be preceeded by the EACEM/EICTA PDS.
-    //! @see EACEM Technical Report Number TR-030, 9.2.11.2.
+    //! Abstract representation of a logical_channel_descriptor for different private data specifiers.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL LogicalChannelNumberDescriptor : public AbstractDescriptor
+    class TSDUCKDLL AbstractLogicalChannelDescriptor : public AbstractDescriptor
     {
     public:
         //!
@@ -54,21 +51,16 @@ namespace ts {
         {
             // Public members
             uint16_t service_id;  //!< Service id.
-            bool     visible;     //!< Service is visible.
+            bool     visible;     //!< Service is visible. Not always defined, defaults to 1.
             uint16_t lcn;         //!< Logical channel number.
 
             //!
             //! Constructor
-            //! @param [in] id_ Service id.
-            //! @param [in] visible_ Service is visible.
-            //! @param [in] lcn_ Logical channel number.
+            //! @param [in] id Service id.
+            //! @param [in] visible Service is visible.
+            //! @param [in] lcn Logical channel number.
             //!
-            Entry(uint16_t id_ = 0, bool visible_ = true, uint16_t lcn_ = 0):
-                service_id(id_),
-                visible(visible_),
-                lcn(lcn_)
-            {
-            }
+            Entry(uint16_t id = 0, bool visible = true, uint16_t lcn = 0);
         };
 
         //!
@@ -81,20 +73,8 @@ namespace ts {
         //!
         static const size_t MAX_ENTRIES = 63;
 
-        // LogicalChannelNumberDescriptor public members:
+        // AbstractLogicalChannelDescriptor public members:
         EntryList entries;  //!< List of service entries.
-
-        //!
-        //! Default constructor.
-        //!
-        LogicalChannelNumberDescriptor();
-
-        //!
-        //! Constructor from a binary descriptor
-        //! @param [in,out] duck TSDuck execution context.
-        //! @param [in] bin A binary descriptor to deserialize.
-        //!
-        LogicalChannelNumberDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;
@@ -103,7 +83,32 @@ namespace ts {
         DeclareDisplayDescriptor();
 
     protected:
+        //!
+        //! Protected constructor for subclasses.
+        //! @param [in] tag Descriptor tag.
+        //! @param [in] xml_name Descriptor name, as used in XML structures.
+        //! @param [in] standards A bit mask of standards which define this structure.
+        //! @param [in] pds Required private data specifier if this is a private descriptor.
+        //! @param [in] xml_legacy_name Table or descriptor legacy XML name. Ignored if null pointer.
+        //!
+        AbstractLogicalChannelDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds, const UChar* xml_legacy_name = nullptr);
+
+        //!
+        //! Protected constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] xml_name Descriptor name, as used in XML structures.
+        //! @param [in] tag Descriptor tag.
+        //! @param [in] standards A bit mask of standards which define this structure.
+        //! @param [in] pds Required private data specifier if this is a private descriptor.
+        //! @param [in] xml_legacy_name Table or descriptor legacy XML name. Ignored if null pointer.
+        //!
+        AbstractLogicalChannelDescriptor(DuckContext& duck, const Descriptor& bin, DID tag, const UChar* xml_name, Standards standards, PDS pds, const UChar* xml_legacy_name = nullptr);
+
         // Inherited methods
         virtual void buildXML(DuckContext&, xml::Element*) const override;
+
+    private:
+        AbstractLogicalChannelDescriptor() = delete;
     };
 }
