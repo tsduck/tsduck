@@ -29,7 +29,7 @@
 //!
 //!  @file
 //!  Representation of a NorDig logical_channel_descriptor (V1).
-//!  This is a private descriptor, must be preceeded by the NorDig PDS.
+//!  This is a private descriptor, must be preceded by the NorDig PDS.
 //!
 //----------------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ namespace ts {
     //!
     //! Representation of a NorDig logical_channel_descriptor (V1).
     //!
-    //! This is a private descriptor, must be preceeded by the NorDig PDS.
+    //! This is a private descriptor, must be preceded by the NorDig PDS.
     //! @see NorDig Unified Requirements ver. 3.1.1, 12.2.9.2.
     //! @ingroup descriptor
     //!

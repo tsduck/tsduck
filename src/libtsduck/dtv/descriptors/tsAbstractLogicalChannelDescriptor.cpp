@@ -27,42 +27,46 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsHDSimulcastLogicalChannelDescriptor.h"
+#include "tsAbstractLogicalChannelDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
-
-#define MY_XML_NAME u"HD_simulcast_logical_channel_descriptor"
-#define MY_CLASS ts::HDSimulcastLogicalChannelDescriptor
-#define MY_DID ts::DID_HD_SIMULCAST_LCN
-#define MY_PDS ts::PDS_EACEM
-#define MY_STD ts::Standards::DVB
-
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-
-// Incorrect use of TPS private data, TPS broadcasters should use EACEM/EICTA PDS instead.
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, ts::PDS_TPS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor () :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+ts::AbstractLogicalChannelDescriptor::AbstractLogicalChannelDescriptor(DID tag,
+                                                                       const UChar* xml_name,
+                                                                       Standards standards,
+                                                                       PDS pds,
+                                                                       const UChar* xml_legacy_name) :
+    AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name),
     entries()
 {
     _is_valid = true;
 }
 
-
-ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor(DuckContext& duck, const Descriptor& desc) :
-    HDSimulcastLogicalChannelDescriptor()
+ts::AbstractLogicalChannelDescriptor::AbstractLogicalChannelDescriptor(DuckContext& duck,
+                                                                       const Descriptor& desc,
+                                                                       DID tag,
+                                                                       const UChar* xml_name,
+                                                                       Standards standards,
+                                                                       PDS pds,
+                                                                       const UChar* xml_legacy_name) :
+    AbstractLogicalChannelDescriptor(tag, xml_name, standards, pds, xml_legacy_name)
 {
     deserialize(duck, desc);
+}
+
+ts::AbstractLogicalChannelDescriptor::Entry::Entry(uint16_t i, bool v, uint16_t l):
+    service_id(i),
+    visible(v),
+    lcn(l)
+{
 }
 
 
@@ -70,7 +74,7 @@ ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor(Duc
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::HDSimulcastLogicalChannelDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::AbstractLogicalChannelDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     for (auto it = entries.begin(); it != entries.end(); ++it) {
@@ -85,7 +89,7 @@ void ts::HDSimulcastLogicalChannelDescriptor::serialize(DuckContext& duck, Descr
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::HDSimulcastLogicalChannelDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AbstractLogicalChannelDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
     entries.clear();
@@ -94,7 +98,7 @@ void ts::HDSimulcastLogicalChannelDescriptor::deserialize(DuckContext& duck, con
         const uint8_t* data = desc.payload();
         size_t size = desc.payloadSize();
         while (size >= 4) {
-            entries.push_back (Entry (GetUInt16 (data), (data[2] & 0x80) != 0, GetUInt16 (data + 2) & 0x03FF));
+            entries.push_back(Entry(GetUInt16(data), (data[2] & 0x80) != 0, GetUInt16(data + 2) & 0x03FF));
             data += 4;
             size -= 4;
         }
@@ -106,7 +110,7 @@ void ts::HDSimulcastLogicalChannelDescriptor::deserialize(DuckContext& duck, con
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AbstractLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
@@ -130,9 +134,9 @@ void ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& d
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::HDSimulcastLogicalChannelDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::AbstractLogicalChannelDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"service");
         e->setIntAttribute(u"service_id", it->service_id, true);
         e->setIntAttribute(u"logical_channel_number", it->lcn, false);
@@ -145,7 +149,7 @@ void ts::HDSimulcastLogicalChannelDescriptor::buildXML(DuckContext& duck, xml::E
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::HDSimulcastLogicalChannelDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::AbstractLogicalChannelDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

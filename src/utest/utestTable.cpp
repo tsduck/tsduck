@@ -45,7 +45,7 @@
 #include "tsAVCVideoDescriptor.h"
 #include "tsDVBAC3Descriptor.h"
 #include "tsEacemPreferredNameIdentifierDescriptor.h"
-#include "tsLogicalChannelNumberDescriptor.h"
+#include "tsEacemLogicalChannelNumberDescriptor.h"
 #include "tsEutelsatChannelNumberDescriptor.h"
 #include "tsDuckContext.h"
 #include "tsTSPacket.h"
@@ -360,7 +360,7 @@ void TableTest::testCleanupPrivateDescriptors()
     ts::DuckContext duck;
     ts::DescriptorList dlist(nullptr);
     dlist.add(duck, ts::EacemPreferredNameIdentifierDescriptor());
-    dlist.add(duck, ts::LogicalChannelNumberDescriptor());
+    dlist.add(duck, ts::EacemLogicalChannelNumberDescriptor());
     dlist.add(duck, ts::ServiceDescriptor());
     dlist.add(duck, ts::EutelsatChannelNumberDescriptor());
 

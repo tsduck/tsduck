@@ -115,17 +115,15 @@ namespace ts {
 //! TS_REGISTER_EXTENSION(u"foo", u"Manipulate FOO tables", {u"fooinject", u"fooextract"}, {u"foogen"});
 //! @endcode
 //!
-#define TS_REGISTER_EXTENSION(...)                                                \
+#define TS_REGISTER_EXTENSION(...)                                               \
     namespace {                                                                  \
         const ts::DuckExtension _TSDuckExtensionId(__VA_ARGS__);                 \
     }                                                                            \
     extern "C" {                                                                 \
-        /** @cond nodoxygen */                                                   \
         TS_PUSH_WARNING()                                                        \
         TS_LLVM_NOWARNING(missing-variable-declarations)                         \
         TS_DLL_EXPORT                                                            \
         ts::DuckExtension::ConstPointer TSDuckExtensionId = &_TSDuckExtensionId; \
         TS_POP_WARNING()                                                         \
-        /** @endcond */                                                          \
     }                                                                            \
     typedef int TS_UNIQUE_NAME(unused_to_allow_semicolon)

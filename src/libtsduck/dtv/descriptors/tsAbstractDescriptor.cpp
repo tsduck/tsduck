@@ -37,8 +37,8 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::AbstractDescriptor::AbstractDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds) :
-    AbstractSignalization(xml_name, standards),
+ts::AbstractDescriptor::AbstractDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds, const UChar* xml_legacy_name) :
+    AbstractSignalization(xml_name, standards, xml_legacy_name),
     _tag(tag),
     _required_pds(pds)
 {

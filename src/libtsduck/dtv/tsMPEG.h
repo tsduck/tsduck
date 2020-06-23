@@ -972,6 +972,7 @@ namespace ts {
         PDS_LOGIWAYS  = 0x000000A2, //!< Private data specifier for Logiways.
         PDS_CANALPLUS = 0x000000C0, //!< Private data specifier for Canal+.
         PDS_EUTELSAT  = 0x0000055F, //!< Private data specifier for EutelSat.
+        PDS_OFCOM     = 0x0000233A, //!< Private data specifier for DTT UK (OFCOM, formerly ITC).
         PDS_ATSC      = 0x41545343, //!< Fake private data specifier for ATSC descriptors (value is "ATSC" in ASCII).
         PDS_ISDB      = 0x49534442, //!< Fake private data specifier for ISDB descriptors (value is "ISDB" in ASCII).
         PDS_NULL      = 0xFFFFFFFF, //!< An invalid private data specifier, can be used as placeholder.
@@ -1243,6 +1244,16 @@ namespace ts {
         DID_PREF_NAME_ID        = 0x85, //!< DID for EACEM/EICTA preferred_name_identifier_descriptor
         DID_EACEM_STREAM_ID     = 0x86, //!< DID for EACEM/EICTA eacem_stream_identifier_descriptor
         DID_HD_SIMULCAST_LCN    = 0x88, //!< DID for EACEM/EICTA HD_simulcast_logical_channel_number_descriptor
+
+        // Valid after PDS_OFCOM private_data_specifier
+
+        DID_OFCOM_LOGICAL_CHAN  = 0x83, //!< DID for OFCOM/DTG logical_channel_descriptor
+        DID_OFCOM_PREF_NAME_LST = 0x84, //!< DID for OFCOM/DTG preferred_name_list_descriptor
+        DID_OFCOM_PREF_NAME_ID  = 0x85, //!< DID for OFCOM/DTG preferred_name_identifier_descriptor
+        DID_OFCOM_SERVICE_ATTR  = 0x86, //!< DID for OFCOM/DTG service_attribute_descriptor
+        DID_OFCOM_SHORT_SRV_NAM = 0x87, //!< DID for OFCOM/DTG short_service_name_descriptor
+        DID_OFCOM_HD_SIMULCAST  = 0x88, //!< DID for OFCOM/DTG HD_simulcast_logical_channel_descriptor
+        DID_OFCOM_GUIDANCE      = 0x89, //!< DID for OFCOM/DTG guidance_descriptor
 
         // Valid after PDS_CANALPLUS private_data_specifier
 
@@ -1595,6 +1606,7 @@ namespace ts {
 
     enum : uint16_t {
         NID_TNT_FRANCE = 0x20FA,  //!< Network id for the French national terrestrial network.
+        NID_DTT_UK     = 0x233A,  //!< Network id for the UK national terrestrial network.
     };
 
     //---------------------------------------------------------------------

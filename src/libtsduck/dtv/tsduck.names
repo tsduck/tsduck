@@ -314,9 +314,9 @@ Bits = 32
 0x000022FC = Office of National Broadcasting and Telecommunications Commission
 0x00002310 = DTT Emirates
 0x00002320 = DTT Uganda
-0x0000233A = Independent Television Commission
+0x0000233A = DTT UK (OFCOM, formerly ITC)
 0x00002372 = DTT Samoa
-0x00002B00 = DTT – Sky New Zealand
+0x00002B00 = DTT Sky New Zealand
 0x00003200 = Australian Terrestrial Television Networks
 0x0000333A = Digital TV Group
 0x00006000 = NDS
@@ -674,6 +674,15 @@ Bits = 8
 # With PDS for BskyB
 0x00000002_B1 = Sky Channel Number
 0x00000002_B2 = Sky Service
+# With PDS for OFCOM/ITC (UK DTT).
+# Descriptors are in defined in the "D-Book".
+0x0000233A_83 = UK DTT Logical Channel
+0x0000233A_84 = UK DTT Preferred Name List
+0x0000233A_85 = UK DTT Preferred Name Identifier
+0x0000233A_86 = UK DTT Service Attribute
+0x0000233A_87 = UK DTT Short Service Name
+0x0000233A_88 = UK DTT HD Simulcast Logical Channel Number
+0x0000233A_89 = UK DTT Guidance
 # ATSC descriptors, using the fake PDS for ATSC.
 0x41545343_80 = ATSC Stuffing
 0x41545343_81 = ATSC AC-3 Audio

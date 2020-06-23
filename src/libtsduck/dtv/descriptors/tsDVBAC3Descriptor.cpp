@@ -50,7 +50,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::DVBAC3Descriptor::DVBAC3Descriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY),
     component_type(),
     bsid(),
     mainid(),
@@ -233,7 +233,7 @@ void ts::DVBAC3Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
 void ts::DVBAC3Descriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(element, MY_XML_NAME_LEGACY) &&
+        checkXMLName(element) &&
         element->getOptionalIntAttribute(component_type, u"component_type") &&
         element->getOptionalIntAttribute(bsid, u"bsid") &&
         element->getOptionalIntAttribute(mainid, u"mainid") &&

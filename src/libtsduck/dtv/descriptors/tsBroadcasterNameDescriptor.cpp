@@ -82,7 +82,7 @@ void ts::BroadcasterNameDescriptor::deserialize(DuckContext& duck, const Descrip
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 2;
+    _is_valid = desc.isValid() && desc.tag() == _tag;
 
     if (_is_valid) {
         duck.decode(name, data, size);

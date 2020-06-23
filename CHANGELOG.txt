@@ -15,9 +15,9 @@ VERSION 3.22-1858
       "tspsi", "tstables", plugins "file", "fork" (input, output and packet
       processor) and plugins "merge", "mux".
     - Options --input-format and --output-format in "tsstuff".
-    - Option --size-of-packet in "tsftrunc".
     - Options --input-synchronous and --jitter-unreal in plugin "pcrverify".
     - Option --timestamp-priority in input plugins "ip" and "srt".
+    - Option --size-of-packet in "tsftrunc".
 
 [BUG] Bug fixes:
 

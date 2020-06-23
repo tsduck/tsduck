@@ -50,7 +50,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::DVBStuffingDescriptor::DVBStuffingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY),
     stuffing()
 {
     _is_valid = true;
@@ -126,5 +126,5 @@ void ts::DVBStuffingDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 void ts::DVBStuffingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     stuffing.clear();
-    _is_valid = checkXMLName(element, MY_XML_NAME_LEGACY) && element->getHexaText(stuffing, 0, 255);
+    _is_valid = checkXMLName(element) && element->getHexaText(stuffing, 0, 255);
 }

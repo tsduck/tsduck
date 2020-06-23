@@ -1316,7 +1316,36 @@
       <!-- Must be in an AIT (table id 0x74) -->
     </dvb_j_application_location_descriptor>
 
+    <dtg_service_attribute_descriptor>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               numeric_selection="bool, required"
+               visible_service="bool, required"/>
+    </dtg_service_attribute_descriptor>
+
+    <dtg_short_service_name_descriptor name="string, required"/>
+
+    <dtg_guidance_descriptor
+        guidance_type="uint2, required"
+        ISO_639_language_code="char3, optional"
+        text="string, optional"
+        guidance_mode="bool, optional">
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </dtg_guidance_descriptor>
+
+    <dtg_preferred_name_identifier_descriptor name_id="uint8, required"/>
+
     <eacem_preferred_name_identifier_descriptor name_id="uint8, required"/>
+
+    <dtg_preferred_name_list_descriptor>
+      <!-- One per language -->
+      <language code="char3, required">
+        <!-- One per name -->
+        <name name_id="uint8, required" name="string, required"/>
+      </language>
+    </dtg_preferred_name_list_descriptor>
 
     <eacem_preferred_name_list_descriptor>
       <!-- One per language -->
@@ -1530,6 +1559,21 @@
       </graphics_configuration>
     </graphics_constraints_descriptor>
 
+    <dtg_HD_simulcast_logical_channel_descriptor>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               logical_channel_number="uint10, required"
+               visible_service="bool, default=true"/>
+    </dtg_HD_simulcast_logical_channel_descriptor>
+
+    <eacem_HD_simulcast_logical_channel_descriptor>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               logical_channel_number="uint10, required"
+               visible_service="bool, default=true"/>
+    </eacem_HD_simulcast_logical_channel_descriptor>
+
+    <!-- Previous version, still accepted for compatibility -->
     <HD_simulcast_logical_channel_descriptor>
       <!-- One per service -->
       <service service_id="uint16, required"
@@ -1718,6 +1762,21 @@
       <!-- local_time_offset and next_time_offset: -780 to +780 minutes (-13 to +13 hours) -->
     </local_time_offset_descriptor>
 
+    <dtg_logical_channel_descriptor>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               logical_channel_number="uint10, required"
+               visible_service="bool, default=true"/>
+    </dtg_logical_channel_descriptor>
+
+    <eacem_logical_channel_number_descriptor>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               logical_channel_number="uint10, required"
+               visible_service="bool, default=true"/>
+    </eacem_logical_channel_number_descriptor>
+
+    <!-- Previous version, still accepted for compatibility -->
     <logical_channel_number_descriptor>
       <!-- One per service -->
       <service service_id="uint16, required"
@@ -1916,7 +1975,7 @@
 
     <private_data_indicator_descriptor private_data_indicator="uint32, required"/>
 
-    <private_data_specifier_descriptor private_data_specifier="uint32|eacem|eutelsat|nordig, required"/>
+    <private_data_specifier_descriptor private_data_specifier="uint32|eacem|eutelsat|nordig|ofcom..., required"/>
 
     <protection_message_descriptor>
       <!-- One per component, up to 15 components -->

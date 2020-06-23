@@ -51,7 +51,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::DVBAC4Descriptor::DVBAC4Descriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY),
     ac4_dialog_enhancement_enabled(),
     ac4_channel_mode(),
     ac4_dsi_toc(),
@@ -205,7 +205,7 @@ void ts::DVBAC4Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
 void ts::DVBAC4Descriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(element, MY_XML_NAME_LEGACY) &&
+        checkXMLName(element) &&
         element->getOptionalBoolAttribute(ac4_dialog_enhancement_enabled, u"ac4_dialog_enhancement_enabled") &&
         element->getOptionalIntAttribute<uint8_t>(ac4_channel_mode, u"ac4_channel_mode", 0, 3) &&
         element->getHexaTextChild(ac4_dsi_toc, u"ac4_dsi_toc", false, 0, MAX_DESCRIPTOR_SIZE - 6) &&

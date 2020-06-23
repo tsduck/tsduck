@@ -28,8 +28,8 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a HD_simulcast_logical_channel_descriptor.
-//!  This is a private descriptor, must be preceeded by the EACEM/EICTA PDS.
+//!  Abstract representation of a preferred_name_identifier_descriptor
+//!  for different private data specifiers.
 //!
 //----------------------------------------------------------------------------
 
@@ -38,62 +38,14 @@
 
 namespace ts {
     //!
-    //! Representation of a HD_simulcast_logical_channel_descriptor.
-    //!
-    //! This is a private descriptor, must be preceeded by the EACEM/EICTA PDS.
+    //! Abstract representation of a preferred_name_identifier_descriptor for different private data specifiers.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL HDSimulcastLogicalChannelDescriptor : public AbstractDescriptor
+    class TSDUCKDLL AbstractPreferredNameIdentifierDescriptor : public AbstractDescriptor
     {
     public:
-        //!
-        //! Service entry.
-        //!
-        struct TSDUCKDLL Entry
-        {
-            // Public members
-            uint16_t service_id;  //!< Service id.
-            bool     visible;     //!< Service is visible.
-            uint16_t lcn;         //!< Logical channel number.
-
-            //!
-            //! Constructor
-            //! @param [in] id_ Service id.
-            //! @param [in] visible_ Service is visible.
-            //! @param [in] lcn_ Logical channel number.
-            //!
-            Entry(uint16_t id_ = 0, bool visible_ = true, uint16_t lcn_ = 0):
-                service_id(id_),
-                visible(visible_),
-                lcn(lcn_)
-            {
-            }
-        };
-
-        //!
-        //! List of service entries.
-        //!
-        typedef std::list<Entry> EntryList;
-
-        //!
-        //! Maximum number of services entries to fit in 255 bytes.
-        //!
-        static const size_t MAX_ENTRIES = 63;
-
-        // HDSimulcastLogicalChannelDescriptor public members:
-        EntryList entries;  //!< List of service entries.
-
-        //!
-        //! Default constructor.
-        //!
-        HDSimulcastLogicalChannelDescriptor();
-
-        //!
-        //! Constructor from a binary descriptor
-        //! @param [in,out] duck TSDuck execution context.
-        //! @param [in] bin A binary descriptor to deserialize.
-        //!
-        HDSimulcastLogicalChannelDescriptor(DuckContext& duck, const Descriptor& bin);
+        // AbstractPreferredNameIdentifierDescriptor public members:
+        uint8_t name_id;  //!< Service name id from an EacemPreferredNameListDescriptor.
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;
@@ -102,7 +54,33 @@ namespace ts {
         DeclareDisplayDescriptor();
 
     protected:
+        //!
+        //! Default constructor.
+        //! @param [in] name_id Service name id from an EacemPreferredNameListDescriptor.
+        //! @param [in] tag Descriptor tag.
+        //! @param [in] xml_name Descriptor name, as used in XML structures.
+        //! @param [in] standards A bit mask of standards which define this structure.
+        //! @param [in] pds Required private data specifier if this is a private descriptor.
+        //! @param [in] xml_legacy_name Table or descriptor legacy XML name. Ignored if null pointer.
+        //!
+        AbstractPreferredNameIdentifierDescriptor(uint8_t name_id, DID tag, const UChar* xml_name, Standards standards, PDS pds, const UChar* xml_legacy_name = nullptr);
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] tag Descriptor tag.
+        //! @param [in] xml_name Descriptor name, as used in XML structures.
+        //! @param [in] standards A bit mask of standards which define this structure.
+        //! @param [in] pds Required private data specifier if this is a private descriptor.
+        //! @param [in] xml_legacy_name Table or descriptor legacy XML name. Ignored if null pointer.
+        //!
+        AbstractPreferredNameIdentifierDescriptor(DuckContext& duck, const Descriptor& bin, DID tag, const UChar* xml_name, Standards standards, PDS pds, const UChar* xml_legacy_name = nullptr);
+
         // Inherited methods
         virtual void buildXML(DuckContext&, xml::Element*) const override;
+
+    private:
+        AbstractPreferredNameIdentifierDescriptor() = delete;
     };
 }

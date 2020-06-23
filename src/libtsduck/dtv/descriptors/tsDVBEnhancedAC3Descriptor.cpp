@@ -50,7 +50,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::DVBEnhancedAC3Descriptor::DVBEnhancedAC3Descriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY),
     component_type(),
     bsid(),
     mainid(),
@@ -289,7 +289,7 @@ void ts::DVBEnhancedAC3Descriptor::buildXML(DuckContext& duck, xml::Element* roo
 void ts::DVBEnhancedAC3Descriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(element, MY_XML_NAME_LEGACY) &&
+        checkXMLName(element) &&
         element->getBoolAttribute(mixinfoexists, u"mixinfoexists", true) &&
         element->getOptionalIntAttribute(component_type, u"component_type") &&
         element->getOptionalIntAttribute(bsid, u"bsid") &&

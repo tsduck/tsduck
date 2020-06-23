@@ -42,9 +42,10 @@ const ts::UChar* const ts::AbstractSignalization::XML_GENERIC_LONG_TABLE  = u"ge
 // Constructors, assignments and destructors.
 //----------------------------------------------------------------------------
 
-ts::AbstractSignalization::AbstractSignalization(const UChar* xml_name, Standards standards) :
+ts::AbstractSignalization::AbstractSignalization(const UChar* xml_name, Standards standards, const UChar* xml_legacy_name) :
     AbstractDefinedByStandards(),
     _xml_name(xml_name),
+    _xml_legacy_name(xml_legacy_name),
     _is_valid(false),
     _standards(standards)
 {
@@ -115,7 +116,7 @@ ts::xml::Element* ts::AbstractSignalization::toXML(DuckContext& duck, xml::Eleme
 // Check that an XML element has the right name for this table.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractSignalization::checkXMLName(const xml::Element* element, const UChar* legacy_name) const
+bool ts::AbstractSignalization::checkXMLName(const xml::Element* element) const
 {
     if (element == nullptr) {
         return false;
@@ -123,7 +124,7 @@ bool ts::AbstractSignalization::checkXMLName(const xml::Element* element, const 
     else if (element->name().similar(_xml_name)) {
         return true;
     }
-    else if (legacy_name != nullptr && element->name().similar(legacy_name)) {
+    else if (_xml_legacy_name != nullptr && element->name().similar(_xml_legacy_name)) {
         return true;
     }
     else {

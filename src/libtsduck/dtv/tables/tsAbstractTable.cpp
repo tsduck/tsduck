@@ -38,8 +38,8 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::AbstractTable::AbstractTable(TID tid, const UChar* xml_name, Standards standards) :
-    AbstractSignalization(xml_name, standards),
+ts::AbstractTable::AbstractTable(TID tid, const UChar* xml_name, Standards standards, const UChar* xml_legacy_name) :
+    AbstractSignalization(xml_name, standards, xml_legacy_name),
     _table_id(tid)
 {
 }
