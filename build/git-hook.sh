@@ -40,6 +40,12 @@ ROOTDIR=$(cd $(dirname ${BASH_SOURCE[0]})/..; pwd)
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 info()  { echo >&2 "$SCRIPT: $*"; }
 
+# Get current branch (output and syntax varies across versions of git).
+BRANCH=$(git branch | sed -e '/^$/d' -e '/^[^*]/d' -e 's/^\* *//' 2>/dev/null)
+
+# Do nothing if branch is not "master".
+[[ "$BRANCH" == "master" ]] || exit 0
+
 # The commit number is in tsVersion.h
 SRCFILE="$ROOTDIR/src/libtsduck/tsVersion.h"
 PREFIX="#define TS_COMMIT"
