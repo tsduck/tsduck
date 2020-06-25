@@ -112,6 +112,7 @@
 #include "tsBoardInformationDescriptor.h"
 #include "tsBouquetNameDescriptor.h"
 #include "tsBroadcasterNameDescriptor.h"
+#include "tsBuffer.h"
 #include "tsByteBlock.h"
 #include "tsC2BundleDeliverySystemDescriptor.h"
 #include "tsC2DeliverySystemDescriptor.h"
