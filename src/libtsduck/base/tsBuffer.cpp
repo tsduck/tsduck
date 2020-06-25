@@ -32,8 +32,8 @@
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const size_t ts::Foo::DEFAULT_SIZE;
-const size_t ts::Foo::MINIMUM_SIZE;
+const size_t ts::Buffer::DEFAULT_SIZE;
+const size_t ts::Buffer::MINIMUM_SIZE;
 #endif
 
 
