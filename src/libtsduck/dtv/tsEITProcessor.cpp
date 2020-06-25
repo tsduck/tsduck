@@ -35,6 +35,10 @@
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+constexpr size_t ts::EITProcessor::MIN_BUFFERED_SECTIONS;
+#endif
+
 
 //----------------------------------------------------------------------------
 // Constructor.
