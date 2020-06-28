@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAC3Attributes.h"
-#include "tsBitStream.h"
+#include "tsBuffer.h"
 TSDUCK_SOURCE;
 
 
@@ -51,9 +51,9 @@ ts::AC3Attributes::AC3Attributes() :
 // Provide an audio frame.
 //----------------------------------------------------------------------------
 
-bool ts::AC3Attributes::moreBinaryData (const void* vdata, size_t size)
+bool ts::AC3Attributes::moreBinaryData(const void* vdata, size_t size)
 {
-    const uint8_t* const data = reinterpret_cast<const uint8_t*> (vdata);
+    const uint8_t* const data = reinterpret_cast<const uint8_t*>(vdata);
 
     // Minimum size for AC-3 header, check AC-3 syncword
     if (size < 7 || data[0] != 0x0B || data[1] != 0x77) {
@@ -89,7 +89,7 @@ bool ts::AC3Attributes::moreBinaryData (const void* vdata, size_t size)
     // bsmod is far away in E-AC-3 (in metadata info)
     if (eac3) {
         // Enhanced-AC-3
-        bsmod = extractEAC3bsmod (data, size);
+        bsmod = extractEAC3bsmod(data, size);
         acmod = (data[4] >> 1) & 0x07;
         surround = false;
     }
@@ -128,23 +128,23 @@ bool ts::AC3Attributes::moreBinaryData (const void* vdata, size_t size)
 // Extract 'bsmod' from an Enhanced-AC-3 frame. Return 0 if not found.
 //----------------------------------------------------------------------------
 
-int ts::AC3Attributes::extractEAC3bsmod (const uint8_t* data, size_t size)
+int ts::AC3Attributes::extractEAC3bsmod(const uint8_t* data, size_t size)
 {
     // Analyse Enhanced-AC-3 bitstream until bsmod is found.
     // See ETSI TS 102 366 V1.1.1, annex E.1, for the dirty details.
 
-    BitStream bs (data, 8 * size);
-    bs.skipBits (16); // syncword
-    const uint8_t strmtyp = bs.getBits<uint8_t> (2);
-    bs.skipBits (14); // substreamid, frmsiz
-    const uint8_t fscod = bs.getBits<uint8_t> (2);
+    Buffer bs(data, size);
+    bs.skipBits(16); // syncword
+    const uint8_t strmtyp = bs.getBits<uint8_t>(2);
+    bs.skipBits(14); // substreamid, frmsiz
+    const uint8_t fscod = bs.getBits<uint8_t>(2);
     uint8_t numblkscod;
     if (fscod == 3) {
-        bs.skipBits (2); // fscod2
+        bs.skipBits(2); // fscod2
         numblkscod = 3;
     }
     else {
-        numblkscod = bs.getBits<uint8_t> (2);
+        numblkscod = bs.getBits<uint8_t>(2);
     }
     uint8_t number_of_blocks_per_sync_frame = 0;
     switch (numblkscod) {
@@ -152,100 +152,100 @@ int ts::AC3Attributes::extractEAC3bsmod (const uint8_t* data, size_t size)
         case 1:  number_of_blocks_per_sync_frame = 2; break;
         case 2:  number_of_blocks_per_sync_frame = 3; break;
         case 3:  number_of_blocks_per_sync_frame = 6; break;
-        default: assert (false);
+        default: assert(false);
     }
-    const uint8_t acmod = bs.getBits<uint8_t> (3);
-    const uint8_t lfeon = bs.getBits<uint8_t> (1);
-    bs.skipBits (10); // bsid, dialnorm
-    const uint8_t compre = bs.getBits<uint8_t> (1);
+    const uint8_t acmod = bs.getBits<uint8_t>(3);
+    const uint8_t lfeon = bs.getBits<uint8_t>(1);
+    bs.skipBits(10); // bsid, dialnorm
+    const uint8_t compre = bs.getBits<uint8_t>(1);
     if (compre) {
-        bs.skipBits (8); // compr
+        bs.skipBits(8); // compr
     }
     if (acmod == 0) {
-        bs.skipBits (5); // dialnorm2
-        const uint8_t compr2e = bs.getBits<uint8_t> (1);
+        bs.skipBits(5); // dialnorm2
+        const uint8_t compr2e = bs.getBits<uint8_t>(1);
         if (compr2e) {
-            bs.skipBits (8); // compr2
+            bs.skipBits(8); // compr2
         }
     }
     if (strmtyp == 1) {
-        const uint8_t chanmape = bs.getBits<uint8_t> (1);
+        const uint8_t chanmape = bs.getBits<uint8_t>(1);
         if (chanmape) {
-            bs.skipBits (16); // chanmap
+            bs.skipBits(16); // chanmap
         }
     }
-    const uint8_t mixmdate = bs.getBits<uint8_t> (1);
+    const uint8_t mixmdate = bs.getBits<uint8_t>(1);
     if (mixmdate) {
         if (acmod > 2) {
-            bs.skipBits (2); // dmixmod
+            bs.skipBits(2); // dmixmod
         }
         if ((acmod & 0x1) && (acmod > 2)) {
-            bs.skipBits (6); // ltrtcmixlev, lorocmixlev
+            bs.skipBits(6); // ltrtcmixlev, lorocmixlev
         }
         if (acmod & 0x4) {
-            bs.skipBits (6); // ltrtsurmixlev, lorosurmixlev
+            bs.skipBits(6); // ltrtsurmixlev, lorosurmixlev
         }
         if (lfeon) {
-            const uint8_t lfemixlevcode = bs.getBits<uint8_t> (1);
+            const uint8_t lfemixlevcode = bs.getBits<uint8_t>(1);
             if (lfemixlevcode) {
-                bs.skipBits (5); // lfemixlevcod
+                bs.skipBits(5); // lfemixlevcod
             }
         }
         if (strmtyp == 0) {
-            const uint8_t pgmscle = bs.getBits<uint8_t> (1);
+            const uint8_t pgmscle = bs.getBits<uint8_t>(1);
             if (pgmscle) {
-                bs.skipBits (6); // pgmscl
+                bs.skipBits(6); // pgmscl
             }
             if (acmod == 0) {
-                const uint8_t pgmscl2e = bs.getBits<uint8_t> (1);
+                const uint8_t pgmscl2e = bs.getBits<uint8_t>(1);
                 if (pgmscl2e) {
-                    bs.skipBits (6); // pgmscl2
+                    bs.skipBits(6); // pgmscl2
                 }
             }
-            const uint8_t extpgmscle = bs.getBits<uint8_t> (1);
+            const uint8_t extpgmscle = bs.getBits<uint8_t>(1);
             if (extpgmscle) {
-                bs.skipBits (6); // extpgmscl
+                bs.skipBits(6); // extpgmscl
             }
-            const uint8_t mixdef = bs.getBits<uint8_t> (2);
+            const uint8_t mixdef = bs.getBits<uint8_t>(2);
             if (mixdef == 1) {
-                bs.skipBits (5); // premixcompsel, drcsrc, premixcompscl
+                bs.skipBits(5); // premixcompsel, drcsrc, premixcompscl
             }
             else if (mixdef == 2) {
-                bs.skipBits (12); // mixdata
+                bs.skipBits(12); // mixdata
             }
             else if (mixdef == 3) {
-                const size_t mixdeflen = bs.getBits<size_t> (5);
-                bs.skipBits (8 * (mixdeflen + 2)); // mixdata
+                const size_t mixdeflen = bs.getBits<size_t>(5);
+                bs.skipBits(8 * (mixdeflen + 2)); // mixdata
             }
             if (acmod < 2) {
-                const uint8_t paninfoe = bs.getBits<uint8_t> (1);
+                const uint8_t paninfoe = bs.getBits<uint8_t>(1);
                 if (paninfoe) {
-                    bs.skipBits (14); // panmean, paninfo
+                    bs.skipBits(14); // panmean, paninfo
                 }
                 if (acmod == 0) {
-                    const uint8_t paninfo2e = bs.getBits<uint8_t> (1);
+                    const uint8_t paninfo2e = bs.getBits<uint8_t>(1);
                     if (paninfo2e) {
-                        bs.skipBits (14); // panmean2, paninfo2
+                        bs.skipBits(14); // panmean2, paninfo2
                     }
                 }
             }
-            const uint8_t frmmixcfginfoe = bs.getBits<uint8_t> (1);
+            const uint8_t frmmixcfginfoe = bs.getBits<uint8_t>(1);
             if (frmmixcfginfoe) {
                 if (numblkscod == 0) {
-                    bs.skipBits (5); // blkmixcfginfo[0]
+                    bs.skipBits(5); // blkmixcfginfo[0]
                 }
                 else {
                     for (uint8_t blk = 0; blk < number_of_blocks_per_sync_frame; blk++) {
-                        const uint8_t blkmixcfginfoe = bs.getBits<uint8_t> (1);
+                        const uint8_t blkmixcfginfoe = bs.getBits<uint8_t>(1);
                         if (blkmixcfginfoe) {
-                            bs.skipBits (5); // blkmixcfginfo[blk]
+                            bs.skipBits(5); // blkmixcfginfo[blk]
                         }
                     }
                 }
             }
         }
     }
-    const uint8_t infomdate = bs.getBits<uint8_t> (1);
+    const uint8_t infomdate = bs.getBits<uint8_t>(1);
     if (infomdate) {
         int bsmod;
         if (bs.remainingReadBits() < 3) {

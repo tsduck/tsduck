@@ -48,6 +48,10 @@ public:
 
     void testConstructors();
     void testReset();
+    void testResize();
+    void testSeek();
+    void testByteAligned();
+    void testSkipBack();
     void testReadBitBigEndian();
     void testReadBitLittleEndian();
     void testReadBitsBigEndian();
@@ -82,6 +86,10 @@ public:
     TSUNIT_TEST_BEGIN(BufferTest);
     TSUNIT_TEST(testConstructors);
     TSUNIT_TEST(testReset);
+    TSUNIT_TEST(testResize);
+    TSUNIT_TEST(testSeek);
+    TSUNIT_TEST(testByteAligned);
+    TSUNIT_TEST(testSkipBack);
     TSUNIT_TEST(testReadBitBigEndian);
     TSUNIT_TEST(testReadBitLittleEndian);
     TSUNIT_TEST(testReadBitsBigEndian);
@@ -274,6 +282,191 @@ void BufferTest::testReset()
     TSUNIT_ASSERT(b.externalMemory());
     TSUNIT_EQUAL(128, b.capacity());
     TSUNIT_EQUAL(128, b.size());
+}
+
+void BufferTest::testResize()
+{
+    ts::Buffer b(512);
+
+    TSUNIT_ASSERT(b.valid());
+    TSUNIT_ASSERT(!b.readOnly());
+    TSUNIT_ASSERT(b.data() != nullptr);
+    TSUNIT_ASSERT(b.internalMemory());
+    TSUNIT_ASSERT(!b.externalMemory());
+    TSUNIT_EQUAL(512, b.capacity());
+    TSUNIT_EQUAL(512, b.size());
+
+    TSUNIT_ASSERT(b.resize(256, false));
+    TSUNIT_EQUAL(512, b.capacity());
+    TSUNIT_EQUAL(256, b.size());
+
+    TSUNIT_ASSERT(!b.resize(600, false));
+    TSUNIT_EQUAL(512, b.capacity());
+    TSUNIT_EQUAL(512, b.size());
+
+    TSUNIT_ASSERT(b.resize(600, true));
+    TSUNIT_EQUAL(600, b.capacity());
+    TSUNIT_EQUAL(600, b.size());
+
+    TSUNIT_ASSERT(b.resize(4, false));
+    TSUNIT_EQUAL(600, b.capacity());
+    TSUNIT_EQUAL(4, b.size());
+
+    TSUNIT_ASSERT(b.resize(4, true));
+    TSUNIT_EQUAL(16, b.capacity());
+    TSUNIT_EQUAL(4, b.size());
+}
+
+void BufferTest::testSeek()
+{
+    // 0          10         20         30          40         50         60         70        79
+    // |          |          |          |           |          |          |          |         |
+    // 01010000 01010001 01010010 01010011 01010100 01010101 01010110 01010111 01101000 01101001
+
+    ts::Buffer b(_bytes2, 10);
+
+    TSUNIT_ASSERT(b.externalMemory());
+    TSUNIT_EQUAL(0, b.currentReadBitOffset());
+    TSUNIT_EQUAL(80, b.remainingReadBits());
+    TSUNIT_ASSERT(!b.endOfRead());
+
+    TSUNIT_ASSERT(b.readSeek(2, 3));
+    TSUNIT_EQUAL(19, b.currentReadBitOffset());
+    TSUNIT_EQUAL(61, b.remainingReadBits());
+
+    TSUNIT_EQUAL(4, b.getBits<uint8_t>(3));
+    TSUNIT_EQUAL(22, b.currentReadBitOffset());
+    TSUNIT_EQUAL(58, b.remainingReadBits());
+
+    TSUNIT_EQUAL(0x94D5, b.getUInt16()); // 10 01010011 010101
+    TSUNIT_EQUAL(38, b.currentReadBitOffset());
+    TSUNIT_EQUAL(42, b.remainingReadBits());
+    TSUNIT_ASSERT(!b.readIsByteAligned());
+    TSUNIT_ASSERT(!b.endOfRead());
+
+    TSUNIT_ASSERT(b.readSeek(9));
+    TSUNIT_ASSERT(b.readIsByteAligned());
+    TSUNIT_EQUAL(72, b.currentReadBitOffset());
+    TSUNIT_EQUAL(8, b.remainingReadBits());
+    TSUNIT_ASSERT(!b.endOfRead());
+
+    TSUNIT_EQUAL(0x69, b.getUInt8());
+    TSUNIT_ASSERT(b.readIsByteAligned());
+    TSUNIT_EQUAL(80, b.currentReadBitOffset());
+    TSUNIT_EQUAL(0, b.remainingReadBits());
+    TSUNIT_ASSERT(b.endOfRead());
+    TSUNIT_ASSERT(!b.readError());
+
+    TSUNIT_EQUAL(0xFFFF, b.getUInt16());
+    TSUNIT_ASSERT(b.readIsByteAligned());
+    TSUNIT_EQUAL(80, b.currentReadBitOffset());
+    TSUNIT_EQUAL(0, b.remainingReadBits());
+    TSUNIT_ASSERT(b.endOfRead());
+    TSUNIT_ASSERT(b.readError());
+
+    TSUNIT_ASSERT(b.readSeek(8));
+    TSUNIT_ASSERT(b.readIsByteAligned());
+    TSUNIT_EQUAL(64, b.currentReadBitOffset());
+    TSUNIT_EQUAL(16, b.remainingReadBits());
+    TSUNIT_ASSERT(!b.endOfRead());
+    TSUNIT_ASSERT(b.readError());
+    b.clearReadError();
+    TSUNIT_ASSERT(!b.readError());
+
+    TSUNIT_EQUAL(0x68, b.getUInt8());
+    TSUNIT_ASSERT(b.readIsByteAligned());
+    TSUNIT_EQUAL(72, b.currentReadBitOffset());
+    TSUNIT_EQUAL(8, b.remainingReadBits());
+    TSUNIT_ASSERT(!b.endOfRead());
+    TSUNIT_ASSERT(!b.readError());
+}
+
+void BufferTest::testByteAligned()
+{
+    ts::Buffer b(_bytes2, 10);
+
+    TSUNIT_ASSERT(b.readIsByteAligned());
+
+    TSUNIT_EQUAL(0, b.getBit());
+    TSUNIT_ASSERT(!b.readIsByteAligned());
+    TSUNIT_EQUAL(1, b.getBit());
+    TSUNIT_ASSERT(!b.readIsByteAligned());
+
+    b.readSeek(2,7);
+    TSUNIT_ASSERT(!b.readIsByteAligned());
+    TSUNIT_EQUAL(0, b.getBit());
+    TSUNIT_ASSERT(b.readIsByteAligned());
+}
+
+void BufferTest::testSkipBack()
+{
+    ts::Buffer b(_bytes2, 10);
+    TSUNIT_ASSERT(b.readIsByteAligned());
+
+    TSUNIT_ASSERT(b.skipBits(3));
+    TSUNIT_EQUAL(3, b.currentReadBitOffset());
+    TSUNIT_EQUAL(77, b.remainingReadBits());
+    TSUNIT_ASSERT(!b.readIsByteAligned());
+
+    TSUNIT_EQUAL(0x82, b.getUInt8()); // 10000 010
+    TSUNIT_EQUAL(11, b.currentReadBitOffset());
+    TSUNIT_EQUAL(69, b.remainingReadBits());
+    TSUNIT_ASSERT(!b.readIsByteAligned());
+
+    TSUNIT_ASSERT(b.skipBits(5));
+    TSUNIT_EQUAL(16, b.currentReadBitOffset());
+    TSUNIT_EQUAL(64, b.remainingReadBits());
+    TSUNIT_ASSERT(b.readIsByteAligned());
+    TSUNIT_EQUAL(2, b.currentReadByteOffset());
+    TSUNIT_EQUAL(8, b.remainingReadBytes());
+
+    TSUNIT_ASSERT(b.skipBits(12));
+    TSUNIT_EQUAL(28, b.currentReadBitOffset());
+    TSUNIT_EQUAL(52, b.remainingReadBits());
+    TSUNIT_ASSERT(!b.readIsByteAligned());
+
+    TSUNIT_ASSERT(b.skipBytes(2));
+    TSUNIT_EQUAL(40, b.currentReadBitOffset());
+    TSUNIT_EQUAL(40, b.remainingReadBits());
+    TSUNIT_ASSERT(b.readIsByteAligned());
+    TSUNIT_EQUAL(5, b.currentReadByteOffset());
+    TSUNIT_EQUAL(5, b.remainingReadBytes());
+
+    TSUNIT_ASSERT(b.backBits(3));
+    TSUNIT_EQUAL(37, b.currentReadBitOffset());
+    TSUNIT_EQUAL(43, b.remainingReadBits());
+    TSUNIT_ASSERT(!b.readIsByteAligned());
+
+    TSUNIT_EQUAL(0x02, b.getBits<uint8_t>(2));
+    TSUNIT_EQUAL(39, b.currentReadBitOffset());
+    TSUNIT_EQUAL(41, b.remainingReadBits());
+    TSUNIT_ASSERT(!b.readIsByteAligned());
+
+    TSUNIT_ASSERT(b.backBytes(3));
+    TSUNIT_EQUAL(8, b.currentReadBitOffset());
+    TSUNIT_EQUAL(72, b.remainingReadBits());
+    TSUNIT_ASSERT(b.readIsByteAligned());
+    TSUNIT_EQUAL(1, b.currentReadByteOffset());
+    TSUNIT_EQUAL(9, b.remainingReadBytes());
+
+    TSUNIT_ASSERT(b.readRealignByte());
+    TSUNIT_EQUAL(8, b.currentReadBitOffset());
+    TSUNIT_EQUAL(72, b.remainingReadBits());
+    TSUNIT_ASSERT(b.readIsByteAligned());
+    TSUNIT_EQUAL(1, b.currentReadByteOffset());
+    TSUNIT_EQUAL(9, b.remainingReadBytes());
+
+    TSUNIT_ASSERT(b.skipBits(3));
+    TSUNIT_EQUAL(11, b.currentReadBitOffset());
+    TSUNIT_EQUAL(69, b.remainingReadBits());
+    TSUNIT_ASSERT(!b.readIsByteAligned());
+
+    TSUNIT_ASSERT(b.readRealignByte());
+    TSUNIT_EQUAL(16, b.currentReadBitOffset());
+    TSUNIT_EQUAL(64, b.remainingReadBits());
+    TSUNIT_ASSERT(b.readIsByteAligned());
+    TSUNIT_EQUAL(2, b.currentReadByteOffset());
+    TSUNIT_EQUAL(8, b.remainingReadBytes());
 }
 
 void BufferTest::testReadBitBigEndian()

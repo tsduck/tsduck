@@ -496,24 +496,27 @@ bool ts::Buffer::dropSize(size_t level)
 // Align the read or write pointer to the next byte boundary.
 //----------------------------------------------------------------------------
 
-ts::Buffer& ts::Buffer::readAlignByte()
+bool ts::Buffer::readRealignByte()
 {
     assert(_state.rbyte <= _state.wbyte);
 
-    if (_state.rbit != 0) {
-        if (_state.rbyte == _state.wbyte) {
-            // Would go beyond write pointer
-            _read_error = true;
-        }
-        else {
-            _state.rbyte++;
-            _state.rbit = 0;
-        }
+    if (_state.rbit == 0) {
+        // Already byte-aligned
+        return true;
     }
-    return *this;
+    else if (_state.rbyte == _state.wbyte) {
+        // Would go beyond write pointer
+        _read_error = true;
+        return false;
+    }
+    else {
+        _state.rbyte++;
+        _state.rbit = 0;
+        return true;
+    }
 }
 
-ts::Buffer& ts::Buffer::writeAlignByte(int stuffing)
+bool ts::Buffer::writeRealignByte(int stuffing)
 {
     assert(_buffer != nullptr);
     assert(_state.wbyte <= _buffer_max);
@@ -533,7 +536,7 @@ ts::Buffer& ts::Buffer::writeAlignByte(int stuffing)
         _state.wbyte++;
         _state.wbit = 0;
     }
-    return *this;
+    return true;
 }
 
 
@@ -591,7 +594,7 @@ bool ts::Buffer::writeSeek(size_t byte, size_t bit, uint8_t stuffing)
     // Forbid seeking beyond end of buffer.
     if (byte > _buffer_max || (byte == _buffer_max && bit > 0)) {
         // File end of buffer with stuffing.
-        writeAlignByte(stuffing);
+        writeRealignByte(stuffing);
         ::memset(_buffer + _state.wbyte, stuffing, _buffer_max - _state.wbyte);
         // Move to end of buffer.
         _state.wbyte = _buffer_max;
@@ -615,7 +618,7 @@ bool ts::Buffer::writeSeek(size_t byte, size_t bit, uint8_t stuffing)
     }
     else if (byte > _state.wbyte) {
         // Trash current partial byte and beyond.
-        writeAlignByte(stuffing);
+        writeRealignByte(stuffing);
         ::memset(_buffer + _state.wbyte, stuffing, byte - _state.wbyte + (bit > 0 ? 1 : 0));
     }
 
@@ -661,51 +664,66 @@ size_t ts::Buffer::remainingWriteBits() const
 // Skip read bits/bytes backward and forward.
 //----------------------------------------------------------------------------
 
-ts::Buffer& ts::Buffer::skipBytes(size_t bytes)
+bool ts::Buffer::skipBytes(size_t bytes)
 {
+    _state.rbit = 0;
     if (_state.rbyte + bytes > _state.wbyte) {
+        _state.rbyte = _state.wbyte;
         _read_error = true;
+        return false;
     }
-    _state.rbyte = std::min(_state.rbyte + bytes, _state.wbyte);
-    _state.rbit = 0;
-    return *this;
+    else {
+        _state.rbyte += bytes;
+        return true;
+    }
 }
 
-ts::Buffer& ts::Buffer::skipBits(size_t bits)
+bool ts::Buffer::skipBits(size_t bits)
 {
-    size_t rpos = 8 * _state.rbyte + _state.rbit + bits;
-    size_t wpos = 8 * _state.wbyte + _state.wbit;
+    const size_t rpos = 8 * _state.rbyte + _state.rbit + bits;
+    const size_t wpos = 8 * _state.wbyte + _state.wbit;
     if (rpos > wpos) {
+        _state.rbyte = _state.wbyte;
+        _state.rbit = _state.wbit;
         _read_error = true;
-        rpos = wpos;
+        return false;
     }
-    _state.rbyte = rpos >> 3;
-    _state.rbit = rpos & 7;
-    return *this;
+    else {
+        _state.rbyte = rpos >> 3;
+        _state.rbit = rpos & 7;
+        return true;
+    }
 }
 
-ts::Buffer& ts::Buffer::backBytes(size_t bytes)
+bool ts::Buffer::backBytes(size_t bytes)
 {
-    if (bytes > _state.rbyte) {
-        _read_error = true;
-        bytes = _state.rbyte;
-    }
-    _state.rbyte -= bytes;
     _state.rbit = 0;
-    return *this;
+    if (bytes > _state.rbyte) {
+        _state.rbyte = 0;
+        _read_error = true;
+        return false;
+    }
+    else {
+        _state.rbyte -= bytes;
+        return true;
+    }
 }
 
-ts::Buffer& ts::Buffer::backBits(size_t bits)
+bool ts::Buffer::backBits(size_t bits)
 {
-    size_t rpos = 8 * _state.rbyte + _state.rbit + bits;
+    size_t rpos = 8 * _state.rbyte + _state.rbit;
     if (bits > rpos) {
+        _state.rbyte = 0;
+        _state.rbit = 0;
         _read_error = true;
-        bits = rpos;
+        return false;
     }
-    rpos -= bits;
-    _state.rbyte = rpos >> 3;
-    _state.rbit = rpos & 7;
-    return *this;
+    else {
+        rpos -= bits;
+        _state.rbyte = rpos >> 3;
+        _state.rbit = rpos & 7;
+        return true;
+    }
 }
 
 

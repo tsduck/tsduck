@@ -288,46 +288,45 @@ namespace ts {
         //!
         //! Align the read pointer to the next byte boundary if not already aligned.
         //! Skip any bit in a partially read byte.
-        //! A read error is generated if this would go beyond the write pointer.
-        //! @return A reference to this object.
+        //! @return True on success, false if would got beyond write pointer (and set read error flag).
         //!
-        Buffer& readAlignByte();
+        bool readRealignByte();
 
         //!
         //! Align the write pointer to the next byte boundary if not already aligned.
         //! Fill bits in a partially written byte with a know value.
         //! @param [in] stuffing Bit value (must be 0 or 1) to write in skipped bits.
-        //! @return A reference to this object.
+        //! @return Always true.
         //!
-        Buffer& writeAlignByte(int stuffing = 0);
+        bool writeRealignByte(int stuffing = 0);
 
         //!
         //! Skip read bytes forward (ignoring bit offset inside bytes).
         //! @param [in] bytes Number of bytes to skip.
-        //! @return A reference to this object.
+        //! @return True on success, false if would got beyond write pointer (and set read error flag).
         //!
-        Buffer& skipBytes(size_t bytes);
+        bool skipBytes(size_t bytes);
 
         //!
         //! Skip read bits forward.
         //! @param [in] bits Number of bits to skip.
-        //! @return A reference to this object.
+        //! @return True on success, false if would got beyond write pointer (and set read error flag).
         //!
-        Buffer& skipBits(size_t bits);
+        bool skipBits(size_t bits);
 
         //!
         //! Skip read bytes backward.
         //! @param [in] bytes Number of bytes to skip back.
-        //! @return A reference to this object.
+        //! @return True on success, false if would got beyond start of buffer (and set read error flag).
         //!
-        Buffer& backBytes(size_t bytes);
+        bool backBytes(size_t bytes);
 
         //!
         //! Skip read bits backward.
         //! @param [in] bits Number of bits to skip back.
-        //! @return A reference to this object.
+        //! @return True on success, false if would got beyond start of buffer (and set read error flag).
         //!
-        Buffer& backBits(size_t bits);
+        bool backBits(size_t bits);
 
         //!
         //! Get current read byte index (ignoring bit offset inside bytes).
