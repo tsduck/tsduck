@@ -106,7 +106,6 @@
 #include "tsBIT.h"
 #include "tsBitrateDifferenceDVBT.h"
 #include "tsBitRateRegulator.h"
-#include "tsBitStream.h"
 #include "tsBlockCipher.h"
 #include "tsBlockCipherAlertInterface.h"
 #include "tsBoardInformationDescriptor.h"
