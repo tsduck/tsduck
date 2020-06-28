@@ -111,6 +111,9 @@ jobs:
       run: make doxygen
 
   macos-clang:
+    # Warning: It has been noted on GitHub macOS runners that the host name can change
+    # between steps or even the middle of a step. This breaks the naming scheme of the
+    # build directory for binaries. As a consequence, we need to force a fixed name.
     name: macOS with clang
     runs-on: macos-latest
     env:
@@ -120,35 +123,21 @@ jobs:
     - uses: actions/checkout@master
     - name: Install dependencies
       run: build/install-prerequisites.sh
-    - name: Check dependencies
-      run: |
-        gsed --version
-        ggrep --version
-        dos2unix --version
     - name: Build TSDuck
-      run: |
-        build/setenv.sh --display
-        make -j5
-        build/setenv.sh --display
-    - name: Temporary troubleshooting step for intermittent issue on GitHub macOS runners
-      run: |
-        build/setenv.sh --display
-        ls $(build/setenv.sh --display)
-        ls -l $(build/setenv.sh --display)/tsversion
-        source build/setenv.sh; echo $PATH; which tsversion
-        source build/setenv.sh; tsversion --version=all
+      run: make -j5 BINDIR=bin
     - name: Check built version
-      run: source build/setenv.sh && tsversion --version=all
+      run: bin/tsversion --version=all
     - name: Run unitary tests
-      run: make test
+      run: make BINDIR=bin test
     - name: Download test suite
       run: |
         mkdir -p ../tsduck-test
         curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
     - name: Run test suite
       run: |
-        make test-suite && status=$? || status=$?
+        export PATH="$(cd bin; pwd):$PATH"
         cd ../tsduck-test
+        ./run-all-tests.sh && status=$? || status=$?
         for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
             cat "$f"
