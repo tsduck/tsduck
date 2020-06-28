@@ -92,7 +92,7 @@ void ts::BitStream::reset(const void* data, size_t size_in_bits, size_t bit_offs
 // Get current bit position.
 //----------------------------------------------------------------------------
 
-size_t ts::BitStream::currentBitOffset() const
+size_t ts::BitStream::currentReadBitOffset() const
 {
     assert(_next_bit >= _start_bit);
     assert(_next_bit <= _end_bit);
@@ -104,7 +104,7 @@ size_t ts::BitStream::currentBitOffset() const
 // Get number of remaining bits.
 //----------------------------------------------------------------------------
 
-size_t ts::BitStream::remainingBitCount() const
+size_t ts::BitStream::remainingReadBits() const
 {
     assert(_next_bit >= _start_bit);
     assert(_next_bit <= _end_bit);
@@ -116,7 +116,7 @@ size_t ts::BitStream::remainingBitCount() const
 // Read the next bit and advance the bitstream pointer.
 //----------------------------------------------------------------------------
 
-uint8_t ts::BitStream::readBit(uint8_t def)
+uint8_t ts::BitStream::getBit(uint8_t def)
 {
     if (_next_bit >= _end_bit) {
         return def;

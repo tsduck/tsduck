@@ -35,7 +35,7 @@
 //----------------------------------------------------------------------------
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
-INT ts::BitStream::read(size_t n, INT def)
+INT ts::BitStream::getBits(size_t n, INT def)
 {
     if (_next_bit + n > _end_bit) {
         return def;
@@ -44,7 +44,7 @@ INT ts::BitStream::read(size_t n, INT def)
 
     // Read leading bits up to byte boundary
     while (n > 0 && (_next_bit & 0x07) != 0) {
-        val = INT(val << 1) | INT(readBit());
+        val = INT(val << 1) | INT(getBit());
         --n;
     }
 
@@ -58,7 +58,7 @@ INT ts::BitStream::read(size_t n, INT def)
 
     // Read trailing bits
     while (n > 0) {
-        val = INT(val << 1) | INT(readBit());
+        val = INT(val << 1) | INT(getBit());
         --n;
     }
 

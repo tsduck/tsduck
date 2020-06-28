@@ -1276,12 +1276,33 @@ namespace ts {
     //! Perform a sign extension on 24 bit integers.
     //!
     //! @param [in] x A 32-bit integer containing a signed 24-bit value to extend.
-    //! @return A 32-bit signed integer containing the signed 24-bit value with
-    //! proper sign extension on 32-bits.
+    //! @return A 32-bit signed integer containing the signed 24-bit value with proper sign extension on 32-bits.
     //!
     TSDUCKDLL inline int32_t SignExtend24(int32_t x)
     {
         return (x & 0x00800000) == 0 ? (x & 0x00FFFFFF) : int32_t(uint32_t(x) | 0xFF000000);
+    }
+
+    //!
+    //! Perform a sign extension on 40 bit integers.
+    //!
+    //! @param [in] x A 64-bit integer containing a signed 40-bit value to extend.
+    //! @return A 64-bit signed integer containing the signed 40-bit value with proper sign extension on 64-bits.
+    //!
+    TSDUCKDLL inline int64_t SignExtend40(int64_t x)
+    {
+        return (x & TS_UCONST64(0x0000008000000000)) == 0 ? (x & TS_UCONST64(0x000000FFFFFFFFFF)) : int64_t(uint64_t(x) | TS_UCONST64(0xFFFFFF0000000000));
+    }
+
+    //!
+    //! Perform a sign extension on 48 bit integers.
+    //!
+    //! @param [in] x A 64-bit integer containing a signed 48-bit value to extend.
+    //! @return A 64-bit signed integer containing the signed 48-bit value with proper sign extension on 64-bits.
+    //!
+    TSDUCKDLL inline int64_t SignExtend48(int64_t x)
+    {
+        return (x & TS_UCONST64(0x0000800000000000)) == 0 ? (x & TS_UCONST64(0x0000FFFFFFFFFFFF)) : int64_t(uint64_t(x) | TS_UCONST64(0xFFFF000000000000));
     }
 
     //!

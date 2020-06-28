@@ -78,10 +78,12 @@ public:
     void testGetUInt24LE();
     void testGetUInt32BE();
     void testGetUInt32LE();
-    void testGetUInt64BE();
-    void testGetUInt64LE();
+    void testGetUInt40BE();
+    void testGetUInt40LE();
     void testGetUInt48BE();
     void testGetUInt48LE();
+    void testGetUInt64BE();
+    void testGetUInt64LE();
     void testGetInt8();
     void testGetInt16BE();
     void testGetInt16LE();
@@ -89,6 +91,10 @@ public:
     void testGetInt24LE();
     void testGetInt32BE();
     void testGetInt32LE();
+    void testGetInt40BE();
+    void testGetInt40LE();
+    void testGetInt48BE();
+    void testGetInt48LE();
     void testGetInt64BE();
     void testGetInt64LE();
     void testPutUInt8();
@@ -142,10 +148,12 @@ public:
     TSUNIT_TEST(testGetUInt24LE);
     TSUNIT_TEST(testGetUInt32BE);
     TSUNIT_TEST(testGetUInt32LE);
-    TSUNIT_TEST(testGetUInt64BE);
-    TSUNIT_TEST(testGetUInt64LE);
+    TSUNIT_TEST(testGetUInt40BE);
+    TSUNIT_TEST(testGetUInt40LE);
     TSUNIT_TEST(testGetUInt48BE);
     TSUNIT_TEST(testGetUInt48LE);
+    TSUNIT_TEST(testGetUInt64BE);
+    TSUNIT_TEST(testGetUInt64LE);
     TSUNIT_TEST(testGetInt8);
     TSUNIT_TEST(testGetInt16BE);
     TSUNIT_TEST(testGetInt16LE);
@@ -153,6 +161,10 @@ public:
     TSUNIT_TEST(testGetInt24LE);
     TSUNIT_TEST(testGetInt32BE);
     TSUNIT_TEST(testGetInt32LE);
+    TSUNIT_TEST(testGetInt40BE);
+    TSUNIT_TEST(testGetInt40LE);
+    TSUNIT_TEST(testGetInt48BE);
+    TSUNIT_TEST(testGetInt48LE);
     TSUNIT_TEST(testGetInt64BE);
     TSUNIT_TEST(testGetInt64LE);
     TSUNIT_TEST(testPutUInt8);
@@ -555,14 +567,14 @@ void PlatformTest::testGetUInt32LE()
     TSUNIT_EQUAL(0x4A494847, ts::GetUInt32LE(_bytes + 0x47));
 }
 
-void PlatformTest::testGetUInt64BE()
+void PlatformTest::testGetUInt40BE()
 {
-    TSUNIT_EQUAL(TS_UCONST64(0x898A8B8C8D8E8F90), ts::GetUInt64BE(_bytes + 0x89));
+    TSUNIT_EQUAL(TS_UCONST64(0x000000898A8B8C8D), ts::GetUInt40BE(_bytes + 0x89));
 }
 
-void PlatformTest::testGetUInt64LE()
+void PlatformTest::testGetUInt40LE()
 {
-    TSUNIT_EQUAL(TS_UCONST64(0x908F8E8D8C8B8A89), ts::GetUInt64LE(_bytes + 0x89));
+    TSUNIT_EQUAL(TS_UCONST64(0x0000008D8C8B8A89), ts::GetUInt40LE(_bytes + 0x89));
 }
 
 void PlatformTest::testGetUInt48BE()
@@ -573,6 +585,16 @@ void PlatformTest::testGetUInt48BE()
 void PlatformTest::testGetUInt48LE()
 {
     TSUNIT_EQUAL(TS_UCONST64(0x00008E8D8C8B8A89), ts::GetUInt48LE(_bytes + 0x89));
+}
+
+void PlatformTest::testGetUInt64BE()
+{
+    TSUNIT_EQUAL(TS_UCONST64(0x898A8B8C8D8E8F90), ts::GetUInt64BE(_bytes + 0x89));
+}
+
+void PlatformTest::testGetUInt64LE()
+{
+    TSUNIT_EQUAL(TS_UCONST64(0x908F8E8D8C8B8A89), ts::GetUInt64LE(_bytes + 0x89));
 }
 
 void PlatformTest::testGetInt8()
@@ -610,6 +632,26 @@ void PlatformTest::testGetInt32BE()
 void PlatformTest::testGetInt32LE()
 {
     TSUNIT_EQUAL(-2071756159, ts::GetInt32LE(_bytes + 0x81)); // 0x84838281
+}
+
+void PlatformTest::testGetInt40BE()
+{
+    TSUNIT_EQUAL(TS_CONST64(-219885416496), ts::GetInt40BE(_bytes + 0xCC)); // 0xCCCDCECFD0
+}
+
+void PlatformTest::testGetInt40LE()
+{
+    TSUNIT_EQUAL(TS_CONST64(-202671993396), ts::GetInt40LE(_bytes + 0xCC)); // 0xD0CFCECDCC
+}
+
+void PlatformTest::testGetInt48BE()
+{
+    TSUNIT_EQUAL(TS_CONST64(-56290666622767), ts::GetInt48BE(_bytes + 0xCC)); // 0xCCCDCECFD0D1
+}
+
+void PlatformTest::testGetInt48LE()
+{
+    TSUNIT_EQUAL(TS_CONST64(-50780206871092), ts::GetInt48LE(_bytes + 0xCC)); // 0xD1D0CFCECDCC
 }
 
 void PlatformTest::testGetInt64BE()

@@ -134,17 +134,17 @@ int ts::AC3Attributes::extractEAC3bsmod (const uint8_t* data, size_t size)
     // See ETSI TS 102 366 V1.1.1, annex E.1, for the dirty details.
 
     BitStream bs (data, 8 * size);
-    bs.skip (16); // syncword
-    const uint8_t strmtyp = bs.read<uint8_t> (2);
-    bs.skip (14); // substreamid, frmsiz
-    const uint8_t fscod = bs.read<uint8_t> (2);
+    bs.skipBits (16); // syncword
+    const uint8_t strmtyp = bs.getBits<uint8_t> (2);
+    bs.skipBits (14); // substreamid, frmsiz
+    const uint8_t fscod = bs.getBits<uint8_t> (2);
     uint8_t numblkscod;
     if (fscod == 3) {
-        bs.skip (2); // fscod2
+        bs.skipBits (2); // fscod2
         numblkscod = 3;
     }
     else {
-        numblkscod = bs.read<uint8_t> (2);
+        numblkscod = bs.getBits<uint8_t> (2);
     }
     uint8_t number_of_blocks_per_sync_frame = 0;
     switch (numblkscod) {
@@ -154,105 +154,105 @@ int ts::AC3Attributes::extractEAC3bsmod (const uint8_t* data, size_t size)
         case 3:  number_of_blocks_per_sync_frame = 6; break;
         default: assert (false);
     }
-    const uint8_t acmod = bs.read<uint8_t> (3);
-    const uint8_t lfeon = bs.read<uint8_t> (1);
-    bs.skip (10); // bsid, dialnorm
-    const uint8_t compre = bs.read<uint8_t> (1);
+    const uint8_t acmod = bs.getBits<uint8_t> (3);
+    const uint8_t lfeon = bs.getBits<uint8_t> (1);
+    bs.skipBits (10); // bsid, dialnorm
+    const uint8_t compre = bs.getBits<uint8_t> (1);
     if (compre) {
-        bs.skip (8); // compr
+        bs.skipBits (8); // compr
     }
     if (acmod == 0) {
-        bs.skip (5); // dialnorm2
-        const uint8_t compr2e = bs.read<uint8_t> (1);
+        bs.skipBits (5); // dialnorm2
+        const uint8_t compr2e = bs.getBits<uint8_t> (1);
         if (compr2e) {
-            bs.skip (8); // compr2
+            bs.skipBits (8); // compr2
         }
     }
     if (strmtyp == 1) {
-        const uint8_t chanmape = bs.read<uint8_t> (1);
+        const uint8_t chanmape = bs.getBits<uint8_t> (1);
         if (chanmape) {
-            bs.skip (16); // chanmap
+            bs.skipBits (16); // chanmap
         }
     }
-    const uint8_t mixmdate = bs.read<uint8_t> (1);
+    const uint8_t mixmdate = bs.getBits<uint8_t> (1);
     if (mixmdate) {
         if (acmod > 2) {
-            bs.skip (2); // dmixmod
+            bs.skipBits (2); // dmixmod
         }
         if ((acmod & 0x1) && (acmod > 2)) {
-            bs.skip (6); // ltrtcmixlev, lorocmixlev
+            bs.skipBits (6); // ltrtcmixlev, lorocmixlev
         }
         if (acmod & 0x4) {
-            bs.skip (6); // ltrtsurmixlev, lorosurmixlev
+            bs.skipBits (6); // ltrtsurmixlev, lorosurmixlev
         }
         if (lfeon) {
-            const uint8_t lfemixlevcode = bs.read<uint8_t> (1);
+            const uint8_t lfemixlevcode = bs.getBits<uint8_t> (1);
             if (lfemixlevcode) {
-                bs.skip (5); // lfemixlevcod
+                bs.skipBits (5); // lfemixlevcod
             }
         }
         if (strmtyp == 0) {
-            const uint8_t pgmscle = bs.read<uint8_t> (1);
+            const uint8_t pgmscle = bs.getBits<uint8_t> (1);
             if (pgmscle) {
-                bs.skip (6); // pgmscl
+                bs.skipBits (6); // pgmscl
             }
             if (acmod == 0) {
-                const uint8_t pgmscl2e = bs.read<uint8_t> (1);
+                const uint8_t pgmscl2e = bs.getBits<uint8_t> (1);
                 if (pgmscl2e) {
-                    bs.skip (6); // pgmscl2
+                    bs.skipBits (6); // pgmscl2
                 }
             }
-            const uint8_t extpgmscle = bs.read<uint8_t> (1);
+            const uint8_t extpgmscle = bs.getBits<uint8_t> (1);
             if (extpgmscle) {
-                bs.skip (6); // extpgmscl
+                bs.skipBits (6); // extpgmscl
             }
-            const uint8_t mixdef = bs.read<uint8_t> (2);
+            const uint8_t mixdef = bs.getBits<uint8_t> (2);
             if (mixdef == 1) {
-                bs.skip (5); // premixcompsel, drcsrc, premixcompscl
+                bs.skipBits (5); // premixcompsel, drcsrc, premixcompscl
             }
             else if (mixdef == 2) {
-                bs.skip (12); // mixdata
+                bs.skipBits (12); // mixdata
             }
             else if (mixdef == 3) {
-                const size_t mixdeflen = bs.read<size_t> (5);
-                bs.skip (8 * (mixdeflen + 2)); // mixdata
+                const size_t mixdeflen = bs.getBits<size_t> (5);
+                bs.skipBits (8 * (mixdeflen + 2)); // mixdata
             }
             if (acmod < 2) {
-                const uint8_t paninfoe = bs.read<uint8_t> (1);
+                const uint8_t paninfoe = bs.getBits<uint8_t> (1);
                 if (paninfoe) {
-                    bs.skip (14); // panmean, paninfo
+                    bs.skipBits (14); // panmean, paninfo
                 }
                 if (acmod == 0) {
-                    const uint8_t paninfo2e = bs.read<uint8_t> (1);
+                    const uint8_t paninfo2e = bs.getBits<uint8_t> (1);
                     if (paninfo2e) {
-                        bs.skip (14); // panmean2, paninfo2
+                        bs.skipBits (14); // panmean2, paninfo2
                     }
                 }
             }
-            const uint8_t frmmixcfginfoe = bs.read<uint8_t> (1);
+            const uint8_t frmmixcfginfoe = bs.getBits<uint8_t> (1);
             if (frmmixcfginfoe) {
                 if (numblkscod == 0) {
-                    bs.skip (5); // blkmixcfginfo[0]
+                    bs.skipBits (5); // blkmixcfginfo[0]
                 }
                 else {
                     for (uint8_t blk = 0; blk < number_of_blocks_per_sync_frame; blk++) {
-                        const uint8_t blkmixcfginfoe = bs.read<uint8_t> (1);
+                        const uint8_t blkmixcfginfoe = bs.getBits<uint8_t> (1);
                         if (blkmixcfginfoe) {
-                            bs.skip (5); // blkmixcfginfo[blk]
+                            bs.skipBits (5); // blkmixcfginfo[blk]
                         }
                     }
                 }
             }
         }
     }
-    const uint8_t infomdate = bs.read<uint8_t> (1);
+    const uint8_t infomdate = bs.getBits<uint8_t> (1);
     if (infomdate) {
         int bsmod;
-        if (bs.remainingBitCount() < 3) {
+        if (bs.remainingReadBits() < 3) {
             bsmod = 0;
         }
         else {
-            bsmod = bs.read<int>(3); // bsmod, at last !
+            bsmod = bs.getBits<int>(3); // bsmod, at last !
         }
         return bsmod;
     }
