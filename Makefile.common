@@ -137,11 +137,18 @@
 #    Additional options for the "ar" command.
 #    This variable can be defined after inclusion of this makefile.
 #
+#  BINDIR
+#    Alternate definition for the BINDIR subdirectory, where all objects and
+#    executables are built. If unspecified, it will be built from current
+#    host, architecture and debug vs. release target.
+#
 #  BINDIR_PREFIX
-#    Fixed prefix to add to BINDIR subdirectory name.
+#    Fixed prefix to add to generated BINDIR subdirectory name. Ignored if
+#    BINDIR is defined as input variable.
 #
 #  BINDIR_SUFFIX
-#    Fixed suffix to add to BINDIR subdirectory name.
+#    Fixed suffix to add to generated BINDIR subdirectory name. Ignored if
+#    BINDIR is defined as input variable.
 #
 #  CFLAGS_EXTRA
 #    Additional options for the C compiler.
@@ -372,8 +379,8 @@
 #  BINDIR
 #    Name of the directory which receives final binary files (executable or
 #    shared binaries). Typically either "bin/release-{arch}-{hostname}" or
-#    "bin/debug-{arch}-{hostname}". See also input variables BINDIR_PREFIX and
-#    BINDIR_SUFFIX.
+#    "bin/debug-{arch}-{hostname}". See also input variables BINDIR,
+#    BINDIR_PREFIX and BINDIR_SUFFIX.
 #
 #  CFLAGS
 #    Options which are applied to C compilations.
@@ -876,8 +883,13 @@ CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(C
 LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_FLAGS) $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA)
 ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
-# Output subdirectories in each project directory
-ifdef DEBUG
+# Output subdirectories in each project directory.
+ifdef BINDIR
+    # BINDIR is specified in input, transform it into an absolute path for recursion.
+    INBINDIR := $(BINDIR)
+    override BINDIR := $(abspath $(INBINDIR))
+    MAKEOVERRIDES := $(subst BINDIR=$(INBINDIR),BINDIR=$(BINDIR),$(MAKEOVERRIDES))
+else ifdef DEBUG
     BINDIR = $(ROOTDIR)/bin/$(BINDIR_PREFIX)debug-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
 else
     BINDIR = $(ROOTDIR)/bin/$(BINDIR_PREFIX)release-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
