@@ -33,8 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
 #include "tsMemory.h"
+#include "tsByteBlock.h"
 
 namespace ts {
     //!
@@ -50,7 +50,7 @@ namespace ts {
         static constexpr size_t DEFAULT_SIZE = 1024;
 
         //!
-        //! Minimal internal allocation size in bytes of an internal private buffer.
+        //! Minimal internal allocation size (capacity) in bytes of an internal private buffer.
         //!
         static constexpr size_t MINIMUM_SIZE = 16;
 
@@ -153,6 +153,12 @@ namespace ts {
         //! @return The current buffer size in bytes.
         //!
         size_t size() const { return _buffer_max; }
+
+        //!
+        //! Get the current base address of the buffer.
+        //! @return A constant pointer the base of the buffer.
+        //!
+        const uint8_t* data() const { return _buffer; }
 
         //!
         //! Specify that read/write operations of integers should use big endian representation.
@@ -290,7 +296,7 @@ namespace ts {
         //!
         //! Align the write pointer to the next byte boundary if not already aligned.
         //! Fill bits in a partially written byte with a know value.
-        //! @param [in] suffing Bit value (must be 0 or 1) to write in skipped bits.
+        //! @param [in] stuffing Bit value (must be 0 or 1) to write in skipped bits.
         //! @return A reference to this object.
         //!
         Buffer& writeAlignByte(int stuffing = 0);
@@ -384,23 +390,6 @@ namespace ts {
         bool endOfWrite() const { return _state.wbyte >= _buffer_max; }
 
         //!
-        //! Read the next bit and advance the bitstream pointer.
-        //! @param [in] def Default value to return if already at end of stream.
-        //! @return The value of the next bit.
-        //!
-        uint8_t readBit(uint8_t def = 0);
-
-        //!
-        //! Read the next n bits as an integer value and advance the bitstream pointer.
-        //! @tparam INT An integer type for the result.
-        //! @param [in] bits Number of bits to read.
-        //! @param [in] def Default value to return if less than @a n bits before end of stream.
-        //! @return The value of the next @a bits.
-        //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-        INT readBits(size_t bits, INT def = 0);
-
-        //!
         //! Push the current state of the read/write streams on a stack of saved states.
         //!
         //! There is an internal stack of read/write states. It is possible to save the current
@@ -485,7 +474,308 @@ namespace ts {
         //!
         bool dropSize(size_t level = NPOS);
 
+        //!
+        //! Read the next bit and advance the read pointer.
+        //! @param [in] def Default value to return if already at end of stream.
+        //! @return The value of the next bit.
+        //!
+        uint8_t getBit(uint8_t def = 0);
+
+        //!
+        //! Write the next bit and advance the write pointer.
+        //! @param [in] bit The bit value (0 or 1).
+        //! @return True on success, false on error (read only or no more space to write).
+        //!
+        bool putBit(uint8_t bit);
+
+        //!
+        //! Read the next n bits as an integer value and advance the read pointer.
+        //! @tparam INT An integer type for the result.
+        //! @param [in] bits Number of bits to read.
+        //! @param [in] def Default value to return if less than @a n bits before end of stream.
+        //! @return The value of the next @a bits.
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        INT getBits(size_t bits, INT def = 0);
+
+        //!
+        //! Put the next n bits from an integer value and advance the write pointer.
+        //! @tparam INT An integer type.
+        //! @param [in] value Integer value to write.
+        //! @param [in] bits Number of bits to write.
+        //! @return True on success, false on error (read only or no more space to write).
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool putBits(INT value, size_t bits);
+
+        //!
+        //! Get bulk bytes from the buffer.
+        //! The bit aligment is ignored, reading starts at the current read byte pointer,
+        //! even if a few bits were already read from that byte.
+        //! @param [out] buffer Address of the buffer receiving the read bytes.
+        //! @param [in] bytes Number of bytes to read.
+        //! @return Actual number of returned bytes. If the requested number of bytes is not
+        //! available, return as much as possible and set the read error.
+        //!
+        size_t getBytes(uint8_t* buffer, size_t bytes);
+
+        //!
+        //! Get bulk bytes from the buffer.
+        //! The bit aligment is ignored, reading starts at the current read byte pointer,
+        //! even if a few bits were already read from that byte.
+        //! @param [in] bytes Number of bytes to read.
+        //! @return Read data as a byte block. If the requested number of bytes is not
+        //! available, return as much as possible and set the read error.
+        //!
+        ByteBlock getByteBlock(size_t bytes);
+
+        //!
+        //! Get bulk bytes from the buffer.
+        //! The bit aligment is ignored, reading starts at the current read byte pointer,
+        //! even if a few bits were already read from that byte.
+        //! @param [in,out] bb Byte block receiving the read bytes. The read data are appended to @a bb.
+        //! @param [in] bytes Number of bytes to read.
+        //! @return Actual number of appended bytes. If the requested number of bytes is not
+        //! available, return as much as possible and set the read error.
+        //!
+        size_t getByteBlockAppend(ByteBlock& bb, size_t bytes);
+
+        //!
+        //! Put bytes in the buffer.
+        //! @param [in] buffer Address of the data to write.
+        //! @param [in] bytes Number of bytes to write.
+        //! @return Actual number of written bytes. If the requested number of bytes is not
+        //! available, write as much as possible and set the write error.
+        //!
+        size_t putBytes(const uint8_t* buffer, size_t bytes);
+
+        //!
+        //! Put bulk bytes in the buffer.
+        //! The bit aligment is ignored, writing starts at the current write byte pointer,
+        //! even if a few bits were already written in that byte.
+        //! @param [in] bb Byte block containing the data to write.
+        //! @param [in] start Start in index in @a bb.
+        //! @param [in] count Number of bytes to write.
+        //! @return Actual number of written bytes. If the requested number of bytes is not
+        //! available, write as much as possible and set the write error.
+        //!
+        size_t putBytes(const ByteBlock& bb, size_t start = 0, size_t count = NPOS);
+
+        //!
+        //! Read the next 8 bits as an unsigned integer value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value.
+        //!
+        uint8_t getUInt8() { return *rdb(1); }
+
+        //!
+        //! Read the next 16 bits as an unsigned integer value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value, according to the current endianness of the buffer.
+        //!
+        uint16_t getUInt16() { return _big_endian ? GetUInt16BE(rdb(2)) : GetUInt16LE(rdb(2)); }
+
+        //!
+        //! Read the next 24 bits as an unsigned integer value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value, according to the current endianness of the buffer.
+        //!
+        uint32_t getUInt24() { return _big_endian ? GetUInt24BE(rdb(3)) : GetUInt24LE(rdb(3)); }
+
+        //!
+        //! Read the next 32 bits as an unsigned integer value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value, according to the current endianness of the buffer.
+        //!
+        uint32_t getUInt32() { return _big_endian ? GetUInt32BE(rdb(4)) : GetUInt32LE(rdb(4)); }
+
+        //!
+        //! Read the next 40 bits as an unsigned integer value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value, according to the current endianness of the buffer.
+        //!
+        uint64_t getUInt40() { return _big_endian ? GetUInt40BE(rdb(5)) : GetUInt40LE(rdb(5)); }
+
+        //!
+        //! Read the next 48 bits as an unsigned integer value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value, according to the current endianness of the buffer.
+        //!
+        uint64_t getUInt48() { return _big_endian ? GetUInt48BE(rdb(6)) : GetUInt48LE(rdb(6)); }
+
+        //!
+        //! Read the next 64 bits as an unsigned integer value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value, according to the current endianness of the buffer.
+        //!
+        uint64_t getUInt64() { return _big_endian ? GetUInt64BE(rdb(8)) : GetUInt64LE(rdb(8)); }
+
+        //!
+        //! Read the next 8 bits as a signed integer value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value.
+        //!
+        int8_t getInt8() { return static_cast<int8_t>(*rdb(1)); }
+
+        //!
+        //! Read the next 16 bits as a signed integer value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value, according to the current endianness of the buffer.
+        //!
+        int16_t getInt16() { return _big_endian ? GetInt16BE(rdb(2)) : GetInt16LE(rdb(2)); }
+
+        //!
+        //! Read the next 24 bits as a signed integer value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value, according to the current endianness of the buffer.
+        //!
+        int32_t getInt24() { return _big_endian ? GetInt24BE(rdb(3)) : GetInt24LE(rdb(3)); }
+
+        //!
+        //! Read the next 32 bits as a signed integer value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value, according to the current endianness of the buffer.
+        //!
+        int32_t getInt32() { return _big_endian ? GetInt32BE(rdb(4)) : GetInt32LE(rdb(4)); }
+
+        //!
+        //! Read the next 40 bits as a signed integer value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value, according to the current endianness of the buffer.
+        //!
+        int64_t getInt40() { return _big_endian ? GetInt40BE(rdb(5)) : GetInt40LE(rdb(5)); }
+
+        //!
+        //! Read the next 48 bits as a signed integer value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value, according to the current endianness of the buffer.
+        //!
+        int64_t getInt48() { return _big_endian ? GetInt48BE(rdb(6)) : GetInt48LE(rdb(6)); }
+
+        //!
+        //! Read the next 64 bits as a signed integer value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value, according to the current endianness of the buffer.
+        //!
+        int64_t getInt64() { return _big_endian ? GetInt64BE(rdb(8)) : GetInt64LE(rdb(8)); }
+
+        //!
+        //! Write an 8-bit unsigned integer value and advance the write pointer.
+        //! @param [in] i 8-bit unsigned integer value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putUInt8(uint8_t i) { return putint(i, 1, PutUInt8, PutUInt8); }
+
+        //!
+        //! Write a 16-bit unsigned integer value and advance the write pointer.
+        //! @param [in] i 16-bit unsigned integer value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putUInt16(uint16_t i) { return putint(i, 2, PutUInt16BE, PutUInt16LE); }
+
+        //!
+        //! Write a 24-bit unsigned integer value and advance the write pointer.
+        //! @param [in] i 24-bit unsigned integer value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putUInt24(uint32_t i) { return putint(i, 3, PutUInt24BE, PutUInt24LE); }
+
+        //!
+        //! Write a 32-bit unsigned integer value and advance the write pointer.
+        //! @param [in] i 32-bit unsigned integer value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putUInt32(uint32_t i) { return putint(i, 4, PutUInt32BE, PutUInt32LE); }
+
+        //!
+        //! Write a 40-bit unsigned integer value and advance the write pointer.
+        //! @param [in] i 40-bit unsigned integer value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putUInt40(uint64_t i) { return putint(i, 5, PutUInt40BE, PutUInt40LE); }
+
+        //!
+        //! Write a 48-bit unsigned integer value and advance the write pointer.
+        //! @param [in] i 48-bit unsigned integer value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putUInt48(uint64_t i) { return putint(i, 6, PutUInt48BE, PutUInt48LE); }
+
+        //!
+        //! Write a 64-bit unsigned integer value and advance the write pointer.
+        //! @param [in] i 64-bit unsigned integer value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putUInt64(uint64_t i) { return putint(i, 8, PutUInt64BE, PutUInt64LE); }
+
+        //!
+        //! Write an 8-bit signed integer value and advance the write pointer.
+        //! @param [in] i 8-bit signed integer value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putInt8(int8_t i) { return putint(i, 1, PutInt8, PutInt8); }
+
+        //!
+        //! Write a 16-bit signed integer value and advance the write pointer.
+        //! @param [in] i 16-bit signed integer value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putInt16(int16_t i) { return putint(i, 2, PutInt16BE, PutInt16LE); }
+
+        //!
+        //! Write a 24-bit signed integer value and advance the write pointer.
+        //! @param [in] i 24-bit signed integer value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putInt24(int32_t i) { return putint(i, 3, PutInt24BE, PutInt24LE); }
+
+        //!
+        //! Write a 32-bit signed integer value and advance the write pointer.
+        //! @param [in] i 32-bit signed integer value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putInt32(int32_t i) { return putint(i, 4, PutInt32BE, PutInt32LE); }
+
+        //!
+        //! Write a 40-bit signed integer value and advance the write pointer.
+        //! @param [in] i 40-bit signed integer value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putInt40(int64_t i) { return putint(i, 5, PutInt40BE, PutInt40LE); }
+
+        //!
+        //! Write a 48-bit signed integer value and advance the write pointer.
+        //! @param [in] i 48-bit signed integer value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putInt48(int64_t i) { return putint(i, 6, PutInt48BE, PutInt48LE); }
+
+        //!
+        //! Write a 64-bit signed integer value and advance the write pointer.
+        //! @param [in] i 64-bit signed integer value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putInt64(int64_t i) { return putint(i, 8, PutInt64BE, PutInt64LE); }
+
     private:
+        // Internal "read bytes" method (1 to 8 bytes).
+        // - Check that the specified number of bytes is available for reading.
+        // - If not available, set read error and return the address of an 8-byte area containing FF.
+        // - Otherwise, if current read pointer is at a byte boundary, return the read address in the buffer.
+        // - If not byte aligned, read the bytes content into an internal 8-byte buffer, byte aligned, and return its address.
+        // - Advance read pointer.
+        const uint8_t* rdb(size_t bytes);
+
+        // Internal put integer method.
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool putint(INT value, size_t bytes, void (*putBE)(void*,INT), void (*putLE)(void*,INT));
+
+        // Request some read size. Return actually possible read size. Set read error if lower than requested.
+        size_t requestReadBytes(size_t bytes);
+
+        // Get bulk bytes, either aligned or not. Update read pointer.
+        void readBytesInternal(uint8_t* data, size_t bytes);
+
         // Read/write state in the buffer.
         struct RWState {
             RWState();     // Constructor.
@@ -495,17 +785,18 @@ namespace ts {
             size_t wbit;   // Next bit to write at offset wbyte (0 = MSB in big endian, LSB in little endian).
         };
 
-        uint8_t* _buffer;       // Base address of memory buffer.
-        size_t   _buffer_size;  // Size of addressable area in _buffer.
-        size_t   _buffer_max;   // Size of usable area in _buffer.
-        bool     _read_only;    // The buffer is in read-only mode.
-        bool     _allocated;    // If true, _buffer was internally allocated and must be freed later.
-        bool     _big_endian;   // Read/write integers in big endian mode (false means little endian).
-        bool     _read_error;   // Read error encountered (passed end of stream for instance).
-        bool     _write_error;  // Write error encountered (passed end of stream for instance).
-        RWState  _state;        // Read/write indexes.
+        uint8_t*             _buffer;        // Base address of memory buffer.
+        size_t               _buffer_size;   // Size of addressable area in _buffer.
+        size_t               _buffer_max;    // Size of usable area in _buffer.
+        bool                 _read_only;     // The buffer is in read-only mode.
+        bool                 _allocated;     // If true, _buffer was internally allocated and must be freed later.
+        bool                 _big_endian;    // Read/write integers in big endian mode (false means little endian).
+        bool                 _read_error;    // Read error encountered (passed end of stream for instance).
+        bool                 _write_error;   // Write error encountered (passed end of stream for instance).
+        RWState              _state;         // Read/write indexes.
         std::vector<size_t>  _saved_max;     // Stack of saved _buffer_max.
         std::vector<RWState> _saved_states;  // Stack of saved states.
+        uint8_t              _realigned[8];  // 64-bit intermediate buffer to read realigned integer.
     };
 }
 

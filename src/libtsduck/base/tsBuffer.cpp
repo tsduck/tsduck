@@ -85,8 +85,8 @@ ts::Buffer::RWState::RWState() :
 //----------------------------------------------------------------------------
 
 ts::Buffer::Buffer(size_t size) :
-    _buffer(new uint8_t[size]),
-    _buffer_size(size),
+    _buffer(nullptr), // adjusted later
+    _buffer_size(std::max(MINIMUM_SIZE, size)),
     _buffer_max(size),
     _read_only(false),
     _allocated(true),
@@ -95,8 +95,10 @@ ts::Buffer::Buffer(size_t size) :
     _write_error(false),
     _state(),
     _saved_max(),
-    _saved_states()
+    _saved_states(),
+    _realigned()
 {
+    _buffer = new uint8_t[_buffer_size];
     CheckNonNull(_buffer);
 }
 
@@ -117,9 +119,9 @@ void ts::Buffer::reset(size_t size)
 
     // Allocate the new buffer.
     if (!_allocated || _buffer == nullptr) {
-        _buffer = new uint8_t[size];
-        _buffer_size = size;
         _buffer_max = size;
+        _buffer_size = std::max(MINIMUM_SIZE, size);
+        _buffer = new uint8_t[_buffer_size];
         CheckNonNull(_buffer);
     }
 
@@ -152,7 +154,8 @@ ts::Buffer::Buffer(void* data, size_t size, bool read_only) :
     _write_error(false),
     _state(),
     _saved_max(),
-    _saved_states()
+    _saved_states(),
+    _realigned()
 {
     if (_read_only) {
         _state.wbyte = _buffer_size;
@@ -205,7 +208,8 @@ ts::Buffer::Buffer(const void* data, size_t size) :
     _write_error(false),
     _state(),
     _saved_max(),
-    _saved_states()
+    _saved_states(),
+    _realigned()
 {
     _state.wbyte = _buffer_size;
 }
@@ -256,7 +260,8 @@ ts::Buffer::Buffer(const Buffer& other) :
     _write_error(other._write_error),
     _state(other._state),
     _saved_max(other._saved_max),
-    _saved_states(other._saved_states)
+    _saved_states(other._saved_states),
+    _realigned()
 {
     if (_buffer != nullptr && _allocated) {
         // Private internal buffer, copy resources.
@@ -282,7 +287,8 @@ ts::Buffer::Buffer(Buffer&& other) :
     _write_error(other._write_error),
     _state(other._state),
     _saved_max(std::move(other._saved_max)),
-    _saved_states(std::move(other._saved_states))
+    _saved_states(std::move(other._saved_states)),
+    _realigned()
 {
     // Clear state of moved buffer.
     other._buffer = nullptr;
@@ -423,14 +429,15 @@ bool ts::Buffer::resize(size_t size, bool reallocate)
 
     // Reallocate (enlarge or shrink) if necessary.
     if (reallocate && _allocated && new_size != _buffer_size) {
-        uint8_t* new_buffer = new uint8_t[new_size];
+        size_t new_buffer_size = std::max(MINIMUM_SIZE, new_size);
+        uint8_t* new_buffer = new uint8_t[new_buffer_size];
         CheckNonNull(new_buffer);
         if (_buffer != nullptr) {
             ::memcpy(new_buffer, _buffer, std::min(_buffer_size, new_size));
             delete[] _buffer;
         }
         _buffer = new_buffer;
-        _buffer_size = new_size;
+        _buffer_size = new_buffer_size;
     }
 
     // We accept at most the physical buffer size.
@@ -703,10 +710,159 @@ ts::Buffer& ts::Buffer::backBits(size_t bits)
 
 
 //----------------------------------------------------------------------------
+// Request some read size in bytes. Return actually possible read size.
+//----------------------------------------------------------------------------
+
+size_t ts::Buffer::requestReadBytes(size_t bytes)
+{
+    assert(_state.rbyte <= _state.wbyte);
+
+    // Maximum possible bytes to read
+    const size_t max_bytes = remainingReadBits() / 8;
+
+    if (bytes <= max_bytes) {
+        return bytes;
+    }
+    else {
+        _read_error = true;
+        return max_bytes;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Internal get bulk bytes, either aligned or not. Update read pointer.
+//----------------------------------------------------------------------------
+
+void ts::Buffer::readBytesInternal(uint8_t* data, size_t bytes)
+{
+    // Internal call: bytes is already validated by requestReadBytes().
+    assert(_state.rbyte + bytes <= _state.wbyte);
+    assert(_buffer != nullptr);
+
+    if (_state.rbit == 0) {
+        // Read pointer is byte aligned, bulk copy.
+        ::memcpy(data, _buffer + _state.rbyte, bytes);
+        _state.rbyte += bytes;
+    }
+    else {
+        // Unaligned read pointer, copy small pieces.
+        while (bytes > 0) {
+            if (_big_endian) {
+                *data++ = uint8_t(_buffer[_state.rbyte] << _state.rbit) | (_buffer[_state.rbyte + 1] >> (8 - _state.rbit));
+            }
+            else {
+                *data++ = (_buffer[_state.rbyte] >> _state.rbit) | uint8_t(_buffer[_state.rbyte + 1] << (8 - _state.rbit));
+            }
+            _state.rbyte++;
+            bytes--;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Public get bulk bytes.
+//----------------------------------------------------------------------------
+
+size_t ts::Buffer::getBytes(uint8_t* buffer, size_t bytes)
+{
+    if (buffer == nullptr) {
+        return 0;
+    }
+    else {
+        bytes = requestReadBytes(bytes);
+        readBytesInternal(buffer, bytes);
+        return bytes;
+    }
+}
+
+ts::ByteBlock ts::Buffer::getByteBlock(size_t bytes)
+{
+    bytes = requestReadBytes(bytes);
+    ByteBlock bb(bytes);
+    readBytesInternal(bb.data(), bytes);
+    return bb;
+}
+
+size_t ts::Buffer::getByteBlockAppend(ByteBlock& bb, size_t bytes)
+{
+    bytes = requestReadBytes(bytes);
+    readBytesInternal(bb.enlarge(bytes), bytes);
+    return bytes;
+}
+
+
+//----------------------------------------------------------------------------
+// Put bulk bytes in the buffer.
+//----------------------------------------------------------------------------
+
+size_t ts::Buffer::putBytes(const ByteBlock& bb, size_t start, size_t count)
+{
+    start = std::min(start, bb.size());
+    count = std::min(bb.size() - start, count);
+    return putBytes(&bb[start], count);
+}
+
+size_t ts::Buffer::putBytes(const uint8_t* buffer, size_t bytes)
+{
+    assert(_state.wbyte <= _buffer_max);
+    assert(_buffer != nullptr);
+    assert(_state.wbit < 8);
+
+    if (_read_only) {
+        _write_error = true;
+        return 0;
+    }
+
+    // Actual size to write.
+    if (_state.wbyte + bytes > _buffer_max) {
+        bytes = _buffer_max - _state.wbyte;
+        _write_error = true;
+    }
+
+    // Write bytes.
+    if (_state.wbit == 0) {
+        // Write pointer is byte aligned, bulk copy.
+        ::memcpy(_buffer + _state.wbyte, buffer, bytes);
+        _state.wbyte += bytes;
+    }
+    else {
+        // Unaligned write pointer, copy small pieces.
+        if (_state.wbyte + bytes == _buffer_max) {
+            // One byte less because of partially written byte.
+            assert(bytes > 0);
+            bytes--;
+            _write_error = true;
+        }
+        if (_big_endian) {
+            // Clear unused bits in current partial write byte.
+            _buffer[_state.wbyte] &= ~(0xFF >> _state.wbit);
+            // Copy each byte in two parts.
+            for (size_t i = 0; i < bytes; ++i) {
+                _buffer[_state.wbyte] |= *buffer >> _state.wbit;
+                _buffer[++_state.wbyte] = uint8_t(*buffer++ << (8 - _state.wbit));
+            }
+        }
+        else {
+            // Clear unused bits in current partial write byte.
+            _buffer[_state.wbyte] &= ~uint8_t(0xFF << _state.wbit);
+            // Copy each byte in two parts.
+            for (size_t i = 0; i < bytes; ++i) {
+                _buffer[_state.wbyte] |= uint8_t(*buffer << _state.wbit);
+                _buffer[++_state.wbyte] = *buffer++ >> (8 - _state.wbit);
+            }
+        }
+    }
+    return bytes;
+}
+
+
+//----------------------------------------------------------------------------
 // Read the next bit and advance the bitstream pointer.
 //----------------------------------------------------------------------------
 
-uint8_t ts::Buffer::readBit(uint8_t def)
+uint8_t ts::Buffer::getBit(uint8_t def)
 {
     if (endOfRead()) {
         _read_error = true;
@@ -723,4 +879,82 @@ uint8_t ts::Buffer::readBit(uint8_t def)
         _state.rbit = 0;
     }
     return bit;
+}
+
+
+//----------------------------------------------------------------------------
+// Write the next bit and advance the write pointer.
+//----------------------------------------------------------------------------
+
+bool ts::Buffer::putBit(uint8_t bit)
+{
+    if (_read_only || endOfWrite()) {
+        _write_error = true;
+        return false;
+    }
+
+    assert(_state.wbyte <= _buffer_max);
+    assert(_state.wbit < 8);
+
+    const uint8_t mask = uint8_t(1 << (_big_endian ? (7 - _state.wbit) : _state.wbit));
+    if (bit == 0) {
+        _buffer[_state.wbyte] &= ~mask;
+    }
+    else {
+        _buffer[_state.wbyte] |= mask;
+    }
+
+    if (++_state.wbit > 7) {
+        _state.wbyte++;
+        _state.wbit = 0;
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Internal "read bytes" method (1 to 8 bytes).
+//----------------------------------------------------------------------------
+
+const uint8_t* ts::Buffer::rdb(size_t bytes)
+{
+    // Internally used to read up to 8 bytes (64-bit integers).
+    assert(bytes <= 8);
+
+    // Static buffer for read error.
+    static const uint8_t ff[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
+    if (_state.rbit == 0) {
+        // Read buffer is byte aligned. Most common case.
+        if (_state.rbyte + bytes > _state.wbyte) {
+            // Not enough bytes to read.
+            _read_error = true;
+            return ff;
+        }
+        else {
+            const uint8_t* buf = _buffer + _state.rbyte;
+            _state.rbyte += bytes;
+            return buf;
+        }
+    }
+    else {
+        // Read buffer is not byte aligned, use an intermediate aligned buffer.
+        if (currentReadBitOffset() + (8 * bytes) > currentWriteBitOffset()) {
+            // Not enough bytes to read.
+            _read_error = true;
+            return ff;
+        }
+        else {
+            for (uint8_t* p = _realigned; p < _realigned + bytes; p++) {
+                if (_big_endian) {
+                    *p = uint8_t(_buffer[_state.rbyte] << _state.rbit) | (_buffer[_state.rbyte + 1] >> (8 - _state.rbit));
+                }
+                else {
+                    *p = (_buffer[_state.rbyte] >> _state.rbit) | uint8_t(_buffer[_state.rbyte + 1] << (8 - _state.rbit));
+                }
+                _state.rbyte++;
+            }
+            return _realigned;
+        }
+    }
 }

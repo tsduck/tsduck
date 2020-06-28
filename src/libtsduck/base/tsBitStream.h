@@ -102,7 +102,7 @@ namespace ts {
         //! Check if this object is currently associated with a memory area.
         //! @return True if this object is currently associated with a memory area.
         //!
-        bool isAssociated() const
+        bool externalMemory() const
         {
             return _base != nullptr;
         }
@@ -128,19 +128,19 @@ namespace ts {
         //! Get current bit position.
         //! @return The offset of the current bit from the starting one.
         //!
-        size_t currentBitOffset() const;
+        size_t currentReadBitOffset() const;
 
         //!
         //! Get number of remaining bits.
         //! @return The number of remaining bits.
         //!
-        size_t remainingBitCount() const;
+        size_t remainingReadBits() const;
 
         //!
         //! Check end of stream.
         //! @return True if the end of stream is reached.
         //!
-        bool endOfStream() const
+        bool endOfRead() const
         {
             return _next_bit >= _end_bit;
         }
@@ -149,7 +149,7 @@ namespace ts {
         //! Check if the current bit pointer is on a byte boundary.
         //! @return True if the next byte to read is at the beginning of a byte.
         //!
-        bool byteAligned() const
+        bool readIsByteAligned() const
         {
             return (_next_bit & 0x07) == 0;
         }
@@ -158,7 +158,7 @@ namespace ts {
         //! Skip bits.
         //! @param [in] n Number of bits to skip.
         //!
-        void skip(size_t n) {
+        void skipBits(size_t n) {
             _next_bit = std::min(_end_bit, _next_bit + n);
         }
 
@@ -166,7 +166,7 @@ namespace ts {
         //! Back n bits.
         //! @param [in] n Number of bits to skip back.
         //!
-        void back(size_t n) {
+        void backBits(size_t n) {
             _next_bit = _start_bit + n >= _next_bit ? _start_bit : _next_bit - n;
         }
 
@@ -183,7 +183,7 @@ namespace ts {
         //! @param [in] def Default value to return if already at end of stream.
         //! @return The value of the next bit.
         //!
-        uint8_t readBit(uint8_t def = 0);
+        uint8_t getBit(uint8_t def = 0);
 
         //!
         //! Read the next n bits as an integer value and advance the bitstream pointer.
@@ -193,7 +193,7 @@ namespace ts {
         //! @return The value of the next @a n bits.
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-        INT read(size_t n, INT def = 0);
+        INT getBits(size_t n, INT def = 0);
     };
 }
 
