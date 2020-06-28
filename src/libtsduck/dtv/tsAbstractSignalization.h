@@ -76,7 +76,7 @@ namespace ts {
         //! This method converts this object to XML.
         //!
         //! When this object is valid, the default implementation of toXML()
-        //! creates a root node with the default XML name and then invoke
+        //! creates a root node with the default XML name and then invokes
         //! buildXML() to populate the XML node.
         //!
         //! Subclasses have the choice to either implement buildXML() or toXML().
@@ -90,13 +90,23 @@ namespace ts {
         virtual xml::Element* toXML(DuckContext& duck, xml::Element* parent) const;
 
         //!
-        //! This abstract converts an XML structure to a table or descriptor.
+        //! This method converts an XML structure to a table or descriptor in this object.
+        //!
         //! In case of success, this object is replaced with the interpreted content of the XML structure.
         //! In case of error, this object is invalidated.
+        //!
+        //! The default implementation checks the name of the XML node and then invokes
+        //! analyzeXML(). Depending on the returned values of analyzeXML(), this object
+        //! is either validated or invalidated.
+        //!
+        //! Subclasses have the choice to either implement analyzeXML() or fromXML().
+        //! If the object is serialized as one single XML node, it is simpler to
+        //! implement analyzeXML().
+        //!
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] element XML element to convert.
         //!
-        virtual void fromXML(DuckContext& duck, const xml::Element* element) = 0;
+        virtual void fromXML(DuckContext& duck, const xml::Element* element);
 
         // Implementation of AbstractDefinedByStandards
         virtual Standards definingStandards() const override;
@@ -188,7 +198,7 @@ namespace ts {
         //! Helper method to convert this object to XML.
         //!
         //! When this object is valid, the default implementation of toXML()
-        //! creates a root node with the default XML name and then invoke
+        //! creates a root node with the default XML name and then invokes
         //! buildXML() to populate the XML node.
         //!
         //! The default implementation is to do nothing. Subclasses which
@@ -201,7 +211,21 @@ namespace ts {
         virtual void buildXML(DuckContext& duck, xml::Element* root) const;
 
         //!
-        //! Check that an XML element has the right name for this table.
+        //! Helper method to convert this object from XML.
+        //!
+        //! The default implementation of fromXML() checks the validity of the XML
+        //! node name and then invokes analyzeXML(). This method shall build the C++
+        //! object from the content of the XML node. When analyzeXML() returns false,
+        //! this table or descriptor object is invalidated.
+        //!
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] element XML element to convert.
+        //! @return True if the analysis is correct, false otherwise.
+        //!
+        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element);
+
+        //!
+        //! Check that an XML element has the right name for this table or descriptor.
         //! @param [in] element XML element to check.
         //! @return True on success, false on error.
         //!

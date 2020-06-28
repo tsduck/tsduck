@@ -84,6 +84,23 @@ ts::LIT::Event::Event(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::LIT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    event_id = 0;
+    service_id = 0;
+    transport_stream_id = 0;
+    original_network_id = 0;
+    events.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 

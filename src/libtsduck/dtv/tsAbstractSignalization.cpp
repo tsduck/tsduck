@@ -90,16 +90,7 @@ ts::UString ts::AbstractSignalization::xmlName() const
 
 
 //----------------------------------------------------------------------------
-// Default helper method to convert this object to XML.
-//----------------------------------------------------------------------------
-
-void ts::AbstractSignalization::buildXML(DuckContext& duck, xml::Element* root) const
-{
-}
-
-
-//----------------------------------------------------------------------------
-// XML serialization
+// XML serialization and deserialization (default implementations).
 //----------------------------------------------------------------------------
 
 ts::xml::Element* ts::AbstractSignalization::toXML(DuckContext& duck, xml::Element* parent) const
@@ -109,6 +100,23 @@ ts::xml::Element* ts::AbstractSignalization::toXML(DuckContext& duck, xml::Eleme
         buildXML(duck, root);
     }
     return root;
+}
+
+void ts::AbstractSignalization::buildXML(DuckContext& duck, xml::Element* root) const
+{
+    // If a subclass does not override toXML() and buildXML(), this will end up with an
+    // empty XML node with the default node name for this structure.
+}
+
+void ts::AbstractSignalization::fromXML(DuckContext& duck, const xml::Element* element)
+{
+    _is_valid = checkXMLName(element) && analyzeXML(duck, element);
+}
+
+bool ts::AbstractSignalization::analyzeXML(DuckContext& duck, const xml::Element* element)
+{
+    // If a subclass does not override fromXML() and analyzeXML(), this will end up with an invalid object.
+    return false;
 }
 
 

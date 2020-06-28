@@ -44,7 +44,7 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::DiscontinuityInformationTable::DiscontinuityInformationTable(bool tr) :
@@ -54,15 +54,21 @@ ts::DiscontinuityInformationTable::DiscontinuityInformationTable(bool tr) :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
-
 ts::DiscontinuityInformationTable::DiscontinuityInformationTable(DuckContext& duck, const BinaryTable& table) :
     DiscontinuityInformationTable()
 {
     deserialize(duck, table);
+}
+
+
+//----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::DiscontinuityInformationTable::clear()
+{
+    _is_valid = true;
+    transition = false;
 }
 
 

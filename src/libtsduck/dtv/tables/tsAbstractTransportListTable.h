@@ -102,6 +102,9 @@ namespace ts {
         //!
         void clearPreferredSections();
 
+        // Inherited methods
+        virtual void clear() override;
+
     protected:
         //!
         //! Table id extension.

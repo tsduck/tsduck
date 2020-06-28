@@ -97,6 +97,9 @@ ts::RRT::RatingValue::RatingValue() :
 
 void ts::RRT::clear()
 {
+    _is_valid = true;
+    version = 0;
+    is_current = true;
     rating_region = 0;
     protocol_version = 0;
     rating_region_name.clear();

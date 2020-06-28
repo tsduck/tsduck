@@ -165,9 +165,7 @@ void ts::AACDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"profile_and_level", profile_and_level, true);
     root->setBoolAttribute(u"SAOC_DE", SAOC_DE);
     root->setOptionalIntAttribute(u"AAC_type", AAC_type, true);
-    if (!additional_info.empty()) {
-        root->addElement(u"additional_info")->addHexaText(additional_info);
-    }
+    root->addHexaTextChild(u"additional_info", additional_info, true);
 }
 
 
@@ -175,12 +173,10 @@ void ts::AACDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AACDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AACDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(profile_and_level, u"profile_and_level", true) &&
-        element->getBoolAttribute(SAOC_DE, u"SAOC_DE", false) &&
-        element->getOptionalIntAttribute(AAC_type, u"AAC_type") &&
-        element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 5);
+    return element->getIntAttribute<uint8_t>(profile_and_level, u"profile_and_level", true) &&
+           element->getBoolAttribute(SAOC_DE, u"SAOC_DE", false) &&
+           element->getOptionalIntAttribute(AAC_type, u"AAC_type") &&
+           element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 5);
 }

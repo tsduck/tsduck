@@ -82,6 +82,21 @@ ts::MGT::TableType::TableType(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::MGT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    protocol_version = 0;
+    tables.clear();
+    descs.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 

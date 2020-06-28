@@ -106,6 +106,7 @@ namespace ts {
         Time utcTime() const;
 
         // Inherited methods
+        virtual void clear() override;
         virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 

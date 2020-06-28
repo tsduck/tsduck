@@ -62,6 +62,7 @@ namespace ts {
         DiscontinuityInformationTable(DuckContext& duck, const BinaryTable& table);
 
         // Inherited methods
+        virtual void clear() override;
         virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 

@@ -75,6 +75,22 @@ ts::PMT::PMT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::PMT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    service_id = 0;
+    pcr_pid = PID_NULL;
+    descs.clear();
+    streams.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 

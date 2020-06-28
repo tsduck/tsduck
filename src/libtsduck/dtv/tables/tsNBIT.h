@@ -142,6 +142,7 @@ namespace ts {
         }
 
         // Inherited methods
+        virtual void clear() override;
         virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 

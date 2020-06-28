@@ -80,6 +80,20 @@ ts::NBIT::Information::Information(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::NBIT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    original_network_id = 0;
+    informations.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // This method checks if a table id is valid for this object.
 //----------------------------------------------------------------------------
 
@@ -190,7 +204,7 @@ void ts::NBIT::serializeContent(DuckContext& duck, BinaryTable& table) const
         size_t key_count = std::min<size_t>(255, it->second.key_ids.size());
 
         for (size_t start_index = 0; ; ) {
-          
+
             // Insert common characteristics (ie. ids).
             assert(remain >= 5);
             PutUInt16(data, it->first);

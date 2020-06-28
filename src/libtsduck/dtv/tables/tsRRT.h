@@ -109,12 +109,8 @@ namespace ts {
         //!
         RRT& operator=(const RRT& other) = default;
 
-        //!
-        //! Clear the content of the table.
-        //!
-        void clear();
-
         // Inherited methods
+        virtual void clear() override;
         virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 

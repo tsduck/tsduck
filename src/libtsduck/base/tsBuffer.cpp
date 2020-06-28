@@ -93,6 +93,7 @@ ts::Buffer::Buffer(size_t size) :
     _big_endian(true),
     _read_error(false),
     _write_error(false),
+    _user_error(false),
     _state(),
     _saved_max(),
     _saved_states(),
@@ -130,6 +131,7 @@ void ts::Buffer::reset(size_t size)
     _allocated = true;
     _read_error = false;
     _write_error = false;
+    _user_error = false;
     _state.rbyte = 0;
     _state.rbit = 0;
     _state.wbyte = 0;
@@ -152,6 +154,7 @@ ts::Buffer::Buffer(void* data, size_t size, bool read_only) :
     _big_endian(true),
     _read_error(false),
     _write_error(false),
+    _user_error(false),
     _state(),
     _saved_max(),
     _saved_states(),
@@ -184,6 +187,7 @@ void ts::Buffer::reset(void* data, size_t size, bool read_only)
     // Reset other properties.
     _read_error = false;
     _write_error = false;
+    _user_error = false;
     _state.rbyte = 0;
     _state.rbit = 0;
     _state.wbyte = _read_only ? _buffer_size : 0;
@@ -206,6 +210,7 @@ ts::Buffer::Buffer(const void* data, size_t size) :
     _big_endian(true),
     _read_error(false),
     _write_error(false),
+    _user_error(false),
     _state(),
     _saved_max(),
     _saved_states(),
@@ -236,6 +241,7 @@ void ts::Buffer::reset(const void* data, size_t size)
     // Reset other properties.
     _read_error = false;
     _write_error = false;
+    _user_error = false;
     _state.rbyte = 0;
     _state.rbit = 0;
     _state.wbyte = _buffer_size;
@@ -258,6 +264,7 @@ ts::Buffer::Buffer(const Buffer& other) :
     _big_endian(other._big_endian),
     _read_error(other._read_error),
     _write_error(other._write_error),
+    _user_error(other._user_error),
     _state(other._state),
     _saved_max(other._saved_max),
     _saved_states(other._saved_states),
@@ -285,6 +292,7 @@ ts::Buffer::Buffer(Buffer&& other) :
     _big_endian(other._big_endian),
     _read_error(other._read_error),
     _write_error(other._write_error),
+    _user_error(other._user_error),
     _state(other._state),
     _saved_max(std::move(other._saved_max)),
     _saved_states(std::move(other._saved_states)),
@@ -318,6 +326,7 @@ ts::Buffer& ts::Buffer::operator=(const Buffer& other)
         _big_endian = other._big_endian;
         _read_error = other._read_error;
         _write_error = other._write_error;
+        _user_error = other._user_error;
         _state = other._state;
         _saved_max = other._saved_max;
         _saved_states = other._saved_states;
@@ -354,6 +363,7 @@ ts::Buffer& ts::Buffer::operator=(Buffer&& other)
         _allocated = other._allocated;
         _big_endian = other._big_endian;
         _read_error = other._read_error;
+        _user_error = other._user_error;
         _write_error = other._write_error;
         _state = other._state;
         _saved_max = std::move(other._saved_max);

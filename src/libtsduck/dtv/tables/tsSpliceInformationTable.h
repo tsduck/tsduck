@@ -78,16 +78,12 @@ namespace ts {
         SpliceInformationTable(DuckContext& duck, const BinaryTable& table);
 
         //!
-        //! Clear all fields.
-        //!
-        void clear();
-
-        //!
         //! Adjust PTS time values using the "PTS adjustment".
         //!
         void adjustPTS();
 
         // Inherited methods
+        virtual void clear() override;
         virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 

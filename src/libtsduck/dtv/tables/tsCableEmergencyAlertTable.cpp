@@ -129,7 +129,9 @@ ts::CableEmergencyAlertTable::Exception::Exception(uint16_t major, uint16_t mino
 
 void ts::CableEmergencyAlertTable::clear()
 {
+    _is_valid = true;
     version = 0;
+    is_current = true;
     protocol_version = 0;
     EAS_event_ID = 0;
     EAS_originator_code.clear();

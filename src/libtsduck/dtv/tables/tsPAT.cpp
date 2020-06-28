@@ -65,6 +65,21 @@ ts::PAT::PAT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::PAT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    ts_id = 0;
+    nit_pid = PID_NIT;
+    pmts.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 
@@ -229,26 +244,26 @@ void ts::PAT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::PAT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    pmts.clear();
+    xml::ElementVector xservice;
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
         element->getIntAttribute<PID>(nit_pid, u"network_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
-        element->getChildren(children, u"service", 0, 0x10000);
+        element->getChildren(xservice, u"service", 0, 0x10000);
 
-    pmts.clear();
-    for (size_t index = 0; _is_valid && index < children.size(); ++index) {
+    for (auto it = xservice.begin(); it != xservice.end(); ++it) {
         uint16_t id = 0;
         PID pid = PID_NULL;
-        _is_valid =
-            children[index]->getIntAttribute<uint16_t>(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-            children[index]->getIntAttribute<PID>(pid, u"program_map_PID", true, 0, 0x0000, 0x1FFF);
-        if (_is_valid) {
+        ok = (*it)->getIntAttribute<uint16_t>(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+             (*it)->getIntAttribute<PID>(pid, u"program_map_PID", true, 0, 0x0000, 0x1FFF);
+        if (ok) {
             pmts[id] = pid;
         }
     }
+
+    return ok;
 }

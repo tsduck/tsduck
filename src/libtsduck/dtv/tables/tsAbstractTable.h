@@ -75,6 +75,11 @@ namespace ts {
         void deserialize(DuckContext& duck, const BinaryTable& bin);
 
         //!
+        //! This method clears the content of the table and returns to a clear empty state.
+        //!
+        virtual void clear() = 0;
+
+        //!
         //! Virtual destructor
         //!
         virtual ~AbstractTable();

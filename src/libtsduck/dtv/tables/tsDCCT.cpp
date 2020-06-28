@@ -107,6 +107,9 @@ ts::DCCT::Term::Term(const AbstractTable* table, uint8_t type, uint64_t id) :
 
 void ts::DCCT::clear()
 {
+    _is_valid = true;
+    version = 0;
+    is_current = true;
     dcc_subtype = 0;
     dcc_id = 0;
     protocol_version = 0;

@@ -81,6 +81,21 @@ ts::AbstractTransportListTable::Transport::Transport(const AbstractTable* table)
 
 
 //----------------------------------------------------------------------------
+// Clear all fields.
+//----------------------------------------------------------------------------
+
+void ts::AbstractTransportListTable::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    descs.clear();
+    transports.clear();
+    _tid_ext = 0xFFFF;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear preferred section in all transports.
 //----------------------------------------------------------------------------
 
