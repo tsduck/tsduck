@@ -231,10 +231,17 @@ namespace ts {
         bool writeError() const { return _write_error; }
 
         //!
+        //! Check if there was a user-generated error.
+        //! @return True if there was a user-generated error.
+        //! @see setUserError()
+        //!
+        bool userError() const { return _user_error; }
+
+        //!
         //! Check if there was any kind of error.
         //! @return True if there was any kind of error.
         //!
-        bool error() const { return _read_error || _write_error; }
+        bool error() const { return _read_error || _write_error || _user_error; }
 
         //!
         //! Clear the read error state.
@@ -247,9 +254,20 @@ namespace ts {
         void clearWriteError() { _write_error = false; }
 
         //!
+        //! Clear the user-generated error state.
+        //!
+        void clearUserError() { _user_error = false; }
+
+        //!
         //! Clear all error states.
         //!
-        void clearError() { _read_error = _write_error = false; }
+        void clearError() { _read_error = _write_error = _user_error = false; }
+
+        //!
+        //! Set the user-generated error state.
+        //! This can be used to indicate an application error such as invalid data format for instance.
+        //!
+        void setUserError() { _user_error = true; }
 
         //!
         //! Reset reading at the specified offset in the buffer.
@@ -792,6 +810,7 @@ namespace ts {
         bool                 _big_endian;    // Read/write integers in big endian mode (false means little endian).
         bool                 _read_error;    // Read error encountered (passed end of stream for instance).
         bool                 _write_error;   // Write error encountered (passed end of stream for instance).
+        bool                 _user_error;    // User-generated error.
         RWState              _state;         // Read/write indexes.
         std::vector<size_t>  _saved_max;     // Stack of saved _buffer_max.
         std::vector<RWState> _saved_states;  // Stack of saved states.

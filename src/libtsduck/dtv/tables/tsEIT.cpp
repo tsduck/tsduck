@@ -106,6 +106,23 @@ ts::EIT::Event::Event(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::EIT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    service_id = 0;
+    ts_id = 0;
+    onetw_id = 0;
+    last_table_id = 0;
+    events.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // This  method checks if a table id is valid for this object.
 //----------------------------------------------------------------------------
 

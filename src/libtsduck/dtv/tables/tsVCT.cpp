@@ -81,6 +81,22 @@ ts::VCT::Channel::Channel(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::VCT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    protocol_version = 0;
+    transport_stream_id = 0;
+    channels.clear();
+    descs.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Set all known values in a Service object.
 //----------------------------------------------------------------------------
 

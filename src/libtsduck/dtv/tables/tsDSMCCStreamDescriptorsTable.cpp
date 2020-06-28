@@ -74,6 +74,7 @@ ts::DSMCCStreamDescriptorsTable& ts::DSMCCStreamDescriptorsTable::operator=(cons
     return *this;
 }
 
+
 //----------------------------------------------------------------------------
 // A static method to display a section.
 //----------------------------------------------------------------------------

@@ -84,7 +84,7 @@ ts::SpliceInformationTable::SpliceInformationTable(const SpliceInformationTable&
 
 void ts::SpliceInformationTable::clear()
 {
-    _is_valid = false;
+    _is_valid = true;
     protocol_version = 0;
     pts_adjustment = 0;
     tier = 0x0FFF;

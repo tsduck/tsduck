@@ -80,6 +80,22 @@ ts::BIT::Broadcaster::Broadcaster(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::BIT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    original_network_id = 0;
+    broadcast_view_propriety = false;
+    descs.clear();
+    broadcasters.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 

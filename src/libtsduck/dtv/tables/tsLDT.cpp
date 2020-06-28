@@ -80,6 +80,22 @@ ts::LDT::Description::Description(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::LDT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    original_service_id = 0;
+    transport_stream_id = 0;
+    original_network_id = 0;
+    descriptions.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 

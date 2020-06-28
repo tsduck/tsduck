@@ -95,6 +95,23 @@ ts::PCAT::Schedule::Schedule() :
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::PCAT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    service_id = 0;
+    transport_stream_id = 0;
+    original_network_id = 0;
+    content_id = 0;
+    versions.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 

@@ -72,7 +72,7 @@ ts::INT::Device& ts::INT::Device::operator=(const Device& other)
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::INT::INT(uint8_t version_, bool is_current_) :
@@ -86,11 +86,6 @@ ts::INT::INT(uint8_t version_, bool is_current_) :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Copy constructor.
-//----------------------------------------------------------------------------
-
 ts::INT::INT(const INT& other) :
     AbstractLongTable(other),
     action_type(other.action_type),
@@ -101,17 +96,28 @@ ts::INT::INT(const INT& other) :
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
-
 ts::INT::INT(DuckContext& duck, const BinaryTable& table) :
     INT()
 {
     deserialize(duck, table);
 }
 
+
+//----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::INT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    action_type = 0;
+    platform_id = 0;
+    processing_order = 0;
+    platform_descs.clear();
+    devices.clear();
+}
 
 //----------------------------------------------------------------------------
 // Deserialize a descriptor list. Update data and remain. Return true on success.

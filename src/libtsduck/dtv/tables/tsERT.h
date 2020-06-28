@@ -111,6 +111,7 @@ namespace ts {
         ERT& operator=(const ERT& other) = default;
 
         // Inherited methods
+        virtual void clear() override;
         virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 

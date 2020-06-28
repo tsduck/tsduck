@@ -140,6 +140,23 @@ ts::UNT::UNT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::UNT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    action_type = 0;
+    OUI = 0;
+    processing_order = 0;
+    descs.clear();
+    devices.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 

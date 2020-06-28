@@ -86,6 +86,25 @@ ts::STT::STT(DuckContext& duck, const Section& section) :
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::STT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    protocol_version = 0;
+    system_time = 0;
+    GPS_UTC_offset = 0;
+    DS_status = 0;
+    DS_day_of_month = 0;
+    DS_hour = 0;
+    descs.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Convert the GPS system time in this object in a UTC time.
 //----------------------------------------------------------------------------
 

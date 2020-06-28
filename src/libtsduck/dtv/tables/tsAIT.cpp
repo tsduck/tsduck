@@ -75,6 +75,22 @@ ts::AIT::AIT(const AIT& other) :
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::AIT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    application_type = 0;
+    test_application_flag = false;
+    descs.clear();
+    applications.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 

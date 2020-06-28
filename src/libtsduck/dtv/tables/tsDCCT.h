@@ -84,7 +84,6 @@ namespace ts {
         //!
         typedef EntryWithDescriptorsList<Term> TermList;
 
-
         //!
         //! Description of a channel change test.
         //! Note: by inheriting from EntryWithDescriptors, there is a public field "DescriptorList descs".
@@ -153,12 +152,8 @@ namespace ts {
         //!
         DCCT& operator=(const DCCT& other) = default;
 
-        //!
-        //! Clear the content of the table.
-        //!
-        void clear();
-
         // Inherited methods
+        virtual void clear() override;
         virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 

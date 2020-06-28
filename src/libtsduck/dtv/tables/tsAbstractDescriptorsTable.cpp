@@ -65,6 +65,20 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable(DuckContext& duck, TID ti
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::AbstractDescriptorsTable::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    descs.clear();
+    _tid_ext = 0xFFFF;
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 

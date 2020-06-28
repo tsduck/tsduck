@@ -99,6 +99,9 @@ ts::DCCSCT::Update::Update(const AbstractTable* table, UpdateType type) :
 
 void ts::DCCSCT::clear()
 {
+    _is_valid = true;
+    version = 0;
+    is_current = true;
     dccsct_type = 0;
     protocol_version = 0;
     descs.clear();

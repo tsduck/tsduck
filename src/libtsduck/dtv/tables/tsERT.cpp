@@ -85,6 +85,22 @@ ts::ERT::Relation::Relation(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::ERT::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    event_relation_id = 0;
+    information_provider_id = 0;
+    relation_type = 0;
+    relations.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 

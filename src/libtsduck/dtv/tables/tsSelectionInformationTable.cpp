@@ -74,6 +74,20 @@ ts::SelectionInformationTable::SelectionInformationTable(DuckContext& duck, cons
 
 
 //----------------------------------------------------------------------------
+// Clear the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::SelectionInformationTable::clear()
+{
+    _is_valid = true;
+    version = 0;
+    is_current = true;
+    descs.clear();
+    services.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 
