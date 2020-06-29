@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//
-//  Encapsulation of Linux DVB property lists.
-//
-//-----------------------------------------------------------------------------
 
 #include "tsDTVProperties.h"
 TSDUCK_SOURCE;

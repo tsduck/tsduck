@@ -140,7 +140,7 @@ namespace {
         const ts::UString info(tuner.deviceInfo());
         std::cout << " (";
         if (!info.empty()) {
-            std::cout << info << ", ";
+            std::cout << "\"" << info << "\", ";
         }
         std::cout << tuner.deliverySystems().toString() << ")" << std::endl;
 

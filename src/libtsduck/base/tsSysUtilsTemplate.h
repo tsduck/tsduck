@@ -97,3 +97,29 @@ bool ts::ExpandWildcardAndAppend(CONTAINER& container, const UString& pattern)
     #error "Unimplemented operating system"
 #endif
 }
+
+
+//----------------------------------------------------------------------------
+// Search all files matching a specified wildcard pattern in a directory tree.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+bool ts::SearchWildcardAndAppend(CONTAINER& container, const UString& root, const UString& pattern, size_t max_levels, bool skip_symlinks)
+{
+    // Append all files directly matching the wildcard in root directory.
+    bool status = ExpandWildcardAndAppend(container, root + PathSeparator + pattern);
+
+    // If the maximum number of recursion levels is not reached, recurse in all subdirectories.
+    if (max_levels > 0) {
+        // Search all files under root and will select directories only.
+        UStringList locals;
+        ExpandWildcard(locals, root + PathSeparator + u"*");
+        for (auto loc = locals.begin(); loc != locals.end(); ++loc) {
+            if (IsDirectory(*loc) && (!skip_symlinks || !IsSymbolicLink(*loc))) {
+                status = SearchWildcardAndAppend(container, *loc, pattern, max_levels - 1) && status;
+            }
+        }
+    }
+
+    return status;
+}

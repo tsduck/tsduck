@@ -420,10 +420,47 @@ namespace ts {
     //! the pattern is not an error, it simply return no file name.
     //!
     template <class CONTAINER>
-    bool ExpandWildcard(CONTAINER& container, const UString& pattern)
+    inline bool ExpandWildcard(CONTAINER& container, const UString& pattern)
     {
         container.clear();
         return ExpandWildcardAndAppend(container, pattern);
+    }
+
+    //!
+    //! Search all files matching a specified wildcard pattern in a directory tree and append them into a container.
+    //!
+    //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+    //! @param [in,out] container A container of @c UString receiving the the names of all files matching the wildcard.
+    //! The names are appended at the end of the existing content of the container.
+    //! @param [in] root Root directory into which the files are searched.
+    //! @param [in] pattern A file path pattern with wildcards. The syntax of the wildcards is system-dependent.
+    //! @param [in] max_levels Maximum number of directory recursions. Since some operating systems allow
+    //! loops in the file system, it is a good idea to set some limit to avoid infinite recursion.
+    //! @param [in] skip_symlinks If true, do not recurse through symbolic links to directories.
+    //! @return True on success, false on error. Note that finding no file matching
+    //! the pattern is not an error, it simply return no file name.
+    //!
+    template <class CONTAINER>
+    bool SearchWildcardAndAppend(CONTAINER& container, const UString& root, const UString& pattern, size_t max_levels = 64, bool skip_symlinks = true);
+
+    //!
+    //! Search all files matching a specified wildcard pattern in a directory tree.
+    //!
+    //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+    //! @param [out] container A container of @c UString receiving the the names of all files matching the wildcard.
+    //! @param [in] root Root directory into which the files are searched.
+    //! @param [in] pattern A file path pattern with wildcards. The syntax of the wildcards is system-dependent.
+    //! @param [in] max_levels Maximum number of directory recursions. Since some operating systems allow
+    //! loops in the file system, it is a good idea to set some limit to avoid infinite recursion.
+    //! @param [in] skip_symlinks If true, do not recurse through symbolic links to directories.
+    //! @return True on success, false on error. Note that finding no file matching
+    //! the pattern is not an error, it simply return no file name.
+    //!
+    template <class CONTAINER>
+    inline bool SearchWildcard(CONTAINER& container, const UString& root, const UString& pattern, size_t max_levels = 64, bool skip_symlinks = true)
+    {
+        container.clear();
+        return SearchWildcardAndAppend(container, root, pattern, max_levels);
     }
 
     //!
@@ -472,7 +509,7 @@ namespace ts {
     //! @param [in] def Default value if the specified environment variable does not exist.
     //!
     template <class CONTAINER>
-    void GetEnvironmentPath(CONTAINER& container, const UString& name, const UString& def = UString())
+    inline void GetEnvironmentPath(CONTAINER& container, const UString& name, const UString& def = UString())
     {
         GetEnvironment(name, def).split(container, SearchPathSeparator, true, true);
     }
@@ -490,7 +527,7 @@ namespace ts {
     //! @param [in] def Default value if the specified environment variable does not exist.
     //!
     template <class CONTAINER>
-    void GetEnvironmentPathAppend(CONTAINER& container, const UString& name, const UString& def = UString())
+    inline void GetEnvironmentPathAppend(CONTAINER& container, const UString& name, const UString& def = UString())
     {
         GetEnvironment(name, def).splitAppend(container, SearchPathSeparator, true, true);
     }
