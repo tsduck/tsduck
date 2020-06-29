@@ -72,6 +72,7 @@ public:
     void testFileTime();
     void testDirectory();
     void testWildcard();
+    void testSearchWildcard();
     void testHomeDirectory();
     void testProcessMetrics();
     void testIsTerminal();
@@ -99,6 +100,7 @@ public:
     TSUNIT_TEST(testFileTime);
     TSUNIT_TEST(testDirectory);
     TSUNIT_TEST(testWildcard);
+    TSUNIT_TEST(testSearchWildcard);
     TSUNIT_TEST(testHomeDirectory);
     TSUNIT_TEST(testProcessMetrics);
     TSUNIT_TEST(testIsTerminal);
@@ -615,6 +617,18 @@ void SysUtilsTest::testWildcard()
     TSUNIT_ASSERT(!ts::FileExists(spuriousFileName));
     TSUNIT_ASSERT(ts::DeleteFile(dirName) == ts::SYS_SUCCESS);
     TSUNIT_ASSERT(!ts::FileExists(dirName));
+}
+
+void SysUtilsTest::testSearchWildcard()
+{
+#if defined(TS_LINUX)
+    ts::UStringList files;
+    const bool ok = ts::SearchWildcard(files, u"/sys/devices", u"dvb*.frontend*");
+    debug() << "SysUtilsTest::testSearchWildcard: searched dvb*.frontend* in /sys/devices, status = " << ts::UString::TrueFalse(ok) << std::endl;
+    for (auto it = files.begin(); it != files.end(); ++it) {
+        debug() << "    \"" << *it << "\"" << std::endl;
+    }
+#endif
 }
 
 void SysUtilsTest::testHomeDirectory()

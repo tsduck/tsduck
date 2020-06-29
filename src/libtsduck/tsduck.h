@@ -658,6 +658,7 @@
 #if defined(TS_LINUX)
 #include "tsDTVProperties.h"
 #include "tsSignalAllocator.h"
+#include "tsTunerDeviceInfo.h"
 #endif
 
 #if defined(TS_MAC)

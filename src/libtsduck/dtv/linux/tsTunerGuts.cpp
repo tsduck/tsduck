@@ -40,6 +40,7 @@
 #include "tsNullReport.h"
 #include "tsMemory.h"
 #include "tsDTVProperties.h"
+#include "tsTunerDeviceInfo.h"
 TSDUCK_SOURCE;
 
 // We used to report "bit error rate", "signal/noise ratio", "signal strength",
@@ -223,7 +224,6 @@ namespace {
 // Get the list of all existing DVB tuners.
 //-----------------------------------------------------------------------------
 
-
 bool ts::Tuner::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report)
 {
     // Reset returned vector
@@ -232,22 +232,21 @@ bool ts::Tuner::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& 
     // Get list of all DVB adapters
     UStringVector names;
 
-    // Flat naming scheme
+    // Flat naming scheme (old kernels < 2.4 and still found on Android).
     ExpandWildcardAndAppend(names, u"/dev/dvb*.frontend*");
 
-    // DVB folder naming scheme
+    // Modern Linux DVB folder naming scheme.
     ExpandWildcardAndAppend(names, u"/dev/dvb/adapter*/frontend*");
 
     // Open all tuners
     tuners.reserve(names.size());
     bool ok = true;
-    for (UStringVector::const_iterator it = names.begin(); it != names.end(); ++it) {
-        UString tuner_name(*it);
+    for (auto it = names.begin(); it != names.end(); ++it) {
 
+        UString tuner_name(*it);
         tuner_name.substitute(u".frontend", u":");
         tuner_name.substitute(u"/frontend", u":");
 
-        report.debug(u"Process wildcard result '%s'", {tuner_name});
         const size_t index = tuners.size();
         tuners.resize(index + 1);
         tuners[index] = new Tuner(duck, tuner_name, true, report);
@@ -275,15 +274,34 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 
     _info_only = info_only;
 
-    // Analyze device name: /dev/dvb/adapterA[:F[:M[:V]]]
+    // Check if this system uses flat or directory DVB naming.
+    const bool dvb_directory = IsDirectory(u"/dev/dvb");
 
+    // Analyze device name: /dev/dvb/adapterA[:F[:M[:V]]]
+    // Alternate old flat format: /dev/dvbA[:F[:M[:V]]]
+    int adapter_nb = 0;
     int frontend_nb = 0;
     int demux_nb = 0;
     int dvr_nb = 0;
     UStringVector fields;
     if (device_name.empty()) {
         // Default tuner is first one
-        fields.push_back(u"/dev/dvb/adapter0");
+        fields.push_back(dvb_directory ? u"/dev/dvb/adapter0" : u"/dev/dvb0");
+    }
+    else if (!device_name.startWith(u"/dev/dvb")) {
+        // If the name does not start with /dev/dvb, check if this is a known device full description.
+        TunerPtrVector all_tuners;
+        GetAllTuners(_duck, all_tuners, report);
+        for (auto it = all_tuners.begin(); it != all_tuners.end(); ++it) {
+            if (device_name.similar((*it)->deviceInfo())) {
+                fields.push_back((*it)->deviceName());
+                break;
+            }
+        }
+        if (fields.empty()) {
+            report.error(u"unknown tuner \"%s\"", {device_name});
+            return false;
+        }
     }
     else {
         device_name.split(fields, u':', false);
@@ -298,16 +316,23 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
         return false;
     }
 
+    // The adapter number is the integer value at end of first field.
+    const size_t n = fields[0].find_last_not_of(u"0123456789");
+    if (n < fields[0].size()) {
+        fields[0].substr(n + 1).toInteger(adapter_nb);
+    }
+
     // If not specified, use frontend index for demux
     if (fcount < 3) {
         demux_nb = frontend_nb;
     }
 
-    // If not specified, use frontend index for dvr    
+    // If not specified, use frontend index for dvr
     if (fcount < 4) {
         dvr_nb = frontend_nb;
     }
-    
+
+    // Rebuild full TSDuck device name.
     _device_name = fields[0];
     if (dvr_nb != 0) {
         _device_name += UString::Format(u":%d:%d:%d", {frontend_nb, demux_nb, dvr_nb});
@@ -319,29 +344,21 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
         _device_name += UString::Format(u":%d", {frontend_nb});
     }
 
-    if (!fields[0].contain(u"adapter", ts::CASE_SENSITIVE)) {
-        // Flat  naming scheme
-        _guts->frontend_name = fields[0] + UString::Format(u".frontend%d", {frontend_nb});
-        _guts->demux_name = fields[0] + UString::Format(u".demux%d", {demux_nb});
-        _guts->dvr_name = fields[0] + UString::Format(u".dvr%d", {dvr_nb});
-    } else {
-        // DVB folder naming scheme
-        _guts->frontend_name = fields[0] + UString::Format(u"/frontend%d", {frontend_nb});
-        _guts->demux_name = fields[0] + UString::Format(u"/demux%d", {demux_nb});
-        _guts->dvr_name = fields[0] + UString::Format(u"/dvr%d", {dvr_nb});
-    }
+    // Rebuild device names for frontend, demux and dvr.
+    const UChar sep = dvb_directory ? u'/' : u'.';
+    _guts->frontend_name.format(u"%s%cfrontend%d", {fields[0], sep, frontend_nb});
+    _guts->demux_name.format(u"%s%cdemux%d", {fields[0], sep, demux_nb});
+    _guts->dvr_name.format(u"%s%cdvr%d", {fields[0], sep, dvr_nb});
 
     // Open DVB adapter frontend. The frontend device is opened in non-blocking mode.
     // All configuration and setup operations are non-blocking anyway.
     // Reading events, however, is a blocking operation.
-
     if ((_guts->frontend_fd = ::open(_guts->frontend_name.toUTF8().c_str(), (info_only ? O_RDONLY : O_RDWR) | O_NONBLOCK)) < 0) {
         report.error(u"error opening %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
         return false;
     }
 
     // Get characteristics of the frontend
-
     if (::ioctl(_guts->frontend_fd, ioctl_request_t(FE_GET_INFO), &_guts->fe_info) < 0) {
         report.error(u"error getting info on %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
         return close(report) || false;
@@ -349,10 +366,19 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
     _guts->fe_info.name[sizeof(_guts->fe_info.name) - 1] = 0;
     _device_info = UString::FromUTF8(_guts->fe_info.name);
 
+    // Get tuner device information (if available).
+    const TunerDeviceInfo devinfo(adapter_nb, frontend_nb, report);
+    const UString devname(devinfo.fullName());
+    if (!devname.empty()) {
+        if (!_device_info.empty()) {
+            _device_info.append(u", ");
+        }
+        _device_info.append(devname);
+    }
+
     // Get the set of delivery systems for this frontend. Use DTV_ENUM_DELSYS to list all delivery systems.
     // If this failed, probably due to an obsolete driver, use the tuner type from FE_GET_INFO. This gives
     // only one tuner type but this is better than nothing.
-
     _delivery_systems.clear();
     DTVProperties props;
 #if defined(DTV_ENUM_DELSYS)
@@ -400,7 +426,6 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
     }
 
     // Open DVB adapter DVR (tap for TS packets) and adapter demux
-
     if (_info_only) {
         _guts->dvr_fd = _guts->demux_fd = -1;
     }
