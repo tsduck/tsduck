@@ -123,18 +123,17 @@ namespace {
             return;
         }
 
-        // Display name. On Windows, since names are weird, always display
-        // the adapter number and use quotes around tuner name.
+        // On Windows, since names are weird, always use quotes around tuner name.
+        const char* quote = "";
 #if defined(TS_WINDOWS)
+        quote = "\"";
+#endif
+
+        // Display name.
         if (tuner_index >= 0) {
             std::cout << tuner_index << ": ";
         }
-        std::cout << '"';
-#endif
-        std::cout << tuner.deviceName();
-#if defined(TS_WINDOWS)
-        std::cout << '"';
-#endif
+        std::cout << quote << tuner.deviceName() << quote;
 
         // Display tuner information.
         const ts::UString info(tuner.deviceInfo());
@@ -146,13 +145,20 @@ namespace {
 
         // Display verbose information
         if (opt.verbose()) {
+
+            // Display device path.
+            const ts::UString path(tuner.devicePath());
+            if (!path.empty()) {
+                std::cout << (tuner_index >= 0 ? "   " : "") << "Device: " << path << std::endl;
+            }
+
+            // Display system-specific status (very verbose).
             std::cout << std::endl;
             tuner.displayStatus(std::cout, u"  ", opt);
             std::cout << std::endl;
         }
     }
 }
-
 
 //----------------------------------------------------------------------------
 //  Program entry point

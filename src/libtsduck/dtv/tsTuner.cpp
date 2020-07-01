@@ -47,6 +47,7 @@ ts::Tuner::Tuner(DuckContext& duck) :
     _info_only(true),
     _device_name(),
     _device_info(),
+    _device_path(),
     _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
     _signal_timeout_silent(false),
     _receive_timeout(0),

@@ -350,6 +350,9 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
     _guts->demux_name.format(u"%s%cdemux%d", {fields[0], sep, demux_nb});
     _guts->dvr_name.format(u"%s%cdvr%d", {fields[0], sep, dvr_nb});
 
+    // Use the frontend device as "device path" for the tuner.
+    _device_path = _guts->frontend_name;
+
     // Open DVB adapter frontend. The frontend device is opened in non-blocking mode.
     // All configuration and setup operations are non-blocking anyway.
     // Reading events, however, is a blocking operation.
