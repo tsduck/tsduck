@@ -604,11 +604,26 @@ bool ts::Tuner::Guts::FindTuners(DuckContext& duck, Tuner* tuner, TunerPtrVector
         const UString tuner_name(GetStringPropertyBag(tuner_monikers[moniker_index].pointer(), L"FriendlyName", debug_report));
         report.debug(u"found tuner filter \"%s\"", {tuner_name});
 
+        // Get physical device path.
+        UString device_path;
+        ::WCHAR* wstring = nullptr;
+        ::HRESULT hr = tuner_monikers[moniker_index]->GetDisplayName(0, 0, &wstring);
+        if (ComSuccess(hr, u"IMoniker::GetDisplayName", report)) {
+            device_path = ToString(wstring);
+            ::CoTaskMemFree(wstring);
+        }
+        report.debug(u"tuner device path: %s", {device_path});
+
         // If a device name was specified, filter this name.
         // First case: a tuner filter name was specified. In that case, there is
         // no need to test other filters, simply skip them. Since the filter names
         // are long and complicated, ignore case and blanks, use UString::similar().
-        if (tuner != nullptr && !tuner->_device_name.empty() && dvb_device_index < 0 && !tuner_name.similar(tuner->_device_name)) {
+        if (tuner != nullptr &&
+            !tuner->_device_name.empty() &&
+            dvb_device_index < 0 &&
+            !tuner_name.similar(tuner->_device_name) &&
+            (device_path.empty() || !device_path.similar(tuner->_device_name)))
+        {
             // Device specified by name, but not this one, try next tuner
             continue;
         }
@@ -634,6 +649,7 @@ bool ts::Tuner::Guts::FindTuners(DuckContext& duck, Tuner* tuner, TunerPtrVector
                 tref._is_open = true;
                 tref._info_only = true;
                 tref._device_name = tuner_name;
+                tref._device_path = device_path;
                 tref._device_info.clear();  // none on Windows
                 report.debug(u"found tuner device \"%s\"", {tref._device_name});
 

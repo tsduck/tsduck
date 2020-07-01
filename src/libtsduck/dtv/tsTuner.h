@@ -166,6 +166,12 @@ namespace ts {
         UString deviceInfo() const { return _device_info; }
 
         //!
+        //! System-specific device path (for information only).
+        //! @return A string with system-specific device path. Can be empty.
+        //!
+        UString devicePath() const { return _device_path; }
+
+        //!
         //! Check if a signal is present and locked.
         //! @param [in,out] report Where to report errors.
         //! @return True if a signal is present and locked.
@@ -352,6 +358,7 @@ namespace ts {
         bool              _info_only;
         UString           _device_name;    // Used to open the tuner
         UString           _device_info;    // Device-specific, can be empty
+        UString           _device_path;    // System-specific device path.
         MilliSecond       _signal_timeout;
         bool              _signal_timeout_silent;
         MilliSecond       _receive_timeout;
