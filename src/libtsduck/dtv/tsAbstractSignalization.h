@@ -52,25 +52,27 @@ namespace ts {
         //! Check if this object is valid.
         //! @return True if this object is valid.
         //!
-        bool isValid() const
-        {
-            return _is_valid;
-        }
+        bool isValid() const { return _is_valid; }
 
         //!
         //! Invalidate this object.
         //! This object must be rebuilt.
         //!
-        void invalidate()
-        {
-            _is_valid = false;
-        }
+        void invalidate() { _is_valid = false; }
+
+        //!
+        //! This method clears the content of the table or descriptor and returns to a clear empty state.
+        //!
+        virtual void clear() final;
 
         //!
         //! Get the XMl node name representing this table or descriptor.
         //! @return The XML node name.
         //!
         UString xmlName() const;
+
+        //@@@@@@@ TODO @@@@@@@@@@@@
+        // Make toXML() and fromXML() final to make sure that all classes override buildXML() and analyzeXML() instead.
 
         //!
         //! This method converts this object to XML.
@@ -156,6 +158,9 @@ namespace ts {
         static UString DeserializeLanguageCode(const uint8_t* data);
 
     protected:
+        //@@@@@@@@@@@@@ TODO @@@@@@@@@@@@@@@@
+        // Make _xml_name _xml_legacy_name _is_valid private.
+
         //!
         //! XML table or descriptor name.
         //!
@@ -195,6 +200,11 @@ namespace ts {
         AbstractSignalization& operator=(const AbstractSignalization& other);
 
         //!
+        //! Helper method to clear the content of the table or descriptor.
+        //!
+        virtual void clearContent();
+
+        //!
         //! Helper method to convert this object to XML.
         //!
         //! When this object is valid, the default implementation of toXML()
@@ -223,6 +233,9 @@ namespace ts {
         //! @return True if the analysis is correct, false otherwise.
         //!
         virtual bool analyzeXML(DuckContext& duck, const xml::Element* element);
+
+        //@@@@@@@ TODO @@@@@@@@@@@@
+        // Make checkXMLName() private to make sure no subclass use it in fromXML().
 
         //!
         //! Check that an XML element has the right name for this table or descriptor.

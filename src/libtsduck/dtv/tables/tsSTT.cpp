@@ -89,7 +89,7 @@ ts::STT::STT(DuckContext& duck, const Section& section) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::STT::clear()
+void ts::STT::clearContent()
 {
     _is_valid = true;
     version = 0;

@@ -46,7 +46,7 @@ ts::AbstractSignalization::AbstractSignalization(const UChar* xml_name, Standard
     AbstractDefinedByStandards(),
     _xml_name(xml_name),
     _xml_legacy_name(xml_legacy_name),
-    _is_valid(false),
+    _is_valid(true),
     _standards(standards)
 {
 }
@@ -90,6 +90,23 @@ ts::UString ts::AbstractSignalization::xmlName() const
 
 
 //----------------------------------------------------------------------------
+// This method clears the content of the table or descriptor.
+//----------------------------------------------------------------------------
+
+void ts::AbstractSignalization::clear()
+{
+    _is_valid = true;
+    clearContent();
+}
+
+void ts::AbstractSignalization::clearContent()
+{
+    // If a subclass does not override clearContent(), clearing the content makes the object invalid.
+    _is_valid = false;
+}
+
+
+//----------------------------------------------------------------------------
 // XML serialization and deserialization (default implementations).
 //----------------------------------------------------------------------------
 
@@ -110,6 +127,10 @@ void ts::AbstractSignalization::buildXML(DuckContext& duck, xml::Element* root) 
 
 void ts::AbstractSignalization::fromXML(DuckContext& duck, const xml::Element* element)
 {
+    // Make sure the object is cleared before analyzing the XML.
+    clear();
+
+    // The object is valid if the XML node name is correct and the subclass correctly analyzes the XML node.
     _is_valid = checkXMLName(element) && analyzeXML(duck, element);
 }
 

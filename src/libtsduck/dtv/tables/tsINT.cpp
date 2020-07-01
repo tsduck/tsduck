@@ -107,7 +107,7 @@ ts::INT::INT(DuckContext& duck, const BinaryTable& table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::INT::clear()
+void ts::INT::clearContent()
 {
     _is_valid = true;
     version = 0;

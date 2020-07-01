@@ -68,7 +68,7 @@ ts::ETT::ETT(DuckContext& duck, const BinaryTable& table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::ETT::clear()
+void ts::ETT::clearContent()
 {
     _is_valid = true;
     version = 0;

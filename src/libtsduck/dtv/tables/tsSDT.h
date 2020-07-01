@@ -248,12 +248,12 @@ namespace ts {
         bool findService(DuckContext& duck, ts::Service& service, bool exact_match = false) const;
 
         // Inherited methods
-        virtual void clear() override;
         virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
     protected:
         // Inherited methods
+        virtual void clearContent() override;
         virtual bool isValidTableId(TID tid) const override;
         virtual void serializeContent(DuckContext&, BinaryTable&) const override;
         virtual void deserializeContent(DuckContext&, const BinaryTable&) override;

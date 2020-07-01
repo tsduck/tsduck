@@ -74,11 +74,6 @@ namespace ts {
         SpliceInsert();
 
         //!
-        //! Reset all fields to default initial values.
-        //!
-        void clear();
-
-        //!
         //! Adjust PTS time values using the "PTS adjustment" field from a splice information section.
         //! @param adjustment PTS adjustment value.
         //!
@@ -120,5 +115,9 @@ namespace ts {
         // Inherited methods
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual void fromXML(DuckContext&, const xml::Element*) override;
+
+    protected:
+        // Inherited methods
+        virtual void clearContent() override;
     };
 }

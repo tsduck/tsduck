@@ -82,7 +82,7 @@ ts::SpliceInformationTable::SpliceInformationTable(const SpliceInformationTable&
 // Clear all fields.
 //----------------------------------------------------------------------------
 
-void ts::SpliceInformationTable::clear()
+void ts::SpliceInformationTable::clearContent()
 {
     _is_valid = true;
     protocol_version = 0;

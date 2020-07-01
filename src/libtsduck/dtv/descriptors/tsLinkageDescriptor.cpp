@@ -104,7 +104,7 @@ void ts::LinkageDescriptor::ExtendedEventLinkageInfo::clear()
     target_service_id.reset();
 }
 
-void ts::LinkageDescriptor::clear()
+void ts::LinkageDescriptor::clearContent()
 {
     ts_id = 0;
     onetw_id = 0;

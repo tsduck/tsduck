@@ -80,7 +80,7 @@ ts::RST::RST(DuckContext& duck, const BinaryTable& table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::RST::clear()
+void ts::RST::clearContent()
 {
     _is_valid = true;
     events.clear();

@@ -86,7 +86,7 @@ ts::ATSCEIT::Event::Event(const AbstractTable* table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::ATSCEIT::clear()
+void ts::ATSCEIT::clearContent()
 {
     _is_valid = true;
     version = 0;
@@ -332,30 +332,27 @@ void ts::ATSCEIT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ATSCEIT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ATSCEIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    events.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getIntAttribute<uint16_t>(source_id, u"source_id", true) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
         element->getChildren(children, u"event");
 
     // Get all events.
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Event& event(events.newEntry());
         xml::ElementVector titles;
-        _is_valid =
-            children[i]->getIntAttribute<uint16_t>(event.event_id, u"event_id", true, 0, 0, 0x3FFF) &&
-            children[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
-            children[i]->getIntAttribute<uint8_t>(event.ETM_location, u"ETM_location", true, 0, 0, 3) &&
-            children[i]->getIntAttribute<Second>(event.length_in_seconds, u"length_in_seconds", true, 0, 0, 0x000FFFFF) &&
-            event.descs.fromXML(duck, titles, children[i], u"title_text");
+        ok = children[i]->getIntAttribute<uint16_t>(event.event_id, u"event_id", true, 0, 0, 0x3FFF) &&
+             children[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
+             children[i]->getIntAttribute<uint8_t>(event.ETM_location, u"ETM_location", true, 0, 0, 3) &&
+             children[i]->getIntAttribute<Second>(event.length_in_seconds, u"length_in_seconds", true, 0, 0, 0x000FFFFF) &&
+             event.descs.fromXML(duck, titles, children[i], u"title_text");
         if (_is_valid && !titles.empty()) {
             _is_valid = event.title_text.fromXML(duck, titles[0]);
         }
     }
+    return ok;
 }

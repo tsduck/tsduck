@@ -76,11 +76,6 @@ namespace ts {
         //!
         ATSCEAC3AudioDescriptor(DuckContext& duck, const Descriptor& bin);
 
-        //!
-        //! Clear the content of this object.
-        //!
-        void clear();
-
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;
         virtual void deserialize(DuckContext&, const Descriptor&) override;
@@ -89,6 +84,7 @@ namespace ts {
 
     protected:
         // Inherited methods
+        virtual void clearContent() override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
     };
 }

@@ -69,7 +69,7 @@ ts::SpliceSchedule::Event::Event() :
 // Reset all fields to default initial values.
 //----------------------------------------------------------------------------
 
-void ts::SpliceSchedule::clear()
+void ts::SpliceSchedule::clearContent()
 {
     events.clear();
 }

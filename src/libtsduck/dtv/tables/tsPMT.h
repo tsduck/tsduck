@@ -159,12 +159,12 @@ namespace ts {
         PID firstVideoPID() const;
 
         // Inherited methods
-        virtual void clear() override;
         virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
     protected:
         // Inherited methods
+        virtual void clearContent() override;
         virtual void serializeContent(DuckContext&, BinaryTable&) const override;
         virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;

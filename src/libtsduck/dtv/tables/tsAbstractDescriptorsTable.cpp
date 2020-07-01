@@ -68,7 +68,7 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable(DuckContext& duck, TID ti
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::clear()
+void ts::AbstractDescriptorsTable::clearContent()
 {
     _is_valid = true;
     version = 0;
@@ -174,12 +174,9 @@ void ts::AbstractDescriptorsTable::buildXML(DuckContext& duck, xml::Element* roo
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AbstractDescriptorsTable::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    descs.clear();
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
-        descs.fromXML(duck, element);
+    return element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+           element->getBoolAttribute(is_current, u"current", false, true) &&
+           descs.fromXML(duck, element);
 }

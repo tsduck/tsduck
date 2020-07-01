@@ -78,7 +78,7 @@ ts::PMT::PMT(DuckContext& duck, const BinaryTable& table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::PMT::clear()
+void ts::PMT::clearContent()
 {
     _is_valid = true;
     version = 0;

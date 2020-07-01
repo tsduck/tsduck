@@ -51,7 +51,6 @@ ts::DiscontinuityInformationTable::DiscontinuityInformationTable(bool tr) :
     AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
     transition(tr)
 {
-    _is_valid = true;
 }
 
 ts::DiscontinuityInformationTable::DiscontinuityInformationTable(DuckContext& duck, const BinaryTable& table) :
@@ -65,7 +64,7 @@ ts::DiscontinuityInformationTable::DiscontinuityInformationTable(DuckContext& du
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::DiscontinuityInformationTable::clear()
+void ts::DiscontinuityInformationTable::clearContent()
 {
     _is_valid = true;
     transition = false;
@@ -137,9 +136,7 @@ void ts::DiscontinuityInformationTable::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DiscontinuityInformationTable::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DiscontinuityInformationTable::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(transition, u"transition", true);
+    return element->getBoolAttribute(transition, u"transition", true);
 }

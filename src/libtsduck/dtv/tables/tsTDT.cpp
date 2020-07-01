@@ -67,7 +67,7 @@ ts::TDT::TDT(DuckContext& duck, const BinaryTable& table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::TDT::clear()
+void ts::TDT::clearContent()
 {
     _is_valid = true;
     utc_time = Time::Epoch;

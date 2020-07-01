@@ -76,7 +76,7 @@ ts::ITT::ITT(DuckContext& duck, const BinaryTable& table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::ITT::clear()
+void ts::ITT::clearContent()
 {
     _is_valid = true;
     version = 0;

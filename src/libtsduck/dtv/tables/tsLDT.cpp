@@ -83,7 +83,7 @@ ts::LDT::Description::Description(const AbstractTable* table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::LDT::clear()
+void ts::LDT::clearContent()
 {
     _is_valid = true;
     version = 0;

@@ -78,7 +78,7 @@ ts::AIT::AIT(const AIT& other) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::AIT::clear()
+void ts::AIT::clearContent()
 {
     _is_valid = true;
     version = 0;
@@ -301,14 +301,10 @@ void ts::AIT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AIT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    descs.clear();
-    applications.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getBoolAttribute(test_application_flag, u"test_application_flag", false, true) &&
@@ -316,23 +312,22 @@ void ts::AIT::fromXML(DuckContext& duck, const xml::Element* element)
         descs.fromXML(duck, children, element, u"application");
 
     // Iterate through applications
-    for (size_t index = 0; _is_valid && index < children.size(); ++index) {
+    for (size_t index = 0; ok && index < children.size(); ++index) {
         Application application(this);
         ApplicationIdentifier identifier;
         const xml::Element* id = children[index]->findFirstChild(u"application_identifier", true);
-
         xml::ElementVector others;
         UStringList allowed({ u"application_identifier" });
 
-        _is_valid =
-            children[index]->getIntAttribute<uint8_t>(application.control_code, u"control_code", true, 0, 0x00, 0xFF) &&
-            application.descs.fromXML(duck, others, children[index], allowed) &&
-            id != nullptr &&
-            id->getIntAttribute<uint32_t>(identifier.organization_id, u"organization_id", true, 0, 0, 0xFFFFFFFF) &&
-            id->getIntAttribute<uint16_t>(identifier.application_id, u"application_id", true, 0, 0, 0xFFFF);
+        ok = children[index]->getIntAttribute<uint8_t>(application.control_code, u"control_code", true, 0, 0x00, 0xFF) &&
+             application.descs.fromXML(duck, others, children[index], allowed) &&
+             id != nullptr &&
+             id->getIntAttribute<uint32_t>(identifier.organization_id, u"organization_id", true, 0, 0, 0xFFFFFFFF) &&
+             id->getIntAttribute<uint16_t>(identifier.application_id, u"application_id", true, 0, 0, 0xFFFF);
 
-        if (_is_valid) {
+        if (ok) {
             applications[identifier] = application;
         }
     }
+    return ok;
 }

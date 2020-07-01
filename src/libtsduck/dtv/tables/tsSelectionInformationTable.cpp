@@ -77,7 +77,7 @@ ts::SelectionInformationTable::SelectionInformationTable(DuckContext& duck, cons
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::clear()
+void ts::SelectionInformationTable::clearContent()
 {
     _is_valid = true;
     version = 0;

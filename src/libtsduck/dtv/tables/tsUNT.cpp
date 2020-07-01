@@ -143,7 +143,7 @@ ts::UNT::UNT(DuckContext& duck, const BinaryTable& table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::UNT::clear()
+void ts::UNT::clearContent()
 {
     _is_valid = true;
     version = 0;

@@ -75,11 +75,11 @@ namespace ts {
         BAT& operator=(const BAT& other);
 
         // Inherited methods.
-        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
     protected:
         // Inherited methods.
         virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
     };
 }

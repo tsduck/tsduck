@@ -127,7 +127,7 @@ ts::CableEmergencyAlertTable::Exception::Exception(uint16_t major, uint16_t mino
 // Clear all fields.
 //----------------------------------------------------------------------------
 
-void ts::CableEmergencyAlertTable::clear()
+void ts::CableEmergencyAlertTable::clearContent()
 {
     _is_valid = true;
     version = 0;
@@ -422,14 +422,13 @@ void ts::CableEmergencyAlertTable::buildXML(DuckContext& duck, xml::Element* roo
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CableEmergencyAlertTable::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CableEmergencyAlertTable::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    clear();
     xml::ElementVector others;
     xml::ElementVector locs;
     xml::ElementVector exceps;
 
-    _is_valid =
+    bool ok =
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"sequence_number", true, 0, 0, 31) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
@@ -450,39 +449,39 @@ void ts::CableEmergencyAlertTable::fromXML(DuckContext& duck, const xml::Element
         element->getChildren(exceps, u"exception", 0, 255) &&
         descs.fromXML(duck, others, element, u"location,exception,alert_text,nature_of_activation_text");
 
-    for (size_t i = 0; _is_valid && i < locs.size(); ++i) {
+    for (size_t i = 0; ok && i < locs.size(); ++i) {
         Location loc;
-        _is_valid =
-            locs[i]->getIntAttribute<uint8_t>(loc.state_code, u"state_code", true, 0, 0, 99) &&
-            locs[i]->getIntAttribute<uint8_t>(loc.county_subdivision, u"county_subdivision", true, 0, 0, 9) &&
-            locs[i]->getIntAttribute<uint16_t>(loc.county_code, u"county_code", true, 0, 0, 909);
-        if (_is_valid) {
+        ok = locs[i]->getIntAttribute<uint8_t>(loc.state_code, u"state_code", true, 0, 0, 99) &&
+             locs[i]->getIntAttribute<uint8_t>(loc.county_subdivision, u"county_subdivision", true, 0, 0, 9) &&
+             locs[i]->getIntAttribute<uint16_t>(loc.county_code, u"county_code", true, 0, 0, 909);
+        if (ok) {
             locations.push_back(loc);
         }
     }
 
-    for (size_t i = 0; _is_valid && i < exceps.size(); ++i) {
+    for (size_t i = 0; ok && i < exceps.size(); ++i) {
         Exception exc;
         bool wrong = false;
         exc.in_band = exceps[i]->hasAttribute(u"major_channel_number") && exceps[i]->hasAttribute(u"minor_channel_number");
         if (exc.in_band) {
             wrong = exceps[i]->hasAttribute(u"OOB_source_ID");
-            _is_valid =
+            ok =
                 exceps[i]->getIntAttribute<uint16_t>(exc.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
                 exceps[i]->getIntAttribute<uint16_t>(exc.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF);
         }
         else {
             wrong = exceps[i]->hasAttribute(u"major_channel_number") || exceps[i]->hasAttribute(u"minor_channel_number");
-            _is_valid = exceps[i]->getIntAttribute<uint16_t>(exc.OOB_source_ID, u"OOB_source_ID", true);
+            ok = exceps[i]->getIntAttribute<uint16_t>(exc.OOB_source_ID, u"OOB_source_ID", true);
         }
         if (wrong) {
-            _is_valid = false;
+            ok = false;
             exceps[i]->report().error(u"invalid combination of attributes in <%s>, line %d", {exceps[i]->name(), exceps[i]->lineNumber()});
         }
-        if (_is_valid) {
+        if (ok) {
             exceptions.push_back(exc);
         }
     }
+    return ok;
 }
 
 

@@ -81,8 +81,8 @@ namespace ts {
 
 
         // NIT/BAT common public members:
-        DescriptorList  descs;          //!< Top-level descriptor list.
-        TransportMap    transports;     //!< Map of TS descriptions, key=onid/tsid, value=descriptor_list.
+        DescriptorList descs;       //!< Top-level descriptor list.
+        TransportMap   transports;  //!< Map of TS descriptions, key=onid/tsid, value=descriptor_list.
 
         //!
         //! Copy constructor.
@@ -101,9 +101,6 @@ namespace ts {
         //! Clear preferred section in all transport.
         //!
         void clearPreferredSections();
-
-        // Inherited methods
-        virtual void clear() override;
 
     protected:
         //!
@@ -134,6 +131,7 @@ namespace ts {
         AbstractTransportListTable(DuckContext& duck, TID tid, const UChar* xml_name, Standards standards, const BinaryTable& table);
 
         // Inherited methods
+        virtual void clearContent() override;
         virtual void serializeContent(DuckContext&, BinaryTable&) const override;
         virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
 

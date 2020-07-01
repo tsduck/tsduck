@@ -109,7 +109,7 @@ ts::EIT::Event::Event(const AbstractTable* table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::EIT::clear()
+void ts::EIT::clearContent()
 {
     _is_valid = true;
     version = 0;

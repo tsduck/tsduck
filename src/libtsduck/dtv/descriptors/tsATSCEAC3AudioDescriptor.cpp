@@ -83,7 +83,7 @@ ts::ATSCEAC3AudioDescriptor::ATSCEAC3AudioDescriptor(DuckContext& duck, const De
 // Clear the content of this object.
 //----------------------------------------------------------------------------
 
-void ts::ATSCEAC3AudioDescriptor::clear()
+void ts::ATSCEAC3AudioDescriptor::clearContent()
 {
     mixinfoexists = false;
     full_service = false;

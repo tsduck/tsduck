@@ -98,7 +98,7 @@ ts::PCAT::Schedule::Schedule() :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::PCAT::clear()
+void ts::PCAT::clearContent()
 {
     _is_valid = true;
     version = 0;

@@ -84,7 +84,7 @@ ts::AbstractTransportListTable::Transport::Transport(const AbstractTable* table)
 // Clear all fields.
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::clear()
+void ts::AbstractTransportListTable::clearContent()
 {
     _is_valid = true;
     version = 0;
