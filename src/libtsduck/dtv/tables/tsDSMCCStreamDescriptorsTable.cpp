@@ -105,8 +105,8 @@ void ts::DSMCCStreamDescriptorsTable::buildXML(DuckContext& duck, xml::Element* 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DSMCCStreamDescriptorsTable::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DSMCCStreamDescriptorsTable::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    AbstractDescriptorsTable::fromXML(duck, element);
-    _is_valid = _is_valid && element->getIntAttribute<uint16_t>(_tid_ext, u"table_id_extension", false, 0xFFFF);
+    return AbstractDescriptorsTable::analyzeXML(duck, element) &&
+           element->getIntAttribute<uint16_t>(_tid_ext, u"table_id_extension", false, 0xFFFF);
 }

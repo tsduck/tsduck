@@ -445,14 +445,10 @@ void ts::INT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::INT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::INT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    platform_descs.clear();
-    devices.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint8_t>(action_type, u"action_type", false, 0x01) &&
@@ -460,14 +456,14 @@ void ts::INT::fromXML(DuckContext& duck, const xml::Element* element)
         element->getIntAttribute<uint32_t>(platform_id, u"platform_id", true, 0, 0x000000, 0xFFFFFF) &&
         platform_descs.fromXML(duck, children, element, u"device");
 
-    for (size_t index = 0; _is_valid && index < children.size(); ++index) {
+    for (size_t index = 0; ok && index < children.size(); ++index) {
         Device& dev(devices.newEntry());
         xml::ElementVector target;
         xml::ElementVector operational;
-        _is_valid =
-            children[index]->getChildren(target, u"target", 0, 1) &&
-            (target.empty() || dev.target_descs.fromXML(duck, target[0])) &&
-            children[index]->getChildren(operational, u"operational", 0, 1) &&
-            (operational.empty() || dev.operational_descs.fromXML(duck, operational[0]));
+        ok = children[index]->getChildren(target, u"target", 0, 1) &&
+             (target.empty() || dev.target_descs.fromXML(duck, target[0])) &&
+             children[index]->getChildren(operational, u"operational", 0, 1) &&
+             (operational.empty() || dev.operational_descs.fromXML(duck, operational[0]));
     }
+    return ok;
 }

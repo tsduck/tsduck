@@ -339,27 +339,22 @@ void ts::MGT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MGT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::MGT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    descs.clear();
-    tables.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
         descs.fromXML(duck, children, element, u"table");
 
-    for (size_t index = 0; _is_valid && index < children.size(); ++index) {
+    for (size_t index = 0; ok && index < children.size(); ++index) {
         // Add a new TableType at the end of the list.
         TableType& tt(tables.newEntry());
-
-        _is_valid =
-            children[index]->getIntEnumAttribute(tt.table_type, *TableTypeEnum::Instance(), u"type", true) &&
-            children[index]->getIntAttribute<PID>(tt.table_type_PID, u"PID", true, 0, 0x0000, 0x1FFF) &&
-            children[index]->getIntAttribute<uint8_t>(tt.table_type_version_number, u"version_number", true, 0, 0, 31) &&
-            children[index]->getIntAttribute<uint32_t>(tt.number_bytes, u"number_bytes", true) &&
-            tt.descs.fromXML(duck, children[index]);
+        ok = children[index]->getIntEnumAttribute(tt.table_type, *TableTypeEnum::Instance(), u"type", true) &&
+             children[index]->getIntAttribute<PID>(tt.table_type_PID, u"PID", true, 0, 0x0000, 0x1FFF) &&
+             children[index]->getIntAttribute<uint8_t>(tt.table_type_version_number, u"version_number", true, 0, 0, 31) &&
+             children[index]->getIntAttribute<uint32_t>(tt.number_bytes, u"number_bytes", true) &&
+             tt.descs.fromXML(duck, children[index]);
     }
+    return ok;
 }

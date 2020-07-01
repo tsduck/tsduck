@@ -337,15 +337,11 @@ void ts::NBIT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::NBIT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::NBIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    informations.clear();
-
     xml::ElementVector xinfo;
     bool body = true;
-
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(original_network_id, u"original_network_id", true) &&
@@ -359,21 +355,21 @@ void ts::NBIT::fromXML(DuckContext& duck, const xml::Element* element)
         setReference();
     }
 
-    for (auto it1 = xinfo.begin(); _is_valid && it1 != xinfo.end(); ++it1) {
+    for (auto it1 = xinfo.begin(); ok && it1 != xinfo.end(); ++it1) {
         uint16_t id = 0;
         xml::ElementVector xkey;
-        _is_valid =
-            (*it1)->getIntAttribute<uint16_t>(id, u"information_id", true) &&
-            (*it1)->getIntAttribute<uint8_t>(informations[id].information_type, u"information_type", true, 0, 0, 15) &&
-            (*it1)->getIntAttribute<uint8_t>(informations[id].description_body_location, u"description_body_location", true, 0, 0, 3) &&
-            (*it1)->getIntAttribute<uint8_t>(informations[id].user_defined, u"user_defined", false, 0xFF) &&
-            informations[id].descs.fromXML(duck, xkey, *it1, u"key");
-        for (auto it2 = xkey.begin(); _is_valid && it2 != xkey.end(); ++it2) {
+        ok = (*it1)->getIntAttribute<uint16_t>(id, u"information_id", true) &&
+             (*it1)->getIntAttribute<uint8_t>(informations[id].information_type, u"information_type", true, 0, 0, 15) &&
+             (*it1)->getIntAttribute<uint8_t>(informations[id].description_body_location, u"description_body_location", true, 0, 0, 3) &&
+             (*it1)->getIntAttribute<uint8_t>(informations[id].user_defined, u"user_defined", false, 0xFF) &&
+             informations[id].descs.fromXML(duck, xkey, *it1, u"key");
+        for (auto it2 = xkey.begin(); ok && it2 != xkey.end(); ++it2) {
             uint16_t kid = 0;
-            _is_valid = (*it2)->getIntAttribute<uint16_t>(kid, u"id", true);
-            if (_is_valid) {
+            ok = (*it2)->getIntAttribute<uint16_t>(kid, u"id", true);
+            if (ok) {
                 informations[id].key_ids.push_back(kid);
             }
         }
     }
+    return ok;
 }

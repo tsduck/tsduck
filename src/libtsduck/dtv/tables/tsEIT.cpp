@@ -597,13 +597,10 @@ void ts::EIT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::EIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    events.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         getTableId(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
@@ -614,16 +611,16 @@ void ts::EIT::fromXML(DuckContext& duck, const xml::Element* element)
         element->getChildren(children, u"event");
 
     // Get all events.
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Event& event(events.newEntry());
-        _is_valid =
-            children[i]->getIntAttribute<uint16_t>(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
-            children[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
-            children[i]->getTimeAttribute(event.duration, u"duration", true) &&
-            children[i]->getIntEnumAttribute<uint8_t>(event.running_status, RST::RunningStatusNames, u"running_status", false, 0) &&
-            children[i]->getBoolAttribute(event.CA_controlled, u"CA_mode", false, false) &&
-            event.descs.fromXML(duck, children[i]);
+        ok = children[i]->getIntAttribute<uint16_t>(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
+             children[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
+             children[i]->getTimeAttribute(event.duration, u"duration", true) &&
+             children[i]->getIntEnumAttribute<uint8_t>(event.running_status, RST::RunningStatusNames, u"running_status", false, 0) &&
+             children[i]->getBoolAttribute(event.CA_controlled, u"CA_mode", false, false) &&
+             event.descs.fromXML(duck, children[i]);
     }
+    return ok;
 }
 
 

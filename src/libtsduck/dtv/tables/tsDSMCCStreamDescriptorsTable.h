@@ -76,11 +76,11 @@ namespace ts {
         DSMCCStreamDescriptorsTable& operator=(const DSMCCStreamDescriptorsTable& other);
 
         // Inherited methods
-        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
     protected:
         // Inherited methods
         virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
     };
 }

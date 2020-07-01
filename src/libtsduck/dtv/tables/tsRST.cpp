@@ -210,25 +210,21 @@ void ts::RST::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::RST::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::RST::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    events.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"event");
+    bool ok = element->getChildren(children, u"event");
 
-    for (size_t index = 0; _is_valid && index < children.size(); ++index) {
+    for (size_t index = 0; ok && index < children.size(); ++index) {
         Event event;
-        _is_valid =
-            children[index]->getIntAttribute<uint16_t>(event.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-            children[index]->getIntAttribute<uint16_t>(event.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            children[index]->getIntAttribute<uint16_t>(event.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-            children[index]->getIntAttribute<uint16_t>(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
-            children[index]->getIntEnumAttribute<uint8_t>(event.running_status, RunningStatusNames, u"running_status", true);
-        if (_is_valid) {
+        ok = children[index]->getIntAttribute<uint16_t>(event.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+             children[index]->getIntAttribute<uint16_t>(event.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
+             children[index]->getIntAttribute<uint16_t>(event.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+             children[index]->getIntAttribute<uint16_t>(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
+             children[index]->getIntEnumAttribute<uint8_t>(event.running_status, RunningStatusNames, u"running_status", true);
+        if (ok) {
             events.push_back(event);
         }
     }
+    return ok;
 }

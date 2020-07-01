@@ -255,23 +255,19 @@ void ts::SelectionInformationTable::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SelectionInformationTable::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    descs.clear();
-    services.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         descs.fromXML(duck, children, element, u"service");
 
-    for (size_t index = 0; _is_valid && index < children.size(); ++index) {
+    for (size_t index = 0; ok && index < children.size(); ++index) {
         uint16_t id = 0;
-        _is_valid =
-            children[index]->getIntAttribute<uint16_t>(id, u"service_id", true) &&
-            children[index]->getIntEnumAttribute<uint8_t>(services[id].running_status, RST::RunningStatusNames, u"running_status", true);
-            services[id].descs.fromXML(duck, children[index]);
+        ok = children[index]->getIntAttribute<uint16_t>(id, u"service_id", true) &&
+             children[index]->getIntEnumAttribute<uint8_t>(services[id].running_status, RST::RunningStatusNames, u"running_status", true);
+             services[id].descs.fromXML(duck, children[index]);
     }
+    return ok;
 }

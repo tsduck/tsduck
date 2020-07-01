@@ -356,42 +356,38 @@ void ts::RRT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::RRT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::RRT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    clear();
-
     xml::ElementVector xdim;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
         element->getIntAttribute<uint8_t>(rating_region, u"rating_region", true) &&
         rating_region_name.fromXML(duck, element, u"rating_region_name", false) &&
         descs.fromXML(duck, xdim, element, u"rating_region_name,dimension");
 
-    for (size_t idim = 0; _is_valid && idim < xdim.size(); ++idim) {
+    for (size_t idim = 0; ok && idim < xdim.size(); ++idim) {
         // The extracted non-descriptor children can be <rating_region_name> or <dimension>.
         // The optional <rating_region_name> has already been separately processed.
         // Process <dimension> only.
         if (xdim[idim]->name().similar(u"dimension")) {
             Dimension dim;
             xml::ElementVector xval;
-            _is_valid =
-                xdim[idim]->getBoolAttribute(dim.graduated_scale, u"graduated_scale", true) &&
-                dim.dimension_name.fromXML(duck, xdim[idim], u"dimension_name", false) &&
-                xdim[idim]->getChildren(xval, u"value", 0, 15);
-            for (size_t ival = 0; _is_valid && ival < xval.size(); ++ival) {
+            ok = xdim[idim]->getBoolAttribute(dim.graduated_scale, u"graduated_scale", true) &&
+                 dim.dimension_name.fromXML(duck, xdim[idim], u"dimension_name", false) &&
+                 xdim[idim]->getChildren(xval, u"value", 0, 15);
+            for (size_t ival = 0; ok && ival < xval.size(); ++ival) {
                 RatingValue val;
-                _is_valid =
-                    val.abbrev_rating_value.fromXML(duck, xval[ival], u"abbrev_rating_value", false) &&
-                    val.rating_value.fromXML(duck, xval[ival], u"rating_value", false);
-                if (_is_valid) {
+                ok = val.abbrev_rating_value.fromXML(duck, xval[ival], u"abbrev_rating_value", false) &&
+                     val.rating_value.fromXML(duck, xval[ival], u"rating_value", false);
+                if (ok) {
                     dim.values.push_back(val);
                 }
             }
-            if (_is_valid) {
+            if (ok) {
                 dimensions.push_back(dim);
             }
         }
     }
+    return ok;
 }
