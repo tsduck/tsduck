@@ -77,7 +77,7 @@ ts::SDT::SDT(const SDT& other) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::SDT::clear()
+void ts::SDT::clearContent()
 {
     _is_valid = true;
     version = 0;

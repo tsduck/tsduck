@@ -97,7 +97,7 @@ ts::DCCSCT::Update::Update(const AbstractTable* table, UpdateType type) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::DCCSCT::clear()
+void ts::DCCSCT::clearContent()
 {
     _is_valid = true;
     version = 0;
@@ -451,24 +451,21 @@ void ts::DCCSCT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DCCSCT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DCCSCT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    clear();
-
     xml::ElementVector children;
-    _is_valid =
+    bool ok =
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
         element->getIntAttribute<uint16_t>(dccsct_type, u"dccsct_type", false, 0) &&
         descs.fromXML(duck, children, element, u"update");
 
-    for (size_t index = 0; _is_valid && index < children.size(); ++index) {
+    for (size_t index = 0; ok && index < children.size(); ++index) {
         // Add a new Update at the end of the list.
         Update& upd(updates.newEntry());
         xml::ElementVector unused;
-        _is_valid =
-            children[index]->getIntEnumAttribute(upd.update_type, UpdateTypeNames, u"update_type", true) &&
+        ok = children[index]->getIntEnumAttribute(upd.update_type, UpdateTypeNames, u"update_type", true) &&
             children[index]->getIntAttribute<uint8_t>(upd.genre_category_code, u"genre_category_code", upd.update_type == new_genre_category) &&
             children[index]->getIntAttribute<uint8_t>(upd.dcc_state_location_code, u"dcc_state_location_code", upd.update_type == new_state) &&
             children[index]->getIntAttribute<uint8_t>(upd.state_code, u"state_code", upd.update_type == new_county) &&
@@ -478,4 +475,5 @@ void ts::DCCSCT::fromXML(DuckContext& duck, const xml::Element* element)
             upd.dcc_county_location_code_text.fromXML(duck, children[index], u"dcc_county_location_code_text", upd.update_type == new_county) &&
             upd.descs.fromXML(duck, unused, children[index], u"genre_category_name_text,dcc_state_location_code_text,dcc_county_location_code_text");
     }
+    return ok;
 }

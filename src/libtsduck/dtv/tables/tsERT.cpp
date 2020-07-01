@@ -88,7 +88,7 @@ ts::ERT::Relation::Relation(const AbstractTable* table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::ERT::clear()
+void ts::ERT::clearContent()
 {
     _is_valid = true;
     version = 0;

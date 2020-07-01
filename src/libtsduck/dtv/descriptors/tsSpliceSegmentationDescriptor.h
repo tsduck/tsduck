@@ -86,11 +86,6 @@ namespace ts {
         SpliceSegmentationDescriptor(DuckContext& duck, const Descriptor& bin);
 
         //!
-        //! Reset all fields to default initial values.
-        //!
-        void clear();
-
-        //!
         //! Rebuild the delivery_not_restricted flag.
         //! @return Value of the delivery_not_restricted flag.
         //!
@@ -104,6 +99,7 @@ namespace ts {
 
     protected:
         // Inherited methods
+        virtual void clearContent() override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
     };
 }

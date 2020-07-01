@@ -95,7 +95,7 @@ ts::RRT::RatingValue::RatingValue() :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::RRT::clear()
+void ts::RRT::clearContent()
 {
     _is_valid = true;
     version = 0;

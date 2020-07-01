@@ -87,7 +87,7 @@ ts::LIT::Event::Event(const AbstractTable* table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::LIT::clear()
+void ts::LIT::clearContent()
 {
     _is_valid = true;
     version = 0;

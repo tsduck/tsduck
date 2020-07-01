@@ -83,7 +83,7 @@ ts::NBIT::Information::Information(const AbstractTable* table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::NBIT::clear()
+void ts::NBIT::clearContent()
 {
     _is_valid = true;
     version = 0;

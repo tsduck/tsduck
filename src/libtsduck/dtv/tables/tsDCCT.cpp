@@ -105,7 +105,7 @@ ts::DCCT::Term::Term(const AbstractTable* table, uint8_t type, uint64_t id) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::DCCT::clear()
+void ts::DCCT::clearContent()
 {
     _is_valid = true;
     version = 0;
@@ -439,25 +439,21 @@ void ts::DCCT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DCCT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DCCT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    clear();
-
     xml::ElementVector xtests;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
         element->getIntAttribute<uint8_t>(dcc_subtype, u"dcc_subtype", false, 0) &&
         element->getIntAttribute<uint8_t>(dcc_id, u"dcc_id", false, 0) &&
         descs.fromXML(duck, xtests, element, u"dcc_test");
 
-    for (size_t i1 = 0; _is_valid && i1 < xtests.size(); ++i1) {
+    for (size_t i1 = 0; ok && i1 < xtests.size(); ++i1) {
         const xml::Element* const e1 = xtests[i1];
         xml::ElementVector xterms;
         Test& test(tests.newEntry()); // add a new Test at the end of the list.
-        _is_valid =
-            e1->getIntEnumAttribute(test.dcc_context, DCCContextNames, u"dcc_context", true) &&
+        ok = e1->getIntEnumAttribute(test.dcc_context, DCCContextNames, u"dcc_context", true) &&
             e1->getIntAttribute<uint16_t>(test.dcc_from_major_channel_number, u"dcc_from_major_channel_number", true) &&
             e1->getIntAttribute<uint16_t>(test.dcc_from_minor_channel_number, u"dcc_from_minor_channel_number", true) &&
             e1->getIntAttribute<uint16_t>(test.dcc_to_major_channel_number, u"dcc_to_major_channel_number", true) &&
@@ -466,13 +462,13 @@ void ts::DCCT::fromXML(DuckContext& duck, const xml::Element* element)
             e1->getDateTimeAttribute(test.dcc_end_time, u"dcc_end_time", true) &&
             test.descs.fromXML(duck, xterms, e1, u"dcc_term");
 
-        for (size_t i2 = 0; _is_valid && i2 < xterms.size(); ++i2) {
+        for (size_t i2 = 0; ok && i2 < xterms.size(); ++i2) {
             const xml::Element* const e2 = xterms[i2];
             Term& term(test.terms.newEntry()); // add a new Term at the end of the list.
-            _is_valid =
-                e2->getIntAttribute<uint8_t>(term.dcc_selection_type, u"dcc_selection_type", true) &&
-                e2->getIntAttribute<uint64_t>(term.dcc_selection_id, u"dcc_selection_id", true) &&
-                term.descs.fromXML(duck, e2);
+            ok = e2->getIntAttribute<uint8_t>(term.dcc_selection_type, u"dcc_selection_type", true) &&
+                 e2->getIntAttribute<uint64_t>(term.dcc_selection_id, u"dcc_selection_id", true) &&
+                 term.descs.fromXML(duck, e2);
         }
     }
+    return ok;
 }

@@ -68,7 +68,7 @@ ts::PAT::PAT(DuckContext& duck, const BinaryTable& table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::PAT::clear()
+void ts::PAT::clearContent()
 {
     _is_valid = true;
     version = 0;

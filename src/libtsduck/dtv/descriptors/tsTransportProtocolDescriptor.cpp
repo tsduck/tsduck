@@ -67,7 +67,7 @@ ts::TransportProtocolDescriptor::TransportProtocolDescriptor(DuckContext& duck, 
     deserialize(duck, desc);
 }
 
-void ts::TransportProtocolDescriptor::clear()
+void ts::TransportProtocolDescriptor::clearContent()
 {
     protocol_id = 0;
     transport_protocol_label = 0;

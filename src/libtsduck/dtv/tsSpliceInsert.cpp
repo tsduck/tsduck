@@ -65,7 +65,7 @@ ts::SpliceInsert::SpliceInsert() :
 // Reset all fields to default initial values.
 //----------------------------------------------------------------------------
 
-void ts::SpliceInsert::clear()
+void ts::SpliceInsert::clearContent()
 {
     event_id = 0;
     canceled = true;

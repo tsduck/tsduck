@@ -85,7 +85,7 @@ ts::MGT::TableType::TableType(const AbstractTable* table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::MGT::clear()
+void ts::MGT::clearContent()
 {
     _is_valid = true;
     version = 0;

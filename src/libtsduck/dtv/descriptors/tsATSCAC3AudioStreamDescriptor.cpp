@@ -82,7 +82,7 @@ ts::ATSCAC3AudioStreamDescriptor::ATSCAC3AudioStreamDescriptor(DuckContext& duck
 // Clear the content of this object.
 //----------------------------------------------------------------------------
 
-void ts::ATSCAC3AudioStreamDescriptor::clear()
+void ts::ATSCAC3AudioStreamDescriptor::clearContent()
 {
     sample_rate_code = 0;
     bsid = 0;

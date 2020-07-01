@@ -84,7 +84,7 @@ ts::SpliceSegmentationDescriptor::SpliceSegmentationDescriptor(DuckContext& duck
 // Reset all fields to default initial values.
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::clear()
+void ts::SpliceSegmentationDescriptor::clearContent()
 {
     identifier = SPLICE_ID_CUEI;
     segmentation_event_id = 0;

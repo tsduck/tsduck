@@ -83,7 +83,7 @@ ts::BIT::Broadcaster::Broadcaster(const AbstractTable* table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::BIT::clear()
+void ts::BIT::clearContent()
 {
     _is_valid = true;
     version = 0;
@@ -342,24 +342,20 @@ void ts::BIT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::BIT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::BIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    descs.clear();
-    broadcasters.clear();
-
     xml::ElementVector xbroadcasters;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(original_network_id, u"original_network_id", true) &&
         element->getBoolAttribute(broadcast_view_propriety, u"broadcast_view_propriety", true) &&
         descs.fromXML(duck, xbroadcasters, element, u"broadcaster");
 
-    for (auto it = xbroadcasters.begin(); _is_valid && it != xbroadcasters.end(); ++it) {
+    for (auto it = xbroadcasters.begin(); ok && it != xbroadcasters.end(); ++it) {
         uint8_t id;
-        _is_valid =
-            (*it)->getIntAttribute<uint8_t>(id, u"broadcaster_id", true) &&
-            broadcasters[id].descs.fromXML(duck, *it);
+        ok = (*it)->getIntAttribute<uint8_t>(id, u"broadcaster_id", true) &&
+             broadcasters[id].descs.fromXML(duck, *it);
     }
+    return ok;
 }

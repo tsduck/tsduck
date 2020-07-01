@@ -79,7 +79,7 @@ ts::TOT::TOT(const TOT& other) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::TOT::clear()
+void ts::TOT::clearContent()
 {
     _is_valid = true;
     utc_time = Time::Epoch;

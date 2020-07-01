@@ -84,7 +84,7 @@ ts::VCT::Channel::Channel(const AbstractTable* table) :
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
-void ts::VCT::clear()
+void ts::VCT::clearContent()
 {
     _is_valid = true;
     version = 0;
