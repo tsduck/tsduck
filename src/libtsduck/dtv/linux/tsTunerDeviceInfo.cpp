@@ -117,7 +117,9 @@ ts::UString ts::TunerDeviceInfo::fullName() const
 {
     UString name;
     BuildName(name, u"", manufacturer);
-    BuildName(name, u"", product);
+    if (product != manufacturer) {
+        BuildName(name, u"", product);
+    }
     BuildName(name, u"", version);
     BuildName(name, u"SN:", serial);
     return name;
