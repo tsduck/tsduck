@@ -405,25 +405,21 @@ void ts::PMT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::PMT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    descs.clear();
-    streams.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
         element->getIntAttribute<PID>(pcr_pid, u"PCR_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
         descs.fromXML(duck, children, element, u"component");
 
-    for (size_t index = 0; _is_valid && index < children.size(); ++index) {
+    for (size_t index = 0; ok && index < children.size(); ++index) {
         PID pid = PID_NULL;
-        _is_valid =
-            children[index]->getIntAttribute<PID>(pid, u"elementary_PID", true, 0, 0x0000, 0x1FFF) &&
-            children[index]->getIntAttribute<uint8_t>(streams[pid].stream_type, u"stream_type", true, 0, 0x00, 0xFF) &&
-            streams[pid].descs.fromXML(duck, children[index]);
+        ok = children[index]->getIntAttribute<PID>(pid, u"elementary_PID", true, 0, 0x0000, 0x1FFF) &&
+             children[index]->getIntAttribute<uint8_t>(streams[pid].stream_type, u"stream_type", true, 0, 0x00, 0xFF) &&
+             streams[pid].descs.fromXML(duck, children[index]);
     }
+    return ok;
 }

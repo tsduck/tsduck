@@ -192,7 +192,6 @@ namespace ts {
         static void Fix(BinaryTable& table, FixMode mode);
 
         // Inherited methods
-        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
     protected:
@@ -202,6 +201,7 @@ namespace ts {
         virtual void serializeContent(DuckContext&, BinaryTable&) const override;
         virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
 
     private:
         constexpr static size_t EIT_HEADER_SIZE        = LONG_SECTION_HEADER_SIZE;

@@ -246,7 +246,6 @@ void ts::PAT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::PAT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    pmts.clear();
     xml::ElementVector xservice;
     bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&

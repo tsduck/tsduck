@@ -297,13 +297,10 @@ void ts::LDT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::LDT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::LDT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    descriptions.clear();
-
     xml::ElementVector xdescriptions;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(original_service_id, u"original_service_id", true) &&
@@ -311,10 +308,10 @@ void ts::LDT::fromXML(DuckContext& duck, const xml::Element* element)
         element->getIntAttribute<uint16_t>(original_network_id, u"original_network_id", true) &&
         element->getChildren(xdescriptions, u"description");
 
-    for (auto it = xdescriptions.begin(); _is_valid && it != xdescriptions.end(); ++it) {
+    for (auto it = xdescriptions.begin(); ok && it != xdescriptions.end(); ++it) {
         uint16_t id;
-        _is_valid =
-            (*it)->getIntAttribute<uint16_t>(id, u"description_id", true) &&
-            descriptions[id].descs.fromXML(duck, *it);
+        ok = (*it)->getIntAttribute<uint16_t>(id, u"description_id", true) &&
+             descriptions[id].descs.fromXML(duck, *it);
     }
+    return ok;
 }

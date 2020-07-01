@@ -325,12 +325,10 @@ void ts::ERT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ERT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ERT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    relations.clear();
     xml::ElementVector xrel;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(event_relation_id, u"event_relation_id", true) &&
@@ -338,13 +336,13 @@ void ts::ERT::fromXML(DuckContext& duck, const xml::Element* element)
         element->getIntAttribute<uint8_t>(relation_type, u"relation_type", true, 0, 0, 15) &&
         element->getChildren(xrel, u"relation");
 
-    for (auto it = xrel.begin(); _is_valid && it != xrel.end(); ++it) {
+    for (auto it = xrel.begin(); ok && it != xrel.end(); ++it) {
         Relation& rel(relations.newEntry());
-        _is_valid =
-            (*it)->getIntAttribute<uint16_t>(rel.node_id, u"node_id", true) &&
-            (*it)->getIntAttribute<uint8_t>(rel.collection_mode, u"collection_mode", true, 0, 0, 15) &&
-            (*it)->getIntAttribute<uint16_t>(rel.parent_node_id, u"parent_node_id", true) &&
-            (*it)->getIntAttribute<uint8_t>(rel.reference_number, u"reference_number", true) &&
-            rel.descs.fromXML(duck, *it);
+        ok = (*it)->getIntAttribute<uint16_t>(rel.node_id, u"node_id", true) &&
+             (*it)->getIntAttribute<uint8_t>(rel.collection_mode, u"collection_mode", true, 0, 0, 15) &&
+             (*it)->getIntAttribute<uint16_t>(rel.parent_node_id, u"parent_node_id", true) &&
+             (*it)->getIntAttribute<uint8_t>(rel.reference_number, u"reference_number", true) &&
+             rel.descs.fromXML(duck, *it);
     }
+    return ok;
 }

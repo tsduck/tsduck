@@ -169,16 +169,11 @@ void ts::NIT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::NIT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::NIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    descs.clear();
-    transports.clear();
-
     xml::ElementVector children;
     bool actual = true;
-
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(network_id, u"network_id", true, 0, 0x0000, 0xFFFF) &&
@@ -187,17 +182,17 @@ void ts::NIT::fromXML(DuckContext& duck, const xml::Element* element)
 
     setActual(actual);
 
-    for (size_t index = 0; _is_valid && index < children.size(); ++index) {
+    for (size_t index = 0; ok && index < children.size(); ++index) {
         TransportStreamId ts;
-        _is_valid =
-            children[index]->getIntAttribute<uint16_t>(ts.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-            children[index]->getIntAttribute<uint16_t>(ts.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            transports[ts].descs.fromXML(duck, children[index]);
-        if (_is_valid && children[index]->hasAttribute(u"preferred_section")) {
-            _is_valid = children[index]->getIntAttribute<int>(transports[ts].preferred_section, u"preferred_section", true, 0, 0, 255);
+        ok = children[index]->getIntAttribute<uint16_t>(ts.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+             children[index]->getIntAttribute<uint16_t>(ts.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
+             transports[ts].descs.fromXML(duck, children[index]);
+        if (ok && children[index]->hasAttribute(u"preferred_section")) {
+            ok = children[index]->getIntAttribute<int>(transports[ts].preferred_section, u"preferred_section", true, 0, 0, 255);
         }
         else {
             transports[ts].preferred_section = -1;
         }
     }
+    return ok;
 }

@@ -500,15 +500,11 @@ void ts::SDT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SDT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    services.clear();
-
     xml::ElementVector children;
     bool actual = true;
-
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
@@ -518,18 +514,18 @@ void ts::SDT::fromXML(DuckContext& duck, const xml::Element* element)
 
     setActual(actual);
 
-    for (size_t index = 0; _is_valid && index < children.size(); ++index) {
+    for (size_t index = 0; ok && index < children.size(); ++index) {
         uint16_t id = 0;
         int rs = 0;
-        _is_valid =
-            children[index]->getIntAttribute<uint16_t>(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-            children[index]->getBoolAttribute(services[id].EITs_present, u"EIT_schedule", false, false) &&
-            children[index]->getBoolAttribute(services[id].EITpf_present, u"EIT_present_following", false, false) &&
-            children[index]->getBoolAttribute(services[id].CA_controlled, u"CA_mode", false, false) &&
-            children[index]->getEnumAttribute(rs, RST::RunningStatusNames, u"running_status", false, 0) &&
-            services[id].descs.fromXML(duck, children[index]);
-        if (_is_valid) {
+        ok = children[index]->getIntAttribute<uint16_t>(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+             children[index]->getBoolAttribute(services[id].EITs_present, u"EIT_schedule", false, false) &&
+             children[index]->getBoolAttribute(services[id].EITpf_present, u"EIT_present_following", false, false) &&
+             children[index]->getBoolAttribute(services[id].CA_controlled, u"CA_mode", false, false) &&
+             children[index]->getEnumAttribute(rs, RST::RunningStatusNames, u"running_status", false, 0) &&
+             services[id].descs.fromXML(duck, children[index]);
+        if (ok) {
             services[id].running_status = uint8_t(rs);
         }
     }
+    return ok;
 }

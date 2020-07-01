@@ -314,12 +314,10 @@ void ts::LIT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::LIT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::LIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    events.clear();
     xml::ElementVector xevent;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(event_id, u"event_id", true) &&
@@ -328,11 +326,11 @@ void ts::LIT::fromXML(DuckContext& duck, const xml::Element* element)
         element->getIntAttribute<uint16_t>(original_network_id, u"original_network_id", true) &&
         element->getChildren(xevent, u"event");
 
-    for (auto it = xevent.begin(); _is_valid && it != xevent.end(); ++it) {
+    for (auto it = xevent.begin(); ok && it != xevent.end(); ++it) {
         Event& ev(events.newEntry());
         xml::ElementVector xschedule;
-        _is_valid =
-            (*it)->getIntAttribute<uint16_t>(ev.local_event_id, u"local_event_id", true) &&
-            ev.descs.fromXML(duck, *it);
+        ok = (*it)->getIntAttribute<uint16_t>(ev.local_event_id, u"local_event_id", true) &&
+             ev.descs.fromXML(duck, *it);
     }
+    return ok;
 }

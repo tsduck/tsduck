@@ -441,13 +441,10 @@ void ts::PCAT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PCAT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::PCAT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    versions.clear();
-
     xml::ElementVector xversion;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(service_id, u"service_id", true) &&
@@ -456,22 +453,21 @@ void ts::PCAT::fromXML(DuckContext& duck, const xml::Element* element)
         element->getIntAttribute<uint32_t>(content_id, u"content_id", true) &&
         element->getChildren(xversion, u"version");
 
-    for (auto it1 = xversion.begin(); _is_valid && it1 != xversion.end(); ++it1) {
+    for (auto it1 = xversion.begin(); ok && it1 != xversion.end(); ++it1) {
         ContentVersion& cv(versions.newEntry());
         xml::ElementVector xschedule;
-        _is_valid =
-            (*it1)->getIntAttribute<uint16_t>(cv.content_version, u"content_version", true) &&
-            (*it1)->getIntAttribute<uint16_t>(cv.content_minor_version, u"content_minor_version", true) &&
-            (*it1)->getIntAttribute<uint8_t>(cv.version_indicator, u"version_indicator", true, 0, 0, 3) &&
-            cv.descs.fromXML(duck, xschedule, *it1, u"schedule");
-        for (auto it2 = xschedule.begin(); _is_valid && it2 != xschedule.end(); ++it2) {
+        ok = (*it1)->getIntAttribute<uint16_t>(cv.content_version, u"content_version", true) &&
+             (*it1)->getIntAttribute<uint16_t>(cv.content_minor_version, u"content_minor_version", true) &&
+             (*it1)->getIntAttribute<uint8_t>(cv.version_indicator, u"version_indicator", true, 0, 0, 3) &&
+             cv.descs.fromXML(duck, xschedule, *it1, u"schedule");
+        for (auto it2 = xschedule.begin(); ok && it2 != xschedule.end(); ++it2) {
             Schedule sched;
-            _is_valid =
-                (*it2)->getDateTimeAttribute(sched.start_time, u"start_time", true) &&
-                (*it2)->getTimeAttribute(sched.duration, u"duration", true);
-            if (_is_valid) {
+            ok = (*it2)->getDateTimeAttribute(sched.start_time, u"start_time", true) &&
+                 (*it2)->getTimeAttribute(sched.duration, u"duration", true);
+            if (ok) {
                 cv.schedules.push_back(sched);
             }
         }
     }
+    return ok;
 }

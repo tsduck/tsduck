@@ -113,7 +113,6 @@ namespace ts {
         INT(DuckContext& duck, const BinaryTable& table);
 
         // Inherited methods
-        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
     protected:
@@ -122,6 +121,7 @@ namespace ts {
         virtual void serializeContent(DuckContext&, BinaryTable&) const override;
         virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
 
     private:
         // Add a new section to a table being serialized

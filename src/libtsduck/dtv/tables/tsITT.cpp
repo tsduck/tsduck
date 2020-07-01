@@ -196,13 +196,10 @@ void ts::ITT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ITT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ITT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    descs.clear();
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint16_t>(event_id, u"event_id", true) &&
-        descs.fromXML(duck, element);
+    return element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+           element->getBoolAttribute(is_current, u"current", false, true) &&
+           element->getIntAttribute<uint16_t>(event_id, u"event_id", true) &&
+           descs.fromXML(duck, element);
 }
