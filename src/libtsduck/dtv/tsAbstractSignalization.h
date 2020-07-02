@@ -159,17 +159,7 @@ namespace ts {
 
     protected:
         //@@@@@@@@@@@@@ TODO @@@@@@@@@@@@@@@@
-        // Make _xml_name _xml_legacy_name _is_valid private.
-
-        //!
-        //! XML table or descriptor name.
-        //!
-        const UChar* const _xml_name;
-
-        //!
-        //! Optional XML table or descriptor legacy name. Ignored if null pointer.
-        //!
-        const UChar* const _xml_legacy_name;
+        // Make _is_valid private.
 
         //!
         //! It is the responsibility of the subclasses to set the valid flag
@@ -275,7 +265,9 @@ namespace ts {
         bool deserializeBool(bool& value, const uint8_t*& data, size_t& size, size_t bit = 0);
 
     private:
-        const Standards _standards;  // Defining standards (usually only one).
+        const UChar* const _xml_name;         // XML table or descriptor name.
+        const UChar* const _xml_legacy_name;  // Optional XML table or descriptor legacy name. Ignored if null pointer.
+        const Standards    _standards;        // Defining standards (usually only one).
 
         // Unreachable constructors and operators.
         AbstractSignalization() = delete;

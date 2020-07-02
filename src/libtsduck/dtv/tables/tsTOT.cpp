@@ -345,18 +345,14 @@ void ts::TOT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TOT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    regions.clear();
-    descs.clear();
     DescriptorList orig(this);
 
     // Get all descriptors in a separated list.
-    _is_valid =
-        checkXMLName(element) &&
-        element->getDateTimeAttribute(utc_time, u"UTC_time", true) &&
-        orig.fromXML(duck, element);
+    const bool ok = element->getDateTimeAttribute(utc_time, u"UTC_time", true) && orig.fromXML(duck, element);
 
     // Then, split local_time_offset_descriptor and others.
     addDescriptors(duck, orig);
+    return ok;
 }

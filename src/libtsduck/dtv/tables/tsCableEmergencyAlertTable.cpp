@@ -429,7 +429,6 @@ bool ts::CableEmergencyAlertTable::analyzeXML(DuckContext& duck, const xml::Elem
     xml::ElementVector exceps;
 
     bool ok =
-        checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"sequence_number", true, 0, 0, 31) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
         element->getIntAttribute<uint16_t>(EAS_event_ID, u"EAS_event_ID", true) &&

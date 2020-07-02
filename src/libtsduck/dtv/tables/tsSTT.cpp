@@ -266,16 +266,13 @@ void ts::STT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::STT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::STT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    descs.clear();
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
-        element->getIntAttribute<uint32_t>(system_time, u"system_time", true) &&
-        element->getIntAttribute<uint8_t>(GPS_UTC_offset, u"GPS_UTC_offset", true) &&
-        element->getBoolAttribute(DS_status, u"DS_status", true) &&
-        element->getIntAttribute<uint8_t>(DS_day_of_month, u"DS_day_of_month", false, 0, 0, 31) &&
-        element->getIntAttribute<uint8_t>(DS_hour, u"DS_hour", false, 0, 0, 23) &&
-        descs.fromXML(duck, element);
+    return element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
+           element->getIntAttribute<uint32_t>(system_time, u"system_time", true) &&
+           element->getIntAttribute<uint8_t>(GPS_UTC_offset, u"GPS_UTC_offset", true) &&
+           element->getBoolAttribute(DS_status, u"DS_status", true) &&
+           element->getIntAttribute<uint8_t>(DS_day_of_month, u"DS_day_of_month", false, 0, 0, 31) &&
+           element->getIntAttribute<uint8_t>(DS_hour, u"DS_hour", false, 0, 0, 23) &&
+           descs.fromXML(duck, element);
 }
