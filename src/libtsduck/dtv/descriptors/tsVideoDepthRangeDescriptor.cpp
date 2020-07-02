@@ -54,7 +54,6 @@ ts::VideoDepthRangeDescriptor::VideoDepthRangeDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ranges()
 {
-    _is_valid = true;
 }
 
 ts::VideoDepthRangeDescriptor::VideoDepthRangeDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -69,6 +68,11 @@ ts::VideoDepthRangeDescriptor::Range::Range() :
     video_min_disparity_hint(0),
     range_selector()
 {
+}
+
+void ts::VideoDepthRangeDescriptor::clearContent()
+{
+    ranges.clear();
 }
 
 
@@ -212,8 +216,8 @@ void ts::VideoDepthRangeDescriptor::buildXML(DuckContext& duck, xml::Element* ro
             e->setIntAttribute(u"video_max_disparity_hint", it->video_max_disparity_hint);
             e->setIntAttribute(u"video_min_disparity_hint", it->video_min_disparity_hint);
         }
-        else if (it->range_type > 1 && !it->range_selector.empty()) {
-            e->addElement(u"range_selector")->addHexaText(it->range_selector);
+        else if (it->range_type > 1) {
+            e->addHexaTextChild(u"range_selector", it->range_selector, true);
         }
     }
 }
@@ -223,22 +227,18 @@ void ts::VideoDepthRangeDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::VideoDepthRangeDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::VideoDepthRangeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    ranges.clear();
-
     xml::ElementVector xranges;
-    _is_valid = checkXMLName(element) && element->getChildren(xranges, u"range");
+    bool ok = element->getChildren(xranges, u"range");
 
-    for (size_t i = 0; _is_valid && i < xranges.size(); ++i) {
+    for (size_t i = 0; ok && i < xranges.size(); ++i) {
         Range range;
-        _is_valid =
-            xranges[i]->getIntAttribute<uint8_t>(range.range_type, u"range_type", true) &&
-            xranges[i]->getIntAttribute<int16_t>(range.video_max_disparity_hint, u"video_max_disparity_hint", range.range_type == 0) &&
-            xranges[i]->getIntAttribute<int16_t>(range.video_min_disparity_hint, u"video_min_disparity_hint", range.range_type == 0) &&
-            xranges[i]->getHexaTextChild(range.range_selector, u"range_selector", false, 0, range.range_type < 2 ? 0 : MAX_DESCRIPTOR_SIZE);
-        if (_is_valid) {
-            ranges.push_back(range);
-        }
+        ok = xranges[i]->getIntAttribute<uint8_t>(range.range_type, u"range_type", true) &&
+             xranges[i]->getIntAttribute<int16_t>(range.video_max_disparity_hint, u"video_max_disparity_hint", range.range_type == 0) &&
+             xranges[i]->getIntAttribute<int16_t>(range.video_min_disparity_hint, u"video_min_disparity_hint", range.range_type == 0) &&
+             xranges[i]->getHexaTextChild(range.range_selector, u"range_selector", false, 0, range.range_type < 2 ? 0 : MAX_DESCRIPTOR_SIZE);
+        ranges.push_back(range);
     }
+    return ok;
 }

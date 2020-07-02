@@ -131,7 +131,7 @@ void ts::DCCDepartingRequestDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DCCDepartingRequestDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DCCDepartingRequestDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

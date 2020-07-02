@@ -68,7 +68,6 @@ ts::ATSCAC3AudioStreamDescriptor::ATSCAC3AudioStreamDescriptor() :
     language_2(),
     additional_info()
 {
-    _is_valid = true;
 }
 
 ts::ATSCAC3AudioStreamDescriptor::ATSCAC3AudioStreamDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -382,7 +381,7 @@ void ts::ATSCAC3AudioStreamDescriptor::buildXML(DuckContext& duck, xml::Element*
     root->setAttribute(u"language", language, true);
     root->setAttribute(u"language_2", language_2, true);
     if (!additional_info.empty()) {
-        root->addElement(u"additional_info")->addHexaText(additional_info);
+        root->addHexaTextChild(u"additional_info", additional_info);
     }
 }
 
@@ -391,24 +390,20 @@ void ts::ATSCAC3AudioStreamDescriptor::buildXML(DuckContext& duck, xml::Element*
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ATSCAC3AudioStreamDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ATSCAC3AudioStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(sample_rate_code, u"sample_rate_code", true, 0, 0, 0x07) &&
-        element->getIntAttribute<uint8_t>(bsid, u"bsid", true, 0, 0, 0x1F) &&
-        element->getIntAttribute<uint8_t>(bit_rate_code, u"bit_rate_code", true, 0, 0, 0x3F) &&
-        element->getIntAttribute<uint8_t>(surround_mode, u"surround_mode", true, 0, 0, 0x03) &&
-        element->getIntAttribute<uint8_t>(bsmod, u"bsmod", true, 0, 0, 0x07) &&
-        element->getIntAttribute<uint8_t>(num_channels, u"num_channels", true, 0, 0, 0x0F) &&
-        element->getBoolAttribute(full_svc, u"full_svc", true) &&
-        element->getIntAttribute<uint8_t>(mainid, u"mainid", bsmod < 2, 0, 0, 0x07) &&
-        element->getIntAttribute<uint8_t>(priority, u"priority", bsmod < 2, 0, 0, 0x03) &&
-        element->getIntAttribute<uint8_t>(asvcflags, u"asvcflags", bsmod >= 2, 0, 0, 0xFF) &&
-        element->getAttribute(text, u"text") &&
-        element->getAttribute(language, u"language") &&
-        element->getAttribute(language_2, u"language_2") &&
-        element->getHexaTextChild(additional_info, u"additional_info");
+    return element->getIntAttribute<uint8_t>(sample_rate_code, u"sample_rate_code", true, 0, 0, 0x07) &&
+           element->getIntAttribute<uint8_t>(bsid, u"bsid", true, 0, 0, 0x1F) &&
+           element->getIntAttribute<uint8_t>(bit_rate_code, u"bit_rate_code", true, 0, 0, 0x3F) &&
+           element->getIntAttribute<uint8_t>(surround_mode, u"surround_mode", true, 0, 0, 0x03) &&
+           element->getIntAttribute<uint8_t>(bsmod, u"bsmod", true, 0, 0, 0x07) &&
+           element->getIntAttribute<uint8_t>(num_channels, u"num_channels", true, 0, 0, 0x0F) &&
+           element->getBoolAttribute(full_svc, u"full_svc", true) &&
+           element->getIntAttribute<uint8_t>(mainid, u"mainid", bsmod < 2, 0, 0, 0x07) &&
+           element->getIntAttribute<uint8_t>(priority, u"priority", bsmod < 2, 0, 0, 0x03) &&
+           element->getIntAttribute<uint8_t>(asvcflags, u"asvcflags", bsmod >= 2, 0, 0, 0xFF) &&
+           element->getAttribute(text, u"text") &&
+           element->getAttribute(language, u"language") &&
+           element->getAttribute(language_2, u"language_2") &&
+           element->getHexaTextChild(additional_info, u"additional_info");
 }

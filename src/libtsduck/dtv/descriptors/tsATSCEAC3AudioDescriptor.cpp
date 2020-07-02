@@ -69,7 +69,6 @@ ts::ATSCEAC3AudioDescriptor::ATSCEAC3AudioDescriptor() :
     substream3_lang(),
     additional_info()
 {
-    _is_valid = true;
 }
 
 ts::ATSCEAC3AudioDescriptor::ATSCEAC3AudioDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -393,7 +392,7 @@ void ts::ATSCEAC3AudioDescriptor::buildXML(DuckContext& duck, xml::Element* root
     root->setAttribute(u"substream2_lang", substream2_lang, true);
     root->setAttribute(u"substream3_lang", substream3_lang, true);
     if (!additional_info.empty()) {
-        root->addElement(u"additional_info")->addHexaText(additional_info);
+        root->addHexaTextChild(u"additional_info", additional_info);
     }
 }
 
@@ -402,27 +401,23 @@ void ts::ATSCEAC3AudioDescriptor::buildXML(DuckContext& duck, xml::Element* root
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ATSCEAC3AudioDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ATSCEAC3AudioDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(mixinfoexists, u"mixinfoexists", true) &&
-        element->getBoolAttribute(full_service, u"full_service", true) &&
-        element->getIntAttribute<uint8_t>(audio_service_type, u"audio_service_type", true, 0, 0, 0x07) &&
-        element->getIntAttribute<uint8_t>(number_of_channels, u"number_of_channels", true, 0, 0, 0x07) &&
-        element->getOptionalIntAttribute<uint8_t>(bsid, u"bsid", 0, 0x1F) &&
-        element->getOptionalIntAttribute<uint8_t>(priority, u"priority", 0, 0x03) &&
-        element->getOptionalIntAttribute<uint8_t>(mainid, u"mainid", 0, 0x07) &&
-        element->getOptionalIntAttribute<uint8_t>(asvc, u"asvc") &&
-        element->getOptionalIntAttribute<uint8_t>(substream1, u"substream1") &&
-        element->getOptionalIntAttribute<uint8_t>(substream2, u"substream2") &&
-        element->getOptionalIntAttribute<uint8_t>(substream3, u"substream3") &&
-        element->getAttribute(language, u"language", false, UString(), 0, 3) &&
-        element->getAttribute(language_2, u"language_2", false, UString(), 0, 3) &&
-        element->getAttribute(substream1_lang, u"substream1_lang", false, UString(), 0, 3) &&
-        element->getAttribute(substream2_lang, u"substream2_lang", false, UString(), 0, 3) &&
-        element->getAttribute(substream3_lang, u"substream3_lang", false, UString(), 0, 3) &&
-        element->getHexaTextChild(additional_info, u"additional_info");
+    return  element->getBoolAttribute(mixinfoexists, u"mixinfoexists", true) &&
+            element->getBoolAttribute(full_service, u"full_service", true) &&
+            element->getIntAttribute<uint8_t>(audio_service_type, u"audio_service_type", true, 0, 0, 0x07) &&
+            element->getIntAttribute<uint8_t>(number_of_channels, u"number_of_channels", true, 0, 0, 0x07) &&
+            element->getOptionalIntAttribute<uint8_t>(bsid, u"bsid", 0, 0x1F) &&
+            element->getOptionalIntAttribute<uint8_t>(priority, u"priority", 0, 0x03) &&
+            element->getOptionalIntAttribute<uint8_t>(mainid, u"mainid", 0, 0x07) &&
+            element->getOptionalIntAttribute<uint8_t>(asvc, u"asvc") &&
+            element->getOptionalIntAttribute<uint8_t>(substream1, u"substream1") &&
+            element->getOptionalIntAttribute<uint8_t>(substream2, u"substream2") &&
+            element->getOptionalIntAttribute<uint8_t>(substream3, u"substream3") &&
+            element->getAttribute(language, u"language", false, UString(), 0, 3) &&
+            element->getAttribute(language_2, u"language_2", false, UString(), 0, 3) &&
+            element->getAttribute(substream1_lang, u"substream1_lang", false, UString(), 0, 3) &&
+            element->getAttribute(substream2_lang, u"substream2_lang", false, UString(), 0, 3) &&
+            element->getAttribute(substream3_lang, u"substream3_lang", false, UString(), 0, 3) &&
+            element->getHexaTextChild(additional_info, u"additional_info");
 }

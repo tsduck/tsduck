@@ -159,7 +159,7 @@ void ts::PartialTransportStreamDescriptor::buildXML(DuckContext& duck, xml::Elem
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PartialTransportStreamDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::PartialTransportStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

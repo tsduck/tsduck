@@ -51,7 +51,6 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 ts::AFExtensionsDescriptor::AFExtensionsDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
-    _is_valid = true;
 }
 
 ts::AFExtensionsDescriptor::AFExtensionsDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -109,6 +108,7 @@ void ts::AFExtensionsDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AFExtensionsDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AFExtensionsDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
+    return true;
 }

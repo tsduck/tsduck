@@ -125,7 +125,7 @@ void ts::SSUSubgroupAssociationDescriptor::buildXML(DuckContext& duck, xml::Elem
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSUSubgroupAssociationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SSUSubgroupAssociationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     _is_valid =

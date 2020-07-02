@@ -112,7 +112,7 @@ void ts::T2MIDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"num_t2mi_streams_minus_one", num_t2mi_streams_minus_one);
     root->setBoolAttribute(u"pcr_iscr_common_clock_flag", pcr_iscr_common_clock_flag);
     if (!reserved.empty()) {
-        root->addElement(u"reserved")->addHexaText(reserved);
+        root->addHexaTextChild(u"reserved", reserved);
     }
 }
 
@@ -121,7 +121,7 @@ void ts::T2MIDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::T2MIDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

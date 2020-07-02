@@ -132,7 +132,7 @@ void ts::EacemStreamIdentifierDescriptor::buildXML(DuckContext& duck, xml::Eleme
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EacemStreamIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::EacemStreamIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

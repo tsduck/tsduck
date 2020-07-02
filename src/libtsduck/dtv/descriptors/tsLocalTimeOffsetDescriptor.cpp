@@ -199,7 +199,7 @@ void ts::LocalTimeOffsetDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::LocalTimeOffsetDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::LocalTimeOffsetDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     regions.clear();
     xml::ElementVector children;

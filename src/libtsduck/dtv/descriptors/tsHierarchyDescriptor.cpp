@@ -161,7 +161,7 @@ void ts::HierarchyDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::HierarchyDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::HierarchyDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -122,7 +122,7 @@ void ts::CarouselIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element*
 {
     root->setIntAttribute(u"carousel_id", carousel_id, true);
     if (!private_data.empty()) {
-        root->addElement(u"private_data")->addHexaText(private_data);
+        root->addHexaTextChild(u"private_data", private_data);
     }
 }
 
@@ -131,7 +131,7 @@ void ts::CarouselIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element*
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CarouselIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CarouselIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

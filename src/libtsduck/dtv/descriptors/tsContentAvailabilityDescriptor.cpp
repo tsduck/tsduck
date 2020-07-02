@@ -148,7 +148,7 @@ void ts::ContentAvailabilityDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ContentAvailabilityDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ContentAvailabilityDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     reserved_future_use.clear();
 

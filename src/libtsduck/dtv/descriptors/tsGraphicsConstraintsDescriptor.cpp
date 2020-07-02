@@ -134,7 +134,7 @@ void ts::GraphicsConstraintsDescriptor::buildXML(DuckContext& duck, xml::Element
     root->setBoolAttribute(u"handles_configuration_changed", handles_configuration_changed);
     root->setBoolAttribute(u"handles_externally_controlled_video", handles_externally_controlled_video);
     if (!graphics_configuration.empty()) {
-        root->addElement(u"graphics_configuration")->addHexaText(graphics_configuration);
+        root->addHexaTextChild(u"graphics_configuration", graphics_configuration);
     }
 }
 
@@ -143,7 +143,7 @@ void ts::GraphicsConstraintsDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::GraphicsConstraintsDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::GraphicsConstraintsDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

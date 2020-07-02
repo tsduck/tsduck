@@ -179,7 +179,7 @@ ts::xml::Element* ts::SSUDataBroadcastIdDescriptor::toXML(DuckContext& duck, xml
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SSUDataBroadcastIdDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     // There is no specific representation of this descriptor.
     // We cannot be called since there is no registration in the XML factory.

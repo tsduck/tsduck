@@ -173,7 +173,7 @@ void ts::SkyLogicalChannelNumberDescriptor::buildXML(DuckContext& duck, xml::Ele
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SkyLogicalChannelNumberDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SkyLogicalChannelNumberDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

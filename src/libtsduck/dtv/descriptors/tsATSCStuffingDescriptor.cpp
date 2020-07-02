@@ -52,7 +52,6 @@ ts::ATSCStuffingDescriptor::ATSCStuffingDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     stuffing()
 {
-    _is_valid = true;
 }
 
 ts::ATSCStuffingDescriptor::ATSCStuffingDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -107,9 +106,7 @@ void ts::ATSCStuffingDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 
 void ts::ATSCStuffingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    if (!stuffing.empty()) {
-        root->addHexaText(stuffing);
-    }
+    root->addHexaText(stuffing, true);
 }
 
 
@@ -117,8 +114,7 @@ void ts::ATSCStuffingDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ATSCStuffingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ATSCStuffingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    stuffing.clear();
-    _is_valid = checkXMLName(element) && element->getHexaText(stuffing, 0, 255);
+    return element->getHexaText(stuffing, 0, 255);
 }

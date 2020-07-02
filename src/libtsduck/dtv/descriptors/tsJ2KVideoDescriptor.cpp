@@ -183,7 +183,7 @@ void ts::J2KVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
     root->setBoolAttribute(u"interlaced_video", interlaced_video);
 
     if (!private_data.empty()) {
-        root->addElement(u"private_data")->addHexaText(private_data);
+        root->addHexaTextChild(u"private_data", private_data);
     }
 }
 
@@ -192,7 +192,7 @@ void ts::J2KVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::J2KVideoDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::J2KVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     private_data.clear();
     _is_valid =

@@ -55,7 +55,6 @@ ts::AssociationTagDescriptor::AssociationTagDescriptor() :
     selector_bytes(),
     private_data()
 {
-    _is_valid = true;
 }
 
 ts::AssociationTagDescriptor::AssociationTagDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -146,10 +145,10 @@ void ts::AssociationTagDescriptor::buildXML(DuckContext& duck, xml::Element* roo
     root->setIntAttribute(u"association_tag", association_tag, true);
     root->setIntAttribute(u"use", use, true);
     if (!selector_bytes.empty()) {
-        root->addElement(u"selector_bytes")->addHexaText(selector_bytes);
+        root->addHexaTextChild(u"selector_bytes", selector_bytes);
     }
     if (!private_data.empty()) {
-        root->addElement(u"private_data")->addHexaText(private_data);
+        root->addHexaTextChild(u"private_data", private_data);
     }
 }
 
@@ -158,15 +157,10 @@ void ts::AssociationTagDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AssociationTagDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AssociationTagDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    selector_bytes.clear();
-    private_data.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(association_tag, u"association_tag", true) &&
-        element->getIntAttribute<uint16_t>(use, u"use", true) &&
-        element->getHexaTextChild(selector_bytes, u"selector_bytes", false) &&
-        element->getHexaTextChild(private_data, u"private_data", false);
+    return element->getIntAttribute<uint16_t>(association_tag, u"association_tag", true) &&
+           element->getIntAttribute<uint16_t>(use, u"use", true) &&
+           element->getHexaTextChild(selector_bytes, u"selector_bytes", false) &&
+           element->getHexaTextChild(private_data, u"private_data", false);
 }

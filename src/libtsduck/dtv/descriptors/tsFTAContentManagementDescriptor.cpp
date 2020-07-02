@@ -137,7 +137,7 @@ void ts::FTAContentManagementDescriptor::buildXML(DuckContext& duck, xml::Elemen
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::FTAContentManagementDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::FTAContentManagementDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

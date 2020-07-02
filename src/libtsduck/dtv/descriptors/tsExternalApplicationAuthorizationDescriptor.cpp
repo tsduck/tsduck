@@ -142,7 +142,7 @@ void ts::ExternalApplicationAuthorizationDescriptor::buildXML(DuckContext& duck,
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExternalApplicationAuthorizationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ExternalApplicationAuthorizationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

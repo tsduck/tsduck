@@ -142,7 +142,7 @@ void ts::DVBHTMLApplicationLocationDescriptor::buildXML(DuckContext& duck, xml::
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationLocationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DVBHTMLApplicationLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

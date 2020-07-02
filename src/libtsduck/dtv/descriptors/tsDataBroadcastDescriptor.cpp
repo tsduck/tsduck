@@ -57,18 +57,21 @@ ts::DataBroadcastDescriptor::DataBroadcastDescriptor() :
     language_code(),
     text()
 {
-    _is_valid = true;
 }
 
 ts::DataBroadcastDescriptor::DataBroadcastDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    data_broadcast_id(0),
-    component_tag(0),
-    selector_bytes(),
-    language_code(),
-    text()
+    DataBroadcastDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::DataBroadcastDescriptor::clearContent()
+{
+    data_broadcast_id = 0;
+    component_tag = 0;
+    selector_bytes.clear();
+    language_code.clear();
+    text.clear();
 }
 
 
@@ -173,9 +176,7 @@ void ts::DataBroadcastDescriptor::buildXML(DuckContext& duck, xml::Element* root
     root->setIntAttribute(u"data_broadcast_id", data_broadcast_id, true);
     root->setIntAttribute(u"component_tag", component_tag, true);
     root->setAttribute(u"language_code", language_code);
-    if (!selector_bytes.empty()) {
-        root->addElement(u"selector_bytes")->addHexaText(selector_bytes);
-    }
+    root->addHexaTextChild(u"selector_bytes", selector_bytes, true);
     root->addElement(u"text")->addText(text);
 }
 
@@ -184,17 +185,11 @@ void ts::DataBroadcastDescriptor::buildXML(DuckContext& duck, xml::Element* root
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DataBroadcastDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    selector_bytes.clear();
-    language_code.clear();
-    text.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(data_broadcast_id, u"data_broadcast_id", true) &&
-        element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true) &&
-        element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
-        element->getHexaTextChild(selector_bytes, u"selector_bytes", true) &&
-        element->getTextChild(text, u"text");
+    return  element->getIntAttribute<uint16_t>(data_broadcast_id, u"data_broadcast_id", true) &&
+            element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true) &&
+            element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
+            element->getHexaTextChild(selector_bytes, u"selector_bytes", true) &&
+            element->getTextChild(text, u"text");
 }

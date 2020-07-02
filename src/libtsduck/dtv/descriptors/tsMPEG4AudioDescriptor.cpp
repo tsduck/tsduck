@@ -52,13 +52,17 @@ ts::MPEG4AudioDescriptor::MPEG4AudioDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     MPEG4_audio_profile_and_level(0)
 {
-    _is_valid = true;
 }
 
 ts::MPEG4AudioDescriptor::MPEG4AudioDescriptor(DuckContext& duck, const Descriptor& desc) :
     MPEG4AudioDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::MPEG4AudioDescriptor::clearContent()
+{
+    MPEG4_audio_profile_and_level = 0;
 }
 
 
@@ -124,9 +128,7 @@ void ts::MPEG4AudioDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MPEG4AudioDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::MPEG4AudioDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(MPEG4_audio_profile_and_level, u"MPEG4_audio_profile_and_level", true);
+    return element->getIntAttribute<uint8_t>(MPEG4_audio_profile_and_level, u"MPEG4_audio_profile_and_level", true);
 }

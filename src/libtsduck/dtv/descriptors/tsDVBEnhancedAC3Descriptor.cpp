@@ -277,7 +277,7 @@ void ts::DVBEnhancedAC3Descriptor::buildXML(DuckContext& duck, xml::Element* roo
     root->setOptionalIntAttribute(u"substream2", substream2, true);
     root->setOptionalIntAttribute(u"substream3", substream3, true);
     if (!additional_info.empty()) {
-        root->addElement(u"additional_info")->addHexaText(additional_info);
+        root->addHexaTextChild(u"additional_info", additional_info);
     }
 }
 
@@ -286,7 +286,7 @@ void ts::DVBEnhancedAC3Descriptor::buildXML(DuckContext& duck, xml::Element* roo
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBEnhancedAC3Descriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DVBEnhancedAC3Descriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

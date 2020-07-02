@@ -66,13 +66,17 @@ ts::TeletextDescriptor::TeletextDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    _is_valid = true;
 }
 
 ts::TeletextDescriptor::TeletextDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds) :
     AbstractDescriptor(tag, xml_name, standards, pds),
     entries()
 {
+}
+
+void ts::TeletextDescriptor::clearContent()
+{
+    entries.clear();
 }
 
 ts::TeletextDescriptor::TeletextDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -199,22 +203,17 @@ void ts::TeletextDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TeletextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"teletext", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(children, u"teletext", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getAttribute(entry.language_code, u"language_code", true, u"", 3, 3) &&
-            children[i]->getIntAttribute<uint8_t>(entry.teletext_type, u"teletext_type", true) &&
-            children[i]->getIntAttribute<uint16_t>(entry.page_number, u"page_number", true);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = children[i]->getAttribute(entry.language_code, u"language_code", true, u"", 3, 3) &&
+             children[i]->getIntAttribute<uint8_t>(entry.teletext_type, u"teletext_type", true) &&
+             children[i]->getIntAttribute<uint16_t>(entry.page_number, u"page_number", true);
+        entries.push_back(entry);
     }
+    return ok;
 }

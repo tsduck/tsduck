@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::AACDescriptor::AACDescriptor() :
@@ -55,18 +55,20 @@ ts::AACDescriptor::AACDescriptor() :
     AAC_type(),
     additional_info()
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::AACDescriptor::AACDescriptor(DuckContext& duck, const Descriptor& desc) :
     AACDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::AACDescriptor::clearContent()
+{
+    profile_and_level = 0;
+    SAOC_DE = false;
+    AAC_type.reset();
+    additional_info.clear();
 }
 
 

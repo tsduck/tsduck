@@ -55,13 +55,20 @@ ts::AudioStreamDescriptor::AudioStreamDescriptor() :
     layer(0),
     variable_rate_audio(false)
 {
-    _is_valid = true;
 }
 
 ts::AudioStreamDescriptor::AudioStreamDescriptor(DuckContext& duck, const Descriptor& desc) :
     AudioStreamDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::AudioStreamDescriptor::clearContent()
+{
+    free_format = false;
+    ID = 0;
+    layer = 0;
+    variable_rate_audio = false;
 }
 
 
@@ -138,12 +145,10 @@ void ts::AudioStreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AudioStreamDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AudioStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(free_format, u"free_format", true) &&
-        element->getIntAttribute<uint8_t>(ID, u"ID", true, 0, 0, 1) &&
-        element->getIntAttribute<uint8_t>(layer, u"layer", true, 0, 0, 3) &&
-        element->getBoolAttribute(variable_rate_audio, u"variable_rate_audio", true);
+    return element->getBoolAttribute(free_format, u"free_format", true) &&
+           element->getIntAttribute<uint8_t>(ID, u"ID", true, 0, 0, 1) &&
+           element->getIntAttribute<uint8_t>(layer, u"layer", true, 0, 0, 3) &&
+           element->getBoolAttribute(variable_rate_audio, u"variable_rate_audio", true);
 }

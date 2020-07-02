@@ -137,7 +137,7 @@ void ts::SimpleApplicationBoundaryDescriptor::buildXML(DuckContext& duck, xml::E
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationBoundaryDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SimpleApplicationBoundaryDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     boundary_extension.clear();
     xml::ElementVector children;

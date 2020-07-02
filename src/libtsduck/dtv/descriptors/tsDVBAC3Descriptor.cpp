@@ -221,7 +221,7 @@ void ts::DVBAC3Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setOptionalIntAttribute(u"mainid", mainid, true);
     root->setOptionalIntAttribute(u"asvc", asvc, true);
     if (!additional_info.empty()) {
-        root->addElement(u"additional_info")->addHexaText(additional_info);
+        root->addHexaTextChild(u"additional_info", additional_info);
     }
 }
 
@@ -230,7 +230,7 @@ void ts::DVBAC3Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBAC3Descriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DVBAC3Descriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

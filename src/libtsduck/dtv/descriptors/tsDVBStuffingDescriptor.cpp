@@ -46,25 +46,24 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::DVBStuffingDescriptor::DVBStuffingDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY),
     stuffing()
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::DVBStuffingDescriptor::DVBStuffingDescriptor(DuckContext& duck, const Descriptor& desc) :
     DVBStuffingDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::DVBStuffingDescriptor::clearContent()
+{
+    stuffing.clear();
 }
 
 
@@ -113,9 +112,7 @@ void ts::DVBStuffingDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 
 void ts::DVBStuffingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    if (!stuffing.empty()) {
-        root->addHexaText(stuffing);
-    }
+    root->addHexaText(stuffing, true);
 }
 
 
@@ -123,8 +120,7 @@ void ts::DVBStuffingDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBStuffingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DVBStuffingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    stuffing.clear();
-    _is_valid = checkXMLName(element) && element->getHexaText(stuffing, 0, 255);
+    return element->getHexaText(stuffing, 0, 255);
 }

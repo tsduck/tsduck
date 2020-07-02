@@ -158,7 +158,7 @@ void ts::DVBHTMLApplicationDescriptor::buildXML(DuckContext& duck, xml::Element*
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DVBHTMLApplicationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     application_ids.clear();
     parameter.clear();

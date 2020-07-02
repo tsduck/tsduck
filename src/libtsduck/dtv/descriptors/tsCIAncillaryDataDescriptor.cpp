@@ -99,7 +99,7 @@ void ts::CIAncillaryDataDescriptor::deserialize(DuckContext& duck, const Descrip
 void ts::CIAncillaryDataDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     if (!ancillary_data.empty()) {
-        root->addElement(u"ancillary_data")->addHexaText(ancillary_data);
+        root->addHexaTextChild(u"ancillary_data", ancillary_data);
     }
 }
 
@@ -108,7 +108,7 @@ void ts::CIAncillaryDataDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CIAncillaryDataDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CIAncillaryDataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

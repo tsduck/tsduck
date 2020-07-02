@@ -127,7 +127,7 @@ void ts::IPSignallingDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPSignallingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::IPSignallingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

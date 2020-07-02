@@ -156,7 +156,7 @@ void ts::URILinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
         root->setIntAttribute(u"min_polling_interval", min_polling_interval);
     }
     if (!private_data.empty()) {
-        root->addElement(u"private_data")->addHexaText(private_data);
+        root->addHexaTextChild(u"private_data", private_data);
     }
 }
 
@@ -165,7 +165,7 @@ void ts::URILinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::URILinkageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::URILinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

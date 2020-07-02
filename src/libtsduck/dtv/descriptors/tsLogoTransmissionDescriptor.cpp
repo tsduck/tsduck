@@ -219,7 +219,7 @@ void ts::LogoTransmissionDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::LogoTransmissionDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::LogoTransmissionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     logo_char.clear();
     reserved_future_use.clear();

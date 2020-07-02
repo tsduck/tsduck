@@ -161,7 +161,7 @@ void ts::ComponentDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ComponentDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ComponentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

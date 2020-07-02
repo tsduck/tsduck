@@ -65,7 +65,6 @@ ts::S2XSatelliteDeliverySystemDescriptor::S2XSatelliteDeliverySystemDescriptor()
     channel_bond_1(),
     reserved_future_use()
 {
-    _is_valid = true;
 }
 
 ts::S2XSatelliteDeliverySystemDescriptor::S2XSatelliteDeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -351,7 +350,7 @@ void ts::S2XSatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::
         }
     }
     if (!reserved_future_use.empty()) {
-        root->addElement(u"reserved_future_use")->addHexaText(reserved_future_use);
+        root->addHexaTextChild(u"reserved_future_use", reserved_future_use);
     }
 }
 
@@ -375,16 +374,13 @@ void ts::S2XSatelliteDeliverySystemDescriptor::buildChannelXML(const Channel& ch
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::S2XSatelliteDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::S2XSatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    reserved_future_use.clear();
-
     Variable<uint32_t> scrambling;
     xml::ElementVector xmaster;
     xml::ElementVector xbond;
 
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(receiver_profiles, u"receiver_profiles", true, 0, 0, 0x1F) &&
         element->getIntAttribute<uint8_t>(S2X_mode, u"S2X_mode", true, 0, 0, 0x03) &&
         element->getIntAttribute<uint8_t>(TS_GS_S2X_mode, u"TS_GS_S2X_mode", true, 0, 0, 0x03) &&
@@ -396,14 +392,15 @@ void ts::S2XSatelliteDeliverySystemDescriptor::fromXML(DuckContext& duck, const 
         getChannelXML(master_channel, duck, xmaster[0]) &&
         (S2X_mode != 3 || getChannelXML(channel_bond_0, duck, xbond[0]));
 
-    if (_is_valid) {
+    if (ok) {
         scrambling_sequence_selector = scrambling.set();
         scrambling_sequence_index = scrambling.value(0);
         num_channel_bonds_minus_one = S2X_mode == 3 && xbond.size() > 1;
         if (num_channel_bonds_minus_one) {
-            _is_valid = getChannelXML(channel_bond_1, duck, xbond[1]);
+            ok = getChannelXML(channel_bond_1, duck, xbond[1]);
         }
     }
+    return ok;
 }
 
 // Analyze an XML element for a channel.
@@ -436,6 +433,5 @@ bool ts::S2XSatelliteDeliverySystemDescriptor::getChannelXML(Channel& channel, D
             element->report().error(u"Invalid value '%s' for attribute 'orbital_position' in <%s> at line %d, use 'nn.n'", {orbit, element->name(), element->lineNumber()});
         }
     }
-
     return ok;
 }

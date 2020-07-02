@@ -265,7 +265,7 @@ void ts::CellListDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CellListDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CellListDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     cells.clear();
 

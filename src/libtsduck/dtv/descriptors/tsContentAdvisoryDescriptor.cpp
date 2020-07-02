@@ -187,7 +187,7 @@ void ts::ContentAdvisoryDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ContentAdvisoryDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ContentAdvisoryDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

@@ -180,7 +180,7 @@ void ts::S2SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::E
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::S2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     Variable<uint32_t> scrambling;
     Variable<uint8_t> stream;

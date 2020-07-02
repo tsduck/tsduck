@@ -124,7 +124,7 @@ void ts::DataStreamAlignmentDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataStreamAlignmentDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DataStreamAlignmentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

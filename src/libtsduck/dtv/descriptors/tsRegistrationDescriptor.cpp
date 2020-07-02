@@ -53,7 +53,6 @@ ts::RegistrationDescriptor::RegistrationDescriptor(uint32_t identifier, const By
     format_identifier(identifier),
     additional_identification_info(info)
 {
-    _is_valid = true;
 }
 
 ts::RegistrationDescriptor::RegistrationDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -123,9 +122,7 @@ void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 void ts::RegistrationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"format_identifier", format_identifier, true);
-    if (!additional_identification_info.empty()) {
-        root->addElement(u"additional_identification_info")->addHexaText(additional_identification_info);
-    }
+    root->addHexaTextChild(u"additional_identification_info", additional_identification_info, true);
 }
 
 
@@ -133,10 +130,8 @@ void ts::RegistrationDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::RegistrationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint32_t>(format_identifier, u"format_identifier", true) &&
-        element->getHexaTextChild(additional_identification_info, u"additional_identification_info", false, 0, MAX_DESCRIPTOR_SIZE - 6);
+    return element->getIntAttribute<uint32_t>(format_identifier, u"format_identifier", true) &&
+           element->getHexaTextChild(additional_identification_info, u"additional_identification_info", false, 0, MAX_DESCRIPTOR_SIZE - 6);
 }

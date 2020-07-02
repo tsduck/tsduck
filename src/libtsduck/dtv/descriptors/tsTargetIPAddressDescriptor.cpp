@@ -140,7 +140,7 @@ void ts::TargetIPAddressDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPAddressDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TargetIPAddressDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     IPv4_addr.clear();
 

@@ -154,7 +154,7 @@ void ts::IPMACGenericStreamLocationDescriptor::buildXML(DuckContext& duck, xml::
     root->setIntAttribute(u"modulation_system_id", modulation_system_id, true);
     root->setIntAttribute(u"PHY_stream_id", PHY_stream_id, true);
     if (!selector_bytes.empty()) {
-        root->addElement(u"selector_bytes")->addHexaText(selector_bytes);
+        root->addHexaTextChild(u"selector_bytes", selector_bytes);
     }
 }
 
@@ -163,7 +163,7 @@ void ts::IPMACGenericStreamLocationDescriptor::buildXML(DuckContext& duck, xml::
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACGenericStreamLocationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::IPMACGenericStreamLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -126,7 +126,7 @@ void ts::CopyrightDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 {
     root->setIntAttribute(u"copyright_identifier", copyright_identifier, true);
     if (!additional_copyright_info.empty()) {
-        root->addElement(u"additional_copyright_info")->addHexaText(additional_copyright_info);
+        root->addHexaTextChild(u"additional_copyright_info", additional_copyright_info);
     }
 }
 
@@ -135,7 +135,7 @@ void ts::CopyrightDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CopyrightDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CopyrightDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

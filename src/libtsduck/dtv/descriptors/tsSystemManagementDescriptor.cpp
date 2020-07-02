@@ -140,7 +140,7 @@ void ts::SystemManagementDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SystemManagementDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SystemManagementDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     additional_identification_info.clear();
 

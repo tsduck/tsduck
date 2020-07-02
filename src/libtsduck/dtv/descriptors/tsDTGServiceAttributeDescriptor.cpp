@@ -52,7 +52,6 @@ ts::DTGServiceAttributeDescriptor::DTGServiceAttributeDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     entries()
 {
-    _is_valid = true;
 }
 
 ts::DTGServiceAttributeDescriptor::DTGServiceAttributeDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -66,6 +65,11 @@ ts::DTGServiceAttributeDescriptor::Entry::Entry(uint16_t id, bool numeric, bool 
     numeric_selection(numeric),
     visible_service(visible)
 {
+}
+
+void ts::DTGServiceAttributeDescriptor::clearContent()
+{
+    entries.clear();
 }
 
 
@@ -144,20 +148,17 @@ void ts::DTGServiceAttributeDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DTGServiceAttributeDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DTGServiceAttributeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
     xml::ElementVector xservice;
-    _is_valid = checkXMLName(element) && element->getChildren(xservice, u"service", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(xservice, u"service", 0, MAX_ENTRIES);
 
-    for (auto it = xservice.begin(); it != xservice.end(); ++it) {
+    for (auto it = xservice.begin(); ok && it != xservice.end(); ++it) {
         Entry entry;
-        _is_valid =
-            (*it)->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true) &&
-            (*it)->getBoolAttribute(entry.numeric_selection, u"numeric_selection", true) &&
-            (*it)->getBoolAttribute(entry.visible_service, u"visible_service", true);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = (*it)->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true) &&
+             (*it)->getBoolAttribute(entry.numeric_selection, u"numeric_selection", true) &&
+             (*it)->getBoolAttribute(entry.visible_service, u"visible_service", true);
+        entries.push_back(entry);
     }
+    return ok;
 }

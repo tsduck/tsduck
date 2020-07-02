@@ -150,7 +150,7 @@ void ts::CAIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CAIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CAIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     casids.clear();
     xml::ElementVector children;

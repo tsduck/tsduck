@@ -142,7 +142,7 @@ void ts::IBPDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::IBPDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::IBPDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

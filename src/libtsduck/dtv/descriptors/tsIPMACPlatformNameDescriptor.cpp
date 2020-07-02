@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::IPMACPlatformNameDescriptor::IPMACPlatformNameDescriptor(const UString& lang, const UString& name) :
@@ -53,18 +53,18 @@ ts::IPMACPlatformNameDescriptor::IPMACPlatformNameDescriptor(const UString& lang
     language_code(lang),
     text(name)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::IPMACPlatformNameDescriptor::IPMACPlatformNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     IPMACPlatformNameDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::IPMACPlatformNameDescriptor::clearContent()
+{
+    language_code.clear();
+    text.clear();
 }
 
 
@@ -138,10 +138,8 @@ void ts::IPMACPlatformNameDescriptor::buildXML(DuckContext& duck, xml::Element* 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformNameDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::IPMACPlatformNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(language_code, u"language_code", true, UString(), 3, 3) &&
-        element->getAttribute(text, u"text", true, UString(), 0, MAX_DESCRIPTOR_SIZE - 5);
+    return element->getAttribute(language_code, u"language_code", true, UString(), 3, 3) &&
+           element->getAttribute(text, u"text", true, UString(), 0, MAX_DESCRIPTOR_SIZE - 5);
 }

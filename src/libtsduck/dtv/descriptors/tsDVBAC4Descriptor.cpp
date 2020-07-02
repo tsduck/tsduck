@@ -190,10 +190,10 @@ void ts::DVBAC4Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setOptionalBoolAttribute(u"ac4_dialog_enhancement_enabled", ac4_dialog_enhancement_enabled);
     root->setOptionalIntAttribute(u"ac4_channel_mode", ac4_channel_mode);
     if (!ac4_dsi_toc.empty()) {
-        root->addElement(u"ac4_dsi_toc")->addHexaText(ac4_dsi_toc);
+        root->addHexaTextChild(u"ac4_dsi_toc", ac4_dsi_toc);
     }
     if (!additional_info.empty()) {
-        root->addElement(u"additional_info")->addHexaText(additional_info);
+        root->addHexaTextChild(u"additional_info", additional_info);
     }
 }
 
@@ -202,7 +202,7 @@ void ts::DVBAC4Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBAC4Descriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DVBAC4Descriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

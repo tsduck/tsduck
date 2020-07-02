@@ -112,7 +112,7 @@ void ts::ExtendedChannelNameDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedChannelNameDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ExtendedChannelNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

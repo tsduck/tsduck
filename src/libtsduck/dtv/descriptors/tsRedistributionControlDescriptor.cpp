@@ -53,13 +53,18 @@ ts::RedistributionControlDescriptor::RedistributionControlDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     rc_information()
 {
-    _is_valid = true;
 }
 
 ts::RedistributionControlDescriptor::RedistributionControlDescriptor(DuckContext& duck, const Descriptor& desc) :
     RedistributionControlDescriptor()
 {
     deserialize(duck, desc);
+}
+
+
+void ts::RedistributionControlDescriptor::clearContent()
+{
+    rc_information.clear();
 }
 
 
@@ -108,9 +113,7 @@ void ts::RedistributionControlDescriptor::DisplayDescriptor(TablesDisplay& displ
 
 void ts::RedistributionControlDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    if (!rc_information.empty()) {
-        root->addElement(u"rc_information")->addHexaText(rc_information);
-    }
+    root->addHexaTextChild(u"rc_information", rc_information, true);
 }
 
 
@@ -118,10 +121,7 @@ void ts::RedistributionControlDescriptor::buildXML(DuckContext& duck, xml::Eleme
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::RedistributionControlDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::RedistributionControlDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    rc_information.clear();
-    _is_valid =
-        checkXMLName(element) &&
-        element->getHexaTextChild(rc_information, u"rc_information", false, 0, 255);
+    return element->getHexaTextChild(rc_information, u"rc_information", false, 0, 255);
 }

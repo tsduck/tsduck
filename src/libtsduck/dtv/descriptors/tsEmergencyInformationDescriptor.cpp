@@ -177,7 +177,7 @@ void ts::EmergencyInformationDescriptor::buildXML(DuckContext& duck, xml::Elemen
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EmergencyInformationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::EmergencyInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     events.clear();
 

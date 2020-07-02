@@ -621,7 +621,7 @@ void ts::LinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
     }
 
     if (!private_data.empty()) {
-        root->addElement(u"private_data")->addHexaText(private_data);
+        root->addHexaTextChild(u"private_data", private_data);
     }
 }
 
@@ -630,7 +630,7 @@ void ts::LinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::LinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     clear();
 

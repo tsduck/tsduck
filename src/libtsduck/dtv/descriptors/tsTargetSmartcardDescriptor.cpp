@@ -134,7 +134,7 @@ void ts::TargetSmartcardDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetSmartcardDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TargetSmartcardDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     private_data.clear();
 

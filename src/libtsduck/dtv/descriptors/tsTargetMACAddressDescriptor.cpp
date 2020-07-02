@@ -54,13 +54,18 @@ ts::TargetMACAddressDescriptor::TargetMACAddressDescriptor() :
     MAC_addr_mask(),
     MAC_addr()
 {
-    _is_valid = true;
 }
 
 ts::TargetMACAddressDescriptor::TargetMACAddressDescriptor(DuckContext& duck, const Descriptor& desc) :
     TargetMACAddressDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::TargetMACAddressDescriptor::clearContent()
+{
+    MAC_addr.clear();
+    MAC_addr_mask.clear();
 }
 
 
@@ -140,21 +145,17 @@ void ts::TargetMACAddressDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TargetMACAddressDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    MAC_addr.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getMACAttribute(MAC_addr_mask, u"MAC_addr_mask", true) &&
         element->getChildren(children, u"address", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         MACAddress addr;
-        _is_valid = children[i]->getMACAttribute(addr, u"MAC_addr", true);
-        if (_is_valid) {
-            MAC_addr.push_back(addr);
-        }
+        ok = children[i]->getMACAttribute(addr, u"MAC_addr", true);
+        MAC_addr.push_back(addr);
     }
+    return ok;
 }

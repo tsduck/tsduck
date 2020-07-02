@@ -169,7 +169,7 @@ void ts::CountryAvailabilityDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CountryAvailabilityDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CountryAvailabilityDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     country_codes.clear();
 

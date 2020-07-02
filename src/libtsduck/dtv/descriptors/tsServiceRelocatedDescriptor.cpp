@@ -55,13 +55,19 @@ ts::ServiceRelocatedDescriptor::ServiceRelocatedDescriptor() :
     old_transport_stream_id(0),
     old_service_id(0)
 {
-    _is_valid = true;
 }
 
 ts::ServiceRelocatedDescriptor::ServiceRelocatedDescriptor(DuckContext& duck, const Descriptor& desc) :
     ServiceRelocatedDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::ServiceRelocatedDescriptor::clearContent()
+{
+    old_original_network_id = 0;
+    old_transport_stream_id = 0;
+    old_service_id = 0;
 }
 
 
@@ -139,11 +145,9 @@ void ts::ServiceRelocatedDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceRelocatedDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ServiceRelocatedDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(old_original_network_id, u"old_original_network_id", true) &&
-        element->getIntAttribute<uint16_t>(old_transport_stream_id, u"old_transport_stream_id", true) &&
-        element->getIntAttribute<uint16_t>(old_service_id, u"old_service_id", true);
+    return element->getIntAttribute<uint16_t>(old_original_network_id, u"old_original_network_id", true) &&
+           element->getIntAttribute<uint16_t>(old_transport_stream_id, u"old_transport_stream_id", true) &&
+           element->getIntAttribute<uint16_t>(old_service_id, u"old_service_id", true);
 }

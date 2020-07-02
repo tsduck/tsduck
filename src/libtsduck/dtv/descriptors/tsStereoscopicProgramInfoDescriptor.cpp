@@ -124,7 +124,7 @@ void ts::StereoscopicProgramInfoDescriptor::buildXML(DuckContext& duck, xml::Ele
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::StereoscopicProgramInfoDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::StereoscopicProgramInfoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -148,7 +148,7 @@ void ts::NVODReferenceDescriptor::buildXML(DuckContext& duck, xml::Element* root
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::NVODReferenceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::NVODReferenceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

@@ -182,7 +182,7 @@ void ts::ServiceGroupDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceGroupDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ServiceGroupDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     simultaneous_services.clear();
     private_data.clear();

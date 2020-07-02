@@ -48,7 +48,6 @@ ts::AbstractPreferredNameIdentifierDescriptor::AbstractPreferredNameIdentifierDe
     AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name),
     name_id(id)
 {
-    _is_valid = true;
 }
 
 ts::AbstractPreferredNameIdentifierDescriptor::AbstractPreferredNameIdentifierDescriptor(DuckContext& duck,
@@ -126,9 +125,7 @@ void ts::AbstractPreferredNameIdentifierDescriptor::buildXML(DuckContext& duck, 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractPreferredNameIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AbstractPreferredNameIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(name_id, u"name_id", true, 0, 0x00, 0xFF);
+    return element->getIntAttribute<uint8_t>(name_id, u"name_id", true, 0, 0x00, 0xFF);
 }

@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::DVBJApplicationLocationDescriptor::DVBJApplicationLocationDescriptor() :
@@ -54,18 +54,19 @@ ts::DVBJApplicationLocationDescriptor::DVBJApplicationLocationDescriptor() :
     classpath_extension(),
     initial_class()
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::DVBJApplicationLocationDescriptor::DVBJApplicationLocationDescriptor(DuckContext& duck, const Descriptor& desc) :
     DVBJApplicationLocationDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::DVBJApplicationLocationDescriptor::clearContent()
+{
+    base_directory.clear();
+    classpath_extension.clear();
+    initial_class.clear();
 }
 
 
@@ -158,11 +159,9 @@ void ts::DVBJApplicationLocationDescriptor::buildXML(DuckContext& duck, xml::Ele
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBJApplicationLocationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DVBJApplicationLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(base_directory, u"base_directory", true) &&
-        element->getAttribute(classpath_extension, u"classpath_extension", true) &&
-        element->getAttribute(initial_class, u"initial_class", true);
+    return element->getAttribute(base_directory, u"base_directory", true) &&
+           element->getAttribute(classpath_extension, u"classpath_extension", true) &&
+           element->getAttribute(initial_class, u"initial_class", true);
 }

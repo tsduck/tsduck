@@ -53,7 +53,6 @@ ts::AreaBroadcastingInformationDescriptor::AreaBroadcastingInformationDescriptor
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     stations()
 {
-    _is_valid = true;
 }
 
 ts::AreaBroadcastingInformationDescriptor::AreaBroadcastingInformationDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -177,22 +176,18 @@ void ts::AreaBroadcastingInformationDescriptor::buildXML(DuckContext& duck, xml:
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AreaBroadcastingInformationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AreaBroadcastingInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    stations.clear();
-
     xml::ElementVector xstation;
-    _is_valid = checkXMLName(element) && element->getChildren(xstation, u"station");
+    bool ok = element->getChildren(xstation, u"station");
 
     for (auto it = xstation.begin(); _is_valid && it != xstation.end(); ++it) {
         Station st;
-        _is_valid =
-            (*it)->getIntAttribute<uint32_t>(st.station_id, u"station_id", true, 0, 0, 0x00FFFFFF) &&
-            (*it)->getIntAttribute<uint16_t>(st.location_code, u"location_code", true) &&
-            (*it)->getIntAttribute<uint8_t>(st.broadcast_signal_format, u"broadcast_signal_format", true) &&
-            (*it)->getHexaTextChild(st.additional_station_info, u"additional_station_info", false);
-        if (_is_valid) {
-            stations.push_back(st);
-        }
+        ok = (*it)->getIntAttribute<uint32_t>(st.station_id, u"station_id", true, 0, 0, 0x00FFFFFF) &&
+             (*it)->getIntAttribute<uint16_t>(st.location_code, u"location_code", true) &&
+             (*it)->getIntAttribute<uint8_t>(st.broadcast_signal_format, u"broadcast_signal_format", true) &&
+             (*it)->getHexaTextChild(st.additional_station_info, u"additional_station_info", false);
+        stations.push_back(st);
     }
+    return ok;
 }

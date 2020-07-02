@@ -158,7 +158,7 @@ void ts::CableDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CableDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CableDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -132,7 +132,7 @@ void ts::PartialReceptionDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PartialReceptionDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::PartialReceptionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     service_ids.clear();
 

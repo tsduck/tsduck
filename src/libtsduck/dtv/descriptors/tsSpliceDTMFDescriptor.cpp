@@ -155,7 +155,7 @@ void ts::SpliceDTMFDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceDTMFDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SpliceDTMFDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

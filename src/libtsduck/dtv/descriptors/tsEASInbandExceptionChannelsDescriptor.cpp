@@ -147,7 +147,7 @@ void ts::EASInbandExceptionChannelsDescriptor::buildXML(DuckContext& duck, xml::
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EASInbandExceptionChannelsDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::EASInbandExceptionChannelsDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

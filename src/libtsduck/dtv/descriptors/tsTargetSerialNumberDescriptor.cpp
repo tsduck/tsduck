@@ -124,7 +124,7 @@ void ts::TargetSerialNumberDescriptor::buildXML(DuckContext& duck, xml::Element*
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetSerialNumberDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TargetSerialNumberDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     serial_data.clear();
 

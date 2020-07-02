@@ -149,7 +149,7 @@ void ts::SSULocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
         root->setIntAttribute(u"association_tag", association_tag, true);
     }
     if (!private_data.empty()) {
-        root->addElement(u"private_data")->addHexaText(private_data);
+        root->addHexaTextChild(u"private_data", private_data);
     }
 }
 
@@ -158,7 +158,7 @@ void ts::SSULocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSULocationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SSULocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     _is_valid =

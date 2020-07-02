@@ -144,7 +144,7 @@ void ts::SpliceTimeDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceTimeDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SpliceTimeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

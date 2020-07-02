@@ -144,7 +144,7 @@ void ts::TargetMACAddressRangeDescriptor::buildXML(DuckContext& duck, xml::Eleme
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressRangeDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TargetMACAddressRangeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     ranges.clear();
 

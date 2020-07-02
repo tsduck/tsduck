@@ -44,20 +44,14 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::MultilingualServiceNameDescriptor::MultilingualServiceNameDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::MultilingualServiceNameDescriptor::MultilingualServiceNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     MultilingualServiceNameDescriptor()
@@ -65,10 +59,10 @@ ts::MultilingualServiceNameDescriptor::MultilingualServiceNameDescriptor(DuckCon
     deserialize(duck, desc);
 }
 
-
-//----------------------------------------------------------------------------
-// Contructor for language entry.
-//----------------------------------------------------------------------------
+void ts::MultilingualServiceNameDescriptor::clearContent()
+{
+    entries.clear();
+}
 
 ts::MultilingualServiceNameDescriptor::Entry::Entry(const UString& lang_, const UString& prov_, const UString& name_) :
     language(lang_),
@@ -176,23 +170,17 @@ void ts::MultilingualServiceNameDescriptor::buildXML(DuckContext& duck, xml::Ele
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MultilingualServiceNameDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::MultilingualServiceNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"language");
+    bool ok = element->getChildren(children, u"language");
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getAttribute(entry.language, u"code", true, u"", 3, 3) &&
-            children[i]->getAttribute(entry.service_provider_name, u"service_provider_name", true) &&
-            children[i]->getAttribute(entry.service_name, u"service_name", true);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = children[i]->getAttribute(entry.language, u"code", true, u"", 3, 3) &&
+             children[i]->getAttribute(entry.service_provider_name, u"service_provider_name", true) &&
+             children[i]->getAttribute(entry.service_name, u"service_name", true);
+        entries.push_back(entry);
     }
+    return ok;
 }

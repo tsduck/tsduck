@@ -307,7 +307,7 @@ void ts::DataBroadcastIdDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 {
     root->setIntAttribute(u"data_broadcast_id", data_broadcast_id, true);
     if (!private_data.empty()) {
-        root->addElement(u"selector_bytes")->addHexaText(private_data);
+        root->addHexaTextChild(u"selector_bytes", private_data);
     }
 }
 
@@ -316,7 +316,7 @@ void ts::DataBroadcastIdDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DataBroadcastIdDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

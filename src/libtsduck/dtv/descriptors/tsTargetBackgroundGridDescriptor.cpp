@@ -139,7 +139,7 @@ void ts::TargetBackgroundGridDescriptor::buildXML(DuckContext& duck, xml::Elemen
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetBackgroundGridDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TargetBackgroundGridDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

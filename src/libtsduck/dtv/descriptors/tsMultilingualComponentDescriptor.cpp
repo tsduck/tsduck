@@ -120,7 +120,7 @@ void ts::MultilingualComponentDescriptor::buildXML(DuckContext& duck, xml::Eleme
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MultilingualComponentDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::MultilingualComponentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     AbstractMultilingualDescriptor::fromXML(duck, element);
     _is_valid = _is_valid && element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true);

@@ -167,22 +167,18 @@ void ts::AbstractMultilingualDescriptor::buildXML(DuckContext& duck, xml::Elemen
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractMultilingualDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AbstractMultilingualDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"language");
+    bool ok = element->getChildren(children, u"language");
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getAttribute(entry.language, u"code", true, u"", 3, 3) &&
-            children[i]->getAttribute(entry.name, _xml_attribute, true);
-        if (_is_valid) {
+        ok = children[i]->getAttribute(entry.language, u"code", true, u"", 3, 3) &&
+             children[i]->getAttribute(entry.name, _xml_attribute, true);
+        if (ok) {
             entries.push_back(entry);
         }
     }
+    return ok;
 }

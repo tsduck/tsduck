@@ -54,7 +54,6 @@ ts::ReferenceDescriptor::ReferenceDescriptor() :
     event_relation_id(0),
     references()
 {
-    _is_valid = true;
 }
 
 ts::ReferenceDescriptor::ReferenceDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -166,24 +165,20 @@ void ts::ReferenceDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ReferenceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ReferenceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    references.clear();
     xml::ElementVector xref;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint16_t>(information_provider_id, u"information_provider_id", true) &&
         element->getIntAttribute<uint16_t>(event_relation_id, u"event_relation_id", true) &&
         element->getChildren(xref, u"reference");
 
-    for (auto it = xref.begin(); _is_valid && it != xref.end(); ++it) {
+    for (auto it = xref.begin(); ok && it != xref.end(); ++it) {
         Reference ref;
-        _is_valid =
-            (*it)->getIntAttribute<uint16_t>(ref.reference_node_id, u"reference_node_id", true) &&
-            (*it)->getIntAttribute<uint8_t>(ref.reference_number, u"reference_number", true) &&
-            (*it)->getIntAttribute<uint8_t>(ref.last_reference_number, u"last_reference_number", true);
-        if (_is_valid) {
-            references.push_back(ref);
-        }
+        ok = (*it)->getIntAttribute<uint16_t>(ref.reference_node_id, u"reference_node_id", true) &&
+             (*it)->getIntAttribute<uint8_t>(ref.reference_number, u"reference_number", true) &&
+             (*it)->getIntAttribute<uint8_t>(ref.last_reference_number, u"last_reference_number", true);
+        references.push_back(ref);
     }
+    return ok;
 }

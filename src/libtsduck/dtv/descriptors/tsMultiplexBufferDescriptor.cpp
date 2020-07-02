@@ -130,7 +130,7 @@ void ts::MultiplexBufferDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::MultiplexBufferDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

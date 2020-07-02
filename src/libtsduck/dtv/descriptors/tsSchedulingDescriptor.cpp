@@ -175,9 +175,7 @@ void ts::SchedulingDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
     root->setIntAttribute(u"period", period);
     root->setIntAttribute(u"duration", duration);
     root->setIntAttribute(u"estimated_cycle_time", estimated_cycle_time);
-    if (!private_data.empty()) {
-        root->addElement(u"private_data")->addHexaText(private_data);
-    }
+    root->addHexaTextChild(u"private_data", private_data, true);
 }
 
 
@@ -185,21 +183,17 @@ void ts::SchedulingDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SchedulingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SchedulingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    private_data.clear();
-    xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getDateTimeAttribute(start_date_time, u"start_date_time", true) &&
-        element->getDateTimeAttribute(end_date_time, u"end_date_time", true) &&
-        element->getBoolAttribute(final_availability, u"final_availability", true) &&
-        element->getBoolAttribute(periodicity, u"periodicity", true) &&
-        element->getIntEnumAttribute(period_unit, SchedulingUnitNames, u"period_unit", true) &&
-        element->getIntEnumAttribute(duration_unit, SchedulingUnitNames, u"duration_unit", true) &&
-        element->getIntEnumAttribute(estimated_cycle_time_unit, SchedulingUnitNames, u"estimated_cycle_time_unit", true) &&
-        element->getIntAttribute<uint8_t>(period, u"period", true) &&
-        element->getIntAttribute<uint8_t>(duration, u"duration", true) &&
-        element->getIntAttribute<uint8_t>(estimated_cycle_time, u"estimated_cycle_time", true) &&
-        element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 16);
+    return  element->getDateTimeAttribute(start_date_time, u"start_date_time", true) &&
+            element->getDateTimeAttribute(end_date_time, u"end_date_time", true) &&
+            element->getBoolAttribute(final_availability, u"final_availability", true) &&
+            element->getBoolAttribute(periodicity, u"periodicity", true) &&
+            element->getIntEnumAttribute(period_unit, SchedulingUnitNames, u"period_unit", true) &&
+            element->getIntEnumAttribute(duration_unit, SchedulingUnitNames, u"duration_unit", true) &&
+            element->getIntEnumAttribute(estimated_cycle_time_unit, SchedulingUnitNames, u"estimated_cycle_time_unit", true) &&
+            element->getIntAttribute<uint8_t>(period, u"period", true) &&
+            element->getIntAttribute<uint8_t>(duration, u"duration", true) &&
+            element->getIntAttribute<uint8_t>(estimated_cycle_time, u"estimated_cycle_time", true) &&
+            element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 16);
 }

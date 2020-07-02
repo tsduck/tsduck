@@ -57,13 +57,20 @@ ts::EventGroupDescriptor::EventGroupDescriptor() :
     other_events(),
     private_data()
 {
-    _is_valid = true;
 }
 
 ts::EventGroupDescriptor::EventGroupDescriptor(DuckContext& duck, const Descriptor& desc) :
     EventGroupDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::EventGroupDescriptor::clearContent()
+{
+    group_type = 0;
+    actual_events.clear();
+    other_events.clear();
+    private_data.clear();
 }
 
 ts::EventGroupDescriptor::ActualEvent::ActualEvent() :
@@ -229,40 +236,30 @@ void ts::EventGroupDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EventGroupDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::EventGroupDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    actual_events.clear();
-    other_events.clear();
-    private_data.clear();
-
     xml::ElementVector xactual;
     xml::ElementVector xother;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(group_type, u"group_type", true, 0, 0, 15) &&
         element->getChildren(xactual, u"actual", 0, 15) &&
         element->getChildren(xother, u"other", 0, group_type == 4 || group_type == 5 ? 31 : 0) &&
         element->getHexaTextChild(private_data, u"private_data", false, 0, group_type == 4 || group_type == 5 ? 0 : 254);
 
-    for (auto it = xactual.begin(); _is_valid && it != xactual.end(); ++it) {
+    for (auto it = xactual.begin(); ok && it != xactual.end(); ++it) {
         ActualEvent ev;
-        _is_valid =
-            (*it)->getIntAttribute<uint16_t>(ev.service_id, u"service_id", true) &&
-            (*it)->getIntAttribute<uint16_t>(ev.event_id, u"event_id", true);
-        if (_is_valid) {
-            actual_events.push_back(ev);
-        }
+        ok = (*it)->getIntAttribute<uint16_t>(ev.service_id, u"service_id", true) &&
+             (*it)->getIntAttribute<uint16_t>(ev.event_id, u"event_id", true);
+        actual_events.push_back(ev);
     }
 
-    for (auto it = xother.begin(); _is_valid && it != xother.end(); ++it) {
+    for (auto it = xother.begin(); ok && it != xother.end(); ++it) {
         OtherEvent ev;
-        _is_valid =
-            (*it)->getIntAttribute<uint16_t>(ev.original_network_id, u"original_network_id", true) &&
-            (*it)->getIntAttribute<uint16_t>(ev.transport_stream_id, u"transport_stream_id", true) &&
-            (*it)->getIntAttribute<uint16_t>(ev.service_id, u"service_id", true) &&
-            (*it)->getIntAttribute<uint16_t>(ev.event_id, u"event_id", true);
-        if (_is_valid) {
-            other_events.push_back(ev);
-        }
+        ok = (*it)->getIntAttribute<uint16_t>(ev.original_network_id, u"original_network_id", true) &&
+             (*it)->getIntAttribute<uint16_t>(ev.transport_stream_id, u"transport_stream_id", true) &&
+             (*it)->getIntAttribute<uint16_t>(ev.service_id, u"service_id", true) &&
+             (*it)->getIntAttribute<uint16_t>(ev.event_id, u"event_id", true);
+        other_events.push_back(ev);
     }
+    return ok;
 }

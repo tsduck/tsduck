@@ -54,13 +54,18 @@ ts::SHDeliverySystemDescriptor::SHDeliverySystemDescriptor() :
     diversity_mode(0),
     modulations()
 {
-    _is_valid = true;
 }
 
 ts::SHDeliverySystemDescriptor::SHDeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
     SHDeliverySystemDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::SHDeliverySystemDescriptor::clearContent()
+{
+    diversity_mode = 0;
+    modulations.clear();
 }
 
 ts::SHDeliverySystemDescriptor::Modulation::Modulation() :
@@ -387,55 +392,49 @@ void ts::SHDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SHDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SHDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    modulations.clear();
-
     xml::ElementVector xmods;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(diversity_mode, u"diversity_mode", true, 0, 0, 15) &&
         element->getChildren(xmods, u"modulation");
 
-    for (size_t i = 0; _is_valid && i < xmods.size(); ++i) {
+    for (size_t i = 0; ok && i < xmods.size(); ++i) {
         Modulation mod;
         xml::ElementVector xofdm;
         xml::ElementVector xtdm;
         xml::ElementVector xint;
-        _is_valid =
-            xmods[i]->getChildren(xofdm, u"OFDM", 0, 1) &&
-            xmods[i]->getChildren(xtdm, u"TDM", xofdm.empty() ? 1 : 0, xofdm.empty() ? 1 : 0) &&
-            xmods[i]->getChildren(xint, u"interleaver", 0, 1);
+        ok = xmods[i]->getChildren(xofdm, u"OFDM", 0, 1) &&
+             xmods[i]->getChildren(xtdm, u"TDM", xofdm.empty() ? 1 : 0, xofdm.empty() ? 1 : 0) &&
+             xmods[i]->getChildren(xint, u"interleaver", 0, 1);
 
-        if (_is_valid) {
+        if (ok) {
             mod.is_ofdm = !xofdm.empty();
             if (mod.is_ofdm) {
                 assert(xofdm.size() == 1);
-                _is_valid =
-                    xofdm[0]->getIntEnumAttribute(mod.ofdm.bandwidth, BandwidthNames, u"bandwidth", true) &&
-                    xofdm[0]->getIntAttribute<uint8_t>(mod.ofdm.priority, u"priority", true, 0, 0, 1) &&
-                    xofdm[0]->getIntAttribute<uint8_t>(mod.ofdm.constellation_and_hierarchy, u"constellation_and_hierarchy", true, 0, 0, 0x07) &&
-                    xofdm[0]->getIntAttribute<uint8_t>(mod.ofdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
-                    xofdm[0]->getIntEnumAttribute(mod.ofdm.guard_interval, GuardIntervalNames, u"guard_interval", true) &&
-                    xofdm[0]->getIntEnumAttribute(mod.ofdm.transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
-                    xofdm[0]->getBoolAttribute(mod.ofdm.common_frequency, u"common_frequency", true);
+                ok = xofdm[0]->getIntEnumAttribute(mod.ofdm.bandwidth, BandwidthNames, u"bandwidth", true) &&
+                     xofdm[0]->getIntAttribute<uint8_t>(mod.ofdm.priority, u"priority", true, 0, 0, 1) &&
+                     xofdm[0]->getIntAttribute<uint8_t>(mod.ofdm.constellation_and_hierarchy, u"constellation_and_hierarchy", true, 0, 0, 0x07) &&
+                     xofdm[0]->getIntAttribute<uint8_t>(mod.ofdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
+                     xofdm[0]->getIntEnumAttribute(mod.ofdm.guard_interval, GuardIntervalNames, u"guard_interval", true) &&
+                     xofdm[0]->getIntEnumAttribute(mod.ofdm.transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
+                     xofdm[0]->getBoolAttribute(mod.ofdm.common_frequency, u"common_frequency", true);
             }
             else {
                 assert(xtdm.size() == 1);
-                _is_valid =
-                    xtdm[0]->getIntEnumAttribute(mod.tdm.polarization, PolarizationNames, u"polarization", true) &&
-                    xtdm[0]->getIntEnumAttribute(mod.tdm.roll_off, RollOffNames, u"roll_off", true) &&
-                    xtdm[0]->getIntEnumAttribute(mod.tdm.modulation_mode, ModulationNames, u"modulation_mode", true) &&
-                    xtdm[0]->getIntAttribute<uint8_t>(mod.tdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
-                    xtdm[0]->getIntAttribute<uint8_t>(mod.tdm.symbol_rate, u"symbol_rate", true, 0, 0, 0x1F);
+                ok = xtdm[0]->getIntEnumAttribute(mod.tdm.polarization, PolarizationNames, u"polarization", true) &&
+                     xtdm[0]->getIntEnumAttribute(mod.tdm.roll_off, RollOffNames, u"roll_off", true) &&
+                     xtdm[0]->getIntEnumAttribute(mod.tdm.modulation_mode, ModulationNames, u"modulation_mode", true) &&
+                     xtdm[0]->getIntAttribute<uint8_t>(mod.tdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
+                     xtdm[0]->getIntAttribute<uint8_t>(mod.tdm.symbol_rate, u"symbol_rate", true, 0, 0, 0x1F);
             }
         }
 
-        mod.interleaver_presence = _is_valid && !xint.empty();
+        mod.interleaver_presence = ok && !xint.empty();
         if (mod.interleaver_presence) {
             assert(xint.size() == 1);
-            _is_valid = xint[0]->getIntAttribute<uint8_t>(mod.common_multiplier, u"common_multiplier", true, 0, 0, 0x3F);
-            if (_is_valid) {
+            ok = xint[0]->getIntAttribute<uint8_t>(mod.common_multiplier, u"common_multiplier", true, 0, 0, 0x3F);
+            if (ok) {
                 const int attr_count =
                     xint[0]->hasAttribute(u"nof_late_taps") +
                     xint[0]->hasAttribute(u"nof_slices") +
@@ -443,14 +442,13 @@ void ts::SHDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Eleme
                     xint[0]->hasAttribute(u"non_late_increments");
                 mod.short_interleaver = attr_count == 0;
                 if (attr_count == 4) {
-                    _is_valid =
-                        xint[0]->getIntAttribute<uint8_t>(mod.nof_late_taps, u"nof_late_taps", true, 0, 0, 0x3F) &&
-                        xint[0]->getIntAttribute<uint8_t>(mod.nof_slices, u"nof_slices", true, 0, 0, 0x3F) &&
-                        xint[0]->getIntAttribute<uint8_t>(mod.slice_distance, u"slice_distance", true, 0, 0, 0xFF) &&
-                        xint[0]->getIntAttribute<uint8_t>(mod.non_late_increments, u"non_late_increments", true, 0, 0, 0x3F);
+                    ok = xint[0]->getIntAttribute<uint8_t>(mod.nof_late_taps, u"nof_late_taps", true, 0, 0, 0x3F) &&
+                         xint[0]->getIntAttribute<uint8_t>(mod.nof_slices, u"nof_slices", true, 0, 0, 0x3F) &&
+                         xint[0]->getIntAttribute<uint8_t>(mod.slice_distance, u"slice_distance", true, 0, 0, 0xFF) &&
+                         xint[0]->getIntAttribute<uint8_t>(mod.non_late_increments, u"non_late_increments", true, 0, 0, 0x3F);
                 }
                 else if (attr_count != 0) {
-                    _is_valid = false;
+                    ok = false;
                     element->report().error(u"in <%s>, line %d, attributes nof_late_taps, nof_slices, slice_distance, "
                                             u"non_late_increments must be all present or all absent",
                                             {xint[0]->name(), xint[0]->lineNumber()});
@@ -458,8 +456,7 @@ void ts::SHDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Eleme
             }
         }
 
-        if (_is_valid) {
-            modulations.push_back(mod);
-        }
+        modulations.push_back(mod);
     }
+    return ok;
 }

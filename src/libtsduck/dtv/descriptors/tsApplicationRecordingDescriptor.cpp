@@ -62,7 +62,6 @@ ts::ApplicationRecordingDescriptor::ApplicationRecordingDescriptor() :
     private_data(),
     reserved_future_use()
 {
-    _is_valid = true;
 }
 
 
@@ -257,12 +256,8 @@ void ts::ApplicationRecordingDescriptor::buildXML(DuckContext& duck, xml::Elemen
     for (auto it = component_tags.begin(); it != component_tags.end(); ++it) {
         root->addElement(u"component")->setIntAttribute(u"tag", *it, true);
     }
-    if (!private_data.empty()) {
-        root->addElement(u"private")->addHexaText(private_data);
-    }
-    if (!reserved_future_use.empty()) {
-        root->addElement(u"reserved_future_use")->addHexaText(reserved_future_use);
-    }
+    root->addHexaTextChild(u"private", private_data, true);
+    root->addHexaTextChild(u"reserved_future_use", reserved_future_use, true);
 }
 
 
@@ -270,18 +265,11 @@ void ts::ApplicationRecordingDescriptor::buildXML(DuckContext& duck, xml::Elemen
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationRecordingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ApplicationRecordingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    labels.clear();
-    component_tags.clear();
-    private_data.clear();
-    reserved_future_use.clear();
-
     xml::ElementVector labelChildren;
     xml::ElementVector compChildren;
-
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getBoolAttribute(scheduled_recording, u"scheduled_recording", true) &&
         element->getBoolAttribute(trick_mode_aware, u"trick_mode_aware", true) &&
         element->getBoolAttribute(time_shift, u"time_shift", true) &&
@@ -293,21 +281,17 @@ void ts::ApplicationRecordingDescriptor::fromXML(DuckContext& duck, const xml::E
         element->getHexaTextChild(private_data, u"private") &&
         element->getHexaTextChild(reserved_future_use, u"reserved_future_use");
 
-    for (size_t i = 0; _is_valid && i < labelChildren.size(); ++i) {
+    for (size_t i = 0; ok && i < labelChildren.size(); ++i) {
         RecodingLabel lab;
-        _is_valid =
-            labelChildren[i]->getAttribute(lab.label, u"label", true) &&
-            labelChildren[i]->getIntAttribute<uint8_t>(lab.storage_properties, u"storage_properties", true, 0, 0, 3);
-        if (_is_valid) {
-            labels.push_back(lab);
-        }
+        ok = labelChildren[i]->getAttribute(lab.label, u"label", true) &&
+             labelChildren[i]->getIntAttribute<uint8_t>(lab.storage_properties, u"storage_properties", true, 0, 0, 3);
+        labels.push_back(lab);
     }
 
-    for (size_t i = 0; _is_valid && i < compChildren.size(); ++i) {
+    for (size_t i = 0; ok && i < compChildren.size(); ++i) {
         uint8_t tag = 0;
-        _is_valid = compChildren[i]->getIntAttribute<uint8_t>(tag, u"tag", true);
-        if (_is_valid) {
-            component_tags.push_back(tag);
-        }
+        ok = compChildren[i]->getIntAttribute<uint8_t>(tag, u"tag", true);
+        component_tags.push_back(tag);
     }
+    return ok;
 }

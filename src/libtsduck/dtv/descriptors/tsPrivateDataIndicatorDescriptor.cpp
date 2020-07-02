@@ -44,25 +44,24 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::PrivateDataIndicatorDescriptor::PrivateDataIndicatorDescriptor(uint32_t pdi) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     private_data_indicator(pdi)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::PrivateDataIndicatorDescriptor::PrivateDataIndicatorDescriptor(DuckContext& duck, const Descriptor& desc) :
     PrivateDataIndicatorDescriptor(0)
 {
     deserialize(duck, desc);
+}
+
+void ts::PrivateDataIndicatorDescriptor::clearContent()
+{
+    private_data_indicator = 0;
 }
 
 
@@ -128,9 +127,7 @@ void ts::PrivateDataIndicatorDescriptor::buildXML(DuckContext& duck, xml::Elemen
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PrivateDataIndicatorDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::PrivateDataIndicatorDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint32_t>(private_data_indicator, u"private_data_indicator", true);
+    return element->getIntAttribute<uint32_t>(private_data_indicator, u"private_data_indicator", true);
 }

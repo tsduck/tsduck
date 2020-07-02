@@ -297,7 +297,7 @@ void ts::EASAudioFileDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EASAudioFileDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::EASAudioFileDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

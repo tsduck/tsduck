@@ -126,7 +126,7 @@ void ts::StreamIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::StreamIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::StreamIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
