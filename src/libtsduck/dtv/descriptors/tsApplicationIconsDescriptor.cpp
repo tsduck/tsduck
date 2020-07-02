@@ -55,7 +55,6 @@ ts::ApplicationIconsDescriptor::ApplicationIconsDescriptor() :
     icon_flags(0),
     reserved_future_use()
 {
-    _is_valid = true;
 }
 
 
@@ -141,9 +140,7 @@ void ts::ApplicationIconsDescriptor::buildXML(DuckContext& duck, xml::Element* r
 {
     root->setAttribute(u"icon_locator", icon_locator);
     root->setIntAttribute(u"icon_flags", icon_flags, true);
-    if (!reserved_future_use.empty()) {
-        root->addElement(u"reserved_future_use")->addHexaText(reserved_future_use);
-    }
+    root->addHexaTextChild(u"reserved_future_use", reserved_future_use, true);
 }
 
 
@@ -151,14 +148,9 @@ void ts::ApplicationIconsDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationIconsDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ApplicationIconsDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    icon_locator.clear();
-    reserved_future_use.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(icon_locator, u"icon_locator", true) &&
-        element->getIntAttribute<uint16_t>(icon_flags, u"icon_flags", true) &&
-        element->getHexaTextChild(reserved_future_use, u"reserved_future_use");
+    return element->getAttribute(icon_locator, u"icon_locator", true) &&
+           element->getIntAttribute<uint16_t>(icon_flags, u"icon_flags", true) &&
+           element->getHexaTextChild(reserved_future_use, u"reserved_future_use");
 }

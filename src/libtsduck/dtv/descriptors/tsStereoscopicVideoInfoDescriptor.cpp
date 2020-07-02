@@ -165,7 +165,7 @@ void ts::StereoscopicVideoInfoDescriptor::buildXML(DuckContext& duck, xml::Eleme
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::StereoscopicVideoInfoDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::StereoscopicVideoInfoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

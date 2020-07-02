@@ -64,7 +64,6 @@ ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    _is_valid = true;
 }
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -78,8 +77,12 @@ ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const UString& code, uint
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    _is_valid = true;
     entries.push_back(Entry(code, type));
+}
+
+void ts::ISO639LanguageDescriptor::clearContent()
+{
+    entries.clear();
 }
 
 
@@ -163,22 +166,16 @@ void ts::ISO639LanguageDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISO639LanguageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ISO639LanguageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"language", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(children, u"language", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getAttribute(entry.language_code, u"code", true, u"", 3, 3) &&
-            children[i]->getIntAttribute<uint8_t>(entry.audio_type, u"audio_type", true, 0, 0x00, 0xFF);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = children[i]->getAttribute(entry.language_code, u"code", true, u"", 3, 3) &&
+             children[i]->getIntAttribute<uint8_t>(entry.audio_type, u"audio_type", true, 0, 0x00, 0xFF);
+        entries.push_back(entry);
     }
+    return ok;
 }

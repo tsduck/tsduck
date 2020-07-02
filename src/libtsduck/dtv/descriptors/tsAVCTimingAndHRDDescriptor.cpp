@@ -210,7 +210,7 @@ void ts::AVCTimingAndHRDDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AVCTimingAndHRDDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AVCTimingAndHRDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

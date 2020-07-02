@@ -122,7 +122,7 @@ void ts::ScramblingDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ScramblingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ScramblingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

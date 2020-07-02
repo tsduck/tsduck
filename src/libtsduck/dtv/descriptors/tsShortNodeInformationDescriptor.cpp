@@ -54,13 +54,19 @@ ts::ShortNodeInformationDescriptor::ShortNodeInformationDescriptor() :
     node_name(),
     text()
 {
-    _is_valid = true;
 }
 
 ts::ShortNodeInformationDescriptor::ShortNodeInformationDescriptor(DuckContext& duck, const Descriptor& desc) :
     ShortNodeInformationDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::ShortNodeInformationDescriptor::clearContent()
+{
+    ISO_639_language_code.clear();
+    node_name.clear();
+    text.clear();
 }
 
 
@@ -137,15 +143,9 @@ void ts::ShortNodeInformationDescriptor::buildXML(DuckContext& duck, xml::Elemen
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ShortNodeInformationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ShortNodeInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    ISO_639_language_code.clear();
-    node_name.clear();
-    text.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, UString(), 3, 3) &&
-        element->getAttribute(node_name, u"node_name", false) &&
-        element->getAttribute(text, u"text", false);
+    return element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, UString(), 3, 3) &&
+           element->getAttribute(node_name, u"node_name", false) &&
+           element->getAttribute(text, u"text", false);
 }

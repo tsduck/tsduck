@@ -65,13 +65,17 @@ ts::VBIDataDescriptor::VBIDataDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     services()
 {
-    _is_valid = true;
 }
 
 ts::VBIDataDescriptor::VBIDataDescriptor(DuckContext& duck, const Descriptor& desc) :
     VBIDataDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::VBIDataDescriptor::clearContent()
+{
+    services.clear();
 }
 
 
@@ -206,9 +210,7 @@ void ts::VBIDataDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
         xml::Element* e = root->addElement(u"service");
         e->setIntAttribute(u"data_service_id", it1->data_service_id);
         if (it1->hasReservedBytes()) {
-            if (!it1->reserved.empty()) {
-                e->addElement(u"reserved")->addHexaText(it1->reserved);
-            }
+            e->addHexaTextChild(u"reserved", it1->reserved, true);
         }
         else {
             for (FieldList::const_iterator it2 = it1->fields.begin(); it2 != it1->fields.end(); ++it2) {
@@ -225,49 +227,40 @@ void ts::VBIDataDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::VBIDataDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::VBIDataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    services.clear();
-
     xml::ElementVector srv;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(srv, u"service");
+    bool ok = element->getChildren(srv, u"service");
 
-    for (size_t srvIndex = 0; _is_valid && srvIndex < srv.size(); ++srvIndex) {
+    for (size_t srvIndex = 0; ok && srvIndex < srv.size(); ++srvIndex) {
         Service service;
         xml::ElementVector fld;
+        ok = srv[srvIndex]->getIntAttribute<uint8_t>(service.data_service_id, u"data_service_id", true) &&
+             srv[srvIndex]->getChildren(fld, u"field") &&
+             srv[srvIndex]->getHexaTextChild(service.reserved, u"reserved", false);
 
-        _is_valid =
-            srv[srvIndex]->getIntAttribute<uint8_t>(service.data_service_id, u"data_service_id", true) &&
-            srv[srvIndex]->getChildren(fld, u"field") &&
-            srv[srvIndex]->getHexaTextChild(service.reserved, u"reserved", false);
-
-        if (_is_valid) {
+        if (ok) {
             if (service.hasReservedBytes()) {
                 if (!fld.empty()) {
                     element->report().error(u"no <field> allowed in <service>, line %d, when data_service_id='%d'", {srv[srvIndex]->lineNumber(), service.data_service_id});
-                    _is_valid = false;
+                    ok = false;
                 }
             }
             else {
                 if (!service.reserved.empty()) {
                     element->report().error(u"no <reserved> allowed in <service>, line %d, when data_service_id='%d'", {srv[srvIndex]->lineNumber(), service.data_service_id});
-                    _is_valid = false;
+                    ok = false;
                 }
             }
         }
 
-        for (size_t fldIndex = 0; _is_valid && fldIndex < fld.size(); ++fldIndex) {
+        for (size_t fldIndex = 0; ok && fldIndex < fld.size(); ++fldIndex) {
             Field field;
-            _is_valid =
-                fld[fldIndex]->getBoolAttribute(field.field_parity, u"field_parity", false, false) &&
-                fld[fldIndex]->getIntAttribute<uint8_t>(field.line_offset, u"line_offset", false, 0x00, 0x00, 0x1F);
+            ok = fld[fldIndex]->getBoolAttribute(field.field_parity, u"field_parity", false, false) &&
+                 fld[fldIndex]->getIntAttribute<uint8_t>(field.line_offset, u"line_offset", false, 0x00, 0x00, 0x1F);
             service.fields.push_back(field);
         }
-
-        if (_is_valid) {
-            services.push_back(service);
-        }
+        services.push_back(service);
     }
+    return ok;
 }

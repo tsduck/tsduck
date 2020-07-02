@@ -52,7 +52,6 @@ ts::AdaptationFieldDataDescriptor::AdaptationFieldDataDescriptor(uint8_t id) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     adaptation_field_data_identifier(id)
 {
-    _is_valid = true;
 }
 
 
@@ -132,9 +131,7 @@ void ts::AdaptationFieldDataDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AdaptationFieldDataDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AdaptationFieldDataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(adaptation_field_data_identifier, u"adaptation_field_data_identifier", true);
+    return element->getIntAttribute<uint8_t>(adaptation_field_data_identifier, u"adaptation_field_data_identifier", true);
 }

@@ -128,7 +128,7 @@ void ts::STDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::STDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

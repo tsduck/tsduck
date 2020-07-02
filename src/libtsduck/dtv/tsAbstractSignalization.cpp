@@ -99,12 +99,6 @@ void ts::AbstractSignalization::clear()
     clearContent();
 }
 
-void ts::AbstractSignalization::clearContent()
-{
-    // If a subclass does not override clearContent(), clearing the content makes the object invalid.
-    _is_valid = false;
-}
-
 
 //----------------------------------------------------------------------------
 // XML serialization and deserialization (default implementations).
@@ -119,12 +113,6 @@ ts::xml::Element* ts::AbstractSignalization::toXML(DuckContext& duck, xml::Eleme
     return root;
 }
 
-void ts::AbstractSignalization::buildXML(DuckContext& duck, xml::Element* root) const
-{
-    // If a subclass does not override toXML() and buildXML(), this will end up with an
-    // empty XML node with the default node name for this structure.
-}
-
 void ts::AbstractSignalization::fromXML(DuckContext& duck, const xml::Element* element)
 {
     // Make sure the object is cleared before analyzing the XML.
@@ -132,12 +120,11 @@ void ts::AbstractSignalization::fromXML(DuckContext& duck, const xml::Element* e
 
     // The object is valid if the XML node name is correct and the subclass correctly analyzes the XML node.
     _is_valid = checkXMLName(element) && analyzeXML(duck, element);
-}
 
-bool ts::AbstractSignalization::analyzeXML(DuckContext& duck, const xml::Element* element)
-{
-    // If a subclass does not override fromXML() and analyzeXML(), this will end up with an invalid object.
-    return false;
+    // If the object is invalid, clear it again to avoid letting partial objects being used.
+    if (!_is_valid) {
+        clear();
+    }
 }
 
 

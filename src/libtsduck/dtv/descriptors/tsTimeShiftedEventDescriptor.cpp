@@ -61,6 +61,12 @@ ts::TimeShiftedEventDescriptor::TimeShiftedEventDescriptor(DuckContext& duck, co
     deserialize(duck, desc);
 }
 
+void ts::TimeShiftedEventDescriptor::clearContent()
+{
+    reference_service_id = 0;
+    reference_event_id = 0;
+}
+
 
 //----------------------------------------------------------------------------
 // Serialization
@@ -128,10 +134,8 @@ void ts::TimeShiftedEventDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedEventDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TimeShiftedEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(reference_service_id, u"reference_service_id", true) &&
-        element->getIntAttribute<uint16_t>(reference_event_id, u"reference_event_id", true);
+    return element->getIntAttribute<uint16_t>(reference_service_id, u"reference_service_id", true) &&
+           element->getIntAttribute<uint16_t>(reference_event_id, u"reference_event_id", true);
 }

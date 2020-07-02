@@ -169,7 +169,7 @@ void ts::C2DeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::C2DeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::C2DeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

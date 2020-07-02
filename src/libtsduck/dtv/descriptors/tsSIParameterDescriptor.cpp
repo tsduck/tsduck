@@ -171,7 +171,7 @@ void ts::SIParameterDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SIParameterDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SIParameterDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

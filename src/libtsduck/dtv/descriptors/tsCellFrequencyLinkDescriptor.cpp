@@ -181,7 +181,7 @@ void ts::CellFrequencyLinkDescriptor::buildXML(DuckContext& duck, xml::Element* 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CellFrequencyLinkDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CellFrequencyLinkDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     cells.clear();
 

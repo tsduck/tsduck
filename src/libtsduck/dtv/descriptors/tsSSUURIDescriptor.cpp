@@ -137,7 +137,7 @@ void ts::SSUURIDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSUURIDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SSUURIDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     uri.clear();
     xml::ElementVector children;

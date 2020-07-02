@@ -124,7 +124,7 @@ void ts::MPEG4VideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MPEG4VideoDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::MPEG4VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

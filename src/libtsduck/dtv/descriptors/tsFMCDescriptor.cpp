@@ -135,7 +135,7 @@ void ts::FMCDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::FMCDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::FMCDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

@@ -176,7 +176,7 @@ void ts::AVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AVCVideoDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

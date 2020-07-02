@@ -291,7 +291,7 @@ void ts::TerrestrialDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::E
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TerrestrialDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TerrestrialDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

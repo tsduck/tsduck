@@ -155,7 +155,7 @@ void ts::DIILocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DIILocationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DIILocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

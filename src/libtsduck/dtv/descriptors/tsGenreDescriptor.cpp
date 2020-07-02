@@ -140,7 +140,7 @@ void ts::GenreDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::GenreDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::GenreDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     attributes.clear();
     xml::ElementVector children;

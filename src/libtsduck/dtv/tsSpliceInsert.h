@@ -112,12 +112,10 @@ namespace ts {
         //!
         void serialize(ByteBlock& data) const;
 
-        // Inherited methods
-        virtual void buildXML(DuckContext&, xml::Element*) const override;
-        virtual void fromXML(DuckContext&, const xml::Element*) override;
-
     protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
     };
 }

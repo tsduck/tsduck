@@ -185,7 +185,7 @@ void ts::C2BundleDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Elem
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::C2BundleDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::C2BundleDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
     xml::ElementVector children;

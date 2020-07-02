@@ -143,7 +143,7 @@ void ts::ContentDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ContentDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ContentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

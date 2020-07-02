@@ -151,7 +151,7 @@ void ts::CAServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CAServiceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CAServiceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     service_ids.clear();
 

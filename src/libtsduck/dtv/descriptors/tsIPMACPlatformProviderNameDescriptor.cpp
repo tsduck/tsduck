@@ -53,7 +53,6 @@ ts::IPMACPlatformProviderNameDescriptor::IPMACPlatformProviderNameDescriptor(con
     language_code(lang),
     text(name)
 {
-    _is_valid = true;
 }
 
 
@@ -138,10 +137,8 @@ void ts::IPMACPlatformProviderNameDescriptor::buildXML(DuckContext& duck, xml::E
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformProviderNameDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::IPMACPlatformProviderNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(language_code, u"language_code", true, UString(), 3, 3) &&
-        element->getAttribute(text, u"text", true, UString(), 0, MAX_DESCRIPTOR_SIZE - 5);
+    return element->getAttribute(language_code, u"language_code", true, UString(), 3, 3) &&
+           element->getAttribute(text, u"text", true, UString(), 0, MAX_DESCRIPTOR_SIZE - 5);
 }

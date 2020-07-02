@@ -143,7 +143,7 @@ void ts::ConditionalPlaybackDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ConditionalPlaybackDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ConditionalPlaybackDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     private_data.clear();
 

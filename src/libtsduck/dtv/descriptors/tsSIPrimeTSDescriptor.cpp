@@ -183,7 +183,7 @@ void ts::SIPrimeTSDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SIPrimeTSDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SIPrimeTSDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

@@ -52,13 +52,17 @@ ts::TargetIPSourceSlashDescriptor::TargetIPSourceSlashDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     addresses()
 {
-    _is_valid = true;
 }
 
 ts::TargetIPSourceSlashDescriptor::TargetIPSourceSlashDescriptor(DuckContext& duck, const Descriptor& desc) :
     TargetIPSourceSlashDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::TargetIPSourceSlashDescriptor::clearContent()
+{
+    addresses.clear();
 }
 
 ts::TargetIPSourceSlashDescriptor::Address::Address(const IPAddress& addr1, uint8_t mask1, const IPAddress& addr2, uint8_t mask2) :
@@ -148,24 +152,18 @@ void ts::TargetIPSourceSlashDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPSourceSlashDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TargetIPSourceSlashDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    addresses.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"address", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(children, u"address", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Address addr;
-        _is_valid =
-                children[i]->getIPAttribute(addr.IPv4_source_addr, u"IPv4_source_addr", true) &&
-                children[i]->getIntAttribute(addr.IPv4_source_slash_mask, u"IPv4_source_slash_mask", true) &&
-                children[i]->getIPAttribute(addr.IPv4_dest_addr, u"IPv4_dest_addr", true) &&
-                children[i]->getIntAttribute(addr.IPv4_dest_slash_mask, u"IPv4_dest_slash_mask", true);
-        if (_is_valid) {
-            addresses.push_back(addr);
-        }
+        ok = children[i]->getIPAttribute(addr.IPv4_source_addr, u"IPv4_source_addr", true) &&
+             children[i]->getIntAttribute(addr.IPv4_source_slash_mask, u"IPv4_source_slash_mask", true) &&
+             children[i]->getIPAttribute(addr.IPv4_dest_addr, u"IPv4_dest_addr", true) &&
+             children[i]->getIntAttribute(addr.IPv4_dest_slash_mask, u"IPv4_dest_slash_mask", true);
+        addresses.push_back(addr);
     }
+    return ok;
 }

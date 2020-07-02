@@ -168,7 +168,7 @@ void ts::MVCExtensionDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MVCExtensionDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::MVCExtensionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

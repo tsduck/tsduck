@@ -124,7 +124,7 @@ void ts::TimeSliceFECIdentifierDescriptor::buildXML(DuckContext& duck, xml::Elem
     root->setIntAttribute(u"max_average_rate", max_average_rate, true);
     root->setIntAttribute(u"time_slice_fec_id", time_slice_fec_id, true);
     if (!id_selector_bytes.empty()) {
-        root->addElement(u"id_selector_bytes")->addHexaText(id_selector_bytes);
+        root->addHexaTextChild(u"id_selector_bytes", id_selector_bytes);
     }
 }
 
@@ -133,7 +133,7 @@ void ts::TimeSliceFECIdentifierDescriptor::buildXML(DuckContext& duck, xml::Elem
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeSliceFECIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TimeSliceFECIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     id_selector_bytes.clear();
 

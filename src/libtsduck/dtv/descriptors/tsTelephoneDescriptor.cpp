@@ -58,13 +58,23 @@ ts::TelephoneDescriptor::TelephoneDescriptor() :
     national_area_code(),
     core_number()
 {
-    _is_valid = true;
 }
 
 ts::TelephoneDescriptor::TelephoneDescriptor(DuckContext& duck, const Descriptor& desc) :
     TelephoneDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::TelephoneDescriptor::clearContent()
+{
+    foreign_availability = false;
+    connection_type = 0;
+    country_prefix.clear();
+    international_area_code.clear();
+    operator_code.clear();
+    national_area_code.clear();
+    core_number.clear();
 }
 
 
@@ -216,15 +226,13 @@ void ts::TelephoneDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TelephoneDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TelephoneDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(foreign_availability, u"foreign_availability", true) &&
-        element->getIntAttribute<uint8_t>(connection_type, u"connection_type", true, 0, 0x00, 0x1F) &&
-        element->getAttribute(country_prefix, u"country_prefix", false, UString(), 0, MAX_COUNTRY_PREFIX_LENGTH) &&
-        element->getAttribute(international_area_code, u"international_area_code", false, UString(), 0, MAX_INTERNATIONAL_AREA_CODE_LENGTH) &&
-        element->getAttribute(operator_code, u"operator_code", false, UString(), 0, MAX_OPERATOR_CODE_LENGTH) &&
-        element->getAttribute(national_area_code, u"national_area_code", false, UString(), 0, MAX_NATIONAL_AREA_CODE_LENGTH) &&
-        element->getAttribute(core_number, u"core_number", false, UString(), 0, MAX_CORE_NUMBER_LENGTH);
+    return  element->getBoolAttribute(foreign_availability, u"foreign_availability", true) &&
+            element->getIntAttribute<uint8_t>(connection_type, u"connection_type", true, 0, 0x00, 0x1F) &&
+            element->getAttribute(country_prefix, u"country_prefix", false, UString(), 0, MAX_COUNTRY_PREFIX_LENGTH) &&
+            element->getAttribute(international_area_code, u"international_area_code", false, UString(), 0, MAX_INTERNATIONAL_AREA_CODE_LENGTH) &&
+            element->getAttribute(operator_code, u"operator_code", false, UString(), 0, MAX_OPERATOR_CODE_LENGTH) &&
+            element->getAttribute(national_area_code, u"national_area_code", false, UString(), 0, MAX_NATIONAL_AREA_CODE_LENGTH) &&
+            element->getAttribute(core_number, u"core_number", false, UString(), 0, MAX_CORE_NUMBER_LENGTH);
 }

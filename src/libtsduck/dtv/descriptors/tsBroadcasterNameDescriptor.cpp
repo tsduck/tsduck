@@ -121,7 +121,7 @@ void ts::BroadcasterNameDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::BroadcasterNameDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::BroadcasterNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     name.clear();
 

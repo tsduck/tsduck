@@ -195,7 +195,7 @@ void ts::DTGGuidanceDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DTGGuidanceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DTGGuidanceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     ISO_639_language_code.clear();
     text.clear();

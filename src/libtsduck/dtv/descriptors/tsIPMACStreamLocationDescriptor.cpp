@@ -154,7 +154,7 @@ void ts::IPMACStreamLocationDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACStreamLocationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::IPMACStreamLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

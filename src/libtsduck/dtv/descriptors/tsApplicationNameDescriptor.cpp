@@ -49,7 +49,6 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 ts::ApplicationNameDescriptor::ApplicationNameDescriptor() :
     AbstractMultilingualDescriptor(MY_DID, MY_XML_NAME, MY_XML_ATTR)
 {
-    _is_valid = true;
 }
 
 ts::ApplicationNameDescriptor::ApplicationNameDescriptor(DuckContext& duck, const Descriptor& desc) :

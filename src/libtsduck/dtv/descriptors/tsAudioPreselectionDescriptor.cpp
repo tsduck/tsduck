@@ -327,7 +327,7 @@ void ts::AudioPreselectionDescriptor::buildXML(DuckContext& duck, xml::Element* 
             }
         }
         if (!it->future_extension.empty()) {
-            e->addElement(u"future_extension")->addHexaText(it->future_extension);
+            e->addHexaTextChild(u"future_extension", it->future_extension);
         }
     }
 }
@@ -337,7 +337,7 @@ void ts::AudioPreselectionDescriptor::buildXML(DuckContext& duck, xml::Element* 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AudioPreselectionDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AudioPreselectionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
     xml::ElementVector children;

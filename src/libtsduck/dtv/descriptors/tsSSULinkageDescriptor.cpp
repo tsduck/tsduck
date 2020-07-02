@@ -192,7 +192,7 @@ ts::xml::Element* ts::SSULinkageDescriptor::toXML(DuckContext& duck, xml::Elemen
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SSULinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     // There is no specific representation of this descriptor.
     // We cannot be called since there is no registration in the XML factory.

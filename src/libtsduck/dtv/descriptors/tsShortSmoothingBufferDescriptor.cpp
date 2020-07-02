@@ -131,7 +131,7 @@ void ts::ShortSmoothingBufferDescriptor::buildXML(DuckContext& duck, xml::Elemen
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ShortSmoothingBufferDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ShortSmoothingBufferDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -205,7 +205,7 @@ void ts::HybridInformationDescriptor::buildXML(DuckContext& duck, xml::Element* 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::HybridInformationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::HybridInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     URL.clear();
 

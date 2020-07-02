@@ -52,7 +52,6 @@ ts::NorDigLogicalChannelDescriptorV2::NorDigLogicalChannelDescriptorV2() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     entries()
 {
-    _is_valid = true;
 }
 
 ts::NorDigLogicalChannelDescriptorV2::NorDigLogicalChannelDescriptorV2(DuckContext& duck, const Descriptor& desc) :
@@ -74,6 +73,11 @@ ts::NorDigLogicalChannelDescriptorV2::ChannelList::ChannelList(uint8_t id, const
     country_code(country),
     services()
 {
+}
+
+void ts::NorDigLogicalChannelDescriptorV2::clearContent()
+{
+    entries.clear();
 }
 
 
@@ -201,35 +205,26 @@ void ts::NorDigLogicalChannelDescriptorV2::buildXML(DuckContext& duck, xml::Elem
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::NorDigLogicalChannelDescriptorV2::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::NorDigLogicalChannelDescriptorV2::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector xclists;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(xclists, u"channel_list");
+    bool ok = element->getChildren(xclists, u"channel_list");
 
-    for (size_t i1 = 0; _is_valid && i1 < xclists.size(); ++i1) {
+    for (size_t i1 = 0; ok && i1 < xclists.size(); ++i1) {
         ChannelList clist;
         xml::ElementVector xsrv;
-        _is_valid =
-            xclists[i1]->getIntAttribute<uint8_t>(clist.channel_list_id, u"id", true) &&
-            xclists[i1]->getAttribute(clist.channel_list_name, u"name", true) &&
-            xclists[i1]->getAttribute(clist.country_code, u"country_code", true, UString(), 3, 3) &&
-            xclists[i1]->getChildren(xsrv, u"service");
-        for (size_t i2 = 0; _is_valid && i2 < xsrv.size(); ++i2) {
+        ok = xclists[i1]->getIntAttribute<uint8_t>(clist.channel_list_id, u"id", true) &&
+             xclists[i1]->getAttribute(clist.channel_list_name, u"name", true) &&
+             xclists[i1]->getAttribute(clist.country_code, u"country_code", true, UString(), 3, 3) &&
+             xclists[i1]->getChildren(xsrv, u"service");
+        for (size_t i2 = 0; ok && i2 < xsrv.size(); ++i2) {
             Service srv;
-            _is_valid =
-                xsrv[i2]->getIntAttribute<uint16_t>(srv.service_id, u"service_id", true) &&
-                xsrv[i2]->getIntAttribute<uint16_t>(srv.lcn, u"logical_channel_number", true, 0, 0x0000, 0x03FF) &&
-                xsrv[i2]->getBoolAttribute(srv.visible, u"visible_service", false, true);
-            if (_is_valid) {
-                clist.services.push_back(srv);
-            }
+            ok = xsrv[i2]->getIntAttribute<uint16_t>(srv.service_id, u"service_id", true) &&
+                 xsrv[i2]->getIntAttribute<uint16_t>(srv.lcn, u"logical_channel_number", true, 0, 0x0000, 0x03FF) &&
+                 xsrv[i2]->getBoolAttribute(srv.visible, u"visible_service", false, true);
+            clist.services.push_back(srv);
         }
-        if (_is_valid) {
-            entries.push_back(clist);
-        }
+        entries.push_back(clist);
     }
+    return ok;
 }

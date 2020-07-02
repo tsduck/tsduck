@@ -53,13 +53,18 @@ ts::MultiplexBufferUtilizationDescriptor::MultiplexBufferUtilizationDescriptor()
     LTW_offset_lower_bound(),
     LTW_offset_upper_bound()
 {
-    _is_valid = true;
 }
 
 ts::MultiplexBufferUtilizationDescriptor::MultiplexBufferUtilizationDescriptor(DuckContext& duck, const Descriptor& desc) :
     MultiplexBufferUtilizationDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::MultiplexBufferUtilizationDescriptor::clearContent()
+{
+    LTW_offset_lower_bound.reset();
+    LTW_offset_upper_bound.reset();
 }
 
 
@@ -143,16 +148,16 @@ void ts::MultiplexBufferUtilizationDescriptor::buildXML(DuckContext& duck, xml::
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferUtilizationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::MultiplexBufferUtilizationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getOptionalIntAttribute<uint16_t>(LTW_offset_lower_bound, u"LTW_offset_lower_bound", 0x0000, 0x7FFF) &&
         element->getOptionalIntAttribute<uint16_t>(LTW_offset_upper_bound, u"LTW_offset_upper_bound", 0x0000, 0x7FFF);
 
-    if (_is_valid && LTW_offset_lower_bound.set() + LTW_offset_upper_bound.set() == 1) {
-        _is_valid = false;
+    if (ok && LTW_offset_lower_bound.set() + LTW_offset_upper_bound.set() == 1) {
+        ok = false;
         element->report().error(u"attributes LTW_offset_lower_bound and LTW_offset_upper_bound must be both set or both unset in <%s>, line %d",
                                 {element->name(), element->lineNumber()});
     }
+    return ok;
 }

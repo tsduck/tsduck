@@ -137,7 +137,7 @@ void ts::EASMetadataDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EASMetadataDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::EASMetadataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

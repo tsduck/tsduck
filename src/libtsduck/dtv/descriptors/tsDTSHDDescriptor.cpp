@@ -398,7 +398,7 @@ void ts::DTSHDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     SubstreamInfoToXML(substream_2, u"substream_2", root);
     SubstreamInfoToXML(substream_3, u"substream_3", root);
     if (!additional_info.empty()) {
-        root->addElement(u"additional_info")->addHexaText(additional_info);
+        root->addHexaTextChild(u"additional_info", additional_info);
     }
 }
 
@@ -429,7 +429,7 @@ void ts::DTSHDDescriptor::SubstreamInfoToXML(const Variable<SubstreamInfo>& info
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DTSHDDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DTSHDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     reset();
 

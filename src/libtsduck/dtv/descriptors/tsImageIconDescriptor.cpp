@@ -63,13 +63,27 @@ ts::ImageIconDescriptor::ImageIconDescriptor() :
     url(),
     icon_data()
 {
-    _is_valid = true;
 }
 
 ts::ImageIconDescriptor::ImageIconDescriptor(DuckContext& duck, const Descriptor& desc) :
     ImageIconDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::ImageIconDescriptor::clearContent()
+{
+    descriptor_number = 0;
+    last_descriptor_number = 0;
+    icon_id = 0;
+    icon_transport_mode = 0;
+    has_position = false;
+    coordinate_system = 0;
+    icon_horizontal_origin = 0;
+    icon_vertical_origin = 0;
+    icon_type.clear();
+    url.clear();
+    icon_data.clear();
 }
 
 
@@ -258,14 +272,14 @@ void ts::ImageIconDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
         }
         root->setAttribute(u"icon_type", icon_type);
         if (icon_transport_mode == 0 && !icon_data.empty()) {
-            root->addElement(u"icon_data")->addHexaText(icon_data);
+            root->addHexaTextChild(u"icon_data", icon_data);
         }
         else if (icon_transport_mode == 1) {
             root->setAttribute(u"url", url);
         }
     }
     else if (!icon_data.empty()) {
-        root->addElement(u"icon_data")->addHexaText(icon_data);
+        root->addHexaTextChild(u"icon_data", icon_data);
     }
 }
 
@@ -274,27 +288,21 @@ void ts::ImageIconDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ImageIconDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ImageIconDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    icon_type.clear();
-    url.clear();
-    icon_data.clear();
-
     has_position =
         element->hasAttribute(u"coordinate_system") ||
         element->hasAttribute(u"icon_horizontal_origin") ||
         element->hasAttribute(u"icon_vertical_origin");
 
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(descriptor_number, u"descriptor_number", true, 0, 0x00, 0x0F) &&
-        element->getIntAttribute<uint8_t>(last_descriptor_number, u"last_descriptor_number", true, 0, 0x00, 0x0F) &&
-        element->getIntAttribute<uint8_t>(icon_id, u"icon_id", true, 0, 0x00, 0x07) &&
-        element->getIntAttribute<uint8_t>(icon_transport_mode, u"icon_transport_mode", descriptor_number == 0, 0, 0x00, 0x03) &&
-        element->getIntAttribute<uint8_t>(coordinate_system, u"coordinate_system", descriptor_number == 0 && has_position, 0, 0x00, 0x07) &&
-        element->getIntAttribute<uint16_t>(icon_horizontal_origin, u"icon_horizontal_origin", descriptor_number == 0 && has_position, 0, 0x0000, 0x0FFF) &&
-        element->getIntAttribute<uint16_t>(icon_vertical_origin, u"icon_vertical_origin", descriptor_number == 0 && has_position, 0, 0x0000, 0x0FFF) &&
-        element->getAttribute(icon_type, u"icon_type", descriptor_number == 0) &&
-        element->getAttribute(url, u"url", descriptor_number == 0 && icon_transport_mode == 1) &&
-        element->getHexaTextChild(icon_data, u"icon_data", false);
+    return  element->getIntAttribute<uint8_t>(descriptor_number, u"descriptor_number", true, 0, 0x00, 0x0F) &&
+            element->getIntAttribute<uint8_t>(last_descriptor_number, u"last_descriptor_number", true, 0, 0x00, 0x0F) &&
+            element->getIntAttribute<uint8_t>(icon_id, u"icon_id", true, 0, 0x00, 0x07) &&
+            element->getIntAttribute<uint8_t>(icon_transport_mode, u"icon_transport_mode", descriptor_number == 0, 0, 0x00, 0x03) &&
+            element->getIntAttribute<uint8_t>(coordinate_system, u"coordinate_system", descriptor_number == 0 && has_position, 0, 0x00, 0x07) &&
+            element->getIntAttribute<uint16_t>(icon_horizontal_origin, u"icon_horizontal_origin", descriptor_number == 0 && has_position, 0, 0x0000, 0x0FFF) &&
+            element->getIntAttribute<uint16_t>(icon_vertical_origin, u"icon_vertical_origin", descriptor_number == 0 && has_position, 0, 0x0000, 0x0FFF) &&
+            element->getAttribute(icon_type, u"icon_type", descriptor_number == 0) &&
+            element->getAttribute(url, u"url", descriptor_number == 0 && icon_transport_mode == 1) &&
+            element->getHexaTextChild(icon_data, u"icon_data", false);
 }

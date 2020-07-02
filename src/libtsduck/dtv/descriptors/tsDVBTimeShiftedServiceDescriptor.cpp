@@ -123,7 +123,7 @@ void ts::DVBTimeShiftedServiceDescriptor::buildXML(DuckContext& duck, xml::Eleme
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBTimeShiftedServiceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DVBTimeShiftedServiceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

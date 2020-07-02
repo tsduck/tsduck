@@ -52,7 +52,6 @@ ts::AncillaryDataDescriptor::AncillaryDataDescriptor(uint8_t id) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ancillary_data_identifier(id)
 {
-    _is_valid = true;
 }
 
 
@@ -132,9 +131,7 @@ void ts::AncillaryDataDescriptor::buildXML(DuckContext& duck, xml::Element* root
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AncillaryDataDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AncillaryDataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(ancillary_data_identifier, u"ancillary_data_identifier", true);
+    return element->getIntAttribute<uint8_t>(ancillary_data_identifier, u"ancillary_data_identifier", true);
 }

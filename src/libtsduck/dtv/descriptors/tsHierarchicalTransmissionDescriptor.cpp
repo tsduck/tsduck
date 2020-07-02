@@ -130,7 +130,7 @@ void ts::HierarchicalTransmissionDescriptor::buildXML(DuckContext& duck, xml::El
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::HierarchicalTransmissionDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::HierarchicalTransmissionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

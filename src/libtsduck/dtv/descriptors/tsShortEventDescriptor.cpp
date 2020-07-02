@@ -205,7 +205,7 @@ void ts::ShortEventDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ShortEventDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ShortEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

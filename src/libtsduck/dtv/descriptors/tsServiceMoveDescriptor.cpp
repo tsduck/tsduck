@@ -54,13 +54,19 @@ ts::ServiceMoveDescriptor::ServiceMoveDescriptor() :
     new_transport_stream_id(0),
     new_service_id(0)
 {
-    _is_valid = true;
 }
 
 ts::ServiceMoveDescriptor::ServiceMoveDescriptor(DuckContext& duck, const Descriptor& desc) :
     ServiceMoveDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::ServiceMoveDescriptor::clearContent()
+{
+    new_original_network_id = 0;
+    new_transport_stream_id = 0;
+    new_service_id = 0;
 }
 
 
@@ -132,11 +138,9 @@ void ts::ServiceMoveDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceMoveDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ServiceMoveDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(new_original_network_id, u"new_original_network_id", true) &&
-        element->getIntAttribute<uint16_t>(new_transport_stream_id, u"new_transport_stream_id", true) &&
-        element->getIntAttribute<uint16_t>(new_service_id, u"new_service_id", true);
+    return element->getIntAttribute<uint16_t>(new_original_network_id, u"new_original_network_id", true) &&
+           element->getIntAttribute<uint16_t>(new_transport_stream_id, u"new_transport_stream_id", true) &&
+           element->getIntAttribute<uint16_t>(new_service_id, u"new_service_id", true);
 }

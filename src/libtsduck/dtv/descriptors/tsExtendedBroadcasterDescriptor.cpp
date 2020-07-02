@@ -57,7 +57,6 @@ ts::ExtendedBroadcasterDescriptor::ExtendedBroadcasterDescriptor() :
     broadcasters(),
     private_data()
 {
-    _is_valid = true;
 }
 
 ts::ExtendedBroadcasterDescriptor::ExtendedBroadcasterDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -70,6 +69,15 @@ ts::ExtendedBroadcasterDescriptor::Broadcaster::Broadcaster(uint16_t onid, uint8
     original_network_id(onid),
     broadcaster_id(bcid)
 {
+}
+
+void ts::ExtendedBroadcasterDescriptor::clearContent()
+{
+    broadcaster_type = 0;
+    terrestrial_broadcaster_id = 0;
+    affiliation_ids.clear();
+    broadcasters.clear();
+    private_data.clear();
 }
 
 
@@ -217,37 +225,28 @@ void ts::ExtendedBroadcasterDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedBroadcasterDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ExtendedBroadcasterDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    affiliation_ids.clear();
-    broadcasters.clear();
-    private_data.clear();
-
     xml::ElementVector xaffiliations;
     xml::ElementVector xbroadcasters;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(broadcaster_type, u"broadcaster_type", true, 0, 0, 15) &&
         element->getIntAttribute<uint16_t>(terrestrial_broadcaster_id, u"terrestrial_broadcaster_id", broadcaster_type == 0x01 || broadcaster_type == 0x02) &&
         element->getChildren(xaffiliations, u"affiliation", 0, broadcaster_type == 0x01 || broadcaster_type == 0x02 ? 15 : 0) &&
         element->getChildren(xbroadcasters, u"broadcaster", 0, broadcaster_type == 0x01 || broadcaster_type == 0x02 ? 15 : 0) &&
         element->getHexaTextChild(private_data, u"private_data");
 
-    for (auto it = xaffiliations.begin(); _is_valid && it != xaffiliations.end(); ++it) {
+    for (auto it = xaffiliations.begin(); ok && it != xaffiliations.end(); ++it) {
         uint8_t id = 0;
-        _is_valid = (*it)->getIntAttribute<uint8_t>(id, u"id", true);
-        if (_is_valid) {
-            affiliation_ids.push_back(id);
-        }
+        ok = (*it)->getIntAttribute<uint8_t>(id, u"id", true);
+        affiliation_ids.push_back(id);
     }
 
-    for (auto it = xbroadcasters.begin(); _is_valid && it != xbroadcasters.end(); ++it) {
+    for (auto it = xbroadcasters.begin(); ok && it != xbroadcasters.end(); ++it) {
         Broadcaster bc;
-        _is_valid =
-            (*it)->getIntAttribute<uint16_t>(bc.original_network_id, u"original_network_id", true) &&
-            (*it)->getIntAttribute<uint8_t>(bc.broadcaster_id, u"broadcaster_id", true);
-        if (_is_valid) {
-            broadcasters.push_back(bc);
-        }
+        ok = (*it)->getIntAttribute<uint16_t>(bc.original_network_id, u"original_network_id", true) &&
+             (*it)->getIntAttribute<uint8_t>(bc.broadcaster_id, u"broadcaster_id", true);
+        broadcasters.push_back(bc);
     }
+    return ok;
 }

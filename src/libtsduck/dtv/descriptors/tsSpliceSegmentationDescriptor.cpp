@@ -387,7 +387,7 @@ void ts::SpliceSegmentationDescriptor::buildXML(DuckContext& duck, xml::Element*
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SpliceSegmentationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     clear();
 

@@ -151,9 +151,7 @@ void ts::CADescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"CA_system_id", cas_id, true);
     root->setIntAttribute(u"CA_PID", ca_pid, true);
-    if (!private_data.empty()) {
-        root->addElement(u"private_data")->addHexaText(private_data);
-    }
+    root->addHexaTextChild(u"private_data", private_data, true);
 }
 
 
@@ -161,7 +159,7 @@ void ts::CADescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CADescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CADescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

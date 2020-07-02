@@ -63,13 +63,27 @@ ts::AudioComponentDescriptor::AudioComponentDescriptor() :
     ISO_639_language_code_2(),
     text()
 {
-    _is_valid = true;
 }
 
 ts::AudioComponentDescriptor::AudioComponentDescriptor(DuckContext& duck, const Descriptor& desc) :
     AudioComponentDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::AudioComponentDescriptor::clearContent()
+{
+    stream_content = 2;  // audio content
+    component_type = 0;
+    component_tag = 0;
+    stream_type = 0;
+    simulcast_group_tag = 0xFF; // no simulcast
+    main_component = true;
+    quality_indicator = 0;
+    sampling_rate = 0;
+    ISO_639_language_code.clear();
+    ISO_639_language_code_2.clear();
+    text.clear();
 }
 
 
@@ -200,23 +214,17 @@ void ts::AudioComponentDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AudioComponentDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AudioComponentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    ISO_639_language_code.clear();
-    ISO_639_language_code_2.clear();
-    text.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(stream_content, u"stream_content", false, 0x02, 0x00, 0x0F) &&
-        element->getIntAttribute<uint8_t>(component_type, u"component_type", true) &&
-        element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true) &&
-        element->getIntAttribute<uint8_t>(stream_type, u"stream_type", true) &&
-        element->getIntAttribute<uint8_t>(simulcast_group_tag, u"simulcast_group_tag", false, 0xFF) &&
-        element->getBoolAttribute(main_component, u"main_component", false, true) &&
-        element->getIntAttribute<uint8_t>(quality_indicator, u"quality_indicator", true, 0, 0, 3) &&
-        element->getIntAttribute<uint8_t>(sampling_rate, u"sampling_rate", true, 0, 0, 7) &&
-        element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, UString(), 3, 3) &&
-        element->getAttribute(ISO_639_language_code_2, u"ISO_639_language_code_2", false, UString(), 3, 3) &&
-        element->getAttribute(text, u"text");
+    return  element->getIntAttribute<uint8_t>(stream_content, u"stream_content", false, 0x02, 0x00, 0x0F) &&
+            element->getIntAttribute<uint8_t>(component_type, u"component_type", true) &&
+            element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true) &&
+            element->getIntAttribute<uint8_t>(stream_type, u"stream_type", true) &&
+            element->getIntAttribute<uint8_t>(simulcast_group_tag, u"simulcast_group_tag", false, 0xFF) &&
+            element->getBoolAttribute(main_component, u"main_component", false, true) &&
+            element->getIntAttribute<uint8_t>(quality_indicator, u"quality_indicator", true, 0, 0, 3) &&
+            element->getIntAttribute<uint8_t>(sampling_rate, u"sampling_rate", true, 0, 0, 7) &&
+            element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, UString(), 3, 3) &&
+            element->getAttribute(ISO_639_language_code_2, u"ISO_639_language_code_2", false, UString(), 3, 3) &&
+            element->getAttribute(text, u"text");
 }

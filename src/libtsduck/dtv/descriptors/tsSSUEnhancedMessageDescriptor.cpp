@@ -148,7 +148,7 @@ void ts::SSUEnhancedMessageDescriptor::buildXML(DuckContext& duck, xml::Element*
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSUEnhancedMessageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SSUEnhancedMessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     text.clear();
     xml::ElementVector children;

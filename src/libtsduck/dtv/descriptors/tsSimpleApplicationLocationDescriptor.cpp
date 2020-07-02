@@ -116,7 +116,7 @@ void ts::SimpleApplicationLocationDescriptor::buildXML(DuckContext& duck, xml::E
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationLocationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SimpleApplicationLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

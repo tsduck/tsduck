@@ -107,7 +107,7 @@ void ts::CPDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"CP_system_id", cp_id, true);
     root->setIntAttribute(u"CP_PID", cp_pid, true);
     if (!private_data.empty()) {
-        root->addElement(u"private_data")->addHexaText(private_data);
+        root->addHexaTextChild(u"private_data", private_data);
     }
 }
 
@@ -116,7 +116,7 @@ void ts::CPDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CPDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CPDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

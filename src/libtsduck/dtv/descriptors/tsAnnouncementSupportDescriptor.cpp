@@ -52,7 +52,6 @@ ts::AnnouncementSupportDescriptor::AnnouncementSupportDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     announcements()
 {
-    _is_valid = true;
 }
 
 ts::AnnouncementSupportDescriptor::AnnouncementSupportDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -236,24 +235,22 @@ void ts::AnnouncementSupportDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AnnouncementSupportDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AnnouncementSupportDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    announcements.clear();
-
     xml::ElementVector xann;
-    _is_valid = checkXMLName(element) && element->getChildren(xann, u"announcement");
+    bool ok = element->getChildren(xann, u"announcement");
 
-    for (size_t i = 0; _is_valid && i < xann.size(); ++i) {
+    for (size_t i = 0; ok && i < xann.size(); ++i) {
         Announcement ann;
-        _is_valid =
-            xann[i]->getIntAttribute<uint8_t>(ann.announcement_type, u"announcement_type", true, 0, 0x00, 0x0F) &&
-            xann[i]->getIntAttribute<uint8_t>(ann.reference_type, u"reference_type", true, 0, 0x00, 0x07) &&
-            xann[i]->getIntAttribute<uint16_t>(ann.original_network_id, u"original_network_id", ann.reference_type >= 1 && ann.reference_type <= 3) &&
-            xann[i]->getIntAttribute<uint16_t>(ann.transport_stream_id, u"transport_stream_id", ann.reference_type >= 1 && ann.reference_type <= 3) &&
-            xann[i]->getIntAttribute<uint16_t>(ann.service_id, u"service_id", ann.reference_type >= 1 && ann.reference_type <= 3) &&
-            xann[i]->getIntAttribute<uint8_t>(ann.component_tag, u"component_tag", ann.reference_type >= 1 && ann.reference_type <= 3);
-        if (_is_valid) {
+        ok = xann[i]->getIntAttribute<uint8_t>(ann.announcement_type, u"announcement_type", true, 0, 0x00, 0x0F) &&
+             xann[i]->getIntAttribute<uint8_t>(ann.reference_type, u"reference_type", true, 0, 0x00, 0x07) &&
+             xann[i]->getIntAttribute<uint16_t>(ann.original_network_id, u"original_network_id", ann.reference_type >= 1 && ann.reference_type <= 3) &&
+             xann[i]->getIntAttribute<uint16_t>(ann.transport_stream_id, u"transport_stream_id", ann.reference_type >= 1 && ann.reference_type <= 3) &&
+             xann[i]->getIntAttribute<uint16_t>(ann.service_id, u"service_id", ann.reference_type >= 1 && ann.reference_type <= 3) &&
+             xann[i]->getIntAttribute<uint8_t>(ann.component_tag, u"component_tag", ann.reference_type >= 1 && ann.reference_type <= 3);
+        if (ok) {
             announcements.push_back(ann);
         }
     }
+    return ok;
 }

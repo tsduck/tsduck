@@ -148,7 +148,7 @@ void ts::TargetIPv6SourceSlashDescriptor::buildXML(DuckContext& duck, xml::Eleme
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6SourceSlashDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TargetIPv6SourceSlashDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     addresses.clear();
 

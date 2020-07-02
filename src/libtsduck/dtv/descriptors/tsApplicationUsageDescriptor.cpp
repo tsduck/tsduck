@@ -52,7 +52,6 @@ ts::ApplicationUsageDescriptor::ApplicationUsageDescriptor(uint8_t type) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     usage_type(type)
 {
-    _is_valid = true;
 }
 
 
@@ -126,9 +125,7 @@ void ts::ApplicationUsageDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationUsageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ApplicationUsageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(usage_type, u"usage_type", true);
+    return element->getIntAttribute<uint8_t>(usage_type, u"usage_type", true);
 }

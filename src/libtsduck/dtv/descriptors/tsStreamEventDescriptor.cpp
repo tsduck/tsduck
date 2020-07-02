@@ -144,7 +144,7 @@ void ts::StreamEventDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
             root->addElement(u"private_text")->addText(UString::FromUTF8(reinterpret_cast<const char*>(private_data.data()), private_data.size()));
         }
         else {
-            root->addElement(u"private_data")->addHexaText(private_data);
+            root->addHexaTextChild(u"private_data", private_data);
         }
     }
 }
@@ -154,7 +154,7 @@ void ts::StreamEventDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::StreamEventDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::StreamEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     UString text;
 

@@ -182,7 +182,7 @@ void ts::ServiceLocationDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceLocationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ServiceLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

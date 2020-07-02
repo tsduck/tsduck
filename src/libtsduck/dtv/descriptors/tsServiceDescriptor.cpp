@@ -140,7 +140,7 @@ void ts::ServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ServiceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

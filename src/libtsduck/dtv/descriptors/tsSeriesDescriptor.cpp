@@ -60,13 +60,23 @@ ts::SeriesDescriptor::SeriesDescriptor() :
     last_episode_number(0),
     series_name()
 {
-    _is_valid = true;
 }
 
 ts::SeriesDescriptor::SeriesDescriptor(DuckContext& duck, const Descriptor& desc) :
     SeriesDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::SeriesDescriptor::clearContent()
+{
+    series_id = 0;
+    repeat_label = 0;
+    program_pattern = 0;
+    expire_date.reset();
+    episode_number = 0;
+    last_episode_number = 0;
+    series_name.clear();
 }
 
 
@@ -176,13 +186,9 @@ void ts::SeriesDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SeriesDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SeriesDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    expire_date.reset();
-    series_name.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint16_t>(series_id, u"series_id", true) &&
         element->getIntAttribute<uint8_t>(repeat_label, u"repeat_label", true, 0, 0, 15) &&
         element->getIntAttribute<uint8_t>(program_pattern, u"program_pattern", true, 0, 0, 7) &&
@@ -190,9 +196,10 @@ void ts::SeriesDescriptor::fromXML(DuckContext& duck, const xml::Element* elemen
         element->getIntAttribute<uint16_t>(last_episode_number, u"last_episode_number", true, 0, 0, 0x0FFF) &&
         element->getAttribute(series_name, u"series_name");
 
-    if (_is_valid && element->hasAttribute(u"expire_date")) {
+    if (ok && element->hasAttribute(u"expire_date")) {
         Time date;
-        _is_valid = element->getDateAttribute(date, u"expire_date", true);
+        ok = element->getDateAttribute(date, u"expire_date", true);
         expire_date = date;
     }
+    return ok;
 }

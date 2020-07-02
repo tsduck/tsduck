@@ -120,7 +120,7 @@ void ts::TransportProfileDescriptor::buildXML(DuckContext& duck, xml::Element* r
 {
     root->setIntAttribute(u"transport_profile", transport_profile, true);
     if (!private_data.empty()) {
-        root->addElement(u"private_data")->addHexaText(private_data);
+        root->addHexaTextChild(u"private_data", private_data);
     }
 }
 
@@ -129,7 +129,7 @@ void ts::TransportProfileDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TransportProfileDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TransportProfileDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

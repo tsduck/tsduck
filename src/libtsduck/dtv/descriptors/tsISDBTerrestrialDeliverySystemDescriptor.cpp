@@ -183,7 +183,7 @@ void ts::ISDBTerrestrialDeliverySystemDescriptor::buildXML(DuckContext& duck, xm
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISDBTerrestrialDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ISDBTerrestrialDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     frequencies.clear();
 

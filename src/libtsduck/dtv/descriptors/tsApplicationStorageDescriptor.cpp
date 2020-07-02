@@ -57,7 +57,6 @@ ts::ApplicationStorageDescriptor::ApplicationStorageDescriptor() :
     version(0),
     priority(0)
 {
-    _is_valid = true;
 }
 
 
@@ -156,14 +155,12 @@ void ts::ApplicationStorageDescriptor::buildXML(DuckContext& duck, xml::Element*
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationStorageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ApplicationStorageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(storage_property, u"storage_property", true) &&
-        element->getBoolAttribute(not_launchable_from_broadcast, u"not_launchable_from_broadcast", true) &&
-        element->getBoolAttribute(launchable_completely_from_cache, u"launchable_completely_from_cache", true) &&
-        element->getBoolAttribute(is_launchable_with_older_version, u"is_launchable_with_older_version", true) &&
-        element->getIntAttribute<uint32_t>(version, u"version", true, 0, 0, 0x7FFFFFFF) &&
-        element->getIntAttribute<uint8_t>(priority, u"priority", true);
+    return element->getIntAttribute<uint8_t>(storage_property, u"storage_property", true) &&
+           element->getBoolAttribute(not_launchable_from_broadcast, u"not_launchable_from_broadcast", true) &&
+           element->getBoolAttribute(launchable_completely_from_cache, u"launchable_completely_from_cache", true) &&
+           element->getBoolAttribute(is_launchable_with_older_version, u"is_launchable_with_older_version", true) &&
+           element->getIntAttribute<uint32_t>(version, u"version", true, 0, 0, 0x7FFFFFFF) &&
+           element->getIntAttribute<uint8_t>(priority, u"priority", true);
 }

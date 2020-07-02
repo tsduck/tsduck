@@ -285,57 +285,45 @@ void ts::SpliceSchedule::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSchedule::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SpliceSchedule::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    clear();
-
     xml::ElementVector xmlEvents;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(xmlEvents, u"splice_event", 0, 255);
+    bool ok = element->getChildren(xmlEvents, u"splice_event", 0, 255);
 
-    for (size_t i = 0; _is_valid && i < xmlEvents.size(); ++i) {
+    for (size_t i = 0; ok && i < xmlEvents.size(); ++i) {
         Event ev;
-        _is_valid =
-            xmlEvents[i]->getIntAttribute<uint32_t>(ev.event_id, u"splice_event_id", true) &&
-            xmlEvents[i]->getBoolAttribute(ev.canceled, u"splice_event_cancel", false, false);
+        ok = xmlEvents[i]->getIntAttribute<uint32_t>(ev.event_id, u"splice_event_id", true) &&
+             xmlEvents[i]->getBoolAttribute(ev.canceled, u"splice_event_cancel", false, false);
 
-        if (_is_valid && !ev.canceled) {
+        if (ok && !ev.canceled) {
             xml::ElementVector children;
-            _is_valid =
-                xmlEvents[i]->getBoolAttribute(ev.splice_out, u"out_of_network", true) &&
-                xmlEvents[i]->getIntAttribute<uint16_t>(ev.program_id, u"unique_program_id", true) &&
-                xmlEvents[i]->getIntAttribute<uint8_t>(ev.avail_num, u"avail_num", false, 0) &&
-                xmlEvents[i]->getIntAttribute<uint8_t>(ev.avails_expected, u"avails_expected", false, 0) &&
-                xmlEvents[i]->getChildren(children, u"break_duration", 0, 1);
+            ok = xmlEvents[i]->getBoolAttribute(ev.splice_out, u"out_of_network", true) &&
+                 xmlEvents[i]->getIntAttribute<uint16_t>(ev.program_id, u"unique_program_id", true) &&
+                 xmlEvents[i]->getIntAttribute<uint8_t>(ev.avail_num, u"avail_num", false, 0) &&
+                 xmlEvents[i]->getIntAttribute<uint8_t>(ev.avails_expected, u"avails_expected", false, 0) &&
+                 xmlEvents[i]->getChildren(children, u"break_duration", 0, 1);
             ev.use_duration = !children.empty();
-            if (_is_valid && ev.use_duration) {
+            if (ok && ev.use_duration) {
                 assert(children.size() == 1);
-                _is_valid =
-                    children[0]->getBoolAttribute(ev.auto_return, u"auto_return", true) &&
-                    children[0]->getIntAttribute<uint64_t>(ev.duration_pts, u"duration", true);
+                ok = children[0]->getBoolAttribute(ev.auto_return, u"auto_return", true) &&
+                     children[0]->getIntAttribute<uint64_t>(ev.duration_pts, u"duration", true);
             }
             ev.program_splice = xmlEvents[i]->hasAttribute(u"utc_splice_time");
-            if (_is_valid && ev.program_splice) {
-                _is_valid = xmlEvents[i]->getIntAttribute<uint32_t>(ev.program_utc, u"utc_splice_time", true);
+            if (ok && ev.program_splice) {
+                ok = xmlEvents[i]->getIntAttribute<uint32_t>(ev.program_utc, u"utc_splice_time", true);
             }
-            if (_is_valid && !ev.program_splice) {
-                _is_valid = xmlEvents[i]->getChildren(children, u"component", 0, 255);
-                for (size_t i1 = 0; _is_valid && i1 < children.size(); ++i1) {
+            if (ok && !ev.program_splice) {
+                ok = xmlEvents[i]->getChildren(children, u"component", 0, 255);
+                for (size_t i1 = 0; ok && i1 < children.size(); ++i1) {
                     uint8_t tag = 0;
                     uint32_t utc = 0;
-                    _is_valid =
-                        children[i1]->getIntAttribute<uint8_t>(tag, u"component_tag", true) &&
-                        children[i1]->getIntAttribute<uint32_t>(utc, u"utc_splice_time", true);
-                    if (_is_valid) {
-                        ev.components_utc[tag] = utc;
-                    }
+                    ok = children[i1]->getIntAttribute<uint8_t>(tag, u"component_tag", true) &&
+                         children[i1]->getIntAttribute<uint32_t>(utc, u"utc_splice_time", true);
+                    ev.components_utc[tag] = utc;
                 }
             }
         }
-
-        if (_is_valid) {
-            events.push_back(ev);
-        }
+        events.push_back(ev);
     }
+    return ok;
 }

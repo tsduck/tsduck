@@ -174,7 +174,7 @@ void ts::ParentalRatingDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ParentalRatingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

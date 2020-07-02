@@ -54,7 +54,6 @@ ts::PDCDescriptor::PDCDescriptor() :
     pil_hours(0),
     pil_minutes(0)
 {
-    _is_valid = true;
 }
 
 ts::PDCDescriptor::PDCDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -135,22 +134,18 @@ void ts::PDCDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PDCDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::PDCDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     UString date;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(date, u"programme_identification_label", true);
-
-    if (_is_valid) {
-        _is_valid =
-            date.scan(u"%d-%d %d:%d", {&pil_month, &pil_day, &pil_hours, &pil_minutes}) &&
-            pil_month > 0 && pil_month < 13 &&
-            pil_day > 0 && pil_day < 32 &&
-            pil_hours < 24 &&
-            pil_minutes < 60;
-        if (!_is_valid) {
-            element->report().error(u"Incorrect value '%s' for attribute 'programme_identification_label' in <%s>, line %d, use 'MM-DD hh:mm'", {date, element->name(), element->lineNumber()});
-        }
+    bool ok =
+        element->getAttribute(date, u"programme_identification_label", true) &&
+        date.scan(u"%d-%d %d:%d", {&pil_month, &pil_day, &pil_hours, &pil_minutes}) &&
+        pil_month > 0 && pil_month < 13 &&
+        pil_day > 0 && pil_day < 32 &&
+        pil_hours < 24 &&
+        pil_minutes < 60;
+    if (!ok) {
+        element->report().error(u"Incorrect value '%s' for attribute 'programme_identification_label' in <%s>, line %d, use 'MM-DD hh:mm'", {date, element->name(), element->lineNumber()});
     }
+    return ok;
 }

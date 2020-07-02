@@ -192,7 +192,7 @@ void ts::DataContentDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataContentDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DataContentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     selector_bytes.clear();
     component_refs.clear();

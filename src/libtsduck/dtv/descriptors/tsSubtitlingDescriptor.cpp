@@ -174,7 +174,7 @@ void ts::SubtitlingDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SubtitlingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SubtitlingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
     xml::ElementVector children;

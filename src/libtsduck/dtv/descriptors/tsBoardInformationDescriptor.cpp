@@ -127,7 +127,7 @@ void ts::BoardInformationDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::BoardInformationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::BoardInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     title.clear();
     text.clear();

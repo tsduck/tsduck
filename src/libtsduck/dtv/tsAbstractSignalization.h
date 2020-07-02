@@ -71,9 +71,6 @@ namespace ts {
         //!
         UString xmlName() const;
 
-        //@@@@@@@ TODO @@@@@@@@@@@@
-        // Make toXML() and fromXML() final to make sure that all classes override buildXML() and analyzeXML() instead.
-
         //!
         //! This method converts this object to XML.
         //!
@@ -89,7 +86,7 @@ namespace ts {
         //! @param [in,out] parent The parent node for the new XML tree.
         //! @return The new XML element.
         //!
-        virtual xml::Element* toXML(DuckContext& duck, xml::Element* parent) const;
+        virtual xml::Element* toXML(DuckContext& duck, xml::Element* parent) const final;
 
         //!
         //! This method converts an XML structure to a table or descriptor in this object.
@@ -108,7 +105,7 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] element XML element to convert.
         //!
-        virtual void fromXML(DuckContext& duck, const xml::Element* element);
+        virtual void fromXML(DuckContext& duck, const xml::Element* element) final;
 
         // Implementation of AbstractDefinedByStandards
         virtual Standards definingStandards() const override;
@@ -192,7 +189,7 @@ namespace ts {
         //!
         //! Helper method to clear the content of the table or descriptor.
         //!
-        virtual void clearContent();
+        virtual void clearContent() = 0;
 
         //!
         //! Helper method to convert this object to XML.
@@ -208,7 +205,7 @@ namespace ts {
         //! @param [in,out] root The root node for the new XML tree.
         //! @param [in,out] duck TSDuck execution context.
         //!
-        virtual void buildXML(DuckContext& duck, xml::Element* root) const;
+        virtual void buildXML(DuckContext& duck, xml::Element* root) const = 0;
 
         //!
         //! Helper method to convert this object from XML.
@@ -222,17 +219,7 @@ namespace ts {
         //! @param [in] element XML element to convert.
         //! @return True if the analysis is correct, false otherwise.
         //!
-        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element);
-
-        //@@@@@@@ TODO @@@@@@@@@@@@
-        // Make checkXMLName() private to make sure no subclass use it in fromXML().
-
-        //!
-        //! Check that an XML element has the right name for this table or descriptor.
-        //! @param [in] element XML element to check.
-        //! @return True on success, false on error.
-        //!
-        bool checkXMLName(const xml::Element* element) const;
+        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) = 0;
 
         //!
         //! Deserialize a 3-byte language or country code.
@@ -268,6 +255,9 @@ namespace ts {
         const UChar* const _xml_name;         // XML table or descriptor name.
         const UChar* const _xml_legacy_name;  // Optional XML table or descriptor legacy name. Ignored if null pointer.
         const Standards    _standards;        // Defining standards (usually only one).
+
+        // Check that an XML element has the right name for this table or descriptor.
+        bool checkXMLName(const xml::Element* element) const;
 
         // Unreachable constructors and operators.
         AbstractSignalization() = delete;

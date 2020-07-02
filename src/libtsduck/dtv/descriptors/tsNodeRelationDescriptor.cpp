@@ -56,7 +56,6 @@ ts::NodeRelationDescriptor::NodeRelationDescriptor() :
     reference_node_id(0),
     reference_number(0)
 {
-    _is_valid = true;
 }
 
 ts::NodeRelationDescriptor::NodeRelationDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -173,18 +172,18 @@ void ts::NodeRelationDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::NodeRelationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::NodeRelationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(reference_type, u"reference_type", false, 0, 0, 15) &&
         element->getOptionalIntAttribute<uint16_t>(information_provider_id, u"information_provider_id", true) &&
         element->getOptionalIntAttribute<uint16_t>(event_relation_id, u"event_relation_id", true) &&
         element->getIntAttribute<uint16_t>(reference_node_id, u"reference_node_id", true) &&
         element->getIntAttribute<uint8_t>(reference_number, u"reference_number", true);
 
-    if (_is_valid && (information_provider_id.set() + event_relation_id.set()) == 1) {
+    if (ok && (information_provider_id.set() + event_relation_id.set()) == 1) {
         element->report().error(u"in <%s> line %d, attributes 'information_provider_id' and 'event_relation_id' must be both present or both absent", {element->name(), element->lineNumber()});
-        _is_valid = false;
+        ok = false;
     }
+    return ok;
 }

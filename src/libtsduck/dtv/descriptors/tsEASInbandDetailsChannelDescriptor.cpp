@@ -128,7 +128,7 @@ void ts::EASInbandDetailsChannelDescriptor::buildXML(DuckContext& duck, xml::Ele
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EASInbandDetailsChannelDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::EASInbandDetailsChannelDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

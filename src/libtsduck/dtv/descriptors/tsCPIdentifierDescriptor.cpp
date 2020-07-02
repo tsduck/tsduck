@@ -115,7 +115,7 @@ void ts::CPIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CPIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CPIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     cpids.clear();
     xml::ElementVector children;

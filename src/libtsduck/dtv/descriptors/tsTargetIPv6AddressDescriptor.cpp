@@ -140,7 +140,7 @@ void ts::TargetIPv6AddressDescriptor::buildXML(DuckContext& duck, xml::Element* 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6AddressDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TargetIPv6AddressDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     IPv6_addr.clear();
 

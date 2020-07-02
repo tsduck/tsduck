@@ -52,7 +52,6 @@ ts::ApplicationSignallingDescriptor::ApplicationSignallingDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    _is_valid = true;
 }
 
 
@@ -124,24 +123,18 @@ void ts::ApplicationSignallingDescriptor::buildXML(DuckContext& duck, xml::Eleme
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationSignallingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ApplicationSignallingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"application", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(children, u"application", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getIntAttribute<uint16_t>(entry.application_type, u"application_type", true, 0, 0x0000, 0x7FFF) &&
-            children[i]->getIntAttribute<uint8_t>(entry.AIT_version_number, u"AIT_version_number", true, 0, 0x00, 0x1F);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = children[i]->getIntAttribute<uint16_t>(entry.application_type, u"application_type", true, 0, 0x0000, 0x7FFF) &&
+             children[i]->getIntAttribute<uint8_t>(entry.AIT_version_number, u"AIT_version_number", true, 0, 0x00, 0x1F);
+        entries.push_back(entry);
     }
+    return ok;
 }
 
 

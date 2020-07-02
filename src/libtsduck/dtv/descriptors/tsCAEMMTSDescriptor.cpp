@@ -139,7 +139,7 @@ void ts::CAEMMTSDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CAEMMTSDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CAEMMTSDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

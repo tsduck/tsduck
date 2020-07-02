@@ -53,13 +53,19 @@ ts::MPEG2AACAudioDescriptor::MPEG2AACAudioDescriptor() :
     MPEG2_AAC_channel_configuration(0),
     MPEG2_AAC_additional_information(0)
 {
-    _is_valid = true;
 }
 
 ts::MPEG2AACAudioDescriptor::MPEG2AACAudioDescriptor(DuckContext& duck, const Descriptor& desc) :
     MPEG2AACAudioDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::MPEG2AACAudioDescriptor::clearContent()
+{
+    MPEG2_AAC_profile = 0;
+    MPEG2_AAC_channel_configuration = 0;
+    MPEG2_AAC_additional_information = 0;
 }
 
 
@@ -133,11 +139,9 @@ void ts::MPEG2AACAudioDescriptor::buildXML(DuckContext& duck, xml::Element* root
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MPEG2AACAudioDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::MPEG2AACAudioDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(MPEG2_AAC_profile, u"MPEG2_AAC_profile", true) &&
-        element->getIntAttribute<uint8_t>(MPEG2_AAC_channel_configuration, u"MPEG2_AAC_channel_configuration", true) &&
-        element->getIntAttribute<uint8_t>(MPEG2_AAC_additional_information, u"MPEG2_AAC_additional_information", true);
+    return element->getIntAttribute<uint8_t>(MPEG2_AAC_profile, u"MPEG2_AAC_profile", true) &&
+           element->getIntAttribute<uint8_t>(MPEG2_AAC_channel_configuration, u"MPEG2_AAC_channel_configuration", true) &&
+           element->getIntAttribute<uint8_t>(MPEG2_AAC_additional_information, u"MPEG2_AAC_additional_information", true);
 }

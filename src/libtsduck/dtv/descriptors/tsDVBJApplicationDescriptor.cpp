@@ -143,7 +143,7 @@ void ts::DVBJApplicationDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBJApplicationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DVBJApplicationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     parameters.clear();
 

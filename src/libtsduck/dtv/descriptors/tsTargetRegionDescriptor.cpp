@@ -243,7 +243,7 @@ void ts::TargetRegionDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetRegionDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TargetRegionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     regions.clear();
 

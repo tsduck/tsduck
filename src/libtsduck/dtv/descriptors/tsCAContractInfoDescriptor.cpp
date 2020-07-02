@@ -172,7 +172,7 @@ void ts::CAContractInfoDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CAContractInfoDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CAContractInfoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     component_tags.clear();
     contract_verification_info.clear();

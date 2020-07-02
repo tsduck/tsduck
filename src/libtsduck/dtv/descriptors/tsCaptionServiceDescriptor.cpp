@@ -188,7 +188,7 @@ void ts::CaptionServiceDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CaptionServiceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::CaptionServiceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

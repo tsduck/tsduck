@@ -130,7 +130,7 @@ void ts::ISPAccessModeDescriptor::buildXML(DuckContext& duck, xml::Element* root
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISPAccessModeDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ISPAccessModeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

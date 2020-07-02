@@ -121,7 +121,7 @@ void ts::MaximumBitrateDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MaximumBitrateDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::MaximumBitrateDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     uint32_t mbr = 0;
 

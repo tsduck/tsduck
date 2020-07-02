@@ -351,7 +351,7 @@ void ts::T2DeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::T2DeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::T2DeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     has_extension = false;
     cells.clear();

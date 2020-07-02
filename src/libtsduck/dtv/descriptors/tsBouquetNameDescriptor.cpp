@@ -123,7 +123,7 @@ void ts::BouquetNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::BouquetNameDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::BouquetNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

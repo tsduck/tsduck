@@ -52,13 +52,17 @@ ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(PDS pds_) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     pds(pds_)
 {
-    _is_valid = true;
 }
 
 ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(DuckContext& duck, const Descriptor& desc) :
     PrivateDataSpecifierDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::PrivateDataSpecifierDescriptor::clearContent()
+{
+    pds = 0;
 }
 
 
@@ -122,9 +126,7 @@ void ts::PrivateDataSpecifierDescriptor::buildXML(DuckContext& duck, xml::Elemen
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PrivateDataSpecifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::PrivateDataSpecifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntEnumAttribute(pds, PrivateDataSpecifierEnum, u"private_data_specifier", true);
+    return element->getIntEnumAttribute(pds, PrivateDataSpecifierEnum, u"private_data_specifier", true);
 }

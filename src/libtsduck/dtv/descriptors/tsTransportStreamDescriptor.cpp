@@ -123,7 +123,7 @@ void ts::TransportStreamDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TransportStreamDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TransportStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -118,7 +118,7 @@ void ts::DSNGDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DSNGDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DSNGDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     station_identification.clear();
     _is_valid =

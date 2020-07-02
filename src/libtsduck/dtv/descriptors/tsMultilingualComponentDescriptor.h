@@ -60,12 +60,13 @@ namespace ts {
         MultilingualComponentDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods
+        virtual void clearContent() override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
         virtual void serializeProlog(DuckContext& duck, const ByteBlockPtr& bbp) const override;
         virtual void deserializeProlog(DuckContext& duck, const uint8_t*& data, size_t& size) override;
     };

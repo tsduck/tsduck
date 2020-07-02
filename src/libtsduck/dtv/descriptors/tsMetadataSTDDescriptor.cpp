@@ -136,7 +136,7 @@ void ts::MetadataSTDDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MetadataSTDDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::MetadataSTDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

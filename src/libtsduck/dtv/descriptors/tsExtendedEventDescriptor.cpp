@@ -56,13 +56,21 @@ ts::ExtendedEventDescriptor::ExtendedEventDescriptor() :
     entries(),
     text()
 {
-    _is_valid = true;
 }
 
 ts::ExtendedEventDescriptor::ExtendedEventDescriptor(DuckContext& duck, const Descriptor& desc) :
     ExtendedEventDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::ExtendedEventDescriptor::clearContent()
+{
+    descriptor_number = 0;
+    last_descriptor_number = 0;
+    language_code.clear();
+    entries.clear();
+    text.clear();
 }
 
 
@@ -337,28 +345,21 @@ void ts::ExtendedEventDescriptor::buildXML(DuckContext& duck, xml::Element* root
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ExtendedEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    language_code.clear();
-    text.clear();
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute(descriptor_number, u"descriptor_number", true) &&
         element->getIntAttribute(last_descriptor_number, u"last_descriptor_number", true) &&
         element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
         element->getTextChild(text, u"text") &&
         element->getChildren(children, u"item");
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getTextChild(entry.item_description, u"description") &&
-            children[i]->getTextChild(entry.item, u"name");
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = children[i]->getTextChild(entry.item_description, u"description") &&
+             children[i]->getTextChild(entry.item, u"name");
+        entries.push_back(entry);
     }
+    return ok;
 }

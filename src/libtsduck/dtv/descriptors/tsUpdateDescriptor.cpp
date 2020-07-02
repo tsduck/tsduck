@@ -133,7 +133,7 @@ void ts::UpdateDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"update_method", update_method, false);
     root->setIntAttribute(u"update_priority", update_priority, false);
     if (!private_data.empty()) {
-        root->addElement(u"private_data")->addHexaText(private_data);
+        root->addHexaTextChild(u"private_data", private_data);
     }
 }
 
@@ -142,7 +142,7 @@ void ts::UpdateDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::UpdateDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::UpdateDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     _is_valid =

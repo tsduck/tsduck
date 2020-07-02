@@ -178,22 +178,23 @@ void ts::AbstractPreferredNameListDescriptor::buildXML(DuckContext& duck, xml::E
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractPreferredNameListDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::AbstractPreferredNameListDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children1;
-    _is_valid = checkXMLName(element) && element->getChildren(children1, u"language");
+    bool ok = element->getChildren(children1, u"language");
 
-    for (size_t i1 = 0; _is_valid && i1 < children1.size(); ++i1) {
+    for (size_t i1 = 0; ok && i1 < children1.size(); ++i1) {
         xml::ElementVector children2;
         UString lang;
-        _is_valid = children1[i1]->getAttribute(lang, u"code", true, u"", 3, 3) && children1[i1]->getChildren(children2, u"name");
-        if (_is_valid) {
+        ok = children1[i1]->getAttribute(lang, u"code", true, u"", 3, 3) && children1[i1]->getChildren(children2, u"name");
+        if (ok) {
             // Force the creation of a language entry.
             NameByIdMap& names(entries[lang]);
             for (size_t i2 = 0; _is_valid && i2 < children2.size(); ++i2) {
                 uint8_t id = 0;
-                _is_valid = children2[i2]->getIntAttribute(id, u"name_id", true) && children2[i2]->getAttribute(names[id], u"name");
+                ok = children2[i2]->getIntAttribute(id, u"name_id", true) && children2[i2]->getAttribute(names[id], u"name");
             }
         }
     }
+    return ok;
 }

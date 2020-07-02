@@ -208,7 +208,7 @@ void ts::TSInformationDescriptor::buildXML(DuckContext& duck, xml::Element* root
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TSInformationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TSInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     ts_name.clear();
     transmission_types.clear();

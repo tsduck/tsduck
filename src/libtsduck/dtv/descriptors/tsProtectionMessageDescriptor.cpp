@@ -147,7 +147,7 @@ void ts::ProtectionMessageDescriptor::buildXML(DuckContext& duck, xml::Element* 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ProtectionMessageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ProtectionMessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     component_tags.clear();
     xml::ElementVector children;

@@ -249,7 +249,7 @@ void ts::DigitalCopyControlDescriptor::buildXML(DuckContext& duck, xml::Element*
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DigitalCopyControlDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DigitalCopyControlDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     maximum_bitrate.reset();
     components.clear();

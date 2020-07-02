@@ -108,7 +108,7 @@ void ts::ECMRepetitionRateDescriptor::buildXML(DuckContext& duck, xml::Element* 
     root->setIntAttribute(u"CA_system_id", CA_system_id, true);
     root->setIntAttribute(u"ECM_repetition_rate", ECM_repetition_rate, false);
     if (!private_data.empty()) {
-        root->addElement(u"private_data")->addHexaText(private_data);
+        root->addHexaTextChild(u"private_data", private_data);
     }
 }
 
@@ -117,7 +117,7 @@ void ts::ECMRepetitionRateDescriptor::buildXML(DuckContext& duck, xml::Element* 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ECMRepetitionRateDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ECMRepetitionRateDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     private_data.clear();
 

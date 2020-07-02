@@ -56,7 +56,6 @@ ts::ApplicationDescriptor::ApplicationDescriptor() :
     application_priority(0),
     transport_protocol_labels()
 {
-    _is_valid = true;
 }
 
 ts::ApplicationDescriptor::ApplicationDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -192,41 +191,36 @@ void ts::ApplicationDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ApplicationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    profiles.clear();
-    transport_protocol_labels.clear();
-
     xml::ElementVector prof;
     xml::ElementVector label;
-
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getBoolAttribute(service_bound, u"service_bound", true) &&
         element->getIntAttribute<uint8_t>(visibility, u"visibility", true, 0, 0, 3) &&
         element->getIntAttribute<uint8_t>(application_priority, u"application_priority", true) &&
         element->getChildren(prof, u"profile") &&
         element->getChildren(label, u"transport_protocol");
 
-    for (size_t i = 0; _is_valid && i < prof.size(); ++i) {
+    for (size_t i = 0; ok && i < prof.size(); ++i) {
         Profile p;
         UString version;
-        _is_valid =
-            prof[i]->getIntAttribute<uint16_t>(p.application_profile, u"application_profile", true) &&
-            prof[i]->getAttribute(version, u"version", true);
-        if (_is_valid && !version.scan(u"%d.%d.%d", {&p.version_major, &p.version_minor, &p.version_micro})) {
-            _is_valid = false;
+        ok = prof[i]->getIntAttribute<uint16_t>(p.application_profile, u"application_profile", true) &&
+             prof[i]->getAttribute(version, u"version", true);
+        if (ok && !version.scan(u"%d.%d.%d", {&p.version_major, &p.version_minor, &p.version_micro})) {
+            ok = false;
             prof[i]->report().error(u"invalid version '%s' in <%s>, line %d, use 'major.minor.micro'", {version, prof[i]->name(), prof[i]->lineNumber()});
         }
-        if (_is_valid) {
+        if (ok) {
             profiles.push_back(p);
         }
     }
-    for (size_t i = 0; _is_valid && i < label.size(); ++i) {
+    for (size_t i = 0; ok && i < label.size(); ++i) {
         uint8_t l;
-        _is_valid = label[i]->getIntAttribute<uint8_t>(l, u"label", true);
-        if (_is_valid) {
+        ok = label[i]->getIntAttribute<uint8_t>(l, u"label", true);
+        if (ok) {
             transport_protocol_labels.push_back(l);
         }
     }
+    return ok;
 }

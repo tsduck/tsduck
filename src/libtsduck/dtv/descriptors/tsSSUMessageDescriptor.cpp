@@ -143,7 +143,7 @@ void ts::SSUMessageDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSUMessageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::SSUMessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     text.clear();
     xml::ElementVector children;

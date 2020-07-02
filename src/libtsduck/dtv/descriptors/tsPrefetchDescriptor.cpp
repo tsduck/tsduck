@@ -164,7 +164,7 @@ void ts::PrefetchDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PrefetchDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::PrefetchDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

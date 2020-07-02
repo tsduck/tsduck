@@ -54,13 +54,18 @@ ts::FrequencyListDescriptor::FrequencyListDescriptor() :
     coding_type(0),
     frequencies()
 {
-    _is_valid = true;
 }
 
 ts::FrequencyListDescriptor::FrequencyListDescriptor(DuckContext& duck, const Descriptor& desc) :
     FrequencyListDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::FrequencyListDescriptor::clearContent()
+{
+    coding_type = 0;
+    frequencies.clear();
 }
 
 
@@ -189,21 +194,17 @@ void ts::FrequencyListDescriptor::buildXML(DuckContext& duck, xml::Element* root
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::FrequencyListDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::FrequencyListDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    frequencies.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntEnumAttribute(coding_type, CodingTypeEnum, u"coding_type", true) &&
         element->getChildren(children, u"centre_frequency", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         uint64_t freq = 0;
-        _is_valid = children[i]->getIntAttribute<uint64_t>(freq, u"value", true);
-        if (_is_valid) {
-            frequencies.push_back(freq);
-        }
+        ok = children[i]->getIntAttribute<uint64_t>(freq, u"value", true);
+        frequencies.push_back(freq);
     }
+    return ok;
 }

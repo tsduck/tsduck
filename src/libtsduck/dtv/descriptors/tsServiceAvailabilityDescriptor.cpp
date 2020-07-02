@@ -141,7 +141,7 @@ void ts::ServiceAvailabilityDescriptor::buildXML(DuckContext& duck, xml::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceAvailabilityDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::ServiceAvailabilityDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     cell_ids.clear();
 

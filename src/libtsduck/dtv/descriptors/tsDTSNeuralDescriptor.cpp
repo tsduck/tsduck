@@ -103,7 +103,7 @@ void ts::DTSNeuralDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 {
     root->setIntAttribute(u"config_id", config_id, true);
     if (!additional_info.empty()) {
-        root->addElement(u"additional_info")->addHexaText(additional_info);
+        root->addHexaTextChild(u"additional_info", additional_info);
     }
 }
 
@@ -112,7 +112,7 @@ void ts::DTSNeuralDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DTSNeuralDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::DTSNeuralDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
