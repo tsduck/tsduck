@@ -44,9 +44,9 @@ const ts::UChar* const ts::AbstractSignalization::XML_GENERIC_LONG_TABLE  = u"ge
 
 ts::AbstractSignalization::AbstractSignalization(const UChar* xml_name, Standards standards, const UChar* xml_legacy_name) :
     AbstractDefinedByStandards(),
+    _is_valid(true),
     _xml_name(xml_name),
     _xml_legacy_name(xml_legacy_name),
-    _is_valid(true),
     _standards(standards)
 {
 }

@@ -161,9 +161,7 @@ void ts::TDT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::TDT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getDateTimeAttribute(utc_time, u"UTC_time", true);
+    return element->getDateTimeAttribute(utc_time, u"UTC_time", true);
 }

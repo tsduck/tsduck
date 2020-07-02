@@ -266,6 +266,6 @@ void ts::HEVCVideoDescriptor::fromXML(DuckContext& duck, const xml::Element* ele
 
     if (_is_valid  && temporal_id_min.set() + temporal_id_max.set() == 1) {
         _is_valid = false;
-        element->report().error(u"line %d: in <%s>, attributes 'temporal_id_min' and 'temporal_id_max' must be both present or both omitted", {element->lineNumber(), _xml_name});
+        element->report().error(u"line %d: in <%s>, attributes 'temporal_id_min' and 'temporal_id_max' must be both present or both omitted", {element->lineNumber(), element->name()});
     }
 }

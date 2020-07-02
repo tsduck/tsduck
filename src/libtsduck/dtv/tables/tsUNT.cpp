@@ -778,14 +778,10 @@ void ts::UNT::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::UNT::fromXML(DuckContext& duck, const xml::Element* element)
+bool ts::UNT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    descs.clear();
-    devices.clear();
-
     xml::ElementVector xdevices;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint8_t>(action_type, u"action_type", false, 0x01) &&
@@ -793,31 +789,28 @@ void ts::UNT::fromXML(DuckContext& duck, const xml::Element* element)
         element->getIntAttribute<uint8_t>(processing_order, u"processing_order", false, 0x00) &&
         descs.fromXML(duck, xdevices, element, u"devices");
 
-    for (size_t i1 = 0; _is_valid && i1 < xdevices.size(); ++i1) {
+    for (size_t i1 = 0; ok && i1 < xdevices.size(); ++i1) {
         Devices& devs(devices.newEntry());
         xml::ElementVector xcomdesc;
         xml::ElementVector xplatforms;
-        _is_valid =
-            xdevices[i1]->getChildren(xcomdesc, u"compatibilityDescriptor") &&
-            xdevices[i1]->getChildren(xplatforms, u"platform");
+        ok = xdevices[i1]->getChildren(xcomdesc, u"compatibilityDescriptor") &&
+             xdevices[i1]->getChildren(xplatforms, u"platform");
 
-        for (size_t i2 = 0; _is_valid && i2 < xcomdesc.size(); ++i2) {
+        for (size_t i2 = 0; ok && i2 < xcomdesc.size(); ++i2) {
             CompatibilityDescriptor comdesc;
             xml::ElementVector xsubdesc;
-            _is_valid =
-                xcomdesc[i2]->getIntAttribute<uint8_t>(comdesc.descriptorType, u"descriptorType", true) &&
-                xcomdesc[i2]->getIntAttribute<uint8_t>(comdesc.specifierType, u"specifierType", false, 0x01) &&
-                xcomdesc[i2]->getIntAttribute<uint32_t>(comdesc.specifierData, u"specifierData", true, 0, 0, 0xFFFFFF) &&
-                xcomdesc[i2]->getIntAttribute<uint16_t>(comdesc.model, u"model", false, 0) &&
-                xcomdesc[i2]->getIntAttribute<uint16_t>(comdesc.version, u"version", false, 0) &&
-                xcomdesc[i2]->getChildren(xsubdesc, u"subDescriptor");
-            for (size_t i3 = 0; _is_valid && i3 < xsubdesc.size(); ++i3) {
+            ok = xcomdesc[i2]->getIntAttribute<uint8_t>(comdesc.descriptorType, u"descriptorType", true) &&
+                 xcomdesc[i2]->getIntAttribute<uint8_t>(comdesc.specifierType, u"specifierType", false, 0x01) &&
+                 xcomdesc[i2]->getIntAttribute<uint32_t>(comdesc.specifierData, u"specifierData", true, 0, 0, 0xFFFFFF) &&
+                 xcomdesc[i2]->getIntAttribute<uint16_t>(comdesc.model, u"model", false, 0) &&
+                 xcomdesc[i2]->getIntAttribute<uint16_t>(comdesc.version, u"version", false, 0) &&
+                 xcomdesc[i2]->getChildren(xsubdesc, u"subDescriptor");
+            for (size_t i3 = 0; ok && i3 < xsubdesc.size(); ++i3) {
                 uint8_t type = 0;
                 ByteBlock content;
-                _is_valid =
-                    xsubdesc[i3]->getIntAttribute<uint8_t>(type, u"subDescriptorType", true) &&
-                    xsubdesc[i3]->getHexaText(content, 0, 255);
-                if (_is_valid) {
+                ok = xsubdesc[i3]->getIntAttribute<uint8_t>(type, u"subDescriptorType", true) &&
+                     xsubdesc[i3]->getHexaText(content, 0, 255);
+                if (ok) {
                     // Build complete descriptor.
                     content.insert(content.begin(), uint8_t(content.size()));
                     content.insert(content.begin(), type);
@@ -827,15 +820,15 @@ void ts::UNT::fromXML(DuckContext& duck, const xml::Element* element)
             devs.compatibilityDescriptor.push_back(comdesc);
         }
 
-        for (size_t i2 = 0; _is_valid && i2 < xplatforms.size(); ++i2) {
+        for (size_t i2 = 0; ok && i2 < xplatforms.size(); ++i2) {
             Platform& platform(devs.platforms.newEntry());
             xml::ElementVector xtarget;
             xml::ElementVector xoperational;
-            _is_valid =
-                xplatforms[i2]->getChildren(xtarget, u"target", 0, 1) &&
-                (xtarget.empty() || platform.target_descs.fromXML(duck, xtarget[0])) &&
-                xplatforms[i2]->getChildren(xoperational, u"operational", 0, 1) &&
-                (xoperational.empty() || platform.operational_descs.fromXML(duck, xoperational[0]));
+            ok = xplatforms[i2]->getChildren(xtarget, u"target", 0, 1) &&
+                 (xtarget.empty() || platform.target_descs.fromXML(duck, xtarget[0])) &&
+                 xplatforms[i2]->getChildren(xoperational, u"operational", 0, 1) &&
+                 (xoperational.empty() || platform.operational_descs.fromXML(duck, xoperational[0]));
         }
     }
+    return ok;
 }
