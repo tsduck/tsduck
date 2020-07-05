@@ -124,6 +124,7 @@ void ts::AbstractSignalization::fromXML(DuckContext& duck, const xml::Element* e
     // If the object is invalid, clear it again to avoid letting partial objects being used.
     if (!_is_valid) {
         clear();
+        _is_valid = false; // was set to true by clear()
     }
 }
 

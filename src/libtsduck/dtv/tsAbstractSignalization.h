@@ -45,6 +45,13 @@ namespace ts {
     //! Abstract base class for MPEG PSI/SI tables and descriptors.
     //! @ingroup mpeg
     //!
+    //! Some methods are declared as "virtual final". Since these methods are not
+    //! inherited, this seems useless. This is in fact a compilation check. These
+    //! methods were formerly designed to be overridden by subclasses but the
+    //! implementation has changed. They are now defined in this class only and
+    //! call a new pure virtual method. The "final" attribute is here to detect
+    //! old subclasses which do not yet use the new scheme.
+    //!
     class TSDUCKDLL AbstractSignalization : public AbstractDefinedByStandards
     {
     public:
@@ -61,7 +68,8 @@ namespace ts {
         void invalidate() { _is_valid = false; }
 
         //!
-        //! This method clears the content of the table or descriptor and returns to a clear empty state.
+        //! This method clears the content of the table or descriptor.
+        //! Upon return, the object is valid and in the same empty state as after a default constructor.
         //!
         virtual void clear() final;
 
@@ -74,13 +82,8 @@ namespace ts {
         //!
         //! This method converts this object to XML.
         //!
-        //! When this object is valid, the default implementation of toXML()
-        //! creates a root node with the default XML name and then invokes
-        //! buildXML() to populate the XML node.
-        //!
-        //! Subclasses have the choice to either implement buildXML() or toXML().
-        //! If the object is serialized as one single XML node, it is simpler to
-        //! implement buildXML().
+        //! When this object is valid, this method creates a root node with the default XML
+        //! name and then invokes buildXML() in the subclass to populate the XML node.
         //!
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] parent The parent node for the new XML tree.
@@ -94,13 +97,8 @@ namespace ts {
         //! In case of success, this object is replaced with the interpreted content of the XML structure.
         //! In case of error, this object is invalidated.
         //!
-        //! The default implementation checks the name of the XML node and then invokes
-        //! analyzeXML(). Depending on the returned values of analyzeXML(), this object
-        //! is either validated or invalidated.
-        //!
-        //! Subclasses have the choice to either implement analyzeXML() or fromXML().
-        //! If the object is serialized as one single XML node, it is simpler to
-        //! implement analyzeXML().
+        //! This method checks the name of the XML node and then invokes analyzeXML() in the subclass. 
+        //! Depending on the returned values of analyzeXML(), this object is either validated or invalidated.
         //!
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] element XML element to convert.
@@ -155,8 +153,8 @@ namespace ts {
         static UString DeserializeLanguageCode(const uint8_t* data);
 
     protected:
-        //@@@@@@@@@@@@@ TODO @@@@@@@@@@@@@@@@
-        // Make _is_valid private.
+        // Implementation node: Try to make _is_valid private some day.
+        // It should not be used outside legacy serialize() / deserialize() implementations.
 
         //!
         //! It is the responsibility of the subclasses to set the valid flag
@@ -189,18 +187,18 @@ namespace ts {
         //!
         //! Helper method to clear the content of the table or descriptor.
         //!
+        //! It is called by clear(). In clearContent(), the subclass shall simply
+        //! revert the value of all fields to their original values in the default
+        //! constructor.
+        //!
         virtual void clearContent() = 0;
 
         //!
         //! Helper method to convert this object to XML.
         //!
-        //! When this object is valid, the default implementation of toXML()
-        //! creates a root node with the default XML name and then invokes
-        //! buildXML() to populate the XML node.
-        //!
-        //! The default implementation is to do nothing. Subclasses which
-        //! override toXML() do not need to implement buildXML() since it
-        //! won't be invoked.
+        //! It is called by toXML() only when the object is valid. The @a root element
+        //! is already built with the appropriate XML node name. In buildXML(), the
+        //! subclass shall simply populate the XML node.
         //!
         //! @param [in,out] root The root node for the new XML tree.
         //! @param [in,out] duck TSDuck execution context.
@@ -210,10 +208,10 @@ namespace ts {
         //!
         //! Helper method to convert this object from XML.
         //!
-        //! The default implementation of fromXML() checks the validity of the XML
-        //! node name and then invokes analyzeXML(). This method shall build the C++
-        //! object from the content of the XML node. When analyzeXML() returns false,
-        //! this table or descriptor object is invalidated.
+        //! It is called by fromXML() after checking the validity of the XML
+        //! node name. In analyzeXML(), the subclass shall populate the C++
+        //! object from the content of the XML node. If analyzeXML() returns false,
+        //! this table or descriptor object is then invalidated and cleared.
         //!
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] element XML element to convert.
