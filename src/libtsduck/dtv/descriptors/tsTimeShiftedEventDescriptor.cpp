@@ -52,7 +52,6 @@ ts::TimeShiftedEventDescriptor::TimeShiftedEventDescriptor() :
     reference_service_id(0),
     reference_event_id(0)
 {
-    _is_valid = true;
 }
 
 ts::TimeShiftedEventDescriptor::TimeShiftedEventDescriptor(DuckContext& duck, const Descriptor& desc) :

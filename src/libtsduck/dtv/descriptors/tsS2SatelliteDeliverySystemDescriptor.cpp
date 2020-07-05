@@ -55,13 +55,21 @@ ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor() :
     scrambling_sequence_index(0),
     input_stream_identifier(0)
 {
-    _is_valid = true;
 }
 
 ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
     S2SatelliteDeliverySystemDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::S2SatelliteDeliverySystemDescriptor::clearContent()
+{
+    scrambling_sequence_selector = false;
+    multiple_input_stream_flag = false;
+    backwards_compatibility_indicator = false;
+    scrambling_sequence_index = 0;
+    input_stream_identifier = 0;
 }
 
 
@@ -185,8 +193,7 @@ bool ts::S2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, cons
     Variable<uint32_t> scrambling;
     Variable<uint8_t> stream;
 
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getBoolAttribute(backwards_compatibility_indicator, u"backwards_compatibility", true) &&
         element->getOptionalIntAttribute<uint32_t>(scrambling, u"scrambling_sequence_index", 0x00000000, 0x0003FFFF) &&
         element->getOptionalIntAttribute<uint8_t>(stream, u"input_stream_identifier");
@@ -199,4 +206,5 @@ bool ts::S2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, cons
         multiple_input_stream_flag = true;
         input_stream_identifier = stream.value();
     }
+    return ok;
 }

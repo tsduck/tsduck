@@ -57,6 +57,14 @@ ts::AssociationTagDescriptor::AssociationTagDescriptor() :
 {
 }
 
+void ts::AssociationTagDescriptor::clearContent()
+{
+    association_tag = 0;
+    use = 0;
+    selector_bytes.clear();
+    private_data.clear();
+}
+
 ts::AssociationTagDescriptor::AssociationTagDescriptor(DuckContext& duck, const Descriptor& desc) :
     AssociationTagDescriptor()
 {

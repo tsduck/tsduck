@@ -54,13 +54,19 @@ ts::VideoWindowDescriptor::VideoWindowDescriptor() :
     vertical_offset(0),
     window_priority(0)
 {
-    _is_valid = true;
 }
 
 ts::VideoWindowDescriptor::VideoWindowDescriptor(DuckContext& duck, const Descriptor& desc) :
     VideoWindowDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::VideoWindowDescriptor::clearContent()
+{
+    horizontal_offset = 0;
+    vertical_offset = 0;
+    window_priority = 0;
 }
 
 
@@ -138,9 +144,7 @@ void ts::VideoWindowDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::VideoWindowDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(horizontal_offset, u"horizontal_offset", true, 0, 0, 0x3FFF) &&
-        element->getIntAttribute<uint16_t>(vertical_offset, u"vertical_offset", true, 0, 0, 0x3FFF) &&
-        element->getIntAttribute<uint8_t>(window_priority, u"window_priority", true, 0, 0, 0x0F);
+    return element->getIntAttribute<uint16_t>(horizontal_offset, u"horizontal_offset", true, 0, 0, 0x3FFF) &&
+           element->getIntAttribute<uint16_t>(vertical_offset, u"vertical_offset", true, 0, 0, 0x3FFF) &&
+           element->getIntAttribute<uint8_t>(window_priority, u"window_priority", true, 0, 0, 0x0F);
 }

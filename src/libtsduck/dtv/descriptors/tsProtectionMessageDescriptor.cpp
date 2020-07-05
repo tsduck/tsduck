@@ -52,7 +52,11 @@ ts::ProtectionMessageDescriptor::ProtectionMessageDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     component_tags()
 {
-    _is_valid = true;
+}
+
+void ts::ProtectionMessageDescriptor::clearContent()
+{
+    component_tags.clear();
 }
 
 ts::ProtectionMessageDescriptor::ProtectionMessageDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -149,15 +153,13 @@ void ts::ProtectionMessageDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::ProtectionMessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    component_tags.clear();
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"component", 0, 15);
+    bool ok = element->getChildren(children, u"component", 0, 15);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         uint8_t t = 0;
-        _is_valid = children[i]->getIntAttribute<uint8_t>(t, u"tag", true);
+        ok = children[i]->getIntAttribute<uint8_t>(t, u"tag", true);
         component_tags.push_back(t);
     }
+    return ok;
 }

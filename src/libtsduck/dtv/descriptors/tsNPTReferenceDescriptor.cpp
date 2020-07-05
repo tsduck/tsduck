@@ -56,7 +56,6 @@ ts::NPTReferenceDescriptor::NPTReferenceDescriptor() :
     scale_numerator(0),
     scale_denominator(0)
 {
-    _is_valid = true;
 }
 
 ts::NPTReferenceDescriptor::NPTReferenceDescriptor(DuckContext& duck, const Descriptor& desc) :

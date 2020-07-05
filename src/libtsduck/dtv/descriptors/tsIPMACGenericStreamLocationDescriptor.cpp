@@ -53,7 +53,7 @@ namespace {
 }
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::IPMACGenericStreamLocationDescriptor::IPMACGenericStreamLocationDescriptor() :
@@ -64,18 +64,21 @@ ts::IPMACGenericStreamLocationDescriptor::IPMACGenericStreamLocationDescriptor()
     PHY_stream_id(0),
     selector_bytes()
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::IPMACGenericStreamLocationDescriptor::IPMACGenericStreamLocationDescriptor(DuckContext& duck, const Descriptor& desc) :
     IPMACGenericStreamLocationDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::IPMACGenericStreamLocationDescriptor::clearContent()
+{
+    interactive_network_id = 0;
+    modulation_system_type = 0;
+    modulation_system_id = 0;
+    PHY_stream_id = 0;
+    selector_bytes.clear();
 }
 
 
@@ -153,9 +156,7 @@ void ts::IPMACGenericStreamLocationDescriptor::buildXML(DuckContext& duck, xml::
     root->setIntEnumAttribute(ModulationTypeNames, u"modulation_system_type", modulation_system_type);
     root->setIntAttribute(u"modulation_system_id", modulation_system_id, true);
     root->setIntAttribute(u"PHY_stream_id", PHY_stream_id, true);
-    if (!selector_bytes.empty()) {
-        root->addHexaTextChild(u"selector_bytes", selector_bytes);
-    }
+    root->addHexaTextChild(u"selector_bytes", selector_bytes, true);
 }
 
 
@@ -165,11 +166,9 @@ void ts::IPMACGenericStreamLocationDescriptor::buildXML(DuckContext& duck, xml::
 
 bool ts::IPMACGenericStreamLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute(interactive_network_id, u"interactive_network_id", true) &&
-        element->getIntEnumAttribute(modulation_system_type, ModulationTypeNames, u"modulation_system_type", true) &&
-        element->getIntAttribute(modulation_system_id, u"modulation_system_id", false) &&
-        element->getIntAttribute(PHY_stream_id, u"PHY_stream_id", false) &&
-        element->getHexaTextChild(selector_bytes, u"selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 9);
+    return element->getIntAttribute(interactive_network_id, u"interactive_network_id", true) &&
+           element->getIntEnumAttribute(modulation_system_type, ModulationTypeNames, u"modulation_system_type", true) &&
+           element->getIntAttribute(modulation_system_id, u"modulation_system_id", false) &&
+           element->getIntAttribute(PHY_stream_id, u"PHY_stream_id", false) &&
+           element->getHexaTextChild(selector_bytes, u"selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 9);
 }

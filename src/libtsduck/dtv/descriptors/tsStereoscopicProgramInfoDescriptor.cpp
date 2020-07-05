@@ -52,7 +52,11 @@ ts::StereoscopicProgramInfoDescriptor::StereoscopicProgramInfoDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     stereoscopic_service_type(0)
 {
-    _is_valid = true;
+}
+
+void ts::StereoscopicProgramInfoDescriptor::clearContent()
+{
+    stereoscopic_service_type = 0;
 }
 
 ts::StereoscopicProgramInfoDescriptor::StereoscopicProgramInfoDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -111,7 +115,7 @@ void ts::StereoscopicProgramInfoDescriptor::DisplayDescriptor(TablesDisplay& dis
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::StereoscopicProgramInfoDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -119,14 +123,7 @@ void ts::StereoscopicProgramInfoDescriptor::buildXML(DuckContext& duck, xml::Ele
     root->setIntAttribute(u"stereoscopic_service_type", stereoscopic_service_type);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::StereoscopicProgramInfoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(stereoscopic_service_type, u"stereoscopic_service_type", true, 0, 0, 7);
+    return element->getIntAttribute<uint8_t>(stereoscopic_service_type, u"stereoscopic_service_type", true, 0, 0, 7);
 }

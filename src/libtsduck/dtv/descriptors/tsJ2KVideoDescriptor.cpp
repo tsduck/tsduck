@@ -44,7 +44,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::J2KVideoDescriptor::J2KVideoDescriptor() :
@@ -61,13 +61,22 @@ ts::J2KVideoDescriptor::J2KVideoDescriptor() :
     interlaced_video(false),
     private_data()
 {
-    _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::J2KVideoDescriptor::clearContent()
+{
+    profile_and_level = 0;
+    horizontal_size = 0;
+    vertical_size = 0;
+    max_bit_rate = 0;
+    max_buffer_size = 0;
+    DEN_frame_rate = 0;
+    NUM_frame_rate = 0;
+    color_specification = 0;
+    still_mode = false;
+    interlaced_video = false;
+    private_data.clear();
+}
 
 ts::J2KVideoDescriptor::J2KVideoDescriptor(DuckContext& duck, const Descriptor& desc) :
     J2KVideoDescriptor()
@@ -181,10 +190,7 @@ void ts::J2KVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
     root->setIntAttribute(u"color_specification", color_specification, true);
     root->setBoolAttribute(u"still_mode", still_mode);
     root->setBoolAttribute(u"interlaced_video", interlaced_video);
-
-    if (!private_data.empty()) {
-        root->addHexaTextChild(u"private_data", private_data);
-    }
+    root->addHexaTextChild(u"private_data", private_data, true);
 }
 
 
@@ -194,18 +200,15 @@ void ts::J2KVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 
 bool ts::J2KVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    private_data.clear();
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(profile_and_level, u"profile_and_level", true) &&
-        element->getIntAttribute<uint32_t>(horizontal_size, u"horizontal_size", true) &&
-        element->getIntAttribute<uint32_t>(vertical_size, u"vertical_size", true) &&
-        element->getIntAttribute<uint32_t>(max_bit_rate, u"max_bit_rate", true) &&
-        element->getIntAttribute<uint32_t>(max_buffer_size, u"max_buffer_size", true) &&
-        element->getIntAttribute<uint16_t>(DEN_frame_rate, u"DEN_frame_rate", true) &&
-        element->getIntAttribute<uint16_t>(NUM_frame_rate, u"NUM_frame_rate", true) &&
-        element->getIntAttribute<uint8_t>(color_specification, u"color_specification", true) &&
-        element->getBoolAttribute(still_mode, u"still_mode", true) &&
-        element->getBoolAttribute(interlaced_video, u"interlaced_video", true) &&
-        element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 26);
+    return  element->getIntAttribute<uint16_t>(profile_and_level, u"profile_and_level", true) &&
+            element->getIntAttribute<uint32_t>(horizontal_size, u"horizontal_size", true) &&
+            element->getIntAttribute<uint32_t>(vertical_size, u"vertical_size", true) &&
+            element->getIntAttribute<uint32_t>(max_bit_rate, u"max_bit_rate", true) &&
+            element->getIntAttribute<uint32_t>(max_buffer_size, u"max_buffer_size", true) &&
+            element->getIntAttribute<uint16_t>(DEN_frame_rate, u"DEN_frame_rate", true) &&
+            element->getIntAttribute<uint16_t>(NUM_frame_rate, u"NUM_frame_rate", true) &&
+            element->getIntAttribute<uint8_t>(color_specification, u"color_specification", true) &&
+            element->getBoolAttribute(still_mode, u"still_mode", true) &&
+            element->getBoolAttribute(interlaced_video, u"interlaced_video", true) &&
+            element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 26);
 }

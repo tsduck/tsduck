@@ -51,13 +51,17 @@ ts::MaximumBitrateDescriptor::MaximumBitrateDescriptor(uint32_t mbr) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     maximum_bitrate(mbr)
 {
-    _is_valid = true;
 }
 
 ts::MaximumBitrateDescriptor::MaximumBitrateDescriptor(DuckContext& duck, const Descriptor& desc) :
     MaximumBitrateDescriptor(0)
 {
     deserialize(duck, desc);
+}
+
+void ts::MaximumBitrateDescriptor::clearContent()
+{
+    maximum_bitrate = 0;
 }
 
 
@@ -124,12 +128,7 @@ void ts::MaximumBitrateDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 bool ts::MaximumBitrateDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     uint32_t mbr = 0;
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint32_t>(mbr, u"maximum_bitrate", true, 0, 0, 0x003FFFFF * BITRATE_UNIT);
-
-    if (_is_valid) {
-        maximum_bitrate = mbr / BITRATE_UNIT;
-    }
+    bool ok = element->getIntAttribute<uint32_t>(mbr, u"maximum_bitrate", true, 0, 0, 0x003FFFFF * BITRATE_UNIT);
+    maximum_bitrate = mbr / BITRATE_UNIT;
+    return ok;
 }

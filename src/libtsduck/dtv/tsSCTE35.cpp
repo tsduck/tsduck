@@ -53,7 +53,7 @@ int ts::SpliceTime::deserialize(const uint8_t* data, size_t size)
         return -1; // too short.
     }
     else if ((data[0] & 0x80) == 0) {
-        reset();
+        clear();
         return 1;
     }
     else if (size < 5) {

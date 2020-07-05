@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ApplicationStorageDescriptor::ApplicationStorageDescriptor() :
@@ -59,10 +59,15 @@ ts::ApplicationStorageDescriptor::ApplicationStorageDescriptor() :
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::ApplicationStorageDescriptor::clearContent()
+{
+    storage_property = 0;
+    not_launchable_from_broadcast = false;
+    launchable_completely_from_cache = false;
+    is_launchable_with_older_version = false;
+    version = 0;
+    priority = 0;
+}
 
 ts::ApplicationStorageDescriptor::ApplicationStorageDescriptor(DuckContext& duck, const Descriptor& desc) :
     ApplicationStorageDescriptor()

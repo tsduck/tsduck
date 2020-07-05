@@ -55,7 +55,14 @@ ts::SSUMessageDescriptor::SSUMessageDescriptor() :
     ISO_639_language_code(),
     text()
 {
-    _is_valid = true;
+}
+
+void ts::SSUMessageDescriptor::clearContent()
+{
+    descriptor_number = 0;
+    last_descriptor_number = 0;
+    ISO_639_language_code.clear();
+    text.clear();
 }
 
 ts::SSUMessageDescriptor::SSUMessageDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -145,12 +152,8 @@ void ts::SSUMessageDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::SSUMessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    text.clear();
-    xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(descriptor_number, u"descriptor_number", true, 0, 0, 15) &&
-        element->getIntAttribute<uint8_t>(last_descriptor_number, u"last_descriptor_number", true, 0, 0, 15) &&
-        element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, u"", 3, 3) &&
-        element->getTextChild(text, u"text");
+    return element->getIntAttribute<uint8_t>(descriptor_number, u"descriptor_number", true, 0, 0, 15) &&
+           element->getIntAttribute<uint8_t>(last_descriptor_number, u"last_descriptor_number", true, 0, 0, 15) &&
+           element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, u"", 3, 3) &&
+           element->getTextChild(text, u"text");
 }

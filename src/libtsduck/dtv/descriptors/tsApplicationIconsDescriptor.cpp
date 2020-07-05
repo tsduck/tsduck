@@ -46,7 +46,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ApplicationIconsDescriptor::ApplicationIconsDescriptor() :
@@ -61,6 +61,13 @@ ts::ApplicationIconsDescriptor::ApplicationIconsDescriptor() :
 //----------------------------------------------------------------------------
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
+
+void ts::ApplicationIconsDescriptor::clearContent()
+{
+    icon_locator.clear();
+    icon_flags = 0;
+    reserved_future_use.clear();
+}
 
 ts::ApplicationIconsDescriptor::ApplicationIconsDescriptor(DuckContext& duck, const Descriptor& desc) :
     ApplicationIconsDescriptor()

@@ -44,26 +44,25 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::STDDescriptor::STDDescriptor(bool leak_valid_) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     leak_valid(leak_valid_)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::STDDescriptor::STDDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     leak_valid(false)
 {
     deserialize(duck, desc);
+}
+
+void ts::STDDescriptor::clearContent()
+{
+    leak_valid = false;
 }
 
 
@@ -115,7 +114,7 @@ void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::STDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -123,14 +122,7 @@ void ts::STDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setBoolAttribute(u"leak_valid", leak_valid);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::STDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(leak_valid, u"leak_valid", true);
+    return element->getBoolAttribute(leak_valid, u"leak_valid", true);
 }

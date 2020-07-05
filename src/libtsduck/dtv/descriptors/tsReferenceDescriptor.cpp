@@ -56,6 +56,13 @@ ts::ReferenceDescriptor::ReferenceDescriptor() :
 {
 }
 
+void ts::ReferenceDescriptor::clearContent()
+{
+    information_provider_id = 0;
+    event_relation_id = 0;
+    references.clear();
+}
+
 ts::ReferenceDescriptor::ReferenceDescriptor(DuckContext& duck, const Descriptor& desc) :
     ReferenceDescriptor()
 {

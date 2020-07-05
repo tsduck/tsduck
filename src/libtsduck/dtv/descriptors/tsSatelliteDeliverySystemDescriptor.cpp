@@ -59,7 +59,18 @@ ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor() :
     roll_off(0),
     FEC_inner(0)
 {
-    _is_valid = true;
+}
+
+void ts::SatelliteDeliverySystemDescriptor::clearContent()
+{
+    frequency = 0;
+    orbital_position = 0;
+    east_not_west = false;
+    polarization = 0;
+    symbol_rate = 0;
+    modulation = 0;
+    roll_off = 0;
+    FEC_inner = 0;
 }
 
 ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -256,9 +267,7 @@ void ts::SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Ele
 bool ts::SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     UString orbit;
-
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
         element->getAttribute(orbit, u"orbital_position", true) &&
         element->getIntEnumAttribute(east_not_west, DirectionNames, u"west_east_flag", true) &&
@@ -267,39 +276,38 @@ bool ts::SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const 
         element->getIntAttribute<uint64_t>(symbol_rate, u"symbol_rate", true) &&
         element->getIntEnumAttribute<DeliverySystem>(_system, DeliverySystemEnum, u"modulation_system", true);
 
-    if (_is_valid) {
+    if (ok) {
         // Enforce a valid delivery system (DVB-S, DVB-S2, ISDB-S).
         _system = ResolveDeliverySystem(duck, _system);
         if (_system == DS_ISDB_S) {
             // ISDB-S variant.
             // Default modulation: ISDB-S (8)
-            _is_valid =
-                element->getIntEnumAttribute<uint8_t>(modulation, ModulationNamesISDB, u"modulation_type", false, 8) &&
-                element->getIntEnumAttribute(FEC_inner, CodeRateNamesISDB, u"FEC_inner", true);
+            ok = element->getIntEnumAttribute<uint8_t>(modulation, ModulationNamesISDB, u"modulation_type", false, 8) &&
+                 element->getIntEnumAttribute(FEC_inner, CodeRateNamesISDB, u"FEC_inner", true);
         }
         else {
             // DVB-S/S2 variant.
             // Default modulation: QPSK (1)
-            _is_valid =
-                element->getIntEnumAttribute<uint8_t>(modulation, ModulationNamesDVB, u"modulation_type", false, 1) &&
-                element->getIntEnumAttribute(FEC_inner, CodeRateNamesDVB, u"FEC_inner", true);
+            ok = element->getIntEnumAttribute<uint8_t>(modulation, ModulationNamesDVB, u"modulation_type", false, 1) &&
+                 element->getIntEnumAttribute(FEC_inner, CodeRateNamesDVB, u"FEC_inner", true);
         }
     }
 
-    if (_is_valid) {
+    if (ok) {
         // Expected orbital position is "XX.X" as in "19.2".
         UStringVector fields;
         uint16_t p1 = 0;
         uint16_t p2 = 0;
         orbit.split(fields, u'.');
-        _is_valid = fields.size() == 2 && fields[0].toInteger(p1) && fields[1].toInteger(p2) && p2 < 10;
-        if (_is_valid) {
+        ok = fields.size() == 2 && fields[0].toInteger(p1) && fields[1].toInteger(p2) && p2 < 10;
+        if (ok) {
             orbital_position = (p1 * 10) + p2;
         }
         else {
             element->report().error(u"Invalid value '%s' for attribute 'orbital_position' in <%s> at line %d, use 'nn.n'", {orbit, element->name(), element->lineNumber()});
         }
     }
+    return ok;
 }
 
 

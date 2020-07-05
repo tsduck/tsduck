@@ -54,7 +54,12 @@ ts::TargetIPAddressDescriptor::TargetIPAddressDescriptor() :
     IPv4_addr_mask(),
     IPv4_addr()
 {
-    _is_valid = true;
+}
+
+void ts::TargetIPAddressDescriptor::clearContent()
+{
+    IPv4_addr_mask.clear();
+    IPv4_addr.clear();
 }
 
 ts::TargetIPAddressDescriptor::TargetIPAddressDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -142,19 +147,15 @@ void ts::TargetIPAddressDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::TargetIPAddressDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    IPv4_addr.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIPAttribute(IPv4_addr_mask, u"IPv4_addr_mask", true) &&
         element->getChildren(children, u"address", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         IPAddress addr;
-        _is_valid = children[i]->getIPAttribute(addr, u"IPv4_addr", true);
-        if (_is_valid) {
-            IPv4_addr.push_back(addr);
-        }
+        ok = children[i]->getIPAttribute(addr, u"IPv4_addr", true);
+        IPv4_addr.push_back(addr);
     }
+    return ok;
 }

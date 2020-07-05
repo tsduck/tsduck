@@ -52,7 +52,11 @@ ts::ExtendedChannelNameDescriptor::ExtendedChannelNameDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     long_channel_name_text()
 {
-    _is_valid = true;
+}
+
+void ts::ExtendedChannelNameDescriptor::clearContent()
+{
+    long_channel_name_text.clear();
 }
 
 ts::ExtendedChannelNameDescriptor::ExtendedChannelNameDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -99,7 +103,7 @@ void ts::ExtendedChannelNameDescriptor::DisplayDescriptor(TablesDisplay& display
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::ExtendedChannelNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -107,14 +111,7 @@ void ts::ExtendedChannelNameDescriptor::buildXML(DuckContext& duck, xml::Element
     long_channel_name_text.toXML(duck, root, u"long_channel_name_text", true);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::ExtendedChannelNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        long_channel_name_text.fromXML(duck, element, u"long_channel_name_text", false);
+    return long_channel_name_text.fromXML(duck, element, u"long_channel_name_text", false);
 }

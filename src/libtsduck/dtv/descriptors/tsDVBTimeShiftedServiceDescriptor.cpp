@@ -52,13 +52,17 @@ ts::DVBTimeShiftedServiceDescriptor::DVBTimeShiftedServiceDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY),
     reference_service_id(0)
 {
-    _is_valid = true;
 }
 
 ts::DVBTimeShiftedServiceDescriptor::DVBTimeShiftedServiceDescriptor(DuckContext& duck, const Descriptor& desc) :
     DVBTimeShiftedServiceDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::DVBTimeShiftedServiceDescriptor::clearContent()
+{
+    reference_service_id = 0;
 }
 
 
@@ -125,7 +129,5 @@ void ts::DVBTimeShiftedServiceDescriptor::buildXML(DuckContext& duck, xml::Eleme
 
 bool ts::DVBTimeShiftedServiceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(reference_service_id, u"reference_service_id", true);
+    return element->getIntAttribute<uint16_t>(reference_service_id, u"reference_service_id", true);
 }

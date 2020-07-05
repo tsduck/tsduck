@@ -53,6 +53,8 @@ namespace ts {
         {
         public:
             Channel();                            //!< Default constructor.
+            void clear();                         //!< Clear content.
+
             uint64_t frequency;                   //!< Frequency in Hz.
             uint16_t orbital_position;            //!< Orbital position, unit is 0.1 degree.
             bool     east_not_west;               //!< True for East, false for West.

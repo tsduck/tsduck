@@ -52,7 +52,11 @@ ts::ContentAdvisoryDescriptor::ContentAdvisoryDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    _is_valid = true;
+}
+
+void ts::ContentAdvisoryDescriptor::clearContent()
+{
+    entries.clear();
 }
 
 ts::ContentAdvisoryDescriptor::ContentAdvisoryDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -189,34 +193,23 @@ void ts::ContentAdvisoryDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::ContentAdvisoryDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"region", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(children, u"region", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
         xml::ElementVector children2;
-        _is_valid =
-            children[i]->getIntAttribute<uint8_t>(entry.rating_region, u"rating_region", true) &&
-            children[i]->getChildren(children2, u"dimension", 0, 255) &&
-            entry.rating_description.fromXML(duck, children[i], u"rating_description", false);
-        if (_is_valid) {
-            for (size_t i2 = 0; _is_valid && i2 < children2.size(); ++i2) {
-                uint8_t dim = 0;
-                uint8_t val = 0;
-                _is_valid =
-                    children2[i2]->getIntAttribute<uint8_t>(dim, u"rating_dimension_j", true) &&
-                    children2[i2]->getIntAttribute<uint8_t>(val, u"rating_value", true, 0, 0, 0x0F);
-                if (_is_valid) {
-                    entry.rating_values[dim] = val;
-                }
-            }
+        ok = children[i]->getIntAttribute<uint8_t>(entry.rating_region, u"rating_region", true) &&
+             children[i]->getChildren(children2, u"dimension", 0, 255) &&
+             entry.rating_description.fromXML(duck, children[i], u"rating_description", false);
+        for (size_t i2 = 0; ok && i2 < children2.size(); ++i2) {
+            uint8_t dim = 0;
+            uint8_t val = 0;
+            ok = children2[i2]->getIntAttribute<uint8_t>(dim, u"rating_dimension_j", true) &&
+                 children2[i2]->getIntAttribute<uint8_t>(val, u"rating_value", true, 0, 0, 0x0F);
+            entry.rating_values[dim] = val;
         }
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        entries.push_back(entry);
     }
+    return ok;
 }

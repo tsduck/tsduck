@@ -52,7 +52,11 @@ ts::SimpleApplicationBoundaryDescriptor::SimpleApplicationBoundaryDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     boundary_extension()
 {
-    _is_valid = true;
+}
+
+void ts::SimpleApplicationBoundaryDescriptor::clearContent()
+{
+    boundary_extension.clear();
 }
 
 ts::SimpleApplicationBoundaryDescriptor::SimpleApplicationBoundaryDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -139,15 +143,13 @@ void ts::SimpleApplicationBoundaryDescriptor::buildXML(DuckContext& duck, xml::E
 
 bool ts::SimpleApplicationBoundaryDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    boundary_extension.clear();
     xml::ElementVector children;
-    _is_valid = checkXMLName(element) && element->getChildren(children, u"prefix");
+    bool ok = element->getChildren(children, u"prefix");
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         UString s;
-        _is_valid = children[i]->getAttribute(s, u"boundary_extension", true);
-        if (_is_valid) {
-            boundary_extension.push_back(s);
-        }
+        ok = children[i]->getAttribute(s, u"boundary_extension", true);
+        boundary_extension.push_back(s);
     }
+    return ok;
 }

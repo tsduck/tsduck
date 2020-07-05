@@ -59,7 +59,18 @@ ts::DTSDescriptor::DTSDescriptor() :
     extended_surround(0),
     additional_info()
 {
-    _is_valid = true;
+}
+
+void ts::DTSDescriptor::clearContent()
+{
+    sample_rate_code = 0;
+    bit_rate_code = 0;
+    nblks = 0;
+    fsize = 0;
+    surround_mode = 0;
+    lfe = false;
+    extended_surround = 0;
+    additional_info.clear();
 }
 
 ts::DTSDescriptor::DTSDescriptor(DuckContext& duck, const Descriptor& desc) :

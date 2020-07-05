@@ -52,7 +52,11 @@ ts::ScramblingDescriptor::ScramblingDescriptor(uint8_t mode) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     scrambling_mode(mode)
 {
-    _is_valid = true;
+}
+
+void ts::ScramblingDescriptor::clearContent()
+{
+    scrambling_mode = 0;
 }
 
 ts::ScramblingDescriptor::ScramblingDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -109,7 +113,7 @@ void ts::ScramblingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::ScramblingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -117,14 +121,7 @@ void ts::ScramblingDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
     root->setIntAttribute(u"scrambling_mode", scrambling_mode, true);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::ScramblingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(scrambling_mode, u"scrambling_mode", true);
+    return element->getIntAttribute<uint8_t>(scrambling_mode, u"scrambling_mode", true);
 }

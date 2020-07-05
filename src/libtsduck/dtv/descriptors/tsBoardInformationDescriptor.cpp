@@ -53,13 +53,18 @@ ts::BoardInformationDescriptor::BoardInformationDescriptor() :
     title(),
     text()
 {
-    _is_valid = true;
 }
 
 ts::BoardInformationDescriptor::BoardInformationDescriptor(DuckContext& duck, const Descriptor& desc) :
     BoardInformationDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::BoardInformationDescriptor::clearContent()
+{
+    title.clear();
+    text.clear();
 }
 
 
@@ -129,11 +134,5 @@ void ts::BoardInformationDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::BoardInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    title.clear();
-    text.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(title, u"title") &&
-        element->getAttribute(text, u"text");
+    return element->getAttribute(title, u"title") && element->getAttribute(text, u"text");
 }

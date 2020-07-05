@@ -54,7 +54,12 @@ ts::SpliceAvailDescriptor::SpliceAvailDescriptor() :
     identifier(SPLICE_ID_CUEI),
     provider_avail_id(0)
 {
-    _is_valid = true;
+}
+
+void ts::SpliceAvailDescriptor::clearContent()
+{
+    identifier = SPLICE_ID_CUEI;
+    provider_avail_id = 0;
 }
 
 ts::SpliceAvailDescriptor::SpliceAvailDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -133,8 +138,6 @@ void ts::SpliceAvailDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::SpliceAvailDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint32_t>(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
-        element->getIntAttribute<uint32_t>(provider_avail_id, u"provider_avail_id", true);
+    return element->getIntAttribute<uint32_t>(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
+           element->getIntAttribute<uint32_t>(provider_avail_id, u"provider_avail_id", true);
 }

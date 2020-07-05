@@ -106,21 +106,21 @@ void ts::Service::set(const UString& desc)
 
 void ts::Service::clear()
 {
-    _id.reset();
-    _tsid.reset();
-    _onid.reset();
-    _pmt_pid.reset();
-    _lcn.reset();
-    _type_dvb.reset();
-    _type_atsc.reset();
-    _name.reset();
-    _provider.reset();
-    _eits_present.reset();
-    _eitpf_present.reset();
-    _ca_controlled.reset();
-    _running_status.reset();
-    _major_id_atsc.reset();
-    _minor_id_atsc.reset();
+    _id.clear();
+    _tsid.clear();
+    _onid.clear();
+    _pmt_pid.clear();
+    _lcn.clear();
+    _type_dvb.clear();
+    _type_atsc.clear();
+    _name.clear();
+    _provider.clear();
+    _eits_present.clear();
+    _eitpf_present.clear();
+    _ca_controlled.clear();
+    _running_status.clear();
+    _major_id_atsc.clear();
+    _minor_id_atsc.clear();
 }
 
 

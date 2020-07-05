@@ -56,6 +56,14 @@ ts::PDCDescriptor::PDCDescriptor() :
 {
 }
 
+void ts::PDCDescriptor::clearContent()
+{
+    pil_month = 0;
+    pil_day = 0;
+    pil_hours = 0;
+    pil_minutes = 0;
+}
+
 ts::PDCDescriptor::PDCDescriptor(DuckContext& duck, const Descriptor& desc) :
     PDCDescriptor()
 {

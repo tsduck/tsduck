@@ -55,7 +55,14 @@ ts::FTAContentManagementDescriptor::FTAContentManagementDescriptor() :
     control_remote_access_over_internet(0),
     do_not_apply_revocation(false)
 {
-    _is_valid = true;
+}
+
+void ts::FTAContentManagementDescriptor::clearContent()
+{
+    user_defined = false;
+    do_not_scramble = false;
+    control_remote_access_over_internet = 0;
+    do_not_apply_revocation = false;
 }
 
 ts::FTAContentManagementDescriptor::FTAContentManagementDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -139,10 +146,8 @@ void ts::FTAContentManagementDescriptor::buildXML(DuckContext& duck, xml::Elemen
 
 bool ts::FTAContentManagementDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(user_defined, u"user_defined", true) &&
-        element->getBoolAttribute(do_not_scramble, u"do_not_scramble", true) &&
-        element->getIntAttribute<uint8_t>(control_remote_access_over_internet, u"control_remote_access_over_internet", true, 0, 0, 3) &&
-        element->getBoolAttribute(do_not_apply_revocation, u"do_not_apply_revocation", true);
+    return element->getBoolAttribute(user_defined, u"user_defined", true) &&
+           element->getBoolAttribute(do_not_scramble, u"do_not_scramble", true) &&
+           element->getIntAttribute<uint8_t>(control_remote_access_over_internet, u"control_remote_access_over_internet", true, 0, 0, 3) &&
+           element->getBoolAttribute(do_not_apply_revocation, u"do_not_apply_revocation", true);
 }

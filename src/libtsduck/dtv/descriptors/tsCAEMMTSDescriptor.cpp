@@ -56,13 +56,20 @@ ts::CAEMMTSDescriptor::CAEMMTSDescriptor() :
     original_network_id(0),
     power_supply_period(0)
 {
-    _is_valid = true;
 }
 
 ts::CAEMMTSDescriptor::CAEMMTSDescriptor(DuckContext& duck, const Descriptor& desc) :
     CAEMMTSDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::CAEMMTSDescriptor::clearContent()
+{
+    CA_system_id = 0;
+    transport_stream_id = 0;
+    original_network_id = 0;
+    power_supply_period = 0;
 }
 
 
@@ -141,10 +148,8 @@ void ts::CAEMMTSDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 
 bool ts::CAEMMTSDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
-        element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", true) &&
-        element->getIntAttribute<uint16_t>(original_network_id, u"original_network_id", true) &&
-        element->getIntAttribute<uint8_t>(power_supply_period, u"power_supply_period", true);
+    return element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
+           element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", true) &&
+           element->getIntAttribute<uint16_t>(original_network_id, u"original_network_id", true) &&
+           element->getIntAttribute<uint8_t>(power_supply_period, u"power_supply_period", true);
 }

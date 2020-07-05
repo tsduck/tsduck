@@ -53,14 +53,18 @@ ts::TransportProfileDescriptor::TransportProfileDescriptor() :
     transport_profile(0),
     private_data()
 {
-    _is_valid = true;
 }
-
 
 ts::TransportProfileDescriptor::TransportProfileDescriptor(DuckContext& duck, const Descriptor& desc) :
     TransportProfileDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::TransportProfileDescriptor::clearContent()
+{
+    transport_profile = 0;
+    private_data.clear();
 }
 
 
@@ -119,9 +123,7 @@ void ts::TransportProfileDescriptor::DisplayDescriptor(TablesDisplay& display, D
 void ts::TransportProfileDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"transport_profile", transport_profile, true);
-    if (!private_data.empty()) {
-        root->addHexaTextChild(u"private_data", private_data);
-    }
+    root->addHexaTextChild(u"private_data", private_data, true);
 }
 
 
@@ -131,8 +133,6 @@ void ts::TransportProfileDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::TransportProfileDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(transport_profile, u"transport_profile", true) &&
-        element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 3);
+    return element->getIntAttribute<uint8_t>(transport_profile, u"transport_profile", true) &&
+           element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 3);
 }

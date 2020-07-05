@@ -70,7 +70,26 @@ ts::HEVCVideoDescriptor::HEVCVideoDescriptor() :
     temporal_id_min(),
     temporal_id_max()
 {
-    _is_valid = true;
+}
+
+void ts::HEVCVideoDescriptor::clearContent()
+{
+    profile_space = 0;
+    tier = false;
+    profile_idc = 0;
+    profile_compatibility_indication = 0;
+    progressive_source = false;
+    interlaced_source = false;
+    non_packed_constraint = false;
+    frame_only_constraint = false;
+    copied_44bits = 0;
+    level_idc = 0;
+    HEVC_still_present = false;
+    HEVC_24hr_picture_present = false;
+    sub_pic_hrd_params_not_present = true;
+    HDR_WCG_idc = 3;
+    temporal_id_min.clear();
+    temporal_id_max.clear();
 }
 
 ts::HEVCVideoDescriptor::HEVCVideoDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -139,8 +158,8 @@ void ts::HEVCVideoDescriptor::deserialize(DuckContext& duck, const Descriptor& d
         HEVC_24hr_picture_present = (data[12] & 0x20) != 0;
         sub_pic_hrd_params_not_present = (data[12] & 0x10) != 0;
         HDR_WCG_idc = data[12] & 0x03;
-        temporal_id_min.reset();
-        temporal_id_max.reset();
+        temporal_id_min.clear();
+        temporal_id_max.clear();
         if (temporal) {
             _is_valid = desc.payloadSize() >= 15;
             if (_is_valid) {
@@ -243,8 +262,7 @@ void ts::HEVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::HEVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(profile_space, u"profile_space", true, 0, 0x00, 0x03) &&
         element->getBoolAttribute(tier, u"tier_flag", true) &&
         element->getIntAttribute<uint8_t>(profile_idc, u"profile_idc", true, 0, 0x00, 0x1F) &&
@@ -264,8 +282,9 @@ bool ts::HEVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->getOptionalIntAttribute<uint8_t>(temporal_id_min, u"temporal_id_min", 0x00, 0x07) &&
         element->getOptionalIntAttribute<uint8_t>(temporal_id_max, u"temporal_id_max", 0x00, 0x07);
 
-    if (_is_valid  && temporal_id_min.set() + temporal_id_max.set() == 1) {
-        _is_valid = false;
+    if (ok && temporal_id_min.set() + temporal_id_max.set() == 1) {
         element->report().error(u"line %d: in <%s>, attributes 'temporal_id_min' and 'temporal_id_max' must be both present or both omitted", {element->lineNumber(), element->name()});
+        ok = false;
     }
+    return ok;
 }

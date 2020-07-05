@@ -54,7 +54,12 @@ ts::SkyLogicalChannelNumberDescriptor::SkyLogicalChannelNumberDescriptor() :
     entries(),
     region_id(0)
 {
-    _is_valid = true;
+}
+
+void ts::SkyLogicalChannelNumberDescriptor::clearContent()
+{
+    entries.clear();
+    region_id = 0;
 }
 
 ts::SkyLogicalChannelNumberDescriptor::SkyLogicalChannelNumberDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -175,24 +180,19 @@ void ts::SkyLogicalChannelNumberDescriptor::buildXML(DuckContext& duck, xml::Ele
 
 bool ts::SkyLogicalChannelNumberDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint16_t>(region_id, u"region_id", true, 0, 0x0000, 0xFFFF) &&
         element->getChildren(children, u"service", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-            children[i]->getIntAttribute<uint8_t>(entry.service_type, u"service_type", true, 0, 0x00, 0xFF) &&
-            children[i]->getIntAttribute<uint16_t>(entry.channel_id, u"channel_id", true, 0, 0x0000, 0xFFFF) &&
-            children[i]->getIntAttribute<uint16_t>(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0xFFFF) &&
-            children[i]->getIntAttribute<uint16_t>(entry.sky_id, u"sky_id", true, 0, 0x0000, 0xFFFF);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = children[i]->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+             children[i]->getIntAttribute<uint8_t>(entry.service_type, u"service_type", true, 0, 0x00, 0xFF) &&
+             children[i]->getIntAttribute<uint16_t>(entry.channel_id, u"channel_id", true, 0, 0x0000, 0xFFFF) &&
+             children[i]->getIntAttribute<uint16_t>(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0xFFFF) &&
+             children[i]->getIntAttribute<uint16_t>(entry.sky_id, u"sky_id", true, 0, 0x0000, 0xFFFF);
+        entries.push_back(entry);
     }
+    return ok;
 }

@@ -53,7 +53,12 @@ ts::CopyrightDescriptor::CopyrightDescriptor() :
     copyright_identifier(0),
     additional_copyright_info()
 {
-    _is_valid = true;
+}
+
+void ts::CopyrightDescriptor::clearContent()
+{
+    copyright_identifier = 0;
+    additional_copyright_info.clear();
 }
 
 ts::CopyrightDescriptor::CopyrightDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -125,9 +130,7 @@ void ts::CopyrightDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
 void ts::CopyrightDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"copyright_identifier", copyright_identifier, true);
-    if (!additional_copyright_info.empty()) {
-        root->addHexaTextChild(u"additional_copyright_info", additional_copyright_info);
-    }
+    root->addHexaTextChild(u"additional_copyright_info", additional_copyright_info, true);
 }
 
 
@@ -137,8 +140,6 @@ void ts::CopyrightDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::CopyrightDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint32_t>(copyright_identifier, u"copyright_identifier", true) &&
-        element->getHexaTextChild(additional_copyright_info, u"additional_copyright_info", false, 0, MAX_DESCRIPTOR_SIZE - 6);
+    return element->getIntAttribute<uint32_t>(copyright_identifier, u"copyright_identifier", true) &&
+           element->getHexaTextChild(additional_copyright_info, u"additional_copyright_info", false, 0, MAX_DESCRIPTOR_SIZE - 6);
 }

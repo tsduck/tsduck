@@ -52,13 +52,17 @@ ts::PartialReceptionDescriptor::PartialReceptionDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     service_ids()
 {
-    _is_valid = true;
 }
 
 ts::PartialReceptionDescriptor::PartialReceptionDescriptor(DuckContext& duck, const Descriptor& desc) :
     PartialReceptionDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::PartialReceptionDescriptor::clearContent()
+{
+    service_ids.clear();
 }
 
 
@@ -134,18 +138,13 @@ void ts::PartialReceptionDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::PartialReceptionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    service_ids.clear();
-
     xml::ElementVector xserv;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(xserv, u"service", 0, 127);
+    bool ok = element->getChildren(xserv, u"service", 0, 127);
 
-    for (auto it = xserv.begin(); _is_valid && it != xserv.end(); ++it) {
+    for (auto it = xserv.begin(); ok && it != xserv.end(); ++it) {
         uint16_t id = 0;
-        _is_valid = (*it)->getIntAttribute<uint16_t>(id, u"id", true);
-        if (_is_valid) {
-            service_ids.push_back(id);
-        }
+        ok = (*it)->getIntAttribute<uint16_t>(id, u"id", true);
+        service_ids.push_back(id);
     }
+    return ok;
 }

@@ -53,7 +53,6 @@ ts::ShortEventDescriptor::ShortEventDescriptor() :
     event_name(),
     text()
 {
-    _is_valid = true;
 }
 
 ts::ShortEventDescriptor::ShortEventDescriptor(const UString& lang_, const UString& name_, const UString& text_) :
@@ -62,7 +61,13 @@ ts::ShortEventDescriptor::ShortEventDescriptor(const UString& lang_, const UStri
     event_name(name_),
     text(text_)
 {
-    _is_valid = true;
+}
+
+void ts::ShortEventDescriptor::clearContent()
+{
+    language_code.clear();
+    event_name.clear();
+    text.clear();
 }
 
 ts::ShortEventDescriptor::ShortEventDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -207,9 +212,7 @@ void ts::ShortEventDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::ShortEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
-        element->getTextChild(event_name, u"event_name") &&
-        element->getTextChild(text, u"text");
+    return element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
+           element->getTextChild(event_name, u"event_name") &&
+           element->getTextChild(text, u"text");
 }

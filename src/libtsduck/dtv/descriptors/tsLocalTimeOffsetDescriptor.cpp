@@ -54,7 +54,6 @@ ts::LocalTimeOffsetDescriptor::LocalTimeOffsetDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     regions()
 {
-    _is_valid = true;
 }
 
 ts::LocalTimeOffsetDescriptor::Region::Region() :
@@ -70,6 +69,11 @@ ts::LocalTimeOffsetDescriptor::LocalTimeOffsetDescriptor(DuckContext& duck, cons
     LocalTimeOffsetDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::LocalTimeOffsetDescriptor::clearContent()
+{
+    regions.clear();
 }
 
 
@@ -201,22 +205,17 @@ void ts::LocalTimeOffsetDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::LocalTimeOffsetDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    regions.clear();
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"region");
+    bool ok = element->getChildren(children, u"region");
 
-    for (size_t index = 0; _is_valid && index < children.size(); ++index) {
+    for (size_t index = 0; ok && index < children.size(); ++index) {
         Region region;
-        _is_valid =
-            children[index]->getAttribute(region.country, u"country_code", true, u"", 3, 3) &&
-            children[index]->getIntAttribute<unsigned int>(region.region_id, u"country_region_id", true, 0, 0, 63) &&
-            children[index]->getIntAttribute<int>(region.time_offset, u"local_time_offset", true, 0, -780, 780) &&
-            children[index]->getDateTimeAttribute(region.next_change, u"time_of_change", true) &&
-            children[index]->getIntAttribute<int>(region.next_time_offset, u"next_time_offset", true, 0, -780, 780);
-        if (_is_valid) {
-            regions.push_back(region);
-        }
+        ok = children[index]->getAttribute(region.country, u"country_code", true, u"", 3, 3) &&
+             children[index]->getIntAttribute<unsigned int>(region.region_id, u"country_region_id", true, 0, 0, 63) &&
+             children[index]->getIntAttribute<int>(region.time_offset, u"local_time_offset", true, 0, -780, 780) &&
+             children[index]->getDateTimeAttribute(region.next_change, u"time_of_change", true) &&
+             children[index]->getIntAttribute<int>(region.next_time_offset, u"next_time_offset", true, 0, -780, 780);
+        regions.push_back(region);
     }
+    return ok;
 }

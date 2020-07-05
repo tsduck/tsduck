@@ -44,20 +44,19 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(uint8_t ctag) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     component_tag(ctag)
 {
-    _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::StreamIdentifierDescriptor::clearContent()
+{
+    component_tag = 0;
+}
 
 ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
@@ -113,7 +112,7 @@ void ts::StreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, D
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::StreamIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -121,14 +120,7 @@ void ts::StreamIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* r
     root->setIntAttribute(u"component_tag", component_tag, true);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::StreamIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true);
+    return element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true);
 }

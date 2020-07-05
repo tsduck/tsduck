@@ -54,7 +54,13 @@ ts::ECMRepetitionRateDescriptor::ECMRepetitionRateDescriptor() :
     ECM_repetition_rate(0),
     private_data()
 {
-    _is_valid = true;
+}
+
+void ts::ECMRepetitionRateDescriptor::clearContent()
+{
+    CA_system_id = 0;
+    ECM_repetition_rate = 0;
+    private_data.clear();
 }
 
 ts::ECMRepetitionRateDescriptor::ECMRepetitionRateDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -107,9 +113,7 @@ void ts::ECMRepetitionRateDescriptor::buildXML(DuckContext& duck, xml::Element* 
 {
     root->setIntAttribute(u"CA_system_id", CA_system_id, true);
     root->setIntAttribute(u"ECM_repetition_rate", ECM_repetition_rate, false);
-    if (!private_data.empty()) {
-        root->addHexaTextChild(u"private_data", private_data);
-    }
+    root->addHexaTextChild(u"private_data", private_data, true);
 }
 
 
@@ -119,13 +123,9 @@ void ts::ECMRepetitionRateDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::ECMRepetitionRateDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    private_data.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
-        element->getIntAttribute<uint16_t>(ECM_repetition_rate, u"ECM_repetition_rate", true) &&
-        element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 6);
+    return element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
+           element->getIntAttribute<uint16_t>(ECM_repetition_rate, u"ECM_repetition_rate", true) &&
+           element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 6);
 }
 
 

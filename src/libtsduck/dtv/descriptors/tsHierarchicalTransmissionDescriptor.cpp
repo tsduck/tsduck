@@ -53,7 +53,12 @@ ts::HierarchicalTransmissionDescriptor::HierarchicalTransmissionDescriptor() :
     high_quality(false),
     reference_PID(PID_NULL)
 {
-    _is_valid = true;
+}
+
+void ts::HierarchicalTransmissionDescriptor::clearContent()
+{
+    high_quality = false;
+    reference_PID = PID_NULL;
 }
 
 ts::HierarchicalTransmissionDescriptor::HierarchicalTransmissionDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -116,7 +121,7 @@ void ts::HierarchicalTransmissionDescriptor::DisplayDescriptor(TablesDisplay& di
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::HierarchicalTransmissionDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -125,15 +130,8 @@ void ts::HierarchicalTransmissionDescriptor::buildXML(DuckContext& duck, xml::El
     root->setIntAttribute(u"reference_PID", reference_PID, true);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::HierarchicalTransmissionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(high_quality, u"high_quality", true) &&
-        element->getIntAttribute<PID>(reference_PID, u"reference_PID", true, 0, 0, 0x1FFF);
+    return element->getBoolAttribute(high_quality, u"high_quality", true) &&
+           element->getIntAttribute<PID>(reference_PID, u"reference_PID", true, 0, 0, 0x1FFF);
 }

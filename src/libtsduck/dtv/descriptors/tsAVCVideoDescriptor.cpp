@@ -44,7 +44,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::AVCVideoDescriptor::AVCVideoDescriptor() :
@@ -58,18 +58,24 @@ ts::AVCVideoDescriptor::AVCVideoDescriptor() :
     AVC_still_present(false),
     AVC_24_hour_picture(false)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::AVCVideoDescriptor::AVCVideoDescriptor(DuckContext& duck, const Descriptor& desc) :
     AVCVideoDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::AVCVideoDescriptor::clearContent()
+{
+    profile_idc = 0;
+    constraint_set0 = false;
+    constraint_set1 = false;
+    constraint_set2 = false;
+    AVC_compatible_flags = 0;
+    level_idc = 0;
+    AVC_still_present = false;
+    AVC_24_hour_picture = false;
 }
 
 
@@ -178,14 +184,12 @@ void ts::AVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 
 bool ts::AVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(profile_idc, u"profile_idc", true, 0, 0x00, 0xFF) &&
-        element->getBoolAttribute(constraint_set0, u"constraint_set0", true) &&
-        element->getBoolAttribute(constraint_set1, u"constraint_set1", true) &&
-        element->getBoolAttribute(constraint_set2, u"constraint_set2", true) &&
-        element->getIntAttribute<uint8_t>(AVC_compatible_flags, u"AVC_compatible_flags", true, 0, 0x00, 0x1F) &&
-        element->getIntAttribute<uint8_t>(level_idc, u"level_idc", true, 0, 0x00, 0xFF) &&
-        element->getBoolAttribute(AVC_still_present, u"AVC_still_present", true) &&
-        element->getBoolAttribute(AVC_24_hour_picture, u"AVC_24_hour_picture", true);
+    return  element->getIntAttribute<uint8_t>(profile_idc, u"profile_idc", true, 0, 0x00, 0xFF) &&
+            element->getBoolAttribute(constraint_set0, u"constraint_set0", true) &&
+            element->getBoolAttribute(constraint_set1, u"constraint_set1", true) &&
+            element->getBoolAttribute(constraint_set2, u"constraint_set2", true) &&
+            element->getIntAttribute<uint8_t>(AVC_compatible_flags, u"AVC_compatible_flags", true, 0, 0x00, 0x1F) &&
+            element->getIntAttribute<uint8_t>(level_idc, u"level_idc", true, 0, 0x00, 0xFF) &&
+            element->getBoolAttribute(AVC_still_present, u"AVC_still_present", true) &&
+            element->getBoolAttribute(AVC_24_hour_picture, u"AVC_24_hour_picture", true);
 }

@@ -53,7 +53,12 @@ ts::EASInbandDetailsChannelDescriptor::EASInbandDetailsChannelDescriptor() :
     details_RF_channel(0),
     details_program_number(0)
 {
-    _is_valid = true;
+}
+
+void ts::EASInbandDetailsChannelDescriptor::clearContent()
+{
+    details_RF_channel = 0;
+    details_program_number = 0;
 }
 
 ts::EASInbandDetailsChannelDescriptor::EASInbandDetailsChannelDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -114,7 +119,7 @@ void ts::EASInbandDetailsChannelDescriptor::DisplayDescriptor(TablesDisplay& dis
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::EASInbandDetailsChannelDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -123,15 +128,8 @@ void ts::EASInbandDetailsChannelDescriptor::buildXML(DuckContext& duck, xml::Ele
     root->setIntAttribute(u"details_program_number", details_program_number, true);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::EASInbandDetailsChannelDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(details_RF_channel, u"details_RF_channel", true) &&
-        element->getIntAttribute<uint16_t>(details_program_number, u"details_program_number", true);
+    return element->getIntAttribute<uint8_t>(details_RF_channel, u"details_RF_channel", true) &&
+           element->getIntAttribute<uint16_t>(details_program_number, u"details_program_number", true);
 }

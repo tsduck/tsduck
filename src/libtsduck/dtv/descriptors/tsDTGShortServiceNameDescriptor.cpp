@@ -52,13 +52,17 @@ ts::DTGShortServiceNameDescriptor::DTGShortServiceNameDescriptor(const UString& 
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     name(name_)
 {
-    _is_valid = true;
 }
 
 ts::DTGShortServiceNameDescriptor::DTGShortServiceNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     DTGShortServiceNameDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::DTGShortServiceNameDescriptor::clearContent()
+{
+    name.clear();
 }
 
 
@@ -120,7 +124,5 @@ void ts::DTGShortServiceNameDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::DTGShortServiceNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(name, u"name", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
+    return element->getAttribute(name, u"name", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
 }

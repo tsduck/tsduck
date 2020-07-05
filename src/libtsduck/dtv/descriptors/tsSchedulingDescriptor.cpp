@@ -70,7 +70,21 @@ ts::SchedulingDescriptor::SchedulingDescriptor() :
     estimated_cycle_time(0),
     private_data()
 {
-    _is_valid = true;
+}
+
+void ts::SchedulingDescriptor::clearContent()
+{
+    start_date_time.clear();
+    end_date_time.clear();
+    final_availability = false;
+    periodicity = false;
+    period_unit = 0;
+    duration_unit = 0;
+    estimated_cycle_time_unit = 0;
+    period = 0;
+    duration = 0;
+    estimated_cycle_time = 0;
+    private_data.clear();
 }
 
 ts::SchedulingDescriptor::SchedulingDescriptor(DuckContext& duck, const Descriptor& desc) :

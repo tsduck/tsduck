@@ -106,7 +106,7 @@ namespace ts {
         /** @return True if the fullname is present.                 */ \
         bool has##suffix() const {return field.set();}                  \
         /** Clear the fullname.                                      */ \
-        void clear##suffix() {field.reset();}                           \
+        void clear##suffix() {field.clear();}                           \
         /** Get the fullname.                                        */ \
         /** @return The fullname or defvalue if unset.               */ \
         type get##suffix() const {return field.set() ? field.value() : type(defvalue);}

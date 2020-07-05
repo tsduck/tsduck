@@ -53,7 +53,12 @@ ts::DCCArrivingRequestDescriptor::DCCArrivingRequestDescriptor() :
     dcc_arriving_request_type(0),
     dcc_arriving_request_text()
 {
-    _is_valid = true;
+}
+
+void ts::DCCArrivingRequestDescriptor::clearContent()
+{
+    dcc_arriving_request_type = 0;
+    dcc_arriving_request_text.clear();
 }
 
 ts::DCCArrivingRequestDescriptor::DCCArrivingRequestDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -134,8 +139,6 @@ void ts::DCCArrivingRequestDescriptor::buildXML(DuckContext& duck, xml::Element*
 
 bool ts::DCCArrivingRequestDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(dcc_arriving_request_type, u"dcc_arriving_request_type", true) &&
-        dcc_arriving_request_text.fromXML(duck, element, u"dcc_arriving_request_text", false);
+    return element->getIntAttribute<uint8_t>(dcc_arriving_request_type, u"dcc_arriving_request_type", true) &&
+           dcc_arriving_request_text.fromXML(duck, element, u"dcc_arriving_request_text", false);
 }

@@ -56,7 +56,15 @@ ts::StereoscopicVideoInfoDescriptor::StereoscopicVideoInfoDescriptor() :
     horizontal_upsampling_factor(0),
     vertical_upsampling_factor(0)
 {
-    _is_valid = true;
+}
+
+void ts::StereoscopicVideoInfoDescriptor::clearContent()
+{
+    base_video = false;
+    leftview = false;
+    usable_as_2D = false;
+    horizontal_upsampling_factor = 0;
+    vertical_upsampling_factor = 0;
 }
 
 ts::StereoscopicVideoInfoDescriptor::StereoscopicVideoInfoDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -167,11 +175,9 @@ void ts::StereoscopicVideoInfoDescriptor::buildXML(DuckContext& duck, xml::Eleme
 
 bool ts::StereoscopicVideoInfoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(base_video, u"base_video", true) &&
-        element->getBoolAttribute(leftview, u"leftview", base_video) &&
-        element->getBoolAttribute(usable_as_2D, u"usable_as_2D", !base_video) &&
-        element->getIntAttribute<uint8_t>(horizontal_upsampling_factor, u"horizontal_upsampling_factor", !base_video, 0, 0, 15) &&
-        element->getIntAttribute<uint8_t>(vertical_upsampling_factor, u"vertical_upsampling_factor", !base_video, 0, 0, 15);
+    return element->getBoolAttribute(base_video, u"base_video", true) &&
+           element->getBoolAttribute(leftview, u"leftview", base_video) &&
+           element->getBoolAttribute(usable_as_2D, u"usable_as_2D", !base_video) &&
+           element->getIntAttribute<uint8_t>(horizontal_upsampling_factor, u"horizontal_upsampling_factor", !base_video, 0, 0, 15) &&
+           element->getIntAttribute<uint8_t>(vertical_upsampling_factor, u"vertical_upsampling_factor", !base_video, 0, 0, 15);
 }

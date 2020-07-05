@@ -53,13 +53,17 @@ ts::AudioPreselectionDescriptor::AudioPreselectionDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    _is_valid = true;
 }
 
 ts::AudioPreselectionDescriptor::AudioPreselectionDescriptor(DuckContext& duck, const Descriptor& desc) :
     AudioPreselectionDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::AudioPreselectionDescriptor::clearContent()
+{
+    entries.clear();
 }
 
 ts::AudioPreselectionDescriptor::PreSelection::PreSelection() :
@@ -339,43 +343,31 @@ void ts::AudioPreselectionDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::AudioPreselectionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"preselection");
+    bool ok = element->getChildren(children, u"preselection");
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
-
         PreSelection sel;
         xml::ElementVector msi;
         xml::ElementVector comps;
+        ok = children[i]->getIntAttribute<uint8_t>(sel.preselection_id, u"preselection_id", true, 0, 0x00, 0x1F) &&
+             children[i]->getIntAttribute<uint8_t>(sel.audio_rendering_indication, u"audio_rendering_indication", true, 0, 0x00, 0x07) &&
+             children[i]->getBoolAttribute(sel.audio_description, u"audio_description", false, false) &&
+             children[i]->getBoolAttribute(sel.spoken_subtitles, u"spoken_subtitles", false, false) &&
+             children[i]->getBoolAttribute(sel.dialogue_enhancement, u"dialogue_enhancement", false, false) &&
+             children[i]->getBoolAttribute(sel.interactivity_enabled, u"interactivity_enabled", false, false) &&
+             children[i]->getAttribute(sel.ISO_639_language_code, u"ISO_639_language_code", false, u"", 3, 3) &&
+             children[i]->getOptionalIntAttribute<uint8_t>(sel.message_id, u"message_id") &&
+             children[i]->getChildren(msi, u"multi_stream_info", 0, 1) &&
+             (msi.empty() || msi.front()->getChildren(comps, u"component", 0, 0x07)) &&
+             children[i]->getHexaTextChild(sel.future_extension, u"future_extension", false, 0, 0x1F);
 
-        _is_valid =
-            children[i]->getIntAttribute<uint8_t>(sel.preselection_id, u"preselection_id", true, 0, 0x00, 0x1F) &&
-            children[i]->getIntAttribute<uint8_t>(sel.audio_rendering_indication, u"audio_rendering_indication", true, 0, 0x00, 0x07) &&
-            children[i]->getBoolAttribute(sel.audio_description, u"audio_description", false, false) &&
-            children[i]->getBoolAttribute(sel.spoken_subtitles, u"spoken_subtitles", false, false) &&
-            children[i]->getBoolAttribute(sel.dialogue_enhancement, u"dialogue_enhancement", false, false) &&
-            children[i]->getBoolAttribute(sel.interactivity_enabled, u"interactivity_enabled", false, false) &&
-            children[i]->getAttribute(sel.ISO_639_language_code, u"ISO_639_language_code", false, u"", 3, 3) &&
-            children[i]->getOptionalIntAttribute<uint8_t>(sel.message_id, u"message_id") &&
-            children[i]->getChildren(msi, u"multi_stream_info", 0, 1) &&
-            (msi.empty() || msi.front()->getChildren(comps, u"component", 0, 0x07)) &&
-            children[i]->getHexaTextChild(sel.future_extension, u"future_extension", false, 0, 0x1F);
-
-        if (_is_valid) {
-            for (size_t i2 = 0; _is_valid && i2 < comps.size(); ++i2) {
-                uint8_t t = 0;
-                _is_valid = comps[i2]->getIntAttribute<uint8_t>(t, u"tag", true);
-                sel.aux_component_tags.push_back(t);
-            }
+        for (size_t i2 = 0; ok && i2 < comps.size(); ++i2) {
+            uint8_t t = 0;
+            ok = comps[i2]->getIntAttribute<uint8_t>(t, u"tag", true);
+            sel.aux_component_tags.push_back(t);
         }
-
-        if (_is_valid) {
-            entries.push_back(sel);
-        }
+        entries.push_back(sel);
     }
-
-    _is_valid = _is_valid && hasValidSizes();
+    return ok && hasValidSizes();
 }

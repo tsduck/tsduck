@@ -52,7 +52,11 @@ ts::TargetMACAddressRangeDescriptor::TargetMACAddressRangeDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ranges()
 {
-    _is_valid = true;
+}
+
+void ts::TargetMACAddressRangeDescriptor::clearContent()
+{
+    ranges.clear();
 }
 
 ts::TargetMACAddressRangeDescriptor::TargetMACAddressRangeDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -146,20 +150,14 @@ void ts::TargetMACAddressRangeDescriptor::buildXML(DuckContext& duck, xml::Eleme
 
 bool ts::TargetMACAddressRangeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    ranges.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"range", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(children, u"range", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Range range;
-        _is_valid =
-            children[i]->getMACAttribute(range.MAC_addr_low, u"MAC_addr_low", true) &&
-            children[i]->getMACAttribute(range.MAC_addr_high, u"MAC_addr_high", true);
-        if (_is_valid) {
-            ranges.push_back(range);
-        }
+        ok = children[i]->getMACAttribute(range.MAC_addr_low, u"MAC_addr_low", true) &&
+             children[i]->getMACAttribute(range.MAC_addr_high, u"MAC_addr_high", true);
+        ranges.push_back(range);
     }
+    return ok;
 }

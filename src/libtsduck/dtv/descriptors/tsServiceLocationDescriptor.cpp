@@ -54,7 +54,12 @@ ts::ServiceLocationDescriptor::ServiceLocationDescriptor() :
     PCR_PID(PID_NULL),
     entries()
 {
-    _is_valid = true;
+}
+
+void ts::ServiceLocationDescriptor::clearContent()
+{
+    PCR_PID = PID_NULL;
+    entries.clear();
 }
 
 ts::ServiceLocationDescriptor::ServiceLocationDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -184,22 +189,17 @@ void ts::ServiceLocationDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::ServiceLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint16_t>(PCR_PID, u"PCR_PID", false, PID_NULL, 0, 0x1FFF) &&
         element->getChildren(children, u"component", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getIntAttribute<uint8_t>(entry.stream_type, u"stream_type", true) &&
-            children[i]->getIntAttribute<uint16_t>(entry.elementary_PID, u"elementary_PID", true, 0, 0, 0x1FFF) &&
-            children[i]->getAttribute(entry.ISO_639_language_code, u"ISO_639_language_code", false, UString(), 0, 3);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = children[i]->getIntAttribute<uint8_t>(entry.stream_type, u"stream_type", true) &&
+             children[i]->getIntAttribute<uint16_t>(entry.elementary_PID, u"elementary_PID", true, 0, 0, 0x1FFF) &&
+             children[i]->getAttribute(entry.ISO_639_language_code, u"ISO_639_language_code", false, UString(), 0, 3);
+        entries.push_back(entry);
     }
+    return ok;
 }

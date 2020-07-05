@@ -53,7 +53,12 @@ ts::TargetRegionDescriptor::TargetRegionDescriptor() :
     country_code(),
     regions()
 {
-    _is_valid = true;
+}
+
+void ts::TargetRegionDescriptor::clearContent()
+{
+    country_code.clear();
+    regions.clear();
 }
 
 ts::TargetRegionDescriptor::TargetRegionDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -245,35 +250,30 @@ void ts::TargetRegionDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::TargetRegionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    regions.clear();
-
     xml::ElementVector xregions;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getAttribute(country_code, u"country_code", true, u"", 3, 3) &&
         element->getChildren(xregions, u"region");
 
-    for (size_t i = 0; _is_valid && i < xregions.size(); ++i) {
+    for (size_t i = 0; ok && i < xregions.size(); ++i) {
         Region region;
-        _is_valid =
-            xregions[i]->getAttribute(region.country_code, u"country_code", false, u"", 3, 3) &&
-            xregions[i]->getIntAttribute<uint8_t>(region.primary_region_code, u"primary_region_code", false) &&
-            xregions[i]->getIntAttribute<uint8_t>(region.secondary_region_code, u"secondary_region_code", false) &&
-            xregions[i]->getIntAttribute<uint16_t>(region.tertiary_region_code, u"tertiary_region_code", false);
-        if (_is_valid) {
-            if (xregions[i]->hasAttribute(u"tertiary_region_code")) {
-                region.region_depth = 3;
-            }
-            else if (xregions[i]->hasAttribute(u"secondary_region_code")) {
-                region.region_depth = 2;
-            }
-            else if (xregions[i]->hasAttribute(u"primary_region_code")) {
-                region.region_depth = 1;
-            }
-            else {
-                region.region_depth = 0;
-            }
-            regions.push_back(region);
+        ok = xregions[i]->getAttribute(region.country_code, u"country_code", false, u"", 3, 3) &&
+             xregions[i]->getIntAttribute<uint8_t>(region.primary_region_code, u"primary_region_code", false) &&
+             xregions[i]->getIntAttribute<uint8_t>(region.secondary_region_code, u"secondary_region_code", false) &&
+             xregions[i]->getIntAttribute<uint16_t>(region.tertiary_region_code, u"tertiary_region_code", false);
+        if (xregions[i]->hasAttribute(u"tertiary_region_code")) {
+            region.region_depth = 3;
         }
+        else if (xregions[i]->hasAttribute(u"secondary_region_code")) {
+            region.region_depth = 2;
+        }
+        else if (xregions[i]->hasAttribute(u"primary_region_code")) {
+            region.region_depth = 1;
+        }
+        else {
+            region.region_depth = 0;
+        }
+        regions.push_back(region);
     }
+    return ok;
 }

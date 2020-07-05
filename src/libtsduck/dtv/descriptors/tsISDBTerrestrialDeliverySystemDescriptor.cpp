@@ -56,7 +56,14 @@ ts::ISDBTerrestrialDeliverySystemDescriptor::ISDBTerrestrialDeliverySystemDescri
     transmission_mode(0),
     frequencies()
 {
-    _is_valid = true;
+}
+
+void ts::ISDBTerrestrialDeliverySystemDescriptor::clearContent()
+{
+    area_code = 0;
+    guard_interval = 0;
+    transmission_mode = 0;
+    frequencies.clear();
 }
 
 ts::ISDBTerrestrialDeliverySystemDescriptor::ISDBTerrestrialDeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -185,21 +192,17 @@ void ts::ISDBTerrestrialDeliverySystemDescriptor::buildXML(DuckContext& duck, xm
 
 bool ts::ISDBTerrestrialDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    frequencies.clear();
-
     xml::ElementVector xfreq;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint16_t>(area_code, u"area_code", true, 0, 0, 0x0FFF) &&
         element->getIntEnumAttribute(guard_interval, GuardIntervalNames, u"guard_interval", true) &&
         element->getIntEnumAttribute(transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
         element->getChildren(xfreq, u"frequency", 0, 126);
 
-    for (auto it = xfreq.begin(); _is_valid && it != xfreq.end(); ++it) {
+    for (auto it = xfreq.begin(); ok && it != xfreq.end(); ++it) {
         uint64_t f = 0;
-        _is_valid = (*it)->getIntAttribute<uint64_t>(f, u"value", true);
-        if (_is_valid) {
-            frequencies.push_back(f);
-        }
+        ok = (*it)->getIntAttribute<uint64_t>(f, u"value", true);
+        frequencies.push_back(f);
     }
+    return ok;
 }

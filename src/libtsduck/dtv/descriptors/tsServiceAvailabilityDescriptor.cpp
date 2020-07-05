@@ -53,7 +53,12 @@ ts::ServiceAvailabilityDescriptor::ServiceAvailabilityDescriptor() :
     availability(false),
     cell_ids()
 {
-    _is_valid = true;
+}
+
+void ts::ServiceAvailabilityDescriptor::clearContent()
+{
+    availability = false;
+    cell_ids.clear();
 }
 
 ts::ServiceAvailabilityDescriptor::ServiceAvailabilityDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -143,19 +148,15 @@ void ts::ServiceAvailabilityDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::ServiceAvailabilityDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    cell_ids.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getBoolAttribute(availability, u"availability", true) &&
         element->getChildren(children, u"cell", 0, MAX_CELLS);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         uint16_t id = 0;
-        _is_valid = children[i]->getIntAttribute<uint16_t>(id, u"id", true);
-        if (_is_valid) {
-            cell_ids.push_back(id);
-        }
+        ok = children[i]->getIntAttribute<uint16_t>(id, u"id", true);
+        cell_ids.push_back(id);
     }
+    return ok;
 }

@@ -55,6 +55,12 @@ ts::RegistrationDescriptor::RegistrationDescriptor(uint32_t identifier, const By
 {
 }
 
+void ts::RegistrationDescriptor::clearContent()
+{
+    format_identifier = 0;
+    additional_identification_info.clear();
+}
+
 ts::RegistrationDescriptor::RegistrationDescriptor(DuckContext& duck, const Descriptor& desc) :
     RegistrationDescriptor()
 {
@@ -116,7 +122,7 @@ void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::RegistrationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -124,11 +130,6 @@ void ts::RegistrationDescriptor::buildXML(DuckContext& duck, xml::Element* root)
     root->setIntAttribute(u"format_identifier", format_identifier, true);
     root->addHexaTextChild(u"additional_identification_info", additional_identification_info, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::RegistrationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

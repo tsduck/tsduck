@@ -47,15 +47,15 @@ ts::AbstractMultilingualDescriptor::AbstractMultilingualDescriptor(DID tag, cons
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Contructor for language entry.
-//----------------------------------------------------------------------------
-
 ts::AbstractMultilingualDescriptor::Entry::Entry(const UString& lang_, const UString& name_) :
     language(lang_),
     name(name_)
 {
+}
+
+void ts::AbstractMultilingualDescriptor::clearContent()
+{
+    entries.clear();
 }
 
 

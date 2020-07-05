@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ComponentDescriptor::ComponentDescriptor() :
@@ -57,18 +57,22 @@ ts::ComponentDescriptor::ComponentDescriptor() :
     language_code(),
     text()
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::ComponentDescriptor::ComponentDescriptor(DuckContext& duck, const Descriptor& desc) :
     ComponentDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::ComponentDescriptor::clearContent()
+{
+    stream_content_ext = 0;
+    stream_content = 0;
+    component_type = 0;
+    component_tag = 0;
+    language_code.clear();
+    text.clear();
 }
 
 
@@ -163,12 +167,10 @@ void ts::ComponentDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::ComponentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(stream_content, u"stream_content", true, 0x00, 0x00, 0x0F) &&
-        element->getIntAttribute<uint8_t>(stream_content_ext, u"stream_content_ext", false, 0x0F, 0x00, 0x0F) &&
-        element->getIntAttribute<uint8_t>(component_type, u"component_type", true, 0x00, 0x00, 0xFF) &&
-        element->getIntAttribute<uint8_t>(component_tag, u"component_tag", false, 0x00, 0x00, 0xFF) &&
-        element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
-        element->getAttribute(text, u"text", false, u"", 0, MAX_DESCRIPTOR_SIZE - 8);
+    return element->getIntAttribute<uint8_t>(stream_content, u"stream_content", true, 0x00, 0x00, 0x0F) &&
+           element->getIntAttribute<uint8_t>(stream_content_ext, u"stream_content_ext", false, 0x0F, 0x00, 0x0F) &&
+           element->getIntAttribute<uint8_t>(component_type, u"component_type", true, 0x00, 0x00, 0xFF) &&
+           element->getIntAttribute<uint8_t>(component_tag, u"component_tag", false, 0x00, 0x00, 0xFF) &&
+           element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
+           element->getAttribute(text, u"text", false, u"", 0, MAX_DESCRIPTOR_SIZE - 8);
 }

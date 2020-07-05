@@ -44,26 +44,25 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::BouquetNameDescriptor::BouquetNameDescriptor(const UString& name_) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     name(name_)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::BouquetNameDescriptor::BouquetNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     name()
 {
     deserialize(duck, desc);
+}
+
+void ts::BouquetNameDescriptor::clearContent()
+{
+    name.clear();
 }
 
 
@@ -125,7 +124,5 @@ void ts::BouquetNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::BouquetNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(name, u"bouquet_name", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
+    return element->getAttribute(name, u"bouquet_name", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
 }

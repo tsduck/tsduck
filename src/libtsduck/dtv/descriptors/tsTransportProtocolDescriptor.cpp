@@ -58,7 +58,6 @@ ts::TransportProtocolDescriptor::TransportProtocolDescriptor() :
     http(),
     selector()
 {
-    _is_valid = true;
 }
 
 ts::TransportProtocolDescriptor::TransportProtocolDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -92,9 +91,9 @@ ts::TransportProtocolDescriptor::Carousel::Carousel() :
 
 void ts::TransportProtocolDescriptor::Carousel::clear()
 {
-    original_network_id.reset();
-    transport_stream_id.reset();
-    service_id.reset();
+    original_network_id.clear();
+    transport_stream_id.clear();
+    service_id.clear();
     component_tag= 0;
 }
 
@@ -109,9 +108,9 @@ ts::TransportProtocolDescriptor::MPE::MPE() :
 
 void ts::TransportProtocolDescriptor::MPE::clear()
 {
-    original_network_id.reset();
-    transport_stream_id.reset();
-    service_id.reset();
+    original_network_id.clear();
+    transport_stream_id.clear();
+    service_id.clear();
     alignment_indicator = 0;
     urls.clear();
 }
@@ -464,75 +463,63 @@ void ts::TransportProtocolDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::TransportProtocolDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    clear();
-
     xml::ElementVector objcar;
     xml::ElementVector ip;
     xml::ElementVector htt;
     xml::ElementVector proto;
     xml::ElementVector urls;
 
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(transport_protocol_label, u"transport_protocol_label", true) &&
         element->getChildren(objcar, u"object_carousel", 0, 1) &&
         element->getChildren(ip, u"ip_mpe", 0, 1) &&
         element->getChildren(htt, u"http", 0, 1) &&
         element->getChildren(proto, u"protocol", 0, 1);
 
-    if (_is_valid && (objcar.size() + ip.size() + htt.size() + proto.size()) != 1) {
-        _is_valid = false;
+    if (ok && (objcar.size() + ip.size() + htt.size() + proto.size()) != 1) {
         element->report().error(u"specify exactly one of <object_carousel>, <ip_mpe>, <http>, <protocol> in <%s>, line %d", {element->name(), element->lineNumber()});
+        return false;
     }
-    else if (_is_valid && !objcar.empty()) {
+    else if (ok && !objcar.empty()) {
         protocol_id = MHP_PROTO_CAROUSEL;
-        _is_valid =
-            objcar[0]->getOptionalIntAttribute(carousel.original_network_id, u"original_network_id") &&
-            objcar[0]->getOptionalIntAttribute(carousel.transport_stream_id, u"transport_stream_id") &&
-            objcar[0]->getOptionalIntAttribute(carousel.service_id, u"service_id") &&
-            objcar[0]->getIntAttribute<uint8_t>(carousel.component_tag, u"component_tag", true);
+        ok = objcar[0]->getOptionalIntAttribute(carousel.original_network_id, u"original_network_id") &&
+             objcar[0]->getOptionalIntAttribute(carousel.transport_stream_id, u"transport_stream_id") &&
+             objcar[0]->getOptionalIntAttribute(carousel.service_id, u"service_id") &&
+             objcar[0]->getIntAttribute<uint8_t>(carousel.component_tag, u"component_tag", true);
     }
-    else if (_is_valid && !ip.empty()) {
+    else if (ok && !ip.empty()) {
         protocol_id = MHP_PROTO_MPE;
-        _is_valid =
-            ip[0]->getOptionalIntAttribute(mpe.original_network_id, u"original_network_id") &&
-            ip[0]->getOptionalIntAttribute(mpe.transport_stream_id, u"transport_stream_id") &&
-            ip[0]->getOptionalIntAttribute(mpe.service_id, u"service_id") &&
-            ip[0]->getBoolAttribute(mpe.alignment_indicator, u"alignment_indicator", true) &&
-            ip[0]->getChildren(urls, u"url");
-        for (size_t i = 0; _is_valid && i < urls.size(); ++i) {
+        ok = ip[0]->getOptionalIntAttribute(mpe.original_network_id, u"original_network_id") &&
+             ip[0]->getOptionalIntAttribute(mpe.transport_stream_id, u"transport_stream_id") &&
+             ip[0]->getOptionalIntAttribute(mpe.service_id, u"service_id") &&
+             ip[0]->getBoolAttribute(mpe.alignment_indicator, u"alignment_indicator", true) &&
+             ip[0]->getChildren(urls, u"url");
+        for (size_t i = 0; ok && i < urls.size(); ++i) {
             UString u;
-            _is_valid = urls[i]->getAttribute(u, u"value");
-            if (_is_valid) {
-                mpe.urls.push_back(u);
-            }
+            ok = urls[i]->getAttribute(u, u"value");
+            mpe.urls.push_back(u);
         }
     }
-    else if (_is_valid && !htt.empty()) {
+    else if (ok && !htt.empty()) {
         protocol_id = MHP_PROTO_HTTP;
-        _is_valid = htt[0]->getChildren(urls, u"url");
-        for (size_t i = 0; _is_valid && i < urls.size(); ++i) {
+        ok = htt[0]->getChildren(urls, u"url");
+        for (size_t i = 0; ok && i < urls.size(); ++i) {
             HTTPEntry e;
             xml::ElementVector exts;
-            _is_valid =
-                urls[i]->getAttribute(e.URL_base, u"base") &&
-                urls[i]->getChildren(exts, u"extension");
-            for (size_t ie = 0; _is_valid && ie < exts.size(); ++ie) {
+            ok = urls[i]->getAttribute(e.URL_base, u"base") &&
+                 urls[i]->getChildren(exts, u"extension");
+            for (size_t ie = 0; ok && ie < exts.size(); ++ie) {
                 UString u;
-                _is_valid = exts[ie]->getAttribute(u, u"value");
-                if (_is_valid) {
-                    e.URL_extensions.push_back(u);
-                }
+                ok = exts[ie]->getAttribute(u, u"value");
+                e.URL_extensions.push_back(u);
             }
-            if (_is_valid) {
-                http.push_back(e);
-            }
+            http.push_back(e);
         }
     }
-    else if (_is_valid && !proto.empty()) {
-        _is_valid =
-            proto[0]->getIntAttribute<uint16_t>(protocol_id, u"id", true) &&
+    else if (ok && !proto.empty()) {
+        ok = proto[0]->getIntAttribute<uint16_t>(protocol_id, u"id", true) &&
             proto[0]->getHexaText(selector) &&
             transferSelectorBytes(duck);
     }
+    return ok;
 }

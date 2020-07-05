@@ -52,13 +52,17 @@ ts::ExternalApplicationAuthorizationDescriptor::ExternalApplicationAuthorization
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    _is_valid = true;
 }
 
 ts::ExternalApplicationAuthorizationDescriptor::ExternalApplicationAuthorizationDescriptor(DuckContext& duck, const Descriptor& desc) :
     ExternalApplicationAuthorizationDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::ExternalApplicationAuthorizationDescriptor::clearContent()
+{
+    entries.clear();
 }
 
 
@@ -144,21 +148,15 @@ void ts::ExternalApplicationAuthorizationDescriptor::buildXML(DuckContext& duck,
 
 bool ts::ExternalApplicationAuthorizationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"application", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(children, u"application", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getIntAttribute<uint32_t>(entry.application_identifier.organization_id, u"organization_id", true) &&
-            children[i]->getIntAttribute<uint16_t>(entry.application_identifier.application_id, u"application_id", true) &&
-            children[i]->getIntAttribute<uint8_t>(entry.application_priority, u"application_priority", true);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = children[i]->getIntAttribute<uint32_t>(entry.application_identifier.organization_id, u"organization_id", true) &&
+             children[i]->getIntAttribute<uint16_t>(entry.application_identifier.application_id, u"application_id", true) &&
+             children[i]->getIntAttribute<uint8_t>(entry.application_priority, u"application_priority", true);
+        entries.push_back(entry);
     }
+    return ok;
 }

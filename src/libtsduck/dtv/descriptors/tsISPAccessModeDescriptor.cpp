@@ -58,13 +58,17 @@ ts::ISPAccessModeDescriptor::ISPAccessModeDescriptor(uint8_t mode) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     access_mode(mode)
 {
-    _is_valid = true;
 }
 
 ts::ISPAccessModeDescriptor::ISPAccessModeDescriptor(DuckContext& duck, const Descriptor& desc) :
     ISPAccessModeDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::ISPAccessModeDescriptor::clearContent()
+{
+    access_mode = 0;
 }
 
 
@@ -132,7 +136,5 @@ void ts::ISPAccessModeDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::ISPAccessModeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntEnumAttribute(access_mode, AccessModeNames, u"access_mode", true);
+    return element->getIntEnumAttribute(access_mode, AccessModeNames, u"access_mode", true);
 }

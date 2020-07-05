@@ -56,7 +56,15 @@ ts::SSUEnhancedMessageDescriptor::SSUEnhancedMessageDescriptor() :
     message_index(0),
     text()
 {
-    _is_valid = true;
+}
+
+void ts::SSUEnhancedMessageDescriptor::clearContent()
+{
+    descriptor_number = 0;
+    last_descriptor_number = 0;
+    ISO_639_language_code.clear();
+    message_index = 0;
+    text.clear();
 }
 
 ts::SSUEnhancedMessageDescriptor::SSUEnhancedMessageDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -150,13 +158,9 @@ void ts::SSUEnhancedMessageDescriptor::buildXML(DuckContext& duck, xml::Element*
 
 bool ts::SSUEnhancedMessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    text.clear();
-    xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(descriptor_number, u"descriptor_number", true, 0, 0, 15) &&
-        element->getIntAttribute<uint8_t>(last_descriptor_number, u"last_descriptor_number", true, 0, 0, 15) &&
-        element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, u"", 3, 3) &&
-        element->getIntAttribute<uint8_t>(message_index, u"message_index", true, 0, 0, 31) &&
-        element->getTextChild(text, u"text");
+    return element->getIntAttribute<uint8_t>(descriptor_number, u"descriptor_number", true, 0, 0, 15) &&
+           element->getIntAttribute<uint8_t>(last_descriptor_number, u"last_descriptor_number", true, 0, 0, 15) &&
+           element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, u"", 3, 3) &&
+           element->getIntAttribute<uint8_t>(message_index, u"message_index", true, 0, 0, 31) &&
+           element->getTextChild(text, u"text");
 }

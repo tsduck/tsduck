@@ -56,7 +56,14 @@ ts::CAServiceDescriptor::CAServiceDescriptor() :
     message_control(0),
     service_ids()
 {
-    _is_valid = true;
+}
+
+void ts::CAServiceDescriptor::clearContent()
+{
+    CA_system_id = 0;
+    ca_broadcaster_group_id = 0;
+    message_control = 0;
+    service_ids.clear();
 }
 
 ts::CAServiceDescriptor::CAServiceDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -153,21 +160,17 @@ void ts::CAServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::CAServiceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    service_ids.clear();
-
     xml::ElementVector xserv;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
         element->getIntAttribute<uint8_t>(ca_broadcaster_group_id, u"ca_broadcaster_group_id", true) &&
         element->getIntAttribute<uint8_t>(message_control, u"message_control", true) &&
         element->getChildren(xserv, u"service", 0, 125);
 
-    for (auto it = xserv.begin(); _is_valid && it != xserv.end(); ++it) {
+    for (auto it = xserv.begin(); ok && it != xserv.end(); ++it) {
         uint16_t id = 0;
-        _is_valid = (*it)->getIntAttribute<uint16_t>(id, u"id", true);
-        if (_is_valid) {
-            service_ids.push_back(id);
-        }
+        ok = (*it)->getIntAttribute<uint16_t>(id, u"id", true);
+        service_ids.push_back(id);
     }
+    return ok;
 }

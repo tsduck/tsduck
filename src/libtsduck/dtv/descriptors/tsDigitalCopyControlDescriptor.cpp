@@ -56,7 +56,14 @@ ts::DigitalCopyControlDescriptor::DigitalCopyControlDescriptor() :
     maximum_bitrate(),
     components()
 {
-    _is_valid = true;
+}
+
+void ts::DigitalCopyControlDescriptor::clearContent()
+{
+    digital_recording_control_data = 0;
+    user_defined = 0;
+    maximum_bitrate.clear();
+    components.clear();
 }
 
 ts::DigitalCopyControlDescriptor::DigitalCopyControlDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -119,7 +126,7 @@ void ts::DigitalCopyControlDescriptor::deserialize(DuckContext& duck, const Desc
     size_t size = desc.payloadSize();
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1;
 
-    maximum_bitrate.reset();
+    maximum_bitrate.clear();
     components.clear();
 
     if (_is_valid) {
@@ -251,27 +258,20 @@ void ts::DigitalCopyControlDescriptor::buildXML(DuckContext& duck, xml::Element*
 
 bool ts::DigitalCopyControlDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    maximum_bitrate.reset();
-    components.clear();
-
     xml::ElementVector xcomp;
-
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(digital_recording_control_data, u"digital_recording_control_data", true, 0, 0x00, 0x03) &&
         element->getIntAttribute<uint8_t>(user_defined, u"user_defined", false, 0, 0x00, 0x0F) &&
         element->getOptionalIntAttribute<uint8_t>(maximum_bitrate, u"maximum_bitrate") &&
         element->getChildren(xcomp, u"component_control");
 
-    for (size_t i = 0; _is_valid && i < xcomp.size(); ++i) {
+    for (size_t i = 0; ok && i < xcomp.size(); ++i) {
         Component comp;
-        _is_valid =
-            xcomp[i]->getIntAttribute<uint8_t>(comp.component_tag, u"component_tag", true) &&
-            xcomp[i]->getIntAttribute<uint8_t>(comp.digital_recording_control_data, u"digital_recording_control_data", true, 0, 0x00, 0x03) &&
-            xcomp[i]->getIntAttribute<uint8_t>(comp.user_defined, u"user_defined", false, 0, 0x00, 0x0F) &&
-            xcomp[i]->getOptionalIntAttribute<uint8_t>(comp.maximum_bitrate, u"maximum_bitrate");
-        if (_is_valid) {
-            components.push_back(comp);
-        }
+        ok = xcomp[i]->getIntAttribute<uint8_t>(comp.component_tag, u"component_tag", true) &&
+             xcomp[i]->getIntAttribute<uint8_t>(comp.digital_recording_control_data, u"digital_recording_control_data", true, 0, 0x00, 0x03) &&
+             xcomp[i]->getIntAttribute<uint8_t>(comp.user_defined, u"user_defined", false, 0, 0x00, 0x0F) &&
+             xcomp[i]->getOptionalIntAttribute<uint8_t>(comp.maximum_bitrate, u"maximum_bitrate");
+        components.push_back(comp);
     }
+    return ok;
 }

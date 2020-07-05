@@ -54,13 +54,18 @@ ts::DataComponentDescriptor::DataComponentDescriptor() :
     data_component_id(0),
     additional_data_component_info()
 {
-    _is_valid = true;
 }
 
 ts::DataComponentDescriptor::DataComponentDescriptor(DuckContext& duck, const Descriptor& desc) :
     DataComponentDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::DataComponentDescriptor::clearContent()
+{
+    data_component_id = 0;
+    additional_data_component_info.clear();
 }
 
 
@@ -131,8 +136,6 @@ void ts::DataComponentDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::DataComponentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(data_component_id, u"data_component_id", true) &&
-        element->getHexaTextChild(additional_data_component_info, u"additional_data_component_info", false, 0, MAX_DESCRIPTOR_SIZE - 2);
+    return element->getIntAttribute<uint16_t>(data_component_id, u"data_component_id", true) &&
+           element->getHexaTextChild(additional_data_component_info, u"additional_data_component_info", false, 0, MAX_DESCRIPTOR_SIZE - 2);
 }

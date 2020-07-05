@@ -53,7 +53,13 @@ ts::MetadataSTDDescriptor::MetadataSTDDescriptor() :
     metadata_buffer_size(0),
     metadata_output_leak_rate(0)
 {
-    _is_valid = true;
+}
+
+void ts::MetadataSTDDescriptor::clearContent()
+{
+    metadata_input_leak_rate = 0;
+    metadata_buffer_size = 0;
+    metadata_output_leak_rate = 0;
 }
 
 ts::MetadataSTDDescriptor::MetadataSTDDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -138,9 +144,7 @@ void ts::MetadataSTDDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::MetadataSTDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint32_t>(metadata_input_leak_rate, u"metadata_input_leak_rate", true, 0, 0, 0x3FFFFF) &&
-        element->getIntAttribute<uint32_t>(metadata_buffer_size, u"metadata_buffer_size", true, 0, 0, 0x3FFFFF) &&
-        element->getIntAttribute<uint32_t>(metadata_output_leak_rate, u"metadata_output_leak_rate", true, 0, 0, 0x3FFFFF);
+    return element->getIntAttribute<uint32_t>(metadata_input_leak_rate, u"metadata_input_leak_rate", true, 0, 0, 0x3FFFFF) &&
+           element->getIntAttribute<uint32_t>(metadata_buffer_size, u"metadata_buffer_size", true, 0, 0, 0x3FFFFF) &&
+           element->getIntAttribute<uint32_t>(metadata_output_leak_rate, u"metadata_output_leak_rate", true, 0, 0, 0x3FFFFF);
 }

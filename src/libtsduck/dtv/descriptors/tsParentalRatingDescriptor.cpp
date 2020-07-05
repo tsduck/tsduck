@@ -65,7 +65,11 @@ ts::ParentalRatingDescriptor::ParentalRatingDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    _is_valid = true;
+}
+
+void ts::ParentalRatingDescriptor::clearContent()
+{
+    entries.clear();
 }
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -79,7 +83,6 @@ ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const UString& code, uint
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    _is_valid = true;
     entries.push_back(Entry(code, rate));
 }
 
@@ -176,20 +179,14 @@ void ts::ParentalRatingDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::ParentalRatingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"country", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(children, u"country", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getAttribute(entry.country_code, u"country_code", true, u"", 3, 3) &&
-            children[i]->getIntAttribute<uint8_t>(entry.rating, u"rating", true, 0, 0x00, 0xFF);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = children[i]->getAttribute(entry.country_code, u"country_code", true, u"", 3, 3) &&
+             children[i]->getIntAttribute<uint8_t>(entry.rating, u"rating", true, 0, 0x00, 0xFF);
+        entries.push_back(entry);
     }
+    return ok;
 }

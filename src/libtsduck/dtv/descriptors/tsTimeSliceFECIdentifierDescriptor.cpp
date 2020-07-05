@@ -57,7 +57,17 @@ ts::TimeSliceFECIdentifierDescriptor::TimeSliceFECIdentifierDescriptor() :
     time_slice_fec_id(0),
     id_selector_bytes()
 {
-    _is_valid = true;
+}
+
+void ts::TimeSliceFECIdentifierDescriptor::clearContent()
+{
+    time_slicing = false;
+    mpe_fec = 0;
+    frame_size = 0;
+    max_burst_duration = 0;
+    max_average_rate = 0;
+    time_slice_fec_id = 0;
+    id_selector_bytes.clear();
 }
 
 ts::TimeSliceFECIdentifierDescriptor::TimeSliceFECIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -123,9 +133,7 @@ void ts::TimeSliceFECIdentifierDescriptor::buildXML(DuckContext& duck, xml::Elem
     root->setIntAttribute(u"max_burst_duration", max_burst_duration, true);
     root->setIntAttribute(u"max_average_rate", max_average_rate, true);
     root->setIntAttribute(u"time_slice_fec_id", time_slice_fec_id, true);
-    if (!id_selector_bytes.empty()) {
-        root->addHexaTextChild(u"id_selector_bytes", id_selector_bytes);
-    }
+    root->addHexaTextChild(u"id_selector_bytes", id_selector_bytes, true);
 }
 
 
@@ -135,17 +143,13 @@ void ts::TimeSliceFECIdentifierDescriptor::buildXML(DuckContext& duck, xml::Elem
 
 bool ts::TimeSliceFECIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    id_selector_bytes.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(time_slicing, u"time_slicing", true) &&
-        element->getIntAttribute<uint8_t>(mpe_fec, u"mpe_fec", true, 0, 0, 0x03) &&
-        element->getIntAttribute<uint8_t>(frame_size, u"frame_size", true, 0, 0x00, 0x07) &&
-        element->getIntAttribute<uint8_t>(max_burst_duration, u"max_burst_duration", true) &&
-        element->getIntAttribute<uint8_t>(max_average_rate, u"max_average_rate", true, 0, 0x00, 0x0F) &&
-        element->getIntAttribute<uint8_t>(time_slice_fec_id, u"time_slice_fec_id", false, 0, 0x00, 0x0F) &&
-        element->getHexaTextChild(id_selector_bytes, u"id_selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 5);
+    return  element->getBoolAttribute(time_slicing, u"time_slicing", true) &&
+            element->getIntAttribute<uint8_t>(mpe_fec, u"mpe_fec", true, 0, 0, 0x03) &&
+            element->getIntAttribute<uint8_t>(frame_size, u"frame_size", true, 0, 0x00, 0x07) &&
+            element->getIntAttribute<uint8_t>(max_burst_duration, u"max_burst_duration", true) &&
+            element->getIntAttribute<uint8_t>(max_average_rate, u"max_average_rate", true, 0, 0x00, 0x0F) &&
+            element->getIntAttribute<uint8_t>(time_slice_fec_id, u"time_slice_fec_id", false, 0, 0x00, 0x0F) &&
+            element->getHexaTextChild(id_selector_bytes, u"id_selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 5);
 }
 
 

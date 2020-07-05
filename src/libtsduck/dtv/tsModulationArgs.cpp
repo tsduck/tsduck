@@ -130,46 +130,46 @@ ts::ModulationArgs::ModulationArgs(bool allow_short_options) :
 
 void ts::ModulationArgs::reset()
 {
-    delivery_system.reset();
-    frequency.reset();
-    polarity.reset();
-    lnb.reset();
-    inversion.reset();
-    symbol_rate.reset();
-    inner_fec.reset();
-    satellite_number.reset();
-    modulation.reset();
-    bandwidth.reset();
-    fec_hp.reset();
-    fec_lp.reset();
-    transmission_mode.reset();
-    guard_interval.reset();
-    hierarchy.reset();
-    pilots.reset();
-    roll_off.reset();
-    plp.reset();
-    isi.reset();
-    pls_code.reset();
-    pls_mode.reset();
-    sound_broadcasting.reset();
-    sb_subchannel_id.reset();
-    sb_segment_count.reset();
-    sb_segment_index.reset();
-    isdbt_layers.reset();
-    isdbt_partial_reception.reset();
-    layer_a_fec.reset();
-    layer_a_modulation.reset();
-    layer_a_segment_count.reset();
-    layer_a_time_interleaving.reset();
-    layer_b_fec.reset();
-    layer_b_modulation.reset();
-    layer_b_segment_count.reset();
-    layer_b_time_interleaving.reset();
-    layer_c_fec.reset();
-    layer_c_modulation.reset();
-    layer_c_segment_count.reset();
-    layer_c_time_interleaving.reset();
-    stream_id.reset();
+    delivery_system.clear();
+    frequency.clear();
+    polarity.clear();
+    lnb.clear();
+    inversion.clear();
+    symbol_rate.clear();
+    inner_fec.clear();
+    satellite_number.clear();
+    modulation.clear();
+    bandwidth.clear();
+    fec_hp.clear();
+    fec_lp.clear();
+    transmission_mode.clear();
+    guard_interval.clear();
+    hierarchy.clear();
+    pilots.clear();
+    roll_off.clear();
+    plp.clear();
+    isi.clear();
+    pls_code.clear();
+    pls_mode.clear();
+    sound_broadcasting.clear();
+    sb_subchannel_id.clear();
+    sb_segment_count.clear();
+    sb_segment_index.clear();
+    isdbt_layers.clear();
+    isdbt_partial_reception.clear();
+    layer_a_fec.clear();
+    layer_a_modulation.clear();
+    layer_a_segment_count.clear();
+    layer_a_time_interleaving.clear();
+    layer_b_fec.clear();
+    layer_b_modulation.clear();
+    layer_b_segment_count.clear();
+    layer_b_time_interleaving.clear();
+    layer_c_fec.clear();
+    layer_c_modulation.clear();
+    layer_c_segment_count.clear();
+    layer_c_time_interleaving.clear();
+    stream_id.clear();
 }
 
 
@@ -322,7 +322,7 @@ void ts::ModulationArgs::setDefaultValues()
 
     // Erase unused values.
     if (delivery_system.set() && delivery_system.value() != DS_DVB_S2) {
-        roll_off.reset();
+        roll_off.clear();
     }
 }
 
@@ -711,7 +711,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
                     switch ((data[6] >> 2) & 0x01) {
                         case 0:
                             delivery_system = DS_DVB_S;
-                            roll_off.reset();
+                            roll_off.clear();
                             break;
                         case 1:
                             delivery_system = DS_DVB_S2;
@@ -731,7 +731,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
                 else {
                     // ISDB variant.
                     delivery_system = DS_ISDB_S;
-                    roll_off.reset();
+                    roll_off.clear();
                     // The TS id is used in ISDB-S multi-stream encapsulation.
                     stream_id = ts_id;
                     // Inner FEC.
@@ -757,7 +757,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
                         // 9  = 2.6GHz band digital satellite sound broadcasting
                         // 10 = Advanced narrow-band CS digital broadcasting
                         // Don't really know how to translate this...
-                        default: modulation.reset(); break;
+                        default: modulation.clear(); break;
                     }
                 }
             }

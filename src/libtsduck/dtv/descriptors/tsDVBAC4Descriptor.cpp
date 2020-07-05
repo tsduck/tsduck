@@ -47,7 +47,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::DVBAC4Descriptor::DVBAC4Descriptor() :
@@ -57,13 +57,20 @@ ts::DVBAC4Descriptor::DVBAC4Descriptor() :
     ac4_dsi_toc(),
     additional_info()
 {
-    _is_valid = true;
 }
 
 
 //----------------------------------------------------------------------------
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
+
+void ts::DVBAC4Descriptor::clearContent()
+{
+    ac4_dialog_enhancement_enabled.clear();
+    ac4_channel_mode.clear();
+    ac4_dsi_toc.clear();
+    additional_info.clear();
+}
 
 ts::DVBAC4Descriptor::DVBAC4Descriptor(DuckContext& duck, const Descriptor& desc) :
     DVBAC4Descriptor()
@@ -104,8 +111,8 @@ void ts::DVBAC4Descriptor::deserialize(DuckContext& duck, const Descriptor& desc
 
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 2 && data[0] == MY_EDID;
 
-    ac4_dialog_enhancement_enabled.reset();
-    ac4_channel_mode.reset();
+    ac4_dialog_enhancement_enabled.clear();
+    ac4_channel_mode.clear();
     ac4_dsi_toc.clear();
     additional_info.clear();
 
@@ -204,10 +211,8 @@ void ts::DVBAC4Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::DVBAC4Descriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getOptionalBoolAttribute(ac4_dialog_enhancement_enabled, u"ac4_dialog_enhancement_enabled") &&
-        element->getOptionalIntAttribute<uint8_t>(ac4_channel_mode, u"ac4_channel_mode", 0, 3) &&
-        element->getHexaTextChild(ac4_dsi_toc, u"ac4_dsi_toc", false, 0, MAX_DESCRIPTOR_SIZE - 6) &&
-        element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 6 - ac4_dsi_toc.size());
+    return element->getOptionalBoolAttribute(ac4_dialog_enhancement_enabled, u"ac4_dialog_enhancement_enabled") &&
+           element->getOptionalIntAttribute<uint8_t>(ac4_channel_mode, u"ac4_channel_mode", 0, 3) &&
+           element->getHexaTextChild(ac4_dsi_toc, u"ac4_dsi_toc", false, 0, MAX_DESCRIPTOR_SIZE - 6) &&
+           element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 6 - ac4_dsi_toc.size());
 }

@@ -56,13 +56,17 @@ ts::EASInbandExceptionChannelsDescriptor::EASInbandExceptionChannelsDescriptor()
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    _is_valid = true;
 }
 
 ts::EASInbandExceptionChannelsDescriptor::EASInbandExceptionChannelsDescriptor(DuckContext& duck, const Descriptor& desc) :
     EASInbandExceptionChannelsDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::EASInbandExceptionChannelsDescriptor::clearContent()
+{
+    entries.clear();
 }
 
 
@@ -149,20 +153,14 @@ void ts::EASInbandExceptionChannelsDescriptor::buildXML(DuckContext& duck, xml::
 
 bool ts::EASInbandExceptionChannelsDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"exception", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(children, u"exception", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getIntAttribute<uint8_t>(entry.RF_channel, u"RF_channel", true) &&
-            children[i]->getIntAttribute<uint16_t>(entry.program_number, u"program_number", true);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = children[i]->getIntAttribute<uint8_t>(entry.RF_channel, u"RF_channel", true) &&
+             children[i]->getIntAttribute<uint16_t>(entry.program_number, u"program_number", true);
+        entries.push_back(entry);
     }
+    return ok;
 }

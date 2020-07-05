@@ -53,7 +53,12 @@ ts::CarouselIdentifierDescriptor::CarouselIdentifierDescriptor() :
     carousel_id(0),
     private_data()
 {
-    _is_valid = true;
+}
+
+void ts::CarouselIdentifierDescriptor::clearContent()
+{
+    carousel_id = 0;
+    private_data.clear();
 }
 
 ts::CarouselIdentifierDescriptor::CarouselIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -133,8 +138,6 @@ void ts::CarouselIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element*
 
 bool ts::CarouselIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint32_t>(carousel_id, u"carousel_id", true) &&
-        element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 6);
+    return element->getIntAttribute<uint32_t>(carousel_id, u"carousel_id", true) &&
+           element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 6);
 }

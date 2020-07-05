@@ -52,7 +52,11 @@ ts::CaptionServiceDescriptor::CaptionServiceDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    _is_valid = true;
+}
+
+void ts::CaptionServiceDescriptor::clearContent()
+{
+    entries.clear();
 }
 
 ts::CaptionServiceDescriptor::CaptionServiceDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -190,24 +194,18 @@ void ts::CaptionServiceDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::CaptionServiceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"service", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(children, u"service", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getAttribute(entry.language, u"language", true, UString(), 3, 3) &&
-            children[i]->getBoolAttribute(entry.digital_cc, u"digital_cc", true) &&
-            children[i]->getBoolAttribute(entry.line21_field, u"line21_field", false) &&
-            children[i]->getIntAttribute<uint8_t>(entry.caption_service_number, u"caption_service_number", false, 0, 0, 0x3F) &&
-            children[i]->getBoolAttribute(entry.easy_reader, u"easy_reader", true) &&
-            children[i]->getBoolAttribute(entry.wide_aspect_ratio, u"wide_aspect_ratio", true);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = children[i]->getAttribute(entry.language, u"language", true, UString(), 3, 3) &&
+             children[i]->getBoolAttribute(entry.digital_cc, u"digital_cc", true) &&
+             children[i]->getBoolAttribute(entry.line21_field, u"line21_field", false) &&
+             children[i]->getIntAttribute<uint8_t>(entry.caption_service_number, u"caption_service_number", false, 0, 0, 0x3F) &&
+             children[i]->getBoolAttribute(entry.easy_reader, u"easy_reader", true) &&
+             children[i]->getBoolAttribute(entry.wide_aspect_ratio, u"wide_aspect_ratio", true);
+        entries.push_back(entry);
     }
+    return ok;
 }

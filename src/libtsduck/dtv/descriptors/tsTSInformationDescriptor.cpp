@@ -55,7 +55,14 @@ ts::TSInformationDescriptor::TSInformationDescriptor() :
     transmission_types(),
     reserved_future_use()
 {
-    _is_valid = true;
+}
+
+void ts::TSInformationDescriptor::clearContent()
+{
+    remote_control_key_id = 0;
+    ts_name.clear();
+    transmission_types.clear();
+    reserved_future_use.clear();
 }
 
 ts::TSInformationDescriptor::TSInformationDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -210,33 +217,24 @@ void ts::TSInformationDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::TSInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    ts_name.clear();
-    transmission_types.clear();
-    reserved_future_use.clear();
-
     xml::ElementVector xtype;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(remote_control_key_id, u"remote_control_key_id", true) &&
         element->getAttribute(ts_name, u"ts_name", true) &&
         element->getHexaTextChild(reserved_future_use, u"reserved_future_use") &&
         element->getChildren(xtype, u"transmission_type", 0, 3);
 
-    for (auto it1 = xtype.begin(); _is_valid && it1 != xtype.end(); ++it1) {
+    for (auto it1 = xtype.begin(); ok && it1 != xtype.end(); ++it1) {
         Entry e;
         xml::ElementVector xserv;
-        _is_valid =
-            (*it1)->getIntAttribute<uint8_t>(e.transmission_type_info, u"transmission_type_info", true) &&
-            (*it1)->getChildren(xserv, u"service");
-        for (auto it2 = xserv.begin(); _is_valid && it2 != xserv.end(); ++it2) {
+        ok = (*it1)->getIntAttribute<uint8_t>(e.transmission_type_info, u"transmission_type_info", true) &&
+             (*it1)->getChildren(xserv, u"service");
+        for (auto it2 = xserv.begin(); ok && it2 != xserv.end(); ++it2) {
             uint16_t id = 0;
-            _is_valid = (*it2)->getIntAttribute<uint16_t>(id, u"id", true);
-            if (_is_valid) {
-                e.service_ids.push_back(id);
-            }
+            ok = (*it2)->getIntAttribute<uint16_t>(id, u"id", true);
+            e.service_ids.push_back(id);
         }
-        if (_is_valid) {
-            transmission_types.push_back(e);
-        }
+        transmission_types.push_back(e);
     }
+    return ok;
 }

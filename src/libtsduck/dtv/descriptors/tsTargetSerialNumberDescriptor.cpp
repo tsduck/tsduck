@@ -53,7 +53,11 @@ ts::TargetSerialNumberDescriptor::TargetSerialNumberDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     serial_data()
 {
-    _is_valid = true;
+}
+
+void ts::TargetSerialNumberDescriptor::clearContent()
+{
+    serial_data.clear();
 }
 
 ts::TargetSerialNumberDescriptor::TargetSerialNumberDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -109,26 +113,15 @@ void ts::TargetSerialNumberDescriptor::DisplayDescriptor(TablesDisplay& display,
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::TargetSerialNumberDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    if (!serial_data.empty()) {
-        root->addHexaText(serial_data);
-    }
+    root->addHexaText(serial_data, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::TargetSerialNumberDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    serial_data.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getHexaText(serial_data, 0, MAX_DESCRIPTOR_SIZE - 2);
+    return element->getHexaText(serial_data, 0, MAX_DESCRIPTOR_SIZE - 2);
 }

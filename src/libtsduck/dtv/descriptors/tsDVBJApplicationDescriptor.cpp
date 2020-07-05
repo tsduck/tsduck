@@ -45,25 +45,24 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::DVBJApplicationDescriptor::DVBJApplicationDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     parameters()
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::DVBJApplicationDescriptor::DVBJApplicationDescriptor(DuckContext& duck, const Descriptor& desc) :
     DVBJApplicationDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::DVBJApplicationDescriptor::clearContent()
+{
+    parameters.clear();
 }
 
 
@@ -145,18 +144,13 @@ void ts::DVBJApplicationDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::DVBJApplicationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    parameters.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"parameter");
+    bool ok = element->getChildren(children, u"parameter");
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         UString param;
-        _is_valid = children[i]->getAttribute(param, u"value", true);
-        if (_is_valid) {
-            parameters.push_back(param);
-        }
+        ok = children[i]->getAttribute(param, u"value", true);
+        parameters.push_back(param);
     }
+    return ok;
 }

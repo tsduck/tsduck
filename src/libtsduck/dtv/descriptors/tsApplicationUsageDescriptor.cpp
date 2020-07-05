@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ApplicationUsageDescriptor::ApplicationUsageDescriptor(uint8_t type) :
@@ -58,6 +58,11 @@ ts::ApplicationUsageDescriptor::ApplicationUsageDescriptor(uint8_t type) :
 //----------------------------------------------------------------------------
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
+
+void ts::ApplicationUsageDescriptor::clearContent()
+{
+    usage_type = 0;
+}
 
 ts::ApplicationUsageDescriptor::ApplicationUsageDescriptor(DuckContext& duck, const Descriptor& desc) :
     ApplicationUsageDescriptor()
@@ -112,18 +117,13 @@ void ts::ApplicationUsageDescriptor::DisplayDescriptor(TablesDisplay& display, D
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::ApplicationUsageDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"usage_type", usage_type, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::ApplicationUsageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

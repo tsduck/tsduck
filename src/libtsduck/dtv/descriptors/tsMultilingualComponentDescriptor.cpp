@@ -44,20 +44,24 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::MultilingualComponentDescriptor::MultilingualComponentDescriptor() :
     AbstractMultilingualDescriptor(MY_DID, MY_XML_NAME, MY_XML_ATTR),
     component_tag(0)
 {
-    _is_valid = true;
 }
 
 
 //----------------------------------------------------------------------------
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
+
+void ts::MultilingualComponentDescriptor::clearContent()
+{
+    component_tag = 0;
+}
 
 ts::MultilingualComponentDescriptor::MultilingualComponentDescriptor(DuckContext& duck, const Descriptor& desc) :
     MultilingualComponentDescriptor()
@@ -122,6 +126,6 @@ void ts::MultilingualComponentDescriptor::buildXML(DuckContext& duck, xml::Eleme
 
 bool ts::MultilingualComponentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    AbstractMultilingualDescriptor::fromXML(duck, element);
-    _is_valid = _is_valid && element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true);
+    return AbstractMultilingualDescriptor::analyzeXML(duck, element) &&
+           element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true);
 }

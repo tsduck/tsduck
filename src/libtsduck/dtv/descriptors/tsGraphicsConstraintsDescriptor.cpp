@@ -55,13 +55,20 @@ ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor() :
     handles_externally_controlled_video(false),
     graphics_configuration()
 {
-    _is_valid = true;
 }
 
 ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor(DuckContext& duck, const Descriptor& desc) :
     GraphicsConstraintsDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::GraphicsConstraintsDescriptor::clearContent()
+{
+    can_run_without_visible_ui = false;
+    handles_configuration_changed = false;
+    handles_externally_controlled_video = false;
+    graphics_configuration.clear();
 }
 
 
@@ -145,10 +152,8 @@ void ts::GraphicsConstraintsDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::GraphicsConstraintsDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(can_run_without_visible_ui, u"can_run_without_visible_ui", true) &&
-        element->getBoolAttribute(handles_configuration_changed, u"handles_configuration_changed", true) &&
-        element->getBoolAttribute(handles_externally_controlled_video, u"handles_externally_controlled_video", true) &&
-        element->getHexaTextChild(graphics_configuration, u"graphics_configuration", false, 0, MAX_DESCRIPTOR_SIZE - 1);
+    return element->getBoolAttribute(can_run_without_visible_ui, u"can_run_without_visible_ui", true) &&
+           element->getBoolAttribute(handles_configuration_changed, u"handles_configuration_changed", true) &&
+           element->getBoolAttribute(handles_externally_controlled_video, u"handles_externally_controlled_video", true) &&
+           element->getHexaTextChild(graphics_configuration, u"graphics_configuration", false, 0, MAX_DESCRIPTOR_SIZE - 1);
 }

@@ -61,13 +61,25 @@ ts::DVBEnhancedAC3Descriptor::DVBEnhancedAC3Descriptor() :
     substream3(),
     additional_info()
 {
-    _is_valid = true;
 }
 
 ts::DVBEnhancedAC3Descriptor::DVBEnhancedAC3Descriptor(DuckContext& duck, const Descriptor& desc) :
     DVBEnhancedAC3Descriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::DVBEnhancedAC3Descriptor::clearContent()
+{
+    component_type.clear();
+    bsid.clear();
+    mainid.clear();
+    asvc.clear();
+    mixinfoexists = false;
+    substream1.clear();
+    substream2.clear();
+    substream3.clear();
+    additional_info.clear();
 }
 
 
@@ -154,13 +166,13 @@ void ts::DVBEnhancedAC3Descriptor::deserialize(DuckContext& duck, const Descript
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1;
 
-    component_type.reset();
-    bsid.reset();
-    mainid.reset();
-    asvc.reset();
-    substream1.reset();
-    substream2.reset();
-    substream3.reset();
+    component_type.clear();
+    bsid.clear();
+    mainid.clear();
+    asvc.clear();
+    substream1.clear();
+    substream2.clear();
+    substream3.clear();
     additional_info.clear();
 
     if (_is_valid) {
@@ -276,9 +288,7 @@ void ts::DVBEnhancedAC3Descriptor::buildXML(DuckContext& duck, xml::Element* roo
     root->setOptionalIntAttribute(u"substream1", substream1, true);
     root->setOptionalIntAttribute(u"substream2", substream2, true);
     root->setOptionalIntAttribute(u"substream3", substream3, true);
-    if (!additional_info.empty()) {
-        root->addHexaTextChild(u"additional_info", additional_info);
-    }
+    root->addHexaTextChild(u"additional_info", additional_info, true);
 }
 
 
@@ -288,15 +298,13 @@ void ts::DVBEnhancedAC3Descriptor::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::DVBEnhancedAC3Descriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(mixinfoexists, u"mixinfoexists", true) &&
-        element->getOptionalIntAttribute(component_type, u"component_type") &&
-        element->getOptionalIntAttribute(bsid, u"bsid") &&
-        element->getOptionalIntAttribute(mainid, u"mainid") &&
-        element->getOptionalIntAttribute(asvc, u"asvc") &&
-        element->getOptionalIntAttribute(substream1, u"substream1") &&
-        element->getOptionalIntAttribute(substream2, u"substream2") &&
-        element->getOptionalIntAttribute(substream3, u"substream3") &&
-        element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
+    return  element->getBoolAttribute(mixinfoexists, u"mixinfoexists", true) &&
+            element->getOptionalIntAttribute(component_type, u"component_type") &&
+            element->getOptionalIntAttribute(bsid, u"bsid") &&
+            element->getOptionalIntAttribute(mainid, u"mainid") &&
+            element->getOptionalIntAttribute(asvc, u"asvc") &&
+            element->getOptionalIntAttribute(substream1, u"substream1") &&
+            element->getOptionalIntAttribute(substream2, u"substream2") &&
+            element->getOptionalIntAttribute(substream3, u"substream3") &&
+            element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
 }

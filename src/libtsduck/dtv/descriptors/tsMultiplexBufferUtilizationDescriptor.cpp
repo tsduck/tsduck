@@ -63,8 +63,8 @@ ts::MultiplexBufferUtilizationDescriptor::MultiplexBufferUtilizationDescriptor(D
 
 void ts::MultiplexBufferUtilizationDescriptor::clearContent()
 {
-    LTW_offset_lower_bound.reset();
-    LTW_offset_upper_bound.reset();
+    LTW_offset_lower_bound.clear();
+    LTW_offset_upper_bound.clear();
 }
 
 
@@ -93,8 +93,8 @@ void ts::MultiplexBufferUtilizationDescriptor::serialize(DuckContext& duck, Desc
 
 void ts::MultiplexBufferUtilizationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    LTW_offset_lower_bound.reset();
-    LTW_offset_upper_bound.reset();
+    LTW_offset_lower_bound.clear();
+    LTW_offset_upper_bound.clear();
 
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();

@@ -54,7 +54,12 @@ ts::TargetSmartcardDescriptor::TargetSmartcardDescriptor() :
     super_CA_system_id(0),
     private_data()
 {
-    _is_valid = true;
+}
+
+void ts::TargetSmartcardDescriptor::clearContent()
+{
+    super_CA_system_id = 0;
+    private_data.clear();
 }
 
 ts::TargetSmartcardDescriptor::TargetSmartcardDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -124,9 +129,7 @@ void ts::TargetSmartcardDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 void ts::TargetSmartcardDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"super_CA_system_id", super_CA_system_id, true);
-    if (!private_data.empty()) {
-        root->addHexaText(private_data);
-    }
+    root->addHexaText(private_data, true);
 }
 
 
@@ -136,10 +139,6 @@ void ts::TargetSmartcardDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::TargetSmartcardDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    private_data.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute(super_CA_system_id, u"super_CA_system_id", true) &&
-        element->getHexaText(private_data, 0, MAX_DESCRIPTOR_SIZE - 6);
+    return element->getIntAttribute(super_CA_system_id, u"super_CA_system_id", true) &&
+           element->getHexaText(private_data, 0, MAX_DESCRIPTOR_SIZE - 6);
 }

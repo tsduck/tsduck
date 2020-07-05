@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::IPMACPlatformProviderNameDescriptor::IPMACPlatformProviderNameDescriptor(const UString& lang, const UString& name) :
@@ -55,10 +55,11 @@ ts::IPMACPlatformProviderNameDescriptor::IPMACPlatformProviderNameDescriptor(con
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::IPMACPlatformProviderNameDescriptor::clearContent()
+{
+    language_code.clear();
+    text.clear();
+}
 
 ts::IPMACPlatformProviderNameDescriptor::IPMACPlatformProviderNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     IPMACPlatformProviderNameDescriptor()
@@ -123,7 +124,7 @@ void ts::IPMACPlatformProviderNameDescriptor::DisplayDescriptor(TablesDisplay& d
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::IPMACPlatformProviderNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -131,11 +132,6 @@ void ts::IPMACPlatformProviderNameDescriptor::buildXML(DuckContext& duck, xml::E
     root->setAttribute(u"language_code", language_code);
     root->setAttribute(u"text", text);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::IPMACPlatformProviderNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

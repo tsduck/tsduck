@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::DVBHTMLApplicationDescriptor::DVBHTMLApplicationDescriptor() :
@@ -53,13 +53,13 @@ ts::DVBHTMLApplicationDescriptor::DVBHTMLApplicationDescriptor() :
     application_ids(),
     parameter()
 {
-    _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::DVBHTMLApplicationDescriptor::clearContent()
+{
+    application_ids.clear();
+    parameter.clear();
+}
 
 ts::DVBHTMLApplicationDescriptor::DVBHTMLApplicationDescriptor(DuckContext& duck, const Descriptor& desc) :
     DVBHTMLApplicationDescriptor()
@@ -160,20 +160,13 @@ void ts::DVBHTMLApplicationDescriptor::buildXML(DuckContext& duck, xml::Element*
 
 bool ts::DVBHTMLApplicationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    application_ids.clear();
-    parameter.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(parameter, u"parameter", false) &&
-        element->getChildren(children, u"application");
+    bool ok = element->getAttribute(parameter, u"parameter", false) && element->getChildren(children, u"application");
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         uint16_t id;
-        _is_valid = children[i]->getIntAttribute<uint16_t>(id, u"id", true);
-        if (_is_valid) {
-            application_ids.push_back(id);
-        }
+        ok = children[i]->getIntAttribute<uint16_t>(id, u"id", true);
+        application_ids.push_back(id);
     }
+    return ok;
 }

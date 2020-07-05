@@ -73,13 +73,22 @@ ts::HybridInformationDescriptor::HybridInformationDescriptor() :
     module_id(0),
     URL()
 {
-    _is_valid = true;
 }
 
 ts::HybridInformationDescriptor::HybridInformationDescriptor(DuckContext& duck, const Descriptor& desc) :
     HybridInformationDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::HybridInformationDescriptor::clearContent()
+{
+    has_location = false;
+    location_type = false;
+    format = 0;
+    component_tag = 0;
+    module_id = 0;
+    URL.clear();
 }
 
 
@@ -207,30 +216,30 @@ void ts::HybridInformationDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::HybridInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    URL.clear();
-
     const bool has_connect = element->hasAttribute(u"URL");
     const int bcast_count = element->hasAttribute(u"component_tag") + element->hasAttribute(u"module_id");
 
+    has_location = has_connect || bcast_count > 0;
+    location_type = has_connect;
+
     if (bcast_count == 1) {
-        _is_valid = false;
         element->report().error(u"attributes 'component_tag' and 'module_id' must be both present or both absent in <%s>, line %d", {element->name(), element->lineNumber()});
+        return false;
     }
     else if (has_connect && bcast_count > 0) {
-        _is_valid = false;
         element->report().error(u"attribute 'URL' and attributes 'component_tag', 'module_id' are mutually exclusive in <%s>, line %d", {element->name(), element->lineNumber()});
+        return false;
+    }
+    else if (!element->getIntAttribute<uint8_t>(format, u"format", true, 0, 0, 15)) {
+        return false;
+    }
+    else if (!has_location) {
+        return true;
+    }
+    else if (location_type) {
+        return element->getAttribute(URL, u"URL");
     }
     else {
-        has_location = has_connect || bcast_count > 0;
-        location_type = has_connect;
-        _is_valid = checkXMLName(element) && element->getIntAttribute<uint8_t>(format, u"format", true, 0, 0, 15);
-        if (_is_valid && has_location) {
-            if (location_type) {
-                _is_valid = element->getAttribute(URL, u"URL");
-            }
-            else {
-                _is_valid = element->getIntAttribute<uint8_t>(component_tag, u"component_tag") && element->getIntAttribute<uint16_t>(module_id, u"module_id");
-            }
-        }
+        return element->getIntAttribute<uint8_t>(component_tag, u"component_tag") && element->getIntAttribute<uint16_t>(module_id, u"module_id");
     }
 }
