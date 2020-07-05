@@ -13,26 +13,30 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, 0), MY_XML_NAME, MY_C
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 foo::FooDescriptor::FooDescriptor(const ts::UString& name_) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     name(name_)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 foo::FooDescriptor::FooDescriptor(ts::DuckContext& duck, const ts::Descriptor& desc) :
     ts::AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     name()
 {
     deserialize(duck, desc);
+}
+
+
+//----------------------------------------------------------------------------
+// Clear content, return to initial values
+//----------------------------------------------------------------------------
+
+void foo::FooDescriptor::clearContent()
+{
+    name.clear();
 }
 
 
@@ -54,13 +58,12 @@ void foo::FooDescriptor::serialize(ts::DuckContext& duck, ts::Descriptor& desc) 
 
 void foo::FooDescriptor::deserialize(ts::DuckContext& duck, const ts::Descriptor& desc)
 {
+    clear();
+
     _is_valid = desc.isValid() && desc.tag() == _tag;
 
     if (_is_valid) {
         duck.decode(name, desc.payload(), desc.payloadSize());
-    }
-    else {
-        name.clear();
     }
 }
 
@@ -93,9 +96,7 @@ void foo::FooDescriptor::buildXML(ts::DuckContext& duck, ts::xml::Element* root)
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void foo::FooDescriptor::fromXML(ts::DuckContext& duck, const ts::xml::Element* element)
+bool foo::FooDescriptor::analyzeXML(ts::DuckContext& duck, const ts::xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(name, u"name", true, u"", 0, ts::MAX_DESCRIPTOR_SIZE - 2);
+    return element->getAttribute(name, u"name", true, u"", 0, ts::MAX_DESCRIPTOR_SIZE - 2);
 }

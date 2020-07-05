@@ -29,9 +29,12 @@ namespace foo {
         // Inherited methods
         virtual void serialize(ts::DuckContext&, ts::Descriptor&) const override;
         virtual void deserialize(ts::DuckContext&, const ts::Descriptor&) override;
-        virtual void buildXML(ts::DuckContext&, ts::xml::Element*) const override;
-        virtual void fromXML(ts::DuckContext&, const ts::xml::Element*) override;
         DeclareDisplayDescriptor();
-    };
 
+    protected:
+        // Inherited methods
+        virtual void clearContent() override;
+        virtual void buildXML(ts::DuckContext&, ts::xml::Element*) const override;
+        virtual bool analyzeXML(ts::DuckContext&, const ts::xml::Element*) override;
+    };
 }
