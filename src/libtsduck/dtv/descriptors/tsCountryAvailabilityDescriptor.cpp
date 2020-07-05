@@ -48,7 +48,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor() :
@@ -56,13 +56,13 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor() :
     country_availability(true),
     country_codes()
 {
-    _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::CountryAvailabilityDescriptor::clearContent()
+{
+    country_availability = true;
+    country_codes.clear();
+}
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
@@ -72,17 +72,11 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(DuckContext& du
     deserialize(duck, desc);
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor using a variable-length list of country codes.
-//----------------------------------------------------------------------------
-
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(bool availability, const std::initializer_list<UString> countries) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     country_availability(availability),
     country_codes(countries)
 {
-    _is_valid = true;
 }
 
 
@@ -171,19 +165,14 @@ void ts::CountryAvailabilityDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::CountryAvailabilityDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    country_codes.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(country_availability, u"country_availability", true) &&
+    bool ok = element->getBoolAttribute(country_availability, u"country_availability", true) &&
         element->getChildren(children, u"country", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         UString name;
-        _is_valid = children[i]->getAttribute(name, u"country_code", true, UString(), 3, 3);
-        if (_is_valid) {
-            country_codes.push_back(name);
-        }
+        ok = children[i]->getAttribute(name, u"country_code", true, UString(), 3, 3);
+        country_codes.push_back(name);
     }
+    return ok;
 }

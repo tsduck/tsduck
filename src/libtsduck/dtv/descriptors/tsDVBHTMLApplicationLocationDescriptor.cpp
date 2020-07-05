@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::DVBHTMLApplicationLocationDescriptor::DVBHTMLApplicationLocationDescriptor() :
@@ -53,13 +53,13 @@ ts::DVBHTMLApplicationLocationDescriptor::DVBHTMLApplicationLocationDescriptor()
     physical_root(),
     initial_path()
 {
-    _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::DVBHTMLApplicationLocationDescriptor::clearContent()
+{
+    physical_root.clear();
+    initial_path.clear();
+}
 
 ts::DVBHTMLApplicationLocationDescriptor::DVBHTMLApplicationLocationDescriptor(DuckContext& duck, const Descriptor& desc) :
     DVBHTMLApplicationLocationDescriptor()
@@ -144,8 +144,6 @@ void ts::DVBHTMLApplicationLocationDescriptor::buildXML(DuckContext& duck, xml::
 
 bool ts::DVBHTMLApplicationLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(physical_root, u"physical_root", true) &&
-        element->getAttribute(initial_path, u"initial_path", true);
+    return element->getAttribute(physical_root, u"physical_root", true) &&
+           element->getAttribute(initial_path, u"initial_path", true);
 }

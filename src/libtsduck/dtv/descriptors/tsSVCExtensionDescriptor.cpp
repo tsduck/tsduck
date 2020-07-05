@@ -61,13 +61,27 @@ ts::SVCExtensionDescriptor::SVCExtensionDescriptor() :
     temporal_id_end(0),
     no_sei_nal_unit_present(false)
 {
-    _is_valid = true;
 }
 
 ts::SVCExtensionDescriptor::SVCExtensionDescriptor(DuckContext& duck, const Descriptor& desc) :
     SVCExtensionDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::SVCExtensionDescriptor::clearContent()
+{
+    width = 0;
+    height = 0;
+    frame_rate = 0;
+    average_bitrate = 0;
+    maximum_bitrate = 0;
+    dependency_id = 0;
+    quality_id_start = 0;
+    quality_id_end = 0;
+    temporal_id_start = 0;
+    temporal_id_end = 0;
+    no_sei_nal_unit_present = false;
 }
 
 
@@ -170,17 +184,15 @@ void ts::SVCExtensionDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::SVCExtensionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(width, u"width", true) &&
-        element->getIntAttribute<uint16_t>(height, u"height", true) &&
-        element->getIntAttribute<uint16_t>(frame_rate, u"frame_rate", true) &&
-        element->getIntAttribute<uint16_t>(average_bitrate, u"average_bitrate", true) &&
-        element->getIntAttribute<uint16_t>(maximum_bitrate, u"maximum_bitrate", true) &&
-        element->getIntAttribute<uint8_t>(dependency_id, u"dependency_id", true, 0, 0x00, 0x07) &&
-        element->getIntAttribute<uint8_t>(quality_id_start, u"quality_id_start", true, 0, 0x00, 0x0F) &&
-        element->getIntAttribute<uint8_t>(quality_id_end, u"quality_id_end", true, 0, 0x00, 0x0F) &&
-        element->getIntAttribute<uint8_t>(temporal_id_start, u"temporal_id_start", true, 0, 0x00, 0x07) &&
-        element->getIntAttribute<uint8_t>(temporal_id_end, u"temporal_id_end", true, 0, 0x00, 0x07) &&
-        element->getBoolAttribute(no_sei_nal_unit_present, u"no_sei_nal_unit_present", true);
+    return  element->getIntAttribute<uint16_t>(width, u"width", true) &&
+            element->getIntAttribute<uint16_t>(height, u"height", true) &&
+            element->getIntAttribute<uint16_t>(frame_rate, u"frame_rate", true) &&
+            element->getIntAttribute<uint16_t>(average_bitrate, u"average_bitrate", true) &&
+            element->getIntAttribute<uint16_t>(maximum_bitrate, u"maximum_bitrate", true) &&
+            element->getIntAttribute<uint8_t>(dependency_id, u"dependency_id", true, 0, 0x00, 0x07) &&
+            element->getIntAttribute<uint8_t>(quality_id_start, u"quality_id_start", true, 0, 0x00, 0x0F) &&
+            element->getIntAttribute<uint8_t>(quality_id_end, u"quality_id_end", true, 0, 0x00, 0x0F) &&
+            element->getIntAttribute<uint8_t>(temporal_id_start, u"temporal_id_start", true, 0, 0x00, 0x07) &&
+            element->getIntAttribute<uint8_t>(temporal_id_end, u"temporal_id_end", true, 0, 0x00, 0x07) &&
+            element->getBoolAttribute(no_sei_nal_unit_present, u"no_sei_nal_unit_present", true);
 }

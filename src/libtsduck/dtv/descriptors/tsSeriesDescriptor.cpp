@@ -73,7 +73,7 @@ void ts::SeriesDescriptor::clearContent()
     series_id = 0;
     repeat_label = 0;
     program_pattern = 0;
-    expire_date.reset();
+    expire_date.clear();
     episode_number = 0;
     last_episode_number = 0;
     series_name.clear();
@@ -110,7 +110,7 @@ void ts::SeriesDescriptor::deserialize(DuckContext& duck, const Descriptor& desc
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
     _is_valid = desc.isValid() && desc.tag() == _tag && size >= 8;
-    expire_date.reset();
+    expire_date.clear();
     series_name.clear();
 
     if (_is_valid) {

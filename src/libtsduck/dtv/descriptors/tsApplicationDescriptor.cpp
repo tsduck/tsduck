@@ -58,6 +58,15 @@ ts::ApplicationDescriptor::ApplicationDescriptor() :
 {
 }
 
+void ts::ApplicationDescriptor::clearContent()
+{
+    profiles.clear();
+    service_bound = false;
+    visibility = 0;
+    application_priority = 0;
+    transport_protocol_labels.clear();
+}
+
 ts::ApplicationDescriptor::ApplicationDescriptor(DuckContext& duck, const Descriptor& desc) :
     ApplicationDescriptor()
 {

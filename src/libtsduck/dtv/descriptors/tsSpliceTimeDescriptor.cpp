@@ -55,7 +55,14 @@ ts::SpliceTimeDescriptor::SpliceTimeDescriptor() :
     TAI_ns(0),
     UTC_offset(0)
 {
-    _is_valid = true;
+}
+
+void ts::SpliceTimeDescriptor::clearContent()
+{
+    identifier = SPLICE_ID_CUEI;
+    TAI_seconds = 0;
+    TAI_ns = 0;
+    UTC_offset = 0;
 }
 
 ts::SpliceTimeDescriptor::SpliceTimeDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -146,10 +153,8 @@ void ts::SpliceTimeDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::SpliceTimeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint32_t>(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
-        element->getIntAttribute<uint64_t>(TAI_seconds, u"TAI_seconds", true, 0, 0, TS_UCONST64(0x0000FFFFFFFFFFFF)) &&
-        element->getIntAttribute<uint32_t>(TAI_ns, u"TAI_ns", true) &&
-        element->getIntAttribute<uint16_t>(UTC_offset, u"UTC_offset", true);
+    return element->getIntAttribute<uint32_t>(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
+           element->getIntAttribute<uint64_t>(TAI_seconds, u"TAI_seconds", true, 0, 0, TS_UCONST64(0x0000FFFFFFFFFFFF)) &&
+           element->getIntAttribute<uint32_t>(TAI_ns, u"TAI_ns", true) &&
+           element->getIntAttribute<uint16_t>(UTC_offset, u"UTC_offset", true);
 }

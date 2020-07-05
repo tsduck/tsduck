@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::PartialTransportStreamDescriptor::PartialTransportStreamDescriptor() :
@@ -54,18 +54,19 @@ ts::PartialTransportStreamDescriptor::PartialTransportStreamDescriptor() :
     minimum_overall_smoothing_rate(UNDEFINED_SMOOTHING_RATE),
     maximum_overall_smoothing_buffer(UNDEFINED_SMOOTHING_BUFFER)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::PartialTransportStreamDescriptor::PartialTransportStreamDescriptor(DuckContext& duck, const Descriptor& desc) :
     PartialTransportStreamDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::PartialTransportStreamDescriptor::clearContent()
+{
+    peak_rate = 0;
+    minimum_overall_smoothing_rate = UNDEFINED_SMOOTHING_RATE;
+    maximum_overall_smoothing_buffer = UNDEFINED_SMOOTHING_BUFFER;
 }
 
 
@@ -161,9 +162,7 @@ void ts::PartialTransportStreamDescriptor::buildXML(DuckContext& duck, xml::Elem
 
 bool ts::PartialTransportStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint32_t>(peak_rate, u"peak_rate", true, 0, 0, 0x003FFFFF) &&
-        element->getIntAttribute<uint32_t>(minimum_overall_smoothing_rate, u"minimum_overall_smoothing_rate", false, 0x003FFFFF, 0, 0x003FFFFF) &&
-        element->getIntAttribute<uint16_t>(maximum_overall_smoothing_buffer, u"maximum_overall_smoothing_buffer", false, 0x3FFF, 0, 0x3FFF);
+    return element->getIntAttribute<uint32_t>(peak_rate, u"peak_rate", true, 0, 0, 0x003FFFFF) &&
+           element->getIntAttribute<uint32_t>(minimum_overall_smoothing_rate, u"minimum_overall_smoothing_rate", false, 0x003FFFFF, 0, 0x003FFFFF) &&
+           element->getIntAttribute<uint16_t>(maximum_overall_smoothing_buffer, u"maximum_overall_smoothing_buffer", false, 0x3FFF, 0, 0x3FFF);
 }

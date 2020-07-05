@@ -54,7 +54,14 @@ ts::FlexMuxTimingDescriptor::FlexMuxTimingDescriptor() :
     FCRLength(0),
     FmxRateLength(0)
 {
-    _is_valid = true;
+}
+
+void ts::FlexMuxTimingDescriptor::clearContent()
+{
+    FCR_ES_ID = 0;
+    FCRResolution = 0;
+    FCRLength = 0;
+    FmxRateLength = 0;
 }
 
 ts::FlexMuxTimingDescriptor::FlexMuxTimingDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -144,10 +151,8 @@ void ts::FlexMuxTimingDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::FlexMuxTimingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(FCR_ES_ID, u"FCR_ES_ID", true) &&
-        element->getIntAttribute<uint32_t>(FCRResolution, u"FCRResolution", true) &&
-        element->getIntAttribute<uint8_t>(FCRLength, u"FCRLength", true) &&
-        element->getIntAttribute<uint8_t>(FmxRateLength, u"FmxRateLength", true);
+    return element->getIntAttribute<uint16_t>(FCR_ES_ID, u"FCR_ES_ID", true) &&
+           element->getIntAttribute<uint32_t>(FCRResolution, u"FCRResolution", true) &&
+           element->getIntAttribute<uint8_t>(FCRLength, u"FCRLength", true) &&
+           element->getIntAttribute<uint8_t>(FmxRateLength, u"FmxRateLength", true);
 }

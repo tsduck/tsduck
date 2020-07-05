@@ -51,7 +51,11 @@ ts::DSNGDescriptor::DSNGDescriptor(const UString& id) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     station_identification(id)
 {
-    _is_valid = true;
+}
+
+void ts::DSNGDescriptor::clearContent()
+{
+    station_identification.clear();
 }
 
 ts::DSNGDescriptor::DSNGDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -105,7 +109,7 @@ void ts::DSNGDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, cons
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::DSNGDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -113,15 +117,7 @@ void ts::DSNGDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setAttribute(u"station_identification", station_identification);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::DSNGDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    station_identification.clear();
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(station_identification, u"station_identification", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
+    return element->getAttribute(station_identification, u"station_identification", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
 }

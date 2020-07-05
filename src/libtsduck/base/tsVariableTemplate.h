@@ -49,21 +49,21 @@ ts::Variable<T>::Variable(Variable<T>&& other) :
 {
     if (other._access != nullptr) {
         _access = new(_data) T(std::move(*(other._access)));
-        other.reset();
+        other.clear();
     }
 }
 
 template <typename T>
 ts::Variable<T>::~Variable()
 {
-    reset();
+    clear();
 }
 
 template <typename T>
 ts::Variable<T>& ts::Variable<T>::operator=(const Variable<T>& other)
 {
     if (&other != this) {
-        reset();
+        clear();
         if (other._access != nullptr) {
             _access = new(_data) T(*(other._access));
         }
@@ -75,10 +75,10 @@ template <typename T>
 ts::Variable<T>& ts::Variable<T>::operator=(Variable<T>&& other)
 {
     if (&other != this) {
-        reset();
+        clear();
         if (other._access != nullptr) {
             _access = new(_data) T(std::move(*(other._access)));
-            other.reset();
+            other.clear();
         }
     }
     return *this;
@@ -87,7 +87,7 @@ ts::Variable<T>& ts::Variable<T>::operator=(Variable<T>&& other)
 template <typename T>
 ts::Variable<T>& ts::Variable<T>::operator=(const T& obj)
 {
-    reset();
+    clear();
     _access = new(_data) T(obj);
     return *this;
 }
@@ -107,11 +107,11 @@ bool ts::Variable<T>::setDefault(const T& def)
 
 
 //----------------------------------------------------------------------------
-// Reset the value.
+// Clear the value.
 //----------------------------------------------------------------------------
 
 template <typename T>
-void ts::Variable<T>::reset()
+void ts::Variable<T>::clear()
 {
     if (_access != nullptr) {
         // Safe when the destructor throws an exception

@@ -61,13 +61,26 @@ ts::T2DeliverySystemDescriptor::T2DeliverySystemDescriptor() :
     tfs(false),
     cells()
 {
-    _is_valid = true;
 }
 
 ts::T2DeliverySystemDescriptor::T2DeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
     T2DeliverySystemDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::T2DeliverySystemDescriptor::clearContent()
+{
+    plp_id = 0;
+    T2_system_id = 0;
+    has_extension = false;
+    SISO_MISO = 0;
+    bandwidth = 0;
+    guard_interval = 0;
+    transmission_mode = 0;
+    other_frequency = false;
+    tfs = false;
+    cells.clear();
 }
 
 ts::T2DeliverySystemDescriptor::Cell::Cell() :
@@ -353,61 +366,47 @@ void ts::T2DeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::T2DeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    has_extension = false;
-    cells.clear();
-
     xml::ElementVector ext;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute(plp_id, u"plp_id", true) &&
         element->getIntAttribute(T2_system_id, u"T2_system_id", true) &&
         element->getChildren(ext, u"extension", 0, 1);
 
-    has_extension = _is_valid && !ext.empty();
+    has_extension = ok && !ext.empty();
 
     if (has_extension) {
         xml::ElementVector xcells;
-        _is_valid =
-            ext[0]->getIntEnumAttribute(SISO_MISO, SisoNames, u"SISO_MISO", true) &&
-            ext[0]->getIntEnumAttribute(bandwidth, BandwidthNames, u"bandwidth", true) &&
-            ext[0]->getIntEnumAttribute(guard_interval, GuardIntervalNames, u"guard_interval", true) &&
-            ext[0]->getIntEnumAttribute(transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
-            ext[0]->getBoolAttribute(other_frequency, u"other_frequency", true) &&
-            ext[0]->getBoolAttribute(tfs, u"tfs", true) &&
-            ext[0]->getChildren(xcells, u"cell");
+        ok = ext[0]->getIntEnumAttribute(SISO_MISO, SisoNames, u"SISO_MISO", true) &&
+             ext[0]->getIntEnumAttribute(bandwidth, BandwidthNames, u"bandwidth", true) &&
+             ext[0]->getIntEnumAttribute(guard_interval, GuardIntervalNames, u"guard_interval", true) &&
+             ext[0]->getIntEnumAttribute(transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
+             ext[0]->getBoolAttribute(other_frequency, u"other_frequency", true) &&
+             ext[0]->getBoolAttribute(tfs, u"tfs", true) &&
+             ext[0]->getChildren(xcells, u"cell");
 
-        for (size_t i1 = 0; _is_valid && i1 < xcells.size(); ++i1) {
-
+        for (size_t i1 = 0; ok && i1 < xcells.size(); ++i1) {
             xml::ElementVector xfreq;
             xml::ElementVector xsub;
             Cell cell;
+            ok = xcells[i1]->getIntAttribute(cell.cell_id, u"cell_id", true) &&
+                 xcells[i1]->getChildren(xfreq, u"centre_frequency", tfs ? 0 : 1, tfs ? xml::UNLIMITED : 1) &&
+                 xcells[i1]->getChildren(xsub, u"subcell");
 
-            _is_valid =
-                xcells[i1]->getIntAttribute(cell.cell_id, u"cell_id", true) &&
-                xcells[i1]->getChildren(xfreq, u"centre_frequency", tfs ? 0 : 1, tfs ? xml::UNLIMITED : 1) &&
-                xcells[i1]->getChildren(xsub, u"subcell");
-
-            for (size_t i2 = 0; _is_valid && i2 < xfreq.size(); ++i2) {
+            for (size_t i2 = 0; ok && i2 < xfreq.size(); ++i2) {
                 uint64_t freq = 0;
-                _is_valid = xfreq[i2]->getIntAttribute(freq, u"value", true);
-                if (_is_valid) {
-                    cell.centre_frequency.push_back(freq);
-                }
+                ok = xfreq[i2]->getIntAttribute(freq, u"value", true);
+                cell.centre_frequency.push_back(freq);
             }
 
-            for (size_t i2 = 0; _is_valid && i2 < xsub.size(); ++i2) {
+            for (size_t i2 = 0; ok && i2 < xsub.size(); ++i2) {
                 Subcell sub;
-                _is_valid =
-                    xsub[i2]->getIntAttribute(sub.cell_id_extension, u"cell_id_extension", true) &&
-                    xsub[i2]->getIntAttribute(sub.transposer_frequency, u"transposer_frequency", true);
-                if (_is_valid) {
-                    cell.subcells.push_back(sub);
-                }
+                ok = xsub[i2]->getIntAttribute(sub.cell_id_extension, u"cell_id_extension", true) &&
+                     xsub[i2]->getIntAttribute(sub.transposer_frequency, u"transposer_frequency", true);
+                cell.subcells.push_back(sub);
             }
 
-            if (_is_valid) {
-                cells.push_back(cell);
-            }
+            cells.push_back(cell);
         }
     }
+    return ok;
 }

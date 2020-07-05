@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(uint16_t id) :
@@ -53,13 +53,7 @@ ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(uint16_t id) :
     data_broadcast_id(id),
     private_data()
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
@@ -67,6 +61,12 @@ ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(DuckContext& duck, cons
     private_data()
 {
     deserialize(duck, desc);
+}
+
+void ts::DataBroadcastIdDescriptor::clearContent()
+{
+    data_broadcast_id = 0;
+    private_data.clear();
 }
 
 
@@ -306,9 +306,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& display, c
 void ts::DataBroadcastIdDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"data_broadcast_id", data_broadcast_id, true);
-    if (!private_data.empty()) {
-        root->addHexaTextChild(u"selector_bytes", private_data);
-    }
+    root->addHexaTextChild(u"selector_bytes", private_data, true);
 }
 
 
@@ -318,8 +316,6 @@ void ts::DataBroadcastIdDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::DataBroadcastIdDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(data_broadcast_id, u"data_broadcast_id", true, 0, 0x0000, 0xFFFF) &&
-        element->getHexaTextChild(private_data, u"selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 2);
+    return element->getIntAttribute<uint16_t>(data_broadcast_id, u"data_broadcast_id", true, 0, 0x0000, 0xFFFF) &&
+           element->getHexaTextChild(private_data, u"selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 2);
 }

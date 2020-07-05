@@ -54,6 +54,11 @@ ts::AnnouncementSupportDescriptor::AnnouncementSupportDescriptor() :
 {
 }
 
+void ts::AnnouncementSupportDescriptor::clearContent()
+{
+    announcements.clear();
+}
+
 ts::AnnouncementSupportDescriptor::AnnouncementSupportDescriptor(DuckContext& duck, const Descriptor& desc) :
     AnnouncementSupportDescriptor()
 {

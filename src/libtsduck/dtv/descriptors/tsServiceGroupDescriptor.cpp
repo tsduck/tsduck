@@ -56,7 +56,13 @@ ts::ServiceGroupDescriptor::ServiceGroupDescriptor() :
     simultaneous_services(),
     private_data()
 {
-    _is_valid = true;
+}
+
+void ts::ServiceGroupDescriptor::clearContent()
+{
+    service_group_type = 0;
+    simultaneous_services.clear();
+    private_data.clear();
 }
 
 ts::ServiceGroupDescriptor::ServiceGroupDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -184,23 +190,17 @@ void ts::ServiceGroupDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::ServiceGroupDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    simultaneous_services.clear();
-    private_data.clear();
-
     xml::ElementVector xserv;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(service_group_type, u"service_group_type", true, 0, 0, 15) &&
         element->getChildren(xserv, u"service", 0, service_group_type == 1 ? 63 : 0) &&
         element->getHexaTextChild(private_data, u"private_data", false, 0, service_group_type == 1 ? 0 : 254);
 
-    for (auto it = xserv.begin(); _is_valid && it != xserv.end(); ++it) {
+    for (auto it = xserv.begin(); ok && it != xserv.end(); ++it) {
         SimultaneousService ss;
-        _is_valid =
-            (*it)->getIntAttribute<uint16_t>(ss.primary_service_id, u"primary_service_id", true) &&
-            (*it)->getIntAttribute<uint16_t>(ss.secondary_service_id, u"secondary_service_id", true);
-        if (_is_valid) {
-            simultaneous_services.push_back(ss);
-        }
+        ok = (*it)->getIntAttribute<uint16_t>(ss.primary_service_id, u"primary_service_id", true) &&
+             (*it)->getIntAttribute<uint16_t>(ss.secondary_service_id, u"secondary_service_id", true);
+        simultaneous_services.push_back(ss);
     }
+    return ok;
 }

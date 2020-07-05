@@ -54,13 +54,19 @@ ts::SystemClockDescriptor::SystemClockDescriptor() :
     clock_accuracy_integer(0),
     clock_accuracy_exponent(0)
 {
-    _is_valid = true;
 }
 
 ts::SystemClockDescriptor::SystemClockDescriptor(DuckContext& duck, const Descriptor& desc) :
     SystemClockDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::SystemClockDescriptor::clearContent()
+{
+    external_clock_reference = false;
+    clock_accuracy_integer = 0;
+    clock_accuracy_exponent = 0;
 }
 
 
@@ -134,9 +140,7 @@ void ts::SystemClockDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::SystemClockDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(external_clock_reference, u"external_clock_reference", true) &&
-        element->getIntAttribute<uint8_t>(clock_accuracy_integer, u"clock_accuracy_integer", true, 0, 0x00, 0x3F) &&
-        element->getIntAttribute<uint8_t>(clock_accuracy_exponent, u"clock_accuracy_exponent", true, 0, 0x00, 0x07);
+    return element->getBoolAttribute(external_clock_reference, u"external_clock_reference", true) &&
+           element->getIntAttribute<uint8_t>(clock_accuracy_integer, u"clock_accuracy_integer", true, 0, 0x00, 0x3F) &&
+           element->getIntAttribute<uint8_t>(clock_accuracy_exponent, u"clock_accuracy_exponent", true, 0, 0x00, 0x07);
 }

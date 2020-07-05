@@ -44,7 +44,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::NPTEndpointDescriptor::NPTEndpointDescriptor(uint64_t start, uint64_t stop) :
@@ -52,18 +52,18 @@ ts::NPTEndpointDescriptor::NPTEndpointDescriptor(uint64_t start, uint64_t stop) 
     start_NPT(start),
     stop_NPT(stop)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::NPTEndpointDescriptor::NPTEndpointDescriptor(DuckContext& duck, const Descriptor& desc) :
     NPTEndpointDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::NPTEndpointDescriptor::clearContent()
+{
+    start_NPT = 0;
+    stop_NPT = 0;
 }
 
 
@@ -136,8 +136,6 @@ void ts::NPTEndpointDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::NPTEndpointDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint64_t>(start_NPT, u"start_NPT", true, 0, 0, TS_UCONST64(0x00000001FFFFFFFF)) &&
-        element->getIntAttribute<uint64_t>(stop_NPT, u"stop_NPT", true, 0, 0, TS_UCONST64(0x00000001FFFFFFFF));
+    return element->getIntAttribute<uint64_t>(start_NPT, u"start_NPT", true, 0, 0, TS_UCONST64(0x00000001FFFFFFFF)) &&
+           element->getIntAttribute<uint64_t>(stop_NPT, u"stop_NPT", true, 0, 0, TS_UCONST64(0x00000001FFFFFFFF));
 }

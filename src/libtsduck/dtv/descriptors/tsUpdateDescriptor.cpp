@@ -56,7 +56,14 @@ ts::UpdateDescriptor::UpdateDescriptor() :
     update_priority(0),
     private_data()
 {
-    _is_valid = true;
+}
+
+void ts::UpdateDescriptor::clearContent()
+{
+    update_flag = 0;
+    update_method = 0;
+    update_priority = 0;
+    private_data.clear();
 }
 
 ts::UpdateDescriptor::UpdateDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -132,9 +139,7 @@ void ts::UpdateDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"update_flag", update_flag, false);
     root->setIntAttribute(u"update_method", update_method, false);
     root->setIntAttribute(u"update_priority", update_priority, false);
-    if (!private_data.empty()) {
-        root->addHexaTextChild(u"private_data", private_data);
-    }
+    root->addHexaTextChild(u"private_data", private_data, true);
 }
 
 
@@ -144,11 +149,8 @@ void ts::UpdateDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::UpdateDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(update_flag, u"update_flag", true, 0, 0, 3) &&
-        element->getIntAttribute<uint8_t>(update_method, u"update_method", true, 0, 0, 15) &&
-        element->getIntAttribute<uint8_t>(update_priority, u"update_priority", true, 0, 0, 3) &&
-        element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 3);
+    return element->getIntAttribute<uint8_t>(update_flag, u"update_flag", true, 0, 0, 3) &&
+           element->getIntAttribute<uint8_t>(update_method, u"update_method", true, 0, 0, 15) &&
+           element->getIntAttribute<uint8_t>(update_priority, u"update_priority", true, 0, 0, 3) &&
+           element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 3);
 }

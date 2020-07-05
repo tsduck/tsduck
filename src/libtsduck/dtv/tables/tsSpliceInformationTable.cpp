@@ -91,7 +91,7 @@ void ts::SpliceInformationTable::clearContent()
     splice_command_type = SPLICE_NULL;
     splice_schedule.clear();
     splice_insert.clear();
-    time_signal.reset();
+    time_signal.clear();
     private_command.identifier = 0;
     private_command.private_bytes.clear();
     descs.clear();

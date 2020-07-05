@@ -56,7 +56,14 @@ ts::T2MIDescriptor::T2MIDescriptor() :
     pcr_iscr_common_clock_flag(false),
     reserved()
 {
-    _is_valid = true;
+}
+
+void ts::T2MIDescriptor::clearContent()
+{
+    t2mi_stream_id = 0;
+    num_t2mi_streams_minus_one = 0;
+    pcr_iscr_common_clock_flag = false;
+    reserved.clear();
 }
 
 ts::T2MIDescriptor::T2MIDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -123,12 +130,10 @@ void ts::T2MIDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::T2MIDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(t2mi_stream_id, u"t2mi_stream_id", true, 0, 0, 7) &&
-        element->getIntAttribute<uint8_t>(num_t2mi_streams_minus_one, u"num_t2mi_streams_minus_one", false, 0, 0, 7) &&
-        element->getBoolAttribute(pcr_iscr_common_clock_flag, u"pcr_iscr_common_clock_flag", false, false) &&
-        element->getHexaTextChild(reserved, u"reserved", false, 0, MAX_DESCRIPTOR_SIZE - 6);
+    return element->getIntAttribute<uint8_t>(t2mi_stream_id, u"t2mi_stream_id", true, 0, 0, 7) &&
+           element->getIntAttribute<uint8_t>(num_t2mi_streams_minus_one, u"num_t2mi_streams_minus_one", false, 0, 0, 7) &&
+           element->getBoolAttribute(pcr_iscr_common_clock_flag, u"pcr_iscr_common_clock_flag", false, false) &&
+           element->getHexaTextChild(reserved, u"reserved", false, 0, MAX_DESCRIPTOR_SIZE - 6);
 }
 
 

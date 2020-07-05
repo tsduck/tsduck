@@ -54,7 +54,13 @@ ts::TargetBackgroundGridDescriptor::TargetBackgroundGridDescriptor() :
     vertical_size(0),
     aspect_ratio_information(0)
 {
-    _is_valid = true;
+}
+
+void ts::TargetBackgroundGridDescriptor::clearContent()
+{
+    horizontal_size = 0;
+    vertical_size = 0;
+    aspect_ratio_information = 0;
 }
 
 ts::TargetBackgroundGridDescriptor::TargetBackgroundGridDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -141,9 +147,7 @@ void ts::TargetBackgroundGridDescriptor::buildXML(DuckContext& duck, xml::Elemen
 
 bool ts::TargetBackgroundGridDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(horizontal_size, u"horizontal_size", true, 0, 0, 0x3FFF) &&
-        element->getIntAttribute<uint16_t>(vertical_size, u"vertical_size", true, 0, 0, 0x3FFF) &&
-        element->getIntAttribute<uint8_t>(aspect_ratio_information, u"aspect_ratio_information", true, 0, 0, 0x0F);
+    return element->getIntAttribute<uint16_t>(horizontal_size, u"horizontal_size", true, 0, 0, 0x3FFF) &&
+           element->getIntAttribute<uint16_t>(vertical_size, u"vertical_size", true, 0, 0, 0x3FFF) &&
+           element->getIntAttribute<uint8_t>(aspect_ratio_information, u"aspect_ratio_information", true, 0, 0, 0x0F);
 }

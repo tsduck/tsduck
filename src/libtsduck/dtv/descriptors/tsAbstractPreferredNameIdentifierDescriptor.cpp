@@ -50,6 +50,11 @@ ts::AbstractPreferredNameIdentifierDescriptor::AbstractPreferredNameIdentifierDe
 {
 }
 
+void ts::AbstractPreferredNameIdentifierDescriptor::clearContent()
+{
+    name_id = 0;
+}
+
 ts::AbstractPreferredNameIdentifierDescriptor::AbstractPreferredNameIdentifierDescriptor(DuckContext& duck,
                                                                                          const Descriptor& desc,
                                                                                          DID tag,

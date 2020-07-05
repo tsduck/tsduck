@@ -58,7 +58,16 @@ ts::ContentAvailabilityDescriptor::ContentAvailabilityDescriptor() :
     encryption_mode(false),
     reserved_future_use()
 {
-    _is_valid = true;
+}
+
+void ts::ContentAvailabilityDescriptor::clearContent()
+{
+    copy_restriction_mode = false;
+    image_constraint_token = false;
+    retention_mode = false;
+    retention_state = 0;
+    encryption_mode = false;
+    reserved_future_use.clear();
 }
 
 ts::ContentAvailabilityDescriptor::ContentAvailabilityDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -150,14 +159,10 @@ void ts::ContentAvailabilityDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::ContentAvailabilityDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    reserved_future_use.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(copy_restriction_mode, u"copy_restriction_mode", true) &&
-        element->getBoolAttribute(image_constraint_token, u"image_constraint_token", true) &&
-        element->getBoolAttribute(retention_mode, u"retention_mode", true) &&
-        element->getIntAttribute<uint8_t>(retention_state, u"retention_state", true, 0, 0, 7) &&
-        element->getBoolAttribute(encryption_mode, u"encryption_mode", true) &&
-        element->getHexaTextChild(reserved_future_use, u"reserved_future_use", false, 0, 253);
+    return element->getBoolAttribute(copy_restriction_mode, u"copy_restriction_mode", true) &&
+           element->getBoolAttribute(image_constraint_token, u"image_constraint_token", true) &&
+           element->getBoolAttribute(retention_mode, u"retention_mode", true) &&
+           element->getIntAttribute<uint8_t>(retention_state, u"retention_state", true, 0, 0, 7) &&
+           element->getBoolAttribute(encryption_mode, u"encryption_mode", true) &&
+           element->getHexaTextChild(reserved_future_use, u"reserved_future_use", false, 0, 253);
 }

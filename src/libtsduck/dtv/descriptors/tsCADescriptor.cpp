@@ -46,7 +46,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::CADescriptor::CADescriptor(uint16_t cas_id_, PID ca_pid_) :
@@ -55,13 +55,19 @@ ts::CADescriptor::CADescriptor(uint16_t cas_id_, PID ca_pid_) :
     ca_pid(ca_pid_),
     private_data()
 {
-    _is_valid = true;
 }
 
 
 //----------------------------------------------------------------------------
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
+
+void ts::CADescriptor::clearContent()
+{
+    cas_id = 0;
+    ca_pid = PID_NULL;
+    private_data.clear();
+}
 
 ts::CADescriptor::CADescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
@@ -161,11 +167,9 @@ void ts::CADescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::CADescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(cas_id, u"CA_system_id", true, 0, 0x0000, 0xFFFF) &&
-        element->getIntAttribute<PID>(ca_pid, u"CA_PID", true, 0, 0x0000, 0x1FFF) &&
-        element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 4);
+    return element->getIntAttribute<uint16_t>(cas_id, u"CA_system_id", true, 0, 0x0000, 0xFFFF) &&
+           element->getIntAttribute<PID>(ca_pid, u"CA_PID", true, 0, 0x0000, 0x1FFF) &&
+           element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 4);
 }
 
 

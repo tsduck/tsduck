@@ -52,7 +52,11 @@ ts::BroadcasterNameDescriptor::BroadcasterNameDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     name()
 {
-    _is_valid = true;
+}
+
+void ts::BroadcasterNameDescriptor::clearContent()
+{
+    name.clear();
 }
 
 ts::BroadcasterNameDescriptor::BroadcasterNameDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -108,7 +112,7 @@ void ts::BroadcasterNameDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::BroadcasterNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -116,16 +120,7 @@ void ts::BroadcasterNameDescriptor::buildXML(DuckContext& duck, xml::Element* ro
     root->setAttribute(u"name", name);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::BroadcasterNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    name.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(name, u"name");
+    return element->getAttribute(name, u"name");
 }

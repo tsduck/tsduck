@@ -52,13 +52,17 @@ ts::DataStreamAlignmentDescriptor::DataStreamAlignmentDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     alignment_type(0)
 {
-    _is_valid = true;
 }
 
 ts::DataStreamAlignmentDescriptor::DataStreamAlignmentDescriptor(DuckContext& duck, const Descriptor& desc) :
     DataStreamAlignmentDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::DataStreamAlignmentDescriptor::clearContent()
+{
+    alignment_type = 0;
 }
 
 
@@ -111,7 +115,7 @@ void ts::DataStreamAlignmentDescriptor::DisplayDescriptor(TablesDisplay& display
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML (de)serialization
 //----------------------------------------------------------------------------
 
 void ts::DataStreamAlignmentDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -119,14 +123,7 @@ void ts::DataStreamAlignmentDescriptor::buildXML(DuckContext& duck, xml::Element
     root->setIntAttribute(u"alignment_type", alignment_type, true);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::DataStreamAlignmentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(alignment_type, u"alignment_type", true);
+    return element->getIntAttribute<uint8_t>(alignment_type, u"alignment_type", true);
 }

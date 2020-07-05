@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::IPMACStreamLocationDescriptor::IPMACStreamLocationDescriptor() :
@@ -56,13 +56,16 @@ ts::IPMACStreamLocationDescriptor::IPMACStreamLocationDescriptor() :
     service_id(0),
     component_tag(0)
 {
-    _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::IPMACStreamLocationDescriptor::clearContent()
+{
+    network_id = 0;
+    original_network_id = 0;
+    transport_stream_id = 0;
+    service_id = 0;
+    component_tag = 0;
+}
 
 ts::IPMACStreamLocationDescriptor::IPMACStreamLocationDescriptor(DuckContext& duck, const Descriptor& desc) :
     IPMACStreamLocationDescriptor()
@@ -156,11 +159,9 @@ void ts::IPMACStreamLocationDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::IPMACStreamLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute(network_id, u"network_id", true) &&
-        element->getIntAttribute(original_network_id, u"original_network_id", true) &&
-        element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
-        element->getIntAttribute(service_id, u"service_id", true) &&
-        element->getIntAttribute(component_tag, u"component_tag", true);
+    return element->getIntAttribute(network_id, u"network_id", true) &&
+           element->getIntAttribute(original_network_id, u"original_network_id", true) &&
+           element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
+           element->getIntAttribute(service_id, u"service_id", true) &&
+           element->getIntAttribute(component_tag, u"component_tag", true);
 }

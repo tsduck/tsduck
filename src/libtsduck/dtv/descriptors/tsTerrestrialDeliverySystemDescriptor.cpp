@@ -43,7 +43,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor() :
@@ -61,18 +61,28 @@ ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor() :
     transmission_mode(0),
     other_frequency(false)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
     TerrestrialDeliverySystemDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::TerrestrialDeliverySystemDescriptor::clearContent()
+{
+    centre_frequency = 0;
+    bandwidth = 0;
+    high_priority = true;
+    no_time_slicing = true;
+    no_mpe_fec = true;
+    constellation = 0;
+    hierarchy = 0;
+    code_rate_hp = 0;
+    code_rate_lp = 0;
+    guard_interval = 0;
+    transmission_mode = 0;
+    other_frequency = false;
 }
 
 
@@ -293,18 +303,16 @@ void ts::TerrestrialDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::E
 
 bool ts::TerrestrialDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint64_t>(centre_frequency, u"centre_frequency", true) &&
-        element->getIntEnumAttribute(bandwidth, BandwidthNames, u"bandwidth", true) &&
-        element->getIntEnumAttribute(high_priority, PriorityNames, u"priority", true) &&
-        element->getBoolAttribute(no_time_slicing, u"no_time_slicing", true) &&
-        element->getBoolAttribute(no_mpe_fec, u"no_MPE_FEC", true) &&
-        element->getIntEnumAttribute(constellation, ConstellationNames, u"constellation", true) &&
-        element->getIntAttribute<uint8_t>(hierarchy, u"hierarchy_information", true) &&
-        element->getIntEnumAttribute(code_rate_hp, CodeRateNames, u"code_rate_HP_stream", true) &&
-        element->getIntEnumAttribute(code_rate_lp, CodeRateNames, u"code_rate_LP_stream", true) &&
-        element->getIntEnumAttribute(guard_interval, GuardIntervalNames, u"guard_interval", true) &&
-        element->getIntEnumAttribute(transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
-        element->getBoolAttribute(other_frequency, u"other_frequency", true);
+    return  element->getIntAttribute<uint64_t>(centre_frequency, u"centre_frequency", true) &&
+            element->getIntEnumAttribute(bandwidth, BandwidthNames, u"bandwidth", true) &&
+            element->getIntEnumAttribute(high_priority, PriorityNames, u"priority", true) &&
+            element->getBoolAttribute(no_time_slicing, u"no_time_slicing", true) &&
+            element->getBoolAttribute(no_mpe_fec, u"no_MPE_FEC", true) &&
+            element->getIntEnumAttribute(constellation, ConstellationNames, u"constellation", true) &&
+            element->getIntAttribute<uint8_t>(hierarchy, u"hierarchy_information", true) &&
+            element->getIntEnumAttribute(code_rate_hp, CodeRateNames, u"code_rate_HP_stream", true) &&
+            element->getIntEnumAttribute(code_rate_lp, CodeRateNames, u"code_rate_LP_stream", true) &&
+            element->getIntEnumAttribute(guard_interval, GuardIntervalNames, u"guard_interval", true) &&
+            element->getIntEnumAttribute(transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
+            element->getBoolAttribute(other_frequency, u"other_frequency", true);
 }

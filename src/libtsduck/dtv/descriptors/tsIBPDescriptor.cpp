@@ -44,7 +44,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::IBPDescriptor::IBPDescriptor() :
@@ -53,18 +53,19 @@ ts::IBPDescriptor::IBPDescriptor() :
     identical_gop(false),
     max_gop_length(0)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::IBPDescriptor::IBPDescriptor(DuckContext& duck, const Descriptor& desc) :
     IBPDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::IBPDescriptor::clearContent()
+{
+    closed_gop = false;
+    identical_gop = false;
+    max_gop_length = 0;
 }
 
 
@@ -144,9 +145,7 @@ void ts::IBPDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::IBPDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(closed_gop, u"closed_gop", true) &&
-        element->getBoolAttribute(identical_gop, u"identical_gop", true) &&
-        element->getIntAttribute<uint16_t>(max_gop_length, u"max_gop_length", true, 0, 0x0001, 0x3FFF);
+    return element->getBoolAttribute(closed_gop, u"closed_gop", true) &&
+           element->getBoolAttribute(identical_gop, u"identical_gop", true) &&
+           element->getIntAttribute<uint16_t>(max_gop_length, u"max_gop_length", true, 0, 0x0001, 0x3FFF);
 }

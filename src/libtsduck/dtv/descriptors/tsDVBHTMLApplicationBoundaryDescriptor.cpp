@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::DVBHTMLApplicationBoundaryDescriptor::DVBHTMLApplicationBoundaryDescriptor() :
@@ -53,13 +53,13 @@ ts::DVBHTMLApplicationBoundaryDescriptor::DVBHTMLApplicationBoundaryDescriptor()
     label(),
     regular_expression()
 {
-    _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::DVBHTMLApplicationBoundaryDescriptor::clearContent()
+{
+    label.clear();
+    regular_expression.clear();
+}
 
 ts::DVBHTMLApplicationBoundaryDescriptor::DVBHTMLApplicationBoundaryDescriptor(DuckContext& duck, const Descriptor& desc) :
     DVBHTMLApplicationBoundaryDescriptor()
@@ -144,8 +144,6 @@ void ts::DVBHTMLApplicationBoundaryDescriptor::buildXML(DuckContext& duck, xml::
 
 bool ts::DVBHTMLApplicationBoundaryDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(label, u"label", true) &&
-        element->getAttribute(regular_expression, u"regular_expression", true);
+    return element->getAttribute(label, u"label", true) &&
+           element->getAttribute(regular_expression, u"regular_expression", true);
 }

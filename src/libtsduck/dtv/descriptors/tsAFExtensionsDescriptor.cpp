@@ -53,6 +53,10 @@ ts::AFExtensionsDescriptor::AFExtensionsDescriptor() :
 {
 }
 
+void ts::AFExtensionsDescriptor::clearContent()
+{
+}
+
 ts::AFExtensionsDescriptor::AFExtensionsDescriptor(DuckContext& duck, const Descriptor& desc) :
     AFExtensionsDescriptor()
 {

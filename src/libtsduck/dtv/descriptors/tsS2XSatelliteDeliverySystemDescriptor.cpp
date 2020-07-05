@@ -67,6 +67,21 @@ ts::S2XSatelliteDeliverySystemDescriptor::S2XSatelliteDeliverySystemDescriptor()
 {
 }
 
+void ts::S2XSatelliteDeliverySystemDescriptor::clearContent()
+{
+    receiver_profiles = 0;
+    S2X_mode = 0;
+    TS_GS_S2X_mode = 0;
+    scrambling_sequence_selector = false;
+    scrambling_sequence_index = 0;
+    timeslice_number = 0;
+    master_channel.clear();
+    num_channel_bonds_minus_one = false;
+    channel_bond_0.clear();
+    channel_bond_1.clear();
+    reserved_future_use.clear();
+}
+
 ts::S2XSatelliteDeliverySystemDescriptor::S2XSatelliteDeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
     S2XSatelliteDeliverySystemDescriptor()
 {
@@ -83,6 +98,18 @@ ts::S2XSatelliteDeliverySystemDescriptor::Channel::Channel() :
     multiple_input_stream_flag(false),
     input_stream_identifier(0)
 {
+}
+
+void ts::S2XSatelliteDeliverySystemDescriptor::Channel::clear()
+{
+    frequency = 0;
+    orbital_position = 0;
+    east_not_west = false;
+    polarization = 0;
+    roll_off = 0;
+    symbol_rate = 0;
+    multiple_input_stream_flag = false;
+    input_stream_identifier = 0;
 }
 
 

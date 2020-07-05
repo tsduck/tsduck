@@ -57,7 +57,16 @@ ts::C2DeliverySystemDescriptor::C2DeliverySystemDescriptor() :
     active_OFDM_symbol_duration(0),
     guard_interval(0)
 {
-    _is_valid = true;
+}
+
+void ts::C2DeliverySystemDescriptor::clearContent()
+{
+    plp_id = 0;
+    data_slice_id = 0;
+    C2_system_tuning_frequency = 0;
+    C2_system_tuning_frequency_type = 0;
+    active_OFDM_symbol_duration = 0;
+    guard_interval = 0;
 }
 
 ts::C2DeliverySystemDescriptor::C2DeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -171,12 +180,10 @@ void ts::C2DeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::C2DeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(plp_id, u"plp_id", true) &&
-        element->getIntAttribute<uint8_t>(data_slice_id, u"data_slice_id", true) &&
-        element->getIntAttribute<uint32_t>(C2_system_tuning_frequency, u"C2_system_tuning_frequency", true) &&
-        element->getIntAttribute<uint8_t>(C2_system_tuning_frequency_type, u"C2_system_tuning_frequency_type", true, 0, 0, 3) &&
-        element->getIntAttribute<uint8_t>(active_OFDM_symbol_duration, u"active_OFDM_symbol_duration", true, 0, 0, 7) &&
-        element->getIntEnumAttribute(guard_interval, C2GuardIntervalNames, u"guard_interval", true);
+    return  element->getIntAttribute<uint8_t>(plp_id, u"plp_id", true) &&
+            element->getIntAttribute<uint8_t>(data_slice_id, u"data_slice_id", true) &&
+            element->getIntAttribute<uint32_t>(C2_system_tuning_frequency, u"C2_system_tuning_frequency", true) &&
+            element->getIntAttribute<uint8_t>(C2_system_tuning_frequency_type, u"C2_system_tuning_frequency_type", true, 0, 0, 3) &&
+            element->getIntAttribute<uint8_t>(active_OFDM_symbol_duration, u"active_OFDM_symbol_duration", true, 0, 0, 7) &&
+            element->getIntEnumAttribute(guard_interval, C2GuardIntervalNames, u"guard_interval", true);
 }

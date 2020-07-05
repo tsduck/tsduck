@@ -66,7 +66,11 @@ ts::CueIdentifierDescriptor::CueIdentifierDescriptor(uint8_t type) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     cue_stream_type(type)
 {
-    _is_valid = true;
+}
+
+void ts::CueIdentifierDescriptor::clearContent()
+{
+    cue_stream_type = CUE_ALL_COMMANDS;
 }
 
 ts::CueIdentifierDescriptor::CueIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -132,7 +136,7 @@ void ts::CueIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::CueIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -140,14 +144,7 @@ void ts::CueIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root
     root->setEnumAttribute(CueStreamTypeNames, u"cue_stream_type", cue_stream_type);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::CueIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntEnumAttribute<uint8_t>(cue_stream_type, CueStreamTypeNames, u"cue_stream_type", true);
+    return element->getIntEnumAttribute<uint8_t>(cue_stream_type, CueStreamTypeNames, u"cue_stream_type", true);
 }

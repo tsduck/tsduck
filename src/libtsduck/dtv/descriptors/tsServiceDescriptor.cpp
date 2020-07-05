@@ -54,7 +54,13 @@ ts::ServiceDescriptor::ServiceDescriptor(uint8_t type, const UString& provider, 
     provider_name(provider),
     service_name(name)
 {
-    _is_valid = true;
+}
+
+void ts::ServiceDescriptor::clearContent()
+{
+    service_type = 0;
+    provider_name.clear();
+    service_name.clear();
 }
 
 ts::ServiceDescriptor::ServiceDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -125,7 +131,7 @@ void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::ServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -135,16 +141,9 @@ void ts::ServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
     root->setAttribute(u"service_name", service_name);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::ServiceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(service_type, u"service_type", true) &&
-        element->getAttribute(provider_name, u"service_provider_name", true) &&
-        element->getAttribute(service_name, u"service_name", true);
+    return element->getIntAttribute<uint8_t>(service_type, u"service_type", true) &&
+           element->getAttribute(provider_name, u"service_provider_name", true) &&
+           element->getAttribute(service_name, u"service_name", true);
 }

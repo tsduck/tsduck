@@ -54,6 +54,11 @@ ts::ATSCTimeShiftedServiceDescriptor::ATSCTimeShiftedServiceDescriptor() :
 {
 }
 
+void ts::ATSCTimeShiftedServiceDescriptor::clearContent()
+{
+    entries.clear();
+}
+
 ts::ATSCTimeShiftedServiceDescriptor::ATSCTimeShiftedServiceDescriptor(DuckContext& duck, const Descriptor& desc) :
     ATSCTimeShiftedServiceDescriptor()
 {

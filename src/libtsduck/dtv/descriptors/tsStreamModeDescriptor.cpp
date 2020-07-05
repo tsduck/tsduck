@@ -45,25 +45,24 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::StreamModeDescriptor::StreamModeDescriptor(uint8_t mode) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     stream_mode(mode)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::StreamModeDescriptor::StreamModeDescriptor(DuckContext& duck, const Descriptor& desc) :
     StreamModeDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::StreamModeDescriptor::clearContent()
+{
+    stream_mode = 0;
 }
 
 
@@ -130,7 +129,5 @@ void ts::StreamModeDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::StreamModeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(stream_mode, u"stream_mode", true);
+    return element->getIntAttribute<uint8_t>(stream_mode, u"stream_mode", true);
 }

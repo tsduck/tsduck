@@ -46,7 +46,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ApplicationRecordingDescriptor::ApplicationRecordingDescriptor() :
@@ -64,10 +64,19 @@ ts::ApplicationRecordingDescriptor::ApplicationRecordingDescriptor() :
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::ApplicationRecordingDescriptor::clearContent()
+{
+    scheduled_recording = false;
+    trick_mode_aware = false;
+    time_shift = false;
+    dynamic = false;
+    av_synced = false;
+    initiating_replay = false;
+    labels.clear();
+    component_tags.clear();
+    private_data.clear();
+    reserved_future_use.clear();
+}
 
 ts::ApplicationRecordingDescriptor::ApplicationRecordingDescriptor(DuckContext& duck, const Descriptor& desc) :
     ApplicationRecordingDescriptor()

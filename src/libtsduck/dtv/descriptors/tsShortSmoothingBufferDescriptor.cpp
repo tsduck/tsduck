@@ -54,13 +54,19 @@ ts::ShortSmoothingBufferDescriptor::ShortSmoothingBufferDescriptor() :
     sb_leak_rate(0),
     DVB_reserved()
 {
-    _is_valid = true;
 }
 
 ts::ShortSmoothingBufferDescriptor::ShortSmoothingBufferDescriptor(DuckContext& duck, const Descriptor& desc) :
     ShortSmoothingBufferDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::ShortSmoothingBufferDescriptor::clearContent()
+{
+    sb_size = 0;
+    sb_leak_rate = 0;
+    DVB_reserved.clear();
 }
 
 
@@ -121,9 +127,7 @@ void ts::ShortSmoothingBufferDescriptor::buildXML(DuckContext& duck, xml::Elemen
 {
     root->setIntAttribute(u"sb_size", sb_size);
     root->setIntAttribute(u"sb_leak_rate", sb_leak_rate);
-    if (!DVB_reserved.empty()) {
-        root->addHexaText(DVB_reserved);
-    }
+    root->addHexaText(DVB_reserved, true);
 }
 
 
@@ -133,9 +137,7 @@ void ts::ShortSmoothingBufferDescriptor::buildXML(DuckContext& duck, xml::Elemen
 
 bool ts::ShortSmoothingBufferDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(sb_size, u"sb_size", true, 0, 0, 3) &&
-        element->getIntAttribute<uint8_t>(sb_leak_rate, u"sb_leak_rate", true, 0, 0, 0x3F) &&
-        element->getHexaText(DVB_reserved, 0, MAX_DESCRIPTOR_SIZE - 3);
+    return element->getIntAttribute<uint8_t>(sb_size, u"sb_size", true, 0, 0, 3) &&
+           element->getIntAttribute<uint8_t>(sb_leak_rate, u"sb_leak_rate", true, 0, 0, 0x3F) &&
+           element->getHexaText(DVB_reserved, 0, MAX_DESCRIPTOR_SIZE - 3);
 }

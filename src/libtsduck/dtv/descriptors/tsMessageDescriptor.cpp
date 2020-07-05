@@ -55,7 +55,6 @@ ts::MessageDescriptor::MessageDescriptor() :
     language_code(),
     message()
 {
-    _is_valid = true;
 }
 
 ts::MessageDescriptor::MessageDescriptor(uint8_t id, const UString& lang, const UString& text) :
@@ -64,13 +63,19 @@ ts::MessageDescriptor::MessageDescriptor(uint8_t id, const UString& lang, const 
     language_code(lang),
     message(text)
 {
-    _is_valid = true;
 }
 
 ts::MessageDescriptor::MessageDescriptor(DuckContext& duck, const Descriptor& desc) :
     MessageDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::MessageDescriptor::clearContent()
+{
+    message_id = 0;
+    language_code.clear();
+    message.clear();
 }
 
 
@@ -129,11 +134,9 @@ void ts::MessageDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 
 bool ts::MessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute(message_id, u"message_id", true) &&
-        element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
-        element->getTextChild(message, u"text");
+    return element->getIntAttribute(message_id, u"message_id", true) &&
+           element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
+           element->getTextChild(message, u"text");
 }
 
 

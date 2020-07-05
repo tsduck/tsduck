@@ -53,13 +53,17 @@ ts::CIAncillaryDataDescriptor::CIAncillaryDataDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ancillary_data()
 {
-    _is_valid = true;
 }
 
 ts::CIAncillaryDataDescriptor::CIAncillaryDataDescriptor(DuckContext& duck, const Descriptor& desc) :
     CIAncillaryDataDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::CIAncillaryDataDescriptor::clearContent()
+{
+    ancillary_data.clear();
 }
 
 
@@ -98,9 +102,7 @@ void ts::CIAncillaryDataDescriptor::deserialize(DuckContext& duck, const Descrip
 
 void ts::CIAncillaryDataDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    if (!ancillary_data.empty()) {
-        root->addHexaTextChild(u"ancillary_data", ancillary_data);
-    }
+    root->addHexaTextChild(u"ancillary_data", ancillary_data, true);
 }
 
 
@@ -110,9 +112,7 @@ void ts::CIAncillaryDataDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::CIAncillaryDataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getHexaTextChild(ancillary_data, u"ancillary_data", false, 0, MAX_DESCRIPTOR_SIZE - 3);
+    return element->getHexaTextChild(ancillary_data, u"ancillary_data", false, 0, MAX_DESCRIPTOR_SIZE - 3);
 }
 
 

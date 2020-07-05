@@ -48,7 +48,6 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 ts::MultilingualNetworkNameDescriptor::MultilingualNetworkNameDescriptor() :
     AbstractMultilingualDescriptor(MY_DID, MY_XML_NAME, MY_XML_ATTR)
 {
-    _is_valid = true;
 }
 
 ts::MultilingualNetworkNameDescriptor::MultilingualNetworkNameDescriptor(DuckContext& duck, const Descriptor& desc) :

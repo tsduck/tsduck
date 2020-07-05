@@ -267,7 +267,9 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
         # Build installers from scratch after updating the repository.
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
             cd "$REMOTE_DIR" '&&' \
-            git pull '&&' \
+            git fetch origin '&&' \
+            git checkout master '&&' \
+            git pull origin master '&&' \
             make distclean ';' \
             touch "installers/timestamp.tmp" '&&' \
             make installer

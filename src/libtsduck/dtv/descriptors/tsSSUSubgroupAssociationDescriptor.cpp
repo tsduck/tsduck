@@ -52,13 +52,17 @@ ts::SSUSubgroupAssociationDescriptor::SSUSubgroupAssociationDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     subgroup_tag(0)
 {
-    _is_valid = true;
 }
 
 ts::SSUSubgroupAssociationDescriptor::SSUSubgroupAssociationDescriptor(DuckContext& duck, const Descriptor& desc) :
     SSUSubgroupAssociationDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::SSUSubgroupAssociationDescriptor::clearContent()
+{
+    subgroup_tag = 0;
 }
 
 
@@ -127,8 +131,5 @@ void ts::SSUSubgroupAssociationDescriptor::buildXML(DuckContext& duck, xml::Elem
 
 bool ts::SSUSubgroupAssociationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint64_t>(subgroup_tag, u"subgroup_tag", true, 0, 0, TS_UCONST64(0x000000FFFFFFFFFF));
+    return element->getIntAttribute<uint64_t>(subgroup_tag, u"subgroup_tag", true, 0, 0, TS_UCONST64(0x000000FFFFFFFFFF));
 }

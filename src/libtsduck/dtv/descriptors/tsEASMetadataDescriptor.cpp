@@ -53,13 +53,18 @@ ts::EASMetadataDescriptor::EASMetadataDescriptor() :
     fragment_number(1),
     XML_fragment()
 {
-    _is_valid = true;
 }
 
 ts::EASMetadataDescriptor::EASMetadataDescriptor(DuckContext& duck, const Descriptor& desc) :
     EASMetadataDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::EASMetadataDescriptor::clearContent()
+{
+    fragment_number = 1;
+    XML_fragment.clear();
 }
 
 
@@ -127,9 +132,7 @@ void ts::EASMetadataDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 void ts::EASMetadataDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"fragment_number", fragment_number, false);
-    if (!XML_fragment.empty()) {
-        root->addText(XML_fragment);
-    }
+    root->addText(XML_fragment, true);
 }
 
 
@@ -139,8 +142,6 @@ void ts::EASMetadataDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::EASMetadataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(fragment_number, u"fragment_number", false, 1, 1, 255) &&
-        element->getText(XML_fragment, false, 0, 253);
+    return element->getIntAttribute<uint8_t>(fragment_number, u"fragment_number", false, 1, 1, 255) &&
+           element->getText(XML_fragment, false, 0, 253);
 }

@@ -58,6 +58,15 @@ ts::NodeRelationDescriptor::NodeRelationDescriptor() :
 {
 }
 
+void ts::NodeRelationDescriptor::clearContent()
+{
+    reference_type = 0;
+    information_provider_id.clear();
+    event_relation_id.clear();
+    reference_node_id = 0;
+    reference_number = 0;
+}
+
 ts::NodeRelationDescriptor::NodeRelationDescriptor(DuckContext& duck, const Descriptor& desc) :
     NodeRelationDescriptor()
 {
@@ -94,8 +103,8 @@ void ts::NodeRelationDescriptor::deserialize(DuckContext& duck, const Descriptor
     size_t size = desc.payloadSize();
     _is_valid = desc.isValid() && desc.tag() == _tag && size >= 4;
 
-    information_provider_id.reset();
-    event_relation_id.reset();
+    information_provider_id.clear();
+    event_relation_id.clear();
 
     if (_is_valid) {
         reference_type = (data[0] >> 4) & 0x0F;

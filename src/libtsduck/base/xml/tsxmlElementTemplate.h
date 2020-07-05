@@ -85,7 +85,7 @@ bool ts::xml::Element::getOptionalIntAttribute(Variable<INT>& value, const UStri
     INT v = INT(0);
     if (!hasAttribute(name)) {
         // Attribute not present, ok.
-        value.reset();
+        value.clear();
         return true;
     }
     else if (getIntAttribute<INT>(v, name, false, 0, minValue, maxValue)) {
@@ -95,7 +95,7 @@ bool ts::xml::Element::getOptionalIntAttribute(Variable<INT>& value, const UStri
     }
     else {
         // Attribute present, incorrect value.
-        value.reset();
+        value.clear();
         return false;
     }
 }
@@ -120,7 +120,7 @@ bool ts::xml::Element::getOptionalIntEnumAttribute(Variable<INT>& value, const E
     INT v = INT(0);
     if (!hasAttribute(name)) {
         // Attribute not present, ok.
-        value.reset();
+        value.clear();
         return true;
     }
     else if (getIntEnumAttribute<INT>(v, definition, name, false)) {
@@ -130,7 +130,7 @@ bool ts::xml::Element::getOptionalIntEnumAttribute(Variable<INT>& value, const E
     }
     else {
         // Attribute present, incorrect value.
-        value.reset();
+        value.clear();
         return false;
     }
 }

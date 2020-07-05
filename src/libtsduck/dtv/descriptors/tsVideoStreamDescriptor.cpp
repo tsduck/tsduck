@@ -58,15 +58,25 @@ ts::VideoStreamDescriptor::VideoStreamDescriptor() :
     profile_and_level_indication(0),
     chroma_format(0),
     frame_rate_extension(false)
-
 {
-    _is_valid = true;
 }
 
 ts::VideoStreamDescriptor::VideoStreamDescriptor(DuckContext& duck, const Descriptor& desc) :
     VideoStreamDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::VideoStreamDescriptor::clearContent()
+{
+    multiple_frame_rate = false;
+    frame_rate_code = 0;
+    MPEG_1_only = false;
+    constrained_parameter = false;
+    still_picture = false;
+    profile_and_level_indication = 0;
+    chroma_format = 0;
+    frame_rate_extension = false;
 }
 
 
@@ -180,14 +190,12 @@ void ts::VideoStreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::VideoStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(multiple_frame_rate, u"multiple_frame_rate", true) &&
-        element->getIntAttribute<uint8_t>(frame_rate_code, u"frame_rate_code", true, 0, 0x00, 0x0F) &&
-        element->getBoolAttribute(MPEG_1_only, u"MPEG_1_only", true) &&
-        element->getBoolAttribute(constrained_parameter, u"constrained_parameter", true) &&
-        element->getBoolAttribute(still_picture, u"still_picture", true) &&
-        element->getIntAttribute<uint8_t>(profile_and_level_indication, u"profile_and_level_indication", !MPEG_1_only) &&
-        element->getIntAttribute<uint8_t>(chroma_format, u"chroma_format", !MPEG_1_only, 0, 0x00, 0x03) &&
-        element->getBoolAttribute(frame_rate_extension, u"frame_rate_extension", !MPEG_1_only);
+    return  element->getBoolAttribute(multiple_frame_rate, u"multiple_frame_rate", true) &&
+            element->getIntAttribute<uint8_t>(frame_rate_code, u"frame_rate_code", true, 0, 0x00, 0x0F) &&
+            element->getBoolAttribute(MPEG_1_only, u"MPEG_1_only", true) &&
+            element->getBoolAttribute(constrained_parameter, u"constrained_parameter", true) &&
+            element->getBoolAttribute(still_picture, u"still_picture", true) &&
+            element->getIntAttribute<uint8_t>(profile_and_level_indication, u"profile_and_level_indication", !MPEG_1_only) &&
+            element->getIntAttribute<uint8_t>(chroma_format, u"chroma_format", !MPEG_1_only, 0, 0x00, 0x03) &&
+            element->getBoolAttribute(frame_rate_extension, u"frame_rate_extension", !MPEG_1_only);
 }

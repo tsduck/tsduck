@@ -52,13 +52,17 @@ ts::MPEG4VideoDescriptor::MPEG4VideoDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     MPEG4_visual_profile_and_level(0)
 {
-    _is_valid = true;
 }
 
 ts::MPEG4VideoDescriptor::MPEG4VideoDescriptor(DuckContext& duck, const Descriptor& desc) :
     MPEG4VideoDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::MPEG4VideoDescriptor::clearContent()
+{
+    MPEG4_visual_profile_and_level = 0;
 }
 
 
@@ -126,7 +130,5 @@ void ts::MPEG4VideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::MPEG4VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(MPEG4_visual_profile_and_level, u"MPEG4_visual_profile_and_level", true);
+    return element->getIntAttribute<uint8_t>(MPEG4_visual_profile_and_level, u"MPEG4_visual_profile_and_level", true);
 }

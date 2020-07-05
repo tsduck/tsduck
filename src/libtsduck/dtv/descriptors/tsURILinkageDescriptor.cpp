@@ -56,7 +56,14 @@ ts::URILinkageDescriptor::URILinkageDescriptor() :
     min_polling_interval(0),
     private_data()
 {
-    _is_valid = true;
+}
+
+void ts::URILinkageDescriptor::clearContent()
+{
+    uri_linkage_type = 0;
+    uri.clear();
+    min_polling_interval = 0;
+    private_data.clear();
 }
 
 ts::URILinkageDescriptor::URILinkageDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -167,10 +174,8 @@ void ts::URILinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::URILinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(uri_linkage_type, u"uri_linkage_type", true) &&
-        element->getAttribute(uri, u"uri", true) &&
-        element->getIntAttribute<uint16_t>(min_polling_interval, u"min_polling_interval", uri_linkage_type <= 1) &&
-        element->getHexaTextChild(private_data, u"private_data", false);
+    return element->getIntAttribute<uint8_t>(uri_linkage_type, u"uri_linkage_type", true) &&
+           element->getAttribute(uri, u"uri", true) &&
+           element->getIntAttribute<uint16_t>(min_polling_interval, u"min_polling_interval", uri_linkage_type <= 1) &&
+           element->getHexaTextChild(private_data, u"private_data", false);
 }

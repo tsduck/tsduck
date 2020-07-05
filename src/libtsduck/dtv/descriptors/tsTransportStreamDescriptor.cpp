@@ -44,20 +44,24 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::TransportStreamDescriptor::TransportStreamDescriptor(const UString& comp) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     compliance(comp)
 {
-    _is_valid = true;
 }
 
 
 //----------------------------------------------------------------------------
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
+
+void ts::TransportStreamDescriptor::clearContent()
+{
+    compliance.clear();
+}
 
 ts::TransportStreamDescriptor::TransportStreamDescriptor(DuckContext& duck, const Descriptor& desc) :
     TransportStreamDescriptor()
@@ -110,7 +114,7 @@ void ts::TransportStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::TransportStreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -118,14 +122,7 @@ void ts::TransportStreamDescriptor::buildXML(DuckContext& duck, xml::Element* ro
     root->setAttribute(u"compliance", compliance);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::TransportStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(compliance, u"compliance", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
+    return element->getAttribute(compliance, u"compliance", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
 }

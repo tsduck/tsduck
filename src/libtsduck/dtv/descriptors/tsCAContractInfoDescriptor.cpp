@@ -57,13 +57,21 @@ ts::CAContractInfoDescriptor::CAContractInfoDescriptor() :
     contract_verification_info(),
     fee_name()
 {
-    _is_valid = true;
 }
 
 ts::CAContractInfoDescriptor::CAContractInfoDescriptor(DuckContext& duck, const Descriptor& desc) :
     CAContractInfoDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::CAContractInfoDescriptor::clearContent()
+{
+    CA_system_id = 0;
+    CA_unit_id = 0;
+    component_tags.clear();
+    contract_verification_info.clear();
+    fee_name.clear();
 }
 
 
@@ -174,24 +182,18 @@ void ts::CAContractInfoDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::CAContractInfoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    component_tags.clear();
-    contract_verification_info.clear();
-    fee_name.clear();
-
     xml::ElementVector xcomp;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
         element->getIntAttribute<uint8_t>(CA_unit_id, u"CA_unit_id", true, 0, 0x00, 0x0F) &&
         element->getAttribute(fee_name, u"fee_name") &&
         element->getChildren(xcomp, u"component", 0, 15) &&
         element->getHexaTextChild(contract_verification_info, u"contract_verification_info", false);
 
-    for (auto it = xcomp.begin(); _is_valid && it != xcomp.end(); ++it) {
+    for (auto it = xcomp.begin(); ok && it != xcomp.end(); ++it) {
         uint8_t tag = 0;
-        _is_valid = (*it)->getIntAttribute<uint8_t>(tag, u"tag", true);
-        if (_is_valid) {
-            component_tags.push_back(tag);
-        }
+        ok = (*it)->getIntAttribute<uint8_t>(tag, u"tag", true);
+        component_tags.push_back(tag);
     }
+    return ok;
 }

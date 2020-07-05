@@ -52,7 +52,11 @@ ts::EmergencyInformationDescriptor::EmergencyInformationDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     events()
 {
-    _is_valid = true;
+}
+
+void ts::EmergencyInformationDescriptor::clearContent()
+{
+    events.clear();
 }
 
 ts::EmergencyInformationDescriptor::EmergencyInformationDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -179,26 +183,22 @@ void ts::EmergencyInformationDescriptor::buildXML(DuckContext& duck, xml::Elemen
 
 bool ts::EmergencyInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    events.clear();
-
     xml::ElementVector xevent;
-    _is_valid = checkXMLName(element) && element->getChildren(xevent, u"event");
+    bool ok = element->getChildren(xevent, u"event");
 
-    for (auto it1 = xevent.begin(); _is_valid && it1 != xevent.end(); ++it1) {
+    for (auto it1 = xevent.begin(); ok && it1 != xevent.end(); ++it1) {
         Event ev;
         xml::ElementVector xarea;
-        _is_valid =
-            (*it1)->getIntAttribute<uint16_t>(ev.service_id, u"service_id", true) &&
-            (*it1)->getBoolAttribute(ev.started, u"started", true) &&
-            (*it1)->getIntAttribute<uint8_t>(ev.signal_level, u"signal_level", true, 0, 0, 1) &&
-            (*it1)->getChildren(xarea, u"area");
-        for (auto it2 = xarea.begin(); _is_valid && it2 != xarea.end(); ++it2) {
+        ok = (*it1)->getIntAttribute<uint16_t>(ev.service_id, u"service_id", true) &&
+             (*it1)->getBoolAttribute(ev.started, u"started", true) &&
+             (*it1)->getIntAttribute<uint8_t>(ev.signal_level, u"signal_level", true, 0, 0, 1) &&
+             (*it1)->getChildren(xarea, u"area");
+        for (auto it2 = xarea.begin(); ok && it2 != xarea.end(); ++it2) {
             uint16_t code = 0;
-            _is_valid = (*it2)->getIntAttribute<uint16_t>(code, u"code", true, 0, 0, 0x0FFF);
+            ok = (*it2)->getIntAttribute<uint16_t>(code, u"code", true, 0, 0, 0x0FFF);
             ev.area_codes.push_back(code);
         }
-        if (_is_valid) {
-            events.push_back(ev);
-        }
+        events.push_back(ev);
     }
+    return ok;
 }

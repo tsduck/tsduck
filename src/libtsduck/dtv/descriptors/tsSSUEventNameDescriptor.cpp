@@ -54,13 +54,19 @@ ts::SSUEventNameDescriptor::SSUEventNameDescriptor() :
     name(),
     text()
 {
-    _is_valid = true;
 }
 
 ts::SSUEventNameDescriptor::SSUEventNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     SSUEventNameDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::SSUEventNameDescriptor::clearContent()
+{
+    ISO_639_language_code.clear();
+    name.clear();
+    text.clear();
 }
 
 
@@ -147,9 +153,7 @@ void ts::SSUEventNameDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::SSUEventNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, u"", 3, 3) &&
-        element->getTextChild(name, u"name") &&
-        element->getTextChild(text, u"text");
+    return element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, u"", 3, 3) &&
+           element->getTextChild(name, u"name") &&
+           element->getTextChild(text, u"text");
 }

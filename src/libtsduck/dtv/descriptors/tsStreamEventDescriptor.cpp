@@ -53,7 +53,13 @@ ts::StreamEventDescriptor::StreamEventDescriptor(uint16_t id, uint64_t npt) :
     event_NPT(npt),
     private_data()
 {
-    _is_valid = true;
+}
+
+void ts::StreamEventDescriptor::clearContent()
+{
+    event_id = 0;
+    event_NPT = 0;
+    private_data.clear();
 }
 
 ts::StreamEventDescriptor::StreamEventDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -157,15 +163,13 @@ void ts::StreamEventDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 bool ts::StreamEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     UString text;
-
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint16_t>(event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
         element->getIntAttribute<uint64_t>(event_NPT, u"event_NPT", true, 0, 0, TS_UCONST64(0x00000001FFFFFFFF)) &&
         element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 10) &&
         element->getTextChild(text, u"private_text", false, false, UString(), 0, MAX_DESCRIPTOR_SIZE - 10);
 
-    if (_is_valid && !text.empty()) {
+    if (ok && !text.empty()) {
         if (private_data.empty()) {
             private_data.appendUTF8(text);
         }
@@ -173,4 +177,5 @@ bool ts::StreamEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element
             element->report().error(u"In <%s> at line %d, <private_data> and <private_text> are mutually exclusive", {element->name(), element->lineNumber()});
         }
     }
+    return ok;
 }

@@ -59,7 +59,18 @@ ts::HierarchyDescriptor::HierarchyDescriptor() :
     hierarchy_embedded_layer_index(0),
     hierarchy_channel(0)
 {
-    _is_valid = true;
+}
+
+void ts::HierarchyDescriptor::clearContent()
+{
+    temporal_scalability = false;
+    spatial_scalability = false;
+    quality_scalability = false;
+    hierarchy_type = 0;
+    hierarchy_layer_index = 0;
+    tref_present = false;
+    hierarchy_embedded_layer_index = 0;
+    hierarchy_channel = 0;
 }
 
 ts::HierarchyDescriptor::HierarchyDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -163,14 +174,12 @@ void ts::HierarchyDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::HierarchyDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(temporal_scalability, u"temporal_scalability", true) &&
-        element->getBoolAttribute(spatial_scalability, u"spatial_scalability", true) &&
-        element->getBoolAttribute(quality_scalability, u"quality_scalability", true) &&
-        element->getIntAttribute<uint8_t>(hierarchy_type, u"hierarchy_type", true, 0x00, 0x00, 0x0F) &&
-        element->getIntAttribute<uint8_t>(hierarchy_layer_index, u"hierarchy_layer_index", true, 0x00, 0x00, 0x3F) &&
-        element->getBoolAttribute(tref_present, u"tref_present", true) &&
-        element->getIntAttribute<uint8_t>(hierarchy_embedded_layer_index, u"hierarchy_embedded_layer_index", true, 0x00, 0x00, 0x3F) &&
-        element->getIntAttribute<uint8_t>(hierarchy_channel, u"hierarchy_channel", true, 0x00, 0x00, 0x3F);
+    return element->getBoolAttribute(temporal_scalability, u"temporal_scalability", true) &&
+           element->getBoolAttribute(spatial_scalability, u"spatial_scalability", true) &&
+           element->getBoolAttribute(quality_scalability, u"quality_scalability", true) &&
+           element->getIntAttribute<uint8_t>(hierarchy_type, u"hierarchy_type", true, 0x00, 0x00, 0x0F) &&
+           element->getIntAttribute<uint8_t>(hierarchy_layer_index, u"hierarchy_layer_index", true, 0x00, 0x00, 0x3F) &&
+           element->getBoolAttribute(tref_present, u"tref_present", true) &&
+           element->getIntAttribute<uint8_t>(hierarchy_embedded_layer_index, u"hierarchy_embedded_layer_index", true, 0x00, 0x00, 0x3F) &&
+           element->getIntAttribute<uint8_t>(hierarchy_channel, u"hierarchy_channel", true, 0x00, 0x00, 0x3F);
 }

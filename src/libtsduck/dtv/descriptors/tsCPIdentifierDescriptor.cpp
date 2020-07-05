@@ -53,7 +53,11 @@ ts::CPIdentifierDescriptor::CPIdentifierDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     cpids()
 {
-    _is_valid = true;
+}
+
+void ts::CPIdentifierDescriptor::clearContent()
+{
+    cpids.clear();
 }
 
 ts::CPIdentifierDescriptor::CPIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -117,18 +121,15 @@ void ts::CPIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::CPIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    cpids.clear();
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"CP_system_id", 0, (MAX_DESCRIPTOR_SIZE - 3) / 2);
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    bool ok = element->getChildren(children, u"CP_system_id", 0, (MAX_DESCRIPTOR_SIZE - 3) / 2);
+
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         uint16_t id = 0;
-        _is_valid = children[i]->getIntAttribute<uint16_t>(id, u"value", true);
-        if (_is_valid) {
-            cpids.push_back(id);
-        }
+        ok = children[i]->getIntAttribute<uint16_t>(id, u"value", true);
+        cpids.push_back(id);
     }
+    return ok;
 }
 
 

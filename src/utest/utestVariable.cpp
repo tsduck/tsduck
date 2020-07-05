@@ -106,14 +106,14 @@ void VariableTest::testElementaryType()
     v4 = v2;
     TSUNIT_ASSERT(v4.set());
 
-    v4.reset();
+    v4.clear();
     TSUNIT_ASSERT(!v4.set());
 
-    v4.reset();
+    v4.clear();
     TSUNIT_ASSERT(!v4.set());
 
     v1 = 1;
-    v2.reset();
+    v2.clear();
     TSUNIT_ASSERT(v1.set());
     TSUNIT_ASSERT(!v2.set());
     TSUNIT_EQUAL(1, v1.value());
@@ -123,7 +123,7 @@ void VariableTest::testElementaryType()
     v1 = 1;
     v2 = 1;
     v3 = 3;
-    v4.reset();
+    v4.clear();
     IntVariable v5;
     TSUNIT_ASSERT(v1.set());
     TSUNIT_ASSERT(v2.set());
@@ -138,7 +138,7 @@ void VariableTest::testElementaryType()
     TSUNIT_ASSERT(v1 != 2);
     TSUNIT_ASSERT(v4 != 1);
 
-    v1.reset();
+    v1.clear();
     TSUNIT_ASSERT(!v1.set());
     TSUNIT_ASSERT(v1.setDefault(1));
     TSUNIT_ASSERT(v1.set());
@@ -221,17 +221,17 @@ void VariableTest::testClass()
         TSUNIT_ASSERT(v4.set());
         TSUNIT_EQUAL(3, TestData::InstanceCount());
 
-        v4.reset();
+        v4.clear();
         TSUNIT_ASSERT(!v4.set());
         TSUNIT_EQUAL(2, TestData::InstanceCount());
 
-        v4.reset();
+        v4.clear();
         TSUNIT_ASSERT(!v4.set());
         TSUNIT_EQUAL(2, TestData::InstanceCount());
 
         v1 = TestData(1);
         TSUNIT_EQUAL(3, TestData::InstanceCount());
-        v2.reset();
+        v2.clear();
         TSUNIT_EQUAL(2, TestData::InstanceCount());
         TSUNIT_ASSERT(v1.set());
         TSUNIT_ASSERT(!v2.set());
@@ -246,7 +246,7 @@ void VariableTest::testClass()
         TSUNIT_EQUAL(3, TestData::InstanceCount());
         v3 = TestData(3);
         TSUNIT_EQUAL(3, TestData::InstanceCount());
-        v4.reset();
+        v4.clear();
         TSUNIT_EQUAL(3, TestData::InstanceCount());
         TestVariable v5;
         TSUNIT_EQUAL(3, TestData::InstanceCount());

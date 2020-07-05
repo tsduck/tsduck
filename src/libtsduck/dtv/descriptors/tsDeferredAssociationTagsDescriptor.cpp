@@ -55,7 +55,14 @@ ts::DeferredAssociationTagsDescriptor::DeferredAssociationTagsDescriptor() :
     program_number(0),
     private_data()
 {
-    _is_valid = true;
+}
+
+void ts::DeferredAssociationTagsDescriptor::clearContent()
+{
+    association_tags.clear();
+    transport_stream_id = 0;
+    program_number = 0;
+    private_data.clear();
 }
 
 ts::DeferredAssociationTagsDescriptor::DeferredAssociationTagsDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -164,22 +171,17 @@ void ts::DeferredAssociationTagsDescriptor::buildXML(DuckContext& duck, xml::Ele
 
 bool ts::DeferredAssociationTagsDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    association_tags.clear();
-    private_data.clear();
     xml::ElementVector children;
-
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", true) &&
         element->getIntAttribute<uint16_t>(program_number, u"program_number", true) &&
         element->getChildren(children, u"association") &&
         element->getHexaTextChild(private_data, u"private_data", false);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         uint16_t tag = 0;
-        _is_valid = children[i]->getIntAttribute<uint16_t>(tag, u"tag", true);
-        if (_is_valid) {
-            association_tags.push_back(tag);
-        }
+        ok = children[i]->getIntAttribute<uint16_t>(tag, u"tag", true);
+        association_tags.push_back(tag);
     }
+    return ok;
 }

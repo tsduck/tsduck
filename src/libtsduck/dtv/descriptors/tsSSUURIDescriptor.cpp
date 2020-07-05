@@ -54,13 +54,19 @@ ts::SSUURIDescriptor::SSUURIDescriptor() :
     min_polling_interval(0),
     uri()
 {
-    _is_valid = true;
 }
 
 ts::SSUURIDescriptor::SSUURIDescriptor(DuckContext& duck, const Descriptor& desc) :
     SSUURIDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::SSUURIDescriptor::clearContent()
+{
+    max_holdoff_time = 0;
+    min_polling_interval = 0;
+    uri.clear();
 }
 
 
@@ -139,11 +145,7 @@ void ts::SSUURIDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::SSUURIDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    uri.clear();
-    xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(max_holdoff_time, u"max_holdoff_time", true) &&
-        element->getIntAttribute<uint8_t>(min_polling_interval, u"min_polling_interval", true) &&
-        element->getAttribute(uri, u"uri", true, u"", 0, MAX_DESCRIPTOR_SIZE - 4);
+    return element->getIntAttribute<uint8_t>(max_holdoff_time, u"max_holdoff_time", true) &&
+           element->getIntAttribute<uint8_t>(min_polling_interval, u"min_polling_interval", true) &&
+           element->getAttribute(uri, u"uri", true, u"", 0, MAX_DESCRIPTOR_SIZE - 4);
 }

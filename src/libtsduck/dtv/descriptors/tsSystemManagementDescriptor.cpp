@@ -56,7 +56,14 @@ ts::SystemManagementDescriptor::SystemManagementDescriptor() :
     additional_broadcasting_identification(0),
     additional_identification_info()
 {
-    _is_valid = true;
+}
+
+void ts::SystemManagementDescriptor::clearContent()
+{
+    broadcasting_flag = 0;
+    broadcasting_identifier = 0;
+    additional_broadcasting_identification = 0;
+    additional_identification_info.clear();
 }
 
 ts::SystemManagementDescriptor::SystemManagementDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -142,12 +149,8 @@ void ts::SystemManagementDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::SystemManagementDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    additional_identification_info.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(broadcasting_flag, u"broadcasting_flag", true, 0, 0, 3) &&
-        element->getIntAttribute<uint8_t>(broadcasting_identifier, u"broadcasting_identifier", true, 0, 0, 0x3F) &&
-        element->getIntAttribute<uint8_t>(additional_broadcasting_identification, u"additional_broadcasting_identification", true) &&
-        element->getHexaTextChild(additional_identification_info, u"additional_identification_info", false, 0, 253);
+    return element->getIntAttribute<uint8_t>(broadcasting_flag, u"broadcasting_flag", true, 0, 0, 3) &&
+           element->getIntAttribute<uint8_t>(broadcasting_identifier, u"broadcasting_identifier", true, 0, 0, 0x3F) &&
+           element->getIntAttribute<uint8_t>(additional_broadcasting_identification, u"additional_broadcasting_identification", true) &&
+           element->getHexaTextChild(additional_identification_info, u"additional_identification_info", false, 0, 253);
 }

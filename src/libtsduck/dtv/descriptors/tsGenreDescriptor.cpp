@@ -53,13 +53,17 @@ ts::GenreDescriptor::GenreDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     attributes()
 {
-    _is_valid = true;
 }
 
 ts::GenreDescriptor::GenreDescriptor(DuckContext& duck, const Descriptor& desc) :
     GenreDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::GenreDescriptor::clearContent()
+{
+    attributes.clear();
 }
 
 
@@ -142,18 +146,13 @@ void ts::GenreDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::GenreDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    attributes.clear();
     xml::ElementVector children;
+    bool ok = element->getChildren(children, u"attribute", 0, 0x1F);
 
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"attribute", 0, 0x1F);
-
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         uint8_t attr = 0;
-        _is_valid = children[i]->getIntAttribute<uint8_t>(attr, u"value", true);
-        if (_is_valid) {
-            attributes.push_back(attr);
-        }
+        ok = children[i]->getIntAttribute<uint8_t>(attr, u"value", true);
+        attributes.push_back(attr);
     }
+    return ok;
 }

@@ -67,7 +67,7 @@ void ts::AACDescriptor::clearContent()
 {
     profile_and_level = 0;
     SAOC_DE = false;
-    AAC_type.reset();
+    AAC_type.clear();
     additional_info.clear();
 }
 
@@ -107,7 +107,7 @@ void ts::AACDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
     if (_is_valid) {
         profile_and_level = data[0];
         SAOC_DE = false;
-        AAC_type.reset();
+        AAC_type.clear();
         additional_info.clear();
         data++; size--;
 

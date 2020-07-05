@@ -351,7 +351,7 @@ void Stuffer::evaluateNextStuffing()
 
     // Initialize new search. Note that _tstamp1 and _tstamp2 may be unset.
     _tstamp1 = _tstamp2;
-    _tstamp2.reset();
+    _tstamp2.clear();
 
     // Read packets until both _tstamp1 and _tstamp2 are set (or end of file)
     ts::TSPacket pkt;
@@ -468,8 +468,8 @@ void Stuffer::stuff()
     _additional_bits = 0;
 
     // Locate first two time stamps,
-    _tstamp1.reset();
-    _tstamp2.reset();
+    _tstamp1.clear();
+    _tstamp2.clear();
     evaluateNextStuffing();
     assert(_tstamp1.set());
     assert(_tstamp2.set());

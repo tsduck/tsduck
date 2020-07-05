@@ -52,7 +52,11 @@ ts::TargetIPv6SourceSlashDescriptor::TargetIPv6SourceSlashDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     addresses()
 {
-    _is_valid = true;
+}
+
+void ts::TargetIPv6SourceSlashDescriptor::clearContent()
+{
+    addresses.clear();
 }
 
 ts::TargetIPv6SourceSlashDescriptor::TargetIPv6SourceSlashDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -150,22 +154,16 @@ void ts::TargetIPv6SourceSlashDescriptor::buildXML(DuckContext& duck, xml::Eleme
 
 bool ts::TargetIPv6SourceSlashDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    addresses.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"address", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(children, u"address", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Address addr;
-        _is_valid =
-                children[i]->getIPv6Attribute(addr.IPv6_source_addr, u"IPv6_source_addr", true) &&
-                children[i]->getIntAttribute(addr.IPv6_source_slash_mask, u"IPv6_source_slash_mask", true) &&
-                children[i]->getIPv6Attribute(addr.IPv6_dest_addr, u"IPv6_dest_addr", true) &&
-                children[i]->getIntAttribute(addr.IPv6_dest_slash_mask, u"IPv6_dest_slash_mask", true);
-        if (_is_valid) {
-            addresses.push_back(addr);
-        }
+        ok = children[i]->getIPv6Attribute(addr.IPv6_source_addr, u"IPv6_source_addr", true) &&
+             children[i]->getIntAttribute(addr.IPv6_source_slash_mask, u"IPv6_source_slash_mask", true) &&
+             children[i]->getIPv6Attribute(addr.IPv6_dest_addr, u"IPv6_dest_addr", true) &&
+             children[i]->getIntAttribute(addr.IPv6_dest_slash_mask, u"IPv6_dest_slash_mask", true);
+        addresses.push_back(addr);
     }
+    return ok;
 }

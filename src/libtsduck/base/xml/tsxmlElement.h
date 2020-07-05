@@ -197,9 +197,10 @@ namespace ts {
             //!
             //! Add a new text inside this node.
             //! @param [in] text Text string to add.
+            //! @param [in] onlyNotEmpty When true, do not add the text if the string is empty.
             //! @return New child element or null on error.
             //!
-            Text* addText(const UString& text);
+            Text* addText(const UString& text, bool onlyNotEmpty = false);
 
             //!
             //! Add a new text containing hexadecimal data inside this node.

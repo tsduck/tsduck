@@ -46,7 +46,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::PrefetchDescriptor::PrefetchDescriptor() :
@@ -54,13 +54,13 @@ ts::PrefetchDescriptor::PrefetchDescriptor() :
     transport_protocol_label(0),
     entries()
 {
-    _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::PrefetchDescriptor::clearContent()
+{
+    transport_protocol_label = 0;
+    entries.clear();
+}
 
 ts::PrefetchDescriptor::PrefetchDescriptor(DuckContext& duck, const Descriptor& desc) :
     PrefetchDescriptor()
@@ -166,21 +166,16 @@ void ts::PrefetchDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 
 bool ts::PrefetchDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(transport_protocol_label, u"transport_protocol_label", true) &&
         element->getChildren(children, u"module");
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getAttribute(entry.label, u"label", true) &&
-            children[i]->getIntAttribute<uint8_t>(entry.prefetch_priority, u"prefetch_priority", true, 1, 1, 100);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = children[i]->getAttribute(entry.label, u"label", true) &&
+             children[i]->getIntAttribute<uint8_t>(entry.prefetch_priority, u"prefetch_priority", true, 1, 1, 100);
+        entries.push_back(entry);
     }
+    return ok;
 }

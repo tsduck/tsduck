@@ -51,7 +51,11 @@ ts::SLDescriptor::SLDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ES_ID(0)
 {
-    _is_valid = true;
+}
+
+void ts::SLDescriptor::clearContent()
+{
+    ES_ID = 0;
 }
 
 ts::SLDescriptor::SLDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -111,7 +115,7 @@ void ts::SLDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::SLDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -119,14 +123,7 @@ void ts::SLDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"ES_ID", ES_ID, true);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::SLDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(ES_ID, u"ES_ID", true);
+    return element->getIntAttribute<uint16_t>(ES_ID, u"ES_ID", true);
 }

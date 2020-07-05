@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::AncillaryDataDescriptor::AncillaryDataDescriptor(uint8_t id) :
@@ -54,10 +54,10 @@ ts::AncillaryDataDescriptor::AncillaryDataDescriptor(uint8_t id) :
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::AncillaryDataDescriptor::clearContent()
+{
+    ancillary_data_identifier = 0;
+}
 
 ts::AncillaryDataDescriptor::AncillaryDataDescriptor(DuckContext& duck, const Descriptor& desc) :
     AncillaryDataDescriptor()

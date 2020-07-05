@@ -58,7 +58,16 @@ ts::DataContentDescriptor::DataContentDescriptor() :
     ISO_639_language_code(),
     text()
 {
-    _is_valid = true;
+}
+
+void ts::DataContentDescriptor::clearContent()
+{
+    data_component_id = 0;
+    entry_component = 0;
+    selector_bytes.clear();
+    component_refs.clear();
+    ISO_639_language_code.clear();
+    text.clear();
 }
 
 ts::DataContentDescriptor::DataContentDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -194,14 +203,8 @@ void ts::DataContentDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::DataContentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    selector_bytes.clear();
-    component_refs.clear();
-    ISO_639_language_code.clear();
-    text.clear();
-
     xml::ElementVector xcomp;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint16_t>(data_component_id, u"data_component_id", true) &&
         element->getIntAttribute<uint8_t>(entry_component, u"entry_component", true) &&
         element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, UString(), 3, 3) &&
@@ -209,11 +212,10 @@ bool ts::DataContentDescriptor::analyzeXML(DuckContext& duck, const xml::Element
         element->getHexaTextChild(selector_bytes, u"selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 8) &&
         element->getChildren(xcomp, u"component");
 
-    for (auto it = xcomp.begin(); _is_valid && it != xcomp.end(); ++it) {
+    for (auto it = xcomp.begin(); ok && it != xcomp.end(); ++it) {
         uint8_t ref = 0;
-        _is_valid = (*it)->getIntAttribute<uint8_t>(ref, u"ref", true);
-        if (_is_valid) {
-            component_refs.push_back(ref);
-        }
+        ok = (*it)->getIntAttribute<uint8_t>(ref, u"ref", true);
+        component_refs.push_back(ref);
     }
+    return ok;
 }

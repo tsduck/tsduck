@@ -58,13 +58,22 @@ ts::DTSHDDescriptor::DTSHDDescriptor() :
     substream_3(),
     additional_info()
 {
-    _is_valid = true;
 }
 
 ts::DTSHDDescriptor::DTSHDDescriptor(DuckContext& duck, const Descriptor& desc) :
     DTSHDDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::DTSHDDescriptor::clearContent()
+{
+    substream_core.clear();
+    substream_0.clear();
+    substream_1.clear();
+    substream_2.clear();
+    substream_3.clear();
+    additional_info.clear();
 }
 
 ts::DTSHDDescriptor::SubstreamInfo::SubstreamInfo() :
@@ -93,11 +102,11 @@ ts::DTSHDDescriptor::AssetInfo::AssetInfo() :
 
 void ts::DTSHDDescriptor::reset()
 {
-    substream_core.reset();
-    substream_0.reset();
-    substream_1.reset();
-    substream_2.reset();
-    substream_3.reset();
+    substream_core.clear();
+    substream_0.clear();
+    substream_1.clear();
+    substream_2.clear();
+    substream_3.clear();
     additional_info.clear();
 }
 
@@ -204,7 +213,7 @@ bool ts::DTSHDDescriptor::DeserializeSubstreamInfo(Variable<SubstreamInfo>& info
 {
     if (!present) {
         // Substream info not present
-        info.reset();
+        info.clear();
         return true;
     }
     else {
@@ -431,16 +440,12 @@ void ts::DTSHDDescriptor::SubstreamInfoToXML(const Variable<SubstreamInfo>& info
 
 bool ts::DTSHDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    reset();
-
-    _is_valid =
-        checkXMLName(element) &&
-        SubstreamInfoFromXML(substream_core, u"substream_core", element) &&
-        SubstreamInfoFromXML(substream_0, u"substream_0", element) &&
-        SubstreamInfoFromXML(substream_1, u"substream_1", element) &&
-        SubstreamInfoFromXML(substream_2, u"substream_2", element) &&
-        SubstreamInfoFromXML(substream_3, u"substream_3", element) &&
-        element->getHexaTextChild(additional_info, u"additional_info", false);
+    return SubstreamInfoFromXML(substream_core, u"substream_core", element) &&
+           SubstreamInfoFromXML(substream_0, u"substream_0", element) &&
+           SubstreamInfoFromXML(substream_1, u"substream_1", element) &&
+           SubstreamInfoFromXML(substream_2, u"substream_2", element) &&
+           SubstreamInfoFromXML(substream_3, u"substream_3", element) &&
+           element->getHexaTextChild(additional_info, u"additional_info", false);
 }
 
 bool ts::DTSHDDescriptor::SubstreamInfoFromXML(Variable<SubstreamInfo>& info, const UString& name, const xml::Element* parent)
@@ -453,7 +458,7 @@ bool ts::DTSHDDescriptor::SubstreamInfoFromXML(Variable<SubstreamInfo>& info, co
 
     if (children.empty()) {
         // Element not present
-        info.reset();
+        info.clear();
         return true;
     }
     else {

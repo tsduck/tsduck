@@ -137,7 +137,9 @@ if ($GitPull) {
         Exit-Script -NoPause:$NoPause "Git not found"
     }
     Push-Location $RootDir
-    & $git pull
+    & $git fetch origin
+    & $git checkout master
+    & $git pull origin master
     Pop-Location
 }
 

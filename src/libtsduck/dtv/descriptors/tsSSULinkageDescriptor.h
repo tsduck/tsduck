@@ -119,7 +119,12 @@ namespace ts {
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;
         virtual void deserialize(DuckContext&, const Descriptor&) override;
-        virtual xml::Element* toXML(DuckContext&, xml::Element*) const override;
         DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual void clearContent() override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
     };
 }

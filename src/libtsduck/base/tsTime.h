@@ -88,6 +88,15 @@ namespace ts {
         Time(int year, int month, int day, int hour, int minute, int second = 0, int millisecond = 0);
 
         //!
+        //! Clear the time value.
+        //! The time value becomes the Epoch.
+        //!
+        void clear()
+        {
+            _value = 0;
+        }
+
+        //!
         //! Operator Time + MilliSecond => Time.
         //! @param [in] duration A number of milliseconds.
         //! @return A @c Time object representing this object plus the

@@ -52,7 +52,12 @@ ts::MultiplexBufferDescriptor::MultiplexBufferDescriptor() :
     MB_buffer_size(0),
     TB_leak_rate(0)
 {
-    _is_valid = true;
+}
+
+void ts::MultiplexBufferDescriptor::clearContent()
+{
+    MB_buffer_size = 0;
+    TB_leak_rate = 0;
 }
 
 ts::MultiplexBufferDescriptor::MultiplexBufferDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -116,7 +121,7 @@ void ts::MultiplexBufferDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::MultiplexBufferDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -125,15 +130,8 @@ void ts::MultiplexBufferDescriptor::buildXML(DuckContext& duck, xml::Element* ro
     root->setIntAttribute(u"TB_leak_rate", TB_leak_rate);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::MultiplexBufferDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint32_t>(MB_buffer_size, u"MB_buffer_size", true, 0, 0, 0x00FFFFFF) &&
-        element->getIntAttribute<uint32_t>(TB_leak_rate, u"TB_leak_rate", true, 0, 0, 0x00FFFFFF);
+    return element->getIntAttribute<uint32_t>(MB_buffer_size, u"MB_buffer_size", true, 0, 0, 0x00FFFFFF) &&
+           element->getIntAttribute<uint32_t>(TB_leak_rate, u"TB_leak_rate", true, 0, 0, 0x00FFFFFF);
 }

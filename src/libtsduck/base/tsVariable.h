@@ -134,11 +134,11 @@ namespace ts {
         bool setDefault(const T& def);
 
         //!
-        //! Reset the value.
+        //! Clear the value.
         //!
         //! This object becomes uninitialized if it was not already.
         //!
-        void reset();
+        void clear();
 
         //!
         //! Access the constant @a T value inside the variable.

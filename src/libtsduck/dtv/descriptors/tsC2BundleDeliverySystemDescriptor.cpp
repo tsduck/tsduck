@@ -53,13 +53,18 @@ ts::C2BundleDeliverySystemDescriptor::C2BundleDeliverySystemDescriptor() :
     AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_C2, MY_XML_NAME),
     entries()
 {
-    _is_valid = true;
 }
 
 ts::C2BundleDeliverySystemDescriptor::C2BundleDeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
     C2BundleDeliverySystemDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::C2BundleDeliverySystemDescriptor::clearContent()
+{
+
+    entries.clear();
 }
 
 ts::C2BundleDeliverySystemDescriptor::Entry::Entry() :
@@ -187,22 +192,19 @@ void ts::C2BundleDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Elem
 
 bool ts::C2BundleDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
     xml::ElementVector children;
-    _is_valid = checkXMLName(element) && element->getChildren(children, u"plp", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(children, u"plp", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry e;
-        _is_valid =
-            children[i]->getIntAttribute<uint8_t>(e.plp_id, u"plp_id", true) &&
-            children[i]->getIntAttribute<uint8_t>(e.data_slice_id, u"data_slice_id", true) &&
-            children[i]->getIntAttribute<uint32_t>(e.C2_system_tuning_frequency, u"C2_system_tuning_frequency", true) &&
-            children[i]->getIntAttribute<uint8_t>(e.C2_system_tuning_frequency_type, u"C2_system_tuning_frequency_type", true, 0, 0, 3) &&
-            children[i]->getIntAttribute<uint8_t>(e.active_OFDM_symbol_duration, u"active_OFDM_symbol_duration", true, 0, 0, 7) &&
-            children[i]->getIntEnumAttribute(e.guard_interval, C2DeliverySystemDescriptor::C2GuardIntervalNames, u"guard_interval", true) &&
-            children[i]->getBoolAttribute(e.master_channel, u"master_channel", true);
-        if (_is_valid) {
-            entries.push_back(e);
-        }
+        ok = children[i]->getIntAttribute<uint8_t>(e.plp_id, u"plp_id", true) &&
+             children[i]->getIntAttribute<uint8_t>(e.data_slice_id, u"data_slice_id", true) &&
+             children[i]->getIntAttribute<uint32_t>(e.C2_system_tuning_frequency, u"C2_system_tuning_frequency", true) &&
+             children[i]->getIntAttribute<uint8_t>(e.C2_system_tuning_frequency_type, u"C2_system_tuning_frequency_type", true, 0, 0, 3) &&
+             children[i]->getIntAttribute<uint8_t>(e.active_OFDM_symbol_duration, u"active_OFDM_symbol_duration", true, 0, 0, 7) &&
+             children[i]->getIntEnumAttribute(e.guard_interval, C2DeliverySystemDescriptor::C2GuardIntervalNames, u"guard_interval", true) &&
+             children[i]->getBoolAttribute(e.master_channel, u"master_channel", true);
+        entries.push_back(e);
     }
+    return ok;
 }

@@ -48,20 +48,24 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, ts::PDS_TPS), MY_XML_
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(uint8_t version_) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     version(version_)
 {
-    _is_valid = true;
 }
 
 
 //----------------------------------------------------------------------------
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
+
+void ts::EacemStreamIdentifierDescriptor::clearContent()
+{
+    version = 0;
+}
 
 ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
@@ -119,7 +123,7 @@ void ts::EacemStreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& displ
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::EacemStreamIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -127,14 +131,7 @@ void ts::EacemStreamIdentifierDescriptor::buildXML(DuckContext& duck, xml::Eleme
     root->setIntAttribute(u"version_byte", version, true);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::EacemStreamIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(version, u"version_byte", true, 0, 0x00, 0xFF);
+    return element->getIntAttribute<uint8_t>(version, u"version_byte", true, 0, 0x00, 0xFF);
 }

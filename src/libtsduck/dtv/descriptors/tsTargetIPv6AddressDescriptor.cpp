@@ -54,7 +54,12 @@ ts::TargetIPv6AddressDescriptor::TargetIPv6AddressDescriptor() :
     IPv6_addr_mask(),
     IPv6_addr()
 {
-    _is_valid = true;
+}
+
+void ts::TargetIPv6AddressDescriptor::clearContent()
+{
+    IPv6_addr_mask.clear();
+    IPv6_addr.clear();
 }
 
 ts::TargetIPv6AddressDescriptor::TargetIPv6AddressDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -142,19 +147,15 @@ void ts::TargetIPv6AddressDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::TargetIPv6AddressDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    IPv6_addr.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIPv6Attribute(IPv6_addr_mask, u"IPv6_addr_mask", true) &&
         element->getChildren(children, u"address", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         IPv6Address addr;
-        _is_valid = children[i]->getIPv6Attribute(addr, u"IPv6_addr", true);
-        if (_is_valid) {
-            IPv6_addr.push_back(addr);
-        }
+        ok = children[i]->getIPv6Attribute(addr, u"IPv6_addr", true);
+        IPv6_addr.push_back(addr);
     }
+    return ok;
 }

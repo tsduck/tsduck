@@ -46,25 +46,24 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::IPSignallingDescriptor::IPSignallingDescriptor(uint32_t id) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     platform_id(id)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::IPSignallingDescriptor::IPSignallingDescriptor(DuckContext& duck, const Descriptor& desc) :
     IPSignallingDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::IPSignallingDescriptor::clearContent()
+{
+    platform_id = 0;
 }
 
 
@@ -129,7 +128,5 @@ void ts::IPSignallingDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::IPSignallingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint32_t>(platform_id, u"platform_id", true, 0, 0, 0x00FFFFFF);
+    return element->getIntAttribute<uint32_t>(platform_id, u"platform_id", true, 0, 0, 0x00FFFFFF);
 }

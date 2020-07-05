@@ -51,7 +51,11 @@ ts::ServiceIdentifierDescriptor::ServiceIdentifierDescriptor(const UString& id) 
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     identifier(id)
 {
-    _is_valid = true;
+}
+
+void ts::ServiceIdentifierDescriptor::clearContent()
+{
+    identifier.clear();
 }
 
 ts::ServiceIdentifierDescriptor::ServiceIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -105,7 +109,7 @@ void ts::ServiceIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, 
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::ServiceIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -113,14 +117,7 @@ void ts::ServiceIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* 
     root->setAttribute(u"service_identifier", identifier);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::ServiceIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(identifier, u"service_identifier", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
+    return element->getAttribute(identifier, u"service_identifier", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
 }

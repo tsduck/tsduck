@@ -45,20 +45,19 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ComponentNameDescriptor::ComponentNameDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     component_name_string()
 {
-    _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::ComponentNameDescriptor::clearContent()
+{
+    component_name_string.clear();
+}
 
 ts::ComponentNameDescriptor::ComponentNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     ComponentNameDescriptor()
@@ -104,7 +103,7 @@ void ts::ComponentNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::ComponentNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -112,14 +111,7 @@ void ts::ComponentNameDescriptor::buildXML(DuckContext& duck, xml::Element* root
     component_name_string.toXML(duck, root, u"component_name_string", true);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::ComponentNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        component_name_string.fromXML(duck, element, u"component_name_string", false);
+    return component_name_string.fromXML(duck, element, u"component_name_string", false);
 }

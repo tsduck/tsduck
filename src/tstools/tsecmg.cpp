@@ -424,7 +424,7 @@ void ECMGClientHandler::main()
     // Make sure to release the channel if not done by the clients.
     if (_channel.set()) {
         _shared->closeChannel(_channel.value());
-        _channel.reset();
+        _channel.clear();
     }
 
     _shared->report().verbose(u"%s: %s: session completed", {_peer, TimeStamp()});
@@ -521,7 +521,7 @@ bool ECMGClientHandler::handleChannelClose(ts::ecmgscs::ChannelClose* msg)
     else {
         // Channel ok, close everything, no response expected.
         _shared->closeChannel(msg->channel_id);
-        _channel.reset();
+        _channel.clear();
         _streams.clear();
         return true;
     }

@@ -46,7 +46,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::DIILocationDescriptor::DIILocationDescriptor() :
@@ -54,18 +54,18 @@ ts::DIILocationDescriptor::DIILocationDescriptor() :
     transport_protocol_label(0),
     entries()
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::DIILocationDescriptor::DIILocationDescriptor(DuckContext& duck, const Descriptor& desc) :
     DIILocationDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::DIILocationDescriptor::clearContent()
+{
+    transport_protocol_label = 0;
+    entries.clear();
 }
 
 
@@ -157,21 +157,16 @@ void ts::DIILocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::DIILocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(transport_protocol_label, u"transport_protocol_label", true) &&
         element->getChildren(children, u"module", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getIntAttribute<uint16_t>(entry.DII_identification, u"DII_identification", true, 0, 0x0000, 0x7FFF) &&
-            children[i]->getIntAttribute<uint16_t>(entry.association_tag, u"association_tag", true);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = children[i]->getIntAttribute<uint16_t>(entry.DII_identification, u"DII_identification", true, 0, 0x0000, 0x7FFF) &&
+             children[i]->getIntAttribute<uint16_t>(entry.association_tag, u"association_tag", true);
+        entries.push_back(entry);
     }
+    return ok;
 }

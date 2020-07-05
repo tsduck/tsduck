@@ -51,7 +51,11 @@ ts::MPEG2StereoscopicVideoFormatDescriptor::MPEG2StereoscopicVideoFormatDescript
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     arrangement_type()
 {
-    _is_valid = true;
+}
+
+void ts::MPEG2StereoscopicVideoFormatDescriptor::clearContent()
+{
+    arrangement_type.clear();
 }
 
 ts::MPEG2StereoscopicVideoFormatDescriptor::MPEG2StereoscopicVideoFormatDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -83,7 +87,7 @@ void ts::MPEG2StereoscopicVideoFormatDescriptor::deserialize(DuckContext& duck, 
     size_t size = desc.payloadSize();
 
     _is_valid = desc.isValid() && desc.tag() == _tag && size == 1;
-    arrangement_type.reset();
+    arrangement_type.clear();
 
     if (_is_valid && (data[0] & 0x80) != 0) {
         arrangement_type = data[0] & 0x7F;
@@ -114,7 +118,7 @@ void ts::MPEG2StereoscopicVideoFormatDescriptor::DisplayDescriptor(TablesDisplay
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::MPEG2StereoscopicVideoFormatDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -122,14 +126,7 @@ void ts::MPEG2StereoscopicVideoFormatDescriptor::buildXML(DuckContext& duck, xml
     root->setOptionalIntAttribute(u"arrangement_type", arrangement_type, true);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::MPEG2StereoscopicVideoFormatDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getOptionalIntAttribute<uint8_t>(arrangement_type, u"arrangement_type", 0x00, 0x7F);
+    return element->getOptionalIntAttribute<uint8_t>(arrangement_type, u"arrangement_type", 0x00, 0x7F);
 }

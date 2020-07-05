@@ -195,7 +195,7 @@ bool ts::EITPlugin::start()
     _eits_act_count = 0;
     _eits_oth_count = 0;
     _services.clear();
-    _ts_id.reset();
+    _ts_id.clear();
     _demux.reset();
     _demux.addPID(PID_PAT);
     _demux.addPID(PID_SDT);

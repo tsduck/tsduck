@@ -49,7 +49,6 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 ts::VBITeletextDescriptor::VBITeletextDescriptor() :
     TeletextDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
-    _is_valid = true;
 }
 
 ts::VBITeletextDescriptor::VBITeletextDescriptor(DuckContext& duck, const Descriptor& desc) :

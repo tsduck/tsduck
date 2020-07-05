@@ -54,13 +54,18 @@ ts::DTSNeuralDescriptor::DTSNeuralDescriptor() :
     config_id(0),
     additional_info()
 {
-    _is_valid = true;
 }
 
 ts::DTSNeuralDescriptor::DTSNeuralDescriptor(DuckContext& duck, const Descriptor& desc) :
     DTSNeuralDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::DTSNeuralDescriptor::clearContent()
+{
+    config_id = 0;
+    additional_info.clear();
 }
 
 
@@ -102,9 +107,7 @@ void ts::DTSNeuralDescriptor::deserialize(DuckContext& duck, const Descriptor& d
 void ts::DTSNeuralDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"config_id", config_id, true);
-    if (!additional_info.empty()) {
-        root->addHexaTextChild(u"additional_info", additional_info);
-    }
+    root->addHexaTextChild(u"additional_info", additional_info, true);
 }
 
 
@@ -114,10 +117,8 @@ void ts::DTSNeuralDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::DTSNeuralDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(config_id, u"config_id", true) &&
-        element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 4);
+    return element->getIntAttribute<uint8_t>(config_id, u"config_id", true) &&
+           element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 4);
 }
 
 

@@ -44,7 +44,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::CableDeliverySystemDescriptor::CableDeliverySystemDescriptor() :
@@ -55,13 +55,21 @@ ts::CableDeliverySystemDescriptor::CableDeliverySystemDescriptor() :
     symbol_rate(0),
     FEC_inner(0)
 {
-    _is_valid = true;
 }
 
 
 //----------------------------------------------------------------------------
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
+
+void ts::CableDeliverySystemDescriptor::clearContent()
+{
+    frequency = 0;
+    FEC_outer = 0;
+    modulation = 0;
+    symbol_rate = 0;
+    FEC_inner = 0;
+}
 
 ts::CableDeliverySystemDescriptor::CableDeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
     CableDeliverySystemDescriptor()
@@ -160,13 +168,11 @@ void ts::CableDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::CableDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
-        element->getIntEnumAttribute<uint8_t>(FEC_outer, OuterFecNames, u"FEC_outer", false, 2) &&
-        element->getIntEnumAttribute<uint8_t>(modulation, ModulationNames, u"modulation", false, 1) &&
-        element->getIntAttribute<uint64_t>(symbol_rate, u"symbol_rate", true) &&
-        element->getIntEnumAttribute(FEC_inner, InnerFecNames, u"FEC_inner", true);
+    return element->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
+           element->getIntEnumAttribute<uint8_t>(FEC_outer, OuterFecNames, u"FEC_outer", false, 2) &&
+           element->getIntEnumAttribute<uint8_t>(modulation, ModulationNames, u"modulation", false, 1) &&
+           element->getIntAttribute<uint64_t>(symbol_rate, u"symbol_rate", true) &&
+           element->getIntEnumAttribute(FEC_inner, InnerFecNames, u"FEC_inner", true);
 }
 
 

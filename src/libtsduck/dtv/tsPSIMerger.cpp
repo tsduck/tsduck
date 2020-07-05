@@ -160,7 +160,7 @@ void ts::PSIMerger::reset(Options options)
     _eit_pzer.setPID(PID_EIT);
 
     // Make sure that all input tables are invalid.
-    _main_tsid.reset();
+    _main_tsid.clear();
     _main_pat.invalidate();
     _merge_pat.invalidate();
     _main_cat.invalidate();

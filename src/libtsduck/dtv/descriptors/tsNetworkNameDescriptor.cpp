@@ -44,26 +44,25 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::NetworkNameDescriptor::NetworkNameDescriptor(const UString& name_) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     name(name_)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::NetworkNameDescriptor::NetworkNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     name()
 {
     deserialize(duck, desc);
+}
+
+void ts::NetworkNameDescriptor::clearContent()
+{
+    name.clear();
 }
 
 
@@ -126,7 +125,5 @@ void ts::NetworkNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::NetworkNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(name, u"network_name", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
+    return element->getAttribute(name, u"network_name", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
 }

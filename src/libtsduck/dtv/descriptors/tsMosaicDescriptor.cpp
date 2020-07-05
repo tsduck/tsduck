@@ -57,6 +57,14 @@ ts::MosaicDescriptor::MosaicDescriptor() :
 {
 }
 
+void ts::MosaicDescriptor::clearContent()
+{
+    mosaic_entry_point = false;
+    number_of_horizontal_elementary_cells = 0;
+    number_of_vertical_elementary_cells = 0;
+    cells.clear();
+}
+
 ts::MosaicDescriptor::MosaicDescriptor(DuckContext& duck, const Descriptor& desc) :
     MosaicDescriptor()
 {

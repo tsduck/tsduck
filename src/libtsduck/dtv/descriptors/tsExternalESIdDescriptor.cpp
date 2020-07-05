@@ -52,7 +52,11 @@ ts::ExternalESIdDescriptor::ExternalESIdDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     external_ES_ID(0)
 {
-    _is_valid = true;
+}
+
+void ts::ExternalESIdDescriptor::clearContent()
+{
+    external_ES_ID = 0;
 }
 
 ts::ExternalESIdDescriptor::ExternalESIdDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -112,7 +116,7 @@ void ts::ExternalESIdDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::ExternalESIdDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -120,14 +124,7 @@ void ts::ExternalESIdDescriptor::buildXML(DuckContext& duck, xml::Element* root)
     root->setIntAttribute(u"external_ES_ID", external_ES_ID, true);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::ExternalESIdDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(external_ES_ID, u"external_ES_ID", true);
+    return element->getIntAttribute<uint16_t>(external_ES_ID, u"external_ES_ID", true);
 }

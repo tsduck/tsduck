@@ -54,6 +54,11 @@ ts::ATSCStuffingDescriptor::ATSCStuffingDescriptor() :
 {
 }
 
+void ts::ATSCStuffingDescriptor::clearContent()
+{
+    stuffing.clear();
+}
+
 ts::ATSCStuffingDescriptor::ATSCStuffingDescriptor(DuckContext& duck, const Descriptor& desc) :
     ATSCStuffingDescriptor()
 {
@@ -101,18 +106,13 @@ void ts::ATSCStuffingDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::ATSCStuffingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->addHexaText(stuffing, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::ATSCStuffingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

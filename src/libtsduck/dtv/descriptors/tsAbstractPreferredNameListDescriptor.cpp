@@ -46,7 +46,11 @@ ts::AbstractPreferredNameListDescriptor::AbstractPreferredNameListDescriptor(DID
     AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name),
     entries()
 {
-    _is_valid = true;
+}
+
+void ts::AbstractPreferredNameListDescriptor::clearContent()
+{
+    entries.clear();
 }
 
 ts::AbstractPreferredNameListDescriptor::AbstractPreferredNameListDescriptor(DuckContext& duck,

@@ -58,7 +58,15 @@ ts::SIPrimeTSDescriptor::SIPrimeTSDescriptor() :
     SI_prime_transport_stream_id(0),
     entries()
 {
-    _is_valid = true;
+}
+
+void ts::SIPrimeTSDescriptor::clearContent()
+{
+    parameter_version = 0;
+    update_time.clear();
+    SI_prime_TS_network_id = 0;
+    SI_prime_transport_stream_id = 0;
+    entries.clear();
 }
 
 ts::SIPrimeTSDescriptor::SIPrimeTSDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -185,24 +193,19 @@ void ts::SIPrimeTSDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::SIPrimeTSDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector xtables;
-    _is_valid =
-        checkXMLName(element) &&
+    bool ok =
         element->getIntAttribute<uint8_t>(parameter_version, u"parameter_version", true) &&
         element->getDateAttribute(update_time, u"update_time", true) &&
         element->getIntAttribute<uint16_t>(SI_prime_TS_network_id, u"SI_prime_TS_network_id", true) &&
         element->getIntAttribute<uint16_t>(SI_prime_transport_stream_id, u"SI_prime_transport_stream_id", true) &&
         element->getChildren(xtables, u"table");
 
-    for (auto it = xtables.begin(); _is_valid && it != xtables.end(); ++it) {
+    for (auto it = xtables.begin(); ok && it != xtables.end(); ++it) {
         Entry entry;
-        _is_valid =
-            (*it)->getIntAttribute<uint8_t>(entry.table_id, u"id", true) &&
-            (*it)->getHexaText(entry.table_description, 0, 255);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = (*it)->getIntAttribute<uint8_t>(entry.table_id, u"id", true) &&
+             (*it)->getHexaText(entry.table_description, 0, 255);
+        entries.push_back(entry);
     }
+    return ok;
 }

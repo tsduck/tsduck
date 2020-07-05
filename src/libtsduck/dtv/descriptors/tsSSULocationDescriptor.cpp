@@ -55,7 +55,13 @@ ts::SSULocationDescriptor::SSULocationDescriptor() :
     association_tag(0),
     private_data()
 {
-    _is_valid = true;
+}
+
+void ts::SSULocationDescriptor::clearContent()
+{
+    data_broadcast_id = 0;
+    association_tag = 0;
+    private_data.clear();
 }
 
 ts::SSULocationDescriptor::SSULocationDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -160,10 +166,7 @@ void ts::SSULocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::SSULocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(data_broadcast_id, u"data_broadcast_id", true) &&
-        element->getIntAttribute<uint16_t>(association_tag, u"association_tag", data_broadcast_id == 0x000A) &&
-        element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 3);
+    return element->getIntAttribute<uint16_t>(data_broadcast_id, u"data_broadcast_id", true) &&
+           element->getIntAttribute<uint16_t>(association_tag, u"association_tag", data_broadcast_id == 0x000A) &&
+           element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 3);
 }

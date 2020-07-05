@@ -45,7 +45,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::AdaptationFieldDataDescriptor::AdaptationFieldDataDescriptor(uint8_t id) :
@@ -54,10 +54,10 @@ ts::AdaptationFieldDataDescriptor::AdaptationFieldDataDescriptor(uint8_t id) :
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::AdaptationFieldDataDescriptor::clearContent()
+{
+    adaptation_field_data_identifier = 0;
+}
 
 ts::AdaptationFieldDataDescriptor::AdaptationFieldDataDescriptor(DuckContext& duck, const Descriptor& desc) :
     AdaptationFieldDataDescriptor()

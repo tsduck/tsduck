@@ -52,7 +52,11 @@ ts::TargetIPSlashDescriptor::TargetIPSlashDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     addresses()
 {
-    _is_valid = true;
+}
+
+void ts::TargetIPSlashDescriptor::clearContent()
+{
+    addresses.clear();
 }
 
 ts::TargetIPSlashDescriptor::TargetIPSlashDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -143,20 +147,14 @@ void ts::TargetIPSlashDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::TargetIPSlashDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    addresses.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"address", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(children, u"address", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Address addr;
-        _is_valid =
-                children[i]->getIPAttribute(addr.IPv4_addr, u"IPv4_addr", true) &&
-                children[i]->getIntAttribute(addr.IPv4_slash_mask, u"IPv4_slash_mask", true);
-        if (_is_valid) {
-            addresses.push_back(addr);
-        }
+        ok = children[i]->getIPAttribute(addr.IPv4_addr, u"IPv4_addr", true) &&
+             children[i]->getIntAttribute(addr.IPv4_slash_mask, u"IPv4_slash_mask", true);
+        addresses.push_back(addr);
     }
+    return ok;
 }

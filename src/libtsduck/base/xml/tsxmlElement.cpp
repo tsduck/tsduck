@@ -272,11 +272,16 @@ ts::xml::Element* ts::xml::Element::addElement(const UString& childName)
 // Add a new text inside this node.
 //----------------------------------------------------------------------------
 
-ts::xml::Text* ts::xml::Element::addText(const UString& text)
+ts::xml::Text* ts::xml::Element::addText(const UString& text, bool onlyNotEmpty)
 {
-    Text* child = new Text(this, text);
-    CheckNonNull(child);
-    return child;
+    if (onlyNotEmpty && text.empty()) {
+        return nullptr;
+    }
+    else {
+        Text* child = new Text(this, text);
+        CheckNonNull(child);
+        return child;
+    }
 }
 
 
@@ -422,7 +427,7 @@ bool ts::xml::Element::getAttribute(UString& value,
 bool ts::xml::Element::getOptionalAttribute(Variable<UString>& value, const UString& name, size_t minSize, size_t maxSize) const
 {
     // Default: erase value.
-    value.reset();
+    value.clear();
     bool ok = true;
 
     if (hasAttribute(name)) {
@@ -474,7 +479,7 @@ bool ts::xml::Element::getBoolAttribute(bool& value, const UString& name, bool r
 bool ts::xml::Element::getOptionalBoolAttribute(Variable<bool>& value, const UString& name) const
 {
     // Default: erase value.
-    value.reset();
+    value.clear();
     bool ok = true;
 
     if (hasAttribute(name)) {

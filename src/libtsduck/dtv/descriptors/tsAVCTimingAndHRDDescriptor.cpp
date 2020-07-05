@@ -44,7 +44,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::AVCTimingAndHRDDescriptor::AVCTimingAndHRDDescriptor() :
@@ -57,18 +57,23 @@ ts::AVCTimingAndHRDDescriptor::AVCTimingAndHRDDescriptor() :
     temporal_poc(false),
     picture_to_display_conversion(false)
 {
-    _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::AVCTimingAndHRDDescriptor::AVCTimingAndHRDDescriptor(DuckContext& duck, const Descriptor& desc) :
     AVCTimingAndHRDDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::AVCTimingAndHRDDescriptor::clearContent()
+{
+    hrd_management_valid = false;
+    N_90khz.clear();
+    K_90khz.clear();
+    num_units_in_tick.clear();
+    fixed_frame_rate = false;
+    temporal_poc = false;
+    picture_to_display_conversion = false;
 }
 
 
@@ -109,9 +114,9 @@ void ts::AVCTimingAndHRDDescriptor::deserialize(DuckContext& duck, const Descrip
 
     _is_valid = desc.isValid() && desc.tag() == _tag && size >= 2;
 
-    N_90khz.reset();
-    K_90khz.reset();
-    num_units_in_tick.reset();
+    N_90khz.clear();
+    K_90khz.clear();
+    num_units_in_tick.clear();
 
     if (_is_valid) {
         hrd_management_valid = (data[0] & 0x80) != 0;
@@ -212,13 +217,11 @@ void ts::AVCTimingAndHRDDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::AVCTimingAndHRDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(hrd_management_valid, u"hrd_management_valid", true) &&
-        element->getOptionalIntAttribute<uint32_t>(N_90khz, u"N_90khz") &&
-        element->getOptionalIntAttribute<uint32_t>(K_90khz, u"K_90khz") &&
-        element->getOptionalIntAttribute<uint32_t>(num_units_in_tick, u"num_units_in_tick") &&
-        element->getBoolAttribute(fixed_frame_rate, u"fixed_frame_rate", true) &&
-        element->getBoolAttribute(temporal_poc, u"temporal_poc", true) &&
-        element->getBoolAttribute(picture_to_display_conversion, u"picture_to_display_conversion", true);
+    return  element->getBoolAttribute(hrd_management_valid, u"hrd_management_valid", true) &&
+            element->getOptionalIntAttribute<uint32_t>(N_90khz, u"N_90khz") &&
+            element->getOptionalIntAttribute<uint32_t>(K_90khz, u"K_90khz") &&
+            element->getOptionalIntAttribute<uint32_t>(num_units_in_tick, u"num_units_in_tick") &&
+            element->getBoolAttribute(fixed_frame_rate, u"fixed_frame_rate", true) &&
+            element->getBoolAttribute(temporal_poc, u"temporal_poc", true) &&
+            element->getBoolAttribute(picture_to_display_conversion, u"picture_to_display_conversion", true);
 }

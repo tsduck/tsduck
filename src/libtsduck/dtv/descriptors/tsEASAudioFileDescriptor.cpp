@@ -53,13 +53,17 @@ ts::EASAudioFileDescriptor::EASAudioFileDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    _is_valid = true;
 }
 
 ts::EASAudioFileDescriptor::EASAudioFileDescriptor(DuckContext& duck, const Descriptor& desc) :
     EASAudioFileDescriptor()
 {
     deserialize(duck, desc);
+}
+
+void ts::EASAudioFileDescriptor::clearContent()
+{
+    entries.clear();
 }
 
 ts::EASAudioFileDescriptor::Entry::Entry() :
@@ -299,36 +303,28 @@ void ts::EASAudioFileDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::EASAudioFileDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"file");
+    bool ok = element->getChildren(children, u"file");
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getIntAttribute<uint8_t>(entry.audio_format, u"audio_format", true, 0, 0, 127) &&
-            children[i]->getAttribute(entry.file_name, u"file_name", false) &&
-            children[i]->getIntAttribute<uint8_t>(entry.audio_source, u"audio_source", true);
-        if (_is_valid) {
+        ok = children[i]->getIntAttribute<uint8_t>(entry.audio_format, u"audio_format", true, 0, 0, 127) &&
+             children[i]->getAttribute(entry.file_name, u"file_name", false) &&
+             children[i]->getIntAttribute<uint8_t>(entry.audio_source, u"audio_source", true);
+        if (ok) {
             if (entry.audio_source == 0x01) {
-                _is_valid =
-                    children[i]->getIntAttribute<uint16_t>(entry.program_number, u"program_number", true) &&
-                    children[i]->getIntAttribute<uint32_t>(entry.carousel_id, u"carousel_id", true) &&
-                    children[i]->getIntAttribute<uint16_t>(entry.application_id, u"application_id", true);
+                ok = children[i]->getIntAttribute<uint16_t>(entry.program_number, u"program_number", true) &&
+                     children[i]->getIntAttribute<uint32_t>(entry.carousel_id, u"carousel_id", true) &&
+                     children[i]->getIntAttribute<uint16_t>(entry.application_id, u"application_id", true);
             }
             else if (entry.audio_source == 0x02) {
-                _is_valid =
-                    children[i]->getIntAttribute<uint16_t>(entry.program_number, u"program_number", true) &&
-                    children[i]->getIntAttribute<uint32_t>(entry.download_id, u"download_id", true) &&
-                    children[i]->getIntAttribute<uint32_t>(entry.module_id, u"module_id", true) &&
-                    children[i]->getIntAttribute<uint16_t>(entry.application_id, u"application_id", true);
+                ok = children[i]->getIntAttribute<uint16_t>(entry.program_number, u"program_number", true) &&
+                     children[i]->getIntAttribute<uint32_t>(entry.download_id, u"download_id", true) &&
+                     children[i]->getIntAttribute<uint32_t>(entry.module_id, u"module_id", true) &&
+                     children[i]->getIntAttribute<uint16_t>(entry.application_id, u"application_id", true);
             }
         }
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        entries.push_back(entry);
     }
+    return ok;
 }

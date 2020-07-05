@@ -46,7 +46,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::DVBAC3Descriptor::DVBAC3Descriptor() :
@@ -57,13 +57,16 @@ ts::DVBAC3Descriptor::DVBAC3Descriptor() :
     asvc(),
     additional_info()
 {
-    _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
+void ts::DVBAC3Descriptor::clearContent()
+{
+    component_type.clear();
+    bsid.clear();
+    mainid.clear();
+    asvc.clear();
+    additional_info.clear();
+}
 
 ts::DVBAC3Descriptor::DVBAC3Descriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
@@ -137,10 +140,10 @@ void ts::DVBAC3Descriptor::deserialize(DuckContext& duck, const Descriptor& desc
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1;
 
-    component_type.reset();
-    bsid.reset();
-    mainid.reset();
-    asvc.reset();
+    component_type.clear();
+    bsid.clear();
+    mainid.clear();
+    asvc.clear();
     additional_info.clear();
 
     if (_is_valid) {
@@ -220,9 +223,7 @@ void ts::DVBAC3Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setOptionalIntAttribute(u"bsid", bsid, true);
     root->setOptionalIntAttribute(u"mainid", mainid, true);
     root->setOptionalIntAttribute(u"asvc", asvc, true);
-    if (!additional_info.empty()) {
-        root->addHexaTextChild(u"additional_info", additional_info);
-    }
+    root->addHexaTextChild(u"additional_info", additional_info, true);
 }
 
 
@@ -232,11 +233,9 @@ void ts::DVBAC3Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::DVBAC3Descriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getOptionalIntAttribute(component_type, u"component_type") &&
-        element->getOptionalIntAttribute(bsid, u"bsid") &&
-        element->getOptionalIntAttribute(mainid, u"mainid") &&
-        element->getOptionalIntAttribute(asvc, u"asvc") &&
-        element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
+    return element->getOptionalIntAttribute(component_type, u"component_type") &&
+           element->getOptionalIntAttribute(bsid, u"bsid") &&
+           element->getOptionalIntAttribute(mainid, u"mainid") &&
+           element->getOptionalIntAttribute(asvc, u"asvc") &&
+           element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
 }

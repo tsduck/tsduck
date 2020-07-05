@@ -47,7 +47,11 @@ ts::AbstractLogicalChannelDescriptor::AbstractLogicalChannelDescriptor(DID tag,
     AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name),
     entries()
 {
-    _is_valid = true;
+}
+
+void ts::AbstractLogicalChannelDescriptor::clearContent()
+{
+    entries.clear();
 }
 
 ts::AbstractLogicalChannelDescriptor::AbstractLogicalChannelDescriptor(DuckContext& duck,

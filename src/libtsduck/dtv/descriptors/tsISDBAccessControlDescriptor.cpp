@@ -56,7 +56,14 @@ ts::ISDBAccessControlDescriptor::ISDBAccessControlDescriptor(uint16_t id, PID p)
     pid(p),
     private_data()
 {
-    _is_valid = true;
+}
+
+void ts::ISDBAccessControlDescriptor::clearContent()
+{
+    CA_system_id = 0;
+    transmission_type = 7;  // broadcast route
+    pid = PID_NULL;
+    private_data.clear();
 }
 
 ts::ISDBAccessControlDescriptor::ISDBAccessControlDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -148,10 +155,8 @@ void ts::ISDBAccessControlDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::ISDBAccessControlDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
-        element->getIntAttribute<uint8_t>(transmission_type, u"transmission_type", false, 7, 0, 7) &&
-        element->getIntAttribute<PID>(pid, u"PID", true, 0, 0x0000, 0x1FFF) &&
-        element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 4);
+    return element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
+           element->getIntAttribute<uint8_t>(transmission_type, u"transmission_type", false, 7, 0, 7) &&
+           element->getIntAttribute<PID>(pid, u"PID", true, 0, 0x0000, 0x1FFF) &&
+           element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 4);
 }

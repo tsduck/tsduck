@@ -55,6 +55,11 @@ ts::AreaBroadcastingInformationDescriptor::AreaBroadcastingInformationDescriptor
 {
 }
 
+void ts::AreaBroadcastingInformationDescriptor::clearContent()
+{
+    stations.clear();
+}
+
 ts::AreaBroadcastingInformationDescriptor::AreaBroadcastingInformationDescriptor(DuckContext& duck, const Descriptor& desc) :
     AreaBroadcastingInformationDescriptor()
 {

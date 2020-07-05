@@ -138,6 +138,9 @@ namespace ts {
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
 
+        // The specific cases of linkage_descriptor reuse buildXML().
+        friend class SSULinkageDescriptor;
+
     private:
         // Display linkage private data of various types.
         // Fields data and size are updated.

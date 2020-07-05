@@ -56,7 +56,15 @@ ts::DTGGuidanceDescriptor::DTGGuidanceDescriptor() :
     guidance_mode(false),
     reserved_future_use()
 {
-    _is_valid = true;
+}
+
+void ts::DTGGuidanceDescriptor::clearContent()
+{
+    guidance_type = 0;
+    ISO_639_language_code.clear();
+    text.clear();
+    guidance_mode = false;
+    reserved_future_use.clear();
 }
 
 ts::DTGGuidanceDescriptor::DTGGuidanceDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -197,15 +205,9 @@ void ts::DTGGuidanceDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::DTGGuidanceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    ISO_639_language_code.clear();
-    text.clear();
-    reserved_future_use.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(guidance_type, u"guidance_type", true, 0, 0, 3) &&
-        element->getBoolAttribute(guidance_mode, u"guidance_mode", guidance_type == 1) &&
-        element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", guidance_type < 2, UString(), 3, 3) &&
-        element->getAttribute(text, u"text", guidance_type < 2, UString(), 0, 250) &&
-        element->getHexaTextChild(reserved_future_use, u"reserved_future_use", false, 0, 254);
+    return element->getIntAttribute<uint8_t>(guidance_type, u"guidance_type", true, 0, 0, 3) &&
+           element->getBoolAttribute(guidance_mode, u"guidance_mode", guidance_type == 1) &&
+           element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", guidance_type < 2, UString(), 3, 3) &&
+           element->getAttribute(text, u"text", guidance_type < 2, UString(), 0, 250) &&
+           element->getHexaTextChild(reserved_future_use, u"reserved_future_use", false, 0, 254);
 }

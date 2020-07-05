@@ -51,7 +51,11 @@ ts::FMCDescriptor::FMCDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    _is_valid = true;
+}
+
+void ts::FMCDescriptor::clearContent()
+{
+    entries.clear();
 }
 
 ts::FMCDescriptor::FMCDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -137,20 +141,14 @@ void ts::FMCDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::FMCDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    entries.clear();
-
     xml::ElementVector children;
-    _is_valid =
-        checkXMLName(element) &&
-        element->getChildren(children, u"stream", 0, MAX_ENTRIES);
+    bool ok = element->getChildren(children, u"stream", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        _is_valid =
-            children[i]->getIntAttribute<uint16_t>(entry.ES_ID, u"ES_ID", true) &&
-            children[i]->getIntAttribute<uint8_t>(entry.FlexMuxChannel, u"FlexMuxChannel", true);
-        if (_is_valid) {
-            entries.push_back(entry);
-        }
+        ok = children[i]->getIntAttribute<uint16_t>(entry.ES_ID, u"ES_ID", true) &&
+             children[i]->getIntAttribute<uint8_t>(entry.FlexMuxChannel, u"FlexMuxChannel", true);
+        entries.push_back(entry);
     }
+    return ok;
 }

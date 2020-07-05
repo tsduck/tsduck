@@ -56,7 +56,14 @@ ts::VideoDecodeControlDescriptor::VideoDecodeControlDescriptor() :
     video_encode_format(0),
     reserved_future_use(3)
 {
-    _is_valid = true;
+}
+
+void ts::VideoDecodeControlDescriptor::clearContent()
+{
+    still_picture = false;
+    sequence_end_code = false;
+    video_encode_format = 0;
+    reserved_future_use = 3;
 }
 
 ts::VideoDecodeControlDescriptor::VideoDecodeControlDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -142,10 +149,8 @@ void ts::VideoDecodeControlDescriptor::buildXML(DuckContext& duck, xml::Element*
 
 bool ts::VideoDecodeControlDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(still_picture, u"still_picture", true) &&
-        element->getBoolAttribute(sequence_end_code, u"sequence_end_code", true) &&
-        element->getIntAttribute<uint8_t>(video_encode_format, u"video_encode_format", true, 0, 0, 0x0F) &&
-        element->getIntAttribute<uint8_t>(reserved_future_use, u"reserved_future_use", false, 3, 0, 3);
+    return element->getBoolAttribute(still_picture, u"still_picture", true) &&
+           element->getBoolAttribute(sequence_end_code, u"sequence_end_code", true) &&
+           element->getIntAttribute<uint8_t>(video_encode_format, u"video_encode_format", true, 0, 0, 0x0F) &&
+           element->getIntAttribute<uint8_t>(reserved_future_use, u"reserved_future_use", false, 3, 0, 3);
 }

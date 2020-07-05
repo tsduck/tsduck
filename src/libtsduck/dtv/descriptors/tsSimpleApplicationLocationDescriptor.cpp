@@ -52,7 +52,11 @@ ts::SimpleApplicationLocationDescriptor::SimpleApplicationLocationDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     initial_path()
 {
-    _is_valid = true;
+}
+
+void ts::SimpleApplicationLocationDescriptor::clearContent()
+{
+    initial_path.clear();
 }
 
 ts::SimpleApplicationLocationDescriptor::SimpleApplicationLocationDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -103,7 +107,7 @@ void ts::SimpleApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& d
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::SimpleApplicationLocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -111,14 +115,7 @@ void ts::SimpleApplicationLocationDescriptor::buildXML(DuckContext& duck, xml::E
     root->setAttribute(u"initial_path", initial_path);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::SimpleApplicationLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    _is_valid =
-        checkXMLName(element) &&
-        element->getAttribute(initial_path, u"initial_path", true, UString(), 0, MAX_DESCRIPTOR_SIZE - 2);
+    return element->getAttribute(initial_path, u"initial_path", true, UString(), 0, MAX_DESCRIPTOR_SIZE - 2);
 }
