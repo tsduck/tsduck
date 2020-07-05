@@ -50,13 +50,14 @@ namespace foo {
         FooTable& operator=(const FooTable& other) = default;
 
         // Inherited methods
-        virtual void fromXML(ts::DuckContext&, const ts::xml::Element*) override;
         DeclareDisplaySection();
 
     protected:
         // Inherited methods
+        virtual void clearContent() override;
         virtual void serializeContent(ts::DuckContext&, ts::BinaryTable&) const override;
         virtual void deserializeContent(ts::DuckContext&, const ts::BinaryTable&) override;
         virtual void buildXML(ts::DuckContext&, ts::xml::Element*) const override;
+        virtual bool analyzeXML(ts::DuckContext&, const ts::xml::Element*) override;
     };
 }

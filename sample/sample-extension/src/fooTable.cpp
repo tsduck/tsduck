@@ -41,6 +41,18 @@ foo::FooTable::FooTable(ts::DuckContext& duck, const ts::BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
+// Clear content, return to initial values
+//----------------------------------------------------------------------------
+
+void foo::FooTable::clearContent()
+{
+    foo_id = 0;
+    name.clear();
+    descs.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 
@@ -171,15 +183,11 @@ void foo::FooTable::buildXML(ts::DuckContext& duck, ts::xml::Element* root) cons
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void foo::FooTable::fromXML(ts::DuckContext& duck, const ts::xml::Element* element)
+bool foo::FooTable::analyzeXML(ts::DuckContext& duck, const ts::xml::Element* element)
 {
-    descs.clear();
-
-    _is_valid =
-        checkXMLName(element) &&
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
-        element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint16_t>(foo_id, u"foo_id", true) &&
-        element->getAttribute(name, u"name") &&
-        descs.fromXML(duck, element);
+    return element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+           element->getBoolAttribute(is_current, u"current", false, true) &&
+           element->getIntAttribute<uint16_t>(foo_id, u"foo_id", true) &&
+           element->getAttribute(name, u"name") &&
+           descs.fromXML(duck, element);
 }
