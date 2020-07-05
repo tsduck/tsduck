@@ -169,7 +169,7 @@ bool ts::TunerGraph::searchVarPropertyImpl(VALTYPE unset,
         parameter = ARGTYPE(retvalue);
     }
     else if (reset_unknown) {
-        parameter.reset();
+        parameter.clear();
     }
     return found;
 }
