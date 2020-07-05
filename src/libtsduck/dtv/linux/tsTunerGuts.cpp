@@ -594,7 +594,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                 params.frequency = 0;
                 params.polarity = ModulationArgs::DEFAULT_POLARITY;
                 params.satellite_number = ModulationArgs::DEFAULT_SATELLITE_NUMBER;
-                params.lnb.reset();
+                params.lnb.clear();
             }
 
             props.clear();
@@ -717,7 +717,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                 params.frequency = 0;
                 params.polarity = ModulationArgs::DEFAULT_POLARITY;
                 params.satellite_number = ModulationArgs::DEFAULT_SATELLITE_NUMBER;
-                params.lnb.reset();
+                params.lnb.clear();
             }
 
             props.clear();
@@ -736,7 +736,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
             params.symbol_rate = props.getByCommand(DTV_SYMBOL_RATE);
             params.inner_fec = InnerFEC(props.getByCommand(DTV_INNER_FEC));
-            params.stream_id.reset();
+            params.stream_id.clear();
             if ((val = props.getByCommand(DTV_STREAM_ID)) != DTVProperties::UNKNOWN) {
                 // Warning: stream id may be incorrect when returned from the driver.
                 // We should update it when possible with the actual transport stream id from the inner stream.
@@ -782,27 +782,27 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             params.bandwidth = BandWidthCodeFromHz(props.getByCommand(DTV_BANDWIDTH_HZ));
             params.transmission_mode = TransmissionMode(props.getByCommand(DTV_TRANSMISSION_MODE));
             params.guard_interval = GuardInterval(props.getByCommand(DTV_GUARD_INTERVAL));
-            params.sound_broadcasting.reset();
+            params.sound_broadcasting.clear();
             if ((val = props.getByCommand(DTV_ISDBT_SOUND_BROADCASTING)) != DTVProperties::UNKNOWN) {
                 params.sound_broadcasting = val != 0;
             }
-            params.sb_subchannel_id.reset();
+            params.sb_subchannel_id.clear();
             if ((val = props.getByCommand(DTV_ISDBT_SB_SUBCHANNEL_ID)) != DTVProperties::UNKNOWN) {
                 params.sb_subchannel_id = int(val);
             }
-            params.sb_segment_count.reset();
+            params.sb_segment_count.clear();
             if ((val = props.getByCommand(DTV_ISDBT_SB_SEGMENT_COUNT)) != DTVProperties::UNKNOWN) {
                 params.sb_segment_count = int(val);
             }
-            params.sb_segment_index.reset();
+            params.sb_segment_index.clear();
             if ((val = props.getByCommand(DTV_ISDBT_SB_SEGMENT_IDX)) != DTVProperties::UNKNOWN) {
                 params.sb_segment_index = int(val);
             }
-            params.isdbt_partial_reception.reset();
+            params.isdbt_partial_reception.clear();
             if ((val = props.getByCommand(DTV_ISDBT_PARTIAL_RECEPTION)) != DTVProperties::UNKNOWN) {
                 params.isdbt_partial_reception = val != 0;
             }
-            params.isdbt_layers.reset();
+            params.isdbt_layers.clear();
             if ((val = props.getByCommand(DTV_ISDBT_LAYER_ENABLED)) != DTVProperties::UNKNOWN) {
                 params.isdbt_layers = UString();
                 if ((val & 0x01) != 0) {
@@ -815,51 +815,51 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                     params.isdbt_layers.value().append(1, u'C');
                 }
             }
-            params.layer_a_fec.reset();
+            params.layer_a_fec.clear();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERA_FEC)) != DTVProperties::UNKNOWN) {
                 params.layer_a_fec = InnerFEC(val);
             }
-            params.layer_a_modulation.reset();
+            params.layer_a_modulation.clear();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERA_MODULATION)) != DTVProperties::UNKNOWN) {
                 params.layer_a_modulation = Modulation(val);
             }
-            params.layer_a_segment_count.reset();
+            params.layer_a_segment_count.clear();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERA_SEGMENT_COUNT)) != DTVProperties::UNKNOWN) {
                 params.layer_a_segment_count = int(val);
             }
-            params.layer_a_time_interleaving.reset();
+            params.layer_a_time_interleaving.clear();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERA_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN) {
                 params.layer_a_time_interleaving = int(val);
             }
-            params.layer_b_fec.reset();
+            params.layer_b_fec.clear();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERB_FEC)) != DTVProperties::UNKNOWN) {
                 params.layer_b_fec = InnerFEC(val);
             }
-            params.layer_b_modulation.reset();
+            params.layer_b_modulation.clear();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERB_MODULATION)) != DTVProperties::UNKNOWN) {
                 params.layer_b_modulation = Modulation(val);
             }
-            params.layer_b_segment_count.reset();
+            params.layer_b_segment_count.clear();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERB_SEGMENT_COUNT)) != DTVProperties::UNKNOWN) {
                 params.layer_b_segment_count = int(val);
             }
-            params.layer_b_time_interleaving.reset();
+            params.layer_b_time_interleaving.clear();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERB_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN) {
                 params.layer_b_time_interleaving = int(val);
             }
-            params.layer_c_fec.reset();
+            params.layer_c_fec.clear();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERC_FEC)) != DTVProperties::UNKNOWN) {
                 params.layer_c_fec = InnerFEC(val);
             }
-            params.layer_c_modulation.reset();
+            params.layer_c_modulation.clear();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERC_MODULATION)) != DTVProperties::UNKNOWN) {
                 params.layer_c_modulation = Modulation(val);
             }
-            params.layer_c_segment_count.reset();
+            params.layer_c_segment_count.clear();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERC_SEGMENT_COUNT)) != DTVProperties::UNKNOWN) {
                 params.layer_c_segment_count = int(val);
             }
-            params.layer_c_time_interleaving.reset();
+            params.layer_c_time_interleaving.clear();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERC_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN) {
                 params.layer_c_time_interleaving = int(val);
             }

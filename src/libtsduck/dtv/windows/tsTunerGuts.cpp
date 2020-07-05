@@ -273,9 +273,9 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
             // returns the intermediate frequency and there is no unique satellite
             // frequency for a given intermediate frequency.
             if (reset_unknown) {
-                params.frequency.reset();
-                params.satellite_number.reset();
-                params.lnb.reset();
+                params.frequency.clear();
+                params.satellite_number.clear();
+                params.lnb.clear();
             }
             // Spectral inversion
             _guts->graph.searchVarProperty<::SpectralInversion>(
@@ -303,7 +303,7 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
                 params.delivery_system = params.modulation == QPSK ? DS_DVB_S : DS_DVB_S2;
             }
             else if (reset_unknown) {
-                params.delivery_system.reset();
+                params.delivery_system.clear();
             }
             // DVB-S2 pilot
             _guts->graph.searchVarProperty<::Pilot>(
@@ -321,7 +321,7 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
         case TT_DVB_C:
         case TT_ISDB_C: {
             if (reset_unknown) {
-                params.frequency.reset();
+                params.frequency.clear();
             }
             // Spectral inversion
             _guts->graph.searchVarProperty<::SpectralInversion>(
@@ -349,7 +349,7 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
         case TT_DVB_T:
         case TT_ISDB_T: {
             if (reset_unknown) {
-                params.frequency.reset();
+                params.frequency.clear();
             }
             // Spectral inversion
             _guts->graph.searchVarProperty<::SpectralInversion>(
@@ -374,7 +374,7 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
                 params.transmission_mode = ts::TransmissionMode(tm);
             }
             else if (reset_unknown) {
-                params.transmission_mode.reset();
+                params.transmission_mode.clear();
             }
             ::GuardInterval gi = ::BDA_GUARD_NOT_SET;
             found = _guts->graph.searchTunerProperty(gi, TunerGraph::psFIRST, KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_GUARD_INTERVAL);
@@ -382,19 +382,19 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
                 params.guard_interval = ts::GuardInterval(gi);
             }
             else if (reset_unknown) {
-                params.guard_interval.reset();
+                params.guard_interval.clear();
             }
             // Other DVB-T parameters, not supported at all
-            params.bandwidth.reset();
-            params.hierarchy.reset();
-            params.fec_lp.reset();
-            params.plp.reset();
+            params.bandwidth.clear();
+            params.hierarchy.clear();
+            params.fec_lp.clear();
+            params.plp.clear();
             break;
         }
 
         case TT_ATSC: {
             if (reset_unknown) {
-                params.frequency.reset();
+                params.frequency.clear();
             }
             // Spectral inversion
             _guts->graph.searchVarProperty<::SpectralInversion>(
