@@ -83,7 +83,7 @@ void ts::MaximumBitrateDescriptor::serialize(DuckContext& duck, Descriptor& desc
 
 void ts::MaximumBitrateDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 3;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 3;
 
     if (_is_valid) {
         maximum_bitrate = GetUInt24(desc.payload()) & 0x003FFFFF;

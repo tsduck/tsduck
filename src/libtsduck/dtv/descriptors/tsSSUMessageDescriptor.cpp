@@ -98,7 +98,7 @@ void ts::SSUMessageDescriptor::deserialize(DuckContext& duck, const Descriptor& 
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 4;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4;
 
     if (_is_valid) {
         descriptor_number = (data[0] >> 4) & 0x0F;

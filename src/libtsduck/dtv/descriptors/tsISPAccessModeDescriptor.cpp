@@ -93,7 +93,7 @@ void ts::ISPAccessModeDescriptor::deserialize(DuckContext& duck, const Descripto
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size == 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size == 1;
 
     if (_is_valid) {
         access_mode = data[0];

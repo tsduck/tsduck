@@ -91,7 +91,7 @@ void ts::SpliceAvailDescriptor::deserialize(DuckContext& duck, const Descriptor&
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size == 8;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size == 8;
 
     if (_is_valid) {
         identifier = GetUInt32(data);

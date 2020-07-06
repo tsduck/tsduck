@@ -100,7 +100,7 @@ void ts::TargetIPSourceSlashDescriptor::deserialize(DuckContext& duck, const Des
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size % 10 == 0;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size % 10 == 0;
     addresses.clear();
 
     if (_is_valid) {

@@ -141,7 +141,7 @@ void ts::DataBroadcastDescriptor::deserialize(DuckContext& duck, const Descripto
     language_code.clear();
     text.clear();
 
-    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 8)) {
+    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 8)) {
         return;
     }
 

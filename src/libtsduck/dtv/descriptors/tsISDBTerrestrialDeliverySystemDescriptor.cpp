@@ -98,7 +98,7 @@ void ts::ISDBTerrestrialDeliverySystemDescriptor::deserialize(DuckContext& duck,
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 2 && size % 2 == 0;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2 && size % 2 == 0;
 
     frequencies.clear();
     if (_is_valid) {

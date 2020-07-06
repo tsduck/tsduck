@@ -99,7 +99,7 @@ void ts::CueIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc)
 
 void ts::CueIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 1;
 
     if (_is_valid) {
         cue_stream_type = *desc.payload();

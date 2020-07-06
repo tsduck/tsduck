@@ -96,7 +96,7 @@ void ts::DIILocationDescriptor::deserialize(DuckContext& duck, const Descriptor&
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size % 4 == 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size % 4 == 1;
 
     if (_is_valid) {
         transport_protocol_label = data[0];

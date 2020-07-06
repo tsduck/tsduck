@@ -43,6 +43,7 @@ namespace ts {
     class DuckContext;
     class Descriptor;
     class DescriptorList;
+    class PSIBuffer;
     class TablesDisplay;
 
     //!
@@ -56,7 +57,7 @@ namespace ts {
         //! Get the descriptor tag.
         //! @return The descriptor tag.
         //!
-        DID tag() const {return _tag;}
+        DID tag() const { return _tag; }
 
         //!
         //! Get the required private data specifier.
@@ -64,31 +65,42 @@ namespace ts {
         //! this descriptor in a section. Return zero if this descriptor is a DVB-defined
         //! or MPEG-defined descriptor, not a private specifier.
         //!
-        PDS requiredPDS() const {return _required_pds;}
+        PDS requiredPDS() const { return _required_pds; }
 
         //!
         //! Check if this descriptor is a private descriptor.
         //! @return True if this descriptor is a private descriptor,
         //! false if it is a DVB-defined or MPEG-defined descriptor.
         //!
-        bool isPrivateDescriptor() const {return _required_pds != 0;}
+        bool isPrivateDescriptor() const { return _required_pds != 0; }
 
         //!
-        //! This abstract method serializes a descriptor.
+        //! This method serializes a descriptor.
+        //!
+        //! The subclass shall preferably override serializePayload(). As legacy, the subclass may directly override
+        //! serialize() but this is not recommended for new descriptors. At some point, if we can refactor all
+        //! descriptors to the new scheme using serializePayload() (which seems unlikely), serialize() will
+        //! become "final" and will no longer allow override.
+        //!
         //! @param [in,out] duck TSDuck execution context.
-        //! @param [out] bin A binary descriptor object.
-        //! Its content is replaced with a binary representation of this object.
+        //! @param [out] bin A binary descriptor object. Its content is replaced with a binary representation of this descriptor.
         //!
-        virtual void serialize(DuckContext& duck, Descriptor& bin) const = 0;
+        virtual void serialize(DuckContext& duck, Descriptor& bin) const;
 
         //!
-        //! This abstract method deserializes a binary descriptor.
-        //! In case of success, this object is replaced with the interpreted content of @a bin.
-        //! In case of error, this object is invalidated.
+        //! This method deserializes a binary descriptor.
+        //!
+        //! The subclass shall preferably override deserializePayload(). As legacy, the subclass may directly override
+        //! deserialize() but this is not recommended for new descriptors. At some point, if we can refactor all
+        //! descriptors to the new scheme using deserializePayload() (which seems unlikely), deserialize() will
+        //! become "final" and will no longer allow override.
+        //!
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to interpret according to the descriptor subclass.
+        //! In case of success, this object is replaced with the interpreted content of @a bin.
+        //! In case of error, this object is invalidated.
         //!
-        virtual void deserialize(DuckContext& duck, const Descriptor& bin) = 0;
+        virtual void deserialize(DuckContext& duck, const Descriptor& bin);
 
         //!
         //! Deserialize a descriptor from a descriptor list.
@@ -107,16 +119,6 @@ namespace ts {
 
     protected:
         //!
-        //! The descriptor tag can be modified by subclasses only
-        //!
-        DID _tag;
-
-        //!
-        //! Required private data specified.
-        //!
-        PDS _required_pds;
-
-        //!
         //! Protected constructor for subclasses.
         //! @param [in] tag Descriptor tag.
         //! @param [in] xml_name Descriptor name, as used in XML structures.
@@ -127,21 +129,62 @@ namespace ts {
         AbstractDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds, const UChar* xml_legacy_name = nullptr);
 
         //!
+        //! Serialize the payload of the descriptor.
+        //!
+        //! This is now the preferred method for descriptor serialization: use the default implementation
+        //! of serialize() and let it call the overridden serializePayload().
+        //!
+        //! The default implementation generates an error. So, if a subclass overrides neither serialize()
+        //! not serializePayload(), all serialization will fail.
+        //!
+        //! @param [in,out] buf Serialization buffer. The subclass shall write the descriptor payload into
+        //! @a buf. If any kind of error is reported in the buffer, the serialization is considered as
+        //! invalid and the binary descriptor is invalid. Such errors include write error, such as attempting
+        //! to write more data than allowed in a binary descriptor or any user-generated error using
+        //! ts::Buffer::setUserError().
+        //!
+        virtual void serializePayload(PSIBuffer& buf) const;
+
+        //!
+        //! Deserialize the payload of the descriptor.
+        //!
+        //! This is now the preferred method for descriptor deserialization: use the default implementation
+        //! of deserialize() and let it call the overridden deserializePayload().
+        //!
+        //! The default implementation generates an error. So, if a subclass overrides neither deserialize()
+        //! nor deserializePayload(), all deserialization will fail.
+        //!
+        //! @param [in,out] buf Serialization buffer. The subclass shall read the descriptor payload from
+        //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
+        //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+        //!
+        virtual void deserializePayload(PSIBuffer& buf);
+
+        //!
         //! Tool for serialization: get a byte buffer for serialization.
+        //! Legacy warning: This method is useful only when serialize() is directly overridden instead
+        //! of serializePayload(). This is consquently considered as a legacy feature.
         //! @return A safe pointer to a two-byte byffer containing the descriptor tag and zero as length.
+        //! @see serializeEnd()
         //!
         ByteBlockPtr serializeStart() const;
 
         //!
         //! Tool for serialization: complete a serialization.
+        //! Legacy warning: This method is useful only when serialize() is directly overridden instead
+        //! of serializeContent(). This is consquently considered as a legacy feature.
         //! @param [out] bin A binary descriptor object which receives the serialized object.
         //! @param [in] bbp Safe pointer containing the serialized data, typically returned by serializeStart().
         //! The tag and length will be updated.
         //! @return True if the serialized descriptor is valid.
+        //! @see serializeStart()
         //!
         bool serializeEnd(Descriptor& bin, const ByteBlockPtr& bbp) const;
 
     private:
+        DID _tag;           // Descriptor tag.
+        PDS _required_pds;  // Required private data specifier.
+
         // Unreachable constructors and operators.
         AbstractDescriptor() = delete;
     };

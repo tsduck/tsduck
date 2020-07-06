@@ -93,7 +93,7 @@ void ts::ConditionalPlaybackDescriptor::deserialize(DuckContext& duck, const Des
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 4;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4;
 
     private_data.clear();
 

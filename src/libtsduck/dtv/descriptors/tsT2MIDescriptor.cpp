@@ -98,7 +98,7 @@ void ts::T2MIDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && size >= 4 && data[0] == MY_EDID)) {
+    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && size >= 4 && data[0] == MY_EDID)) {
         return;
     }
 

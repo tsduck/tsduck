@@ -107,7 +107,7 @@ void ts::ServiceLocationDescriptor::deserialize(DuckContext& duck, const Descrip
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 3 && (size - 3) % 6 == 0;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 3 && (size - 3) % 6 == 0;
 
     if (_is_valid) {
         // Fixed part.

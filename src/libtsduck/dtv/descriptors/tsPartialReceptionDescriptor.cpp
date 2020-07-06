@@ -88,7 +88,7 @@ void ts::PartialReceptionDescriptor::deserialize(DuckContext& duck, const Descri
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size % 2 == 0;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size % 2 == 0;
 
     service_ids.clear();
     if (_is_valid) {

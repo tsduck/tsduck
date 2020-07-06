@@ -125,7 +125,7 @@ void ts::SchedulingDescriptor::deserialize(DuckContext& duck, const Descriptor& 
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 14;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 14;
     private_data.clear();
 
     if (_is_valid) {

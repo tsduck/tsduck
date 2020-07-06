@@ -87,7 +87,7 @@ void ts::ComponentNameDescriptor::deserialize(DuckContext& duck, const Descripto
     component_name_string.clear();
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && component_name_string.deserialize(duck, data, size);
+    _is_valid = desc.isValid() && desc.tag() == tag() && component_name_string.deserialize(duck, data, size);
 }
 
 

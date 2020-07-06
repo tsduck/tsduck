@@ -95,7 +95,7 @@ void ts::ProtectionMessageDescriptor::deserialize(DuckContext& duck, const Descr
     size_t size = desc.payloadSize();
 
     component_tags.clear();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 2 && data[0] == MY_EDID;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2 && data[0] == MY_EDID;
 
     if (_is_valid) {
         const size_t count = data[1] & 0x0F;

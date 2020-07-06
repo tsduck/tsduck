@@ -36,6 +36,7 @@
 #include "tsArgsSupplierInterface.h"
 #include "tsMPEG.h"
 #include "tsCASFamily.h"
+#include "tsDuckContext.h"
 #include "tsTLVSyntax.h"
 
 namespace ts {
@@ -45,7 +46,7 @@ namespace ts {
     class Section;
     class Descriptor;
     class DescriptorList;
-    class DuckContext;
+    class PSIBuffer;
 
     //!
     //! A class to display PSI/SI tables.
@@ -77,6 +78,12 @@ namespace ts {
         //! @return A reference to the TSDuck execution context.
         //!
         DuckContext& duck() { return _duck; }
+
+        //!
+        //! Get the output stream.
+        //! @return A reference to the output stream.
+        //!
+        std::ostream& out() { return _duck.out(); }
 
         //!
         //! Display a table on the output stream.
@@ -181,6 +188,14 @@ namespace ts {
         //! @return A reference to the output stream.
         //!
         virtual std::ostream& displayExtraData(const void *data, size_t size, int indent = 0);
+
+        //!
+        //! A utility method to dump extraneous bytes after expected data.
+        //! @param [in] buf Buffer containing extra data to read.
+        //! @param [in] indent Indentation width.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displayExtraData(PSIBuffer& buf, int indent = 0);
 
         //!
         //! A utility method to dump private binary data in a descriptor or section.

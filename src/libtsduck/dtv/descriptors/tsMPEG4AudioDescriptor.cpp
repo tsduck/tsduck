@@ -87,7 +87,7 @@ void ts::MPEG4AudioDescriptor::deserialize(DuckContext& duck, const Descriptor& 
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size == 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size == 1;
 
     if (_is_valid) {
         MPEG4_audio_profile_and_level = data[0];

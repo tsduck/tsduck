@@ -250,7 +250,7 @@ void ts::ExtendedEventDescriptor::serialize(DuckContext& duck, Descriptor& desc)
 
 void ts::ExtendedEventDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 5)) {
+    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 5)) {
         return;
     }
 

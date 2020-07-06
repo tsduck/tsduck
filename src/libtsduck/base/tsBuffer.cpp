@@ -56,7 +56,7 @@ ts::Buffer::~Buffer()
 // Check the validity of a buffer.
 //----------------------------------------------------------------------------
 
-bool ts::Buffer::valid() const
+bool ts::Buffer::isValid() const
 {
     assert(_state.rbyte <= _state.wbyte);
     assert(_buffer_max <= _buffer_size);
@@ -532,6 +532,10 @@ bool ts::Buffer::writeRealignByte(int stuffing)
     assert(_state.wbyte <= _buffer_max);
     assert(_state.wbyte < _buffer_max || _state.wbit == 0);
 
+    if (_read_only) {
+        _write_error = true;
+        return false;
+    }
     if (_state.wbit != 0) {
         // Build a mask for partial byte ('1' in bits to overwrite).
         const uint8_t mask = _big_endian ? (0xFF >> _state.wbit) : uint8_t(0xFF << _state.wbit);
@@ -551,7 +555,7 @@ bool ts::Buffer::writeRealignByte(int stuffing)
 
 
 //----------------------------------------------------------------------------
-// Reset reading or writing at the specified offset in the buffer.
+// Reset reading at the specified offset in the buffer.
 //----------------------------------------------------------------------------
 
 bool ts::Buffer::readSeek(size_t byte, size_t bit)
@@ -579,7 +583,12 @@ bool ts::Buffer::readSeek(size_t byte, size_t bit)
     return true;
 }
 
-bool ts::Buffer::writeSeek(size_t byte, size_t bit, uint8_t stuffing)
+
+//----------------------------------------------------------------------------
+// Reset writing at the specified offset in the buffer.
+//----------------------------------------------------------------------------
+
+bool ts::Buffer::writeSeek(size_t byte, size_t bit)
 {
     assert(_state.rbyte <= _state.wbyte);
     assert(_buffer_max <= _buffer_size);
@@ -587,7 +596,7 @@ bool ts::Buffer::writeSeek(size_t byte, size_t bit, uint8_t stuffing)
     assert(_state.wbyte < _buffer_max || _state.wbit == 0);
 
     // Forbid invalid values.
-    if (bit > 7) {
+    if (_read_only || bit > 7) {
         _write_error = true;
         return false;
     }
@@ -603,9 +612,6 @@ bool ts::Buffer::writeSeek(size_t byte, size_t bit, uint8_t stuffing)
 
     // Forbid seeking beyond end of buffer.
     if (byte > _buffer_max || (byte == _buffer_max && bit > 0)) {
-        // File end of buffer with stuffing.
-        writeRealignByte(stuffing);
-        ::memset(_buffer + _state.wbyte, stuffing, _buffer_max - _state.wbyte);
         // Move to end of buffer.
         _state.wbyte = _buffer_max;
         _state.wbit = 0;
@@ -613,29 +619,71 @@ bool ts::Buffer::writeSeek(size_t byte, size_t bit, uint8_t stuffing)
         return false;
     }
 
-    // If we seek forward, trash memory with stuffing bytes.
-    if (byte == _state.wbyte && bit > _state.wbit) {
-        // Only trash a few bits. In fact, trash the rest of the byte because the end is meaningless.
-        const uint8_t mask = _big_endian ? (0xFF >> _state.wbit) : uint8_t(0xFF << _state.wbit);
-        if (stuffing == 0) {
-            // Clear trashed bits.
-            _buffer[_state.wbyte] &= ~mask;
-        }
-        else {
-            // Set trashed bits.
-            _buffer[_state.wbyte] |= mask;
-        }
-    }
-    else if (byte > _state.wbyte) {
-        // Trash current partial byte and beyond.
-        writeRealignByte(stuffing);
-        ::memset(_buffer + _state.wbyte, stuffing, byte - _state.wbyte + (bit > 0 ? 1 : 0));
-    }
-
     // Set write position.
     _state.wbyte = byte;
     _state.wbit = bit;
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Reset writing at the specified offset in the buffer and trash forward.
+//----------------------------------------------------------------------------
+
+bool ts::Buffer::writeSeek(size_t byte, size_t bit, uint8_t stuffing)
+{
+    if (_read_only) {
+        _write_error = true;
+        return false;
+    }
+
+    // Save current state for potential trash if moving forward.
+    RWState prev(_state);
+
+    // Seek to new position.
+    const bool success = writeSeek(byte, bit);
+
+    // If we seeked forward, trash memory with stuffing bytes.
+    if (_state.wbyte == prev.wbyte && _state.wbit > prev.wbit) {
+        setBits(_state.wbyte, prev.wbit, _state.wbit, stuffing);
+    }
+    else if (_state.wbyte > prev.wbyte) {
+        if (prev.wbit > 0) {
+            setBits(prev.wbyte, prev.wbit, 8, stuffing);
+            prev.wbyte++;
+        }
+        ::memset(_buffer + prev.wbyte, stuffing, _state.wbyte - prev.wbyte);
+        setBits(_state.wbyte, 0, _state.wbit, stuffing);
+    }
+
+    return success;
+}
+
+
+//----------------------------------------------------------------------------
+// Internal method: Set range of bits [start_bit..end_bit[ in a byte.
+//----------------------------------------------------------------------------
+
+void ts::Buffer::setBits(size_t byte, size_t start_bit, size_t end_bit, uint8_t value)
+{
+    // Only if bit range is not empty.
+    if (byte < _buffer_max && end_bit > start_bit) {
+
+        // Build a mask where all addressed bits are 1.
+        const uint8_t mask = _big_endian ?
+            ((0xFF >> start_bit) & ~(0xFF >> end_bit)) :
+            uint8_t((0xFF << start_bit) & ~(0xFF << end_bit));
+
+        // Set range of bits.
+        if (value == 0) {
+            // Clear bits.
+            _buffer[byte] &= ~mask;
+        }
+        else {
+            // Set bits.
+            _buffer[byte] |= mask;
+        }
+    }
 }
 
 
@@ -676,6 +724,10 @@ size_t ts::Buffer::remainingWriteBits() const
 
 bool ts::Buffer::skipBytes(size_t bytes)
 {
+    if (_read_error) {
+        // Can't skip bits and bytes if read error is already set.
+        return false;
+    }
     _state.rbit = 0;
     if (_state.rbyte + bytes > _state.wbyte) {
         _state.rbyte = _state.wbyte;
@@ -690,6 +742,10 @@ bool ts::Buffer::skipBytes(size_t bytes)
 
 bool ts::Buffer::skipBits(size_t bits)
 {
+    if (_read_error) {
+        // Can't skip bits and bytes if read error is already set.
+        return false;
+    }
     const size_t rpos = 8 * _state.rbyte + _state.rbit + bits;
     const size_t wpos = 8 * _state.wbyte + _state.wbit;
     if (rpos > wpos) {
@@ -707,6 +763,10 @@ bool ts::Buffer::skipBits(size_t bits)
 
 bool ts::Buffer::backBytes(size_t bytes)
 {
+    if (_read_error) {
+        // Can't skip bits and bytes if read error is already set.
+        return false;
+    }
     _state.rbit = 0;
     if (bytes > _state.rbyte) {
         _state.rbyte = 0;
@@ -721,6 +781,10 @@ bool ts::Buffer::backBytes(size_t bytes)
 
 bool ts::Buffer::backBits(size_t bits)
 {
+    if (_read_error) {
+        // Can't skip bits and bytes if read error is already set.
+        return false;
+    }
     size_t rpos = 8 * _state.rbyte + _state.rbit;
     if (bits > rpos) {
         _state.rbyte = 0;
@@ -745,8 +809,8 @@ size_t ts::Buffer::requestReadBytes(size_t bytes)
 {
     assert(_state.rbyte <= _state.wbyte);
 
-    // Maximum possible bytes to read
-    const size_t max_bytes = remainingReadBits() / 8;
+    // Maximum possible bytes to read.
+    const size_t max_bytes = _read_error ? 0 : remainingReadBits() / 8;
 
     if (bytes <= max_bytes) {
         return bytes;
@@ -838,7 +902,8 @@ size_t ts::Buffer::putBytes(const uint8_t* buffer, size_t bytes)
     assert(_buffer != nullptr);
     assert(_state.wbit < 8);
 
-    if (_read_only) {
+    // Can't write on read-only or if write error already set.
+    if (_read_only || _write_error) {
         _write_error = true;
         return 0;
     }
@@ -892,7 +957,7 @@ size_t ts::Buffer::putBytes(const uint8_t* buffer, size_t bytes)
 
 uint8_t ts::Buffer::getBit(uint8_t def)
 {
-    if (endOfRead()) {
+    if (_read_error || endOfRead()) {
         _read_error = true;
         return def;
     }
@@ -916,7 +981,7 @@ uint8_t ts::Buffer::getBit(uint8_t def)
 
 bool ts::Buffer::putBit(uint8_t bit)
 {
-    if (_read_only || endOfWrite()) {
+    if (_read_only || _write_error || endOfWrite()) {
         _write_error = true;
         return false;
     }
@@ -952,6 +1017,10 @@ const uint8_t* ts::Buffer::rdb(size_t bytes)
     // Static buffer for read error.
     static const uint8_t ff[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
+    if (_read_error) {
+        // Read error already set, don't read anything more.
+        return ff;
+    }
     if (_state.rbit == 0) {
         // Read buffer is byte aligned. Most common case.
         if (_state.rbyte + bytes > _state.wbyte) {

@@ -87,7 +87,7 @@ void ts::SSUSubgroupAssociationDescriptor::deserialize(DuckContext& duck, const 
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size == 5;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size == 5;
 
     if (_is_valid) {
         subgroup_tag = GetUInt40(data);

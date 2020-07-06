@@ -88,7 +88,7 @@ void ts::TransportStreamDescriptor::serialize(DuckContext& duck, Descriptor& des
 
 void ts::TransportStreamDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag;
+    _is_valid = desc.isValid() && desc.tag() == tag();
 
     if (_is_valid) {
         duck.decode(compliance, desc.payload(), desc.payloadSize());

@@ -84,7 +84,7 @@ void ts::STDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 
 void ts::STDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 1;
 
     if (_is_valid) {
         leak_valid = (*desc.payload() & 0x01) != 0;

@@ -91,7 +91,7 @@ void ts::DCCDepartingRequestDescriptor::deserialize(DuckContext& duck, const Des
 
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 2;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2;
 
     if (_is_valid) {
         dcc_departing_request_type = *data++;

@@ -100,7 +100,7 @@ void ts::S2SatelliteDeliverySystemDescriptor::serialize(DuckContext& duck, Descr
 
 void ts::S2SatelliteDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1)) {
+    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 1)) {
         return;
     }
 

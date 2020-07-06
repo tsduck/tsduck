@@ -94,7 +94,7 @@ void ts::SkyLogicalChannelNumberDescriptor::serialize(DuckContext& duck, Descrip
 
 void ts::SkyLogicalChannelNumberDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 9 == 2;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 9 == 2;
     entries.clear();
 
     if (_is_valid) {

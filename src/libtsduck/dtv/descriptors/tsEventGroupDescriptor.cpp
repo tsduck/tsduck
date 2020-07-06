@@ -123,7 +123,7 @@ void ts::EventGroupDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
 
     actual_events.clear();
     other_events.clear();

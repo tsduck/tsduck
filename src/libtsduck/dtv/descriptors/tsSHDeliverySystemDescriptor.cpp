@@ -161,7 +161,7 @@ void ts::SHDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descri
 
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 2 && data[0] == MY_EDID;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2 && data[0] == MY_EDID;
 
     if (_is_valid) {
         diversity_mode = (data[1] >> 4) & 0x0F;

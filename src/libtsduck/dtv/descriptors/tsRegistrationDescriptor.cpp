@@ -87,7 +87,7 @@ void ts::RegistrationDescriptor::serialize(DuckContext& duck, Descriptor& desc) 
 
 void ts::RegistrationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 4;
     additional_identification_info.clear();
 
     if (_is_valid) {

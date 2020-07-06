@@ -85,7 +85,7 @@ void ts::DVBStuffingDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 
 void ts::DVBStuffingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag;
+    _is_valid = desc.isValid() && desc.tag() == tag();
 
     if (_is_valid) {
         stuffing.copy(desc.payload(), desc.payloadSize());

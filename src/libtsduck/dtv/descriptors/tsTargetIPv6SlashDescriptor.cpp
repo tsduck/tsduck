@@ -96,7 +96,7 @@ void ts::TargetIPv6SlashDescriptor::deserialize(DuckContext& duck, const Descrip
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size % 17 == 0;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size % 17 == 0;
     addresses.clear();
 
     if (_is_valid) {

@@ -171,7 +171,7 @@ void ts::ATSCEAC3AudioDescriptor::serialize(DuckContext& duck, Descriptor& desc)
 void ts::ATSCEAC3AudioDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     clear();
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 2;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 2;
 
     if (!_is_valid) {
         return;

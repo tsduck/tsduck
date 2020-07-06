@@ -194,7 +194,7 @@ namespace {
 void BufferTest::testConstructors()
 {
     ts::Buffer b1;
-    TSUNIT_ASSERT(b1.valid());
+    TSUNIT_ASSERT(b1.isValid());
     TSUNIT_ASSERT(!b1.readOnly());
     TSUNIT_ASSERT(b1.data() != nullptr);
     TSUNIT_ASSERT(b1.internalMemory());
@@ -204,7 +204,7 @@ void BufferTest::testConstructors()
 
     uint8_t bin2[256];
     ts::Buffer b2(bin2, sizeof(bin2));
-    TSUNIT_ASSERT(b2.valid());
+    TSUNIT_ASSERT(b2.isValid());
     TSUNIT_ASSERT(!b2.readOnly());
     TSUNIT_ASSERT(!b2.internalMemory());
     TSUNIT_ASSERT(b2.externalMemory());
@@ -218,7 +218,7 @@ void BufferTest::testConstructors()
 
     static const uint8_t bin3[128] = {0};
     ts::Buffer b3(bin3, sizeof(bin3));
-    TSUNIT_ASSERT(b3.valid());
+    TSUNIT_ASSERT(b3.isValid());
     TSUNIT_ASSERT(b3.readOnly());
     TSUNIT_ASSERT(!b3.internalMemory());
     TSUNIT_ASSERT(b3.externalMemory());
@@ -235,7 +235,7 @@ void BufferTest::testConstructors()
     TSUNIT_EQUAL(1, b1.currentWriteByteOffset());
 
     ts::Buffer b4(b1);
-    TSUNIT_ASSERT(b4.valid());
+    TSUNIT_ASSERT(b4.isValid());
     TSUNIT_ASSERT(!b4.readOnly());
     TSUNIT_ASSERT(b4.data() != nullptr);
     TSUNIT_ASSERT(b4.data() != b1.data());
@@ -247,7 +247,7 @@ void BufferTest::testConstructors()
     TSUNIT_EQUAL(1, b4.currentWriteByteOffset());
 
     ts::Buffer b5(b3);
-    TSUNIT_ASSERT(b5.valid());
+    TSUNIT_ASSERT(b5.isValid());
     TSUNIT_ASSERT(b5.readOnly());
     TSUNIT_ASSERT(!b5.internalMemory());
     TSUNIT_ASSERT(b5.externalMemory());
@@ -264,7 +264,7 @@ void BufferTest::testReset()
 {
     ts::Buffer b(512);
 
-    TSUNIT_ASSERT(b.valid());
+    TSUNIT_ASSERT(b.isValid());
     TSUNIT_ASSERT(!b.readOnly());
     TSUNIT_ASSERT(b.data() != nullptr);
     TSUNIT_ASSERT(b.internalMemory());
@@ -275,7 +275,7 @@ void BufferTest::testReset()
     static const uint8_t bin[128] = {0};
     b.reset(bin, sizeof(bin));
 
-    TSUNIT_ASSERT(b.valid());
+    TSUNIT_ASSERT(b.isValid());
     TSUNIT_ASSERT(b.readOnly());
     TSUNIT_EQUAL(bin, b.data());
     TSUNIT_ASSERT(!b.internalMemory());
@@ -288,7 +288,7 @@ void BufferTest::testResize()
 {
     ts::Buffer b(512);
 
-    TSUNIT_ASSERT(b.valid());
+    TSUNIT_ASSERT(b.isValid());
     TSUNIT_ASSERT(!b.readOnly());
     TSUNIT_ASSERT(b.data() != nullptr);
     TSUNIT_ASSERT(b.internalMemory());
@@ -477,7 +477,7 @@ void BufferTest::testReadBitBigEndian()
 
     ts::Buffer b(_bytes2, 11);
 
-    TSUNIT_ASSERT(b.valid());
+    TSUNIT_ASSERT(b.isValid());
     TSUNIT_ASSERT(b.readOnly());
     TSUNIT_ASSERT(!b.internalMemory());
     TSUNIT_ASSERT(b.externalMemory());
@@ -639,7 +639,7 @@ void BufferTest::testReadBitLittleEndian()
     ts::Buffer b(_bytes2, 11);
     b.setLittleEndian();
 
-    TSUNIT_ASSERT(b.valid());
+    TSUNIT_ASSERT(b.isValid());
     TSUNIT_ASSERT(b.readOnly());
     TSUNIT_ASSERT(!b.internalMemory());
     TSUNIT_ASSERT(b.externalMemory());

@@ -30,6 +30,7 @@
 #include "tsBouquetNameDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
+#include "tsPSIBuffer.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
@@ -67,31 +68,17 @@ void ts::BouquetNameDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Binary serialization
 //----------------------------------------------------------------------------
 
-void ts::BouquetNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::BouquetNameDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.encoded(name));
-    serializeEnd(desc, bbp);
+    buf.putString(name);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::BouquetNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::BouquetNameDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag;
-
-    if (_is_valid) {
-        duck.decode(name, desc.payload(), desc.payloadSize());
-    }
-    else {
-        name.clear();
-    }
+    buf.getString(name);
 }
 
 
@@ -99,28 +86,23 @@ void ts::BouquetNameDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::BouquetNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::BouquetNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
-    strm << margin << "Name: \"" << duck.decoded(payload, size) << "\"" << std::endl;
+    PSIBuffer buf(display.duck(), data, size);
+
+    display.out() << margin << "Name: \"" << buf.getString() << "\"" << std::endl;
 }
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::BouquetNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setAttribute(u"bouquet_name", name);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::BouquetNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

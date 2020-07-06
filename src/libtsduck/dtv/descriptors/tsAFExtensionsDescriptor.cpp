@@ -82,7 +82,7 @@ void ts::AFExtensionsDescriptor::serialize(DuckContext& duck, Descriptor& desc) 
 
 void ts::AFExtensionsDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1 && desc.payload()[0] == MY_EDID;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 1 && desc.payload()[0] == MY_EDID;
 }
 
 

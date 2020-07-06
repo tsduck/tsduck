@@ -30,6 +30,7 @@
 #include "tsNetworkNameDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
+#include "tsPSIBuffer.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
@@ -67,31 +68,17 @@ void ts::NetworkNameDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Binary serialization
 //----------------------------------------------------------------------------
 
-void ts::NetworkNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::NetworkNameDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.encoded(name));
-    serializeEnd(desc, bbp);
+    buf.putString(name);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::NetworkNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::NetworkNameDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag;
-
-    if (_is_valid) {
-        duck.decode(name, desc.payload(), desc.payloadSize());
-    }
-    else {
-        name.clear();
-    }
+    buf.getString(name);
 }
 
 
@@ -99,29 +86,23 @@ void ts::NetworkNameDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NetworkNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::NetworkNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(display.duck(), data, size);
 
-    strm << margin << "Name: \"" << duck.decoded(payload, size) << "\"" << std::endl;
+    display.out() << margin << "Name: \"" << buf.getString() << "\"" << std::endl;
 }
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML
 //----------------------------------------------------------------------------
 
 void ts::NetworkNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setAttribute(u"network_name", name);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::NetworkNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

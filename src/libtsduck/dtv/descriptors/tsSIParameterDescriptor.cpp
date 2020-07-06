@@ -104,7 +104,7 @@ void ts::SIParameterDescriptor::deserialize(DuckContext& duck, const Descriptor&
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 3;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 3;
     entries.clear();
 
     if (_is_valid) {

@@ -41,7 +41,52 @@ namespace ts {
     //! General-purpose memory buffer with bit access.
     //! @ingroup cpp
     //!
-    class TSDUCKDLL Buffer final
+    //! A buffer has the following properties:
+    //! - Internal memory space (freeed with the buffer object) or external memory area.
+    //! - Access mode: read/write or read-only.
+    //! - Maximum size (in bytes).
+    //! - Read pointer (in bits).
+    //! - Write pointer (in bits).
+    //! - Error state (read error, write error, user-generated error).
+    //! - Endianness: byte and bit order, used when reading or writing integer data.
+    //!
+    //! In a read/write buffer, both read and write pointers initially point to the start
+    //! of the buffer. Then, the read pointer always remains behind the write pointer. In
+    //! other words, we can read only what was previously written. The application cannot
+    //! write beyond the current maximum buffer size and cannot read beyond the current
+    //! write pointer.
+    //!
+    //! In a read-only buffer, the write pointer always points to the end of the buffer
+    //! and cannot be changed.
+    //!
+    //! Read and write pointers are composed of a byte offset from the beginning of the
+    //! buffer and a bit offset (0 to 7) in this byte. In big endian mode (the default),
+    //! bit 0 is the most significant bit (msb) and bit 7 is the least significant bit
+    //! (lsb). In little endian mode, bit 0 is the lsb and bit 7 is the msb.
+    //!
+    //! It is possible to read and write integer values of any number of bits, starting
+    //! at any bit offset. Best performances are, of course, achieved on 8, 16, 32 and
+    //! 64-bit integers starting at a byte boundary (bit offset 0).
+    //!
+    //! The two read-error and write-error states are independent. They are most commonly
+    //! set when trying to read or write past the write pointer or end of buffer, respectively.
+    //! When some multi-byte data cannot be read or written, the corresponding error is set
+    //! and the read or write pointer is left unmodified (no partial read or write).
+    //!
+    //! Once the read error is set, all subsequent read operations will fail until the
+    //! read error state is explicitly cleared. The same principle applies to write error
+    //! state and write operations.
+    //!
+    //! For example, consider that the remaining number of bytes to read is 2. Trying to
+    //! read a 32-bit data fails and the read error is set. Attempting to read an 8-bit
+    //! or 16-bit data will then fail because the read error is set, even though there
+    //! are enough bytes to read.
+    //!
+    //! Note: The principles of the C++ class ts::Buffer were freely inspired by the Java
+    //! class @c java.nio.ByteBuffer. There are differences between the two but the main
+    //! principles are similar.
+    //!
+    class TSDUCKDLL Buffer
     {
     public:
         //!
@@ -122,7 +167,7 @@ namespace ts {
         //! Check if the buffer is valid and contains some memory.
         //! @return True if the buffer is valid and contains some memory.
         //!
-        bool valid() const;
+        bool isValid() const;
 
         //!
         //! Check if the buffer is read-only.
@@ -286,10 +331,21 @@ namespace ts {
         //! pointer to the end of the buffer and generates a write error.
         //! @param [in] byte Index of next byte to write.
         //! @param [in] bit Offset of next bit to write in this byte.
+        //! @return True on success, false on error.
+        //!
+        bool writeSeek(size_t byte, size_t bit = 0);
+
+        //!
+        //! Reset writing at the specified offset in the buffer and trash forward memory.
+        //! Seeking backward beyon the read pointer moves the write pointer to the read pointer
+        //! and generates a write error. Seeking forward past the end of buffer moves the write
+        //! pointer to the end of the buffer and generates a write error.
+        //! @param [in] byte Index of next byte to write.
+        //! @param [in] bit Offset of next bit to write in this byte.
         //! @param [in] stuffing When seeking forward, byte value to write in skipped bytes.
         //! @return True on success, false on error.
         //!
-        bool writeSeek(size_t byte, size_t bit = 0, uint8_t stuffing = 0);
+        bool writeSeek(size_t byte, size_t bit, uint8_t stuffing);
 
         //!
         //! Check if the current read bit pointer is on a byte boundary.
@@ -345,6 +401,12 @@ namespace ts {
         //! @return True on success, false if would got beyond start of buffer (and set read error flag).
         //!
         bool backBits(size_t bits);
+
+        //!
+        //! Get starting address of current read data (ignoring bit offset inside first byte to read).
+        //! @return The starting address of current read data.
+        //!
+        const uint8_t* currentReadAddress() const { return _buffer + _state.rbyte; }
 
         //!
         //! Get current read byte index (ignoring bit offset inside bytes).
@@ -774,6 +836,25 @@ namespace ts {
         //!
         bool putInt64(int64_t i) { return putint(i, 8, PutInt64BE, PutInt64LE); }
 
+    protected:
+        //!
+        //! Set the read error state (reserved to subclasses).
+        //!
+        void setReadError() { _read_error = true; }
+
+        //!
+        //! Set the write error state (reserved to subclasses).
+        //!
+        void setWriteError() { _write_error = true; }
+
+        //!
+        //! Get starting address of current write area (ignoring bit offset inside first byte to read).
+        //! This operation is reserved to subclasses. Applications can only get a read-only pointer to
+        //! the current read area (see currentReadAddress()).
+        //! @return The starting address of current write area.
+        //!
+        uint8_t* currentWriteAddress() const { return _buffer + _state.wbyte; }
+
     private:
         // Internal "read bytes" method (1 to 8 bytes).
         // - Check that the specified number of bytes is available for reading.
@@ -792,6 +873,9 @@ namespace ts {
 
         // Get bulk bytes, either aligned or not. Update read pointer.
         void readBytesInternal(uint8_t* data, size_t bytes);
+
+        // Set range of bits [start_bit..end_bit[ in a byte.
+        void setBits(size_t byte, size_t start_bit, size_t end_bit, uint8_t value);
 
         // Read/write state in the buffer.
         struct RWState {

@@ -100,7 +100,7 @@ void ts::AssociationTagDescriptor::deserialize(DuckContext& duck, const Descript
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 5;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 5;
 
     if (_is_valid) {
         association_tag = GetUInt16(data);

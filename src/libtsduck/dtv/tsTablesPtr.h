@@ -44,6 +44,7 @@ namespace ts {
     class BinaryTable;
     class Descriptor;
     class DescriptorList;
+    class PSIBuffer;
     class Section;
     class TablesDisplay;
 

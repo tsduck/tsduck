@@ -108,7 +108,7 @@ void ts::LocalTimeOffsetDescriptor::serialize(DuckContext& duck, Descriptor& des
 
 void ts::LocalTimeOffsetDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 13 == 0;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 13 == 0;
     regions.clear();
 
     if (_is_valid) {

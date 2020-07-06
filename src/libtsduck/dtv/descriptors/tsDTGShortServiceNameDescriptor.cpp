@@ -84,7 +84,7 @@ void ts::DTGShortServiceNameDescriptor::serialize(DuckContext& duck, Descriptor&
 
 void ts::DTGShortServiceNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag;
+    _is_valid = desc.isValid() && desc.tag() == tag();
 
     if (_is_valid) {
         duck.decode(name, desc.payload(), desc.payloadSize());

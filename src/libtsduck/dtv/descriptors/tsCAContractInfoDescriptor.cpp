@@ -102,7 +102,7 @@ void ts::CAContractInfoDescriptor::deserialize(DuckContext& duck, const Descript
     contract_verification_info.clear();
     fee_name.clear();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 5;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 5;
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();

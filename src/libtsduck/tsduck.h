@@ -422,6 +422,7 @@
 #include "tsPrivateDataSpecifierDescriptor.h"
 #include "tsProcessorPlugin.h"
 #include "tsProtectionMessageDescriptor.h"
+#include "tsPSIBuffer.h"
 #include "tsPSILogger.h"
 #include "tsPSIMerger.h"
 #include "tsPSIRepository.h"

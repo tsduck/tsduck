@@ -164,7 +164,7 @@ void ts::SpliceSegmentationDescriptor::deserialize(DuckContext& duck, const Desc
     size_t size = desc.payloadSize();
 
     clear();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 9;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 9;
 
     if (_is_valid) {
         identifier = GetUInt32(data);

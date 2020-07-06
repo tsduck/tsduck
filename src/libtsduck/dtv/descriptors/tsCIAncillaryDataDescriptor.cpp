@@ -88,7 +88,7 @@ void ts::CIAncillaryDataDescriptor::deserialize(DuckContext& duck, const Descrip
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 1 && data[0] == MY_EDID;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1 && data[0] == MY_EDID;
 
     if (_is_valid) {
         ancillary_data.copy(data + 1, size - 1);

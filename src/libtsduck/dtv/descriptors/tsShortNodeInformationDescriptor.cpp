@@ -100,7 +100,7 @@ void ts::ShortNodeInformationDescriptor::deserialize(DuckContext& duck, const De
     node_name.clear();
     text.clear();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag &&
+    _is_valid = desc.isValid() && desc.tag() == tag() &&
         deserializeLanguageCode(ISO_639_language_code, data, size) &&
         duck.decodeWithByteLength(node_name, data, size) &&
         duck.decodeWithByteLength(text, data, size);

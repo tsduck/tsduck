@@ -84,7 +84,7 @@ void ts::PrivateDataSpecifierDescriptor::serialize(DuckContext& duck, Descriptor
 
 void ts::PrivateDataSpecifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 4;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 4;
 
     if (_is_valid) {
         pds = GetUInt32 (desc.payload());

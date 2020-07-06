@@ -99,7 +99,7 @@ void ts::CableDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor&
 
 void ts::CableDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 11)) {
+    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 11)) {
         return;
     }
 

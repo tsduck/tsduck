@@ -135,7 +135,7 @@ void ts::SSUDataBroadcastIdDescriptor::serialize(DuckContext& duck, Descriptor& 
 
 void ts::SSUDataBroadcastIdDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 3 && GetUInt16 (desc.payload()) == 0x000A;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 3 && GetUInt16 (desc.payload()) == 0x000A;
     entries.clear();
     private_data.clear();
 

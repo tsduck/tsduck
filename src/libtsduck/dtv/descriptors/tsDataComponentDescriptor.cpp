@@ -88,7 +88,7 @@ void ts::DataComponentDescriptor::serialize(DuckContext& duck, Descriptor& desc)
 
 void ts::DataComponentDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 2;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 2;
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();

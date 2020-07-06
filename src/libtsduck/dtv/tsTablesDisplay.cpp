@@ -30,10 +30,10 @@
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsBinaryTable.h"
+#include "tsPSIBuffer.h"
 #include "tsSection.h"
 #include "tsDescriptor.h"
 #include "tsDescriptorList.h"
-#include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
@@ -129,10 +129,16 @@ bool ts::TablesDisplay::loadArgs(DuckContext& duck, Args &args)
 // A utility method to dump extraneous bytes after expected data.
 //----------------------------------------------------------------------------
 
+std::ostream& ts::TablesDisplay::displayExtraData(PSIBuffer& buf, int indent)
+{
+    displayExtraData(buf.currentReadAddress(), buf.remainingReadBytes(), indent);
+    buf.skipBytes(buf.remainingReadBytes());
+    return _duck.out();
+}
+
 std::ostream& ts::TablesDisplay::displayExtraData(const void* data, size_t size, int indent)
 {
     std::ostream& strm(_duck.out());
-
     if (size > 0) {
         strm << std::string(indent, ' ') << "Extraneous " << size << " bytes:" << std::endl
              << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);

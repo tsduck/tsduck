@@ -87,7 +87,7 @@ void ts::ExternalESIdDescriptor::deserialize(DuckContext& duck, const Descriptor
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size == 2;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size == 2;
 
     if (_is_valid) {
         external_ES_ID = GetUInt16(data);

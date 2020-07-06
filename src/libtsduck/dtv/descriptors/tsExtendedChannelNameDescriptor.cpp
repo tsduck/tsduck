@@ -87,7 +87,7 @@ void ts::ExtendedChannelNameDescriptor::deserialize(DuckContext& duck, const Des
     long_channel_name_text.clear();
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && long_channel_name_text.deserialize(duck, data, size);
+    _is_valid = desc.isValid() && desc.tag() == tag() && long_channel_name_text.deserialize(duck, data, size);
 }
 
 

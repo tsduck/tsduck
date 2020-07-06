@@ -96,7 +96,7 @@ void ts::SSULocationDescriptor::deserialize(DuckContext& duck, const Descriptor&
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 2;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2;
     private_data.clear();
 
     if (_is_valid) {

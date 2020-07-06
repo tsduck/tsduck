@@ -115,7 +115,7 @@ void ts::J2KVideoDescriptor::deserialize(DuckContext& duck, const Descriptor& de
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 24;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 24;
     private_data.clear();
 
     if (_is_valid) {

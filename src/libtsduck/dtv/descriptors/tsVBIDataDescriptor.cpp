@@ -169,7 +169,7 @@ void ts::VBIDataDescriptor::deserialize(DuckContext& duck, const Descriptor& des
 {
     services.clear();
 
-    if (!(_is_valid = desc.isValid() && desc.tag() == _tag)) {
+    if (!(_is_valid = desc.isValid() && desc.tag() == tag())) {
         return;
     }
 

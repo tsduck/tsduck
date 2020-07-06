@@ -138,7 +138,7 @@ void ts::HEVCVideoDescriptor::serialize(DuckContext& duck, Descriptor& desc) con
 
 void ts::HEVCVideoDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && (desc.payloadSize() == 13 || desc.payloadSize() == 15);
+    _is_valid = desc.isValid() && desc.tag() == tag() && (desc.payloadSize() == 13 || desc.payloadSize() == 15);
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();

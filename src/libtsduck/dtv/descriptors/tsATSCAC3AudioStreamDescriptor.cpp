@@ -154,7 +154,7 @@ void ts::ATSCAC3AudioStreamDescriptor::serialize(DuckContext& duck, Descriptor& 
 void ts::ATSCAC3AudioStreamDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     clear();
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 3;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 3;
 
     if (!_is_valid) {
         return;

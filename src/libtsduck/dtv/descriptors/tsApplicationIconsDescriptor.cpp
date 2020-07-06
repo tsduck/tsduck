@@ -102,7 +102,7 @@ void ts::ApplicationIconsDescriptor::deserialize(DuckContext& duck, const Descri
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 1 && size >= size_t(data[0]) + 3;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1 && size >= size_t(data[0]) + 3;
 
     if (_is_valid) {
         duck.decodeWithByteLength(icon_locator, data, size);

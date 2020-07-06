@@ -154,7 +154,7 @@ void ts::AudioPreselectionDescriptor::deserialize(DuckContext& duck, const Descr
     size_t size = desc.payloadSize();
 
     entries.clear();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 2 && data[0] == MY_EDID;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2 && data[0] == MY_EDID;
 
     if (_is_valid) {
         size_t numEntries = data[1] >> 3;

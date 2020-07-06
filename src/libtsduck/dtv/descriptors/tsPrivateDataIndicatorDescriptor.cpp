@@ -83,7 +83,7 @@ void ts::PrivateDataIndicatorDescriptor::serialize(DuckContext& duck, Descriptor
 
 void ts::PrivateDataIndicatorDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 4;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 4;
 
     if (_is_valid) {
         private_data_indicator = GetUInt32(desc.payload());

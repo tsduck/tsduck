@@ -130,7 +130,7 @@ void ts::ImageIconDescriptor::deserialize(DuckContext& duck, const Descriptor& d
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 4 && data[0] == MY_EDID;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4 && data[0] == MY_EDID;
 
     icon_type.clear();
     url.clear();

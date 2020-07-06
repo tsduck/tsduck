@@ -112,7 +112,7 @@ void ts::C2BundleDeliverySystemDescriptor::deserialize(DuckContext& duck, const 
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size % 8 == 1 && data[0] == MY_EDID;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size % 8 == 1 && data[0] == MY_EDID;
     data++; size--;
 
     while (_is_valid && size >= 8) {

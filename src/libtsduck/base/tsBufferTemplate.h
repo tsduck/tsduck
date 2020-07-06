@@ -37,7 +37,8 @@
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 INT ts::Buffer::getBits(size_t bits, INT def)
 {
-    if (currentReadBitOffset() + bits > currentWriteBitOffset()) {
+    // No read if read error is already set or not enough bits to read.
+    if (_read_error || currentReadBitOffset() + bits > currentWriteBitOffset()) {
         _read_error = true;
         return def;
     }
@@ -100,7 +101,8 @@ INT ts::Buffer::getBits(size_t bits, INT def)
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 bool ts::Buffer::putBits(INT value, size_t bits)
 {
-    if (_read_only || remainingWriteBits() < bits) {
+    // No write if write error is already set or read-only or not enough bits to write.
+    if (_write_error || _read_only || remainingWriteBits() < bits) {
         _write_error = true;
         return false;
     }
@@ -162,7 +164,8 @@ bool ts::Buffer::putint(INT value, size_t bytes, void (*putBE)(void*,INT), void 
     // Internally used to write up to 8 bytes (64-bit integers).
     assert(bytes <= 8);
 
-    if (_read_only) {
+    // No write if write error is already set or read-only.
+    if (_write_error || _read_only) {
         _write_error = true;
         return false;
     }
