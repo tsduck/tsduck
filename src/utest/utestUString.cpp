@@ -1793,6 +1793,11 @@ void UStringTest::testFormat()
     TSUNIT_EQUAL(u"2.000000", ts::UString::Format(u"%f", {2}));
     TSUNIT_EQUAL(u"-2.000000", ts::UString::Format(u"%f", {-2}));
     TSUNIT_EQUAL(u" 0.667", ts::UString::Format(u"%6.3f", {2.0 / 3.0}));
+
+    // Repeat previous argument.
+    TSUNIT_EQUAL(u"1 1 2", ts::UString::Format(u"%d %<d %d", {1, 2}));
+    TSUNIT_EQUAL(u" 1 2", ts::UString::Format(u"%<d %d %d", {1, 2}));
+    TSUNIT_EQUAL(u"   1   1 2", ts::UString::Format(u"%*d %<*d %d", {4, 1, 3, 2}));
 }
 
 void UStringTest::testArgMixOut()
