@@ -116,7 +116,7 @@ namespace ts {
         //!
         bool putString(const UString& str, size_t start = 0, size_t count = NPOS)
         {
-            return putStringCommon(str, start, count, &Charset::encode, false, 0);
+            return putStringCommon(str, start, count, &Charset::encode, false, 0) != 0;
         }
 
         //!
@@ -143,7 +143,7 @@ namespace ts {
         //!
         bool putStringWithByteLength(const UString& str, size_t start = 0, size_t count = NPOS)
         {
-            return putStringCommon(str, start, count, &Charset::encodeWithByteLength, false, 1);
+            return putStringCommon(str, start, count, &Charset::encodeWithByteLength, false, 1) != 0;
         }
 
         //!
