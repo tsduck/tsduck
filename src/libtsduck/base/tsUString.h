@@ -1608,6 +1608,7 @@ namespace ts {
         //! - @c \%\% : Insert a literal \%.
         //!
         //! The allowed options, between the '\%' and the letter are, in this order:
+        //! - @c < : Reuse previous argument value, do not advance in argument list.
         //! - @c - : Left-justified (right-justified by default).
         //! - @c + : Force a '+' sign with positive decimal integers or floating point values (@c \%d or @c \%f only).
         //! - @c 0 : Zero padding for integers. This is the default with @c \%x and @c \%X.
@@ -1618,8 +1619,8 @@ namespace ts {
         //! - @c ' : For integer conversions, use a separator for groups of thousands.
         //! - @c * : Can be used instead of @e digits. The integer value is taken from the argument list.
         //!
-        //! Since the argument list is typed, it is possible to mix integers and strings of various types
-        //! and sizes. Example:
+        //! Since the argument list is typed, it is possible to mix integers and strings of various types and sizes.
+        //! Example:
         //! @code
         //! int i = -1234;
         //! uint16_t u16 = 128;
@@ -2168,6 +2169,7 @@ namespace ts {
 
             UString&          _result;  //!< Result string.
             ArgIterator       _arg;     //!< Current argument.
+            ArgIterator       _prev;    //!< Previous argument.
             const ArgIterator _end;     //!< After last argument.
 
             //!

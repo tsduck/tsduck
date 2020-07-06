@@ -1772,7 +1772,7 @@ void ts::UString::appendDump(const void *data,
 
 void ts::UString::format(const UChar* fmt, const std::initializer_list<ArgMixIn>& args)
 {
-    // Pre-reserve some space. We don't really know how much. Just address the most comman cases.
+    // Pre-reserve some space. We don't really know how much. Just address the most common cases.
     reserve(256);
 
     // Process the string.
@@ -1846,6 +1846,7 @@ ts::UString::ArgMixInContext::ArgMixInContext(UString& result, const UChar* fmt,
     ArgMixContext(fmt, true),
     _result(result),
     _arg(args.begin()),
+    _prev(args.end()),
     _end(args.end())
 {
     // Loop into format, stop at each '%' sequence.
@@ -1889,6 +1890,7 @@ void ts::UString::ArgMixInContext::processArg()
     }
 
     // The allowed options, between the '%' and the letter are:
+    //       < : Reuse previous argument value, do not advance in argument list.
     //       - : Left-justified (right-justified by default).
     //       + : Force a '+' sign with decimal integers.
     //       0 : Zero padding for integers.
@@ -1900,11 +1902,16 @@ void ts::UString::ArgMixInContext::processArg()
     bool leftJustified = false;
     bool forceSign = false;
     bool useSeparator = false;
+    bool reusePrevious = false;
     UChar pad = u' ';
     size_t minWidth = 0;
     size_t maxWidth = std::numeric_limits<size_t>::max();
     size_t precision = 6;
 
+    if (*_fmt == u'<') {
+        reusePrevious = true;
+        _fmt++;
+    }
     if (*_fmt == u'-') {
         leftJustified = true;
         _fmt++;
@@ -1957,8 +1964,19 @@ void ts::UString::ArgMixInContext::processArg()
         return;
     }
 
+    // Point to actual parameter value.
+    ArgIterator argit(_arg);
+    if (reusePrevious) {
+        // Reuse previous argument value, do not advance in argument list.
+        argit = _prev;
+    }
+    else {
+        // Absorb the inserted argument.
+        _prev = _arg++;
+    }
+
     // Process missing argument.
-    if (_arg == _end) {
+    if (argit == _end) {
         if (debugActive()) {
             debug(u"missing argument", cmd);
         }
@@ -1966,7 +1984,7 @@ void ts::UString::ArgMixInContext::processArg()
     }
 
     // Now, the command is valid, process it.
-    if (_arg->isAnyString() || (_arg->isBool() && cmd == u's')) {
+    if (argit->isAnyString() || (argit->isBool() && cmd == u's')) {
         // String arguments are always treated as %s, regardless of the % command.
         // Also if a bool is specified as %s, print true or false.
         if (cmd != u's' && debugActive()) {
@@ -1974,14 +1992,14 @@ void ts::UString::ArgMixInContext::processArg()
         }
         // Get the string parameter.
         UString value;
-        if (_arg->isAnyString8()) {
-            value.assignFromUTF8(_arg->toCharPtr());
+        if (argit->isAnyString8()) {
+            value.assignFromUTF8(argit->toCharPtr());
         }
-        else if (_arg->isAnyString16()) {
-            value.assign(_arg->toUCharPtr());
+        else if (argit->isAnyString16()) {
+            value.assign(argit->toUCharPtr());
         }
-        else if (_arg->isBool()) {
-            value.assign(TrueFalse(_arg->toBool()));
+        else if (argit->isBool()) {
+            value.assign(TrueFalse(argit->toBool()));
         }
         else {
             // Not a string, should not get there.
@@ -2004,68 +2022,65 @@ void ts::UString::ArgMixInContext::processArg()
     }
     else if (cmd == u'c') {
         // Use an integer value as an Unicode code point.
-        if (!_arg->isInteger() && debugActive()) {
+        if (!argit->isInteger() && debugActive()) {
             debug(u"type mismatch, not an integer or character", cmd);
         }
         // Get and convert the Unicode code point.
-        _result.append(_arg->toUInt32());
+        _result.append(argit->toUInt32());
     }
     else if (cmd == u'x' || cmd == u'X') {
         // Insert an integer in hexadecimal.
-        if (!_arg->isInteger() && debugActive()) {
+        if (!argit->isInteger() && debugActive()) {
             debug(u"type mismatch, not an integer", cmd);
         }
         // Format the hexa string.
         const bool upper = cmd == u'X';
-        switch (_arg->size()) {
+        switch (argit->size()) {
             case 1:
-                _result.append(HexaMin(_arg->toInteger<uint8_t>(), minWidth, separator, false, upper));
+                _result.append(HexaMin(argit->toInteger<uint8_t>(), minWidth, separator, false, upper));
                 break;
             case 2:
-                _result.append(HexaMin(_arg->toInteger<uint16_t>(), minWidth, separator, false, upper));
+                _result.append(HexaMin(argit->toInteger<uint16_t>(), minWidth, separator, false, upper));
                 break;
             case 4:
-                _result.append(HexaMin(_arg->toInteger<uint32_t>(), minWidth, separator, false, upper));
+                _result.append(HexaMin(argit->toInteger<uint32_t>(), minWidth, separator, false, upper));
                 break;
             default:
-                _result.append(HexaMin(_arg->toInteger<uint64_t>(), minWidth, separator, false, upper));
+                _result.append(HexaMin(argit->toInteger<uint64_t>(), minWidth, separator, false, upper));
                 break;
         }
     }
     else if (cmd == u'f') {
         // Insert a floating point value
-        if (!_arg->isDouble() && debugActive()) {
+        if (!argit->isDouble() && debugActive()) {
             debug(u"type mismatch, not a double", cmd);
         }
-        _result.append(Float(_arg->toDouble(), minWidth, precision, forceSign));
+        _result.append(Float(argit->toDouble(), minWidth, precision, forceSign));
     }
     else {
         // Insert an integer in decimal.
         if (cmd != u'd' && debugActive()) {
             debug(u"type mismatch, got an integer", cmd);
         }
-        if (_arg->size() > 4) {
+        if (argit->size() > 4) {
             // Stored as 64-bit integer.
-            if (_arg->isSigned()) {
-                _result.append(Decimal(_arg->toInt64(), minWidth, !leftJustified, separator, forceSign, pad));
+            if (argit->isSigned()) {
+                _result.append(Decimal(argit->toInt64(), minWidth, !leftJustified, separator, forceSign, pad));
             }
             else {
-                _result.append(Decimal(_arg->toUInt64(), minWidth, !leftJustified, separator, forceSign, pad));
+                _result.append(Decimal(argit->toUInt64(), minWidth, !leftJustified, separator, forceSign, pad));
             }
         }
         else {
             // Stored as 32-bit integer.
-            if (_arg->isSigned()) {
-                _result.append(Decimal(_arg->toInt32(), minWidth, !leftJustified, separator, forceSign, pad));
+            if (argit->isSigned()) {
+                _result.append(Decimal(argit->toInt32(), minWidth, !leftJustified, separator, forceSign, pad));
             }
             else {
-                _result.append(Decimal(_arg->toUInt32(), minWidth, !leftJustified, separator, forceSign, pad));
+                _result.append(Decimal(argit->toUInt32(), minWidth, !leftJustified, separator, forceSign, pad));
             }
         }
     }
-
-    // Finally, absorb the inserted argument.
-    ++_arg;
 }
 
 // Anciliary function to extract a size field from a '%' sequence.
