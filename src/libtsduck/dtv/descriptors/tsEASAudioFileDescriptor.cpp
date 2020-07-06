@@ -127,7 +127,7 @@ void ts::EASAudioFileDescriptor::deserialize(DuckContext& duck, const Descriptor
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    if (!desc.isValid() || desc.tag() != _tag || size == 0) {
+    if (!desc.isValid() || desc.tag() != tag() || size == 0) {
         return;
     }
 

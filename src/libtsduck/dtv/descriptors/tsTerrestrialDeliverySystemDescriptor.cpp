@@ -117,7 +117,7 @@ void ts::TerrestrialDeliverySystemDescriptor::serialize(DuckContext& duck, Descr
 
 void ts::TerrestrialDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 7;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 7;
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();

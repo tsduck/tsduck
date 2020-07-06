@@ -100,7 +100,7 @@ void ts::URILinkageDescriptor::deserialize(DuckContext& duck, const Descriptor& 
     private_data.clear();
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 3 && data[0] == MY_EDID;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 3 && data[0] == MY_EDID;
 
     if (_is_valid) {
         uri_linkage_type = data[1];

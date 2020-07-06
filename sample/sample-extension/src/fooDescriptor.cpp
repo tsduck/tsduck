@@ -60,7 +60,7 @@ void foo::FooDescriptor::deserialize(ts::DuckContext& duck, const ts::Descriptor
 {
     clear();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag;
+    _is_valid = desc.isValid() && desc.tag() == tag();
 
     if (_is_valid) {
         duck.decode(name, desc.payload(), desc.payloadSize());

@@ -90,7 +90,7 @@ void ts::EutelsatChannelNumberDescriptor::serialize(DuckContext& duck, Descripto
 
 void ts::EutelsatChannelNumberDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 8 == 0;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 8 == 0;
     entries.clear();
 
     if (_is_valid) {

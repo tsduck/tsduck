@@ -87,7 +87,7 @@ void ts::AbstractPreferredNameIdentifierDescriptor::serialize(DuckContext& duck,
 
 void ts::AbstractPreferredNameIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 1;
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();

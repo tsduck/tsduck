@@ -30,6 +30,7 @@
 #include "tsBroadcasterNameDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
+#include "tsPSIBuffer.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
@@ -67,33 +68,17 @@ ts::BroadcasterNameDescriptor::BroadcasterNameDescriptor(DuckContext& duck, cons
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Binary serialization
 //----------------------------------------------------------------------------
 
-void ts::BroadcasterNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::BroadcasterNameDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.encoded(name));
-    serializeEnd(desc, bbp);
+    buf.putString(name);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::BroadcasterNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::BroadcasterNameDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag;
-
-    if (_is_valid) {
-        duck.decode(name, data, size);
-    }
-    else {
-        name.clear();
-    }
+    buf.getString(name);
 }
 
 
@@ -103,11 +88,10 @@ void ts::BroadcasterNameDescriptor::deserialize(DuckContext& duck, const Descrip
 
 void ts::BroadcasterNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(display.duck(), data, size);
 
-    strm << margin << "Broadcaster name: \"" << duck.decoded(data, size) << "\"" << std::endl;
+    display.out() << margin << "Broadcaster name: \"" << buf.getString() << "\"" << std::endl;
 }
 
 

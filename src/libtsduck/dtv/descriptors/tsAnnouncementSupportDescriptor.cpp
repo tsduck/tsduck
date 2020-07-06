@@ -111,7 +111,7 @@ void ts::AnnouncementSupportDescriptor::deserialize(DuckContext& duck, const Des
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 2;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2;
     announcements.clear();
 
     if (!_is_valid) {

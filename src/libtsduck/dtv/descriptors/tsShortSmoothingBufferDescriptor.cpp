@@ -91,7 +91,7 @@ void ts::ShortSmoothingBufferDescriptor::deserialize(DuckContext& duck, const De
 {
     const uint8_t* data = desc.payload();
     const size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
 
     if (_is_valid) {
         sb_size = (data[0] >> 6) & 0x03;

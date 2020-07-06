@@ -87,7 +87,7 @@ void ts::NorDigLogicalChannelDescriptorV1::serialize(DuckContext& duck, Descript
 
 void ts::NorDigLogicalChannelDescriptorV1::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 4 == 0;
     entries.clear();
 
     if (_is_valid) {

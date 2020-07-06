@@ -109,7 +109,7 @@ void ts::TSInformationDescriptor::deserialize(DuckContext& duck, const Descripto
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 2;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2;
 
     ts_name.clear();
     transmission_types.clear();

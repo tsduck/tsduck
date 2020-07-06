@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
+#include "tsPSIBuffer.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
@@ -71,36 +72,21 @@ ts::ServiceDescriptor::ServiceDescriptor(DuckContext& duck, const Descriptor& de
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Binary serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ServiceDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(service_type);
-    bbp->append(duck.encodedWithByteLength(provider_name));
-    bbp->append(duck.encodedWithByteLength(service_name));
-    serializeEnd(desc, bbp);
+    buf.putUInt8(service_type);
+    buf.putStringWithByteLength(provider_name);
+    buf.putStringWithByteLength(service_name);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::ServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ServiceDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 3;
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        service_type = data[0];
-        data++; size--;
-        duck.decodeWithByteLength(provider_name, data, size);
-        duck.decodeWithByteLength(service_name, data, size);
-        _is_valid = size == 0;
-    }
+    service_type = buf.getUInt8();
+    buf.getStringWithByteLength(provider_name);
+    buf.getStringWithByteLength(service_name);
 }
 
 
@@ -110,23 +96,18 @@ void ts::ServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& des
 
 void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
+    std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(display.duck(), data, size);
 
     if (size >= 1) {
-        // Service type.
-        uint8_t stype = *data;
-        data += 1; size -= 1;
-        strm << margin << "Service type: " << names::ServiceType(stype, names::FIRST) << std::endl;
-
-        // Provider and service names (data and size are updated by FromDVBWithByteLength).
-        const UString provider(duck.decodedWithByteLength(data, size));
-        const UString service(duck.decodedWithByteLength(data, size));
+        strm << margin << "Service type: " << names::ServiceType(buf.getUInt8(), names::FIRST) << std::endl;
+        const UString provider(buf.getStringWithByteLength());
+        const UString service(buf.getStringWithByteLength());
         strm << margin << "Service: \"" << service << "\", Provider: \"" << provider << "\"" << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(buf, indent);
 }
 
 

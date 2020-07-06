@@ -95,7 +95,7 @@ void ts::FlexMuxTimingDescriptor::deserialize(DuckContext& duck, const Descripto
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size == 8;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size == 8;
 
     if (_is_valid) {
         FCR_ES_ID = GetUInt16(data);

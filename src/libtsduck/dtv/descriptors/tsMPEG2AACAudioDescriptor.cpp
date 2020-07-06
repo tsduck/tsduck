@@ -92,7 +92,7 @@ void ts::MPEG2AACAudioDescriptor::deserialize(DuckContext& duck, const Descripto
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size == 3;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size == 3;
 
     if (_is_valid) {
         MPEG2_AAC_profile = data[0];

@@ -108,7 +108,7 @@ void ts::DTSDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 5;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 5;
 
     if (_is_valid) {
         sample_rate_code = (data[0] >> 4) & 0x0F;

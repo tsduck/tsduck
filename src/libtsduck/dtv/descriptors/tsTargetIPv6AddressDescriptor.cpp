@@ -93,7 +93,7 @@ void ts::TargetIPv6AddressDescriptor::deserialize(DuckContext& duck, const Descr
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 16 && size % 16 == 0;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 16 && size % 16 == 0;
     IPv6_addr.clear();
 
     if (_is_valid) {

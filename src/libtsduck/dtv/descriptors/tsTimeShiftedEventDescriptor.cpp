@@ -86,7 +86,7 @@ void ts::TimeShiftedEventDescriptor::serialize(DuckContext& duck, Descriptor& de
 
 void ts::TimeShiftedEventDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 4;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 4;
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();

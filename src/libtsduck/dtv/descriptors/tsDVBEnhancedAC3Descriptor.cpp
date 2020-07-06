@@ -164,7 +164,7 @@ void ts::DVBEnhancedAC3Descriptor::serialize(DuckContext& duck, Descriptor& desc
 
 void ts::DVBEnhancedAC3Descriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 1;
 
     component_type.clear();
     bsid.clear();

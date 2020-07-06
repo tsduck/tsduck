@@ -84,7 +84,7 @@ void ts::ATSCStuffingDescriptor::serialize(DuckContext& duck, Descriptor& desc) 
 
 void ts::ATSCStuffingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag;
+    _is_valid = desc.isValid() && desc.tag() == tag();
 
     if (_is_valid) {
         stuffing.copy(desc.payload(), desc.payloadSize());

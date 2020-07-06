@@ -164,7 +164,7 @@ void ts::TeletextDescriptor::deserialize(DuckContext& duck, const Descriptor& de
 {
     entries.clear();
 
-    if (!(_is_valid = desc.isValid() && desc.tag() == _tag)) {
+    if (!(_is_valid = desc.isValid() && desc.tag() == tag())) {
         return;
     }
 

@@ -86,7 +86,7 @@ void ts::NPTEndpointDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 
 void ts::NPTEndpointDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 14;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 14;
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();

@@ -90,7 +90,7 @@ void ts::ServiceMoveDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 
 void ts::ServiceMoveDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 6;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 6;
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();

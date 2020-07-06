@@ -89,7 +89,7 @@ void ts::ServiceAvailabilityDescriptor::serialize(DuckContext& duck, Descriptor&
 
 void ts::ServiceAvailabilityDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 2 == 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 2 == 1;
     cell_ids.clear();
 
     if (_is_valid) {

@@ -92,7 +92,7 @@ void ts::ExternalApplicationAuthorizationDescriptor::deserialize(DuckContext& du
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size % 7 == 0;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size % 7 == 0;
 
     if (_is_valid) {
         while (size >= 7) {

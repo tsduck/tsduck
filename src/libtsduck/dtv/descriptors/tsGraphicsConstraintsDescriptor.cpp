@@ -98,7 +98,7 @@ void ts::GraphicsConstraintsDescriptor::deserialize(DuckContext& duck, const Des
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
 
     if (_is_valid) {
         can_run_without_visible_ui = (data[0] & 0x04) != 0;

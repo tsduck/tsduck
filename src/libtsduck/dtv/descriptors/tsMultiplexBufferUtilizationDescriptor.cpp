@@ -99,7 +99,7 @@ void ts::MultiplexBufferUtilizationDescriptor::deserialize(DuckContext& duck, co
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size == 4;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size == 4;
 
     if (_is_valid && (data[0] & 0x80) != 0) {
         LTW_offset_lower_bound = GetUInt16(data) & 0x7FFF;

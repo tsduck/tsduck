@@ -146,7 +146,7 @@ void ts::SatelliteDeliverySystemDescriptor::deserialize(DuckContext& duck, const
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size == 11;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size == 11;
 
     if (_is_valid) {
         frequency = 10000 * uint64_t(DecodeBCD(data, 8)); // coded in 10 kHz units

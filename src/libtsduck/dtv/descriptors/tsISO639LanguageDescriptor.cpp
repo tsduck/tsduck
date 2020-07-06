@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
+#include "tsPSIBuffer.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
@@ -90,19 +91,12 @@ void ts::ISO639LanguageDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ISO639LanguageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ISO639LanguageDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->language_code)) {
-            desc.invalidate();
-            return;
-        }
-        bbp->appendUInt8(it->audio_type);
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        buf.putLanguageCode(it->language_code);
+        buf.putUInt8(it->audio_type);
     }
-
-    serializeEnd(desc, bbp);
 }
 
 
@@ -110,19 +104,11 @@ void ts::ISO639LanguageDescriptor::serialize(DuckContext& duck, Descriptor& desc
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISO639LanguageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ISO639LanguageDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
-    entries.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        while (size >= 4) {
-            entries.push_back(Entry(DeserializeLanguageCode(data), data[3]));
-            data += 4;
-            size -= 4;
-        }
+    while (!buf.endOfRead()) {
+        const UString lang(buf.getLanguageCode());
+        entries.push_back(Entry(lang, buf.getUInt8()));
     }
 }
 
@@ -136,15 +122,13 @@ void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& display, DID
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, data, size);
 
-    while (size >= 4) {
-        const uint8_t type = data[3];
-        strm << margin << "Language: " << DeserializeLanguageCode(data)
-             << ", Type: " << names::AudioType(type, names::FIRST) << std::endl;
-        data += 4; size -= 4;
+    while (buf.remainingReadBytes() >= 4) {
+        strm << margin << "Language: " << buf.getLanguageCode();
+        strm << ", Type: " << names::AudioType(buf.getUInt8(), names::FIRST) << std::endl;
     }
-
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(buf, indent);
 }
 
 

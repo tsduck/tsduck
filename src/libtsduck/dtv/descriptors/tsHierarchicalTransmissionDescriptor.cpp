@@ -90,7 +90,7 @@ void ts::HierarchicalTransmissionDescriptor::deserialize(DuckContext& duck, cons
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size == 3;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size == 3;
 
     if (_is_valid) {
         high_quality = (data[0] & 0x01) != 0;

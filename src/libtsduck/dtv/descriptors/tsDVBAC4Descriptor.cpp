@@ -109,7 +109,7 @@ void ts::DVBAC4Descriptor::deserialize(DuckContext& duck, const Descriptor& desc
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 2 && data[0] == MY_EDID;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 2 && data[0] == MY_EDID;
 
     ac4_dialog_enhancement_enabled.clear();
     ac4_channel_mode.clear();

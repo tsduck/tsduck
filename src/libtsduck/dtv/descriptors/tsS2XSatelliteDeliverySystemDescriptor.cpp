@@ -169,7 +169,7 @@ void ts::S2XSatelliteDeliverySystemDescriptor::deserialize(DuckContext& duck, co
 
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 3 && data[0] == MY_EDID;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 3 && data[0] == MY_EDID;
 
     if (_is_valid) {
         receiver_profiles = (data[1] >> 3) & 0x1F;

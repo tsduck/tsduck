@@ -84,7 +84,7 @@ void ts::AdaptationFieldDataDescriptor::serialize(DuckContext& duck, Descriptor&
 
 void ts::AdaptationFieldDataDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 1;
 
     if (_is_valid) {
         adaptation_field_data_identifier = GetUInt8(desc.payload());

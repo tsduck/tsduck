@@ -93,7 +93,7 @@ void ts::PDCDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 
 void ts::PDCDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 3;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 3;
 
     if (_is_valid) {
         const uint32_t date = GetUInt24(desc.payload());

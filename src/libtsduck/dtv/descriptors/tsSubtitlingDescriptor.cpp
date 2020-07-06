@@ -137,7 +137,7 @@ void ts::SubtitlingDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 {
     entries.clear();
 
-    if (!(_is_valid = desc.isValid() && desc.tag() == _tag)) {
+    if (!(_is_valid = desc.isValid() && desc.tag() == tag())) {
         return;
     }
 

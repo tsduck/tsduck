@@ -85,7 +85,7 @@ void ts::TargetSerialNumberDescriptor::serialize(DuckContext& duck, Descriptor& 
 
 void ts::TargetSerialNumberDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag;
+    _is_valid = desc.isValid() && desc.tag() == tag();
 
     if (_is_valid) {
         serial_data.copy(desc.payload(), desc.payloadSize());

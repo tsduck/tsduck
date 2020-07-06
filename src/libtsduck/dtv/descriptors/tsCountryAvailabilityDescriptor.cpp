@@ -104,7 +104,7 @@ void ts::CountryAvailabilityDescriptor::serialize(DuckContext& duck, Descriptor&
 
 void ts::CountryAvailabilityDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 3 == 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 3 == 1;
     country_codes.clear();
 
     if (_is_valid) {

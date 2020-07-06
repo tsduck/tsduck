@@ -91,7 +91,7 @@ void ts::GenreDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size > 0;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size > 0;
 
     if (_is_valid) {
         const size_t count = data[0] & 0x1F;

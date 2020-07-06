@@ -83,7 +83,7 @@ void ts::DSNGDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 
 void ts::DSNGDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag;
+    _is_valid = desc.isValid() && desc.tag() == tag();
 
     if (_is_valid) {
         duck.decode(station_identification, desc.payload(), desc.payloadSize());

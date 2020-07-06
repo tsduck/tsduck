@@ -90,7 +90,7 @@ void ts::CPIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 1 && size % 2 == 1 && data[0] == MY_EDID;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1 && size % 2 == 1 && data[0] == MY_EDID;
 
     cpids.clear();
     if (_is_valid) {

@@ -95,7 +95,7 @@ void ts::AbstractPreferredNameListDescriptor::serialize(DuckContext& duck, Descr
 
 void ts::AbstractPreferredNameListDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag;
+    _is_valid = desc.isValid() && desc.tag() == tag();
     entries.clear();
 
     if (_is_valid) {

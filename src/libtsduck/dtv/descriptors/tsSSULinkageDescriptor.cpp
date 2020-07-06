@@ -147,7 +147,7 @@ void ts::SSULinkageDescriptor::serialize(DuckContext& duck, Descriptor& desc) co
 
 void ts::SSULinkageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 8;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 8;
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();

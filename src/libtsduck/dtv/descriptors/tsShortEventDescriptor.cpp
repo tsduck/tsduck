@@ -154,7 +154,7 @@ void ts::ShortEventDescriptor::serialize(DuckContext& duck, Descriptor& desc) co
 
 void ts::ShortEventDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4)) {
+    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 4)) {
         return;
     }
 

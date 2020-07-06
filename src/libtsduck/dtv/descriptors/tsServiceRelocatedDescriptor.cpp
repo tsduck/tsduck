@@ -94,7 +94,7 @@ void ts::ServiceRelocatedDescriptor::deserialize(DuckContext& duck, const Descri
 {
     const uint8_t* data = desc.payload();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 7 && data[0] == MY_EDID;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 7 && data[0] == MY_EDID;
 
     if (_is_valid) {
         old_original_network_id = GetUInt16(data + 1);

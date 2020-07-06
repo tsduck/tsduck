@@ -135,7 +135,7 @@ void ts::NPTReferenceDescriptor::serialize(DuckContext& duck, Descriptor& desc) 
 
 void ts::NPTReferenceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 18;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 18;
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();

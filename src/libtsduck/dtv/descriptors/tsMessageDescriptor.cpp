@@ -106,7 +106,7 @@ void ts::MessageDescriptor::deserialize(DuckContext& duck, const Descriptor& des
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && size >= 5 && data[0] == MY_EDID)) {
+    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && size >= 5 && data[0] == MY_EDID)) {
         return;
     }
 

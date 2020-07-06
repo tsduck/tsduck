@@ -86,7 +86,7 @@ void ts::RedistributionControlDescriptor::serialize(DuckContext& duck, Descripto
 
 void ts::RedistributionControlDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag;
+    _is_valid = desc.isValid() && desc.tag() == tag();
 
     if (_is_valid) {
         rc_information.copy(desc.payload(), desc.payloadSize());

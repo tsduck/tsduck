@@ -99,7 +99,7 @@ void ts::MultilingualServiceNameDescriptor::serialize(DuckContext& duck, Descrip
 
 void ts::MultilingualServiceNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag;
+    _is_valid = desc.isValid() && desc.tag() == tag();
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
     entries.clear();

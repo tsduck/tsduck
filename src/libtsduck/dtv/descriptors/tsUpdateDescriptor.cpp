@@ -97,7 +97,7 @@ void ts::UpdateDescriptor::deserialize(DuckContext& duck, const Descriptor& desc
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
 
     if (_is_valid) {
         update_flag = (data[0] >> 6) & 0x03;

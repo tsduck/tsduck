@@ -93,7 +93,7 @@ void ts::BoardInformationDescriptor::deserialize(DuckContext& duck, const Descri
     title.clear();
     text.clear();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag &&
+    _is_valid = desc.isValid() && desc.tag() == tag() &&
         duck.decodeWithByteLength(title, data, size) &&
         duck.decodeWithByteLength(text, data, size) &&
         size == 0;

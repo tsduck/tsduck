@@ -109,7 +109,7 @@ void ts::SeriesDescriptor::deserialize(DuckContext& duck, const Descriptor& desc
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 8;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 8;
     expire_date.clear();
     series_name.clear();
 

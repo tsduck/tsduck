@@ -95,7 +95,7 @@ void ts::ApplicationSignallingDescriptor::serialize(DuckContext& duck, Descripto
 
 void ts::ApplicationSignallingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 3 == 0;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 3 == 0;
     entries.clear();
 
     if (_is_valid) {

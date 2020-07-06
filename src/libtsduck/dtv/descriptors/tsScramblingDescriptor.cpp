@@ -84,7 +84,7 @@ void ts::ScramblingDescriptor::serialize(DuckContext& duck, Descriptor& desc) co
 
 void ts::ScramblingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 1;
 
     if (_is_valid) {
         scrambling_mode = GetUInt8(desc.payload());

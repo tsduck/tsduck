@@ -108,7 +108,7 @@ void ts::ContentAdvisoryDescriptor::deserialize(DuckContext& duck, const Descrip
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 1;
+    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
 
     if (_is_valid) {
         size_t reg_count = data[0] & 0x3F;
