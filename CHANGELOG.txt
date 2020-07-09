@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.22-1858
+VERSION 3.22-1907
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -18,6 +18,8 @@ VERSION 3.22-1858
     - Options --input-synchronous and --jitter-unreal in plugin "pcrverify".
     - Option --timestamp-priority in input plugins "ip" and "srt".
     - Option --size-of-packet in "tsftrunc".
+    - Options --eit-normalization, --eit-base-date and --pack-and-flush in
+      "tspacketize", "tstabcomp" and plugin "inject".
 
 [BUG] Bug fixes:
 

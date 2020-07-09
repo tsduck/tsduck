@@ -33,7 +33,7 @@
 
 #include "tsMain.h"
 #include "tsDuckContext.h"
-#include "tsSectionFile.h"
+#include "tsSectionFileArgs.h"
 #include "tsTSPacket.h"
 #include "tsFileNameRate.h"
 #include "tsOutputRedirector.h"
@@ -55,14 +55,15 @@ namespace {
         Options(int argc, char *argv[]);
 
         ts::DuckContext           duck;
-        bool                      continuous; // Continuous packetization
+        bool                      continuous;    // Continuous packetization
         ts::CyclingPacketizer::StuffingPolicy stuffing_policy;
-        ts::CRC32::Validation     crc_op;     // Validate/recompute CRC32
-        ts::PID                   pid;        // Target PID
-        ts::BitRate               bitrate;    // Target PID bitrate
-        ts::UString               outfile;    // Output file
-        ts::FileNameRateList      infiles;    // Input file names and repetition rates
-        ts::SectionFile::FileType inType;     // Input files type
+        ts::CRC32::Validation     crc_op;        // Validate/recompute CRC32
+        ts::PID                   pid;           // Target PID
+        ts::BitRate               bitrate;       // Target PID bitrate
+        ts::UString               outfile;       // Output file
+        ts::FileNameRateList      infiles;       // Input file names and repetition rates
+        ts::SectionFile::FileType inType;        // Input files type
+        ts::SectionFileArgs       sections_opt;  // Section file options
     };
 }
 
@@ -76,9 +77,11 @@ Options::Options(int argc, char *argv[]) :
     bitrate(0),
     outfile(),
     infiles(),
-    inType(ts::SectionFile::UNSPECIFIED)
+    inType(ts::SectionFile::UNSPECIFIED),
+    sections_opt()
 {
     duck.defineArgsForCharset(*this);
+    sections_opt.defineArgs(*this);
 
     option(u"", 0, STRING);
     help(u"",
@@ -126,8 +129,9 @@ Options::Options(int argc, char *argv[]) :
     help(u"xml", u"Specify that all input files are XML, regardless of their file name.");
 
     analyze(argc, argv);
-
     duck.loadArgs(*this);
+    sections_opt.loadArgs(duck, *this);
+
     continuous = present(u"continuous");
     if (present(u"stuffing")) {
         stuffing_policy = ts::CyclingPacketizer::ALWAYS;
@@ -184,7 +188,7 @@ int MainCode(int argc, char *argv[])
             SetBinaryModeStdin(opt);
             opt.inType = ts::SectionFile::BINARY;
         }
-        if (!file.load(std::cin, opt, opt.inType)) {
+        if (!file.load(std::cin, opt, opt.inType) || !opt.sections_opt.processSectionFile(file, opt)) {
             return EXIT_FAILURE;
         }
         pzer.addSections(file.sections());
@@ -194,7 +198,7 @@ int MainCode(int argc, char *argv[])
     }
     else {
         for (ts::FileNameRateList::const_iterator it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
-            if (!file.load(it->file_name, opt, opt.inType)) {
+            if (!file.load(it->file_name, opt, opt.inType) || !opt.sections_opt.processSectionFile(file, opt)) {
                 return EXIT_FAILURE;
             }
             pzer.addSections(file.sections(), it->repetition);

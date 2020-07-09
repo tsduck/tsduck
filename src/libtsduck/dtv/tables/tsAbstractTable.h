@@ -48,6 +48,13 @@ namespace ts {
     //! Abstract base class for MPEG PSI/SI tables.
     //! @ingroup table
     //!
+    //! Some methods are declared as "virtual final". Since these methods are not
+    //! inherited, this seems useless. This is in fact a compilation check. These
+    //! methods were formerly designed to be overridden by subclasses but the
+    //! implementation has changed. They are now defined in this class only and
+    //! call a new pure virtual method. The "final" attribute is here to detect
+    //! old subclasses which do not yet use the new scheme.
+    //!
     class TSDUCKDLL AbstractTable: public AbstractSignalization
     {
     public:
@@ -63,7 +70,7 @@ namespace ts {
         //! @param [out] bin A binary table object.
         //! Its content is replaced with a binary representation of this object.
         //!
-        void serialize(DuckContext& duck, BinaryTable& bin) const;
+        virtual void serialize(DuckContext& duck, BinaryTable& bin) const final;
 
         //!
         //! This method deserializes a binary table.
@@ -72,7 +79,7 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary table to interpret according to the table subclass.
         //!
-        void deserialize(DuckContext& duck, const BinaryTable& bin);
+        virtual void deserialize(DuckContext& duck, const BinaryTable& bin) final;
 
         //!
         //! Virtual destructor

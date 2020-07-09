@@ -43,7 +43,7 @@
 
 namespace ts {
     //!
-    //! Command line arguments for the class PSILogger.
+    //! Command line arguments to select Conditional Access Systems.
     //! @ingroup cmd
     //!
     class TSDUCKDLL CASSelectionArgs : public ArgsSupplierInterface

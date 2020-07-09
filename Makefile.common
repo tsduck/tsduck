@@ -1022,6 +1022,10 @@ NOSOURCE = \
     .tmp_versions *.VC.db *.VC.dbopen *.VC.opendb *.deb *.rpm *.bz2 *.7z \
     *~ *.bak *.autosave cov-int
 
+# Doxygen version 1.8.17 has a bug which reports thousands of false errors.
+# Define a filter for doxygen errors.
+DOXYGEN_ERROR_FILTER = $(if $(subst 1.8.17,,$(shell $(DOXYGEN) --version)),, 2>&1 | grep -v 'warning: return type of member .* is not documented$$')
+
 # Source code documentation generation.
 # - Make sure that the output directory is created (doxygen does not create parent directories).
 # - Delete empty subdirectories (many of them created for nothing in case of hierachical output).
@@ -1031,7 +1035,7 @@ doxygen:
 	@if [ -e Doxyfile ]; then \
 	    outdir=$$($(GREP) '^ *OUTPUT_DIRECTORY *=' Doxyfile | tail -1 | $(SED) -e 's/.*= *//' -e 's/ *$$//'); \
 	    [ -n "$$outdir" ] && mkdir -p "$$outdir"; \
-	    $(DOXYGEN) $(DOXYGEN_FLAGS); \
+	    $(DOXYGEN) $(DOXYGEN_FLAGS) $(DOXYGEN_ERROR_FILTER); \
 	    [ -n "$$outdir" ] && find "$$outdir" -type d -empty -delete; \
 	else \
 	    $(RECURSE) \

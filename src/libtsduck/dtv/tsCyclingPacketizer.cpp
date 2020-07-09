@@ -74,7 +74,7 @@ ts::CyclingPacketizer::SectionDesc::SectionDesc(const SectionPtr& sec, MilliSeco
 
 void ts::CyclingPacketizer::addSections(const SectionPtrVector& sects, MilliSecond rep_rate)
 {
-    for (SectionPtrVector::const_iterator it = sects.begin(); it != sects.end(); ++it) {
+    for (auto it = sects.begin(); it != sects.end(); ++it) {
         addSection(*it, rep_rate);
     }
 }
@@ -169,21 +169,23 @@ void ts::CyclingPacketizer::addScheduledSection(const SectionDescPtr& sect)
 
 void ts::CyclingPacketizer::addSection(const SectionPtr& sect, MilliSecond rep_rate)
 {
-    SectionDescPtr desc(new SectionDesc(sect, rep_rate));
+    if (!sect.isNull() && sect->isValid()) {
+        SectionDescPtr desc(new SectionDesc(sect, rep_rate));
 
-    if (rep_rate == 0 || _bitrate == 0) {
-        // Unschedule section, simply add it at end of queue
-        _other_sections.push_back(desc);
-    }
-    else {
-        // Scheduled section, its due time is "now"
-        desc->due_packet = packetCount();
-        addScheduledSection(desc);
-        _sched_packets += sect->packetCount();
-    }
+        if (rep_rate == 0 || _bitrate == 0) {
+            // Unschedule section, simply add it at end of queue
+            _other_sections.push_back(desc);
+        }
+        else {
+            // Scheduled section, its due time is "now"
+            desc->due_packet = packetCount();
+            addScheduledSection(desc);
+            _sched_packets += sect->packetCount();
+        }
 
-    _section_count++;
-    _remain_in_cycle++;
+        _section_count++;
+        _remain_in_cycle++;
+    }
 }
 
 

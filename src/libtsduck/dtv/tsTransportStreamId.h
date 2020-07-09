@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Identification of a transport stream
+//!  Full identification of a DVB transport stream.
 //!
 //----------------------------------------------------------------------------
 
@@ -37,11 +37,12 @@
 
 namespace ts {
     //!
-    //! Identification of a transport stream.
+    //! Full identification of a DVB transport stream.
     //! @ingroup mpeg
     //!
-    struct TSDUCKDLL TransportStreamId
+    class TSDUCKDLL TransportStreamId
     {
+    public:
         // Public members:
         uint16_t transport_stream_id;  //!< Transport stream id.
         uint16_t original_network_id;  //!< Original network id.
@@ -55,6 +56,14 @@ namespace ts {
             transport_stream_id(tsid),
             original_network_id(onid)
         {
+        }
+
+        //!
+        //! Clear the content of this object.
+        //!
+        void clear()
+        {
+            transport_stream_id = original_network_id = 0;
         }
 
         //!

@@ -35,6 +35,7 @@
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsSysUtils.h"
+#include "tsEIT.h"
 TSDUCK_SOURCE;
 
 
@@ -89,14 +90,23 @@ void ts::SectionFile::add(const BinaryTablePtrVector& tables)
 
 void ts::SectionFile::add(const BinaryTablePtr& table)
 {
-    if (!table.isNull() && table->isValid()) {
-        // Add the standards from the table in the context.
-        _duck.addStandards(table->definingStandards());
-        // Add the table as a whole.
-        _tables.push_back(table);
-        // Add all its sections (none of them is orphan).
-        for (size_t i = 0; i < table->sectionCount(); ++i) {
-            _sections.push_back(table->sectionAt(i));
+    if (!table.isNull()) {
+        if (table->isValid()) {
+            // The table is added as a whole.
+            // Add the standards from the table in the context.
+            _duck.addStandards(table->definingStandards());
+            // Add the table as a whole.
+            _tables.push_back(table);
+            // Add all its sections (none of them is orphan).
+            for (size_t i = 0; i < table->sectionCount(); ++i) {
+                _sections.push_back(table->sectionAt(i));
+            }
+        }
+        else {
+            // The table is invalid. Add individual present sections.
+            for (size_t i = 0; i < table->sectionCount(); ++i) {
+                add(table->sectionAt(i)); // can be a null pointer
+            }
         }
     }
 }
@@ -243,6 +253,67 @@ void ts::SectionFile::collectLastTable()
     // Built a valid table.
     _tables.push_back(table);
     _orphanSections.erase(first, _orphanSections.end());
+}
+
+
+//----------------------------------------------------------------------------
+//! Reorganize all EIT sections according to ETSI TS 101 211.
+//----------------------------------------------------------------------------
+
+void ts::SectionFile::reorganizeEITs(const ts::Time& reftime)
+{
+    EIT::ReorganizeSections(_sections, reftime);
+    rebuildTables();
+}
+
+
+//----------------------------------------------------------------------------
+// Rebuild _tables and _orphanSections from _sections.
+//----------------------------------------------------------------------------
+
+void ts::SectionFile::rebuildTables()
+{
+    // Restart from scratch/
+    _tables.clear();
+    _orphanSections.clear();
+
+    // Rebuild tables from consecutive sections.
+    for (size_t i = 0; i < _sections.size(); ++i) {
+        if (_sections[i].isNull() || !_sections[i]->isValid()) {
+            // Ignore invalid sections.
+        }
+        else if (_sections[i]->isShortSection()) {
+            // Short sections are always full tables.
+            _tables.push_back(new BinaryTable({_sections[i]}));
+        }
+        else if (_sections[i]->sectionNumber() != 0 || i + _sections[i]->lastSectionNumber() >= _sections.size()) {
+            // Orphan section, not preceded by logically adjacent sections or section #0 without enough following sections.
+            _orphanSections.push_back(_sections[i]);
+        }
+        else {
+            // We have a long section #0, try to match all following sections.
+            const TID tid = _sections[i]->tableId();
+            const uint16_t tidext = _sections[i]->tableIdExtension();
+            const size_t count = _sections[i]->lastSectionNumber() + 1;
+            bool ok = true;
+            SectionPtrVector secs;
+            for (size_t i0 = 1; ok && i0 < count; ++i0) {
+                secs.push_back(_sections[i + i0]);
+                ok = _sections[i + i0]->tableId() == tid &&
+                     _sections[i + i0]->tableIdExtension() == tidext &&
+                     _sections[i + i0]->sectionNumber() == i0;
+            }
+            if (ok) {
+                // All sections are present in order, this is a table.
+                _tables.push_back(new BinaryTable(secs));
+                i += count - 1;
+            }
+            else {
+                // Cannot find a complete table. Push first section as orphan.
+                _orphanSections.push_back(_sections[i]);
+            }
+        }
+    }
 }
 
 

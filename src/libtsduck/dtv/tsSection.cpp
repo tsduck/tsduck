@@ -209,7 +209,7 @@ void ts::Section::reload(TID tid,
                          size_t payload_size,
                          PID source_pid)
 {
-    initialize (source_pid);
+    initialize(source_pid);
     _is_valid = section_number <= last_section_number && version <= 31 &&
         LONG_SECTION_HEADER_SIZE + payload_size + SECTION_CRC32_SIZE <= MAX_PRIVATE_SECTION_SIZE;
     _data = new ByteBlock(LONG_SECTION_HEADER_SIZE + payload_size + SECTION_CRC32_SIZE);
@@ -462,6 +462,36 @@ void ts::Section::setUInt16(size_t offset, uint16_t value, bool recompute_crc)
         PutUInt16(_data->data() + headerSize() + offset, value);
         if (recompute_crc) {
             recomputeCRC();
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Append binary data to the payload of the section.
+//----------------------------------------------------------------------------
+
+void ts::Section::appendPayload(const void* data, size_t size, bool recompute_crc)
+{
+    if (_is_valid && data != nullptr && size != 0) {
+        // Update section size in header.
+        PutUInt16(_data->data() + 1, (GetUInt16(_data->data() + 1) & 0xF000) | uint16_t((_data->size() + size - 3) & 0x0FFF));
+
+        // Remove trailing CRC (now invalid) at end of long section.
+        const bool is_long = isLongSection() && _data->size() >= LONG_SECTION_HEADER_SIZE + 4;
+        if (is_long) {
+            _data->resize(_data->size() - 4);
+        }
+
+        // Append the data.
+        _data->append(data, size);
+
+        // Restore a trailing CRC at end of long section and optionally recompute it.
+        if (is_long) {
+            _data->appendUInt32(0);
+            if (recompute_crc) {
+                recomputeCRC();
+            }
         }
     }
 }

@@ -308,20 +308,24 @@ namespace ts {
         }
 
         //!
-        //! Add a table in the file.
+        //! Add a binary table in the file.
+        //! If the table is not complete (there are missing sections),
+        //! the sections which are present are individually added.
         //! @param [in] table The binary table to add.
         //!
         void add(const BinaryTablePtr& table);
 
         //!
-        //! Add several tables in the file.
+        //! Add several binary tables in the file.
+        //! If a table is not complete (there are missing sections),
+        //! the sections which are present are individually added.
         //! @param [in] tables The binary tables to add.
         //!
         void add(const BinaryTablePtrVector& tables);
 
         //!
-        //! Add a table in the file.
-        //! The table is serialized
+        //! Add a typed table in the file.
+        //! The table is serialized first. Then its sections are added in the file.
         //! @param [in] table The table to add.
         //!
         void add(const AbstractTablePtr& table);
@@ -348,6 +352,22 @@ namespace ts {
         size_t packOrphanSections();
 
         //!
+        //! Reorganize all EIT sections according to ETSI TS 101 211.
+        //!
+        //! Only one EITp/f subtable is kept per service. It is split in two sections if two
+        //! events (present and following) are specified. All EIT schedule are kept. But they
+        //! are completely reorganized. All events are extracted and spread over new EIT
+        //! sections according to ETSI TS 101 211 rules.
+        //!
+        //! @param [in] reftime Reference time for EIT schedule. Only the date part is used.
+        //! This is the "last midnight" according to which EIT segments are assigned. By
+        //! default, the oldest event start time is used.
+        //! @see ts::EIT::ReorganizeSections()
+        //! @see ETSI TS 101 211, section 4.1.4
+        //!
+        void reorganizeEITs(const Time& reftime = Time());
+
+        //!
         //! This static method loads the XML model for tables and descriptors.
         //! It loads the main model and merges all extensions.
         //! @param [out] doc XML document which receives the model.
@@ -362,6 +382,11 @@ namespace ts {
         SectionPtrVector     _orphanSections;  //!< Sections which do not belong to any table.
         xml::Tweaks          _xmlTweaks;       //!< XML formatting and parsing tweaks.
         CRC32::Validation    _crc_op;          //!< Processing of CRC32 when loading sections.
+
+        //!
+        //! Rebuild _tables and _orphanSections from _sections.
+        //!
+        void rebuildTables();
 
         //!
         //! Parse an XML document.
