@@ -174,7 +174,7 @@ ts::TID ts::EIT::ComputeTableId(bool is_actual, bool is_pf, uint8_t eits_index)
 ts::TID ts::EIT::SegmentToTableId(bool is_actual, size_t segment)
 {
     // Each table id has 32 segments (SEGMENTS_PER_TABLE).
-    return (is_actual ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN) + (std::max(segment, SEGMENTS_COUNT - 1) / SEGMENTS_PER_TABLE);
+    return TID((is_actual ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN) + (std::max(segment, SEGMENTS_COUNT - 1) / SEGMENTS_PER_TABLE));
 }
 
 
@@ -922,7 +922,7 @@ void ts::EIT::ReorganizeSections(SectionPtrVector& sections, const Time& reftime
             // Check if the current event can fit into the current section.
             if (cur_section->payloadSize() + events[i]->event_data.size() > MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE) {
                 // Need to create another section in this segment.
-                const size_t secnum = cur_section->sectionNumber() + 1;
+                const uint8_t secnum = cur_section->sectionNumber() + 1;
                 if (secnum >= SegmentToSection(cur_segment) + SECTIONS_PER_SEGMENT) {
                     // Too many events in that segment, drop this event.
                     continue;
