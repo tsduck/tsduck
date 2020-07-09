@@ -28,20 +28,49 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Command line arguments for section file processing.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 22
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1907
+#include "tsArgsSupplierInterface.h"
+#include "tsSectionFile.h"
+#include "tsReport.h"
+#include "tsTime.h"
+
+namespace ts {
+    //!
+    //! Command line arguments for section file processing.
+    //! @ingroup cmd
+    //!
+    class TSDUCKDLL SectionFileArgs : public ArgsSupplierInterface
+    {
+    public:
+        //!
+        //! Constructor.
+        //!
+        SectionFileArgs();
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~SectionFileArgs();
+
+        // Public fields, by options.
+        bool pack_and_flush;   // Pack and flush incomplete tables before exiting.
+        bool eit_normalize;    // EIT normalization (ETSI TS 101 211).
+        Time eit_base_time;    // Last midnight reference for EIT's.
+
+        // Implementation of ArgsSupplierInterface.
+        virtual void defineArgs(Args& args) const override;
+        virtual bool loadArgs(DuckContext& duck, Args& args) override;
+
+        //!
+        //! Process the content of a section file according to the selected options.
+        //! @param [in,out] file Section file to manipulate.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on failure.
+        //!
+        bool processSectionFile(SectionFile& file, Report& report) const;
+    };
+}

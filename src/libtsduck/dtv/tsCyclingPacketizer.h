@@ -153,8 +153,9 @@ namespace ts {
         void addSections(const SectionPtrVector& sections, MilliSecond repetition_rate = 0);
 
         //!
-        //! Add all sections of a table into the packetizer.
-        //! The contents of the sections are shared.
+        //! Add all sections of a binary table into the packetizer.
+        //! The contents of the sections are shared. If the table is not complete (there are
+        //! missing sections), the sections which are present are individually added.
         //! @param [in] table A binary table to packetize.
         //! @param [in] repetition_rate Repetition rate of the sections in milliseconds.
         //! If zero, simply packetize sections one after the other.
@@ -162,8 +163,7 @@ namespace ts {
         void addTable(const BinaryTable& table, MilliSecond repetition_rate = 0);
 
         //!
-        //! Add all sections of a table into the packetizer.
-        //! The contents of the sections are shared.
+        //! Add all sections of a typed table into the packetizer.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table A table to packetize.
         //! @param [in] repetition_rate Repetition rate of the sections in milliseconds.
