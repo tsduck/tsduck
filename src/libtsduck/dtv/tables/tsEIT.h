@@ -142,8 +142,7 @@ namespace ts {
         //!
         static uint8_t SegmentToSection(size_t segment)
         {
-            // Each table id has 32 segments (SEGMENTS_PER_TABLE).
-            return uint8_t(segment % SEGMENTS_PER_TABLE);
+            return uint8_t(segment * SECTIONS_PER_SEGMENT);
         }
 
         //!
@@ -164,11 +163,7 @@ namespace ts {
         //! @param [in] event_start_time UTC start time of event.
         //! @return The corresponding segment number, from 0 to SEGMENTS_COUNT - 1.
         //!
-        static size_t TimeToSegment(const Time& last_midnight, const Time& event_start_time)
-        {
-            // Each segment covers 3 hours (SEGMENT_DURATION).
-            return size_t((event_start_time - last_midnight) / SEGMENT_DURATION);
-        }
+        static size_t TimeToSegment(const Time& last_midnight, const Time& event_start_time);
 
         //!
         //! Toggle an EIT table id between Actual and Other.
@@ -338,8 +333,8 @@ namespace ts {
         bool getTableId(const xml::Element*);
 
         // Build an empty EIT section for a given service. Return null pointer on error.
-        // Do not compute the CRC32 of the section.
-        static SectionPtr BuildEmptySection(TID tid, uint8_t section_number, const ServiceIdTriplet& serv);
+        // Do not compute the CRC32 of the section. Also insert the section in a vector of sections.
+        static SectionPtr BuildEmptySection(TID tid, uint8_t section_number, const ServiceIdTriplet& serv, SectionPtrVector& sections);
 
         // Extract the service id triplet from an EIT section.
         static ServiceIdTriplet GetService(const SectionPtr&);

@@ -257,7 +257,7 @@ void ts::SectionFile::collectLastTable()
 
 
 //----------------------------------------------------------------------------
-//! Reorganize all EIT sections according to ETSI TS 101 211.
+// Reorganize all EIT sections according to ETSI TS 101 211.
 //----------------------------------------------------------------------------
 
 void ts::SectionFile::reorganizeEITs(const ts::Time& reftime)

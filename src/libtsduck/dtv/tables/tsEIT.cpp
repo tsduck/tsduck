@@ -174,7 +174,24 @@ ts::TID ts::EIT::ComputeTableId(bool is_actual, bool is_pf, uint8_t eits_index)
 ts::TID ts::EIT::SegmentToTableId(bool is_actual, size_t segment)
 {
     // Each table id has 32 segments (SEGMENTS_PER_TABLE).
-    return TID((is_actual ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN) + (std::max(segment, SEGMENTS_COUNT - 1) / SEGMENTS_PER_TABLE));
+    return TID((is_actual ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN) + (std::min(segment, SEGMENTS_COUNT - 1) / SEGMENTS_PER_TABLE));
+}
+
+
+//----------------------------------------------------------------------------
+// Compute the segment of an event in an EIT schedule.
+//----------------------------------------------------------------------------
+
+size_t ts::EIT::TimeToSegment(const Time& last_midnight, const Time& event_start_time)
+{
+    if (event_start_time < last_midnight) {
+        // Should not happen, last midnight is the start time of the reference period.
+        return 0;
+    }
+    else {
+        // Each segment covers 3 hours (SEGMENT_DURATION).
+        return size_t((event_start_time - last_midnight) / SEGMENT_DURATION);
+    }
 }
 
 
@@ -338,9 +355,9 @@ void ts::EIT::serializeContent(DuckContext& duck, BinaryTable& table) const
         int target_section = section_number;
 
         // With EIT schedule, the events are grouped in 32 segments of 8 sections, covering 3 hours each.
-        if (_table_id >= TID_EIT_S_ACT_MIN && _table_id <= TID_EIT_S_OTH_MAX) {
+        if (IsSchedule(_table_id)) {
             assert(ev->start_time >= base_time);
-            target_section = 8 * std::min<int>(31, int((ev->start_time - base_time) / SEGMENT_DURATION));
+            target_section = SegmentToSection(std::min(TimeToSegment(base_time, ev->start_time), SEGMENTS_PER_TABLE - 1));
         }
 
         // If we cannot at least add the fixed part, open a new section.
@@ -722,7 +739,7 @@ ts::EIT::BinaryEvent::BinaryEvent(TID tid, const uint8_t*& data, size_t& size) :
 // Build an empty EIT section for a given service. Return null pointer on error.
 //----------------------------------------------------------------------------
 
-ts::SectionPtr ts::EIT::BuildEmptySection(TID tid, uint8_t section_number, const ServiceIdTriplet& serv)
+ts::SectionPtr ts::EIT::BuildEmptySection(TID tid, uint8_t section_number, const ServiceIdTriplet& serv, SectionPtrVector& sections)
 {
     // Build section data.
     ByteBlockPtr section_data(new ByteBlock(LONG_SECTION_HEADER_SIZE + EIT_PAYLOAD_FIXED_SIZE + SECTION_CRC32_SIZE));
@@ -744,7 +761,11 @@ ts::SectionPtr ts::EIT::BuildEmptySection(TID tid, uint8_t section_number, const
     PutUInt8(data + 13, tid);  // last table id
 
     // Build a section from the binary data.
-    return SectionPtr(new Section(section_data, PID_NULL, CRC32::IGNORE));
+    const SectionPtr sec(new Section(section_data, PID_NULL, CRC32::IGNORE));
+
+    // Insert the section in the list of them before returning it.
+    sections.push_back(sec);
+    return sec;
 }
 
 
@@ -862,9 +883,9 @@ void ts::EIT::ReorganizeSections(SectionPtrVector& sections, const Time& reftime
         assert(evcount > 0);
 
         // Build present and following sections.
-        const TID tid = events[0]->actual ? TID_EIT_PF_ACT : TID_EIT_PF_ACT;
-        const SectionPtr psec(BuildEmptySection(tid, 0, it->first));
-        const SectionPtr fsec(BuildEmptySection(tid, 1, it->first));
+        const TID tid = events[0]->actual ? TID_EIT_PF_ACT : TID_EIT_PF_OTH;
+        const SectionPtr psec(BuildEmptySection(tid, 0, it->first, out_sections));
+        const SectionPtr fsec(BuildEmptySection(tid, 1, it->first, out_sections));
         if (evcount == 1) {
             // Only a current event.
             psec->appendPayload(events[0]->event_data, false);
@@ -882,14 +903,10 @@ void ts::EIT::ReorganizeSections(SectionPtrVector& sections, const Time& reftime
         // Fix segment_last_section_number (offset 4 in payload). Recompute CRC now.
         psec->setUInt8(4, 1, true);
         fsec->setUInt8(4, 1, true);
-
-        // Insert present and following sections in output sections.
-        out_sections.push_back(psec);
-        out_sections.push_back(fsec);
     }
 
     // Pass 4: EIT schedule processing according to ETSI TS 101 211.
-    for (auto it = events_pf.begin(); it != events_pf.end(); ++it) {
+    for (auto it = events_sched.begin(); it != events_sched.end(); ++it) {
 
         // Get ordered list of events for a given service. Cannot be empty.
         const BinaryEventPtrVector& events(it->second);
@@ -903,20 +920,23 @@ void ts::EIT::ReorganizeSections(SectionPtrVector& sections, const Time& reftime
         // Create the section for segment 0. It can be empty, but all segments shall
         // have at least an empty section, until the last event in the service.
         size_t cur_segment = 0;
-        SectionPtr cur_section(BuildEmptySection(SegmentToTableId(actual, cur_segment), SegmentToSection(cur_segment), service));
-        out_sections.push_back(cur_section);
+        SectionPtr cur_section(BuildEmptySection(SegmentToTableId(actual, cur_segment), SegmentToSection(cur_segment), service, out_sections));
 
         // Loop on all events for this service.
         for (size_t i = 0; i < events.size(); ++i)  {
 
-            // Make sure we have a section for the segment of this event.
+            // If the event is before the reference "last midnight", it can't be scheduled and is ignored.
+            if (events[i]->start_time < last_midnight) {
+                continue;
+            }
+
+            // Compute the segment number of this event.
             const size_t segment = TimeToSegment(last_midnight, events[i]->start_time);
-            if (cur_section.isNull() || segment != cur_segment) {
-                // We have changed segment, we need to create all intermediate segments as empty.
-                while (++cur_segment <= segment) {
-                    cur_section = BuildEmptySection(SegmentToTableId(actual, cur_segment), SegmentToSection(cur_segment), service);
-                    out_sections.push_back(cur_section);
-                }
+
+            // If we have changed segment, we need to create all intermediate segments as empty.
+            while (cur_segment < segment) {
+                cur_segment++;
+                cur_section = BuildEmptySection(SegmentToTableId(actual, cur_segment), SegmentToSection(cur_segment), service, out_sections);
             }
 
             // Check if the current event can fit into the current section.
@@ -927,8 +947,7 @@ void ts::EIT::ReorganizeSections(SectionPtrVector& sections, const Time& reftime
                     // Too many events in that segment, drop this event.
                     continue;
                 }
-                cur_section = BuildEmptySection(SegmentToTableId(actual, cur_segment), secnum, service);
-                out_sections.push_back(cur_section);
+                cur_section = BuildEmptySection(SegmentToTableId(actual, cur_segment), secnum, service, out_sections);
             }
 
             // Now append the event to the section payload.
