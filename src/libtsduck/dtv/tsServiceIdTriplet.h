@@ -88,7 +88,7 @@ namespace ts {
         //! This is a value containing the original network id, TS id, service id and version.
         //! @return The "normalized" 64-bit identifier of the TS.
         //!
-        uint32_t normalized() const
+        uint64_t normalized() const
         {
             return (uint64_t(original_network_id) << 40) | (uint64_t(transport_stream_id) << 24) | (uint64_t(service_id) << 8) | uint64_t(version);
         }

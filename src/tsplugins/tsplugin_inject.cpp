@@ -228,7 +228,7 @@ bool ts::InjectPlugin::start()
 {
     // Get command line arguments
     duck.loadArgs(*this);
-    _sections_opt.loadArgs(duck, *this),
+    _sections_opt.loadArgs(duck, *this);
     _inject_pid = intValue<PID>(u"pid", PID_NULL);
     _repeat_count = intValue<size_t>(u"repeat", 0);
     _terminate = present(u"terminate");
