@@ -131,7 +131,7 @@ void ts::RST::deserializeContent(DuckContext& duck, const BinaryTable& table)
 void ts::RST::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the section
-    uint8_t payload[MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE];
+    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
     uint8_t* data = payload;
     size_t remain = sizeof(payload);
 

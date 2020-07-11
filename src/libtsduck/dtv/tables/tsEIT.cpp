@@ -316,25 +316,15 @@ void ts::EIT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 
 void ts::EIT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
-    // Inside an EIT, events shall be sorted in start time order.
-    // Build a list of events in order of start time.
-    std::list<const Event*> ordered_events;
-    for (auto it1 = events.begin(); it1 != events.end(); ++it1) {
-        ordered_events.push_back(&it1->second);
-    }
-    ordered_events.sort(LessEventPtr);
-
-    // For EIT schedule, sections are grouped into 32 segments of 8 sections.
-    // Each segment covers a period of 3 hours (8 segments per day, one EIT covers 4 days).
-    // The first segment starts the first day at 00:00:00, this is the base time for this EIT.
-    // See ETSI TR 101 211, section 4.1.4.2.
-    Time base_time;
-    if (!ordered_events.empty()) {
-        base_time = ordered_events.front()->start_time.thisDay();
-    }
+    // In the serialize() method, we do not attempt to reorder events and
+    // sections according to rules from ETSI TS 101 211. This is impossible in
+    // the general case since those rules prescript to skip sessions between
+    // segments, making the result an "invalid" table in the MPEG-TS sense.
+    // Applications wanting to produce a conformant set of EIT sections shall
+    // use the static method EIT::ReorganizeSections().
 
     // Build the sections
-    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
     int section_number = 0;
     uint8_t* data = payload;
     size_t remain = sizeof(payload);
@@ -348,71 +338,32 @@ void ts::EIT::serializeContent(DuckContext& duck, BinaryTable& table) const
     remain -= EIT_PAYLOAD_FIXED_SIZE;
 
     // Add all events in time order.
-    for (auto evit = ordered_events.begin(); evit != ordered_events.end(); ++evit) {
-        const Event* const ev = *evit;
+    for (auto evit = events.begin(); evit != events.end(); ++evit) {
+        const Event& ev(evit->second);
 
-        // Compute target section number for this event.
-        int target_section = section_number;
+        // Insert the characteristics of the event. When the rest of the section is not
+        // large enough to hold the entire event description, open a new section. Unless
+        // we are at the beginning of the section, in which case the event will be truncated.
 
-        // With EIT schedule, the events are grouped in 32 segments of 8 sections, covering 3 hours each.
-        if (IsSchedule(_table_id)) {
-            assert(ev->start_time >= base_time);
-            target_section = SegmentToSection(std::min(TimeToSegment(base_time, ev->start_time), SEGMENTS_PER_TABLE - 1));
-        }
-
-        // If we cannot at least add the fixed part, open a new section.
-        // Also add empty sections up to the target section.
-        while (remain < EIT_EVENT_FIXED_SIZE || section_number < target_section) {
+        if (data > payload + EIT_PAYLOAD_FIXED_SIZE && EIT_EVENT_FIXED_SIZE + ev.descs.binarySize() > remain) {
             addSection(table, section_number, payload, data, remain);
         }
 
-        // Insert the characteristics of the event. When the section is
-        // not large enough to hold the entire descriptor list, open a
-        // new section for the rest of the descriptors. In that case, the
-        // common properties of the event must be repeated.
-        bool starting = true;
-        size_t start_index = 0;
+        // Insert common characteristics of the service
+        assert(remain >= 12);
+        PutUInt16(data, ev.event_id);
+        EncodeMJD(ev.start_time, data + 2, 5);
+        data[7] = EncodeBCD(int(ev.duration / 3600));
+        data[8] = EncodeBCD(int((ev.duration / 60) % 60));
+        data[9] = EncodeBCD(int(ev.duration % 60));
+        data += 10;
+        remain -= 10;
 
-        while (starting || start_index < ev->descs.count()) {
+        // The following fields are inserted in the 4 "reserved" bits of the descriptor_loop_length.
+        const uint16_t reserved_bits = uint8_t(ev.running_status << 1) | (ev.CA_controlled ? 0x01 : 0x00);
 
-            // If we are at the beginning of an event description, make sure that the
-            // entire event description fits in the section. If it does not fit, start
-            // a new section. Note that huge event descriptions may not fit into one
-            // section. In that case, the event description will span two sections later.
-            if (starting && EIT_EVENT_FIXED_SIZE + ev->descs.binarySize() > remain) {
-                addSection(table, section_number, payload, data, remain);
-            }
-
-            starting = false;
-
-            // Insert common characteristics of the service
-            assert(remain >= 12);
-            PutUInt16(data, ev->event_id);
-            EncodeMJD(ev->start_time, data + 2, 5);
-            data[7] = EncodeBCD(int(ev->duration / 3600));
-            data[8] = EncodeBCD(int((ev->duration / 60) % 60));
-            data[9] = EncodeBCD(int(ev->duration % 60));
-            data += 10;
-            remain -= 10;
-
-            // Insert descriptors (all or some).
-            uint8_t* flags = data;
-            start_index = ev->descs.lengthSerialize(data, remain, start_index);
-
-            // The following fields are inserted in the 4 "reserved" bits of the descriptor_loop_length.
-            flags[0] = (flags[0] & 0x0F) | uint8_t(ev->running_status << 5) | (ev->CA_controlled ? 0x10 : 0x00);
-
-            // If not all descriptors were written, the section is full.
-            // Open a new one and continue with this event.
-            if (start_index < ev->descs.count()) {
-                addSection(table, section_number, payload, data, remain);
-            }
-        }
-
-        // With EIT p/f, close the section after each event (one event per section).
-        if (_table_id == TID_EIT_PF_ACT || _table_id == TID_EIT_PF_OTH) {
-            addSection(table, section_number, payload, data, remain);
-        }
+        // Insert descriptors (all or some).
+        ev.descs.lengthSerialize(data, remain, 0, reserved_bits);
     }
 
     // Add partial section (if there is one)
@@ -442,10 +393,9 @@ void ts::EIT::addSection(BinaryTable& table, int& section_number, uint8_t* paylo
                                  payload,
                                  data - payload)); // payload_size,
 
-    // Reinitialize pointers.
-    // Restart after constant part of payload (6 bytes).
-    remain += data - payload - 6;
-    data = payload + 6;
+    // Reinitialize pointers. Restart after constant part of payload (6 bytes).
+    remain += data - payload - EIT_PAYLOAD_FIXED_SIZE;
+    data = payload + EIT_PAYLOAD_FIXED_SIZE;
     section_number++;
 }
 

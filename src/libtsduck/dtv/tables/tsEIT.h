@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an Event Information Table (EIT)
+//!  Representation of a DVB Event Information Table (EIT)
 //!
 //----------------------------------------------------------------------------
 
@@ -40,7 +40,39 @@
 
 namespace ts {
     //!
-    //! Representation of an Event Information Table (EIT).
+    //! Representation of a DVB Event Information Table (EIT).
+    //!
+    //! EIT's are very special tables. In fact, EIT's are not "tables" in the MPEG-TS sense.
+    //! A valid "table" contains all sections from number zero to @a last_section_number.
+    //! EIT's, on the contrary, are organized in "segments" as described in ETSI TS 101 211,
+    //! with missing sections between segments.
+    //!
+    //! An instance of the C++ class named EIT (and its XML counterpart) logically contains
+    //! the same information as an EIT as defined in ETSI EN 300 468, ie. a service identification
+    //! and a list of events in that service. Serializing such an object produces a set of
+    //! contiguous sections which are syntactically correct according to ETSI EN 300 468.
+    //! However, the organization of events and sections is generally not compatible with
+    //! the rules from ETSI TS 101 211 (especially EIT-schedule). The static method
+    //! ReorganizeSections() can be used to transform a set of EIT sections and reorganize
+    //! events and sections to produce a set of sections which are compatible with the
+    //! rules from ETSI TS 101 211. The resulting sections can be directly injected in
+    //! PID 18 of a transport stream.
+    //!
+    //! Consequently, the correct way to produce conformant EIT sections is the following:
+    //!
+    //! - From C++ applications: Build instances of class EIT, serialize them in instances
+    //!   of class BinaryTable. Then, collect all sections from all BinaryTable instances
+    //!   in a vector of sections or SectionPtrVector. Finally, invoke the static method
+    //!   EIT::ReorganizeSections() over the complete vector of EIT sections.
+    //!
+    //! - From scripts and command lines: Create XML files containing \<EIT> structures.
+    //!   The organization of events over \<EIT> XML structures does not matter. Load these
+    //!   XML files with the option @c -\-eit-normalization (in plugin @a inject for instance).
+    //!   This option has the effect of invoking EIT::ReorganizeSections() over all sections
+    //!   which are created from each XML file.
+    //!
+    //! @see ETSI EN 300 468, 5.2.4.
+    //! @see ETSI TS 101 211, 4.1.4.
     //! @ingroup table
     //!
     class TSDUCKDLL EIT : public AbstractLongTable
@@ -277,8 +309,21 @@ namespace ts {
 
         //!
         //! Static method to fix the segmentation of a binary EIT.
+        //!
+        //! Warning: This method is legacy and should no longer be used. Now preferably use
+        //! the method ReorganizeSections(). The method Fix() works on a BinaryTable object.
+        //! Such an object contains a "valid" table, ie. containing all sections, from zero
+        //! to last_section_number. But in practice, EIT's are never complete tables. They are
+        //! a set of sections which are organized in segments as described in ETSI TS 101 211,
+        //! with missing sections between segments. As a consequence, attempting to reorganize
+        //! EIT sections inside a valid BinaryTable object is not possible in the general case.
+        //!
+        //! The method ReorganizeSections(), on the contrary, works on a set or sections, without
+        //! any attempt to keep valid full tables.
+        //!
         //! @param [in,out] table The table to fix. Ignored if it is not valid or not an EIT.
         //! @param [in] mode The type of fix to apply.
+        //! @see ReorganizeSections()
         //!
         static void Fix(BinaryTable& table, FixMode mode);
 
@@ -290,6 +335,8 @@ namespace ts {
         //!
         //! All EIT schedule are kept. But they are completely reorganized. All events are
         //! extracted and spread over new EIT sections according to ETSI TS 101 211 rules.
+        //!
+        //! Non-EIT sections are left unmodified.
         //!
         //! @param [in,out] sections A vector of safe pointers to sections. Only valid EIT
         //! sections are used. On output, a completely new list of sections is built.
@@ -303,6 +350,7 @@ namespace ts {
 
         //!
         //! Modify an EIT-schedule section to make it "standalone", outside any other table.
+        //! Its section number and last section number are set to zero.
         //! @param [in,out] section The section to update.
         //! @return True if the section was modified, false otherwise (not an EIT-scheduled or not modified).
         //!

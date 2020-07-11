@@ -267,7 +267,7 @@ void ts::CableEmergencyAlertTable::deserializeContent(DuckContext& duck, const B
 void ts::CableEmergencyAlertTable::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the section (only one is allowed in an EAS table).
-    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
     uint8_t* data = payload;
     size_t remain = sizeof(payload);
 

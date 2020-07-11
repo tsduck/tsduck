@@ -148,7 +148,7 @@ void ts::SelectionInformationTable::serializeContent(DuckContext& duck, BinaryTa
 {
     // Build the section. Note that a Selection Information Table is not allowed
     // to use more than one section, see ETSI EN 300 468, 7.1.2.
-    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
     uint8_t* data = payload;
     size_t remain = sizeof(payload);
 

@@ -181,7 +181,7 @@ void ts::STT::deserializeSection(DuckContext& duck, const Section& section)
 void ts::STT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the section. Note that a STT is not allowed to use more than one section, see A/65, section 6.1.
-    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
     uint8_t* data = payload;
     size_t remain = sizeof(payload);
 

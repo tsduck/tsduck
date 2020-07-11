@@ -118,7 +118,7 @@ void ts::AbstractDescriptorsTable::serializeContent(DuckContext& duck, BinaryTab
 {
     // Add all descriptors, creating several sections if necessary.
     // Make sure to create at least one section if the list is empty.
-    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
     int section_number = 0;
     uint8_t* data = payload;
     size_t remain = sizeof(payload);

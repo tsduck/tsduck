@@ -165,7 +165,7 @@ void ts::BIT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 void ts::BIT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the sections
-    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
     int section_number = 0;
     uint8_t* data = payload;
     size_t remain = sizeof(payload);

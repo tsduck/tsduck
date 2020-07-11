@@ -333,7 +333,7 @@ bool ts::UNT::DeserializeDevices(Devices& devs, const uint8_t*& data, size_t& re
 void ts::UNT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the sections
-    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
     int section_number = 0;
     uint8_t* data = payload;
     size_t remain = sizeof(payload);
