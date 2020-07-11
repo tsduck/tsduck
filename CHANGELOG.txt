@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.22-1907
+VERSION 3.22-1911
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -25,6 +25,9 @@ VERSION 3.22-1907
 
   * Fixed issue #587: Due to an intermediate integer overflow, the report PCR
     jitters were sometimes completely incorrect.
+  * Sections of some DVB, ATSC and ARIB tables, when serialized, were limited
+    to 1024 bytes instead of 4096. Only MPEG-defined PSI sections should be
+    limited to 1024 bytes.
 
 -------------------------------------------------------------------------------
 

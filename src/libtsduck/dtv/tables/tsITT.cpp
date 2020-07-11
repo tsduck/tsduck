@@ -133,7 +133,7 @@ void ts::ITT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 void ts::ITT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the sections. There is only a descriptor loop in the payload.
-    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
     int section_number = 0;
     size_t desc_index = 0;
 

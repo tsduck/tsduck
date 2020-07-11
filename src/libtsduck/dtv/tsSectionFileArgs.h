@@ -57,9 +57,9 @@ namespace ts {
         virtual ~SectionFileArgs();
 
         // Public fields, by options.
-        bool pack_and_flush;   // Pack and flush incomplete tables before exiting.
-        bool eit_normalize;    // EIT normalization (ETSI TS 101 211).
-        Time eit_base_time;    // Last midnight reference for EIT's.
+        bool pack_and_flush;   //!< Pack and flush incomplete tables before exiting.
+        bool eit_normalize;    //!< EIT normalization (ETSI TS 101 211).
+        Time eit_base_time;    //!< Last midnight reference for EIT normalization.
 
         // Implementation of ArgsSupplierInterface.
         virtual void defineArgs(Args& args) const override;

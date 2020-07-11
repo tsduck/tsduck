@@ -170,7 +170,7 @@ void ts::ERT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 void ts::ERT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the sections
-    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
     int section_number = 0;
 
     // Add fixed part (3 bytes). Will remain unmodified in all sections.
