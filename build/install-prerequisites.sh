@@ -83,7 +83,7 @@ MINOR=$(lsb_release -r 2>/dev/null | sed -e '/\./!d' -e 's/.*:[\t ]*//' -e 's/.*
 if [[ $(uname -s) == Darwin ]]; then
 
     # macOS
-    pkglist="gnu-sed grep dos2unix pcsc-lite srt"
+    pkglist="gnu-sed grep dos2unix coreutils pcsc-lite srt"
     if [[ -z $(which clang 2>/dev/null) ]]; then
         # Build tools not installed
         xcode-select --install
