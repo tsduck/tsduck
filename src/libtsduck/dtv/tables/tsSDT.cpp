@@ -55,7 +55,6 @@ ts::SDT::SDT(bool is_actual_, uint8_t version_, bool is_current_, uint16_t ts_id
     onetw_id(onetw_id_),
     services(this)
 {
-    _is_valid = true;
 }
 
 ts::SDT::SDT(DuckContext& duck, const BinaryTable& table) :
@@ -74,14 +73,21 @@ ts::SDT::SDT(const SDT& other) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::SDT::tableIdExtension() const
+{
+    return ts_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::SDT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     ts_id = 0;
     onetw_id = 0;
     services.clear();

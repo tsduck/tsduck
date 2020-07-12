@@ -76,6 +76,7 @@ namespace ts {
         DSMCCStreamDescriptorsTable& operator=(const DSMCCStreamDescriptorsTable& other);
 
         // Inherited methods
+        virtual bool isPrivate() const override;
         DeclareDisplaySection();
 
     protected:

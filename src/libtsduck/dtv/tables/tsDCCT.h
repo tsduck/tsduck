@@ -153,6 +153,7 @@ namespace ts {
         DCCT& operator=(const DCCT& other) = default;
 
         // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:

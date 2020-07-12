@@ -39,16 +39,16 @@
 #include "tsMPEG.h"
 
 namespace ts {
-
-    class DuckContext;
-    class Descriptor;
-    class DescriptorList;
-    class PSIBuffer;
-    class TablesDisplay;
-
     //!
     //! Abstract base class for MPEG PSI/SI descriptors.
     //! @ingroup descriptor
+    //!
+    //! A descriptor subclass shall override the following methods:
+    //! - clearContent()
+    //! - serializePayload()
+    //! - deserializePayload()
+    //! - buildXML()
+    //! - analyzeXML()
     //!
     class TSDUCKDLL AbstractDescriptor: public AbstractSignalization
     {
@@ -154,7 +154,7 @@ namespace ts {
         //! The default implementation generates an error. So, if a subclass overrides neither deserialize()
         //! nor deserializePayload(), all deserialization will fail.
         //!
-        //! @param [in,out] buf Serialization buffer. The subclass shall read the descriptor payload from
+        //! @param [in,out] buf Deserialization buffer. The subclass shall read the descriptor payload from
         //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
         //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
         //!

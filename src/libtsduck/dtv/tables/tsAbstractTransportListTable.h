@@ -102,6 +102,9 @@ namespace ts {
         //!
         void clearPreferredSections();
 
+        // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
+
     protected:
         //!
         //! Table id extension.

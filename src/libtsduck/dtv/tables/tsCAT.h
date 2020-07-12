@@ -75,5 +75,8 @@ namespace ts {
         //! Virtual destructor.
         //!
         virtual ~CAT();
+
+        // Inherited methods
+        virtual bool isPrivate() const override;
     };
 }

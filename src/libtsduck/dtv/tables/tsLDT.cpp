@@ -55,7 +55,6 @@ ts::LDT::LDT(uint8_t vers, bool cur) :
     original_network_id(0),
     descriptions(this)
 {
-    _is_valid = true;
 }
 
 ts::LDT::LDT(const LDT& other) :
@@ -80,14 +79,21 @@ ts::LDT::Description::Description(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::LDT::tableIdExtension() const
+{
+    return original_service_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::LDT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     original_service_id = 0;
     transport_stream_id = 0;
     original_network_id = 0;

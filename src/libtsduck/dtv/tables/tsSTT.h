@@ -106,6 +106,7 @@ namespace ts {
         Time utcTime() const;
 
         // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:

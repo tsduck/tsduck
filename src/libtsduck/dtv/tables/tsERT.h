@@ -111,6 +111,7 @@ namespace ts {
         ERT& operator=(const ERT& other) = default;
 
         // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:

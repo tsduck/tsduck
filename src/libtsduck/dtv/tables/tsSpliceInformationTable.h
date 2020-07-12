@@ -83,6 +83,7 @@ namespace ts {
         void adjustPTS();
 
         // Inherited methods
+        virtual bool isPrivate() const override;
         DeclareDisplaySection();
 
         //!

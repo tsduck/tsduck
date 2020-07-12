@@ -53,7 +53,6 @@ ts::ATSCEIT::ATSCEIT(uint8_t version_, uint16_t source_id_) :
     protocol_version(0),
     events(this)
 {
-    _is_valid = true;
 }
 
 ts::ATSCEIT::ATSCEIT(DuckContext& duck, const BinaryTable& table) :
@@ -83,14 +82,21 @@ ts::ATSCEIT::Event::Event(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::ATSCEIT::tableIdExtension() const
+{
+    return source_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::ATSCEIT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     source_id = 0;
     protocol_version = 0;
     events.clear();

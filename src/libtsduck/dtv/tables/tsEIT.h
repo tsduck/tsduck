@@ -357,6 +357,7 @@ namespace ts {
         static bool SetStandaloneSchedule(Section& section);
 
         // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:

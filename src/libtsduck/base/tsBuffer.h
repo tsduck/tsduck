@@ -504,6 +504,12 @@ namespace ts {
         bool dropReadWriteState(size_t level = NPOS);
 
         //!
+        //! Get the current number of pushed states of the read/write streams.
+        //! @return The current number of pushed states of the read/write streams.
+        //!
+        size_t pushedReadWriteStateLevels() const { return _saved_states.size(); }
+
+        //!
         //! Change the usable size of the buffer.
         //! @param [in] size New usable size in bytes of the buffer. In some cases, the final granted
         //! size can be different:

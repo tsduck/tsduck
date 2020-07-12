@@ -44,7 +44,6 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid_, const UChar* xm
     descs(this),
     _tid_ext(tid_ext_)
 {
-    _is_valid = true;
 }
 
 ts::AbstractDescriptorsTable::AbstractDescriptorsTable(const ts::AbstractDescriptorsTable& other) :
@@ -65,14 +64,21 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable(DuckContext& duck, TID ti
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::AbstractDescriptorsTable::tableIdExtension() const
+{
+    return _tid_ext;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::AbstractDescriptorsTable::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     descs.clear();
     _tid_ext = 0xFFFF;
 }
@@ -131,7 +137,7 @@ void ts::AbstractDescriptorsTable::serializeContent(DuckContext& duck, BinaryTab
 
         // Add section in the table
         table.addSection(new Section(_table_id,
-                                     false,  // is_private_section
+                                     isPrivate(),
                                      _tid_ext,
                                      version,
                                      is_current,

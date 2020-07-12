@@ -65,3 +65,13 @@ ts::TSDT::TSDT(const ts::TSDT& other) :
 ts::TSDT::~TSDT()
 {
 }
+
+
+//----------------------------------------------------------------------------
+// Inherited public methods
+//----------------------------------------------------------------------------
+
+bool ts::TSDT::isPrivate() const
+{
+    return false; // MPEG-defined
+}

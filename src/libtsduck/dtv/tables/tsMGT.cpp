@@ -54,7 +54,6 @@ ts::MGT::MGT(uint8_t version_) :
     tables(this),
     descs(this)
 {
-    _is_valid = true;
 }
 
 ts::MGT::MGT(const MGT& other) :
@@ -82,14 +81,21 @@ ts::MGT::TableType::TableType(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::MGT::tableIdExtension() const
+{
+    return 0;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::MGT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     protocol_version = 0;
     tables.clear();
     descs.clear();

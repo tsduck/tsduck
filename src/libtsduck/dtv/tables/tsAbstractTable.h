@@ -39,11 +39,6 @@
 #include "tsMPEG.h"
 
 namespace ts {
-
-    class tsBinaryTable;
-    class TablesDisplay;
-    class DVBCharTable;
-
     //!
     //! Abstract base class for MPEG PSI/SI tables.
     //! @ingroup table
@@ -55,6 +50,18 @@ namespace ts {
     //! call a new pure virtual method. The "final" attribute is here to detect
     //! old subclasses which do not yet use the new scheme.
     //!
+    //! A table subclass shall override the following methods:
+    //! - clearContent()
+    //! - tableIdExtension() : for long tables only, see AbstractLongTable
+    //! - serializePayload()
+    //! - deserializePayload()
+    //! - buildXML()
+    //! - analyzeXML()
+    //!
+    //! A table subclass may also override the following methods when necessary:
+    //! - isPrivate() : for non-private table, ie. MPEG-defined or SCTE-defined.
+    //! - isValidTableId() : for table types accepting several table id values.
+    //!
     class TSDUCKDLL AbstractTable: public AbstractSignalization
     {
     public:
@@ -62,7 +69,14 @@ namespace ts {
         //! Get the table_id.
         //! @return The table_id.
         //!
-        TID tableId() const {return _table_id;}
+        TID tableId() const { return _table_id; }
+
+        //!
+        //! Check if the table is a private one (ie. not MPEG-defined).
+        //! The default implementation returns true. MPEG-defined tables should override this method to return false.
+        //! @return True if the table is a private one (ie. not MPEG-defined).
+        //!
+        virtual bool isPrivate() const;
 
         //!
         //! This method serializes a table.
@@ -293,16 +307,111 @@ namespace ts {
         //! @param [out] bin A binary table object.
         //! Its content is replaced with a binary representation of this object.
         //!
-        virtual void serializeContent(DuckContext& duck, BinaryTable& bin) const = 0;
+        virtual void serializeContent(DuckContext& duck, BinaryTable& bin) const;
 
         //!
-        //! This abstract method deserializes the content of a binary table.
+        //! This method deserializes the content of a binary table.
+        //!
         //! In case of success, this object is replaced with the interpreted content of @a bin.
         //! In case of error, this object is invalidated.
+        //!
+        //! The subclass shall preferably override deserializePayload(). As legacy, the subclass may directly override
+        //! deserializeContent() but this is not recommended for new tables. At some point, if we can refactor all
+        //! tables to the new scheme using deserializePayload(), deserializeContent() will disappear or
+        //! become "final" and will no longer allow override.
+        //!
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary table to interpret according to the table subclass.
         //!
-        virtual void deserializeContent(DuckContext& duck, const BinaryTable& bin) = 0;
+        virtual void deserializeContent(DuckContext& duck, const BinaryTable& bin);
+
+        //!
+        //! This abstract method serializes the payload of all sections in the table.
+        //!
+        //! When serialize() is called, the output binary table is cleared and serializePayload()
+        //! is called. A subclass shall implement serializePayload() which adds all required sections
+        //! in the binary table.
+        //!
+        //! Note that it is not necessary to explicitly add the last (or only) section. Upon return from
+        //! serializePayload(), serialize() checks the state of the @a payload buffer. If the output
+        //! binary table is still empty or if the @a payload buffer is not empty (or not empty after
+        //! the last saved write position), then addOneSection() is automatically called.
+        //!
+        //! This is now the preferred method for table serialization: use the default implementation
+        //! of serializeContent() and let it call the overridden serializePayload().
+        //!
+        //! The default implementation generates an error. So, if a subclass overrides neither serializeContent()
+        //! nor serializePayload(), all serialization will fail.
+        //!
+        //! @param [in,out] table The binary table into which this object shall be serialized. The @a table is
+        //! initially empty when serialize() calls serializePayload().
+        //! @param [in,out] payload A PSIBuffer with the appropriate size for the section payload. The @a payload
+        //! buffer is initially empty when serialize() calls serializePayload().
+        //!
+        virtual void serializePayload(BinaryTable& table, PSIBuffer& payload) const;
+
+        //!
+        //! This abstract method deserializes the payload of a section.
+        //!
+        //! When deserialize() is called, this object is cleared and validated. Then, deserializePayload()
+        //! is invoked for each section in the binary table. A subclass shall implement deserializePayload()
+        //! which adds the content of the binary section to the C++ object. Do not reset the object in
+        //! deserializePayload() since it is repeatedly called for each section of a single binary table.
+        //!
+        //! This is now the preferred method for table deserialization: use the default implementation
+        //! of deserializeContent() and let it call the overridden deserializePayload().
+        //!
+        //! The default implementation generates an error. So, if a subclass overrides neither deserializeContent()
+        //! nor deserializePayload(), all deserialization will fail.
+        //!
+        //! @param [in,out] buf Deserialization buffer. The subclass shall read the descriptor payload from
+        //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
+        //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+        //! @param [in] section A reference to the section. Can be used to access values in the section header
+        //! (typically for long sections).
+        //!
+        virtual void deserializePayload(PSIBuffer& buf, const Section& section);
+
+        //!
+        //! Helper method for serializePayload(): add a section in a binary table.
+        //!
+        //! For long tables, the section number is always one more than the current last section in the table.
+        //!
+        //! It the @a payload buffer has a pushed read/write state, this state is restored and immediately pushed again.
+        //! The typical use case is the following:
+        //! - A table may create more than one section.
+        //! - The payload of all sections starts with the same fixed data.
+        //! - In the subclass, the method serializePayload() builds the initial fixed data once.
+        //! - The method serializePayload() immediately pushes the read/write state of the buffer.
+        //! - The method serializePayload() builds payloads and call addOneSection().
+        //! - Upon return from addOneSection(), the buffer is back right after the initial fixed data.
+        //!
+        //! @param [in,out] table The binary table into which the new section shall be added.
+        //! @param [in,out] payload A PSIBuffer containing the section payload between the read and the write pointer.
+        //!
+        void addOneSection(BinaryTable& table, PSIBuffer& payload) const;
+
+        //!
+        //! Actual implementation of adding one section in a binary table.
+        //! Do not call directly, it is only called by addOneSection() and is overridden in AbstractLongTable.
+        //! @param [in,out] table The binary table into which the new section shall be added.
+        //! @param [in,out] payload A PSIBuffer containing the section payload between the read and the write pointer.
+        //!
+        virtual void addOneSectionImpl(BinaryTable& table, PSIBuffer& payload) const;
+
+        //!
+        //! Wrapper for deserializePayload().
+        //! This is a method to overload in intermediate classes to avoid using "call superclass" to all tables.
+        //! @param [in,out] buf Deserialization buffer.
+        //! @param [in] section A reference to the section.
+        //!
+        virtual void deserializePayloadWrapper(PSIBuffer& buf, const Section& section);
+
+        //!
+        //! Get the maximum size in bytes of the payload of sections of this table.
+        //! @return The maximum size in bytes of the payload of sections of this table.
+        //!
+        virtual size_t maxPayloadSize() const;
 
     private:
         // Unreachable constructors and operators.

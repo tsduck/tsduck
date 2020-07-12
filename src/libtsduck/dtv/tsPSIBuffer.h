@@ -34,11 +34,13 @@
 
 #pragma once
 #include "tsBuffer.h"
+#include "tsMPEG.h"
 #include "tsCharset.h"
 
 namespace ts {
 
     class DuckContext;
+    class Section;
 
     //!
     //! A specialized subclass of ts::Buffer for PSI serialization.
@@ -60,7 +62,7 @@ namespace ts {
         explicit PSIBuffer(DuckContext& duck, size_t size = DEFAULT_SIZE);
 
         //!
-        //! Constructor using an external memory area which must remain valid as long as the Buffer object is used and not reset.
+        //! Constructor using an external memory area which must remain valid as long as the PSIBuffer object is used and not reset.
         //!
         //! When @a read_only is true, the read index is at the beginning of the buffer and
         //! the write index is at the end of the buffer. When @a read_only is false,
@@ -74,7 +76,7 @@ namespace ts {
         PSIBuffer(DuckContext& duck, void* data, size_t size, bool read_only = false);
 
         //!
-        //! Constructor using a read-only external memory area which must remain valid as long as the Buffer object is used and not reset.
+        //! Constructor using a read-only external memory area which must remain valid as long as the PSIBuffer object is used and not reset.
         //!
         //! The read index is at the beginning of the buffer and the write index is at the end of the buffer.
         //!
@@ -85,10 +87,39 @@ namespace ts {
         PSIBuffer(DuckContext& duck, const void* data, size_t size);
 
         //!
+        //! Constructor over the payload of a read-only section which must remain unmodified as long as the PSIBuffer object is used and not reset.
+        //!
+        //! The read index is at the beginning of the section payload and the write index is at the end of the section payload.
+        //!
+        //! @param [in,out] duck Reference to TSDuck execution context.
+        //! @param [in] section Section the payload of which is analysed by this PSIBuffer.
+        //!
+        PSIBuffer(DuckContext& duck, const Section& section);
+
+        //!
         //! Get a reference to the associated TSDuck execution context.
         //! @return A reference to the associated TSDuck execution context.
         //!
         DuckContext& duck() const { return _duck; }
+
+        //!
+        //! Deserialize a 13-bit PID value.
+        //! If the current read pointer is byte-aligned, 3 bits are skipped first.
+        //! If the current read bit pointer is 3, the PID value is directly read.
+        //! For all other read pointers, a read error is generated.
+        //! @return The decoded 13-bit PID value.
+        //!
+        PID getPID();
+
+        //!
+        //! Serialize a 13-bit PID value.
+        //! If the current write pointer is byte-aligned, 3 '1' bits are written first.
+        //! If the current write bit pointer is 3, the PID value is directly written.
+        //! For all other write pointers, a write error is generated.
+        //! @param [in] pid 13-bit PID value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putPID(PID pid);
 
         //!
         //! Serialize a 3-byte language or country code and advance the write pointer.

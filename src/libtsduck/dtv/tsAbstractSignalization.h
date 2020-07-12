@@ -71,7 +71,7 @@ namespace ts {
         //! This method clears the content of the table or descriptor.
         //! Upon return, the object is valid and in the same empty state as after a default constructor.
         //!
-        virtual void clear() final;
+        virtual void clear();
 
         //!
         //! Get the XMl node name representing this table or descriptor.
@@ -97,7 +97,7 @@ namespace ts {
         //! In case of success, this object is replaced with the interpreted content of the XML structure.
         //! In case of error, this object is invalidated.
         //!
-        //! This method checks the name of the XML node and then invokes analyzeXML() in the subclass. 
+        //! This method checks the name of the XML node and then invokes analyzeXML() in the subclass.
         //! Depending on the returned values of analyzeXML(), this object is either validated or invalidated.
         //!
         //! @param [in,out] duck TSDuck execution context.

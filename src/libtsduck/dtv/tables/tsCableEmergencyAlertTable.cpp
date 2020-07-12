@@ -68,7 +68,6 @@ ts::CableEmergencyAlertTable::CableEmergencyAlertTable(uint8_t sequence_number) 
     exceptions(),
     descs(this)
 {
-    _is_valid = true;
 }
 
 ts::CableEmergencyAlertTable::CableEmergencyAlertTable(const CableEmergencyAlertTable& other) :
@@ -124,14 +123,28 @@ ts::CableEmergencyAlertTable::Exception::Exception(uint16_t major, uint16_t mino
 
 
 //----------------------------------------------------------------------------
+// Inherited public methods
+//----------------------------------------------------------------------------
+
+bool ts::CableEmergencyAlertTable::isPrivate() const
+{
+    // Although not MPEG-defined, SCTE section are "non private".
+    return false;
+}
+
+uint16_t ts::CableEmergencyAlertTable::tableIdExtension() const
+{
+    // Specified as zero in this table.
+    return 0;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear all fields.
 //----------------------------------------------------------------------------
 
 void ts::CableEmergencyAlertTable::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     protocol_version = 0;
     EAS_event_ID = 0;
     EAS_originator_code.clear();

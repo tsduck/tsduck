@@ -61,7 +61,6 @@ ts::DCCSCT::DCCSCT(uint8_t version_) :
     updates(this),
     descs(this)
 {
-    _is_valid = true;
 }
 
 ts::DCCSCT::DCCSCT(const DCCSCT& other) :
@@ -94,14 +93,21 @@ ts::DCCSCT::Update::Update(const AbstractTable* table, UpdateType type) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::DCCSCT::tableIdExtension() const
+{
+    return dccsct_type;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::DCCSCT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     dccsct_type = 0;
     protocol_version = 0;
     descs.clear();

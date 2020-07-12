@@ -48,7 +48,6 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 ts::TVCT::TVCT(uint8_t version_, bool is_current_) :
     VCT(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_)
 {
-    _is_valid = true;
 }
 
 ts::TVCT::TVCT(DuckContext& duck, const BinaryTable& table) :

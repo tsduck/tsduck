@@ -76,6 +76,16 @@ ts::DSMCCStreamDescriptorsTable& ts::DSMCCStreamDescriptorsTable::operator=(cons
 
 
 //----------------------------------------------------------------------------
+// Inherited public methods
+//----------------------------------------------------------------------------
+
+bool ts::DSMCCStreamDescriptorsTable::isPrivate() const
+{
+    return false; // MPEG-defined
+}
+
+
+//----------------------------------------------------------------------------
 // A static method to display a section.
 //----------------------------------------------------------------------------
 

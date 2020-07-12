@@ -47,6 +47,7 @@ namespace ts {
         DescriptorList descs; //!< List of descriptors.
 
         // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:

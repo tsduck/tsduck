@@ -57,7 +57,6 @@ ts::LIT::LIT(uint8_t vers, bool cur) :
     original_network_id(0),
     events(this)
 {
-    _is_valid = true;
 }
 
 ts::LIT::LIT(const LIT& other) :
@@ -84,14 +83,21 @@ ts::LIT::Event::Event(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::LIT::tableIdExtension() const
+{
+    return event_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::LIT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     event_id = 0;
     service_id = 0;
     transport_stream_id = 0;

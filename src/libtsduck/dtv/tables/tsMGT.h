@@ -107,6 +107,7 @@ namespace ts {
         MGT& operator=(const MGT& other) = default;
 
         // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
         //!

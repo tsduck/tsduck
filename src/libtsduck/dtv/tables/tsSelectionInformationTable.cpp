@@ -56,7 +56,6 @@ ts::SelectionInformationTable::SelectionInformationTable(uint8_t version_, bool 
     descs(this),
     services(this)
 {
-    _is_valid = true;
 }
 
 ts::SelectionInformationTable::SelectionInformationTable(const SelectionInformationTable& other) :
@@ -74,14 +73,21 @@ ts::SelectionInformationTable::SelectionInformationTable(DuckContext& duck, cons
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::SelectionInformationTable::tableIdExtension() const
+{
+    return 0xFFFF;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::SelectionInformationTable::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     descs.clear();
     services.clear();
 }

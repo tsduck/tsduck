@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Representation of a Program Map Table (PMT).
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.4.4.8
     //! @ingroup table
     //!
     class TSDUCKDLL PMT : public AbstractLongTable
@@ -159,6 +160,8 @@ namespace ts {
         PID firstVideoPID() const;
 
         // Inherited methods
+        virtual bool isPrivate() const override;
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:

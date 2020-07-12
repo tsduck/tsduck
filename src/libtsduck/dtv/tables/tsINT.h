@@ -113,6 +113,7 @@ namespace ts {
         INT(DuckContext& duck, const BinaryTable& table);
 
         // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:

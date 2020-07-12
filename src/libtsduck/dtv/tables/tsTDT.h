@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Representation of a Time & Date Table (TDT)
+    //! @see ETSI EN 300 468, 5.2.5
     //! @ingroup table
     //!
     class TSDUCKDLL TDT : public AbstractTable

@@ -83,7 +83,6 @@ ts::INT::INT(uint8_t version_, bool is_current_) :
     platform_descs(this),
     devices(this)
 {
-    _is_valid = true;
 }
 
 ts::INT::INT(const INT& other) :
@@ -104,20 +103,30 @@ ts::INT::INT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::INT::tableIdExtension() const
+{
+    // The table id extension is made of action_type and platform_id_hash.
+    return uint16_t(uint16_t(action_type) << 8) |
+           uint16_t(((platform_id >> 16) & 0xFF) ^ ((platform_id >> 8) & 0xFF) ^ (platform_id& 0xFF));
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::INT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     action_type = 0;
     platform_id = 0;
     processing_order = 0;
     platform_descs.clear();
     devices.clear();
 }
+
 
 //----------------------------------------------------------------------------
 // Deserialize a descriptor list. Update data and remain. Return true on success.
@@ -305,13 +314,9 @@ void ts::INT::addSection(BinaryTable& table,
                          uint8_t*& data,
                          size_t& remain) const
 {
-    // The table id extension is made of action_type and platform_id_hash.
-    const uint16_t tidext = uint16_t(uint16_t(action_type) << 8) |
-        uint16_t(((platform_id >> 16) & 0xFF) ^ ((platform_id >> 8) & 0xFF) ^ (platform_id& 0xFF));
-
     table.addSection(new Section(_table_id,
                                  true,    // is_private_section
-                                 tidext,
+                                 tableIdExtension(),
                                  version,
                                  is_current,
                                  uint8_t(section_number),

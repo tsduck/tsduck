@@ -31,6 +31,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -54,7 +55,6 @@ ts::PAT::PAT(uint8_t version_, bool is_current_, uint16_t ts_id_, PID nit_pid_) 
     nit_pid(nit_pid_),
     pmts()
 {
-    _is_valid = true;
 }
 
 ts::PAT::PAT(DuckContext& duck, const BinaryTable& table) :
@@ -65,16 +65,28 @@ ts::PAT::PAT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
+// Inherited public methods
+//----------------------------------------------------------------------------
+
+bool ts::PAT::isPrivate() const
+{
+    return false; // MPEG-defined
+}
+
+uint16_t ts::PAT::tableIdExtension() const
+{
+    return ts_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::PAT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     ts_id = 0;
-    nit_pid = PID_NIT;
+    nit_pid = PID_NULL;
     pmts.clear();
 }
 
@@ -83,46 +95,22 @@ void ts::PAT::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::PAT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content.
-    nit_pid = PID_NULL;
-    pmts.clear();
+    // Table id extension is TS id.
+    ts_id = section.tableIdExtension();
 
-    // Loop on all sections
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
-
-        // Reference to current section
-        const Section& sect (*table.sectionAt(si));
-
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent();
-        ts_id = sect.tableIdExtension();
-
-        // Analyze the section payload:
-        // This is a list of service_id/pmt_pid pairs
-        const uint8_t* data (sect.payload());
-        size_t remain (sect.payloadSize());
-
-        while (remain >= 4) {
-            // Extract one id/pid entry
-            uint16_t id (GetUInt16 (data));
-            uint16_t pid (GetUInt16 (data + 2) & 0x1FFF);
-            data += 4;
-            remain -= 4;
-
-            // Register the PID
-            if (id == 0) {
-                nit_pid = pid;
-            }
-            else {
-                pmts[id] = pid;
-            }
+    // The paylaod is a list of service_id/pmt_pid pairs
+    while (!buf.endOfRead()) {
+        const uint16_t id = buf.getUInt16();
+        const uint16_t pid = buf.getPID();
+        if (id == 0) {
+            nit_pid = pid;
+        }
+        else {
+            pmts[id] = pid;
         }
     }
-
-    _is_valid = true;
 }
 
 
@@ -130,62 +118,25 @@ void ts::PAT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::PAT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 {
-    // Build the sections
-    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number = 0;
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
-
-    // Add the NIT PID in the first section
+    // Add the NIT PID once in the first section
     if (nit_pid != PID_NULL) {
-        PutUInt16 (data, 0); // pseudo service_id
-        PutUInt16 (data + 2, nit_pid | 0xE000);
-        data += 4;
-        remain -= 4;
+        payload.putUInt16(0); // pseudo service_id
+        payload.putPID(nit_pid);
     }
 
     // Add all services
-    for (ServiceMap::const_iterator it = pmts.begin(); it != pmts.end(); ++it) {
+    for (auto it = pmts.begin(); it != pmts.end(); ++it) {
 
         // If current section payload is full, close the current section.
-        // We always use last_section_number = section_number but the
-        // table is allowed to grow (see BinaryTable::AddSection).
-        if (remain < 4) {
-            table.addSection (new Section (_table_id,
-                                           false,   // is_private_section
-                                           ts_id,   // tid_ext
-                                           version,
-                                           is_current,
-                                           uint8_t(section_number),
-                                           uint8_t(section_number), //last_section_number
-                                           payload,
-                                           data - payload)); // payload_size,
-            section_number++;
-            data = payload;
-            remain = sizeof(payload);
+        if (payload.remainingWriteBytes() < 4) {
+            addOneSection(table, payload);
         }
 
         // Add current service entry into the PAT section
-        PutUInt16 (data, it->first);               // service_id
-        PutUInt16 (data + 2, it->second | 0xE000); // pmt pid
-        data += 4;
-        remain -= 4;
-    }
-
-    // Add partial section (if there is one)
-
-    if (data > payload || table.sectionCount() == 0) {
-        table.addSection (new Section (_table_id,
-                                       false,   // is_private_section
-                                       ts_id,   // tid_ext
-                                       version,
-                                       is_current,
-                                       uint8_t(section_number),
-                                       uint8_t(section_number), //last_section_number
-                                       payload,
-                                       data - payload)); // payload_size,
+        payload.putUInt16(it->first);  // service_id
+        payload.putPID(it->second);    // pmt pid
     }
 }
 
@@ -194,29 +145,23 @@ void ts::PAT::serializeContent(DuckContext& duck, BinaryTable& table) const
 // A static method to display a PAT section.
 //----------------------------------------------------------------------------
 
-void ts::PAT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::PAT::DisplaySection(TablesDisplay& display, const Section& section, int indent)
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section);
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
-    uint16_t tsid = section.tableIdExtension();
-
-    strm << margin << UString::Format(u"TS id:   %5d (0x%04X)", {tsid, tsid}) << std::endl;
+    strm << margin << UString::Format(u"TS id:   %5d (0x%<04X)", {section.tableIdExtension()}) << std::endl;
 
     // Loop through all program / pid pairs
-    while (size >= 4) {
-        uint16_t program = GetUInt16(data);
-        uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
-        data += 4; size -= 4;
-        strm << margin
-             << UString::Format(u"%s %5d (0x%04X)  PID: %4d (0x%04X)", {program == 0 ? u"NIT:    " : u"Program:", program, program, pid, pid})
-             << std::endl;
+    while (!buf.endOfRead()) {
+        const uint16_t id = buf.getUInt16();
+        const uint16_t pid = buf.getPID();
+        strm << margin << UString::Format(u"%s %5d (0x%<04X)  PID: %4d (0x%<04X)", {id == 0 ? u"NIT:    " : u"Program:", id, pid}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(buf, indent);
 }
 
 

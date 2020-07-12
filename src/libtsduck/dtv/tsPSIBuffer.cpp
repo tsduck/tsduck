@@ -29,6 +29,7 @@
 
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
+#include "tsSection.h"
 TSDUCK_SOURCE;
 
 
@@ -52,6 +53,45 @@ ts::PSIBuffer::PSIBuffer(DuckContext& duck, const void* data, size_t size) :
     Buffer(data, size),
     _duck(duck)
 {
+}
+
+ts::PSIBuffer::PSIBuffer(DuckContext& duck, const Section& section) :
+    Buffer(section.payload(), section.payloadSize()),
+    _duck(duck)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Serialize / deserialize a 13-bit PID value.
+//----------------------------------------------------------------------------
+
+ts::PID ts::PSIBuffer::getPID()
+{
+    if (readIsByteAligned()) {
+        return getUInt16() & 0x1FFF;
+    }
+    else if (currentReadBitOffset() == 3) {
+        return getBits<PID>(13);
+    }
+    else {
+        setReadError();
+        return PID_NULL;
+    }
+}
+
+bool ts::PSIBuffer::putPID(PID pid)
+{
+    if (writeIsByteAligned()) {
+        return putUInt16(0xE000 | pid);
+    }
+    else if (currentWriteBitOffset() == 3) {
+        return putBits(pid, 13);
+    }
+    else {
+        setWriteError();
+        return false;
+    }
 }
 
 

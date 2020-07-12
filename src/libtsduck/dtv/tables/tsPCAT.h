@@ -128,6 +128,7 @@ namespace ts {
         PCAT& operator=(const PCAT& other) = default;
 
         // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:

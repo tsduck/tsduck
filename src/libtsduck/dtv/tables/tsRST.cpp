@@ -66,7 +66,6 @@ ts::RST::RST() :
     AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
     events()
 {
-    _is_valid = true;
 }
 
 ts::RST::RST(DuckContext& duck, const BinaryTable& table) :
@@ -82,7 +81,6 @@ ts::RST::RST(DuckContext& duck, const BinaryTable& table) :
 
 void ts::RST::clearContent()
 {
-    _is_valid = true;
     events.clear();
 }
 

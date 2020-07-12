@@ -56,7 +56,6 @@ ts::ERT::ERT(uint8_t vers, bool cur) :
     relation_type(0),
     relations(this)
 {
-    _is_valid = true;
 }
 
 ts::ERT::ERT(const ERT& other) :
@@ -85,14 +84,21 @@ ts::ERT::Relation::Relation(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::ERT::tableIdExtension() const
+{
+    return event_relation_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::ERT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     event_relation_id = 0;
     information_provider_id = 0;
     relation_type = 0;

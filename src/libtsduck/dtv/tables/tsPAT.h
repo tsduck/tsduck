@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Representation of a Program Association Table (PAT).
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.4.4.3
     //! @ingroup table
     //!
     class TSDUCKDLL PAT : public AbstractLongTable
@@ -74,13 +75,15 @@ namespace ts {
         PAT(DuckContext& duck, const BinaryTable& table);
 
         // Inherited methods
+        virtual bool isPrivate() const override;
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:
         // Inherited methods
         virtual void clearContent() override;
-        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
-        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void serializePayload(BinaryTable& table, PSIBuffer& payload) const override;
+        virtual void deserializePayload(PSIBuffer& buf, const Section& section) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
     };
