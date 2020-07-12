@@ -41,6 +41,7 @@
 namespace ts {
     //!
     //! Representation of a Service Description Table (SDT).
+    //! @see ETSI EN 300 468, 5.2.3
     //! @ingroup table
     //!
     class TSDUCKDLL SDT : public AbstractLongTable
@@ -248,6 +249,7 @@ namespace ts {
         bool findService(DuckContext& duck, ts::Service& service, bool exact_match = false) const;
 
         // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:

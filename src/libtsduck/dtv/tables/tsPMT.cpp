@@ -55,7 +55,6 @@ ts::PMT::PMT(uint8_t version_, bool is_current_, uint16_t service_id_, PID pcr_p
     descs(this),
     streams(this)
 {
-    _is_valid = true;
 }
 
 ts::PMT::PMT(const PMT& other) :
@@ -75,14 +74,26 @@ ts::PMT::PMT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
+// Inherited public methods
+//----------------------------------------------------------------------------
+
+bool ts::PMT::isPrivate() const
+{
+    return false; // MPEG-defined
+}
+
+uint16_t ts::PMT::tableIdExtension() const
+{
+    return service_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::PMT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     service_id = 0;
     pcr_pid = PID_NULL;
     descs.clear();

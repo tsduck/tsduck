@@ -61,7 +61,6 @@ ts::DCCT::DCCT(uint8_t vers, uint8_t id) :
     tests(this),
     descs(this)
 {
-    _is_valid = true;
 }
 
 ts::DCCT::DCCT(const DCCT& other) :
@@ -102,14 +101,21 @@ ts::DCCT::Term::Term(const AbstractTable* table, uint8_t type, uint64_t id) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::DCCT::tableIdExtension() const
+{
+    return  uint16_t((uint16_t(dcc_subtype) << 8) | dcc_id);
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::DCCT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     dcc_subtype = 0;
     dcc_id = 0;
     protocol_version = 0;
@@ -278,15 +284,15 @@ void ts::DCCT::serializeContent(DuckContext& duck, BinaryTable& table) const
     }
 
     // Add one single section in the table
-    table.addSection(new Section(MY_TID,           // tid
-                                 true,             // is_private_section
-                                 uint16_t((uint16_t(dcc_subtype) << 8) | dcc_id), // tid_ext
+    table.addSection(new Section(MY_TID,             // tid
+                                 true,               // is_private_section
+                                 tableIdExtension(), // tid_ext
                                  version,
-                                 is_current,       // should be true
-                                 0,                // section_number,
-                                 0,                // last_section_number
+                                 is_current,         // should be true
+                                 0,                  // section_number,
+                                 0,                  // last_section_number
                                  payload,
-                                 data - payload)); // payload_size,
+                                 data - payload));   // payload_size,
 }
 
 

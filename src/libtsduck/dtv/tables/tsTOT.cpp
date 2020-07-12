@@ -57,7 +57,6 @@ ts::TOT::TOT(const Time& utc_time_) :
     regions(),
     descs(this)
 {
-    _is_valid = true;
 }
 
 ts::TOT::TOT(DuckContext& duck, const BinaryTable& table) :
@@ -81,8 +80,7 @@ ts::TOT::TOT(const TOT& other) :
 
 void ts::TOT::clearContent()
 {
-    _is_valid = true;
-    utc_time = Time::Epoch;
+    utc_time.clear();
     regions.clear();
     descs.clear();
 }

@@ -55,7 +55,6 @@ ts::BIT::BIT(uint8_t vers, bool cur) :
     descs(this),
     broadcasters(this)
 {
-    _is_valid = true;
 }
 
 ts::BIT::BIT(const BIT& other) :
@@ -80,14 +79,21 @@ ts::BIT::Broadcaster::Broadcaster(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::BIT::tableIdExtension() const
+{
+    return original_network_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::BIT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     original_network_id = 0;
     broadcast_view_propriety = false;
     descs.clear();

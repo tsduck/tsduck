@@ -57,7 +57,6 @@ ts::STT::STT() :
     DS_hour(0),
     descs(this)
 {
-    _is_valid = true;
 }
 
 ts::STT::STT(const STT& other) :
@@ -86,14 +85,21 @@ ts::STT::STT(DuckContext& duck, const Section& section) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::STT::tableIdExtension() const
+{
+    return 0x0000;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::STT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     protocol_version = 0;
     system_time = 0;
     GPS_UTC_offset = 0;

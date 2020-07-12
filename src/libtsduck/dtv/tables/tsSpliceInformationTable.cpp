@@ -60,7 +60,6 @@ ts::SpliceInformationTable::SpliceInformationTable() :
     private_command(),
     descs(this)
 {
-    _is_valid = true;
 }
 
 ts::SpliceInformationTable::SpliceInformationTable(const SpliceInformationTable& other) :
@@ -79,12 +78,22 @@ ts::SpliceInformationTable::SpliceInformationTable(const SpliceInformationTable&
 
 
 //----------------------------------------------------------------------------
+// Inherited public methods
+//----------------------------------------------------------------------------
+
+bool ts::SpliceInformationTable::isPrivate() const
+{
+    // Although not MPEG-defined, SCTE section are "non private".
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear all fields.
 //----------------------------------------------------------------------------
 
 void ts::SpliceInformationTable::clearContent()
 {
-    _is_valid = true;
     protocol_version = 0;
     pts_adjustment = 0;
     tier = 0x0FFF;

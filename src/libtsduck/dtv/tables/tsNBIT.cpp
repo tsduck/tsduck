@@ -53,7 +53,6 @@ ts::NBIT::NBIT(bool is_body, uint8_t vers, bool cur) :
     original_network_id(0),
     informations(this)
 {
-    _is_valid = true;
 }
 
 ts::NBIT::NBIT(const NBIT& other) :
@@ -80,14 +79,21 @@ ts::NBIT::Information::Information(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::NBIT::tableIdExtension() const
+{
+    return original_network_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::NBIT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     original_network_id = 0;
     informations.clear();
 }

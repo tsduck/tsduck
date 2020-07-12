@@ -53,7 +53,6 @@ ts::TDT::TDT(const Time& utc_time_) :
     AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
     utc_time(utc_time_)
 {
-    _is_valid = true;
 }
 
 ts::TDT::TDT(DuckContext& duck, const BinaryTable& table) :
@@ -69,8 +68,7 @@ ts::TDT::TDT(DuckContext& duck, const BinaryTable& table) :
 
 void ts::TDT::clearContent()
 {
-    _is_valid = true;
-    utc_time = Time::Epoch;
+    utc_time.clear();
 }
 
 

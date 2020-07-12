@@ -111,6 +111,7 @@ namespace ts {
         ATSCEIT& operator=(const ATSCEIT& other) = default;
 
         // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:

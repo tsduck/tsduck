@@ -47,6 +47,19 @@ namespace ts {
         uint8_t version;     //!< Table version number.
         bool    is_current;  //!< True if table is current, false if table is next.
 
+        //!
+        //! Get the table id extension.
+        //! The table id extension is a 16-bit field which usually contains one of the
+        //! table fields (service id, transport stream id, etc.) For each subclass, the
+        //! table id extension is usually directly available in the corresponding public
+        //! field. This virtual method is a generic way to access the table id extension.
+        //! @return The table id extension.
+        //!
+        virtual uint16_t tableIdExtension() const = 0;
+
+        // Inherited methods
+        virtual void clear() override final;
+
     protected:
         //!
         //! Constructor for subclasses.
@@ -62,5 +75,10 @@ namespace ts {
         //! Virtual destructor
         //!
         virtual ~AbstractLongTable();
+
+        // Inherited methods.
+        virtual size_t maxPayloadSize() const override;
+        virtual void deserializePayloadWrapper(PSIBuffer& buf, const Section& section) override;
+        virtual void addOneSectionImpl(BinaryTable& table, PSIBuffer& payload) const override;
     };
 }

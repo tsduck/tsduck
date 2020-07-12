@@ -66,7 +66,6 @@ ts::DiscontinuityInformationTable::DiscontinuityInformationTable(DuckContext& du
 
 void ts::DiscontinuityInformationTable::clearContent()
 {
-    _is_valid = true;
     transition = false;
 }
 

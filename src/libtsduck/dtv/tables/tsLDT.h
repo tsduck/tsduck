@@ -105,6 +105,7 @@ namespace ts {
         LDT& operator=(const LDT& other) = default;
 
         // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:

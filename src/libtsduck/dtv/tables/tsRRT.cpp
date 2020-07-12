@@ -55,7 +55,6 @@ ts::RRT::RRT(uint8_t vers, uint8_t reg) :
     dimensions(),
     descs(this)
 {
-    _is_valid = true;
 }
 
 ts::RRT::RRT(const RRT& other) :
@@ -92,14 +91,21 @@ ts::RRT::RatingValue::RatingValue() :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::RRT::tableIdExtension() const
+{
+    return 0xFF00 | rating_region;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::RRT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     rating_region = 0;
     protocol_version = 0;
     rating_region_name.clear();
@@ -237,7 +243,7 @@ void ts::RRT::serializeContent(DuckContext& duck, BinaryTable& table) const
     // Add one single section in the table
     table.addSection(new Section(MY_TID,           // tid
                                  true,             // is_private_section
-                                 0xFF00 | rating_region, // tid_ext
+                                 tableIdExtension(),
                                  version,
                                  is_current,       // should be true
                                  0,                // section_number,

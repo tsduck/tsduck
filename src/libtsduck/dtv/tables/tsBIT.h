@@ -105,6 +105,7 @@ namespace ts {
         BIT& operator=(const BIT& other) = default;
 
         // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:

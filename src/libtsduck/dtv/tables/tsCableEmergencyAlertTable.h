@@ -134,6 +134,8 @@ namespace ts {
         CableEmergencyAlertTable(DuckContext& duck, const BinaryTable& table);
 
         // Inherited methods
+        virtual bool isPrivate() const override;
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:

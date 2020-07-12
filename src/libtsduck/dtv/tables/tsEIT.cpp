@@ -69,7 +69,6 @@ ts::EIT::EIT(bool is_actual_,
     last_table_id(_table_id),
     events(this)
 {
-    _is_valid = true;
 }
 
 ts::EIT::EIT(DuckContext& duck, const BinaryTable& table) :
@@ -106,14 +105,21 @@ ts::EIT::Event::Event(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::EIT::tableIdExtension() const
+{
+    return service_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::EIT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     service_id = 0;
     ts_id = 0;
     onetw_id = 0;

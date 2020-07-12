@@ -59,7 +59,6 @@ ts::PCAT::PCAT(uint8_t vers, bool cur) :
     content_id(0),
     versions(this)
 {
-    _is_valid = true;
 }
 
 ts::PCAT::PCAT(const PCAT& other) :
@@ -95,14 +94,21 @@ ts::PCAT::Schedule::Schedule() :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::PCAT::tableIdExtension() const
+{
+    return service_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::PCAT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     service_id = 0;
     transport_stream_id = 0;
     original_network_id = 0;

@@ -55,7 +55,6 @@ ts::AIT::AIT(uint8_t version_, bool is_current_, uint16_t application_type_, boo
     descs(this),
     applications(this)
 {
-    _is_valid = true;
 }
 
 ts::AIT::AIT(DuckContext& duck, const BinaryTable& table) :
@@ -75,14 +74,21 @@ ts::AIT::AIT(const AIT& other) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::AIT::tableIdExtension() const
+{
+    return (test_application_flag ? 0x8000 : 0x0000) | (application_type & 0x7FFF);
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::AIT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     application_type = 0;
     test_application_flag = false;
     descs.clear();
@@ -198,20 +204,18 @@ void ts::AIT::serializeContent(DuckContext& duck, BinaryTable& table) const
     // Now update the 16-bit application loop length.
     PutUInt16(app_length, uint16_t(0xF000 | (data - app_length - 2)));
 
-    // Compute synthetic tid extension.
-    uint16_t tid_ext = (test_application_flag ? 0x8000 : 0x0000) | (application_type & 0x7FFF);
-
     // Add one single section in the table
-    table.addSection(new Section(MY_TID, // tid
-        true,                            // is_private_section
-        tid_ext,                         // tid_ext
-        version,
-        is_current,
-        0, // section_number,
-        0, // last_section_number
-        payload,
-        data - payload)); // payload_size,
+    table.addSection(new Section(MY_TID,              // tid
+                                 true,                // is_private_section
+                                 tableIdExtension(),  // tid_ext
+                                 version,
+                                 is_current,
+                                 0,                   // section_number,
+                                 0,                   // last_section_number
+                                 payload,
+                                 data - payload));    // payload_size,
 }
+
 
 //----------------------------------------------------------------------------
 // A static method to display a AIT section.

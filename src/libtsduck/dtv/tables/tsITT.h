@@ -78,6 +78,7 @@ namespace ts {
         ITT& operator=(const ITT& other) = default;
 
         // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:

@@ -65,3 +65,13 @@ ts::CAT::CAT(const ts::CAT& other) :
 ts::CAT::~CAT()
 {
 }
+
+
+//----------------------------------------------------------------------------
+// Inherited public methods
+//----------------------------------------------------------------------------
+
+bool ts::CAT::isPrivate() const
+{
+    return false; // MPEG-defined
+}

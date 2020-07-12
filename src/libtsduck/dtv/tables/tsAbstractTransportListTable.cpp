@@ -49,7 +49,6 @@ ts::AbstractTransportListTable::AbstractTransportListTable(TID tid_,
     transports(this),
     _tid_ext(tid_ext_)
 {
-    _is_valid = true;
 }
 
 ts::AbstractTransportListTable::AbstractTransportListTable(const AbstractTransportListTable& other) :
@@ -81,17 +80,24 @@ ts::AbstractTransportListTable::Transport::Transport(const AbstractTable* table)
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::AbstractTransportListTable::tableIdExtension() const
+{
+    return _tid_ext;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear all fields.
 //----------------------------------------------------------------------------
 
 void ts::AbstractTransportListTable::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
+    _tid_ext = 0xFFFF;
     descs.clear();
     transports.clear();
-    _tid_ext = 0xFFFF;
 }
 
 
@@ -189,7 +195,7 @@ void ts::AbstractTransportListTable::addSection(BinaryTable& table,
                                                 size_t& remain) const
 {
     table.addSection(new Section(_table_id,
-                                 true,   // is_private_section
+                                 isPrivate(),
                                  _tid_ext,
                                  version,
                                  is_current,

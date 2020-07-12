@@ -55,7 +55,6 @@ ts::ITT::ITT(uint8_t vers, bool cur) :
     event_id(0),
     descs(this)
 {
-    _is_valid = true;
 }
 
 ts::ITT::ITT(const ITT& other) :
@@ -73,14 +72,21 @@ ts::ITT::ITT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::ITT::tableIdExtension() const
+{
+    return event_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::ITT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     event_id = 0;
     descs.clear();
 }

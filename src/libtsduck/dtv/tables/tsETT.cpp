@@ -54,7 +54,6 @@ ts::ETT::ETT(uint8_t version_) :
     ETM_id(0),
     extended_text_message()
 {
-    _is_valid = true;
 }
 
 ts::ETT::ETT(DuckContext& duck, const BinaryTable& table) :
@@ -65,14 +64,21 @@ ts::ETT::ETT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::ETT::tableIdExtension() const
+{
+    return ETT_table_id_extension;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::ETT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     ETT_table_id_extension = 0;
     protocol_version = 0;
     ETM_id = 0;

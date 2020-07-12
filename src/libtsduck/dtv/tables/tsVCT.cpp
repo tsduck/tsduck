@@ -81,14 +81,21 @@ ts::VCT::Channel::Channel(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::VCT::tableIdExtension() const
+{
+    return transport_stream_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::VCT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     protocol_version = 0;
     transport_stream_id = 0;
     channels.clear();

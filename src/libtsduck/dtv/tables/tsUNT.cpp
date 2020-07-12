@@ -119,7 +119,6 @@ ts::UNT::UNT(uint8_t version_, bool is_current_) :
     descs(this),
     devices(this)
 {
-    _is_valid = true;
 }
 
 ts::UNT::UNT(const UNT& other) :
@@ -140,14 +139,24 @@ ts::UNT::UNT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension.
+//----------------------------------------------------------------------------
+
+uint16_t ts::UNT::tableIdExtension() const
+{
+    // The table id extension is made of action_type and OUI hash.
+    return uint16_t(uint16_t(action_type) << 8) |
+           uint16_t(((OUI >> 16) & 0xFF) ^ ((OUI >> 8) & 0xFF) ^ (OUI & 0xFF));
+
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 
 void ts::UNT::clearContent()
 {
-    _is_valid = true;
-    version = 0;
-    is_current = true;
     action_type = 0;
     OUI = 0;
     processing_order = 0;
@@ -495,14 +504,9 @@ void ts::UNT::addSection(BinaryTable& table,
                          uint8_t*& data,
                          size_t& remain) const
 {
-    // The table id extension is made of action_type and OUI hash.
-    const uint16_t tidext =
-        uint16_t(uint16_t(action_type) << 8) |
-        uint16_t(((OUI >> 16) & 0xFF) ^ ((OUI >> 8) & 0xFF) ^ (OUI & 0xFF));
-
     table.addSection(new Section(_table_id,
                                  true,    // is_private_section
-                                 tidext,
+                                 tableIdExtension(),
                                  version,
                                  is_current,
                                  uint8_t(section_number),

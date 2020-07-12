@@ -154,6 +154,7 @@ namespace ts {
         bool findService(Service& service, bool exact_match = false, bool same_ts = true) const;
 
         // Inherited methods
+        virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
 
     protected:
