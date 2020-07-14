@@ -172,6 +172,22 @@ namespace ts {
         virtual std::ostream& displayDescriptorList(const Section& section, const void* data, size_t size, int indent = 0, uint16_t cas = CASID_NULL);
 
         //!
+        //! Display a list of descriptors (with is preceding length) from a PSI buffer.
+        //! @param [in] section Section containing the descriptor list.
+        //! @param [in,out] buf Buffer containing the descriptor list to read
+        //! @param [in] indent Indentation width.
+        //! @param [in] length_bits Number of meaningful bits in the length field.
+        //! @param [in] cas CAS id of the table.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displayDescriptorListWithLength(const Section& section,
+                                                              PSIBuffer& buf,
+                                                              int indent = 0,
+                                                              const UString& title = UString(),
+                                                              size_t length_bits = 12,
+                                                              uint16_t cas = CASID_NULL);
+
+        //!
         //! Display a list of descriptors.
         //! @param [in] list Descriptor list.
         //! @param [in] indent Indentation width.
@@ -190,8 +206,8 @@ namespace ts {
         virtual std::ostream& displayExtraData(const void *data, size_t size, int indent = 0);
 
         //!
-        //! A utility method to dump extraneous bytes after expected data.
-        //! @param [in] buf Buffer containing extra data to read.
+        //! A utility method to dump extraneous bytes after expected data in a PSI buffer.
+        //! @param [in,out] buf Buffer containing extra data to read.
         //! @param [in] indent Indentation width.
         //! @return A reference to the output stream.
         //!

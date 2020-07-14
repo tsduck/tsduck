@@ -500,6 +500,28 @@ std::ostream& ts::TablesDisplay::displayDescriptor(const Descriptor& desc, int i
 
 
 //----------------------------------------------------------------------------
+// Display a list of descriptors from a PSI Buffer
+//----------------------------------------------------------------------------
+
+std::ostream& ts::TablesDisplay::displayDescriptorListWithLength(const Section& section, PSIBuffer& buf, int indent, const UString& title, size_t length_bits, uint16_t cas)
+{
+    // Read the length field.
+    const size_t length = buf.getUnalignedLength(length_bits);
+    bool ok = !buf.readError();
+
+    // Read and display descriptors.
+    if (ok && length > 0) {
+        if (!title.empty()) {
+            _duck.out() << std::string(indent, ' ') << title << std::endl;
+        }
+        displayDescriptorList(section, buf.currentReadAddress(), length, indent, cas);
+        buf.skipBytes(length);
+    }
+    return _duck.out();
+}
+
+
+//----------------------------------------------------------------------------
 // Display a list of descriptors from a memory area
 //----------------------------------------------------------------------------
 

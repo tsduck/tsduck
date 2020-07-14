@@ -101,7 +101,7 @@ void ts::PAT::deserializePayload(PSIBuffer& buf, const Section& section)
     ts_id = section.tableIdExtension();
 
     // The paylaod is a list of service_id/pmt_pid pairs
-    while (!buf.endOfRead()) {
+    while (!buf.error() && !buf.endOfRead()) {
         const uint16_t id = buf.getUInt16();
         const uint16_t pid = buf.getPID();
         if (id == 0) {
