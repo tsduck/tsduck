@@ -33,7 +33,9 @@
 
 #include "tsSectionFile.h"
 #include "tsPAT.h"
+#include "tsCAT.h"
 #include "tsTDT.h"
+#include "tsCAIdentifierDescriptor.h"
 #include "tsSysUtils.h"
 #include "tsBinaryTable.h"
 #include "tsDuckContext.h"
@@ -70,6 +72,7 @@ public:
     void testSCTE35();
     void testAllTables();
     void testBuildSections();
+    void testMultiSections();
 
     TSUNIT_TEST_BEGIN(SectionFileTest);
     TSUNIT_TEST(testConfigurationFile);
@@ -80,6 +83,7 @@ public:
     TSUNIT_TEST(testSCTE35);
     TSUNIT_TEST(testAllTables);
     TSUNIT_TEST(testBuildSections);
+    TSUNIT_TEST(testMultiSections);
     TSUNIT_TEST_END();
 
 private:
@@ -472,4 +476,59 @@ void SectionFileTest::testBuildSections()
 
     ts::TDT xmlTDT(duck, *xmlFile.tables()[2]);
     TSUNIT_ASSERT(tdtTime == xmlTDT.utc_time);
+}
+
+void SectionFileTest::testMultiSections()
+{
+    ts::DuckContext duck;
+    ts::CAT cat1;
+
+    TSUNIT_ASSERT(cat1.isValid());
+    TSUNIT_ASSERT(!cat1.isPrivate());
+    TSUNIT_EQUAL(ts::TID_CAT, cat1.tableId());
+    TSUNIT_EQUAL(0xFFFF, cat1.tableIdExtension());
+    TSUNIT_ASSERT(cat1.descs.empty());
+
+    // Add 300 10-byte descriptors => 3000 bytes => 3 sections.
+    // One CAT section = 1024 bytes max, 1012 payload max => 101 descriptors per section.
+    uint16_t id = 0;
+    for (size_t di = 0; di < 300; ++di) {
+        cat1.descs.add(duck, ts::CAIdentifierDescriptor({id, uint16_t(id+1), uint16_t(id+2), uint16_t(id+3)}));
+        TSUNIT_EQUAL(di + 1, cat1.descs.size());
+        TSUNIT_EQUAL(10, cat1.descs[di]->size());
+        id += 4;
+    }
+
+    ts::BinaryTable bin;
+    cat1.serialize(duck, bin);
+
+    TSUNIT_ASSERT(bin.isValid());
+    TSUNIT_ASSERT(!bin.isShortSection());
+    TSUNIT_EQUAL(ts::TID_CAT,bin.tableId());
+    TSUNIT_EQUAL(0xFFFF, bin.tableIdExtension());
+    TSUNIT_EQUAL(3, bin.sectionCount());
+    TSUNIT_EQUAL(1022, bin.sectionAt(0)->size());
+    TSUNIT_EQUAL(1010, bin.sectionAt(0)->payloadSize());
+    TSUNIT_EQUAL(1022, bin.sectionAt(1)->size());
+    TSUNIT_EQUAL(1010, bin.sectionAt(1)->payloadSize());
+    TSUNIT_EQUAL(992, bin.sectionAt(2)->size());
+    TSUNIT_EQUAL(980, bin.sectionAt(2)->payloadSize());
+
+    ts::CAT cat2(duck, bin);
+    TSUNIT_ASSERT(cat2.isValid());
+    TSUNIT_ASSERT(!cat2.isPrivate());
+    TSUNIT_EQUAL(ts::TID_CAT, cat2.tableId());
+    TSUNIT_EQUAL(0xFFFF, cat2.tableIdExtension());
+    TSUNIT_EQUAL(300, cat2.descs.size());
+
+    id = 0;
+    for (size_t di = 0; di < cat2.descs.size(); ++di) {
+        ts::CAIdentifierDescriptor desc(duck, *cat2.descs[di]);
+        TSUNIT_ASSERT(desc.isValid());
+        TSUNIT_EQUAL(4, desc.casids.size());
+        for (size_t ii = 0; ii < desc.casids.size(); ++ii) {
+            TSUNIT_EQUAL(id, desc.casids[ii]);
+            id++;
+        }
+    }
 }

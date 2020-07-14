@@ -97,15 +97,22 @@ void ts::AbstractLongTable::deserializePayloadWrapper(PSIBuffer& buf, const Sect
 void ts::AbstractLongTable::addOneSectionImpl(BinaryTable& table, PSIBuffer& payload) const
 {
     // Always add a new section, after last one, in long tables.
-    const uint8_t section_number = uint8_t(table.sectionCount());
-    const SectionPtr section(new Section(tableId(),
-                                         isPrivate(),
-                                         tableIdExtension(),
-                                         version,
-                                         is_current,
-                                         section_number,
-                                         section_number, // last_section_number
-                                         payload.currentReadAddress(),
-                                         payload.remainingReadBytes()));
-    table.addSection(section, true, true);
+    if (table.sectionCount() < 256) {
+        // Add one section.
+        const uint8_t section_number = uint8_t(table.sectionCount());
+        const SectionPtr section(new Section(tableId(),
+                                             isPrivate(),
+                                             tableIdExtension(),
+                                             version,
+                                             is_current,
+                                             section_number,
+                                             section_number, // last_section_number
+                                             payload.currentReadAddress(),
+                                             payload.remainingReadBytes()));
+        table.addSection(section, true, true);
+    }
+    else {
+        // Too many sections, this is an error.
+        payload.setUserError();
+    }
 }

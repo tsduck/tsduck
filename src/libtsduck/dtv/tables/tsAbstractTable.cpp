@@ -166,9 +166,15 @@ void ts::AbstractTable::addOneSection(BinaryTable& table, PSIBuffer& payload) co
 
 void ts::AbstractTable::addOneSectionImpl(BinaryTable &table, PSIBuffer &payload) const
 {
-    // Always replace section #0 in short tables.
-    const SectionPtr section(new Section(tableId(), isPrivate(), payload.currentReadAddress(), payload.remainingReadBytes()));
-    table.addSection(section, true);
+    // Always set one single section in short tables.
+    if (table.sectionCount() == 0) {
+        const SectionPtr section(new Section(tableId(), isPrivate(), payload.currentReadAddress(), payload.remainingReadBytes()));
+        table.addSection(section, true);
+    }
+    else {
+        // More than one section, this is an error.
+        payload.setUserError();
+    }
 }
 
 
