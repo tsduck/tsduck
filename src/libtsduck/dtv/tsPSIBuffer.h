@@ -41,6 +41,7 @@ namespace ts {
 
     class DuckContext;
     class Section;
+    class DescriptorList;
 
     //!
     //! A specialized subclass of ts::Buffer for PSI serialization.
@@ -224,6 +225,92 @@ namespace ts {
         //! @return The decoded string.
         //!
         UString getStringWithByteLength();
+
+        //!
+        //! Put (serialize) a complete descriptor list.
+        //!
+        //! Generate a write error when the buffer is not large enough to write all descriptors or when the
+        //! write pointer is not byte-aligned.
+        //!
+        //! @param [in] descs The descriptor list to serialize into the buffer.
+        //! @param [in] start Starting index in the descriptor list.
+        //! @param [in] count Maximum number of descriptors to serialize.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putDescriptorList(const DescriptorList& descs, size_t start = 0, size_t count = NPOS);
+
+        //!
+        //! Put (serialize) as many descriptors as possible from a descriptor list.
+        //!
+        //! Generate a write error when the write pointer is not byte-aligned.
+        //!
+        //! @param [in] descs The descriptor list to serialize into the buffer.
+        //! @param [in] start Starting index in the descriptor list.
+        //! @param [in] count Maximum number of descriptors to serialize.
+        //! @return The index of the first descriptor that could not be serialized (or descs.size() if all
+        //! descriptors were serialized). In the first case, the returned index can be used as @a start
+        //! parameter to serialized the rest of the list (in another section for instance).
+        //!
+        size_t putPartialDescriptorList(const DescriptorList& descs, size_t start = 0, size_t count = NPOS);
+
+        //!
+        //! Put (serialize) a complete descriptor list with a 2-byte length field before the descriptor list.
+        //!
+        //! Generate a write error when the buffer is not large enough to write all descriptors or when the
+        //! write pointer is not byte-aligned.
+        //!
+        //! The 2-byte length field uses only its N least significant bits (@a length_bits) for the length
+        //! of the descriptor list. If the current write pointer is byte-aligned, 16-N '1' bits are written
+        //! first. If the current write bit pointer is 16-N, the length is directly written after that bit.
+        //! For all other write pointers, a write error is generated.
+        //!
+        //! @param [in] descs The descriptor list to serialize into the buffer.
+        //! @param [in] start Starting index in the descriptor list.
+        //! @param [in] count Maximum number of descriptors to serialize.
+        //! @param [in] length_bits Number of meaningful bits in the length field.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putDescriptorListWithLength(const DescriptorList& descs, size_t start = 0, size_t count = NPOS, size_t length_bits = 12);
+
+        //!
+        //! Put (serialize) as many descriptors as possible from a descriptor list with a 2-byte length field before the descriptor list.
+        //!
+        //! The 2-byte length field uses only its N least significant bits (@a length_bits) for the length
+        //! of the descriptor list. If the current write pointer is byte-aligned, 16-N '1' bits are written
+        //! first. If the current write bit pointer is 16-N, the length is directly written after that bit.
+        //! For all other write pointers, a write error is generated.
+        //!
+        //! @param [in] descs The descriptor list to serialize into the buffer.
+        //! @param [in] start Starting index in the descriptor list.
+        //! @param [in] count Maximum number of descriptors to serialize.
+        //! @param [in] length_bits Number of meaningful bits in the length field.
+        //! @return The index of the first descriptor that could not be serialized (or descs.size() if all
+        //! descriptors were serialized). In the first case, the returned index can be used as @a start
+        //! parameter to serialized the rest of the list (in another section for instance).
+        //!
+        size_t putPartialDescriptorListWithLength(const DescriptorList& descs, size_t start = 0, size_t count = NPOS, size_t length_bits = 12);
+
+        //!
+        //! Get (deserialize) a descriptor list.
+        //! @param [in,out] descs The descriptor list into which the deserialized descriptors are appended.
+        //! @param [in] length Number of bytes to read. If NPOS is specified (the default), read the rest of the buffer.
+        //! @return True on success, false on error (truncated, misaligned, etc.)
+        //!
+        bool getDescriptorList(DescriptorList& descs, size_t length = NPOS);
+
+        //!
+        //! Get (deserialize) a descriptor list with a 2-byte length field before the descriptor list.
+        //!
+        //! The 2-byte length field uses only its N least significant bits (@a length_bits) for the length
+        //! of the descriptor list. If the current read pointer is byte-aligned, 16-N bits are skipped first.
+        //! If the current read bit pointer is 16-N, the length is directly read after that bit.
+        //! For all other read pointers, a read error is generated.
+        //!
+        //! @param [in,out] descs The descriptor list into which the deserialized descriptors are appended.
+        //! @param [in] length_bits Number of meaningful bits in the length field.
+        //! @return True on success, false on error (truncated, misaligned, etc.)
+        //!
+        bool getDescriptorListWithLength(DescriptorList& descs, size_t length_bits = 12);
 
     private:
         DuckContext& _duck;

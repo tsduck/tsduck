@@ -484,6 +484,20 @@ namespace ts {
         size_t pushReadWriteState();
 
         //!
+        //! Swap the current state of the read/write streams with the one on top of the stack of saved states.
+        //!
+        //! As a result, the previously saved state is restore and the current state (just before
+        //! restoring the saved state) is pushed. If there was no saved state, the current state
+        //! is unchanged but still saved. So it is always safe to assume that the current state
+        //! was savded.
+        //!
+        //! @return The level of pushed state (0 for the first push, then 1, etc.)
+        //! The returned level can be used by popReadWriteState() and dropReadWriteState().
+        //! @see pushReadWriteState()
+        //!
+        size_t swapReadWriteState();
+
+        //!
         //! Restore the current state of the read/write streams from the stack of saved states.
         //! @param [in] level Saved level to restore. The default is NPOS, meaning the last
         //! saved state. Another inner level can be specified, in which case all outer levels

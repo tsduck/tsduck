@@ -388,6 +388,18 @@ size_t ts::Buffer::pushReadWriteState()
     return _saved_states.size() - 1;
 }
 
+
+size_t ts::Buffer::swapReadWriteState()
+{
+    if (_saved_states.empty()) {
+        _saved_states.push_back(_state);
+    }
+    else {
+        std::swap(_state, _saved_states.back());
+    }
+    return _saved_states.size() - 1;
+}
+
 bool ts::Buffer::popReadWriteState(size_t level)
 {
     if (!_saved_states.empty() && level == NPOS) {
