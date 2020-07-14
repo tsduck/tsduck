@@ -288,7 +288,8 @@ size_t ts::PSIBuffer::putPartialDescriptorList(const DescriptorList& descs, size
 {
     // Normalize start and count.
     start = std::min(start, descs.size());
-    const size_t last = std::min(start + count, descs.size());
+    count = std::min(count, descs.size() - start);
+    const size_t last = start + count;
 
     // Write error if not byte-aligned.
     if (readOnly() || !writeIsByteAligned()) {
