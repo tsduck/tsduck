@@ -29,6 +29,7 @@
 
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
+#include "tsDescriptorList.h"
 #include "tsSection.h"
 TSDUCK_SOURCE;
 
@@ -252,4 +253,175 @@ bool ts::PSIBuffer::getStringWithByteLength(ts::UString& str)
         setReadError();
         return false;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Put (serialize) a complete descriptor list.
+//----------------------------------------------------------------------------
+
+bool ts::PSIBuffer::putDescriptorList(const DescriptorList& descs, size_t start, size_t count)
+{
+    // Normalize start and count.
+    start = std::min(start, descs.size());
+    count = std::min(count, descs.size() - start);
+
+    if (readOnly() || !writeIsByteAligned() || descs.binarySize(start, count) > remainingWriteBytes()) {
+        // Write is not byte-aligned or there is not enough room to serialize the descriptors.
+        setWriteError();
+        return false;
+    }
+    else {
+        // Write all descriptors (they should fit).
+        const size_t next = putPartialDescriptorList(descs, start, count);
+        assert(next == start + count);
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Put (serialize) as many descriptors as possible from a descriptor list.
+//----------------------------------------------------------------------------
+
+size_t ts::PSIBuffer::putPartialDescriptorList(const DescriptorList& descs, size_t start, size_t count)
+{
+    // Normalize start and count.
+    start = std::min(start, descs.size());
+    const size_t last = std::min(start + count, descs.size());
+
+    // Write error if not byte-aligned.
+    if (readOnly() || !writeIsByteAligned()) {
+        setWriteError();
+        return start;
+    }
+
+    // Serialize as many descriptors as we can.
+    while (start < last && descs[start]->size() <= remainingWriteBytes()) {
+        const size_t written = putBytes(descs[start]->content(), descs[start]->size());
+        assert(written == descs[start]->size());
+        start++;
+    }
+
+    return start;
+}
+
+
+//----------------------------------------------------------------------------
+// Put (serialize) a complete descriptor list with a 2-byte length field.
+//----------------------------------------------------------------------------
+
+bool ts::PSIBuffer::putDescriptorListWithLength(const DescriptorList& descs, size_t start, size_t count, size_t length_bits)
+{
+    // Normalize start and count.
+    start = std::min(start, descs.size());
+    count = std::min(count, descs.size() - start);
+
+    if (2 + descs.binarySize(start, count) > remainingWriteBytes()) {
+        // Not enough room to serialize the descriptors.
+        setWriteError();
+        return false;
+    }
+    else {
+        // Write all descriptors (they should fit unless there is an alignment error).
+        return putPartialDescriptorListWithLength(descs, start, count, length_bits) == start + count;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Put (serialize) as many descriptors as possible with a 2-byte length field.
+//----------------------------------------------------------------------------
+
+size_t ts::PSIBuffer::putPartialDescriptorListWithLength(const DescriptorList& descs, size_t start, size_t count, size_t length_bits)
+{
+    // Normalize start.
+    start = std::min(start, descs.size());
+
+    // Filter incorrect length or length alignment.
+    if (readOnly() || remainingWriteBytes() < 2 || length_bits == 0 || length_bits > 16 || (!writeIsByteAligned() && currentWriteBitOffset() != 16 - length_bits)) {
+        setWriteError();
+        return start;
+    }
+
+    // Write stuffing bits if byte aligned.
+    if (writeIsByteAligned()) {
+        putBits(0xFFFF, 16 - length_bits);
+    }
+
+    // Save state where the length will be written later.
+    pushReadWriteState();
+
+    // Write a zero as place-holder for length.
+    putBits(0, length_bits);
+    assert(writeIsByteAligned());
+
+    // Serialize as many descriptors as we can. Compute written size.
+    size_t size_in_bytes = currentWriteByteOffset();
+    start = putPartialDescriptorList(descs, start, count);
+    size_in_bytes = currentWriteByteOffset() - size_in_bytes;
+
+    // Update the length field.
+    swapReadWriteState();
+    putBits(size_in_bytes, length_bits);
+    popReadWriteState();
+
+    return start;
+}
+
+
+//----------------------------------------------------------------------------
+// Get (deserialize) a descriptor list.
+//----------------------------------------------------------------------------
+
+bool ts::PSIBuffer::getDescriptorList(DescriptorList& descs, size_t length)
+{
+    // Normalize and check length.
+    if (length == NPOS) {
+        length = remainingReadBytes();
+    }
+    if (!readIsByteAligned() || length > remainingReadBytes()) {
+        setReadError();
+        return false;
+    }
+
+    // Read descriptors.
+    const bool ok = descs.add(currentReadAddress(), length);
+    skipBytes(length);
+
+    if (!ok) {
+        setReadError();
+    }
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Get (deserialize) a descriptor list with a 2-byte length field.
+//----------------------------------------------------------------------------
+
+bool ts::PSIBuffer::getDescriptorListWithLength(DescriptorList& descs, size_t length_bits)
+{
+    // Check if we can read the length field.
+    if (remainingReadBytes() < 2 || length_bits == 0 || length_bits > 16 || (!readIsByteAligned() && currentReadBitOffset() != 16 - length_bits)) {
+        setReadError();
+        return false;
+    }
+
+    // Read the length field.
+    if (readIsByteAligned()) {
+        skipBits(16 - length_bits);
+    }
+    const size_t length = getBits<size_t>(16 - length_bits);
+    const size_t actual_length = std::min(length, remainingReadBytes());
+    assert(readIsByteAligned());
+
+    // Read descriptors.
+    const bool ok = descs.add(currentReadAddress(), actual_length) && actual_length == length;
+    skipBytes(actual_length);
+
+    if (!ok) {
+        setReadError();
+    }
+    return ok;
 }

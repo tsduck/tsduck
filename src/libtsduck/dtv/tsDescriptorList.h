@@ -183,8 +183,9 @@ namespace ts {
         //! Add descriptors from a memory area at end of list
         //! @param [in] addr Address of descriptors in memory.
         //! @param [in] size Size in bytes of descriptors in memory.
+        //! @return True in case of succee, false in case of truncated descriptor.
         //!
-        void add(const void* addr, size_t size);
+        bool add(const void* addr, size_t size);
 
         //!
         //! Add one descriptor from a memory area at end of list.
@@ -296,9 +297,11 @@ namespace ts {
 
         //!
         //! Total number of bytes that is required to serialize the list of descriptors.
+        //! @param [in] start Starting index in the descriptor list.
+        //! @param [in] count Maximum number of descriptors to include in the size.
         //! @return The total number of bytes that is required to serialize the list of descriptors.
         //!
-        size_t binarySize() const;
+        size_t binarySize(size_t start = 0, size_t count = NPOS) const;
 
         //!
         //! Serialize the content of the descriptor list.

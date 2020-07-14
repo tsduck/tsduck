@@ -154,17 +154,20 @@ void ts::DescriptorList::add(DuckContext& duck, const AbstractDescriptor& desc)
 // Add descriptors from a memory area
 //----------------------------------------------------------------------------
 
-void ts::DescriptorList::add(const void* data, size_t size)
+bool ts::DescriptorList::add(const void* data, size_t size)
 {
     const uint8_t* desc = reinterpret_cast<const uint8_t*>(data);
-    size_t length;
+    size_t length = 0;
 
     while (size >= 2 && (length = size_t(desc[1]) + 2) <= size) {
         add(DescriptorPtr(new Descriptor(desc, length)));
         desc += length;
         size -= length;
     }
+
+    return size == 0;
 }
+
 
 //----------------------------------------------------------------------------
 // Get a reference to the descriptor at a specified index.
@@ -292,12 +295,12 @@ bool ts::DescriptorList::removeByIndex(size_t index)
 // Remove all descriptors with the specified tag.
 //----------------------------------------------------------------------------
 
-size_t ts::DescriptorList::removeByTag (DID tag, PDS pds)
+size_t ts::DescriptorList::removeByTag(DID tag, PDS pds)
 {
     const bool check_pds = pds != 0 && tag >= 0x80;
     size_t removed_count = 0;
 
-    for (ElementVector::iterator it = _list.begin(); it != _list.end(); ) {
+    for (auto it = _list.begin(); it != _list.end(); ) {
         const DID itag = it->desc->tag();
         if (itag == tag && (!check_pds || it->pds == pds) && (itag != DID_PRIV_DATA_SPECIF || prepareRemovePDS (it))) {
             it = _list.erase (it);
@@ -316,11 +319,13 @@ size_t ts::DescriptorList::removeByTag (DID tag, PDS pds)
 // Total number of bytes that is required to serialize the list of descriptors.
 //----------------------------------------------------------------------------
 
-size_t ts::DescriptorList::binarySize() const
+size_t ts::DescriptorList::binarySize(size_t start, size_t count) const
 {
+    start = std::min(start, _list.size());
+    count = std::min(count, _list.size() - start);
     size_t size = 0;
 
-    for (int i = 0; i < int(_list.size()); ++i) {
+    for (size_t i = start; i < start + count; ++i) {
         size += _list[i].desc->size();
     }
 
@@ -337,7 +342,6 @@ size_t ts::DescriptorList::serialize(uint8_t*& addr, size_t& size, size_t start)
     size_t i;
 
     for (i = start; i < _list.size() && _list[i].desc->size() <= size; ++i) {
-        // Flawfinder: ignore: memcpy()
         ::memcpy(addr, _list[i].desc->content(), _list[i].desc->size());
         addr += _list[i].desc->size();
         size -= _list[i].desc->size();
