@@ -403,26 +403,41 @@ bool ts::PSIBuffer::getDescriptorList(DescriptorList& descs, size_t length)
 
 bool ts::PSIBuffer::getDescriptorListWithLength(DescriptorList& descs, size_t length_bits)
 {
-    // Check if we can read the length field.
-    if (remainingReadBytes() < 2 || length_bits == 0 || length_bits > 16 || (!readIsByteAligned() && currentReadBitOffset() != 16 - length_bits)) {
-        setReadError();
-        return false;
-    }
-
     // Read the length field.
-    if (readIsByteAligned()) {
-        skipBits(16 - length_bits);
-    }
-    const size_t length = getBits<size_t>(16 - length_bits);
-    const size_t actual_length = std::min(length, remainingReadBytes());
-    assert(readIsByteAligned());
+    const size_t length = getUnalignedLength(length_bits);
+    bool ok = !readError();
 
     // Read descriptors.
-    const bool ok = descs.add(currentReadAddress(), actual_length) && actual_length == length;
-    skipBytes(actual_length);
+    if (ok) {
+        ok = descs.add(currentReadAddress(), length);
+        skipBytes(length);
+    }
 
     if (!ok) {
         setReadError();
     }
     return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Get a 2-byte integer field, typically a length before a descriptor list.
+//----------------------------------------------------------------------------
+
+size_t ts::PSIBuffer::getUnalignedLength(size_t length_bits)
+{
+    if (readError() || remainingReadBytes() < 2 || length_bits == 0 || length_bits > 16 || (!readIsByteAligned() && currentReadBitOffset() != 16 - length_bits)) {
+        setReadError();
+        return 0;
+    }
+    if (readIsByteAligned()) {
+        skipBits(16 - length_bits);
+    }
+    const size_t length = getBits<size_t>(length_bits);
+    const size_t actual_length = std::min(length, remainingReadBytes());
+    assert(readIsByteAligned());
+    if (length > actual_length) {
+        setReadError();
+    }
+    return actual_length;
 }

@@ -247,8 +247,9 @@ void ts::AbstractTable::serializeContent(DuckContext& duck, BinaryTable& table) 
         // sections, and there is no need to add the last section.
         if (add && payload.pushedReadWriteStateLevels() > 0) {
             const size_t current_write = payload.currentWriteByteOffset();
-            payload.popReadWriteState();
+            payload.swapReadWriteState();
             add = current_write > payload.currentWriteByteOffset();
+            payload.swapReadWriteState();
         }
         // Finally, add the section if necessary.
         if (add) {

@@ -32,6 +32,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -105,66 +106,23 @@ void ts::PMT::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::PMT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    service_id = 0;
-    pcr_pid = PID_NULL;
-    descs.clear();
-    streams.clear();
+    // Get fixed pard.
+    service_id = section.tableIdExtension();
+    pcr_pid = buf.getPID();
 
-    // Loop on all sections (although a PMT is not allowed to use more than
-    // one section, see ISO/IEC 13818-1:2000 2.4.4.8 & 2.4.4.9)
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
+    // Get program-level descriptor list.
+    buf.getDescriptorListWithLength(descs);
 
-        // Reference to current section
-        const Section& sect(*table.sectionAt(si));
-
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent();
-        service_id = sect.tableIdExtension();
-
-        // Analyze the section payload:
-        const uint8_t* data(sect.payload());
-        size_t remain(sect.payloadSize());
-
-        // Get PCR PID
-        if (remain < 2) {
-            return;
-        }
-        pcr_pid = GetUInt16(data) & 0x1FFF;
-        data += 2;
-        remain -= 2;
-
-        // Get program information descriptor list
-        if (remain < 2) {
-            return;
-        }
-        size_t info_length(GetUInt16(data) & 0x0FFF);
-        data += 2;
-        remain -= 2;
-        info_length = std::min(info_length, remain);
-        descs.add(data, info_length);
-        data += info_length;
-        remain -= info_length;
-
-        // Get elementary streams description
-        while (remain >= 5) {
-            PID pid = GetUInt16(data + 1) & 0x1FFF;
-            Stream& str(streams[pid]);
-            str.stream_type = data[0];
-            info_length = GetUInt16(data + 3) & 0x0FFF;
-            data += 5;
-            remain -= 5;
-            info_length = std::min(info_length, remain);
-            str.descs.add(data, info_length);
-            data += info_length;
-            remain -= info_length;
-        }
+    // Get elementary streams description
+    while (!buf.error() && !buf.endOfRead()) {
+        const uint8_t type = buf.getUInt8();
+        const PID pid = buf.getPID();
+        Stream& str(streams[pid]);
+        str.stream_type = type;
+        buf.getDescriptorListWithLength(str.descs);
     }
-
-    _is_valid = true;
 }
 
 
@@ -172,58 +130,53 @@ void ts::PMT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 {
     // Build the section. Note that a PMT is not allowed to use more than
-    // one section, see ISO/IEC 13818-1:2000 2.4.4.8 & 2.4.4.9
-    uint8_t payload [MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
+    // one section, see ISO/IEC 13818-1:2000 2.4.4.8 & 2.4.4.9. For the sake
+    // of completeness, we allow multi-section PMT for very large services.
 
-    // Add PCR PID
-    PutUInt16(data, pcr_pid | 0xE000);
-    data += 2;
-    remain -= 2;
+    // Fixed part, to be repeated on all sections.
+    payload.putPID(pcr_pid);
+    payload.pushReadWriteState();
 
-    // Insert program_info descriptor list (with leading length field)
-    descs.lengthSerialize(data, remain);
-
-    // Add description of all elementary streams
-    for (StreamMap::const_iterator it = streams.begin(); it != streams.end() && remain >= 5; ++it) {
-
-        // Insert stream type and pid
-        data[0] = it->second.stream_type;
-        PutUInt16(data + 1, it->first | 0xE000); // PID
-        data += 3;
-        remain -= 3;
-
-        // Insert descriptor list for elem. stream (with leading length field)
-        size_t next_index = it->second.descs.lengthSerialize(data, remain);
-        if (next_index != it->second.descs.count()) {
-            // Not enough space to serialize all descriptors in the section.
-            // A PMT cannot have more than one section.
-            // Return with table left in invalid state.
-            return;
+    // Insert program_info descriptor list (with leading length field).
+    // Add new section when the descriptor list overflows.
+    for (size_t start = 0;;) {
+        start = payload.putPartialDescriptorListWithLength(descs, start);
+        if (payload.error() || start >= descs.size()) {
+            break;
+        }
+        else {
+            addOneSection(table, payload);
         }
     }
 
-    // Add one single section in the table
-    table.addSection(new Section(MY_TID,           // tid
-                                 false,            // is_private_section
-                                 service_id,       // tid_ext
-                                 version,
-                                 is_current,
-                                 0,                // section_number,
-                                 0,                // last_section_number
-                                 payload,
-                                 data - payload)); // payload_size,
+    // Minimum size of a section: fixed part and empty program-level descriptor list.
+    constexpr size_t payload_min_size = 4;
+
+    // Add description of all elementary streams
+    for (auto it = streams.begin(); it != streams.end(); ++it) {
+
+        // Binary size of the stream entry.
+        const size_t entry_size = 5 + it->second.descs.binarySize();
+
+        // If the current does not fit into the section, create a new section, unless we are at the beginning of the section.
+        if (entry_size > payload.remainingWriteBytes() && payload.currentWriteByteOffset() > payload_min_size) {
+            addOneSection(table, payload);
+            payload.putPartialDescriptorListWithLength(descs, 0, 0);
+        }
+
+        // Insert stream entry
+        payload.putUInt8(it->second.stream_type);
+        payload.putPID(it->first); // PID
+        payload.putPartialDescriptorListWithLength(it->second.descs);
+    }
 }
 
 
 //----------------------------------------------------------------------------
 // Check if an elementary stream carries audio, video or subtitles.
-// Does not just look at the stream type.
-// Also analyzes the descriptor list for addional information.
 //----------------------------------------------------------------------------
 
 bool ts::PMT::Stream::isVideo() const
@@ -340,52 +293,27 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
+    // Fixed part.
+    const PID pcr_pid = buf.getPID();
+    strm << margin << UString::Format(u"Program: %d (0x%<X), PCR PID: ", {section.tableIdExtension()})
+         << (pcr_pid == PID_NULL ? u"none" : UString::Format(u"%d (0x%<X)", {pcr_pid}))
+         << std::endl;
 
-    if (size >= 4) {
-        // Fixed part
-        PID pid = GetUInt16(data) & 0x1FFF;
-        size_t info_length = GetUInt16(data + 2) & 0x0FFF;
-        data += 4; size -= 4;
-        if (info_length > size) {
-            info_length = size;
-        }
-        strm << margin << UString::Format(u"Program: %d (0x%X)", {section.tableIdExtension(), section.tableIdExtension()})
-             << ", PCR PID: ";
-        if (pid == PID_NULL) {
-            strm << "none";
-        }
-        else {
-            strm << pid << UString::Format(u" (0x%X)", {pid});
-        }
-        strm << std::endl;
+    // Process and display "program info" descriptors.
+    display.displayDescriptorListWithLength(section, buf, indent, u"Program information:");
 
-        // Process and display "program info"
-        if (info_length > 0) {
-            strm << margin << "Program information:" << std::endl;
-            display.displayDescriptorList(section, data, info_length, indent);
-        }
-        data += info_length; size -= info_length;
-
-        // Process and display "elementary stream info"
-        while (size >= 5) {
-            uint8_t stream = *data;
-            PID es_pid = GetUInt16(data + 1) & 0x1FFF;
-            size_t es_info_length = GetUInt16(data + 3) & 0x0FFF;
-            data += 5; size -= 5;
-            if (es_info_length > size) {
-                es_info_length = size;
-            }
-            strm << margin << "Elementary stream: type " << names::StreamType(stream, names::FIRST)
-                 << ", PID: " << es_pid << UString::Format(u" (0x%X)", {es_pid}) << std::endl;
-            display.displayDescriptorList(section, data, es_info_length, indent);
-            data += es_info_length; size -= es_info_length;
-        }
+    // Get elementary streams description
+    while (!buf.error() && !buf.endOfRead()) {
+        const uint8_t type = buf.getUInt8();
+        const PID pid = buf.getPID();
+        strm << margin << "Elementary stream: type " << names::StreamType(type, names::FIRST)
+             << UString::Format(u", PID: %d (0x%<X)", {pid}) << std::endl;
+        display.displayDescriptorListWithLength(section, buf, indent);
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(buf, indent);
 }
 
 

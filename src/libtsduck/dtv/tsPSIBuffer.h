@@ -312,6 +312,19 @@ namespace ts {
         //!
         bool getDescriptorListWithLength(DescriptorList& descs, size_t length_bits = 12);
 
+        //!
+        //! Get a 2-byte integer length field, typically a length before a descriptor list.
+        //!
+        //! The 2-byte integer field uses only its N least significant bits (@a length_bits). If the current
+        //! read pointer is byte-aligned, 16-N bits are skipped first. If the current read bit pointer is 16-N,
+        //! the length is directly read after that bit. For all other read pointers, a read error is generated.
+        //!
+        //! @param [in] length_bits Number of meaningful bits in the integer field.
+        //! @return The integer value. Return zero on error. The returned value cannot be larger than the remaining
+        //! number of bytes to read.
+        //!
+        size_t getUnalignedLength(size_t length_bits);
+
     private:
         DuckContext& _duck;
 

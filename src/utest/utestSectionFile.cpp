@@ -33,6 +33,7 @@
 
 #include "tsSectionFile.h"
 #include "tsPAT.h"
+#include "tsPMT.h"
 #include "tsCAT.h"
 #include "tsTDT.h"
 #include "tsCAIdentifierDescriptor.h"
@@ -72,7 +73,9 @@ public:
     void testSCTE35();
     void testAllTables();
     void testBuildSections();
-    void testMultiSections();
+    void testMultiSectionsCAT();
+    void testMultiSectionsAtProgramLevelPMT();
+    void testMultiSectionsAtStreamLevelPMT();
 
     TSUNIT_TEST_BEGIN(SectionFileTest);
     TSUNIT_TEST(testConfigurationFile);
@@ -83,7 +86,9 @@ public:
     TSUNIT_TEST(testSCTE35);
     TSUNIT_TEST(testAllTables);
     TSUNIT_TEST(testBuildSections);
-    TSUNIT_TEST(testMultiSections);
+    TSUNIT_TEST(testMultiSectionsCAT);
+    TSUNIT_TEST(testMultiSectionsAtProgramLevelPMT);
+    TSUNIT_TEST(testMultiSectionsAtStreamLevelPMT);
     TSUNIT_TEST_END();
 
 private:
@@ -478,7 +483,7 @@ void SectionFileTest::testBuildSections()
     TSUNIT_ASSERT(tdtTime == xmlTDT.utc_time);
 }
 
-void SectionFileTest::testMultiSections()
+void SectionFileTest::testMultiSectionsCAT()
 {
     ts::DuckContext duck;
     ts::CAT cat1;
@@ -491,12 +496,12 @@ void SectionFileTest::testMultiSections()
 
     // Add 300 10-byte descriptors => 3000 bytes => 3 sections.
     // One CAT section = 1024 bytes max, 1012 payload max => 101 descriptors per section.
-    uint16_t id = 0;
+    uint16_t counter = 0;
     for (size_t di = 0; di < 300; ++di) {
-        cat1.descs.add(duck, ts::CAIdentifierDescriptor({id, uint16_t(id+1), uint16_t(id+2), uint16_t(id+3)}));
+        cat1.descs.add(duck, ts::CAIdentifierDescriptor({counter, uint16_t(counter+1), uint16_t(counter+2), uint16_t(counter+3)}));
         TSUNIT_EQUAL(di + 1, cat1.descs.size());
         TSUNIT_EQUAL(10, cat1.descs[di]->size());
-        id += 4;
+        counter += 4;
     }
 
     ts::BinaryTable bin;
@@ -521,14 +526,186 @@ void SectionFileTest::testMultiSections()
     TSUNIT_EQUAL(0xFFFF, cat2.tableIdExtension());
     TSUNIT_EQUAL(300, cat2.descs.size());
 
-    id = 0;
+    counter = 0;
     for (size_t di = 0; di < cat2.descs.size(); ++di) {
         ts::CAIdentifierDescriptor desc(duck, *cat2.descs[di]);
         TSUNIT_ASSERT(desc.isValid());
         TSUNIT_EQUAL(4, desc.casids.size());
         for (size_t ii = 0; ii < desc.casids.size(); ++ii) {
-            TSUNIT_EQUAL(id, desc.casids[ii]);
-            id++;
+            TSUNIT_EQUAL(counter, desc.casids[ii]);
+            counter++;
+        }
+    }
+}
+
+void SectionFileTest::testMultiSectionsAtProgramLevelPMT()
+{
+    ts::DuckContext duck;
+    ts::PMT pmt1;
+
+    pmt1.service_id = 0x5678;
+    pmt1.pcr_pid = 0x1234;
+
+    TSUNIT_ASSERT(pmt1.isValid());
+    TSUNIT_ASSERT(!pmt1.isPrivate());
+    TSUNIT_EQUAL(ts::TID_PMT, pmt1.tableId());
+    TSUNIT_EQUAL(0x5678, pmt1.tableIdExtension());
+    TSUNIT_ASSERT(pmt1.descs.empty());
+    TSUNIT_ASSERT(pmt1.streams.empty());
+
+    // Add 202 10-byte descriptors => 2020 bytes => 3 sections.
+    // One PSI section = 1024 bytes max, 1012 payload max, incl. 4-byte fixed part => 100 descriptors per section.
+    uint16_t counter = 0;
+    for (size_t di = 0; di < 202; ++di) {
+        pmt1.descs.add(duck, ts::CAIdentifierDescriptor({counter, uint16_t(counter+1), uint16_t(counter+2), uint16_t(counter+3)}));
+        counter += 4;
+    }
+
+    // Add only one stream, with one descriptor.
+    const ts::PID es_pid = 100;
+    pmt1.streams[es_pid].stream_type = 0xAB;
+    pmt1.streams[es_pid].descs.add(duck, ts::CAIdentifierDescriptor({counter, uint16_t(counter+1), uint16_t(counter+2), uint16_t(counter+3)}));
+
+    ts::BinaryTable bin;
+    pmt1.serialize(duck, bin);
+
+    TSUNIT_ASSERT(bin.isValid());
+    TSUNIT_ASSERT(!bin.isShortSection());
+    TSUNIT_EQUAL(ts::TID_PMT,bin.tableId());
+    TSUNIT_EQUAL(0x5678, bin.tableIdExtension());
+    TSUNIT_EQUAL(3, bin.sectionCount());
+    TSUNIT_EQUAL(1016, bin.sectionAt(0)->size());
+    TSUNIT_EQUAL(1004, bin.sectionAt(0)->payloadSize());
+    TSUNIT_EQUAL(1016, bin.sectionAt(1)->size());
+    TSUNIT_EQUAL(1004, bin.sectionAt(1)->payloadSize());
+    TSUNIT_EQUAL(51, bin.sectionAt(2)->size());
+    TSUNIT_EQUAL(39, bin.sectionAt(2)->payloadSize());
+
+    ts::PMT pmt2(duck, bin);
+    TSUNIT_ASSERT(pmt2.isValid());
+    TSUNIT_ASSERT(!pmt2.isPrivate());
+    TSUNIT_EQUAL(ts::TID_PMT, pmt2.tableId());
+    TSUNIT_EQUAL(0x5678, pmt2.tableIdExtension());
+    TSUNIT_EQUAL(0x1234, pmt2.pcr_pid);
+    TSUNIT_EQUAL(202, pmt2.descs.size());
+
+    counter = 0;
+    for (size_t di = 0; di < pmt2.descs.size(); ++di) {
+        ts::CAIdentifierDescriptor desc(duck, *pmt2.descs[di]);
+        TSUNIT_ASSERT(desc.isValid());
+        TSUNIT_EQUAL(4, desc.casids.size());
+        for (size_t ii = 0; ii < desc.casids.size(); ++ii) {
+            TSUNIT_EQUAL(counter, desc.casids[ii]);
+            counter++;
+        }
+    }
+
+    TSUNIT_EQUAL(1, pmt2.streams.size());
+    TSUNIT_EQUAL(100, pmt2.streams.begin()->first);
+    const ts::PMT::Stream& es(pmt2.streams.begin()->second);
+    TSUNIT_EQUAL(0xAB, es.stream_type);
+    TSUNIT_EQUAL(1, es.descs.size());
+
+    ts::CAIdentifierDescriptor desc(duck, *es.descs[0]);
+    TSUNIT_ASSERT(desc.isValid());
+    TSUNIT_EQUAL(4, desc.casids.size());
+    for (size_t ii = 0; ii < desc.casids.size(); ++ii) {
+        TSUNIT_EQUAL(counter, desc.casids[ii]);
+        counter++;
+    }
+}
+
+void SectionFileTest::testMultiSectionsAtStreamLevelPMT()
+{
+    ts::DuckContext duck;
+    ts::PMT pmt1;
+
+    pmt1.service_id = 0x5678;
+    pmt1.pcr_pid = 0x1234;
+
+    TSUNIT_ASSERT(pmt1.isValid());
+    TSUNIT_ASSERT(!pmt1.isPrivate());
+    TSUNIT_EQUAL(ts::TID_PMT, pmt1.tableId());
+    TSUNIT_EQUAL(0x5678, pmt1.tableIdExtension());
+    TSUNIT_ASSERT(pmt1.descs.empty());
+    TSUNIT_ASSERT(pmt1.streams.empty());
+
+    // Add 3 10-byte descriptors at program level.
+    // First section initial size: 34 bytes. Subsequent sections: 4 bytes.
+    uint16_t counter = 0;
+    for (size_t di = 0; di < 3; ++di) {
+        pmt1.descs.add(duck, ts::CAIdentifierDescriptor({counter, uint16_t(counter+1), uint16_t(counter+2), uint16_t(counter+3)}));
+        counter += 4;
+    }
+
+    // Add 90 streams, with 2 descriptors => 25 bytes per stream.
+    // One PSI section = 1024 bytes max, 1012 payload max.
+    // First section payload: 34 bytes + 39 x 25 bytes = 1009 bytes
+    // Second section payload: 4 bytes + 40 x 25 bytes = 1004 bytes
+    // Third section payload: 4 bytes + 11 x 25 bytes = 279 bytes
+    ts::PID es_pid = 50;
+    uint8_t stype = 0;
+    for (size_t si = 0; si < 90; ++si) {
+        pmt1.streams[es_pid].stream_type = stype++;
+        pmt1.streams[es_pid].descs.add(duck, ts::CAIdentifierDescriptor({counter, uint16_t(counter+1), uint16_t(counter+2), uint16_t(counter+3)}));
+        counter += 4;
+        pmt1.streams[es_pid].descs.add(duck, ts::CAIdentifierDescriptor({counter, uint16_t(counter+1), uint16_t(counter+2), uint16_t(counter+3)}));
+        counter += 4;
+        es_pid++;
+    }
+
+    ts::BinaryTable bin;
+    pmt1.serialize(duck, bin);
+
+    TSUNIT_ASSERT(bin.isValid());
+    TSUNIT_ASSERT(!bin.isShortSection());
+    TSUNIT_EQUAL(ts::TID_PMT,bin.tableId());
+    TSUNIT_EQUAL(0x5678, bin.tableIdExtension());
+    TSUNIT_EQUAL(3, bin.sectionCount());
+    TSUNIT_EQUAL(1021, bin.sectionAt(0)->size());
+    TSUNIT_EQUAL(1009, bin.sectionAt(0)->payloadSize());
+    TSUNIT_EQUAL(1016, bin.sectionAt(1)->size());
+    TSUNIT_EQUAL(1004, bin.sectionAt(1)->payloadSize());
+    TSUNIT_EQUAL(291, bin.sectionAt(2)->size());
+    TSUNIT_EQUAL(279, bin.sectionAt(2)->payloadSize());
+
+    ts::PMT pmt2(duck, bin);
+    TSUNIT_ASSERT(pmt2.isValid());
+    TSUNIT_ASSERT(!pmt2.isPrivate());
+    TSUNIT_EQUAL(ts::TID_PMT, pmt2.tableId());
+    TSUNIT_EQUAL(0x5678, pmt2.tableIdExtension());
+    TSUNIT_EQUAL(0x1234, pmt2.pcr_pid);
+    TSUNIT_EQUAL(3, pmt2.descs.size());
+
+    counter = 0;
+    es_pid = 50;
+    stype = 0;
+
+    for (size_t di = 0; di < pmt2.descs.size(); ++di) {
+        ts::CAIdentifierDescriptor desc(duck, *pmt2.descs[di]);
+        TSUNIT_ASSERT(desc.isValid());
+        TSUNIT_EQUAL(4, desc.casids.size());
+        for (size_t ii = 0; ii < desc.casids.size(); ++ii) {
+            TSUNIT_EQUAL(counter, desc.casids[ii]);
+            counter++;
+        }
+    }
+
+    TSUNIT_EQUAL(90, pmt2.streams.size());
+    for (auto si = pmt2.streams.begin(); si != pmt2.streams.end(); ++si) {
+        TSUNIT_EQUAL(es_pid, si->first);
+        es_pid++;
+        TSUNIT_EQUAL(stype, si->second.stream_type);
+        stype++;
+        TSUNIT_EQUAL(2, si->second.descs.size());
+        for (size_t di = 0; di < si->second.descs.size(); ++di) {
+            ts::CAIdentifierDescriptor desc(duck, *si->second.descs[di]);
+            TSUNIT_ASSERT(desc.isValid());
+            TSUNIT_EQUAL(4, desc.casids.size());
+            for (size_t ii = 0; ii < desc.casids.size(); ++ii) {
+                TSUNIT_EQUAL(counter, desc.casids[ii]);
+                counter++;
+            }
         }
     }
 }
