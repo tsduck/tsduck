@@ -176,6 +176,7 @@ namespace ts {
         //! @param [in] section Section containing the descriptor list.
         //! @param [in,out] buf Buffer containing the descriptor list to read
         //! @param [in] indent Indentation width.
+        //! @param [in] title Optional title to display as preceding line.
         //! @param [in] length_bits Number of meaningful bits in the length field.
         //! @param [in] cas CAS id of the table.
         //! @return A reference to the output stream.
