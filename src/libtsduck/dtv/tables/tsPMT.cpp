@@ -161,7 +161,7 @@ void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
         // Binary size of the stream entry.
         const size_t entry_size = 5 + it->second.descs.binarySize();
 
-        // If the current does not fit into the section, create a new section, unless we are at the beginning of the section.
+        // If the current entry does not fit into the section, create a new section, unless we are at the beginning of the section.
         if (entry_size > payload.remainingWriteBytes() && payload.currentWriteByteOffset() > payload_min_size) {
             addOneSection(table, payload);
             payload.putPartialDescriptorListWithLength(descs, 0, 0);

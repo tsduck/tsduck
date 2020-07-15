@@ -72,7 +72,7 @@ ts::PID ts::PSIBuffer::getPID()
     if (readIsByteAligned()) {
         return getUInt16() & 0x1FFF;
     }
-    else if (currentReadBitOffset() == 3) {
+    else if (currentReadBitOffset() % 8 == 3) {
         return getBits<PID>(13);
     }
     else {
@@ -86,7 +86,7 @@ bool ts::PSIBuffer::putPID(PID pid)
     if (writeIsByteAligned()) {
         return putUInt16(0xE000 | pid);
     }
-    else if (currentWriteBitOffset() == 3) {
+    else if (currentWriteBitOffset() % 8 == 3) {
         return putBits(pid, 13);
     }
     else {
@@ -340,7 +340,7 @@ size_t ts::PSIBuffer::putPartialDescriptorListWithLength(const DescriptorList& d
     start = std::min(start, descs.size());
 
     // Filter incorrect length or length alignment.
-    if (readOnly() || remainingWriteBytes() < 2 || length_bits == 0 || length_bits > 16 || (!writeIsByteAligned() && currentWriteBitOffset() != 16 - length_bits)) {
+    if (readOnly() || remainingWriteBytes() < 2 || length_bits == 0 || length_bits > 16 || (!writeIsByteAligned() && currentWriteBitOffset() % 8 != 16 - length_bits)) {
         setWriteError();
         return start;
     }
@@ -426,7 +426,7 @@ bool ts::PSIBuffer::getDescriptorListWithLength(DescriptorList& descs, size_t le
 
 size_t ts::PSIBuffer::getUnalignedLength(size_t length_bits)
 {
-    if (readError() || remainingReadBytes() < 2 || length_bits == 0 || length_bits > 16 || (!readIsByteAligned() && currentReadBitOffset() != 16 - length_bits)) {
+    if (readError() || remainingReadBytes() < 2 || length_bits == 0 || length_bits > 16 || (!readIsByteAligned() && currentReadBitOffset() % 8 != 16 - length_bits)) {
         setReadError();
         return 0;
     }
