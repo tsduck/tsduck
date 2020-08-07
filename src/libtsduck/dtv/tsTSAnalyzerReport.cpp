@@ -246,7 +246,7 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
     grid.subSection();
 
     grid.setLayout({grid.bothTruncateLeft(73, u'.')});
-    grid.putLayout({{u"Broadcast time:", _duration == 0 ? u"Unknown" : UString::Format(u"%d sec (%d mn %d sec)", {_duration / 1000, _duration / 60000, (_duration / 1000) % 60})}});
+    grid.putLayout({{u"Broadcast time:", _duration == 0 ? u"Unknown" : UString::Format(u"%d sec (%d min %d sec)", {_duration / 1000, _duration / 60000, (_duration / 1000) % 60})}});
     if (_first_tdt != Time::Epoch || _first_tot != Time::Epoch || !_country_code.empty()) {
         // This looks like a DVB stream.
         reportTimeStamp(grid, u"First TDT UTC time stamp:", _first_tdt);
