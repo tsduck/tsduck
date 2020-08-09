@@ -79,7 +79,7 @@ GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     option(u"", 0, STRING, 1, 1);
     help(u"", u"filename", u"Name of the binary output file which receives the ECM.");
 
-    option(u"cp-number", 0, INT16);
+    option(u"cp-number", 0, UINT16);
     help(u"cp-number", u"Crypto-period number. Default: 0.");
 
     option(u"cw-current", 'c', STRING, 1, 1);
