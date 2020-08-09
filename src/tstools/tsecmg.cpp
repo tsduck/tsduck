@@ -617,10 +617,14 @@ bool ECMGClientHandler::handleCWProvision(ts::ecmgscs::CWProvision* msg)
         resp.stream_id = msg->stream_id;
         resp.CP_number = msg->CP_number;
 
+        // Check if 16-bit crypto-period numbers wrap over 0xFFFF.
+        const uint16_t cpMax = msg->CP_number + _opt.channelStatus.lead_CW;
+        const bool cpWrap = cpMax < msg->CP_number;
+
         // Add all CW's in the ECM (in the clear, yeah, but that's a fake/test ECMG).
         ts::duck::ClearECM ecm;
         for (auto it = msg->CP_CW_combination.begin(); it != msg->CP_CW_combination.end(); ++it) {
-            if (it->CP < msg->CP_number || it->CP > msg->CP_number + _opt.channelStatus.lead_CW) {
+            if ((!cpWrap && (it->CP < msg->CP_number || it->CP > cpMax)) || (cpWrap && it->CP > cpMax && it->CP < msg->CP_number)) {
                 // Incorrect CP/CW combination.
                 return sendErrorResponse(msg, ts::ecmgscs::Errors::not_enough_CW);
             }
