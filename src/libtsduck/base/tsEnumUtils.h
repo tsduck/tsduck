@@ -61,20 +61,23 @@ namespace ts
 //! Example:
 //! @code
 //! enum E {A = 0x01, B = 0x02, C = 0x04};
-//! TS_ENABLE_BITMASK_OPERATORS(E)
+//! TS_ENABLE_BITMASK_OPERATORS(E);
 //!
 //! E e = A | B | C;
 //! e ^= B | C;
 //! @endcode
 //!
-#define TS_ENABLE_BITMASK_OPERATORS(T)       \
-    /** Template specialization on type T */ \
-    template<>                               \
-    struct ts::EnableBitMaskOperators<T>     \
-    {                                        \
-        /** Enable bitmask operators on T */ \
-        static constexpr bool value = true;  \
-    }
+#define TS_ENABLE_BITMASK_OPERATORS(T)           \
+    namespace ts {                               \
+        /** Template specialization on type T */ \
+        template<>                               \
+        struct EnableBitMaskOperators<T>         \
+        {                                        \
+            /** Enable bitmask operators on T */ \
+            static constexpr bool value = true;  \
+        };                                       \
+    }                                            \
+    typedef int TS_UNIQUE_NAME(for_trailing_semicolon)
 
 //!
 //! Bitmask "not" unary operator on enumeration types.
