@@ -35,8 +35,7 @@
 #include "tsPluginRepository.h"
 #include "tsUDPReceiver.h"
 #include "tsMPEPacket.h"
-#include "tsOneShotPacketizer.h"
-#include "tsContinuityAnalyzer.h"
+#include "tsPacketizer.h"
 #include "tsMessageQueue.h"
 #include "tsThread.h"
 TSDUCK_SOURCE;
@@ -52,13 +51,14 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class MPEInjectPlugin: public ProcessorPlugin, private Thread
+    class MPEInjectPlugin: public ProcessorPlugin, private Thread, private SectionProviderInterface
     {
         TS_NOBUILD_NOCOPY(MPEInjectPlugin);
     public:
         // Implementation of plugin API
         MPEInjectPlugin(TSP*);
         virtual bool start() override;
+        virtual bool getOptions() override;
         virtual bool stop() override;
         virtual bool isRealTime() override {return true;}
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
@@ -66,22 +66,27 @@ namespace ts {
     private:
         typedef MessageQueue<Section, Mutex> SectionQueue;
 
-        // Plugin private fields.
-        volatile bool  _terminate;      // Force termination flag for thread.
-        PID            _mpe_pid;        // PID into insert the MPE datagrams.
-        bool           _replace;        // Replace incoming PID if it exists.
-        size_t         _max_queued;     // Max number of queued sections.
-        MACAddress     _default_mac;    // Default MAC address in MPE section for unicast packets.
-        SocketAddress  _new_source;     // Masquerade source socket in MPE section.
-        SocketAddress  _new_dest;       // Masquerade destination socket in MPE section.
-        UDPReceiver    _sock;           // Incoming socket with associated command line options
-        SectionQueue   _section_queue;  // Queue of datagrams between the UDP server and the MPE inserter.
-        TSPacketVector _mpe_packets;    // TS packets to insert, contain a packetized MPE section.
-        size_t         _packet_index;   // Next index in _mpe_packets.
-        ContinuityAnalyzer _cc_fixer;   // To fix continuity counters in MPE PID.
+        // Command line options.
+        PID           _mpe_pid;        // PID into insert the MPE datagrams.
+        bool          _replace;        // Replace incoming PID if it exists.
+        bool          _pack_sections;  // Packet DSM-CC section, without stuffing in TS packets.
+        size_t        _max_queued;     // Max number of queued sections.
+        MACAddress    _default_mac;    // Default MAC address in MPE section for unicast packets.
+        SocketAddress _new_source;     // Masquerade source socket in MPE section.
+        SocketAddress _new_dest;       // Masquerade destination socket in MPE section.
+        UDPReceiver   _sock;           // Incoming socket with associated command line options
+
+        // Working data.
+        volatile bool _terminate;      // Force termination flag for thread.
+        SectionQueue  _section_queue;  // Queue of datagrams between the UDP server and the MPE inserter.
+        Packetizer    _packetizer;     // Packetizer for MPE sections.
 
         // Invoked in the context of the server thread.
         virtual void main() override;
+
+        // Implementation of SectionProviderInterface.
+        virtual void provideSection(SectionCounter counter, SectionPtr& section) override;
+        virtual bool doStuffing() override;
     };
 }
 
@@ -95,18 +100,17 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"mpeinject", ts::MPEInjectPlugin);
 ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Inject an incoming UDP stream into MPE (Multi-Protocol Encapsulation)", u"[options] [address:]port"),
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
-    _terminate(false),
     _mpe_pid(PID_NULL),
     _replace(false),
+    _pack_sections(false),
     _max_queued(DEFAULT_MAX_QUEUED_SECTION),
     _default_mac(),
     _new_source(),
     _new_dest(),
     _sock(*tsp_),
+    _terminate(false),
     _section_queue(DEFAULT_MAX_QUEUED_SECTION),
-    _mpe_packets(),
-    _packet_index(0),
-    _cc_fixer(AllPIDs, tsp)
+    _packetizer(duck, PID_NULL, this, tsp)
 {
     // UDP receiver common options.
     _sock.defineArgs(*this);
@@ -134,6 +138,12 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
          u"not specified, the original source port from the UDP datagram is used. By "
          u"default, the source address is not modified.");
 
+    option(u"pack-sections");
+    help(u"pack-sections",
+         u"Specify to pack DSM-CC sections containing MPE datagrams. "
+         u"With this option, each DSM-CC section starts in the same TS packet as the previous section. "
+         u"By default, the last TS packet of a DSM-CC section is stuffed and the next section starts in the next TS packet of the PID.");
+
     option(u"pid", 'p', PIDVAL, 1, 1);
     help(u"pid",
          u"Specify the PID into which the MPE datagrams shall be inserted. This is a "
@@ -148,15 +158,15 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get command line options method
 //----------------------------------------------------------------------------
 
-bool ts::MPEInjectPlugin::start()
+bool ts::MPEInjectPlugin::getOptions()
 {
-    // Get command line arguments.
     _mpe_pid = intValue<PID>(u"pid");
     _max_queued = intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_SECTION);
     _replace = present(u"replace");
+    _pack_sections = present(u"pack-sections");
     const UString macAddress(value(u"mac-address"));
     const UString newDestination(value(u"new-destination"));
     const UString newSource(value(u"new-source"));
@@ -172,18 +182,28 @@ bool ts::MPEInjectPlugin::start()
         return false;
     }
 
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::MPEInjectPlugin::start()
+{
     // Create UDP socket
     if (!_sock.open(*tsp)) {
         return false;
     }
 
-    // Reset buffers.
+    // Reset section queue.
     _section_queue.clear();
     _section_queue.setMaxMessages(_max_queued);
-    _mpe_packets.clear();
-    _packet_index = 0;
-    _cc_fixer.reset();
-    _cc_fixer.setGenerator(true);
+
+    // Reset packetizer.
+    _packetizer.reset();
+    _packetizer.setPID(_mpe_pid);
 
     // Start the internal thread which listens to incoming UDP packet.
     _terminate = false;
@@ -201,7 +221,7 @@ bool ts::MPEInjectPlugin::stop()
 {
     // Close the UDP socket.
     // This will force the server thread to terminate on receive error.
-    // In case the server does not properly notify the error, set a flag.
+    // In case the server does not properly notify the error, set a volatile flag.
     _terminate = true;
     _sock.close(*tsp);
 
@@ -224,32 +244,40 @@ ts::ProcessorPlugin::Status ts::MPEInjectPlugin::processPacket(TSPacket& pkt, TS
         return TSP_END;
     }
 
-    // MPE injection may occur only by replacing null packets or original PID.
-    if (pid != PID_NULL && pid != _mpe_pid) {
-        // Leave current packet unmodified.
-        return TSP_OK;
+    // MPE injection occurs by replacing original PID or null packets.
+    if ((_replace && pid == _mpe_pid) || (!_replace && pid == PID_NULL)) {
+        // Get next packet from the packetizer (can be a null packet if there is no section available).
+        _packetizer.getNextPacket(pkt);
     }
 
-    // If there is no more TS packet to insert from the previous section, try to get next section.
+    return TSP_OK;
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of SectionProviderInterface, invoked by the packetizer.
+//----------------------------------------------------------------------------
+
+bool ts::MPEInjectPlugin::doStuffing()
+{
+    // Indicate if we need to stuff TS packets between packetized sections.
+    return !_pack_sections;
+}
+
+void ts::MPEInjectPlugin::provideSection(SectionCounter counter, SectionPtr& section)
+{
+    // The packetizer needs a new section to packetize. Try to get next section.
     // Do not wait for a section, just do nothing if there is none available.
-    SectionQueue::MessagePtr section;
-    if (_packet_index >= _mpe_packets.size() && _section_queue.dequeue(section, 0) && !section.isNull() && section->isValid()) {
-        // Packetize the section.
-        OneShotPacketizer zer(duck, _mpe_pid, true);
-        zer.addSection(section.changeMutex<NullMutex>());
-        zer.getPackets(_mpe_packets);
-        _packet_index = 0;
-    }
-
-    if (_packet_index < _mpe_packets.size()) {
-        // There is an available TS packet, replace the current TS packet.
-        pkt = _mpe_packets[_packet_index++];
-        _cc_fixer.feedPacket(pkt);
-        return TSP_OK;
+    SectionQueue::MessagePtr ptr;
+    if (_section_queue.dequeue(ptr, 0) && !ptr.isNull() && ptr->isValid()) {
+        // Got a valid section. Transfer the section pointer ownership.
+        // We need an ownership transfer because SectionQueue::MessagePtr uses
+        // a real Mutex while SectionPtr uses a NullMutex (unsynchronized).
+        section = ptr.changeMutex<NullMutex>();
     }
     else {
-        // No available packet, force a null packet.
-        return pid == PID_NULL ? TSP_OK : TSP_NULL;
+        // No section available. Clear returned pointer, just in case.
+        section.clear();
     }
 }
 

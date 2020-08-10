@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <!-- See ETSI EN 301 192, section 8.4 -->
+  <INT platform_id="0x123456">
+    <IPMAC_platform_name_descriptor language_code="eng" text="Demo"/>
+    <IPMAC_platform_provider_name_descriptor language_code="eng" text="TSDuck"/>
+    <device>
+      <target>
+        <target_IP_slash_descriptor>
+          <address IPv4_addr="230.2.3.4" IPv4_slash_mask="32"/>
+        </target_IP_slash_descriptor>
+      </target>
+      <operational>
+        <IPMAC_stream_location_descriptor
+            network_id="1"
+            original_network_id="1"
+            transport_stream_id="1"
+            service_id="701"
+            component_tag="1"/>
+      </operational>
+    </device>
+  </INT>
+</tsduck>

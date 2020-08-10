@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <SDT transport_stream_id="1" original_network_id="1">
+    <service service_id="700" running_status="running">
+      <service_descriptor service_type="0x0C" service_name="MPE Demo (INT)" service_provider_name="TSDuck"/>
+    </service>
+    <service service_id="701" running_status="running">
+      <service_descriptor service_type="0x0C" service_name="MPE Demo" service_provider_name="TSDuck"/>
+    </service>
+  </SDT>
+</tsduck>
