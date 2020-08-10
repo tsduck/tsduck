@@ -760,7 +760,8 @@ TS_MSC_NOWARNING(4627)  // 'header_file': skipped when looking for precompiled h
 TS_MSC_NOWARNING(4628)  // digraphs not supported with -Ze. Character sequence '<:' not interpreted as alternate token for '['
 TS_MSC_NOWARNING(4820)  // 'n' bytes padding added after data member 'nnnnn'
 TS_MSC_NOWARNING(5026)  // move constructor was implicitly defined as deleted
-TS_MSC_NOWARNING(5039)  // pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
+TS_MSC_NOWARNING(5039)  // pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception
+TS_MSC_NOWARNING(5220)  // a non-static data member with a volatile qualified type no longer implies that compiler generated copy/move constructors and copy/move assignment operators are not trivial
 
 // The following ones should really be informational instead of warning:
 TS_MSC_NOWARNING(4371)  // layout of class may have changed from a previous version of the compiler due to better packing of member 'xxxx'
