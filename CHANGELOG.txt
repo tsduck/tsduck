@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.22-1921
+VERSION 3.22-1924
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -20,6 +20,7 @@ VERSION 3.22-1921
     - Option --size-of-packet in "tsftrunc".
     - Options --eit-normalization, --eit-base-date and --pack-and-flush in
       "tspacketize", "tstabcomp" and plugin "inject".
+    - Option --pack-sections in plugin "mpeinject".
 
 [BUG] Bug fixes:
 

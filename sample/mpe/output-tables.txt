@@ -1,0 +1,66 @@
+
+* PAT, TID 0 (0x00), PID 0 (0x0000)
+  Version: 0, sections: 1, total size: 20 bytes
+  - Section 0:
+    TS id:       1 (0x0001)
+    Program:   700 (0x02BC)  PID: 5000 (0x1388)
+    Program:   701 (0x02BD)  PID: 5002 (0x138A)
+
+* SDT Actual, TID 66 (0x42), PID 17 (0x0011)
+  Version: 0, sections: 1, total size: 69 bytes
+  - Section 0:
+    Transport Stream Id: 1 (0x0001)
+    Original Network Id: 1 (0x0001)
+    Service Id: 700 (0x02BC), EITs: no, EITp/f: no, CA mode: free
+    Running status: running
+    - Descriptor 0: Service (0x48, 72), 23 bytes
+      Service type: 0x0C (Data broadcast service)
+      Service: "MPE Demo (INT)", Provider: "TSDuck"
+    Service Id: 701 (0x02BD), EITs: no, EITp/f: no, CA mode: free
+    Running status: running
+    - Descriptor 0: Service (0x48, 72), 17 bytes
+      Service type: 0x0C (Data broadcast service)
+      Service: "MPE Demo", Provider: "TSDuck"
+
+* PMT, TID 2 (0x02), PID 5000 (0x1388)
+  Version: 0, sections: 1, total size: 25 bytes
+  - Section 0:
+    Program: 700 (0x02BC), PCR PID: none
+    Elementary stream: type 0x05 (MPEG-2 Private sections), PID: 5001 (0x1389)
+    - Descriptor 0: Data Broadcast Id (0x66, 102), 2 bytes
+      Data broadcast id: 0x000B (11, IP/MAC Notification service)
+
+* INT (IP/MAC Notification), TID 76 (0x4C), PID 5001 (0x1389)
+  Version: 0, sections: 1, total size: 60 bytes
+  - Section 0:
+    Platform id: 0x123456 (unknown)
+    Action type: 0x01, processing order: 0x00, id hash: 0x70 (valid)
+    Platform descriptors:
+      - Descriptor 0: INT IP/MAC Platform Name (0x0C, 12), 7 bytes
+        Language: eng
+        Platform name: Demo
+      - Descriptor 1: INT IP/MAC Platform Provider Name (0x0D, 13), 9 bytes
+        Language: eng
+        Platform name: TSDuck
+    Device #0
+      Target descriptors:
+        - Descriptor 0: INT Target IP Slash (0x0F, 15), 5 bytes
+          Address/mask: 230.2.3.4/32
+      Operational descriptors:
+        - Descriptor 0: INT IP/MAC Stream Location (0x13, 19), 9 bytes
+          Network id: 0x0001 (1)
+          Original network id: 0x0001 (1)
+          Transport stream id: 0x0001 (1)
+          Service id: 0x02BD (701)
+          Component tag: 0x01 (1)
+
+* PMT, TID 2 (0x02), PID 5002 (0x138A)
+  Version: 0, sections: 1, total size: 28 bytes
+  - Section 0:
+    Program: 701 (0x02BD), PCR PID: 5004 (0x138C)
+    Elementary stream: type 0x0D (DSM-CC Sections), PID: 5003 (0x138B)
+    - Descriptor 0: Stream Identifier (0x52, 82), 1 bytes
+      Component tag: 1 (0x01)
+    - Descriptor 1: Data Broadcast Id (0x66, 102), 2 bytes
+      Data broadcast id: 0x0005 (5, Multi protocol encapsulation)
+

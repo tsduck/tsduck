@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <!-- See ETSI EN 301 192, section 7.2 -->
+  <PMT service_id="701" PCR_PID="5004">
+    <component elementary_PID="5003" stream_type="0x0D">
+      <stream_identifier_descriptor component_tag="1"/>
+      <data_broadcast_id_descriptor data_broadcast_id="0x0005"/>
+    </component>
+  </PMT>
+</tsduck>
