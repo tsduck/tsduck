@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.22-1911
+VERSION 3.22-1921
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -28,6 +28,8 @@ VERSION 3.22-1911
   * Sections of some DVB, ATSC and ARIB tables, when serialized, were limited
     to 1024 bytes instead of 4096. Only MPEG-defined PSI sections should be
     limited to 1024 bytes.
+  * Fixed issue #619: "tsecmg" failed to process an ECM request with crypto-
+    period numbers wrapping over 0xFFFF (eg. CP = 0xFFFF and 0x0000).
 
 -------------------------------------------------------------------------------
 
