@@ -4,7 +4,6 @@
 # It can be any TS in fact.
 
 cd $(dirname "$0")
-tsp --version
 
 tsp --verbose \
     -I http --infinite https://tsduck.io/streams/france-dttv/tnt-uhf30-546MHz-2019-01-22.ts \

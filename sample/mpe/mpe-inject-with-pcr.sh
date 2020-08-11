@@ -3,7 +3,6 @@
 # The output TS has two data services and a forged PCR PID.
 
 cd $(dirname "$0")
-tsp --version
 
 # Target output bitrate:
 BITRATE=30000000

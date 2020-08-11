@@ -3,13 +3,8 @@
 # The output TS has two data services and no PCR at all.
 
 cd $(dirname "$0")
-tsp --version
 
-# Target output bitrate:
-BITRATE=30000000
-
-# MPE insertion command:
-tsp --verbose --bitrate $BITRATE --max-flushed-packets 70 \
+tsp --verbose --bitrate 30000000 --max-flushed-packets 70 \
     -I null \
     -P regulate --packet-burst 14 \
     -P inject pat.xml --pid 0 --bitrate 15000 \
