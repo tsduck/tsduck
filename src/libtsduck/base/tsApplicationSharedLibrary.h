@@ -56,15 +56,14 @@ namespace ts {
         //! @param [in] prefix Prefix to add to @a filename if the file is not found.
         //! @param [in] library_path Name of an environment variable, an optional list of directories to search,
         //! similar to @c LD_LIBARY_PATH.
-        //! @param [in] permanent If false (the default), the shared library is unloaded from the current process
-        //! when this object is destroyed. If true, the shared library remains active.
+        //! @param [in] flags Shared library options.
         //! @param [in,out] report Where to report errors.
         //! @see GetSearchPath()
         //!
         explicit ApplicationSharedLibrary(const UString& filename,
                                           const UString& prefix = UString(),
                                           const UString& library_path = UString(),
-                                          bool permanent = false,
+                                          SharedLibraryFlags flags = SharedLibraryFlags::NONE,
                                           Report& report = NULLREP);
 
         //!
@@ -89,8 +88,8 @@ namespace ts {
         //! The ordered list of directories is:
         //! - All directories in @a library_path environment variable (if the name is not empty).
         //! - Directory of the current executable.
-        //! - Directory ../lib64/tsduck from current executable (64-bit UNIX only).
-        //! - Directory ../lib/tsduck from current executable (UNIX only).
+        //! - Directories ../lib64/tsduck and ../lib64 from current executable (64-bit UNIX only).
+        //! - Directories ../lib/tsduck and ../lib from current executable (UNIX only).
         //! - All directories in %Path% environment variable (Windows only).
         //! @param [out] directories List of directories in search order.
         //! @param [in] library_path Name of an environment variable, an optional list of directories to search,

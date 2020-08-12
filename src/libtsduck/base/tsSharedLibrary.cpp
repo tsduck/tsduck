@@ -40,12 +40,12 @@ TSDUCK_SOURCE;
 // Constructor: Load a shared library
 //----------------------------------------------------------------------------
 
-ts::SharedLibrary::SharedLibrary(const UString& filename, bool permanent, Report& report) :
+ts::SharedLibrary::SharedLibrary(const UString& filename, SharedLibraryFlags flags, Report& report) :
     _report(report),
     _filename(),
     _error(),
     _is_loaded(false),
-    _permanent(permanent),
+    _flags(flags),
 #if defined(TS_WINDOWS)
     _module(0)
 #else
@@ -64,7 +64,8 @@ ts::SharedLibrary::SharedLibrary(const UString& filename, bool permanent, Report
 
 ts::SharedLibrary::~SharedLibrary()
 {
-    if (!_permanent) {
+    // If mapping is not permanent, unload the shared library.
+    if ((_flags & SharedLibraryFlags::PERMANENT) == SharedLibraryFlags::NONE) {
         unload();
     }
 }
@@ -83,10 +84,31 @@ void ts::SharedLibrary::load(const UString& filename)
     _filename = filename;
     _report.debug(u"trying to load \"%s\"", {_filename});
 
+    // On UNIX systems, with option AUTO_PATH, add the directory part of the shared library file file in LD_LIBRARY_PATH
+#if defined(TS_UNIX)
+    if ((_flags & SharedLibraryFlags::AUTO_PATH) != SharedLibraryFlags::NONE) {
+        // Get directory part of file name.
+        const UString dirname(DirectoryName(filename));
+        if (dirname != u".") {
+            // An actual directory is specified, use it.
+            // Get current content of LD_LIBRARY_PATH.
+            UStringList dirs;
+            GetEnvironmentPath(dirs, u"LD_LIBRARY_PATH");
+            // Check if this directory is already in the list.
+            if (std::find(dirs.begin(), dirs.end(), dirname) == dirs.end()) {
+                // Not in the list, add the directory.
+                _report.debug(u"adding %s to LD_LIBRARY_PATH", {dirname});
+                dirs.push_back(dirname);
+                SetEnvironmentPath(u"LD_LIBRARY_PATH", dirs);
+            }
+        }
+    }
+#endif
+
+    // Load the sharealble library.
 #if defined(TSDUCK_STATIC)
     _error = u"statically linked application";
 #elif defined(TS_WINDOWS)
-    // Flawfinder: ignore: LoadLibraryEx: Ensure that the full path to the library is specified
     _module = ::LoadLibraryExW(_filename.wc_str(), NULL, 0);
     _is_loaded = _module != 0;
     if (!_is_loaded) {

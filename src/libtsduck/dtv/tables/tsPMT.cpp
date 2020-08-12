@@ -108,7 +108,7 @@ void ts::PMT::clearContent()
 
 void ts::PMT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Get fixed pard.
+    // Get fixed part.
     service_id = section.tableIdExtension();
     pcr_pid = buf.getPID();
 

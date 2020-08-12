@@ -4,12 +4,8 @@
 # Default target is build all.
 default: all
 
-# TSDuck definitions.
-ifeq ($(shell uname -s),Darwin) # Mac
-    SYSPREFIX ?= /usr/local
-else # Linux
-    SYSPREFIX ?= /usr
-endif
+# TSDuck definitions are in /usr on Linux and /usr/local on Mac.
+SYSPREFIX ?= $(if $(subst Darwin,,$(shell uname -s)),/usr,/usr/local)
 include $(SYSPREFIX)/include/tsduck/tsduck.mk
 
 # Default installation directory prefix.
@@ -56,9 +52,10 @@ clean distclean:
 $(LIBEXT_SO): $(LIBOBJS)
 $(PLUGINS_SO) $(TOOLS): $(LIBEXT_SO)
 
-# Installation: all shared libraries and executables are installed in the system "bin".
-# This is typically where TSDuck is installed (required to find extensions and plugins).
+# Installation in the same directories as TSDuck.
 install: all
-	install -d -m 755 $(DESTDIR)$(SYSPREFIX)/bin
-	install -m 755 $(LIBEXT_SO) $(PLUGINS_SO) $(TOOLS) $(DESTDIR)$(SYSPREFIX)/bin
-	$(if $(CONFIGS),install -m 644 $(CONFIGS) $(DESTDIR)$(SYSPREFIX)/bin,@true)
+	install -d -m 755 $(DESTDIR)$(TS_BIN_DIR) $(DESTDIR)$(TS_LIB_DIR) $(DESTDIR)$(TS_PLUGIN_DIR) $(DESTDIR)$(TS_CONFIG_DIR)
+	$(if $(TOOLS),install -m 755 $(TOOLS) $(DESTDIR)$(TS_BIN_DIR),@true)
+	$(if $(LIBEXT_SO),install -m 644 $(LIBEXT_SO) $(DESTDIR)$(TS_LIB_DIR),@true)
+	$(if $(PLUGINS_SO),install -m 644 $(PLUGINS_SO) $(DESTDIR)$(TS_PLUGIN_DIR),@true)
+	$(if $(CONFIGS),install -m 644 $(CONFIGS) $(DESTDIR)$(TS_CONFIG_DIR),@true)

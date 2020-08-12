@@ -501,10 +501,8 @@ namespace ts {
     //!
     //! The search path is analyzed and split into individual directory names.
     //!
-    //! @tparam CONTAINER A container class of @c UString as defined by the
-    //! C++ Standard Template Library (STL).
-    //! @param [out] container A container of @c UString receiving the
-    //! directory names.
+    //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+    //! @param [out] container A container of @c UString receiving the directory names.
     //! @param [in] name Environment variable name.
     //! @param [in] def Default value if the specified environment variable does not exist.
     //!
@@ -519,8 +517,7 @@ namespace ts {
     //!
     //! The search path is analyzed and split into individual directory names.
     //!
-    //! @tparam CONTAINER A container class of @c UString as defined by the
-    //! C++ Standard Template Library (STL).
+    //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
     //! @param [in,out] container A container of @c UString receiving the directory names.
     //! The directory names are appended to the container without erasing previous content.
     //! @param [in] name Environment variable name.
@@ -543,6 +540,22 @@ namespace ts {
     //! @return True on success, false on error.
     //!
     TSDUCKDLL bool SetEnvironment(const UString& name, const UString& value);
+
+    //!
+    //! Set the value of an environment variable containing a search path.
+    //!
+    //! If the variable previously existed, its value is overwritten.
+    //! If it did not exist, it is created.
+    //!
+    //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+    //! @param [in] name Environment variable name.
+    //! @param [in] container A container of @c UString containing directory names.
+    //!
+    template <class CONTAINER>
+    inline void SetEnvironmentPath(const UString& name, const CONTAINER& container)
+    {
+        SetEnvironment(name, UString::Join(container, UString(1, SearchPathSeparator)));
+    }
 
     //!
     //! Delete an environment variable.

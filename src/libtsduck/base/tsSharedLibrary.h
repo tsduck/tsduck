@@ -35,8 +35,18 @@
 #pragma once
 #include "tsUString.h"
 #include "tsNullReport.h"
+#include "tsEnumUtils.h"
 
 namespace ts {
+    //!
+    //! Bit masks options to load shared libraries.
+    //!
+    enum class SharedLibraryFlags : uint16_t {
+        NONE      = 0x00,  //!< No option
+        PERMANENT = 0x01,  //!< The shared library remains active when the SharedLibrary object is destroyed (unloaded otherwise).
+        AUTO_PATH = 0x02,  //!< Automatically add the shared library directory (if specified) in LD_LIBRARY_PATH (UNIX only) before loading.
+    };
+
     //!
     //! Shared library handling (.so on UNIX, DLL on Windows).
     //! @ingroup system
@@ -48,11 +58,11 @@ namespace ts {
         //!
         //! Constructor: Load a shared library
         //! @param [in] filename Shared library file name.
-        //! @param [in] permanent If false (the default), the shared library is unloaded from the current process
-        //! when this object is destroyed. If true, the shared library remains active.
+        //! @param [in] flags Shared library options.
         //! @param [in,out] report Where to report errors.
+        //! @see SharedLibraryFlags
         //!
-        explicit SharedLibrary(const UString& filename, bool permanent = false, Report& report = NULLREP);
+        explicit SharedLibrary(const UString& filename, SharedLibraryFlags flags = SharedLibraryFlags::NONE, Report& report = NULLREP);
 
         //!
         //! Destructor.
@@ -102,11 +112,11 @@ namespace ts {
 
     private:
         // Private members
-        Report& _report;
-        UString _filename;
-        UString _error;
-        bool    _is_loaded;
-        bool    _permanent;
+        Report&            _report;
+        UString            _filename;
+        UString            _error;
+        bool               _is_loaded;
+        SharedLibraryFlags _flags;
 
 #if defined(TS_WINDOWS)
         ::HMODULE _module;
@@ -115,3 +125,5 @@ namespace ts {
 #endif
     };
 }
+
+TS_ENABLE_BITMASK_OPERATORS(ts::SharedLibraryFlags);

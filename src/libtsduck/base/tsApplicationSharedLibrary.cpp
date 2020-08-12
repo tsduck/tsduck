@@ -43,10 +43,10 @@ TSDUCK_SOURCE;
 ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
                                                        const UString& prefix,
                                                        const UString& library_path,
-                                                       bool permanent,
+                                                       SharedLibraryFlags flags,
                                                        Report& report) :
     // Do not load in superclass since plain filename is not the first choice.
-    SharedLibrary(UString(), permanent, report),
+    SharedLibrary(UString(), flags, report),
     _prefix(prefix)
 {
     // Without file name, nothing to do.
@@ -112,8 +112,10 @@ void ts::ApplicationSharedLibrary::GetSearchPath(UStringList& directories, const
     const UString exec_parent(DirectoryName(exec_dir));
 #if TS_ADDRESS_BITS == 64
     directories.push_back(exec_parent + u"/lib64/tsduck");
+    directories.push_back(exec_parent + u"/lib64");
 #endif
     directories.push_back(exec_parent + u"/lib/tsduck");
+    directories.push_back(exec_parent + u"/lib");
 #endif
 
     // On Windows system, try the PATH.
