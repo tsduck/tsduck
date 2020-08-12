@@ -41,6 +41,17 @@ foo::FooTable::FooTable(ts::DuckContext& duck, const ts::BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
+// Get the table id extension
+//----------------------------------------------------------------------------
+
+uint16_t foo::FooTable::tableIdExtension() const
+{
+    // This is the field which is serialize as "table id extension" in a FOOT.
+    return foo_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear content, return to initial values
 //----------------------------------------------------------------------------
 
@@ -53,46 +64,21 @@ void foo::FooTable::clearContent()
 
 
 //----------------------------------------------------------------------------
-// Deserialization
+// Deserialization of the payload of one section.
+// The content is added to the table.
+// Buffer deserialization errors or remaining data invalidate the table.
 //----------------------------------------------------------------------------
 
-void foo::FooTable::deserializeContent(ts::DuckContext& duck, const ts::BinaryTable& table)
+void foo::FooTable::deserializePayload(ts::PSIBuffer& buf, const ts::Section& section)
 {
-    // Clear table content
-    foo_id = 0;
-    name.clear();
-    descs.clear();
+    // Get fixed part. Should be identical in all sections.
+    foo_id = section.tableIdExtension();
 
-    // Loop on all sections.
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
+    // Get name (accumulated from all sections)
+    name.append(buf.getStringWithByteLength());
 
-        // Reference to current section
-        const ts::Section& sect(*table.sectionAt(si));
-
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent();
-        foo_id = sect.tableIdExtension();
-
-        // Analyze the section payload:
-        const uint8_t* data = sect.payload();
-        size_t remain = sect.payloadSize();
-
-        // Get name (accumulated in all sections)
-        name.append(duck.decodedWithByteLength(data, remain));
-
-        // Get descriptor list
-        if (remain < 2) {
-            return; // invalid table
-        }
-        size_t info_length = ts::GetUInt16(data) & 0x0FFF;
-        data += 2; remain -= 2;
-        info_length = std::min(info_length, remain);
-
-        descs.add(data, info_length);
-    }
-
-    _is_valid = true;
+    // Add descriptors from the section.
+    buf.getDescriptorListWithLength(descs);
 }
 
 
@@ -100,40 +86,22 @@ void foo::FooTable::deserializeContent(ts::DuckContext& duck, const ts::BinaryTa
 // Serialization
 //----------------------------------------------------------------------------
 
-void foo::FooTable::serializeContent(ts::DuckContext& duck, ts::BinaryTable& table) const
+void foo::FooTable::serializePayload(ts::BinaryTable& table, ts::PSIBuffer& payload) const
 {
-    // Build the sections
-    int section_number = 0;
     size_t name_index = 0;
     size_t desc_index = 0;
-    uint8_t payload[ts::MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
 
     // Build sections until name and descriptors are all gone.
     // Make sure to build at least one section.
     do {
-        uint8_t* data = payload;
-        size_t remain = sizeof(payload);
+        // Serialize as many characters as possible from the name.
+        name_index += payload.putPartialStringWithByteLength(name, name_index);
 
-        // Serialize at most 255 bytes of the name.
-        name_index += duck.encodeWithByteLength(data, remain, name, name_index);
+        // Serialize as many descriptors as possible.
+        desc_index = payload.putPartialDescriptorListWithLength(descs, desc_index);
 
-        // Serialize as many descriptors as we can.
-        desc_index = descs.lengthSerialize(data, remain, desc_index);
-
-        // Now create the section.
-        table.addSection(new ts::Section(_table_id,
-                                         true,     // is_private_section
-                                         foo_id,   // tid_ext
-                                         version,
-                                         is_current,
-                                         uint8_t(section_number),
-                                         uint8_t(section_number),   //last_section_number
-                                         payload,
-                                         data - payload));   // payload_size,
-
-        // For next section.
-        section_number++;
-
+        // Add this section. The payload buffer is reset on return.
+        addOneSection(table, payload);
     } while (name_index < name.size() || desc_index < descs.size());
 }
 
@@ -146,22 +114,15 @@ void foo::FooTable::DisplaySection(ts::TablesDisplay& display, const ts::Section
 {
     ts::DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
+    const std::string margin(indent, ' ');
+    ts::PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
     const uint16_t id = section.tableIdExtension();
-    const ts::UString name(duck.decodedWithByteLength(data, size));
+    const ts::UString name(buf.getStringWithByteLength());
 
-    strm << ts::UString::Format(u"%*sFoo id: 0x%X (%d), name: \"%s\"", {indent, u"", id, id, name}) << std::endl;
-
-    if (size >= 2) {
-        size_t length = ts::GetUInt16(data) & 0x0FFF;
-        data += 2; size -= 2;
-        length = std::min(size, length);
-        display.displayDescriptorList(section, data, length, indent);
-        data += length; size -= length;
-    }
-    display.displayExtraData(data, size, indent);
+    strm << margin << ts::UString::Format(u"Foo id: 0x%X (%<d), name: \"%s\"", {id, name}) << std::endl;
+    display.displayDescriptorListWithLength(section, buf, indent);
+    display.displayExtraData(buf, indent);
 }
 
 

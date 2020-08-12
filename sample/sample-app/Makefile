@@ -9,12 +9,8 @@
 # If you have installed TSDuck in some non-standard location, just use:
 # make SYSPREFIX=$HOME/test
 
-# TSDuck definitions.
-ifeq ($(shell uname -s),Darwin) # Mac
-    SYSPREFIX ?= /usr/local
-else # Linux
-    SYSPREFIX ?= /usr
-endif
+# TSDuck definitions are in /usr on Linux and /usr/local on Mac.
+SYSPREFIX ?= $(if $(subst Darwin,,$(shell uname -s)),/usr,/usr/local)
 include $(SYSPREFIX)/include/tsduck/tsduck.mk
 
 default: myexec

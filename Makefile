@@ -71,9 +71,9 @@ test: default
 .PHONY: test-suite
 test-suite: default
 	@if [[ -d ../tsduck-test/.git ]]; then \
-	   cd ../tsduck-test; git pull; ./run-all-tests.sh --dev; \
+	   cd ../tsduck-test; git pull; ./run-all-tests.sh $(if $(DEBUG),--debug,--dev); \
 	 elif [[ -x ../tsduck-test/run-all-tests.sh ]]; then \
-	   ../tsduck-test/run-all-tests.sh --dev; \
+	   ../tsduck-test/run-all-tests.sh $(if $(DEBUG),--debug,--dev); \
 	 else \
 	   echo >&2 "No test repository in ../tsduck-test"; \
 	 fi

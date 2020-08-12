@@ -90,7 +90,7 @@ ts::DuckExtensionRepository::DuckExtensionRepository() :
             // This extension shall be loaded.
             // Use the "permanent" load flag to make sure the shared library remains active.
             EXTDEBUG("loading extension " << filename);
-            ApplicationSharedLibrary shlib(filename, UString(), UString(), true);
+            ApplicationSharedLibrary shlib(filename, UString(), UString(), SharedLibraryFlags::PERMANENT);
             if (!shlib.isLoaded()) {
                 EXTDEBUG("failed to load extension " << filename << " : " << shlib.errorMessage());
             }
@@ -153,8 +153,7 @@ ts::UString ts::DuckExtensionRepository::listExtensions(ts::Report& report)
 
     // Search path for plugins.
     UStringList plugins_dirs;
-    GetEnvironmentPath(plugins_dirs, TS_PLUGINS_PATH);
-    plugins_dirs.push_back(DirectoryName(ExecutableFile()));
+    ApplicationSharedLibrary::GetSearchPath(plugins_dirs, TS_PLUGINS_PATH);
 
     // Search path for executables.
     UStringList tools_dirs;

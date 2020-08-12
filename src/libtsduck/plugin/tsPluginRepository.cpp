@@ -50,10 +50,23 @@ const ts::Enumeration ts::PluginRepository::ListProcessorEnum({
 
 ts::PluginRepository::PluginRepository() :
     _sharedLibraryAllowed(true),
+    _debug(!GetEnvironment(u"TSPLUGIN_DEBUG").empty()),
     _inputPlugins(),
     _processorPlugins(),
     _outputPlugins()
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Log a debug message if environment variable TSPLUGIN_DEBUG is defined and not empty.
+//----------------------------------------------------------------------------
+
+void ts::PluginRepository::debug(const UString& fmt, const std::initializer_list<ArgMixIn>& args) const
+{
+    if (_debug) {
+        std::cerr << "* debug: " << UString::Format(fmt, args) << std::endl << std::flush;
+    }
 }
 
 
@@ -63,6 +76,7 @@ ts::PluginRepository::PluginRepository() :
 
 void ts::PluginRepository::registerInput(const UString& name, InputPluginFactory allocator)
 {
+    debug(u"registering input plugin %s, status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
     if (allocator != nullptr) {
         _inputPlugins[name] = allocator;
     }
@@ -70,6 +84,7 @@ void ts::PluginRepository::registerInput(const UString& name, InputPluginFactory
 
 void ts::PluginRepository::registerProcessor(const UString& name, ProcessorPluginFactory allocator)
 {
+    debug(u"registering processor plugin %s, status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
     if (allocator != nullptr) {
         _processorPlugins[name] = allocator;
     }
@@ -77,6 +92,7 @@ void ts::PluginRepository::registerProcessor(const UString& name, ProcessorPlugi
 
 void ts::PluginRepository::registerOutput(const UString& name, OutputPluginFactory allocator)
 {
+    debug(u"registering output plugin %s, status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
     if (allocator != nullptr) {
         _outputPlugins[name] = allocator;
     }
@@ -111,8 +127,10 @@ FACTORY ts::PluginRepository::getFactory(const UString& plugin_name, const UStri
     // Load a shared library if not found and allowed.
     if (it == plugin_map.end() && _sharedLibraryAllowed) {
         // Load shareable library. Use name resolution. Use permanent mapping to keep
-        // the shareable image in memory after returning from this function.
-        ApplicationSharedLibrary shlib(plugin_name, u"tsplugin_", TS_PLUGINS_PATH, true, report);
+        // the shareable image in memory after returning from this function. Also make
+        // sure to include the plugin's directory in the shared library search path:
+        // an extension may install a library in the same directory as the plugin.
+        ApplicationSharedLibrary shlib(plugin_name, u"tsplugin_", TS_PLUGINS_PATH, SharedLibraryFlags::PERMANENT | SharedLibraryFlags::AUTO_PATH, report);
         if (shlib.isLoaded()) {
             // Search again if the shareable library was loaded.
             // The shareable library is supposed to register its plugins on initialization.
@@ -188,7 +206,8 @@ void ts::PluginRepository::loadAllPlugins(Report& report)
     // Load all plugins, let them register their plugins.
     for (size_t i = 0; i < files.size(); ++i) {
         // Permanent load.
-        SharedLibrary shlib(files[i], true, report);
+        SharedLibrary shlib(files[i], SharedLibraryFlags::PERMANENT, report);
+        debug(u"loaded plugin file %s, status: %s", {files[i], shlib.isLoaded()});
     }
 }
 

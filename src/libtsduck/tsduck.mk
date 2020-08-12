@@ -53,6 +53,15 @@ TS_ROOT_DIR := $(abspath $(TS_INCLUDE_DIR)/../..)
 # Default root directory for the platform.
 TS_SYSROOT_DIR := $(if $(TS_MAC),/usr/local,/usr)
 
+# Directories where TSDuck tools, plugins and configuration files are installed.
+# First look into TSDuck installation tree, then in system tree (can be the same).
+# Useful only when you develop a plugin or extension: we may want to install
+# your plugin and configuration files there.
+TS_BIN_DIR := $(dir $(firstword $(wildcard $(TS_ROOT_DIR)/bin/tsp $(TS_SYSROOT_DIR)/bin/tsp)))
+TS_LIB_DIR := $(dir $(firstword $(wildcard $(TS_ROOT_DIR)/lib*/libtsduck.so $(TS_SYSROOT_DIR)/lib*/libtsduck.so)))
+TS_PLUGIN_DIR := $(dir $(firstword $(wildcard $(TS_ROOT_DIR)/lib*/tsduck/tsplugin_* $(TS_SYSROOT_DIR)/lib*/tsduck/tsplugin_*)))
+TS_CONFIG_DIR := $(dir $(firstword $(wildcard $(TS_ROOT_DIR)/share/tsduck/tsduck.* $(TS_SYSROOT_DIR)/share/tsduck/tsduck.*)))
+
 # Options to link with TSDuck library.
 # If the library file is present in TS_ROOT_DIR, use it. Otherwise, use from TS_SYSROOT_DIR.
 TS_LIBFILE := $(wildcard $(TS_ROOT_DIR)/lib*/libtsduck.$(if $(TS_STATIC),a,so))

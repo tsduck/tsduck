@@ -38,8 +38,8 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %{_bindir}/footool
-%{_bindir}/tsplugin_foot.so
-%{_bindir}/tslibext_foo.so
-%{_bindir}/tslibext_foo.xml
-%{_bindir}/tslibext_foo.names
+%{_libdir}/tslibext_foo.so
+%{_libdir}/tsduck/tsplugin_foot.so
+%{_datadir}/tsduck/tslibext_foo.xml
+%{_datadir}/tsduck/tslibext_foo.names
 %doc doc/tsduck-extension-foo.pdf
