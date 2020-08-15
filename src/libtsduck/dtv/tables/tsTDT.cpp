@@ -28,10 +28,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsTDT.h"
-#include "tsMJD.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -76,25 +76,14 @@ void ts::TDT::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::TDT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // This is a short table, must have only one section
-    if (table.sectionCount() != 1) {
-        return;
-    }
-
-    // Reference to single section
-    const Section& sect(*table.sectionAt(0));
-
     // Get UTC time.
-    if (sect.payloadSize() >= MJD_SIZE) {
-        DecodeMJD(sect.payload(), MJD_SIZE, utc_time);
-        _is_valid = true;
+    utc_time = buf.getFullMJD();
 
-        // In Japan, the time field is in fact a JST time, convert it to UTC.
-        if ((duck.standards() & Standards::JAPAN) == Standards::JAPAN) {
-            utc_time = utc_time.JSTToUTC();
-        }
+    // In Japan, the time field is in fact a JST time, convert it to UTC.
+    if ((buf.duck().standards() & Standards::JAPAN) == Standards::JAPAN) {
+        utc_time = utc_time.JSTToUTC();
     }
 }
 
@@ -103,23 +92,16 @@ void ts::TDT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::TDT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 {
-    // Encode the data in MJD in the payload (5 bytes)
+    // Encode the data in MJD in the payload.
     // In Japan, the time field is in fact a JST time, convert UTC to JST before serialization.
-    uint8_t payload[MJD_SIZE];
-    if ((duck.standards() & Standards::JAPAN) == Standards::JAPAN) {
-        EncodeMJD(utc_time.UTCToJST(), payload, MJD_SIZE);
+    if ((payload.duck().standards() & Standards::JAPAN) == Standards::JAPAN) {
+        payload.putFullMJD(utc_time.UTCToJST());
     }
     else {
-        EncodeMJD(utc_time, payload, MJD_SIZE);
+        payload.putFullMJD(utc_time);
     }
-
-    // Add the section in the table
-    table.addSection(new Section(MY_TID, // tid
-                                 true,    // is_private_section
-                                 payload,
-                                 MJD_SIZE));
 }
 
 
@@ -131,17 +113,14 @@ void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
+    const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    if (size >= 5) {
-        Time time;
-        DecodeMJD(data, 5, time);
-        data += 5; size -= 5;
-        strm << std::string(indent, ' ') << "UTC time: " << time.format(Time::DATETIME) << std::endl;
+    if (buf.remainingReadBytes() >= 5) {
+        strm << margin << "UTC time: " << buf.getFullMJD().format(Time::DATETIME) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(buf, indent);
 }
 
 

@@ -99,12 +99,12 @@ bool ts::EncodeMJD(const Time& time, uint8_t* mjd, size_t mjd_size)
 
     // Cannot represent dates earlier than MJD epoch
     if (time_ms < Time::JulianEpochOffset) {
-        Zero (mjd, 5);
+        Zero(mjd, mjd_size);
         return false;
     }
 
     const uint64_t d = (time_ms - Time::JulianEpochOffset) / 1000; // seconds since MJD epoch
-    PutUInt16 (mjd, uint16_t(d / (24 * 3600))); // days
+    PutUInt16(mjd, uint16_t(d / (24 * 3600))); // days
     if (mjd_size >= 3) {
         mjd[2] = EncodeBCD(int((d / 3600) % 24)); // hours
     }

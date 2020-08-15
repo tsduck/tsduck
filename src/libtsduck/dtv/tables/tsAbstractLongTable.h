@@ -78,6 +78,7 @@ namespace ts {
 
         // Inherited methods.
         virtual size_t maxPayloadSize() const override;
+        virtual bool useTrailingCRC32() const override;
         virtual void deserializePayloadWrapper(PSIBuffer& buf, const Section& section) override;
         virtual void addOneSectionImpl(BinaryTable& table, PSIBuffer& payload) const override;
     };

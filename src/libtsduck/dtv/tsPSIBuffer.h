@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsBuffer.h"
+#include "tsTime.h"
 #include "tsMPEG.h"
 #include "tsCharset.h"
 
@@ -225,6 +226,65 @@ namespace ts {
         //! @return The decoded string.
         //!
         UString getStringWithByteLength();
+
+        //!
+        //! Put (serialize) a full Modified Julian Date (MJD), date and time, 5 bytes.
+        //!
+        //! Generate a write error when the buffer is not large enough or when the write pointer is not byte-aligned.
+        //!
+        //! @param [in] time The date and time to serialize.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putFullMJD(const Time& time) { return putMJD(time, 5); }
+
+        //!
+        //! Put (serialize) the date part of a Modified Julian Date (MJD), the time part is ignored, 2 bytes.
+        //!
+        //! Generate a write error when the buffer is not large enough or when the write pointer is not byte-aligned.
+        //!
+        //! @param [in] time The date to serialize.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putDateMJD(const Time& time) { return putMJD(time, 2); }
+
+        //!
+        //! Put (serialize) a Modified Julian Date (MJD), 2 to 5 bytes.
+        //!
+        //! Generate a write error when the buffer is not large enough or when the write pointer is not byte-aligned.
+        //!
+        //! @param [in] time The date and time to serialize.
+        //! @param [in] mjd_size Size in bytes of the MJD area, 2 to 5 bytes.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putMJD(const Time& time, size_t mjd_size);
+
+        //!
+        //! Get a full Modified Julian Date (MJD), date and time, 5 bytes.
+        //!
+        //! Generate a read error when there is not enough bytes or when the write pointer is not byte-aligned.
+        //!
+        //! @return The deserialize date and time (Epoch on error).
+        //!
+        Time getFullMJD() { return getMJD(5); }
+
+        //!
+        //! Get the date part of a Modified Julian Date (MJD), the time part is ignored, 2 bytes.
+        //!
+        //! Generate a read error when there is not enough bytes or when the write pointer is not byte-aligned.
+        //!
+        //! @return The deserialize date and time (Epoch on error).
+        //!
+        Time getDateMJD() { return getMJD(2); }
+
+        //!
+        //! Get a Modified Julian Date (MJD), 2 to 5 bytes.
+        //!
+        //! Generate a read error when there is not enough bytes or when the write pointer is not byte-aligned.
+        //!
+        //! @param [in] mjd_size Size in bytes of the MJD area, 2 to 5 bytes.
+        //! @return The deserialize date and time (Epoch on error).
+        //!
+        Time getMJD(size_t mjd_size);
 
         //!
         //! Put (serialize) a complete descriptor list.

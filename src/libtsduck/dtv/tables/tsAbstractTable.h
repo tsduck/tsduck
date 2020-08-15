@@ -413,6 +413,13 @@ namespace ts {
         //!
         virtual size_t maxPayloadSize() const;
 
+        //!
+        //! Check if the sections of this table have a trailing CRC32.
+        //! This is usually false for short sections but some short sections such as DVB-TOT use a CRC32.
+        //! @return True if the sections of this table have a trailing CRC32.
+        //!
+        virtual bool useTrailingCRC32() const;
+
     private:
         // Unreachable constructors and operators.
         AbstractTable() = delete;
