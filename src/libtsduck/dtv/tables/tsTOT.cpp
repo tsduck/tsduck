@@ -28,12 +28,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsTOT.h"
-#include "tsMJD.h"
-#include "tsBCD.h"
-#include "tsCRC32.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -71,6 +69,17 @@ ts::TOT::TOT(const TOT& other) :
     regions(other.regions),
     descs(this, other.descs)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the sections of this table have a trailing CRC32.
+//----------------------------------------------------------------------------
+
+bool ts::TOT::useTrailingCRC32() const
+{
+    // A TOT is a short section with a CRC32.
+    return true;
 }
 
 
@@ -136,60 +145,25 @@ void ts::TOT::addDescriptors(DuckContext& duck, const DescriptorList& dlist)
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::TOT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    regions.clear();
-    descs.clear();
+    // A TOT section is a short section with a CRC32. But it has already been checked
+    // and removed from the buffer since TOT::useTrailingCRC32() returns true.
 
-    // This is a short table, must have only one section
-    if (table.sectionCount() != 1) {
-        return;
-    }
-
-    // Reference to single section
-    const Section& sect(*table.sectionAt(0));
-    const uint8_t* data = sect.payload();
-    size_t remain = sect.payloadSize();
-
-    // A TOT section is a short section with a CRC32.
-    // Normally, only long sections have a CRC32.
-    // So, the generic code has not checked the CRC32.
-    if (remain < 4) { // no CRC32
-        return;
-    }
-    // Remove CRC32 from payload
-    remain -= 4;
-    // Verify CRC32 in section
-    size_t size = sect.size() - 4;
-    if (CRC32(sect.content(), size) != GetUInt32(sect.content() + size)) {
-        return;
-    }
-
-    // Analyze the section payload:
-    // - 40-bit UTC time in MJD format.
-    // - 16-bit length for descriptor loop
-    if (remain < MJD_SIZE + 2) {
-        return;
-    }
-    DecodeMJD(data, MJD_SIZE, utc_time);
-    size_t length = GetUInt16(data + MJD_SIZE) & 0x0FFF;
-    data += MJD_SIZE + 2;
-    remain -= MJD_SIZE + 2;
-    remain = std::min(length, remain);
+    // Get UTC time.
+    utc_time = buf.getFullMJD();
 
     // In Japan, the time field is in fact a JST time, convert it to UTC.
-    if ((duck.standards() & Standards::JAPAN) == Standards::JAPAN) {
+    if ((buf.duck().standards() & Standards::JAPAN) == Standards::JAPAN) {
         utc_time = utc_time.JSTToUTC();
     }
 
     // Get descriptor list.
-    // Build a descriptor list.
     DescriptorList dlist(nullptr);
-    dlist.add(data, length);
-    addDescriptors(duck, dlist);
+    buf.getDescriptorListWithLength(dlist);
 
-    _is_valid = true;
+    // Split between actual descriptors and regions.
+    addDescriptors(buf.duck(), dlist);
 }
 
 
@@ -197,23 +171,16 @@ void ts::TOT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::TOT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 {
-    // Build the section
-    uint8_t payload [MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
-
-    // Encode the data in MJD in the payload (5 bytes)
+    // Encode the data in MJD in the payload.
     // In Japan, the time field is in fact a JST time, convert UTC to JST before serialization.
-    if ((duck.standards() & Standards::JAPAN) == Standards::JAPAN) {
-        EncodeMJD(utc_time.UTCToJST(), data, MJD_SIZE);
+    if ((payload.duck().standards() & Standards::JAPAN) == Standards::JAPAN) {
+        payload.putFullMJD(utc_time.UTCToJST());
     }
     else {
-        EncodeMJD(utc_time, data, MJD_SIZE);
+        payload.putFullMJD(utc_time);
     }
-    data += MJD_SIZE;
-    remain -= MJD_SIZE;
 
     // Build a descriptor list.
     DescriptorList dlist(nullptr);
@@ -223,39 +190,22 @@ void ts::TOT::serializeContent(DuckContext& duck, BinaryTable& table) const
     for (RegionVector::const_iterator it = regions.begin(); it != regions.end(); ++it) {
         lto.regions.push_back(*it);
         if (lto.regions.size() >= LocalTimeOffsetDescriptor::MAX_REGION) {
-            dlist.add(duck, lto);
+            dlist.add(payload.duck(), lto);
             lto.regions.clear();
         }
     }
     if (!lto.regions.empty()) {
-        dlist.add(duck, lto);
+        dlist.add(payload.duck(), lto);
     }
 
     // Append the "other" descriptors to the list
     dlist.add(descs);
 
     // Insert descriptor list (with leading length field).
-    // Keep 4 bytes for CRC.
-    remain -= 4;
-    size_t next_index = dlist.lengthSerialize(data, remain);
-    if (next_index != dlist.count()) {
-        // Could not serialize all descriptors
-        // No simple way to report this error.
-        // Add error processing here later.
-    }
+    payload.putPartialDescriptorListWithLength(dlist);
 
-    // Add the section in the table (include CRC)
-    table.addSection(new Section(MY_TID,
-                                 true,   // is_private_section
-                                 payload,
-                                 data + 4 - payload));
-
-    // Now artificially rebuild a CRC at end of section
-    const Section& sect(*table.sectionAt(0));
-    data = const_cast <uint8_t*>(sect.content());
-    size_t size = sect.size();
-    assert(size > 4);
-    PutUInt32(data + size - 4, CRC32(data, size - 4).value());
+    // A TOT section is a short section with a CRC32. But it will be
+    // automatically added since TOT::useTrailingCRC32() returns true.
 }
 
 
@@ -268,33 +218,16 @@ void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
-
-    if (size >= 5) {
-        // Fixed part
-        Time time;
-        DecodeMJD(data, 5, time);
-        data += 5; size -= 5;
-        strm << margin << "UTC time: " << time.format(Time::DATE | Time::TIME) << std::endl;
-
-        // Descriptor loop
-        if (size >= 2) {
-            size_t length = GetUInt16(data) & 0x0FFF;
-            data += 2; size -= 2;
-            if (length > size) {
-                length = size;
-            }
-            display.displayDescriptorList(section, data, length, indent);
-            data += length; size -= length;
-        }
+    if (buf.remainingReadBytes() >= 5) {
+        strm << margin << "UTC time: " << buf.getFullMJD().format(Time::DATETIME) << std::endl;
+        display.displayDescriptorListWithLength(section, buf, indent);
 
         // There is a CRC32 at the end of a TOT, even though we are in a short section.
-        if (size >= 4) {
-            CRC32 comp_crc32(section.content(), data - section.content());
-            uint32_t sect_crc32 = GetUInt32(data);
-            data += 4; size -= 4;
+        if (buf.remainingReadBytes() >= 4) {
+            const uint32_t sect_crc32 = buf.getUInt32();
+            const CRC32 comp_crc32(section.content(), section.size() - 4);
             strm << margin << UString::Format(u"CRC32: 0x%X ", {sect_crc32});
             if (sect_crc32 == comp_crc32) {
                 strm << "(OK)";
@@ -306,7 +239,7 @@ void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(buf, indent);
 }
 
 

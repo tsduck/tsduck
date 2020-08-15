@@ -32,6 +32,7 @@
 #include "tsSection.h"
 #include "tsDuckContext.h"
 #include "tsPSIBuffer.h"
+#include "tsCRC32.h"
 TSDUCK_SOURCE;
 
 
@@ -69,6 +70,17 @@ bool ts::AbstractTable::isPrivate() const
 size_t ts::AbstractTable::maxPayloadSize() const
 {
     return isPrivate() ? MAX_PRIVATE_SHORT_SECTION_PAYLOAD_SIZE : MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE;
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the sections of this table have a trailing CRC32.
+//----------------------------------------------------------------------------
+
+bool ts::AbstractTable::useTrailingCRC32() const
+{
+    // By default, short sections do not use a CRC32.
+    return false;
 }
 
 
@@ -166,9 +178,17 @@ void ts::AbstractTable::addOneSection(BinaryTable& table, PSIBuffer& payload) co
 
 void ts::AbstractTable::addOneSectionImpl(BinaryTable &table, PSIBuffer &payload) const
 {
+    // This is the implementation for short tables.
+    // This method is overridden in AbstractLongTable.
     // Always set one single section in short tables.
     if (table.sectionCount() == 0) {
         const SectionPtr section(new Section(tableId(), isPrivate(), payload.currentReadAddress(), payload.remainingReadBytes()));
+        // Add a trailing CRC32 if this table needs it, even though this is a short section.
+        if (useTrailingCRC32()) {
+            // The CRC must be computed on the section with the final CRC included in the length.
+            section->appendPayload(ByteBlock(4));
+            section->setUInt32(section->payloadSize() - 4, CRC32(section->content(), section->size() - 4));
+        }
         table.addSection(section, true);
     }
     else {
@@ -267,8 +287,21 @@ void ts::AbstractTable::deserializeContent(DuckContext& duck, const BinaryTable&
         const Section& section(*table.sectionAt(si));
         assert(section.isValid());
 
+        // Check if we shall manually check the value of a CRC32 in a short section.
+        const bool short_crc = section.isShortSection() && useTrailingCRC32();
+        if (short_crc) {
+            // This is a short section which needs a CRC32.
+            if (section.size() < 4 || CRC32(section.content(), section.size() - 4) != GetUInt32(section.content() + section.size() - 4)) {
+                // Invalid CRC32, not a valid section.
+                clear();
+                invalidate();
+                break;
+            }
+        }
+
         // Map a deserialization read-only buffer over the payload part.
-        PSIBuffer buf(duck, section.payload(), section.payloadSize());
+        // Remove CRC32 from payload in short sections that have one.
+        PSIBuffer buf(duck, section.payload(), section.payloadSize() - (short_crc ? 4 : 0));
 
         // Let the subclass deserialize the payload in the buffer.
         // We call it through a wrapper virtual method to let intermediate classes

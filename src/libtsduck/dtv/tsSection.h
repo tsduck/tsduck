@@ -522,6 +522,14 @@ namespace ts {
         void setUInt16(size_t offset, uint16_t value, bool recompute_crc = true);
 
         //!
+        //! Set a 32-bit integer in the payload of the section.
+        //! @param [in] offset Byte offset in the payload.
+        //! @param [in] value The value to set in the payload.
+        //! @param [in] recompute_crc If true, immediately recompute the CRC32 of the section.
+        //!
+        void setUInt32(size_t offset, uint32_t value, bool recompute_crc = true);
+
+        //!
         //! Append binary data to the payload of the section.
         //! @param [in] data Address of data to add to the payload.
         //! @param [in] size Size in bytes of data to add to the payload.

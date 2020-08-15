@@ -61,6 +61,17 @@ size_t ts::AbstractLongTable::maxPayloadSize() const
 
 
 //----------------------------------------------------------------------------
+// Check if the sections of this table have a trailing CRC32.
+//----------------------------------------------------------------------------
+
+bool ts::AbstractLongTable::useTrailingCRC32() const
+{
+    // By default, all long sections have a CRC32.
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // This method clears the content of the table.
 //----------------------------------------------------------------------------
 

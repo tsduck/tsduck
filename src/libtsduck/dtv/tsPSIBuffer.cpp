@@ -31,6 +31,7 @@
 #include "tsDuckContext.h"
 #include "tsDescriptorList.h"
 #include "tsSection.h"
+#include "tsMJD.h"
 TSDUCK_SOURCE;
 
 
@@ -257,6 +258,40 @@ bool ts::PSIBuffer::getStringWithByteLength(ts::UString& str)
 
 
 //----------------------------------------------------------------------------
+// Serialize and deserialize dates and times.
+//----------------------------------------------------------------------------
+
+bool ts::PSIBuffer::putMJD(const Time& time, size_t mjd_size)
+{
+    if (readOnly() || writeError() || !writeIsByteAligned() || remainingWriteBytes() < mjd_size || !EncodeMJD(time, currentWriteAddress(), mjd_size)) {
+        // Write is not byte-aligned or there is not enough room or encoding error.
+        setWriteError();
+        return false;
+    }
+    else {
+        // Successfully serialized, move write pointer.
+        writeSeek(currentWriteByteOffset() + mjd_size);
+        return true;
+    }
+}
+
+ts::Time ts::PSIBuffer::getMJD(size_t mjd_size)
+{
+    Time result;
+    if (readError() || !readIsByteAligned() || remainingReadBytes() < mjd_size || !DecodeMJD(currentReadAddress(), mjd_size, result)) {
+        setReadError();
+        return Time::Epoch;
+    }
+    else {
+        // Successfully deserialized, move read pointer.
+        skipBytes(mjd_size);
+        return result;
+    }
+}
+
+
+
+//----------------------------------------------------------------------------
 // Put (serialize) a complete descriptor list.
 //----------------------------------------------------------------------------
 
@@ -266,7 +301,7 @@ bool ts::PSIBuffer::putDescriptorList(const DescriptorList& descs, size_t start,
     start = std::min(start, descs.size());
     count = std::min(count, descs.size() - start);
 
-    if (readOnly() || !writeIsByteAligned() || descs.binarySize(start, count) > remainingWriteBytes()) {
+    if (readOnly() || writeError() || !writeIsByteAligned() || descs.binarySize(start, count) > remainingWriteBytes()) {
         // Write is not byte-aligned or there is not enough room to serialize the descriptors.
         setWriteError();
         return false;
@@ -292,7 +327,7 @@ size_t ts::PSIBuffer::putPartialDescriptorList(const DescriptorList& descs, size
     const size_t last = start + count;
 
     // Write error if not byte-aligned.
-    if (readOnly() || !writeIsByteAligned()) {
+    if (readOnly() || writeError() || !writeIsByteAligned()) {
         setWriteError();
         return start;
     }
@@ -340,7 +375,7 @@ size_t ts::PSIBuffer::putPartialDescriptorListWithLength(const DescriptorList& d
     start = std::min(start, descs.size());
 
     // Filter incorrect length or length alignment.
-    if (readOnly() || remainingWriteBytes() < 2 || length_bits == 0 || length_bits > 16 || (!writeIsByteAligned() && currentWriteBitOffset() % 8 != 16 - length_bits)) {
+    if (readOnly() || writeError() || remainingWriteBytes() < 2 || length_bits == 0 || length_bits > 16 || (!writeIsByteAligned() && currentWriteBitOffset() % 8 != 16 - length_bits)) {
         setWriteError();
         return start;
     }

@@ -466,6 +466,16 @@ void ts::Section::setUInt16(size_t offset, uint16_t value, bool recompute_crc)
     }
 }
 
+void ts::Section::setUInt32(size_t offset, uint32_t value, bool recompute_crc)
+{
+    if (_is_valid && offset + 3 < payloadSize()) {
+        PutUInt32(_data->data() + headerSize() + offset, value);
+        if (recompute_crc) {
+            recomputeCRC();
+        }
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Append binary data to the payload of the section.
