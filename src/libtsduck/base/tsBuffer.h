@@ -846,7 +846,7 @@ namespace ts {
         //! Write a 48-bit signed integer value and advance the write pointer.
         //! @param [in] i 48-bit signed integer value to write.
         //! @return True on success, false if there is not enough space to write (and set write error flag).
-        //!
+        //!unsigned integer
         bool putInt48(int64_t i) { return putint(i, 6, PutInt48BE, PutInt48LE); }
 
         //!
@@ -855,6 +855,20 @@ namespace ts {
         //! @return True on success, false if there is not enough space to write (and set write error flag).
         //!
         bool putInt64(int64_t i) { return putint(i, 8, PutInt64BE, PutInt64LE); }
+
+        //!
+        //! Read the next 8 bits as a Binary Coded Decimal (BCD) value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded integer value.
+        //!
+        int getBCD();
+
+        //!
+        //! Write a Binary Coded Decimal (BCD) value in 8 bits and advance the write pointer.
+        //! @param [in] i Integer value to write in BCD format (must be in the range 0..99).
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putBCD(int i);
 
     protected:
         //!

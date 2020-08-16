@@ -135,27 +135,14 @@ namespace ts {
 
         // Inherited methods
         virtual void clearContent() override;
-        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
-        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void serializePayload(BinaryTable& table, PSIBuffer& payload) const override;
+        virtual void deserializePayload(PSIBuffer& buf, const Section& section) override;
 
     private:
         typedef std::set<TransportStreamId> TransportStreamIdSet;
 
-        // Add a new section to a table being serialized.
-        // Session number is incremented. Data and remain are reinitialized.
-        void addSection(BinaryTable& table,
-                        int& section_number,
-                        uint8_t* payload,
-                        uint8_t*& data,
-                        size_t& remain) const;
-
-        // Same as previous, while being inside the transport loop.
-        void addSection(BinaryTable& table,
-                        int& section_number,
-                        uint8_t* payload,
-                        uint8_t*& tsll_addr,
-                        uint8_t*& data,
-                        size_t& remain) const;
+        // Add a new section to a table being serialized, while inside transport loop.
+        void addSection(BinaryTable& table, PSIBuffer& payload, bool last_section) const;
 
         // Select a transport stream for serialization in current section.
         // If found, set ts_id, remove the ts id from the set and return true.

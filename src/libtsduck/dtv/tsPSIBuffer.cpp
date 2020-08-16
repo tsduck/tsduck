@@ -277,13 +277,16 @@ bool ts::PSIBuffer::putMJD(const Time& time, size_t mjd_size)
 
 ts::Time ts::PSIBuffer::getMJD(size_t mjd_size)
 {
+    // Invalid MJD decoding: We filter invalid mjd_size as an error.
+    // But we accept invalid MJD values (returns Unix Epoch) because
+    // too many EIT's have invalid dates in the field.
     Time result;
-    if (readError() || !readIsByteAligned() || remainingReadBytes() < mjd_size || !DecodeMJD(currentReadAddress(), mjd_size, result)) {
+    if (readError() || !readIsByteAligned() || remainingReadBytes() < mjd_size || mjd_size < MJD_MIN_SIZE || mjd_size > MJD_SIZE) {
         setReadError();
         return Time::Epoch;
     }
     else {
-        // Successfully deserialized, move read pointer.
+        DecodeMJD(currentReadAddress(), mjd_size, result);
         skipBytes(mjd_size);
         return result;
     }

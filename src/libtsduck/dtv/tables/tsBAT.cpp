@@ -31,6 +31,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -85,48 +86,26 @@ void ts::BAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    strm << margin << UString::Format(u"Bouquet Id: %d (0x%04X)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
+    // Display bouquet information
+    strm << margin << UString::Format(u"Bouquet Id: %d (0x%<X)", {section.tableIdExtension()}) << std::endl;
+    display.displayDescriptorListWithLength(section, buf, indent, u"Bouquet information:");
 
-    if (size >= 2) {
-        // Display bouquet information
-        size_t loop_length = GetUInt16(data) & 0x0FFF;
-        data += 2; size -= 2;
-        if (loop_length > size) {
-            loop_length = size;
-        }
-        if (loop_length > 0) {
-            strm << margin << "Bouquet information:" << std::endl;
-            display.displayDescriptorList(section, data, loop_length, indent);
-        }
-        data += loop_length; size -= loop_length;
+    // Transport stream loop length.
+    buf.skipBits(4);
+    const size_t loop_length = buf.getBits<size_t>(12);
+    const size_t end_loop = buf.currentReadByteOffset() + loop_length;
 
-        // Loop across all transports
-        if (size >= 2) {
-            loop_length = GetUInt16(data) & 0x0FFF;
-            data += 2; size -= 2;
-            if (loop_length > size) {
-                loop_length = size;
-            }
-
-            while (loop_length >= 6) {
-                uint16_t tsid = GetUInt16(data);
-                uint16_t nwid = GetUInt16(data + 2);
-                size_t length = GetUInt16(data + 4) & 0x0FFF;
-                data += 6; size -= 6; loop_length -= 6;
-                if (length > loop_length) {
-                    length = loop_length;
-                }
-                strm << margin << UString::Format(u"Transport Stream Id: %d (0x%X), Original Network Id: %d (0x%X)", {tsid, tsid, nwid, nwid}) << std::endl;
-                display.displayDescriptorList(section, data, length, indent);
-                data += length; size -= length; loop_length -= length;
-            }
-        }
+    // Loop across all transports
+    while (!buf.error() && buf.currentReadByteOffset() + 6 <= end_loop && buf.remainingReadBytes() >= 6) {
+        const uint16_t tsid = buf.getUInt16();
+        const uint16_t nwid = buf.getUInt16();
+        strm << margin << UString::Format(u"Transport Stream Id: %d (0x%<X), Original Network Id: %d (0x%<X)", {tsid, nwid}) << std::endl;
+        display.displayDescriptorListWithLength(section, buf, indent);
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(buf, indent);
 }
 
 
