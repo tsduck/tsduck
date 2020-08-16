@@ -29,7 +29,6 @@
 
 #include "tsBuffer.h"
 #include "tsFatal.h"
-#include "tsBCD.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -1076,17 +1075,196 @@ const uint8_t* ts::Buffer::rdb(size_t bytes)
 
 int ts::Buffer::getBCD()
 {
-    return DecodeBCD(getUInt8());
+    const uint8_t byte = getUInt8();
+    const uint8_t b1 = byte >> 4;
+    const uint8_t b2 = byte & 0x0F;
+    if (readError() || b1 > 9 || b2 > 9) {
+        return 0xFF;
+    }
+    else {
+        return 10 * b1 + b2;
+    }
 }
 
 bool ts::Buffer::putBCD(int i)
 {
     if (i >= 0 && i <= 99) {
-        return putUInt8(EncodeBCD(i));
+        return putUInt8(uint8_t((i / 10) << 4) | (i % 10));
     }
     else {
         // Cannot be represented as 2 decimal digits.
-        setWriteError();
+        _write_error = true;
         return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get a UTF-8 string.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Buffer::getUTF8(size_t bytes)
+{
+    UString str;
+    getUTF8(str, bytes);
+    return str;
+}
+
+bool ts::Buffer::getUTF8(UString& result, size_t bytes)
+{
+    if (bytes == NPOS) {
+        bytes = remainingReadBytes();
+    }
+
+    if (_read_error || _state.rbit != 0 || bytes > remainingReadBytes()) {
+        _read_error = true;
+        return false;
+    }
+
+    result.assignFromUTF8(reinterpret_cast<const char*>(_buffer + _state.rbyte), bytes);
+    _state.rbyte += bytes;
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Get a UTF-8 string (preceded by its length).
+//----------------------------------------------------------------------------
+
+ts::UString ts::Buffer::getUTF8WithLength(size_t length_bits)
+{
+    UString str;
+    getUTF8WithLength(str, length_bits);
+    return str;
+}
+
+bool ts::Buffer::getUTF8WithLength(UString& result, size_t length_bits)
+{
+    // The size of the length field must be representable as a size_t.
+    if (_read_error || length_bits == 0 || length_bits > 8 * sizeof(size_t)) {
+        _read_error = true;
+        return false;
+    }
+
+    // Attempt to read the length.
+    const RWState saved(_state);
+    const size_t length = getBits<size_t>(length_bits);
+    if (_read_error || _state.rbit != 0 || length > remainingReadBytes()) {
+        _state = saved; // revert the length field in case of error
+        _read_error = true;
+        return false;
+    }
+
+    result.assignFromUTF8(reinterpret_cast<const char*>(_buffer + _state.rbyte), length);
+    _state.rbyte += length;
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Put a string using UTF-8 format.
+//----------------------------------------------------------------------------
+
+size_t ts::Buffer::putUTF8Internal(const UString& str, size_t start, size_t count, bool partial)
+{
+    // Normalize start and count within allowed bounds.
+    start = std::min(start, str.size());
+    count = std::min(count, str.size() - start);
+
+    if (_read_only || _write_error || _state.wbit != 0) {
+        _write_error = true;
+        return false;
+    }
+
+    // Serialize as many characters as possible.
+    const UChar* const in_start = &str[start];
+    const UChar* in = in_start;
+    const UChar* const in_end = in + count;
+    char* const cbuffer = reinterpret_cast<char*>(_buffer);
+    char* out = cbuffer + _state.wbyte;
+    char* const out_end = cbuffer + _buffer_max;
+    UString::ConvertUTF16ToUTF8(in, in_end, out, out_end);
+
+    assert(in >= in_start);
+    assert(in <= in_end);
+    assert(out >= cbuffer + _state.wbyte);
+    assert(out <= out_end);
+
+    if (partial) {
+        // Always accept the conversion, return the number of written characters.
+        _state.wbyte = out - cbuffer;
+        return in - in_start;
+    }
+    else if (in == in_end) {
+        // Full conversion completed, return "true".
+        _state.wbyte = out - cbuffer;
+        return 1;
+    }
+    else {
+        // Full conversion failed, return "false".
+        _write_error = true;
+        return 0;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Put a string (preceded by its length) using UTF-8 format.
+//----------------------------------------------------------------------------
+
+size_t ts::Buffer::putUTF8WithLengthInternal(const UString& str, size_t start, size_t count, size_t length_bits, bool partial)
+{
+    // Normalize start and count within allowed bounds.
+    start = std::min(start, str.size());
+    count = std::min(count, str.size() - start);
+
+    // The size of the length field must be representable as a size_t.
+    // The write pointer must be byte-aligned after writing the length field.
+    if (_read_only || _write_error || length_bits == 0 || length_bits > 8 * sizeof(size_t) || (_state.wbit + length_bits) % 8 != 0) {
+        _write_error = true;
+        return false;
+    }
+
+    // Cannot write more bytes than representable in the length field.
+    const size_t max_bytes = length_bits == 8 * sizeof(size_t) ? std::numeric_limits<size_t>::max() : (size_t(1) << length_bits) - 1;
+
+    // Save the position for the length field and write a zero place-holder for the length.
+    const RWState saved(_state);
+    putBits(0, length_bits);
+    assert(!_write_error);
+    assert(_state.wbit == 0);
+
+    // Now we can attempt the conversion.
+    const UChar* const in_start = &str[start];
+    const UChar* in = in_start;
+    const UChar* const in_end = in + count;
+    char* const cbuffer = reinterpret_cast<char*>(_buffer);
+    char* const out_start = cbuffer + _state.wbyte;
+    char* out = out_start;
+    char* const out_end = out_start + std::min(_buffer_max - _state.wbyte, max_bytes);
+    UString::ConvertUTF16ToUTF8(in, in_end, out, out_end);
+
+    assert(in >= in_start);
+    assert(in <= in_end);
+    assert(out >= out_start);
+    assert(out <= out_end);
+
+    if (partial || in == in_end) {
+        // Accept the conversion.
+        // Restore state before zero-length place-holder and write actual length
+        _state = saved;
+        putBits(out - out_start, length_bits);
+        assert(!_write_error);
+        assert(_state.wbit == 0);
+        // The write pointer is now after the written bytes.
+        _state.wbyte = out - cbuffer;
+        // Return a number of characters for a partial write and a "boolean" for a full write.
+        return partial ? in - in_start : 1;
+    }
+    else {
+        // Full conversion failed, restore state before zero-length place-holder
+        _state = saved;
+        _write_error = true;
+        return 0;
     }
 }

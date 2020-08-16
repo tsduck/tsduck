@@ -35,6 +35,7 @@
 #pragma once
 #include "tsMemory.h"
 #include "tsByteBlock.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -846,7 +847,7 @@ namespace ts {
         //! Write a 48-bit signed integer value and advance the write pointer.
         //! @param [in] i 48-bit signed integer value to write.
         //! @return True on success, false if there is not enough space to write (and set write error flag).
-        //!unsigned integer
+        //!
         bool putInt48(int64_t i) { return putint(i, 6, PutInt48BE, PutInt48LE); }
 
         //!
@@ -859,16 +860,117 @@ namespace ts {
         //!
         //! Read the next 8 bits as a Binary Coded Decimal (BCD) value and advance the read pointer.
         //! Set the read error flag if there are not enough bits to read.
-        //! @return The decoded integer value.
+        //! If a byte is successfully read but is not a valid BCD value, OxFF is returned but no read error is set.
+        //! @return The decoded integer value or 0xFF on error.
         //!
         int getBCD();
 
         //!
         //! Write a Binary Coded Decimal (BCD) value in 8 bits and advance the write pointer.
-        //! @param [in] i Integer value to write in BCD format (must be in the range 0..99).
+        //! @param [in] i Integer value to write in BCD format (must be in the range 0..99 or a write error is generated).
         //! @return True on success, false if there is not enough space to write (and set write error flag).
         //!
         bool putBCD(int i);
+
+        //!
+        //! Get a UTF-8 string.
+        //! The read-pointer must be byte-aligned.
+        //! @param [out] str Returned decoded string.
+        //! @param [in] size Size in bytes of the encoded UTF-8 string. If specified as @a NPOS (the default), read up to
+        //! the end of the buffer. If different from @a NPOS, the exact number of bytes must be available or a read
+        //! error is generated.
+        //! @return True on success, false on error.
+        //!
+        bool getUTF8(UString& result, size_t bytes = NPOS);
+
+        //!
+        //! Get a UTF-8 string.
+        //! The read-pointer must be byte-aligned.
+        //! @param [in] size Size in bytes of the encoded UTF-8 string. If specified as @a NPOS (the default), read up to
+        //! the end of the buffer. If different from @a NPOS, the exact number of bytes must be available or a read
+        //! error is generated.
+        //! @return The decoded string.
+        //!
+
+        UString getUTF8(size_t bytes = NPOS);
+
+        //!
+        //! Get a UTF-8 string (preceded by its length).
+        //! The read-pointer must be byte-aligned after reading the length-field.
+        //! The specified number of bytes must be available or a read error is generated.
+        //! @param [out] str Returned decoded string.
+        //! @param [in] length_bits Size in bits in the length field.
+        //! @return True on success, false on error (truncated, unsupported format, etc.)
+        //!
+        bool getUTF8WithLength(UString& result, size_t length_bits = 8);
+
+        //!
+        //! Get a UTF-8 string (preceded by its length).
+        //! The read-pointer must be byte-aligned after reading the length-field.
+        //! The specified number of bytes must be available or a read error is generated.
+        //! @param [in] length_bits Size in bits in the length field.
+        //! @return The decoded string.
+        //!
+        UString getUTF8WithLength(size_t length_bits = 8);
+
+        //!
+        //! Put a string using UTF-8 format.
+        //! The write-pointer must be byte-aligned.
+        //! Generate a write error when the buffer is full before writing the complete string.
+        //! @param [in] str The UTF-16 string to encode.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putUTF8(const UString& str, size_t start = 0, size_t count = NPOS)
+        {
+            return putUTF8Internal(str, start, count, false) != 0;
+        }
+
+        //!
+        //! Put a partial string using UTF-8 format.
+        //! The write-pointer must be byte-aligned.
+        //! Stop either when this string is serialized or when the buffer is full, whichever comes first.
+        //! Do not generate a write error when the buffer is full.
+        //! @param [in] str The UTF-16 string to encode.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
+        //!
+        size_t putPartialUTF8(const UString& str, size_t start = 0, size_t count = NPOS)
+        {
+            return putUTF8Internal(str, start, count, true);
+        }
+
+        //!
+        //! Put a string (preceded by its length) using UTF-8 format.
+        //! The write-pointer must be byte-aligned after writing the length-field.
+        //! Generate a write error when the buffer is full before writing the complete string.
+        //! @param [in] str The UTF-16 string to encode.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @param [in] length_bits Size in bits in the length field.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putUTF8WithLength(const UString& str, size_t start = 0, size_t count = NPOS, size_t length_bits = 8)
+        {
+            return putUTF8WithLengthInternal(str, start, count, length_bits, false) != 0;
+        }
+
+        //!
+        //! Put a partial string (preceded by its length) using UTF-8 format.
+        //! The write-pointer must be byte-aligned after writing the length-field.
+        //! Do not generate a write error when the buffer is full.
+        //! @param [in] str The UTF-16 string to encode.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @param [in] length_bits Size in bits in the length field.
+        //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
+        //!
+        size_t putPartialUTF8WithLength(const UString& str, size_t start = 0, size_t count = NPOS, size_t length_bits = 8)
+        {
+            return putUTF8WithLengthInternal(str, start, count, length_bits, true);
+        }
 
     protected:
         //!
@@ -910,6 +1012,10 @@ namespace ts {
 
         // Set range of bits [start_bit..end_bit[ in a byte.
         void setBits(size_t byte, size_t start_bit, size_t end_bit, uint8_t value);
+
+        // Common code for UTF-8 strings.
+        size_t putUTF8Internal(const UString& str, size_t start, size_t count, bool partial);
+        size_t putUTF8WithLengthInternal(const UString& str, size_t start, size_t count, size_t length_bits, bool partial);
 
         // Read/write state in the buffer.
         struct RWState {
