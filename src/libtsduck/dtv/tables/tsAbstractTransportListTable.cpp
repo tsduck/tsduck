@@ -257,9 +257,10 @@ void ts::AbstractTransportListTable::serializePayload(BinaryTable& table, PSIBuf
             addSection(table, payload, false);
         }
 
-        // Get a TS to serialize in current section
+        // Get a TS to serialize in current section.
+        // The current section is the next one to add in the binary table.
         TransportStreamId ts_id;
-        while (!getNextTransport(ts_set, ts_id, table.sectionCount())) {
+        while (!getNextTransport(ts_set, ts_id, int(table.sectionCount()))) {
             // No transport found for this section, close it and starts a new one.
             addSection(table, payload, false);
         }
