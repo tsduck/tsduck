@@ -340,25 +340,23 @@ void ts::ATSCEIT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::ATSCEIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector children;
+    xml::ElementVector xevent;
     bool ok =
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getIntAttribute<uint16_t>(source_id, u"source_id", true) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
-        element->getChildren(children, u"event");
+        element->getChildren(xevent, u"event");
 
     // Get all events.
-    for (size_t i = 0; ok && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < xevent.size(); ++i) {
         Event& event(events.newEntry());
-        xml::ElementVector titles;
-        ok = children[i]->getIntAttribute<uint16_t>(event.event_id, u"event_id", true, 0, 0, 0x3FFF) &&
-             children[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
-             children[i]->getIntAttribute<uint8_t>(event.ETM_location, u"ETM_location", true, 0, 0, 3) &&
-             children[i]->getIntAttribute<Second>(event.length_in_seconds, u"length_in_seconds", true, 0, 0, 0x000FFFFF) &&
-             event.descs.fromXML(duck, titles, children[i], u"title_text");
-        if (_is_valid && !titles.empty()) {
-            _is_valid = event.title_text.fromXML(duck, titles[0]);
-        }
+        xml::ElementVector xtitle;
+        ok = xevent[i]->getIntAttribute<uint16_t>(event.event_id, u"event_id", true, 0, 0, 0x3FFF) &&
+             xevent[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
+             xevent[i]->getIntAttribute<uint8_t>(event.ETM_location, u"ETM_location", true, 0, 0, 3) &&
+             xevent[i]->getIntAttribute<Second>(event.length_in_seconds, u"length_in_seconds", true, 0, 0, 0x000FFFFF) &&
+             event.descs.fromXML(duck, xtitle, xevent[i], u"title_text") &&
+             (xtitle.empty() || event.title_text.fromXML(duck, xtitle[0]));
     }
     return ok;
 }

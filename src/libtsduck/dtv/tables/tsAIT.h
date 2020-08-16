@@ -40,7 +40,6 @@
 namespace ts {
     //!
     //! Representation of an Application Information Table (AIT)
-    //!
     //! @see ETSI TS 101 812, 10.4.6.
     //! @ingroup table
     //!
@@ -59,14 +58,9 @@ namespace ts {
 
             //!
             //! Constructor.
-            //!
             //! @param [in] table Parent AIT.
             //!
-            explicit Application(const AbstractTable* table)
-                : EntryWithDescriptors(table)
-                , control_code(0)
-            {
-            }
+            explicit Application(const AbstractTable* table);
 
         private:
             // Inaccessible operations.
@@ -92,10 +86,10 @@ namespace ts {
         //! @param [in] application_type Application type.
         //! @param [in] test_application True if this is a test application, false otherwise.
         //!
-        AIT(uint8_t  version = 0,
-            bool     is_current = true,
-            uint16_t application_type = 0,
-            bool     test_application = false);
+        explicit AIT(uint8_t  version = 0,
+                     bool     is_current = true,
+                     uint16_t application_type = 0,
+                     bool     test_application = false);
 
         //!
         //! Copy constructor.
@@ -124,9 +118,13 @@ namespace ts {
     protected:
         // Inherited methods
         virtual void clearContent() override;
-        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
-        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void serializePayload(BinaryTable& table, PSIBuffer& payload) const override;
+        virtual void deserializePayload(PSIBuffer& buf, const Section& section) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
+
+    private:
+        // Add a new section to a table being serialized, while inside transport loop.
+        void addSection(BinaryTable& table, PSIBuffer& payload, bool last_section) const;
     };
 }

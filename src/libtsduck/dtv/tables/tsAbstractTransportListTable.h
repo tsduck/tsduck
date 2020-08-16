@@ -66,7 +66,7 @@ namespace ts {
             //! Constructor.
             //! @param [in] table Parent table.
             //!
-            Transport(const AbstractTable* table);
+            explicit Transport(const AbstractTable* table);
 
         private:
             // Inaccessible operations.
