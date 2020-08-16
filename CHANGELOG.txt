@@ -4,6 +4,14 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 VERSION 3.22-1924
 
+[NEW] New commands and plugins:
+
+  * On Linux and macOS, the installation of TSDuck files are no longer all
+    inside /usr/bin. Shared libraries are in /usr/lib, plugins are in
+    /usr/lib/tsduck, configuration files are in /usr/share/tsduck. On macOS,
+    /usr/local is used instead of /usr. On some 64-bit Linux distros,
+    /usr/lib64 is used instead of /usr/lib.
+
 [IMP] Improvements on existing commands and plugins:
 
   * The "tsp" command now keeps track of input time-stamps for each packet

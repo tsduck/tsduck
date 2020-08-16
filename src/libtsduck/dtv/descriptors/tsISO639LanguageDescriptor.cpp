@@ -106,7 +106,7 @@ void ts::ISO639LanguageDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::ISO639LanguageDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.endOfRead()) {
+    while (!buf.error() && !buf.endOfRead()) {
         const UString lang(buf.getLanguageCode());
         entries.push_back(Entry(lang, buf.getUInt8()));
     }

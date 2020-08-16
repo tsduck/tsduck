@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Representation of a Running Status Table (RST).
+    //! @see ETSI EN 300 468, 5.2.7
     //! @ingroup table
     //!
     class TSDUCKDLL RST : public AbstractTable
@@ -99,8 +100,8 @@ namespace ts {
     protected:
         // Inherited methods
         virtual void clearContent() override;
-        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
-        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void serializePayload(BinaryTable& table, PSIBuffer& payload) const override;
+        virtual void deserializePayload(PSIBuffer& buf, const Section& section) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
     };

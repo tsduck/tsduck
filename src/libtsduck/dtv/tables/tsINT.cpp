@@ -32,6 +32,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -129,83 +130,25 @@ void ts::INT::clearContent()
 
 
 //----------------------------------------------------------------------------
-// Deserialize a descriptor list. Update data and remain. Return true on success.
-//----------------------------------------------------------------------------
-
-bool ts::INT::GetDescriptorList(DescriptorList& dlist, const uint8_t*& data, size_t& remain)
-{
-    // Get descriptor loop length.
-    if (remain < 2) {
-        return false;
-    }
-    size_t dlength = GetUInt16(data) & 0x0FFF;
-    data += 2;
-    remain -= 2;
-
-    if (remain < dlength) {
-        return false;
-    }
-
-    // Get descriptor loop.
-    dlist.add(data, dlength);
-    data += dlength;
-    remain -= dlength;
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::INT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::INT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    action_type = 0;
-    platform_id = 0;
-    processing_order = 0;
-    platform_descs.clear();
-    devices.clear();
+    // Get common properties (should be identical in all sections)
+    action_type = uint8_t(section.tableIdExtension() >> 8);
+    platform_id = buf.getUInt24();
+    processing_order = buf.getUInt8();
 
-    // Loop on all sections.
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
+    // Get platform descriptor loop.
+    buf.getDescriptorListWithLength(platform_descs);
 
-        // Reference to current section
-        const Section& sect(*table.sectionAt(si));
-
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent();
-        action_type = sect.tableIdExtension() >> 8;
-
-        // Analyze the section payload:
-        const uint8_t* data = sect.payload();
-        size_t remain = sect.payloadSize();
-
-        // Get fixed part.
-        if (remain < 4) {
-            return;
-        }
-        platform_id = GetUInt24(data);
-        processing_order = data[3];
-        data += 4;
-        remain -= 4;
-
-        // Get platform descriptor loop.
-        if (!GetDescriptorList(platform_descs, data, remain)) {
-            return;
-        }
-
-        // Get device descriptions.
-        while (remain > 0) {
-            Device& dev(devices.newEntry());
-            if (!GetDescriptorList(dev.target_descs, data, remain) || !GetDescriptorList(dev.operational_descs, data, remain)) {
-                return;
-            }
-        }
+    // Get device descriptions.
+    while (!buf.error() && !buf.endOfRead()) {
+        Device& dev(devices.newEntry());
+        buf.getDescriptorListWithLength(dev.target_descs);
+        buf.getDescriptorListWithLength(dev.operational_descs);
     }
-
-    _is_valid = true;
 }
 
 
@@ -213,156 +156,54 @@ void ts::INT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::INT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::INT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 {
-    // Build the sections
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number = 0;
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
-
-    // Serialize fixed part (4 bytes, will remain identical in all sections).
-    PutUInt24(data, platform_id);
-    data[3] = processing_order;
-    data += 4;
-    remain -= 4;
+    // Fixed part, to be repeated on all sections.
+    payload.putUInt24(platform_id);
+    payload.putUInt8(processing_order);
+    payload.pushReadWriteState();
 
     // Add top-level platform_descriptor_loop.
     // If the descriptor list is too long to fit into one section, create new sections when necessary.
     for (size_t start_index = 0; ; ) {
 
         // Add the descriptor list (or part of it).
-        start_index = platform_descs.lengthSerialize(data, remain, start_index);
+        start_index = payload.putPartialDescriptorListWithLength(platform_descs, start_index);
 
         // If all descriptors were serialized, exit loop
-        if (start_index == platform_descs.count()) {
+        if (start_index >= platform_descs.size()) {
             break;
         }
-        assert(start_index < platform_descs.count());
 
         // Need to close the section and open a new one.
-        addSection(table, section_number, payload, data, remain);
+        addOneSection(table, payload);
     }
+
+    // Minimum size of a section: fixed part and empty top-level descriptor list.
+    constexpr size_t payload_min_size = 6;
 
     // Add all devices. A device must be serialize inside one unique section.
     // If we cannot serialize a device in the current section, open a new section.
     // If a complete section is not large enough to serialize a device, the
     // device description is truncated.
-    for (DeviceList::const_iterator it = devices.begin(); it != devices.end(); ++it) {
+    for (auto it = devices.begin(); it != devices.end(); ++it) {
 
-        // Keep current position in case we cannot completely serialize the current device.
-        uint8_t* const initial_data = data;
-        const size_t initial_remain = remain;
+        // Binary size of the device entry.
+        const size_t entry_size = 2 + it->second.target_descs.binarySize() + 2 + it->second.operational_descs.binarySize();
 
-        // Try to serialize the current device in the current section.
-        if (!serializeDevice(it->second, data, remain) && initial_data > payload + 6) {
-            // Could not serialize the device and there was already something before it.
-            // Restore initial data and close the section.
-            data = initial_data;
-            remain = initial_remain;
-            addSection(table, section_number, payload, data, remain);
-
-            // Reserve empty platform_descriptor_loop.
-            PutUInt16(data, 0xF000);
-            data += 2; remain -= 2;
-
-            // Retry the serialization of the device. Ignore failure (truncated).
-            serializeDevice(it->second, data, remain);
+        // If the current entry does not fit into the section, create a new section, unless we are at the beginning of the section.
+        if (entry_size > payload.remainingWriteBytes() && payload.currentWriteByteOffset() > payload_min_size) {
+            addOneSection(table, payload);
+            payload.putPartialDescriptorListWithLength(platform_descs, 0, 0);
         }
+
+        // Insert device entry.
+        // During serialization of the first descriptor loop, keep size for at least an empty second descriptor loop.
+        payload.pushSize(payload.size() - 2);
+        payload.putPartialDescriptorListWithLength(it->second.target_descs);
+        payload.popSize();
+        payload.putPartialDescriptorListWithLength(it->second.operational_descs);
     }
-
-    // Add partial section (if there is one)
-    if (data > payload + 6 || table.sectionCount() == 0) {
-        addSection(table, section_number, payload, data, remain);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Private method: Serialize one device description. Update data and remain.
-// Return true if the service was completely serialized, false otherwise.
-//----------------------------------------------------------------------------
-
-bool ts::INT::serializeDevice(const Device& device, uint8_t*& data, size_t& remain) const
-{
-    // We need at least 4 bytes, for the length of the two descriptor loops.
-    if (remain < 4) {
-        return false;
-    }
-
-    // Keep 2 additional bytes for operational descriptor loop length.
-    remain -= 2;
-
-    // Serialize target descriptor loop, then operational descriptor loop.
-    const size_t tg_count = device.target_descs.lengthSerialize(data, remain);
-    remain += 2;
-    const size_t op_count = device.operational_descs.lengthSerialize(data, remain);
-
-    // Return if we could serialize them all.
-    return tg_count == device.target_descs.count() && op_count == device.operational_descs.count();
-}
-
-
-//----------------------------------------------------------------------------
-// Private method: Add a new section to a table being serialized.
-// Section number is incremented. Data and remain are reinitialized.
-//----------------------------------------------------------------------------
-
-void ts::INT::addSection(BinaryTable& table,
-                         int& section_number,
-                         uint8_t* payload,
-                         uint8_t*& data,
-                         size_t& remain) const
-{
-    table.addSection(new Section(_table_id,
-                                 true,    // is_private_section
-                                 tableIdExtension(),
-                                 version,
-                                 is_current,
-                                 uint8_t(section_number),
-                                 uint8_t(section_number),   //last_section_number
-                                 payload,
-                                 data - payload)); // payload_size,
-
-    // Reinitialize pointers.
-    // Restart after constant part of payload (4 bytes).
-    remain += data - payload - 4;
-    data = payload + 4;
-    section_number++;
-}
-
-
-//----------------------------------------------------------------------------
-// Display a descriptor list. Update data and remain. Return true on success.
-//----------------------------------------------------------------------------
-
-bool ts::INT::DisplayDescriptorList(TablesDisplay& display, const Section& section, const uint8_t*& data, size_t& remain, int indent)
-{
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-
-    if (remain < 2) {
-        return false;
-    }
-
-    size_t dlength = GetUInt16(data) & 0x0FFF;
-    data += 2;
-    remain -= 2;
-
-    if (remain < dlength) {
-        return false;
-    }
-
-    if (dlength == 0) {
-        strm << margin << "None" << std::endl;
-    }
-    else {
-        display.displayDescriptorList(section, data, dlength, indent);
-        data += dlength; remain -= dlength;
-    }
-
-    return true;
 }
 
 
@@ -375,46 +216,34 @@ void ts::INT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
-
-    if (size >= 4) {
+    if (buf.remainingReadBytes() >= 4) {
 
         // Fixed part
-        const uint8_t action_type = section.tableIdExtension() >> 8;
-        const uint8_t id_hash = section.tableIdExtension() & 0xFF;
-        const uint8_t comp_hash = data[0] ^ data[1] ^ data[2];
-        const uint32_t platform_id = GetUInt24(data);
-        const uint8_t processing_order = data[3];
-        data += 4; size -= 4;
+        const uint8_t action = uint8_t(section.tableIdExtension() >> 8);
+        const uint8_t id_hash = uint8_t(section.tableIdExtension());
+        const uint32_t pfid = buf.getUInt24();
+        const uint8_t order = buf.getUInt8();
+        const uint8_t comp_hash = uint8_t(pfid >> 16) ^ uint8_t(pfid >> 8) ^ uint8_t(pfid);
+        const UString hash_status(id_hash == comp_hash ? u"valid" : UString::Format(u"invalid, should be 0x%X", {comp_hash}));
 
-        strm << margin << "Platform id: " << names::PlatformId(platform_id, names::FIRST) << std::endl
+        strm << margin << "Platform id: " << names::PlatformId(pfid, names::FIRST) << std::endl
              << margin
-             << UString::Format(u"Action type: 0x%X, processing order: 0x%X, id hash: 0x%X (%s)",
-                                {action_type, processing_order, id_hash,
-                                 id_hash == comp_hash ? u"valid" : UString::Format(u"invalid, should be 0x%X", {comp_hash})})
-             << std::endl
-             << margin << "Platform descriptors:" << std::endl;
+             << UString::Format(u"Action type: 0x%X, processing order: 0x%X, id hash: 0x%X (%s)", {action, order, id_hash, hash_status})
+             << std::endl;
 
-        // Get platform descriptor loop.
-        if (DisplayDescriptorList(display, section, data, size, indent + 2)) {
-            // Get device descriptions.
-            int device_index = 0;
-            bool ok = true;
-            while (ok && size > 0) {
-                strm << margin << "Device #" << device_index++ << std::endl
-                     << margin << "  Target descriptors:" << std::endl;
-                ok = DisplayDescriptorList(display, section, data, size, indent + 4);
-                if (ok) {
-                    strm << margin << "  Operational descriptors:" << std::endl;
-                    ok = DisplayDescriptorList(display, section, data, size, indent + 4);
-                }
-            }
+        display.displayDescriptorListWithLength(section, buf, indent, u"Platform descriptors:");
+
+        // Get device descriptions.
+        for (int device_index = 0; !buf.error() && !buf.endOfRead(); device_index++) {
+            strm << margin << "Device #" << device_index << std::endl;
+            display.displayDescriptorListWithLength(section, buf, indent + 2, u"Target descriptors:", u"None");
+            display.displayDescriptorListWithLength(section, buf, indent + 2, u"Operational descriptors:", u"None");
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(buf, indent);
 }
 
 

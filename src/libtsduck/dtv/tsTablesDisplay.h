@@ -177,6 +177,7 @@ namespace ts {
         //! @param [in,out] buf Buffer containing the descriptor list to read
         //! @param [in] indent Indentation width.
         //! @param [in] title Optional title to display as preceding line.
+        //! @param [in] empty_text Optional text to display when the descriptor list is empty.
         //! @param [in] length_bits Number of meaningful bits in the length field.
         //! @param [in] cas CAS id of the table.
         //! @return A reference to the output stream.
@@ -185,6 +186,7 @@ namespace ts {
                                                               PSIBuffer& buf,
                                                               int indent = 0,
                                                               const UString& title = UString(),
+                                                              const UString& empty_text = UString(),
                                                               size_t length_bits = 12,
                                                               uint16_t cas = CASID_NULL);
 

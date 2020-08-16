@@ -31,6 +31,7 @@
 #include "tsBinaryTable.h"
 #include "tsSection.h"
 #include "tsTablesDisplay.h"
+#include "tsPSIBuffer.h"
 TSDUCK_SOURCE;
 
 
@@ -117,138 +118,72 @@ void ts::AbstractTransportListTable::clearPreferredSections()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::AbstractTransportListTable::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    _tid_ext = 0xFFFF;
-    descs.clear();
-    transports.clear();
+    // Get common properties (should be identical in all sections)
+    _tid_ext = section.tableIdExtension();
 
-    // Loop on all sections
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
+    // Get top-level descriptor list
+    buf.getDescriptorListWithLength(descs);
 
-        // Reference to current section
-        const Section& sect(*table.sectionAt(si));
+    // Transport stream loop length.
+    buf.skipBits(4);
+    const size_t loop_length = buf.getBits<size_t>(12);
+    const size_t end_loop = buf.currentReadByteOffset() + loop_length;
 
-        // Abort if not expected table
-        if (sect.tableId() != _table_id) {
-            return;
-        }
-
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent();
-        _tid_ext = sect.tableIdExtension();
-
-        // Analyze the section payload:
-        const uint8_t* data = sect.payload();
-        size_t remain = sect.payloadSize();
-
-        // Get top-level descriptor list
-        if (remain < 2) {
-            return;
-        }
-        size_t info_length (GetUInt16 (data) & 0x0FFF);
-        data += 2;
-        remain -= 2;
-        info_length = std::min (info_length, remain);
-        descs.add (data, info_length);
-        data += info_length;
-        remain -= info_length;
-
-        // Get transports description length
-        if (remain < 2) {
-            return;
-        }
-        size_t ts_length (GetUInt16 (data) & 0x0FFF);
-        data += 2;
-        remain -= 2;
-        remain = std::min (ts_length, remain);
-
-        // Get transports description
-        while (remain >= 6) {
-            TransportStreamId id(GetUInt16 (data), GetUInt16 (data + 2)); // tsid, onid
-            info_length = GetUInt16(data + 4) & 0x0FFF;
-            data += 6;
-            remain -= 6;
-            info_length = std::min(info_length, remain);
-            transports[id].descs.add(data, info_length);
-            transports[id].preferred_section = int(si);
-            data += info_length;
-            remain -= info_length;
-        }
+    // Get transport streams description
+    while (!buf.error() && !buf.endOfRead()) {
+        const uint16_t tsid = buf.getUInt16();
+        const uint16_t nwid = buf.getUInt16();
+        const TransportStreamId id(tsid, nwid);
+        buf.getDescriptorListWithLength(transports[id].descs);
+        transports[id].preferred_section = section.sectionNumber();
     }
 
-    _is_valid = true;
+    // Make sure we exactly reached the end of transport stream loop.
+    if (!buf.error() && buf.currentReadByteOffset() != end_loop) {
+        buf.setUserError();
+    }
 }
 
 
 //----------------------------------------------------------------------------
-// Private method: Add a new section to a table being serialized.
-// Section number is incremented. Data and remain are reinitialized.
+// Add a new section to a table being serialized, while inside transport loop.
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::addSection(BinaryTable& table,
-                                                int& section_number,
-                                                uint8_t* payload,
-                                                uint8_t*& data,
-                                                size_t& remain) const
+void ts::AbstractTransportListTable::addSection(BinaryTable& table, PSIBuffer& payload, bool last_section) const
 {
-    table.addSection(new Section(_table_id,
-                                 isPrivate(),
-                                 _tid_ext,
-                                 version,
-                                 is_current,
-                                 uint8_t(section_number),
-                                 uint8_t(section_number),   //last_section_number
-                                 payload,
-                                 data - payload)); // payload_size,
+    // The read/write state was pushed just before transport_stream_loop_length.
 
-    // Reinitialize pointers.
-    remain += data - payload;
-    data = payload;
-    section_number++;
-}
+    // Update transport_stream_loop_length.
+    const size_t end = payload.currentWriteByteOffset();
+    payload.swapReadWriteState();
+    assert(payload.currentWriteByteOffset() + 2 <= end);
+    const size_t loop_length = end - payload.currentWriteByteOffset() - 2;
+    payload.putBits(0xFF, 4);
+    payload.putBits(loop_length, 12);
+    payload.popReadWriteState();
 
+    // Add the section and reset buffer.
+    addOneSection(table, payload);
 
-//----------------------------------------------------------------------------
-// Private method: Same as previous, while being inside the transport loop.
-//----------------------------------------------------------------------------
+    // Prepare for the next section if necessary.
+    if (!last_section) {
+        // Empty (zero-length) top-level descriptor list.
+        payload.putUInt16(0xF000);
 
-void ts::AbstractTransportListTable::addSection(BinaryTable& table,
-                                                int& section_number,
-                                                uint8_t* payload,
-                                                uint8_t*& tsll_addr,
-                                                uint8_t*& data,
-                                                size_t& remain) const
-{
-    // Update transport_stream_loop_length in current section
-    PutUInt16(tsll_addr, 0xF000 | uint16_t(data - tsll_addr - 2));
-
-    // Add current section, open a new one
-    addSection(table, section_number, payload, data, remain);
-
-    // Insert a zero-length global descriptor loop
-    assert(remain >= 4);
-    PutUInt16(data, 0xF000);
-
-    // Reserve transport_stream_loop_length.
-    tsll_addr = data + 2;
-    PutUInt16(data + 2, 0xF000);
-    data += 4;
-    remain -= 4;
+        // Reserve transport_stream_loop_length.
+        payload.pushReadWriteState();
+        payload.putUInt16(0xF000);
+    }
 }
 
 
 //----------------------------------------------------------------------------
 // Select a transport stream for serialization in current section.
-// If found, set ts_id, remove the ts id from the set and return true.
-// Otherwise, return false.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractTransportListTable::getNextTransport(TransportStreamIdSet& ts_set,
-                                                      TransportStreamId& ts_id,
-                                                      int section_number) const
+bool ts::AbstractTransportListTable::getNextTransport(TransportStreamIdSet& ts_set, TransportStreamId& ts_id, int section_number) const
 {
     // Search one TS which should be serialized in current section
     for (auto it = ts_set.begin(); it != ts_set.end(); ++it) {
@@ -279,7 +214,7 @@ bool ts::AbstractTransportListTable::getNextTransport(TransportStreamIdSet& ts_s
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::AbstractTransportListTable::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 {
     // Build a set of TS id to serialize.
     TransportStreamIdSet ts_set;
@@ -287,77 +222,66 @@ void ts::AbstractTransportListTable::serializeContent(DuckContext& duck, BinaryT
         ts_set.insert(it->first);
     }
 
-    // Build the sections
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number = 0;
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
+    // Minimum size of a section: empty top-level descriptor list and transport_stream_loop_length.
+    constexpr size_t payload_min_size = 4;
 
     // Add top-level descriptor list.
-    // If the descriptor list is too long to fit into one section,
-    // create new sections when necessary.
-    for (size_t start_index = 0; ; ) {
+    // If the descriptor list is too long to fit into one section, create new sections when necessary.
+    for (size_t start = 0;;) {
+        // Reserve and restore 2 bytes for transport_stream_loop_length.
+        payload.pushSize(payload.size() - 2);
+        start = payload.putPartialDescriptorListWithLength(descs, start);
+        payload.popSize();
 
-        // Add the descriptor list (or part of it).
-        // Reserve 2 extra bytes at end, for the rest of the section
-        assert(remain > 2);
-        remain -= 2;
-        start_index = descs.lengthSerialize(data, remain, start_index);
-        remain += 2;
-
-        // If all descriptors were serialized, exit loop
-        if (start_index == descs.count()) {
+        if (payload.error() || start >= descs.size()) {
+            // Top-level descriptor list completed.
             break;
         }
-        assert(start_index < descs.count());
-
-        // Need to close the section and open a new one.
-        // Add a zero transport_stream_loop_length.
-        assert(remain >= 2);
-        PutUInt16(data, 0xF000);
-        data += 2;
-        remain -= 2;
-        addSection(table, section_number, payload, data, remain);
+        else {
+            // There are remaining top-level descriptors, flush current section.
+            // Add a zero transport_stream_loop_length.
+            payload.putUInt16(0xF000);
+            addOneSection(table, payload);
+        }
     }
 
     // Reserve transport_stream_loop_length.
-    assert (remain >= 2);
-    uint8_t* tsll_addr = data;
-    PutUInt16 (data, 0xF000);
-    data += 2;
-    remain -= 2;
+    payload.pushReadWriteState();
+    payload.putUInt16(0xF000);
 
     // Add all transports
     while (!ts_set.empty()) {
 
         // If we cannot at least add the fixed part of a transport, open a new section
-        if (remain < 6) {
-            addSection (table, section_number, payload, tsll_addr, data, remain);
-            assert (remain >= 6);
+        if (payload.remainingWriteBytes() < 6) {
+            addSection(table, payload, false);
         }
 
         // Get a TS to serialize in current section
         TransportStreamId ts_id;
-        while (!getNextTransport (ts_set, ts_id, section_number)) {
+        while (!getNextTransport(ts_set, ts_id, table.sectionCount())) {
             // No transport found for this section, close it and starts a new one.
-            addSection (table, section_number, payload, tsll_addr, data, remain);
+            addSection(table, payload, false);
         }
 
-        // Locate transport description
+        // Locate transport description.
         const TransportMap::const_iterator ts_iter(transports.find(ts_id));
         assert(ts_iter != transports.end());
         const DescriptorList& dlist(ts_iter->second.descs);
+
+        // Binary size of the transport entry.
+        const size_t entry_size = 6 + dlist.binarySize();
 
         // If we are not at the beginning of the transport loop, make sure that the
         // entire transport description fits in the section. If it does not fit,
         // start a new section. Huge transport descriptions may not fit into
         // one section, even when starting at the beginning of the transport loop.
         // In that case, the transport description will span two sections later.
-        if (data > tsll_addr + 2 && 6 + dlist.binarySize() > remain) {
-            // Push back the transport in the set
-            ts_set.insert (ts_id);
+        if (entry_size > payload.remainingWriteBytes() && payload.currentWriteByteOffset() > payload_min_size) {
+            // Push back the transport in the set, we won't use it in this section.
+            ts_set.insert(ts_id);
             // Create a new section
-            addSection (table, section_number, payload, tsll_addr, data, remain);
+            addSection(table, payload, false);
             // Loop back since the section number has changed and a new transport may be better
             continue;
         }
@@ -368,15 +292,12 @@ void ts::AbstractTransportListTable::serializeContent(DuckContext& duck, BinaryT
         // common properties of the transport must be repeated.
         size_t start_index = 0;
         for (;;) {
-            // Insert common characteristics of the transport
-            assert (remain >= 6);
-            PutUInt16 (data, ts_id.transport_stream_id);
-            PutUInt16 (data + 2, ts_id.original_network_id);
-            data += 4;
-            remain -= 4;
+            // Insert common characteristics of the transport.
+            payload.putUInt16(ts_id.transport_stream_id);
+            payload.putUInt16(ts_id.original_network_id);
 
             // Insert descriptors (all or some).
-            start_index = dlist.lengthSerialize(data, remain, start_index);
+            start_index = payload.putPartialDescriptorListWithLength(dlist, start_index);
 
             // Exit loop when all descriptors were serialized.
             if (start_index >= dlist.count()) {
@@ -385,10 +306,10 @@ void ts::AbstractTransportListTable::serializeContent(DuckContext& duck, BinaryT
 
             // Not all descriptors were written, the section is full.
             // Open a new one and continue with this transport.
-            addSection(table, section_number, payload, tsll_addr, data, remain);
+            addSection(table, payload, false);
         }
     }
 
     // Add partial section.
-    addSection(table, section_number, payload, tsll_addr, data, remain);
+    addSection(table, payload, true);
 }

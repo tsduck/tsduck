@@ -29,6 +29,7 @@
 
 #include "tsBuffer.h"
 #include "tsFatal.h"
+#include "tsBCD.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -1065,5 +1066,27 @@ const uint8_t* ts::Buffer::rdb(size_t bytes)
             }
             return _realigned;
         }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Read / write Binary Coded Decimal (BCD) values.
+//----------------------------------------------------------------------------
+
+int ts::Buffer::getBCD()
+{
+    return DecodeBCD(getUInt8());
+}
+
+bool ts::Buffer::putBCD(int i)
+{
+    if (i >= 0 && i <= 99) {
+        return putUInt8(EncodeBCD(i));
+    }
+    else {
+        // Cannot be represented as 2 decimal digits.
+        setWriteError();
+        return false;
     }
 }

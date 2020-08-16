@@ -6,12 +6,12 @@ INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -nam
 
 linux|mac {
     QMAKE_CXXFLAGS += $$system("curl-config --cflags")
-    QMAKE_LFLAGS += $$system("curl-config --libs")
+    LIBS += $$system("curl-config --libs")
 }
 
 linux {
-    LIBS += $$system("$$PROJROOT/dektec/dtapi-config.sh --object")
     QMAKE_CXXFLAGS += -isystem $$PROJROOT/dektec/LinuxSDK/DTAPI/Include
+    LIBS += $$system("$$PROJROOT/dektec/dtapi-config.sh --object")
 }
 
 mac {

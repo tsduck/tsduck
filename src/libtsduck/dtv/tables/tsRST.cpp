@@ -31,6 +31,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -89,36 +90,18 @@ void ts::RST::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::RST::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::RST::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    events.clear();
-
-    // This is a short table, must have only one section
-    if (table.sectionCount() != 1) {
-        return;
-    }
-
-    // Reference to single section
-    const Section& sect(*table.sectionAt(0));
-    const uint8_t* data = sect.payload();
-    size_t remain = sect.payloadSize();
-
-    // Analyze the section payload.
-    while (remain >= 9) {
+    while (!buf.error() && !buf.endOfRead()) {
         Event event;
-        event.transport_stream_id = GetUInt16(data);
-        event.original_network_id = GetUInt16(data + 2);
-        event.service_id = GetUInt16(data + 4);
-        event.event_id = GetUInt16(data + 6);
-        event.running_status = data[8] & 0x07;
-
+        event.transport_stream_id = buf.getUInt16();
+        event.original_network_id = buf.getUInt16();
+        event.service_id = buf.getUInt16();
+        event.event_id = buf.getUInt16();
+        buf.skipBits(5);
+        event.running_status = buf.getBits<uint8_t>(3);
         events.push_back(event);
-        data += 9;
-        remain -= 9;
     }
-
-    _is_valid = remain == 0;
 }
 
 
@@ -126,28 +109,16 @@ void ts::RST::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RST::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::RST::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 {
-    // Build the section
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
-
-    for (EventList::const_iterator it = events.begin(); it != events.end() && remain >= 9; ++it) {
-        PutUInt16(data, it->transport_stream_id);
-        PutUInt16(data + 2, it->original_network_id);
-        PutUInt16(data + 4, it->service_id);
-        PutUInt16(data + 6, it->event_id);
-        PutUInt8(data + 8, it->running_status | 0xF8);
-        data += 9;
-        remain -= 9;
+    for (auto it = events.begin(); it != events.end(); ++it) {
+        payload.putUInt16(it->transport_stream_id);
+        payload.putUInt16(it->original_network_id);
+        payload.putUInt16(it->service_id);
+        payload.putUInt16(it->event_id);
+        payload.putBits(0xFF, 5);
+        payload.putBits(it->running_status, 3);
     }
-
-    // Add the section in the table.
-    table.addSection(new Section(MY_TID,
-                                 true,   // is_private_section
-                                 payload,
-                                 data - payload));
 }
 
 
@@ -160,30 +131,23 @@ void ts::RST::DisplaySection(TablesDisplay& display, const ts::Section& section,
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
-
-    while (size >= 9) {
-        const uint16_t transport_stream_id = GetUInt16(data);
-        const uint16_t original_network_id = GetUInt16(data + 2);
-        const uint16_t service_id = GetUInt16(data + 4);
-        const uint16_t event_id = GetUInt16(data + 6);
-        const uint8_t running_status = data[8] & 0x07;
-        data += 9;
-        size -= 9;
+    while (!buf.error() && buf.remainingReadBytes() >= 9) {
+        const uint16_t ts_id = buf.getUInt16();
+        const uint16_t onet_id = buf.getUInt16();
+        const uint16_t srv_id = buf.getUInt16();
+        const uint16_t ev_id = buf.getUInt16();
+        buf.skipBits(5);
+        const uint8_t rs = buf.getBits<uint8_t>(3);
 
         strm << margin
-             << UString::Format(u"TS: %d (0x%X), Orig. Netw.: %d (0x%X), Service: %d (0x%X), Event: %d (0x%X), Status: %s",
-                       {transport_stream_id, transport_stream_id,
-                        original_network_id, original_network_id,
-                        service_id, service_id,
-                        event_id, event_id,
-                        RunningStatusNames.name(running_status)})
+             << UString::Format(u"TS: %d (0x%<X), Orig. Netw.: %d (0x%<X), Service: %d (0x%<X), Event: %d (0x%<X), Status: %s",
+                                {ts_id, onet_id, srv_id, ev_id, RunningStatusNames.name(rs)})
              << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(buf, indent);
 }
 
 

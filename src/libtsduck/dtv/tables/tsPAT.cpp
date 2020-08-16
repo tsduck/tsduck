@@ -155,7 +155,7 @@ void ts::PAT::DisplaySection(TablesDisplay& display, const Section& section, int
     strm << margin << UString::Format(u"TS id:   %5d (0x%<04X)", {section.tableIdExtension()}) << std::endl;
 
     // Loop through all program / pid pairs
-    while (!buf.endOfRead()) {
+    while (!buf.error() && !buf.endOfRead()) {
         const uint16_t id = buf.getUInt16();
         const uint16_t pid = buf.getPID();
         strm << margin << UString::Format(u"%s %5d (0x%<04X)  PID: %4d (0x%<04X)", {id == 0 ? u"NIT:    " : u"Program:", id, pid}) << std::endl;
