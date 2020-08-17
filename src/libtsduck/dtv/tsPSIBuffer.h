@@ -43,6 +43,7 @@ namespace ts {
     class DuckContext;
     class Section;
     class DescriptorList;
+    class ATSCMultipleString;
 
     //!
     //! A specialized subclass of ts::Buffer for PSI serialization.
@@ -384,6 +385,42 @@ namespace ts {
         //! number of bytes to read.
         //!
         size_t getUnalignedLength(size_t length_bits);
+
+        //!
+        //! Get (deserialize) an ATSC multiple_string_structure() as defined in ATSC A/65.
+        //! @param [out] mss The deserialized multiple_string_structure.
+        //! @param [in] mss_size Optional size of the multiple_string_structure to deserialize.
+        //! If different from NPOS (the default), do not read more than @a mss_size bytes and move the
+        //! read pointer after @a mss_size bytes, even if the multiple_string_structure is shorter.
+        //! @param [in] ignore_empty If true and there is nothing left to read, then this is a valid empty multiple_string_structure.
+        //! @return True on success, false on error (truncated, misaligned, etc.)
+        //!
+        bool getMultipleString(ATSCMultipleString& mss, size_t mss_size = NPOS, bool ignore_empty = false);
+
+        //!
+        //! Get (deserialize) an ATSC multiple_string_structure() as defined in ATSC A/65, with a leading byte length.
+        //! @param [out] mss The deserialized multiple_string_structure.
+        //! @param [in] length_bytes Size in bytes of the leading length field (1 byte by default).
+        //! @return True on success, false on error (truncated, misaligned, etc.)
+        //!
+        bool getMultipleStringWithLength(ATSCMultipleString& mss, size_t length_bytes = 1);
+
+        //!
+        //! Put (serialize) an ATSC multiple_string_structure() as defined in ATSC A/65.
+        //! @param [in] mss The multiple_string_structure to serialize.
+        //! @param [in] max_size Max size to serialize, possibly lower than the buffer size.
+        //! @param [in] ignore_empty If true and the multiple_string_structure is empty, do nothing.
+        //! @return True on success, false on error (truncated, misaligned, etc.)
+        //!
+        bool putMultipleString(const ATSCMultipleString& mss, size_t max_size = NPOS, bool ignore_empty = false);
+
+        //!
+        //! Put (serialize) an ATSC multiple_string_structure() as defined in ATSC A/65, with a leading byte length.
+        //! @param [in] mss The multiple_string_structure to serialize.
+        //! @param [in] length_bytes Size in bytes of the leading length field (1 byte by default).
+        //! @return True on success, false on error (truncated, misaligned, etc.)
+        //!
+        bool putMultipleStringWithLength(const ATSCMultipleString& mss, size_t length_bytes = 1);
 
     private:
         DuckContext& _duck;

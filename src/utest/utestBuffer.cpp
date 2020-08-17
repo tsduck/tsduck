@@ -87,6 +87,7 @@ public:
     void testGetUTF8();
     void testGetUTF8WithLength();
     void testPutUTF8();
+    void testPutFixedUTF8();
     void testPutPartialUTF8();
     void testPutUTF8WithLength();
     void testPutPartialUTF8WithLength();
@@ -1188,6 +1189,32 @@ void BufferTest::testPutUTF8()
     TSUNIT_EQUAL('z', mem[4]);
 
     TSUNIT_ASSERT(!b.putUTF8(u"123456789"));
+    TSUNIT_ASSERT(b.writeError());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+}
+
+void BufferTest::testPutFixedUTF8()
+{
+    uint8_t mem[10];
+    ::memset(mem, 0, sizeof(mem));
+    ts::Buffer b(mem, sizeof(mem));
+    TSUNIT_ASSERT(!b.readOnly());
+    TSUNIT_EQUAL(0, b.currentWriteByteOffset());
+
+    TSUNIT_ASSERT(b.putFixedUTF8(u"abcde", 2));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(2, b.currentWriteByteOffset());
+    TSUNIT_EQUAL('a', mem[0]);
+    TSUNIT_EQUAL('b', mem[1]);
+
+    TSUNIT_ASSERT(b.putFixedUTF8(u"x", 3, ' '));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+    TSUNIT_EQUAL('x', mem[2]);
+    TSUNIT_EQUAL(' ', mem[3]);
+    TSUNIT_EQUAL(' ', mem[4]);
+
+    TSUNIT_ASSERT(!b.putFixedUTF8(u"9", 9));
     TSUNIT_ASSERT(b.writeError());
     TSUNIT_EQUAL(5, b.currentWriteByteOffset());
 }

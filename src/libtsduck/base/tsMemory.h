@@ -1093,6 +1093,120 @@ namespace ts {
     {
         PutIntBE<INT>(p, i);
     }
+
+    //!
+    //! Template function getting a variable-length integer from serialized data in big endian representation.
+    //!
+    //! @tparam INT Some integer type.
+    //! @param [in] p An address pointing to an INT in big endian representation.
+    //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
+    //! @return The INT value in native byte order, deserialized from @a p.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    TSDUCKDLL inline INT GetIntVarBE(const void* p, size_t size);
+
+    //!
+    //! Template function getting a variable-length integer from serialized data in little endian representation.
+    //!
+    //! @tparam INT Some integer type.
+    //! @param [in] p An address pointing to an INT in little endian representation.
+    //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
+    //! @return The INT value in native byte order, deserialized from @a p.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    TSDUCKDLL inline INT GetIntVarLE(const void* p, size_t size);
+
+    //!
+    //! Template function getting a variable-length integer from serialized data in big endian representation.
+    //!
+    //! @tparam INT Some integer type.
+    //! @param [in] p An address pointing to an INT in big endian representation.
+    //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
+    //! @param [out] i The INT value in native byte order, deserialized from @a p.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    TSDUCKDLL inline void GetIntVarBE(const void* p, size_t size, INT& i)
+    {
+        i = GetIntVarBE<INT>(p, size);
+    }
+
+    //!
+    //! Template function getting a variable-length integer from serialized data in little endian representation.
+    //!
+    //! @tparam INT Some integer type.
+    //! @param [in] p An address pointing to an INT in little endian representation.
+    //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
+    //! @param [out] i The INT value in native byte order, deserialized from @a p.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    TSDUCKDLL inline void GetIntVarLE(const void* p, size_t size, INT& i)
+    {
+        i = GetIntVarLE<INT>(p, size);
+    }
+
+    //!
+    //! Template function serializing a variable-length integer data in big endian representation.
+    //!
+    //! @tparam INT Some integer type.
+    //! @param [out] p An address where to serialize the integer.
+    //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
+    //! @param [in] i The INT in native byte order to serialize in big endian representation.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    TSDUCKDLL inline void PutIntVarBE(void* p, size_t size, INT i);
+
+    //!
+    //! Template function serializing a variable-length integer data in little endian representation.
+    //!
+    //! @tparam INT Some integer type.
+    //! @param [out] p An address where to serialize the integer.
+    //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
+    //! @param [in] i The INT in native byte order to serialize in little endian representation.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    TSDUCKDLL inline void PutIntVarLE(void* p, size_t size, INT i);
+
+    //!
+    //! Template function getting a variable-length integer from serialized data in big endian representation.
+    //!
+    //! @tparam INT Some integer type.
+    //! @param [in] p An address pointing to an INT in big endian representation.
+    //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
+    //! @return The INT value in native byte order, deserialized from @a p.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    TSDUCKDLL inline INT GetIntVar(const void* p, size_t size)
+    {
+        return GetIntVarBE<INT>(p, size);
+    }
+
+    //!
+    //! Template function getting a variable-length integer from serialized data in big endian representation.
+    //!
+    //! @tparam INT Some integer type.
+    //! @param [in] p An address pointing to an INT in big endian representation.
+    //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
+    //! @param [out] i The INT value in native byte order, deserialized from @a p.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    TSDUCKDLL inline void GetIntVar(const void* p, size_t size, INT& i)
+    {
+        GetIntVarBE<INT>(p, size, i);
+    }
+
+    //!
+    //! Template function serializing a variable-length integer data in big endian representation.
+    //!
+    //! @tparam INT Some integer type.
+    //! @param [out] p An address where to serialize the integer.
+    //! @param [in] size Size in bytes of the integer. Must be 1 to 8.
+    //! @param [in] i The INT in native byte order to serialize in big endian representation.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    TSDUCKDLL inline void PutIntVar(void* p, size_t size, INT i)
+    {
+        PutIntVarBE<INT>(p, size, i);
+    }
 }
 
 #include "tsMemoryTemplate.h"

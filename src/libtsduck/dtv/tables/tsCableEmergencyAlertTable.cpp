@@ -170,107 +170,59 @@ void ts::CableEmergencyAlertTable::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CableEmergencyAlertTable::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::CableEmergencyAlertTable::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    clear();
-
-    // An EAS table may have only one section
-    if (table.sectionCount() != 1) {
-        return;
-    }
-
-    // Reference to single section
-    const Section& sect(*table.sectionAt(0));
-    const uint8_t* data = sect.payload();
-    size_t remain = sect.payloadSize();
-
-    // Fixed part.
-    if (remain < 7) {
-        return;
-    }
-    version = sect.version();
-    protocol_version = data[0];
-    EAS_event_ID = GetUInt16(data + 1);
-    EAS_originator_code.assignFromUTF8(reinterpret_cast<const char*>(data + 3), 3);
-    const size_t event_len = data[6];
-    data += 7; remain -= 7;
-
-    // Event code.
-    if (remain < event_len + 1) {
-        return;
-    }
-    EAS_event_code.assignFromUTF8(reinterpret_cast<const char*>(data), event_len);
-    data += event_len; remain -= event_len;
-
-    // Activation text
-    if (!nature_of_activation_text.lengthDeserialize(duck, data, remain)) {
-        return;
-    }
-
-    // A large portion of fixed fields
-    if (remain < 19) {
-        return;
-    }
-    alert_message_time_remaining = data[0];
-    const uint32_t start = GetUInt32(data + 1);
+    protocol_version = buf.getUInt8();
+    EAS_event_ID = buf.getUInt16();
+    buf.getUTF8(EAS_originator_code, 3);
+    buf.getUTF8WithLength(EAS_event_code);
+    buf.getMultipleStringWithLength(nature_of_activation_text);
+    alert_message_time_remaining = buf.getUInt8();
+    const uint32_t start = buf.getUInt32();
     event_start_time = start == 0 ? Time::Epoch : Time::GPSSecondsToUTC(start);
-    event_duration = GetUInt16(data + 5);
-    alert_priority = data[8] & 0x0F;
-    details_OOB_source_ID = GetUInt16(data + 9);
-    details_major_channel_number = GetUInt16(data + 11) & 0x03FF;
-    details_minor_channel_number = GetUInt16(data + 13) & 0x03FF;
-    audio_OOB_source_ID = GetUInt16(data + 15);
-    const size_t alert_len = GetUInt16(data + 17);
-    data += 19; remain -= 19;
-
-    // Alert text.
-    if (!alert_text.deserialize(duck, data, remain, alert_len, true)) {
-        return;
-    }
+    event_duration = buf.getUInt16();
+    buf.skipBits(12);
+    alert_priority = buf.getBits<uint8_t>(4);
+    details_OOB_source_ID = buf.getUInt16();
+    buf.skipBits(6);
+    details_major_channel_number = buf.getBits<uint16_t>(10);
+    buf.skipBits(6);
+    details_minor_channel_number = buf.getBits<uint16_t>(10);
+    audio_OOB_source_ID = buf.getUInt16();
+    buf.getMultipleStringWithLength(alert_text, 2); // unusual 2-byte length field
 
     // List of locations.
-    if (remain < 1 || remain < 1 + 3 * size_t(*data)) {
-        return;
-    }
-    size_t count = *data++;
-    remain--;
-
-    while (count-- > 0) {
-        locations.push_back(Location(data[0], data[1] >> 4, GetUInt16(data + 1) & 0x03FF));
-        data += 3; remain -= 3;
+    size_t count = buf.getUInt8();
+    while (!buf.readError() && count-- > 0) {
+        Location loc;
+        loc.state_code = buf.getUInt8();
+        loc.county_subdivision = buf.getBits<uint8_t>(4);
+        buf.skipBits(2);
+        loc.county_code = buf.getBits<uint16_t>(10);
+        locations.push_back(loc);
     }
 
     // List of exceptions.
-    if (remain < 1 || remain < 1 + 5 * size_t(*data)) {
-        return;
-    }
-    count = *data++;
-    remain--;
-
-    while (count-- > 0) {
-        if ((data[0] & 0x80) != 0) {
-            // In-band reference
-            exceptions.push_back(Exception(GetUInt16(data + 1) & 0x03FF, GetUInt16(data + 3) & 0x03FF));
+    count = buf.getUInt8();
+    while (!buf.readError() && count-- > 0) {
+        Exception exc;
+        exc.in_band = buf.getBit() != 0;
+        buf.skipBits(7);
+        if (exc.in_band) {
+            buf.skipBits(6);
+            exc.major_channel_number = buf.getBits<uint16_t>(10);
+            buf.skipBits(6);
+            exc.minor_channel_number = buf.getBits<uint16_t>(10);
         }
         else {
-            exceptions.push_back(Exception(GetUInt16(data + 3)));
+            buf.skipBits(16);
+            exc.OOB_source_ID = buf.getUInt16();
         }
-        data += 5; remain -= 5;
+        exceptions.push_back(exc);
     }
 
-    // Descriptor list.
-    if (remain < 2) {
-        return;
-    }
-    const size_t desc_len = GetUInt16(data) & 0x03FF;
-    data += 2; remain -= 2;
-    if (desc_len > remain) {
-        return;
-    }
-    descs.add(data, desc_len);
-
-    _is_valid = true;
+    // Descriptor list (with 10-bit length field).
+    buf.getDescriptorListWithLength(descs, 10);
 }
 
 
@@ -278,102 +230,62 @@ void ts::CableEmergencyAlertTable::deserializeContent(DuckContext& duck, const B
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CableEmergencyAlertTable::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::CableEmergencyAlertTable::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 {
-    // Build the section (only one is allowed in an EAS table).
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
+    // A cable_emergency_alert_table can have only one section.
 
-    // Fixed part of the section.
-    PutUInt8(data, protocol_version);
-    PutUInt16(data + 1, EAS_event_ID);
-
-    // Encode exactly 3 characters for EAS_originator_code.
-    for (size_t i = 0; i < 3; ++i) {
-        data[3 + i] = uint8_t(i < EAS_originator_code.size() ? EAS_originator_code[i] : SPACE);
-    }
-    data += 6; remain -= 6;
-
-    // Where to store the length of EAS_event_code.
-    size_t len = std::min<size_t>(EAS_event_code.size(), 255);
-    *data++ = uint8_t(len);
-    remain--;
-    for (size_t i = 0; i < len; ++i) {
-        *data++ = uint8_t(EAS_event_code[i]);
-        remain--;
-    }
-
-    nature_of_activation_text.lengthSerialize(duck, data, remain);
-
-    // A large portion of fixed fields
-    if (remain < 19) {
+    // Locations and exceptions cannot have more than 255 entries each (one-byte counter).
+    if (locations.size() > 255 || exceptions.size() > 255) {
+        payload.setUserError();
         return;
     }
-    PutUInt8(data, alert_message_time_remaining);
-    PutUInt32(data + 1, event_start_time == Time::Epoch ? 0 : uint32_t(event_start_time.toGPSSeconds()));
-    PutUInt16(data + 5, event_duration);
-    PutUInt16(data + 7, 0xFFF0 | alert_priority);
-    PutUInt16(data + 9, details_OOB_source_ID);
-    PutUInt16(data + 11, 0xFC00 | details_major_channel_number);
-    PutUInt16(data + 13, 0xFC00 | details_minor_channel_number);
-    PutUInt16(data + 15, audio_OOB_source_ID);
-    uint8_t* len_addr = data + 17; // place-holder for alert_text length;
-    data += 19; remain -= 19;
 
-    PutUInt16(len_addr, uint16_t(alert_text.serialize(duck, data, remain, NPOS, true)));
+    payload.putUInt8(protocol_version);
+    payload.putUInt16(EAS_event_ID);
+    payload.putFixedUTF8(EAS_originator_code, 3, ' ');
+    payload.putUTF8WithLength(EAS_event_code);
+    payload.putMultipleStringWithLength(nature_of_activation_text);
+    payload.putUInt8(alert_message_time_remaining);
+    payload.putUInt32(event_start_time == Time::Epoch ? 0 : uint32_t(event_start_time.toGPSSeconds()));
+    payload.putUInt16(event_duration);
+    payload.putBits(0xFFFF, 12);
+    payload.putBits(alert_priority, 4);
+    payload.putUInt16(details_OOB_source_ID);
+    payload.putBits(0xFF, 6);
+    payload.putBits(details_major_channel_number, 10);
+    payload.putBits(0xFF, 6);
+    payload.putBits(details_minor_channel_number, 10);
+    payload.putUInt16(audio_OOB_source_ID);
+    payload.putMultipleStringWithLength(alert_text, 2); // 2-byte length field
 
     // Serialize locations.
-    if (remain < 1) {
-        return;
-    }
-    len_addr = data; // address of location_code_count
-    *data++ = 0;
-    remain--;
-    for (auto it = locations.begin(); remain >= 3 && it != locations.end(); ++it) {
-        PutUInt8(data, it->state_code);
-        PutUInt16(data + 1, uint16_t((uint16_t(it->county_subdivision) << 12) | 0x0C00 | (it->county_code & 0x03FF)));
-        data += 3; remain -= 3;
-        (*len_addr)++; // increment number of serialized locations
+    payload.putUInt8(uint8_t(locations.size()));
+    for (auto it = locations.begin(); !payload.writeError() && it != locations.end(); ++it) {
+        payload.putUInt8(it->state_code);
+        payload.putBits(it->county_subdivision, 4);
+        payload.putBits(0xFF, 2);
+        payload.putBits(it->county_code, 10);
     }
 
     // Serialize exceptions.
-    if (remain < 1) {
-        return;
-    }
-    len_addr = data; // address of exception_count
-    *data++ = 0;
-    remain--;
-    for (auto it = exceptions.begin(); remain >= 5 && it != exceptions.end(); ++it) {
-        PutUInt8(data, it->in_band ? 0xFF : 0x7F);
+    payload.putUInt8(uint8_t(exceptions.size()));
+    for (auto it = exceptions.begin(); !payload.writeError() && it != exceptions.end(); ++it) {
+        payload.putBits(it->in_band, 1);
+        payload.putBits(0xFF, 7);
         if (it->in_band) {
-            PutUInt16(data + 1, 0xFC00 | it->major_channel_number);
-            PutUInt16(data + 3, 0xFC00 | it->minor_channel_number);
+            payload.putBits(0xFF, 6);
+            payload.putBits(it->major_channel_number, 10);
+            payload.putBits(0xFF, 6);
+            payload.putBits(it->minor_channel_number, 10);
         }
         else {
-            PutUInt16(data + 1, 0xFFFF);
-            PutUInt16(data + 3, it->OOB_source_ID);
+            payload.putUInt16(0xFFFF);
+            payload.putUInt16(it->OOB_source_ID);
         }
-        data += 5; remain -= 5;
-        (*len_addr)++; // increment number of serialized exceptions
     }
 
     // Insert descriptors (all or some, depending on the remaining space).
-    if (remain < 2) {
-        return;
-    }
-    descs.lengthSerialize(data, remain, 0, 0x003F, 10);
-
-    // Add one single section to the table.
-    table.addSection(new Section(_table_id,
-                                 false,   // is_private_section (should be true but SCTE 18 specifies it as zero).
-                                 0,       // tid_ext
-                                 version,
-                                 is_current,
-                                 0,       // section_number
-                                 0,       //last_section_number
-                                 payload,
-                                 data - payload)); // payload_size,
+    payload.putPartialDescriptorListWithLength(descs, 0, NPOS, 10); // 10-bit length field
 }
 
 
@@ -507,123 +419,75 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& display, const 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
-    bool ok = size >= 7;
+    if (buf.remainingReadBytes() < 7) {
+        buf.setUserError();
+    }
+    else {
+        strm << margin << UString::Format(u"Protocol version: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        strm << margin << UString::Format(u"EAS event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        strm << margin << "Originator code: \"" << buf.getUTF8(3) << "\"";
+        strm << ", event code: \"" << buf.getUTF8WithLength() << "\"" << std::endl;
+    }
 
-    if (ok) {
-        const uint8_t protocol_version = data[0];
-        const uint16_t event_id = GetUInt16(data + 1);
-        const UString orig_code(UString::FromUTF8(reinterpret_cast<const char*>(data + 3), 3));
-        size_t len = data[6];
-        data += 7; size -= 7;
-        if (len > size) {
-            len = size;
+    display.displayATSCMultipleString(buf, 1, indent, u"Nature of activation: ");
+
+    if (!buf.error() && buf.remainingReadBytes() >= 17) {
+        strm << margin << UString::Format(u"Remaining: %d seconds", {buf.getUInt8()});
+        const uint32_t start = buf.getUInt32();
+        strm << ", start time: " << (start == 0 ? u"immediate" : Time::GPSSecondsToUTC(start).format(Time::DATETIME));
+        strm << UString::Format(u", duration: %d minutes", {buf.getUInt16()}) << std::endl;
+        buf.skipBits(12);
+        strm << margin << UString::Format(u"Alert priority: %d", {buf.getBits<uint8_t>(4)}) << std::endl;
+        strm << margin << UString::Format(u"Details: OOB id: 0x%X (%<d)", {buf.getUInt16()});
+        buf.skipBits(6);
+        strm << ", major.minor: " << buf.getBits<uint16_t>(10);
+        buf.skipBits(6);
+        strm << "." << buf.getBits<uint16_t>(10) << std::endl;
+        strm << margin << UString::Format(u"Audio: OOB id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        display.displayATSCMultipleString(buf, 2, indent, u"Alert text: ");
+    }
+
+    // Display locations.
+    size_t count = buf.getUInt8();
+    if (!buf.error()) {
+        strm << margin << UString::Format(u"Number of locations: %d", {count}) << std::endl;
+    }
+    while (!buf.error() && buf.remainingReadBytes() >= 3 && count-- > 0) {
+        const uint8_t state = buf.getUInt8();
+        const uint8_t subd = buf.getBits<uint8_t>(4);
+        buf.skipBits(2);
+        const uint16_t county = buf.getBits<uint16_t>(10);
+        strm << margin
+             << UString::Format(u"  State code: %d, county: %d, subdivision: %s", {state, county, NameFromSection(u"EASCountySubdivision", subd, names::VALUE)})
+             << std::endl;
+    }
+
+    // Display exceptions.
+    count = buf.getUInt8();
+    if (!buf.error()) {
+        strm << margin << UString::Format(u"Number of exceptions: %d", {count}) << std::endl;
+    }
+    while (!buf.error() && buf.remainingReadBytes() >= 5 && count-- > 0) {
+        const bool inband = buf.getBit() != 0;
+        buf.skipBits(7);
+        strm << margin << UString::Format(u"  In-band: %s", {inband});
+        if (inband) {
+            buf.skipBits(6);
+            const uint16_t major = buf.getBits<uint16_t>(10);
+            buf.skipBits(6);
+            const uint16_t minor = buf.getBits<uint16_t>(10);
+            strm << UString::Format(u", exception major.minor: %d.%d", {major, minor}) << std::endl;
         }
-        const UString event_code(UString::FromUTF8(reinterpret_cast<const char*>(data), len));
-        data += len; size -= len;
-
-        strm << margin << UString::Format(u"Protocol version: 0x%X (%d)", {protocol_version, protocol_version}) << std::endl
-             << margin << UString::Format(u"EAS event id: 0x%X (%d)", {event_id, event_id}) << std::endl
-             << margin << UString::Format(u"Originator code: \"%s\", event code: \"%s\"", {orig_code, event_code}) << std::endl;
-
-        if (size > 0) {
-            len = *data++;
-            size--;
-            ATSCMultipleString::Display(display, u"Nature of activation: ", indent, data, size, len);
-        }
-
-        ok = size >= 17;
-
-        if (ok) {
-            const uint8_t remaining = data[0];
-            const uint32_t start_value = GetUInt32(data + 1);
-            const Time start_time(Time::GPSSecondsToUTC(start_value));
-            const uint16_t duration = GetUInt16(data + 5);
-            const uint8_t priority = data[8] & 0x0F;
-            const uint16_t details_oob = GetUInt16(data + 9);
-            const uint16_t details_major = GetUInt16(data + 11) & 0x03FF;
-            const uint16_t details_minor = GetUInt16(data + 13) & 0x03FF;
-            const uint16_t audio_oob = GetUInt16(data + 15);
-            data += 17; size -= 17;
-
-            strm << margin
-                 << UString::Format(u"Remaining: %d seconds, start time: %s, duration: %d minutes", {remaining, start_value == 0 ? u"immediate" : start_time.format(Time::DATETIME), duration})
-                 << std::endl
-                 << margin
-                 << UString::Format(u"Alert priority: %d", {priority})
-                 << std::endl
-                 << margin
-                 << UString::Format(u"Details: OOB id: 0x%X (%d), major.minor: %d.%d", {details_oob, details_oob, details_major, details_minor})
-                 << std::endl
-                 << margin
-                 << UString::Format(u"Audio: OOB id: 0x%X (%d)", {audio_oob, audio_oob})
-                 << std::endl;
-
-            ok = size >= 2;
-        }
-
-        if (ok) {
-            len = GetUInt16(data);
-            data += 2; size -= 2;
-            ATSCMultipleString::Display(display, u"Alert text: ", indent, data, size, len);
-            ok = size >= 1;
-        }
-
-        if (ok) {
-            // Display locations.
-            len = *data++;
-            size--;
-            strm << margin << UString::Format(u"Number of locations: %d", {len}) << std::endl;
-            while (ok && len-- > 0) {
-                ok = size >= 3;
-                if (ok) {
-                    const uint8_t state = data[0];
-                    const uint8_t subd = data[1] >> 4;
-                    const uint16_t county = GetUInt16(data + 1) & 0x03FF;
-                    strm << margin
-                         << UString::Format(u"  State code: %d, county: %d, subdivision: %s", {state, county, NameFromSection(u"EASCountySubdivision", subd, names::VALUE)})
-                         << std::endl;
-
-                }
-                data += 3; size -= 3;
-            }
-            ok = ok && size >= 1;
-        }
-
-        if (ok) {
-            // Display exceptions.
-            len = *data++;
-            size--;
-            strm << margin << UString::Format(u"Number of exceptions: %d", {len}) << std::endl;
-            while (ok && len-- > 0) {
-                ok = size >= 5;
-                if (ok) {
-                    const bool inband = (data[0] & 0x80) != 0;
-                    strm << margin << UString::Format(u"  In-band: %s", {inband});
-                    if (inband) {
-                        strm << UString::Format(u", exception major.minor: %d.%d", {GetUInt16(data + 1) & 0x03FF, GetUInt16(data + 3) & 0x03FF}) << std::endl;
-                    }
-                    else {
-                        strm << UString::Format(u", exception OOB id: 0x%X (%d)", {GetUInt16(data + 3), GetUInt16(data + 3)}) << std::endl;
-                    }
-                }
-                data += 5; size -= 5;
-            }
-            ok = ok && size >= 2;
-        }
-
-        if (ok) {
-            len = GetUInt16(data) & 0x03FF;
-            data += 2; size -= 2;
-            if (len > size) {
-                len = size;
-            }
-            display.displayDescriptorList(section, data, len, indent);
-            data += len; size -= len;
+        else {
+            buf.skipBits(16);
+            strm << UString::Format(u", exception OOB id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    // Display descriptor list with 10-bit length field.
+    display.displayDescriptorListWithLength(section, buf, indent, UString(), UString(), 10);
+
+    display.displayExtraData(buf, indent);
 }

@@ -34,6 +34,7 @@
 #include "tsSection.h"
 #include "tsDescriptor.h"
 #include "tsDescriptorList.h"
+#include "tsATSCMultipleString.h"
 #include "tsNames.h"
 #include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
@@ -131,6 +132,8 @@ bool ts::TablesDisplay::loadArgs(DuckContext& duck, Args &args)
 
 std::ostream& ts::TablesDisplay::displayExtraData(PSIBuffer& buf, int indent)
 {
+    // Reset read error to restart at last read point.
+    buf.clearReadError();
     displayExtraData(buf.currentReadAddress(), buf.remainingReadBytes(), indent);
     buf.skipBytes(buf.remainingReadBytes());
     return _duck.out();
@@ -658,6 +661,42 @@ std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* p
     else {
         displayUnkownDescriptor(did, payload, size, indent, tid, _duck.actualPDS(pds));
     }
+
+    return strm;
+}
+
+
+//----------------------------------------------------------------------------
+// Display an ATSC multiple_string_structure() from a PSI buffer.
+//----------------------------------------------------------------------------
+
+std::ostream& ts::TablesDisplay::displayATSCMultipleString(PSIBuffer& buf, size_t length_bytes, int indent, const UString& title)
+{
+    std::ostream& strm(_duck.out());
+
+    if (buf.error() || !buf.readIsByteAligned() || length_bytes > 8) {
+        buf.setUserError();
+        return strm;
+    }
+
+    // Get maximum size of structure.
+    size_t mss_size = NPOS;
+    if (length_bytes > 0) {
+        mss_size = buf.getBits<size_t>(8 * length_bytes);
+        if (buf.error()) {
+            return strm;
+        }
+    }
+
+    // These pointers will be updated by Display().
+    const uint8_t* data = buf.currentReadAddress();
+    const size_t initial_size = buf.remainingReadBytes();
+    size_t size = initial_size;
+    ATSCMultipleString::Display(*this, title, indent, data, size, mss_size);
+
+    // Adjust read pointer after the structure.
+    assert(size <= initial_size);
+    buf.skipBytes(initial_size - size);
 
     return strm;
 }
