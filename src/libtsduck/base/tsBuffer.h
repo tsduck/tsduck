@@ -608,6 +608,12 @@ namespace ts {
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         bool putBits(INT value, size_t bits);
 
+        //! @cond nodoxygen
+        // Template specialization for boolean.
+        template <>
+        inline bool putBits<bool>(bool value, size_t bits) { return putBits<int>(value ? 1 : 0, bits); }
+        //! @endcond
+
         //!
         //! Get bulk bytes from the buffer.
         //! The bit aligment is ignored, reading starts at the current read byte pointer,
