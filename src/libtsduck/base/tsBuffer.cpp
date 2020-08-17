@@ -1173,7 +1173,7 @@ size_t ts::Buffer::putUTF8Internal(const UString& str, size_t start, size_t coun
 
     if (_read_only || _write_error || _state.wbit != 0) {
         _write_error = true;
-        return false;
+        return 0; // 0 byte with partial, 0 as false otherwise
     }
 
     // Serialize as many characters as possible.
@@ -1222,7 +1222,7 @@ size_t ts::Buffer::putUTF8WithLengthInternal(const UString& str, size_t start, s
     // The write pointer must be byte-aligned after writing the length field.
     if (_read_only || _write_error || length_bits == 0 || length_bits > 8 * sizeof(size_t) || (_state.wbit + length_bits) % 8 != 0) {
         _write_error = true;
-        return false;
+        return 0; // 0 byte with partial, 0 as false otherwise
     }
 
     // Cannot write more bytes than representable in the length field.
