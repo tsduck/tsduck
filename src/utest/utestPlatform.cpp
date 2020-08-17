@@ -117,6 +117,10 @@ public:
     void testPutInt32LE();
     void testPutInt64BE();
     void testPutInt64LE();
+    void testGetIntVarBE();
+    void testGetIntVarLE();
+    void testPutIntVarBE();
+    void testPutIntVarLE();
 
     TSUNIT_TEST_BEGIN(PlatformTest);
     TSUNIT_TEST(testIntegerTypes);
@@ -187,6 +191,10 @@ public:
     TSUNIT_TEST(testPutInt32LE);
     TSUNIT_TEST(testPutInt64BE);
     TSUNIT_TEST(testPutInt64LE);
+    TSUNIT_TEST(testGetIntVarBE);
+    TSUNIT_TEST(testGetIntVarLE);
+    TSUNIT_TEST(testPutIntVarBE);
+    TSUNIT_TEST(testPutIntVarLE);
     TSUNIT_TEST_END();
 };
 
@@ -808,4 +816,62 @@ void PlatformTest::testPutInt64LE()
     uint8_t out[16];
     ts::PutInt64LE(out, TS_CONST64(-3183251291827679796)); // 0xD3D2D1D0CFCECDCC
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0xCC, 8));
+}
+
+void PlatformTest::testGetIntVarBE()
+{
+    TSUNIT_EQUAL(0x07, ts::GetIntVarBE<uint8_t>(_bytes + 0x07, 1));
+    TSUNIT_EQUAL(0x2324, ts::GetIntVarBE<uint16_t>(_bytes + 0x23, 2));
+    TSUNIT_EQUAL(0x101112, ts::GetIntVarBE<uint32_t>(_bytes + 0x10, 3));
+    TSUNIT_EQUAL(0xCECFD0, ts::GetIntVarBE<uint32_t>(_bytes + 0xCE, 3));
+    TSUNIT_EQUAL(0x4748494A, ts::GetIntVarBE<uint32_t>(_bytes + 0x47, 4));
+    TSUNIT_EQUAL(TS_UCONST64(0x000000898A8B8C8D), ts::GetIntVarBE<uint64_t>(_bytes + 0x89, 5));
+    TSUNIT_EQUAL(TS_UCONST64(0x0000898A8B8C8D8E), ts::GetIntVarBE<uint64_t>(_bytes + 0x89, 6));
+    TSUNIT_EQUAL(TS_UCONST64(0x898A8B8C8D8E8F90), ts::GetIntVarBE<uint64_t>(_bytes + 0x89, 8));
+}
+
+void PlatformTest::testGetIntVarLE()
+{
+    TSUNIT_EQUAL(0x07, ts::GetIntVarLE<uint8_t>(_bytes + 0x07, 1));
+    TSUNIT_EQUAL(0x2423, ts::GetIntVarLE<uint16_t>(_bytes + 0x23, 2));
+    TSUNIT_EQUAL(0x121110, ts::GetIntVarLE<uint32_t>(_bytes + 0x10, 3));
+    TSUNIT_EQUAL(0xD0CFCE, ts::GetIntVarLE<uint32_t>(_bytes + 0xCE, 3));
+    TSUNIT_EQUAL(0x4A494847, ts::GetIntVarLE<uint32_t>(_bytes + 0x47, 4));
+    TSUNIT_EQUAL(TS_UCONST64(0x0000008D8C8B8A89), ts::GetIntVarLE<uint64_t>(_bytes + 0x89, 5));
+    TSUNIT_EQUAL(TS_UCONST64(0x00008E8D8C8B8A89), ts::GetIntVarLE<uint64_t>(_bytes + 0x89, 6));
+    TSUNIT_EQUAL(TS_UCONST64(0x908F8E8D8C8B8A89), ts::GetIntVarLE<uint64_t>(_bytes + 0x89, 8));
+}
+
+void PlatformTest::testPutIntVarBE()
+{
+    uint8_t out[16];
+    ts::PutIntVarBE(out, 1, 0x78);
+    TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x78, 1));
+    ts::PutIntVarBE(out, 2, 0x898A);
+    TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 2));
+    ts::PutIntVarBE(out, 3, 0x898A8B);
+    TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 3));
+    ts::PutIntVarBE(out, 4, 0x56575859);
+    TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x56, 4));
+    ts::PutIntVarBE(out, 6, TS_UCONST64(0x0000898A8B8C8D8E));
+    TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 6));
+    ts::PutIntVarBE(out, 8, TS_UCONST64(0x898A8B8C8D8E8F90));
+    TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 8));
+}
+
+void PlatformTest::testPutIntVarLE()
+{
+    uint8_t out[16];
+    ts::PutIntVarLE(out, 1, 0x78);
+    TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x78, 1));
+    ts::PutIntVarLE(out, 2, 0x8A89);
+    TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 2));
+    ts::PutIntVarLE(out, 3, 0x8B8A89);
+    TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 3));
+    ts::PutIntVarLE(out, 4, 0x59585756);
+    TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x56, 4));
+    ts::PutIntVarLE(out, 6, TS_UCONST64(0x00008E8D8C8B8A89));
+    TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 6));
+    ts::PutIntVarLE(out, 8, TS_UCONST64(0x908F8E8D8C8B8A89));
+    TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 8));
 }

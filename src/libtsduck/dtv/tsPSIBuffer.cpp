@@ -32,6 +32,7 @@
 #include "tsDescriptorList.h"
 #include "tsSection.h"
 #include "tsMJD.h"
+#include "tsATSCMultipleString.h"
 TSDUCK_SOURCE;
 
 
@@ -478,4 +479,123 @@ size_t ts::PSIBuffer::getUnalignedLength(size_t length_bits)
         setReadError();
     }
     return actual_length;
+}
+
+
+//----------------------------------------------------------------------------
+// Get an ATSC multiple_string_structure.
+//----------------------------------------------------------------------------
+
+bool ts::PSIBuffer::getMultipleString(ATSCMultipleString& mss, size_t mss_size, bool ignore_empty)
+{
+    mss.clear();
+
+    // Must start on a byte boundary.
+    if (readError() || !readIsByteAligned()) {
+        setReadError();
+        return false;
+    }
+
+    // These pointers will be updated by mss.deserialize().
+    const uint8_t* data = currentReadAddress();
+    size_t size = remainingReadBytes();
+
+    // Make sure mss_size is actually used if lower than NPOS but larger than buffer size.
+    if (mss_size != NPOS && mss_size > size) {
+        mss_size = size;
+    }
+
+    // Deserialize the multiple string structure.
+    if (mss.deserialize(_duck, data, size, mss_size, ignore_empty)) {
+        assert(size <= remainingReadBytes());
+        skipBytes(remainingReadBytes() - size);
+        return true;
+    }
+    else {
+        setReadError();
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get an ATSC multiple_string_structure with a leading byte length.
+//----------------------------------------------------------------------------
+
+bool ts::PSIBuffer::getMultipleStringWithLength(ATSCMultipleString& mss, size_t length_bytes)
+{
+    mss.clear();
+
+    // Must start on a byte boundary.
+    if (readError() || !readIsByteAligned()) {
+        setReadError();
+        return false;
+    }
+
+    // These pointers will be updated by mss.deserialize().
+    const uint8_t* data = currentReadAddress();
+    size_t size = remainingReadBytes();
+
+    // Deserialize the multiple string structure.
+    if (mss.lengthDeserialize(_duck, data, size, length_bytes)) {
+        assert(size <= remainingReadBytes());
+        skipBytes(remainingReadBytes() - size);
+        return true;
+    }
+    else {
+        setReadError();
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Put an ATSC multiple_string_structure.
+//----------------------------------------------------------------------------
+
+bool ts::PSIBuffer::putMultipleString(const ATSCMultipleString& mss, size_t max_size, bool ignore_empty)
+{
+    // Must start on a byte boundary.
+    if (readOnly() || writeError() || !writeIsByteAligned()) {
+        setReadError();
+        return false;
+    }
+
+    // These pointers will be updated by mss.deserialize().
+    uint8_t* data = currentWriteAddress();
+    size_t size = remainingWriteBytes();
+
+    // Serialize the structure.
+    size_t count = mss.serialize(_duck, data, size, max_size, ignore_empty);
+
+    // Successfully serialized, move write pointer.
+    assert(count <= remainingWriteBytes());
+    writeSeek(currentWriteByteOffset() + count);
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Put an ATSC multiple_string_structure with a leading byte length.
+//----------------------------------------------------------------------------
+
+bool ts::PSIBuffer::putMultipleStringWithLength(const ATSCMultipleString& mss, size_t length_bytes)
+{
+    // Must start on a byte boundary.
+    if (readOnly() || writeError() || !writeIsByteAligned()) {
+        setReadError();
+        return false;
+    }
+
+    // These pointers will be updated by mss.deserialize().
+    uint8_t* data = currentWriteAddress();
+    size_t size = remainingWriteBytes();
+
+    // Serialize the structure.
+    mss.lengthSerialize(_duck, data, size, length_bytes);
+
+    // Successfully serialized, move write pointer.
+    assert(size <= remainingWriteBytes());
+    writeSeek(currentWriteByteOffset() + remainingWriteBytes() - size);
+    return true;
 }

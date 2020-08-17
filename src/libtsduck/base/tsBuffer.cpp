@@ -1165,7 +1165,7 @@ bool ts::Buffer::getUTF8WithLength(UString& result, size_t length_bits)
 // Put a string using UTF-8 format.
 //----------------------------------------------------------------------------
 
-size_t ts::Buffer::putUTF8Internal(const UString& str, size_t start, size_t count, bool partial)
+size_t ts::Buffer::putUTF8Internal(const UString& str, size_t start, size_t count, bool partial, size_t fixed_size, uint8_t pad)
 {
     // Normalize start and count within allowed bounds.
     start = std::min(start, str.size());
@@ -1176,13 +1176,18 @@ size_t ts::Buffer::putUTF8Internal(const UString& str, size_t start, size_t coun
         return 0; // 0 byte with partial, 0 as false otherwise
     }
 
+    if (fixed_size != NPOS && remainingWriteBytes() < fixed_size) {
+        _write_error = true;
+        return 0; // false
+    }
+
     // Serialize as many characters as possible.
     const UChar* const in_start = &str[start];
     const UChar* in = in_start;
     const UChar* const in_end = in + count;
     char* const cbuffer = reinterpret_cast<char*>(_buffer);
     char* out = cbuffer + _state.wbyte;
-    char* const out_end = cbuffer + _buffer_max;
+    char* const out_end = cbuffer + (fixed_size == NPOS ? _buffer_max : std::min(_buffer_max, _state.wbyte + fixed_size));
     UString::ConvertUTF16ToUTF8(in, in_end, out, out_end);
 
     assert(in >= in_start);
@@ -1194,6 +1199,12 @@ size_t ts::Buffer::putUTF8Internal(const UString& str, size_t start, size_t coun
         // Always accept the conversion, return the number of written characters.
         _state.wbyte = out - cbuffer;
         return in - in_start;
+    }
+    else if (fixed_size != NPOS) {
+        // Fixed-size serialization, pad if necessary and return "true".
+        ::memset(out, pad, out_end - out);
+        _state.wbyte = out_end - cbuffer;
+        return 1;
     }
     else if (in == in_end) {
         // Full conversion completed, return "true".

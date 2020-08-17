@@ -394,25 +394,47 @@ size_t ts::ATSCMultipleString::serialize(DuckContext& duck, ByteBlock& data, siz
 // Serialize a binary multiple_string_structure with a leading byte length.
 //----------------------------------------------------------------------------
 
-void ts::ATSCMultipleString::lengthSerialize(ts::DuckContext& duck, uint8_t*& data, size_t& size) const
+size_t ts::ATSCMultipleString::lengthSerialize(ts::DuckContext& duck, uint8_t*& data, size_t& size, size_t length_bytes) const
 {
-    if (data != nullptr && size > 0) {
-        // Placeholder for byte length.
-        uint8_t* len_addr = data++;
-        size--;
-        // Serialize the string.
-        *len_addr = uint8_t(serialize(duck, data, size, 255, true));
+    if (data == nullptr || size < length_bytes || length_bytes == 0 || length_bytes == 7 || length_bytes > 8) {
+        // Invalid parameter.
+        return 0;
     }
+
+    const size_t max_size = length_bytes >= sizeof(size_t) ? std::numeric_limits<size_t>::max() : (size_t(1) << (length_bytes * 8)) - 1;
+    uint8_t* const len_addr = data;
+
+    // Skip length field.
+    data += length_bytes;
+    size -= length_bytes;
+
+    // Serialize the string.
+    const size_t length = serialize(duck, data, size, max_size, true);
+
+    // Update length field.
+    PutIntVar(len_addr, length_bytes, length);
+    return length_bytes + length;
 }
 
-void ts::ATSCMultipleString::lengthSerialize(ts::DuckContext& duck, ts::ByteBlock& data) const
+size_t ts::ATSCMultipleString::lengthSerialize(ts::DuckContext& duck, ts::ByteBlock& data, size_t length_bytes) const
 {
-    // Placeholder for byte length.
+    if (length_bytes == 0 || length_bytes == 7 || length_bytes > 8) {
+        // Invalid parameter.
+        return 0;
+    }
+
+    const size_t max_size = length_bytes >= sizeof(size_t) ? std::numeric_limits<size_t>::max() : (size_t(1) << (length_bytes * 8)) - 1;
     const size_t len_index = data.size();
-    data.appendUInt8(0);
+
+    // Placeholder for byte length.
+    data.enlarge(length_bytes);
+
     // Serialize the string.
-    const size_t len = serialize(duck, data, 255, true);
-    data[len_index] = uint8_t(len);
+    const size_t length = serialize(duck, data, max_size, true);
+
+    // Update length field.
+    PutIntVar(data.data() + len_index, length_bytes, length);
+    return length_bytes + length;
 }
 
 
@@ -420,16 +442,17 @@ void ts::ATSCMultipleString::lengthSerialize(ts::DuckContext& duck, ts::ByteBloc
 // Deserialize a binary multiple_string_structure with a leading byte length.
 //----------------------------------------------------------------------------
 
-bool ts::ATSCMultipleString::lengthDeserialize(DuckContext& duck, const uint8_t*& buffer, size_t& buffer_size)
+bool ts::ATSCMultipleString::lengthDeserialize(DuckContext& duck, const uint8_t*& buffer, size_t& buffer_size, size_t length_bytes)
 {
-    if (buffer == nullptr || buffer_size == 0) {
-        clear();
-        return false; // no valid string
+    if (buffer == nullptr || buffer_size < length_bytes || length_bytes == 0 || length_bytes == 7 || length_bytes > 8) {
+        // Invalid parameter.
+        return false;
     }
     else {
-        const size_t len = *buffer++;
-        buffer_size--;
-        return deserialize(duck, buffer, buffer_size, len, true);
+        const size_t length = GetIntVar<size_t>(buffer, length_bytes);
+        buffer += length_bytes;
+        buffer_size -= length_bytes;
+        return deserialize(duck, buffer, buffer_size, length, true);
     }
 }
 

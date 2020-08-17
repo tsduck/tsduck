@@ -924,7 +924,23 @@ namespace ts {
         //!
         bool putUTF8(const UString& str, size_t start = 0, size_t count = NPOS)
         {
-            return putUTF8Internal(str, start, count, false) != 0;
+            return putUTF8Internal(str, start, count, false, NPOS, 0) != 0;
+        }
+
+        //!
+        //! Put a string using UTF-8 format with a fixed binary size (truncate or pad).
+        //! The write-pointer must be byte-aligned.
+        //! Generate a write error when the buffer is full before writing the complete string.
+        //! @param [in] str The UTF-16 string to encode.
+        //! @param [in] size Fixed size in bytes to fill. If @a str cannot be fully serialized, it is truncated.
+        //! @param [in] pad It @a str does not fill @a size bytes, pad the remaining bytes with this value.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putFixedUTF8(const UString& str, size_t size, uint8_t pad = 0, size_t start = 0, size_t count = NPOS)
+        {
+            return putUTF8Internal(str, start, count, false, size, pad) != 0;
         }
 
         //!
@@ -939,7 +955,7 @@ namespace ts {
         //!
         size_t putPartialUTF8(const UString& str, size_t start = 0, size_t count = NPOS)
         {
-            return putUTF8Internal(str, start, count, true);
+            return putUTF8Internal(str, start, count, true, NPOS, 0);
         }
 
         //!
@@ -1014,7 +1030,7 @@ namespace ts {
         void setBits(size_t byte, size_t start_bit, size_t end_bit, uint8_t value);
 
         // Common code for UTF-8 strings.
-        size_t putUTF8Internal(const UString& str, size_t start, size_t count, bool partial);
+        size_t putUTF8Internal(const UString& str, size_t start, size_t count, bool partial, size_t fixed_size, uint8_t pad);
         size_t putUTF8WithLengthInternal(const UString& str, size_t start, size_t count, size_t length_bits, bool partial);
 
         // Read/write state in the buffer.

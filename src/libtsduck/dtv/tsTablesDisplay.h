@@ -200,6 +200,16 @@ namespace ts {
         virtual std::ostream& displayDescriptorList(const DescriptorList& list, int indent = 0, uint16_t cas = CASID_NULL);
 
         //!
+        //! Display an ATSC multiple_string_structure() as defined in ATSC A/65 from a PSI buffer.
+        //! @param [in,out] buf Buffer containing the structure to read
+        //! @param [in] length_bytes Size in bytes of the leading length field (0 if there is none).
+        //! @param [in] indent Indentation width.
+        //! @param [in] title Optional title to display.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displayATSCMultipleString(PSIBuffer& buf, size_t length_bytes = 0, int indent = 0, const UString& title = UString());
+
+        //!
         //! A utility method to dump extraneous bytes after expected data.
         //! @param [in] data Address of extra data to dump.
         //! @param [in] size Size of extra data to dump.
