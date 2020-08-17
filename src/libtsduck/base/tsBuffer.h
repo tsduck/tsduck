@@ -875,8 +875,8 @@ namespace ts {
         //!
         //! Get a UTF-8 string.
         //! The read-pointer must be byte-aligned.
-        //! @param [out] str Returned decoded string.
-        //! @param [in] size Size in bytes of the encoded UTF-8 string. If specified as @a NPOS (the default), read up to
+        //! @param [out] result Returned decoded string.
+        //! @param [in] bytes Size in bytes of the encoded UTF-8 string. If specified as @a NPOS (the default), read up to
         //! the end of the buffer. If different from @a NPOS, the exact number of bytes must be available or a read
         //! error is generated.
         //! @return True on success, false on error.
@@ -886,7 +886,7 @@ namespace ts {
         //!
         //! Get a UTF-8 string.
         //! The read-pointer must be byte-aligned.
-        //! @param [in] size Size in bytes of the encoded UTF-8 string. If specified as @a NPOS (the default), read up to
+        //! @param [in] bytes Size in bytes of the encoded UTF-8 string. If specified as @a NPOS (the default), read up to
         //! the end of the buffer. If different from @a NPOS, the exact number of bytes must be available or a read
         //! error is generated.
         //! @return The decoded string.
@@ -898,7 +898,7 @@ namespace ts {
         //! Get a UTF-8 string (preceded by its length).
         //! The read-pointer must be byte-aligned after reading the length-field.
         //! The specified number of bytes must be available or a read error is generated.
-        //! @param [out] str Returned decoded string.
+        //! @param [out] result Returned decoded string.
         //! @param [in] length_bits Size in bits in the length field.
         //! @return True on success, false on error (truncated, unsupported format, etc.)
         //!
