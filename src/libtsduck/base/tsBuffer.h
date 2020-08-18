@@ -219,6 +219,18 @@ namespace ts {
         void setLittleEndian() { _big_endian = false; }
 
         //!
+        //! Specify that read/write operations of integers should use the native endian representation.
+        //! The endianness of the buffer is not changed by the various reset() operations.
+        //!
+        void setNativeEndian() { _big_endian = TS_BIG_ENDIAN_BOOL; }
+
+        //!
+        //! Switch the endianness of read/write operations of integers.
+        //! The endianness of the buffer is not changed by the various reset() operations.
+        //!
+        void switchEndian() { _big_endian = !_big_endian; }
+
+        //!
         //! Check if read/write operations of integers use big endian representation.
         //! @return True if big endian is used, false if little endian.
         //!
@@ -229,6 +241,12 @@ namespace ts {
         //! @return True if little endian is used, false if big endian.
         //!
         bool isLittleEndian() const { return !_big_endian; }
+
+        //!
+        //! Check if read/write operations of integers use the native endian representation.
+        //! @return True if the native endian is used, false otherwise.
+        //!
+        bool isNativeEndian() const { return _big_endian == TS_BIG_ENDIAN_BOOL; }
 
         //!
         //! Reset the buffer, remove link to any external memory, reallocate an internal buffer if necessary.
@@ -881,7 +899,10 @@ namespace ts {
         //! error is generated.
         //! @return True on success, false on error.
         //!
-        bool getUTF8(UString& result, size_t bytes = NPOS);
+        bool getUTF8(UString& result, size_t bytes = NPOS)
+        {
+            return getUTFInternal(result, bytes, true); // true = UTF-8
+        }
 
         //!
         //! Get a UTF-8 string.
@@ -891,8 +912,10 @@ namespace ts {
         //! error is generated.
         //! @return The decoded string.
         //!
-
-        UString getUTF8(size_t bytes = NPOS);
+        UString getUTF8(size_t bytes = NPOS)
+        {
+            return outStringToResult(bytes, &Buffer::getUTF8);
+        }
 
         //!
         //! Get a UTF-8 string (preceded by its length).
@@ -902,7 +925,10 @@ namespace ts {
         //! @param [in] length_bits Size in bits in the length field.
         //! @return True on success, false on error (truncated, unsupported format, etc.)
         //!
-        bool getUTF8WithLength(UString& result, size_t length_bits = 8);
+        bool getUTF8WithLength(UString& result, size_t length_bits = 8)
+        {
+            return getUTFWithLengthInternal(result, length_bits, true); // true = UTF-8
+        }
 
         //!
         //! Get a UTF-8 string (preceded by its length).
@@ -911,7 +937,64 @@ namespace ts {
         //! @param [in] length_bits Size in bits in the length field.
         //! @return The decoded string.
         //!
-        UString getUTF8WithLength(size_t length_bits = 8);
+        UString getUTF8WithLength(size_t length_bits = 8)
+        {
+            return outStringToResult(length_bits, &Buffer::getUTF8WithLength);
+        }
+
+        //!
+        //! Get a UTF-16 string.
+        //! The read-pointer must be byte-aligned.
+        //! @param [out] result Returned decoded string.
+        //! @param [in] bytes Size in bytes of the encoded UTF-16 string. If specified as @a NPOS (the default), read up to
+        //! the end of the buffer. If different from @a NPOS, the exact number of bytes must be available or a read
+        //! error is generated. If @a bytes is an odd value, the last byte is skipped and ignored.
+        //! @return True on success, false on error.
+        //!
+        bool getUTF16(UString& result, size_t bytes = NPOS)
+        {
+            return getUTFInternal(result, bytes, false); // false = UTF-16
+        }
+
+        //!
+        //! Get a UTF-16 string.
+        //! The read-pointer must be byte-aligned.
+        //! @param [in] bytes Size in bytes of the encoded UTF-16 string. If specified as @a NPOS (the default), read up to
+        //! the end of the buffer. If different from @a NPOS, the exact number of bytes must be available or a read
+        //! error is generated. If @a bytes is an odd value, the last byte is skipped and ignored.
+        //! @return The decoded string.
+        //!
+        UString getUTF16(size_t bytes = NPOS)
+        {
+            return outStringToResult(bytes, &Buffer::getUTF16);
+        }
+
+        //!
+        //! Get a UTF-16 string (preceded by its length).
+        //! The read-pointer must be byte-aligned after reading the length-field.
+        //! The specified number of bytes must be available or a read error is generated.
+        //! If the extracted length is an odd value, the last byte is skipped and ignored.
+        //! @param [out] result Returned decoded string.
+        //! @param [in] length_bits Size in bits in the length field.
+        //! @return True on success, false on error (truncated, unsupported format, etc.)
+        //!
+        bool getUTF16WithLength(UString& result, size_t length_bits = 8)
+        {
+            return getUTFWithLengthInternal(result, length_bits, false); // false = UTF-16
+        }
+
+        //!
+        //! Get a UTF-16 string (preceded by its length).
+        //! The read-pointer must be byte-aligned after reading the length-field.
+        //! The specified number of bytes must be available or a read error is generated.
+        //! If the extracted length is an odd value, the last byte is skipped and ignored.
+        //! @param [in] length_bits Size in bits in the length field.
+        //! @return The decoded string.
+        //!
+        UString getUTF16WithLength(size_t length_bits = 8)
+        {
+            return outStringToResult(length_bits, &Buffer::getUTF16WithLength);
+        }
 
         //!
         //! Put a string using UTF-8 format.
@@ -924,7 +1007,7 @@ namespace ts {
         //!
         bool putUTF8(const UString& str, size_t start = 0, size_t count = NPOS)
         {
-            return putUTF8Internal(str, start, count, false, NPOS, 0) != 0;
+            return putUTFInternal(str, start, count, false, NPOS, 0, true) != 0; // true = UTF-8
         }
 
         //!
@@ -940,7 +1023,7 @@ namespace ts {
         //!
         bool putFixedUTF8(const UString& str, size_t size, uint8_t pad = 0, size_t start = 0, size_t count = NPOS)
         {
-            return putUTF8Internal(str, start, count, false, size, pad) != 0;
+            return putUTFInternal(str, start, count, false, size, pad, true) != 0; // true = UTF-8
         }
 
         //!
@@ -955,7 +1038,7 @@ namespace ts {
         //!
         size_t putPartialUTF8(const UString& str, size_t start = 0, size_t count = NPOS)
         {
-            return putUTF8Internal(str, start, count, true, NPOS, 0);
+            return putUTFInternal(str, start, count, true, NPOS, 0, true); // true = UTF-8
         }
 
         //!
@@ -987,6 +1070,54 @@ namespace ts {
         {
             return putUTF8WithLengthInternal(str, start, count, length_bits, true);
         }
+
+        //!
+        //! Put a string using UTF-16 format.
+        //! The write-pointer must be byte-aligned.
+        //! Generate a write error when the buffer is full before writing the complete string.
+        //! @param [in] str The UTF-16 string to encode.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putUTF16(const UString& str, size_t start = 0, size_t count = NPOS)
+        {
+            return putUTFInternal(str, start, count, false, NPOS, 0, false) != 0; // false = UTF-16
+        }
+
+        //!
+        //! Put a string using UTF-16 format with a fixed binary size (truncate or pad).
+        //! The write-pointer must be byte-aligned.
+        //! Generate a write error when the buffer is full before writing the complete string.
+        //! @param [in] str The UTF-16 string to encode.
+        //! @param [in] size Fixed size in bytes to fill. If @a str cannot be fully serialized, it is truncated.
+        //! @param [in] pad It @a str does not fill @a size bytes, serialize the remaining UTF-16 characters with this value.
+        //! If @a size has an odd value, the last byte is padded with the least significant byte of @a pad.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putFixedUTF16(const UString& str, size_t size, uint16_t pad = 0, size_t start = 0, size_t count = NPOS)
+        {
+            return putUTFInternal(str, start, count, false, size, pad, false) != 0; // false = UTF-16
+        }
+
+        //!
+        //! Put a partial string using UTF-8 format.
+        //! The write-pointer must be byte-aligned.
+        //! Stop either when this string is serialized or when the buffer is full, whichever comes first.
+        //! Do not generate a write error when the buffer is full.
+        //! @param [in] str The UTF-16 string to encode.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
+        //!
+        size_t putPartialUTF16(const UString& str, size_t start = 0, size_t count = NPOS)
+        {
+            return putUTFInternal(str, start, count, true, NPOS, 0, false); // false = UTF-16
+        }
+
+        //@@@@@@ TODO: putUTF8WithLength and putPartialUTF8WithLength
 
     protected:
         //!
@@ -1029,8 +1160,11 @@ namespace ts {
         // Set range of bits [start_bit..end_bit[ in a byte.
         void setBits(size_t byte, size_t start_bit, size_t end_bit, uint8_t value);
 
-        // Common code for UTF-8 strings.
-        size_t putUTF8Internal(const UString& str, size_t start, size_t count, bool partial, size_t fixed_size, uint8_t pad);
+        // Common code for UTF strings.
+        UString outStringToResult(size_t param, bool (Buffer::*method)(UString&, size_t));
+        bool getUTFInternal(UString& result, size_t bytes, bool utf8);
+        bool getUTFWithLengthInternal(UString& result, size_t length_bits, bool utf8);
+        size_t putUTFInternal(const UString& str, size_t start, size_t count, bool partial, size_t fixed_size, int pad, bool utf8);
         size_t putUTF8WithLengthInternal(const UString& str, size_t start, size_t count, size_t length_bits, bool partial);
 
         // Read/write state in the buffer.

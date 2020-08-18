@@ -1100,45 +1100,65 @@ bool ts::Buffer::putBCD(int i)
 
 
 //----------------------------------------------------------------------------
-// Get a UTF-8 string.
+// Transform an output string parameter into a returned value.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Buffer::getUTF8(size_t bytes)
+ts::UString ts::Buffer::outStringToResult(size_t param, bool (Buffer::*method)(UString&, size_t))
 {
-    UString str;
-    getUTF8(str, bytes);
-    return str;
+    UString result;
+    (this->*method)(result, param);
+    return result;
 }
 
-bool ts::Buffer::getUTF8(UString& result, size_t bytes)
+
+//----------------------------------------------------------------------------
+// Get a UTF-8 or UTF-16 string.
+//----------------------------------------------------------------------------
+
+bool ts::Buffer::getUTFInternal(UString& result, size_t bytes, bool utf8)
 {
+    // If size is unspecified, use the rest of the buffer.
     if (bytes == NPOS) {
         bytes = remainingReadBytes();
     }
 
+    // Parameter validation.
     if (_read_error || _state.rbit != 0 || bytes > remainingReadBytes()) {
         _read_error = true;
         return false;
     }
 
-    result.assignFromUTF8(reinterpret_cast<const char*>(_buffer + _state.rbyte), bytes);
-    _state.rbyte += bytes;
+    // Decode UTF-8 or UTF-16 characters.
+    if (utf8) {
+        result.assignFromUTF8(reinterpret_cast<const char*>(_buffer + _state.rbyte), bytes);
+        _state.rbyte += bytes;
+    }
+    else if (isNativeEndian()) {
+        // Decode UTF-16 in native endian => direct mapping.
+        result.assign(reinterpret_cast<const UChar*>(_buffer + _state.rbyte), bytes / 2);
+        _state.rbyte += bytes;
+    }
+    else {
+        // Decode UTF-16 in opposite endian => decode characters one by one.
+        result.resize(bytes / 2);
+        for (size_t i = 0; i < result.size(); ++i) {
+            result[i] = UChar(getUInt16());
+        }
+        if (bytes % 2 != 0) {
+            // Odd number of bytes, last one is ignored.
+            skipBytes(1);
+        }
+    }
+
     return true;
 }
 
 
 //----------------------------------------------------------------------------
-// Get a UTF-8 string (preceded by its length).
+// Get a UTF-8 or UTF-16 string (preceded by its length).
 //----------------------------------------------------------------------------
 
-ts::UString ts::Buffer::getUTF8WithLength(size_t length_bits)
-{
-    UString str;
-    getUTF8WithLength(str, length_bits);
-    return str;
-}
-
-bool ts::Buffer::getUTF8WithLength(UString& result, size_t length_bits)
+bool ts::Buffer::getUTFWithLengthInternal(UString& result, size_t length_bits, bool utf8)
 {
     // The size of the length field must be representable as a size_t.
     if (_read_error || length_bits == 0 || length_bits > 8 * sizeof(size_t)) {
@@ -1155,17 +1175,16 @@ bool ts::Buffer::getUTF8WithLength(UString& result, size_t length_bits)
         return false;
     }
 
-    result.assignFromUTF8(reinterpret_cast<const char*>(_buffer + _state.rbyte), length);
-    _state.rbyte += length;
-    return true;
+    // Read the characters as a fixed string (length is already validated).
+    return getUTFInternal(result, length, utf8);
 }
 
 
 //----------------------------------------------------------------------------
-// Put a string using UTF-8 format.
+// Put a string using UTF format.
 //----------------------------------------------------------------------------
 
-size_t ts::Buffer::putUTF8Internal(const UString& str, size_t start, size_t count, bool partial, size_t fixed_size, uint8_t pad)
+size_t ts::Buffer::putUTFInternal(const UString& str, size_t start, size_t count, bool partial, size_t fixed_size, int pad, bool utf8)
 {
     // Normalize start and count within allowed bounds.
     start = std::min(start, str.size());
@@ -1178,8 +1197,11 @@ size_t ts::Buffer::putUTF8Internal(const UString& str, size_t start, size_t coun
 
     if (fixed_size != NPOS && remainingWriteBytes() < fixed_size) {
         _write_error = true;
-        return 0; // false
+        return 0; // as false
     }
+
+    // Save the position before attempting to serialize.
+    const RWState saved(_state);
 
     // Serialize as many characters as possible.
     const UChar* const in_start = &str[start];
@@ -1188,7 +1210,19 @@ size_t ts::Buffer::putUTF8Internal(const UString& str, size_t start, size_t coun
     char* const cbuffer = reinterpret_cast<char*>(_buffer);
     char* out = cbuffer + _state.wbyte;
     char* const out_end = cbuffer + (fixed_size == NPOS ? _buffer_max : std::min(_buffer_max, _state.wbyte + fixed_size));
-    UString::ConvertUTF16ToUTF8(in, in_end, out, out_end);
+
+    if (utf8) {
+        // Convert to UTF-8 and include the written data in the buffer.
+        UString::ConvertUTF16ToUTF8(in, in_end, out, out_end);
+        _state.wbyte = out - cbuffer;
+    }
+    else {
+        // Encode UTF-16 characters one by one.
+        while (in < in_end && out + 1 < out_end) {
+            putUInt16(uint16_t(*in++));
+            out += 2;
+        }
+    }
 
     assert(in >= in_start);
     assert(in <= in_end);
@@ -1197,22 +1231,35 @@ size_t ts::Buffer::putUTF8Internal(const UString& str, size_t start, size_t coun
 
     if (partial) {
         // Always accept the conversion, return the number of written characters.
-        _state.wbyte = out - cbuffer;
         return in - in_start;
     }
     else if (fixed_size != NPOS) {
         // Fixed-size serialization, pad if necessary and return "true".
-        ::memset(out, pad, out_end - out);
-        _state.wbyte = out_end - cbuffer;
+        if (utf8) {
+            // Pad with 8-bit values.
+            ::memset(out, pad, out_end - out);
+            _state.wbyte = out_end - cbuffer;
+        }
+        else {
+            // Pad with 16-bit values.
+            while (cbuffer + _state.wbyte + 1 < out_end) {
+                putUInt16(uint16_t(pad));
+            }
+            if (cbuffer + _state.wbyte < out_end) {
+                // Pad an even number of bytes, use LSB of pad value as last byte.
+                putUInt8(uint8_t(pad));
+            }
+            assert(cbuffer + _state.wbyte == out_end);
+        }
         return 1;
     }
     else if (in == in_end) {
         // Full conversion completed, return "true".
-        _state.wbyte = out - cbuffer;
         return 1;
     }
     else {
-        // Full conversion failed, return "false".
+        // Full conversion failed, restore state and return "false".
+        _state = saved;
         _write_error = true;
         return 0;
     }

@@ -279,6 +279,14 @@
     //!
     #define TS_BIG_ENDIAN
     //!
+    //! Defined to @c true when compiled for a little-endian or LSB-first target platform, @a false otherwise.
+    //!
+    #define TS_LITTLE_ENDIAN_BOOL true/false
+    //!
+    //! Defined to @c true when compiled for a big-endian or MSB-first target platform, @a false otherwise.
+    //!
+    #define TS_BIG_ENDIAN_BOOL true/false
+    //!
     //! Number of bits in an address (or a pointer or a size_t).
     //!
     #define TS_ADDRESS_BITS 16, 32, 64, etc.
@@ -440,7 +448,13 @@
     #endif
 #endif
 
-#if !defined(TS_LITTLE_ENDIAN) && !defined(TS_BIG_ENDIAN)
+#if defined(TS_LITTLE_ENDIAN)
+    #define TS_LITTLE_ENDIAN_BOOL true
+    #define TS_BIG_ENDIAN_BOOL false
+#elif defined(TS_BIG_ENDIAN)
+    #define TS_LITTLE_ENDIAN_BOOL false
+    #define TS_BIG_ENDIAN_BOOL true
+#else
     #error "unknow endian, please update this header file"
 #endif
 

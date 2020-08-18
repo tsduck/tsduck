@@ -86,6 +86,8 @@ public:
     void testGetBCD();
     void testGetUTF8();
     void testGetUTF8WithLength();
+    void testGetUTF16();
+    void testGetUTF16WithLength();
     void testPutUTF8();
     void testPutFixedUTF8();
     void testPutPartialUTF8();
@@ -133,11 +135,18 @@ public:
     TSUNIT_TEST(testGetBCD);
     TSUNIT_TEST(testGetUTF8);
     TSUNIT_TEST(testGetUTF8WithLength);
+    TSUNIT_TEST(testGetUTF16);
+    TSUNIT_TEST(testGetUTF16WithLength);
     TSUNIT_TEST(testPutUTF8);
     TSUNIT_TEST(testPutPartialUTF8);
     TSUNIT_TEST(testPutUTF8WithLength);
     TSUNIT_TEST(testPutPartialUTF8WithLength);
     TSUNIT_TEST_END();
+
+private:
+    // Return a byte block with bytes swapped two by two.
+    static ts::ByteBlock SwapBytes(const ts::UString& str);
+    static ts::ByteBlock SwapBytes(const void* data, size_t size);
 };
 
 TSUNIT_REGISTER(BufferTest);
@@ -201,6 +210,28 @@ namespace {
         0x6E, // 01101110
         0x6F, // 01101111
     };
+}
+
+
+//----------------------------------------------------------------------------
+// Return a byte block with bytes swapped two by two.
+//----------------------------------------------------------------------------
+
+ts::ByteBlock BufferTest::SwapBytes(const void* data, size_t size)
+{
+    ts::ByteBlock result(size);
+    const uint8_t* const in = reinterpret_cast<const uint8_t*>(data);
+
+    for (size_t i = 0; i+1 < result.size(); i += 2) {
+        result[i] = in[i + 1];
+        result[i + 1] = in[i];
+    }
+    return result;
+}
+
+ts::ByteBlock BufferTest::SwapBytes(const ts::UString& str)
+{
+    return SwapBytes(str.data(), 2 * str.size());
 }
 
 
@@ -1167,6 +1198,102 @@ void BufferTest::testGetUTF8WithLength()
     TSUNIT_EQUAL(8, b.currentReadByteOffset());
 }
 
+void BufferTest::testGetUTF16()
+{
+    // GREEK_SMALL_LETTER_ALPHA has a non-zero most significant byte in Unicode and UTF-16
+    const ts::UString mem = ts::UString({u'a', ts::GREEK_SMALL_LETTER_ALPHA}) + u"cdefgh";
+    debug() << "BufferTest::testGetUTF16: reference = \"" << mem << "\"" << std::endl;
+
+    // Run the test in native endian.
+    ts::Buffer b(mem.data(), 2 * mem.size());
+    b.setNativeEndian();
+    TSUNIT_ASSERT(b.readOnly());
+
+    TSUNIT_EQUAL(u"", b.getUTF16(0));
+    TSUNIT_ASSERT(!b.readError());
+    TSUNIT_EQUAL(0, b.currentReadByteOffset());
+
+    TSUNIT_EQUAL(ts::UString({u'a', ts::GREEK_SMALL_LETTER_ALPHA, u'c'}), b.getUTF16(6));
+    TSUNIT_ASSERT(!b.readError());
+    TSUNIT_EQUAL(6, b.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"de", b.getUTF16(4));
+    TSUNIT_ASSERT(!b.readError());
+    TSUNIT_EQUAL(10, b.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"", b.getUTF16(20));
+    TSUNIT_ASSERT(b.readError());
+    TSUNIT_EQUAL(10, b.currentReadByteOffset());
+
+    // Same test in opposite endian.
+    const ts::ByteBlock mem2(SwapBytes(mem));
+    ts::Buffer b2(mem2.data(), mem2.size());
+    b2.setNativeEndian();
+    b2.switchEndian();
+    TSUNIT_ASSERT(b2.readOnly());
+    TSUNIT_ASSERT(b.isLittleEndian() + b2.isLittleEndian() == 1);
+    TSUNIT_ASSERT(b.isBigEndian() + b2.isBigEndian() == 1);
+
+    TSUNIT_EQUAL(u"", b2.getUTF16(0));
+    TSUNIT_ASSERT(!b2.readError());
+    TSUNIT_EQUAL(0, b2.currentReadByteOffset());
+
+    TSUNIT_EQUAL(ts::UString({u'a', ts::GREEK_SMALL_LETTER_ALPHA, u'c'}), b2.getUTF16(6));
+    TSUNIT_ASSERT(!b2.readError());
+    TSUNIT_EQUAL(6, b2.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"de", b2.getUTF16(4));
+    TSUNIT_ASSERT(!b2.readError());
+    TSUNIT_EQUAL(10, b2.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"", b2.getUTF16(20));
+    TSUNIT_ASSERT(b2.readError());
+    TSUNIT_EQUAL(10, b2.currentReadByteOffset());
+}
+
+void BufferTest::testGetUTF16WithLength()
+{
+    static const uint16_t mem[] = {6, u'a', ts::GREEK_SMALL_LETTER_ALPHA, u'c', 4, u'd', u'e', 8, u'f', u'g', u'h'};
+
+    // Run the test in native endian.
+    ts::Buffer b(mem, sizeof(mem));
+    b.setNativeEndian();
+    TSUNIT_ASSERT(b.readOnly());
+
+    TSUNIT_EQUAL(ts::UString({u'a', ts::GREEK_SMALL_LETTER_ALPHA, u'c'}), b.getUTF16WithLength(16));
+    TSUNIT_ASSERT(!b.readError());
+    TSUNIT_EQUAL(8, b.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"de", b.getUTF16WithLength(16));
+    TSUNIT_ASSERT(!b.readError());
+    TSUNIT_EQUAL(14, b.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"", b.getUTF16WithLength(16));
+    TSUNIT_ASSERT(b.readError());
+    TSUNIT_EQUAL(14, b.currentReadByteOffset());
+
+    // Same test in opposite endian.
+    const ts::ByteBlock mem2(SwapBytes(mem, sizeof(mem)));
+    ts::Buffer b2(mem2.data(), mem2.size());
+    b2.setNativeEndian();
+    b2.switchEndian();
+    TSUNIT_ASSERT(b2.readOnly());
+    TSUNIT_ASSERT(b.isLittleEndian() + b2.isLittleEndian() == 1);
+    TSUNIT_ASSERT(b.isBigEndian() + b2.isBigEndian() == 1);
+
+    TSUNIT_EQUAL(ts::UString({u'a', ts::GREEK_SMALL_LETTER_ALPHA, u'c'}), b2.getUTF16WithLength(16));
+    TSUNIT_ASSERT(!b2.readError());
+    TSUNIT_EQUAL(8, b2.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"de", b2.getUTF16WithLength(16));
+    TSUNIT_ASSERT(!b2.readError());
+    TSUNIT_EQUAL(14, b2.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"", b2.getUTF16WithLength(16));
+    TSUNIT_ASSERT(b2.readError());
+    TSUNIT_EQUAL(14, b2.currentReadByteOffset());
+}
+
 void BufferTest::testPutUTF8()
 {
     uint8_t mem[10];
@@ -1327,3 +1454,5 @@ void BufferTest::testPutPartialUTF8WithLength()
     TSUNIT_EQUAL('1', mem[8]);
     TSUNIT_EQUAL('2', mem[9]);
 }
+
+//@@@@@@ TODO: put UTF-16 tests
