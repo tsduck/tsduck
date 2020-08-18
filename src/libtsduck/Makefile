@@ -57,8 +57,8 @@ else
 endif
 
 # With static link, we compile in a specific directory.
-BINDIR_SUFFIX := $(if $(STATIC),-static,)
-OBJSUBDIR := objs-libtsduck
+BINDIR_SUFFIX = $(if $(STATIC),-static,)
+OBJSUBDIR = objs-libtsduck
 
 # Now, we can include the common makefile.
 include ../../Makefile.tsduck

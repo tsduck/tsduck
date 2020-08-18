@@ -284,6 +284,10 @@
 #    Additional options for the linker.
 #    This variable can be defined after inclusion of this makefile.
 #
+#  LLVM
+#    If defined (any non-empty value), force the usage of the LLVM (clang)
+#    compiler. Useful on Linux only. On macOS, clang is the default compiler.
+#
 #  M32
 #    If defined (any non-empty value), compile for 32-bit target when running
 #    in 64-bit host. More precisely, on a x86-84 host platform, generate code
@@ -478,8 +482,8 @@
 #    PATH on Windows-based environments such as Cygwin.
 #
 #  LLVM_VERSION
-#    Contain the current LLVM compiler version, usually in form x.y.z.
-#    Empty if LLVM is not available.
+#    Contain the current LLVM (clang) compiler version, usually in form x.y.z.
+#    Empty if LLVM (clang) is not available.
 #
 #  LOCAL_ARCH
 #    Local processor exact architecture ("i686", "x86_64", "armv7l", etc.)
@@ -686,27 +690,27 @@ endif
 ifneq ($(subst cygwin,,$(LOCAL_OS)),$(LOCAL_OS))
     CYGWIN = true
     LOCAL_OS := cygwin
-    LD_LIBRARY_PATH_NAME := PATH
-    CFLAGS_FPIC :=
+    LD_LIBRARY_PATH_NAME = PATH
+    CFLAGS_FPIC =
 else
-    LD_LIBRARY_PATH_NAME := LD_LIBRARY_PATH
-    CFLAGS_FPIC := -fPIC
+    LD_LIBRARY_PATH_NAME = LD_LIBRARY_PATH
+    CFLAGS_FPIC = -fPIC
 endif
 
 # Executable files suffix
 ifdef CYGWIN
-    EXE_SUFFIX := .exe
+    EXE_SUFFIX = .exe
 else
-    EXE_SUFFIX :=
+    EXE_SUFFIX =
 endif
 
 # Define compilation flags for 32-bit cross-compilation.
 # Target architecture is skipped on ARM because of numerous variants.
 ifdef M32
-    override MAIN_ARCH   := i386
+    override MAIN_ARCH := i386
     override TARGET_FLAGS := -march=i686
-    CFLAGS_M32  := -m32
-    LDFLAGS_M32 := -m32
+    CFLAGS_M32   := -m32
+    LDFLAGS_M32  := -m32
 else ifndef MAIN_ARCH
     MAIN_ARCH    := $(shell uname -m | $(SED) -e 's/i.86/i386/' -e 's/arm.*/arm/')
     TARGET_FLAGS :=
@@ -774,10 +778,21 @@ ifeq ($(GCC_VERSION_DONE),)
     export USE_LLVM := $(if $(shell $(CXX) --version 2>/dev/null | grep -i clang),true,)
 endif
 
+# Forced usage of LLVM (clang)
+ifdef LLVM
+    export USE_GCC :=
+    export USE_LLVM := true
+    CXX = clang++
+    CC = clang
+endif
+
 # When C++ source files are present, automatically define LDCXX.
 ifndef LDCXX
     ifneq ($(wildcard *.cpp),)
         export LDCXX = true
+        ifdef LLVM
+            CC = clang++
+        endif
     endif
 endif
 
@@ -790,6 +805,11 @@ cross:
 .PHONY: debug
 debug:
 	+@$(MAKE) DEBUG=true
+
+# Alternate target to recompile with LLVM (clang) compiler
+.PHONY: llvm clang
+llvm clang:
+	+@$(MAKE) LLVM=true
 
 # Alternate target to recompile for 32-bit target
 .PHONY: m32
@@ -884,12 +904,12 @@ LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_FLAGS) $(LDF
 ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
 # Output subdirectories in each project directory.
-ifdef BINDIR
+ifneq ($(BINDIR),)
     # BINDIR is specified in input, transform it into an absolute path for recursion.
     INBINDIR := $(BINDIR)
     override BINDIR := $(abspath $(INBINDIR))
     MAKEOVERRIDES := $(subst BINDIR=$(INBINDIR),BINDIR=$(BINDIR),$(MAKEOVERRIDES))
-else ifdef DEBUG
+else ifneq ($(DEBUG),)
     BINDIR = $(ROOTDIR)/bin/$(BINDIR_PREFIX)debug-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
 else
     BINDIR = $(ROOTDIR)/bin/$(BINDIR_PREFIX)release-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
@@ -930,12 +950,12 @@ RPMBUILDFLAGS = -ba --clean $(if $(M32),--target $(MAIN_ARCH) -D 'mflags M32=tru
 SOURCES      := $(sort $(notdir $(wildcard *.c *.cpp $(addsuffix /*.c,$(CVPATH)) $(addsuffix /*.cpp,$(CXXVPATH)))))
 HEADERS      := $(sort $(notdir $(basename $(wildcard *.h $(addsuffix /*.h,$(CVPATH) $(CXXVPATH))))))
 MODULES      := $(basename $(SOURCES))
-OBJS         := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES)))
 MODULES_MAIN := $(sort $(filter-out $(HEADERS),$(MODULES)))
 MODULES_LIB  := $(sort $(filter-out $(MODULES_MAIN),$(MODULES)))
-OBJS_MAIN    := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_MAIN)))
-OBJS_LIB     := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_LIB)))
-EXECS        := $(addprefix $(BINDIR)/,$(MODULES_MAIN))
+OBJS          = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES)))
+OBJS_MAIN     = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_MAIN)))
+OBJS_LIB      = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_LIB)))
+EXECS         = $(addprefix $(BINDIR)/,$(MODULES_MAIN))
 
 # Keep intermediate files, avoid using "ar" again.
 .SECONDARY:
