@@ -53,7 +53,7 @@ jobs:
     - name: Build TSDuck
       run: make -j5
     - name: Check built version
-      run: source build/setenv.sh && tsversion --version=all
+      run: make show-version
     - name: Run unitary tests
       run: make test
     - name: Download test suite
@@ -74,8 +74,7 @@ jobs:
     name: Linux with clang
     runs-on: ubuntu-latest
     env:
-      CC: clang++
-      CXX: clang++
+      LLVM: true
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
@@ -83,7 +82,7 @@ jobs:
     - name: Build TSDuck
       run: make -j5
     - name: Check built version
-      run: source build/setenv.sh && tsversion --version=all
+      run: make show-version
     - name: Run unitary tests
       run: make test
     - name: Download test suite
@@ -117,27 +116,25 @@ jobs:
     name: macOS with clang
     runs-on: macos-latest
     env:
-      CC: clang++
-      CXX: clang++
+       BINDIR: bin
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
       run: build/install-prerequisites.sh
     - name: Build TSDuck
-      run: make -j5 BINDIR=bin
+      run: make -j5
     - name: Check built version
-      run: bin/tsversion --version=all
+      run: make show-version
     - name: Run unitary tests
-      run: make BINDIR=bin test
+      run: make test
     - name: Download test suite
       run: |
         mkdir -p ../tsduck-test
         curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
     - name: Run test suite
       run: |
-        export PATH="$(cd bin; pwd):$PATH"
+        make test-suite && status=$? || status=$?
         cd ../tsduck-test
-        ./run-all-tests.sh && status=$? || status=$?
         for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
             cat "$f"
