@@ -93,6 +93,11 @@ public:
     void testPutPartialUTF8();
     void testPutUTF8WithLength();
     void testPutPartialUTF8WithLength();
+    void testPutUTF16();
+    void testPutFixedUTF16();
+    void testPutPartialUTF16();
+    void testPutUTF16WithLength();
+    void testPutPartialUTF16WithLength();
 
     TSUNIT_TEST_BEGIN(BufferTest);
     TSUNIT_TEST(testConstructors);
@@ -138,9 +143,15 @@ public:
     TSUNIT_TEST(testGetUTF16);
     TSUNIT_TEST(testGetUTF16WithLength);
     TSUNIT_TEST(testPutUTF8);
+    TSUNIT_TEST(testPutFixedUTF8);
     TSUNIT_TEST(testPutPartialUTF8);
     TSUNIT_TEST(testPutUTF8WithLength);
     TSUNIT_TEST(testPutPartialUTF8WithLength);
+    TSUNIT_TEST(testPutUTF16);
+    TSUNIT_TEST(testPutFixedUTF16);
+    TSUNIT_TEST(testPutPartialUTF16);
+    TSUNIT_TEST(testPutUTF16WithLength);
+    TSUNIT_TEST(testPutPartialUTF16WithLength);
     TSUNIT_TEST_END();
 
 private:
@@ -1455,4 +1466,399 @@ void BufferTest::testPutPartialUTF8WithLength()
     TSUNIT_EQUAL('2', mem[9]);
 }
 
-//@@@@@@ TODO: put UTF-16 tests
+void BufferTest::testPutUTF16()
+{
+    uint8_t mem[20];
+
+    // Run the test in big endian.
+    ::memset(mem, 0, sizeof(mem));
+    ts::Buffer b(mem, sizeof(mem));
+    b.setBigEndian();
+
+    TSUNIT_ASSERT(!b.readOnly());
+    TSUNIT_EQUAL(0, b.currentWriteByteOffset());
+
+    TSUNIT_ASSERT(b.putUTF16(u"abcde", 3, 5));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(4, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(0x00, mem[0]);
+    TSUNIT_EQUAL('d',  mem[1]);
+    TSUNIT_EQUAL(0x00, mem[2]);
+    TSUNIT_EQUAL('e',  mem[3]);
+
+    TSUNIT_ASSERT(b.putUTF16(u"xyz"));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(10, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(0x00, mem[4]);
+    TSUNIT_EQUAL('x',  mem[5]);
+    TSUNIT_EQUAL(0x00, mem[6]);
+    TSUNIT_EQUAL('y',  mem[7]);
+    TSUNIT_EQUAL(0x00, mem[8]);
+    TSUNIT_EQUAL('z',  mem[9]);
+
+    TSUNIT_ASSERT(!b.putUTF16(u"1234567"));
+    TSUNIT_ASSERT(b.writeError());
+    TSUNIT_EQUAL(10, b.currentWriteByteOffset());
+
+    // Run the test in little endian.
+    ::memset(mem, 0, sizeof(mem));
+    b.reset(mem, sizeof(mem));
+    b.setLittleEndian();
+
+    TSUNIT_ASSERT(!b.readOnly());
+    TSUNIT_EQUAL(0, b.currentWriteByteOffset());
+
+    TSUNIT_ASSERT(b.putUTF16(u"abcde", 3, 5));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(4, b.currentWriteByteOffset());
+    TSUNIT_EQUAL('d',  mem[0]);
+    TSUNIT_EQUAL(0x00, mem[1]);
+    TSUNIT_EQUAL('e',  mem[2]);
+    TSUNIT_EQUAL(0x00, mem[3]);
+
+    TSUNIT_ASSERT(b.putUTF16(u"xyz"));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(10, b.currentWriteByteOffset());
+    TSUNIT_EQUAL('x',  mem[4]);
+    TSUNIT_EQUAL(0x00, mem[5]);
+    TSUNIT_EQUAL('y',  mem[6]);
+    TSUNIT_EQUAL(0x00, mem[7]);
+    TSUNIT_EQUAL('z',  mem[8]);
+    TSUNIT_EQUAL(0x00, mem[9]);
+
+    TSUNIT_ASSERT(!b.putUTF16(u"1234567"));
+    TSUNIT_ASSERT(b.writeError());
+    TSUNIT_EQUAL(10, b.currentWriteByteOffset());
+}
+
+void BufferTest::testPutFixedUTF16()
+{
+    uint8_t mem[20];
+
+    // Run the test in big endian.
+    ::memset(mem, 0, sizeof(mem));
+    ts::Buffer b(mem, sizeof(mem));
+    b.setBigEndian();
+
+    TSUNIT_ASSERT(!b.readOnly());
+    TSUNIT_EQUAL(0, b.currentWriteByteOffset());
+
+    TSUNIT_ASSERT(b.putFixedUTF16(ts::UString({u'a', ts::GREEK_SMALL_LETTER_ALPHA, u'c', u'd', u'e'}), 4));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(4, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(0x00, mem[0]);
+    TSUNIT_EQUAL('a',  mem[1]);
+    TSUNIT_EQUAL(ts::GREEK_SMALL_LETTER_ALPHA >> 8, mem[2]);
+    TSUNIT_EQUAL(ts::GREEK_SMALL_LETTER_ALPHA & 0xFF, mem[3]);
+
+    TSUNIT_ASSERT(b.putFixedUTF16(u"x", 7, u' '));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(11, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(0x00, mem[4]);
+    TSUNIT_EQUAL('x',  mem[5]);
+    TSUNIT_EQUAL(0x00, mem[6]);
+    TSUNIT_EQUAL(' ',  mem[7]);
+    TSUNIT_EQUAL(0x00, mem[8]);
+    TSUNIT_EQUAL(' ',  mem[9]);
+    TSUNIT_EQUAL(' ',  mem[10]);
+
+    TSUNIT_ASSERT(!b.putFixedUTF8(u"9", 10));
+    TSUNIT_ASSERT(b.writeError());
+    TSUNIT_EQUAL(11, b.currentWriteByteOffset());
+
+    // Run the test in little endian.
+    ::memset(mem, 0, sizeof(mem));
+    b.reset(mem, sizeof(mem));
+    b.setLittleEndian();
+
+    TSUNIT_ASSERT(!b.readOnly());
+    TSUNIT_EQUAL(0, b.currentWriteByteOffset());
+
+    TSUNIT_ASSERT(b.putFixedUTF16(ts::UString({u'a', ts::GREEK_SMALL_LETTER_ALPHA, u'c', u'd', u'e'}), 4));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(4, b.currentWriteByteOffset());
+    TSUNIT_EQUAL('a',  mem[0]);
+    TSUNIT_EQUAL(0x00, mem[1]);
+    TSUNIT_EQUAL(ts::GREEK_SMALL_LETTER_ALPHA & 0xFF, mem[2]);
+    TSUNIT_EQUAL(ts::GREEK_SMALL_LETTER_ALPHA >> 8, mem[3]);
+
+    TSUNIT_ASSERT(b.putFixedUTF16(u"x", 7, u' '));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(11, b.currentWriteByteOffset());
+    TSUNIT_EQUAL('x',  mem[4]);
+    TSUNIT_EQUAL(0x00, mem[5]);
+    TSUNIT_EQUAL(' ',  mem[6]);
+    TSUNIT_EQUAL(0x00, mem[7]);
+    TSUNIT_EQUAL(' ',  mem[8]);
+    TSUNIT_EQUAL(0x00, mem[9]);
+    TSUNIT_EQUAL(' ',  mem[10]);
+
+    TSUNIT_ASSERT(!b.putFixedUTF8(u"9", 10));
+    TSUNIT_ASSERT(b.writeError());
+    TSUNIT_EQUAL(11, b.currentWriteByteOffset());
+}
+
+void BufferTest::testPutPartialUTF16()
+{
+    uint8_t mem[11];
+
+    // Run the test in big endian.
+    ::memset(mem, 0, sizeof(mem));
+    ts::Buffer b(mem, sizeof(mem));
+    b.setBigEndian();
+
+    TSUNIT_ASSERT(!b.readOnly());
+    TSUNIT_EQUAL(0, b.currentWriteByteOffset());
+
+    TSUNIT_EQUAL(2, b.putPartialUTF16(u"abcde", 3, 5));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(!b.endOfWrite());
+    TSUNIT_EQUAL(4, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(0x00, mem[0]);
+    TSUNIT_EQUAL('d',  mem[1]);
+    TSUNIT_EQUAL(0x00, mem[2]);
+    TSUNIT_EQUAL('e',  mem[3]);
+
+    TSUNIT_EQUAL(3, b.putPartialUTF16(u"ijklmn", 1));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(!b.endOfWrite());
+    TSUNIT_EQUAL(10, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(0x00, mem[4]);
+    TSUNIT_EQUAL('j',  mem[5]);
+    TSUNIT_EQUAL(0x00, mem[6]);
+    TSUNIT_EQUAL('k',  mem[7]);
+    TSUNIT_EQUAL(0x00, mem[8]);
+    TSUNIT_EQUAL('l',  mem[9]);
+
+    // Run the test in little endian.
+    ::memset(mem, 0, sizeof(mem));
+    b.reset(mem, sizeof(mem));
+    b.setLittleEndian();
+
+    TSUNIT_ASSERT(!b.readOnly());
+    TSUNIT_EQUAL(0, b.currentWriteByteOffset());
+
+    TSUNIT_EQUAL(2, b.putPartialUTF16(u"abcde", 3, 5));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(!b.endOfWrite());
+    TSUNIT_EQUAL(4, b.currentWriteByteOffset());
+    TSUNIT_EQUAL('d',  mem[0]);
+    TSUNIT_EQUAL(0x00, mem[1]);
+    TSUNIT_EQUAL('e',  mem[2]);
+    TSUNIT_EQUAL(0x00, mem[3]);
+
+    TSUNIT_EQUAL(3, b.putPartialUTF16(u"ijklmn", 1));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(!b.endOfWrite());
+    TSUNIT_EQUAL(10, b.currentWriteByteOffset());
+    TSUNIT_EQUAL('j',  mem[4]);
+    TSUNIT_EQUAL(0x00, mem[5]);
+    TSUNIT_EQUAL('k',  mem[6]);
+    TSUNIT_EQUAL(0x00, mem[7]);
+    TSUNIT_EQUAL('l',  mem[8]);
+    TSUNIT_EQUAL(0x00, mem[9]);
+}
+
+void BufferTest::testPutUTF16WithLength()
+{
+    uint8_t mem[20];
+
+    // Run the test in big endian.
+    ::memset(mem, 0, sizeof(mem));
+    ts::Buffer b(mem, sizeof(mem));
+    b.setBigEndian();
+
+    TSUNIT_ASSERT(!b.readOnly());
+    TSUNIT_EQUAL(0, b.currentWriteByteOffset());
+
+    TSUNIT_ASSERT(b.putUTF16WithLength(u"abcde", 3, 5));
+    TSUNIT_ASSERT(b.writeIsByteAligned());
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(0x04, mem[0]);
+    TSUNIT_EQUAL(0x00, mem[1]);
+    TSUNIT_EQUAL('d',  mem[2]);
+    TSUNIT_EQUAL(0x00, mem[3]);
+    TSUNIT_EQUAL('e',  mem[4]);
+
+    // Cannot write if not byte-aligned after length field.
+    TSUNIT_ASSERT(!b.putUTF16WithLength(u"ijk", 0, ts::NPOS, 7));
+    TSUNIT_ASSERT(b.writeError());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+
+    b.clearWriteError();
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(b.writeIsByteAligned());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+
+    TSUNIT_ASSERT(b.putBits(0xFF, 5));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(!b.writeIsByteAligned());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+
+    // Cannot write 8 bytes if length field is 3 bits.
+    TSUNIT_ASSERT(!b.putUTF16WithLength(u"1234", 0, ts::NPOS, 3));
+    TSUNIT_ASSERT(b.writeError());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+
+    b.clearWriteError();
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+
+    TSUNIT_ASSERT(b.putUTF16WithLength(u"12", 0, ts::NPOS, 11));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(b.writeIsByteAligned());
+    TSUNIT_EQUAL(11, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(0xF8, mem[5]);
+    TSUNIT_EQUAL(0x04, mem[6]);
+    TSUNIT_EQUAL(0x00, mem[7]);
+    TSUNIT_EQUAL('1',  mem[8]);
+    TSUNIT_EQUAL(0x00, mem[9]);
+    TSUNIT_EQUAL('2',  mem[10]);
+
+    // Too large for buffer
+    TSUNIT_ASSERT(!b.putUTF16WithLength(u"12345"));
+    TSUNIT_ASSERT(b.writeError());
+    TSUNIT_EQUAL(11, b.currentWriteByteOffset());
+
+    // Run the test in little endian.
+    ::memset(mem, 0, sizeof(mem));
+    b.reset(mem, sizeof(mem));
+    b.setLittleEndian();
+
+    TSUNIT_ASSERT(!b.readOnly());
+    TSUNIT_EQUAL(0, b.currentWriteByteOffset());
+
+    TSUNIT_ASSERT(b.putUTF16WithLength(u"abcde", 3, 5));
+    TSUNIT_ASSERT(b.writeIsByteAligned());
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(0x04, mem[0]);
+    TSUNIT_EQUAL('d',  mem[1]);
+    TSUNIT_EQUAL(0x00, mem[2]);
+    TSUNIT_EQUAL('e',  mem[3]);
+    TSUNIT_EQUAL(0x00, mem[4]);
+
+    // Cannot write if not byte-aligned after length field.
+    TSUNIT_ASSERT(!b.putUTF16WithLength(u"ijk", 0, ts::NPOS, 7));
+    TSUNIT_ASSERT(b.writeError());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+
+    b.clearWriteError();
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(b.writeIsByteAligned());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+
+    TSUNIT_ASSERT(b.putBits(0xFF, 5));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(!b.writeIsByteAligned());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+
+    // Cannot write 8 bytes if length field is 3 bits.
+    TSUNIT_ASSERT(!b.putUTF16WithLength(u"1234", 0, ts::NPOS, 3));
+    TSUNIT_ASSERT(b.writeError());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+
+    b.clearWriteError();
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+
+    TSUNIT_ASSERT(b.putUTF16WithLength(u"12", 0, ts::NPOS, 11));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(b.writeIsByteAligned());
+    TSUNIT_EQUAL(11, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(0x9F, mem[5]); // 0x9F = 100 11111 = 3-bit length field: 4, previous 5-bit integer field: 0x1F
+    TSUNIT_EQUAL(0x00, mem[6]);
+    TSUNIT_EQUAL('1',  mem[7]);
+    TSUNIT_EQUAL(0x00, mem[8]);
+    TSUNIT_EQUAL('2',  mem[9]);
+    TSUNIT_EQUAL(0x00, mem[10]);
+
+    // Too large for buffer
+    TSUNIT_ASSERT(!b.putUTF16WithLength(u"12345"));
+    TSUNIT_ASSERT(b.writeError());
+    TSUNIT_EQUAL(11, b.currentWriteByteOffset());
+}
+
+void BufferTest::testPutPartialUTF16WithLength()
+{
+    uint8_t mem[20];
+
+    // Run the test in big endian.
+    ::memset(mem, 0, sizeof(mem));
+    ts::Buffer b(mem, sizeof(mem));
+    b.setBigEndian();
+
+    TSUNIT_ASSERT(!b.readOnly());
+    TSUNIT_EQUAL(0, b.currentWriteByteOffset());
+
+    TSUNIT_EQUAL(5, b.putPartialUTF16WithLength(u"abcde", 0, ts::NPOS, 16));
+    TSUNIT_ASSERT(b.writeIsByteAligned());
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(!b.endOfWrite());
+    TSUNIT_EQUAL(12, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(0x00, mem[0]);
+    TSUNIT_EQUAL(0x0A, mem[1]);
+    TSUNIT_EQUAL(0x00, mem[2]);
+    TSUNIT_EQUAL('a',  mem[3]);
+    TSUNIT_EQUAL(0x00, mem[4]);
+    TSUNIT_EQUAL('b',  mem[5]);
+    TSUNIT_EQUAL(0x00, mem[6]);
+    TSUNIT_EQUAL('c',  mem[7]);
+    TSUNIT_EQUAL(0x00, mem[8]);
+    TSUNIT_EQUAL('d',  mem[9]);
+    TSUNIT_EQUAL(0x00, mem[10]);
+    TSUNIT_EQUAL('e',  mem[11]);
+
+    TSUNIT_EQUAL(3, b.putPartialUTF16WithLength(u"123456789"));
+    TSUNIT_ASSERT(b.writeIsByteAligned());
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(!b.endOfWrite());
+    TSUNIT_EQUAL(19, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(0x06, mem[12]);
+    TSUNIT_EQUAL(0x00, mem[13]);
+    TSUNIT_EQUAL('1',  mem[14]);
+    TSUNIT_EQUAL(0x00, mem[15]);
+    TSUNIT_EQUAL('2',  mem[16]);
+    TSUNIT_EQUAL(0x00, mem[17]);
+    TSUNIT_EQUAL('3',  mem[18]);
+
+    // Run the test in little endian.
+    ::memset(mem, 0, sizeof(mem));
+    b.reset(mem, sizeof(mem));
+    b.setLittleEndian();
+
+    TSUNIT_ASSERT(!b.readOnly());
+    TSUNIT_EQUAL(0, b.currentWriteByteOffset());
+
+    TSUNIT_EQUAL(5, b.putPartialUTF16WithLength(u"abcde", 0, ts::NPOS, 16));
+    TSUNIT_ASSERT(b.writeIsByteAligned());
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(!b.endOfWrite());
+    TSUNIT_EQUAL(12, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(0x0A, mem[0]);
+    TSUNIT_EQUAL(0x00, mem[1]);
+    TSUNIT_EQUAL('a',  mem[2]);
+    TSUNIT_EQUAL(0x00, mem[3]);
+    TSUNIT_EQUAL('b',  mem[4]);
+    TSUNIT_EQUAL(0x00, mem[5]);
+    TSUNIT_EQUAL('c',  mem[6]);
+    TSUNIT_EQUAL(0x00, mem[7]);
+    TSUNIT_EQUAL('d',  mem[8]);
+    TSUNIT_EQUAL(0x00, mem[9]);
+    TSUNIT_EQUAL('e',  mem[10]);
+    TSUNIT_EQUAL(0x00, mem[11]);
+
+    TSUNIT_EQUAL(3, b.putPartialUTF16WithLength(u"123456789"));
+    TSUNIT_ASSERT(b.writeIsByteAligned());
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(!b.endOfWrite());
+    TSUNIT_EQUAL(19, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(0x06, mem[12]);
+    TSUNIT_EQUAL('1',  mem[13]);
+    TSUNIT_EQUAL(0x00, mem[14]);
+    TSUNIT_EQUAL('2',  mem[15]);
+    TSUNIT_EQUAL(0x00, mem[14]);
+    TSUNIT_EQUAL('3',  mem[17]);
+    TSUNIT_EQUAL(0x00, mem[18]);
+}

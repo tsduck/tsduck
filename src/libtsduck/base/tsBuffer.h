@@ -1053,7 +1053,7 @@ namespace ts {
         //!
         bool putUTF8WithLength(const UString& str, size_t start = 0, size_t count = NPOS, size_t length_bits = 8)
         {
-            return putUTF8WithLengthInternal(str, start, count, length_bits, false) != 0;
+            return putUTFWithLengthInternal(str, start, count, length_bits, false, true) != 0;
         }
 
         //!
@@ -1068,7 +1068,7 @@ namespace ts {
         //!
         size_t putPartialUTF8WithLength(const UString& str, size_t start = 0, size_t count = NPOS, size_t length_bits = 8)
         {
-            return putUTF8WithLengthInternal(str, start, count, length_bits, true);
+            return putUTFWithLengthInternal(str, start, count, length_bits, true, true);
         }
 
         //!
@@ -1117,7 +1117,35 @@ namespace ts {
             return putUTFInternal(str, start, count, true, NPOS, 0, false); // false = UTF-16
         }
 
-        //@@@@@@ TODO: putUTF8WithLength and putPartialUTF8WithLength
+        //!
+        //! Put a string (preceded by its length) using UTF-16 format.
+        //! The write-pointer must be byte-aligned after writing the length-field.
+        //! Generate a write error when the buffer is full before writing the complete string.
+        //! @param [in] str The UTF-16 string to encode.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @param [in] length_bits Size in bits in the length field.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putUTF16WithLength(const UString& str, size_t start = 0, size_t count = NPOS, size_t length_bits = 8)
+        {
+            return putUTFWithLengthInternal(str, start, count, length_bits, false, false) != 0;
+        }
+
+        //!
+        //! Put a partial string (preceded by its length) using UTF-16 format.
+        //! The write-pointer must be byte-aligned after writing the length-field.
+        //! Do not generate a write error when the buffer is full.
+        //! @param [in] str The UTF-16 string to encode.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @param [in] length_bits Size in bits in the length field.
+        //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
+        //!
+        size_t putPartialUTF16WithLength(const UString& str, size_t start = 0, size_t count = NPOS, size_t length_bits = 8)
+        {
+            return putUTFWithLengthInternal(str, start, count, length_bits, true, false);
+        }
 
     protected:
         //!
@@ -1165,7 +1193,7 @@ namespace ts {
         bool getUTFInternal(UString& result, size_t bytes, bool utf8);
         bool getUTFWithLengthInternal(UString& result, size_t length_bits, bool utf8);
         size_t putUTFInternal(const UString& str, size_t start, size_t count, bool partial, size_t fixed_size, int pad, bool utf8);
-        size_t putUTF8WithLengthInternal(const UString& str, size_t start, size_t count, size_t length_bits, bool partial);
+        size_t putUTFWithLengthInternal(const UString& str, size_t start, size_t count, size_t length_bits, bool partial, bool utf8);
 
         // Read/write state in the buffer.
         struct RWState {
