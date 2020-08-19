@@ -33,6 +33,7 @@
 #include "tsStreamIdentifierDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -106,64 +107,26 @@ void ts::MGT::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::MGT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::MGT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    protocol_version = 0;
-    descs.clear();
-    tables.clear();
+    // Get common properties (should be identical in all sections)
+    protocol_version = buf.getUInt8();
 
-    // Loop on all sections (although a MGT is not allowed to use more than one section, see A/65, section 6.2)
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
-
-        // Reference to current section
-        const Section& sect(*table.sectionAt(si));
-
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent(); // should be true
-
-        // Analyze the section payload:
-        const uint8_t* data = sect.payload();
-        size_t remain = sect.payloadSize();
-        if (remain < 3) {
-            return; // invalid table, too short
-        }
-
-        // Get fixed fields.
-        protocol_version = data[0];
-        uint16_t tables_defined = GetUInt16(data + 1);
-        data += 3; remain -= 3;
-
-        // Loop on all table types definitions.
-        while (tables_defined > 0 && remain >= 11) {
-            // Add a new TableType at the end of the list.
-            TableType& tt(tables.newEntry());
-            tt.table_type = GetUInt16(data);
-            tt.table_type_PID = GetUInt16(data + 2) & 0x1FFF;
-            tt.table_type_version_number = data[4] & 0x1F;
-            tt.number_bytes = GetUInt32(data + 5);
-            size_t info_length = GetUInt16(data + 9) & 0x0FFF;
-            data += 11; remain -= 11;
-            info_length = std::min(info_length, remain);
-            tt.descs.add(data, info_length);
-            data += info_length; remain -= info_length;
-            tables_defined--;
-        }
-        if (tables_defined > 0 || remain < 2) {
-            return; // truncated table.
-        }
-
-        // Get program information descriptor list
-        size_t info_length = GetUInt16(data) & 0x0FFF;
-        data += 2; remain -= 2;
-        info_length = std::min(info_length, remain);
-        descs.add(data, info_length);
-        data += info_length;
-        remain -= info_length;
+    // Loop on all tables definitions.
+    uint16_t tables_defined = buf.getUInt16();
+    while (!buf.error() && tables_defined-- > 0) {
+        // Add a new TableType at the end of the list.
+        TableType& tt(tables.newEntry());
+        tt.table_type = buf.getUInt16();
+        tt.table_type_PID = buf.getPID();
+        buf.skipBits(3);
+        tt.table_type_version_number = buf.getBits<uint8_t>(5);
+        tt.number_bytes = buf.getUInt32();
+        buf.getDescriptorListWithLength(tt.descs);
     }
 
-    _is_valid = true;
+    // Get top-level descriptor list
+    buf.getDescriptorListWithLength(descs);
 }
 
 
@@ -171,52 +134,31 @@ void ts::MGT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MGT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::MGT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 {
-    // Build the section. Note that a MGT is not allowed to use more than one section, see A/65, section 6.2.
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
+    // Important: an MGT is not allowed to use more than one section, see A/65, section 6.2.
+    // So, all tables definitions are serialized in the same PSIBuffer. We don't check
+    // sizes in order to postpone some data in the next section. We serialize everything
+    // once and overflows will give write-errors in the PSIBuffer. These errors will be
+    // interpreted as "invalid table" by the caller.
 
     // Add fixed fields.
-    data[0] = protocol_version;
-    PutUInt16(data + 1, uint16_t(tables.size()));
-    data += 3; remain -= 3;
+    payload.putUInt8(protocol_version);
+    payload.putUInt16(uint16_t(tables.size()));
 
     // Add description of all table types.
-    for (auto it = tables.begin(); it != tables.end() && remain >= 11; ++it) {
+    for (auto it = tables.begin(); it != tables.end(); ++it) {
         const TableType& tt(it->second);
-
-        // Insert fixed fields.
-        PutUInt16(data, tt.table_type);
-        PutUInt16(data + 2, 0xE000 | tt.table_type_PID);
-        PutUInt8(data + 4, 0xE0 | tt.table_type_version_number);
-        PutUInt32(data + 5, tt.number_bytes);
-        data += 9; remain -= 9;
-
-        // Insert descriptor list for this table type (with leading length field)
-        size_t next_index = tt.descs.lengthSerialize(data, remain);
-        if (next_index != tt.descs.count()) {
-            // Not enough space to serialize all descriptors in the section.
-            // A MGT cannot have more than one section.
-            // Return with table left in invalid state.
-            return;
-        }
+        payload.putUInt16(tt.table_type);
+        payload.putPID(tt.table_type_PID);
+        payload.putBits(0xFF, 3);
+        payload.putBits(tt.table_type_version_number, 5);
+        payload.putUInt32(tt.number_bytes);
+        payload.putPartialDescriptorListWithLength(tt.descs);
     }
 
     // Insert common descriptor list (with leading length field)
-    descs.lengthSerialize(data, remain);
-
-    // Add one single section in the table
-    table.addSection(new Section(MY_TID,           // tid
-                                 true,             // is_private_section
-                                 0,                // tid_ext is always zero in MGT
-                                 version,
-                                 is_current,       // should be true
-                                 0,                // section_number,
-                                 0,                // last_section_number
-                                 payload,
-                                 data - payload)); // payload_size,
+    payload.putPartialDescriptorListWithLength(descs);
 }
 
 
@@ -275,48 +217,38 @@ void ts::MGT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
+    uint16_t table_count = 0;
 
-    if (size >= 3) {
-        // Fixed part.
-        uint16_t table_count = GetUInt16(data + 1);
-        strm << margin << UString::Format(u"Protocol version: %d, number of table types: %d", {data[0], table_count}) << std::endl;
-        data += 3; size -= 3;
-
-        // Display all table types.
-        while (table_count > 0 && size >= 11) {
-
-            const uint16_t type = GetUInt16(data);
-            const PID pid = GetUInt16(data + 2) & 0x1FFF;
-            strm << margin << UString::Format(u"- Table type: %s (0x%X)", {TableTypeName(type), type}) << std::endl
-                 << margin << UString::Format(u"  PID: 0x%X (%d), version: %d, size: %d bytes", {pid, pid, data[4] & 0x1F, GetUInt32(data + 5)}) << std::endl;
-
-            // Use fake PDS for ATSC.
-            size_t info_length = GetUInt16(data + 9) & 0x0FFF;
-            data += 11; size -= 11;
-            info_length = std::min(info_length, size);
-            display.displayDescriptorList(section, data, info_length, indent + 2);
-
-            data += info_length; size -= info_length;
-            table_count--;
-        }
-
-        // Display common descriptors. Use fake PDS for ATSC.
-        if (table_count == 0 && size >= 2) {
-            size_t info_length = GetUInt16(data) & 0x0FFF;
-            data += 2; size -= 2;
-            info_length = std::min(info_length, size);
-            if (info_length > 0) {
-                strm << margin << "- Global descriptors:" << std::endl;
-                display.displayDescriptorList(section, data, info_length, indent + 2);
-                data += info_length; size -= info_length;
-            }
-        }
+    if (buf.remainingReadBytes() < 2) {
+        buf.setUserError();
+    }
+    else {
+        strm << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
+        strm << UString::Format(u", number of table types: %d", {table_count = buf.getUInt16()}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    // Loop on all table types.
+    while (!buf.error() && table_count-- > 0) {
+
+        if (buf.remainingReadBytes() < 11) {
+            buf.setUserError();
+            break;
+        }
+
+        const uint16_t type = buf.getUInt16();
+        strm << margin << UString::Format(u"- Table type: %s (0x%X)", {TableTypeName(type), type}) << std::endl;
+        strm << margin << UString::Format(u"  PID: 0x%X (%<d)", {buf.getPID()});
+        buf.skipBits(3);
+        strm << UString::Format(u", version: %d", {buf.getBits<uint8_t>(5)});
+        strm << UString::Format(u", size: %d bytes", {buf.getUInt32()}) << std::endl;
+        display.displayDescriptorListWithLength(section, buf, indent + 2);
+    }
+
+    // Common descriptors.
+    display.displayDescriptorListWithLength(section, buf, indent, u"Global descriptors:");
+    display.displayExtraData(buf, indent);
 }
 
 

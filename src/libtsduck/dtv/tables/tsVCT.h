@@ -170,20 +170,12 @@ namespace ts {
 
         // Inherited methods
         virtual void clearContent() override;
-        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
-        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void serializePayload(BinaryTable& table, PSIBuffer& payload) const override;
+        virtual void deserializePayload(PSIBuffer& buf, const Section& section) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
 
     private:
-        // Add a new section to a table being serialized.
-        // Session number is incremented. Data and remain are reinitialized.
-        void addSection(BinaryTable& table,
-                        int& section_number,
-                        uint8_t* payload,
-                        uint8_t*& data,
-                        size_t& remain) const;
-
         // Internal version of find by Service class.
         ChannelList::const_iterator findServiceInternal(Service& service, bool exact_match, bool same_ts) const;
 

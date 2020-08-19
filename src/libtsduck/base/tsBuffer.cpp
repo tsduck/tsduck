@@ -1150,6 +1150,11 @@ bool ts::Buffer::getUTFInternal(UString& result, size_t bytes, bool utf8)
         }
     }
 
+    // Remove trailing zeroes, considered as padding/stuffing from fixed-size strings.
+    while (!result.empty() && result.back() == CHAR_NULL) {
+        result.pop_back();
+    }
+
     return true;
 }
 
