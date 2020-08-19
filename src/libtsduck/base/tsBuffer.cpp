@@ -1267,10 +1267,10 @@ size_t ts::Buffer::putUTFInternal(const UString& str, size_t start, size_t count
 
 
 //----------------------------------------------------------------------------
-// Put a string (preceded by its length) using UTF-8 format.
+// Put a string (preceded by its length) using UTF format.
 //----------------------------------------------------------------------------
 
-size_t ts::Buffer::putUTF8WithLengthInternal(const UString& str, size_t start, size_t count, size_t length_bits, bool partial)
+size_t ts::Buffer::putUTFWithLengthInternal(const UString& str, size_t start, size_t count, size_t length_bits, bool partial, bool utf8)
 {
     // Normalize start and count within allowed bounds.
     start = std::min(start, str.size());
@@ -1300,17 +1300,39 @@ size_t ts::Buffer::putUTF8WithLengthInternal(const UString& str, size_t start, s
     char* const out_start = cbuffer + _state.wbyte;
     char* out = out_start;
     char* const out_end = out_start + std::min(_buffer_max - _state.wbyte, max_bytes);
-    UString::ConvertUTF16ToUTF8(in, in_end, out, out_end);
+
+    if (utf8) {
+        // Encode UTF-8.
+        UString::ConvertUTF16ToUTF8(in, in_end, out, out_end);
+    }
+    else if (isNativeEndian()) {
+        // Encode UTF-16 using native endian => direct copy.
+        // Warning: UChar pointer arithmetics uses 2-byte unit.
+        // Always copy an even number of bytes (& ~1).
+        const size_t size = std::min(2 * (in_end - in), out_end - out) & ~1;
+        ::memcpy(out, in, size);
+        in += size / 2;
+        out += size;
+    }
+    else {
+        // Encode UTF-16 in opposite endian => decode characters one by one.
+        while (in < in_end && out + 1 < out_end) {
+            putUInt16(uint16_t(*in++));
+            out += 2;
+        }
+    }
 
     assert(in >= in_start);
     assert(in <= in_end);
     assert(out >= out_start);
     assert(out <= out_end);
 
+    // Restore state before zero-length place-holder
+    _state = saved;
+
     if (partial || in == in_end) {
         // Accept the conversion.
-        // Restore state before zero-length place-holder and write actual length
-        _state = saved;
+        // Write actual length in length field.
         putBits(out - out_start, length_bits);
         assert(!_write_error);
         assert(_state.wbit == 0);
@@ -1320,8 +1342,7 @@ size_t ts::Buffer::putUTF8WithLengthInternal(const UString& str, size_t start, s
         return partial ? in - in_start : 1;
     }
     else {
-        // Full conversion failed, restore state before zero-length place-holder
-        _state = saved;
+        // Full conversion failed.
         _write_error = true;
         return 0;
     }
