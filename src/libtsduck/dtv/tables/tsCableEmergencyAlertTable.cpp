@@ -488,6 +488,5 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& display, const 
 
     // Display descriptor list with 10-bit length field.
     display.displayDescriptorListWithLength(section, buf, indent, UString(), UString(), 10);
-
     display.displayExtraData(buf, indent);
 }
