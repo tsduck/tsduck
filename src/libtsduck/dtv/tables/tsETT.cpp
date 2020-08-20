@@ -31,6 +31,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -90,36 +91,12 @@ void ts::ETT::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ETT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::ETT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    ETT_table_id_extension = 0;
-    ETM_id = 0;
-    protocol_version = 0;
-    extended_text_message.clear();
-
-    // An ETT is not allowed to use more than one section, see A/65, section 6.2.
-    if (table.sectionCount() == 0) {
-        return;
-    }
-    const Section& sect(*table.sectionAt(0));
-
-    // Analyze the section payload:
-    const uint8_t* data = sect.payload();
-    size_t remain = sect.payloadSize();
-    if (remain < 5) {
-        return; // invalid table, too short
-    }
-
-    version = sect.version();
-    is_current = sect.isCurrent(); // should be true
-    ETT_table_id_extension = sect.tableIdExtension();
-
-    protocol_version = data[0];
-    ETM_id = GetUInt32(data + 1);
-    data += 5; remain -= 5;
-
-    _is_valid = extended_text_message.deserialize(duck, data, remain);
+    ETT_table_id_extension = section.tableIdExtension();
+    protocol_version = buf.getUInt8();
+    ETM_id = buf.getUInt32();
+    buf.getMultipleString(extended_text_message);
 }
 
 
@@ -127,28 +104,12 @@ void ts::ETT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ETT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::ETT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 {
-    // Build the section. Note that an ETT is not allowed to use more than one section, see A/65, section 6.2.
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
-
-    data[0] = protocol_version;
-    PutUInt32(data + 1, ETM_id);
-    data += 5; remain -= 5;
-    extended_text_message.serialize(duck, data, remain);
-
-    // Add one single section in the table
-    table.addSection(new Section(MY_TID,           // tid
-                                 true,             // is_private_section
-                                 ETT_table_id_extension,
-                                 version,
-                                 is_current,       // should be true
-                                 0,                // section_number,
-                                 0,                // last_section_number
-                                 payload,
-                                 data - payload)); // payload_size,
+    // Important: an ETT is not allowed to use more than one section, see A/65, section 6.6.
+    payload.putUInt8(protocol_version);
+    payload.putUInt32(ETM_id);
+    payload.putMultipleString(extended_text_message);
 }
 
 
@@ -161,19 +122,19 @@ void ts::ETT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    if (size >= 5) {
-        // Fixed part.
-        uint32_t id = GetUInt32(data + 1);
-        strm << margin << UString::Format(u"ETT table id extension: 0x%X (%d)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl
-             << margin << UString::Format(u"Protocol version: %d, ETM id: 0x%X (%d)", {data[0], id, id}) << std::endl;
-        data += 5; size -= 5;
-        ATSCMultipleString::Display(display, u"Extended text message: ", indent, data, size);
+    if (buf.remainingReadBytes() < 5) {
+        buf.setUserError();
+    }
+    else {
+        strm << margin << UString::Format(u"ETT table id extension: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+        strm << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
+        strm << UString::Format(u", ETM id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+        display.displayATSCMultipleString(buf, 0, indent, u"Extended text message: ");
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(buf, indent);
 }
 
 

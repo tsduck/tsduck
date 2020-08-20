@@ -31,6 +31,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -80,7 +81,11 @@ ts::STT::STT(DuckContext& duck, const BinaryTable& table) :
 ts::STT::STT(DuckContext& duck, const Section& section) :
     STT()
 {
-    deserializeSection(duck, section);
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
+    deserializePayload(buf, section);
+    if (buf.error() || buf.remainingReadBytes() > 0) {
+        invalidate();
+    }
 }
 
 
@@ -132,51 +137,16 @@ ts::Time ts::STT::utcTime() const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::STT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::STT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Deserialize first section.
-    if (table.sectionCount() > 0 && !table.sectionAt(0).isNull()) {
-        deserializeSection(duck, *table.sectionAt(0));
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Deserialize one section.
-//----------------------------------------------------------------------------
-
-void ts::STT::deserializeSection(DuckContext& duck, const Section& section)
-{
-    // Clear table content
-    _is_valid = false;
-    protocol_version = 0;
-    descs.clear();
-
-    // Get fixed properties (should be identical in all STT)
-    version = section.version();       // should be zero
-    is_current = section.isCurrent();  // should be true
-
-    // Section payload:
-    const uint8_t* data = section.payload();
-    size_t remain = section.payloadSize();
-
-    // Giveup if not a valid STT section.
-    if (!section.isValid() || section.tableId() != TID_STT || remain < 8) {
-        return;
-    }
-
-    // Get fixed fields.
-    protocol_version = data[0];
-    system_time = GetUInt32(data + 1);
-    GPS_UTC_offset = data[5];
-    DS_status = (data[6] & 0x80) != 0;
-    DS_day_of_month = data[6] & 0x1F;
-    DS_hour = data[7];
-    data += 8; remain -= 8;
-
-    // Add descriptors.
-    descs.add(data, remain);
-    _is_valid = true;
+    protocol_version = buf.getUInt8();
+    system_time = buf.getUInt32();
+    GPS_UTC_offset = buf.getUInt8();
+    DS_status = buf.getBit() != 0;
+    buf.skipBits(2);
+    DS_day_of_month = buf.getBits<uint8_t>(5);
+    DS_hour = buf.getUInt8();
+    buf.getDescriptorList(descs);
 }
 
 
@@ -184,34 +154,17 @@ void ts::STT::deserializeSection(DuckContext& duck, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::STT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::STT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 {
-    // Build the section. Note that a STT is not allowed to use more than one section, see A/65, section 6.1.
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
-
-    // Add fixed fields.
-    data[0] = protocol_version;
-    PutUInt32(data + 1, system_time);
-    data[5] = GPS_UTC_offset;
-    data[6] = (DS_status ? 0xE0 : 0x60) | (DS_day_of_month & 0x1F);
-    data[7] = DS_hour;
-    data += 8; remain -= 8;
-
-    // Insert descriptor list (without leading length field)
-    descs.serialize(data, remain);
-
-    // Add one single section in the table
-    table.addSection(new Section(MY_TID,           // tid
-                                 true,             // is_private_section
-                                 0,                // tid_ext is always zero in STT
-                                 version,          // Should be zero
-                                 is_current,       // should be true
-                                 0,                // section_number,
-                                 0,                // last_section_number
-                                 payload,
-                                 data - payload)); // payload_size,
+    // An STT is not allowed to use more than one section, see A/65, section 6.1.
+    payload.putUInt8(protocol_version);
+    payload.putUInt32(system_time);
+    payload.putUInt8(GPS_UTC_offset);
+    payload.putBit(DS_status);
+    payload.putBits(0xFF, 2);
+    payload.putBits(DS_day_of_month, 5);
+    payload.putUInt8(DS_hour);
+    payload.putPartialDescriptorList(descs);
 }
 
 
@@ -224,27 +177,26 @@ void ts::STT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
-
-    if (size >= 8) {
-        // Fixed part.
-        const uint32_t time = GetUInt32(data + 1);
-        const uint8_t offset = data[5];
-        const Time utc(Time::UnixTimeToUTC(time + Time::UnixEpochToGPS - offset));
-
-        strm << margin << UString::Format(u"Protocol version: %d", {data[0]}) << std::endl
-             << margin << UString::Format(u"System time: 0x%X (%d), GPS-UTC offset: 0x%X (%d)", {time, time, offset, offset}) << std::endl
-             << margin << "Corresponding UTC time: " << (time == 0 ? u"none" : utc.format(Time::DATE | Time::TIME)) << std::endl
-             << margin << UString::Format(u"Daylight saving time: %s, next switch day: %d, hour: %d", {UString::YesNo((data[6] & 0x80) != 0), data[6] & 0x1F, data[7]}) << std::endl;
-
-        // Display descriptors. Use fake PDS for ATSC.
-        display.displayDescriptorList(section, data + 8, size - 8, indent);
+    if (buf.remainingReadBytes() < 8) {
+        buf.setUserError();
     }
     else {
-        display.displayExtraData(data, size, indent);
+        strm << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()}) << std::endl;
+        const uint32_t time = buf.getUInt32();
+        const uint8_t offset = buf.getUInt8();
+        const Time utc(Time::UnixTimeToUTC(time + Time::UnixEpochToGPS - offset));
+        strm << margin << UString::Format(u"System time: 0x%X (%<d), GPS-UTC offset: 0x%X (%<d)", {time, offset}) << std::endl;
+        strm << margin << "Corresponding UTC time: " << (time == 0 ? u"none" : utc.format(Time::DATE | Time::TIME)) << std::endl;
+        strm << margin << "Daylight saving time: " << UString::YesNo(buf.getBit() != 0);
+        buf.skipBits(2);
+        strm << UString::Format(u", next switch day: %d", {buf.getBits<uint8_t>(5)});
+        strm << UString::Format(u", hour: %d", {buf.getUInt8()}) << std::endl;
+        display.displayDescriptorList(section, buf, indent);
     }
+
+    display.displayExtraData(buf, indent);
 }
 
 
