@@ -34,6 +34,7 @@
 #include "tsStreamIdentifierDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -71,6 +72,12 @@ ts::SelectionInformationTable::SelectionInformationTable(DuckContext& duck, cons
     deserialize(duck, table);
 }
 
+ts::SelectionInformationTable::Service::Service(const AbstractTable* table, uint8_t status) :
+    EntryWithDescriptors(table),
+    running_status(status)
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Get the table id extension.
@@ -97,52 +104,15 @@ void ts::SelectionInformationTable::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::SelectionInformationTable::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    descs.clear();
-    services.clear();
-
-    // Loop on all sections, although a Selection Information Table is not allowed
-    // to use more than one section, see ETSI EN 300 468, 7.1.2.
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
-
-        // Reference to current section
-        const Section& sect(*table.sectionAt(si));
-
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent();
-
-        // Analyze the section payload:
-        const uint8_t* data = sect.payload();
-        size_t remain = sect.payloadSize();
-
-        // Get global  descriptor list
-        if (remain < 2) {
-            return;
-        }
-        size_t info_length = GetUInt16(data) & 0x0FFF;
-        data += 2;
-        remain -= 2;
-        info_length = std::min(info_length, remain);
-        descs.add(data, info_length);
-        data += info_length; remain -= info_length;
-
-        // Get service description
-        while (remain >= 4) {
-            const uint16_t id = GetUInt16(data);
-            Service& srv(services[id]);
-            srv.running_status = (data[2] >> 4) & 0x07;
-            info_length = GetUInt16(data + 2) & 0x0FFF;
-            data += 4; remain -= 4;
-            info_length = std::min(info_length, remain);
-            srv.descs.add(data, info_length);
-            data += info_length; remain -= info_length;
-        }
+    buf.getDescriptorListWithLength(descs);
+    while (!buf.error() && !buf.endOfRead()) {
+        Service& srv(services[buf.getUInt16()]);
+        buf.skipBits(1);
+        srv.running_status = buf.getBits<uint8_t>(3);
+        buf.getDescriptorListWithLength(srv.descs);
     }
-
-    _is_valid = true;
 }
 
 
@@ -150,44 +120,17 @@ void ts::SelectionInformationTable::deserializeContent(DuckContext& duck, const 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::SelectionInformationTable::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 {
-    // Build the section. Note that a Selection Information Table is not allowed
-    // to use more than one section, see ETSI EN 300 468, 7.1.2.
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
+    // A Selection Information Table is not allowed to use more than one section, see ETSI EN 300 468, 7.1.2.
 
-    // Insert program_info descriptor list (with leading length field)
-    descs.lengthSerialize(data, remain);
-
-    // Add description of all services.
-    for (auto it = services.begin(); it != services.end() && remain >= 4; ++it) {
-
-        // Insert stream type and pid
-        PutUInt16(data, it->first); // service id
-        data += 2; remain -= 2;
-
-        // Insert descriptor list for service (with leading length field)
-        size_t next_index = it->second.descs.lengthSerialize(data, remain, 0, it->second.running_status | 0x08);
-        if (next_index != it->second.descs.count()) {
-            // Not enough space to serialize all descriptors in the section.
-            // A SelectionInformationTable cannot have more than one section.
-            // Return with table left in invalid state.
-            return;
-        }
+    payload.putPartialDescriptorListWithLength(descs);
+    for (auto it = services.begin(); !payload.error() && it != services.end(); ++it) {
+        payload.putUInt16(it->first); // service id
+        payload.putBit(1);
+        payload.putBits(it->second.running_status, 3);
+        payload.putPartialDescriptorListWithLength(it->second.descs);
     }
-
-    // Add one single section in the table
-    table.addSection(new Section(MY_TID,           // tid
-                                 true,             // is_private_section
-                                 0xFFFF,           // tid_ext
-                                 version,
-                                 is_current,
-                                 0,                // section_number,
-                                 0,                // last_section_number
-                                 payload,
-                                 data - payload)); // payload_size,
 }
 
 
@@ -200,41 +143,16 @@ void ts::SelectionInformationTable::DisplaySection(TablesDisplay& display, const
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
-
-    if (size >= 2) {
-        // Fixed part
-        size_t info_length = GetUInt16(data) & 0x0FFF;
-        data += 2; size -= 2;
-        if (info_length > size) {
-            info_length = size;
-        }
-
-        // Process and display global descriptor list.
-        if (info_length > 0) {
-            strm << margin << "Global information:" << std::endl;
-            display.displayDescriptorList(section, data, info_length, indent);
-        }
-        data += info_length; size -= info_length;
-
-        // Process and display "service info"
-        while (size >= 4) {
-            const uint16_t id = GetUInt16(data);
-            const uint8_t rs = (data[2] >> 4) & 0x07;
-            info_length = GetUInt16(data + 2) & 0x0FFF;
-            data += 4; size -= 4;
-            if (info_length > size) {
-                info_length = size;
-            }
-            strm << margin << UString::Format(u"Service id: %d (0x%X), Status: %s", {id, id, RST::RunningStatusNames.name(rs)}) << std::endl;
-            display.displayDescriptorList(section, data, info_length, indent);
-            data += info_length; size -= info_length;
-        }
+    display.displayDescriptorListWithLength(section, buf, indent, u"Global information:");
+    while (!buf.error() && buf.remainingReadBytes() >= 4) {
+        strm << margin << UString::Format(u"Service id: %d (0x%<X)", {buf.getUInt16()});
+        buf.skipBits(1);
+        strm << ", Status: " << RST::RunningStatusNames.name(buf.getBits<uint8_t>(3)) << std::endl;
+        display.displayDescriptorListWithLength(section, buf, indent);
     }
-
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(buf, indent);
 }
 
 

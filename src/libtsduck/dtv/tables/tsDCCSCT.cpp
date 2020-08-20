@@ -32,6 +32,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -119,111 +120,64 @@ void ts::DCCSCT::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DCCSCT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::DCCSCT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    clear();
+    // Get common properties (should be identical in all sections)
+    dccsct_type = section.tableIdExtension();
+    protocol_version = buf.getUInt8();
 
-    // Loop on all sections (although a DCCSCT is not allowed to use more than one section, see A/65, section 6.8)
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
+    // Loop on all update definitions.
+    uint8_t updates_defined = buf.getUInt8();
+    while (!buf.error() && updates_defined-- > 0) {
 
-        // Reference to current section
-        const Section& sect(*table.sectionAt(si));
+        // Add a new Update at the end of the list.
+        Update& upd(updates.newEntry());
+        upd.update_type = UpdateType(buf.getUInt8());
 
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent(); // should be true
-        dccsct_type = sect.tableIdExtension();
+        // Length of the data block (depends on the update type).
+        const size_t update_data_length = buf.getUInt8();
+        const size_t update_data_end = buf.currentReadByteOffset() + update_data_length;
 
-        // Analyze the section payload:
-        const uint8_t* data = sect.payload();
-        size_t remain = sect.payloadSize();
-        if (remain < 2) {
-            return; // invalid table, too short
+        switch (upd.update_type) {
+            case new_genre_category: {
+                upd.genre_category_code = buf.getUInt8();
+                buf.getMultipleString(upd.genre_category_name_text);
+                break;
+            }
+            case new_state: {
+                upd.dcc_state_location_code = buf.getUInt8();
+                buf.getMultipleString(upd.dcc_state_location_code_text);
+                break;
+            }
+            case new_county: {
+                upd.state_code = buf.getUInt8();
+                buf.skipBits(6);
+                upd.dcc_county_location_code = buf.getBits<uint16_t>(10);
+                buf.getMultipleString(upd.dcc_county_location_code_text);
+                break;
+            }
+            default: {
+                buf.skipBytes(update_data_length);
+                break;
+            }
         }
 
-        // Get fixed fields.
-        protocol_version = data[0];
-        uint8_t updates_defined = data[1];
-        data += 2; remain -= 2;
-
-        // Loop on all table types definitions.
-        while (updates_defined > 0 && remain >= 2) {
-            // Add a new Update at the end of the list.
-            Update& upd(updates.newEntry());
-
-            upd.update_type = UpdateType(data[0]);
-            size_t len = data[1];
-            data += 2; remain -= 2;
-
-            if (remain < len) {
-                return; // invalid table, too short
-            }
-            switch (upd.update_type) {
-                case new_genre_category: {
-                    if (len < 2) {
-                        return; // invalid table, too short
-                    }
-                    upd.genre_category_code = data[0];
-                    data++; remain--;
-                    if (!upd.genre_category_name_text.deserialize(duck, data, remain, len - 1)) {
-                        return; // invalid table
-                    }
-                    break;
-                }
-                case new_state: {
-                    if (len < 2) {
-                        return; // invalid table, too short
-                    }
-                    upd.dcc_state_location_code = data[0];
-                    data++; remain--;
-                    if (!upd.dcc_state_location_code_text.deserialize(duck, data, remain, len - 1)) {
-                        return; // invalid table
-                    }
-                    break;
-                }
-                case new_county: {
-                    if (len < 4) {
-                        return; // invalid table, too short
-                    }
-                    upd.state_code = data[0];
-                    upd.dcc_county_location_code = GetUInt16(data + 1) & 0x03FF;
-                    data += 3; remain -= 3;
-                    if (!upd.dcc_county_location_code_text.deserialize(duck, data, remain, len - 3)) {
-                        return; // invalid table
-                    }
-                    break;
-                }
-                default: {
-                    data += len; remain -= len;
-                    break;
-                }
-            }
-
-            // Deserialize descriptor list for this update.
-            if (remain < 2) {
-                return; // invalid table, too short
-            }
-            len = GetUInt16(data) & 0x03FF;
-            data += 2; remain -= 2;
-            len = std::min(len, remain);
-            upd.descs.add(data, len);
-            data += len; remain -= len;
-
-            updates_defined--;
+        // Make sure the update data length was correctly set, skip extra data.
+        if (buf.currentReadByteOffset() > update_data_end) {
+            // Corrupted data.
+            buf.setUserError();
+            break;
         }
-        if (updates_defined > 0 || remain < 2) {
-            return; // truncated table.
+        else if (buf.currentReadByteOffset() < update_data_end) {
+            buf.readSeek(update_data_end);
         }
 
-        // Get descriptor list for the global table.
-        size_t len = GetUInt16(data) & 0x03FF;
-        data += 2; remain -= 2;
-        len = std::min(len, remain);
-        descs.add(data, len);
-        data += len; remain -= len;
+        // Deserialize descriptor list for this update (10-bit length field).
+        buf.getDescriptorListWithLength(upd.descs, 10);
     }
 
-    _is_valid = true;
+    // Get descriptor list for the global table (10-bit length field).
+    buf.getDescriptorListWithLength(descs, 10);
 }
 
 
@@ -231,52 +185,44 @@ void ts::DCCSCT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DCCSCT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::DCCSCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    // Build the section. Note that a DCCSCT is not allowed to use more than one section, see A/65, section 6.2.
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
+    // A DCCSCT is not allowed to use more than one section, see A/65, section 6.2.
+    if (updates.size() > 255) {
+        buf.setUserError();
+        return;
+    }
 
-    // Add fixed fields.
-    data[0] = protocol_version;
-    data[1] = uint8_t(updates.size());
-    data += 2; remain -= 2;
+    buf.putUInt8(protocol_version);
+    buf.putUInt8(uint8_t(updates.size()));
 
     // Add description of all updates.
-    for (auto it = updates.begin(); it != updates.end() && remain >= 2; ++it) {
+    for (auto it = updates.begin(); it != updates.end(); ++it) {
         const Update& upd(it->second);
+        buf.putUInt8(upd.update_type);
 
-        // Insert fixed fields.
-        data[0] = uint8_t(upd.update_type);
-        data[1] = 0; // place-holder for update_data_length
-        uint8_t* data_length_addr = data + 1;
-        data += 2; remain -= 2;
+        // Save position of update_data_length
+        buf.pushReadWriteState();
+        buf.putUInt8(0); // fake update_data_length
+        const size_t update_data_start = buf.currentReadByteOffset();
 
-        // We always need at least 4 bytes for the length of the two descriptor lists.
-        if (remain < 4) {
-            return;
-        }
-
-        // Insert type-dependent data. We now know that we have enough space for the fixed parts.
+        // Insert type-dependent data.
         switch (upd.update_type) {
             case new_genre_category: {
-                data[0] = upd.genre_category_code;
-                data++; remain--;
-                upd.genre_category_name_text.serialize(duck, data, remain);
+                buf.putUInt8(upd.genre_category_code);
+                buf.putMultipleString(upd.genre_category_name_text);
                 break;
             }
             case new_state: {
-                data[0] = upd.dcc_state_location_code;
-                data++; remain--;
-                upd.dcc_state_location_code_text.serialize(duck, data, remain);
+                buf.putUInt8(upd.dcc_state_location_code);
+                buf.putMultipleString(upd.dcc_state_location_code_text);
                 break;
             }
             case new_county: {
-                data[0] = upd.state_code;
-                PutUInt16(data + 1, 0xFC00 | upd.dcc_county_location_code);
-                data += 3; remain -= 3;
-                upd.dcc_county_location_code_text.serialize(duck, data, remain);
+                buf.putUInt8(upd.state_code);
+                buf.putBits(0xFF, 6);
+                buf.putBits(upd.dcc_county_location_code, 10);
+                buf.putMultipleString(upd.dcc_county_location_code_text);
                 break;
             }
             default: {
@@ -285,33 +231,17 @@ void ts::DCCSCT::serializeContent(DuckContext& duck, BinaryTable& table) const
         }
 
         // Update update_data_length
-        *data_length_addr = uint8_t(data - data_length_addr - 1);
+        const size_t update_data_length = buf.currentReadByteOffset() - update_data_start;
+        buf.swapReadWriteState();
+        buf.putUInt8(uint8_t(update_data_length));
+        buf.swapReadWriteState();
 
-        // Insert descriptor list for this updates (with leading length field)
-        size_t next_index = upd.descs.lengthSerialize(data, remain, 0, 0x003F, 10);
-        if (next_index < upd.descs.count()) {
-            // Not enough space to serialize all descriptors in the section.
-            return;
-        }
+        // Insert descriptor list for this updates (with leading 10-bit length field)
+        buf.putDescriptorListWithLength(upd.descs, 0, NPOS, 10);
     }
 
-    // Insert common descriptor list (with leading length field)
-    size_t next_index = descs.lengthSerialize(data, remain, 0, 0x003F, 10);
-    if (next_index < descs.count()) {
-        // Not enough space to serialize all descriptors in the section.
-        return;
-    }
-
-    // Add one single section in the table
-    table.addSection(new Section(MY_TID,           // tid
-                                 true,             // is_private_section
-                                 dccsct_type,      // tid_ext
-                                 version,
-                                 is_current,       // should be true
-                                 0,                // section_number,
-                                 0,                // last_section_number
-                                 payload,
-                                 data - payload)); // payload_size,
+    // Insert common descriptor list (with leading 10-bit length field)
+    buf.putDescriptorListWithLength(descs, 0, NPOS, 10);
 }
 
 

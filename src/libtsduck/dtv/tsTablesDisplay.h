@@ -172,7 +172,35 @@ namespace ts {
         virtual std::ostream& displayDescriptorList(const Section& section, const void* data, size_t size, int indent = 0, uint16_t cas = CASID_NULL);
 
         //!
-        //! Display a list of descriptors (with is preceding length) from a PSI buffer.
+        //! Display a list of descriptors.
+        //! @param [in] list Descriptor list.
+        //! @param [in] indent Indentation width.
+        //! @param [in] cas CAS id of the table.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displayDescriptorList(const DescriptorList& list, int indent = 0, uint16_t cas = CASID_NULL);
+
+        //!
+        //! Display a list of descriptors from a PSI buffer.
+        //! @param [in] section Section containing the descriptor list.
+        //! @param [in,out] buf Buffer containing the descriptor list to read
+        //! @param [in] indent Indentation width.
+        //! @param [in] title Optional title to display as preceding line.
+        //! @param [in] empty_text Optional text to display when the descriptor list is empty.
+        //! @param [in] length Number of bytes to read. If NPOS is specified (the default), read the rest of the buffer.
+        //! @param [in] cas CAS id of the table.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displayDescriptorList(const Section& section,
+                                                    PSIBuffer& buf,
+                                                    int indent = 0,
+                                                    const UString& title = UString(),
+                                                    const UString& empty_text = UString(),
+                                                    size_t length = NPOS,
+                                                    uint16_t cas = CASID_NULL);
+
+        //!
+        //! Display a list of descriptors (with its preceding length) from a PSI buffer.
         //! @param [in] section Section containing the descriptor list.
         //! @param [in,out] buf Buffer containing the descriptor list to read
         //! @param [in] indent Indentation width.
@@ -189,15 +217,6 @@ namespace ts {
                                                               const UString& empty_text = UString(),
                                                               size_t length_bits = 12,
                                                               uint16_t cas = CASID_NULL);
-
-        //!
-        //! Display a list of descriptors.
-        //! @param [in] list Descriptor list.
-        //! @param [in] indent Indentation width.
-        //! @param [in] cas CAS id of the table.
-        //! @return A reference to the output stream.
-        //!
-        virtual std::ostream& displayDescriptorList(const DescriptorList& list, int indent = 0, uint16_t cas = CASID_NULL);
 
         //!
         //! Display an ATSC multiple_string_structure() as defined in ATSC A/65 from a PSI buffer.

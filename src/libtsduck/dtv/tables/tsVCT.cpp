@@ -267,7 +267,7 @@ void ts::VCT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
     const size_t payload_min_size = payload.currentReadByteOffset();
 
     // Loop on channel definitions.
-    for (size_t i = 0; i < channels.size(); ++i) {
+    for (size_t i = 0; !payload.error() && i < channels.size(); ++i) {
         const Channel& ch(channels[i]);
 
         // Binary size of the channel definition.
@@ -351,13 +351,14 @@ void ts::VCT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     const std::string margin(indent, ' ');
     PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
+    strm << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+
     uint16_t num_channels = 0;
 
     if (buf.remainingReadBytes() < 2) {
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
         strm << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
         strm << UString::Format(u", number of channels: %d", {num_channels = buf.getUInt8()}) << std::endl;
     }
