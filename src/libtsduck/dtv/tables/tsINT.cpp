@@ -161,7 +161,7 @@ void ts::INT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
     // Fixed part, to be repeated on all sections.
     payload.putUInt24(platform_id);
     payload.putUInt8(processing_order);
-    payload.pushReadWriteState();
+    payload.pushState();
 
     // Add top-level platform_descriptor_loop.
     // If the descriptor list is too long to fit into one section, create new sections when necessary.
@@ -199,9 +199,9 @@ void ts::INT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 
         // Insert device entry.
         // During serialization of the first descriptor loop, keep size for at least an empty second descriptor loop.
-        payload.pushSize(payload.size() - 2);
+        payload.pushWriteSize(payload.size() - 2);
         payload.putPartialDescriptorListWithLength(it->second.target_descs);
-        payload.popSize();
+        payload.popState();
         payload.putPartialDescriptorListWithLength(it->second.operational_descs);
     }
 }

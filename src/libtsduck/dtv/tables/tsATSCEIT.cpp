@@ -141,7 +141,7 @@ void ts::ATSCEIT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 
     // Save position before num_events_in_section. Will be updated at each event.
     uint8_t num_events_in_section = 0;
-    payload.pushReadWriteState();
+    payload.pushState();
     payload.putUInt8(num_events_in_section);
     const size_t payload_min_size = payload.currentReadByteOffset();
 
@@ -177,11 +177,11 @@ void ts::ATSCEIT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
         payload.putPartialDescriptorListWithLength(event.descs);
 
         // Now increment the field num_events_in_section at saved position.
-        payload.swapReadWriteState();
-        payload.pushReadWriteState();
+        payload.swapState();
+        payload.pushState();
         payload.putUInt8(++num_events_in_section);
-        payload.popReadWriteState();
-        payload.swapReadWriteState();
+        payload.popState();
+        payload.swapState();
     }
 }
 

@@ -32,6 +32,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -128,95 +129,47 @@ void ts::DCCT::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DCCT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::DCCT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    clear();
+    dcc_subtype = uint8_t(section.tableIdExtension() >> 8);
+    dcc_id = uint8_t(section.tableIdExtension());
+    protocol_version = buf.getUInt8();
 
-    // Loop on all sections (although a DCCT is not allowed to use more than one section, see A/65, section 6.7)
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
+    // Loop on all upper-level definitions.
+    uint8_t dcc_test_count = buf.getUInt8();
+    while (!buf.error() && dcc_test_count-- > 0) {
 
-        // Reference to current section
-        const Section& sect(*table.sectionAt(si));
+        // Add a new Test at the end of the list.
+        Test& test(tests.newEntry());
 
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent(); // should be true
-        dcc_subtype = uint8_t(sect.tableIdExtension() >> 8);
-        dcc_id = uint8_t(sect.tableIdExtension());
+        test.dcc_context = DCCContext(buf.getBit());
+        buf.skipBits(3);
+        test.dcc_from_major_channel_number = buf.getBits<uint16_t>(10);
+        test.dcc_from_minor_channel_number = buf.getBits<uint16_t>(10);
+        buf.skipBits(4);
+        test.dcc_to_major_channel_number = buf.getBits<uint16_t>(10);
+        test.dcc_to_minor_channel_number = buf.getBits<uint16_t>(10);
+        test.dcc_start_time = Time::GPSSecondsToUTC(buf.getUInt32());
+        test.dcc_end_time = Time::GPSSecondsToUTC(buf.getUInt32());
 
-        // Analyze the section payload:
-        const uint8_t* data = sect.payload();
-        size_t remain = sect.payloadSize();
-        if (remain < 2) {
-            return; // invalid table, too short
+        // Loop on all inner-level definitions.
+        size_t dcc_term_count = buf.getUInt8();
+        while (!buf.error() && dcc_term_count-- > 0) {
+
+            // Add a new Term at the end of the list.
+            Term& term(test.terms.newEntry());
+
+            term.dcc_selection_type = buf.getUInt8();
+            term.dcc_selection_id = buf.getUInt64();
+            buf.getDescriptorListWithLength(term.descs, 10); // 10-bit length field
         }
 
-        // Get fixed fields.
-        protocol_version = data[0];
-        uint8_t dcc_test_count = data[1];
-        data += 2; remain -= 2;
-
-        // Loop on all DCC test definitions.
-        while (dcc_test_count > 0 && remain >= 15) {
-
-            // Add a new Test at the end of the list.
-            Test& test(tests.newEntry());
-
-            const uint32_t from = GetUInt24(data);
-            const uint32_t to = GetUInt24(data + 3);
-            test.dcc_context = DCCContext((data[0] >> 7) & 0x01);
-            test.dcc_from_major_channel_number = uint16_t((from >> 10) & 0x03FF);
-            test.dcc_from_minor_channel_number = uint16_t(from & 0x03FF);
-            test.dcc_to_major_channel_number = uint16_t((to >> 10) & 0x03FF);
-            test.dcc_to_minor_channel_number = uint16_t(to & 0x03FF);
-            test.dcc_start_time = Time::GPSSecondsToUTC(GetUInt32(data + 6));
-            test.dcc_end_time = Time::GPSSecondsToUTC(GetUInt32(data + 10));
-            size_t dcc_term_count = data[14];
-            data += 15; remain -= 15;
-
-            // Deserialize all DCC terms in this DCC test.
-            while (dcc_term_count > 0 && remain >= 11) {
-
-                // Add a new Term at the end of the list.
-                Term& term(test.terms.newEntry());
-
-                term.dcc_selection_type = data[0];
-                term.dcc_selection_id = GetUInt64(data + 1);
-                size_t len = GetUInt16(data + 9) & 0x03FF;
-                data += 11; remain -= 11;
-
-                len = std::min(len, remain);
-                term.descs.add(data, len);
-                data += len; remain -= len;
-
-                dcc_term_count--;
-            }
-
-            // Deserialize descriptor list for this DCC test.
-            if (remain < 2) {
-                return; // invalid table, too short
-            }
-            size_t len = GetUInt16(data) & 0x03FF;
-            data += 2; remain -= 2;
-            len = std::min(len, remain);
-            test.descs.add(data, len);
-            data += len; remain -= len;
-
-            dcc_test_count--;
-        }
-        if (dcc_test_count > 0 || remain < 2) {
-            return; // truncated table.
-        }
-
-        // Get descriptor list for the global table.
-        size_t len = GetUInt16(data) & 0x03FF;
-        data += 2; remain -= 2;
-        len = std::min(len, remain);
-        descs.add(data, len);
-        data += len; remain -= len;
+        // Deserialize descriptor list for this DCC test.
+        buf.getDescriptorListWithLength(test.descs, 10); // 10-bit length field
     }
 
-    _is_valid = true;
+    // Get descriptor list for the global table.
+    buf.getDescriptorListWithLength(descs, 10); // 10-bit length field
 }
 
 
@@ -224,75 +177,50 @@ void ts::DCCT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DCCT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::DCCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    // Build the section. Note that a DCCT is not allowed to use more than one section, see A/65, section 6.2.
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
-
-    // Add fixed fields.
-    data[0] = protocol_version;
-    data[1] = uint8_t(tests.size());
-    data += 2; remain -= 2;
-
-    // Add description of all DCC tests.
-    for (auto it1 = tests.begin(); it1 != tests.end() && remain >= 15; ++it1) {
-        const Test& test(it1->second);
-
-        // Insert fixed fields.
-        PutUInt24(data, (uint32_t(test.dcc_context & 0x01) << 23) |
-                        (uint32_t(test.dcc_from_major_channel_number & 0x03FF) << 10) |
-                        uint32_t(test.dcc_from_minor_channel_number & 0x03FF));
-        PutUInt24(data + 3, 0x00F00000 |
-                            (uint32_t(test.dcc_to_major_channel_number & 0x03FF) << 10) |
-                            uint32_t(test.dcc_to_minor_channel_number & 0x03FF));
-        PutUInt32(data + 6, uint32_t(test.dcc_start_time.toGPSSeconds()));
-        PutUInt32(data + 10, uint32_t(test.dcc_end_time.toGPSSeconds()));
-        PutUInt8(data + 14, uint8_t(test.terms.size()));
-        data += 15; remain -= 15;
-
-        // Add description of all DCC terms in this DCC test.
-        for (auto it2 = test.terms.begin(); it2 != test.terms.end() && remain >= 9; ++it2) {
-            const Term& term(it2->second);
-            PutUInt8(data, term.dcc_selection_type);
-            PutUInt64(data + 1, term.dcc_selection_id);
-            data += 9; remain -= 9;
-
-            // Insert descriptor list for this DCC term (with leading length field)
-            size_t next_index = term.descs.lengthSerialize(data, remain, 0, 0x003F, 10);
-            if (next_index < term.descs.count()) {
-                // Not enough space to serialize all descriptors in the section.
-                return;
-            }
-
-        }
-
-        // Insert descriptor list for this DCC test (with leading length field)
-        size_t next_index = test.descs.lengthSerialize(data, remain, 0, 0x003F, 10);
-        if (next_index < test.descs.count()) {
-            // Not enough space to serialize all descriptors in the section.
-            return;
-        }
-    }
-
-    // Insert common descriptor list (with leading length field)
-    size_t next_index = descs.lengthSerialize(data, remain, 0, 0x003F, 10);
-    if (next_index < descs.count()) {
-        // Not enough space to serialize all descriptors in the section.
+    // A DCCT is not allowed to use more than one section, see A/65, section 6.2.
+    if (tests.size() > 255) {
+        buf.setUserError();
         return;
     }
 
-    // Add one single section in the table
-    table.addSection(new Section(MY_TID,             // tid
-                                 true,               // is_private_section
-                                 tableIdExtension(), // tid_ext
-                                 version,
-                                 is_current,         // should be true
-                                 0,                  // section_number,
-                                 0,                  // last_section_number
-                                 payload,
-                                 data - payload));   // payload_size,
+    buf.putUInt8(protocol_version);
+    buf.putUInt8(uint8_t(tests.size()));
+
+    // Add description of all DCC tests.
+    for (auto it1 = tests.begin(); it1 != tests.end(); ++it1) {
+        const Test& test(it1->second);
+        buf.putBit(test.dcc_context);
+        buf.putBits(0xFF, 3);
+        buf.putBits(test.dcc_from_major_channel_number, 10);
+        buf.putBits(test.dcc_from_minor_channel_number, 10);
+        buf.putBits(0xFF, 4);
+        buf.putBits(test.dcc_to_major_channel_number, 10);
+        buf.putBits(test.dcc_to_minor_channel_number, 10);
+        buf.putUInt32(uint32_t(test.dcc_start_time.toGPSSeconds()));
+        buf.putUInt32(uint32_t(test.dcc_end_time.toGPSSeconds()));
+
+        if (test.terms.size() > 255) {
+            buf.setUserError();
+            return;
+        }
+        buf.putUInt8(uint8_t(test.terms.size()));
+
+        // Add description of all DCC terms in this DCC test.
+        for (auto it2 = test.terms.begin(); it2 != test.terms.end(); ++it2) {
+            const Term& term(it2->second);
+            buf.putUInt8(term.dcc_selection_type);
+            buf.putUInt64(term.dcc_selection_id);
+            buf.putDescriptorListWithLength(term.descs, 0, NPOS, 10);
+        }
+
+        // Insert descriptor list for this DCC test (with leading 10-bit length field)
+        buf.putDescriptorListWithLength(test.descs, 0, NPOS, 10);
+    }
+
+    // Insert common descriptor list (with leading 10-bit length field)
+    buf.putDescriptorListWithLength(descs, 0, NPOS, 10);
 }
 
 
@@ -305,104 +233,51 @@ void ts::DCCT::DisplaySection(TablesDisplay& display, const ts::Section& section
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
-    bool ok = true;
+    strm << margin << UString::Format(u"DCC subtype: 0x%02X (%<d), DCC id: 0x%02X (%<d)", {section.tableIdExtension() >> 8, section.tableIdExtension() & 0xFF}) << std::endl;
 
-    if (size >= 2) {
-        // Fixed part.
-        const uint8_t subtype = uint8_t(section.tableIdExtension() >> 8);
-        const uint8_t id = uint8_t(section.tableIdExtension());
-        size_t dcc_test_count = data[1];
-        strm << margin << UString::Format(u"DCC subtype: 0x%X (%d), DCC id: 0x%X (%d)", {subtype, subtype, id, id}) << std::endl
-             << margin << UString::Format(u"Protocol version: %d, number of DCC tests: %d", {data[0], dcc_test_count}) << std::endl;
-        data += 2; size -= 2;
+    uint16_t dcc_test_count = 0;
 
-        // Loop on all DCC tests.
-        while (ok && dcc_test_count > 0) {
-
-            // Check fixed part.
-            ok = size >= 15;
-            if (!ok) {
-                break;
-            }
-
-            // Display fixed part.
-            const uint8_t ctx = (data[0] >> 7) & 0x01;
-            const uint32_t from = GetUInt24(data);
-            const uint32_t to = GetUInt24(data + 3);
-            const Time start(Time::GPSSecondsToUTC(GetUInt32(data + 6)));
-            const Time end(Time::GPSSecondsToUTC(GetUInt32(data + 10)));
-            size_t dcc_term_count = data[14];
-            data += 15; size -= 15;
-
-            strm << margin << UString::Format(u"- DCC context: %d (%s)", {ctx, DCCContextNames.name(ctx)}) << std::endl
-                 << margin << UString::Format(u"  DCC from channel %d.%d to channel %d.%d", {(from >> 10) & 0x03FF, from & 0x03FF, (to >> 10) & 0x03FF, to & 0x03FF}) << std::endl
-                 << margin << "  Start UTC: " << start.format(Time::DATETIME) << std::endl
-                 << margin << "  End UTC:   " << end.format(Time::DATETIME) << std::endl
-                 << margin << "  Number of DCC selection terms: " << dcc_term_count << std::endl;
-
-            // Loop on all DCC selection terms.
-            while (ok && dcc_term_count > 0) {
-
-                // Check fixed part.
-                ok = size >= 9;
-                if (!ok) {
-                    break;
-                }
-
-                // Display fixed part.
-                strm << margin << "  - DCC selection type: " << NameFromSection(u"DCCSelectionType", data[0], names::FIRST) << std::endl
-                     << margin << UString::Format(u"    DCC selection id: 0x%X", {GetUInt64(data + 1)}) << std::endl;
-                data += 9; size -= 9;
-
-                // Display descriptor list for this term.
-                ok = ok && size >= 2;
-                if (ok) {
-                    size_t len = GetUInt16(data) & 0x03FF;
-                    data += 2; size -= 2;
-                    len = std::min(len, size);
-                    if (len > 0) {
-                        strm << margin << "    DCC selection term descriptors:" << std::endl;
-                        display.displayDescriptorList(section, data, len, indent + 4);
-                        data += len; size -= len;
-                    }
-                }
-
-                dcc_term_count--;
-            }
-
-            // Display descriptor list for this DCC test.
-            ok = ok && size >= 2;
-            if (ok) {
-                size_t len = GetUInt16(data) & 0x03FF;
-                data += 2; size -= 2;
-                len = std::min(len, size);
-                if (len > 0) {
-                    strm << margin << "  DCC test descriptors:" << std::endl;
-                    display.displayDescriptorList(section, data, len, indent + 2);
-                    data += len; size -= len;
-                }
-            }
-
-            dcc_test_count--;
-        }
-
-        // Display descriptor list for the global table.
-        if (ok && size >= 2) {
-            size_t len = GetUInt16(data) & 0x03FF;
-            data += 2; size -= 2;
-            len = std::min(len, size);
-            if (len > 0) {
-                strm << margin << "Additional descriptors:" << std::endl;
-                display.displayDescriptorList(section, data, len, indent);
-                data += len; size -= len;
-            }
-        }
+    if (buf.remainingReadBytes() < 2) {
+        buf.setUserError();
+    }
+    else {
+        strm << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
+        strm << UString::Format(u", number of DCC tests: %d", {dcc_test_count = buf.getUInt8()}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    // Loop on all upper-level definitions.
+    while (!buf.error() && dcc_test_count-- > 0 && buf.remainingReadBytes() >= 15) {
+
+        const uint8_t ctx = buf.getBit();
+        strm << margin << UString::Format(u"- DCC context: %d (%s)", {ctx, DCCContextNames.name(ctx)}) << std::endl;
+        buf.skipBits(3);
+        strm << margin << "  DCC from channel " << buf.getBits<uint16_t>(10);
+        strm << "." << buf.getBits<uint16_t>(10);
+        buf.skipBits(4);
+        strm << " to channel " << buf.getBits<uint16_t>(10);
+        strm << "." << buf.getBits<uint16_t>(10) << std::endl;
+        strm << margin << "  Start UTC: " << Time::GPSSecondsToUTC(buf.getUInt32()).format(Time::DATETIME) << std::endl;
+        strm << margin << "  End UTC:   " << Time::GPSSecondsToUTC(buf.getUInt32()).format(Time::DATETIME) << std::endl;
+
+        size_t dcc_term_count = buf.getUInt8();
+        strm << margin << "  Number of DCC selection terms: " << dcc_term_count << std::endl;
+
+        // Loop on all DCC selection terms.
+        while (!buf.error() && dcc_term_count-- > 0 && buf.remainingReadBytes() >= 9) {
+            strm << margin << "  - DCC selection type: " << NameFromSection(u"DCCSelectionType", buf.getUInt8(), names::FIRST) << std::endl;
+            strm << margin << UString::Format(u"    DCC selection id: 0x%X", {buf.getUInt64()}) << std::endl;
+            display.displayDescriptorListWithLength(section, buf, indent + 4, u"DCC selection term descriptors:", UString(), 10);
+        }
+
+        // Display descriptor list for this DCC test.
+        display.displayDescriptorListWithLength(section, buf, indent + 2, u"DCC test descriptors:", UString(), 10);
+    }
+
+    // Display descriptor list for the global table.
+    display.displayDescriptorListWithLength(section, buf, indent, u"Additional descriptors:", UString(), 10);
+    display.displayExtraData(buf, indent);
 }
 
 

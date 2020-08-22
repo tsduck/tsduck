@@ -172,6 +172,14 @@ std::ostream& ts::TablesDisplay::displayPrivateData(const UString& title, const 
     return strm;
 }
 
+std::ostream& ts::TablesDisplay::displayPrivateData(const UString& title, PSIBuffer& buf, size_t size, int indent, size_t single_line_max)
+{
+    size = std::max(size, buf.remainingReadBytes());
+    displayPrivateData(title, buf.currentReadAddress(), size, indent, single_line_max);
+    buf.skipBytes(size);
+    return _duck.out();
+}
+
 
 //----------------------------------------------------------------------------
 // Display a table on the output stream.

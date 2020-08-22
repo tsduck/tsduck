@@ -48,7 +48,7 @@ ts::Buffer::~Buffer()
     }
     _buffer = nullptr;
     _buffer_size = 0;
-    _buffer_max = 0;
+    _state.clear();
 }
 
 
@@ -59,9 +59,9 @@ ts::Buffer::~Buffer()
 bool ts::Buffer::isValid() const
 {
     assert(_state.rbyte <= _state.wbyte);
-    assert(_buffer_max <= _buffer_size);
-    assert(_state.wbyte <= _buffer_max);
-    assert(_state.wbyte < _buffer_max || _state.wbit == 0);
+    assert(_state.end <= _buffer_size);
+    assert(_state.wbyte <= _state.end);
+    assert(_state.wbyte < _state.end || _state.wbit == 0);
     assert(8 * _state.rbyte + _state.rbit <= 8 * _state.wbyte + _state.wbit);
     return _buffer != nullptr;
 }
@@ -71,12 +71,22 @@ bool ts::Buffer::isValid() const
 // Read/write state constructor.
 //----------------------------------------------------------------------------
 
-ts::Buffer::RWState::RWState() :
+ts::Buffer::State::State(bool rdonly, size_t size) :
+    reason(Reason::FULL),
+    read_only(rdonly),
+    end(size),
     rbyte(0),
     wbyte(0),
     rbit(0),
-    wbit(0)
+    wbit(0),
+    len_bits(0)
 {
+}
+
+void ts::Buffer::State::clear()
+{
+    read_only = false;
+    end = rbyte = wbyte = rbit = wbit = len_bits = 0;
 }
 
 
@@ -87,15 +97,12 @@ ts::Buffer::RWState::RWState() :
 ts::Buffer::Buffer(size_t size) :
     _buffer(nullptr), // adjusted later
     _buffer_size(std::max(MINIMUM_SIZE, size)),
-    _buffer_max(size),
-    _read_only(false),
     _allocated(true),
     _big_endian(true),
     _read_error(false),
     _write_error(false),
     _user_error(false),
-    _state(),
-    _saved_max(),
+    _state(false, size),
     _saved_states(),
     _realigned()
 {
@@ -115,28 +122,26 @@ void ts::Buffer::reset(size_t size)
         delete[] _buffer;
         _buffer = nullptr;
         _buffer_size = 0;
-        _buffer_max = 0;
     }
 
     // Allocate the new buffer.
     if (!_allocated || _buffer == nullptr) {
-        _buffer_max = size;
         _buffer_size = std::max(MINIMUM_SIZE, size);
         _buffer = new uint8_t[_buffer_size];
         CheckNonNull(_buffer);
     }
 
     // Reset other properties.
-    _read_only = false;
     _allocated = true;
     _read_error = false;
     _write_error = false;
     _user_error = false;
+    _state.read_only = false;
     _state.rbyte = 0;
     _state.rbit = 0;
     _state.wbyte = 0;
     _state.wbit = 0;
-    _saved_max.clear();
+    _state.end = size;
     _saved_states.clear();
 }
 
@@ -148,20 +153,17 @@ void ts::Buffer::reset(size_t size)
 ts::Buffer::Buffer(void* data, size_t size, bool read_only) :
     _buffer(reinterpret_cast<uint8_t*>(data)),
     _buffer_size(size),
-    _buffer_max(size),
-    _read_only(read_only),
     _allocated(false),
     _big_endian(true),
     _read_error(false),
     _write_error(false),
     _user_error(false),
-    _state(),
-    _saved_max(),
+    _state(read_only, size),
     _saved_states(),
     _realigned()
 {
-    if (_read_only) {
-        _state.wbyte = _buffer_size;
+    if (_state.read_only) {
+        _state.wbyte = _state.end;
     }
 }
 
@@ -180,19 +182,18 @@ void ts::Buffer::reset(void* data, size_t size, bool read_only)
     // Point to external buffer.
     _buffer = reinterpret_cast<uint8_t*>(data);
     _buffer_size = size;
-    _buffer_max = size;
-    _read_only = read_only;
     _allocated = false;
 
     // Reset other properties.
     _read_error = false;
     _write_error = false;
     _user_error = false;
+    _state.read_only = read_only;
+    _state.end = size;
     _state.rbyte = 0;
     _state.rbit = 0;
-    _state.wbyte = _read_only ? _buffer_size : 0;
+    _state.wbyte = _state.read_only ? _state.end : 0;
     _state.wbit = 0;
-    _saved_max.clear();
     _saved_states.clear();
 }
 
@@ -204,15 +205,12 @@ void ts::Buffer::reset(void* data, size_t size, bool read_only)
 ts::Buffer::Buffer(const void* data, size_t size) :
     _buffer(reinterpret_cast<uint8_t*>(const_cast<void*>(data))),
     _buffer_size(size),
-    _buffer_max(size),
-    _read_only(true),
     _allocated(false),
     _big_endian(true),
     _read_error(false),
     _write_error(false),
     _user_error(false),
-    _state(),
-    _saved_max(),
+    _state(true, size),
     _saved_states(),
     _realigned()
 {
@@ -234,19 +232,17 @@ void ts::Buffer::reset(const void* data, size_t size)
     // Point to external buffer.
     _buffer = reinterpret_cast<uint8_t*>(const_cast<void*>(data));
     _buffer_size = size;
-    _buffer_max = size;
-    _read_only = true;
     _allocated = false;
 
     // Reset other properties.
     _read_error = false;
     _write_error = false;
     _user_error = false;
+    _state.read_only = true;
     _state.rbyte = 0;
     _state.rbit = 0;
-    _state.wbyte = _buffer_size;
+    _state.end = _state.wbyte = _buffer_size;
     _state.wbit = 0;
-    _saved_max.clear();
     _saved_states.clear();
 }
 
@@ -258,15 +254,12 @@ void ts::Buffer::reset(const void* data, size_t size)
 ts::Buffer::Buffer(const Buffer& other) :
     _buffer(other._buffer), // adjusted later
     _buffer_size(other._buffer_size),
-    _buffer_max(other._buffer_max),
-    _read_only(other._read_only),
     _allocated(other._allocated),
     _big_endian(other._big_endian),
     _read_error(other._read_error),
     _write_error(other._write_error),
     _user_error(other._user_error),
     _state(other._state),
-    _saved_max(other._saved_max),
     _saved_states(other._saved_states),
     _realigned()
 {
@@ -286,22 +279,19 @@ ts::Buffer::Buffer(const Buffer& other) :
 ts::Buffer::Buffer(Buffer&& other) :
     _buffer(other._buffer),
     _buffer_size(other._buffer_size),
-    _buffer_max(other._buffer_max),
-    _read_only(other._read_only),
     _allocated(other._allocated),
     _big_endian(other._big_endian),
     _read_error(other._read_error),
     _write_error(other._write_error),
     _user_error(other._user_error),
     _state(other._state),
-    _saved_max(std::move(other._saved_max)),
     _saved_states(std::move(other._saved_states)),
     _realigned()
 {
     // Clear state of moved buffer.
     other._buffer = nullptr;
     other._buffer_size = 0;
-    other._buffer_max = 0;
+    other._state.clear();
 }
 
 
@@ -320,15 +310,12 @@ ts::Buffer& ts::Buffer::operator=(const Buffer& other)
         // Copy buffer properties.
         _buffer = other._buffer; // adjusted later
         _buffer_size = other._buffer_size;
-        _buffer_max = other._buffer_max;
-        _read_only = other._read_only;
         _allocated = other._allocated;
         _big_endian = other._big_endian;
         _read_error = other._read_error;
         _write_error = other._write_error;
         _user_error = other._user_error;
         _state = other._state;
-        _saved_max = other._saved_max;
         _saved_states = other._saved_states;
 
         // Process buffer content.
@@ -358,66 +345,213 @@ ts::Buffer& ts::Buffer::operator=(Buffer&& other)
         // Move resources between buffers.
         _buffer = other._buffer;
         _buffer_size = other._buffer_size;
-        _buffer_max = other._buffer_max;
-        _read_only = other._read_only;
         _allocated = other._allocated;
         _big_endian = other._big_endian;
         _read_error = other._read_error;
         _user_error = other._user_error;
         _write_error = other._write_error;
         _state = other._state;
-        _saved_max = std::move(other._saved_max);
         _saved_states = std::move(other._saved_states);
 
         // Clear state of moved buffer.
         other._buffer = nullptr;
-        other._buffer_max = 0;
         other._buffer_size = 0;
+        other._state.clear();
     }
     return *this;
 }
 
 
 //----------------------------------------------------------------------------
-// Push/pop the current state of the read/write streams.
+// Push the current state of the read/write streams.
 //----------------------------------------------------------------------------
 
-size_t ts::Buffer::pushReadWriteState()
+size_t ts::Buffer::pushState()
 {
     _saved_states.push_back(_state);
+    _saved_states.back().reason = Reason::FULL;
     return _saved_states.size() - 1;
 }
 
 
-size_t ts::Buffer::swapReadWriteState()
+//----------------------------------------------------------------------------
+// Temporary reduce the new readable size of the buffer.
+//----------------------------------------------------------------------------
+
+size_t ts::Buffer::pushReadSize(size_t size)
+{
+    // Save current state.
+    _saved_states.push_back(_state);
+    _saved_states.back().reason = Reason::READ_SIZE;
+
+    // Adjust the new write pointer and make the buffer read-only.
+    _state.wbyte = std::max(_state.rbyte, std::min(size, _state.wbyte));
+    _state.read_only = true;
+
+    return _saved_states.size() - 1;
+}
+
+
+//----------------------------------------------------------------------------
+// Temporary reduce the writable size of the buffer.
+//----------------------------------------------------------------------------
+
+size_t ts::Buffer::pushWriteSize(size_t size)
+{
+    // Save current state.
+    _saved_states.push_back(_state);
+    _saved_states.back().reason = Reason::WRITE_SIZE;
+
+    // Adjust the new end of buffer.
+    _state.end = std::max(_state.wbyte, std::min(size, _state.end));
+
+    return _saved_states.size() - 1;
+}
+
+
+//----------------------------------------------------------------------------
+// Start a write sequence with a leading length field.
+//----------------------------------------------------------------------------
+
+size_t ts::Buffer::pushWriteSequenceWithLeadingLength(size_t length_bits)
+{
+    // Check parameters. Must be byte-aligned after the length field.
+    if (_state.read_only || _write_error || length_bits == 0 || length_bits > 64 || (_state.wbit + length_bits) % 8 != 0) {
+        return NPOS;
+    }
+
+    // Save current state.
+    _saved_states.push_back(_state);
+    _saved_states.back().reason = Reason::WRITE_LEN_SEQ;
+    _saved_states.back().len_bits = length_bits;
+
+    // Write a zero place holder for the length field.
+    putBits(0, length_bits);
+
+    return _saved_states.size() - 1;
+}
+
+
+
+//----------------------------------------------------------------------------
+// Pop the current state from the stack and perform appropriate actions.
+//----------------------------------------------------------------------------
+
+bool ts::Buffer::popState(size_t level)
 {
     if (_saved_states.empty()) {
-        _saved_states.push_back(_state);
+        // Nothing to restore.
+        return false;
+    }
+    else if (level == NPOS) {
+        // Default level is last level.
+        level = _saved_states.size() - 1;
+    }
+    else if (level >= _saved_states.size()) {
+        // Non-existent level.
+        return false;
+    }
+
+    // We need to pop the states one by one since some actions may be performed at each level.
+    while (_saved_states.size() > level) {
+        // Reference to last saved state.
+        const State& saved(_saved_states.back());
+
+        // Apply restoration of the state.
+        switch (saved.reason) {
+            case Reason::FULL: {
+                // Full restore.
+                _state = _saved_states.back();
+                break;
+            }
+            case Reason::READ_SIZE: {
+                // Restore write pointer and read-only indicator.
+                assert(_state.wbyte <= saved.wbyte);
+                _state.wbyte = saved.wbyte;
+                _state.read_only = saved.read_only;
+                break;
+            }
+            case Reason::WRITE_SIZE: {
+                // Restore end of buffer.
+                assert(_state.end <= saved.end);
+                _state.end = saved.end;
+                break;
+            }
+            case Reason::WRITE_LEN_SEQ: {
+                // Save current state.
+                State current(_state);
+                // Compute the number bytes in the written sequence.
+                const size_t bytes = current.wbyte - (8 * saved.wbyte + saved.wbit + saved.len_bits) / 8;
+                // Back to state at the beginning of the length field and write length field.
+                _state = saved;
+                putBits(bytes, saved.len_bits);
+                // Restore current state.
+                _state = current;
+                break;
+            }
+            default: {
+                // Corrupted saved state.
+                assert(false);
+                return false;
+            }
+        }
+
+        // Drop last saved state.
+        _saved_states.pop_back();
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Temporary reduce the new readable size using a length field.
+//----------------------------------------------------------------------------
+
+size_t ts::Buffer::pushReadSizeFromLength(size_t length_bits)
+{
+    // Read the length field.
+    size_t length = getBits<size_t>(length_bits);
+    if (_read_error || _state.rbit != 0) {
+        // Length not read or not byte-aligned.
+        _read_error = true;
+        return NPOS;
     }
     else {
+        // Reduce the readable size. Will be maximized by the write pointer.
+        return pushReadSize(_state.rbyte + length);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Swap the current state with the one on top of the stack of saved states.
+//----------------------------------------------------------------------------
+
+size_t ts::Buffer::swapState()
+{
+    if (_saved_states.empty()) {
+        // Empty stack, cannot swap, simply push current state.
+        _saved_states.push_back(_state);
+    }
+    else if (_saved_states.back().reason != Reason::FULL) {
+        // Cannot swap when with a temporary state.
+        _read_error = _write_error = true;
+        return NPOS;
+    }
+    else {
+        // Actually swap states.
         std::swap(_state, _saved_states.back());
     }
     return _saved_states.size() - 1;
 }
 
-bool ts::Buffer::popReadWriteState(size_t level)
-{
-    if (!_saved_states.empty() && level == NPOS) {
-        _state = _saved_states.back();
-        _saved_states.pop_back();
-        return true;
-    }
-    else if (level >= _saved_states.size()) {
-        return false;
-    }
-    else {
-        _state = _saved_states.at(level);
-        _saved_states.resize(level);
-        return true;
-    }
-}
 
-bool ts::Buffer::dropReadWriteState(size_t level)
+//----------------------------------------------------------------------------
+// Drop the last saved state from the stack of saved states.
+//----------------------------------------------------------------------------
+
+bool ts::Buffer::dropState(size_t level)
 {
     if (!_saved_states.empty() && level == NPOS) {
         _saved_states.pop_back();
@@ -434,7 +568,7 @@ bool ts::Buffer::dropReadWriteState(size_t level)
 
 
 //----------------------------------------------------------------------------
-// Set/push/pop the buffer size.
+// Change the buffer size.
 //----------------------------------------------------------------------------
 
 bool ts::Buffer::resize(size_t size, bool reallocate)
@@ -451,66 +585,33 @@ bool ts::Buffer::resize(size_t size, bool reallocate)
 
     // Reallocate (enlarge or shrink) if necessary.
     if (reallocate && _allocated && new_size != _buffer_size) {
-        size_t new_buffer_size = std::max(MINIMUM_SIZE, new_size);
-        uint8_t* new_buffer = new uint8_t[new_buffer_size];
+
+        // Allocate new buffer.
+        const size_t new_buffer_size = std::max(MINIMUM_SIZE, new_size);
+        uint8_t* const new_buffer = new uint8_t[new_buffer_size];
         CheckNonNull(new_buffer);
+
+        // Copy previous buffer and deallocate it.
         if (_buffer != nullptr) {
             ::memcpy(new_buffer, _buffer, std::min(_buffer_size, new_size));
             delete[] _buffer;
         }
+
+        // Switch to new buffer.
         _buffer = new_buffer;
         _buffer_size = new_buffer_size;
+
+        // Make sure that all saved state don't allow more than new size.
+        for (auto it = _saved_states.begin(); it != _saved_states.end(); ++it) {
+            it->end = std::min(it->end, new_size);
+        }
     }
 
     // We accept at most the physical buffer size.
-    _buffer_max = std::min(new_size, _buffer_size);
+    _state.end = std::min(new_size, _buffer_size);
 
     // Return success only if the requested size was granted.
-    return size == _buffer_max;
-}
-
-
-//----------------------------------------------------------------------------
-// Push/pop the buffer size.
-//----------------------------------------------------------------------------
-
-size_t ts::Buffer::pushSize(size_t size)
-{
-    _saved_max.push_back(_buffer_max);
-    resize(size, false);
-    return _saved_states.size() - 1;
-}
-
-bool ts::Buffer::popSize(size_t level)
-{
-    size_t size = 0;
-    if (!_saved_max.empty() && level == NPOS) {
-        size = _saved_max.back();
-        _saved_max.pop_back();
-    }
-    else if (level >= _saved_max.size()) {
-        return false;
-    }
-    else {
-        size = _saved_max.at(level);
-        _saved_max.resize(level);
-    }
-    return resize(size, size > _buffer_size);
-}
-
-bool ts::Buffer::dropSize(size_t level)
-{
-    if (!_saved_max.empty() && level == NPOS) {
-        _saved_max.pop_back();
-        return true;
-    }
-    else if (level >= _saved_max.size()) {
-        return false;
-    }
-    else {
-        _saved_max.resize(level);
-        return true;
-    }
+    return size == _state.end;
 }
 
 
@@ -541,10 +642,10 @@ bool ts::Buffer::readRealignByte()
 bool ts::Buffer::writeRealignByte(int stuffing)
 {
     assert(_buffer != nullptr);
-    assert(_state.wbyte <= _buffer_max);
-    assert(_state.wbyte < _buffer_max || _state.wbit == 0);
+    assert(_state.wbyte <= _state.end);
+    assert(_state.wbyte < _state.end || _state.wbit == 0);
 
-    if (_read_only) {
+    if (_state.read_only) {
         _write_error = true;
         return false;
     }
@@ -603,12 +704,12 @@ bool ts::Buffer::readSeek(size_t byte, size_t bit)
 bool ts::Buffer::writeSeek(size_t byte, size_t bit)
 {
     assert(_state.rbyte <= _state.wbyte);
-    assert(_buffer_max <= _buffer_size);
-    assert(_state.wbyte <= _buffer_max);
-    assert(_state.wbyte < _buffer_max || _state.wbit == 0);
+    assert(_state.end <= _buffer_size);
+    assert(_state.wbyte <= _state.end);
+    assert(_state.wbyte < _state.end || _state.wbit == 0);
 
     // Forbid invalid values.
-    if (_read_only || bit > 7) {
+    if (_state.read_only || bit > 7) {
         _write_error = true;
         return false;
     }
@@ -623,9 +724,9 @@ bool ts::Buffer::writeSeek(size_t byte, size_t bit)
     }
 
     // Forbid seeking beyond end of buffer.
-    if (byte > _buffer_max || (byte == _buffer_max && bit > 0)) {
+    if (byte > _state.end || (byte == _state.end && bit > 0)) {
         // Move to end of buffer.
-        _state.wbyte = _buffer_max;
+        _state.wbyte = _state.end;
         _state.wbit = 0;
         _write_error = true;
         return false;
@@ -644,13 +745,13 @@ bool ts::Buffer::writeSeek(size_t byte, size_t bit)
 
 bool ts::Buffer::writeSeek(size_t byte, size_t bit, uint8_t stuffing)
 {
-    if (_read_only) {
+    if (_state.read_only) {
         _write_error = true;
         return false;
     }
 
     // Save current state for potential trash if moving forward.
-    RWState prev(_state);
+    State prev(_state);
 
     // Seek to new position.
     const bool success = writeSeek(byte, bit);
@@ -679,7 +780,7 @@ bool ts::Buffer::writeSeek(size_t byte, size_t bit, uint8_t stuffing)
 void ts::Buffer::setBits(size_t byte, size_t start_bit, size_t end_bit, uint8_t value)
 {
     // Only if bit range is not empty.
-    if (byte < _buffer_max && end_bit > start_bit) {
+    if (byte < _state.end && end_bit > start_bit) {
 
         // Build a mask where all addressed bits are 1.
         const uint8_t mask = _big_endian ?
@@ -719,14 +820,14 @@ size_t ts::Buffer::remainingReadBits() const
 
 size_t ts::Buffer::remainingWriteBytes() const
 {
-    assert(_buffer_max >= _state.wbyte);
-    return _buffer_max - _state.wbyte; // ignore bit offset
+    assert(_state.end >= _state.wbyte);
+    return _state.end - _state.wbyte; // ignore bit offset
 }
 
 size_t ts::Buffer::remainingWriteBits() const
 {
-    assert(_buffer_max > _state.wbyte || (_buffer_max == _state.wbyte && _state.wbit == 0));
-    return 8 * (_buffer_max - _state.wbyte) - _state.wbit;
+    assert(_state.end > _state.wbyte || (_state.end == _state.wbyte && _state.wbit == 0));
+    return 8 * (_state.end - _state.wbyte) - _state.wbit;
 }
 
 
@@ -910,19 +1011,19 @@ size_t ts::Buffer::putBytes(const ByteBlock& bb, size_t start, size_t count)
 
 size_t ts::Buffer::putBytes(const uint8_t* buffer, size_t bytes)
 {
-    assert(_state.wbyte <= _buffer_max);
+    assert(_state.wbyte <= _state.end);
     assert(_buffer != nullptr);
     assert(_state.wbit < 8);
 
     // Can't write on read-only or if write error already set.
-    if (_read_only || _write_error) {
+    if (_state.read_only || _write_error) {
         _write_error = true;
         return 0;
     }
 
     // Actual size to write.
-    if (_state.wbyte + bytes > _buffer_max) {
-        bytes = _buffer_max - _state.wbyte;
+    if (_state.wbyte + bytes > _state.end) {
+        bytes = _state.end - _state.wbyte;
         _write_error = true;
     }
 
@@ -934,7 +1035,7 @@ size_t ts::Buffer::putBytes(const uint8_t* buffer, size_t bytes)
     }
     else {
         // Unaligned write pointer, copy small pieces.
-        if (_state.wbyte + bytes == _buffer_max) {
+        if (_state.wbyte + bytes == _state.end) {
             // One byte less because of partially written byte.
             assert(bytes > 0);
             bytes--;
@@ -993,12 +1094,12 @@ uint8_t ts::Buffer::getBit(uint8_t def)
 
 bool ts::Buffer::putBit(uint8_t bit)
 {
-    if (_read_only || _write_error || endOfWrite()) {
+    if (_state.read_only || _write_error || endOfWrite()) {
         _write_error = true;
         return false;
     }
 
-    assert(_state.wbyte <= _buffer_max);
+    assert(_state.wbyte <= _state.end);
     assert(_state.wbit < 8);
 
     const uint8_t mask = uint8_t(1 << (_big_endian ? (7 - _state.wbit) : _state.wbit));
@@ -1172,7 +1273,7 @@ bool ts::Buffer::getUTFWithLengthInternal(UString& result, size_t length_bits, b
     }
 
     // Attempt to read the length.
-    const RWState saved(_state);
+    const State saved(_state);
     const size_t length = getBits<size_t>(length_bits);
     if (_read_error || _state.rbit != 0 || length > remainingReadBytes()) {
         _state = saved; // revert the length field in case of error
@@ -1195,7 +1296,7 @@ size_t ts::Buffer::putUTFInternal(const UString& str, size_t start, size_t count
     start = std::min(start, str.size());
     count = std::min(count, str.size() - start);
 
-    if (_read_only || _write_error || _state.wbit != 0) {
+    if (_state.read_only || _write_error || _state.wbit != 0) {
         _write_error = true;
         return 0; // 0 byte with partial, 0 as false otherwise
     }
@@ -1206,7 +1307,7 @@ size_t ts::Buffer::putUTFInternal(const UString& str, size_t start, size_t count
     }
 
     // Save the position before attempting to serialize.
-    const RWState saved(_state);
+    const State saved(_state);
 
     // Serialize as many characters as possible.
     const UChar* const in_start = &str[start];
@@ -1214,7 +1315,7 @@ size_t ts::Buffer::putUTFInternal(const UString& str, size_t start, size_t count
     const UChar* const in_end = in + count;
     char* const cbuffer = reinterpret_cast<char*>(_buffer);
     char* out = cbuffer + _state.wbyte;
-    char* const out_end = cbuffer + (fixed_size == NPOS ? _buffer_max : std::min(_buffer_max, _state.wbyte + fixed_size));
+    char* const out_end = cbuffer + (fixed_size == NPOS ? _state.end : std::min(_state.end, _state.wbyte + fixed_size));
 
     if (utf8) {
         // Convert to UTF-8 and include the written data in the buffer.
@@ -1283,7 +1384,7 @@ size_t ts::Buffer::putUTFWithLengthInternal(const UString& str, size_t start, si
 
     // The size of the length field must be representable as a size_t.
     // The write pointer must be byte-aligned after writing the length field.
-    if (_read_only || _write_error || length_bits == 0 || length_bits > 8 * sizeof(size_t) || (_state.wbit + length_bits) % 8 != 0) {
+    if (_state.read_only || _write_error || length_bits == 0 || length_bits > 8 * sizeof(size_t) || (_state.wbit + length_bits) % 8 != 0) {
         _write_error = true;
         return 0; // 0 byte with partial, 0 as false otherwise
     }
@@ -1292,7 +1393,7 @@ size_t ts::Buffer::putUTFWithLengthInternal(const UString& str, size_t start, si
     const size_t max_bytes = length_bits == 8 * sizeof(size_t) ? std::numeric_limits<size_t>::max() : (size_t(1) << length_bits) - 1;
 
     // Save the position for the length field and write a zero place-holder for the length.
-    const RWState saved(_state);
+    const State saved(_state);
     putBits(0, length_bits);
     assert(!_write_error);
     assert(_state.wbit == 0);
@@ -1304,7 +1405,7 @@ size_t ts::Buffer::putUTFWithLengthInternal(const UString& str, size_t start, si
     char* const cbuffer = reinterpret_cast<char*>(_buffer);
     char* const out_start = cbuffer + _state.wbyte;
     char* out = out_start;
-    char* const out_end = out_start + std::min(_buffer_max - _state.wbyte, max_bytes);
+    char* const out_end = out_start + std::min(_state.end - _state.wbyte, max_bytes);
 
     if (utf8) {
         // Encode UTF-8.

@@ -262,7 +262,7 @@ void ts::VCT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 
     // Save position before num_channels_in_section. Will be updated at each channel.
     uint8_t num_channels_in_section = 0;
-    payload.pushReadWriteState();
+    payload.pushState();
     payload.putUInt8(num_channels_in_section);
     const size_t payload_min_size = payload.currentReadByteOffset();
 
@@ -306,16 +306,16 @@ void ts::VCT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 
         // Descriptors for this channel (with 10-bit length field).
         // Temporarily remove 2 trailing bytes for minimal additional_descriptor loop.
-        payload.pushSize(payload.size() - 2);
+        payload.pushWriteSize(payload.size() - 2);
         payload.putPartialDescriptorListWithLength(ch.descs, 0, NPOS, 10);
-        payload.popSize();
+        payload.popState();
 
         // Now increment the field num_channels_in_section at saved position.
-        payload.swapReadWriteState();
-        payload.pushReadWriteState();
+        payload.swapState();
+        payload.pushState();
         payload.putUInt8(++num_channels_in_section);
-        payload.popReadWriteState();
-        payload.swapReadWriteState();
+        payload.popState();
+        payload.swapState();
     }
 
     // There should be at least two remaining bytes if there was no error.

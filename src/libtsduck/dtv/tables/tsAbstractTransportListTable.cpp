@@ -157,12 +157,12 @@ void ts::AbstractTransportListTable::addSection(BinaryTable& table, PSIBuffer& p
 
     // Update transport_stream_loop_length.
     const size_t end = payload.currentWriteByteOffset();
-    payload.swapReadWriteState();
+    payload.swapState();
     assert(payload.currentWriteByteOffset() + 2 <= end);
     const size_t loop_length = end - payload.currentWriteByteOffset() - 2;
     payload.putBits(0xFF, 4);
     payload.putBits(loop_length, 12);
-    payload.popReadWriteState();
+    payload.popState();
 
     // Add the section and reset buffer.
     addOneSection(table, payload);
@@ -173,7 +173,7 @@ void ts::AbstractTransportListTable::addSection(BinaryTable& table, PSIBuffer& p
         payload.putUInt16(0xF000);
 
         // Reserve transport_stream_loop_length.
-        payload.pushReadWriteState();
+        payload.pushState();
         payload.putUInt16(0xF000);
     }
 }
@@ -229,9 +229,9 @@ void ts::AbstractTransportListTable::serializePayload(BinaryTable& table, PSIBuf
     // If the descriptor list is too long to fit into one section, create new sections when necessary.
     for (size_t start = 0;;) {
         // Reserve and restore 2 bytes for transport_stream_loop_length.
-        payload.pushSize(payload.size() - 2);
+        payload.pushWriteSize(payload.size() - 2);
         start = payload.putPartialDescriptorListWithLength(descs, start);
-        payload.popSize();
+        payload.popState();
 
         if (payload.error() || start >= descs.size()) {
             // Top-level descriptor list completed.
@@ -246,7 +246,7 @@ void ts::AbstractTransportListTable::serializePayload(BinaryTable& table, PSIBuf
     }
 
     // Reserve transport_stream_loop_length.
-    payload.pushReadWriteState();
+    payload.pushState();
     payload.putUInt16(0xF000);
 
     // Add all transports

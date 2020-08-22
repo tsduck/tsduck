@@ -390,21 +390,13 @@ size_t ts::PSIBuffer::putPartialDescriptorListWithLength(const DescriptorList& d
     }
 
     // Save state where the length will be written later.
-    pushReadWriteState();
-
-    // Write a zero as place-holder for length.
-    putBits(0, length_bits);
-    assert(writeIsByteAligned());
+    pushWriteSequenceWithLeadingLength(length_bits);
 
     // Serialize as many descriptors as we can. Compute written size.
-    size_t size_in_bytes = currentWriteByteOffset();
     start = putPartialDescriptorList(descs, start, count);
-    size_in_bytes = currentWriteByteOffset() - size_in_bytes;
 
     // Update the length field.
-    swapReadWriteState();
-    putBits(size_in_bytes, length_bits);
-    popReadWriteState();
+    popState();
 
     return start;
 }

@@ -163,10 +163,10 @@ void ts::AbstractTable::addOneSection(BinaryTable& table, PSIBuffer& payload) co
         addOneSectionImpl(table, payload);
 
         // Reset the payload buffer
-        if (payload.pushedReadWriteStateLevels() > 0) {
+        if (payload.pushedLevels() > 0) {
             // At least one read/write state is pushed, restore it and push it again.
-            payload.popReadWriteState();
-            payload.pushReadWriteState();
+            payload.popState();
+            payload.pushState();
         }
         else {
             // No saved state, reset payload buffer.
@@ -265,11 +265,11 @@ void ts::AbstractTable::serializeContent(DuckContext& duck, BinaryTable& table) 
         // But if there is a saved read/write state and nothing was added since the saved state,
         // then we assume that the saved state is fixed initial common data, identical in all
         // sections, and there is no need to add the last section.
-        if (add && payload.pushedReadWriteStateLevels() > 0) {
+        if (add && payload.pushedLevels() > 0) {
             const size_t current_write = payload.currentWriteByteOffset();
-            payload.swapReadWriteState();
+            payload.swapState();
             add = current_write > payload.currentWriteByteOffset();
-            payload.swapReadWriteState();
+            payload.swapState();
         }
         // Finally, add the section if necessary.
         if (add) {

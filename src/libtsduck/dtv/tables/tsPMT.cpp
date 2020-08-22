@@ -138,7 +138,7 @@ void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 
     // Fixed part, to be repeated on all sections.
     payload.putPID(pcr_pid);
-    payload.pushReadWriteState();
+    payload.pushState();
 
     // Insert program_info descriptor list (with leading length field).
     // Add new section when the descriptor list overflows.
