@@ -152,9 +152,9 @@ void ts::AIT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
     // If the descriptor list is too long to fit into one section, create new sections when necessary.
     for (size_t start = 0;;) {
         // Reserve and restore 2 bytes for application_loop_length.
-        payload.pushSize(payload.size() - 2);
+        payload.pushWriteSize(payload.size() - 2);
         start = payload.putPartialDescriptorListWithLength(descs, start);
-        payload.popSize();
+        payload.popState();
 
         if (payload.error() || start >= descs.size()) {
             // Common descriptor list completed.
@@ -169,8 +169,8 @@ void ts::AIT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
     }
 
     // Reserve application_loop_length.
-    payload.pushReadWriteState();
-    payload.putUInt16(0xF000);
+    payload.putBits(0xFF, 4);
+    payload.pushWriteSequenceWithLeadingLength(12);
 
     // Add all transports
     for (auto it = applications.begin(); it != applications.end(); ++it) {
@@ -199,7 +199,8 @@ void ts::AIT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
     }
 
     // Add partial section.
-    addSection(table, payload, true);
+    payload.popState(); // close application_loop_length
+    addOneSection(table, payload);
 }
 
 
@@ -212,13 +213,7 @@ void ts::AIT::addSection(BinaryTable& table, PSIBuffer& payload, bool last_secti
     // The read/write state was pushed just before application_loop_length.
 
     // Update application_loop_length.
-    const size_t end = payload.currentWriteByteOffset();
-    payload.swapReadWriteState();
-    assert(payload.currentWriteByteOffset() + 2 <= end);
-    const size_t loop_length = end - payload.currentWriteByteOffset() - 2;
-    payload.putBits(0xFF, 4);
-    payload.putBits(loop_length, 12);
-    payload.popReadWriteState();
+    payload.popState();
 
     // Add the section and reset buffer.
     addOneSection(table, payload);
@@ -229,8 +224,8 @@ void ts::AIT::addSection(BinaryTable& table, PSIBuffer& payload, bool last_secti
         payload.putUInt16(0xF000);
 
         // Reserve application_loop_length.
-        payload.pushReadWriteState();
-        payload.putUInt16(0xF000);
+        payload.putBits(0xFF, 4);
+        payload.pushWriteSequenceWithLeadingLength(12);
     }
 }
 

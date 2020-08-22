@@ -102,7 +102,7 @@ template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::t
 bool ts::Buffer::putBits(INT value, size_t bits)
 {
     // No write if write error is already set or read-only or not enough bits to write.
-    if (_write_error || _read_only || remainingWriteBits() < bits) {
+    if (_write_error || _state.read_only || remainingWriteBits() < bits) {
         _write_error = true;
         return false;
     }
@@ -165,7 +165,7 @@ bool ts::Buffer::putint(INT value, size_t bytes, void (*putBE)(void*,INT), void 
     assert(bytes <= 8);
 
     // No write if write error is already set or read-only.
-    if (_write_error || _read_only) {
+    if (_write_error || _state.read_only) {
         _write_error = true;
         return false;
     }
@@ -173,7 +173,7 @@ bool ts::Buffer::putint(INT value, size_t bytes, void (*putBE)(void*,INT), void 
     // Hypothetical new write pointer (bit pointer won't change).
     const size_t new_wbyte = _state.wbyte + bytes;
 
-    if (new_wbyte > _buffer_max || (new_wbyte == _buffer_max && _state.wbit > 0)) {
+    if (new_wbyte > _state.end || (new_wbyte == _state.end && _state.wbit > 0)) {
         // Not enough bytes to write.
         _write_error = true;
         return false;

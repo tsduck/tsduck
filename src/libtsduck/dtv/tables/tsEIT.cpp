@@ -294,7 +294,7 @@ void ts::EIT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
     payload.putUInt16(onetw_id);
     payload.putUInt8(0); // segment_last_section_number, will be fixed later.
     payload.putUInt8(last_table_id);
-    payload.pushReadWriteState();
+    payload.pushState();
 
     // Minimum size of a section: fixed part.
     const size_t payload_min_size = payload.currentWriteByteOffset();

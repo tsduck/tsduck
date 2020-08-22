@@ -174,7 +174,7 @@ namespace ts {
         //! Check if the buffer is read-only.
         //! @return True if the buffer is read-only.
         //!
-        bool readOnly() const { return _read_only; }
+        bool readOnly() const { return _state.read_only; }
 
         //!
         //! Check if the buffer uses some internal private memory buffer.
@@ -198,7 +198,7 @@ namespace ts {
         //! Get the current buffer size in bytes.
         //! @return The current buffer size in bytes.
         //!
-        size_t size() const { return _buffer_max; }
+        size_t size() const { return _state.end; }
 
         //!
         //! Get the current base address of the buffer.
@@ -485,7 +485,7 @@ namespace ts {
         //! Check end of write stream.
         //! @return True if the end of write stream is reached.
         //!
-        bool endOfWrite() const { return _state.wbyte >= _buffer_max; }
+        bool endOfWrite() const { return _state.wbyte >= _state.end; }
 
         //!
         //! Push the current state of the read/write streams on a stack of saved states.
@@ -496,35 +496,98 @@ namespace ts {
         //! continue with the new state.
         //!
         //! @return The level of pushed state (0 for the first push, then 1, etc.)
-        //! The returned level can be used by popReadWriteState() and dropReadWriteState().
-        //! @see popReadWriteState()
-        //! @see dropReadWriteState()
+        //! The returned level can be used by popState() and dropState().
+        //! @see popState()
         //!
-        size_t pushReadWriteState();
+        size_t pushState();
+
+        //!
+        //! Temporary reduce the readable size of the buffer.
+        //!
+        //! The previous state is pushed to the internal stack of state and can be restored later.
+        //! Saving the readable size temporarily changes the write pointer and sets the buffer as read only.
+        //! When the state is restored using popState(), the previous readable size (write pointer)
+        //! and read-only indicator are restored. The read pointer is not restored (everything that was
+        //! read in the meantime remain read).
+        //!
+        //! @param [in] size New readable size in bytes of the buffer. In some cases, the final granted
+        //! size can be different. The final value is bounded by the current read and write pointers.
+        //! @return The level of pushed state (0 for the first push, then 1, etc.) Return NPOS on error.
+        //! @see popState()
+        //!
+        size_t pushReadSize(size_t size);
+
+        //!
+        //! Temporary reduce the readable size of the buffer using a length field from the stream.
+        //!
+        //! An integer value is read from the stream (given the value size in bits). The read pointer
+        //! must then be byte-aligned. Finally, pushReadSize() is called so that the remaining number
+        //! of bytes to read is the length value that was just read.
+        //!
+        //! @param [in] length_bits Size in bits of the length field to read.
+        //! @return The level of pushed state (0 for the first push, then 1, etc.) Return NPOS on error.
+        //! @see pushReadSize()
+        //!
+        size_t pushReadSizeFromLength(size_t length_bits);
+
+        //!
+        //! Temporary reduce the writable size of the buffer.
+        //!
+        //! The previous state is pushed to the internal stack of state and can be restored later.
+        //! Saving the writable size temporarily changes the end of buffer.
+        //! When the state is restored using popState(), the previous end of buffer is restored.
+        //! The read and write pointers are not restored (everything that was read or written in
+        //! the meantime remain valid).
+        //!
+        //! @param [in] size New writable size in bytes of the buffer. In some cases, the final granted
+        //! size can be different. The final value is bounded by the current write pointer and end of buffer.
+        //! @return The level of pushed state (0 for the first push, then 1, etc.) Return NPOS on error.
+        //! @see popState()
+        //!
+        size_t pushWriteSize(size_t size);
+
+        //!
+        //! Start a write sequence with a leading length field.
+        //!
+        //! The current state is pushed and the specified number of bits are skipped in the write field.
+        //! The write stream must then be byte-aligned or an error is generated.
+        //! Writing data can be continued by the application. When popState() is called, the size in
+        //! bytes starting after the length field is then written in the length field.
+        //!
+        //! @param [in] length_bits Size in bits of the length field to write. Must be in the range 1 to 64.
+        //! @return The level of pushed state (0 for the first push, then 1, etc.) Return NPOS on error.
+        //! @see popState()
+        //!
+        size_t pushWriteSequenceWithLeadingLength(size_t length_bits);
 
         //!
         //! Swap the current state of the read/write streams with the one on top of the stack of saved states.
         //!
-        //! As a result, the previously saved state is restore and the current state (just before
+        //! The previous state must have been fully saved using pushState() only, not any other
+        //! push method such as pushReadSize() or pushWriteSize(). Otherwise, the buffer is set
+        //! in read and write error state.
+        //!
+        //! As a result, the previously saved state is restored and the current state (just before
         //! restoring the saved state) is pushed. If there was no saved state, the current state
         //! is unchanged but still saved. So it is always safe to assume that the current state
-        //! was savded.
+        //! was saved.
         //!
-        //! @return The level of pushed state (0 for the first push, then 1, etc.)
-        //! The returned level can be used by popReadWriteState() and dropReadWriteState().
-        //! @see pushReadWriteState()
+        //! @return The level of pushed state (0 for the first push, then 1, etc.) Return NPOS on error.
         //!
-        size_t swapReadWriteState();
+        size_t swapState();
 
         //!
-        //! Restore the current state of the read/write streams from the stack of saved states.
+        //! Pop the current state of the read/write streams from the stack of saved states and perform appropriate actions.
+        //! The new state depends on which method was used to push the previous state.
         //! @param [in] level Saved level to restore. The default is NPOS, meaning the last
         //! saved state. Another inner level can be specified, in which case all outer levels
-        //! are dropped.
+        //! are also popped.
         //! @return True on success. False if there is no saved state or @a level does not exist.
-        //! @see pushReadWriteState()
+        //! @see pushState()
+        //! @see pushReadSize()
+        //! @see pushWriteSize()
         //!
-        bool popReadWriteState(size_t level = NPOS);
+        bool popState(size_t level = NPOS);
 
         //!
         //! Drop the last saved state of the read/write streams from the stack of saved states.
@@ -534,13 +597,13 @@ namespace ts {
         //! @return True on success. False if there is no saved state or @a level does not exist.
         //! @see pushReadWriteState()
         //!
-        bool dropReadWriteState(size_t level = NPOS);
+        bool dropState(size_t level = NPOS);
 
         //!
         //! Get the current number of pushed states of the read/write streams.
         //! @return The current number of pushed states of the read/write streams.
         //!
-        size_t pushedReadWriteStateLevels() const { return _saved_states.size(); }
+        size_t pushedLevels() const { return _saved_states.size(); }
 
         //!
         //! Change the usable size of the buffer.
@@ -558,39 +621,6 @@ namespace ts {
         //! @see capacity()
         //!
         bool resize(size_t size, bool reallocate);
-
-        //!
-        //! Temporary change the new usable size of the buffer.
-        //! The current value is pushed to an internal stack and can be restored later.
-        //! @param [in] size New usable size in bytes of the buffer. In some cases, the final granted
-        //! size can be different. The final value is bounded by the current write pointer (lower bound)
-        //! and the current capacity() (upper bound).
-        //! @return The level of pushed state (0 for the first push, then 1, etc.)
-        //! The returned level can be used by popSize() and dropSize().
-        //! @see popSize()
-        //! @see dropSize()
-        //!
-        size_t pushSize(size_t size);
-
-        //!
-        //! Restore the current buffer size from the stack of saved size.
-        //! @param [in] level Saved level to restore. The default is NPOS, meaning the last
-        //! saved size. Another inner level can be specified, in which case all outer levels
-        //! are dropped.
-        //! @return True on success. False if there is no saved size or @a level does not exist.
-        //! @see pushSize()
-        //!
-        bool popSize(size_t level = NPOS);
-
-        //!
-        //! Drop the last saved buffer size from the stack of saved sizes.
-        //! @param [in] level Saved level to drop. The default is NPOS, meaning the last
-        //! saved size. Another inner level can be specified, in which case the specified level
-        //! and all outer levels are dropped.
-        //! @return True on success. False if there is no saved size or @a level does not exist.
-        //! @see pushSize()
-        //!
-        bool dropSize(size_t level = NPOS);
 
         //!
         //! Read the next bit and advance the read pointer.
@@ -1195,28 +1225,42 @@ namespace ts {
         size_t putUTFInternal(const UString& str, size_t start, size_t count, bool partial, size_t fixed_size, int pad, bool utf8);
         size_t putUTFWithLengthInternal(const UString& str, size_t start, size_t count, size_t length_bits, bool partial, bool utf8);
 
-        // Read/write state in the buffer.
-        struct RWState {
-            RWState();     // Constructor.
-            size_t rbyte;  // Next byte to read, offset from beginning of buffer.
-            size_t wbyte;  // Next byte to write, offset from beginning of buffer.
-            size_t rbit;   // Next bit to read at offset rbyte (0 = MSB in big endian, LSB in little endian).
-            size_t wbit;   // Next bit to write at offset wbyte (0 = MSB in big endian, LSB in little endian).
+        // Reason for the creation of a buffer state.
+        enum class Reason {
+            FULL,           // Full state was saved.
+            READ_SIZE,      // A new read size (write pointer) was specified.
+            WRITE_SIZE,     // A new write size (end of buffer) was specified.
+            WRITE_LEN_SEQ,  // A write sequence with a leading length field was started.
         };
 
-        uint8_t*             _buffer;        // Base address of memory buffer.
-        size_t               _buffer_size;   // Size of addressable area in _buffer.
-        size_t               _buffer_max;    // Size of usable area in _buffer.
-        bool                 _read_only;     // The buffer is in read-only mode.
-        bool                 _allocated;     // If true, _buffer was internally allocated and must be freed later.
-        bool                 _big_endian;    // Read/write integers in big endian mode (false means little endian).
-        bool                 _read_error;    // Read error encountered (passed end of stream for instance).
-        bool                 _write_error;   // Write error encountered (passed end of stream for instance).
-        bool                 _user_error;    // User-generated error.
-        RWState              _state;         // Read/write indexes.
-        std::vector<size_t>  _saved_max;     // Stack of saved _buffer_max.
-        std::vector<RWState> _saved_states;  // Stack of saved states.
-        uint8_t              _realigned[8];  // 64-bit intermediate buffer to read realigned integer.
+        // Read/write state in the buffer.
+        struct State {
+            Reason reason;     // Reason for the creation of this state.
+            bool   read_only;  // The buffer is in read-only mode.
+            size_t end;        // Size of usable area in buffer.
+            size_t rbyte;      // Next byte to read, offset from beginning of buffer.
+            size_t wbyte;      // Next byte to write, offset from beginning of buffer.
+            size_t rbit;       // Next bit to read at offset rbyte (0 = MSB in big endian, LSB in little endian).
+            size_t wbit;       // Next bit to write at offset wbyte (0 = MSB in big endian, LSB in little endian).
+            size_t len_bits;   // Size in bits of the length field (when reason is WRITE_LEN_SEQ);
+
+            // Constructor.
+            State(bool rdonly = true, size_t size = 0);
+
+            // Reset all values to zero.
+            void clear();
+        };
+
+        uint8_t*           _buffer;        // Base address of memory buffer.
+        size_t             _buffer_size;   // Size of addressable area in _buffer.
+        bool               _allocated;     // If true, _buffer was internally allocated and must be freed later.
+        bool               _big_endian;    // Read/write integers in big endian mode (false means little endian).
+        bool               _read_error;    // Read error encountered (passed end of stream for instance).
+        bool               _write_error;   // Write error encountered (passed end of stream for instance).
+        bool               _user_error;    // User-generated error.
+        State              _state;         // Read/write indexes.
+        std::vector<State> _saved_states;  // Stack of saved states.
+        uint8_t            _realigned[8];  // 64-bit intermediate buffer to read realigned integer.
     };
 
     //! @cond nodoxygen

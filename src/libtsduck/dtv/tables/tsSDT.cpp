@@ -179,7 +179,7 @@ void ts::SDT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
     // Fixed part, to be repeated on all sections.
     payload.putUInt16(onetw_id);
     payload.putUInt8(0xFF);
-    payload.pushReadWriteState();
+    payload.pushState();
 
     // Minimum size of a section: fixed part.
     const size_t payload_min_size = payload.currentWriteByteOffset();
