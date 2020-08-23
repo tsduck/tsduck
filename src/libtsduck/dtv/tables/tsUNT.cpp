@@ -32,6 +32,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -147,7 +148,6 @@ uint16_t ts::UNT::tableIdExtension() const
     // The table id extension is made of action_type and OUI hash.
     return uint16_t(uint16_t(action_type) << 8) |
            uint16_t(((OUI >> 16) & 0xFF) ^ ((OUI >> 8) & 0xFF) ^ (OUI & 0xFF));
-
 }
 
 
@@ -169,169 +169,65 @@ void ts::UNT::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::UNT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::UNT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    action_type = 0;
-    OUI = 0;
-    processing_order = 0;
-    descs.clear();
-    devices.clear();
+    // Get common properties (should be identical in all sections)
+    action_type = uint8_t(section.tableIdExtension() >> 8);
+    OUI = buf.getUInt24();
+    processing_order = buf.getUInt8();
 
-    // Loop on all sections.
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
+    // Get common descriptor loop.
+    buf.getDescriptorListWithLength(descs);
 
-        // Reference to current section
-        const Section& sect(*table.sectionAt(si));
+    // Get descriptions of sets of devices.
+    while (!buf.error() && !buf.endOfRead()) {
 
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent();
-        action_type = uint8_t(sect.tableIdExtension() >> 8);
+        // Create a new entry in the list of devices.
+        Devices& devs(devices.newEntry());
 
-        // Analyze the section payload:
-        const uint8_t* data = sect.payload();
-        size_t remain = sect.payloadSize();
+        // Get compatibilityDescriptor(), a list of compatibility descriptors.
+        // There is a leading 16-bit length field for compatibilityDescriptor().
+        buf.pushReadSizeFromLength(16);
+        size_t descriptorCount = buf.getUInt16();
 
-        // Get fixed part. We do not check the OUI_hash.
-        if (remain < 4) {
-            return;
-        }
-        OUI = GetUInt24(data);
-        processing_order = data[3];
-        data += 4;
-        remain -= 4;
+        // Get outer descriptor loop.
+        while (!buf.error() && !buf.endOfRead() && descriptorCount-- > 0) {
+            CompatibilityDescriptor cdesc;
+            cdesc.descriptorType = buf.getUInt8();
 
-        // Get common descriptor loop.
-        if (!DeserializeDescriptorList(descs, data, remain)) {
-            return;
-        }
+            // Get current compatibility descriptor content, based on 8-bit length field.
+            buf.pushReadSizeFromLength(8);
 
-        // Get descriptions of sets of devices.
-        while (remain > 0) {
-            Devices& devs(devices.newEntry());
-            if (!DeserializeDevices(devs, data, remain)) {
-                return;
-            }
-        }
-    }
+            cdesc.specifierType = buf.getUInt8();
+            cdesc.specifierData = buf.getUInt24();
+            cdesc.model = buf.getUInt16();
+            cdesc.version = buf.getUInt16();
+            buf.skipBits(8); // ignore subDescriptorCount, just read them all
+            buf.getDescriptorList(cdesc.subDescriptors);
 
-    _is_valid = true;
-}
+            // Close current compatibility descriptor.
+            buf.popState();
 
-
-//----------------------------------------------------------------------------
-// Deserialize a descriptor list.
-//----------------------------------------------------------------------------
-
-bool ts::UNT::DeserializeDescriptorList(DescriptorList& dlist, const uint8_t*& data, size_t& remain)
-{
-    // Get descriptor loop length.
-    if (remain < 2) {
-        return false;
-    }
-    size_t dlength = GetUInt16(data) & 0x0FFF;
-    data += 2;
-    remain -= 2;
-
-    // Get descriptor loop.
-    if (remain < dlength) {
-        return false;
-    }
-    else {
-        dlist.add(data, dlength);
-        data += dlength;
-        remain -= dlength;
-        return true;
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Deserialize a compatibility descriptor (a list of them).
-//----------------------------------------------------------------------------
-
-bool ts::UNT::DeserializeCompatibilityDescriptorList(CompatibilityDescriptorList& dlist, const uint8_t*& data, size_t& remain)
-{
-    // Get descriptor loop length and count.
-    if (remain < 4) {
-        return false;
-    }
-    const size_t compatibilityDescriptorLength = GetUInt16(data);
-    size_t descriptorCount = GetUInt16(data + 2);
-    const uint8_t* const data_end = data + 2 + compatibilityDescriptorLength;
-
-    // Check structure size.
-    if (remain < 2 + compatibilityDescriptorLength) {
-        return false;
-    }
-    data += 4;
-    remain -= 4;
-
-    // Get outer descriptor loop.
-    while (descriptorCount > 0) {
-
-        // Deserialize fixed part.
-        if (remain < 11) {
-            return false;
-        }
-        CompatibilityDescriptor cdesc;
-        cdesc.descriptorType = data[0];
-        const size_t descriptorLength = data[1];
-        cdesc.specifierType = data[2];
-        cdesc.specifierData = GetUInt24(data + 3);
-        cdesc.model = GetUInt16(data + 6);
-        cdesc.version = GetUInt16(data + 8);
-        const size_t subDescriptorCount = data[10];
-        if (remain < 2 + descriptorLength) {
-            return false;
+            // Insert compatibilityDescriptor() entry.
+            devs.compatibilityDescriptor.push_back(cdesc);
         }
 
-        // Deserialize sub-descriptors.
-        assert(descriptorLength >= 9);
-        cdesc.subDescriptors.add(data + 11, descriptorLength - 9);
-        data += 2 + descriptorLength;
-        remain -= 2 + descriptorLength;
+        // Close compatibilityDescriptor() list of compatibility descriptors.
+        buf.popState();
 
-        // Check that the expected number of descriptors were read.
-        if (cdesc.subDescriptors.size() != subDescriptorCount) {
-            return false;
+        // Open platform loop using 16-bit length field.
+        buf.pushReadSizeFromLength(16);
+
+        // Get platform descriptions.
+        while (!buf.error() && !buf.endOfRead()) {
+            Platform& platform(devs.platforms.newEntry());
+            buf.getDescriptorListWithLength(platform.target_descs);
+            buf.getDescriptorListWithLength(platform.operational_descs);
         }
 
-        // Next compatibilityDescriptor() entry.
-        dlist.push_back(cdesc);
-        descriptorCount--;
+        // Close platform loop.
+        buf.popState();
     }
-
-    // Check that we reached the expected end of structure.
-    return data == data_end && descriptorCount == 0;
-}
-
-
-//----------------------------------------------------------------------------
-// Deserialize a set of devices.
-//----------------------------------------------------------------------------
-
-bool ts::UNT::DeserializeDevices(Devices& devs, const uint8_t*& data, size_t& remain)
-{
-    // Get compatibility descriptor.
-    if (!DeserializeCompatibilityDescriptorList(devs.compatibilityDescriptor, data, remain) || remain < 2) {
-        return false;
-    }
-
-    // Get platform loop length.
-    const uint8_t* const data_end = data + 2 + GetUInt16(data);
-    data += 2;
-    remain -= 2;
-
-    // Get platform descriptions.
-    while (data < data_end) {
-        Platform& platform(devs.platforms.newEntry());
-        if (!DeserializeDescriptorList(platform.target_descs, data, remain) || !DeserializeDescriptorList(platform.operational_descs, data, remain)) {
-            return false;
-        }
-    }
-    return true;
 }
 
 
@@ -339,186 +235,88 @@ bool ts::UNT::DeserializeDevices(Devices& devs, const uint8_t*& data, size_t& re
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::UNT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::UNT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    // Build the sections
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number = 0;
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
+    // Fixed part, to be repeated on all sections.
+    buf.putUInt24(OUI);
+    buf.putUInt8(processing_order);
+    buf.pushState();
 
-    // Serialize fixed part (4 bytes, will remain identical in all sections).
-    PutUInt24(data, OUI);
-    data[3] = processing_order;
-    data += 4;
-    remain -= 4;
-
-    // Add top-level platform_descriptor_loop.
-    // If the descriptor list is too long to fit into one section, create new sections when necessary.
-    for (size_t start_index = 0; ; ) {
-
-        // Add the descriptor list (or part of it).
-        start_index = descs.lengthSerialize(data, remain, start_index);
-
-        // If all descriptors were serialized, exit loop
-        if (start_index == descs.count()) {
+    // Insert top-level common descriptor loop (with leading length field).
+    // Add new section when the descriptor list overflows.
+    for (size_t start = 0;;) {
+        start = buf.putPartialDescriptorListWithLength(descs, start);
+        if (buf.error() || start >= descs.size()) {
             break;
         }
-        assert(start_index < descs.count());
-
-        // Need to close the section and open a new one.
-        addSection(table, section_number, payload, data, remain);
+        else {
+            addOneSection(table, buf);
+        }
     }
 
     // Add all sets of devices. A set of devices must be serialize inside one unique section.
     // If we cannot serialize a set of devices in the current section, open a new section.
-    // If a complete section is not large enough to serialize a device, the
-    // device description is truncated.
-    for (auto it = devices.begin(); it != devices.end(); ++it) {
-
-        // Keep current position in case we cannot completely serialize the current set of devices.
-        uint8_t* const initial_data = data;
-        const size_t initial_remain = remain;
+    bool retry = false;
+    auto it = devices.begin();
+    while (!buf.error() && it != devices.end()) {
+        const Devices& devs(it->second);
 
         // Try to serialize the current set of device in the current section.
-        if (!serializeDevices(it->second, data, remain) && initial_data > payload + 6) {
-            // Could not serialize the set of devices and there was already something before it.
-            // Restore initial data and close the section.
-            data = initial_data;
-            remain = initial_remain;
-            addSection(table, section_number, payload, data, remain);
+        // Keep current position in case we cannot completely serialize it.
+        buf.pushState();
 
-            // Reserve empty common_descriptor_loop.
-            PutUInt16(data, 0xF000);
-            data += 2; remain -= 2;
+        // Start of compatibilityDescriptor(). It is a structure with a 16-bit length field.
+        buf.pushWriteSequenceWithLeadingLength(16);
+        buf.putUInt16(uint16_t(devs.compatibilityDescriptor.size()));
 
-            // Retry the serialization of the device. Ignore failure (truncated).
-            serializeDevices(it->second, data, remain);
+        // Serialize all entries in the compatibilityDescriptor().
+        for (auto it2 = devs.compatibilityDescriptor.begin(); !buf.error() && it2 != devs.compatibilityDescriptor.end(); ++it2) {
+            buf.putUInt8(it2->descriptorType);
+            buf.pushWriteSequenceWithLeadingLength(8); // descriptorLength
+            buf.putUInt8(it2->specifierType);
+            buf.putUInt24(it2->specifierData);
+            buf.putUInt16(it2->model);
+            buf.putUInt16(it2->version);
+            buf.putUInt8(uint8_t(it2->subDescriptors.count()));
+            buf.putDescriptorList(it2->subDescriptors);
+            buf.popState(); // update descriptorLength
+        }
+
+        // End of compatibilityDescriptor(). The 16-bit length field is updated now.
+        buf.popState();
+
+        // Start of platform_loop. It is a structure with a 16-bit length field.
+        buf.pushWriteSequenceWithLeadingLength(16);
+
+        // Serialize all platform descriptions.
+        for (auto it2 = devs.platforms.begin(); !buf.error() && it2 != devs.platforms.end(); ++it2) {
+            buf.putDescriptorListWithLength(it2->second.target_descs);
+            buf.putDescriptorListWithLength(it2->second.operational_descs);
+        }
+
+        // End of platform_loop. The 16-bit length field is updated now.
+        buf.popState();
+
+        // Process end of set of devices.
+        if (!buf.error()) {
+            // Set of devices was successfully serialized. Move to next one.
+            retry = false;
+            buf.dropState(); // drop initially saved position.
+            ++it;
+        }
+        else if (retry) {
+            // This is already a retry on an empty section. Definitely too large, invalid table.
+            return;
+        }
+        else {
+            // Could not serialize in this section, try with an empty one.
+            retry = true;
+            buf.popState(); // return to previous state before current set of devices
+            buf.clearError();
+            addOneSection(table, buf);
+            buf.putUInt16(0xF000); // empty common_descriptor_loop.
         }
     }
-
-    // Add partial section (if there is one)
-    if (data > payload + 6 || table.sectionCount() == 0) {
-        addSection(table, section_number, payload, data, remain);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Private method: Serialize one set of devices.
-//----------------------------------------------------------------------------
-
-bool ts::UNT::serializeDevices(const Devices& devs, uint8_t*& data, size_t& remain) const
-{
-    // Check if the structure is truncated (not enough space).
-    bool truncated = false;
-
-    // Minimum required size: 6 byte (4 for an empty compatibilityDescriptor() and 2 for platform_loop_length).
-    constexpr size_t min_size = 6;
-    if (remain < min_size) {
-        return false;
-    }
-
-    // Keep room for 2 additional bytes for platform_loop_length.
-    remain -= 2;
-
-    // Serialize the compatibilityDescriptor().
-    // Remember starting point to update compatibilityDescriptorLength and descriptorCount.
-    // Skip them, they will be updated later.
-    uint8_t* comp_desc_base = data;
-    uint16_t descriptorCount = 0;
-    data += 4;
-    remain -= 4;
-
-    // Serialize all entries in the compatibilityDescriptor().
-    for (auto it = devs.compatibilityDescriptor.begin(); !truncated && it != devs.compatibilityDescriptor.end(); ++it) {
-        // Check that we have space for the fixed part.
-        if (remain < 11) {
-            truncated = true;
-            break;
-        }
-        // Fill fixed part. Skip descriptorLength and subDescriptorCount for now.
-        uint8_t* desc_base = data;
-        PutUInt8(data, it->descriptorType);
-        PutUInt8(data + 2, it->specifierType);
-        PutUInt24(data + 3, it->specifierData);
-        PutUInt16(data + 6, it->model);
-        PutUInt16(data + 8, it->version);
-        data += 11;
-        remain -= 11;
-        // Serialize subDescriptor().
-        const size_t count = it->subDescriptors.serialize(data, remain);
-        // Update descriptorLength and subDescriptorCount.
-        PutUInt8(desc_base + 1, uint8_t(data - desc_base - 2));
-        PutUInt8(desc_base + 10, uint8_t(count));
-        // Check if all sub-descriptors have been serialized.
-        if (count < it->subDescriptors.count()) {
-            truncated = true;
-        }
-        descriptorCount++;
-    }
-
-    // Update compatibilityDescriptorLength and descriptorCount.
-    PutUInt16(comp_desc_base, uint16_t(data - comp_desc_base - 2));
-    PutUInt16(comp_desc_base + 2, descriptorCount);
-
-    // End of compatibilityDescriptor().
-    // Restore additional bytes for platform_loop_length.
-    remain += 2;
-
-    // Save address of platform_loop_length and skip it.
-    uint8_t* const platform_base = data;
-    data += 2;
-    remain -= 2;
-
-    // Serialize all platform descriptions.
-    for (auto it = devs.platforms.begin(); !truncated && it != devs.platforms.end(); ++it) {
-        // Check that we have space for the fixed parts.
-        if (remain < 4) {
-            truncated = true;
-            break;
-        }
-        // Serialize target descriptor loop, then operational descriptor loop.
-        remain -= 2;
-        const size_t tg_count = it->second.target_descs.lengthSerialize(data, remain);
-        remain += 2;
-        const size_t op_count = it->second.operational_descs.lengthSerialize(data, remain);
-        // Check if we could serialize them all.
-        truncated = tg_count < it->second.target_descs.count() || op_count < it->second.operational_descs.count();
-    }
-
-    // Update platform_loop_length.
-    PutUInt16(platform_base, uint8_t(data - platform_base - 2));
-
-    return !truncated;
-}
-
-
-//----------------------------------------------------------------------------
-// Private method: Add a new section to a table being serialized.
-//----------------------------------------------------------------------------
-
-void ts::UNT::addSection(BinaryTable& table,
-                         int& section_number,
-                         uint8_t* payload,
-                         uint8_t*& data,
-                         size_t& remain) const
-{
-    table.addSection(new Section(_table_id,
-                                 true,    // is_private_section
-                                 tableIdExtension(),
-                                 version,
-                                 is_current,
-                                 uint8_t(section_number),
-                                 uint8_t(section_number),   //last_section_number
-                                 payload,
-                                 data - payload)); // payload_size,
-
-    // Reinitialize pointers.
-    // Restart after constant part of payload (4 bytes).
-    remain += data - payload - 4;
-    data = payload + 4;
-    section_number++;
 }
 
 
@@ -531,200 +329,96 @@ void ts::UNT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
-
-    if (size >= 4) {
-
-        // Fixed part
-        const uint8_t action_type = section.tableIdExtension() >> 8;
-        const uint8_t oui_hash = section.tableIdExtension() & 0xFF;
-        const uint8_t comp_hash = data[0] ^ data[1] ^ data[2];
-        const uint32_t oui = GetUInt24(data);
-        const uint8_t processing_order = data[3];
-        data += 4; size -= 4;
-
-        strm << margin << "OUI: " << names::OUI(oui, names::HEXA_FIRST) << std::endl
-             << margin
-             << UString::Format(u"Action type: 0x%X, processing order: 0x%X, OUI hash: 0x%X (%s)",
-                                {action_type, processing_order, oui_hash,
-                                 oui_hash == comp_hash ? u"valid" : UString::Format(u"invalid, should be 0x%X", {comp_hash})})
-             << std::endl
-             << margin << "Common descriptors:" << std::endl;
-
-        // Display common descriptor loop.
-        if (DisplayDescriptorList(display, section, data, size, indent + 2)) {
-            // Loop on sets of devices.
-            strm << margin << "Sets of devices:" << std::endl;
-            if (size == 0) {
-                strm << margin << "  None" << std::endl;
-            }
-            else {
-                size_t dev_index = 0;
-                while (size > 0) {
-                    strm << margin << "  - Devices " << dev_index++ << ":" << std::endl;
-                    if (!DisplayDevices(display, section, data, size, indent + 4)) {
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    display.displayExtraData(data, size, indent);
-}
-
-
-//----------------------------------------------------------------------------
-// Display a descriptor list.
-//----------------------------------------------------------------------------
-
-bool ts::UNT::DisplayDescriptorList(TablesDisplay& display, const Section& section, const uint8_t*& data, size_t& remain, int indent)
-{
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-
-    if (remain < 2) {
-        return false;
-    }
-
-    size_t dlength = GetUInt16(data) & 0x0FFF;
-    data += 2;
-    remain -= 2;
-
-    if (remain < dlength) {
-        return false;
-    }
-
-    if (dlength == 0) {
-        strm << margin << "None" << std::endl;
+    if (buf.remainingReadBytes() < 4) {
+        buf.setUserError();
     }
     else {
-        display.displayDescriptorList(section, data, dlength, indent);
-        data += dlength;
-        remain -= dlength;
+        const uint32_t oui = buf.getUInt24();
+        const uint8_t oui_hash = section.tableIdExtension() & 0xFF;
+        const uint8_t comp_hash = uint8_t(oui >> 16) ^ uint8_t(oui >> 8) ^ uint8_t(oui);
+        const UString oui_check(oui_hash == comp_hash ? u"valid" : UString::Format(u"invalid, should be 0x%X", {comp_hash}));
+        strm << margin << "OUI: " << names::OUI(oui, names::HEXA_FIRST) << std::endl;
+        strm << margin << UString::Format(u"Action type: 0x%X", {uint8_t(section.tableIdExtension() >> 8)});
+        strm << UString::Format(u", processing order: 0x%X", {buf.getUInt8()});
+        strm << UString::Format(u", OUI hash: 0x%X (%s)", {oui_hash, oui_check}) << std::endl;
     }
 
-    return true;
-}
+    // Display common descriptor loop.
+    display.displayDescriptorListWithLength(section, buf, indent, u"Common descriptors:", u"None");
 
-
-//----------------------------------------------------------------------------
-// Display a compatibility descriptor.
-//----------------------------------------------------------------------------
-
-bool ts::UNT::DisplayCompatibilityDescriptorList(TablesDisplay& display, const Section& section, const uint8_t*& data, size_t& remain, int indent)
-{
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-
-    // Need fixed part.
-    if (remain < 4) {
-        return false;
-    }
-    const size_t compatibilityDescriptorLength = GetUInt16(data);
-    const size_t descriptorCount = GetUInt16(data + 2);
-    const uint8_t* const data_end = data + 2 + compatibilityDescriptorLength;
-
-    strm << margin << UString::Format(u"Compatibility descriptor: %d bytes, %d descriptors", {compatibilityDescriptorLength, descriptorCount}) << std::endl;
-
-    if (remain < 2 + compatibilityDescriptorLength) {
-        return false;
-    }
-    data += 4;
-    remain -= 4;
-
-    // Display outer descriptor loop.
-    for (size_t desc_index = 0; desc_index < descriptorCount; ++desc_index) {
-
-        // Deserialize fixed part.
-        if (remain < 11) {
-            return false;
+    if (!buf.error()) {
+        strm << margin << "Sets of devices:" << std::endl;
+        if (buf.endOfRead()) {
+            strm << margin << "- None" << std::endl;
         }
-        const size_t descriptorLength = data[1];
-        const size_t subDescriptorCount = data[10];
-        strm << margin
-             << "- Descriptor " << desc_index
-             << ", type " << NameFromSection(u"CompatibilityDescriptorType", data[0], names::HEXA_FIRST)
-             << std::endl
-             << margin
-             << UString::Format(u"  Specifier type: 0x%X, specifier data (OUI): %s", {data[2], names::OUI(GetUInt24(data + 3), names::HEXA_FIRST)})
-             << std::endl
-             << margin
-             << UString::Format(u"  Model: 0x%X (%d), version: 0x%X (%d)", {GetUInt16(data + 6), GetUInt16(data + 6), GetUInt16(data + 8), GetUInt16(data + 8)})
-             << std::endl
-             << margin
-             << UString::Format(u"  Sub-descriptor count: %d", {subDescriptorCount})
-             << std::endl;
+    }
 
-        if (remain < 2 + descriptorLength) {
-            return false;
-        }
+    // Loop on sets of devices.
+    for (size_t dev_index = 0; !buf.error() && !buf.endOfRead(); ++dev_index) {
+        strm << margin << "- Devices " << dev_index << ":" << std::endl;
 
-        // Locate sub-descriptors.
-        const uint8_t* subdesc = data + 11;
-        size_t subdesc_remain = descriptorLength - 9;
+        // Display list of compatibility descriptor.
+        buf.pushReadSizeFromLength(16);
+        const size_t compatibilityDescriptorLength = buf.remainingReadBytes();
+        size_t descriptorCount = buf.getUInt16();
+        strm << margin << UString::Format(u"  Compatibility descriptor: %d bytes, %d descriptors", {compatibilityDescriptorLength, descriptorCount}) << std::endl;
 
-        // Then jump over them.
-        data += 2 + descriptorLength;
-        remain -= 2 + descriptorLength;
-
-        // Display sub-descriptors. They are not real descriptors, so we display them in hexa.
-        for (size_t subdesc_index = 0; subdesc_remain >= 2 && subdesc_index < subDescriptorCount; ++subdesc_index) {
+        // Display outer descriptor loop.
+        for (size_t desc_index = 0; !buf.error() && !buf.endOfRead() && descriptorCount-- > 0 && buf.remainingReadBytes() >= 11; ++desc_index) {
             strm << margin
-                 << UString::Format(u"  - Sub-descriptor %d, type: 0x%X (%d), %d bytes", {subdesc_index, subdesc[0], subdesc[0], subdesc[1]})
+                 << "  - Descriptor " << desc_index
+                 << ", type " << NameFromSection(u"CompatibilityDescriptorType", buf.getUInt8(), names::HEXA_FIRST)
                  << std::endl;
-            const size_t size = std::min<size_t>(subdesc_remain - 2, subdesc[1]);
-            if (size > 0) {
-                strm << UString::Dump(subdesc + 2, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 4);
+
+            // Get current compatibility descriptor content, based on 8-bit length field.
+            buf.pushReadSizeFromLength(8);
+
+            strm << margin << UString::Format(u"    Specifier type: 0x%X", {buf.getUInt8()});
+            strm << UString::Format(u", specifier data (OUI): %s", {names::OUI(buf.getUInt24(), names::HEXA_FIRST)}) << std::endl;
+            strm << margin << UString::Format(u"    Model: 0x%X (%<d)", {buf.getUInt16()});
+            strm << UString::Format(u", version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            const size_t subDescriptorCount = buf.getUInt8();
+            strm << margin << UString::Format(u"    Sub-descriptor count: %d", {subDescriptorCount}) << std::endl;
+
+            // Display sub-descriptors. They are not real descriptors, so we display them in hexa.
+            for (size_t subdesc_index = 0; !buf.error() && !buf.endOfRead() && subdesc_index < subDescriptorCount; ++subdesc_index) {
+                strm << margin << UString::Format(u"    - Sub-descriptor %d, type: 0x%X (%<d)", {subdesc_index, buf.getUInt8()});
+                size_t length = buf.getUInt8();
+                strm << UString::Format(u", %d bytes", {length}) << std::endl;
+                length = std::min(length, buf.remainingReadBytes());
+                if (length > 0) {
+                    strm << UString::Dump(buf.currentReadAddress(), length, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 6);
+                }
+                buf.skipBytes(length);
             }
-            subdesc += 2 + size;
-            subdesc_remain -= 2 + size;
+
+            // Close current compatibility descriptor.
+            display.displayExtraData(buf, indent + 4);
+            buf.popState();
         }
+
+        // Close compatibilityDescriptor() list of compatibility descriptors.
+        display.displayExtraData(buf, indent + 2);
+        buf.popState();
+
+        // Open platform loop using 16-bit length field.
+        buf.pushReadSizeFromLength(16);
+
+        // Get platform descriptions.
+        for (size_t platform_index = 0; !buf.error() && !buf.endOfRead(); ++platform_index) {
+            strm << margin << "  Platform " << platform_index << ":" << std::endl;
+            display.displayDescriptorListWithLength(section, buf, indent + 4, u"Target descriptors:", u"None");
+            display.displayDescriptorListWithLength(section, buf, indent + 4, u"Operational descriptors:", u"None");
+        }
+
+        // Close platform loop.
+        display.displayExtraData(buf, indent + 2);
+        buf.popState();
     }
 
-    // Check that we reached the expected end of structure.
-    return data == data_end;
-}
-
-
-//----------------------------------------------------------------------------
-// Display a set of devices.
-//----------------------------------------------------------------------------
-
-bool ts::UNT::DisplayDevices(TablesDisplay& display, const Section& section, const uint8_t*& data, size_t& remain, int indent)
-{
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-
-    // Display compatibility descriptor.
-    if (!DisplayCompatibilityDescriptorList(display, section, data, remain, indent) || remain < 2) {
-        return false;
-    }
-
-    // Get platform loop length.
-    const uint8_t* const data_end = data + 2 + GetUInt16(data);
-    data += 2;
-    remain -= 2;
-
-    // Display platform descriptions.
-    size_t platform_index = 0;
-    while (data < data_end) {
-        strm << margin << "Platform " << platform_index++ << ":" << std::endl
-             << margin << "  Target descriptors:" << std::endl;
-        if (!DisplayDescriptorList(display, section, data, remain, indent + 2)) {
-            return false;
-        }
-        strm << margin << "  Operational descriptors:" << std::endl;
-        if (!DisplayDescriptorList(display, section, data, remain, indent + 2)) {
-            return false;
-        }
-    }
-    return true;
+    display.displayExtraData(buf, indent);
 }
 
 

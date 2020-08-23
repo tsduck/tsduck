@@ -143,7 +143,7 @@ void ts::AIT::deserializePayload(PSIBuffer& buf, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AIT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::AIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // Minimum size of a section: empty common descriptor list and application_loop_length.
     constexpr size_t payload_min_size = 4;
@@ -152,32 +152,32 @@ void ts::AIT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
     // If the descriptor list is too long to fit into one section, create new sections when necessary.
     for (size_t start = 0;;) {
         // Reserve and restore 2 bytes for application_loop_length.
-        payload.pushWriteSize(payload.size() - 2);
-        start = payload.putPartialDescriptorListWithLength(descs, start);
-        payload.popState();
+        buf.pushWriteSize(buf.size() - 2);
+        start = buf.putPartialDescriptorListWithLength(descs, start);
+        buf.popState();
 
-        if (payload.error() || start >= descs.size()) {
+        if (buf.error() || start >= descs.size()) {
             // Common descriptor list completed.
             break;
         }
         else {
             // There are remaining top-level descriptors, flush current section.
             // Add a zero application_loop_length.
-            payload.putUInt16(0xF000);
-            addOneSection(table, payload);
+            buf.putUInt16(0xF000);
+            addOneSection(table, buf);
         }
     }
 
     // Reserve application_loop_length.
-    payload.putBits(0xFF, 4);
-    payload.pushWriteSequenceWithLeadingLength(12);
+    buf.putBits(0xFF, 4);
+    buf.pushWriteSequenceWithLeadingLength(12);
 
     // Add all transports
     for (auto it = applications.begin(); it != applications.end(); ++it) {
 
         // If we cannot at least add the fixed part of an application description, open a new section
-        if (payload.remainingWriteBytes() < 9) {
-            addSection(table, payload, false);
+        if (buf.remainingWriteBytes() < 9) {
+            addSection(table, buf, false);
         }
 
         // Binary size of the application entry.
@@ -185,22 +185,22 @@ void ts::AIT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
 
         // If we are not at the beginning of the application loop, make sure that the entire
         // application description fits in the section. If it does not fit, start a new section.
-        if (entry_size > payload.remainingWriteBytes() && payload.currentWriteByteOffset() > payload_min_size) {
+        if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
             // Create a new section
-            addSection(table, payload, false);
+            addSection(table, buf, false);
         }
 
         // Serialize the characteristics of the application.
         // If the descriptor list is too large for an entire section, it is truncated.
-        payload.putUInt32(it->first.organization_id);
-        payload.putUInt16(it->first.application_id);
-        payload.putUInt8(it->second.control_code);
-        payload.putPartialDescriptorListWithLength(it->second.descs);
+        buf.putUInt32(it->first.organization_id);
+        buf.putUInt16(it->first.application_id);
+        buf.putUInt8(it->second.control_code);
+        buf.putPartialDescriptorListWithLength(it->second.descs);
     }
 
     // Add partial section.
-    payload.popState(); // close application_loop_length
-    addOneSection(table, payload);
+    buf.popState(); // close application_loop_length
+    addOneSection(table, buf);
 }
 
 

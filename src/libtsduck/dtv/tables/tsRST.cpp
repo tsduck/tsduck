@@ -109,15 +109,15 @@ void ts::RST::deserializePayload(PSIBuffer& buf, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RST::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::RST::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     for (auto it = events.begin(); it != events.end(); ++it) {
-        payload.putUInt16(it->transport_stream_id);
-        payload.putUInt16(it->original_network_id);
-        payload.putUInt16(it->service_id);
-        payload.putUInt16(it->event_id);
-        payload.putBits(0xFF, 5);
-        payload.putBits(it->running_status, 3);
+        buf.putUInt16(it->transport_stream_id);
+        buf.putUInt16(it->original_network_id);
+        buf.putUInt16(it->service_id);
+        buf.putUInt16(it->event_id);
+        buf.putBits(0xFF, 5);
+        buf.putBits(it->running_status, 3);
     }
 }
 

@@ -171,15 +171,15 @@ void ts::TOT::deserializePayload(PSIBuffer& buf, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::TOT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // Encode the data in MJD in the payload.
     // In Japan, the time field is in fact a JST time, convert UTC to JST before serialization.
-    if ((payload.duck().standards() & Standards::JAPAN) == Standards::JAPAN) {
-        payload.putFullMJD(utc_time.UTCToJST());
+    if ((buf.duck().standards() & Standards::JAPAN) == Standards::JAPAN) {
+        buf.putFullMJD(utc_time.UTCToJST());
     }
     else {
-        payload.putFullMJD(utc_time);
+        buf.putFullMJD(utc_time);
     }
 
     // Build a descriptor list.
@@ -190,19 +190,19 @@ void ts::TOT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
     for (RegionVector::const_iterator it = regions.begin(); it != regions.end(); ++it) {
         lto.regions.push_back(*it);
         if (lto.regions.size() >= LocalTimeOffsetDescriptor::MAX_REGION) {
-            dlist.add(payload.duck(), lto);
+            dlist.add(buf.duck(), lto);
             lto.regions.clear();
         }
     }
     if (!lto.regions.empty()) {
-        dlist.add(payload.duck(), lto);
+        dlist.add(buf.duck(), lto);
     }
 
     // Append the "other" descriptors to the list
     dlist.add(descs);
 
     // Insert descriptor list (with leading length field).
-    payload.putPartialDescriptorListWithLength(dlist);
+    buf.putPartialDescriptorListWithLength(dlist);
 
     // A TOT section is a short section with a CRC32. But it will be
     // automatically added since TOT::useTrailingCRC32() returns true.
@@ -223,20 +223,7 @@ void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     if (buf.remainingReadBytes() >= 5) {
         strm << margin << "UTC time: " << buf.getFullMJD().format(Time::DATETIME) << std::endl;
         display.displayDescriptorListWithLength(section, buf, indent);
-
-        // There is a CRC32 at the end of a TOT, even though we are in a short section.
-        if (buf.remainingReadBytes() >= 4) {
-            const uint32_t sect_crc32 = buf.getUInt32();
-            const CRC32 comp_crc32(section.content(), section.size() - 4);
-            strm << margin << UString::Format(u"CRC32: 0x%X ", {sect_crc32});
-            if (sect_crc32 == comp_crc32) {
-                strm << "(OK)";
-            }
-            else {
-                strm << UString::Format(u"(WRONG, expected 0x%X)", {comp_crc32.value()});
-            }
-            strm << std::endl;
-        }
+        display.displayCRC32(section, buf, indent);
     }
 
     display.displayExtraData(buf, indent);

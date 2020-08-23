@@ -156,19 +156,19 @@ void ts::INT::deserializePayload(PSIBuffer& buf, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::INT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::INT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // Fixed part, to be repeated on all sections.
-    payload.putUInt24(platform_id);
-    payload.putUInt8(processing_order);
-    payload.pushState();
+    buf.putUInt24(platform_id);
+    buf.putUInt8(processing_order);
+    buf.pushState();
 
     // Add top-level platform_descriptor_loop.
     // If the descriptor list is too long to fit into one section, create new sections when necessary.
     for (size_t start_index = 0; ; ) {
 
         // Add the descriptor list (or part of it).
-        start_index = payload.putPartialDescriptorListWithLength(platform_descs, start_index);
+        start_index = buf.putPartialDescriptorListWithLength(platform_descs, start_index);
 
         // If all descriptors were serialized, exit loop
         if (start_index >= platform_descs.size()) {
@@ -176,7 +176,7 @@ void ts::INT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
         }
 
         // Need to close the section and open a new one.
-        addOneSection(table, payload);
+        addOneSection(table, buf);
     }
 
     // Minimum size of a section: fixed part and empty top-level descriptor list.
@@ -192,17 +192,17 @@ void ts::INT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
         const size_t entry_size = 2 + it->second.target_descs.binarySize() + 2 + it->second.operational_descs.binarySize();
 
         // If the current entry does not fit into the section, create a new section, unless we are at the beginning of the section.
-        if (entry_size > payload.remainingWriteBytes() && payload.currentWriteByteOffset() > payload_min_size) {
-            addOneSection(table, payload);
-            payload.putPartialDescriptorListWithLength(platform_descs, 0, 0);
+        if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
+            addOneSection(table, buf);
+            buf.putPartialDescriptorListWithLength(platform_descs, 0, 0);
         }
 
         // Insert device entry.
         // During serialization of the first descriptor loop, keep size for at least an empty second descriptor loop.
-        payload.pushWriteSize(payload.size() - 2);
-        payload.putPartialDescriptorListWithLength(it->second.target_descs);
-        payload.popState();
-        payload.putPartialDescriptorListWithLength(it->second.operational_descs);
+        buf.pushWriteSize(buf.size() - 2);
+        buf.putPartialDescriptorListWithLength(it->second.target_descs);
+        buf.popState();
+        buf.putPartialDescriptorListWithLength(it->second.operational_descs);
     }
 }
 

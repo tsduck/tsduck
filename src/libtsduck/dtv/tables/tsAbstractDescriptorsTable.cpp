@@ -100,12 +100,12 @@ void ts::AbstractDescriptorsTable::deserializePayload(PSIBuffer& buf, const Sect
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::AbstractDescriptorsTable::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     size_t start = 0;
-    while (!payload.error() && start < descs.size()) {
-        start = payload.putPartialDescriptorList(descs, start);
-        addOneSection(table, payload);
+    while (!buf.error() && start < descs.size()) {
+        start = buf.putPartialDescriptorList(descs, start);
+        addOneSection(table, buf);
     }
 }
 

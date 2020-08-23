@@ -255,19 +255,19 @@ void ts::VCT::deserializePayload(PSIBuffer& buf, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::VCT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::VCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // Add fixed fields.
-    payload.putUInt8(protocol_version);
+    buf.putUInt8(protocol_version);
 
     // Save position before num_channels_in_section. Will be updated at each channel.
     uint8_t num_channels_in_section = 0;
-    payload.pushState();
-    payload.putUInt8(num_channels_in_section);
-    const size_t payload_min_size = payload.currentReadByteOffset();
+    buf.pushState();
+    buf.putUInt8(num_channels_in_section);
+    const size_t payload_min_size = buf.currentReadByteOffset();
 
     // Loop on channel definitions.
-    for (size_t i = 0; !payload.error() && i < channels.size(); ++i) {
+    for (size_t i = 0; !buf.error() && i < channels.size(); ++i) {
         const Channel& ch(channels[i]);
 
         // Binary size of the channel definition.
@@ -276,61 +276,61 @@ void ts::VCT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
         // If we are not at the beginning of the channel loop, make sure that the entire
         // channel fits in the section. If it does not fit, start a new section.
         // Take into account at least 2 bytes for the trailing descriptor list.
-        if (entry_size + 2 > payload.remainingWriteBytes() && payload.currentWriteByteOffset() > payload_min_size) {
+        if (entry_size + 2 > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
             // Create an empty trailing descriptor list.
-            payload.putUInt16(0xFC00);
+            buf.putUInt16(0xFC00);
             // Create a new section.
-            addOneSection(table, payload);
+            addOneSection(table, buf);
             // We are at the position of num_channels_in_section in the new section.
-            payload.putUInt8(num_channels_in_section = 0);
+            buf.putUInt8(num_channels_in_section = 0);
         }
 
         // Serialize the channel definition.
-        payload.putFixedUTF16(ch.short_name, 14);
-        payload.putBits(0xFF, 4);
-        payload.putBits(ch.major_channel_number, 10);
-        payload.putBits(ch.minor_channel_number, 10);
-        payload.putUInt8(ch.modulation_mode);
-        payload.putUInt32(ch.carrier_frequency);
-        payload.putUInt16(ch.channel_TSID);
-        payload.putUInt16(ch.program_number);
-        payload.putBits(ch.ETM_location, 2);
-        payload.putBit(ch.access_controlled);
-        payload.putBit(ch.hidden);
-        payload.putBit(_table_id != TID_CVCT ? 1 : ch.path_select);
-        payload.putBit(_table_id != TID_CVCT || ch.out_of_band);
-        payload.putBit(ch.hide_guide);
-        payload.putBits(0xFF, 3);
-        payload.putBits(ch.service_type, 6);
-        payload.putUInt16(ch.source_id);
+        buf.putFixedUTF16(ch.short_name, 14);
+        buf.putBits(0xFF, 4);
+        buf.putBits(ch.major_channel_number, 10);
+        buf.putBits(ch.minor_channel_number, 10);
+        buf.putUInt8(ch.modulation_mode);
+        buf.putUInt32(ch.carrier_frequency);
+        buf.putUInt16(ch.channel_TSID);
+        buf.putUInt16(ch.program_number);
+        buf.putBits(ch.ETM_location, 2);
+        buf.putBit(ch.access_controlled);
+        buf.putBit(ch.hidden);
+        buf.putBit(_table_id != TID_CVCT ? 1 : ch.path_select);
+        buf.putBit(_table_id != TID_CVCT || ch.out_of_band);
+        buf.putBit(ch.hide_guide);
+        buf.putBits(0xFF, 3);
+        buf.putBits(ch.service_type, 6);
+        buf.putUInt16(ch.source_id);
 
         // Descriptors for this channel (with 10-bit length field).
         // Temporarily remove 2 trailing bytes for minimal additional_descriptor loop.
-        payload.pushWriteSize(payload.size() - 2);
-        payload.putPartialDescriptorListWithLength(ch.descs, 0, NPOS, 10);
-        payload.popState();
+        buf.pushWriteSize(buf.size() - 2);
+        buf.putPartialDescriptorListWithLength(ch.descs, 0, NPOS, 10);
+        buf.popState();
 
         // Now increment the field num_channels_in_section at saved position.
-        payload.swapState();
-        payload.pushState();
-        payload.putUInt8(++num_channels_in_section);
-        payload.popState();
-        payload.swapState();
+        buf.swapState();
+        buf.pushState();
+        buf.putUInt8(++num_channels_in_section);
+        buf.popState();
+        buf.swapState();
     }
 
     // There should be at least two remaining bytes if there was no error.
-    assert(payload.error() || payload.remainingWriteBytes() >= 2);
+    assert(buf.error() || buf.remainingWriteBytes() >= 2);
 
     // Serialize additional_descriptor loop. May overflow on additional sections.
     size_t start = 0;
-    while (!payload.error()) {
-        start = payload.putPartialDescriptorListWithLength(descs, start, NPOS, 10);
+    while (!buf.error()) {
+        start = buf.putPartialDescriptorListWithLength(descs, start, NPOS, 10);
         if (start < descs.size()) {
             // Too many descriptors to fit in this section, flush current section.
-            addOneSection(table, payload);
+            addOneSection(table, buf);
             // We are at the position of num_channels_in_section in the new section.
             // There is no channel entry in this section.
-            payload.putUInt8(0);
+            buf.putUInt8(0);
         }
         else {
             // Descriptor list completed.

@@ -170,19 +170,19 @@ void ts::SDT::deserializePayload(PSIBuffer& buf, const Section& section)
 }
 
 
-//----------------------------------------------------------------------------
+//---------------------------------------------------------------s-------------
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::SDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // Fixed part, to be repeated on all sections.
-    payload.putUInt16(onetw_id);
-    payload.putUInt8(0xFF);
-    payload.pushState();
+    buf.putUInt16(onetw_id);
+    buf.putUInt8(0xFF);
+    buf.pushState();
 
     // Minimum size of a section: fixed part.
-    const size_t payload_min_size = payload.currentWriteByteOffset();
+    const size_t payload_min_size = buf.currentWriteByteOffset();
 
     // Add all services
     for (auto it = services.begin(); it != services.end(); ++it) {
@@ -191,18 +191,18 @@ void ts::SDT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
         const size_t entry_size = 5 + it->second.descs.binarySize();
 
         // If the current entry does not fit into the section, create a new section, unless we are at the beginning of the section.
-        if (entry_size > payload.remainingWriteBytes() && payload.currentWriteByteOffset() > payload_min_size) {
-            addOneSection(table, payload);
+        if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
+            addOneSection(table, buf);
         }
 
         // Insert service entry
-        payload.putUInt16(it->first); // service_id
-        payload.putBits(0xFF, 6);
-        payload.putBit(it->second.EITs_present);
-        payload.putBit(it->second.EITpf_present);
-        payload.putBits(it->second.running_status, 3);
-        payload.putBit(it->second.CA_controlled);
-        payload.putPartialDescriptorListWithLength(it->second.descs);
+        buf.putUInt16(it->first); // service_id
+        buf.putBits(0xFF, 6);
+        buf.putBit(it->second.EITs_present);
+        buf.putBit(it->second.EITpf_present);
+        buf.putBits(it->second.running_status, 3);
+        buf.putBit(it->second.CA_controlled);
+        buf.putPartialDescriptorListWithLength(it->second.descs);
     }
 }
 

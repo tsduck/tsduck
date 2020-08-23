@@ -202,28 +202,9 @@ namespace ts {
     protected:
         // Inherited methods
         virtual void clearContent() override;
-        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
-        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void serializePayload(BinaryTable&, PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&, const Section&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
-        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
-
-    private:
-        // Deserialize various structures. Update data and remain. Return true on success.
-        static bool DeserializeDescriptorList(DescriptorList& dlist, const uint8_t*& data, size_t& remain);
-        static bool DeserializeCompatibilityDescriptorList(CompatibilityDescriptorList& dlist, const uint8_t*& data, size_t& remain);
-        static bool DeserializeDevices(Devices& devs, const uint8_t*& data, size_t& remain);
-
-        // Add a new section to a table being serialized
-        // Section number is incremented. Data and remain are reinitialized.
-        void addSection(BinaryTable& table, int& section_number, uint8_t* payload, uint8_t*& data, size_t& remain) const;
-
-        // Serialize one set of devices description. Update data and remain.
-        // Return true if the service was completely serialized, false otherwise.
-        bool serializeDevices(const Devices& devs, uint8_t*& data, size_t& remain) const;
-
-        // Display various structures. Update data and remain. Return true on success.
-        static bool DisplayDescriptorList(TablesDisplay& display, const Section& section, const uint8_t*& data, size_t& remain, int indent);
-        static bool DisplayCompatibilityDescriptorList(TablesDisplay& display, const Section& section, const uint8_t*& data, size_t& remain, int indent);
-        static bool DisplayDevices(TablesDisplay& display, const Section& section, const uint8_t*& data, size_t& remain, int indent);
+        virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };
 }

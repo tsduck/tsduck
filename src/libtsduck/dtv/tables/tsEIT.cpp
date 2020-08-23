@@ -280,7 +280,7 @@ void ts::EIT::deserializePayload(PSIBuffer& buf, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::EIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // In the serialize() method, we do not attempt to reorder events and
     // sections according to rules from ETSI TS 101 211. This is impossible in
@@ -290,14 +290,14 @@ void ts::EIT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
     // use the static method EIT::ReorganizeSections().
 
     // Fixed part, to be repeated on all sections.
-    payload.putUInt16(ts_id);
-    payload.putUInt16(onetw_id);
-    payload.putUInt8(0); // segment_last_section_number, will be fixed later.
-    payload.putUInt8(last_table_id);
-    payload.pushState();
+    buf.putUInt16(ts_id);
+    buf.putUInt16(onetw_id);
+    buf.putUInt8(0); // segment_last_section_number, will be fixed later.
+    buf.putUInt8(last_table_id);
+    buf.pushState();
 
     // Minimum size of a section: fixed part.
-    const size_t payload_min_size = payload.currentWriteByteOffset();
+    const size_t payload_min_size = buf.currentWriteByteOffset();
 
     // Add all events in time order.
     for (auto evit = events.begin(); evit != events.end(); ++evit) {
@@ -307,26 +307,26 @@ void ts::EIT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
         const size_t entry_size = EIT_EVENT_FIXED_SIZE + ev.descs.binarySize();
 
         // If the current entry does not fit into the section, create a new section, unless we are at the beginning of the section.
-        if (entry_size > payload.remainingWriteBytes() && payload.currentWriteByteOffset() > payload_min_size) {
-            addOneSection(table, payload);
+        if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
+            addOneSection(table, buf);
         }
 
         // Insert event entry.
-        payload.putUInt16(ev.event_id);
-        payload.putFullMJD(ev.start_time);
-        payload.putBCD(int(ev.duration / 3600));
-        payload.putBCD(int((ev.duration / 60) % 60));
-        payload.putBCD(int(ev.duration % 60));
-        payload.putBits(ev.running_status, 3);
-        payload.putBit(ev.CA_controlled);
-        payload.putPartialDescriptorListWithLength(ev.descs);
+        buf.putUInt16(ev.event_id);
+        buf.putFullMJD(ev.start_time);
+        buf.putBCD(int(ev.duration / 3600));
+        buf.putBCD(int((ev.duration / 60) % 60));
+        buf.putBCD(int(ev.duration % 60));
+        buf.putBits(ev.running_status, 3);
+        buf.putBit(ev.CA_controlled);
+        buf.putPartialDescriptorListWithLength(ev.descs);
     }
 
     // Add partial section (if there is one). Normally, we do not have to do this.
     // This is done automatically in the caller. However, in the specific case of
     // an EIT, we must have a complete binary table to call Fix().
-    if (payload.currentWriteByteOffset() > payload_min_size || table.sectionCount() == 0) {
-        addOneSection(table, payload);
+    if (buf.currentWriteByteOffset() > payload_min_size || table.sectionCount() == 0) {
+        addOneSection(table, buf);
     }
 
     // Finally, fix the segmentation values in the serialized binary table.

@@ -104,12 +104,12 @@ void ts::ETT::deserializePayload(PSIBuffer& buf, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ETT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::ETT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // Important: an ETT is not allowed to use more than one section, see A/65, section 6.6.
-    payload.putUInt8(protocol_version);
-    payload.putUInt32(ETM_id);
-    payload.putMultipleString(extended_text_message);
+    buf.putUInt8(protocol_version);
+    buf.putUInt32(ETM_id);
+    buf.putMultipleString(extended_text_message);
 }
 
 

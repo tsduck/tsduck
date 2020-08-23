@@ -92,15 +92,15 @@ void ts::TDT::deserializePayload(PSIBuffer& buf, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::TDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // Encode the data in MJD in the payload.
     // In Japan, the time field is in fact a JST time, convert UTC to JST before serialization.
-    if ((payload.duck().standards() & Standards::JAPAN) == Standards::JAPAN) {
-        payload.putFullMJD(utc_time.UTCToJST());
+    if ((buf.duck().standards() & Standards::JAPAN) == Standards::JAPAN) {
+        buf.putFullMJD(utc_time.UTCToJST());
     }
     else {
-        payload.putFullMJD(utc_time);
+        buf.putFullMJD(utc_time);
     }
 }
 

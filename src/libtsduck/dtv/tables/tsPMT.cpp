@@ -130,25 +130,25 @@ void ts::PMT::deserializePayload(PSIBuffer& buf, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // Build the section. Note that a PMT is not allowed to use more than
     // one section, see ISO/IEC 13818-1:2000 2.4.4.8 & 2.4.4.9. For the sake
     // of completeness, we allow multi-section PMT for very large services.
 
     // Fixed part, to be repeated on all sections.
-    payload.putPID(pcr_pid);
-    payload.pushState();
+    buf.putPID(pcr_pid);
+    buf.pushState();
 
     // Insert program_info descriptor list (with leading length field).
     // Add new section when the descriptor list overflows.
     for (size_t start = 0;;) {
-        start = payload.putPartialDescriptorListWithLength(descs, start);
-        if (payload.error() || start >= descs.size()) {
+        start = buf.putPartialDescriptorListWithLength(descs, start);
+        if (buf.error() || start >= descs.size()) {
             break;
         }
         else {
-            addOneSection(table, payload);
+            addOneSection(table, buf);
         }
     }
 
@@ -162,15 +162,15 @@ void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
         const size_t entry_size = 5 + it->second.descs.binarySize();
 
         // If the current entry does not fit into the section, create a new section, unless we are at the beginning of the section.
-        if (entry_size > payload.remainingWriteBytes() && payload.currentWriteByteOffset() > payload_min_size) {
-            addOneSection(table, payload);
-            payload.putPartialDescriptorListWithLength(descs, 0, 0);
+        if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
+            addOneSection(table, buf);
+            buf.putPartialDescriptorListWithLength(descs, 0, 0);
         }
 
         // Insert stream entry
-        payload.putUInt8(it->second.stream_type);
-        payload.putPID(it->first); // PID
-        payload.putPartialDescriptorListWithLength(it->second.descs);
+        buf.putUInt8(it->second.stream_type);
+        buf.putPID(it->first); // PID
+        buf.putPartialDescriptorListWithLength(it->second.descs);
     }
 }
 

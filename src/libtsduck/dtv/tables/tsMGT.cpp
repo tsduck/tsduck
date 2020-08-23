@@ -134,7 +134,7 @@ void ts::MGT::deserializePayload(PSIBuffer& buf, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MGT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::MGT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // Important: an MGT is not allowed to use more than one section, see A/65, section 6.2.
     // So, all tables definitions are serialized in the same PSIBuffer. We don't check
@@ -143,22 +143,22 @@ void ts::MGT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
     // interpreted as "invalid table" by the caller.
 
     // Add fixed fields.
-    payload.putUInt8(protocol_version);
-    payload.putUInt16(uint16_t(tables.size()));
+    buf.putUInt8(protocol_version);
+    buf.putUInt16(uint16_t(tables.size()));
 
     // Add description of all table types.
     for (auto it = tables.begin(); it != tables.end(); ++it) {
         const TableType& tt(it->second);
-        payload.putUInt16(tt.table_type);
-        payload.putPID(tt.table_type_PID);
-        payload.putBits(0xFF, 3);
-        payload.putBits(tt.table_type_version_number, 5);
-        payload.putUInt32(tt.number_bytes);
-        payload.putPartialDescriptorListWithLength(tt.descs);
+        buf.putUInt16(tt.table_type);
+        buf.putPID(tt.table_type_PID);
+        buf.putBits(0xFF, 3);
+        buf.putBits(tt.table_type_version_number, 5);
+        buf.putUInt32(tt.number_bytes);
+        buf.putPartialDescriptorListWithLength(tt.descs);
     }
 
     // Insert common descriptor list (with leading length field)
-    payload.putPartialDescriptorListWithLength(descs);
+    buf.putPartialDescriptorListWithLength(descs);
 }
 
 
