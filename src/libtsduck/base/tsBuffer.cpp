@@ -465,8 +465,10 @@ bool ts::Buffer::popState(size_t level)
                 break;
             }
             case Reason::READ_SIZE: {
+                // Skip potentially unread data in pushed read area.
                 // Restore write pointer and read-only indicator.
                 assert(_state.wbyte <= saved.wbyte);
+                _state.rbyte = _state.wbyte;
                 _state.wbyte = saved.wbyte;
                 _state.read_only = saved.read_only;
                 break;
@@ -980,6 +982,13 @@ size_t ts::Buffer::getBytes(uint8_t* buffer, size_t bytes)
         readBytesInternal(buffer, bytes);
         return bytes;
     }
+}
+
+void ts::Buffer::getByteBlock(ByteBlock& bb, size_t bytes)
+{
+    bytes = requestReadBytes(bytes);
+    bb.resize(bytes);
+    readBytesInternal(bb.data(), bytes);
 }
 
 ts::ByteBlock ts::Buffer::getByteBlock(size_t bytes)

@@ -154,17 +154,17 @@ void ts::STT::deserializePayload(PSIBuffer& buf, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::STT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::STT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // An STT is not allowed to use more than one section, see A/65, section 6.1.
-    payload.putUInt8(protocol_version);
-    payload.putUInt32(system_time);
-    payload.putUInt8(GPS_UTC_offset);
-    payload.putBit(DS_status);
-    payload.putBits(0xFF, 2);
-    payload.putBits(DS_day_of_month, 5);
-    payload.putUInt8(DS_hour);
-    payload.putPartialDescriptorList(descs);
+    buf.putUInt8(protocol_version);
+    buf.putUInt32(system_time);
+    buf.putUInt8(GPS_UTC_offset);
+    buf.putBit(DS_status);
+    buf.putBits(0xFF, 2);
+    buf.putBits(DS_day_of_month, 5);
+    buf.putUInt8(DS_hour);
+    buf.putPartialDescriptorList(descs);
 }
 
 

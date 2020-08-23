@@ -507,8 +507,8 @@ namespace ts {
         //! The previous state is pushed to the internal stack of state and can be restored later.
         //! Saving the readable size temporarily changes the write pointer and sets the buffer as read only.
         //! When the state is restored using popState(), the previous readable size (write pointer)
-        //! and read-only indicator are restored. The read pointer is not restored (everything that was
-        //! read in the meantime remain read).
+        //! and read-only indicator are restored. The read pointer is set to the end of previous
+        //! readable size.
         //!
         //! @param [in] size New readable size in bytes of the buffer. In some cases, the final granted
         //! size can be different. The final value is bounded by the current read and write pointers.
@@ -676,6 +676,15 @@ namespace ts {
         //! available, return as much as possible and set the read error.
         //!
         ByteBlock getByteBlock(size_t bytes);
+
+        //!
+        //! Get bulk bytes from the buffer.
+        //! The bit aligment is ignored, reading starts at the current read byte pointer,
+        //! even if a few bits were already read from that byte.
+        //! @param [out] bb Byte block receiving the read bytes.
+        //! @param [in] bytes Number of bytes to read.
+        //!
+        void getByteBlock(ByteBlock& bb, size_t bytes);
 
         //!
         //! Get bulk bytes from the buffer.
@@ -1242,7 +1251,7 @@ namespace ts {
             size_t wbyte;      // Next byte to write, offset from beginning of buffer.
             size_t rbit;       // Next bit to read at offset rbyte (0 = MSB in big endian, LSB in little endian).
             size_t wbit;       // Next bit to write at offset wbyte (0 = MSB in big endian, LSB in little endian).
-            size_t len_bits;   // Size in bits of the length field (when reason is WRITE_LEN_SEQ);
+            size_t len_bits;   // Size in bits of the length field (when reason is WRITE_LEN_SEQ).
 
             // Constructor.
             State(bool rdonly = true, size_t size = 0);

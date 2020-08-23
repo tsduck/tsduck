@@ -230,62 +230,62 @@ void ts::CableEmergencyAlertTable::deserializePayload(PSIBuffer& buf, const Sect
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CableEmergencyAlertTable::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::CableEmergencyAlertTable::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // A cable_emergency_alert_table can have only one section.
 
     // Locations and exceptions cannot have more than 255 entries each (one-byte counter).
     if (locations.size() > 255 || exceptions.size() > 255) {
-        payload.setUserError();
+        buf.setUserError();
         return;
     }
 
-    payload.putUInt8(protocol_version);
-    payload.putUInt16(EAS_event_ID);
-    payload.putFixedUTF8(EAS_originator_code, 3, ' ');
-    payload.putUTF8WithLength(EAS_event_code);
-    payload.putMultipleStringWithLength(nature_of_activation_text);
-    payload.putUInt8(alert_message_time_remaining);
-    payload.putUInt32(event_start_time == Time::Epoch ? 0 : uint32_t(event_start_time.toGPSSeconds()));
-    payload.putUInt16(event_duration);
-    payload.putBits(0xFFFF, 12);
-    payload.putBits(alert_priority, 4);
-    payload.putUInt16(details_OOB_source_ID);
-    payload.putBits(0xFF, 6);
-    payload.putBits(details_major_channel_number, 10);
-    payload.putBits(0xFF, 6);
-    payload.putBits(details_minor_channel_number, 10);
-    payload.putUInt16(audio_OOB_source_ID);
-    payload.putMultipleStringWithLength(alert_text, 2); // 2-byte length field
+    buf.putUInt8(protocol_version);
+    buf.putUInt16(EAS_event_ID);
+    buf.putFixedUTF8(EAS_originator_code, 3, ' ');
+    buf.putUTF8WithLength(EAS_event_code);
+    buf.putMultipleStringWithLength(nature_of_activation_text);
+    buf.putUInt8(alert_message_time_remaining);
+    buf.putUInt32(event_start_time == Time::Epoch ? 0 : uint32_t(event_start_time.toGPSSeconds()));
+    buf.putUInt16(event_duration);
+    buf.putBits(0xFFFF, 12);
+    buf.putBits(alert_priority, 4);
+    buf.putUInt16(details_OOB_source_ID);
+    buf.putBits(0xFF, 6);
+    buf.putBits(details_major_channel_number, 10);
+    buf.putBits(0xFF, 6);
+    buf.putBits(details_minor_channel_number, 10);
+    buf.putUInt16(audio_OOB_source_ID);
+    buf.putMultipleStringWithLength(alert_text, 2); // 2-byte length field
 
     // Serialize locations.
-    payload.putUInt8(uint8_t(locations.size()));
-    for (auto it = locations.begin(); !payload.writeError() && it != locations.end(); ++it) {
-        payload.putUInt8(it->state_code);
-        payload.putBits(it->county_subdivision, 4);
-        payload.putBits(0xFF, 2);
-        payload.putBits(it->county_code, 10);
+    buf.putUInt8(uint8_t(locations.size()));
+    for (auto it = locations.begin(); !buf.writeError() && it != locations.end(); ++it) {
+        buf.putUInt8(it->state_code);
+        buf.putBits(it->county_subdivision, 4);
+        buf.putBits(0xFF, 2);
+        buf.putBits(it->county_code, 10);
     }
 
     // Serialize exceptions.
-    payload.putUInt8(uint8_t(exceptions.size()));
-    for (auto it = exceptions.begin(); !payload.writeError() && it != exceptions.end(); ++it) {
-        payload.putBits(it->in_band, 1);
-        payload.putBits(0xFF, 7);
+    buf.putUInt8(uint8_t(exceptions.size()));
+    for (auto it = exceptions.begin(); !buf.writeError() && it != exceptions.end(); ++it) {
+        buf.putBits(it->in_band, 1);
+        buf.putBits(0xFF, 7);
         if (it->in_band) {
-            payload.putBits(0xFF, 6);
-            payload.putBits(it->major_channel_number, 10);
-            payload.putBits(0xFF, 6);
-            payload.putBits(it->minor_channel_number, 10);
+            buf.putBits(0xFF, 6);
+            buf.putBits(it->major_channel_number, 10);
+            buf.putBits(0xFF, 6);
+            buf.putBits(it->minor_channel_number, 10);
         }
         else {
-            payload.putUInt16(0xFFFF);
-            payload.putUInt16(it->OOB_source_ID);
+            buf.putUInt16(0xFFFF);
+            buf.putUInt16(it->OOB_source_ID);
         }
     }
 
     // Insert descriptors (all or some, depending on the remaining space).
-    payload.putPartialDescriptorListWithLength(descs, 0, NPOS, 10); // 10-bit length field
+    buf.putPartialDescriptorListWithLength(descs, 0, NPOS, 10); // 10-bit length field
 }
 
 

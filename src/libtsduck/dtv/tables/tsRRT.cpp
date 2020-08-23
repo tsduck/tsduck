@@ -152,39 +152,39 @@ void ts::RRT::deserializePayload(PSIBuffer& buf, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RRT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::RRT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // An RRT is not allowed to use more than one section, see A/65, section 6.4.
 
     if (dimensions.size() > 255) {
         // Too many dimensions, invalid.
-        payload.setUserError();
+        buf.setUserError();
         return;
     }
 
-    payload.putUInt8(protocol_version);
-    payload.putMultipleStringWithLength(rating_region_name);
-    payload.putUInt8(uint8_t(dimensions.size()));
+    buf.putUInt8(protocol_version);
+    buf.putMultipleStringWithLength(rating_region_name);
+    buf.putUInt8(uint8_t(dimensions.size()));
 
     // Loop on dimensions definitions.
-    for (auto dim = dimensions.begin(); !payload.error() && dim != dimensions.end(); ++dim) {
+    for (auto dim = dimensions.begin(); !buf.error() && dim != dimensions.end(); ++dim) {
         if (dim->values.size() > 15) {
             // Too many value, invalid.
-            payload.setUserError();
+            buf.setUserError();
             return;
         }
-        payload.putMultipleStringWithLength(dim->dimension_name);
-        payload.putBits(0xFF, 3);
-        payload.putBit(dim->graduated_scale);
-        payload.putBits(dim->values.size(), 4);
-        for (auto val = dim->values.begin(); !payload.error() && val != dim->values.end(); ++val) {
-            payload.putMultipleStringWithLength(val->abbrev_rating_value);
-            payload.putMultipleStringWithLength(val->rating_value);
+        buf.putMultipleStringWithLength(dim->dimension_name);
+        buf.putBits(0xFF, 3);
+        buf.putBit(dim->graduated_scale);
+        buf.putBits(dim->values.size(), 4);
+        for (auto val = dim->values.begin(); !buf.error() && val != dim->values.end(); ++val) {
+            buf.putMultipleStringWithLength(val->abbrev_rating_value);
+            buf.putMultipleStringWithLength(val->rating_value);
         }
     }
 
     // Insert common descriptor list (with leading 10-bit length field)
-    payload.putPartialDescriptorListWithLength(descs, 0, NPOS, 10);
+    buf.putPartialDescriptorListWithLength(descs, 0, NPOS, 10);
 }
 
 

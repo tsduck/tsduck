@@ -214,7 +214,7 @@ bool ts::AbstractTransportListTable::getNextTransport(TransportStreamIdSet& ts_s
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::AbstractTransportListTable::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // Build a set of TS id to serialize.
     TransportStreamIdSet ts_set;
@@ -229,32 +229,32 @@ void ts::AbstractTransportListTable::serializePayload(BinaryTable& table, PSIBuf
     // If the descriptor list is too long to fit into one section, create new sections when necessary.
     for (size_t start = 0;;) {
         // Reserve and restore 2 bytes for transport_stream_loop_length.
-        payload.pushWriteSize(payload.size() - 2);
-        start = payload.putPartialDescriptorListWithLength(descs, start);
-        payload.popState();
+        buf.pushWriteSize(buf.size() - 2);
+        start = buf.putPartialDescriptorListWithLength(descs, start);
+        buf.popState();
 
-        if (payload.error() || start >= descs.size()) {
+        if (buf.error() || start >= descs.size()) {
             // Top-level descriptor list completed.
             break;
         }
         else {
             // There are remaining top-level descriptors, flush current section.
             // Add a zero transport_stream_loop_length.
-            payload.putUInt16(0xF000);
-            addOneSection(table, payload);
+            buf.putUInt16(0xF000);
+            addOneSection(table, buf);
         }
     }
 
     // Reserve transport_stream_loop_length.
-    payload.pushState();
-    payload.putUInt16(0xF000);
+    buf.pushState();
+    buf.putUInt16(0xF000);
 
     // Add all transports
     while (!ts_set.empty()) {
 
         // If we cannot at least add the fixed part of a transport, open a new section
-        if (payload.remainingWriteBytes() < 6) {
-            addSection(table, payload, false);
+        if (buf.remainingWriteBytes() < 6) {
+            addSection(table, buf, false);
         }
 
         // Get a TS to serialize in current section.
@@ -262,7 +262,7 @@ void ts::AbstractTransportListTable::serializePayload(BinaryTable& table, PSIBuf
         TransportStreamId ts_id;
         while (!getNextTransport(ts_set, ts_id, int(table.sectionCount()))) {
             // No transport found for this section, close it and starts a new one.
-            addSection(table, payload, false);
+            addSection(table, buf, false);
         }
 
         // Locate transport description.
@@ -278,11 +278,11 @@ void ts::AbstractTransportListTable::serializePayload(BinaryTable& table, PSIBuf
         // start a new section. Huge transport descriptions may not fit into
         // one section, even when starting at the beginning of the transport loop.
         // In that case, the transport description will span two sections later.
-        if (entry_size > payload.remainingWriteBytes() && payload.currentWriteByteOffset() > payload_min_size) {
+        if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
             // Push back the transport in the set, we won't use it in this section.
             ts_set.insert(ts_id);
             // Create a new section
-            addSection(table, payload, false);
+            addSection(table, buf, false);
             // Loop back since the section number has changed and a new transport may be better
             continue;
         }
@@ -294,11 +294,11 @@ void ts::AbstractTransportListTable::serializePayload(BinaryTable& table, PSIBuf
         size_t start_index = 0;
         for (;;) {
             // Insert common characteristics of the transport.
-            payload.putUInt16(ts_id.transport_stream_id);
-            payload.putUInt16(ts_id.original_network_id);
+            buf.putUInt16(ts_id.transport_stream_id);
+            buf.putUInt16(ts_id.original_network_id);
 
             // Insert descriptors (all or some).
-            start_index = payload.putPartialDescriptorListWithLength(dlist, start_index);
+            start_index = buf.putPartialDescriptorListWithLength(dlist, start_index);
 
             // Exit loop when all descriptors were serialized.
             if (start_index >= dlist.count()) {
@@ -307,10 +307,10 @@ void ts::AbstractTransportListTable::serializePayload(BinaryTable& table, PSIBuf
 
             // Not all descriptors were written, the section is full.
             // Open a new one and continue with this transport.
-            addSection(table, payload, false);
+            addSection(table, buf, false);
         }
     }
 
     // Add partial section.
-    addSection(table, payload, true);
+    addSection(table, buf, true);
 }

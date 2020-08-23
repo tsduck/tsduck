@@ -135,8 +135,8 @@ namespace ts {
 
         // Inherited methods
         virtual void clearContent() override;
-        virtual void serializePayload(BinaryTable& table, PSIBuffer& payload) const override;
-        virtual void deserializePayload(PSIBuffer& buf, const Section& section) override;
+        virtual void serializePayload(BinaryTable&, PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&, const Section&) override;
 
     private:
         typedef std::set<TransportStreamId> TransportStreamIdSet;

@@ -33,6 +33,7 @@
 #include "tsxmlElement.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 TSDUCK_SOURCE;
 
@@ -89,6 +90,17 @@ bool ts::SpliceInformationTable::isPrivate() const
 
 
 //----------------------------------------------------------------------------
+// Check if the sections of this table have a trailing CRC32.
+//----------------------------------------------------------------------------
+
+bool ts::SpliceInformationTable::useTrailingCRC32() const
+{
+    // A splice_information_table is a short section with a CRC32.
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear all fields.
 //----------------------------------------------------------------------------
 
@@ -138,96 +150,61 @@ ts::SpliceInformationTable::SpliceInformationTable(DuckContext& duck, const Bina
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInformationTable::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::SpliceInformationTable::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    clear();
-
-    // This is a short table, must have only one section
-    if (table.sectionCount() != 1) {
-        return;
-    }
-
-    // Reference to single section
-    const Section& sect(*table.sectionAt(0));
-    const uint8_t* data = sect.payload();
-    size_t remain = sect.payloadSize();
-
-    // Payload layout: fixed part (11 bytes), variable part, CRC2 (4 bytes).
-    // There is a CRC32 at the end of a SpliceInformationTable, even though we are in a short section.
-    if (remain < 15) {
-        return;
-    }
-
-    // Check CRC32 now
-    const CRC32 comp_crc32(sect.content(), sect.size() - 4);
-    const uint32_t sect_crc32 = GetUInt32(data + remain - 4);
-    remain -= 4;
-
-    if (sect_crc32 != comp_crc32) {
-        return;
-    }
+    // A splice_information_table section is a short section with a CRC32.
+    // But it has already been checked and removed from the buffer since useTrailingCRC32() returns true.
 
     // Fixed part.
-    protocol_version = data[0];
-    bool encrypted = (data[1] & 0x80) != 0;
-    pts_adjustment = (uint64_t(data[1] & 0x01) << 32) | uint64_t(GetUInt32(data + 2));
-    tier = (GetUInt16(data + 7) >> 4) & 0x0FFF;
-    const size_t command_length = GetUInt16(data + 8) & 0x0FFF;
-    splice_command_type = data[10];
-    data += 11; remain -= 11;
+    protocol_version = buf.getUInt8();
+    const bool encrypted = buf.getBit() != 0;
+    buf.skipBits(6); // skip encryption_algorithm
+    pts_adjustment = buf.getBits<uint64_t>(33);
+    buf.skipBits(8); // skip cw_index
+    tier = buf.getBits<uint16_t>(12);
+    size_t command_length = buf.getBits<size_t>(12);
+    splice_command_type = buf.getUInt8();
 
     // Encrypted sections cannot be deserialized.
     if (encrypted) {
         return;
     }
 
-    // Decode splice command (and then 2 bytes for descriptor loop size).
-    if (command_length + 2 > remain) {
-        return;
-    }
+    // Decode splice command.
+    bool success = true;
+    buf.pushReadSize(buf.currentReadByteOffset() + command_length);
     switch (splice_command_type) {
         case SPLICE_NULL:
         case SPLICE_BANDWIDTH_RESERVATION:
             // These commands are empty.
             break;
         case SPLICE_SCHEDULE:
-            if (splice_schedule.deserialize(data, command_length) < 0) {
-                return;
-            }
+            success = splice_schedule.deserialize(buf.currentReadAddress(), buf.remainingReadBytes()) >= 0;
             break;
         case SPLICE_INSERT:
-            if (splice_insert.deserialize(data, command_length) < 0) {
-                return;
-            }
+            success = splice_insert.deserialize(buf.currentReadAddress(), buf.remainingReadBytes()) >= 0;
             break;
         case SPLICE_TIME_SIGNAL:
-            if (time_signal.deserialize(data, command_length) < 0) {
-                return;
-            }
+            success = time_signal.deserialize(buf.currentReadAddress(), buf.remainingReadBytes()) >= 0;
             break;
         case SPLICE_PRIVATE_COMMAND:
-            if (command_length < 4) {
-                return;
-            }
-            private_command.identifier = GetUInt32(data);
-            private_command.private_bytes.copy(data + 4, command_length - 4);
+            private_command.identifier = buf.getUInt32();
+            buf.getByteBlock(private_command.private_bytes, command_length - 4);
             break;
         default:
             // Invalid command.
             break;
     }
-    data += command_length; remain -= command_length;
+    buf.popState();  // now point after command_length
+    if (!success) {
+        buf.setUserError();
+    }
 
     // Process descriptor list.
-    const uint16_t dlength = GetUInt16(data);
-    data += 2; remain -= 2;
-    if (dlength > remain) {
-        return;
-    }
-    descs.add(data, dlength);
+    buf.getDescriptorListWithLength(descs, 16);
 
-    _is_valid = true;
+    // Skip alignment_stuffing
+    buf.skipBytes(buf.remainingReadBytes());
 }
 
 
@@ -235,70 +212,56 @@ void ts::SpliceInformationTable::deserializeContent(DuckContext& duck, const Bin
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInformationTable::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::SpliceInformationTable::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    // Build the section header.
-    ByteBlockPtr bb(new ByteBlock);
-    bb->appendUInt8(MY_TID);
-    bb->appendUInt16(0); // placeholder for section length
-
-    // Splice info section fixed part.
-    bb->appendUInt8(protocol_version);
-    bb->appendUInt8(uint8_t(pts_adjustment >> 32) & 0x01);
-    bb->appendUInt32(uint32_t(pts_adjustment));
-    bb->appendUInt8(0); // cw_index
-    bb->appendUInt16(uint16_t(tier << 4));
-    bb->appendUInt8(0); // placeholder for command length
-    bb->appendUInt8(splice_command_type);
+    buf.putUInt8(protocol_version);
+    buf.putBit(0);      // encrypted_packet
+    buf.putBits(0, 6);  // encryption_algorithm
+    buf.putBits(pts_adjustment, 33);
+    buf.putUInt8(0);    // cw_index
+    buf.putBits(tier, 12);
+    buf.pushState();    // before splice_command_length
+    buf.putBits(0, 12); // placeholder for splice_command_length
+    buf.putUInt8(splice_command_type);
 
     // Serialize the splice command.
-    size_t start = bb->size();
+    const size_t start = buf.currentWriteByteOffset();
+    ByteBlock bb;
     switch (splice_command_type) {
         case SPLICE_NULL:
         case SPLICE_BANDWIDTH_RESERVATION:
             // These commands are empty.
             break;
         case SPLICE_SCHEDULE:
-            splice_schedule.serialize(*bb);
+            splice_schedule.serialize(bb);
             break;
         case SPLICE_INSERT:
-            splice_insert.serialize(*bb);
+            splice_insert.serialize(bb);
             break;
         case SPLICE_TIME_SIGNAL:
-            time_signal.serialize(*bb);
+            time_signal.serialize(bb);
             break;
         case SPLICE_PRIVATE_COMMAND:
-            bb->appendUInt32(private_command.identifier);
-            bb->append(private_command.private_bytes);
+            buf.putUInt32(private_command.identifier);
+            buf.putBytes(private_command.private_bytes);
             break;
         default:
             // Invalid command.
             break;
     }
+    buf.putBytes(bb);
 
     // Adjust the command length.
-    PutUInt16(bb->data() + 11, uint16_t(uint16_t((*bb)[11]) << 8) | (uint16_t(bb->size() - start) & 0x0FFF));
+    const size_t splice_command_length = buf.currentWriteByteOffset() - start;
+    buf.swapState();
+    buf.putBits(splice_command_length, 12);
+    buf.popState();
 
     // Descriptor loop.
-    start = bb->size();
-    bb->appendUInt16(0); // placeholder for descriptors length.
-    size_t dlength = descs.serialize(*bb);
-    PutUInt16(bb->data() + start, uint16_t(dlength));
+    buf.putDescriptorListWithLength(descs, 0, NPOS, 16);
 
-    // Placeholder for CRC32.
-    bb->appendUInt32(0);
-
-    // Update section length.
-    // section_syntax = 0, private_indicator = 0
-    PutUInt16(bb->data() + 1, 0x3000 | ((bb->size() - 3) & 0x0FFF));
-
-    // Compute and update CRC32.
-    // This will not be done by the Section class since this is a short section.
-    PutUInt32(bb->data() + bb->size() - 4, CRC32(bb->data(), bb->size() - 4).value());
-
-    // Build the section.
-    SectionPtr section(new Section(bb));
-    table.addSection(section);
+    // A splice_information_table section is a short section with a CRC32.
+    // But it will be automatically added since useTrailingCRC32() returns true.
 }
 
 
@@ -418,6 +381,8 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& display, const ts
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+
+    //@@@@@@@@ use PSIBuffer
 
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();

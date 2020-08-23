@@ -694,6 +694,37 @@ std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* p
 
 
 //----------------------------------------------------------------------------
+// Display a CRC32 from a section.
+//----------------------------------------------------------------------------
+
+std::ostream& ts::TablesDisplay::displayCRC32(const Section& section, int indent)
+{
+    std::ostream& strm(_duck.out());
+    const uint32_t sect_crc32 = GetUInt32(section.content() + section.size() - 4);
+    const CRC32 comp_crc32(section.content(), section.size() - 4);
+
+    strm << std::string(indent, ' ') << UString::Format(u"CRC32: 0x%X ", {sect_crc32});
+    if (sect_crc32 == comp_crc32) {
+        strm << "(OK)";
+    }
+    else {
+        strm << UString::Format(u"(WRONG, expected 0x%X)", {comp_crc32.value()});
+    }
+    strm << std::endl;
+    return strm;
+}
+
+std::ostream& ts::TablesDisplay::displayCRC32(const Section& section, PSIBuffer& buf, int indent)
+{
+    if (!buf.error() && buf.remainingReadBytes() == 4) {
+        displayCRC32(section, indent);
+        buf.skipBytes(4);
+    }
+    return _duck.out();
+}
+
+
+//----------------------------------------------------------------------------
 // Display an ATSC multiple_string_structure() from a PSI buffer.
 //----------------------------------------------------------------------------
 

@@ -229,6 +229,28 @@ namespace ts {
         virtual std::ostream& displayATSCMultipleString(PSIBuffer& buf, size_t length_bytes = 0, int indent = 0, const UString& title = UString());
 
         //!
+        //! Display a CRC32 from a section.
+        //! Not required on section with long header since the CRC32 is validated when the section is read.
+        //! Only useful on sections with short header and a CRC32 (TOT, splice_information_table).
+        //! @param [in] section Section containing the CRC32.
+        //! @param [in] indent Indentation width.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displayCRC32(const Section& section, int indent = 0);
+
+        //!
+        //! Display a CRC32 from a section.
+        //! Not required on section with long header since the CRC32 is validated when the section is read.
+        //! Only useful on sections with short header and a CRC32 (TOT, splice_information_table).
+        //! @param [in] section Section containing the CRC32.
+        //! @param [in,out] buf Buffer containing the section payload. If there are exactly 4 remaining
+        //! bytes in @a buf, the CRC32 is displayed and the 4 bytes are skipped. Otherwise, nothing is displayed.
+        //! @param [in] indent Indentation width.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displayCRC32(const Section& section, PSIBuffer& buf, int indent = 0);
+
+        //!
         //! A utility method to dump extraneous bytes after expected data.
         //! @param [in] data Address of extra data to dump.
         //! @param [in] size Size of extra data to dump.

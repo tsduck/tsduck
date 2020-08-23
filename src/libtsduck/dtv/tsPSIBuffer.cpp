@@ -457,7 +457,7 @@ bool ts::PSIBuffer::getDescriptorListWithLength(DescriptorList& descs, size_t le
 
 size_t ts::PSIBuffer::getUnalignedLength(size_t length_bits)
 {
-    if (readError() || remainingReadBytes() < 2 || length_bits == 0 || length_bits > 16 || (!readIsByteAligned() && currentReadBitOffset() % 8 != 16 - length_bits)) {
+    if (readError() || remainingReadBytes() < 2 || length_bits == 0 || length_bits > 16 || (!readIsByteAligned() && (currentReadBitOffset() + length_bits) % 8 != 0)) {
         setReadError();
         return 0;
     }

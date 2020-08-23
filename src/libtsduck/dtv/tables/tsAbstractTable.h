@@ -345,10 +345,10 @@ namespace ts {
         //!
         //! @param [in,out] table The binary table into which this object shall be serialized. The @a table is
         //! initially empty when serialize() calls serializePayload().
-        //! @param [in,out] payload A PSIBuffer with the appropriate size for the section payload. The @a payload
+        //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. The @a payload
         //! buffer is initially empty when serialize() calls serializePayload().
         //!
-        virtual void serializePayload(BinaryTable& table, PSIBuffer& payload) const;
+        virtual void serializePayload(BinaryTable& table, PSIBuffer& buf) const;
 
         //!
         //! This abstract method deserializes the payload of a section.

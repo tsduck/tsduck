@@ -323,8 +323,8 @@ void ts::AbstractTable::deserializePayload(PSIBuffer& buf, const Section& sectio
     buf.setUserError();
 }
 
-void ts::AbstractTable::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::AbstractTable::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // Generate an error to invalidate the serialization.
-    payload.setUserError();
+    buf.setUserError();
 }

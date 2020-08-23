@@ -134,54 +134,54 @@ void ts::ATSCEIT::deserializePayload(PSIBuffer& buf, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ATSCEIT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::ATSCEIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // Add fixed fields.
-    payload.putUInt8(protocol_version);
+    buf.putUInt8(protocol_version);
 
     // Save position before num_events_in_section. Will be updated at each event.
     uint8_t num_events_in_section = 0;
-    payload.pushState();
-    payload.putUInt8(num_events_in_section);
-    const size_t payload_min_size = payload.currentReadByteOffset();
+    buf.pushState();
+    buf.putUInt8(num_events_in_section);
+    const size_t payload_min_size = buf.currentReadByteOffset();
 
     // Loop on event definitions.
-    for (auto it = events.begin(); !payload.error() && it != events.end(); ++it) {
+    for (auto it = events.begin(); !buf.error() && it != events.end(); ++it) {
         const Event& event(it->second);
 
         // Pre-serialize the title_text. Its max size is 255 bytes since its size must fit in a byte.
         ByteBlock title;
-        event.title_text.serialize(payload.duck(), title, 255, true);
+        event.title_text.serialize(buf.duck(), title, 255, true);
 
         // Binary size of the event definition.
         const size_t entry_size = 10 + title.size() + 2 + event.descs.binarySize();
 
         // If we are not at the beginning of the event loop, make sure that the entire
         // event fits in the section. If it does not fit, start a new section.
-        if (entry_size > payload.remainingWriteBytes() && payload.currentWriteByteOffset() > payload_min_size) {
+        if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
             // Create a new section.
-            addOneSection(table, payload);
+            addOneSection(table, buf);
             // We are at the position of num_events_in_section in the new section.
-            payload.putUInt8(num_events_in_section = 0);
+            buf.putUInt8(num_events_in_section = 0);
         }
 
         // Serialize the event definition.
-        payload.putBits(0xFF, 2);
-        payload.putBits(event.event_id, 14);
-        payload.putUInt32(uint32_t(event.start_time.toGPSSeconds()));
-        payload.putBits(0xFF, 2);
-        payload.putBits(event.ETM_location, 2);
-        payload.putBits(event.length_in_seconds, 20);
-        payload.putUInt8(uint8_t(title.size()));
-        payload.putBytes(title);
-        payload.putPartialDescriptorListWithLength(event.descs);
+        buf.putBits(0xFF, 2);
+        buf.putBits(event.event_id, 14);
+        buf.putUInt32(uint32_t(event.start_time.toGPSSeconds()));
+        buf.putBits(0xFF, 2);
+        buf.putBits(event.ETM_location, 2);
+        buf.putBits(event.length_in_seconds, 20);
+        buf.putUInt8(uint8_t(title.size()));
+        buf.putBytes(title);
+        buf.putPartialDescriptorListWithLength(event.descs);
 
         // Now increment the field num_events_in_section at saved position.
-        payload.swapState();
-        payload.pushState();
-        payload.putUInt8(++num_events_in_section);
-        payload.popState();
-        payload.swapState();
+        buf.swapState();
+        buf.pushState();
+        buf.putUInt8(++num_events_in_section);
+        buf.popState();
+        buf.swapState();
     }
 }
 

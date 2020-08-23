@@ -118,25 +118,25 @@ void ts::PAT::deserializePayload(PSIBuffer& buf, const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::PAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // Add the NIT PID once in the first section
     if (nit_pid != PID_NULL) {
-        payload.putUInt16(0); // pseudo service_id
-        payload.putPID(nit_pid);
+        buf.putUInt16(0); // pseudo service_id
+        buf.putPID(nit_pid);
     }
 
     // Add all services
     for (auto it = pmts.begin(); it != pmts.end(); ++it) {
 
         // If current section payload is full, close the current section.
-        if (payload.remainingWriteBytes() < 4) {
-            addOneSection(table, payload);
+        if (buf.remainingWriteBytes() < 4) {
+            addOneSection(table, buf);
         }
 
         // Add current service entry into the PAT section
-        payload.putUInt16(it->first);  // service_id
-        payload.putPID(it->second);    // pmt pid
+        buf.putUInt16(it->first);  // service_id
+        buf.putPID(it->second);    // pmt pid
     }
 }
 

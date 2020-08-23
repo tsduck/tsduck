@@ -86,10 +86,10 @@ void ts::DiscontinuityInformationTable::deserializePayload(PSIBuffer& buf, const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DiscontinuityInformationTable::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::DiscontinuityInformationTable::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    payload.putBit(transition);
-    payload.putBits(0xFF, 7);
+    buf.putBit(transition);
+    buf.putBits(0xFF, 7);
 }
 
 

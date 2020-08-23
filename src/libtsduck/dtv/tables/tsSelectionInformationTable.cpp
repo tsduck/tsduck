@@ -120,16 +120,16 @@ void ts::SelectionInformationTable::deserializePayload(PSIBuffer& buf, const Sec
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::serializePayload(BinaryTable& table, PSIBuffer& payload) const
+void ts::SelectionInformationTable::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // A Selection Information Table is not allowed to use more than one section, see ETSI EN 300 468, 7.1.2.
 
-    payload.putPartialDescriptorListWithLength(descs);
-    for (auto it = services.begin(); !payload.error() && it != services.end(); ++it) {
-        payload.putUInt16(it->first); // service id
-        payload.putBit(1);
-        payload.putBits(it->second.running_status, 3);
-        payload.putPartialDescriptorListWithLength(it->second.descs);
+    buf.putPartialDescriptorListWithLength(descs);
+    for (auto it = services.begin(); !buf.error() && it != services.end(); ++it) {
+        buf.putUInt16(it->first); // service id
+        buf.putBit(1);
+        buf.putBits(it->second.running_status, 3);
+        buf.putPartialDescriptorListWithLength(it->second.descs);
     }
 }
 
