@@ -143,7 +143,7 @@ void ts::ATSCEIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     uint8_t num_events_in_section = 0;
     buf.pushState();
     buf.putUInt8(num_events_in_section);
-    const size_t payload_min_size = buf.currentReadByteOffset();
+    const size_t payload_min_size = buf.currentWriteByteOffset();
 
     // Loop on event definitions.
     for (auto it = events.begin(); !buf.error() && it != events.end(); ++it) {

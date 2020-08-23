@@ -148,15 +148,10 @@ namespace ts {
     protected:
         // Inherited methods
         virtual void clearContent() override;
-        virtual bool isValidTableId(TID tid) const override;
-        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
-        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual bool isValidTableId(TID) const override;
+        virtual void serializePayload(BinaryTable&, PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&, const Section&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
-
-    private:
-        // Add a new section to a table being serialized.
-        // Session number is incremented. Data and remain are reinitialized.
-        void addSection(BinaryTable& table, int& section_number, uint8_t* payload, uint8_t*& data, size_t& remain) const;
     };
 }

@@ -31,6 +31,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -121,87 +122,56 @@ void ts::PCAT::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PCAT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::PCAT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    versions.clear();
+    // Get common properties (should be identical in all sections)
+    service_id = section.tableIdExtension();
+    transport_stream_id = buf.getUInt16();
+    original_network_id = buf.getUInt16();
+    content_id = buf.getUInt32();
 
-    // Loop on all sections
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
+    // Loop on content version entries.
+    for (size_t version_count = buf.getUInt8(); !buf.error() && version_count > 0; version_count--) {
 
-        // Reference to current section
-        const Section& sect(*table.sectionAt(si));
+        ContentVersion& cv(versions.newEntry());
+        cv.content_version = buf.getUInt16();
+        cv.content_minor_version = buf.getUInt16();
+        cv.version_indicator = buf.getBits<uint8_t>(2);
+        buf.skipBits(2);
 
-        // Analyze the section payload:
-        const uint8_t* data = sect.payload();
-        size_t remain = sect.payloadSize();
+        // [Warning #1] Here, ARIB STD-B10 is ambiguous. It says "content_descriptor_length: This 12-bit
+        // field gives the total length in bytes of the following schedule loop and descriptor loop."
+        // Question: Does this include the following 2-byte schedule_description_length field?
+        // We assume here that this 2-byte field is included but this can be wrong.
+        buf.pushReadSizeFromLength(12);
 
-        // Abort if not expected table or payload too short.
-        if (sect.tableId() != _table_id || remain < 9) {
-            return;
+        // Start the schedule_description_length sequence.
+        buf.skipBits(4);
+        buf.pushReadSizeFromLength(12);
+
+        // Get schedule loop.
+        while (!buf.error() && !buf.endOfRead()) {
+            Schedule sched;
+            // [Warning #2] Here, ARIB STD-B10 is ambiguous again. It says "duration: A 24-bit field
+            // indicates the duration of the partial contents announcement by hours, minutes, and seconds."
+            // It does not say if this is binary or BCD. We assume here the same format as in EIT, ie. BCD.
+            sched.start_time = buf.getFullMJD();
+            const int hour = buf.getBCD();
+            const int min = buf.getBCD();
+            const int sec = buf.getBCD();
+            sched.duration = (hour * 3600) + (min * 60) + sec;
+            cv.schedules.push_back(sched);
         }
 
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent();
-        service_id = sect.tableIdExtension();
-        transport_stream_id = GetUInt16(data);
-        original_network_id = GetUInt16(data + 2);
-        content_id = GetUInt32(data + 4);
-        size_t version_count = data[8];
-        data += 9; remain -= 9;
+        // Close the schedule_description_length sequence.
+        buf.popState();
 
-        // Loop across all content versions.
-        while (version_count > 0 && remain >= 8) {
+        // Get descriptor loop.
+        buf.getDescriptorList(cv.descs);
 
-            // Get fixed part.
-            ContentVersion& cv(versions.newEntry());
-            cv.content_version = GetUInt16(data);
-            cv.content_minor_version = GetUInt16(data + 2);
-            cv.version_indicator = (data[4] >> 6) & 0x03;
-            const size_t content_length = GetUInt16(data + 4) & 0x0FFF;
-            size_t schedule_length = GetUInt16(data + 6) & 0x0FFF;
-            data += 8; remain -= 8;
-
-            // [Warning #1] Here, ARIB STD-B10 is ambiguous. It says "content_descriptor_length: This 12-bit
-            // field gives the total length in bytes of the following schedule loop and descriptor loop."
-            // Question: Does this include the 2-byte schedule_description_length field?
-            // We assume here that the 2-byte field is included but this can be wrong.
-            if (content_length < 2 || remain + 2 < content_length || schedule_length + 2 > content_length || schedule_length % 8 != 0) {
-                return;
-            }
-            const size_t descriptor_length = content_length - schedule_length - 2;
-
-            // Get schedule loop.
-            while (schedule_length >= 8) {
-                assert(remain >= 8);
-                Schedule sched;
-                // [Warning #2] Here, ARIB STD-B10 is ambiguous again. It says "duration: A 24-bit field
-                // indicates the duration of the partial contents announcement by hours, min- utes, and seconds."
-                // It does not say if this is binary or BCD. We assume here the same format as in EIT, ie. BCD.
-                DecodeMJD(data, 5, sched.start_time);
-                const int hour = DecodeBCD(data[5]);
-                const int min = DecodeBCD(data[6]);
-                const int sec = DecodeBCD(data[7]);
-                sched.duration = (hour * 3600) + (min * 60) + sec;
-                cv.schedules.push_back(sched);
-                data += 8; remain -= 8; schedule_length -= 8;
-            }
-
-            // Get descriptor loop.
-            assert(remain >= descriptor_length);
-            cv.descs.add(data, descriptor_length);
-            data += descriptor_length; remain -= descriptor_length;
-            version_count--;
-        }
-
-        // Abort in case of extra data in section.
-        if (remain != 0) {
-            return;
-        }
+        // Close the content_descriptor_length sequence.
+        buf.popState();
     }
-
-    _is_valid = true;
 }
 
 
@@ -209,144 +179,76 @@ void ts::PCAT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PCAT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::PCAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    // Build the sections
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number = 0;
+    // Add fixed fields.
+    buf.putUInt16(transport_stream_id);
+    buf.putUInt16(original_network_id);
+    buf.putUInt32(content_id);
 
-    // Add fixed part (9 bytes). Will remain unmodified in all sections.
-    PutUInt16(payload, transport_stream_id);
-    PutUInt16(payload + 2, original_network_id);
-    PutUInt32(payload + 4, content_id);
-    payload[8] = 0; // number of content versions.
+    // Save position before num_of_content_version. Will be updated at each version.
+    // This position will also be restored after each call to addOneSection().
+    uint8_t num_of_content_version = 0;
+    buf.pushState();
+    buf.putUInt8(num_of_content_version);
 
-    uint8_t* data = payload + 9;
-    size_t remain = sizeof(payload) - 9;
+    // Minimum size of the payload (after fixed size).
+    const size_t payload_min_size = buf.currentWriteByteOffset();
 
     // Add all content versions.
     for (auto it1 = versions.begin(); it1 != versions.end(); ++it1) {
-
-        // If we cannot at least add the fixed part of a description, open a new section
-        if (remain < 9) {
-            addSection(table, section_number, payload, data, remain);
-        }
-
-        // If we are not at the beginning of the content version loop, make sure that the entire
-        // content version fits in the section. If it does not fit, start a new section. Huge
-        // content versions may not fit into one section, even when starting at the beginning
-        // of the description loop. In that case, the description will span two sections later.
         const ContentVersion& cv(it1->second);
-        const DescriptorList& dlist(cv.descs);
-        const size_t version_length = 8 + cv.schedules.size() * 8 + dlist.binarySize();
-        if (data > payload + 9 && version_length > remain) {
-            // Create a new section
-            addSection(table, section_number, payload, data, remain);
-        }
 
-        // Increment number of content versions.
-        payload[8]++;
+        // Binary size of the channel definition.
+        const size_t entry_size = 8 + 8 * cv.schedules.size() + cv.descs.binarySize();
+
+        // If we are not at the beginning of the content loop, make sure that the entire
+        // entry fits in the section. If it does not fit, start a new section.
+        if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
+            // Create a new section.
+            addOneSection(table, buf);
+            // We are at the position of num_of_content_version in the new section.
+            buf.putUInt8(num_of_content_version = 0);
+        }
 
         // Fill fixed part of the content version.
-        uint8_t* cv_base = serializeContentVersionFixedPart(cv, data, remain);
+        buf.putUInt16(cv.content_version);
+        buf.putUInt16(cv.content_minor_version);
+        buf.putBits(cv.version_indicator, 2);
+        buf.putBits(0xFF, 2);
+
+        // Start the content_descriptor_length sequence. See [Warning #1] above.
+        buf.pushWriteSequenceWithLeadingLength(12);
+
+        // Start the schedule_description_length sequence.
+        buf.putBits(0xFF, 4);
+        buf.pushWriteSequenceWithLeadingLength(12);
 
         // Fill schedule loop.
         for (auto it2 = cv.schedules.begin(); it2 != cv.schedules.end(); ++it2) {
-            if (remain < 8) {
-                // No room for this schedule, start a new section.
-                addSection(table, section_number, payload, data, remain);
-                payload[8] = 1; // first content version of new section.
-                cv_base = serializeContentVersionFixedPart(cv, data, remain);
-            }
-
-            // Serialize the schedule.
-            // See [Warning #2] above.
-            assert(remain >= 8);
-            EncodeMJD(it2->start_time, data, 5);
-            data[5] = EncodeBCD(int(it2->duration / 3600));
-            data[6] = EncodeBCD(int((it2->duration / 60) % 60));
-            data[7] = EncodeBCD(int(it2->duration % 60));
-            data += 8; remain -= 8;
-
-            // Add 8 bytes in content_descriptor_length and schedule_description_length.
-            // Assume no overflow on 12 LSB.
-            PutUInt16(cv_base + 4, GetUInt16(cv_base + 4) + 8);
-            PutUInt16(cv_base + 6, GetUInt16(cv_base + 6) + 8);
+            // Serialize the schedule. See [Warning #2] above.
+            buf.putFullMJD(it2->start_time);
+            buf.putBCD(int(it2->duration / 3600));
+            buf.putBCD(int((it2->duration / 60) % 60));
+            buf.putBCD(int(it2->duration % 60));
         }
 
-        // Serialize the descriptor loop.
-        for (size_t start_index = 0; ; ) {
+        // Close the schedule_description_length sequence.
+        buf.popState();
 
-            // Insert descriptors (all or some).
-            uint8_t* const dloop_base = data;
-            start_index = dlist.serialize(data, remain, start_index);
-            const size_t dloop_length = data - dloop_base;
+        // Add descriptor loop. Must fit completely in the section.
+        buf.putDescriptorList(cv.descs);
 
-            // Add descriptor loop length in content_descriptor_length. Assume no overflow on 12 LSB.
-            PutUInt16(cv_base + 4, uint16_t(GetUInt16(cv_base + 4) + dloop_length));
+        // Close the content_descriptor_length sequence.
+        buf.popState();
 
-            // Exit loop when all descriptors were serialized.
-            if (start_index >= dlist.count()) {
-                break;
-            }
-
-            // Not all descriptors were written, the section is full.
-            // Open a new one and continue with this content version.
-            addSection(table, section_number, payload, data, remain);
-            payload[8] = 1; // first content version of new section.
-            cv_base = serializeContentVersionFixedPart(cv, data, remain);
-        }
-
+        // Now increment the field num_of_content_version at saved position.
+        buf.swapState();
+        buf.pushState();
+        buf.putUInt8(++num_of_content_version);
+        buf.popState();
+        buf.swapState();
     }
-
-    // Add partial section.
-    addSection(table, section_number, payload, data, remain);
-}
-
-
-//----------------------------------------------------------------------------
-// Add a new section to a table being serialized.
-//----------------------------------------------------------------------------
-
-void ts::PCAT::addSection(BinaryTable& table, int& section_number, uint8_t* payload, uint8_t*& data, size_t& remain) const
-{
-    table.addSection(new Section(_table_id,
-                                 true,                    // is_private_section
-                                 service_id,              // ts id extension
-                                 version,
-                                 is_current,
-                                 uint8_t(section_number),
-                                 uint8_t(section_number), //last_section_number
-                                 payload,
-                                 data - payload));        // payload_size,
-
-    // Reinitialize pointers after fixed part of payload (9 bytes).
-    remain += data - payload - 9;
-    data = payload + 9;
-    payload[8] = 0; // reset number of content versions
-    section_number++;
-}
-
-
-//----------------------------------------------------------------------------
-// Serialize the fixed part of a ContentVersion.
-// Update data and remain, return the base address of the content version entry.
-//----------------------------------------------------------------------------
-
-uint8_t* ts::PCAT::serializeContentVersionFixedPart(const ContentVersion& cv, uint8_t*& data, size_t& remain) const
-{
-    assert(remain >= 8);
-    uint8_t* const base = data;
-    PutUInt16(data, cv.content_version);
-    PutUInt16(data + 2, cv.content_minor_version);
-    // See [Warning #1] above. Initial content_descriptor_length is 2.
-    // Initial schedule_description_length is 0.
-    data[4] = uint8_t(cv.version_indicator << 6) | 0x30;
-    data[5] = 0x02;
-    data[6] = 0xF0;
-    data[7] = 0x00;
-    data += 8; remain -= 8;
-    return base;
 }
 
 
@@ -359,59 +261,55 @@ void ts::PCAT::DisplaySection(TablesDisplay& display, const ts::Section& section
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
+    strm << margin << UString::Format(u"Service id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
-    strm << margin << UString::Format(u"Service id: 0x%X (%d)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
-
-    if (size >= 9) {
-
-        // Display common information
-        strm << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-             << margin << UString::Format(u"Original network id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl
-             << margin << UString::Format(u"Content id: 0x%X (%d)", {GetUInt32(data + 4), GetUInt32(data + 4)}) << std::endl;
-        size_t version_count = data[8];
-        data += 9; size -= 9;
+    if (buf.remainingReadBytes() < 9) {
+        buf.setUserError();
+    }
+    else {
+        strm << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        strm << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        strm << margin << UString::Format(u"Content id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
 
         // Loop across all content versions.
-        while (version_count > 0 && size >= 8) {
+        for (size_t version_count = buf.getUInt8(); !buf.error() && buf.remainingReadBytes() >= 8 && version_count > 0; version_count--) {
+            strm << margin << UString::Format(u"- Content version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            strm << margin << UString::Format(u"  Content minor version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            strm << margin << "  Version indicator: " << NameFromSection(u"PCATVersionIndicator", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
+            buf.skipBits(2);
 
-            // Display fixed part.
-            strm << margin << UString::Format(u"- Content version: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-                 << margin << UString::Format(u"  Content minor version: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl
-                 << margin << "  Version indicator: " << NameFromSection(u"PCATVersionIndicator", (data[4] >> 6) & 0x03, names::DECIMAL_FIRST) << std::endl;
+            // Start the content_descriptor_length sequence. See [Warning #1] above.
+            buf.pushReadSizeFromLength(12);
 
-            // See [Warning #1] above.
-            const size_t content_length = std::max<size_t>(2, std::min<size_t>(GetUInt16(data + 4) & 0x0FFF, size - 6));
-            size_t schedule_length = std::min<size_t>(GetUInt16(data + 6) & 0x0FFF, content_length - 2);
-            const size_t descriptor_length = content_length - schedule_length - 2;
-            data += 8; size -= 8;
+            // Start the schedule_description_length sequence.
+            buf.skipBits(4);
+            buf.pushReadSizeFromLength(12);
 
             // Display schedule loop.
-            while (schedule_length >= 8) {
-                assert(size >= 8);
+            while (!buf.error() && buf.remainingReadBytes() >= 8) {
                 // See [Warning #2] above.
-                Time start;
-                DecodeMJD(data, 5, start);
-                const int hour = DecodeBCD(data[5]);
-                const int min = DecodeBCD(data[6]);
-                const int sec = DecodeBCD(data[7]);
-                strm << margin
-                     << UString::Format(u"  Schedule start: %s, duration: %02d:%02d:%02d", {start.format(Time::DATE | Time::TIME), hour, min, sec})
-                     << std::endl;
-                data += 8; size -= 8; schedule_length -= 8;
+                strm << margin << "  Schedule start: " << buf.getFullMJD().format(Time::DATE | Time::TIME);
+                strm << UString::Format(u", duration: %02d", {buf.getBCD()});
+                strm << UString::Format(u":%02d", {buf.getBCD()});
+                strm << UString::Format(u":%02d", {buf.getBCD()}) << std::endl;
             }
 
+            // Close the schedule_description_length sequence.
+            display.displayPrivateData(u"Extraneous schedule bytes", buf);
+            buf.popState();
+
             // Display descriptor loop.
-            assert(size >= descriptor_length);
-            display.displayDescriptorList(section, data, descriptor_length, indent + 2);
-            data += descriptor_length; size -= descriptor_length;
-            version_count--;
+            display.displayDescriptorList(section, buf, indent + 2);
+
+            // Close the content_descriptor_length sequence.
+            display.displayPrivateData(u"Extraneous version content bytes", buf);
+            buf.popState();
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(buf, indent);
 }
 
 
