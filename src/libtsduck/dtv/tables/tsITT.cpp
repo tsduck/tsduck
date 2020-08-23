@@ -31,11 +31,10 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
-#include "tsMJD.h"
-#include "tsBCD.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"ITT"
@@ -96,39 +95,10 @@ void ts::ITT::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ITT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::ITT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    descs.clear();
-
-    // Loop on all sections
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
-
-        // Reference to current section
-        const Section& sect(*table.sectionAt(si));
-
-        // Analyze the section payload:
-        const uint8_t* data = sect.payload();
-        size_t remain = sect.payloadSize();
-
-        // Abort if not expected table or payload too short.
-        if (sect.tableId() != _table_id || remain < 2) {
-            return;
-        }
-
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent();
-        event_id = sect.tableIdExtension();
-
-        // Get descriptor loop.
-        size_t len = GetUInt16(data) & 0x0FFF;
-        data += 2; remain -= 2;
-        len = std::min(len, remain);
-        descs.add(data, len);
-    }
-
-    _is_valid = true;
+    event_id = section.tableIdExtension();
+    buf.getDescriptorListWithLength(descs);
 }
 
 
@@ -136,28 +106,13 @@ void ts::ITT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ITT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::ITT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    // Build the sections. There is only a descriptor loop in the payload.
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number = 0;
-    size_t desc_index = 0;
-
+    size_t start_index = 0;
     do {
-        uint8_t* data = payload;
-        size_t remain = sizeof(payload);
-        desc_index = descs.lengthSerialize(data, remain, desc_index);
-        table.addSection(new Section(_table_id,
-                                     true,                    // is_private_section
-                                     event_id,                // ts id extension
-                                     version,
-                                     is_current,
-                                     uint8_t(section_number),
-                                     uint8_t(section_number), //last_section_number
-                                     payload,
-                                     data - payload));        // payload_size,
-        section_number++;
-    } while (desc_index < descs.count());
+        start_index = buf.putPartialDescriptorListWithLength(descs, start_index);
+        addOneSection(table, buf);
+    } while (start_index < descs.count());
 }
 
 
@@ -170,18 +125,11 @@ void ts::ITT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    strm << margin << UString::Format(u"Event id: 0x%X (%d)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
-
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
-    size_t len = GetUInt16(data) & 0x0FFF;
-    data += 2; size -= 2;
-    len = std::min(len, size);
-    display.displayDescriptorList(section, data, len, indent);
-    data += len; size -= len;
-
-    display.displayExtraData(data, size, indent);
+    strm << margin << UString::Format(u"Event id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    display.displayDescriptorListWithLength(section, buf, indent);
+    display.displayExtraData(buf, indent);
 }
 
 

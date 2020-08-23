@@ -264,7 +264,7 @@ void ts::VCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     uint8_t num_channels_in_section = 0;
     buf.pushState();
     buf.putUInt8(num_channels_in_section);
-    const size_t payload_min_size = buf.currentReadByteOffset();
+    const size_t payload_min_size = buf.currentWriteByteOffset();
 
     // Loop on channel definitions.
     for (size_t i = 0; !buf.error() && i < channels.size(); ++i) {

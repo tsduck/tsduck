@@ -31,6 +31,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -113,69 +114,21 @@ bool ts::NBIT::isValidTableId(TID tid) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::NBIT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::NBIT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    informations.clear();
+    original_network_id = section.tableIdExtension();
 
-    // Loop on all sections
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
-
-        // Reference to current section
-        const Section& sect(*table.sectionAt(si));
-
-        // Analyze the section payload:
-        const uint8_t* data = sect.payload();
-        size_t remain = sect.payloadSize();
-
-        // Abort if not expected table.
-        if (sect.tableId() != _table_id) {
-            return;
+    while (!buf.error() && !buf.endOfRead()) {
+        Information& info(informations[buf.getUInt16()]);
+        info.information_type = buf.getBits<uint8_t>(4);
+        info.description_body_location = buf.getBits<uint8_t>(2);
+        buf.skipBits(2);
+        info.user_defined = buf.getUInt8();
+        for (size_t count = buf.getUInt8(); !buf.error() && count > 0; count--) {
+            info.key_ids.push_back(buf.getUInt16());
         }
-
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent();
-        original_network_id = sect.tableIdExtension();
-
-        // Loop across all informations.
-        while (remain >= 5) {
-
-            // Read fixed part.
-            const uint16_t id = GetUInt16(data);
-            Information& info(informations[id]);
-            info.information_type = (data[2] >> 4) & 0x0F;
-            info.description_body_location = (data[2] >> 2) & 0x03;
-            info.user_defined = data[3];
-            size_t count = data[4];
-            data += 5; remain -= 5;
-
-            // Read list of key ids.
-            while (count > 0 && remain >= 2) {
-                info.key_ids.push_back(GetUInt16(data));
-                data += 2; remain -= 2; count--;
-            }
-
-            // Abort in case of truncated data.
-            if (count != 0 || remain < 2) {
-                return;
-            }
-
-            // Read list of descriptors.
-            size_t length = GetUInt16(data) & 0x0FFF;
-            data += 2; remain -= 2;
-            length = std::min(length, remain);
-            informations[id].descs.add(data, length);
-            data += length; remain -= length;
-        }
-
-        // Abort in case of extra data in section.
-        if (remain != 0) {
-            return;
-        }
+        buf.getDescriptorListWithLength(info.descs);
     }
-
-    _is_valid = true;
 }
 
 
@@ -183,90 +136,58 @@ void ts::NBIT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::NBIT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::NBIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    // Build the sections
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number = 0;
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
-
     // The section payload directly starts with the list of information sets.
     for (auto it = informations.begin(); it != informations.end(); ++it) {
+        const Information& info(it->second);
+
+        // Binary size of this entry.
+        const size_t entry_size = 5 + 2 * info.key_ids.size() + 2 + info.descs.binarySize();
 
         // If we are not at the beginning of the information loop, make sure that the entire
         // information set fits in the section. If it does not fit, start a new section. Huge
         // descriptions may not fit into one section, even when starting at the beginning
         // of the information loop. In that case, the information will span two sections later.
-        const DescriptorList& dlist(it->second.descs);
-        if (data > payload && 5 + 2 * it->second.key_ids.size() + 2 + dlist.binarySize() > remain) {
-            // Create a new section
-            addSection(table, section_number, payload, data, remain);
+        if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > 0) {
+            // Create a new section.
+            addOneSection(table, buf);
         }
 
         // Serialize the characteristics of the information set. Since the number of key ids is less
         // than 256 (must fit in one byte), the key id list will fit in the section. If the descriptor
         // list is too large to fit in one section, the key_id list won't be repeated in the next section.
-        size_t key_count = std::min<size_t>(255, it->second.key_ids.size());
+        size_t key_count = std::min<size_t>(255, info.key_ids.size());
 
         for (size_t start_index = 0; ; ) {
-
-            // Insert common characteristics (ie. ids).
-            assert(remain >= 5);
-            PutUInt16(data, it->first);
-            PutUInt8(data + 2, uint8_t(it->second.information_type << 4) | uint8_t((it->second.description_body_location & 0x03) << 2) | 0x03);
-            PutUInt8(data + 3, it->second.user_defined);
-            PutUInt8(data + 4, uint8_t(key_count));
-            data += 5; remain -= 5;
+            buf.putUInt16(it->first); // information_id
+            buf.putBits(info.information_type, 4);
+            buf.putBits(info.description_body_location, 2);
+            buf.putBits(0xFF, 2);
+            buf.putUInt8(info.user_defined);
+            buf.putUInt8(uint8_t(key_count));
 
             // Insert the key id list.
             for (size_t i = 0; i < key_count; ++i) {
-                PutUInt16(data, it->second.key_ids[i]);
-                data += 2; remain -= 2;
+                buf.putUInt16(info.key_ids[i]);
             }
 
             // Don't repeat the key id list if we overflow the descriptor list in another section.
             key_count = 0;
 
             // Insert descriptors (all or some).
-            start_index = dlist.lengthSerialize(data, remain, start_index);
+            start_index = buf.putPartialDescriptorListWithLength(info.descs, start_index);
 
             // Exit loop when all descriptors were serialized.
-            if (start_index >= dlist.count()) {
+            if (start_index >= info.descs.count()) {
                 break;
             }
 
             // Not all descriptors were written, the section is full.
-            // Open a new one and continue with this transport.
-            addSection(table, section_number, payload, data, remain);
+            // Open a new one and continue with this information entry.
+            addOneSection(table, buf);
         }
     }
-
-    // Add partial section.
-    addSection(table, section_number, payload, data, remain);
-}
-
-
-//----------------------------------------------------------------------------
-// Add a new section to a table being serialized.
-//----------------------------------------------------------------------------
-
-void ts::NBIT::addSection(BinaryTable& table, int& section_number, uint8_t* payload, uint8_t*& data, size_t& remain) const
-{
-    table.addSection(new Section(_table_id,
-                                 true,                    // is_private_section
-                                 original_network_id,     // ts id extension
-                                 version,
-                                 is_current,
-                                 uint8_t(section_number),
-                                 uint8_t(section_number), //last_section_number
-                                 payload,
-                                 data - payload));        // payload_size,
-
-    // Reinitialize pointers after fixed part of payload (4 bytes).
-    remain += data - payload;
-    data = payload;
-    section_number++;
 }
 
 
@@ -279,36 +200,23 @@ void ts::NBIT::DisplaySection(TablesDisplay& display, const ts::Section& section
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
+    strm << margin << UString::Format(u"Original network id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
-    strm << margin << UString::Format(u"Original network id: 0x%X (%d)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
-
-    // Loop across all information sets.
-    while (size >= 5) {
-        strm << margin << UString::Format(u"- Information id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-             << margin << "  Information type: " << NameFromSection(u"ISDBInformationType", (data[2] >> 4) & 0x0F, names::FIRST) << std::endl
-             << margin << "  Description body location: " << NameFromSection(u"ISDBDescriptionBodyLocation", (data[2] >> 2) & 0x03, names::FIRST) << std::endl
-             << margin << UString::Format(u"  User defined: 0x%X (%d)", {data[3], data[3]}) << std::endl;
-        size_t count = data[4];
-        data += 5; size -= 5;
-
-        while (count > 0 && size >= 2) {
-            strm << margin << UString::Format(u"  Key id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl;
-            data += 2; size -= 2; count--;
+    while (!buf.error() && buf.remainingReadBytes() >= 5) {
+        strm << margin << UString::Format(u"- Information id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        strm << margin << "  Information type: " << NameFromSection(u"ISDBInformationType", buf.getBits<uint8_t>(4), names::FIRST) << std::endl;
+        strm << margin << "  Description body location: " << NameFromSection(u"ISDBDescriptionBodyLocation", buf.getBits<uint8_t>(2), names::FIRST) << std::endl;
+        buf.skipBits(2);
+        strm << margin << UString::Format(u"  User defined: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        for (size_t count = buf.getUInt8(); !buf.error() && count > 0; count--) {
+            strm << margin << UString::Format(u"  Key id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }
-
-        if (size >= 2) {
-            size_t length = GetUInt16(data) & 0x0FFF;
-            data += 2; size -= 2;
-            length = std::min(length, size);
-            display.displayDescriptorList(section, data, length, indent + 2);
-            data += length; size -= length;
-        }
+        display.displayDescriptorListWithLength(section, buf, indent + 2);
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(buf, indent);
 }
 
 

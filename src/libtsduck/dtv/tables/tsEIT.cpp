@@ -470,10 +470,9 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     while (!buf.error() && buf.remainingReadBytes() >= 12) {
         strm << margin << UString::Format(u"- Event Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
         strm << margin << "  Start " << zone << ": " << buf.getFullMJD().format(Time::DATE | Time::TIME) << std::endl;
-        const int hour = buf.getBCD();
-        const int min = buf.getBCD();
-        const int sec = buf.getBCD();
-        strm << margin << UString::Format(u"  Duration: %02d:%02d:%02d", {hour, min, sec}) << std::endl;
+        strm << margin << UString::Format(u"  Duration: %02d", {buf.getBCD()});
+        strm << UString::Format(u":%02d", {buf.getBCD()});
+        strm << UString::Format(u":%02d", {buf.getBCD()}) << std::endl;
         strm << margin << "  Running status: " << names::RunningStatus(buf.getBits<uint8_t>(3)) << std::endl;
         strm << margin << "  CA mode: " << (buf.getBit() != 0 ? "controlled" : "free") << std::endl;
         display.displayDescriptorListWithLength(section, buf, indent + 2);
