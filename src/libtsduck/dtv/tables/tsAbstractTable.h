@@ -84,7 +84,7 @@ namespace ts {
         //! @param [out] bin A binary table object.
         //! Its content is replaced with a binary representation of this object.
         //!
-        virtual void serialize(DuckContext& duck, BinaryTable& bin) const final;
+        void serialize(DuckContext& duck, BinaryTable& bin) const;
 
         //!
         //! This method deserializes a binary table.
@@ -93,7 +93,7 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary table to interpret according to the table subclass.
         //!
-        virtual void deserialize(DuckContext& duck, const BinaryTable& bin) final;
+        void deserialize(DuckContext& duck, const BinaryTable& bin);
 
         //!
         //! Virtual destructor
@@ -301,29 +301,17 @@ namespace ts {
         virtual bool isValidTableId(TID tid) const;
 
         //!
-        //! This abstract method serializes the content of a table.
-        //! This method is invoked by serialize() when the table is valid.
-        //! @param [in,out] duck TSDuck execution context.
-        //! @param [out] bin A binary table object.
-        //! Its content is replaced with a binary representation of this object.
+        //! Get the maximum size in bytes of the payload of sections of this table.
+        //! @return The maximum size in bytes of the payload of sections of this table.
         //!
-        virtual void serializeContent(DuckContext& duck, BinaryTable& bin) const;
+        virtual size_t maxPayloadSize() const;
 
         //!
-        //! This method deserializes the content of a binary table.
+        //! Check if the sections of this table have a trailing CRC32.
+        //! This is usually false for short sections but some short sections such as DVB-TOT use a CRC32.
+        //! @return True if the sections of this table have a trailing CRC32.
         //!
-        //! In case of success, this object is replaced with the interpreted content of @a bin.
-        //! In case of error, this object is invalidated.
-        //!
-        //! The subclass shall preferably override deserializePayload(). As legacy, the subclass may directly override
-        //! deserializeContent() but this is not recommended for new tables. At some point, if we can refactor all
-        //! tables to the new scheme using deserializePayload(), deserializeContent() will disappear or
-        //! become "final" and will no longer allow override.
-        //!
-        //! @param [in,out] duck TSDuck execution context.
-        //! @param [in] bin A binary table to interpret according to the table subclass.
-        //!
-        virtual void deserializeContent(DuckContext& duck, const BinaryTable& bin);
+        virtual bool useTrailingCRC32() const;
 
         //!
         //! This abstract method serializes the payload of all sections in the table.
@@ -337,32 +325,20 @@ namespace ts {
         //! binary table is still empty or if the @a payload buffer is not empty (or not empty after
         //! the last saved write position), then addOneSection() is automatically called.
         //!
-        //! This is now the preferred method for table serialization: use the default implementation
-        //! of serializeContent() and let it call the overridden serializePayload().
-        //!
-        //! The default implementation generates an error. So, if a subclass overrides neither serializeContent()
-        //! nor serializePayload(), all serialization will fail.
-        //!
         //! @param [in,out] table The binary table into which this object shall be serialized. The @a table is
         //! initially empty when serialize() calls serializePayload().
         //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. The @a payload
         //! buffer is initially empty when serialize() calls serializePayload().
         //!
-        virtual void serializePayload(BinaryTable& table, PSIBuffer& buf) const;
+        virtual void serializePayload(BinaryTable& table, PSIBuffer& buf) const = 0;
 
         //!
-        //! This abstract method deserializes the payload of a section.
+        //! This abstract method deserializes the payload of one section.
         //!
         //! When deserialize() is called, this object is cleared and validated. Then, deserializePayload()
         //! is invoked for each section in the binary table. A subclass shall implement deserializePayload()
         //! which adds the content of the binary section to the C++ object. Do not reset the object in
         //! deserializePayload() since it is repeatedly called for each section of a single binary table.
-        //!
-        //! This is now the preferred method for table deserialization: use the default implementation
-        //! of deserializeContent() and let it call the overridden deserializePayload().
-        //!
-        //! The default implementation generates an error. So, if a subclass overrides neither deserializeContent()
-        //! nor deserializePayload(), all deserialization will fail.
         //!
         //! @param [in,out] buf Deserialization buffer. The subclass shall read the descriptor payload from
         //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
@@ -370,7 +346,7 @@ namespace ts {
         //! @param [in] section A reference to the section. Can be used to access values in the section header
         //! (typically for long sections).
         //!
-        virtual void deserializePayload(PSIBuffer& buf, const Section& section);
+        virtual void deserializePayload(PSIBuffer& buf, const Section& section) = 0;
 
         //!
         //! Helper method for serializePayload(): add a section in a binary table.
@@ -406,19 +382,6 @@ namespace ts {
         //! @param [in] section A reference to the section.
         //!
         virtual void deserializePayloadWrapper(PSIBuffer& buf, const Section& section);
-
-        //!
-        //! Get the maximum size in bytes of the payload of sections of this table.
-        //! @return The maximum size in bytes of the payload of sections of this table.
-        //!
-        virtual size_t maxPayloadSize() const;
-
-        //!
-        //! Check if the sections of this table have a trailing CRC32.
-        //! This is usually false for short sections but some short sections such as DVB-TOT use a CRC32.
-        //! @return True if the sections of this table have a trailing CRC32.
-        //!
-        virtual bool useTrailingCRC32() const;
 
     private:
         // Unreachable constructors and operators.

@@ -52,13 +52,25 @@ ts::AbstractTable::~AbstractTable()
 
 
 //----------------------------------------------------------------------------
+// Checks if a table id is valid for this object.
+//----------------------------------------------------------------------------
+
+bool ts::AbstractTable::isValidTableId(TID tid) const
+{
+    // The default implementation checks that the TID is identical to the TID of this object.
+    // Subclasses for which several table ids are valid should override this method.
+    return tid == _table_id;
+}
+
+
+//----------------------------------------------------------------------------
 // Check if the table is a private one (ie. not MPEG-defined).
-// The default implementation returns true.
-// MPEG-defined tables should override this method to return false.
 //----------------------------------------------------------------------------
 
 bool ts::AbstractTable::isPrivate() const
 {
+    // The default implementation returns true.
+    // MPEG-defined tables should override this method to return false.
     return true;
 }
 
@@ -69,6 +81,8 @@ bool ts::AbstractTable::isPrivate() const
 
 size_t ts::AbstractTable::maxPayloadSize() const
 {
+    // The default implementation returns the size of short sections payload.
+    // AbstractLongTable should override this with the size of long sections payload.
     return isPrivate() ? MAX_PRIVATE_SHORT_SECTION_PAYLOAD_SIZE : MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE;
 }
 
@@ -118,17 +132,6 @@ ts::AbstractTable::EntryWithDescriptors& ts::AbstractTable::EntryWithDescriptors
 
 
 //----------------------------------------------------------------------------
-// This method checks if a table id is valid for this object.
-//----------------------------------------------------------------------------
-
-bool ts::AbstractTable::isValidTableId(TID tid) const
-{
-    // The default implementation checks that the TID is identical to the TID of this object.
-    return tid == _table_id;
-}
-
-
-//----------------------------------------------------------------------------
 // This method serializes a table.
 //----------------------------------------------------------------------------
 
@@ -142,8 +145,39 @@ void ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
         return;
     }
 
-    // Call the subclass implementation.
-    serializeContent(duck, table);
+    // Build a buffer of the appropriate size.
+    PSIBuffer payload(duck, maxPayloadSize());
+
+    // Let the subclass serialize the sections payloads.
+    serializePayload(table, payload);
+
+    // Upon return, add unfinished section when necessary.
+    if (payload.error()) {
+        // There were serialization errors, invalidate the binary table.
+        table.clear();
+    }
+    else if (table.sectionCount() == 0) {
+        // No section were added, add this one, even if empty.
+        addOneSection(table, payload);
+    }
+    else {
+        // Some sections were already added. Check if we need to add a last one.
+        // By default, we add it if it is not empty.
+        bool add = payload.remainingReadBytes() > 0;
+        // But if there is a saved read/write state and nothing was added since the saved state,
+        // then we assume that the saved state is fixed initial common data, identical in all
+        // sections, and there is no need to add the last section.
+        if (add && payload.pushedLevels() > 0) {
+            const size_t current_write = payload.currentWriteByteOffset();
+            payload.swapState();
+            add = current_write > payload.currentWriteByteOffset();
+            payload.swapState();
+        }
+        // Finally, add the section if necessary.
+        if (add) {
+            addOneSection(table, payload);
+        }
+    }
 
     // Add the standards of the serialized table into the context.
     duck.addStandards(definingStandards());
@@ -217,73 +251,10 @@ void ts::AbstractTable::deserialize(DuckContext& duck, const BinaryTable& table)
     // So, we need to update this object.
     _table_id = table.tableId();
 
-    // Call the subclass implementation.
-    deserializeContent(duck, table);
-
-    // Add the standards of the deserialized table into the context.
-    duck.addStandards(definingStandards());
-}
-
-
-//----------------------------------------------------------------------------
-// Wrapper for deserializePayload (overridden by intermediate classes).
-//----------------------------------------------------------------------------
-
-void ts::AbstractTable::deserializePayloadWrapper(PSIBuffer& buf, const Section& section)
-{
-    // At this level, we directly invoke the subclass handler.
-    deserializePayload(buf, section);
-}
-
-
-//----------------------------------------------------------------------------
-// Default implementations for serialization handlers.
-// Will disappear some day when refactoring is complete...
-//----------------------------------------------------------------------------
-
-void ts::AbstractTable::serializeContent(DuckContext& duck, BinaryTable& table) const
-{
-    // Build a buffer of the appropriate size.
-    PSIBuffer payload(duck, maxPayloadSize());
-
-    // Let the subclass serialize the sections payloads.
-    serializePayload(table, payload);
-
-    // Upon return, add unfinished section when necessary.
-    if (payload.error()) {
-        // There were serialization errors, invalidate the binary table.
-        table.clear();
-    }
-    else if (table.sectionCount() == 0) {
-        // No section were added, add this one, even if empty.
-        addOneSection(table, payload);
-    }
-    else {
-        // Some sections were already added. Check if we need to add a last one.
-        // By default, we add it if it is not empty.
-        bool add = payload.remainingReadBytes() > 0;
-        // But if there is a saved read/write state and nothing was added since the saved state,
-        // then we assume that the saved state is fixed initial common data, identical in all
-        // sections, and there is no need to add the last section.
-        if (add && payload.pushedLevels() > 0) {
-            const size_t current_write = payload.currentWriteByteOffset();
-            payload.swapState();
-            add = current_write > payload.currentWriteByteOffset();
-            payload.swapState();
-        }
-        // Finally, add the section if necessary.
-        if (add) {
-            addOneSection(table, payload);
-        }
-    }
-}
-
-void ts::AbstractTable::deserializeContent(DuckContext& duck, const BinaryTable& table)
-{
     // Loop on all sections in the table.
     for (size_t si = 0; si < table.sectionCount(); ++si) {
 
-        // The table is already valid.
+        // The binary table is already valid, so its sectiosn are valid too.
         const Section& section(*table.sectionAt(si));
         assert(section.isValid());
 
@@ -315,16 +286,18 @@ void ts::AbstractTable::deserializeContent(DuckContext& duck, const BinaryTable&
             break;
         }
     }
+
+    // Add the standards of the deserialized table into the context.
+    duck.addStandards(definingStandards());
 }
 
-void ts::AbstractTable::deserializePayload(PSIBuffer& buf, const Section& section)
-{
-    // Generate an error to invalidate the deserialization.
-    buf.setUserError();
-}
 
-void ts::AbstractTable::serializePayload(BinaryTable& table, PSIBuffer& buf) const
+//----------------------------------------------------------------------------
+// Wrapper for deserializePayload (overridden by intermediate classes).
+//----------------------------------------------------------------------------
+
+void ts::AbstractTable::deserializePayloadWrapper(PSIBuffer& buf, const Section& section)
 {
-    // Generate an error to invalidate the serialization.
-    buf.setUserError();
+    // At this level, we directly invoke the subclass handler.
+    deserializePayload(buf, section);
 }

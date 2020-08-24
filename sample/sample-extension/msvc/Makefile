@@ -2,4 +2,4 @@
 default:
 	@true
 clean distclean:
-	rm -rf Release-* Debug-* .vs *.user
+	@rm -rf Release-* Debug-* .vs *.user

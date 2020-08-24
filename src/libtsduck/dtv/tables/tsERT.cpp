@@ -31,6 +31,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -110,62 +111,24 @@ void ts::ERT::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ERT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::ERT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    relations.clear();
+    // Get common properties (should be identical in all sections)
+    event_relation_id = section.tableIdExtension();
+    information_provider_id = buf.getUInt16();
+    relation_type = buf.getBits<uint8_t>(4);
+    buf.skipBits(4);
 
-    // Loop on all sections
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
-
-        // Reference to current section
-        const Section& sect(*table.sectionAt(si));
-
-        // Analyze the section payload:
-        const uint8_t* data = sect.payload();
-        size_t remain = sect.payloadSize();
-
-        // Abort if not expected table or payload too short.
-        if (sect.tableId() != _table_id || remain < 3) {
-            return;
-        }
-
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent();
-        event_relation_id = sect.tableIdExtension();
-        information_provider_id = GetUInt16(data);
-        relation_type = (data[2] >> 4) & 0x0F;
-        data += 3; remain -= 3;
-
-        // Loop across all local events.
-        while (remain >= 8) {
-
-            // Get fixed part.
-            Relation& rel(relations.newEntry());
-            rel.node_id = GetUInt16(data);
-            rel.collection_mode = (data[2] >> 4) & 0x0F;
-            rel.parent_node_id = GetUInt16(data + 3);
-            rel.reference_number = data[5];
-            size_t len = GetUInt16(data + 6) & 0x0FFF;
-            data += 8; remain -= 8;
-
-            if (len > remain) {
-                return;
-            }
-
-            // Get descriptor loop.
-            rel.descs.add(data, len);
-            data += len; remain -= len;
-        }
-
-        // Abort in case of extra data in section.
-        if (remain != 0) {
-            return;
-        }
+    // Loop across all relations.
+    while (!buf.error() && !buf.endOfRead()) {
+        Relation& rel(relations.newEntry());
+        rel.node_id = buf.getUInt16();
+        rel.collection_mode = buf.getBits<uint8_t>(4);
+        buf.skipBits(4);
+        rel.parent_node_id = buf.getUInt16();
+        rel.reference_number = buf.getUInt8();
+        buf.getDescriptorListWithLength(rel.descs);
     }
-
-    _is_valid = true;
 }
 
 
@@ -173,94 +136,39 @@ void ts::ERT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ERT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::ERT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    // Build the sections
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number = 0;
+    // Fixed part, to be repeated on all sections.
+    buf.putUInt16(information_provider_id);
+    buf.putBits(relation_type, 4);
+    buf.putBits(0xFF, 4);
+    buf.pushState();
 
-    // Add fixed part (3 bytes). Will remain unmodified in all sections.
-    PutUInt16(payload, information_provider_id);
-    PutUInt8(payload + 2, uint8_t(relation_type << 4) | 0x0F);
+    // Minimum payload size, before loop of local events.
+    const size_t payload_min_size = buf.currentWriteByteOffset();
 
-    uint8_t* data = payload + 3;
-    size_t remain = sizeof(payload) - 3;
-
-    // Add all local events.
+    // Add all relations.
     for (auto it = relations.begin(); it != relations.end(); ++it) {
-
-        // If we cannot at least add the fixed part of an event description, open a new section
-        if (remain < 8) {
-            addSection(table, section_number, payload, data, remain);
-        }
-
-        // If we are not at the beginning of the event loop, make sure that the entire
-        // relation description fits in the section. If it does not fit, start a new section. Huge
-        // descriptions may not fit into one section, even when starting at the beginning
-        // of the description loop. In that case, the description will span two sections later.
         const Relation& rel(it->second);
-        const DescriptorList& dlist(rel.descs);
-        const size_t event_length = 8 + dlist.binarySize();
-        if (data > payload + 3 && event_length > remain) {
-            // Create a new section
-            addSection(table, section_number, payload, data, remain);
+
+        // Binary size of this entry.
+        const size_t entry_size = 8 + rel.descs.binarySize();
+
+        // If we are not at the beginning of the relations loop, make sure that the entire
+        // description fits in the section. If it does not fit, start a new section.
+        if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
+            // Create a new section.
+            addOneSection(table, buf);
         }
 
-        // Fill fixed part of the content version.
-        assert(remain >= 8);
-        PutUInt16(data, rel.node_id);
-        PutUInt8(data + 2, uint8_t(rel.collection_mode << 4) | 0x0F);
-        PutUInt16(data + 3, rel.parent_node_id);
-        PutUInt8(data + 5, rel.reference_number);
-        data += 6; remain -= 6;
-
-        // Serialize the descriptor loop.
-        for (size_t start_index = 0; ; ) {
-
-            // Insert descriptors (all or some).
-            start_index = dlist.lengthSerialize(data, remain, start_index);
-
-            // Exit loop when all descriptors were serialized.
-            if (start_index >= dlist.count()) {
-                break;
-            }
-
-            // Not all descriptors were written, the section is full.
-            // Open a new one and continue with this relation description.
-            addSection(table, section_number, payload, data, remain);
-            PutUInt16(data, rel.node_id);
-            PutUInt8(data + 2, uint8_t(rel.collection_mode << 4) | 0x0F);
-            PutUInt16(data + 3, rel.parent_node_id);
-            PutUInt8(data + 5, rel.reference_number);
-            data += 6; remain -= 6;
-        }
+        // Serialize the relation entry. If the descriptor loop is too long, it is truncated.
+        buf.putUInt16(rel.node_id);
+        buf.putBits(rel.collection_mode, 4);
+        buf.putBits(0xFF, 4);
+        buf.putUInt16(rel.parent_node_id);
+        buf.putUInt8(rel.reference_number);
+        buf.putPartialDescriptorListWithLength(rel.descs);
     }
-
-    // Add partial section.
-    addSection(table, section_number, payload, data, remain);
-}
-
-
-//----------------------------------------------------------------------------
-// Add a new section to a table being serialized.
-//----------------------------------------------------------------------------
-
-void ts::ERT::addSection(BinaryTable& table, int& section_number, uint8_t* payload, uint8_t*& data, size_t& remain) const
-{
-    table.addSection(new Section(_table_id,
-                                 true,                    // is_private_section
-                                 event_relation_id,       // ts id extension
-                                 version,
-                                 is_current,
-                                 uint8_t(section_number),
-                                 uint8_t(section_number), //last_section_number
-                                 payload,
-                                 data - payload));        // payload_size,
-
-    // Reinitialize pointers after fixed part of payload (3 bytes).
-    remain += data - payload - 3;
-    data = payload + 3;
-    section_number++;
 }
 
 
@@ -273,34 +181,30 @@ void ts::ERT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
+    strm << margin << UString::Format(u"Event relation id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
-    strm << margin << UString::Format(u"Event relation id: 0x%X (%d)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
-
-    if (size >= 3) {
-
-        // Display common information
-        strm << margin << UString::Format(u"Information provider id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-             << margin << "Relation type: " << NameFromSection(u"ISDBRelationType", (data[2] >> 4) & 0x0F, names::DECIMAL_FIRST) << std::endl;
-        data += 3; size -= 3;
-
-        // Loop across all local events.
-        while (size >= 8) {
-            strm << margin << UString::Format(u"- Node id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-                 << margin << "  Collection mode: " << NameFromSection(u"ISDBCollectionMode", (data[2] >> 4) & 0x0F, names::DECIMAL_FIRST) << std::endl
-                 << margin << UString::Format(u"  Parent node id: 0x%X (%d)", {GetUInt16(data + 3), GetUInt16(data + 3)}) << std::endl
-                 << margin << UString::Format(u"  Reference number: 0x%X (%d)", {data[5], data[5]}) << std::endl;
-            size_t len = GetUInt16(data + 6) & 0x0FFF;
-            data += 8; size -= 8;
-            len = std::min(len, size);
-            display.displayDescriptorList(section, data, len, indent + 2);
-            data += len; size -= len;
-        }
+    if (buf.remainingReadBytes() < 3) {
+        buf.setUserError();
+    }
+    else {
+        strm << margin << UString::Format(u"Information provider id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        strm << margin << "Relation type: " << NameFromSection(u"ISDBRelationType", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
+        buf.skipBits(4);
     }
 
-    display.displayExtraData(data, size, indent);
+    // Loop across all relations.
+    while (!buf.error() && buf.remainingReadBytes() >= 8) {
+        strm << margin << UString::Format(u"- Node id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        strm << margin << "  Collection mode: " << NameFromSection(u"ISDBCollectionMode", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
+        buf.skipBits(4);
+        strm << margin << UString::Format(u"  Parent node id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        strm << margin << UString::Format(u"  Reference number: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        display.displayDescriptorListWithLength(section, buf, indent + 2);
+    }
+
+    display.displayExtraData(buf, indent);
 }
 
 

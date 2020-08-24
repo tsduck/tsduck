@@ -13,6 +13,6 @@ deb rpm: default
 
 # Cleanup non-source files:
 clean distclean:
-	$(MAKE) -C src $@
-	$(MAKE) -C msvc $@
-	rm -rf installers/tmp demo/*.ts
+	@$(MAKE) -C src $@
+	@$(MAKE) -C msvc $@
+	@rm -rf installers/tmp demo/*.ts

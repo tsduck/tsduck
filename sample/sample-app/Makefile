@@ -16,6 +16,6 @@ include $(SYSPREFIX)/include/tsduck/tsduck.mk
 default: myexec
 
 clean:
-	rm -rf *.o *.ts
+	@rm -rf *.o *.ts
 distclean: clean
-	rm -rf myexec
+	@rm -rf myexec

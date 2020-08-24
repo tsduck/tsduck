@@ -24,7 +24,7 @@ default: $(SHLIBS)
 	@true
 
 clean distclean:
-	rm -rf *.o *.so
+	@rm -rf *.o *.so
 
 .PHONY: install
 install: $(SHLIBS)

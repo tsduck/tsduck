@@ -33,7 +33,12 @@
 
 include ../Makefile.tsduck
 
-RECURSE_ORDER = none
+SAMPLE_SUBDIRS = $(filter sample-%,$(SUBDIRS))
+RECURSE_ORDER = $(if $(MAKECMDGOALS),$(if $(filter-out clean distclean,$(MAKECMDGOALS)),none,$(SAMPLE_SUBDIRS)),none)
 
 default:
 	@true
+
+.PHONY: sample
+sample:
+	@for dir in $(SAMPLE_SUBDIRS); do echo "=== Building $$dir"; $(MAKE) -C $$dir; done

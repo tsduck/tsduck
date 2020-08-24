@@ -47,7 +47,7 @@ CONFIGS := $(wildcard *.xml *.names)
 all: $(LIBEXT_SO) $(PLUGINS_SO) $(TOOLS)
 	@true
 clean distclean:
-	rm -rf *.o *.so $(TOOLS)
+	@rm -rf *.o *.so $(TOOLS)
 
 $(LIBEXT_SO): $(LIBOBJS)
 $(PLUGINS_SO) $(TOOLS): $(LIBEXT_SO)
