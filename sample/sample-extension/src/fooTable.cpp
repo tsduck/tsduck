@@ -86,7 +86,7 @@ void foo::FooTable::deserializePayload(ts::PSIBuffer& buf, const ts::Section& se
 // Serialization
 //----------------------------------------------------------------------------
 
-void foo::FooTable::serializePayload(ts::BinaryTable& table, ts::PSIBuffer& payload) const
+void foo::FooTable::serializePayload(ts::BinaryTable& table, ts::PSIBuffer& buf) const
 {
     size_t name_index = 0;
     size_t desc_index = 0;
@@ -95,13 +95,13 @@ void foo::FooTable::serializePayload(ts::BinaryTable& table, ts::PSIBuffer& payl
     // Make sure to build at least one section.
     do {
         // Serialize as many characters as possible from the name.
-        name_index += payload.putPartialStringWithByteLength(name, name_index);
+        name_index += buf.putPartialStringWithByteLength(name, name_index);
 
         // Serialize as many descriptors as possible.
-        desc_index = payload.putPartialDescriptorListWithLength(descs, desc_index);
+        desc_index = buf.putPartialDescriptorListWithLength(descs, desc_index);
 
         // Add this section. The payload buffer is reset on return.
-        addOneSection(table, payload);
+        addOneSection(table, buf);
     } while (name_index < name.size() || desc_index < descs.size());
 }
 

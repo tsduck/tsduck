@@ -31,6 +31,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -105,62 +106,21 @@ void ts::BIT::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::BIT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::BIT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    descs.clear();
-    broadcasters.clear();
+    // Get common properties (should be identical in all sections)
+    original_network_id = section.tableIdExtension();
+    buf.skipBits(3);
+    broadcast_view_propriety = buf.getBit() != 0;
 
-    // Loop on all sections
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
+    // Get top-level descriptor list.
+    buf.getDescriptorListWithLength(descs);
 
-        // Reference to current section
-        const Section& sect(*table.sectionAt(si));
-
-        // Abort if not expected table
-        if (sect.tableId() != _table_id) {
-            return;
-        }
-
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent();
-        original_network_id = sect.tableIdExtension();
-
-        // Analyze the section payload:
-        const uint8_t* data = sect.payload();
-        size_t remain = sect.payloadSize();
-
-        // Get top-level descriptor list
-        if (remain < 2) {
-            return;
-        }
-        broadcast_view_propriety = (data[0] & 0x10) != 0;
-        size_t length = GetUInt16(data) & 0x0FFF;
-        data += 2; remain -= 2;
-
-        length = std::min(length, remain);
-        descs.add(data, length);
-        data += length; remain -= length;
-
-        // Loop across all broadcasters
-        while (remain >= 3) {
-            const uint8_t id = data[0];
-            length = GetUInt16(data + 1) & 0x0FFF;
-            data += 3; remain -= 3;
-
-            length = std::min(length, remain);
-            broadcasters[id].descs.add(data, length);
-            data += length; remain -= length;
-        }
-
-        // Abort in case of extra data in section.
-        if (remain != 0) {
-            return;
-        }
+    // Loop across all broadcasters
+    while (!buf.error() && !buf.endOfRead()) {
+        Broadcaster& bc(broadcasters[buf.getUInt8()]);
+        buf.getDescriptorListWithLength(bc.descs);
     }
-
-    _is_valid = true;
 }
 
 
@@ -168,113 +128,48 @@ void ts::BIT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::BIT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::BIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    // Build the sections
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number = 0;
-    uint8_t* data = payload;
-    size_t remain = sizeof(payload);
-
-    // Add top-level descriptor list.
+    // Add top-level descriptor list at the beginning of the section.
+    // The 4 bits before the descriptor loop length contain meaningful info.
     // If the descriptor list is too long to fit into one section, create new sections when necessary.
     for (size_t start_index = 0; ; ) {
-
-        // Add the descriptor list (or part of it).
-        start_index = descs.lengthSerialize(data, remain, start_index, broadcast_view_propriety ? 0x000F : 0x000E);
+        buf.putBits(0xFF, 3);
+        buf.putBit(broadcast_view_propriety);
+        start_index = buf.putPartialDescriptorListWithLength(descs, start_index);
 
         // If all descriptors were serialized, exit loop
         if (start_index == descs.count()) {
             break;
         }
-        assert(start_index < descs.count());
 
         // Need to close the section and open a new one.
-        addSection(table, section_number, payload, data, remain);
+        addOneSection(table, buf);
     }
+
+    // Minimal payload size, with an empty top-level descriptor list.
+    constexpr size_t payload_min_size = 2;
 
     // Add all broadcasters.
     for (auto it = broadcasters.begin(); it != broadcasters.end(); ++it) {
+        const Broadcaster& bc(it->second);
 
-        // If we cannot at least add the fixed part of a broadcaster, open a new section
-        if (remain < 1) {
-            addSection(table, section_number, payload, data, remain);
-            createEmptyMainDescriptorLoop(data, remain);
+        // Binary size of this broadcaster definition.
+        const size_t entry_size = 3 + bc.descs.binarySize();
+
+        // If we are not at the beginning of the broadcaster loop, make sure that the entire
+        // entry fits in the section. If it does not fit, start a new section.
+        if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
+            // Create a new section.
+            addOneSection(table, buf);
+            // Insert an empty top-level descriptor list.
+            buf.putUInt16(broadcast_view_propriety ? 0xF000 : 0xE000);
         }
 
-        // If we are not at the beginning of the broadcaster loop, make sure that the entire broadcaster
-        // description fits in the section. If it does not fit, start a new section. Huge broadcaster
-        // descriptions may not fit into one section, even when starting at the beginning of the broadcaster
-        // loop. In that case, the broadcaster description will span two sections later.
-        const DescriptorList& dlist(it->second.descs);
-        if (data > payload + 2 && 1 + dlist.binarySize() > remain) {
-            // Create a new section
-            addSection(table, section_number, payload, data, remain);
-            createEmptyMainDescriptorLoop(data, remain);
-        }
-
-        // Serialize the characteristics of the broadcaster. When the section is not large enough to hold
-        // the entire descriptor list, open a new section for the rest of the descriptors. In that case,
-        // the common properties of the broadcaster must be repeated.
-        for (size_t start_index = 0; ; ) {
-            // Insert common characteristics of the broadcaster (ie. broadcaster id).
-            assert(remain >= 3);
-            data[0] = it->first;
-            data++; remain--;
-
-            // Insert descriptors (all or some).
-            start_index = dlist.lengthSerialize(data, remain, start_index);
-
-            // Exit loop when all descriptors were serialized.
-            if (start_index >= dlist.count()) {
-                break;
-            }
-
-            // Not all descriptors were written, the section is full.
-            // Open a new one and continue with this transport.
-            addSection(table, section_number, payload, data, remain);
-            createEmptyMainDescriptorLoop(data, remain);
-        }
+        // Serialize the characteristics of the broadcaster. The section must be large enough to hold the entire descriptor list.
+        buf.putUInt8(it->first);  // broadcaster_id
+        buf.putDescriptorListWithLength(bc.descs);
     }
-
-    // Add partial section.
-    addSection(table, section_number, payload, data, remain);
-}
-
-
-//----------------------------------------------------------------------------
-// Create an empty main descriptor loop. Data and remain are updated.
-//----------------------------------------------------------------------------
-
-void ts::BIT::createEmptyMainDescriptorLoop(uint8_t*& data, size_t& remain) const
-{
-    assert(remain >= 2);
-    data[0] = broadcast_view_propriety ? 0xF0 : 0xE0;
-    data[1] = 0x00;
-    data += 2; remain -= 2;
-}
-
-
-//----------------------------------------------------------------------------
-// Add a new section to a table being serialized.
-//----------------------------------------------------------------------------
-
-void ts::BIT::addSection(BinaryTable& table, int& section_number, uint8_t* payload, uint8_t*& data, size_t& remain) const
-{
-    table.addSection(new Section(_table_id,
-                                 true,                    // is_private_section
-                                 original_network_id,     // ts id extension
-                                 version,
-                                 is_current,
-                                 uint8_t(section_number),
-                                 uint8_t(section_number), //last_section_number
-                                 payload,
-                                 data - payload));        // payload_size,
-
-    // Reinitialize pointers.
-    remain += data - payload;
-    data = payload;
-    section_number++;
 }
 
 
@@ -287,40 +182,26 @@ void ts::BIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
+    strm << margin << UString::Format(u"Original network id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
-    strm << margin << UString::Format(u"Original network id: 0x%X (%d)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
-
-    if (size >= 2) {
-        // Display common information
-        strm << margin << UString::Format(u"Broadcast view property: %s", {(data[0] & 0x10) != 0}) << std::endl;
-        size_t length = GetUInt16(data) & 0x0FFF;
-        data += 2; size -= 2;
-        if (length > size) {
-            length = size;
-        }
-        if (length > 0) {
-            strm << margin << "Common descriptors:" << std::endl;
-            display.displayDescriptorList(section, data, length, indent);
-        }
-        data += length; size -= length;
-
-        // Loop across all broadcasters
-        while (size >= 3) {
-            strm << margin << UString::Format(u"Broadcaster id: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-            length = GetUInt16(data + 1) & 0x0FFF;
-            data += 3; size -= 3;
-            if (length > size) {
-                length = size;
-            }
-            display.displayDescriptorList(section, data, length, indent);
-            data += length; size -= length;
-        }
+    if (buf.endOfRead()) {
+        buf.setUserError();
+    }
+    else {
+        buf.skipBits(3);
+        strm << margin << UString::Format(u"Broadcast view property: %s", {buf.getBit() != 0}) << std::endl;
+        display.displayDescriptorListWithLength(section, buf, indent, u"Common descriptors:");
     }
 
-    display.displayExtraData(data, size, indent);
+    // Loop across all broadcasters
+    while (!buf.error() && buf.remainingReadBytes() >= 3) {
+        strm << margin << UString::Format(u"Broadcaster id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        display.displayDescriptorListWithLength(section, buf, indent);
+    }
+
+    display.displayExtraData(buf, indent);
 }
 
 

@@ -31,6 +31,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -110,60 +111,20 @@ void ts::LIT::clearContent()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::LIT::deserializeContent(DuckContext& duck, const BinaryTable& table)
+void ts::LIT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Clear table content
-    events.clear();
+    // Get common properties (should be identical in all sections)
+    event_id = section.tableIdExtension();
+    service_id = buf.getUInt16();
+    transport_stream_id = buf.getUInt16();
+    original_network_id = buf.getUInt16();
 
-    // Loop on all sections
-    for (size_t si = 0; si < table.sectionCount(); ++si) {
-
-        // Reference to current section
-        const Section& sect(*table.sectionAt(si));
-
-        // Analyze the section payload:
-        const uint8_t* data = sect.payload();
-        size_t remain = sect.payloadSize();
-
-        // Abort if not expected table or payload too short.
-        if (sect.tableId() != _table_id || remain < 6) {
-            return;
-        }
-
-        // Get common properties (should be identical in all sections)
-        version = sect.version();
-        is_current = sect.isCurrent();
-        event_id = sect.tableIdExtension();
-        service_id = GetUInt16(data);
-        transport_stream_id = GetUInt16(data + 2);
-        original_network_id = GetUInt16(data + 4);
-        data += 6; remain -= 6;
-
-        // Loop across all local events.
-        while (remain >= 4) {
-
-            // Get fixed part.
-            Event& ev(events.newEntry());
-            ev.local_event_id = GetUInt16(data);
-            size_t len = GetUInt16(data + 2) & 0x0FFF;
-            data += 4; remain -= 4;
-
-            if (len > remain) {
-                return;
-            }
-
-            // Get descriptor loop.
-            ev.descs.add(data, len);
-            data += len; remain -= len;
-        }
-
-        // Abort in case of extra data in section.
-        if (remain != 0) {
-            return;
-        }
+    // Loop across all local events.
+    while (!buf.error() && !buf.endOfRead()) {
+        Event& ev(events.newEntry());
+        ev.local_event_id = buf.getUInt16();
+        buf.getDescriptorListWithLength(ev.descs);
     }
-
-    _is_valid = true;
 }
 
 
@@ -171,89 +132,35 @@ void ts::LIT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::LIT::serializeContent(DuckContext& duck, BinaryTable& table) const
+void ts::LIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    // Build the sections
-    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number = 0;
+    // Fixed part, to be repeated on all sections.
+    buf.putUInt16(service_id);
+    buf.putUInt16(transport_stream_id);
+    buf.putUInt16(original_network_id);
+    buf.pushState();
 
-    // Add fixed part (6 bytes). Will remain unmodified in all sections.
-    PutUInt16(payload, service_id);
-    PutUInt16(payload + 2, transport_stream_id);
-    PutUInt16(payload + 4, original_network_id);
-
-    uint8_t* data = payload + 6;
-    size_t remain = sizeof(payload) - 6;
+    // Minimum payload size, before loop of local events.
+    const size_t payload_min_size = buf.currentWriteByteOffset();
 
     // Add all local events.
     for (auto it = events.begin(); it != events.end(); ++it) {
+        const Event& ev(it->second);
 
-        // If we cannot at least add the fixed part of an event description, open a new section
-        if (remain < 4) {
-            addSection(table, section_number, payload, data, remain);
-        }
+        // Binary size of this entry.
+        const size_t entry_size = 4 + ev.descs.binarySize();
 
         // If we are not at the beginning of the event loop, make sure that the entire
-        // event description fits in the section. If it does not fit, start a new section. Huge
-        // descriptions may not fit into one section, even when starting at the beginning
-        // of the description loop. In that case, the description will span two sections later.
-        const Event& ev(it->second);
-        const DescriptorList& dlist(ev.descs);
-        const size_t event_length = 4 + dlist.binarySize();
-        if (data > payload + 6 && event_length > remain) {
-            // Create a new section
-            addSection(table, section_number, payload, data, remain);
+        // event description fits in the section. If it does not fit, start a new section.
+        if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
+            // Create a new section.
+            addOneSection(table, buf);
         }
 
-        // Fill fixed part of the content version.
-        assert(remain >= 4);
-        PutUInt16(data, ev.local_event_id);
-        data += 2; remain -= 2;
-
-        // Serialize the descriptor loop.
-        for (size_t start_index = 0; ; ) {
-
-            // Insert descriptors (all or some).
-            start_index = dlist.lengthSerialize(data, remain, start_index);
-
-            // Exit loop when all descriptors were serialized.
-            if (start_index >= dlist.count()) {
-                break;
-            }
-
-            // Not all descriptors were written, the section is full.
-            // Open a new one and continue with this local event.
-            addSection(table, section_number, payload, data, remain);
-            PutUInt16(data, ev.local_event_id);
-            data += 2; remain -= 2;
-        }
+        // Serialize local event. If descriptor loop is too long, it is truncated.
+        buf.putUInt16(ev.local_event_id);
+        buf.putPartialDescriptorListWithLength(ev.descs);
     }
-
-    // Add partial section.
-    addSection(table, section_number, payload, data, remain);
-}
-
-
-//----------------------------------------------------------------------------
-// Add a new section to a table being serialized.
-//----------------------------------------------------------------------------
-
-void ts::LIT::addSection(BinaryTable& table, int& section_number, uint8_t* payload, uint8_t*& data, size_t& remain) const
-{
-    table.addSection(new Section(_table_id,
-                                 true,                    // is_private_section
-                                 event_id,                // ts id extension
-                                 version,
-                                 is_current,
-                                 uint8_t(section_number),
-                                 uint8_t(section_number), //last_section_number
-                                 payload,
-                                 data - payload));        // payload_size,
-
-    // Reinitialize pointers after fixed part of payload (6 bytes).
-    remain += data - payload - 6;
-    data = payload + 6;
-    section_number++;
 }
 
 
@@ -266,32 +173,26 @@ void ts::LIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
     const std::string margin(indent, ' ');
+    PSIBuffer buf(duck, section.payload(), section.payloadSize());
 
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
+    strm << margin << UString::Format(u"Event id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
-    strm << margin << UString::Format(u"Event id: 0x%X (%d)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
-
-    if (size >= 6) {
-
-        // Display common information
-        strm << margin << UString::Format(u"Service id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-             << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl
-             << margin << UString::Format(u"Original network id: 0x%X (%d)", {GetUInt16(data + 4), GetUInt16(data + 4)}) << std::endl;
-        data += 6; size -= 6;
-
-        // Loop across all local events.
-        while (size >= 4) {
-            strm << margin << UString::Format(u"- Local event id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl;
-            size_t len = GetUInt16(data + 2) & 0x0FFF;
-            data += 4; size -= 4;
-            len = std::min(len, size);
-            display.displayDescriptorList(section, data, len, indent + 2);
-            data += len; size -= len;
-        }
+    if (buf.remainingReadBytes() < 6) {
+        buf.setUserError();
+    }
+    else {
+        strm << margin << UString::Format(u"Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        strm << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        strm << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    // Loop across all local events.
+    while (!buf.error() && buf.remainingReadBytes() >= 4) {
+        strm << margin << UString::Format(u"- Local event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        display.displayDescriptorListWithLength(section, buf, indent + 2);
+    }
+
+    display.displayExtraData(buf, indent);
 }
 
 

@@ -56,8 +56,8 @@ namespace foo {
     protected:
         // Inherited methods
         virtual void clearContent() override;
-        virtual void serializePayload(ts::BinaryTable& table, ts::PSIBuffer& payload) const override;
-        virtual void deserializePayload(ts::PSIBuffer& buf, const ts::Section& section) override;
+        virtual void serializePayload(ts::BinaryTable&, ts::PSIBuffer&) const override;
+        virtual void deserializePayload(ts::PSIBuffer&, const ts::Section&) override;
         virtual void buildXML(ts::DuckContext&, ts::xml::Element*) const override;
         virtual bool analyzeXML(ts::DuckContext&, const ts::xml::Element*) override;
     };
