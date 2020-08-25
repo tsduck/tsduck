@@ -327,8 +327,8 @@ namespace ts {
                         size_t tlvStart,
                         size_t tlvSize,
                         size_t dataOffset,
-                        int indent,
-                        int innerIndent,
+                        size_t indent,
+                        size_t innerIndent,
                         const TLVSyntax& tlv);
 
     private:
