@@ -211,16 +211,9 @@ void ts::INT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a INT section.
 //----------------------------------------------------------------------------
 
-void ts::INT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::INT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     if (buf.remainingReadBytes() >= 4) {
-
-        // Fixed part
         const uint8_t action = uint8_t(section.tableIdExtension() >> 8);
         const uint8_t id_hash = uint8_t(section.tableIdExtension());
         const uint32_t pfid = buf.getUInt24();
@@ -228,22 +221,22 @@ void ts::INT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         const uint8_t comp_hash = uint8_t(pfid >> 16) ^ uint8_t(pfid >> 8) ^ uint8_t(pfid);
         const UString hash_status(id_hash == comp_hash ? u"valid" : UString::Format(u"invalid, should be 0x%X", {comp_hash}));
 
-        strm << margin << "Platform id: " << names::PlatformId(pfid, names::FIRST) << std::endl
+        disp << margin << "Platform id: " << names::PlatformId(pfid, names::FIRST) << std::endl
              << margin
              << UString::Format(u"Action type: 0x%X, processing order: 0x%X, id hash: 0x%X (%s)", {action, order, id_hash, hash_status})
              << std::endl;
 
-        display.displayDescriptorListWithLength(section, buf, indent, u"Platform descriptors:");
+        disp.displayDescriptorListWithLength(section, buf, margin, u"Platform descriptors:");
 
         // Get device descriptions.
         for (int device_index = 0; !buf.error() && !buf.endOfRead(); device_index++) {
-            strm << margin << "Device #" << device_index << std::endl;
-            display.displayDescriptorListWithLength(section, buf, indent + 2, u"Target descriptors:", u"None");
-            display.displayDescriptorListWithLength(section, buf, indent + 2, u"Operational descriptors:", u"None");
+            disp << margin << "Device #" << device_index << std::endl;
+            disp.displayDescriptorListWithLength(section, buf, margin + u"  ", u"Target descriptors:", u"None");
+            disp.displayDescriptorListWithLength(section, buf, margin + u"  ", u"Operational descriptors:", u"None");
         }
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

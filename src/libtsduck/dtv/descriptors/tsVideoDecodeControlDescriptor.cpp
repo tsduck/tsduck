@@ -115,7 +115,7 @@ void ts::VideoDecodeControlDescriptor::DisplayDescriptor(TablesDisplay& display,
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size > 0) {
         strm << margin << UString::Format(u"Still picture: %s", {(data[0] & 0x80) != 0}) << std::endl
@@ -124,7 +124,7 @@ void ts::VideoDecodeControlDescriptor::DisplayDescriptor(TablesDisplay& display,
              << margin << UString::Format(u"Reserve future use: %d", {data[0] & 0x03}) << std::endl;
         data++; size--;
     }
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

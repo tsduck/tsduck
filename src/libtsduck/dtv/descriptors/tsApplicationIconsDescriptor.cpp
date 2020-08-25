@@ -121,7 +121,7 @@ void ts::ApplicationIconsDescriptor::DisplayDescriptor(TablesDisplay& display, D
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size > 0) {
         strm << margin << "Icon locator: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
@@ -133,7 +133,7 @@ void ts::ApplicationIconsDescriptor::DisplayDescriptor(TablesDisplay& display, D
                     strm << margin << "  - " << NameFromSection(u"ApplicationIconFlags", mask) << std::endl;
                 }
             }
-            display.displayPrivateData(u"Reserved bytes", data + 2, size - 2, indent);
+            display.displayPrivateData(u"Reserved bytes", data + 2, size - 2, margin);
         }
     }
 }

@@ -113,19 +113,18 @@ void ts::CAEMMTSDescriptor::deserialize(DuckContext& duck, const Descriptor& des
 
 void ts::CAEMMTSDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    if (size >= 7) {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const UString margin(indent, ' ');
 
+    if (size >= 7) {
         strm << margin << "CA System Id: " << names::CASId(duck, GetUInt16(data), names::FIRST) << std::endl
              << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl
              << margin << UString::Format(u"Original network id: 0x%X (%d)", {GetUInt16(data + 4), GetUInt16(data + 4)}) << std::endl
              << margin << UString::Format(u"Power-on time: %d minutes", {data[6]}) << std::endl;
-
         data += 7; size -= 7;
     }
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

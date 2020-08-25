@@ -107,7 +107,7 @@ void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 2) {
         const uint8_t data_id = data[0];
@@ -126,12 +126,12 @@ void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
             }
         }
         else {
-            display.displayPrivateData(u"Associated data", data, length, indent);
+            display.displayPrivateData(u"Associated data", data, length, margin);
             data += length; size -= length;
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

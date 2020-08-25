@@ -117,7 +117,7 @@ void ts::EASInbandExceptionChannelsDescriptor::DisplayDescriptor(TablesDisplay& 
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size > 0) {
         uint8_t count = data[0];
@@ -129,7 +129,7 @@ void ts::EASInbandExceptionChannelsDescriptor::DisplayDescriptor(TablesDisplay& 
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

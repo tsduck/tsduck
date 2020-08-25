@@ -105,7 +105,7 @@ void ts::EacemStreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& displ
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         uint8_t version = data[0];
@@ -113,7 +113,7 @@ void ts::EacemStreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& displ
         strm << margin << "Version: " << int(version) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

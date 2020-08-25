@@ -132,7 +132,7 @@ void ts::SIParameterDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 3) {
         const uint8_t version = data[0];
@@ -146,12 +146,12 @@ void ts::SIParameterDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
         while (size >= 2) {
             strm << margin << "- Table id: " << names::TID(duck, data[0], CASID_NULL, names::HEXA_FIRST) << std::endl;
             const size_t len = std::min<size_t>(data[1], size - 2);
-            display.displayPrivateData(u"Table description", data + 2, len, indent + 2);
+            display.displayPrivateData(u"Table description", data + 2, len, margin + u"  ");
             data += 2 + len; size -= 2 + len;
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

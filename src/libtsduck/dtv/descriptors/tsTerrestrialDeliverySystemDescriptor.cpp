@@ -145,7 +145,7 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 11) {
         uint32_t cfreq = GetUInt32(data);
@@ -231,7 +231,7 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
         strm << ", other frequencies: " << UString::YesNo(other_freq) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

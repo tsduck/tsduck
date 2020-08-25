@@ -211,7 +211,7 @@ void ts::MosaicDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, co
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
     bool ok = size >= 1;
 
     if (ok) {
@@ -276,7 +276,7 @@ void ts::MosaicDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, co
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

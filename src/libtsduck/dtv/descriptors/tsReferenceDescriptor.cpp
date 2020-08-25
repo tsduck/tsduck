@@ -132,7 +132,7 @@ void ts::ReferenceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         strm << margin << UString::Format(u"Information provider id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
@@ -147,7 +147,7 @@ void ts::ReferenceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

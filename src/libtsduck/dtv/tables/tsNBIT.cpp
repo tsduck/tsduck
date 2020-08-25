@@ -195,28 +195,23 @@ void ts::NBIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a NBIT section.
 //----------------------------------------------------------------------------
 
-void ts::NBIT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::NBIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
-    strm << margin << UString::Format(u"Original network id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
     while (!buf.error() && buf.remainingReadBytes() >= 5) {
-        strm << margin << UString::Format(u"- Information id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        strm << margin << "  Information type: " << NameFromSection(u"ISDBInformationType", buf.getBits<uint8_t>(4), names::FIRST) << std::endl;
-        strm << margin << "  Description body location: " << NameFromSection(u"ISDBDescriptionBodyLocation", buf.getBits<uint8_t>(2), names::FIRST) << std::endl;
+        disp << margin << UString::Format(u"- Information id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << "  Information type: " << NameFromSection(u"ISDBInformationType", buf.getBits<uint8_t>(4), names::FIRST) << std::endl;
+        disp << margin << "  Description body location: " << NameFromSection(u"ISDBDescriptionBodyLocation", buf.getBits<uint8_t>(2), names::FIRST) << std::endl;
         buf.skipBits(2);
-        strm << margin << UString::Format(u"  User defined: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"  User defined: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         for (size_t count = buf.getUInt8(); !buf.error() && count > 0; count--) {
-            strm << margin << UString::Format(u"  Key id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"  Key id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }
-        display.displayDescriptorListWithLength(section, buf, indent + 2);
+        disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

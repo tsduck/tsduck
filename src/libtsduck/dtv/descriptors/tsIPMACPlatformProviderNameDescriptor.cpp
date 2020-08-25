@@ -111,7 +111,7 @@ void ts::IPMACPlatformProviderNameDescriptor::DisplayDescriptor(TablesDisplay& d
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 3) {
         strm << margin << "Language: " << DeserializeLanguageCode(data) << std::endl
@@ -119,7 +119,7 @@ void ts::IPMACPlatformProviderNameDescriptor::DisplayDescriptor(TablesDisplay& d
         size = 0;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

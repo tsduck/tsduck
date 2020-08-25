@@ -172,7 +172,7 @@ void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& display,
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         const uint8_t mix_type = (data[0] >> 7) & 0x01;
@@ -198,9 +198,9 @@ void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& display,
             strm << margin << "Language: " << DeserializeLanguageCode(data) << std::endl;
             data += 3; size -= 3;
         }
-        display.displayPrivateData(u"Private data", data, size, indent);
+        display.displayPrivateData(u"Private data", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }

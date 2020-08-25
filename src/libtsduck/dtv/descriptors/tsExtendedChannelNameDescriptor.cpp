@@ -97,8 +97,9 @@ void ts::ExtendedChannelNameDescriptor::deserialize(DuckContext& duck, const Des
 
 void ts::ExtendedChannelNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    ATSCMultipleString::Display(display, u"Long channel name: ", indent, data, size);
-    display.displayExtraData(data, size, indent);
+    const UString margin(indent, ' ');
+    ATSCMultipleString::Display(display, u"Long channel name: ", margin, data, size);
+    display.displayExtraData(data, size, margin);
 }
 
 

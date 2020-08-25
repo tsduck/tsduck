@@ -112,7 +112,7 @@ void ts::TargetBackgroundGridDescriptor::DisplayDescriptor(TablesDisplay& displa
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 4) {
         const uint32_t x = GetUInt32(data);
@@ -125,7 +125,7 @@ void ts::TargetBackgroundGridDescriptor::DisplayDescriptor(TablesDisplay& displa
         data += 4; size -= 4;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

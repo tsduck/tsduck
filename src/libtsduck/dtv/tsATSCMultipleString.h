@@ -278,7 +278,7 @@ namespace ts {
         //! A static method to display a binary multiple_string_structure.
         //! @param [in,out] display Display engine.
         //! @param [in] title Leading title to display. Can be empty.
-        //! @param [in] indent Indentation width.
+        //! @param [in] margin Left margin content.
         //! @param [in,out] buffer Address of the binary structure to display.
         //! On return, it is updated to point after the structure.
         //! @param [in,out] buffer_size Size in bytes of the data buffer.
@@ -287,7 +287,7 @@ namespace ts {
         //! possibly lower than the buffer size. If lower than @a buffer_size, adjust
         //! @a data and @a buffer_size to skip @a mss_size bytes.
         //!
-        static void Display(TablesDisplay& display, const UString& title, int indent, const uint8_t*& buffer, size_t& buffer_size, size_t mss_size = NPOS);
+        static void Display(TablesDisplay& display, const UString& title, const UString& margin, const uint8_t*& buffer, size_t& buffer_size, size_t mss_size = NPOS);
 
     private:
         class StringElement

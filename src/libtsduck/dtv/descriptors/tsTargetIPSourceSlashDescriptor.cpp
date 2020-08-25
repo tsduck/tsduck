@@ -120,7 +120,7 @@ void ts::TargetIPSourceSlashDescriptor::DisplayDescriptor(TablesDisplay& display
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 10) {
         strm << margin << "- Source:      " << IPAddress(GetUInt32(data)) << "/" << int(data[4]) << std::endl
@@ -128,7 +128,7 @@ void ts::TargetIPSourceSlashDescriptor::DisplayDescriptor(TablesDisplay& display
         data += 10; size -= 10;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

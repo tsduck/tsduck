@@ -178,7 +178,7 @@ void ts::ShortEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 4) {
         const UString lang(DeserializeLanguageCode(data));
@@ -190,7 +190,7 @@ void ts::ShortEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
              << margin << "Description: \"" << text << "\"" << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

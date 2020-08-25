@@ -172,7 +172,7 @@ void ts::EventGroupDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         const uint8_t type = (data[0] >> 4) & 0x0F;
@@ -196,10 +196,10 @@ void ts::EventGroupDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
                      << margin << UString::Format(u"  Event id:            0x%X (%d)", {GetUInt16(data + 6), GetUInt16(data + 6)}) << std::endl;
                 data += 8; size -= 8;
             }
-            display.displayExtraData(data, size, indent);
+            display.displayExtraData(data, size, margin);
         }
         else {
-            display.displayPrivateData(u"Private data", data, size, indent);
+            display.displayPrivateData(u"Private data", data, size, margin);
         }
     }
 }

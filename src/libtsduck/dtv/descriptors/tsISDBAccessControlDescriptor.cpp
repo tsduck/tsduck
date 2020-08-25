@@ -112,14 +112,14 @@ void ts::ISDBAccessControlDescriptor::deserialize(DuckContext& duck, const Descr
 
 void ts::ISDBAccessControlDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const UString margin(indent, ' ');
+
     if (size < 4) {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
     else {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
-
         // Extract common part
         const uint16_t casid = GetUInt16(data);
         const uint8_t type = (data[2] >> 5) & 0x07;
@@ -131,7 +131,7 @@ void ts::ISDBAccessControlDescriptor::DisplayDescriptor(TablesDisplay& display, 
              << margin << "Transmission type: " << NameFromSection(u"ISDBCATransmissionType", type, names::DECIMAL_FIRST) << std::endl
              << margin << UString::Format(u"%s PID: 0x%X (%d)", {dtype, pid, pid}) << std::endl;
 
-        display.displayPrivateData(u"Private CA data", data, size, indent);
+        display.displayPrivateData(u"Private CA data", data, size, margin);
     }
 }
 

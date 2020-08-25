@@ -116,16 +116,16 @@ void ts::SystemManagementDescriptor::DisplayDescriptor(TablesDisplay& display, D
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size < 2) {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
     else {
         strm << margin << "Broadcasting flag: " << NameFromSection(u"SystemManagementBroadcasting", (data[0] >> 6) & 0x03, names::DECIMAL_FIRST) << std::endl
              << margin << "Broadcasting identifier: " << NameFromSection(u"SystemManagementIdentifier", data[0] & 0x3F, names::DECIMAL_FIRST) << std::endl
              << margin << UString::Format(u"Additional broadcasting id: 0x%X (%d)", {data[1], data[1]}) << std::endl;
-        display.displayPrivateData(u"Additional identification info", data + 2, size - 2, indent);
+        display.displayPrivateData(u"Additional identification info", data + 2, size - 2, margin);
     }
 }
 

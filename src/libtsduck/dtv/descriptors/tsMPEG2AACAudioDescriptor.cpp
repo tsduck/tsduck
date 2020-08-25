@@ -110,7 +110,7 @@ void ts::MPEG2AACAudioDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 3) {
         strm << margin << UString::Format(u"MPEG-2 AAC profile: 0x%X (%d)", {data[0], data[0]}) << std::endl
@@ -119,7 +119,7 @@ void ts::MPEG2AACAudioDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
         data += 3; size -= 3;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

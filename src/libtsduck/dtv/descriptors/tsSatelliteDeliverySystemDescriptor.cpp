@@ -319,7 +319,7 @@ void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& dis
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 11) {
         const bool isDVB = (duck.standards() & Standards::ISDB) == Standards::NONE;
@@ -348,5 +348,5 @@ void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& dis
              << margin << "Inner FEC: " << NameFromSection(isDVB ? u"DVBSatelliteFEC" : u"ISDBSatelliteFEC", fec, names::VALUE | names::DECIMAL) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }

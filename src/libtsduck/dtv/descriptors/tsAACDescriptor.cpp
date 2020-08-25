@@ -135,7 +135,7 @@ void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         uint8_t prof_lev = data[0];
@@ -149,12 +149,12 @@ void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
                 data++; size--;
                 strm << margin << "AAC type: " << NameFromSection(u"ComponentType", 0x6F00 | type, names::HEXA_FIRST, 8) << std::endl;
             }
-            display.displayPrivateData(u"Additional information", data, size, indent);
+            display.displayPrivateData(u"Additional information", data, size, margin);
             data += size; size = 0;
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

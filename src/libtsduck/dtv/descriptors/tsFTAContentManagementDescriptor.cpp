@@ -113,7 +113,7 @@ void ts::FTAContentManagementDescriptor::DisplayDescriptor(TablesDisplay& displa
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         strm << margin << UString::Format(u"User-defined: %s", {(data[0] & 0x80) != 0}) << std::endl
@@ -123,7 +123,7 @@ void ts::FTAContentManagementDescriptor::DisplayDescriptor(TablesDisplay& displa
         data++; size--;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

@@ -162,7 +162,7 @@ void ts::TelephoneDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 3) {
         const uint8_t ctype = data[0] & 0x1F;
@@ -202,7 +202,7 @@ void ts::TelephoneDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

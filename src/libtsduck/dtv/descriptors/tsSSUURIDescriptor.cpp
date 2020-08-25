@@ -114,7 +114,7 @@ void ts::SSUURIDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, co
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 2) {
         strm << margin << UString::Format(u"Max holdoff time: %d minutes", {data[0]}) << std::endl
@@ -122,7 +122,7 @@ void ts::SSUURIDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, co
              << margin << "URI: \"" << duck.decoded(data + 2, size - 2) << "\"" << std::endl;
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

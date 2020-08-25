@@ -147,16 +147,16 @@ void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, cons
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    if (size >= 3) {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const UString margin(indent, ' ');
 
+    if (size >= 3) {
         strm << margin << "T2-MI stream id: " << int(data[0] & 0x07)
              << ", T2-MI stream count: " << int((data[1] & 0x07) + 1)
              << ", PCR/ISCR common clock: " << UString::YesNo(data[2] & 0x01)
              << std::endl;
         data += 3; size -= 3;
     }
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }

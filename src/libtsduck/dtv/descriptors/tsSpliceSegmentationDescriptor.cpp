@@ -254,7 +254,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     bool ok = size >= 9;
     const uint8_t cancel = ok ? ((data[8] >> 7) & 0x01) : 0;
@@ -316,7 +316,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
             const size_t upid_size = data[1];
             strm << margin << UString::Format(u"Segmentation upid type: %s, %d bytes", {NameFromSection(u"SpliceSegmentationUpIdType", data[0], names::HEXA_FIRST), upid_size}) << std::endl;
             if (upid_size > 0) {
-                strm << UString::Dump(data + 2, upid_size, UString::BPL, indent + 2, 16);
+                strm << UString::Dump(data + 2, upid_size, UString::BPL, margin.size() + 2, 16);
             }
             data += 2 + upid_size; size -= 2 + upid_size;
 
@@ -333,7 +333,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
         data += 2; size -= 2;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

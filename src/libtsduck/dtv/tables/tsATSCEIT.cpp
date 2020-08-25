@@ -190,14 +190,9 @@ void ts::ATSCEIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display an ATSC EIT section.
 //----------------------------------------------------------------------------
 
-void ts::ATSCEIT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::ATSCEIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
-    strm << margin << UString::Format(u"Source Id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Source Id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
     size_t event_count = 0;
 
@@ -205,23 +200,23 @@ void ts::ATSCEIT::DisplaySection(TablesDisplay& display, const ts::Section& sect
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
-        strm << UString::Format(u", number of events: %d", {event_count = buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
+        disp << UString::Format(u", number of events: %d", {event_count = buf.getUInt8()}) << std::endl;
     }
 
     // Loop on all event definitions.
     while (!buf.error() && event_count-- > 0) {
         buf.skipBits(2);
-        strm << margin << UString::Format(u"- Event Id: 0x%X (%<d)", {buf.getBits<uint16_t>(14)}) << std::endl;
-        strm << margin << "  Start UTC: " << Time::GPSSecondsToUTC(buf.getUInt32()).format(Time::DATETIME) << std::endl;
+        disp << margin << UString::Format(u"- Event Id: 0x%X (%<d)", {buf.getBits<uint16_t>(14)}) << std::endl;
+        disp << margin << "  Start UTC: " << Time::GPSSecondsToUTC(buf.getUInt32()).format(Time::DATETIME) << std::endl;
         buf.skipBits(2);
-        strm << margin << UString::Format(u"  ETM location: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
-        strm << margin << UString::Format(u"  Duration: %d seconds", {buf.getBits<Second>(20)}) << std::endl;
-        display.displayATSCMultipleString(buf, 1, indent + 2, u"Title text: ");
-        display.displayDescriptorListWithLength(section, buf, indent + 2);
+        disp << margin << UString::Format(u"  ETM location: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
+        disp << margin << UString::Format(u"  Duration: %d seconds", {buf.getBits<Second>(20)}) << std::endl;
+        disp.displayATSCMultipleString(buf, 1, margin + u"  ", u"Title text: ");
+        disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

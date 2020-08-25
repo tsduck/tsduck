@@ -103,7 +103,7 @@ void ts::ExternalESIdDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 2) {
         const uint16_t id = GetUInt16(data);
@@ -111,7 +111,7 @@ void ts::ExternalESIdDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
         strm << margin << UString::Format(u"External ES id: 0x%X (%d)", {id, id}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

@@ -196,11 +196,11 @@ void ts::EASAudioFileDescriptor::deserialize(DuckContext& duck, const Descriptor
 
 void ts::EASAudioFileDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    if (size > 0) {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const UString margin(indent, ' ');
 
+    if (size > 0) {
         // Number of audio sources.
         size_t count = data[0];
         data++; size--;
@@ -260,12 +260,12 @@ void ts::EASAudioFileDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
             }
 
             // Unused part of loop instance, if any.
-            display.displayExtraData(data, loop_length, indent + 2);
+            display.displayExtraData(data, loop_length, margin + u"  ");
             data += loop_length; size -= loop_length;
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

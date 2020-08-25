@@ -127,7 +127,7 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 6) {
         const uint16_t type = GetUInt16(data);
@@ -142,7 +142,7 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
         data += size; size = 0;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

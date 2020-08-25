@@ -144,7 +144,7 @@ void ts::NorDigLogicalChannelDescriptorV2::DisplayDescriptor(TablesDisplay& disp
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 2) {
         const uint8_t id = data[0];
@@ -176,7 +176,7 @@ void ts::NorDigLogicalChannelDescriptorV2::DisplayDescriptor(TablesDisplay& disp
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

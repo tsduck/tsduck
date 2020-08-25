@@ -101,7 +101,7 @@ void ts::StreamModeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 2) {
         const uint8_t mode = GetUInt8(data);
@@ -109,7 +109,7 @@ void ts::StreamModeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
         strm << margin << UString::Format(u"Stream mode: %s", {NameFromSection(u"DSMCCStreamMode", mode, names::HEXA_FIRST)}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

@@ -253,7 +253,7 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& 
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
     bool ok = true;
 
     if (size >= 2) {
@@ -305,10 +305,10 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& 
                     (!num || DisplayChannel(display, u"Channel bond 1", data, size, indent));
             }
         }
-        display.displayPrivateData(u"Reserved for future use", data, size, indent);
+        display.displayPrivateData(u"Reserved for future use", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 
@@ -321,7 +321,7 @@ bool ts::S2XSatelliteDeliverySystemDescriptor::DisplayChannel(TablesDisplay& dis
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     const bool east = (data[6] & 0x80) != 0;
     const uint8_t polar = (data[6] >> 5) & 0x03;

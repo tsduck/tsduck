@@ -189,7 +189,7 @@ void ts::NetworkChangeNotifyDescriptor::DisplayDescriptor(TablesDisplay& display
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
     bool ok = true;
 
     while (ok && size >= 3) {
@@ -230,7 +230,7 @@ void ts::NetworkChangeNotifyDescriptor::DisplayDescriptor(TablesDisplay& display
         ok = ok && len == 0;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

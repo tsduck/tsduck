@@ -123,7 +123,7 @@ void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 6) {
         strm << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
@@ -141,7 +141,7 @@ void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
         data += len; size -= len;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

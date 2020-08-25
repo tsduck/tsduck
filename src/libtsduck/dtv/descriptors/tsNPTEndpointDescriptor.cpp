@@ -104,7 +104,7 @@ void ts::NPTEndpointDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 14) {
         const uint64_t start = GetUInt48(data) & TS_UCONST64(0x00000001FFFFFFFF);
@@ -115,7 +115,7 @@ void ts::NPTEndpointDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
              << margin << UString::Format(u"Stop NPT:  0x%09X (%d)", {stop, stop}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

@@ -103,14 +103,14 @@ void ts::StereoscopicProgramInfoDescriptor::DisplayDescriptor(TablesDisplay& dis
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         strm << margin << "Stereoscopic service type: " << NameFromSection(u"StereoscopicServiceType", data[0] & 0x07, names::DECIMAL_FIRST) << std::endl;
         data += 1; size -= 1;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

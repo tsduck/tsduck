@@ -137,10 +137,10 @@ void ts::SeriesDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, co
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size < 8) {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
     else {
         const uint16_t id = GetUInt16(data);

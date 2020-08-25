@@ -145,7 +145,7 @@ void ts::CPIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 2) {
         const uint16_t id = GetUInt16(data);
@@ -153,5 +153,5 @@ void ts::CPIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
         strm << margin << "CP System Id: " << NameFromSection(u"CPSystemId", id, names::FIRST) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }

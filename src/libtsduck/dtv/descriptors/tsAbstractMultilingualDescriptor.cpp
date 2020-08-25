@@ -134,7 +134,7 @@ void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& displa
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 4) {
         const size_t len = std::min<size_t>(data[3], size - 4);
@@ -145,7 +145,7 @@ void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& displa
         data += 4 + len; size -= 4 + len;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

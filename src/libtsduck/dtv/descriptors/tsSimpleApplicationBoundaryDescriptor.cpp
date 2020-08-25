@@ -112,7 +112,7 @@ void ts::SimpleApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& d
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size > 0) {
         strm << margin << UString::Format(u"Number of prefixes: %d", {data[0]}) << std::endl;

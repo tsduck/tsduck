@@ -414,52 +414,47 @@ bool ts::CableEmergencyAlertTable::analyzeXML(DuckContext& duck, const xml::Elem
 // A static method to display a CableEmergencyAlertTable section.
 //----------------------------------------------------------------------------
 
-void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     if (buf.remainingReadBytes() < 7) {
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"Protocol version: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-        strm << margin << UString::Format(u"EAS event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        strm << margin << "Originator code: \"" << buf.getUTF8(3) << "\"";
-        strm << ", event code: \"" << buf.getUTF8WithLength() << "\"" << std::endl;
+        disp << margin << UString::Format(u"Protocol version: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"EAS event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << "Originator code: \"" << buf.getUTF8(3) << "\"";
+        disp << ", event code: \"" << buf.getUTF8WithLength() << "\"" << std::endl;
     }
 
-    display.displayATSCMultipleString(buf, 1, indent, u"Nature of activation: ");
+    disp.displayATSCMultipleString(buf, 1, margin, u"Nature of activation: ");
 
     if (!buf.error() && buf.remainingReadBytes() >= 17) {
-        strm << margin << UString::Format(u"Remaining: %d seconds", {buf.getUInt8()});
+        disp << margin << UString::Format(u"Remaining: %d seconds", {buf.getUInt8()});
         const uint32_t start = buf.getUInt32();
-        strm << ", start time: " << (start == 0 ? u"immediate" : Time::GPSSecondsToUTC(start).format(Time::DATETIME));
-        strm << UString::Format(u", duration: %d minutes", {buf.getUInt16()}) << std::endl;
+        disp << ", start time: " << (start == 0 ? u"immediate" : Time::GPSSecondsToUTC(start).format(Time::DATETIME));
+        disp << UString::Format(u", duration: %d minutes", {buf.getUInt16()}) << std::endl;
         buf.skipBits(12);
-        strm << margin << UString::Format(u"Alert priority: %d", {buf.getBits<uint8_t>(4)}) << std::endl;
-        strm << margin << UString::Format(u"Details: OOB id: 0x%X (%<d)", {buf.getUInt16()});
+        disp << margin << UString::Format(u"Alert priority: %d", {buf.getBits<uint8_t>(4)}) << std::endl;
+        disp << margin << UString::Format(u"Details: OOB id: 0x%X (%<d)", {buf.getUInt16()});
         buf.skipBits(6);
-        strm << ", major.minor: " << buf.getBits<uint16_t>(10);
+        disp << ", major.minor: " << buf.getBits<uint16_t>(10);
         buf.skipBits(6);
-        strm << "." << buf.getBits<uint16_t>(10) << std::endl;
-        strm << margin << UString::Format(u"Audio: OOB id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        display.displayATSCMultipleString(buf, 2, indent, u"Alert text: ");
+        disp << "." << buf.getBits<uint16_t>(10) << std::endl;
+        disp << margin << UString::Format(u"Audio: OOB id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp.displayATSCMultipleString(buf, 2, margin, u"Alert text: ");
     }
 
     // Display locations.
     size_t count = buf.getUInt8();
     if (!buf.error()) {
-        strm << margin << UString::Format(u"Number of locations: %d", {count}) << std::endl;
+        disp << margin << UString::Format(u"Number of locations: %d", {count}) << std::endl;
     }
     while (!buf.error() && buf.remainingReadBytes() >= 3 && count-- > 0) {
         const uint8_t state = buf.getUInt8();
         const uint8_t subd = buf.getBits<uint8_t>(4);
         buf.skipBits(2);
         const uint16_t county = buf.getBits<uint16_t>(10);
-        strm << margin
+        disp << margin
              << UString::Format(u"  State code: %d, county: %d, subdivision: %s", {state, county, NameFromSection(u"EASCountySubdivision", subd, names::VALUE)})
              << std::endl;
     }
@@ -467,26 +462,26 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& display, const 
     // Display exceptions.
     count = buf.getUInt8();
     if (!buf.error()) {
-        strm << margin << UString::Format(u"Number of exceptions: %d", {count}) << std::endl;
+        disp << margin << UString::Format(u"Number of exceptions: %d", {count}) << std::endl;
     }
     while (!buf.error() && buf.remainingReadBytes() >= 5 && count-- > 0) {
         const bool inband = buf.getBit() != 0;
         buf.skipBits(7);
-        strm << margin << UString::Format(u"  In-band: %s", {inband});
+        disp << margin << UString::Format(u"  In-band: %s", {inband});
         if (inband) {
             buf.skipBits(6);
             const uint16_t major = buf.getBits<uint16_t>(10);
             buf.skipBits(6);
             const uint16_t minor = buf.getBits<uint16_t>(10);
-            strm << UString::Format(u", exception major.minor: %d.%d", {major, minor}) << std::endl;
+            disp << UString::Format(u", exception major.minor: %d.%d", {major, minor}) << std::endl;
         }
         else {
             buf.skipBits(16);
-            strm << UString::Format(u", exception OOB id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << UString::Format(u", exception OOB id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }
     }
 
     // Display descriptor list with 10-bit length field.
-    display.displayDescriptorListWithLength(section, buf, indent, UString(), UString(), 10);
-    display.displayExtraData(buf, indent);
+    disp.displayDescriptorListWithLength(section, buf, margin, UString(), UString(), 10);
+    disp.displayExtraData(buf, margin);
 }

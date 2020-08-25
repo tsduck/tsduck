@@ -109,7 +109,7 @@ void ts::TargetSmartcardDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 4) {
         const uint32_t id = GetUInt32(data);
@@ -117,7 +117,7 @@ void ts::TargetSmartcardDescriptor::DisplayDescriptor(TablesDisplay& display, DI
              << margin << UString::Format(u"Private data (%d bytes): %s", {size - 4, UString::Dump(data + 4, size - 4, UString::SINGLE_LINE)}) << std::endl;
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

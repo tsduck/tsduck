@@ -109,14 +109,13 @@ void ts::GenreDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 
 void ts::GenreDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    if (size > 0) {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const UString margin(indent, ' ');
 
+    if (size > 0) {
         size_t count = data[0] & 0x1F;
         data++; size--;
-
         strm << margin << UString::Format(u"Attribute count: %d", {count}) << std::endl;
         while (count > 0 && size > 0) {
             strm << margin << " - Attribute: " << NameFromSection(u"ATSCGenreCode", data[0], names::FIRST) << std::endl;
@@ -124,7 +123,7 @@ void ts::GenreDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, con
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

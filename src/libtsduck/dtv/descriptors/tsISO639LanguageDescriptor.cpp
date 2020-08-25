@@ -121,14 +121,14 @@ void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& display, DID
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
     PSIBuffer buf(duck, data, size);
 
     while (buf.remainingReadBytes() >= 4) {
         strm << margin << "Language: " << buf.getLanguageCode();
         strm << ", Type: " << names::AudioType(buf.getUInt8(), names::FIRST) << std::endl;
     }
-    display.displayExtraData(buf, indent);
+    display.displayExtraData(buf, margin);
 }
 
 

@@ -99,7 +99,7 @@ void ts::PrivateDataIndicatorDescriptor::DisplayDescriptor(TablesDisplay& displa
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 4) {
         // Sometimes, the indicator is made of ASCII characters. Try to display them.
@@ -109,7 +109,7 @@ void ts::PrivateDataIndicatorDescriptor::DisplayDescriptor(TablesDisplay& displa
         data += 4; size -= 4;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

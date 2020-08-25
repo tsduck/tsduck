@@ -125,7 +125,7 @@ void ts::ContentAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size > 0) {
         strm << margin << UString::Format(u"Copy restriction mode: %s", {(data[0] & 0x40) != 0}) << std::endl
@@ -133,7 +133,7 @@ void ts::ContentAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
              << margin << UString::Format(u"Retention mode: %s", {(data[0] & 0x10) != 0}) << std::endl
              << margin << "Retention state: " << NameFromSection(u"ContentRetentionState", (data[0] >> 1) & 0x07, names::DECIMAL_FIRST) << std::endl
              << margin << UString::Format(u"Encryption mode: %s", {(data[0] & 0x01) != 0}) << std::endl;
-        display.displayPrivateData(u"Reserved future use", data + 1, size - 1, indent);
+        display.displayPrivateData(u"Reserved future use", data + 1, size - 1, margin);
     }
 }
 

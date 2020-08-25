@@ -107,14 +107,14 @@ void ts::EASInbandDetailsChannelDescriptor::DisplayDescriptor(TablesDisplay& dis
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 3) {
         strm << margin << UString::Format(u"RF channel: %d, program number: 0x%X (%d)", {data[0], GetUInt16(data + 1), GetUInt16(data + 1)}) << std::endl;
         data += 3; size -= 3;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

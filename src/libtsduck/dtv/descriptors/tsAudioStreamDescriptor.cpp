@@ -116,7 +116,7 @@ void ts::AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         strm << margin << UString::Format(u"Free format: %s, variable rate: %s", {UString::TrueFalse((data[0] & 0x80) != 0), UString::TrueFalse((data[0] & 0x08) != 0)}) << std::endl
@@ -124,7 +124,7 @@ void ts::AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
         data++; size--;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

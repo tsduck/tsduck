@@ -294,7 +294,7 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 5) {
         const uint8_t desc_num = data[0];
@@ -318,7 +318,7 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
         data += length; size -= length;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

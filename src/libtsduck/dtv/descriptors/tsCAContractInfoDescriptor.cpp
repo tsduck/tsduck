@@ -135,7 +135,7 @@ void ts::CAContractInfoDescriptor::DisplayDescriptor(TablesDisplay& display, DID
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 5) {
         size_t count = data[2] & 0x0F;
@@ -148,7 +148,7 @@ void ts::CAContractInfoDescriptor::DisplayDescriptor(TablesDisplay& display, DID
         }
         if (size > 0) {
             count = std::min<size_t>(data[0], size - 1);
-            display.displayPrivateData(u"Contract verification info", data + 1, count, indent);
+            display.displayPrivateData(u"Contract verification info", data + 1, count, margin);
             data += count + 1; size -= count + 1;
         }
         if (size > 0) {
@@ -156,7 +156,7 @@ void ts::CAContractInfoDescriptor::DisplayDescriptor(TablesDisplay& display, DID
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

@@ -149,7 +149,7 @@ void ts::DTGGuidanceDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         const uint8_t type = data[0] & 0x03;
@@ -168,12 +168,12 @@ void ts::DTGGuidanceDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
             size = 0;
         }
         else if (type >= 2) {
-            display.displayPrivateData(u"Reserved", data, size, indent);
+            display.displayPrivateData(u"Reserved", data, size, margin);
             size = 0;
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

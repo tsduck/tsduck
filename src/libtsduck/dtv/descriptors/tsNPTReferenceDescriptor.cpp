@@ -167,7 +167,7 @@ void ts::NPTReferenceDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 18) {
         const uint64_t stc = GetUInt40(data + 1) & TS_UCONST64(0x00000001FFFFFFFF);
@@ -180,7 +180,7 @@ void ts::NPTReferenceDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
         data += 18; size -= 18;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

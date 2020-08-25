@@ -256,28 +256,23 @@ void ts::PCAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a PCAT section.
 //----------------------------------------------------------------------------
 
-void ts::PCAT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::PCAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
-    strm << margin << UString::Format(u"Service id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Service id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
     if (buf.remainingReadBytes() < 9) {
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        strm << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        strm << margin << UString::Format(u"Content id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Content id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
 
         // Loop across all content versions.
         for (size_t version_count = buf.getUInt8(); !buf.error() && buf.remainingReadBytes() >= 8 && version_count > 0; version_count--) {
-            strm << margin << UString::Format(u"- Content version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-            strm << margin << UString::Format(u"  Content minor version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-            strm << margin << "  Version indicator: " << NameFromSection(u"PCATVersionIndicator", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
+            disp << margin << UString::Format(u"- Content version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"  Content minor version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << "  Version indicator: " << NameFromSection(u"PCATVersionIndicator", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
             buf.skipBits(2);
 
             // Start the content_descriptor_length sequence. See [Warning #1] above.
@@ -290,26 +285,26 @@ void ts::PCAT::DisplaySection(TablesDisplay& display, const ts::Section& section
             // Display schedule loop.
             while (!buf.error() && buf.remainingReadBytes() >= 8) {
                 // See [Warning #2] above.
-                strm << margin << "  Schedule start: " << buf.getFullMJD().format(Time::DATE | Time::TIME);
-                strm << UString::Format(u", duration: %02d", {buf.getBCD()});
-                strm << UString::Format(u":%02d", {buf.getBCD()});
-                strm << UString::Format(u":%02d", {buf.getBCD()}) << std::endl;
+                disp << margin << "  Schedule start: " << buf.getFullMJD().format(Time::DATE | Time::TIME);
+                disp << UString::Format(u", duration: %02d", {buf.getBCD()});
+                disp << UString::Format(u":%02d", {buf.getBCD()});
+                disp << UString::Format(u":%02d", {buf.getBCD()}) << std::endl;
             }
 
             // Close the schedule_description_length sequence.
-            display.displayPrivateData(u"Extraneous schedule bytes", buf);
+            disp.displayPrivateData(u"Extraneous schedule bytes", buf);
             buf.popState();
 
             // Display descriptor loop.
-            display.displayDescriptorList(section, buf, indent + 2);
+            disp.displayDescriptorList(section, buf, margin + u"  ");
 
             // Close the content_descriptor_length sequence.
-            display.displayPrivateData(u"Extraneous version content bytes", buf);
+            disp.displayPrivateData(u"Extraneous version content bytes", buf);
             buf.popState();
         }
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

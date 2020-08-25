@@ -128,11 +128,11 @@ void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    if (size >= 2) {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const UString margin(indent, ' ');
 
+    if (size >= 2) {
         const uint8_t type = data[0];
         strm << margin << "URI linkage type: " << NameFromSection(u"URILinkageType", type, names::HEXA_FIRST) << std::endl;
         data++; size--;
@@ -143,10 +143,10 @@ void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
             data += 2; size -= 2;
             strm << margin << UString::Format(u"Min polling interval: %d (%d seconds)", {interval, 2 * interval}) << std::endl;
         }
-        display.displayPrivateData(u"Private data", data, size, indent);
+        display.displayPrivateData(u"Private data", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

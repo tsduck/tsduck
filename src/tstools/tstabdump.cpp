@@ -172,14 +172,16 @@ namespace {
                     ts::BinaryTable table(sections, false, false);
                     if (table.isValid()) {
                         // Complete table available, dump as a table.
-                        opt.display.displayTable(table) << std::endl;
+                        opt.display.displayTable(table);
+                        opt.display.out() << std::endl;
                         opt.max_tables--;
                     }
                     else {
                         // Complete table not available, dump as individual sections.
                         for (ts::SectionPtrVector::const_iterator it = sections.begin(); opt.max_tables > 0 && it != sections.end(); ++it) {
                             if (!it->isNull()) {
-                                opt.display.displaySection(**it) << std::endl;
+                                opt.display.displaySection(**it);
+                                opt.display.out() << std::endl;
                                 opt.max_tables--;
                             }
                         }
@@ -232,7 +234,8 @@ namespace {
             // Display all sections.
             opt.duck.setOutput(&opt.pager.output(opt), false);
             for (ts::SectionPtrVector::const_iterator it = file.sections().begin(); opt.max_tables > 0 && it != file.sections().end(); ++it) {
-                opt.display.displaySection(**it) << std::endl;
+                opt.display.displaySection(**it);
+                opt.display.out() << std::endl;
                 opt.max_tables--;
             }
         }

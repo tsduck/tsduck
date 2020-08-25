@@ -88,7 +88,7 @@ bool ts::SectionDemux::Status::hasErrors() const
 
 std::ostream& ts::SectionDemux::Status::display(std::ostream& strm, int indent, bool errors_only) const
 {
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (!errors_only || invalid_ts != 0) {
         strm << margin << "Invalid TS packets: " << UString::Decimal(invalid_ts) << std::endl;

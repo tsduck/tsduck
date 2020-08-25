@@ -576,13 +576,12 @@ bool ts::ATSCMultipleString::deserialize(DuckContext& duck, const uint8_t*& buff
 // A static method to display a bianry multiple_string_structure.
 //----------------------------------------------------------------------------
 
-void ts::ATSCMultipleString::Display(TablesDisplay& display, const UString& title, int indent, const uint8_t*& buffer, size_t& buffer_size, size_t mss_size)
+void ts::ATSCMultipleString::Display(TablesDisplay& display, const UString& title, const UString& margin, const uint8_t*& buffer, size_t& buffer_size, size_t mss_size)
 {
     if (buffer != nullptr && buffer_size > 0 && mss_size > 0) {
 
         DuckContext& duck(display.duck());
         std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
         StringElement elem;
 
         // Get number of strings.
@@ -597,7 +596,7 @@ void ts::ATSCMultipleString::Display(TablesDisplay& display, const UString& titl
 
         // Adjust unused data in multiple_string_structure (mss), if an mss size was specified.
         if (mss_size > 0 && mss_size <= buffer_size) {
-            display.displayExtraData(buffer, mss_size, indent + 2);
+            display.displayExtraData(buffer, mss_size, margin + u"  ");
             buffer += mss_size;
             buffer_size -= mss_size;
         }

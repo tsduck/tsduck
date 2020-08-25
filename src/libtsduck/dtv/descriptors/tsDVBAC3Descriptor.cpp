@@ -180,7 +180,7 @@ void ts::DVBAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, co
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         uint8_t flags = data[0];
@@ -205,10 +205,10 @@ void ts::DVBAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, co
             data++; size--;
             strm << margin << UString::Format(u"Associated to: 0x%X", {asvc}) << std::endl;
         }
-        display.displayPrivateData(u"Additional information", data, size, indent);
+        display.displayPrivateData(u"Additional information", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

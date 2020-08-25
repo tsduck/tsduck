@@ -192,44 +192,39 @@ void ts::RRT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display an RRT section.
 //----------------------------------------------------------------------------
 
-void ts::RRT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::RRT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
-    strm << margin << UString::Format(u"Rating region: 0x%X (%<d)", {uint8_t(section.tableIdExtension())}) << std::endl;
+    disp << margin << UString::Format(u"Rating region: 0x%X (%<d)", {uint8_t(section.tableIdExtension())}) << std::endl;
 
     if (buf.remainingReadBytes() < 2) {
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()}) << std::endl;
-        display.displayATSCMultipleString(buf, 1, indent, u"Rating region name: ");
+        disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()}) << std::endl;
+        disp.displayATSCMultipleString(buf, 1, margin, u"Rating region name: ");
     }
 
     // Display all dimensions.
     const size_t dim_count = buf.error() ? 0 : buf.getUInt8();
-    strm << margin << "Number of dimensions: " << dim_count << std::endl;
+    disp << margin << "Number of dimensions: " << dim_count << std::endl;
     for (size_t dim_index = 0; !buf.error() && dim_index < dim_count; ++dim_index) {
-        strm << margin << "- Dimension " << dim_index << std::endl;
-        display.displayATSCMultipleString(buf, 1, indent + 2, u"Dimension name: ");
+        disp << margin << "- Dimension " << dim_index << std::endl;
+        disp.displayATSCMultipleString(buf, 1, margin + u"  ", u"Dimension name: ");
         buf.skipBits(3);
-        strm << margin << UString::Format(u"  Graduated scale: %s", {buf.getBit() != 0});
+        disp << margin << UString::Format(u"  Graduated scale: %s", {buf.getBit() != 0});
         size_t val_count = buf.getBits<size_t>(4);
-        strm << ", number of rating values: " << val_count << std::endl;
+        disp << ", number of rating values: " << val_count << std::endl;
 
         // Display all values.
         while (val_count-- > 0) {
-            display.displayATSCMultipleString(buf, 1, indent + 2, u"- Abbreviated rating value: ");
-            display.displayATSCMultipleString(buf, 1, indent + 2, u"  Rating value: ");
+            disp.displayATSCMultipleString(buf, 1, margin + u"  ", u"- Abbreviated rating value: ");
+            disp.displayATSCMultipleString(buf, 1, margin + u"  ", u"  Rating value: ");
         }
     }
 
     // Common descriptors.
-    display.displayDescriptorListWithLength(section, buf, indent, u"Descriptors", UString(), 10);
-    display.displayExtraData(buf, indent);
+    disp.displayDescriptorListWithLength(section, buf, margin, u"Descriptors", UString(), 10);
+    disp.displayExtraData(buf, margin);
 }
 
 

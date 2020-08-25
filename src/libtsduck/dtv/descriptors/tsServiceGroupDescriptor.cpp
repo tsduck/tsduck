@@ -141,7 +141,7 @@ void ts::ServiceGroupDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         const uint8_t type = (data[0] >> 4) & 0x0F;
@@ -155,10 +155,10 @@ void ts::ServiceGroupDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
                      << margin << UString::Format(u"  Secondary service id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl;
                 data += 4; size -= 4;
             }
-            display.displayExtraData(data, size, indent);
+            display.displayExtraData(data, size, margin);
         }
         else {
-            display.displayPrivateData(u"Private data", data, size, indent);
+            display.displayPrivateData(u"Private data", data, size, margin);
         }
     }
 }

@@ -447,38 +447,33 @@ void ts::EIT::Fix(BinaryTable& table, FixMode mode)
 // A static method to display an EIT section.
 //----------------------------------------------------------------------------
 
-void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::EIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     // The time reference is UTC as defined by DVB, but JST in Japan.
-    const char* const zone = (duck.standards() & Standards::JAPAN) == Standards::JAPAN ? "JST" : "UTC";
+    const char* const zone = (disp.duck().standards() & Standards::JAPAN) == Standards::JAPAN ? "JST" : "UTC";
 
-    strm << margin << UString::Format(u"Service Id: %d (0x%<X)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Service Id: %d (0x%<X)", {section.tableIdExtension()}) << std::endl;
 
     if (buf.remainingReadBytes() >= 6) {
-        strm << margin << UString::Format(u"TS Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
-        strm << margin << UString::Format(u"Original Network Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
-        strm << margin << UString::Format(u"Segment last section: %d (0x%<X)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"TS Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Original Network Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Segment last section: %d (0x%<X)", {buf.getUInt8()}) << std::endl;
         const uint8_t last_tid = buf.getUInt8();
-        strm << margin << UString::Format(u"Last Table Id: %d (0x%<X), %s", {last_tid, names::TID(duck, last_tid)}) << std::endl;
+        disp << margin << UString::Format(u"Last Table Id: %d (0x%<X), %s", {last_tid, names::TID(disp.duck(), last_tid)}) << std::endl;
     }
 
     while (!buf.error() && buf.remainingReadBytes() >= 12) {
-        strm << margin << UString::Format(u"- Event Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
-        strm << margin << "  Start " << zone << ": " << buf.getFullMJD().format(Time::DATE | Time::TIME) << std::endl;
-        strm << margin << UString::Format(u"  Duration: %02d", {buf.getBCD()});
-        strm << UString::Format(u":%02d", {buf.getBCD()});
-        strm << UString::Format(u":%02d", {buf.getBCD()}) << std::endl;
-        strm << margin << "  Running status: " << names::RunningStatus(buf.getBits<uint8_t>(3)) << std::endl;
-        strm << margin << "  CA mode: " << (buf.getBit() != 0 ? "controlled" : "free") << std::endl;
-        display.displayDescriptorListWithLength(section, buf, indent + 2);
+        disp << margin << UString::Format(u"- Event Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
+        disp << margin << "  Start " << zone << ": " << buf.getFullMJD().format(Time::DATE | Time::TIME) << std::endl;
+        disp << margin << UString::Format(u"  Duration: %02d", {buf.getBCD()});
+        disp << UString::Format(u":%02d", {buf.getBCD()});
+        disp << UString::Format(u":%02d", {buf.getBCD()}) << std::endl;
+        disp << margin << "  Running status: " << names::RunningStatus(buf.getBits<uint8_t>(3)) << std::endl;
+        disp << margin << "  CA mode: " << (buf.getBit() != 0 ? "controlled" : "free") << std::endl;
+        disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

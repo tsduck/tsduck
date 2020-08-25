@@ -100,7 +100,7 @@ void ts::PrivateDataSpecifierDescriptor::DisplayDescriptor(TablesDisplay& displa
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 4) {
         uint32_t sp = GetUInt32(data);
@@ -108,7 +108,7 @@ void ts::PrivateDataSpecifierDescriptor::DisplayDescriptor(TablesDisplay& displa
         strm << margin << "Specifier: " << names::PrivateDataSpecifier(sp, names::FIRST) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

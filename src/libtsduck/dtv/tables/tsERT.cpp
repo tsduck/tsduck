@@ -176,35 +176,30 @@ void ts::ERT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a ERT section.
 //----------------------------------------------------------------------------
 
-void ts::ERT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::ERT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
-    strm << margin << UString::Format(u"Event relation id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Event relation id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
     if (buf.remainingReadBytes() < 3) {
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"Information provider id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        strm << margin << "Relation type: " << NameFromSection(u"ISDBRelationType", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << UString::Format(u"Information provider id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << "Relation type: " << NameFromSection(u"ISDBRelationType", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
         buf.skipBits(4);
     }
 
     // Loop across all relations.
     while (!buf.error() && buf.remainingReadBytes() >= 8) {
-        strm << margin << UString::Format(u"- Node id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        strm << margin << "  Collection mode: " << NameFromSection(u"ISDBCollectionMode", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << UString::Format(u"- Node id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << "  Collection mode: " << NameFromSection(u"ISDBCollectionMode", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
         buf.skipBits(4);
-        strm << margin << UString::Format(u"  Parent node id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        strm << margin << UString::Format(u"  Reference number: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-        display.displayDescriptorListWithLength(section, buf, indent + 2);
+        disp << margin << UString::Format(u"  Parent node id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"  Reference number: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

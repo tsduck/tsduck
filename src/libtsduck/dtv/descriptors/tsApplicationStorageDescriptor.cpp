@@ -124,7 +124,7 @@ void ts::ApplicationStorageDescriptor::DisplayDescriptor(TablesDisplay& display,
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 7) {
         const uint32_t vers = GetUInt32(data + 2) & 0x7FFFFFFF;
@@ -137,7 +137,7 @@ void ts::ApplicationStorageDescriptor::DisplayDescriptor(TablesDisplay& display,
         data += 7; size -= 7;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

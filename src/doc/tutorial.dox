@@ -49,7 +49,7 @@ ts::LATIN_CAPITAL_LETTER_A_WITH_ACUTE, among hundredths of others.
 Some interesting features in class ts::UString are:
 - Explicit and implicit conversions between UTF-8 and UTF-16.
 - Including automatic conversion to UTF-8 when writing to text streams.
-- Conversions with DVB character sets.
+- Conversions with DVB and ARIB character sets.
 - Conversions with HTML encoding.
 - Management of "display width", that is to say the amount of space which
   is used when the string is displayed. This can be different from the
@@ -67,13 +67,13 @@ Some interesting features in class ts::UString are:
 - Data scanning using
   @ref ts::UString::scan() "scan()".
 
-Unicode strings can be converted to and from DVB strings. Most DVB-defined
-character sets are implemented (see the classes ts::Charset and ts::DVBCharset)
-and recognized when a string is read from a descriptor.
-When a string is serialized into a binary descriptor, the
-most appropriate DVB character set is used. In practice, a few known DVB
-character sets are used and when the string cannot be encoded in any of
-them UTF-8 is used (UTF-8 is a valid DVB character set).
+Unicode strings can be converted to and from DVB or ARIB (Japan) strings.
+Most DVB-defined character sets are implemented (see the classes ts::Charset
+and ts::DVBCharset) and recognized when a string is read from a descriptor.
+When a string is serialized into a binary descriptor, the most appropriate DVB
+character set is used. In practice, a few known DVB character sets are used
+and when the string cannot be encoded in any of them UTF-8 is used
+(UTF-8 is a valid DVB character set).
 
 ## Binary data {#bindata}
 
@@ -83,12 +83,20 @@ operations. It also adds useful methods for data serialization or deserializatio
 in any byte order.
 
 For data serialization or deserialization over arbitrary
-memory areas, the header file tsPlatform.h provides low-level functions to
-access integer values of 8, 16, 24, 32 and 64 bits in any byte order.
+memory areas, the header file tsMemory.h provides low-level functions to
+access integer values of 8, 16, 24, 32, 40, 48 and 64 bits in any byte order.
 
-The class ts::BitStream provides an abstraction layer over a memory area
-to parse bitstreams. It gives access to data of any bit-size at any bit
-position, either as a continuous stream or seeking at random bit positions.
+The class ts::Buffer provides a higher-level abstraction layer over a memory area
+to parse or generate bitstreams. It gives access to data of any bit-size at any bit
+position, any endianness, either as a continuous stream or seeking at random bit positions.
+
+The principles of the C++ class ts::Buffer were freely inspired by the Java
+class @c java.nio.ByteBuffer. There are differences between the two but the main
+principles are similar.
+    
+Its subclass ts::PSIBuffer provides primitives to serialize and deserialize
+MPEG and DVB structures such as list of descriptors, DVB, ARIB and ATSC strings
+or "Modified Julian Dates".
 
 ## Memory management {#memmgmt}
 
@@ -622,6 +630,27 @@ versioning.
 
 It is also possible to use a ts::SectionDemux to be notified of all
 individual sections.
+
+## Application preferences contexts
+
+The class ts::DuckContext carries various preferences about the standards
+or localizations. Each application has a given context. Using @c tsp, each
+plugin has it own context.
+
+The preferences which are carried by a context include the default standard
+(DVB, ATSC, ISDB), the default character sets in PSI/SI, the default private
+data specifier (for DVB private descriptors), the HF region (for terrestrial
+or satellite frequency mapping)
+
+The ts::DuckContext class can automatically define command-line arguments
+to explicitly specity preferences (options @c -\-atsc or @c -\-default-charset
+for instance). Thus, the preferences are setup from the beginning.
+
+But preferences are also accumulated all along the execution. For instance,
+as soon as an ATSC table is demuxed, the fact that the transport stream
+contains ATSC data is stored in the context. Later, when an MPEG table (a PMT
+for instance) contains an ambiguous descriptor tag which is used by DVB and
+ATSC, then the ATSC alternative will be used.
 
 ## DVB SimulCrypt protocols {#dvbprotocols}
 

@@ -101,14 +101,14 @@ void ts::IPSignallingDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 3) {
         strm << margin << "Platform id: " << names::PlatformId(GetUInt24(data), names::FIRST) << std::endl;
         data += 3; size -= 3;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

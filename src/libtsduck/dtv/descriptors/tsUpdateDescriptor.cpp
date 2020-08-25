@@ -119,13 +119,13 @@ void ts::UpdateDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, co
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size > 0) {
         strm << margin << "Update flag: " << NameFromSection(u"SSUUpdateFlag", (data[0] >> 6) & 0x03, names::DECIMAL_FIRST) << std::endl
              << margin << "Update method: " << NameFromSection(u"SSUUpdateMethod", (data[0] >> 2) & 0x0F, names::DECIMAL_FIRST) << std::endl
              << margin << UString::Format(u"Update priority: %d", {data[0] & 0x03}) << std::endl;
-        display.displayPrivateData(u"Private data", data + 1, size - 1, indent);
+        display.displayPrivateData(u"Private data", data + 1, size - 1, margin);
     }
 }
 

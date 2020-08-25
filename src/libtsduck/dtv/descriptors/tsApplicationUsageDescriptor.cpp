@@ -105,14 +105,15 @@ void ts::ApplicationUsageDescriptor::DisplayDescriptor(TablesDisplay& display, D
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         uint8_t type = data[0];
         data += 1; size -= 1;
-        strm << UString::Format(u"%*sUsage type: %d (0x%X)", {indent, u"", type, type}) << std::endl;
+        strm << margin << UString::Format(u"Usage type: %d (0x%X)", {type, type}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

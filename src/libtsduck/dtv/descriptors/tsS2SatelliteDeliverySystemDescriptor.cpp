@@ -141,7 +141,7 @@ void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         const bool scrambling_sequence_selector = (data[0] & 0x80) != 0;
@@ -164,7 +164,7 @@ void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

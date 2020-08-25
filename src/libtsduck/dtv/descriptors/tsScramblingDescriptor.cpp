@@ -100,7 +100,7 @@ void ts::ScramblingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         const uint8_t mode = data[0];
@@ -108,7 +108,7 @@ void ts::ScramblingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
         strm << margin << UString::Format(u"Scrambling mode: %s", {NameFromSection(u"ScramblingMode", mode, names::HEXA_FIRST)}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

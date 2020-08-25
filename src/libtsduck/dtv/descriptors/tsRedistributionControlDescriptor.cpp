@@ -103,7 +103,8 @@ void ts::RedistributionControlDescriptor::deserialize(DuckContext& duck, const D
 
 void ts::RedistributionControlDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    display.displayPrivateData(u"RC information", data, size, indent);
+    const UString margin(indent, ' ');
+    display.displayPrivateData(u"RC information", data, size, margin);
 }
 
 

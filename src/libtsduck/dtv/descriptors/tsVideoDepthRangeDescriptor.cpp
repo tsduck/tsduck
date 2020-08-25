@@ -166,7 +166,7 @@ void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
     bool ok = true;
 
     while (ok && size >= 2) {
@@ -192,14 +192,14 @@ void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& display, DI
             default:
                 ok = size >= len;
                 if (ok) {
-                    display.displayPrivateData(u"Range selector bytes", data, len, indent + 2);
+                    display.displayPrivateData(u"Range selector bytes", data, len, margin + u"  ");
                     data += len; size -= len;
                 }
                 break;
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

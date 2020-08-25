@@ -126,7 +126,7 @@ void ts::AssociationTagDescriptor::DisplayDescriptor(TablesDisplay& display, DID
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 5) {
         const uint16_t tag = GetUInt16(data);
@@ -135,11 +135,11 @@ void ts::AssociationTagDescriptor::DisplayDescriptor(TablesDisplay& display, DID
         data += 5; size -= 5;
 
         strm << margin << UString::Format(u"Association tag: 0x%X (%d), use: 0x%X (%d)", {tag, tag, use, use}) << std::endl;
-        display.displayPrivateData(u"Selector bytes", data, len, indent);
-        display.displayPrivateData(u"Private data", data + len, size - len, indent);
+        display.displayPrivateData(u"Selector bytes", data, len, margin);
+        display.displayPrivateData(u"Private data", data + len, size - len, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

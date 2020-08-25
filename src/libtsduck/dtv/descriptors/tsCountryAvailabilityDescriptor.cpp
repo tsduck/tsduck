@@ -129,7 +129,7 @@ void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         bool available = (data[0] & 0x80) != 0;
@@ -141,7 +141,7 @@ void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

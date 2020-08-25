@@ -198,7 +198,7 @@ void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
     bool ok = size >= 3;
 
     if (ok) {
@@ -230,7 +230,7 @@ void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
                     const size_t len = data[0];
                     ok = size > len;
                     if (ok) {
-                        display.displayPrivateData(u"Icon data", data + 1, len, indent);
+                        display.displayPrivateData(u"Icon data", data + 1, len, margin);
                         data += len + 1; size -= len + 1;
                     }
                 }
@@ -243,13 +243,13 @@ void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
             const size_t len = data[0];
             ok = size > len;
             if (ok) {
-                display.displayPrivateData(u"Icon data", data + 1, len, indent);
+                display.displayPrivateData(u"Icon data", data + 1, len, margin);
                 data += len + 1; size -= len + 1;
             }
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

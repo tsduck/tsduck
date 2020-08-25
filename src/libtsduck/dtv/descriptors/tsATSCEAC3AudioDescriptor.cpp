@@ -284,12 +284,11 @@ void ts::ATSCEAC3AudioDescriptor::deserialize(DuckContext& duck, const Descripto
 
 void ts::ATSCEAC3AudioDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const UString margin(indent, ' ');
+
     if (size >= 2) {
-
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
-
         // Fixed initial size: 2 bytes.
         const bool bsid_flag = (data[0] & 0x40) != 0;
         const bool mainid_flag = (data[0] & 0x20) != 0;
@@ -360,12 +359,12 @@ void ts::ATSCEAC3AudioDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
             data += 3; size -= 3;
         }
         if (size > 0) {
-            display.displayPrivateData(u"Additional information", data, size, indent);
+            display.displayPrivateData(u"Additional information", data, size, margin);
             data += size; size = 0;
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

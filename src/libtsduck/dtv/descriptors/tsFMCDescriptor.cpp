@@ -108,7 +108,7 @@ void ts::FMCDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 3) {
         const uint16_t id = GetUInt16(data);
@@ -117,7 +117,7 @@ void ts::FMCDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
         strm << margin << UString::Format(u"ES id: 0x%X (%d), FlexMux channel: 0x%X (%d)", {id, id, fmc, fmc}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

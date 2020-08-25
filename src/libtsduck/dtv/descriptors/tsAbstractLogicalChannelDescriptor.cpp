@@ -118,7 +118,7 @@ void ts::AbstractLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& disp
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 4) {
         const uint16_t service = GetUInt16(data);
@@ -130,7 +130,7 @@ void ts::AbstractLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& disp
              << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

@@ -324,13 +324,8 @@ void ts::UNT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a UNT section.
 //----------------------------------------------------------------------------
 
-void ts::UNT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     if (buf.remainingReadBytes() < 4) {
         buf.setUserError();
     }
@@ -339,35 +334,35 @@ void ts::UNT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         const uint8_t oui_hash = section.tableIdExtension() & 0xFF;
         const uint8_t comp_hash = uint8_t(oui >> 16) ^ uint8_t(oui >> 8) ^ uint8_t(oui);
         const UString oui_check(oui_hash == comp_hash ? u"valid" : UString::Format(u"invalid, should be 0x%X", {comp_hash}));
-        strm << margin << "OUI: " << names::OUI(oui, names::HEXA_FIRST) << std::endl;
-        strm << margin << UString::Format(u"Action type: 0x%X", {uint8_t(section.tableIdExtension() >> 8)});
-        strm << UString::Format(u", processing order: 0x%X", {buf.getUInt8()});
-        strm << UString::Format(u", OUI hash: 0x%X (%s)", {oui_hash, oui_check}) << std::endl;
+        disp << margin << "OUI: " << names::OUI(oui, names::HEXA_FIRST) << std::endl;
+        disp << margin << UString::Format(u"Action type: 0x%X", {uint8_t(section.tableIdExtension() >> 8)});
+        disp << UString::Format(u", processing order: 0x%X", {buf.getUInt8()});
+        disp << UString::Format(u", OUI hash: 0x%X (%s)", {oui_hash, oui_check}) << std::endl;
     }
 
     // Display common descriptor loop.
-    display.displayDescriptorListWithLength(section, buf, indent, u"Common descriptors:", u"None");
+    disp.displayDescriptorListWithLength(section, buf, margin, u"Common descriptors:", u"None");
 
     if (!buf.error()) {
-        strm << margin << "Sets of devices:" << std::endl;
+        disp << margin << "Sets of devices:" << std::endl;
         if (buf.endOfRead()) {
-            strm << margin << "- None" << std::endl;
+            disp << margin << "- None" << std::endl;
         }
     }
 
     // Loop on sets of devices.
     for (size_t dev_index = 0; !buf.error() && !buf.endOfRead(); ++dev_index) {
-        strm << margin << "- Devices " << dev_index << ":" << std::endl;
+        disp << margin << "- Devices " << dev_index << ":" << std::endl;
 
         // Display list of compatibility descriptor.
         buf.pushReadSizeFromLength(16);
         const size_t compatibilityDescriptorLength = buf.remainingReadBytes();
         size_t descriptorCount = buf.getUInt16();
-        strm << margin << UString::Format(u"  Compatibility descriptor: %d bytes, %d descriptors", {compatibilityDescriptorLength, descriptorCount}) << std::endl;
+        disp << margin << UString::Format(u"  Compatibility descriptor: %d bytes, %d descriptors", {compatibilityDescriptorLength, descriptorCount}) << std::endl;
 
         // Display outer descriptor loop.
         for (size_t desc_index = 0; !buf.error() && !buf.endOfRead() && descriptorCount-- > 0 && buf.remainingReadBytes() >= 11; ++desc_index) {
-            strm << margin
+            disp << margin
                  << "  - Descriptor " << desc_index
                  << ", type " << NameFromSection(u"CompatibilityDescriptorType", buf.getUInt8(), names::HEXA_FIRST)
                  << std::endl;
@@ -375,32 +370,32 @@ void ts::UNT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             // Get current compatibility descriptor content, based on 8-bit length field.
             buf.pushReadSizeFromLength(8);
 
-            strm << margin << UString::Format(u"    Specifier type: 0x%X", {buf.getUInt8()});
-            strm << UString::Format(u", specifier data (OUI): %s", {names::OUI(buf.getUInt24(), names::HEXA_FIRST)}) << std::endl;
-            strm << margin << UString::Format(u"    Model: 0x%X (%<d)", {buf.getUInt16()});
-            strm << UString::Format(u", version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"    Specifier type: 0x%X", {buf.getUInt8()});
+            disp << UString::Format(u", specifier data (OUI): %s", {names::OUI(buf.getUInt24(), names::HEXA_FIRST)}) << std::endl;
+            disp << margin << UString::Format(u"    Model: 0x%X (%<d)", {buf.getUInt16()});
+            disp << UString::Format(u", version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
             const size_t subDescriptorCount = buf.getUInt8();
-            strm << margin << UString::Format(u"    Sub-descriptor count: %d", {subDescriptorCount}) << std::endl;
+            disp << margin << UString::Format(u"    Sub-descriptor count: %d", {subDescriptorCount}) << std::endl;
 
             // Display sub-descriptors. They are not real descriptors, so we display them in hexa.
             for (size_t subdesc_index = 0; !buf.error() && !buf.endOfRead() && subdesc_index < subDescriptorCount; ++subdesc_index) {
-                strm << margin << UString::Format(u"    - Sub-descriptor %d, type: 0x%X (%<d)", {subdesc_index, buf.getUInt8()});
+                disp << margin << UString::Format(u"    - Sub-descriptor %d, type: 0x%X (%<d)", {subdesc_index, buf.getUInt8()});
                 size_t length = buf.getUInt8();
-                strm << UString::Format(u", %d bytes", {length}) << std::endl;
+                disp << UString::Format(u", %d bytes", {length}) << std::endl;
                 length = std::min(length, buf.remainingReadBytes());
                 if (length > 0) {
-                    strm << UString::Dump(buf.currentReadAddress(), length, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 6);
+                    disp << UString::Dump(buf.currentReadAddress(), length, UString::HEXA | UString::ASCII | UString::OFFSET, margin.size() + 6);
                 }
                 buf.skipBytes(length);
             }
 
             // Close current compatibility descriptor.
-            display.displayExtraData(buf, indent + 4);
+            disp.displayExtraData(buf, margin + u"    ");
             buf.popState();
         }
 
         // Close compatibilityDescriptor() list of compatibility descriptors.
-        display.displayExtraData(buf, indent + 2);
+        disp.displayExtraData(buf, margin + u"  ");
         buf.popState();
 
         // Open platform loop using 16-bit length field.
@@ -408,17 +403,17 @@ void ts::UNT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 
         // Get platform descriptions.
         for (size_t platform_index = 0; !buf.error() && !buf.endOfRead(); ++platform_index) {
-            strm << margin << "  Platform " << platform_index << ":" << std::endl;
-            display.displayDescriptorListWithLength(section, buf, indent + 4, u"Target descriptors:", u"None");
-            display.displayDescriptorListWithLength(section, buf, indent + 4, u"Operational descriptors:", u"None");
+            disp << margin << "  Platform " << platform_index << ":" << std::endl;
+            disp.displayDescriptorListWithLength(section, buf, margin + u"    ", u"Target descriptors:", u"None");
+            disp.displayDescriptorListWithLength(section, buf, margin + u"    ", u"Operational descriptors:", u"None");
         }
 
         // Close platform loop.
-        display.displayExtraData(buf, indent + 2);
+        disp.displayExtraData(buf, margin + u"  ");
         buf.popState();
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

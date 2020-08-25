@@ -154,7 +154,8 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
             }
             _tdt_ok = !_opt.all;
             if (_opt.verbose()) {
-                _opt.display.displayTable(table) << std::endl;
+                _opt.display.displayTable(table);
+                _opt.display.out() << std::endl;
                 break;
             }
             ts::TDT tdt(_opt.duck, table);
@@ -171,7 +172,8 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
             }
             _tot_ok = !_opt.all;
             if (_opt.verbose()) {
-                _opt.display.displayTable(table) << std::endl;
+                _opt.display.displayTable(table);
+                _opt.display.out() << std::endl;
                 break;
             }
             ts::TOT tot(_opt.duck, table);

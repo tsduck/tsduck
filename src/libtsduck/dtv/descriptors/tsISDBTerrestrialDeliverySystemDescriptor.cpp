@@ -148,7 +148,7 @@ void ts::ISDBTerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDispla
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 2) {
         const uint16_t v = GetUInt16(data);
@@ -167,7 +167,7 @@ void ts::ISDBTerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDispla
         data += 2; size -= 2;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

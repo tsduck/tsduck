@@ -278,7 +278,7 @@ void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, D
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         const uint8_t div = (data[0] >> 4) & 0x0F;
@@ -343,7 +343,7 @@ void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, D
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

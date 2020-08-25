@@ -138,17 +138,17 @@ void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    if (size >= 4) {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const UString margin(indent, ' ');
 
+    if (size >= 4) {
         const uint16_t id = GetUInt16(data);
         const uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
         strm << margin << UString::Format(u"CP System Id: %s, CP PID: %d (0x%X)", {NameFromSection(u"CPSystemId", id, names::FIRST), pid, pid}) << std::endl;
-        display.displayPrivateData(u"Private CP data", data + 4, size - 4, indent);
+        display.displayPrivateData(u"Private CP data", data + 4, size - 4, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }

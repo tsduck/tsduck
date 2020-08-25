@@ -315,31 +315,25 @@ void ts::SDT::Service::setType(uint8_t service_type)
 // A static method to display a SDT section.
 //----------------------------------------------------------------------------
 
-void ts::SDT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::SDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
-    // Fixed part.
-    strm << margin << UString::Format(u"Transport Stream Id: %d (0x%<X)", {section.tableIdExtension()}) << std::endl;
-    strm << margin << UString::Format(u"Original Network Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
+    disp << margin << UString::Format(u"Transport Stream Id: %d (0x%<X)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Original Network Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
     buf.skipBits(8);
 
     // Services description
     while (!buf.error() && !buf.endOfRead()) {
-        strm << margin << UString::Format(u"Service Id: %d (0x%<X)", {buf.getUInt16()});
+        disp << margin << UString::Format(u"Service Id: %d (0x%<X)", {buf.getUInt16()});
         buf.skipBits(6);
-        strm << ", EITs: " << UString::YesNo(buf.getBit() != 0);
-        strm << ", EITp/f: " << UString::YesNo(buf.getBit() != 0);
+        disp << ", EITs: " << UString::YesNo(buf.getBit() != 0);
+        disp << ", EITp/f: " << UString::YesNo(buf.getBit() != 0);
         const uint8_t running_status = buf.getBits<uint8_t>(3);
-        strm << ", CA mode: " << (buf.getBit() != 0 ? "controlled" : "free") << std::endl;
-        strm << margin << "Running status: " << names::RunningStatus(running_status) << std::endl;
-        display.displayDescriptorListWithLength(section, buf, indent);
+        disp << ", CA mode: " << (buf.getBit() != 0 ? "controlled" : "free") << std::endl;
+        disp << margin << "Running status: " << names::RunningStatus(running_status) << std::endl;
+        disp.displayDescriptorListWithLength(section, buf, margin);
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

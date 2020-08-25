@@ -213,20 +213,14 @@ void ts::TOT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a TOT section.
 //----------------------------------------------------------------------------
 
-void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::TOT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     if (buf.remainingReadBytes() >= 5) {
-        strm << margin << "UTC time: " << buf.getFullMJD().format(Time::DATETIME) << std::endl;
-        display.displayDescriptorListWithLength(section, buf, indent);
-        display.displayCRC32(section, buf, indent);
+        disp << margin << "UTC time: " << buf.getFullMJD().format(Time::DATETIME) << std::endl;
+        disp.displayDescriptorListWithLength(section, buf, margin);
+        disp.displayCRC32(section, buf, margin);
     }
-
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

@@ -101,7 +101,8 @@ void ts::ATSCStuffingDescriptor::deserialize(DuckContext& duck, const Descriptor
 
 void ts::ATSCStuffingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    display.displayPrivateData(u"Stuffing data", data, size, indent);
+    const UString margin(indent, ' ');
+    display.displayPrivateData(u"Stuffing data", data, size, margin);
 }
 
 

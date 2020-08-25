@@ -140,7 +140,7 @@ void ts::AreaBroadcastingInformationDescriptor::DisplayDescriptor(TablesDisplay&
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         size_t count = data[0];
@@ -153,11 +153,11 @@ void ts::AreaBroadcastingInformationDescriptor::DisplayDescriptor(TablesDisplay&
             size_t len = GetUInt8(data + 6);
             data += 7; size -= 7;
             len = std::min(len, size);
-            display.displayPrivateData(u"Additional station info", data, len, indent + 2);
+            display.displayPrivateData(u"Additional station info", data, len, margin + u"  ");
             data += len; size -= len; count--;
         }
     }
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

@@ -108,10 +108,10 @@ void ts::TransportProfileDescriptor::DisplayDescriptor(TablesDisplay& display, D
     if (size > 0) {
         DuckContext& duck(display.duck());
         std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
+        const UString margin(indent, ' ');
 
         strm << margin << "Transport profile: " << NameFromSection(u"TransportProfile", data[0], names::HEXA_FIRST) << std::endl;
-        display.displayPrivateData(u"Private data", data + 1, size - 1, indent);
+        display.displayPrivateData(u"Private data", data + 1, size - 1, margin);
     }
 }
 

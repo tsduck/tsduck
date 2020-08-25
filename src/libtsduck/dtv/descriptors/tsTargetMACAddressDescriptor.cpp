@@ -115,7 +115,7 @@ void ts::TargetMACAddressDescriptor::DisplayDescriptor(TablesDisplay& display, D
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     const char* header = "Address mask: ";
     while (size >= 6) {
@@ -124,7 +124,7 @@ void ts::TargetMACAddressDescriptor::DisplayDescriptor(TablesDisplay& display, D
         header = "Address: ";
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

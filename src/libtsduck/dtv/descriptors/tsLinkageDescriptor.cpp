@@ -331,7 +331,7 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 7) {
 
@@ -368,10 +368,10 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         }
 
         // Remaining private data
-        display.displayPrivateData(u"Private data", data, size, indent);
+        display.displayPrivateData(u"Private data", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 
@@ -388,7 +388,7 @@ void ts::LinkageDescriptor::DisplayPrivateMobileHandover(TablesDisplay& display,
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     uint8_t hand_over = *data >> 4;
     uint8_t origin = *data & 0x01;
@@ -429,7 +429,7 @@ void ts::LinkageDescriptor::DisplayPrivateSSU(TablesDisplay& display, const uint
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     uint8_t dlength = data[0];
     data += 1; size -= 1;
@@ -447,7 +447,7 @@ void ts::LinkageDescriptor::DisplayPrivateSSU(TablesDisplay& display, const uint
         }
         data += slength; size -= slength; dlength -= slength;
         strm << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl;
-        display.displayPrivateData(u"Selector data", sdata, slength, indent);
+        display.displayPrivateData(u"Selector data", sdata, slength, margin);
     }
 }
 
@@ -462,7 +462,7 @@ void ts::LinkageDescriptor::DisplayPrivateTableSSU(TablesDisplay& display, const
     if (size >= 1) {
         DuckContext& duck(display.duck());
         std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
+        const UString margin(indent, ' ');
 
         uint8_t ttype = data[0];
         data += 1; size -= 1;
@@ -490,7 +490,7 @@ void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& display, const uint
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     uint8_t data_length = data[0];
     data += 1; size -= 1;
@@ -535,7 +535,7 @@ void ts::LinkageDescriptor::DisplayPrivateDeferredINT(TablesDisplay& display, co
     if (size >= 1) {
         DuckContext& duck(display.duck());
         std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
+        const UString margin(indent, ' ');
 
         uint8_t ttype = data[0];
         data += 1; size -= 1;

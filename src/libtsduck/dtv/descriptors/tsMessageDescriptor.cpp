@@ -150,16 +150,16 @@ void ts::MessageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    if (size >= 4) {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const UString margin(indent, ' ');
 
+    if (size >= 4) {
         strm << margin << "Message id: " << int(data[0])
              << ", language: " << DeserializeLanguageCode(data + 1) << std::endl
              << margin << "Message: \"" << duck.decoded(data + 4, size - 4) << "\"" << std::endl;
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }

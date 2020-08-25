@@ -111,7 +111,7 @@ void ts::ExternalApplicationAuthorizationDescriptor::DisplayDescriptor(TablesDis
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 7) {
         const uint32_t org = GetUInt32(data);
@@ -123,7 +123,7 @@ void ts::ExternalApplicationAuthorizationDescriptor::DisplayDescriptor(TablesDis
              << margin << UString::Format(u"  Priority: 0x%X (%d)", {prio, prio}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

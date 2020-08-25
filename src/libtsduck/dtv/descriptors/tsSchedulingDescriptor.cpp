@@ -152,7 +152,7 @@ void ts::SchedulingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 14) {
         Time start, end;
@@ -165,10 +165,10 @@ void ts::SchedulingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
              << margin << UString::Format(u"Period: %d %ss", {data[11], SchedulingUnitNames.name((data[10] >> 4) & 0x03)}) << std::endl
              << margin << UString::Format(u"Duration: %d %ss", {data[12], SchedulingUnitNames.name((data[10] >> 2) & 0x03)}) << std::endl
              << margin << UString::Format(u"Estimated cycle time: %d %ss", {data[13], SchedulingUnitNames.name(data[10] & 0x03)}) << std::endl;
-        display.displayPrivateData(u"Private data", data + 14, size - 14, indent);
+        display.displayPrivateData(u"Private data", data + 14, size - 14, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

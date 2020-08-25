@@ -126,7 +126,7 @@ void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& dis
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     uint16_t region_id = GetUInt16(data);
     data += 2; size -= 2;
@@ -151,7 +151,7 @@ void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& dis
              << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

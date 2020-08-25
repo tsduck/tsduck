@@ -115,7 +115,7 @@ void ts::ShortNodeInformationDescriptor::DisplayDescriptor(TablesDisplay& displa
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 3) {
         strm << margin << "Language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
@@ -123,7 +123,7 @@ void ts::ShortNodeInformationDescriptor::DisplayDescriptor(TablesDisplay& displa
         strm << margin << "Node name: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
         strm << margin << "Text: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
     }
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

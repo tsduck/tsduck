@@ -120,16 +120,11 @@ void ts::ITT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display an ITT section.
 //----------------------------------------------------------------------------
 
-void ts::ITT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::ITT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
-    strm << margin << UString::Format(u"Event id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
-    display.displayDescriptorListWithLength(section, buf, indent);
-    display.displayExtraData(buf, indent);
+    disp << margin << UString::Format(u"Event id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    disp.displayDescriptorListWithLength(section, buf, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

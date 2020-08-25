@@ -120,7 +120,7 @@ void ts::SSUEventNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 4) {
         const UString lang(DeserializeLanguageCode(data));
@@ -131,7 +131,7 @@ void ts::SSUEventNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
              << margin << "Event name: \"" << name << "\"" << std::endl
              << margin << "Event text: \"" << text << "\"" << std::endl;
     }
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

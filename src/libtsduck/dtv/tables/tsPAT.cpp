@@ -145,23 +145,14 @@ void ts::PAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a PAT section.
 //----------------------------------------------------------------------------
 
-void ts::PAT::DisplaySection(TablesDisplay& display, const Section& section, int indent)
+void ts::PAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section);
-
-    strm << margin << UString::Format(u"TS id:   %5d (0x%<04X)", {section.tableIdExtension()}) << std::endl;
-
-    // Loop through all program / pid pairs
-    while (!buf.error() && !buf.endOfRead()) {
+    disp << margin << UString::Format(u"TS id:   %5d (0x%<04X)", {section.tableIdExtension()}) << std::endl;
+    while (!buf.error() && buf.remainingReadBytes() >= 4) {
         const uint16_t id = buf.getUInt16();
-        const uint16_t pid = buf.getPID();
-        strm << margin << UString::Format(u"%s %5d (0x%<04X)  PID: %4d (0x%<04X)", {id == 0 ? u"NIT:    " : u"Program:", id, pid}) << std::endl;
+        disp << margin << UString::Format(u"%s %5d (0x%<04X)  PID: %4d (0x%<04X)", {id == 0 ? u"NIT:    " : u"Program:", id, buf.getPID()}) << std::endl;
     }
-
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

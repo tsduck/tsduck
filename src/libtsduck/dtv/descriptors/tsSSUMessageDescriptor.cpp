@@ -120,7 +120,7 @@ void ts::SSUMessageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 4) {
         strm << margin << UString::Format(u"Descriptor number: %d, last: %d", {(data[0] >> 4) & 0x0F, data[0] & 0x0F}) << std::endl
@@ -128,7 +128,7 @@ void ts::SSUMessageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
             << margin << "Text: \"" << duck.decoded(data + 4, size - 4) << "\"" << std::endl;
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

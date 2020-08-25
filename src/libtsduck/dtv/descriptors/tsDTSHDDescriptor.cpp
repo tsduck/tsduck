@@ -289,6 +289,8 @@ void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, con
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
+    const UString margin(indent, ' ');
+
     if (size >= 1) {
         const uint8_t flags = data[0];
         data++; size--;
@@ -298,11 +300,11 @@ void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, con
             DisplaySubstreamInfo(display, (flags & 0x10) != 0, indent, u"2", data, size) &&
             DisplaySubstreamInfo(display, (flags & 0x08) != 0, indent, u"3", data, size))
         {
-            display.displayPrivateData(u"Additional information", data, size, indent);
+            display.displayPrivateData(u"Additional information", data, size, margin);
             data += size; size = 0;
         }
     }
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 bool ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& display, bool present, int indent, const UString& name, const uint8_t*& data, size_t& size)
@@ -328,7 +330,7 @@ bool ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& display, bool pres
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     strm << margin << "Substream " << name << ":" << std::endl
          << margin << UString::Format(u"  Asset count: %d, channel count: %d", {num_assets, channel_count}) << std::endl
