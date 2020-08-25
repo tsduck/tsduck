@@ -142,7 +142,7 @@ void ts::C2BundleDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 8) {
 
@@ -163,7 +163,7 @@ void ts::C2BundleDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp
              << margin << UString::Format(u"  Master channel: %s", {master}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

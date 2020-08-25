@@ -357,7 +357,7 @@ void ts::Grid::putLayout(const std::initializer_list<ColumnText> text)
     _out << _leftMargin;
 
     // Inner margins.
-    const std::string margin(_marginWidth, ' ');
+    const UString margin(_marginWidth, ' ');
 
     // Iterator through text to display
     std::initializer_list<ColumnText>::const_iterator iText = text.begin();

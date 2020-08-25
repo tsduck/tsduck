@@ -107,14 +107,14 @@ void ts::CarouselIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display,
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 4) {
         strm << margin << UString::Format(u"Carousel id: 0x%X (%d)", { GetUInt32(data), GetUInt32(data) }) << std::endl;
-        display.displayPrivateData(u"Private data", data + 4, size - 4, indent);
+        display.displayPrivateData(u"Private data", data + 4, size - 4, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

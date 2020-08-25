@@ -141,7 +141,7 @@ void ts::ContentAdvisoryDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         size_t reg_count = data[0] & 0x3F;
@@ -158,13 +158,13 @@ void ts::ContentAdvisoryDescriptor::DisplayDescriptor(TablesDisplay& display, DI
             if (size >= 1) {
                 size_t len = data[0];
                 data++; size--;
-                ATSCMultipleString::Display(display, u"Rating description: ", indent + 2, data, size, len);
+                ATSCMultipleString::Display(display, u"Rating description: ", margin + u"  ", data, size, len);
             }
             reg_count--;
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

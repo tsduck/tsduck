@@ -117,14 +117,14 @@ void ts::CADescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 
 void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const UString margin(indent, ' ');
+
     if (size < 4) {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
     else {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
-
         // Extract common part
         uint16_t sysid = GetUInt16(data);
         uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
@@ -142,7 +142,7 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
                 disp(display, data, size, indent, tid);
             }
             else {
-                display.displayPrivateData(u"Private CA data", data, size, indent);
+                display.displayPrivateData(u"Private CA data", data, size, margin);
             }
         }
     }

@@ -288,32 +288,26 @@ ts::PID ts::PMT::firstVideoPID() const
 // A static method to display a PMT section.
 //----------------------------------------------------------------------------
 
-void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::PMT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
-    // Fixed part.
     const PID pcr_pid = buf.getPID();
-    strm << margin << UString::Format(u"Program: %d (0x%<X), PCR PID: ", {section.tableIdExtension()})
+    disp << margin << UString::Format(u"Program: %d (0x%<X), PCR PID: ", {section.tableIdExtension()})
          << (pcr_pid == PID_NULL ? u"none" : UString::Format(u"%d (0x%<X)", {pcr_pid}))
          << std::endl;
 
     // Process and display "program info" descriptors.
-    display.displayDescriptorListWithLength(section, buf, indent, u"Program information:");
+    disp.displayDescriptorListWithLength(section, buf, margin, u"Program information:");
 
     // Get elementary streams description
     while (!buf.error() && !buf.endOfRead()) {
         const uint8_t type = buf.getUInt8();
         const PID pid = buf.getPID();
-        strm << margin << "Elementary stream: type " << names::StreamType(type, names::FIRST)
+        disp << margin << "Elementary stream: type " << names::StreamType(type, names::FIRST)
              << UString::Format(u", PID: %d (0x%<X)", {pid}) << std::endl;
-        display.displayDescriptorListWithLength(section, buf, indent);
+        disp.displayDescriptorListWithLength(section, buf, margin);
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

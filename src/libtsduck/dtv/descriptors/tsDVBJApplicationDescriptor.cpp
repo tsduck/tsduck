@@ -114,7 +114,7 @@ void ts::DVBJApplicationDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 1) {
         const size_t len = std::min<size_t>(data[0], size - 1);
@@ -122,7 +122,7 @@ void ts::DVBJApplicationDescriptor::DisplayDescriptor(TablesDisplay& display, DI
         data += 1 + len; size -= 1 + len;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

@@ -110,7 +110,7 @@ void ts::MetadataSTDDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 9) {
         const uint32_t input = GetUInt24(data) & 0x3FFFFF;
@@ -122,7 +122,7 @@ void ts::MetadataSTDDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
              << margin << UString::Format(u"Metadata output leak rate: %'d (%'d bits/s)", {output, 400 * output}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

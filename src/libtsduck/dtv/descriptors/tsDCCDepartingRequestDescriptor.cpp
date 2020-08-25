@@ -109,15 +109,15 @@ void ts::DCCDepartingRequestDescriptor::DisplayDescriptor(TablesDisplay& display
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 2) {
         strm << margin << UString::Format(u"DCC departing request type: 0x%X (%d)", {data[0], data[0]}) << std::endl;
         const size_t len = data[1];
         data += 2; size -= 2;
-        ATSCMultipleString::Display(display, u"DCC departing request text: ", indent, data, size, len);
+        ATSCMultipleString::Display(display, u"DCC departing request text: ", margin, data, size, len);
     }
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

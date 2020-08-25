@@ -136,7 +136,7 @@ void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& display, DID
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 4) {
         const uint8_t rating = data[3];
@@ -155,7 +155,7 @@ void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& display, DID
         data += 4; size -= 4;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

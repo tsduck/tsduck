@@ -129,7 +129,7 @@ void ts::StereoscopicVideoInfoDescriptor::DisplayDescriptor(TablesDisplay& displ
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         const bool base = (data[0] & 0x01) != 0;
@@ -147,7 +147,7 @@ void ts::StereoscopicVideoInfoDescriptor::DisplayDescriptor(TablesDisplay& displ
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

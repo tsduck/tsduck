@@ -172,31 +172,26 @@ void ts::STT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display an STT section.
 //----------------------------------------------------------------------------
 
-void ts::STT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::STT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     if (buf.remainingReadBytes() < 8) {
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()}) << std::endl;
         const uint32_t time = buf.getUInt32();
         const uint8_t offset = buf.getUInt8();
         const Time utc(Time::UnixTimeToUTC(time + Time::UnixEpochToGPS - offset));
-        strm << margin << UString::Format(u"System time: 0x%X (%<d), GPS-UTC offset: 0x%X (%<d)", {time, offset}) << std::endl;
-        strm << margin << "Corresponding UTC time: " << (time == 0 ? u"none" : utc.format(Time::DATE | Time::TIME)) << std::endl;
-        strm << margin << "Daylight saving time: " << UString::YesNo(buf.getBit() != 0);
+        disp << margin << UString::Format(u"System time: 0x%X (%<d), GPS-UTC offset: 0x%X (%<d)", {time, offset}) << std::endl;
+        disp << margin << "Corresponding UTC time: " << (time == 0 ? u"none" : utc.format(Time::DATE | Time::TIME)) << std::endl;
+        disp << margin << "Daylight saving time: " << UString::YesNo(buf.getBit() != 0);
         buf.skipBits(2);
-        strm << UString::Format(u", next switch day: %d", {buf.getBits<uint8_t>(5)});
-        strm << UString::Format(u", hour: %d", {buf.getUInt8()}) << std::endl;
-        display.displayDescriptorList(section, buf, indent);
+        disp << UString::Format(u", next switch day: %d", {buf.getBits<uint8_t>(5)});
+        disp << UString::Format(u", hour: %d", {buf.getUInt8()}) << std::endl;
+        disp.displayDescriptorList(section, buf, margin);
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

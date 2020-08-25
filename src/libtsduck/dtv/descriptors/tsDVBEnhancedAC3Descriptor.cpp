@@ -222,7 +222,7 @@ void ts::DVBEnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         uint8_t flags = data[0];
@@ -266,10 +266,10 @@ void ts::DVBEnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID
             data++; size--;
             strm << margin << "Substream 3: " << names::AC3ComponentType(type, names::FIRST) << std::endl;
         }
-        display.displayPrivateData(u"Additional information", data, size, indent);
+        display.displayPrivateData(u"Additional information", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

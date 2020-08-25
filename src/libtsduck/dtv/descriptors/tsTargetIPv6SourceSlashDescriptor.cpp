@@ -120,7 +120,7 @@ void ts::TargetIPv6SourceSlashDescriptor::DisplayDescriptor(TablesDisplay& displ
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 34) {
         strm << margin << "- Source:      " << IPv6Address(data, 16) << "/" << int(data[16]) << std::endl
@@ -128,7 +128,7 @@ void ts::TargetIPv6SourceSlashDescriptor::DisplayDescriptor(TablesDisplay& displ
         data += 34; size -= 34;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

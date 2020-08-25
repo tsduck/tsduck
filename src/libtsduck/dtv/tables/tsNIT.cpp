@@ -90,16 +90,11 @@ bool ts::NIT::isValidTableId(TID tid) const
 // A static method to display a NIT section.
 //----------------------------------------------------------------------------
 
-void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::NIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     // Display bouquet information
-    strm << margin << UString::Format(u"Network Id: %d (0x%<X)", {section.tableIdExtension()}) << std::endl;
-    display.displayDescriptorListWithLength(section, buf, indent, u"Network information:");
+    disp << margin << UString::Format(u"Network Id: %d (0x%<X)", {section.tableIdExtension()}) << std::endl;
+    disp.displayDescriptorListWithLength(section, buf, margin, u"Network information:");
 
     // Transport stream loop length.
     buf.skipBits(4);
@@ -110,11 +105,11 @@ void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     while (!buf.error() && buf.currentReadByteOffset() + 6 <= end_loop && buf.remainingReadBytes() >= 6) {
         const uint16_t tsid = buf.getUInt16();
         const uint16_t nwid = buf.getUInt16();
-        strm << margin << UString::Format(u"Transport Stream Id: %d (0x%<X), Original Network Id: %d (0x%<X)", {tsid, nwid}) << std::endl;
-        display.displayDescriptorListWithLength(section, buf, indent);
+        disp << margin << UString::Format(u"Transport Stream Id: %d (0x%<X), Original Network Id: %d (0x%<X)", {tsid, nwid}) << std::endl;
+        disp.displayDescriptorListWithLength(section, buf, margin);
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

@@ -148,7 +148,7 @@ void ts::DataContentDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 4) {
         strm << margin << "Data component id: " << NameFromSection(u"ISDBDataComponentId", GetUInt16(data), names::HEXA_FIRST) << std::endl
@@ -157,7 +157,7 @@ void ts::DataContentDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
         size_t len = data[3];
         data += 4; size -= 4;
         len = std::min(len, size);
-        display.displayPrivateData(u"Selector bytes", data, len, indent);
+        display.displayPrivateData(u"Selector bytes", data, len, margin);
         data += len; size -= len;
 
         if (size > 0) {
@@ -176,7 +176,7 @@ void ts::DataContentDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

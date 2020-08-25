@@ -175,30 +175,25 @@ void ts::LDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a LDT section.
 //----------------------------------------------------------------------------
 
-void ts::LDT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::LDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
-    strm << margin << UString::Format(u"Original service id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Original service id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
     if (buf.remainingReadBytes() < 4) {
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        strm << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
     }
 
     while (!buf.error() && buf.remainingReadBytes() >= 5) {
-        strm << margin << UString::Format(u"Description id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Description id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         buf.skipBits(12);
-        display.displayDescriptorListWithLength(section, buf, indent);
+        disp.displayDescriptorListWithLength(section, buf, margin);
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

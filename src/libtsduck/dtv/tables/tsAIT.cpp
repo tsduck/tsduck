@@ -234,17 +234,12 @@ void ts::AIT::addSection(BinaryTable& table, PSIBuffer& payload, bool last_secti
 // A static method to display a AIT section.
 //----------------------------------------------------------------------------
 
-void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::AIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     // Common information.
     const uint16_t tidext = section.tableIdExtension();
-    strm << margin << UString::Format(u"Application type: %d (0x%<04X), Test application: %d", {tidext & 0x7FFF, tidext >> 15}) << std::endl;
-    display.displayDescriptorListWithLength(section, buf, indent, u"Common descriptor loop:");
+    disp << margin << UString::Format(u"Application type: %d (0x%<04X), Test application: %d", {tidext & 0x7FFF, tidext >> 15}) << std::endl;
+    disp.displayDescriptorListWithLength(section, buf, margin, u"Common descriptor loop:");
 
     // Application loop length.
     buf.skipBits(4);
@@ -256,13 +251,13 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         const uint32_t org_id = buf.getUInt32();
         const uint16_t app_id = buf.getUInt16();
         const uint8_t code = buf.getUInt8();
-        strm << margin
+        disp << margin
              << UString::Format(u"Application: Identifier: (Organization id: %d (0x%<X), Application id: %d (0x%<X)), Control code: %d", {org_id, app_id, code})
              << std::endl;
-        display.displayDescriptorListWithLength(section, buf, indent);
+        disp.displayDescriptorListWithLength(section, buf, margin);
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

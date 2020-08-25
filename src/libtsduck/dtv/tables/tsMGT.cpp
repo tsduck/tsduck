@@ -212,21 +212,16 @@ ts::UString ts::MGT::TableTypeName(uint16_t table_type)
 // A static method to display a MGT section.
 //----------------------------------------------------------------------------
 
-void ts::MGT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::MGT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     uint16_t table_count = 0;
 
     if (buf.remainingReadBytes() < 2) {
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
-        strm << UString::Format(u", number of table types: %d", {table_count = buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
+        disp << UString::Format(u", number of table types: %d", {table_count = buf.getUInt16()}) << std::endl;
     }
 
     // Loop on all table types.
@@ -238,17 +233,17 @@ void ts::MGT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         }
 
         const uint16_t type = buf.getUInt16();
-        strm << margin << UString::Format(u"- Table type: %s (0x%X)", {TableTypeName(type), type}) << std::endl;
-        strm << margin << UString::Format(u"  PID: 0x%X (%<d)", {buf.getPID()});
+        disp << margin << UString::Format(u"- Table type: %s (0x%X)", {TableTypeName(type), type}) << std::endl;
+        disp << margin << UString::Format(u"  PID: 0x%X (%<d)", {buf.getPID()});
         buf.skipBits(3);
-        strm << UString::Format(u", version: %d", {buf.getBits<uint8_t>(5)});
-        strm << UString::Format(u", size: %d bytes", {buf.getUInt32()}) << std::endl;
-        display.displayDescriptorListWithLength(section, buf, indent + 2);
+        disp << UString::Format(u", version: %d", {buf.getBits<uint8_t>(5)});
+        disp << UString::Format(u", size: %d bytes", {buf.getUInt32()}) << std::endl;
+        disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
     }
 
     // Common descriptors.
-    display.displayDescriptorListWithLength(section, buf, indent, u"Global descriptors:");
-    display.displayExtraData(buf, indent);
+    disp.displayDescriptorListWithLength(section, buf, margin, u"Global descriptors:");
+    disp.displayExtraData(buf, margin);
 }
 
 

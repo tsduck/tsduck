@@ -261,11 +261,11 @@ void ts::ATSCAC3AudioStreamDescriptor::deserialize(DuckContext& duck, const Desc
 
 void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    if (size >= 3) {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const UString margin(indent, ' ');
 
+    if (size >= 3) {
         // Fixed initial size: 3 bytes.
         const uint8_t sample = uint8_t((data[0] >> 5) & 0x07);
         const uint8_t bsid = uint8_t(data[0] & 0x1F);
@@ -348,12 +348,12 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& display,
 
         // Trailing info.
         if (ok) {
-            display.displayPrivateData(u"Additional information", data, size, indent);
+            display.displayPrivateData(u"Additional information", data, size, margin);
             data += size; size = 0;
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

@@ -97,8 +97,9 @@ void ts::ComponentNameDescriptor::deserialize(DuckContext& duck, const Descripto
 
 void ts::ComponentNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    ATSCMultipleString::Display(display, u"Component name: ", indent, data, size);
-    display.displayExtraData(data, size, indent);
+    const UString margin(indent, ' ');
+    ATSCMultipleString::Display(display, u"Component name: ", margin, data, size);
+    display.displayExtraData(data, size, margin);
 }
 
 

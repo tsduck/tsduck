@@ -107,7 +107,7 @@ void ts::TransportStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     strm << margin << "Compliance: \"" << duck.decoded(payload, size) << "\"" << std::endl;
 }

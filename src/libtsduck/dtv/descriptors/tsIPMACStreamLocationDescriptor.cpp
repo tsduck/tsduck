@@ -119,7 +119,7 @@ void ts::IPMACStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& display
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 9) {
         const uint16_t net = GetUInt16(data);
@@ -135,7 +135,7 @@ void ts::IPMACStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& display
         data += 9; size -= 9;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

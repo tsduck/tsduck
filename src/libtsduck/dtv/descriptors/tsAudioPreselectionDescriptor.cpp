@@ -237,7 +237,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         size_t numEntries = data[0] >> 3;
@@ -294,7 +294,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
                 const size_t len = valid ? (data[0] & 0x1F) : 0;
                 valid = valid && size >= 1 + len;
                 if (valid) {
-                    display.displayPrivateData(u"Future extension", data + 1, len, indent + 2);
+                    display.displayPrivateData(u"Future extension", data + 1, len, margin + u"  ");
                     data += 1 + len;
                     size -= 1 + len;
                 }
@@ -302,7 +302,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

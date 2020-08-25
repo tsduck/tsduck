@@ -126,13 +126,8 @@ void ts::RST::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a RST section.
 //----------------------------------------------------------------------------
 
-void ts::RST::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::RST::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     while (!buf.error() && buf.remainingReadBytes() >= 9) {
         const uint16_t ts_id = buf.getUInt16();
         const uint16_t onet_id = buf.getUInt16();
@@ -141,13 +136,12 @@ void ts::RST::DisplaySection(TablesDisplay& display, const ts::Section& section,
         buf.skipBits(5);
         const uint8_t rs = buf.getBits<uint8_t>(3);
 
-        strm << margin
+        disp << margin
              << UString::Format(u"TS: %d (0x%<X), Orig. Netw.: %d (0x%<X), Service: %d (0x%<X), Event: %d (0x%<X), Status: %s",
                                 {ts_id, onet_id, srv_id, ev_id, RunningStatusNames.name(rs)})
              << std::endl;
     }
-
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

@@ -376,54 +376,49 @@ bool ts::SpliceInformationTable::analyzeXML(DuckContext& duck, const xml::Elemen
 // A static method to display a SpliceInformationTable section.
 //----------------------------------------------------------------------------
 
-void ts::SpliceInformationTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     if (buf.remainingReadBytes() < 15) {
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()}) << std::endl;
-        strm << margin << "Encryption: ";
+        disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()}) << std::endl;
+        disp << margin << "Encryption: ";
         const uint8_t encrypted_packet = buf.getBit();
         if (encrypted_packet == 0) {
-            strm << "none";
+            disp << "none";
             buf.skipBits(6); // skip encryption_algorithm
         }
         else {
             const uint8_t encryption_algo = buf.getBits<uint8_t>(6);
-            strm << UString::Format(u"0x%X (%<d)", {encryption_algo});
+            disp << UString::Format(u"0x%X (%<d)", {encryption_algo});
             switch (encryption_algo) {
-                case 0: strm << ", none"; break;
-                case 1: strm << ", DES-ECB"; break;
-                case 2: strm << ", DES-CBC"; break;
-                case 3: strm << ", TDES-ECB"; break;
+                case 0: disp << ", none"; break;
+                case 1: disp << ", DES-ECB"; break;
+                case 2: disp << ", DES-CBC"; break;
+                case 3: disp << ", TDES-ECB"; break;
                 default: break;
             }
         }
-        strm << std::endl;
-        strm << margin << UString::Format(u"PTS adjustment: 0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
-        strm << margin << UString::Format(u"CW index: 0x%X (%<d)", {buf.getUInt8()});
-        strm << UString::Format(u", tier: 0x%03X (%<d)", {buf.getBits<uint16_t>(12)}) << std::endl;
+        disp.out() << std::endl;
+        disp << margin << UString::Format(u"PTS adjustment: 0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
+        disp << margin << UString::Format(u"CW index: 0x%X (%<d)", {buf.getUInt8()});
+        disp << UString::Format(u", tier: 0x%03X (%<d)", {buf.getBits<uint16_t>(12)}) << std::endl;
         if (encrypted_packet != 0) {
             // The encrypted part starts at the command type.
-            strm << margin << "Encrypted command, cannot display" << std::endl;
+            disp << margin << "Encrypted command, cannot display" << std::endl;
         }
         else {
             // Unencrypted packet, can display everything.
             const size_t cmd_length = buf.getBits<size_t>(12);
             const uint8_t cmd_type = buf.getUInt8();
             buf.pushReadSize(buf.currentReadByteOffset() + cmd_length);
-            strm << margin << UString::Format(u"Command type: %s, size: %d bytes", {NameFromSection(u"SpliceCommandType", cmd_type, names::HEXA_FIRST), cmd_length}) << std::endl;
+            disp << margin << UString::Format(u"Command type: %s, size: %d bytes", {NameFromSection(u"SpliceCommandType", cmd_type, names::HEXA_FIRST), cmd_length}) << std::endl;
             switch (cmd_type) {
                 case SPLICE_SCHEDULE: {
                     SpliceSchedule cmd;
                     if (cmd.deserialize(buf.currentReadAddress(), buf.remainingReadBytes()) >= 0) {
-                        cmd.display(display, indent);
+                        cmd.display(disp, margin);
                         buf.skipBytes(buf.remainingReadBytes());
                     }
                     break;
@@ -431,7 +426,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& display, const ts
                 case SPLICE_INSERT: {
                     SpliceInsert cmd;
                     if (cmd.deserialize(buf.currentReadAddress(), cmd_length) >= 0) {
-                        cmd.display(display, indent);
+                        cmd.display(disp, margin);
                         buf.skipBytes(buf.remainingReadBytes());
                     }
                     break;
@@ -440,28 +435,28 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& display, const ts
                     SpliceTime cmd;
                     if (cmd.deserialize(buf.currentReadAddress(), cmd_length) >= 0) {
                         buf.skipBytes(buf.remainingReadBytes());
-                        strm << margin << "Time: " << cmd.toString() << std::endl;
+                        disp << margin << "Time: " << cmd.toString() << std::endl;
                     }
                     break;
                 }
                 case SPLICE_PRIVATE_COMMAND: {
-                    strm << margin << UString::Format(u"Command identifier: 0x%0X (%<'d)", {buf.getUInt32()}) << std::endl;
+                    disp << margin << UString::Format(u"Command identifier: 0x%0X (%<'d)", {buf.getUInt32()}) << std::endl;
                     break;
                 }
                 default:
                     // Invalid command.
                     break;
             }
-            display.displayPrivateData(u"Remaining command content", buf, NPOS, indent);
+            disp.displayPrivateData(u"Remaining command content", buf, NPOS, margin);
             buf.popState();  // now point after command_length
 
             // Splice descriptors.
-            display.displayDescriptorListWithLength(section, buf, indent, UString(), UString(), 16);
+            disp.displayDescriptorListWithLength(section, buf, margin, UString(), UString(), 16);
         }
     }
 
-    display.displayCRC32(section, buf, indent);
-    display.displayExtraData(buf, indent);
+    disp.displayCRC32(section, buf, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

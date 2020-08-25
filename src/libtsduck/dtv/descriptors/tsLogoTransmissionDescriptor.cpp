@@ -159,7 +159,7 @@ void ts::LogoTransmissionDescriptor::DisplayDescriptor(TablesDisplay& display, D
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size > 0) {
         const uint8_t ttype = data[0];
@@ -177,7 +177,7 @@ void ts::LogoTransmissionDescriptor::DisplayDescriptor(TablesDisplay& display, D
                          << margin << UString::Format(u"Logo version: 0x%03X (%d)", {version, version}) << std::endl
                          << margin << UString::Format(u"Download data id: 0x%X (%d)", {ddid, ddid}) << std::endl;
                 }
-                display.displayExtraData(data, size, indent);
+                display.displayExtraData(data, size, margin);
                 break;
             case 0x02:
                 if (size >= 2) {
@@ -185,13 +185,13 @@ void ts::LogoTransmissionDescriptor::DisplayDescriptor(TablesDisplay& display, D
                     data += 2; size -= 2;
                     strm << margin << UString::Format(u"Logo id: 0x%03X (%d)", {id, id}) << std::endl;
                 }
-                display.displayExtraData(data, size, indent);
+                display.displayExtraData(data, size, margin);
                 break;
             case 0x03:
                 strm << margin << "Logo characters: \"" << duck.decoded(data, size) << "\"" << std::endl;
                 break;
             default:
-                display.displayPrivateData(u"Reserved for future use", data, size, indent);
+                display.displayPrivateData(u"Reserved for future use", data, size, margin);
                 break;
         }
     }

@@ -107,7 +107,7 @@ void ts::SmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 6) {
         const uint32_t rate = GetUInt24(data) & 0x003FFFFF;
@@ -117,7 +117,7 @@ void ts::SmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& display, DI
         data += 6; size -= 6;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

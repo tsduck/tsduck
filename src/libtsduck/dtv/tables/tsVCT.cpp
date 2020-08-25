@@ -344,14 +344,9 @@ void ts::VCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a VCT section.
 //----------------------------------------------------------------------------
 
-void ts::VCT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
-    strm << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
     uint16_t num_channels = 0;
 
@@ -359,8 +354,8 @@ void ts::VCT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
-        strm << UString::Format(u", number of channels: %d", {num_channels = buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
+        disp << UString::Format(u", number of channels: %d", {num_channels = buf.getUInt8()}) << std::endl;
     }
 
     // Loop on all channel definitions.
@@ -373,35 +368,35 @@ void ts::VCT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 
         const UString name(buf.getUTF16(14));
         buf.skipBits(4);
-        strm << margin << "- Channel " << buf.getBits<uint16_t>(10);
-        strm << "." << buf.getBits<uint16_t>(10);
-        strm << ", short name: \"" << name << "\"" << std::endl;
-        strm << margin << "  Modulation: " << NameFromSection(u"ATSCModulationModes", buf.getUInt8());
-        strm << UString::Format(u", frequency: %'d", {buf.getUInt32()}) << std::endl;
-        strm << margin << UString::Format(u"  TS id: 0x%X (%<d)", {buf.getUInt16()});
-        strm << UString::Format(u", program number: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        strm << margin << UString::Format(u"  ETM location: %d", {buf.getBits<uint8_t>(2)});
-        strm << ", access controlled: " << UString::YesNo(buf.getBit() != 0) << std::endl;
+        disp << margin << "- Channel " << buf.getBits<uint16_t>(10);
+        disp << "." << buf.getBits<uint16_t>(10);
+        disp << ", short name: \"" << name << "\"" << std::endl;
+        disp << margin << "  Modulation: " << NameFromSection(u"ATSCModulationModes", buf.getUInt8());
+        disp << UString::Format(u", frequency: %'d", {buf.getUInt32()}) << std::endl;
+        disp << margin << UString::Format(u"  TS id: 0x%X (%<d)", {buf.getUInt16()});
+        disp << UString::Format(u", program number: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"  ETM location: %d", {buf.getBits<uint8_t>(2)});
+        disp << ", access controlled: " << UString::YesNo(buf.getBit() != 0) << std::endl;
         const bool hidden = buf.getBit() != 0;
         if (section.tableId() == TID_CVCT) {
             // The following two bits are used in CVCT only.
-            strm << margin << UString::Format(u"  Path select: %d", {buf.getBit()});
-            strm << ", out of band: " << UString::YesNo(buf.getBit() != 0) << std::endl;
+            disp << margin << UString::Format(u"  Path select: %d", {buf.getBit()});
+            disp << ", out of band: " << UString::YesNo(buf.getBit() != 0) << std::endl;
         }
         else {
             buf.skipBits(2);
         }
-        strm << margin << "  Hidden: " << UString::YesNo(hidden) << ", hide guide: " << UString::YesNo(buf.getBit() != 0) << std::endl;
+        disp << margin << "  Hidden: " << UString::YesNo(hidden) << ", hide guide: " << UString::YesNo(buf.getBit() != 0) << std::endl;
         buf.skipBits(3);
-        strm << margin << "  Service type: " << NameFromSection(u"ATSCServiceType", buf.getBits<uint8_t>(6));
-        strm << UString::Format(u", source id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << "  Service type: " << NameFromSection(u"ATSCServiceType", buf.getBits<uint8_t>(6));
+        disp << UString::Format(u", source id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
 
-        display.displayDescriptorListWithLength(section, buf, indent + 2, UString(), UString(), 10);
+        disp.displayDescriptorListWithLength(section, buf, margin + u"  ", UString(), UString(), 10);
     }
 
     // Common descriptors.
-    display.displayDescriptorListWithLength(section, buf, indent, u"Additional descriptors:", UString(), 10);
-    display.displayExtraData(buf, indent);
+    disp.displayDescriptorListWithLength(section, buf, margin, u"Additional descriptors:", UString(), 10);
+    disp.displayExtraData(buf, margin);
 }
 
 

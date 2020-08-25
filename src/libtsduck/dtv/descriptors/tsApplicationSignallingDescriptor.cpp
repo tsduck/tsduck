@@ -151,7 +151,7 @@ void ts::ApplicationSignallingDescriptor::DisplayDescriptor(TablesDisplay& displ
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 3) {
         uint16_t app_type = GetUInt16(data) & 0x7FFF;
@@ -160,5 +160,5 @@ void ts::ApplicationSignallingDescriptor::DisplayDescriptor(TablesDisplay& displ
         strm << margin << UString::Format(u"Application type: %d (0x%X), AIT Version: %d (0x%X)", {app_type, app_type, ait_version, ait_version}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }

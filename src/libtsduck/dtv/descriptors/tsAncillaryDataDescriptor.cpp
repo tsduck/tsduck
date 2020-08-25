@@ -100,7 +100,7 @@ void ts::AncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         uint8_t id = data[0];
@@ -113,7 +113,7 @@ void ts::AncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

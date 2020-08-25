@@ -127,7 +127,7 @@ void ts::IPMACGenericStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& 
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 7) {
         const uint16_t netid = GetUInt16(data);
@@ -138,10 +138,10 @@ void ts::IPMACGenericStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& 
              << margin << UString::Format(u"Modulation system type: 0x%X (%s)", {systype, ModulationTypeNames.name(systype)}) << std::endl
              << margin << UString::Format(u"Modulation system id: 0x%X (%d)", {sysid, sysid}) << std::endl
              << margin << UString::Format(u"Physical stream id: 0x%X (%d)", {strid, strid}) << std::endl;
-        display.displayPrivateData(u"Selector bytes", data + 7, size - 7, indent);
+        display.displayPrivateData(u"Selector bytes", data + 7, size - 7, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

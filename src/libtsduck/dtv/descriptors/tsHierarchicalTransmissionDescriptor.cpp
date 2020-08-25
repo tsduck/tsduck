@@ -107,7 +107,7 @@ void ts::HierarchicalTransmissionDescriptor::DisplayDescriptor(TablesDisplay& di
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 3) {
         const PID pid = GetUInt16(data + 1) & 0x1FFF;
@@ -116,7 +116,7 @@ void ts::HierarchicalTransmissionDescriptor::DisplayDescriptor(TablesDisplay& di
         data += 3; size -= 3;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

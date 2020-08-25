@@ -141,7 +141,7 @@ void ts::CaptionServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         size_t count = data[0] & 0x1F;
@@ -162,7 +162,7 @@ void ts::CaptionServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

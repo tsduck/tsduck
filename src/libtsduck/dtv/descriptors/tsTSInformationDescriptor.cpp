@@ -162,10 +162,10 @@ void ts::TSInformationDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size < 2) {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
     else {
         strm << margin << UString::Format(u"Remote control key id: 0x%X (%d)", {data[0], data[0]}) << std::endl;
@@ -187,7 +187,7 @@ void ts::TSInformationDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
             }
         }
 
-        display.displayPrivateData(u"Reserved for future use", data, size, indent);
+        display.displayPrivateData(u"Reserved for future use", data, size, margin);
     }
 }
 

@@ -117,7 +117,7 @@ void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 2) {
         uint16_t cas_id = GetUInt16(data);
@@ -125,7 +125,7 @@ void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
         strm << margin << "CA System Id: " << names::CASId(duck, cas_id, names::FIRST) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

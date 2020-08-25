@@ -132,7 +132,7 @@ void ts::NodeRelationDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         strm << margin << UString::Format(u"Reference type: %d", {(data[0] >> 4) & 0x0F}) << std::endl;
@@ -151,7 +151,7 @@ void ts::NodeRelationDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

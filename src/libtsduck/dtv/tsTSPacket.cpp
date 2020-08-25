@@ -1029,7 +1029,7 @@ std::ostream& ts::TSPacket::write(std::ostream& strm, Report& report) const
 
 std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t indent, size_t max_size) const
 {
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     // The 16 MSB contains flags specific to ts_dump_packet.
     // The 16 LSB contains flags for ts_hexa_dump.

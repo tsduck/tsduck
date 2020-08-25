@@ -100,7 +100,7 @@ void ts::SimpleApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& d
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     strm << margin << "Initial path: \"" << duck.decoded(data, size) << "\"" << std::endl;
 }

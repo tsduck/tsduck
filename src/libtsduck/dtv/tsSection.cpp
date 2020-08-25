@@ -585,7 +585,7 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
 
 std::ostream& ts::Section::dump(std::ostream& strm, int indent, uint16_t cas, bool no_header) const
 {
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
     const TID tid(tableId());
 
     // Build a fake context based on the standards which define this section.
@@ -616,6 +616,6 @@ std::ostream& ts::Section::dump(std::ostream& strm, int indent, uint16_t cas, bo
     }
 
     // Display section body
-    strm << UString::Dump(content(), size(), UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
+    strm << UString::Dump(content(), size(), UString::HEXA | UString::ASCII | UString::OFFSET, margin.size() + 2);
     return strm;
 }

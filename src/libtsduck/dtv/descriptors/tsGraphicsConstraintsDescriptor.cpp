@@ -117,16 +117,16 @@ void ts::GraphicsConstraintsDescriptor::DisplayDescriptor(TablesDisplay& display
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         strm << margin << "Can run without visible UI: " << UString::TrueFalse((data[0] & 0x04) != 0) << std::endl
              << margin << "Handles configuration changed: " << UString::TrueFalse((data[0] & 0x02) != 0) << std::endl
              << margin << "Handles externally controlled video: " << UString::TrueFalse((data[0] & 0x01) != 0) << std::endl;
-        display.displayPrivateData(u"Graphics configuration", data + 1, size - 1, indent);
+        display.displayPrivateData(u"Graphics configuration", data + 1, size - 1, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

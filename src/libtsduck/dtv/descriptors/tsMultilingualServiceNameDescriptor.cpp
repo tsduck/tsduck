@@ -131,7 +131,7 @@ void ts::MultilingualServiceNameDescriptor::DisplayDescriptor(TablesDisplay& dis
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 4) {
         const size_t prov_len = std::min<size_t>(data[3], size - 4);
@@ -147,7 +147,7 @@ void ts::MultilingualServiceNameDescriptor::DisplayDescriptor(TablesDisplay& dis
         strm << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

@@ -160,16 +160,12 @@ uint64_t ts::SpliceInsert::lowestPTS() const
 // Display a SpliceInsert command.
 //----------------------------------------------------------------------------
 
-void ts::SpliceInsert::display(TablesDisplay& display, int indent) const
+void ts::SpliceInsert::display(TablesDisplay& disp, const UString& margin) const
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-
-    strm << margin << UString::Format(u"Splice event id: 0x%X, cancel: %d", {event_id, canceled}) << std::endl;
+    disp << margin << UString::Format(u"Splice event id: 0x%X, cancel: %d", {event_id, canceled}) << std::endl;
 
     if (!canceled) {
-        strm << margin
+        disp << margin
              << "Out of network: " << UString::YesNo(splice_out)
              << ", program splice: " << UString::YesNo(program_splice)
              << ", duration set: " << UString::YesNo(use_duration)
@@ -178,23 +174,23 @@ void ts::SpliceInsert::display(TablesDisplay& display, int indent) const
 
         if (program_splice && !immediate) {
             // The complete program switches at a given time.
-            strm << margin << "Time PTS: " << program_pts.toString() << std::endl;
+            disp << margin << "Time PTS: " << program_pts.toString() << std::endl;
         }
         if (!program_splice) {
             // Program components switch individually.
-            strm << margin << "Number of components: " << components_pts.size() << std::endl;
+            disp << margin << "Number of components: " << components_pts.size() << std::endl;
             for (SpliceByComponent::const_iterator it = components_pts.begin(); it != components_pts.end(); ++it) {
-                strm << margin << UString::Format(u"  Component tag: 0x%X (%d)", {it->first, it->first});
+                disp << margin << UString::Format(u"  Component tag: 0x%X (%d)", {it->first, it->first});
                 if (!immediate) {
-                    strm << ", time PTS: " << it->second.toString();
+                    disp << ", time PTS: " << it->second.toString();
                 }
-                strm << std::endl;
+                disp.out() << std::endl;
             }
         }
         if (use_duration) {
-            strm << margin << UString::Format(u"Duration PTS: 0x%09X (%d), auto return: %s", {duration_pts, duration_pts, UString::YesNo(auto_return)}) << std::endl;
+            disp << margin << UString::Format(u"Duration PTS: 0x%09X (%d), auto return: %s", {duration_pts, duration_pts, UString::YesNo(auto_return)}) << std::endl;
         }
-        strm << margin << UString::Format(u"Unique program id: 0x%X (%d), avail: 0x%X (%d), avails expected: %d", {program_id, program_id, avail_num, avail_num, avails_expected}) << std::endl;
+        disp << margin << UString::Format(u"Unique program id: 0x%X (%d), avail: 0x%X (%d), avails expected: %d", {program_id, program_id, avail_num, avail_num, avails_expected}) << std::endl;
     }
 }
 

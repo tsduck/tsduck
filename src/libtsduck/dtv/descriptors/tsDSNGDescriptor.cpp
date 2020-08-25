@@ -102,7 +102,7 @@ void ts::DSNGDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, cons
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     strm << margin << "Station identification: \"" << duck.decoded(payload, size) << "\"" << std::endl;
 }

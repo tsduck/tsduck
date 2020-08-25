@@ -115,7 +115,7 @@ void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 2) {
         uint8_t content = data[0];
@@ -124,7 +124,7 @@ void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         strm << margin << UString::Format(u"Content: %s / User: 0x%X", {names::Content(content, names::FIRST), user}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

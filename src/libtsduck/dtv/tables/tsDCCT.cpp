@@ -228,14 +228,9 @@ void ts::DCCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a DCCT section.
 //----------------------------------------------------------------------------
 
-void ts::DCCT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::DCCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
-    strm << margin << UString::Format(u"DCC subtype: 0x%02X (%<d), DCC id: 0x%02X (%<d)", {section.tableIdExtension() >> 8, section.tableIdExtension() & 0xFF}) << std::endl;
+    disp << margin << UString::Format(u"DCC subtype: 0x%02X (%<d), DCC id: 0x%02X (%<d)", {section.tableIdExtension() >> 8, section.tableIdExtension() & 0xFF}) << std::endl;
 
     uint16_t dcc_test_count = 0;
 
@@ -243,41 +238,41 @@ void ts::DCCT::DisplaySection(TablesDisplay& display, const ts::Section& section
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
-        strm << UString::Format(u", number of DCC tests: %d", {dcc_test_count = buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
+        disp << UString::Format(u", number of DCC tests: %d", {dcc_test_count = buf.getUInt8()}) << std::endl;
     }
 
     // Loop on all upper-level definitions.
     while (!buf.error() && dcc_test_count-- > 0 && buf.remainingReadBytes() >= 15) {
 
         const uint8_t ctx = buf.getBit();
-        strm << margin << UString::Format(u"- DCC context: %d (%s)", {ctx, DCCContextNames.name(ctx)}) << std::endl;
+        disp << margin << UString::Format(u"- DCC context: %d (%s)", {ctx, DCCContextNames.name(ctx)}) << std::endl;
         buf.skipBits(3);
-        strm << margin << "  DCC from channel " << buf.getBits<uint16_t>(10);
-        strm << "." << buf.getBits<uint16_t>(10);
+        disp << margin << "  DCC from channel " << buf.getBits<uint16_t>(10);
+        disp << "." << buf.getBits<uint16_t>(10);
         buf.skipBits(4);
-        strm << " to channel " << buf.getBits<uint16_t>(10);
-        strm << "." << buf.getBits<uint16_t>(10) << std::endl;
-        strm << margin << "  Start UTC: " << Time::GPSSecondsToUTC(buf.getUInt32()).format(Time::DATETIME) << std::endl;
-        strm << margin << "  End UTC:   " << Time::GPSSecondsToUTC(buf.getUInt32()).format(Time::DATETIME) << std::endl;
+        disp << " to channel " << buf.getBits<uint16_t>(10);
+        disp << "." << buf.getBits<uint16_t>(10) << std::endl;
+        disp << margin << "  Start UTC: " << Time::GPSSecondsToUTC(buf.getUInt32()).format(Time::DATETIME) << std::endl;
+        disp << margin << "  End UTC:   " << Time::GPSSecondsToUTC(buf.getUInt32()).format(Time::DATETIME) << std::endl;
 
         size_t dcc_term_count = buf.getUInt8();
-        strm << margin << "  Number of DCC selection terms: " << dcc_term_count << std::endl;
+        disp << margin << "  Number of DCC selection terms: " << dcc_term_count << std::endl;
 
         // Loop on all DCC selection terms.
         while (!buf.error() && dcc_term_count-- > 0 && buf.remainingReadBytes() >= 9) {
-            strm << margin << "  - DCC selection type: " << NameFromSection(u"DCCSelectionType", buf.getUInt8(), names::FIRST) << std::endl;
-            strm << margin << UString::Format(u"    DCC selection id: 0x%X", {buf.getUInt64()}) << std::endl;
-            display.displayDescriptorListWithLength(section, buf, indent + 4, u"DCC selection term descriptors:", UString(), 10);
+            disp << margin << "  - DCC selection type: " << NameFromSection(u"DCCSelectionType", buf.getUInt8(), names::FIRST) << std::endl;
+            disp << margin << UString::Format(u"    DCC selection id: 0x%X", {buf.getUInt64()}) << std::endl;
+            disp.displayDescriptorListWithLength(section, buf, margin + u"    ", u"DCC selection term descriptors:", UString(), 10);
         }
 
         // Display descriptor list for this DCC test.
-        display.displayDescriptorListWithLength(section, buf, indent + 2, u"DCC test descriptors:", UString(), 10);
+        disp.displayDescriptorListWithLength(section, buf, margin + u"  ", u"DCC test descriptors:", UString(), 10);
     }
 
     // Display descriptor list for the global table.
-    display.displayDescriptorListWithLength(section, buf, indent, u"Additional descriptors:", UString(), 10);
-    display.displayExtraData(buf, indent);
+    disp.displayDescriptorListWithLength(section, buf, margin, u"Additional descriptors:", UString(), 10);
+    disp.displayExtraData(buf, margin);
 }
 
 

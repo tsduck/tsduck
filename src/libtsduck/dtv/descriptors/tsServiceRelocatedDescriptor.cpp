@@ -116,7 +116,7 @@ void ts::ServiceRelocatedDescriptor::DisplayDescriptor(TablesDisplay& display, D
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 6) {
         strm << margin << UString::Format(u"Old original network id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
@@ -125,7 +125,7 @@ void ts::ServiceRelocatedDescriptor::DisplayDescriptor(TablesDisplay& display, D
         data += 6; size -= 6;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

@@ -97,7 +97,7 @@ void ts::ServiceDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     std::ostream& strm(display.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
     PSIBuffer buf(display.duck(), data, size);
 
     if (size >= 1) {
@@ -107,7 +107,7 @@ void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         strm << margin << "Service: \"" << service << "\", Provider: \"" << provider << "\"" << std::endl;
     }
 
-    display.displayExtraData(buf, indent);
+    display.displayExtraData(buf, margin);
 }
 
 

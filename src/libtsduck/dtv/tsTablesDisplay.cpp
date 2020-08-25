@@ -130,23 +130,21 @@ bool ts::TablesDisplay::loadArgs(DuckContext& duck, Args &args)
 // A utility method to dump extraneous bytes after expected data.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayExtraData(PSIBuffer& buf, int indent)
+void ts::TablesDisplay::displayExtraData(PSIBuffer& buf, const UString& margin)
 {
     // Reset read error to restart at last read point.
     buf.clearReadError();
-    displayExtraData(buf.currentReadAddress(), buf.remainingReadBytes(), indent);
+    displayExtraData(buf.currentReadAddress(), buf.remainingReadBytes(), margin);
     buf.skipBytes(buf.remainingReadBytes());
-    return _duck.out();
 }
 
-std::ostream& ts::TablesDisplay::displayExtraData(const void* data, size_t size, int indent)
+void ts::TablesDisplay::displayExtraData(const void* data, size_t size, const UString& margin)
 {
     std::ostream& strm(_duck.out());
     if (size > 0) {
-        strm << std::string(indent, ' ') << "Extraneous " << size << " bytes:" << std::endl
-             << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
+        strm << margin << "Extraneous " << size << " bytes:" << std::endl;
+        strm << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, margin.size());
     }
-    return strm;
 }
 
 
@@ -154,30 +152,24 @@ std::ostream& ts::TablesDisplay::displayExtraData(const void* data, size_t size,
 // A utility method to dump private binary data in a descriptor or section.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayPrivateData(const UString& title, const void* data, size_t size, int indent, size_t single_line_max)
+void ts::TablesDisplay::displayPrivateData(const UString& title, const void* data, size_t size, const UString& margin, size_t single_line_max)
 {
     std::ostream& strm(_duck.out());
-    const std::string margin(indent, ' ');
 
     if (size > single_line_max) {
-        strm << margin << title << " (" << size << " bytes):" << std::endl
-             << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, indent + 2, 16);
+        strm << margin << title << " (" << size << " bytes):" << std::endl;
+        strm << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, margin.size() + 2, 16);
     }
     else if (size > 0) {
-        strm << margin << title << " (" << size << " bytes): "
-             << UString::Dump(data, size, UString::SINGLE_LINE)
-             << std::endl;
+        strm << margin << title << " (" << size << " bytes): " << UString::Dump(data, size, UString::SINGLE_LINE) << std::endl;
     }
-
-    return strm;
 }
 
-std::ostream& ts::TablesDisplay::displayPrivateData(const UString& title, PSIBuffer& buf, size_t size, int indent, size_t single_line_max)
+void ts::TablesDisplay::displayPrivateData(const UString& title, PSIBuffer& buf, size_t size, const UString& margin, size_t single_line_max)
 {
     size = std::min(size, buf.remainingReadBytes());
-    displayPrivateData(title, buf.currentReadAddress(), size, indent, single_line_max);
+    displayPrivateData(title, buf.currentReadAddress(), size, margin, single_line_max);
     buf.skipBytes(size);
-    return _duck.out();
 }
 
 
@@ -185,25 +177,24 @@ std::ostream& ts::TablesDisplay::displayPrivateData(const UString& title, PSIBuf
 // Display a table on the output stream.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayTable(const BinaryTable& table, int indent, uint16_t cas)
+void ts::TablesDisplay::displayTable(const BinaryTable& table, const UString& margin, uint16_t cas)
 {
     std::ostream& strm(_duck.out());
 
     // Filter invalid tables
     if (!table.isValid()) {
-        return strm;
+        return;
     }
 
     // Display hexa dump of each section in the table
     if (_raw_dump) {
         for (size_t i = 0; i < table.sectionCount(); ++i) {
             const Section& section(*table.sectionAt(i));
-            strm << UString::Dump(section.content(), section.size(), _raw_flags | UString::BPL, indent, 16) << std::endl;
+            strm << UString::Dump(section.content(), section.size(), _raw_flags | UString::BPL, margin.size(), 16) << std::endl;
         }
-        return strm;
+        return;
     }
 
-    const std::string margin(indent, ' ');
     const TID tid = table.tableId();
     cas = _duck.casId(cas);
 
@@ -236,10 +227,8 @@ std::ostream& ts::TablesDisplay::displayTable(const BinaryTable& table, int inde
             strm << ", next (not yet applicable)";
         }
         strm << ":" << std::endl;
-        displaySection(*section, indent + 4, cas, true);
+        displaySection(*section, margin + u"    ", cas, true);
     }
-
-    return strm;
 }
 
 
@@ -247,24 +236,24 @@ std::ostream& ts::TablesDisplay::displayTable(const BinaryTable& table, int inde
 // Display a section on the output stream.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displaySection(const Section& section, int indent, uint16_t cas, bool no_header)
+void ts::TablesDisplay::displaySection(const Section& section, const UString& margin, uint16_t cas, bool no_header)
 {
     std::ostream& strm(_duck.out());
 
     // Filter invalid section
     if (!section.isValid()) {
-        return strm;
+        return;
     }
 
     // Display hexa dump of the section
     if (_raw_dump) {
-        strm << UString::Dump(section.content(), section.size(), _raw_flags | UString::BPL, indent, 16) << std::endl;
-        return strm;
+        strm << UString::Dump(section.content(), section.size(), _raw_flags | UString::BPL, margin.size(), 16) << std::endl;
+        return;
     }
 
-    const std::string margin(indent, ' ');
     const TID tid = section.tableId();
     cas = _duck.casId(cas);
+    UString extra_margin;
 
     // Display common header lines.
     if (!no_header) {
@@ -279,18 +268,18 @@ std::ostream& ts::TablesDisplay::displaySection(const Section& section, int inde
         }
         else {
             strm << margin << "  Section: " << int(section.sectionNumber())
-                << " (last: " << int(section.lastSectionNumber())
-                << "), version: " << int(section.version());
+                 << " (last: " << int(section.lastSectionNumber())
+                 << "), version: " << int(section.version());
             if (section.isNext()) {
                 strm << ", next (not yet applicable)";
             }
         }
         strm << ", size: " << section.size() << " bytes" << std::endl;
-        indent += 2;
+        extra_margin = u"  ";
     }
 
     // Display section body
-    return displaySectionData(section, indent, cas);
+    displaySectionData(section, margin + extra_margin, cas);
 }
 
 
@@ -298,7 +287,7 @@ std::ostream& ts::TablesDisplay::displaySection(const Section& section, int inde
 // Display a section on the output stream.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int indent, uint16_t cas)
+void ts::TablesDisplay::displaySectionData(const Section& section, const UString& margin, uint16_t cas)
 {
     // Update CAS with default one if necessary.
     cas = _duck.casId(cas);
@@ -307,12 +296,12 @@ std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int 
     DisplaySectionFunction handler = PSIRepository::Instance()->getSectionDisplay(section.tableId(), _duck.standards(), section.sourcePID(), cas);
 
     if (handler != nullptr) {
-        handler(*this, section, indent);
+        PSIBuffer buf(_duck, section.payload(), section.payloadSize());
+        handler(*this, section, buf, margin);
     }
     else {
-        displayUnkownSectionData(section, indent);
+        displayUnkownSectionData(section, margin);
     }
-    return _duck.out();
 }
 
 
@@ -320,7 +309,7 @@ std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int 
 // Display the payload of a section on the output stream as a one-line "log" message.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::logSectionData(const Section& section, const UString& header, size_t max_bytes, uint16_t cas)
+void ts::TablesDisplay::logSectionData(const Section& section, const UString& header, size_t max_bytes, uint16_t cas)
 {
     // Update CAS with default one if necessary.
     cas = _duck.casId(cas);
@@ -334,7 +323,6 @@ std::ostream& ts::TablesDisplay::logSectionData(const Section& section, const US
     // Output exactly one line.
     std::ostream& strm(_duck.out());
     strm << header << handler(section, max_bytes) << std::endl;
-    return strm;
 }
 
 
@@ -359,9 +347,9 @@ ts::UString ts::TablesDisplay::LogUnknownSectionData(const Section& section, siz
 // Display the content of an unknown descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayUnkownDescriptor(DID did, const uint8_t * payload, size_t size, int indent, TID tid, PDS pds)
+void ts::TablesDisplay::displayUnkownDescriptor(DID did, const uint8_t * payload, size_t size, const UString& margin, TID tid, PDS pds)
 {
-    _duck.out() << UString::Dump(payload, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
+    _duck.out() << UString::Dump(payload, size, UString::HEXA | UString::ASCII | UString::OFFSET, margin.size());
 }
 
 
@@ -369,10 +357,9 @@ void ts::TablesDisplay::displayUnkownDescriptor(DID did, const uint8_t * payload
 // Display an unknown section
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayUnkownSectionData(const ts::Section& section, int indent)
+void ts::TablesDisplay::displayUnkownSectionData(const ts::Section& section, const UString& margin)
 {
     std::ostream& strm(_duck.out());
-    const std::string margin(indent, ' ');
 
     // The table id extension was not yet displayed since it depends on the table id.
     if (section.isLongSection()) {
@@ -400,20 +387,20 @@ void ts::TablesDisplay::displayUnkownSectionData(const ts::Section& section, int
                        tlvStart - index,   // offset of TLV records in area to display
                        tlvSize,            // total size of TLV records
                        index,              // offset to display for start of area
-                       indent,             // left margin
+                       margin.size(),      // left margin
                        0,                  // inner margin
                        *it);               // TLV syntax
             index = endIndex;
 
             // Display a separator after TLV area.
             if (index < payloadSize) {
-                strm << UString::Format(u"%*s%04X:  End of TLV area", {indent, "", index}) << std::endl;
+                strm << margin << UString::Format(u"%04X:  End of TLV area", {index}) << std::endl;
             }
         }
     }
 
     // Display remaining binary data.
-    strm << UString::Dump(payload + index, payloadSize - index, UString::HEXA | UString::ASCII | UString::OFFSET, indent, UString::DEFAULT_HEXA_LINE_WIDTH, index);
+    strm << UString::Dump(payload + index, payloadSize - index, UString::HEXA | UString::ASCII | UString::OFFSET, margin.size(), UString::DEFAULT_HEXA_LINE_WIDTH, index);
 }
 
 
@@ -499,13 +486,10 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
 // Display a descriptor on the output stream.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayDescriptor(const Descriptor& desc, int indent, TID tid, PDS pds, uint16_t cas)
+void ts::TablesDisplay::displayDescriptor(const Descriptor& desc, const UString& margin, TID tid, PDS pds, uint16_t cas)
 {
     if (desc.isValid()) {
-        return displayDescriptorData(desc.tag(), desc.payload(), desc.payloadSize(), indent, tid, _duck.actualPDS(pds), cas);
-    }
-    else {
-        return _duck.out();
+        displayDescriptorData(desc.tag(), desc.payload(), desc.payloadSize(), margin, tid, _duck.actualPDS(pds), cas);
     }
 }
 
@@ -514,13 +498,13 @@ std::ostream& ts::TablesDisplay::displayDescriptor(const Descriptor& desc, int i
 // Display a list of descriptors from a PSI Buffer
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayDescriptorList(const Section& section,
-                                                       PSIBuffer& buf,
-                                                       int indent,
-                                                       const UString& title,
-                                                       const UString& empty_text,
-                                                       size_t length,
-                                                       uint16_t cas)
+void ts::TablesDisplay::displayDescriptorList(const Section& section,
+                                              PSIBuffer& buf,
+                                              const UString& margin,
+                                              const UString& title,
+                                              const UString& empty_text,
+                                              size_t length,
+                                              uint16_t cas)
 {
     if (length == NPOS) {
         length = buf.remainingReadBytes();
@@ -530,17 +514,16 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const Section& section,
     }
     else if (!buf.error()) {
         if (!title.empty() && (length > 0 || !empty_text.empty())) {
-            _duck.out() << std::string(indent, ' ') << title << std::endl;
+            _duck.out() << margin << title << std::endl;
         }
         if (length > 0) {
-            displayDescriptorList(section, buf.currentReadAddress(), length, indent, cas);
+            displayDescriptorList(section, buf.currentReadAddress(), length, margin, cas);
             buf.skipBytes(length);
         }
         else if (!empty_text.empty()) {
-            _duck.out() << std::string(indent, ' ') << "- " << empty_text << std::endl;
+            _duck.out() << margin << "- " << empty_text << std::endl;
         }
     }
-    return _duck.out();
 }
 
 
@@ -548,16 +531,16 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const Section& section,
 // Display a list of descriptors (with preceding length) from a PSI buffer
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayDescriptorListWithLength(const Section& section,
+void ts::TablesDisplay::displayDescriptorListWithLength(const Section& section,
                                                                  PSIBuffer& buf,
-                                                                 int indent,
+                                                                 const UString& margin,
                                                                  const UString& title,
                                                                  const UString& empty_text,
                                                                  size_t length_bits,
                                                                  uint16_t cas)
 {
     const size_t length = buf.getUnalignedLength(length_bits);
-    return displayDescriptorList(section, buf, indent, title, empty_text, length, cas);
+    displayDescriptorList(section, buf, margin, title, empty_text, length, cas);
 }
 
 
@@ -565,10 +548,9 @@ std::ostream& ts::TablesDisplay::displayDescriptorListWithLength(const Section& 
 // Display a list of descriptors from a memory area
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayDescriptorList(const Section& section, const void* data, size_t size, int indent, uint16_t cas)
+void ts::TablesDisplay::displayDescriptorList(const Section& section, const void* data, size_t size, const UString& margin, uint16_t cas)
 {
     std::ostream& strm(_duck.out());
-    const std::string margin(indent, ' ');
     const uint8_t* desc_start = reinterpret_cast<const uint8_t*>(data);
     size_t desc_index = 0;
     const TID tid = section.tableId();
@@ -606,7 +588,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const Section& section, c
         }
 
         // Display descriptor.
-        displayDescriptorData(desc_tag, desc_start, desc_length, indent + 2, tid, pds, cas);
+        displayDescriptorData(desc_tag, desc_start, desc_length, margin + u"  ", tid, pds, cas);
 
         // Move to next descriptor for next iteration
         desc_start += desc_length;
@@ -614,8 +596,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const Section& section, c
     }
 
     // Report extraneous bytes
-    displayExtraData(desc_start, size, indent);
-    return strm;
+    displayExtraData(desc_start, size, margin);
 }
 
 
@@ -623,10 +604,9 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const Section& section, c
 // Display a list of descriptors.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayDescriptorList(const DescriptorList& list, int indent, uint16_t cas)
+void ts::TablesDisplay::displayDescriptorList(const DescriptorList& list, const UString& margin, uint16_t cas)
 {
     std::ostream& strm(_duck.out());
-    const std::string margin(indent, ' ');
     const TID tid = list.tableId();
 
     for (size_t i = 0; i < list.count(); ++i) {
@@ -636,11 +616,9 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const DescriptorList& lis
             strm << margin << "- Descriptor " << i << ": "
                  << names::DID(desc->tag(), _duck.actualPDS(pds), tid, names::VALUE | names::BOTH) << ", "
                  << desc->size() << " bytes" << std::endl;
-            displayDescriptor(*desc, indent + 2, tid, _duck.actualPDS(pds), cas);
+            displayDescriptor(*desc, margin + u"  ", tid, _duck.actualPDS(pds), cas);
         }
     }
-
-    return strm;
 }
 
 
@@ -648,7 +626,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const DescriptorList& lis
 // Display a descriptor on the output stream.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds, uint16_t cas)
+void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, size_t size, const UString& margin, TID tid, PDS pds, uint16_t cas)
 {
     std::ostream& strm(_duck.out());
 
@@ -664,7 +642,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* p
         edid = EDID::ExtensionMPEG(ext);
         size--;
         // Display extended descriptor header
-        strm << std::string(indent, ' ') << "MPEG extended descriptor: " << NameFromSection(u"MPEGExtendedDescriptorId", ext, names::VALUE | names::BOTH) << std::endl;
+        strm << margin << "MPEG extended descriptor: " << NameFromSection(u"MPEGExtendedDescriptorId", ext, names::VALUE | names::BOTH) << std::endl;
     }
     else if (did == DID_DVB_EXTENSION && size >= 1) {
         // Extension descriptor, the extension id is in the first byte of the payload.
@@ -672,7 +650,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* p
         edid = EDID::ExtensionDVB(ext);
         size--;
         // Display extended descriptor header
-        strm << std::string(indent, ' ') << "Extended descriptor: " << names::EDID(ext, names::VALUE | names::BOTH) << std::endl;
+        strm << margin << "Extended descriptor: " << names::EDID(ext, names::VALUE | names::BOTH) << std::endl;
     }
     else {
         // Simple descriptor.
@@ -683,13 +661,11 @@ std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* p
     DisplayDescriptorFunction handler = PSIRepository::Instance()->getDescriptorDisplay(edid, tid);
 
     if (handler != nullptr) {
-        handler(*this, did, payload, size, indent, tid, _duck.actualPDS(pds));
+        handler(*this, did, payload, size, margin.size(), tid, _duck.actualPDS(pds));
     }
     else {
-        displayUnkownDescriptor(did, payload, size, indent, tid, _duck.actualPDS(pds));
+        displayUnkownDescriptor(did, payload, size, margin, tid, _duck.actualPDS(pds));
     }
-
-    return strm;
 }
 
 
@@ -697,13 +673,13 @@ std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* p
 // Display a CRC32 from a section.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayCRC32(const Section& section, int indent)
+void ts::TablesDisplay::displayCRC32(const Section& section, const UString& margin)
 {
     std::ostream& strm(_duck.out());
     const uint32_t sect_crc32 = GetUInt32(section.content() + section.size() - 4);
     const CRC32 comp_crc32(section.content(), section.size() - 4);
 
-    strm << std::string(indent, ' ') << UString::Format(u"CRC32: 0x%X ", {sect_crc32});
+    strm << margin << UString::Format(u"CRC32: 0x%X ", {sect_crc32});
     if (sect_crc32 == comp_crc32) {
         strm << "(OK)";
     }
@@ -711,16 +687,14 @@ std::ostream& ts::TablesDisplay::displayCRC32(const Section& section, int indent
         strm << UString::Format(u"(WRONG, expected 0x%X)", {comp_crc32.value()});
     }
     strm << std::endl;
-    return strm;
 }
 
-std::ostream& ts::TablesDisplay::displayCRC32(const Section& section, PSIBuffer& buf, int indent)
+void ts::TablesDisplay::displayCRC32(const Section& section, PSIBuffer& buf, const UString& margin)
 {
     if (!buf.error() && buf.remainingReadBytes() == 4) {
-        displayCRC32(section, indent);
+        displayCRC32(section, margin);
         buf.skipBytes(4);
     }
-    return _duck.out();
 }
 
 
@@ -728,13 +702,11 @@ std::ostream& ts::TablesDisplay::displayCRC32(const Section& section, PSIBuffer&
 // Display an ATSC multiple_string_structure() from a PSI buffer.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayATSCMultipleString(PSIBuffer& buf, size_t length_bytes, int indent, const UString& title)
+void ts::TablesDisplay::displayATSCMultipleString(PSIBuffer& buf, size_t length_bytes, const UString& margin, const UString& title)
 {
-    std::ostream& strm(_duck.out());
-
     if (buf.error() || !buf.readIsByteAligned() || length_bytes > 8) {
         buf.setUserError();
-        return strm;
+        return;
     }
 
     // Get maximum size of structure.
@@ -742,7 +714,7 @@ std::ostream& ts::TablesDisplay::displayATSCMultipleString(PSIBuffer& buf, size_
     if (length_bytes > 0) {
         mss_size = buf.getBits<size_t>(8 * length_bytes);
         if (buf.error()) {
-            return strm;
+            return;
         }
     }
 
@@ -750,11 +722,9 @@ std::ostream& ts::TablesDisplay::displayATSCMultipleString(PSIBuffer& buf, size_
     const uint8_t* data = buf.currentReadAddress();
     const size_t initial_size = buf.remainingReadBytes();
     size_t size = initial_size;
-    ATSCMultipleString::Display(*this, title, indent, data, size, mss_size);
+    ATSCMultipleString::Display(*this, title, margin, data, size, mss_size);
 
     // Adjust read pointer after the structure.
     assert(size <= initial_size);
     buf.skipBytes(initial_size - size);
-
-    return strm;
 }

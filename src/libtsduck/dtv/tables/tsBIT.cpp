@@ -177,31 +177,26 @@ void ts::BIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a BIT section.
 //----------------------------------------------------------------------------
 
-void ts::BIT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::BIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
-    strm << margin << UString::Format(u"Original network id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
     if (buf.endOfRead()) {
         buf.setUserError();
     }
     else {
         buf.skipBits(3);
-        strm << margin << UString::Format(u"Broadcast view property: %s", {buf.getBit() != 0}) << std::endl;
-        display.displayDescriptorListWithLength(section, buf, indent, u"Common descriptors:");
+        disp << margin << UString::Format(u"Broadcast view property: %s", {buf.getBit() != 0}) << std::endl;
+        disp.displayDescriptorListWithLength(section, buf, margin, u"Common descriptors:");
     }
 
     // Loop across all broadcasters
     while (!buf.error() && buf.remainingReadBytes() >= 3) {
-        strm << margin << UString::Format(u"Broadcaster id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-        display.displayDescriptorListWithLength(section, buf, indent);
+        disp << margin << UString::Format(u"Broadcaster id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp.displayDescriptorListWithLength(section, buf, margin);
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

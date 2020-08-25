@@ -117,24 +117,18 @@ void ts::ETT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a ETT section.
 //----------------------------------------------------------------------------
 
-void ts::ETT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::ETT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     if (buf.remainingReadBytes() < 5) {
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"ETT table id extension: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
-        strm << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
-        strm << UString::Format(u", ETM id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
-        display.displayATSCMultipleString(buf, 0, indent, u"Extended text message: ");
+        disp << margin << UString::Format(u"ETT table id extension: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
+        disp << UString::Format(u", ETM id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+        disp.displayATSCMultipleString(buf, 0, margin, u"Extended text message: ");
     }
-
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

@@ -114,9 +114,9 @@ void ts::AbstractDescriptorsTable::serializePayload(BinaryTable& table, PSIBuffe
 // A static method to display a section.
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::AbstractDescriptorsTable::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    display.displayDescriptorList(section, section.payload(), section.payloadSize(), indent);
+    disp.displayDescriptorList(section, section.payload(), section.payloadSize(), margin);
 }
 
 

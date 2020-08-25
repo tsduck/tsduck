@@ -95,7 +95,9 @@ void ts::AFExtensionsDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
     // Important: With extension descriptors, the DisplayDescriptor() function is called
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
-    display.displayExtraData(data, size, indent);
+
+    const UString margin(indent, ' ');
+    display.displayExtraData(data, size, margin);
 }
 
 

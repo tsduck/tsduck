@@ -131,7 +131,7 @@ void ts::DTSDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 5) {
         uint8_t sample_rate_code = (data[0] >> 4) & 0x0F;
@@ -151,10 +151,10 @@ void ts::DTSDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
              << margin << "LFE (Low Frequency Effect) audio channel: " << UString::OnOff(lfe_flag) << std::endl
              << margin << "Extended surround flag: " << names::DTSExtendedSurroundMode(extended_surround_flag) << std::endl;
 
-        display.displayPrivateData(u"Additional information", data, size, indent);
+        display.displayPrivateData(u"Additional information", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

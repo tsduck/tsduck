@@ -184,7 +184,7 @@ void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 11) {
         uint8_t fec_outer = data[5] & 0x0F;
@@ -232,5 +232,5 @@ void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display
         strm << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }

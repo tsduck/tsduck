@@ -109,12 +109,12 @@ void ts::ShortSmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& displa
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         strm << margin << UString::Format(u"Smoothing buffer size: %s", {NameFromSection(u"SmoothingBufferSize", (data[0] >> 6) & 0x03, names::FIRST)}) << std::endl
              << margin << UString::Format(u"Smoothing buffer leak rate: %s", {NameFromSection(u"SmoothingBufferLeakRate", data[0] & 0x3F, names::FIRST)}) << std::endl;
-        display.displayPrivateData(u"DVB-reserved data", data + 1, size - 1, indent);
+        display.displayPrivateData(u"DVB-reserved data", data + 1, size - 1, margin);
     }
 }
 

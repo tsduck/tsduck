@@ -111,14 +111,14 @@ void ts::ConditionalPlaybackDescriptor::deserialize(DuckContext& duck, const Des
 
 void ts::ConditionalPlaybackDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const UString margin(indent, ' ');
+
     if (size < 4) {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
     else {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
-
         // Extract common part
         const uint16_t casid = GetUInt16(data);
         uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
@@ -128,7 +128,7 @@ void ts::ConditionalPlaybackDescriptor::DisplayDescriptor(TablesDisplay& display
         strm << margin << "CA System Id: " << names::CASId(duck, casid, names::FIRST) << std::endl
              << margin << UString::Format(u"%s PID: 0x%X (%d)", {dtype, pid, pid}) << std::endl;
 
-        display.displayPrivateData(u"Private CA data", data, size, indent);
+        display.displayPrivateData(u"Private CA data", data, size, margin);
     }
 }
 

@@ -97,19 +97,14 @@ void ts::DiscontinuityInformationTable::serializePayload(BinaryTable& table, PSI
 // A static method to display a DiscontinuityInformationTable section.
 //----------------------------------------------------------------------------
 
-void ts::DiscontinuityInformationTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::DiscontinuityInformationTable::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     if (buf.remainingReadBytes() > 0) {
-        strm << margin << "Transition: " << UString::YesNo(buf.getBit() != 0) << std::endl;
+        disp << margin << "Transition: " << UString::YesNo(buf.getBit() != 0) << std::endl;
         buf.skipBits(7);
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

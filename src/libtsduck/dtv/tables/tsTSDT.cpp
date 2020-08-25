@@ -29,7 +29,6 @@
 
 #include "tsTSDT.h"
 #include "tsBinaryTable.h"
-#include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 TSDUCK_SOURCE;

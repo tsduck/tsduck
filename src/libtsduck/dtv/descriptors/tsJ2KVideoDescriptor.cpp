@@ -142,7 +142,7 @@ void ts::J2KVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 24) {
         const uint16_t profile_and_level = GetUInt16(data);
@@ -166,10 +166,10 @@ void ts::J2KVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
              << margin << UString::Format(u"Still mode: %s", {still_mode}) << std::endl
              << margin << UString::Format(u"Interlaced video: %s", {interlaced_video}) << std::endl;
 
-        display.displayPrivateData(u"Private data", data + 24, size - 24, indent);
+        display.displayPrivateData(u"Private data", data + 24, size - 24, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

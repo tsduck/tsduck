@@ -113,7 +113,7 @@ void ts::ServiceAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         strm << margin << "Availability: " << UString::TrueFalse((data[0] & 0x80) != 0) << std::endl;
@@ -125,7 +125,7 @@ void ts::ServiceAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

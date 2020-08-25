@@ -126,5 +126,6 @@ void ts::CIAncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& display, DI
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    display.displayPrivateData(u"Ancillary data", data, size, indent);
+    const UString margin(indent, ' ');
+    display.displayPrivateData(u"Ancillary data", data, size, margin);
 }

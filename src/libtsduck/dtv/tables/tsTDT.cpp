@@ -109,18 +109,12 @@ void ts::TDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a TDT section.
 //----------------------------------------------------------------------------
 
-void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::TDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     if (buf.remainingReadBytes() >= 5) {
-        strm << margin << "UTC time: " << buf.getFullMJD().format(Time::DATETIME) << std::endl;
+        disp << margin << "UTC time: " << buf.getFullMJD().format(Time::DATETIME) << std::endl;
     }
-
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

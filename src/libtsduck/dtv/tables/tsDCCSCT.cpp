@@ -243,21 +243,16 @@ void ts::DCCSCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a DCCSCT section.
 //----------------------------------------------------------------------------
 
-void ts::DCCSCT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     uint16_t updates_defined = 0;
 
     if (buf.remainingReadBytes() < 2) {
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"Protocol version: %d, DCCSCT type: 0x%X", {buf.getUInt8(), section.tableIdExtension()});
-        strm << UString::Format(u", number of updates: %d", {updates_defined = buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %d, DCCSCT type: 0x%X", {buf.getUInt8(), section.tableIdExtension()});
+        disp << UString::Format(u", number of updates: %d", {updates_defined = buf.getUInt8()}) << std::endl;
     }
 
     // Loop on all updates definitions.
@@ -269,7 +264,7 @@ void ts::DCCSCT::DisplaySection(TablesDisplay& display, const ts::Section& secti
         }
 
         const uint8_t utype = buf.getUInt8();
-        strm << margin << UString::Format(u"- Update type: 0x%X (%s)", {utype, UpdateTypeNames.name(utype)}) << std::endl;
+        disp << margin << UString::Format(u"- Update type: 0x%X (%s)", {utype, UpdateTypeNames.name(utype)}) << std::endl;
 
         // Reduce read area to update data.
         buf.pushReadSizeFromLength(8);
@@ -278,44 +273,44 @@ void ts::DCCSCT::DisplaySection(TablesDisplay& display, const ts::Section& secti
         switch (utype) {
             case new_genre_category: {
                 if (buf.remainingReadBytes() >= 1) {
-                    strm << margin << UString::Format(u"  Genre category code: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-                    display.displayATSCMultipleString(buf, 0, indent + 2, u"Genre category name: ");
+                    disp << margin << UString::Format(u"  Genre category code: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+                    disp.displayATSCMultipleString(buf, 0, margin + u"  ", u"Genre category name: ");
                 }
                 break;
             }
             case new_state: {
                 if (buf.remainingReadBytes() >= 1) {
-                    strm << margin << UString::Format(u"  DCC state location code: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-                    display.displayATSCMultipleString(buf, 0, indent + 2, u"DCC state location: ");
+                    disp << margin << UString::Format(u"  DCC state location code: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+                    disp.displayATSCMultipleString(buf, 0, margin + u"  ", u"DCC state location: ");
                 }
                 break;
             }
             case new_county: {
                 if (buf.remainingReadBytes() >= 3) {
-                    strm << margin << UString::Format(u"  State code: 0x%X (%<d)", {buf.getUInt8()});
+                    disp << margin << UString::Format(u"  State code: 0x%X (%<d)", {buf.getUInt8()});
                     buf.skipBits(6);
-                    strm << UString::Format(u", DCC county location code: 0x%03X (%<d)", {buf.getBits<uint16_t>(10)}) << std::endl;
-                    display.displayATSCMultipleString(buf, 0, indent + 2, u"DCC county location: ");
+                    disp << UString::Format(u", DCC county location code: 0x%03X (%<d)", {buf.getBits<uint16_t>(10)}) << std::endl;
+                    disp.displayATSCMultipleString(buf, 0, margin + u"  ", u"DCC county location: ");
                 }
                 break;
             }
             default: {
-                display.displayPrivateData(u"Update data: ", buf, NPOS, indent + 2);
+                disp.displayPrivateData(u"Update data: ", buf, NPOS, margin + u"  ");
                 break;
             }
         }
 
         // Terminate update data.
-        display.displayExtraData(buf, indent + 2);
+        disp.displayExtraData(buf, margin + u"  ");
         buf.popState();
 
         // Display descriptor list for this update.
-        display.displayDescriptorListWithLength(section, buf, indent + 2, u"Descriptors for this update:", UString(), 10);
+        disp.displayDescriptorListWithLength(section, buf, margin + u"  ", u"Descriptors for this update:", UString(), 10);
     }
 
     // Display descriptor list for the global table.
-    display.displayDescriptorListWithLength(section, buf, indent, u"Additional descriptors:", UString(), 10);
-    display.displayExtraData(buf, indent);
+    disp.displayDescriptorListWithLength(section, buf, margin, u"Additional descriptors:", UString(), 10);
+    disp.displayExtraData(buf, margin);
 }
 
 

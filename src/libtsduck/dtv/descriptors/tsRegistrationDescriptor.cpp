@@ -107,16 +107,16 @@ void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 4) {
         // Sometimes, the format identifier is made of ASCII characters. Try to display them.
         strm << margin << UString::Format(u"Format identifier: 0x%X", {GetUInt32(data)});
         duck.displayIfASCII(data, 4, u" (\"", u"\")") << std::endl;
-        display.displayPrivateData(u"Additional identification info", data + 4, size - 4, indent);
+        display.displayPrivateData(u"Additional identification info", data + 4, size - 4, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

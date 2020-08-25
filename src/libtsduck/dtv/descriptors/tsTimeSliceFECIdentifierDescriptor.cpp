@@ -161,7 +161,7 @@ void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 3) {
         const bool time_slicing = (data[0] & 0x80) != 0;
@@ -203,9 +203,9 @@ void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp
         }
         strm << std::endl
              << margin << UString::Format(u"Time slice FEC id: 0x%X (%d)", {time_slice_fec_id, time_slice_fec_id}) << std::endl;
-        display.displayPrivateData(u"Id selector bytes", data, size, indent);
+        display.displayPrivateData(u"Id selector bytes", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }

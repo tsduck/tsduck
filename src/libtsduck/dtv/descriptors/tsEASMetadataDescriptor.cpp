@@ -112,7 +112,7 @@ void ts::EASMetadataDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 2) {
         const size_t length = std::min<size_t>(data[1], size - 2);
@@ -121,7 +121,7 @@ void ts::EASMetadataDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
         data += 2 + length; size -=  2 + length;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

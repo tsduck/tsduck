@@ -172,7 +172,7 @@ void ts::TargetRegionDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
     bool ok = size >= 3;
     int index = 0;
 
@@ -217,7 +217,7 @@ void ts::TargetRegionDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

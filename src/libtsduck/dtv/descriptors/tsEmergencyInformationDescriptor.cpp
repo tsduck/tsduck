@@ -136,7 +136,7 @@ void ts::EmergencyInformationDescriptor::DisplayDescriptor(TablesDisplay& displa
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 4) {
         strm << margin << UString::Format(u"- Event service id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
@@ -155,7 +155,7 @@ void ts::EmergencyInformationDescriptor::DisplayDescriptor(TablesDisplay& displa
         }
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

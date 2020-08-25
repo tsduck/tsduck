@@ -107,9 +107,10 @@ namespace ts {
     //!
     //! @param [in,out] display Display engine.
     //! @param [in] section The section to display.
-    //! @param [in] indent Indentation width.
+    //! @param [in,out] payload A read-only PSIBuffer over the section payload.
+    //! @param [in] margin Left margin content.
     //!
-    typedef void (*DisplaySectionFunction)(TablesDisplay& display, const Section& section, int indent);
+    typedef void (*DisplaySectionFunction)(TablesDisplay& display, const Section& section, PSIBuffer& payload, const UString& margin);
 
     //!
     //! Profile of a function to display a brief overview ("log") of a section on one line.
@@ -153,18 +154,26 @@ namespace ts {
     //! @hideinitializer
     //! Define a DisplaySection static function.
     //!
-#define DeclareDisplaySection()                            \
-        /** A static method to display a section.       */ \
-        /** @param [in,out] display Display engine.     */ \
-        /** @param [in] section The section to display. */ \
-        /** @param [in] indent Indentation width.       */ \
-        static void DisplaySection(ts::TablesDisplay& display, const ts::Section& section, int indent)
+#define DeclareDisplaySection()                                      \
+        /** A static method to display a section.                 */ \
+        /** @param [in,out] display Display engine.               */ \
+        /** @param [in] section The section to display.           */ \
+        /** @param [in,out] payload A PSIBuffer over the payload. */ \
+        /** @param [in] margin Left margin content.               */ \
+        static void DisplaySection(ts::TablesDisplay& display, const ts::Section& section, PSIBuffer& payload, const UString& margin)
+
+    //! @param [in,out] display Display engine.
+    //! @param [in] section The section to display.
+    //! @param [in] payload A read-only PSIBuffer over the section payload.
+    //! @param [in] margin Left margin content.
+    //!
+    typedef void (*DisplaySectionFunction)(TablesDisplay& display, const Section& section, PSIBuffer& payload, const UString& margin);
 
     //!
     //! @hideinitializer
     //! Define a LogSection static function.
     //!
-#define DeclareLogSection()                                         \
+#define DeclareLogSection()                                          \
         /** A static method to log a section.                     */ \
         /** @param [in] section The section to log.               */ \
         /** @param [in] max_bytes Maximum number of bytes to log. */ \

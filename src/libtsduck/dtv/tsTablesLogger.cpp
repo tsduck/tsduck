@@ -522,7 +522,8 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
         }
         else {
             // Full table formatting
-            _display.displayTable(table, 0, _cas_mapper.casId(pid)) << std::endl;
+            _display.displayTable(table, u"", _cas_mapper.casId(pid));
+            _display.out() << std::endl;
         }
         postDisplay();
     }
@@ -637,7 +638,8 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
         }
         else {
             // Full section formatting.
-            _display.displaySection(sect, 0, _cas_mapper.casId(pid)) << std::endl;
+            _display.displaySection(sect, u"", _cas_mapper.casId(pid));
+            _display.out() << std::endl;
         }
         postDisplay();
     }

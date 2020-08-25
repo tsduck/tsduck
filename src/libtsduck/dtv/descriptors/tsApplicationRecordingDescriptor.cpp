@@ -185,7 +185,7 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& displa
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     // Flags in first byte.
     bool valid = size >= 1;
@@ -234,13 +234,13 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& displa
     if (valid) {
         uint8_t count = data[0];
         data++; size--;
-        display.displayPrivateData(u"Private data", data, count, indent);
+        display.displayPrivateData(u"Private data", data, count, margin);
         data += count; size -= count;
-        display.displayPrivateData(u"Reserved bytes", data, size, indent);
+        display.displayPrivateData(u"Reserved bytes", data, size, margin);
         size = 0;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

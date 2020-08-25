@@ -117,7 +117,7 @@ void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 5) {
         const uint8_t type = data[3] >> 3;
@@ -131,7 +131,7 @@ void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
         data += 5; size -= 5;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

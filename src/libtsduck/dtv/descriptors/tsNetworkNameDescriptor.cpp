@@ -88,7 +88,7 @@ void ts::NetworkNameDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::NetworkNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
     PSIBuffer buf(display.duck(), data, size);
 
     display.out() << margin << "Name: \"" << buf.getString() << "\"" << std::endl;

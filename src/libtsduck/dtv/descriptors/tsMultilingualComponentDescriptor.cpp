@@ -98,7 +98,7 @@ void ts::MultilingualComponentDescriptor::DisplayDescriptor(TablesDisplay& displ
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         // Display prolog here

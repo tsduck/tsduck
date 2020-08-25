@@ -168,31 +168,26 @@ void ts::LIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // A static method to display a LIT section.
 //----------------------------------------------------------------------------
 
-void ts::LIT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::LIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
-    strm << margin << UString::Format(u"Event id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Event id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
     if (buf.remainingReadBytes() < 6) {
         buf.setUserError();
     }
     else {
-        strm << margin << UString::Format(u"Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        strm << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        strm << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
     }
 
     // Loop across all local events.
     while (!buf.error() && buf.remainingReadBytes() >= 4) {
-        strm << margin << UString::Format(u"- Local event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        display.displayDescriptorListWithLength(section, buf, indent + 2);
+        disp << margin << UString::Format(u"- Local event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
     }
 
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

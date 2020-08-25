@@ -162,7 +162,7 @@ void ts::DVBAC4Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, co
 
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         const uint8_t flags = data[0];
@@ -177,13 +177,13 @@ void ts::DVBAC4Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, co
         }
         if ((flags & 0x40) != 0 && size >= 1) {
             const size_t toc_size = std::min<size_t>(data[0], size - 1);
-            display.displayPrivateData(u"AC-4 TOC (in DSI)", data + 1, toc_size, indent);
+            display.displayPrivateData(u"AC-4 TOC (in DSI)", data + 1, toc_size, margin);
             data += 1 + toc_size; size -= 1 + toc_size;
         }
-        display.displayPrivateData(u"Additional information", data, size, indent);
+        display.displayPrivateData(u"Additional information", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, indent);
+        display.displayExtraData(data, size, margin);
     }
 }
 

@@ -109,14 +109,14 @@ void ts::ISPAccessModeDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         strm << margin << UString::Format(u"Access mode: 0x%X (%s)", {data[0], AccessModeNames.name(data[0])}) << std::endl;
         data++; size--;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

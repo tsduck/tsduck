@@ -122,7 +122,7 @@ void ts::ATSCTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& disp
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         size_t count = data[0] & 0x1F;
@@ -136,7 +136,7 @@ void ts::ATSCTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& disp
 
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

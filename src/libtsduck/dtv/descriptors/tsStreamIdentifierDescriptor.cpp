@@ -90,13 +90,13 @@ void ts::StreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, D
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
     PSIBuffer buf(duck, data, size);
 
     if (buf.remainingReadBytes() >= 1) {
         strm << margin << UString::Format(u"Component tag: %d (0x%<X)", {buf.getUInt8()}) << std::endl;
     }
-    display.displayExtraData(buf, indent);
+    display.displayExtraData(buf, margin);
 }
 
 

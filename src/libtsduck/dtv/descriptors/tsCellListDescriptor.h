@@ -109,7 +109,7 @@ namespace ts {
 
     private:
         // Static method to print coordinates of a cell or subcell.
-        static void DisplayCoordinates(TablesDisplay& display, const uint8_t* data, size_t size, int indent);
+        static void DisplayCoordinates(TablesDisplay& display, const uint8_t* data, size_t size, const UString& margin);
 
         // Static method to convert a raw latitude or longitude into a readable string.
         static UString ToDegrees(int32_t value, bool is_latitude);

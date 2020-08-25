@@ -116,14 +116,14 @@ void ts::TargetIPv6SlashDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     while (size >= 17) {
         strm << margin << "Address/mask: " << IPv6Address(data, 16) << "/" << int(data[16]) << std::endl;
         data += 17; size -= 17;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

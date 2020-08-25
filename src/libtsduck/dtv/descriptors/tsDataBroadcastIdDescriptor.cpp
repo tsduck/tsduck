@@ -108,7 +108,7 @@ void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 2) {
         uint16_t id = GetUInt16(data);
@@ -119,7 +119,7 @@ void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& display, DI
         data += size; size = 0;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 
@@ -129,6 +129,8 @@ void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 
 void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& display, const uint8_t* data, size_t size, int indent, uint16_t dbid)
 {
+    const UString margin(indent, ' ');
+
     // Interpretation depends in the data broadcast id.
     switch (dbid) {
         case 0x0005:
@@ -144,7 +146,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& display,
             DisplaySelectorGeneric(display, data, size, indent, dbid);
             break;
     }
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 
@@ -154,7 +156,8 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& display,
 
 void ts::DataBroadcastIdDescriptor::DisplaySelectorGeneric(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
 {
-    display.displayPrivateData(u"Data Broadcast selector", data, size, indent);
+    const UString margin(indent, ' ');
+    display.displayPrivateData(u"Data Broadcast selector", data, size, margin);
     data += size; size = 0;
 }
 
@@ -168,7 +171,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& display, c
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     // OUI_data_length:
     if (size < 1) {
@@ -213,18 +216,18 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& display, c
             strm << UString::Format(u"%d (0x%02X)", {upd_version, upd_version});
         }
         strm << std::endl;
-        display.displayPrivateData(u"Selector data", sdata, slength, indent + 2);
+        display.displayPrivateData(u"Selector data", sdata, slength, margin + u"  ");
     }
 
     // Extraneous data in OUI_loop:
     if (dlength > 0) {
-        display.displayPrivateData(u"Extraneous data in OUI loop", data, dlength, indent);
+        display.displayPrivateData(u"Extraneous data in OUI loop", data, dlength, margin);
         data += dlength; size -= dlength;
     }
 
     // Private data
     if (size > 0) {
-        display.displayPrivateData(u"Private data", data, size, indent);
+        display.displayPrivateData(u"Private data", data, size, margin);
         data += size; size = 0;
     }
 }
@@ -241,7 +244,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorMPE(TablesDisplay& display, c
     if (size >= 2) {
         DuckContext& duck(display.duck());
         std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
+        const UString margin(indent, ' ');
 
         strm << margin << UString::Format(u"MAC address range: %d, MAC/IP mapping: %d, alignment: %d bits",
                                           {(data[0] >> 5) & 0x07, (data[0] >> 4) & 0x01, (data[0] & 0x08) == 0 ? 8 : 32})
@@ -262,7 +265,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& display, c
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     // platform_id_data_length:
     if (size < 1) {
@@ -290,12 +293,12 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& display, c
 
     // Extraneous data in Platform id loop:
     if (dlength > 0) {
-        display.displayPrivateData(u"Extraneous data in platform_id loop", data, dlength, indent);
+        display.displayPrivateData(u"Extraneous data in platform_id loop", data, dlength, margin);
         data += dlength; size -= dlength;
     }
 
     // Private data
-    display.displayPrivateData(u"Private data", data, size, indent);
+    display.displayPrivateData(u"Private data", data, size, margin);
 }
 
 

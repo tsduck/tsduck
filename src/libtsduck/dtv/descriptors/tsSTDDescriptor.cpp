@@ -100,7 +100,7 @@ void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 1) {
         uint8_t leak = data[0] & 0x01;
@@ -109,7 +109,7 @@ void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
              << (leak != 0 ? " (leak)" : " (vbv_delay)") << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

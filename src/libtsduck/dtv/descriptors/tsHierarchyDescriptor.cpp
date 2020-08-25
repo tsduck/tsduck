@@ -133,7 +133,7 @@ void ts::HierarchyDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
 {
     DuckContext& duck(display.duck());
     std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
+    const UString margin(indent, ' ');
 
     if (size >= 4) {
         strm << margin << "Temporal scalability: " << UString::TrueFalse((data[0] & 0x40) != 0) << std::endl
@@ -147,7 +147,7 @@ void ts::HierarchyDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
         data += 4; size -= 4;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 

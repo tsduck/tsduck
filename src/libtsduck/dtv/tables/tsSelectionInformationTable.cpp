@@ -138,21 +138,16 @@ void ts::SelectionInformationTable::serializePayload(BinaryTable& table, PSIBuff
 // A static method to display a SelectionInformationTable section.
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::SelectionInformationTable::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
-    display.displayDescriptorListWithLength(section, buf, indent, u"Global information:");
+    disp.displayDescriptorListWithLength(section, buf, margin, u"Global information:");
     while (!buf.error() && buf.remainingReadBytes() >= 4) {
-        strm << margin << UString::Format(u"Service id: %d (0x%<X)", {buf.getUInt16()});
+        disp << margin << UString::Format(u"Service id: %d (0x%<X)", {buf.getUInt16()});
         buf.skipBits(1);
-        strm << ", Status: " << RST::RunningStatusNames.name(buf.getBits<uint8_t>(3)) << std::endl;
-        display.displayDescriptorListWithLength(section, buf, indent);
+        disp << ", Status: " << RST::RunningStatusNames.name(buf.getBits<uint8_t>(3)) << std::endl;
+        disp.displayDescriptorListWithLength(section, buf, margin);
     }
-    display.displayExtraData(buf, indent);
+    disp.displayExtraData(buf, margin);
 }
 
 

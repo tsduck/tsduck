@@ -135,11 +135,11 @@ void ts::C2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, D
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    if (size >= 7) {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const std::string margin(indent, ' ');
+    DuckContext& duck(display.duck());
+    std::ostream& strm(duck.out());
+    const UString margin(indent, ' ');
 
+    if (size >= 7) {
         const uint8_t plp = data[0];
         const uint8_t slice = data[1];
         const uint32_t freq = GetUInt32(data + 2);
@@ -155,7 +155,7 @@ void ts::C2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, D
              << margin << UString::Format(u"Guard interval: %d (%s)", {guard, C2GuardIntervalNames.name(guard)}) << std::endl;
     }
 
-    display.displayExtraData(data, size, indent);
+    display.displayExtraData(data, size, margin);
 }
 
 
