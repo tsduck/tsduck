@@ -412,8 +412,8 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
                                    size_t tlvStart,
                                    size_t tlvSize,
                                    size_t dataOffset,
-                                   int indent,
-                                   int innerIndent,
+                                   size_t indent,
+                                   size_t innerIndent,
                                    const TLVSyntax& tlv)
 {
     std::ostream& strm(_duck.out());
@@ -661,7 +661,7 @@ void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, s
     DisplayDescriptorFunction handler = PSIRepository::Instance()->getDescriptorDisplay(edid, tid);
 
     if (handler != nullptr) {
-        handler(*this, did, payload, size, margin.size(), tid, _duck.actualPDS(pds));
+        handler(*this, did, payload, size, int(margin.size()), tid, _duck.actualPDS(pds));
     }
     else {
         displayUnkownDescriptor(did, payload, size, margin, tid, _duck.actualPDS(pds));
