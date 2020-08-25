@@ -149,48 +149,41 @@ namespace ts {
     //! @param [in] tid Table id of table containing the descriptors (typically CAT or PMT).
     //!
     typedef void (*DisplayCADescriptorFunction)(TablesDisplay& display, const uint8_t* data, size_t size, int indent, TID tid);
-
-    //!
-    //! @hideinitializer
-    //! Define a DisplaySection static function.
-    //!
-#define DeclareDisplaySection()                                      \
-        /** A static method to display a section.                 */ \
-        /** @param [in,out] display Display engine.               */ \
-        /** @param [in] section The section to display.           */ \
-        /** @param [in,out] payload A PSIBuffer over the payload. */ \
-        /** @param [in] margin Left margin content.               */ \
-        static void DisplaySection(ts::TablesDisplay& display, const ts::Section& section, PSIBuffer& payload, const UString& margin)
-
-    //! @param [in,out] display Display engine.
-    //! @param [in] section The section to display.
-    //! @param [in] payload A read-only PSIBuffer over the section payload.
-    //! @param [in] margin Left margin content.
-    //!
-    typedef void (*DisplaySectionFunction)(TablesDisplay& display, const Section& section, PSIBuffer& payload, const UString& margin);
-
-    //!
-    //! @hideinitializer
-    //! Define a LogSection static function.
-    //!
-#define DeclareLogSection()                                          \
-        /** A static method to log a section.                     */ \
-        /** @param [in] section The section to log.               */ \
-        /** @param [in] max_bytes Maximum number of bytes to log. */ \
-        static ts::UString LogSection(const ts::Section& section, size_t max_bytes)
-
-    //!
-    //! @hideinitializer
-    //! Define a DisplayDescriptor static function.
-    //!
-#define DeclareDisplayDescriptor()                                           \
-        /** Static method to display a descriptor.                        */ \
-        /** @param [in,out] display Display engine.                       */ \
-        /** @param [in] did Descriptor id.                                */ \
-        /** @param [in] payload Address of the descriptor payload.        */ \
-        /** @param [in] size Size in bytes of the descriptor payload.     */ \
-        /** @param [in] indent Indentation width.                         */ \
-        /** @param [in] tid Table id of table containing the descriptors. */ \
-        /** @param [in] pds Private Data Specifier.                       */ \
-        static void DisplayDescriptor(ts::TablesDisplay& display, ts::DID did, const uint8_t* payload, size_t size, int indent, ts::TID tid, ts::PDS pds)
 }
+
+//!
+//! @hideinitializer
+//! Define a DisplaySection static function.
+//!
+#define DeclareDisplaySection()                                  \
+    /** A static method to display a section.                 */ \
+    /** @param [in,out] display Display engine.               */ \
+    /** @param [in] section The section to display.           */ \
+    /** @param [in,out] payload A PSIBuffer over the payload. */ \
+    /** @param [in] margin Left margin content.               */ \
+    static void DisplaySection(ts::TablesDisplay& display, const ts::Section& section, ts::PSIBuffer& payload, const ts::UString& margin)
+
+//!
+//! @hideinitializer
+//! Define a LogSection static function.
+//!
+#define DeclareLogSection()                                      \
+    /** A static method to log a section.                     */ \
+    /** @param [in] section The section to log.               */ \
+    /** @param [in] max_bytes Maximum number of bytes to log. */ \
+    static ts::UString LogSection(const ts::Section& section, size_t max_bytes)
+
+//!
+//! @hideinitializer
+//! Define a DisplayDescriptor static function.
+//!
+#define DeclareDisplayDescriptor()                                       \
+    /** Static method to display a descriptor.                        */ \
+    /** @param [in,out] display Display engine.                       */ \
+    /** @param [in] did Descriptor id.                                */ \
+    /** @param [in] payload Address of the descriptor payload.        */ \
+    /** @param [in] size Size in bytes of the descriptor payload.     */ \
+    /** @param [in] indent Indentation width.                         */ \
+    /** @param [in] tid Table id of table containing the descriptors. */ \
+    /** @param [in] pds Private Data Specifier.                       */ \
+    static void DisplayDescriptor(ts::TablesDisplay& display, ts::DID did, const uint8_t* payload, size_t size, int indent, ts::TID tid, ts::PDS pds)

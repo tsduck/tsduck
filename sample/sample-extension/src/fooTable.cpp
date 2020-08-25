@@ -110,19 +110,14 @@ void foo::FooTable::serializePayload(ts::BinaryTable& table, ts::PSIBuffer& buf)
 // A static method to display an FOOT section.
 //----------------------------------------------------------------------------
 
-void foo::FooTable::DisplaySection(ts::TablesDisplay& display, const ts::Section& section, int indent)
+void foo::FooTable::DisplaySection(ts::TablesDisplay& disp, const ts::Section& section, ts::PSIBuffer& buf, const ts::UString& margin)
 {
-    ts::DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-    ts::PSIBuffer buf(duck, section.payload(), section.payloadSize());
-
     const uint16_t id = section.tableIdExtension();
     const ts::UString name(buf.getStringWithByteLength());
 
-    strm << margin << ts::UString::Format(u"Foo id: 0x%X (%<d), name: \"%s\"", {id, name}) << std::endl;
-    display.displayDescriptorListWithLength(section, buf, indent);
-    display.displayExtraData(buf, indent);
+    disp << margin << ts::UString::Format(u"Foo id: 0x%X (%<d), name: \"%s\"", {id, name}) << std::endl;
+    disp.displayDescriptorListWithLength(section, buf, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

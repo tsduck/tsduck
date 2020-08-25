@@ -19,11 +19,11 @@ namespace foo {
 
     // Display a FooCAS ECM on the output stream.
     // Compatible with ts::DisplaySectionFunction profile.
-    FOODLL void DisplayFooCASECM(ts::TablesDisplay& display, const ts::Section& section, int indent);
+    FOODLL void DisplayFooCASECM(ts::TablesDisplay& disp, const ts::Section& section, ts::PSIBuffer& buf, const ts::UString& margin);
 
     // Display a FooCAS EMM on the output stream.
     // Compatible with ts::DisplaySectionFunction profile.
-    FOODLL void DisplayFooCASEMM(ts::TablesDisplay& display, const ts::Section& section, int indent);
+    FOODLL void DisplayFooCASEMM(ts::TablesDisplay& disp, const ts::Section& section, ts::PSIBuffer& buf, const ts::UString& margin);
 
     // Display the payload of a FooCAS ECM on the output stream as a one-line "log" message.
     // Compatible with ts::LogSectionFunction profile.

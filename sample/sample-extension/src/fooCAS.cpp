@@ -27,19 +27,11 @@ TS_REGISTER_SECTION(ts::Range<ts::TID>(ts::TID_EMM_FIRST, ts::TID_EMM_LAST),
 // Display a FooCAS ECM on the output stream.
 //----------------------------------------------------------------------------
 
-void foo::DisplayFooCASECM(ts::TablesDisplay& display, const ts::Section& section, int indent)
+void foo::DisplayFooCASECM(ts::TablesDisplay& disp, const ts::Section& section, ts::PSIBuffer& buf, const ts::UString& margin)
 {
-    ts::DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
-
-    if (size >= 2) {
-        // A FooCAS ECM starts with a 2-byte foo_id.
-        strm << ts::UString::Format(u"%*sFoo id: 0x%X", {indent, u"", ts::GetUInt16(data)}) << std::endl
-             << ts::UString::Format(u"%*sData: %s", {indent, u"", ts::UString::Dump(data + 2, size - 2, ts::UString::COMPACT)}) << std::endl;
-    }
+    // A FooCAS ECM starts with a 2-byte foo_id.
+    disp << margin << ts::UString::Format(u"Foo id: 0x%X", {buf.getUInt16()}) << std::endl;
+    disp.displayPrivateData(u"Data", buf, ts::NPOS, margin);
 }
 
 
@@ -47,19 +39,11 @@ void foo::DisplayFooCASECM(ts::TablesDisplay& display, const ts::Section& sectio
 // Display a FooCAS EMM on the output stream.
 //----------------------------------------------------------------------------
 
-void foo::DisplayFooCASEMM(ts::TablesDisplay& display, const ts::Section& section, int indent)
+void foo::DisplayFooCASEMM(ts::TablesDisplay& disp, const ts::Section& section, ts::PSIBuffer& buf, const ts::UString& margin)
 {
-    ts::DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-
-    const uint8_t* data = section.payload();
-    size_t size = section.payloadSize();
-
-    if (size >= 2) {
-        // A FooCAS EMM starts with a 2-byte foo_id.
-        strm << ts::UString::Format(u"%*sFoo id: 0x%X", {indent, u"", ts::GetUInt16(data)}) << std::endl
-             << ts::UString::Format(u"%*sData: %s", {indent, u"", ts::UString::Dump(data + 2, size - 2, ts::UString::COMPACT)}) << std::endl;
-    }
+    // A FooCAS EMM starts with a 2-byte foo_id.
+    disp << margin << ts::UString::Format(u"Foo id: 0x%X", {buf.getUInt16()}) << std::endl;
+    disp.displayPrivateData(u"Data", buf, ts::NPOS, margin);
 }
 
 
