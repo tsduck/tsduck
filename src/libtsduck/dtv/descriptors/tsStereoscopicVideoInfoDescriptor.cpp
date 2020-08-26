@@ -125,29 +125,27 @@ void ts::StereoscopicVideoInfoDescriptor::deserialize(DuckContext& duck, const D
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::StereoscopicVideoInfoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::StereoscopicVideoInfoDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         const bool base = (data[0] & 0x01) != 0;
-        strm << margin << UString::Format(u"Base video: %s", {base}) << std::endl;
+        disp << margin << UString::Format(u"Base video: %s", {base}) << std::endl;
         data += 1; size -= 1;
         if (base && size >= 1) {
-            strm << margin << UString::Format(u"Left view: %s", {(data[0] & 0x01) != 0}) << std::endl;
+            disp << margin << UString::Format(u"Left view: %s", {(data[0] & 0x01) != 0}) << std::endl;
             data += 1; size -= 1;
         }
         else if (!base && size >= 2) {
-            strm << margin << UString::Format(u"Usable as 2D: %s", {(data[0] & 0x01) != 0}) << std::endl
+            disp << margin << UString::Format(u"Usable as 2D: %s", {(data[0] & 0x01) != 0}) << std::endl
                  << margin << "Horizontal upsampling factor: " << NameFromSection(u"StereoscopicUpsamplingFactor", (data[1] >> 4) & 0x0F, names::DECIMAL_FIRST) << std::endl
                  << margin << "Vertical upsampling factor: " << NameFromSection(u"StereoscopicUpsamplingFactor", data[1] & 0x0F, names::DECIMAL_FIRST) << std::endl;
             data += 2; size -= 2;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

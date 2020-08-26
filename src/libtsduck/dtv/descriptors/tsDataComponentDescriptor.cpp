@@ -103,18 +103,16 @@ void ts::DataComponentDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DataComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DataComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size < 2) {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
     else {
-        strm << margin << "Data component id: " << NameFromSection(u"ISDBDataComponentId", GetUInt16(data), names::HEXA_FIRST) << std::endl;
-        display.displayPrivateData(u"Additional data component info", data + 2, size - 2, margin);
+        disp << margin << "Data component id: " << NameFromSection(u"ISDBDataComponentId", GetUInt16(data), names::HEXA_FIRST) << std::endl;
+        disp.displayPrivateData(u"Additional data component info", data + 2, size - 2, margin);
     }
 }
 

@@ -104,19 +104,17 @@ void ts::PartialReceptionDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::PartialReceptionDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::PartialReceptionDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 2) {
         const uint16_t id = GetUInt16(data);
-        strm << margin << UString::Format(u"Service id: 0x%X (%d)", {id,id}) << std::endl;
+        disp << margin << UString::Format(u"Service id: 0x%X (%d)", {id,id}) << std::endl;
         data += 2; size -= 2;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -158,14 +158,12 @@ void ts::VideoDepthRangeDescriptor::deserialize(DuckContext& duck, const Descrip
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     // Important: With extension descriptors, the DisplayDescriptor() function is called
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
     bool ok = true;
 
@@ -173,7 +171,7 @@ void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& display, DI
         const uint8_t type = data[0];
         size_t len = data[1];
         data += 2; size -= 2;
-        strm << margin << UString::Format(u"- Range type: 0x%X (%d)", {type, type}) << std::endl;
+        disp << margin << UString::Format(u"- Range type: 0x%X (%d)", {type, type}) << std::endl;
 
         switch (type) {
             case 0:
@@ -183,7 +181,7 @@ void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& display, DI
                     const int16_t max = SignExtend(int16_t(hint >> 12), 12);
                     const int16_t min = SignExtend(int16_t(hint), 12);
                     data += 3; size -= 3;
-                    strm << margin << UString::Format(u"  Video max disparity hint: %d, min: %d", {max, min}) << std::endl;
+                    disp << margin << UString::Format(u"  Video max disparity hint: %d, min: %d", {max, min}) << std::endl;
                 }
                 break;
             case 1:
@@ -192,14 +190,14 @@ void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& display, DI
             default:
                 ok = size >= len;
                 if (ok) {
-                    display.displayPrivateData(u"Range selector bytes", data, len, margin + u"  ");
+                    disp.displayPrivateData(u"Range selector bytes", data, len, margin + u"  ");
                     data += len; size -= len;
                 }
                 break;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

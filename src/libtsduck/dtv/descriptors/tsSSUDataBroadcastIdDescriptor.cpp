@@ -202,7 +202,7 @@ bool ts::SSUDataBroadcastIdDescriptor::analyzeXML(DuckContext& duck, const xml::
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::SSUDataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
 {
-    DataBroadcastIdDescriptor::DisplayDescriptor(display, did, payload, size, indent, tid, pds);
+    DataBroadcastIdDescriptor::DisplayDescriptor(disp, did, payload, size, indent, tid, pds);
 }

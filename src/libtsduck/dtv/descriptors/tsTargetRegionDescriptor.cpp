@@ -164,24 +164,22 @@ void ts::TargetRegionDescriptor::deserialize(DuckContext& duck, const Descriptor
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetRegionDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TargetRegionDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     // Important: With extension descriptors, the DisplayDescriptor() function is called
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
     bool ok = size >= 3;
     int index = 0;
 
     if (ok) {
-        strm << margin << "Country code: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
+        disp << margin << "Country code: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
         data += 3; size -= 3;
     }
     while (ok && size >= 1) {
-        strm << margin << "- Region #" << index++ << std::endl;
+        disp << margin << "- Region #" << index++ << std::endl;
 
         const int depth = data[0] & 0x03;
         const bool has_cc = (data[0] & 0x04) != 0;
@@ -190,34 +188,34 @@ void ts::TargetRegionDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
         if (has_cc) {
             ok = size >= 3;
             if (ok) {
-                strm << margin << "  Country code: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
+                disp << margin << "  Country code: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
                 data += 3; size -= 3;
             }
         }
         if (ok && depth >= 1) {
             ok = size >= 1;
             if (ok) {
-                strm << margin << UString::Format(u"  Primary region code: 0x%X (%d)", {data[0], data[0]}) << std::endl;
+                disp << margin << UString::Format(u"  Primary region code: 0x%X (%d)", {data[0], data[0]}) << std::endl;
                 data++; size--;
             }
         }
         if (ok && depth >= 2) {
             ok = size >= 1;
             if (ok) {
-                strm << margin << UString::Format(u"  Secondary region code: 0x%X (%d)", {data[0], data[0]}) << std::endl;
+                disp << margin << UString::Format(u"  Secondary region code: 0x%X (%d)", {data[0], data[0]}) << std::endl;
                 data++; size--;
             }
         }
         if (ok && depth >= 3) {
             ok = size >= 2;
             if (ok) {
-                strm << margin << UString::Format(u"  Tertiary region code: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl;
+                disp << margin << UString::Format(u"  Tertiary region code: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl;
                 data += 2; size -= 2;
             }
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

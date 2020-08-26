@@ -128,10 +128,8 @@ void ts::ServiceLocationDescriptor::deserialize(DuckContext& duck, const Descrip
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ServiceLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ServiceLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 3) {
@@ -139,14 +137,14 @@ void ts::ServiceLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DI
         size_t count = data[2];
         data += 3; size -= 3;
 
-        strm << margin << "PCR PID: ";
+        disp << margin << "PCR PID: ";
         if (pid == PID_NULL) {
-            strm << "none";
+            disp << "none";
         }
         else {
-            strm << UString::Format(u"0x%X (%d)", {pid, pid});
+            disp << UString::Format(u"0x%X (%d)", {pid, pid});
         }
-        strm << ", number of elements: " << count << std::endl;
+        disp << ", number of elements: " << count << std::endl;
 
         // Loop on all component entries.
         while (count-- > 0 && size >= 6) {
@@ -155,11 +153,11 @@ void ts::ServiceLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DI
             const UString lang(DeserializeLanguageCode(data + 3));
             data += 6; size -= 6;
 
-            strm << margin << UString::Format(u"- PID: 0x%X (%d), language: \"%s\", type: %s", {pid, pid, lang, names::ServiceType(stype, names::FIRST)}) << std::endl;
+            disp << margin << UString::Format(u"- PID: 0x%X (%d), language: \"%s\", type: %s", {pid, pid, lang, names::ServiceType(stype, names::FIRST)}) << std::endl;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

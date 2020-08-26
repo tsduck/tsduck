@@ -99,21 +99,19 @@ void ts::MPEG2StereoscopicVideoFormatDescriptor::deserialize(DuckContext& duck, 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MPEG2StereoscopicVideoFormatDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MPEG2StereoscopicVideoFormatDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         if ((data[0] & 0x80) != 0) {
             const uint8_t type = data[0] & 0x7F;
-            strm << margin << UString::Format(u"Arrangement type: 0x%X (%d)", {type, type}) << std::endl;
+            disp << margin << UString::Format(u"Arrangement type: 0x%X (%d)", {type, type}) << std::endl;
         }
         data += 1; size -= 1;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

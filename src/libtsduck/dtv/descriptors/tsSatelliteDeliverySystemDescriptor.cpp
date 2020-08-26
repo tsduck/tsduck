@@ -315,14 +315,12 @@ bool ts::SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 11) {
-        const bool isDVB = (duck.standards() & Standards::ISDB) == Standards::NONE;
+        const bool isDVB = (disp.duck().standards() & Standards::ISDB) == Standards::NONE;
         const uint8_t east = data[6] >> 7;
         const uint8_t polar = (data[6] >> 5) & 0x03;
         const uint8_t roll_off = (data[6] >> 3) & 0x03;
@@ -335,18 +333,18 @@ void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& dis
         BCDToString(srate, data + 7, 7, 3, true);
         data += 11; size -= 11;
 
-        strm << margin << "Orbital position: " << orbital << " degree, " << (east ? "east" : "west") << std::endl
+        disp << margin << "Orbital position: " << orbital << " degree, " << (east ? "east" : "west") << std::endl
              << margin << "Frequency: " << freq << " GHz" << std::endl
              << margin << "Symbol rate: " << srate << " Msymbol/s" << std::endl
              << margin << "Polarization: " << NameFromSection(u"SatellitePolarization", polar, names::VALUE | names::DECIMAL) << std::endl
              << margin << "Delivery system: " << DeliverySystemEnum.name(delsys) << std::endl
              << margin << "Modulation: " << NameFromSection(isDVB ? u"DVBSatelliteModulationType" : u"ISDBSatelliteModulationType", mod_type, names::VALUE | names::DECIMAL);
         if (delsys == DS_DVB_S2) {
-            strm << ", roll off: " << NameFromSection(u"DVBS2RollOff", roll_off, names::VALUE | names::DECIMAL);
+            disp << ", roll off: " << NameFromSection(u"DVBS2RollOff", roll_off, names::VALUE | names::DECIMAL);
         }
-        strm << std::endl
-             << margin << "Inner FEC: " << NameFromSection(isDVB ? u"DVBSatelliteFEC" : u"ISDBSatelliteFEC", fec, names::VALUE | names::DECIMAL) << std::endl;
+        disp << std::endl;
+        disp << margin << "Inner FEC: " << NameFromSection(isDVB ? u"DVBSatelliteFEC" : u"ISDBSatelliteFEC", fec, names::VALUE | names::DECIMAL) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }

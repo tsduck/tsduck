@@ -99,12 +99,10 @@ void ts::DTGShortServiceNameDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTGShortServiceNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::DTGShortServiceNameDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
-    strm << margin << "Name: \"" << duck.decoded(payload, size) << "\"" << std::endl;
+    disp << margin << "Name: \"" << disp.duck().decoded(payload, size) << "\"" << std::endl;
 }
 
 

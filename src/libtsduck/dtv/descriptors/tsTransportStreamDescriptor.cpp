@@ -103,13 +103,11 @@ void ts::TransportStreamDescriptor::deserialize(DuckContext& duck, const Descrip
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TransportStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::TransportStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
-    strm << margin << "Compliance: \"" << duck.decoded(payload, size) << "\"" << std::endl;
+    disp << margin << "Compliance: \"" << disp.duck().decoded(payload, size) << "\"" << std::endl;
 }
 
 

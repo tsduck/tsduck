@@ -158,15 +158,13 @@ void ts::TelephoneDescriptor::deserialize(DuckContext& duck, const Descriptor& d
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TelephoneDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TelephoneDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 3) {
         const uint8_t ctype = data[0] & 0x1F;
-        strm << margin << UString::Format(u"Foreign availability: %s", {(data[0] & 0x20) != 0}) << std::endl
+        disp << margin << UString::Format(u"Foreign availability: %s", {(data[0] & 0x20) != 0}) << std::endl
              << margin << UString::Format(u"Connection type: 0x%X (%d)", {ctype, ctype}) << std::endl;
         const size_t country_len = (data[1] >> 5) & 0x03;
         const size_t inter_len = (data[1] >> 2) & 0x07;
@@ -178,23 +176,23 @@ void ts::TelephoneDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
         UString str;
         if (size >= country_len && DVBCharTableSingleByte::RAW_ISO_8859_1.decode(str, data, country_len)) {
             data += country_len; size -= country_len;
-            strm << margin << "Country prefix: \"" << str << "\"" << std::endl;
+            disp << margin << "Country prefix: \"" << str << "\"" << std::endl;
 
             if (size >= inter_len && DVBCharTableSingleByte::RAW_ISO_8859_1.decode(str, data, inter_len)) {
                 data += inter_len; size -= inter_len;
-                strm << margin << "International area code: \"" << str << "\"" << std::endl;
+                disp << margin << "International area code: \"" << str << "\"" << std::endl;
 
                 if (size >= oper_len && DVBCharTableSingleByte::RAW_ISO_8859_1.decode(str, data, oper_len)) {
                     data += oper_len; size -= oper_len;
-                    strm << margin << "Operator code: \"" << str << "\"" << std::endl;
+                    disp << margin << "Operator code: \"" << str << "\"" << std::endl;
 
                     if (size >= nat_len && DVBCharTableSingleByte::RAW_ISO_8859_1.decode(str, data, nat_len)) {
                         data += nat_len; size -= nat_len;
-                        strm << margin << "National area code: \"" << str << "\"" << std::endl;
+                        disp << margin << "National area code: \"" << str << "\"" << std::endl;
 
                         if (size >= core_len && DVBCharTableSingleByte::RAW_ISO_8859_1.decode(str, data, core_len)) {
                             data += core_len; size -= core_len;
-                            strm << margin << "Core number: \"" << str << "\"" << std::endl;
+                            disp << margin << "Core number: \"" << str << "\"" << std::endl;
                         }
                     }
                 }
@@ -202,7 +200,7 @@ void ts::TelephoneDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

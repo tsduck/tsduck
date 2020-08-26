@@ -184,7 +184,7 @@ void ts::SpliceInsert::display(TablesDisplay& disp, const UString& margin) const
                 if (!immediate) {
                     disp << ", time PTS: " << it->second.toString();
                 }
-                disp.out() << std::endl;
+                disp << std::endl;
             }
         }
         if (use_duration) {

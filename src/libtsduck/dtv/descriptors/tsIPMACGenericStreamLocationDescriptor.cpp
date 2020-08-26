@@ -123,10 +123,8 @@ void ts::IPMACGenericStreamLocationDescriptor::deserialize(DuckContext& duck, co
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::IPMACGenericStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::IPMACGenericStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 7) {
@@ -134,14 +132,14 @@ void ts::IPMACGenericStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& 
         const uint8_t systype = GetUInt8(data + 2);
         const uint16_t sysid = GetUInt16(data + 3);
         const uint16_t strid  = GetUInt16(data + 5);
-        strm << margin << UString::Format(u"Interactive network id: 0x%X (%d)", {netid, netid}) << std::endl
+        disp << margin << UString::Format(u"Interactive network id: 0x%X (%d)", {netid, netid}) << std::endl
              << margin << UString::Format(u"Modulation system type: 0x%X (%s)", {systype, ModulationTypeNames.name(systype)}) << std::endl
              << margin << UString::Format(u"Modulation system id: 0x%X (%d)", {sysid, sysid}) << std::endl
              << margin << UString::Format(u"Physical stream id: 0x%X (%d)", {strid, strid}) << std::endl;
-        display.displayPrivateData(u"Selector bytes", data + 7, size - 7, margin);
+        disp.displayPrivateData(u"Selector bytes", data + 7, size - 7, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

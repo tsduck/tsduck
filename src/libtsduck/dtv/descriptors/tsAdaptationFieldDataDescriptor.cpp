@@ -96,24 +96,22 @@ void ts::AdaptationFieldDataDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AdaptationFieldDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AdaptationFieldDataDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         uint8_t id = data[0];
         data += 1; size -= 1;
-        strm << margin << UString::Format(u"Adaptation field data identifier: 0x%X", {id}) << std::endl;
+        disp << margin << UString::Format(u"Adaptation field data identifier: 0x%X", {id}) << std::endl;
         for (int i = 0; i < 8; ++i) {
             if ((id & (1 << i)) != 0) {
-                strm << margin << "  " << NameFromSection(u"AdaptationFieldDataIdentifier", (1 << i), names::HEXA_FIRST) << std::endl;
+                disp << margin << "  " << NameFromSection(u"AdaptationFieldDataIdentifier", (1 << i), names::HEXA_FIRST) << std::endl;
             }
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

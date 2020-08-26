@@ -133,14 +133,12 @@ void ts::SeriesDescriptor::deserialize(DuckContext& duck, const Descriptor& desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SeriesDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SeriesDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size < 8) {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
     else {
         const uint16_t id = GetUInt16(data);
@@ -154,12 +152,12 @@ void ts::SeriesDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, co
         const uint16_t episode = (GetUInt16(data + 5) >> 4) & 0x0FFF;
         const uint16_t last = GetUInt16(data + 6) & 0x0FFF;
 
-        strm << margin << UString::Format(u"Series id: 0x%X (%d)", {id, id}) << std::endl
+        disp << margin << UString::Format(u"Series id: 0x%X (%d)", {id, id}) << std::endl
              << margin << UString::Format(u"Repeat label: %d", {repeat, repeat}) << std::endl
              << margin << "Program pattern: " << NameFromSection(u"ISDBProgramPattern", pattern, names::DECIMAL_FIRST) << std::endl
              << margin << "Expire date: " << (date_valid ? date.format(Time::DATE) : u"unspecified") << std::endl
              << margin << UString::Format(u"Episode: %d/%d", {episode, last}) << std::endl
-             << margin << "Series name: \"" << duck.decoded(data + 8, size - 8) << u"\"" << std::endl;
+             << margin << "Series name: \"" << disp.duck().decoded(data + 8, size - 8) << u"\"" << std::endl;
     }
 }
 

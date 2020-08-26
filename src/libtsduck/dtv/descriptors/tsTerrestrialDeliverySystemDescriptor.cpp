@@ -141,10 +141,8 @@ void ts::TerrestrialDeliverySystemDescriptor::deserialize(DuckContext& duck, con
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 11) {
@@ -162,76 +160,79 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
         bool other_freq = (data[6] & 0x01) != 0;
         data += 11; size -= 11;
 
-        strm << margin << "Centre frequency: " << UString::Decimal(10 * uint64_t(cfreq)) << " Hz, Bandwidth: ";
+        disp << margin << "Centre frequency: " << UString::Decimal(10 * uint64_t(cfreq)) << " Hz, Bandwidth: ";
         switch (bwidth) {
-            case 0:  strm << "8 MHz"; break;
-            case 1:  strm << "7 MHz"; break;
-            case 2:  strm << "6 MHz"; break;
-            case 3:  strm << "5 MHz"; break;
-            default: strm << "code " << int(bwidth) << " (reserved)"; break;
+            case 0:  disp << "8 MHz"; break;
+            case 1:  disp << "7 MHz"; break;
+            case 2:  disp << "6 MHz"; break;
+            case 3:  disp << "5 MHz"; break;
+            default: disp << "code " << int(bwidth) << " (reserved)"; break;
         }
-        strm << std::endl
-             << margin << "Priority: " << (prio ? "high" : "low")
+        disp << std::endl;
+        disp << margin << "Priority: " << (prio ? "high" : "low")
              << ", Time slicing: " << (tslice ? "unused" : "used")
              << ", MPE-FEC: " << (mpe_fec ? "unused" : "used")
              << std::endl
              << margin << "Constellation pattern: ";
         switch (constel) {
-            case 0:  strm << "QPSK"; break;
-            case 1:  strm << "16-QAM"; break;
-            case 2:  strm << "64-QAM"; break;
-            case 3:  strm << "reserved"; break;
+            case 0:  disp << "QPSK"; break;
+            case 1:  disp << "16-QAM"; break;
+            case 2:  disp << "64-QAM"; break;
+            case 3:  disp << "reserved"; break;
             default: assert(false);
         }
-        strm << std::endl << margin << "Hierarchy: ";
+        disp << std::endl;
+        disp << margin << "Hierarchy: ";
         assert(hierarchy < 8);
         switch (hierarchy & 0x03) {
-            case 0:  strm << "non-hierarchical"; break;
-            case 1:  strm << "alpha = 1"; break;
-            case 2:  strm << "alpha = 2"; break;
-            case 3:  strm << "alpha = 4"; break;
+            case 0:  disp << "non-hierarchical"; break;
+            case 1:  disp << "alpha = 1"; break;
+            case 2:  disp << "alpha = 2"; break;
+            case 3:  disp << "alpha = 4"; break;
             default: assert(false);
         }
-        strm << ", " << ((hierarchy & 0x04) ? "in-depth" : "native")
+        disp << ", " << ((hierarchy & 0x04) ? "in-depth" : "native")
              << " interleaver" << std::endl
              << margin << "Code rate: high prio: ";
         switch (rate_hp) {
-            case 0:  strm << "1/2"; break;
-            case 1:  strm << "2/3"; break;
-            case 2:  strm << "3/4"; break;
-            case 3:  strm << "5/6"; break;
-            case 4:  strm << "7/8"; break;
-            default: strm << "code " << int(rate_hp) << " (reserved)"; break;
+            case 0:  disp << "1/2"; break;
+            case 1:  disp << "2/3"; break;
+            case 2:  disp << "3/4"; break;
+            case 3:  disp << "5/6"; break;
+            case 4:  disp << "7/8"; break;
+            default: disp << "code " << int(rate_hp) << " (reserved)"; break;
         }
-        strm << ", low prio: ";
+        disp << ", low prio: ";
         switch (rate_lp) {
-            case 0:  strm << "1/2"; break;
-            case 1:  strm << "2/3"; break;
-            case 2:  strm << "3/4"; break;
-            case 3:  strm << "5/6"; break;
-            case 4:  strm << "7/8"; break;
-            default: strm << "code " << int(rate_lp) << " (reserved)"; break;
+            case 0:  disp << "1/2"; break;
+            case 1:  disp << "2/3"; break;
+            case 2:  disp << "3/4"; break;
+            case 3:  disp << "5/6"; break;
+            case 4:  disp << "7/8"; break;
+            default: disp << "code " << int(rate_lp) << " (reserved)"; break;
         }
-        strm << std::endl << margin << "Guard interval: ";
+        disp << std::endl;
+        disp << margin << "Guard interval: ";
         switch (guard) {
-            case 0:  strm << "1/32"; break;
-            case 1:  strm << "1/16"; break;
-            case 2:  strm << "1/8"; break;
-            case 3:  strm << "1/4"; break;
+            case 0:  disp << "1/32"; break;
+            case 1:  disp << "1/16"; break;
+            case 2:  disp << "1/8"; break;
+            case 3:  disp << "1/4"; break;
             default: assert(false);
         }
-        strm << std::endl << margin << "OFDM transmission mode: ";
+        disp << std::endl;
+        disp << margin << "OFDM transmission mode: ";
         switch (transm) {
-            case 0:  strm << "2k"; break;
-            case 1:  strm << "8k"; break;
-            case 2:  strm << "4k"; break;
-            case 3:  strm << "reserved"; break;
+            case 0:  disp << "2k"; break;
+            case 1:  disp << "8k"; break;
+            case 2:  disp << "4k"; break;
+            case 3:  disp << "reserved"; break;
             default: assert(false);
         }
-        strm << ", other frequencies: " << UString::YesNo(other_freq) << std::endl;
+        disp << ", other frequencies: " << UString::YesNo(other_freq) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

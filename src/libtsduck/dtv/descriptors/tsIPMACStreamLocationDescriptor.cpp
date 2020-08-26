@@ -115,10 +115,8 @@ void ts::IPMACStreamLocationDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::IPMACStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::IPMACStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 9) {
@@ -127,7 +125,7 @@ void ts::IPMACStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& display
         const uint16_t ts = GetUInt16(data + 4);
         const uint16_t srv = GetUInt16(data + 6);
         const uint8_t comp = data[8];
-        strm << margin << UString::Format(u"Network id: 0x%X (%d)", {net, net}) << std::endl
+        disp << margin << UString::Format(u"Network id: 0x%X (%d)", {net, net}) << std::endl
              << margin << UString::Format(u"Original network id: 0x%X (%d)", {onet, onet}) << std::endl
              << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {ts, ts}) << std::endl
              << margin << UString::Format(u"Service id: 0x%X (%d)", {srv, srv}) << std::endl
@@ -135,7 +133,7 @@ void ts::IPMACStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& display
         data += 9; size -= 9;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -112,20 +112,18 @@ void ts::SystemManagementDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SystemManagementDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SystemManagementDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size < 2) {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
     else {
-        strm << margin << "Broadcasting flag: " << NameFromSection(u"SystemManagementBroadcasting", (data[0] >> 6) & 0x03, names::DECIMAL_FIRST) << std::endl
+        disp << margin << "Broadcasting flag: " << NameFromSection(u"SystemManagementBroadcasting", (data[0] >> 6) & 0x03, names::DECIMAL_FIRST) << std::endl
              << margin << "Broadcasting identifier: " << NameFromSection(u"SystemManagementIdentifier", data[0] & 0x3F, names::DECIMAL_FIRST) << std::endl
              << margin << UString::Format(u"Additional broadcasting id: 0x%X (%d)", {data[1], data[1]}) << std::endl;
-        display.displayPrivateData(u"Additional identification info", data + 2, size - 2, margin);
+        disp.displayPrivateData(u"Additional identification info", data + 2, size - 2, margin);
     }
 }
 

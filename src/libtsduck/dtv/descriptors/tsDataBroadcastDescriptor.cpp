@@ -79,10 +79,8 @@ void ts::DataBroadcastDescriptor::clearContent()
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
@@ -93,19 +91,19 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
         if (slength > size) {
             slength = size;
         }
-        strm << margin << "Data broadcast id: " << names::DataBroadcastId(dbid, names::BOTH_FIRST) << std::endl
+        disp << margin << "Data broadcast id: " << names::DataBroadcastId(dbid, names::BOTH_FIRST) << std::endl
              << margin << UString::Format(u"Component tag: %d (0x%X), ", {ctag, ctag})
              << std::endl;
-        DataBroadcastIdDescriptor::DisplaySelectorBytes(display, data, slength, indent, dbid);
+        DataBroadcastIdDescriptor::DisplaySelectorBytes(disp, data, slength, indent, dbid);
         data += slength; size -= slength;
         if (size >= 3) {
-            strm << margin << "Language: " << DeserializeLanguageCode(data) << std::endl;
+            disp << margin << "Language: " << DeserializeLanguageCode(data) << std::endl;
             data += 3; size -= 3;
-            strm << margin << "Description: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
+            disp << margin << "Description: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

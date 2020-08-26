@@ -179,6 +179,16 @@ namespace ts {
         DisplayDescriptorFunction getDescriptorDisplay(const EDID& edid, TID tid = TID_NULL) const;
 
         //!
+        //! Get the legacy display function for a given extended descriptor id.
+        //! @param [in] edid Extended descriptor id.
+        //! @param [in] tid Optional table id of the table containing the descriptor.
+        //! If @a edid is a standard descriptor and @a tid is specified, try first a
+        //! table-specific descriptor for this table. Fallback to the standard descriptor.
+        //! @return Corresponding display function or zero if there is none.
+        //!
+        LegacyDisplayDescriptorFunction getLegacyDescriptorDisplay(const EDID& edid, TID tid = TID_NULL) const;
+
+        //!
         //! Get the display function of the CA_descriptor for a given CA_system_id.
         //! @param [in] cas CA_system_id.
         //! @return Corresponding display function or zero if there is none.
@@ -298,6 +308,21 @@ namespace ts {
                                const UString& xmlNameLegacy = UString());
 
             //!
+            //! Register a descriptor factory for a given descriptor tag.
+            //! @param [in] factory Function which creates a descriptor of this type.
+            //! @param [in] edid Exended descriptor id.
+            //! @param [in] xmlName XML node name for this descriptor type.
+            //! @param [in] displayFunction Legacy display function for the corresponding descriptors. Can be null.
+            //! @param [in] xmlNameLegacy Legacy XML node name for this descriptor type (optional).
+            //! @see TS_REGISTER_DESCRIPTOR
+            //!
+            RegisterDescriptor(DescriptorFactory factory,
+                               const EDID& edid,
+                               const UString& xmlName,
+                               LegacyDisplayDescriptorFunction displayFunction,
+                               const UString& xmlNameLegacy = UString());
+
+            //!
             //! Registers a CA_descriptor display function for a given range of CA_system_id.
             //! @param [in] displayFunction Display function for the corresponding descriptors.
             //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
@@ -306,6 +331,9 @@ namespace ts {
             //! @see TS_REGISTER_CA_DESCRIPTOR
             //!
             RegisterDescriptor(DisplayCADescriptorFunction displayFunction, uint16_t minCAS, uint16_t maxCAS = CASID_NULL);
+
+        private:
+            void registerXML(DescriptorFactory factory, const EDID& edid, const UString& xmlName, const UString& xmlNameLegacy);
         };
 
         //!
@@ -382,20 +410,22 @@ namespace ts {
         public:
             DescriptorFactory         factory;    // Function to build an instance of the descriptor.
             DisplayDescriptorFunction display;    // Function to display a descriptor.
+            LegacyDisplayDescriptorFunction legacyDisplay; // Function to display a descriptor (legacy version).
 
             // Constructor.
             DescriptorDescription(DescriptorFactory fact = nullptr, DisplayDescriptorFunction disp = nullptr);
+            DescriptorDescription(DescriptorFactory fact, LegacyDisplayDescriptorFunction disp);
         };
 
         // PSIRepository instance private members.
-        std::multimap<TID, TableDescription>             _tables;                   // Description of all table ids, potential multiple entries per table idx
-        std::map<EDID, DescriptorDescription>            _descriptors;              // Description of all descriptors, by extended id.
-        std::map<UString, TableFactory>                  _tableNames;               // XML table name to table factory
-        std::map<UString, DescriptorFactory>             _descriptorNames;          // XML descriptor name to descriptor factory
-        std::multimap<UString, TID>                      _descriptorTablesIds;      // XML descriptor name to table id for table-specific descriptors
-        std::map<uint16_t, DisplayCADescriptorFunction>  _casIdDescriptorDisplays;  // CA_system_id to display function for CA_descriptor.
-        UStringList                                      _xmlModelFiles;            // Additional XML model files for tables.
-        UStringList                                      _namesFiles;               // Additional names files.
+        std::multimap<TID, TableDescription>            _tables;                   // Description of all table ids, potential multiple entries per table idx
+        std::map<EDID, DescriptorDescription>           _descriptors;              // Description of all descriptors, by extended id.
+        std::map<UString, TableFactory>                 _tableNames;               // XML table name to table factory
+        std::map<UString, DescriptorFactory>            _descriptorNames;          // XML descriptor name to descriptor factory
+        std::multimap<UString, TID>                     _descriptorTablesIds;      // XML descriptor name to table id for table-specific descriptors
+        std::map<uint16_t, DisplayCADescriptorFunction> _casIdDescriptorDisplays;  // CA_system_id to display function for CA_descriptor.
+        UStringList                                     _xmlModelFiles;            // Additional XML model files for tables.
+        UStringList                                     _namesFiles;               // Additional names files.
 
         // Common code to lookup a table function.
         template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type* = nullptr>

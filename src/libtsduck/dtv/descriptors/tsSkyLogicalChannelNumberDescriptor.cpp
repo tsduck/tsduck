@@ -122,16 +122,14 @@ void ts::SkyLogicalChannelNumberDescriptor::deserialize(DuckContext& duck, const
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     uint16_t region_id = GetUInt16(data);
     data += 2; size -= 2;
 
-    strm << margin
+    disp << margin
          << UString::Format(u"Region Id: %5d (0x%04X)", {region_id, region_id})
          << std::endl;
 
@@ -143,7 +141,7 @@ void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& dis
         const uint16_t sky_id = GetUInt16(data + 7);
         data += 9; size -= 9;
 
-        strm << margin
+        disp << margin
              << UString::Format(u"Service Id: %5d (0x%04X), Service Type: %s, Channel number: %3d, "
                                  "Lcn: %5d, Sky Id: %5d (0x%04X)",
                                  {service_id, service_id, names::ServiceType(service_type, names::FIRST),
@@ -151,7 +149,7 @@ void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& dis
              << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

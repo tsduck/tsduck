@@ -128,30 +128,28 @@ void ts::NodeRelationDescriptor::deserialize(DuckContext& duck, const Descriptor
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NodeRelationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::NodeRelationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
-        strm << margin << UString::Format(u"Reference type: %d", {(data[0] >> 4) & 0x0F}) << std::endl;
+        disp << margin << UString::Format(u"Reference type: %d", {(data[0] >> 4) & 0x0F}) << std::endl;
         const bool has_external = (data[0] & 0x08) != 0;
         data++; size--;
 
         if (size >= size_t(has_external ? 7 : 3)) {
             if (has_external) {
-                strm << margin << UString::Format(u"Information provider id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
+                disp << margin << UString::Format(u"Information provider id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
                      << margin << UString::Format(u"Event relation id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl;
                 data += 4; size -= 4;
             }
-            strm << margin << UString::Format(u"Reference node id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
+            disp << margin << UString::Format(u"Reference node id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
                  << margin << UString::Format(u"Reference number: 0x%X (%d)", {data[2], data[2]}) << std::endl;
             data += 3; size -= 3;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

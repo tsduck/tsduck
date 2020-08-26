@@ -110,10 +110,8 @@ void ts::FlexMuxTimingDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::FlexMuxTimingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::FlexMuxTimingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 8) {
@@ -122,13 +120,13 @@ void ts::FlexMuxTimingDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
         const uint8_t len = GetUInt8(data + 6);
         const uint8_t fmx = GetUInt8(data + 7);
         data += 8; size -= 8;
-        strm << margin << UString::Format(u"FCR ES ID: 0x%X (%d)", {id, id}) << std::endl
+        disp << margin << UString::Format(u"FCR ES ID: 0x%X (%d)", {id, id}) << std::endl
              << margin << UString::Format(u"FCR resolution: %'d cycles/second", {res}) << std::endl
              << margin << UString::Format(u"FCR length: %'d", {len}) << std::endl
              << margin << UString::Format(u"FMX rate length: %d", {fmx}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

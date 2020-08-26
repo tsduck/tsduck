@@ -112,20 +112,18 @@ void ts::DTGServiceAttributeDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTGServiceAttributeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DTGServiceAttributeDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 3) {
-        strm << margin
+        disp << margin
              << UString::Format(u"Service Id: %5d (0x%04X), numeric selection: %s, visible: %s", {GetUInt16(data), GetUInt16(data), (data[2] & 0x02) != 0, (data[2] & 0x01) != 0})
              << std::endl;
         data += 3; size -= 3;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

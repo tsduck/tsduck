@@ -113,10 +113,8 @@ void ts::NVODReferenceDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NVODReferenceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::NVODReferenceDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 6) {
@@ -124,12 +122,12 @@ void ts::NVODReferenceDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
         const uint16_t net = GetUInt16(data + 2);
         const uint16_t srv = GetUInt16(data + 4);
         data += 6; size -= 6;
-        strm << margin << UString::Format(u"- Transport stream id: 0x%X (%d)", {ts, ts}) << std::endl
+        disp << margin << UString::Format(u"- Transport stream id: 0x%X (%d)", {ts, ts}) << std::endl
              << margin << UString::Format(u"  Original network id: 0x%X (%d)", {net, net}) << std::endl
              << margin << UString::Format(u"  Service id: 0x%X (%d)", {srv, srv}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

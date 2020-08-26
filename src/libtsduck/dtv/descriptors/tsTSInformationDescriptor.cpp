@@ -158,36 +158,34 @@ void ts::TSInformationDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TSInformationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TSInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size < 2) {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
     else {
-        strm << margin << UString::Format(u"Remote control key id: 0x%X (%d)", {data[0], data[0]}) << std::endl;
+        disp << margin << UString::Format(u"Remote control key id: 0x%X (%d)", {data[0], data[0]}) << std::endl;
         const size_t nlen = std::min<size_t>(size - 2, (data[1] >> 2) & 0x3F);
         const size_t tcount = data[1] & 0x03;
         data += 2; size -= 2;
 
-        strm << margin << "TS name: \"" << duck.decoded(data, nlen) << "\"" << std::endl;
+        disp << margin << "TS name: \"" << disp.duck().decoded(data, nlen) << "\"" << std::endl;
         data += nlen; size -= nlen;
 
         for (size_t i1 = 0; size >= 2 && i1 < tcount; ++i1) {
-            strm << margin << UString::Format(u"- Transmission type info: 0x%X (%d)", {data[0], data[0]}) << std::endl;
+            disp << margin << UString::Format(u"- Transmission type info: 0x%X (%d)", {data[0], data[0]}) << std::endl;
             const size_t scount = data[1];
             data += 2; size -= 2;
             for (size_t i2 = 0; size >= 2 && i2 < scount; ++i2) {
                 const uint16_t id = GetUInt16(data);
-                strm << margin << UString::Format(u"  Service id: 0x%X (%d)", {id, id}) << std::endl;
+                disp << margin << UString::Format(u"  Service id: 0x%X (%d)", {id, id}) << std::endl;
                 data += 2; size -= 2;
             }
         }
 
-        display.displayPrivateData(u"Reserved for future use", data, size, margin);
+        disp.displayPrivateData(u"Reserved for future use", data, size, margin);
     }
 }
 

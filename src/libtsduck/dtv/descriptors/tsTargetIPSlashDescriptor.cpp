@@ -112,18 +112,16 @@ void ts::TargetIPSlashDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetIPSlashDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TargetIPSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 5) {
-        strm << margin << "Address/mask: " << IPAddress(GetUInt32(data)) << "/" << int(data[4]) << std::endl;
+        disp << margin << "Address/mask: " << IPAddress(GetUInt32(data)) << "/" << int(data[4]) << std::endl;
         data += 5; size -= 5;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

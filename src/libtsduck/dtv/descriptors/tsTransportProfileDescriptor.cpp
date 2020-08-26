@@ -103,15 +103,13 @@ void ts::TransportProfileDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TransportProfileDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TransportProfileDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     if (size > 0) {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
         const UString margin(indent, ' ');
 
-        strm << margin << "Transport profile: " << NameFromSection(u"TransportProfile", data[0], names::HEXA_FIRST) << std::endl;
-        display.displayPrivateData(u"Private data", data + 1, size - 1, margin);
+        disp << margin << "Transport profile: " << NameFromSection(u"TransportProfile", data[0], names::HEXA_FIRST) << std::endl;
+        disp.displayPrivateData(u"Private data", data + 1, size - 1, margin);
     }
 }
 

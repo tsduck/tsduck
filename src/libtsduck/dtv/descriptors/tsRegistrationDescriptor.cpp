@@ -103,20 +103,18 @@ void ts::RegistrationDescriptor::deserialize(DuckContext& duck, const Descriptor
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
         // Sometimes, the format identifier is made of ASCII characters. Try to display them.
-        strm << margin << UString::Format(u"Format identifier: 0x%X", {GetUInt32(data)});
-        duck.displayIfASCII(data, 4, u" (\"", u"\")") << std::endl;
-        display.displayPrivateData(u"Additional identification info", data + 4, size - 4, margin);
+        disp << margin << UString::Format(u"Format identifier: 0x%X", {GetUInt32(data)});
+        disp.duck().displayIfASCII(data, 4, u" (\"", u"\")") << std::endl;
+        disp.displayPrivateData(u"Additional identification info", data + 4, size - 4, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

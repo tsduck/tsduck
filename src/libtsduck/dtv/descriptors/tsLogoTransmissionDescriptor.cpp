@@ -155,15 +155,13 @@ void ts::LogoTransmissionDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::LogoTransmissionDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::LogoTransmissionDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size > 0) {
         const uint8_t ttype = data[0];
-        strm << margin << "Logo transmission type: " << NameFromSection(u"LogoTransmissionType", ttype, names::HEXA_FIRST) << std::endl;
+        disp << margin << "Logo transmission type: " << NameFromSection(u"LogoTransmissionType", ttype, names::HEXA_FIRST) << std::endl;
         data += 1; size -= 1;
 
         switch (ttype) {
@@ -173,25 +171,25 @@ void ts::LogoTransmissionDescriptor::DisplayDescriptor(TablesDisplay& display, D
                     const uint16_t version = GetUInt16(data + 2) & 0x0FFF;
                     const uint16_t ddid = GetUInt16(data + 4);
                     data += 6; size -= 6;
-                    strm << margin << UString::Format(u"Logo id: 0x%03X (%d)", {id, id}) << std::endl
+                    disp << margin << UString::Format(u"Logo id: 0x%03X (%d)", {id, id}) << std::endl
                          << margin << UString::Format(u"Logo version: 0x%03X (%d)", {version, version}) << std::endl
                          << margin << UString::Format(u"Download data id: 0x%X (%d)", {ddid, ddid}) << std::endl;
                 }
-                display.displayExtraData(data, size, margin);
+                disp.displayExtraData(data, size, margin);
                 break;
             case 0x02:
                 if (size >= 2) {
                     const uint16_t id = GetUInt16(data) & 0x01FF;
                     data += 2; size -= 2;
-                    strm << margin << UString::Format(u"Logo id: 0x%03X (%d)", {id, id}) << std::endl;
+                    disp << margin << UString::Format(u"Logo id: 0x%03X (%d)", {id, id}) << std::endl;
                 }
-                display.displayExtraData(data, size, margin);
+                disp.displayExtraData(data, size, margin);
                 break;
             case 0x03:
-                strm << margin << "Logo characters: \"" << duck.decoded(data, size) << "\"" << std::endl;
+                disp << margin << "Logo characters: \"" << disp.duck().decoded(data, size) << "\"" << std::endl;
                 break;
             default:
-                display.displayPrivateData(u"Reserved for future use", data, size, margin);
+                disp.displayPrivateData(u"Reserved for future use", data, size, margin);
                 break;
         }
     }

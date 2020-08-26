@@ -131,30 +131,28 @@ void ts::AACDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         uint8_t prof_lev = data[0];
         data++; size--;
-        strm << margin << UString::Format(u"Profile and level: 0x%X", {prof_lev}) << std::endl;
+        disp << margin << UString::Format(u"Profile and level: 0x%X", {prof_lev}) << std::endl;
         if (size >= 1) {
             uint8_t flags = data[0];
             data++; size--;
             if ((flags & 0x80) && size >= 1) { // AAC_type
                 uint8_t type = data[0];
                 data++; size--;
-                strm << margin << "AAC type: " << NameFromSection(u"ComponentType", 0x6F00 | type, names::HEXA_FIRST, 8) << std::endl;
+                disp << margin << "AAC type: " << NameFromSection(u"ComponentType", 0x6F00 | type, names::HEXA_FIRST, 8) << std::endl;
             }
-            display.displayPrivateData(u"Additional information", data, size, margin);
+            disp.displayPrivateData(u"Additional information", data, size, margin);
             data += size; size = 0;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -108,19 +108,17 @@ void ts::SimpleApplicationBoundaryDescriptor::deserialize(DuckContext& duck, con
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SimpleApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size > 0) {
-        strm << margin << UString::Format(u"Number of prefixes: %d", {data[0]}) << std::endl;
+        disp << margin << UString::Format(u"Number of prefixes: %d", {data[0]}) << std::endl;
         data++; size--;
     }
 
     while (size > 0) {
-        strm << margin << "Boundary extension: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
+        disp << margin << "Boundary extension: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
     }
 }
 

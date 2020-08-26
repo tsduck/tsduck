@@ -107,36 +107,35 @@ void ts::PartialTransportStreamDescriptor::deserialize(DuckContext& duck, const 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::PartialTransportStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::PartialTransportStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 8) {
         const uint32_t peak = GetUInt24(data) & 0x003FFFFF;
         const uint32_t min_rate = GetUInt24(data + 3) & 0x003FFFFF;
         const uint16_t max_buffer = GetUInt16(data + 6) & 0x3FFF;
-        strm << margin << UString::Format(u"Peak rate: 0x%X (%d) x 400 b/s", {peak, peak}) << std::endl
+        disp << margin << UString::Format(u"Peak rate: 0x%X (%d) x 400 b/s", {peak, peak}) << std::endl
              << margin << "Min smoothing rate: ";
         if (min_rate == UNDEFINED_SMOOTHING_RATE) {
-            strm << "undefined";
+            disp << "undefined";
         }
         else {
-            strm << UString::Format(u"0x%X (%d) x 400 b/s", {min_rate, min_rate});
+            disp << UString::Format(u"0x%X (%d) x 400 b/s", {min_rate, min_rate});
         }
-        strm << std::endl << margin << "Max smoothing buffer: ";
+        disp << std::endl;
+        disp << margin << "Max smoothing buffer: ";
         if (max_buffer == UNDEFINED_SMOOTHING_BUFFER) {
-            strm << "undefined";
+            disp << "undefined";
         }
         else {
-            strm << UString::Format(u"0x%X (%d) bytes", {max_buffer, max_buffer});
+            disp << UString::Format(u"0x%X (%d) bytes", {max_buffer, max_buffer});
         }
-        strm << std::endl;
+        disp << std::endl;
         data += 8; size -= 8;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

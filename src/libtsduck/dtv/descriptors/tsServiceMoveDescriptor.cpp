@@ -105,20 +105,18 @@ void ts::ServiceMoveDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ServiceMoveDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ServiceMoveDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 6) {
-        strm << margin << UString::Format(u"New original network id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
+        disp << margin << UString::Format(u"New original network id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
              << margin << UString::Format(u"New transport stream id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl
              << margin << UString::Format(u"New service id: 0x%X (%d)", {GetUInt16(data + 4), GetUInt16(data + 4)}) << std::endl;
         data += 6; size -= 6;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -132,23 +132,21 @@ bool ts::CPDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     // Important: With extension descriptors, the DisplayDescriptor() function is called
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
         const uint16_t id = GetUInt16(data);
         const uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
-        strm << margin << UString::Format(u"CP System Id: %s, CP PID: %d (0x%X)", {NameFromSection(u"CPSystemId", id, names::FIRST), pid, pid}) << std::endl;
-        display.displayPrivateData(u"Private CP data", data + 4, size - 4, margin);
+        disp << margin << UString::Format(u"CP System Id: %s, CP PID: %d (0x%X)", {NameFromSection(u"CPSystemId", id, names::FIRST), pid, pid}) << std::endl;
+        disp.displayPrivateData(u"Private CP data", data + 4, size - 4, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }

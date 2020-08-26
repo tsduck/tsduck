@@ -180,10 +180,8 @@ bool ts::CableDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml:
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 11) {
@@ -195,42 +193,43 @@ void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display
         BCDToString(srate, data + 7, 7, 3, true);
         data += 11; size -= 11;
 
-        strm << margin << "Frequency: " << freq << " MHz" << std::endl
+        disp << margin << "Frequency: " << freq << " MHz" << std::endl
              << margin << "Symbol rate: " << srate << " Msymbol/s" << std::endl
              << margin << "Modulation: ";
         switch (modulation) {
-            case 0:  strm << "not defined"; break;
-            case 1:  strm << "16-QAM"; break;
-            case 2:  strm << "32-QAM"; break;
-            case 3:  strm << "64-QAM"; break;
-            case 4:  strm << "128-QAM"; break;
-            case 5:  strm << "256-QAM"; break;
-            default: strm << "code " << int(modulation) << " (reserved)"; break;
+            case 0:  disp << "not defined"; break;
+            case 1:  disp << "16-QAM"; break;
+            case 2:  disp << "32-QAM"; break;
+            case 3:  disp << "64-QAM"; break;
+            case 4:  disp << "128-QAM"; break;
+            case 5:  disp << "256-QAM"; break;
+            default: disp << "code " << int(modulation) << " (reserved)"; break;
         }
-        strm << std::endl << margin << "Outer FEC: ";
+        disp << std::endl;
+        disp << margin << "Outer FEC: ";
         switch (fec_outer) {
-            case 0:  strm << "not defined"; break;
-            case 1:  strm << "none"; break;
-            case 2:  strm << "RS(204/188)"; break;
-            default: strm << "code " << int(fec_outer) << " (reserved)"; break;
+            case 0:  disp << "not defined"; break;
+            case 1:  disp << "none"; break;
+            case 2:  disp << "RS(204/188)"; break;
+            default: disp << "code " << int(fec_outer) << " (reserved)"; break;
         }
-        strm << ", Inner FEC: ";
+        disp << ", Inner FEC: ";
         switch (fec_inner) {
-            case 0:  strm << "not defined"; break;
-            case 1:  strm << "1/2 conv. code rate"; break;
-            case 2:  strm << "2/3 conv. code rate"; break;
-            case 3:  strm << "3/4 conv. code rate"; break;
-            case 4:  strm << "5/6 conv. code rate"; break;
-            case 5:  strm << "7/8 conv. code rate"; break;
-            case 6:  strm << "8/9 conv. code rate"; break;
-            case 7:  strm << "3/5 conv. code rate"; break;
-            case 8:  strm << "4/5 conv. code rate"; break;
-            case 9:  strm << "9/10 conv. code rate"; break;
-            case 15: strm << "none"; break;
-            default: strm << "code " << int(fec_inner) << " (reserved)"; break;
+            case 0:  disp << "not defined"; break;
+            case 1:  disp << "1/2 conv. code rate"; break;
+            case 2:  disp << "2/3 conv. code rate"; break;
+            case 3:  disp << "3/4 conv. code rate"; break;
+            case 4:  disp << "5/6 conv. code rate"; break;
+            case 5:  disp << "7/8 conv. code rate"; break;
+            case 6:  disp << "8/9 conv. code rate"; break;
+            case 7:  disp << "3/5 conv. code rate"; break;
+            case 8:  disp << "4/5 conv. code rate"; break;
+            case 9:  disp << "9/10 conv. code rate"; break;
+            case 15: disp << "none"; break;
+            default: disp << "code " << int(fec_inner) << " (reserved)"; break;
         }
-        strm << std::endl;
+        disp << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }

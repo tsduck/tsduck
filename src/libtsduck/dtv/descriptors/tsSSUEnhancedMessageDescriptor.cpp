@@ -120,20 +120,18 @@ void ts::SSUEnhancedMessageDescriptor::deserialize(DuckContext& duck, const Desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSUEnhancedMessageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SSUEnhancedMessageDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 5) {
-        strm << margin << UString::Format(u"Descriptor number: %d, last: %d", {(data[0] >> 4) & 0x0F, data[0] & 0x0F}) << std::endl
+        disp << margin << UString::Format(u"Descriptor number: %d, last: %d", {(data[0] >> 4) & 0x0F, data[0] & 0x0F}) << std::endl
              << margin << "Language: " << DeserializeLanguageCode(data + 1) << std::endl
              << margin << UString::Format(u"Message index: %d", {data[4] & 0x1F}) << std::endl
-             << margin << "Text: \"" << duck.decoded(data + 5, size - 5) << "\"" << std::endl;
+             << margin << "Text: \"" << disp.duck().decoded(data + 5, size - 5) << "\"" << std::endl;
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

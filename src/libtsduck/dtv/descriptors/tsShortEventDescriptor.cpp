@@ -174,23 +174,21 @@ void ts::ShortEventDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ShortEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ShortEventDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
         const UString lang(DeserializeLanguageCode(data));
         data += 3; size -= 3;
-        const UString name(duck.decodedWithByteLength(data, size));
-        const UString text(duck.decodedWithByteLength(data, size));
-        strm << margin << "Language: " << lang << std::endl
+        const UString name(disp.duck().decodedWithByteLength(data, size));
+        const UString text(disp.duck().decodedWithByteLength(data, size));
+        disp << margin << "Language: " << lang << std::endl
              << margin << "Event name: \"" << name << "\"" << std::endl
              << margin << "Description: \"" << text << "\"" << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

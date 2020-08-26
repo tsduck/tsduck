@@ -118,24 +118,22 @@ void ts::CAServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& d
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CAServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CAServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
-        strm << margin << "CA System Id: " << names::CASId(duck, GetUInt16(data), names::FIRST) << std::endl
+        disp << margin << "CA System Id: " << names::CASId(disp.duck(), GetUInt16(data), names::FIRST) << std::endl
              << margin << UString::Format(u"CA broadcaster group id: 0x%X (%d)", {data[2], data[2]}) << std::endl
              << margin << UString::Format(u"Delay time: %d days", {data[3]}) << std::endl;
         data += 4; size -= 4;
         while (size >= 2) {
-            strm << margin << UString::Format(u"Service id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl;
+            disp << margin << UString::Format(u"Service id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl;
             data += 2; size -= 2;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

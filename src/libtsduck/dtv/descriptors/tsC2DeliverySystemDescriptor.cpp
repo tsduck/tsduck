@@ -129,14 +129,12 @@ const ts::Enumeration ts::C2DeliverySystemDescriptor::C2GuardIntervalNames({
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::C2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::C2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     // Important: With extension descriptors, the DisplayDescriptor() function is called
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 7) {
@@ -148,14 +146,14 @@ void ts::C2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, D
         const uint8_t guard = data[6] & 0x07;
         data += 7; size -= 7;
 
-        strm << margin << UString::Format(u"PLP id: 0x%X (%d), data slice id: 0x%X (%d)", {plp, plp, slice, slice}) << std::endl
+        disp << margin << UString::Format(u"PLP id: 0x%X (%d), data slice id: 0x%X (%d)", {plp, plp, slice, slice}) << std::endl
              << margin << UString::Format(u"Frequency: %'d Hz (0x%X)", {freq, freq}) << std::endl
              << margin << UString::Format(u"Tuning frequency type: %s", {NameFromSection(u"C2TuningType", type, names::FIRST)}) << std::endl
              << margin << UString::Format(u"Symbol duration: %s", {NameFromSection(u"C2SymbolDuration", duration, names::FIRST)}) << std::endl
              << margin << UString::Format(u"Guard interval: %d (%s)", {guard, C2GuardIntervalNames.name(guard)}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

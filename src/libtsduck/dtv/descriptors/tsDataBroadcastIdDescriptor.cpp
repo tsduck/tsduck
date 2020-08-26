@@ -104,22 +104,20 @@ void ts::DataBroadcastIdDescriptor::deserialize(DuckContext& duck, const Descrip
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 2) {
         uint16_t id = GetUInt16(data);
         data += 2; size -= 2;
-        strm << margin << "Data broadcast id: " << names::DataBroadcastId(id, names::BOTH_FIRST) << std::endl;
+        disp << margin << "Data broadcast id: " << names::DataBroadcastId(id, names::BOTH_FIRST) << std::endl;
         // The rest of the descriptor is the "id selector".
-        DisplaySelectorBytes(display, data, size, indent, id);
+        DisplaySelectorBytes(disp, data, size, indent, id);
         data += size; size = 0;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -127,26 +125,26 @@ void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 // Static method to display a data broadcast selector bytes.
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& display, const uint8_t* data, size_t size, int indent, uint16_t dbid)
+void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& disp, const uint8_t* data, size_t size, int indent, uint16_t dbid)
 {
     const UString margin(indent, ' ');
 
     // Interpretation depends in the data broadcast id.
     switch (dbid) {
         case 0x0005:
-            DisplaySelectorMPE(display, data, size, indent, dbid);
+            DisplaySelectorMPE(disp, data, size, indent, dbid);
             break;
         case 0x000A:
-            DisplaySelectorSSU(display, data, size, indent, dbid);
+            DisplaySelectorSSU(disp, data, size, indent, dbid);
             break;
         case 0x000B:
-            DisplaySelectorINT(display, data, size, indent, dbid);
+            DisplaySelectorINT(disp, data, size, indent, dbid);
             break;
         default:
-            DisplaySelectorGeneric(display, data, size, indent, dbid);
+            DisplaySelectorGeneric(disp, data, size, indent, dbid);
             break;
     }
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -154,10 +152,10 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& display,
 // Generic selector bytes
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::DisplaySelectorGeneric(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
+void ts::DataBroadcastIdDescriptor::DisplaySelectorGeneric(TablesDisplay& disp, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
 {
     const UString margin(indent, ' ');
-    display.displayPrivateData(u"Data Broadcast selector", data, size, margin);
+    disp.displayPrivateData(u"Data Broadcast selector", data, size, margin);
     data += size; size = 0;
 }
 
@@ -167,10 +165,8 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorGeneric(TablesDisplay& displa
 // Id selector is a system_software_update_info structure.
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
+void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& disp, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     // OUI_data_length:
@@ -199,35 +195,35 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& display, c
         }
         data += slength; size -= slength; dlength -= slength;
         // Display
-        strm << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl
+        disp << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl
             << margin << UString::Format(u"  Update type: 0x%X (", {upd_type});
         switch (upd_type) {
-            case 0x00: strm << "proprietary update solution"; break;
-            case 0x01: strm << "standard update carousel (no notification) via broadcast"; break;
-            case 0x02: strm << "system software update with UNT via broadcast"; break;
-            case 0x03: strm << "system software update using return channel with UNT"; break;
-            default:   strm << "reserved"; break;
+            case 0x00: disp << "proprietary update solution"; break;
+            case 0x01: disp << "standard update carousel (no notification) via broadcast"; break;
+            case 0x02: disp << "system software update with UNT via broadcast"; break;
+            case 0x03: disp << "system software update using return channel with UNT"; break;
+            default:   disp << "reserved"; break;
         }
-        strm << ")" << std::endl << margin << "  Update version: ";
+        disp << ")" << std::endl << margin << "  Update version: ";
         if (upd_flag == 0) {
-            strm << "none";
+            disp << "none";
         }
         else {
-            strm << UString::Format(u"%d (0x%02X)", {upd_version, upd_version});
+            disp << UString::Format(u"%d (0x%02X)", {upd_version, upd_version});
         }
-        strm << std::endl;
-        display.displayPrivateData(u"Selector data", sdata, slength, margin + u"  ");
+        disp << std::endl;
+        disp.displayPrivateData(u"Selector data", sdata, slength, margin + u"  ");
     }
 
     // Extraneous data in OUI_loop:
     if (dlength > 0) {
-        display.displayPrivateData(u"Extraneous data in OUI loop", data, dlength, margin);
+        disp.displayPrivateData(u"Extraneous data in OUI loop", data, dlength, margin);
         data += dlength; size -= dlength;
     }
 
     // Private data
     if (size > 0) {
-        display.displayPrivateData(u"Private data", data, size, margin);
+        disp.displayPrivateData(u"Private data", data, size, margin);
         data += size; size = 0;
     }
 }
@@ -238,15 +234,13 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& display, c
 // Id selector is a multiprotocol_encapsulation_info structure.
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::DisplaySelectorMPE(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
+void ts::DataBroadcastIdDescriptor::DisplaySelectorMPE(TablesDisplay& disp, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
 {
+    const UString margin(indent, ' ');
+
     // Fixed length: 2 bytes.
     if (size >= 2) {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const UString margin(indent, ' ');
-
-        strm << margin << UString::Format(u"MAC address range: %d, MAC/IP mapping: %d, alignment: %d bits",
+        disp << margin << UString::Format(u"MAC address range: %d, MAC/IP mapping: %d, alignment: %d bits",
                                           {(data[0] >> 5) & 0x07, (data[0] >> 4) & 0x01, (data[0] & 0x08) == 0 ? 8 : 32})
              << std::endl
              << margin << UString::Format(u"Max sections per datagram: %d", {data[1]})
@@ -261,10 +255,8 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorMPE(TablesDisplay& display, c
 // Id selector is a IP/MAC_notification_info structure.
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
+void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& disp, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     // platform_id_data_length:
@@ -279,26 +271,26 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& display, c
 
     // Platform id loop.
     while (dlength >= 5) {
-        strm << margin << UString::Format(u"- Platform id: %s", {ts::names::PlatformId(GetUInt24(data), names::HEXA_FIRST)}) << std::endl
+        disp << margin << UString::Format(u"- Platform id: %s", {ts::names::PlatformId(GetUInt24(data), names::HEXA_FIRST)}) << std::endl
              << margin << UString::Format(u"  Action type: 0x%X, version: ", {data[3]});
         if ((data[4] & 0x20) != 0) {
-            strm << UString::Decimal(data[4] & 0x1F);
+            disp << UString::Decimal(data[4] & 0x1F);
         }
         else {
-            strm << "unspecified";
+            disp << "unspecified";
         }
-        strm << std::endl;
+        disp << std::endl;
         data += 5; size -= 5;  dlength -= 5;
     }
 
     // Extraneous data in Platform id loop:
     if (dlength > 0) {
-        display.displayPrivateData(u"Extraneous data in platform_id loop", data, dlength, margin);
+        disp.displayPrivateData(u"Extraneous data in platform_id loop", data, dlength, margin);
         data += dlength; size -= dlength;
     }
 
     // Private data
-    display.displayPrivateData(u"Private data", data, size, margin);
+    disp.displayPrivateData(u"Private data", data, size, margin);
 }
 
 

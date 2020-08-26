@@ -136,15 +136,13 @@ void ts::MVCExtensionDescriptor::deserialize(DuckContext& duck, const Descriptor
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MVCExtensionDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MVCExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 8) {
         const uint32_t val = GetUInt24(data + 4);
-        strm << margin << UString::Format(u"Average bitrate: %d kb/s, maximum: %d kb/s", {GetUInt16(data), GetUInt16(data + 2)}) << std::endl
+        disp << margin << UString::Format(u"Average bitrate: %d kb/s, maximum: %d kb/s", {GetUInt16(data), GetUInt16(data + 2)}) << std::endl
              << margin << UString::Format(u"View association not present: %s", {(val & 0x800000) != 0}) << std::endl
              << margin << UString::Format(u"Base view is left eyeview: %s", {(val & 0x400000) != 0}) << std::endl
              << margin << UString::Format(u"View order min: %d, max: %d", {(val >> 10) & 0x03FF, val & 0x03FF}) << std::endl
@@ -154,7 +152,7 @@ void ts::MVCExtensionDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
         data += 8; size -= 8;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

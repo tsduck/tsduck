@@ -111,20 +111,18 @@ void ts::VideoDecodeControlDescriptor::deserialize(DuckContext& duck, const Desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::VideoDecodeControlDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::VideoDecodeControlDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size > 0) {
-        strm << margin << UString::Format(u"Still picture: %s", {(data[0] & 0x80) != 0}) << std::endl
+        disp << margin << UString::Format(u"Still picture: %s", {(data[0] & 0x80) != 0}) << std::endl
              << margin << UString::Format(u"Sequence end code: %s", {(data[0] & 0x40) != 0}) << std::endl
              << margin << "Video encode format: " << NameFromSection(u"VideoEncodeFormat", (data[0] >> 2) & 0x0F, names::DECIMAL_FIRST) << std::endl
              << margin << UString::Format(u"Reserve future use: %d", {data[0] & 0x03}) << std::endl;
         data++; size--;
     }
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -290,10 +290,8 @@ void ts::ExtendedEventDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 5) {
@@ -304,21 +302,21 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
         if (length > size) {
             length = size;
         }
-        strm << margin << "Descriptor number: " << int((desc_num >> 4) & 0x0F)
+        disp << margin << "Descriptor number: " << int((desc_num >> 4) & 0x0F)
              << ", last: " << int(desc_num & 0x0F) << std::endl
              << margin << "Language: " << lang << std::endl;
         size -= length;
         while (length > 0) {
-            const UString description(duck.decodedWithByteLength(data, length));
-            const UString item(duck.decodedWithByteLength(data, length));
-            strm << margin << "\"" << description << "\" : \"" << item << "\"" << std::endl;
+            const UString description(disp.duck().decodedWithByteLength(data, length));
+            const UString item(disp.duck().decodedWithByteLength(data, length));
+            disp << margin << "\"" << description << "\" : \"" << item << "\"" << std::endl;
         }
-        const UString text(duck.decodedWithByteLength(data, size));
-        strm << margin << "Text: \"" << text << "\"" << std::endl;
+        const UString text(disp.duck().decodedWithByteLength(data, size));
+        disp << margin << "Text: \"" << text << "\"" << std::endl;
         data += length; size -= length;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

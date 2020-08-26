@@ -138,10 +138,8 @@ void ts::J2KVideoDescriptor::deserialize(DuckContext& duck, const Descriptor& de
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::J2KVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::J2KVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 24) {
@@ -156,7 +154,7 @@ void ts::J2KVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
         const bool still_mode = (data[23] & 0x80) != 0;
         const bool interlaced_video = (data[23] & 0x40) != 0;
 
-        strm << margin << UString::Format(u"Profile and level: 0x%X (%d)", {profile_and_level, profile_and_level}) << std::endl
+        disp << margin << UString::Format(u"Profile and level: 0x%X (%d)", {profile_and_level, profile_and_level}) << std::endl
              << margin << UString::Format(u"Horizontal size: 0x%X (%d)", {horizontal_size, horizontal_size}) << std::endl
              << margin << UString::Format(u"Vertical size: 0x%X (%d)", {vertical_size, vertical_size}) << std::endl
              << margin << UString::Format(u"Max bit rate: 0x%X (%d)", {max_bit_rate, max_bit_rate}) << std::endl
@@ -166,10 +164,10 @@ void ts::J2KVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
              << margin << UString::Format(u"Still mode: %s", {still_mode}) << std::endl
              << margin << UString::Format(u"Interlaced video: %s", {interlaced_video}) << std::endl;
 
-        display.displayPrivateData(u"Private data", data + 24, size - 24, margin);
+        disp.displayPrivateData(u"Private data", data + 24, size - 24, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

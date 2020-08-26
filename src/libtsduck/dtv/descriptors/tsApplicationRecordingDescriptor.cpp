@@ -181,16 +181,14 @@ void ts::ApplicationRecordingDescriptor::deserialize(DuckContext& duck, const De
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     // Flags in first byte.
     bool valid = size >= 1;
     if (valid) {
-        strm << margin << "Scheduled recording: " << UString::TrueFalse((data[0] & 0x80) != 0) << std::endl
+        disp << margin << "Scheduled recording: " << UString::TrueFalse((data[0] & 0x80) != 0) << std::endl
              << margin << "Trick mode aware: " << UString::TrueFalse((data[0] & 0x40) != 0) << std::endl
              << margin << "Time shift: " << UString::TrueFalse((data[0] & 0x20) != 0) << std::endl
              << margin << "Dynamic: " << UString::TrueFalse((data[0] & 0x10) != 0) << std::endl
@@ -208,7 +206,9 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& displa
             valid = size >= 1 && size >= size_t(data[0] + 2);
             if (valid) {
                 const size_t len = data[0];
-                strm << margin << UString::Format(u"Label: \"%s\", storage properties: 0x%X", {duck.decoded(data + 1, len), uint8_t((data[len + 1] >> 6) & 0x03)}) << std::endl;
+                disp << margin
+                     << UString::Format(u"Label: \"%s\", storage properties: 0x%X", {disp.duck().decoded(data + 1, len), uint8_t((data[len + 1] >> 6) & 0x03)})
+                     << std::endl;
                 data += len + 2;
                 size -= len + 2;
                 labelCount--;
@@ -223,7 +223,7 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& displa
         uint8_t count = data[0];
         data++; size--;
         while (count > 0) {
-            strm << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[0], data[0]}) << std::endl;
+            disp << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[0], data[0]}) << std::endl;
             data++; size--;
             count--;
         }
@@ -234,13 +234,13 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& displa
     if (valid) {
         uint8_t count = data[0];
         data++; size--;
-        display.displayPrivateData(u"Private data", data, count, margin);
+        disp.displayPrivateData(u"Private data", data, count, margin);
         data += count; size -= count;
-        display.displayPrivateData(u"Reserved bytes", data, size, margin);
+        disp.displayPrivateData(u"Reserved bytes", data, size, margin);
         size = 0;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

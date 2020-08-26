@@ -107,10 +107,8 @@ void ts::ExternalApplicationAuthorizationDescriptor::deserialize(DuckContext& du
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ExternalApplicationAuthorizationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ExternalApplicationAuthorizationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 7) {
@@ -118,12 +116,12 @@ void ts::ExternalApplicationAuthorizationDescriptor::DisplayDescriptor(TablesDis
         const uint16_t app = GetUInt16(data + 4);
         const uint8_t prio = GetUInt8(data + 6);
         data += 7; size -= 7;
-        strm << margin << UString::Format(u"- Organization id: 0x%X (%d)", {org, org}) << std::endl
+        disp << margin << UString::Format(u"- Organization id: 0x%X (%d)", {org, org}) << std::endl
              << margin << UString::Format(u"  Application id: 0x%X (%d)", {app, app}) << std::endl
              << margin << UString::Format(u"  Priority: 0x%X (%d)", {prio, prio}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

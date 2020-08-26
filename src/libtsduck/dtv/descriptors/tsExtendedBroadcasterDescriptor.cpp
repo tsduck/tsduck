@@ -159,10 +159,8 @@ void ts::ExtendedBroadcasterDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ExtendedBroadcasterDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ExtendedBroadcasterDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size == 0) {
@@ -171,7 +169,7 @@ void ts::ExtendedBroadcasterDescriptor::DisplayDescriptor(TablesDisplay& display
 
     const uint8_t btype = (data[0] >> 4) & 0x0F;
     data++; size--;
-    strm << margin << "Broadcaster type: " << NameFromSection(u"ISDBBroadcasterType", btype, names::HEXA_FIRST) << std::endl;
+    disp << margin << "Broadcaster type: " << NameFromSection(u"ISDBBroadcasterType", btype, names::HEXA_FIRST) << std::endl;
 
     if ((btype == 0x01 || btype == 0x02) && size >= 3) {
 
@@ -180,22 +178,22 @@ void ts::ExtendedBroadcasterDescriptor::DisplayDescriptor(TablesDisplay& display
         size_t bc_count = data[2] & 0x0F;
         data += 3; size -= 3;
 
-        strm << margin << UString::Format(u"Terrestrial%s broadcaster id: 0x%X (%d)", {btype == 0x02 ? u" sound" : u"", bcid, bcid}) << std::endl
+        disp << margin << UString::Format(u"Terrestrial%s broadcaster id: 0x%X (%d)", {btype == 0x02 ? u" sound" : u"", bcid, bcid}) << std::endl
              << margin << UString::Format(u"Number of affiliations: %d, number of broadcaster ids: %d", {aff_count, bc_count}) << std::endl;
 
         while (aff_count > 0 && size > 0) {
-            strm << margin << UString::Format(u"- %s id: 0x%X (%d)", {btype == 0x02 ? u"Sound broadcast affiliation" : u"Affiliation", data[0], data[0]}) << std::endl;
+            disp << margin << UString::Format(u"- %s id: 0x%X (%d)", {btype == 0x02 ? u"Sound broadcast affiliation" : u"Affiliation", data[0], data[0]}) << std::endl;
             data++; size--; aff_count--;
         }
 
         while (bc_count > 0 && size >= 3) {
-            strm << margin << UString::Format(u"- Original network id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
+            disp << margin << UString::Format(u"- Original network id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
                  << margin << UString::Format(u"  Broadcaster id: 0x%X (%d)", {data[2], data[2]}) << std::endl;
             data += 3; size -= 3; bc_count--;
         }
     }
 
-    display.displayPrivateData(btype == 0x01 || btype == 0x02 ? u"Private data" : u"Reserve future use", data, size, margin);
+    disp.displayPrivateData(btype == 0x01 || btype == 0x02 ? u"Private data" : u"Reserve future use", data, size, margin);
 }
 
 

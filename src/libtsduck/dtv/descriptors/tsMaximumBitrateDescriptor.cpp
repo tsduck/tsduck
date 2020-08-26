@@ -95,19 +95,17 @@ void ts::MaximumBitrateDescriptor::deserialize(DuckContext& duck, const Descript
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MaximumBitrateDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MaximumBitrateDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 3) {
         const uint32_t mbr = GetUInt24(data) & 0x003FFFFF;
         data += 3; size -= 3;
-        strm << margin << UString::Format(u"Maximum bitrate: 0x%X (%d), %'d bits/second", {mbr, mbr, mbr * BITRATE_UNIT}) << std::endl;
+        disp << margin << UString::Format(u"Maximum bitrate: 0x%X (%d), %'d bits/second", {mbr, mbr, mbr * BITRATE_UNIT}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

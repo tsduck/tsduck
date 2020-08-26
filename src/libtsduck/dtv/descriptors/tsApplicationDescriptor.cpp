@@ -146,10 +146,8 @@ void ts::ApplicationDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ApplicationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ApplicationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
@@ -157,22 +155,22 @@ void ts::ApplicationDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
         data++; size--;
         while (size >= 5 && len >= 5) {
             const uint16_t pr = GetUInt16(data);
-            strm << margin << UString::Format(u"Profile: 0x%X (%d), version: %d.%d.%d", {pr, pr, data[2], data[3], data[4]}) << std::endl;
+            disp << margin << UString::Format(u"Profile: 0x%X (%d), version: %d.%d.%d", {pr, pr, data[2], data[3], data[4]}) << std::endl;
             data += 5; size -= 5; len -= 5;
         }
         if (size >= 1) {
-            strm << margin
+            disp << margin
                  << UString::Format(u"Service bound: %d, visibility: %d, priority: %d", {data[0] >> 7, (data[0] >> 5) & 0x03, data[1]})
                  << std::endl;
             data += 2; size -= 2;
         }
         while (size > 0) {
-            strm << margin << UString::Format(u"Transport protocol label: 0x%X (%d)", {data[0], data[0]}) << std::endl;
+            disp << margin << UString::Format(u"Transport protocol label: 0x%X (%d)", {data[0], data[0]}) << std::endl;
             data++; size--;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -125,28 +125,26 @@ void ts::DeferredAssociationTagsDescriptor::deserialize(DuckContext& duck, const
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DeferredAssociationTagsDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DeferredAssociationTagsDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         size_t len = data[0];
         data++; size--;
         while (size >= 2 && len >= 2) {
-            strm << margin << UString::Format(u"Association tag: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl;
+            disp << margin << UString::Format(u"Association tag: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl;
             data += 2; size -= 2; len -= 2;
         }
         if (size >= 4 && len == 0) {
-            strm << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
+            disp << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
                  << margin << UString::Format(u"Program number: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl;
-            display.displayPrivateData(u"Private data", data + 4, size - 4, margin);
+            disp.displayPrivateData(u"Private data", data + 4, size - 4, margin);
             size = 0;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

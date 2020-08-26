@@ -176,10 +176,8 @@ void ts::DVBAC3Descriptor::deserialize(DuckContext& duck, const Descriptor& desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBAC3Descriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
@@ -188,27 +186,27 @@ void ts::DVBAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, co
         if ((flags & 0x80) && size >= 1) { // component_type
             uint8_t type = data[0];
             data++; size--;
-            strm << margin << "Component type: " << names::AC3ComponentType(type, names::FIRST) << std::endl;
+            disp << margin << "Component type: " << names::AC3ComponentType(type, names::FIRST) << std::endl;
         }
         if ((flags & 0x40) && size >= 1) { // bsid
             uint8_t bsid = data[0];
             data++; size--;
-            strm << margin << UString::Format(u"AC-3 coding version: %d (0x%X)", {bsid, bsid}) << std::endl;
+            disp << margin << UString::Format(u"AC-3 coding version: %d (0x%X)", {bsid, bsid}) << std::endl;
         }
         if ((flags & 0x20) && size >= 1) { // mainid
             uint8_t mainid = data[0];
             data++; size--;
-            strm << margin << UString::Format(u"Main audio service id: %d (0x%X)", {mainid, mainid}) << std::endl;
+            disp << margin << UString::Format(u"Main audio service id: %d (0x%X)", {mainid, mainid}) << std::endl;
         }
         if ((flags & 0x10) && size >= 1) { // asvc
             uint8_t asvc = data[0];
             data++; size--;
-            strm << margin << UString::Format(u"Associated to: 0x%X", {asvc}) << std::endl;
+            disp << margin << UString::Format(u"Associated to: 0x%X", {asvc}) << std::endl;
         }
-        display.displayPrivateData(u"Additional information", data, size, margin);
+        disp.displayPrivateData(u"Additional information", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

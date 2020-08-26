@@ -122,10 +122,8 @@ void ts::AssociationTagDescriptor::deserialize(DuckContext& duck, const Descript
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AssociationTagDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AssociationTagDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 5) {
@@ -134,12 +132,12 @@ void ts::AssociationTagDescriptor::DisplayDescriptor(TablesDisplay& display, DID
         const size_t len = std::min<size_t>(size - 5, GetUInt8(data + 4));
         data += 5; size -= 5;
 
-        strm << margin << UString::Format(u"Association tag: 0x%X (%d), use: 0x%X (%d)", {tag, tag, use, use}) << std::endl;
-        display.displayPrivateData(u"Selector bytes", data, len, margin);
-        display.displayPrivateData(u"Private data", data + len, size - len, margin);
+        disp << margin << UString::Format(u"Association tag: 0x%X (%d), use: 0x%X (%d)", {tag, tag, use, use}) << std::endl;
+        disp.displayPrivateData(u"Selector bytes", data, len, margin);
+        disp.displayPrivateData(u"Private data", data + len, size - len, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

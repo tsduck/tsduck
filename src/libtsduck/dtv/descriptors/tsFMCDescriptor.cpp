@@ -104,20 +104,18 @@ void ts::FMCDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::FMCDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::FMCDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 3) {
         const uint16_t id = GetUInt16(data);
         const uint8_t fmc = data[2];
         data += 3; size -= 3;
-        strm << margin << UString::Format(u"ES id: 0x%X (%d), FlexMux channel: 0x%X (%d)", {id, id, fmc, fmc}) << std::endl;
+        disp << margin << UString::Format(u"ES id: 0x%X (%d), FlexMux channel: 0x%X (%d)", {id, id, fmc, fmc}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -147,18 +147,16 @@ bool ts::ApplicationSignallingDescriptor::analyzeXML(DuckContext& duck, const xm
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ApplicationSignallingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ApplicationSignallingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 3) {
         uint16_t app_type = GetUInt16(data) & 0x7FFF;
         uint8_t ait_version = data[2] & 0x1F;
         data += 3; size -= 3;
-        strm << margin << UString::Format(u"Application type: %d (0x%X), AIT Version: %d (0x%X)", {app_type, app_type, ait_version, ait_version}) << std::endl;
+        disp << margin << UString::Format(u"Application type: %d (0x%X), AIT Version: %d (0x%X)", {app_type, app_type, ait_version, ait_version}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }

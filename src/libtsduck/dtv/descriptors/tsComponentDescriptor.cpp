@@ -123,26 +123,24 @@ void ts::ComponentDescriptor::deserialize(DuckContext& duck, const Descriptor& d
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 6) {
         const uint16_t type = GetUInt16(data);
         const uint8_t tag = data[2];
-        strm << margin << "Content/type: " << names::ComponentType(duck, type, names::FIRST) << std::endl
+        disp << margin << "Content/type: " << names::ComponentType(disp.duck(), type, names::FIRST) << std::endl
              << margin << UString::Format(u"Component tag: %d (0x%X)", {tag, tag}) << std::endl
              << margin << "Language: " << DeserializeLanguageCode(data + 3) << std::endl;
         data += 6; size -= 6;
         if (size > 0) {
-            strm << margin << "Description: \"" << duck.decoded(data, size) << "\"" << std::endl;
+            disp << margin << "Description: \"" << disp.duck().decoded(data, size) << "\"" << std::endl;
         }
         data += size; size = 0;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

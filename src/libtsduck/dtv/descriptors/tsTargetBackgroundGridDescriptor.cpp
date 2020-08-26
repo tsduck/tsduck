@@ -108,15 +108,13 @@ void ts::TargetBackgroundGridDescriptor::deserialize(DuckContext& duck, const De
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetBackgroundGridDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TargetBackgroundGridDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
         const uint32_t x = GetUInt32(data);
-        strm << margin
+        disp << margin
              << UString::Format(u"Size: %dx%d, aspect ratio: %s",
                                 {(x >> 18) & 0x3FFF,
                                  (x >> 4) & 0x3FFF,
@@ -125,7 +123,7 @@ void ts::TargetBackgroundGridDescriptor::DisplayDescriptor(TablesDisplay& displa
         data += 4; size -= 4;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

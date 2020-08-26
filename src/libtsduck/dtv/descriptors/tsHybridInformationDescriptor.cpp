@@ -159,10 +159,8 @@ void ts::HybridInformationDescriptor::deserialize(DuckContext& duck, const Descr
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::HybridInformationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::HybridInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size > 0) {
@@ -171,22 +169,22 @@ void ts::HybridInformationDescriptor::DisplayDescriptor(TablesDisplay& display, 
         const uint8_t format = (data[0] >> 2) & 0x0F;
         data++; size--;
 
-        strm << margin << "Has location: " << UString::YesNo(has) << std::endl
+        disp << margin << "Has location: " << UString::YesNo(has) << std::endl
              << margin << "Location type: " << (type ? "connected" : "broadcast") << std::endl
              << margin << "Format: " << NameFromSection(u"ISDBHybridInformationFormat", format, names::DECIMAL_FIRST) << std::endl;
 
         if (has) {
             if (type) {
-                strm << margin << "URL: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
+                disp << margin << "URL: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
             }
             else if (size >= 3) {
-                strm << margin << UString::Format(u"Component tag: 0x0%X (%d)", {data[0], data[0]}) << std::endl
+                disp << margin << UString::Format(u"Component tag: 0x0%X (%d)", {data[0], data[0]}) << std::endl
                      << margin << UString::Format(u"Module id: 0x0%X (%d)", {GetUInt16(data + 1), GetUInt16(data + 1)}) << std::endl;
                 data += 3; size -= 3;
             }
         }
 
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsDescriptorList.h"
@@ -115,34 +116,28 @@ void ts::CADescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const UString margin(indent, ' ');
-
-    if (size < 4) {
-        display.displayExtraData(data, size, margin);
+    if (buf.remainingReadBytes() < 4) {
+        disp.displayExtraData(buf, margin);
     }
     else {
-        // Extract common part
-        uint16_t sysid = GetUInt16(data);
-        uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
-        const UChar* const dtype = tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA");
-        data += 4; size -= 4;
-
-        strm << margin << UString::Format(u"CA System Id: %s, %s PID: %d (0x%X)", {names::CASId(duck, sysid, names::FIRST), dtype, pid, pid}) << std::endl;
+        // Display common part
+        const uint16_t casid = buf.getUInt16();
+        disp << margin << "CA System Id: " << names::CASId(disp.duck(), casid, names::FIRST);
+        disp << ", " << (tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA"));
+        disp << UString::Format(u" PID: %d (0x%<X)", {buf.getPID()}) << std::endl;
 
         // CA private part.
-        if (size > 0) {
+        if (!buf.endOfRead()) {
             // Check if a specific CAS registered its own display routine.
-            DisplayCADescriptorFunction disp = PSIRepository::Instance()->getCADescriptorDisplay(sysid);
-            if (disp != nullptr) {
+            DisplayCADescriptorFunction func = PSIRepository::Instance()->getCADescriptorDisplay(casid);
+            if (func != nullptr) {
                 // Use a CAS-specific display routine.
-                disp(display, data, size, indent, tid);
+                func(disp, buf, margin, tid);
             }
             else {
-                display.displayPrivateData(u"Private CA data", data, size, margin);
+                disp.displayPrivateData(u"Private CA data", buf, NPOS, margin);
             }
         }
     }

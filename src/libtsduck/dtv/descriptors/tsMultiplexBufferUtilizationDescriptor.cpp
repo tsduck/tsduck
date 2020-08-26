@@ -112,24 +112,22 @@ void ts::MultiplexBufferUtilizationDescriptor::deserialize(DuckContext& duck, co
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferUtilizationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MultiplexBufferUtilizationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
         const bool valid = (data[0] & 0x80) != 0;
         const uint16_t low = GetUInt16(data) & 0x7FFF;
         const uint16_t upp = GetUInt16(data + 2) & 0x7FFF;
-        strm << margin << "Bound valid: " << UString::YesNo(valid) << std::endl;
+        disp << margin << "Bound valid: " << UString::YesNo(valid) << std::endl;
         if (valid) {
-            strm << margin << UString::Format(u"LTW offset bounds: lower: 0x%X (%d), upper: 0x%X (%d)", {low, low, upp, upp}) << std::endl;
+            disp << margin << UString::Format(u"LTW offset bounds: lower: 0x%X (%d), upper: 0x%X (%d)", {low, low, upp, upp}) << std::endl;
         }
         data += 4; size -= 4;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

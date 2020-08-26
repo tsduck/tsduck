@@ -126,18 +126,16 @@ bool ts::DTSNeuralDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTSNeuralDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DTSNeuralDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     // Important: With extension descriptors, the DisplayDescriptor() function is called
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
     if (size > 0) {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
         const UString margin(indent, ' ');
 
-        strm << margin << UString::Format(u"Config Id: 0x%X (%d))", {data[0], data[0]}) << std::endl;
-        display.displayPrivateData(u"Additional info", data + 1, size - 1, margin);
+        disp << margin << UString::Format(u"Config Id: 0x%X (%d))", {data[0], data[0]}) << std::endl;
+        disp.displayPrivateData(u"Additional info", data + 1, size - 1, margin);
     }
 }

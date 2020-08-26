@@ -229,14 +229,12 @@ void ts::AudioPreselectionDescriptor::deserialize(DuckContext& duck, const Descr
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     // Important: With extension descriptors, the DisplayDescriptor() function is called
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
@@ -246,7 +244,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
 
         for (bool valid = true; valid && numEntries > 0 && size >= 2; numEntries--) {
 
-            strm << margin << UString::Format(u"- Preselection id: %d", {data[0] >> 3}) << std::endl
+            disp << margin << UString::Format(u"- Preselection id: %d", {data[0] >> 3}) << std::endl
                  << margin << "  Audio rendering indication: " << NameFromSection(u"AudioPreselectionRendering", data[0] & 0x07, names::DECIMAL_FIRST) << std::endl
                  << margin << "  Audio description: " << UString::YesNo((data[1] & 0x80) != 0) << std::endl
                  << margin << "  Spoken subtitles: " << UString::YesNo((data[1] & 0x40) != 0) << std::endl
@@ -263,7 +261,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
             if (hasLanguage) {
                 valid = size >= 3;
                 if (valid) {
-                    strm << margin << "  Language code: \"" << DeserializeLanguageCode(data) << '"' << std::endl;
+                    disp << margin << "  Language code: \"" << DeserializeLanguageCode(data) << '"' << std::endl;
                     data += 3;
                     size -= 3;
                 }
@@ -271,7 +269,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
             if (valid && hasLabel) {
                 valid = size >= 1;
                 if (valid) {
-                    strm << margin << UString::Format(u"  Text label / message id: 0x%0X (%d)", {data[0], data[0]}) << std::endl;
+                    disp << margin << UString::Format(u"  Text label / message id: 0x%0X (%d)", {data[0], data[0]}) << std::endl;
                     data += 1;
                     size -= 1;
                 }
@@ -281,9 +279,9 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
                 const size_t num = valid ? (data[0] >> 5) : 0;
                 valid = valid && size >= 1 + num;
                 if (valid) {
-                    strm << margin << UString::Format(u"  Multi stream info: %d aux components", {num}) << std::endl;
+                    disp << margin << UString::Format(u"  Multi stream info: %d aux components", {num}) << std::endl;
                     for (size_t i = 1; i <= num; ++i) {
-                        strm << margin << UString::Format(u"    Component tag: 0x%0X (%d)", {data[i], data[i]}) << std::endl;
+                        disp << margin << UString::Format(u"    Component tag: 0x%0X (%d)", {data[i], data[i]}) << std::endl;
                     }
                     data += 1 + num;
                     size -= 1 + num;
@@ -294,7 +292,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
                 const size_t len = valid ? (data[0] & 0x1F) : 0;
                 valid = valid && size >= 1 + len;
                 if (valid) {
-                    display.displayPrivateData(u"Future extension", data + 1, len, margin + u"  ");
+                    disp.displayPrivateData(u"Future extension", data + 1, len, margin + u"  ");
                     data += 1 + len;
                     size -= 1 + len;
                 }
@@ -302,7 +300,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

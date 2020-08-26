@@ -106,19 +106,17 @@ void ts::SystemClockDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SystemClockDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SystemClockDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 2) {
-        strm << margin << "External clock reference: " << UString::TrueFalse((data[0] & 0x80) != 0) << std::endl
+        disp << margin << "External clock reference: " << UString::TrueFalse((data[0] & 0x80) != 0) << std::endl
              << margin << UString::Format(u"Clock accuracy integer: %d, exponent: %d", {data[0] & 0x3F, (data[1] >> 5) & 0x07}) << std::endl;
         data += 2; size -= 2;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

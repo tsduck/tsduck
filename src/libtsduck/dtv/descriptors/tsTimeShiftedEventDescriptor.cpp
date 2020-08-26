@@ -100,21 +100,19 @@ void ts::TimeShiftedEventDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TimeShiftedEventDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
         const uint16_t service = GetUInt16(data);
         const uint16_t event = GetUInt16(data + 2);
         data += 4; size -= 4;
-        strm << margin << UString::Format(u"Reference service id: 0x%X (%d)", {service, service}) << std::endl
+        disp << margin << UString::Format(u"Reference service id: 0x%X (%d)", {service, service}) << std::endl
              << margin << UString::Format(u"Reference event id: 0x%X (%d)", {event, event}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -106,16 +106,14 @@ void ts::IBPDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::IBPDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::IBPDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 2) {
         const uint16_t n = GetUInt16(data);
         data += 2; size -= 2;
-        strm << margin
+        disp << margin
              << UString::Format(u"Closed GOP: %s, identical GOP: %s, max GOP length: 0x%X (%'d)",
                                 {UString::YesNo((n & 0x8000) != 0),
                                  UString::YesNo((n & 0x4000) != 0),
@@ -123,7 +121,7 @@ void ts::IBPDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
              << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

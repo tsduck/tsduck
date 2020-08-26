@@ -136,10 +136,8 @@ void ts::SIPrimeTSDescriptor::deserialize(DuckContext& duck, const Descriptor& d
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SIPrimeTSDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SIPrimeTSDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 7) {
@@ -150,20 +148,20 @@ void ts::SIPrimeTSDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
         const uint16_t ts_id = GetUInt16(data + 5);
         data += 7; size -= 7;
 
-        strm << margin << UString::Format(u"Parameter version: 0x%X (%d)", {version, version}) << std::endl
+        disp << margin << UString::Format(u"Parameter version: 0x%X (%d)", {version, version}) << std::endl
              << margin << "Update time: " << update.format(Time::DATE) << std::endl
              << margin << UString::Format(u"SI prime TS network id: 0x%X (%d)", {net_id, net_id}) << std::endl
              << margin << UString::Format(u"SI prime TS id: 0x%X (%d)", {ts_id, ts_id}) << std::endl;
 
         while (size >= 2) {
-            strm << margin << "- Table id: " << names::TID(duck, data[0], CASID_NULL, names::HEXA_FIRST) << std::endl;
+            disp << margin << "- Table id: " << names::TID(disp.duck(), data[0], CASID_NULL, names::HEXA_FIRST) << std::endl;
             const size_t len = std::min<size_t>(data[1], size - 2);
-            display.displayPrivateData(u"Table description", data + 2, len, margin + u"  ");
+            disp.displayPrivateData(u"Table description", data + 2, len, margin + u"  ");
             data += 2 + len; size -= 2 + len;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

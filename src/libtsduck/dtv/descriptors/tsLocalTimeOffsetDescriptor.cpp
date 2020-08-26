@@ -140,25 +140,23 @@ void ts::LocalTimeOffsetDescriptor::deserialize(DuckContext& duck, const Descrip
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 3) {
         // Country code is a 3-byte string
-        strm << margin << "Country code: " << DeserializeLanguageCode(data) << std::endl;
+        disp << margin << "Country code: " << DeserializeLanguageCode(data) << std::endl;
         data += 3; size -= 3;
         if (size >= 1) {
             uint8_t region_id = *data >> 2;
             uint8_t polarity = *data & 0x01;
             data += 1; size -= 1;
-            strm << margin
+            disp << margin
                  << UString::Format(u"Region id: %d (0x%X), polarity: %s of Greenwich", {region_id, region_id, polarity ? u"west" : u"east"})
                  << std::endl;
             if (size >= 2) {
-                strm << margin
+                disp << margin
                      << UString::Format(u"Local time offset: %s%02d:%02d", {polarity ? u"-" : u"", DecodeBCD(data[0]), DecodeBCD(data[1])})
                      << std::endl;
                 data += 2; size -= 2;
@@ -166,9 +164,9 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& display, DI
                     Time next_change;
                     DecodeMJD(data, 5, next_change);
                     data += 5; size -= 5;
-                    strm << margin << "Next change: " << next_change.format(Time::DATETIME) << std::endl;
+                    disp << margin << "Next change: " << next_change.format(Time::DATETIME) << std::endl;
                     if (size >= 2) {
-                        strm << margin
+                        disp << margin
                              << UString::Format(u"Next time offset: %s%02d:%02d", {polarity ? u"-" : u"", DecodeBCD(data[0]), DecodeBCD(data[1])})
                              << std::endl;
                         data += 2; size -= 2;
@@ -178,7 +176,7 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& display, DI
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

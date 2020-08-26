@@ -259,10 +259,8 @@ void ts::ATSCAC3AudioStreamDescriptor::deserialize(DuckContext& duck, const Desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 3) {
@@ -276,7 +274,7 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& display,
         const bool full = (data[2] & 0x01) != 0;
         data += 3; size -= 3;
 
-        strm << margin << UString::Format(u"Sample rate: %s", {NameFromSection(u"ATSCAC3SampleRateCode", sample, names::VALUE)}) << std::endl
+        disp << margin << UString::Format(u"Sample rate: %s", {NameFromSection(u"ATSCAC3SampleRateCode", sample, names::VALUE)}) << std::endl
              << margin << UString::Format(u"AC-3 coding version: 0x%X (%d)", {bsid, bsid}) << std::endl
              << margin << UString::Format(u"Bit rate: %s%s", {NameFromSection(u"ATSCAC3BitRateCode", bitrate & 0x1F, names::VALUE), (bitrate & 0x20) == 0 ? u"" : u" max"}) << std::endl
              << margin << UString::Format(u"Surround mode: %s", {NameFromSection(u"ATSCAC3SurroundMode", surround, names::VALUE)}) << std::endl
@@ -297,12 +295,12 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& display,
             if (bsmod < 2) {
                 const uint8_t mainid = uint8_t((data[0] >> 5) & 0x07);
                 const uint8_t priority = uint8_t((data[0] >> 3) & 0x03);
-                strm << margin << UString::Format(u"Main audio service id: %d", {mainid}) << std::endl
+                disp << margin << UString::Format(u"Main audio service id: %d", {mainid}) << std::endl
                      << margin << UString::Format(u"Priority: %d", {priority}) << std::endl;
             }
             else {
                 const uint8_t asvcflags = data[0];
-                strm << margin << UString::Format(u"Associated services flags: 0x%X", {asvcflags}) << std::endl;
+                disp << margin << UString::Format(u"Associated services flags: 0x%X", {asvcflags}) << std::endl;
             }
             data++; size--;
         }
@@ -323,7 +321,7 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& display,
                 DVBCharTableUTF16::RAW_UNICODE.decode(text, data, textlen);
             }
             data += textlen; size -= textlen;
-            strm << margin << "Text: \"" << text << "\"" << std::endl;
+            disp << margin << "Text: \"" << text << "\"" << std::endl;
         }
 
         // Decode one byte flags.
@@ -338,22 +336,22 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& display,
 
         // Deserialize languages.
         if (ok && has_lang) {
-            strm << margin << "Language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
+            disp << margin << "Language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
             data += 3; size -= 3;
         }
         if (ok && has_lang2) {
-            strm << margin << "Language 2: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
+            disp << margin << "Language 2: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
             data += 3; size -= 3;
         }
 
         // Trailing info.
         if (ok) {
-            display.displayPrivateData(u"Additional information", data, size, margin);
+            disp.displayPrivateData(u"Additional information", data, size, margin);
             data += size; size = 0;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

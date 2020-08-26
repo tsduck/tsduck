@@ -120,15 +120,13 @@ void ts::ApplicationStorageDescriptor::deserialize(DuckContext& duck, const Desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ApplicationStorageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ApplicationStorageDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 7) {
         const uint32_t vers = GetUInt32(data + 2) & 0x7FFFFFFF;
-        strm << margin << UString::Format(u"Storage property: 0x%X (%d)", {data[0], data[0]}) << std::endl
+        disp << margin << UString::Format(u"Storage property: 0x%X (%d)", {data[0], data[0]}) << std::endl
              << margin << "Not launchable from broadcast: " << UString::YesNo((data[1] & 0x80) != 0) << std::endl
              << margin << "Launchable completely from cache: " << UString::YesNo((data[1] & 0x40) != 0) << std::endl
              << margin << "Is launchable with older version: " << UString::YesNo((data[1] & 0x20) != 0) << std::endl
@@ -137,7 +135,7 @@ void ts::ApplicationStorageDescriptor::DisplayDescriptor(TablesDisplay& display,
         data += 7; size -= 7;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

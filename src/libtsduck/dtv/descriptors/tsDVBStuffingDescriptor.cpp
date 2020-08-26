@@ -100,10 +100,10 @@ void ts::DVBStuffingDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBStuffingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBStuffingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     const UString margin(indent, ' ');
-    display.displayPrivateData(u"Stuffing data", data, size, margin);
+    disp.displayPrivateData(u"Stuffing data", data, size, margin);
 }
 
 

@@ -218,7 +218,7 @@ bool ts::SSULinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element*
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::SSULinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
 {
-    LinkageDescriptor::DisplayDescriptor(display, did, payload, size, indent, tid, pds);
+    LinkageDescriptor::DisplayDescriptor(disp, did, payload, size, indent, tid, pds);
 }

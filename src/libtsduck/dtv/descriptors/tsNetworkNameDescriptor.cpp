@@ -86,12 +86,9 @@ void ts::NetworkNameDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NetworkNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::NetworkNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-    PSIBuffer buf(display.duck(), data, size);
-
-    display.out() << margin << "Name: \"" << buf.getString() << "\"" << std::endl;
+    disp << margin << "Name: \"" << buf.getString() << "\"" << std::endl;
 }
 
 

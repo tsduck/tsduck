@@ -111,27 +111,25 @@ void ts::CueIdentifierDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CueIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CueIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
-        strm << margin << UString::Format(u"Cue stream type: 0x%X", {data[0]});
+        disp << margin << UString::Format(u"Cue stream type: 0x%X", {data[0]});
         switch (data[0]) {
-            case 0x00: strm << " (splice_insert, splice_null, splice_schedule)"; break;
-            case 0x01: strm << " (All commands)"; break;
-            case 0x02: strm << " (Segmentation)"; break;
-            case 0x03: strm << " (Tiered splicing)"; break;
-            case 0x04: strm << " (Tiered segmentation)"; break;
+            case 0x00: disp << " (splice_insert, splice_null, splice_schedule)"; break;
+            case 0x01: disp << " (All commands)"; break;
+            case 0x02: disp << " (Segmentation)"; break;
+            case 0x03: disp << " (Tiered splicing)"; break;
+            case 0x04: disp << " (Tiered segmentation)"; break;
             default: break;
         }
-        strm << std::endl;
+        disp << std::endl;
         data += 1; size -= 1;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 
