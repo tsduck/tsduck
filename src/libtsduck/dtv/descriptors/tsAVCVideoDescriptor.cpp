@@ -127,10 +127,8 @@ void ts::AVCVideoDescriptor::deserialize(DuckContext& duck, const Descriptor& de
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AVCVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
@@ -144,7 +142,7 @@ void ts::AVCVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
         const bool AVC_24_hour_picture = (data[3] & 0x40) != 0;
         data += 4; size -= 4;
 
-        strm << margin << "Profile IDC: " << int(profile_idc)
+        disp << margin << "Profile IDC: " << int(profile_idc)
              << ", level IDC: " << int(level_idc)
              << std::endl
              << margin << "Constraint set0: " << UString::TrueFalse(constraint_set0)
@@ -157,7 +155,7 @@ void ts::AVCVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
              << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

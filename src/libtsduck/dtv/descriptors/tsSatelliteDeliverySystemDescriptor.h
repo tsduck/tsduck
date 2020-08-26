@@ -111,7 +111,7 @@ namespace ts {
         virtual DeliverySystem deliverySystem(const DuckContext&) const override;
         virtual void serialize(DuckContext&, Descriptor&) const override;
         virtual void deserialize(DuckContext&, const Descriptor&) override;
-        DeclareDisplayDescriptor();
+        DeclareLegacyDisplayDescriptor();
 
     protected:
         // Inherited methods

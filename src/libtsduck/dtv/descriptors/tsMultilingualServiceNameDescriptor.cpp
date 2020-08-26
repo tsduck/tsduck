@@ -127,27 +127,25 @@ void ts::MultilingualServiceNameDescriptor::deserialize(DuckContext& duck, const
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MultilingualServiceNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MultilingualServiceNameDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 4) {
         const size_t prov_len = std::min<size_t>(data[3], size - 4);
-        strm << margin
+        disp << margin
              << "Language: " << DeserializeLanguageCode(data)
-             << ", provider: \"" << duck.decoded(data + 4, prov_len) << "\"";
+             << ", provider: \"" << disp.duck().decoded(data + 4, prov_len) << "\"";
         data += 4 + prov_len; size -= 4 + prov_len;
         if (size >= 1) {
             const size_t name_len = std::min<size_t>(data[0], size - 1);
-            strm << ", service: \"" << duck.decoded(data + 1, name_len) << "\"";
+            disp << ", service: \"" << disp.duck().decoded(data + 1, name_len) << "\"";
             data += 1 + name_len; size -= 1 + name_len;
         }
-        strm << std::endl;
+        disp << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -175,10 +175,8 @@ void ts::HEVCVideoDescriptor::deserialize(DuckContext& duck, const Descriptor& d
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::HEVCVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::HEVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 13) {
@@ -200,7 +198,7 @@ void ts::HEVCVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
         const uint8_t HDR_WCG_idc = data[12] & 0x03;
         data += 13; size -= 13;
 
-        strm << margin << "Profile space: " << profile_space
+        disp << margin << "Profile space: " << profile_space
              << ", tier: " << UString::TrueFalse(tier)
              << ", profile IDC: " << profile_idc
              << std::endl
@@ -222,12 +220,12 @@ void ts::HEVCVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
              << std::endl;
 
         if (temporal && size >= 2) {
-            strm << margin << "Temporal id min: " << int(data[0] >> 5) << ", max: " << int(data[1] >> 5) << std::endl;
+            disp << margin << "Temporal id min: " << int(data[0] >> 5) << ", max: " << int(data[1] >> 5) << std::endl;
             data += 2; size -= 2;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

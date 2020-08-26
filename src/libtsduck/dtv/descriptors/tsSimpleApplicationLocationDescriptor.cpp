@@ -96,13 +96,11 @@ void ts::SimpleApplicationLocationDescriptor::deserialize(DuckContext& duck, con
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SimpleApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
-    strm << margin << "Initial path: \"" << duck.decoded(data, size) << "\"" << std::endl;
+    disp << margin << "Initial path: \"" << disp.duck().decoded(data, size) << "\"" << std::endl;
 }
 
 

@@ -106,10 +106,8 @@ void ts::NorDigLogicalChannelDescriptorV1::deserialize(DuckContext& duck, const 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NorDigLogicalChannelDescriptorV1::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::NorDigLogicalChannelDescriptorV1::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 4) {
@@ -117,12 +115,12 @@ void ts::NorDigLogicalChannelDescriptorV1::DisplayDescriptor(TablesDisplay& disp
         const uint8_t visible = (data[2] >> 7) & 0x01;
         const uint16_t channel = GetUInt16(data + 2) & 0x3FFF;
         data += 4; size -= 4;
-        strm << margin
+        disp << margin
              << UString::Format(u"Service Id: %5d (0x%04X), Visible: %1d, Channel number: %3d", {service, service, visible, channel})
              << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

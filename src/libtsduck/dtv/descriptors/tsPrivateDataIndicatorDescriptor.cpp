@@ -95,21 +95,19 @@ void ts::PrivateDataIndicatorDescriptor::deserialize(DuckContext& duck, const De
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::PrivateDataIndicatorDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::PrivateDataIndicatorDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
         // Sometimes, the indicator is made of ASCII characters. Try to display them.
-        strm << margin << UString::Format(u"Private data indicator: 0x%X", {GetUInt32(data)});
-        duck.displayIfASCII(data, 4, u" (\"", u"\")");
-        strm << std::endl;
+        disp << margin << UString::Format(u"Private data indicator: 0x%X", {GetUInt32(data)});
+        disp.duck().displayIfASCII(data, 4, u" (\"", u"\")");
+        disp << std::endl;
         data += 4; size -= 4;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

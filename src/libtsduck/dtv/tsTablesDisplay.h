@@ -86,11 +86,25 @@ namespace ts {
         std::ostream& out() { return _duck.out(); }
 
         //!
-        //! Conversion operator to use a TablesDisplay instance directly as an output stream.
+        //! Output stream operator to use a TablesDisplay instance directly as an output stream.
+        //! @tparam T Any type
+        //! @param [in] expression Any expression that can by output on streams.
         //! @return A reference to the output stream.
         //! @see out()
         //!
-        operator std::ostream&() { return _duck.out(); }
+        template <typename T>
+        std::ostream& operator<<(const T& expression) { return _duck.out() << expression; }
+
+        //!
+        //! Output stream operator to use a TablesDisplay instance directly as an output stream.
+        //! @param [in] manip An I/O manipulator such as @c std::endl.
+        //! @return A reference to the output stream.
+        //! @see out()
+        //
+        // Implementation note: For some reason which is not identified, the template operator <<
+        // above is not resolved on I/O manipulator parameters. So we need this explicit one.
+        //
+        std::ostream& operator<<(std::ostream& (*manip)(std::ostream&)) { return _duck.out() << manip; }
 
         //!
         //! Display a table on the output stream.

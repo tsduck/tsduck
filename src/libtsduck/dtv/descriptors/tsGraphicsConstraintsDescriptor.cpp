@@ -113,20 +113,18 @@ void ts::GraphicsConstraintsDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::GraphicsConstraintsDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::GraphicsConstraintsDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
-        strm << margin << "Can run without visible UI: " << UString::TrueFalse((data[0] & 0x04) != 0) << std::endl
+        disp << margin << "Can run without visible UI: " << UString::TrueFalse((data[0] & 0x04) != 0) << std::endl
              << margin << "Handles configuration changed: " << UString::TrueFalse((data[0] & 0x02) != 0) << std::endl
              << margin << "Handles externally controlled video: " << UString::TrueFalse((data[0] & 0x01) != 0) << std::endl;
-        display.displayPrivateData(u"Graphics configuration", data + 1, size - 1, margin);
+        disp.displayPrivateData(u"Graphics configuration", data + 1, size - 1, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

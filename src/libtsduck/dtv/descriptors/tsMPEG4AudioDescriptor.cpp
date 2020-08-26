@@ -99,18 +99,16 @@ void ts::MPEG4AudioDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MPEG4AudioDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MPEG4AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
-        strm << margin << UString::Format(u"MPEG-4 Audio profile and level: 0x%X (%d)", {data[0], data[0]}) << std::endl;
+        disp << margin << UString::Format(u"MPEG-4 Audio profile and level: 0x%X (%d)", {data[0], data[0]}) << std::endl;
         data++; size--;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

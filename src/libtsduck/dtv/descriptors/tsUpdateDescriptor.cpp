@@ -115,17 +115,15 @@ void ts::UpdateDescriptor::deserialize(DuckContext& duck, const Descriptor& desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::UpdateDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::UpdateDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size > 0) {
-        strm << margin << "Update flag: " << NameFromSection(u"SSUUpdateFlag", (data[0] >> 6) & 0x03, names::DECIMAL_FIRST) << std::endl
+        disp << margin << "Update flag: " << NameFromSection(u"SSUUpdateFlag", (data[0] >> 6) & 0x03, names::DECIMAL_FIRST) << std::endl
              << margin << "Update method: " << NameFromSection(u"SSUUpdateMethod", (data[0] >> 2) & 0x0F, names::DECIMAL_FIRST) << std::endl
              << margin << UString::Format(u"Update priority: %d", {data[0] & 0x03}) << std::endl;
-        display.displayPrivateData(u"Private data", data + 1, size - 1, margin);
+        disp.displayPrivateData(u"Private data", data + 1, size - 1, margin);
     }
 }
 

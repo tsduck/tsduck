@@ -79,14 +79,9 @@ ts::UString foo::LogFooCASEMM(const ts::Section& section, size_t max_bytes)
 // Display the private part of a FooCAS CA_descriptor on the output stream.
 //----------------------------------------------------------------------------
 
-void foo::DisplayFooCASCADescriptor(ts::TablesDisplay& display, const uint8_t* data, size_t size, int indent, ts::TID tid)
+void foo::DisplayFooCASCADescriptor(ts::TablesDisplay& disp, ts::PSIBuffer& buf, const ts::UString& margin, ts::TID tid)
 {
-    ts::DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-
-    if (size >= 2) {
-        // The private part of a FooCAS CA-descriptor starts with a 2-byte foo_id.
-        strm << ts::UString::Format(u"%*sFoo id: 0x%X", {indent, u"", ts::GetUInt16(data)}) << std::endl
-             << ts::UString::Format(u"%*sData: %s", {indent, u"", ts::UString::Dump(data + 2, size - 2, ts::UString::COMPACT)}) << std::endl;
-    }
+    // The private part of a FooCAS CA-descriptor starts with a 2-byte foo_id.
+    disp << margin << ts::UString::Format(u"%*sFoo id: 0x%X", {buf.getUInt16()}) << std::endl;
+    disp.displayPrivateData(u"Data",buf, ts::NPOS, margin);
 }

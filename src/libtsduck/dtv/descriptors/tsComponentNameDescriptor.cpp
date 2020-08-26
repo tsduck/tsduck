@@ -95,11 +95,11 @@ void ts::ComponentNameDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ComponentNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ComponentNameDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     const UString margin(indent, ' ');
-    ATSCMultipleString::Display(display, u"Component name: ", margin, data, size);
-    display.displayExtraData(data, size, margin);
+    ATSCMultipleString::Display(disp, u"Component name: ", margin, data, size);
+    disp.displayExtraData(data, size, margin);
 }
 
 

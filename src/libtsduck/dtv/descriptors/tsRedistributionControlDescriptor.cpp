@@ -101,10 +101,10 @@ void ts::RedistributionControlDescriptor::deserialize(DuckContext& duck, const D
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::RedistributionControlDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::RedistributionControlDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     const UString margin(indent, ' ');
-    display.displayPrivateData(u"RC information", data, size, margin);
+    disp.displayPrivateData(u"RC information", data, size, margin);
 }
 
 

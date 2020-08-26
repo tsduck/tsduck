@@ -132,10 +132,8 @@ void ts::AbstractPreferredNameListDescriptor::deserialize(DuckContext& duck, con
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AbstractPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AbstractPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 4) {
@@ -143,7 +141,7 @@ void ts::AbstractPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& d
         uint8_t count = data[3];
         data += 4; size -= 4;
 
-        strm << margin << "Language: " << lang << ", name count: " << int(count) << std::endl;
+        disp << margin << "Language: " << lang << ", name count: " << int(count) << std::endl;
         while (count-- > 0 && size >= 2) {
             uint8_t id = data[0];
             size_t length = data[1];
@@ -151,12 +149,12 @@ void ts::AbstractPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& d
             if (length > size) {
                 length = size;
             }
-            strm << margin << "Id: " << int(id) << ", Name: \"" << duck.decoded(data, length) << "\"" << std::endl;
+            disp << margin << "Id: " << int(id) << ", Name: \"" << disp.duck().decoded(data, length) << "\"" << std::endl;
             data += length; size -= length;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

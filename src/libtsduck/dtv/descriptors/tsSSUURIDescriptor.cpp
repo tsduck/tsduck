@@ -110,19 +110,17 @@ void ts::SSUURIDescriptor::deserialize(DuckContext& duck, const Descriptor& desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSUURIDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SSUURIDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 2) {
-        strm << margin << UString::Format(u"Max holdoff time: %d minutes", {data[0]}) << std::endl
+        disp << margin << UString::Format(u"Max holdoff time: %d minutes", {data[0]}) << std::endl
              << margin << UString::Format(u"Min polling interval: %d hours", {data[1]}) << std::endl
-             << margin << "URI: \"" << duck.decoded(data + 2, size - 2) << "\"" << std::endl;
+             << margin << "URI: \"" << disp.duck().decoded(data + 2, size - 2) << "\"" << std::endl;
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

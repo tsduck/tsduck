@@ -103,18 +103,16 @@ void ts::CarouselIdentifierDescriptor::deserialize(DuckContext& duck, const Desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CarouselIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CarouselIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
-        strm << margin << UString::Format(u"Carousel id: 0x%X (%d)", { GetUInt32(data), GetUInt32(data) }) << std::endl;
-        display.displayPrivateData(u"Private data", data + 4, size - 4, margin);
+        disp << margin << UString::Format(u"Carousel id: 0x%X (%d)", { GetUInt32(data), GetUInt32(data) }) << std::endl;
+        disp.displayPrivateData(u"Private data", data + 4, size - 4, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

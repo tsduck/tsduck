@@ -111,19 +111,17 @@ void ts::ShortNodeInformationDescriptor::deserialize(DuckContext& duck, const De
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ShortNodeInformationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ShortNodeInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 3) {
-        strm << margin << "Language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
+        disp << margin << "Language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
         data += 3; size -= 3;
-        strm << margin << "Node name: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
-        strm << margin << "Text: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
+        disp << margin << "Node name: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
+        disp << margin << "Text: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
     }
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -164,14 +164,12 @@ bool ts::SupplementaryAudioDescriptor::analyzeXML(DuckContext& duck, const xml::
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     // Important: With extension descriptors, the DisplayDescriptor() function is called
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
@@ -179,28 +177,29 @@ void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& display,
         const uint8_t editorial = (data[0] >> 2) & 0x1F;
         const uint8_t lang_present = data[0] & 0x01;
         data++; size--;
-        strm << margin << "Mix type: ";
+        disp << margin << "Mix type: ";
         switch (mix_type) {
-            case 0:  strm << "supplementary stream"; break;
-            case 1:  strm << "complete and independent stream"; break;
+            case 0:  disp << "supplementary stream"; break;
+            case 1:  disp << "complete and independent stream"; break;
             default: assert(false);
         }
-        strm << std::endl << margin << "Editorial classification: ";
+        disp << std::endl;
+        disp << margin << "Editorial classification: ";
         switch (editorial) {
-            case 0x00: strm << "main audio"; break;
-            case 0x01: strm << "audio description for the visually impaired"; break;
-            case 0x02: strm << "clean audio for the hearing impaired"; break;
-            case 0x03: strm << "spoken subtitles for the visually impaired"; break;
-            default:   strm << UString::Format(u"reserved value 0x%X", {editorial}); break;
+            case 0x00: disp << "main audio"; break;
+            case 0x01: disp << "audio description for the visually impaired"; break;
+            case 0x02: disp << "clean audio for the hearing impaired"; break;
+            case 0x03: disp << "spoken subtitles for the visually impaired"; break;
+            default:   disp << UString::Format(u"reserved value 0x%X", {editorial}); break;
         }
-        strm << std::endl;
+        disp << std::endl;
         if (lang_present && size >= 3) {
-            strm << margin << "Language: " << DeserializeLanguageCode(data) << std::endl;
+            disp << margin << "Language: " << DeserializeLanguageCode(data) << std::endl;
             data += 3; size -= 3;
         }
-        display.displayPrivateData(u"Private data", data, size, margin);
+        disp.displayPrivateData(u"Private data", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }

@@ -103,20 +103,18 @@ void ts::HierarchicalTransmissionDescriptor::deserialize(DuckContext& duck, cons
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::HierarchicalTransmissionDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::HierarchicalTransmissionDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 3) {
         const PID pid = GetUInt16(data + 1) & 0x1FFF;
-        strm << margin << UString::Format(u"Quality level: %s", {(data[0] & 0x01) != 0 ? u"high" : u"low"}) << std::endl
+        disp << margin << UString::Format(u"Quality level: %s", {(data[0] & 0x01) != 0 ? u"high" : u"low"}) << std::endl
              << margin << UString::Format(u"Reference PID: 0x%X (%d)", {pid, pid}) << std::endl;
         data += 3; size -= 3;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -119,20 +119,18 @@ bool ts::StreamEventDescriptor::asciiPrivate() const
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::StreamEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::StreamEventDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 10) {
         const uint16_t id = GetUInt16(data);
         const uint64_t npt = GetUInt64(data + 2) & TS_UCONST64(0x00000001FFFFFFFF);
-        strm << margin << UString::Format(u"Event id: 0x%X (%d), NPT: 0x%09X (%d)", {id, id, npt, npt}) << std::endl;
-        display.displayPrivateData(u"Private data", data + 10, size - 10, margin);
+        disp << margin << UString::Format(u"Event id: 0x%X (%d), NPT: 0x%09X (%d)", {id, id, npt, npt}) << std::endl;
+        disp.displayPrivateData(u"Private data", data + 10, size - 10, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

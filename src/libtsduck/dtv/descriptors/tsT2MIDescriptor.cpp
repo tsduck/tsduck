@@ -141,22 +141,20 @@ bool ts::T2MIDescriptor::analyzeXML(DuckContext& duck, const xml::Element* eleme
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     // Important: With extension descriptors, the DisplayDescriptor() function is called
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 3) {
-        strm << margin << "T2-MI stream id: " << int(data[0] & 0x07)
+        disp << margin << "T2-MI stream id: " << int(data[0] & 0x07)
              << ", T2-MI stream count: " << int((data[1] & 0x07) + 1)
              << ", PCR/ISCR common clock: " << UString::YesNo(data[2] & 0x01)
              << std::endl;
         data += 3; size -= 3;
     }
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }

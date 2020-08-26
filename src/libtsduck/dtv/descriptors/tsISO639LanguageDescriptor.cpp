@@ -117,18 +117,13 @@ void ts::ISO639LanguageDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const UString margin(indent, ' ');
-    PSIBuffer buf(duck, data, size);
-
     while (buf.remainingReadBytes() >= 4) {
-        strm << margin << "Language: " << buf.getLanguageCode();
-        strm << ", Type: " << names::AudioType(buf.getUInt8(), names::FIRST) << std::endl;
+        disp << margin << "Language: " << buf.getLanguageCode();
+        disp << ", Type: " << names::AudioType(buf.getUInt8(), names::FIRST) << std::endl;
     }
-    display.displayExtraData(buf, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

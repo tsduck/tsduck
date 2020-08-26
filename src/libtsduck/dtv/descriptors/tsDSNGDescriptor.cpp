@@ -98,13 +98,11 @@ void ts::DSNGDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DSNGDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::DSNGDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
-    strm << margin << "Station identification: \"" << duck.decoded(payload, size) << "\"" << std::endl;
+    disp << margin << "Station identification: \"" << disp.duck().decoded(payload, size) << "\"" << std::endl;
 }
 
 

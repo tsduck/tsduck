@@ -190,20 +190,18 @@ void ts::ImageIconDescriptor::deserialize(DuckContext& duck, const Descriptor& d
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     // Important: With extension descriptors, the DisplayDescriptor() function is called
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
     bool ok = size >= 3;
 
     if (ok) {
         const uint8_t desc = (data[0] >> 4) & 0x0F;
-        strm << margin << UString::Format(u"Descriptor number: %d, last: %d", {desc, data[0] & 0x0F}) << std::endl
+        disp << margin << UString::Format(u"Descriptor number: %d, last: %d", {desc, data[0] & 0x0F}) << std::endl
              << margin << UString::Format(u"Icon id: %d", {data[1] & 0x07}) << std::endl;
         data += 2; size -= 2;
 
@@ -213,29 +211,29 @@ void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
             const uint8_t coord = (data[0] >> 2) & 0x07;
             data++; size--;
 
-            strm << margin << "Transport mode: " << NameFromSection(u"IconTransportMode", transport, names::DECIMAL_FIRST) << std::endl
+            disp << margin << "Transport mode: " << NameFromSection(u"IconTransportMode", transport, names::DECIMAL_FIRST) << std::endl
                  << margin << "Position specified: " << UString::YesNo(pos) << std::endl;
 
             if (pos) {
-                strm << margin << "Coordinate system: " << NameFromSection(u"IconCoordinateSystem", coord, names::DECIMAL_FIRST) << std::endl;
+                disp << margin << "Coordinate system: " << NameFromSection(u"IconCoordinateSystem", coord, names::DECIMAL_FIRST) << std::endl;
                 ok = size >= 3;
                 if (ok) {
-                    strm << margin << UString::Format(u"Horizontal origin: %d, vertical: %d", {(GetUInt16(data) >> 4) & 0x0FFF, GetUInt16(data + 1) & 0x0FFF}) << std::endl;
+                    disp << margin << UString::Format(u"Horizontal origin: %d, vertical: %d", {(GetUInt16(data) >> 4) & 0x0FFF, GetUInt16(data + 1) & 0x0FFF}) << std::endl;
                     data += 3; size -= 3;
                 }
             }
             if (ok) {
-                strm << margin << "Icon type: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
+                disp << margin << "Icon type: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
                 if (transport == 0x00 ) {
                     const size_t len = data[0];
                     ok = size > len;
                     if (ok) {
-                        display.displayPrivateData(u"Icon data", data + 1, len, margin);
+                        disp.displayPrivateData(u"Icon data", data + 1, len, margin);
                         data += len + 1; size -= len + 1;
                     }
                 }
                 else if (transport == 0x01) {
-                    strm << margin << "URL: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
+                    disp << margin << "URL: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
                 }
             }
         }
@@ -243,13 +241,13 @@ void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
             const size_t len = data[0];
             ok = size > len;
             if (ok) {
-                display.displayPrivateData(u"Icon data", data + 1, len, margin);
+                disp.displayPrivateData(u"Icon data", data + 1, len, margin);
                 data += len + 1; size -= len + 1;
             }
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

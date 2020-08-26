@@ -310,15 +310,13 @@ void ts::TransportProtocolDescriptor::deserialize(DuckContext& duck, const Descr
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 3) {
         const uint16_t proto = GetUInt16(data);
-        strm << margin << "Protocol id: " << NameFromSection(u"MHPTransportProtocolId", proto, names::BOTH_FIRST) << std::endl
+        disp << margin << "Protocol id: " << NameFromSection(u"MHPTransportProtocolId", proto, names::BOTH_FIRST) << std::endl
              << margin << UString::Format(u"Transport protocol label: 0x%X (%d)", {data[2], data[2]}) << std::endl;
         data += 3; size -= 3;
 
@@ -330,14 +328,14 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, 
                         const uint16_t net = GetUInt16(data + 1);
                         const uint16_t ts  = GetUInt16(data + 3);
                         const uint16_t srv = GetUInt16(data + 5);
-                        strm << margin << UString::Format(u"Original network id: 0x%X (%d)", {net, net}) << std::endl
+                        disp << margin << UString::Format(u"Original network id: 0x%X (%d)", {net, net}) << std::endl
                              << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {ts, ts}) << std::endl
                              << margin << UString::Format(u"Service id: 0x%X (%d)", {srv, srv}) << std::endl
                              << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[7], data[7]}) << std::endl;
                         data += 8; size -= 8;
                     }
                     else if (!remote && size >= 2) {
-                        strm << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[1], data[1]}) << std::endl;
+                        disp << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[1], data[1]}) << std::endl;
                         data += 2; size -= 2;
                     }
                 }
@@ -351,14 +349,14 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, 
                         const uint16_t net = GetUInt16(data + 1);
                         const uint16_t ts  = GetUInt16(data + 3);
                         const uint16_t srv = GetUInt16(data + 5);
-                        strm << margin << UString::Format(u"Original network id: 0x%X (%d)", {net, net}) << std::endl
+                        disp << margin << UString::Format(u"Original network id: 0x%X (%d)", {net, net}) << std::endl
                              << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {ts, ts}) << std::endl
                              << margin << UString::Format(u"Service id: 0x%X (%d)", {srv, srv}) << std::endl
                              << margin << UString::Format(u"Alignment indicator: %d", {(data[7] >> 7) & 0x01}) << std::endl;
                         data += 8; size -= 8;
                     }
                     else if (!remote && size >= 2) {
-                        strm << margin << UString::Format(u"Alignment indicator: %d", {(data[1] >> 7) & 0x01}) << std::endl;
+                        disp << margin << UString::Format(u"Alignment indicator: %d", {(data[1] >> 7) & 0x01}) << std::endl;
                         data += 2; size -= 2;
                     }
                     else {
@@ -368,7 +366,7 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, 
                         const size_t len = data[0];
                         ok = size >= 1 + len;
                         if (ok) {
-                            strm << margin << "URL: \"" << duck.decoded(data + 1, len) << "\"" << std::endl;
+                            disp << margin << "URL: \"" << disp.duck().decoded(data + 1, len) << "\"" << std::endl;
                             data += 1 + len; size -= 1 + len;
                         }
                     }
@@ -381,14 +379,14 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, 
                     const size_t len = data[0];
                     ok = size >= 2 + len;
                     if (ok) {
-                        strm << margin << "URL base: \"" << duck.decoded(data + 1, len) << "\"" << std::endl;
+                        disp << margin << "URL base: \"" << disp.duck().decoded(data + 1, len) << "\"" << std::endl;
                         size_t count = data[1 + len];
                         data += 2 + len; size -= 2 + len;
                         while (count-- > 0) {
                             const size_t extlen = data[0];
                             ok = size >= 1 + extlen;
                             if (ok) {
-                                strm << margin << "  Extension: \"" << duck.decoded(data + 1, extlen) << "\"" << std::endl;
+                                disp << margin << "  Extension: \"" << disp.duck().decoded(data + 1, extlen) << "\"" << std::endl;
                                 data += 1 + extlen; size -= 1 + extlen;
                             }
                         }
@@ -397,13 +395,13 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, 
                 break;
             }
             default: {
-                display.displayPrivateData(u"Selector", data, size, margin);
+                disp.displayPrivateData(u"Selector", data, size, margin);
                 break;
             }
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

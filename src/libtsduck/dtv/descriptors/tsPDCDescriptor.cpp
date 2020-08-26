@@ -109,22 +109,20 @@ void ts::PDCDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::PDCDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::PDCDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 3) {
         const uint32_t date = GetUInt24(data);
         data += 3; size -= 3;
-        strm << margin
+        disp << margin
              << UString::Format(u"Programme Identification Label: %02d-%02d %02d:%02d (MM-DD hh:mm)",
                                 {(date >> 11) & 0x0F, (date >> 15) & 0x1F, (date >> 6) & 0x1F, date & 0x3F})
              << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

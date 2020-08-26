@@ -400,7 +400,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::S
                 default: break;
             }
         }
-        disp.out() << std::endl;
+        disp << std::endl;
         disp << margin << UString::Format(u"PTS adjustment: 0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
         disp << margin << UString::Format(u"CW index: 0x%X (%<d)", {buf.getUInt8()});
         disp << UString::Format(u", tier: 0x%03X (%<d)", {buf.getBits<uint16_t>(12)}) << std::endl;

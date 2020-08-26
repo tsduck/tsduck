@@ -110,20 +110,18 @@ void ts::DVBHTMLApplicationBoundaryDescriptor::deserialize(DuckContext& duck, co
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBHTMLApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         size_t len = std::min<size_t>(data[0], size - 1);
-        strm << margin << "Label: \"" << duck.decoded(data + 1, len) << "\"" << std::endl
-             << margin << "Regexp: \"" << duck.decoded(data + 1 + len, size - len - 1) << "\"" << std::endl;
+        disp << margin << "Label: \"" << disp.duck().decoded(data + 1, len) << "\"" << std::endl
+             << margin << "Regexp: \"" << disp.duck().decoded(data + 1 + len, size - len - 1) << "\"" << std::endl;
         size = 0;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

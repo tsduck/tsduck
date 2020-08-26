@@ -158,15 +158,13 @@ void ts::AudioComponentDescriptor::deserialize(DuckContext& duck, const Descript
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AudioComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AudioComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 9) {
         const bool multi = (data[5] & 0x80) != 0;
-        strm << margin << UString::Format(u"Content type: 0x%X (%d)", {data[0] & 0x0F, data[0] & 0x0F}) << std::endl
+        disp << margin << UString::Format(u"Content type: 0x%X (%d)", {data[0] & 0x0F, data[0] & 0x0F}) << std::endl
              << margin << "Component type: " << NameFromSection(u"ISDBAudioComponentType", data[1], names::FIRST) << std::endl
              << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[2], data[2]}) << std::endl
              << margin << "Stream type: " << names::StreamType(data[3], names::FIRST) << std::endl
@@ -177,13 +175,13 @@ void ts::AudioComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID
              << margin << "Language code: \"" << DeserializeLanguageCode(data + 6) << "\"" << std::endl;
         data += 9; size -= 9;
         if (multi && size >= 3) {
-            strm << margin << "Language code 2: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
+            disp << margin << "Language code 2: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
             data += 3; size -= 3;
         }
-        strm << margin << "Text: \"" << duck.decoded(data, size) << "\"" << std::endl;
+        disp << margin << "Text: \"" << disp.duck().decoded(data, size) << "\"" << std::endl;
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

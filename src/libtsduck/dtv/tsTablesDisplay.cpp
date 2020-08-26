@@ -659,12 +659,19 @@ void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, s
 
     // Locate the display handler for this descriptor payload.
     DisplayDescriptorFunction handler = PSIRepository::Instance()->getDescriptorDisplay(edid, tid);
-
     if (handler != nullptr) {
-        handler(*this, did, payload, size, int(margin.size()), tid, _duck.actualPDS(pds));
+        PSIBuffer buf(_duck, payload, size);
+        handler(*this, buf, margin, did, tid, _duck.actualPDS(pds));
     }
     else {
-        displayUnkownDescriptor(did, payload, size, margin, tid, _duck.actualPDS(pds));
+        // Try to find a legacy display handler.
+        LegacyDisplayDescriptorFunction legacy_handler = PSIRepository::Instance()->getLegacyDescriptorDisplay(edid, tid);
+        if (legacy_handler != nullptr) {
+            legacy_handler(*this, did, payload, size, int(margin.size()), tid, _duck.actualPDS(pds));
+        }
+        else {
+            displayUnkownDescriptor(did, payload, size, margin, tid, _duck.actualPDS(pds));
+        }
     }
 }
 

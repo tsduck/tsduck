@@ -250,10 +250,8 @@ void ts::SpliceSegmentationDescriptor::deserialize(DuckContext& duck, const Desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     bool ok = size >= 9;
@@ -263,11 +261,10 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
     uint8_t type_id = 0;
 
     if (ok) {
-        strm << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
-        duck.displayIfASCII(data, 4, u" (\"", u"\")");
-        strm << std::endl
-             << margin << UString::Format(u"Segmentation event id: 0x%X, cancel: %d", {GetUInt32(data + 4), cancel})
-             << std::endl;
+        disp << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
+        disp.duck().displayIfASCII(data, 4, u" (\"", u"\")");
+        disp << std::endl;
+        disp << margin << UString::Format(u"Segmentation event id: 0x%X, cancel: %d", {GetUInt32(data + 4), cancel}) << std::endl;
         data += 9; size -= 9;
         ok = !cancel || size > 0;
     }
@@ -276,13 +273,13 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
         program_segmentation = (data[0] & 0x80) != 0x00;
         has_duration = (data[0] & 0x40) != 0x00;
         const bool not_restricted = (data[0] & 0x20) != 0x00;
-        strm << margin << UString::Format(u"Program segmentation: %d, has duration: %d, not restricted: %d", {program_segmentation, has_duration, not_restricted}) << std::endl;
+        disp << margin << UString::Format(u"Program segmentation: %d, has duration: %d, not restricted: %d", {program_segmentation, has_duration, not_restricted}) << std::endl;
         if (!not_restricted) {
             const bool web_delivery_allowed = (data[0] & 0x10) != 0x00;
             const bool no_regional_blackout = (data[0] & 0x08) != 0x00;
             const bool archive_allowed = (data[0] & 0x04) != 0x00;
             const uint8_t device_restrictions = data[0] & 0x03;
-            strm << margin << UString::Format(u"Web delivery allowed: %d, no regional blackout: %d", {web_delivery_allowed, no_regional_blackout}) << std::endl
+            disp << margin << UString::Format(u"Web delivery allowed: %d, no regional blackout: %d", {web_delivery_allowed, no_regional_blackout}) << std::endl
                  << margin << UString::Format(u"Archive allowed: %d, device restrictions: %d", {archive_allowed, device_restrictions}) << std::endl;
         }
         data += 1; size -= 1;
@@ -293,9 +290,9 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
         if (ok) {
             size_t count = data[0];
             data += 1; size -= 1;
-            strm << margin << UString::Format(u"Component count: %d", {count}) << std::endl;
+            disp << margin << UString::Format(u"Component count: %d", {count}) << std::endl;
             while (count > 0) {
-                strm << margin << UString::Format(u"Component tag: %d, PTS offset: %d", {data[0], GetUInt40(data + 1) & PTS_DTS_MASK}) << std::endl;
+                disp << margin << UString::Format(u"Component tag: %d, PTS offset: %d", {data[0], GetUInt40(data + 1) & PTS_DTS_MASK}) << std::endl;
                 data += 6; size -= 6;
                 count--;
             }
@@ -305,7 +302,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
     if (ok && !cancel && has_duration) {
         ok = size >= 5;
         if (ok) {
-            strm << margin << UString::Format(u"Segment duration: %d", {GetUInt40(data)}) << std::endl;
+            disp << margin << UString::Format(u"Segment duration: %d", {GetUInt40(data)}) << std::endl;
             data += 5; size -= 5;
         }
     }
@@ -314,14 +311,14 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
         ok = size >= 2 && size >= size_t(5 + data[1]);
         if (ok) {
             const size_t upid_size = data[1];
-            strm << margin << UString::Format(u"Segmentation upid type: %s, %d bytes", {NameFromSection(u"SpliceSegmentationUpIdType", data[0], names::HEXA_FIRST), upid_size}) << std::endl;
+            disp << margin << UString::Format(u"Segmentation upid type: %s, %d bytes", {NameFromSection(u"SpliceSegmentationUpIdType", data[0], names::HEXA_FIRST), upid_size}) << std::endl;
             if (upid_size > 0) {
-                strm << UString::Dump(data + 2, upid_size, UString::BPL, margin.size() + 2, 16);
+                disp << UString::Dump(data + 2, upid_size, UString::BPL, margin.size() + 2, 16);
             }
             data += 2 + upid_size; size -= 2 + upid_size;
 
             type_id = data[0];
-            strm << margin << UString::Format(u"Segmentation type id: %s", {NameFromSection(u"SpliceSegmentationTypeId", type_id, names::HEXA_FIRST)}) << std::endl
+            disp << margin << UString::Format(u"Segmentation type id: %s", {NameFromSection(u"SpliceSegmentationTypeId", type_id, names::HEXA_FIRST)}) << std::endl
                  << margin << UString::Format(u"Segment number: %d, expected segments: %d", {data[1], data[2]}) << std::endl;
             data += 3; size -= 3;
         }
@@ -329,11 +326,11 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
 
     if (ok && !cancel && (type_id == 0x34 || type_id == 0x36)) {
         ok = size >= 2;
-        strm << margin << UString::Format(u"Sub-segment number: %d, expected sub-segments: %d", {data[0], data[1]}) << std::endl;
+        disp << margin << UString::Format(u"Sub-segment number: %d, expected sub-segments: %d", {data[0], data[1]}) << std::endl;
         data += 2; size -= 2;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

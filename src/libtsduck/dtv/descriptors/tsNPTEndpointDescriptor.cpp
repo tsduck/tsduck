@@ -100,10 +100,8 @@ void ts::NPTEndpointDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NPTEndpointDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::NPTEndpointDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 14) {
@@ -111,11 +109,11 @@ void ts::NPTEndpointDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
         const uint64_t stop = GetUInt64(data + 6) & TS_UCONST64(0x00000001FFFFFFFF);
         data += 14; size -= 14;
 
-        strm << margin << UString::Format(u"Start NPT: 0x%09X (%d)", {start, start}) << std::endl
+        disp << margin << UString::Format(u"Start NPT: 0x%09X (%d)", {start, start}) << std::endl
              << margin << UString::Format(u"Stop NPT:  0x%09X (%d)", {stop, stop}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

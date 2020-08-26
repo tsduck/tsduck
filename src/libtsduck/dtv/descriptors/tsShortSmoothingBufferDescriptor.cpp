@@ -105,16 +105,14 @@ void ts::ShortSmoothingBufferDescriptor::deserialize(DuckContext& duck, const De
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ShortSmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ShortSmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
-        strm << margin << UString::Format(u"Smoothing buffer size: %s", {NameFromSection(u"SmoothingBufferSize", (data[0] >> 6) & 0x03, names::FIRST)}) << std::endl
+        disp << margin << UString::Format(u"Smoothing buffer size: %s", {NameFromSection(u"SmoothingBufferSize", (data[0] >> 6) & 0x03, names::FIRST)}) << std::endl
              << margin << UString::Format(u"Smoothing buffer leak rate: %s", {NameFromSection(u"SmoothingBufferLeakRate", data[0] & 0x3F, names::FIRST)}) << std::endl;
-        display.displayPrivateData(u"DVB-reserved data", data + 1, size - 1, margin);
+        disp.displayPrivateData(u"DVB-reserved data", data + 1, size - 1, margin);
     }
 }
 

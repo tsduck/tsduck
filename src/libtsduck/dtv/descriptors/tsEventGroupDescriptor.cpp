@@ -168,38 +168,36 @@ void ts::EventGroupDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::EventGroupDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::EventGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         const uint8_t type = (data[0] >> 4) & 0x0F;
         size_t count = data[0] & 0x0F;
         data++; size--;
-        strm << margin << "Group type: " << NameFromSection(u"ISDBEventGroupType", type, names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Group type: " << NameFromSection(u"ISDBEventGroupType", type, names::DECIMAL_FIRST) << std::endl;
 
-        strm << margin << "Actual events:" << (count == 0 ? " none" : "") << std::endl;
+        disp << margin << "Actual events:" << (count == 0 ? " none" : "") << std::endl;
         while (count > 0 && size >= 4) {
-            strm << margin << UString::Format(u"- Service id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
+            disp << margin << UString::Format(u"- Service id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
                  << margin << UString::Format(u"  Event id:   0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl;
             data += 4; size -= 4; count--;
         }
 
         if (type == 4 || type == 5) {
-            strm << margin << "Other networks events:" << (size < 8 ? " none" : "") << std::endl;
+            disp << margin << "Other networks events:" << (size < 8 ? " none" : "") << std::endl;
             while (size >= 8) {
-                strm << margin << UString::Format(u"- Original network id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
+                disp << margin << UString::Format(u"- Original network id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
                      << margin << UString::Format(u"  Transport stream id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl
                      << margin << UString::Format(u"  Service id:          0x%X (%d)", {GetUInt16(data + 4), GetUInt16(data + 4)}) << std::endl
                      << margin << UString::Format(u"  Event id:            0x%X (%d)", {GetUInt16(data + 6), GetUInt16(data + 6)}) << std::endl;
                 data += 8; size -= 8;
             }
-            display.displayExtraData(data, size, margin);
+            disp.displayExtraData(data, size, margin);
         }
         else {
-            display.displayPrivateData(u"Private data", data, size, margin);
+            disp.displayPrivateData(u"Private data", data, size, margin);
         }
     }
 }

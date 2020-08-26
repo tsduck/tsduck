@@ -148,27 +148,25 @@ void ts::SchedulingDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SchedulingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SchedulingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 14) {
         Time start, end;
         DecodeMJD(data, 5, start);
         DecodeMJD(data + 5, 5, end);
-        strm << margin << "Start time: " << start.format(Time::DATETIME) << std::endl
+        disp << margin << "Start time: " << start.format(Time::DATETIME) << std::endl
              << margin << "End time:   " << end.format(Time::DATETIME) << std::endl
              << margin << UString::Format(u"Final availability: %s", {(data[10] & 0x80) != 0}) << std::endl
              << margin << UString::Format(u"Periodicity: %s", {(data[10] & 0x40) != 0}) << std::endl
              << margin << UString::Format(u"Period: %d %ss", {data[11], SchedulingUnitNames.name((data[10] >> 4) & 0x03)}) << std::endl
              << margin << UString::Format(u"Duration: %d %ss", {data[12], SchedulingUnitNames.name((data[10] >> 2) & 0x03)}) << std::endl
              << margin << UString::Format(u"Estimated cycle time: %d %ss", {data[13], SchedulingUnitNames.name(data[10] & 0x03)}) << std::endl;
-        display.displayPrivateData(u"Private data", data + 14, size - 14, margin);
+        disp.displayPrivateData(u"Private data", data + 14, size - 14, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

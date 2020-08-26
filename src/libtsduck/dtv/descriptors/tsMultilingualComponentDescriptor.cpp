@@ -94,17 +94,15 @@ void ts::MultilingualComponentDescriptor::deserializeProlog(DuckContext& duck, c
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MultilingualComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MultilingualComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         // Display prolog here
-        strm << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[0], data[0]}) << std::endl;
+        disp << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[0], data[0]}) << std::endl;
         // Delegate the rest to the superclass.
-        AbstractMultilingualDescriptor::DisplayDescriptor(display, did, data + 1, size - 1, indent, tid, pds);
+        AbstractMultilingualDescriptor::DisplayDescriptor(disp, did, data + 1, size - 1, indent, tid, pds);
     }
 }
 

@@ -144,39 +144,37 @@ void ts::DataContentDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DataContentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DataContentDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
-        strm << margin << "Data component id: " << NameFromSection(u"ISDBDataComponentId", GetUInt16(data), names::HEXA_FIRST) << std::endl
+        disp << margin << "Data component id: " << NameFromSection(u"ISDBDataComponentId", GetUInt16(data), names::HEXA_FIRST) << std::endl
              << margin << UString::Format(u"Entry component: 0x%X (%d)", {data[2], data[2]}) << std::endl;
 
         size_t len = data[3];
         data += 4; size -= 4;
         len = std::min(len, size);
-        display.displayPrivateData(u"Selector bytes", data, len, margin);
+        disp.displayPrivateData(u"Selector bytes", data, len, margin);
         data += len; size -= len;
 
         if (size > 0) {
             len = data[0];
             data++; size--;
             for (size_t i = 0; size > 0 && i < len; ++i) {
-                strm << margin << UString::Format(u"Component ref: 0x%X (%d)", {data[0], data[0]}) << std::endl;
+                disp << margin << UString::Format(u"Component ref: 0x%X (%d)", {data[0], data[0]}) << std::endl;
                 data++; size--;
             }
 
             if (size >= 4) {
-                strm << margin << "Language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
+                disp << margin << "Language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
                 data += 3; size -= 3;
-                strm << margin << "Text: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
+                disp << margin << "Text: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
             }
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

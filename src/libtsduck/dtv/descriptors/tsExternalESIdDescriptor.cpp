@@ -99,19 +99,17 @@ void ts::ExternalESIdDescriptor::deserialize(DuckContext& duck, const Descriptor
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ExternalESIdDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ExternalESIdDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 2) {
         const uint16_t id = GetUInt16(data);
         data += 2; size -= 2;
-        strm << margin << UString::Format(u"External ES id: 0x%X (%d)", {id, id}) << std::endl;
+        disp << margin << UString::Format(u"External ES id: 0x%X (%d)", {id, id}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -132,14 +132,12 @@ void ts::EmergencyInformationDescriptor::deserialize(DuckContext& duck, const De
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::EmergencyInformationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::EmergencyInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 4) {
-        strm << margin << UString::Format(u"- Event service id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
+        disp << margin << UString::Format(u"- Event service id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
              << margin << UString::Format(u"  Event is started: %s", {(data[2] & 0x80) != 0}) << std::endl
              << margin << UString::Format(u"  Signal level: %d", {(data[2] >> 6) & 0x01}) << std::endl;
         size_t len = data[3];
@@ -147,7 +145,7 @@ void ts::EmergencyInformationDescriptor::DisplayDescriptor(TablesDisplay& displa
         len = std::min(len, size);
         while (len >= 2) {
             const uint16_t ac = (GetUInt16(data) >> 4) & 0x0FFF;
-            strm << margin << UString::Format(u"  Area code: 0x%03X (%d)", {ac, ac}) << std::endl;
+            disp << margin << UString::Format(u"  Area code: 0x%03X (%d)", {ac, ac}) << std::endl;
             data += 2; size -= 2; len -= 2;
         }
         if (len > 0) {
@@ -155,7 +153,7 @@ void ts::EmergencyInformationDescriptor::DisplayDescriptor(TablesDisplay& displa
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

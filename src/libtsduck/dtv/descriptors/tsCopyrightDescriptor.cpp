@@ -105,20 +105,18 @@ void ts::CopyrightDescriptor::deserialize(DuckContext& duck, const Descriptor& d
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CopyrightDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CopyrightDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
         // Sometimes, the copyright identifier is made of ASCII characters. Try to display them.
-        strm << margin << UString::Format(u"Copyright identifier: 0x%X", {GetUInt32(data)});
-        duck.displayIfASCII(data, 4, u" (\"", u"\")") << std::endl;
-        display.displayPrivateData(u"Additional copyright info", data + 4, size - 4, margin);
+        disp << margin << UString::Format(u"Copyright identifier: 0x%X", {GetUInt32(data)});
+        disp.duck().displayIfASCII(data, 4, u" (\"", u"\")") << std::endl;
+        disp.displayPrivateData(u"Additional copyright info", data + 4, size - 4, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

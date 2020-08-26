@@ -111,20 +111,18 @@ void ts::ContentDescriptor::deserialize(DuckContext& duck, const Descriptor& des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 2) {
         uint8_t content = data[0];
         uint8_t user = data[1];
         data += 2; size -= 2;
-        strm << margin << UString::Format(u"Content: %s / User: 0x%X", {names::Content(content, names::FIRST), user}) << std::endl;
+        disp << margin << UString::Format(u"Content: %s / User: 0x%X", {names::Content(content, names::FIRST), user}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

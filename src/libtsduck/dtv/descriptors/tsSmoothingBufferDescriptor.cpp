@@ -103,21 +103,19 @@ void ts::SmoothingBufferDescriptor::deserialize(DuckContext& duck, const Descrip
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 6) {
         const uint32_t rate = GetUInt24(data) & 0x003FFFFF;
         const uint32_t sbsize = GetUInt24(data + 3) & 0x003FFFFF;
-        strm << margin << UString::Format(u"Smoothing buffer leak rate: 0x%X (%d) x 400 b/s", {rate, rate}) << std::endl
+        disp << margin << UString::Format(u"Smoothing buffer leak rate: 0x%X (%d) x 400 b/s", {rate, rate}) << std::endl
              << margin << UString::Format(u"Smoothing buffer size: 0x%X (%d) bytes", {sbsize, sbsize}) << std::endl;
         data += 6; size -= 6;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

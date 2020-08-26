@@ -44,11 +44,9 @@ void foo::FooDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void foo::FooDescriptor::serialize(ts::DuckContext& duck, ts::Descriptor& desc) const
+void foo::FooDescriptor::serializePayload(ts::PSIBuffer& buf) const
 {
-    ts::ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.encoded(name));
-    serializeEnd(desc, bbp);
+    buf.putString(name);
 }
 
 
@@ -56,15 +54,9 @@ void foo::FooDescriptor::serialize(ts::DuckContext& duck, ts::Descriptor& desc) 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void foo::FooDescriptor::deserialize(ts::DuckContext& duck, const ts::Descriptor& desc)
+void foo::FooDescriptor::deserializePayload(ts::PSIBuffer& buf)
 {
-    clear();
-
-    _is_valid = desc.isValid() && desc.tag() == tag();
-
-    if (_is_valid) {
-        duck.decode(name, desc.payload(), desc.payloadSize());
-    }
+    buf.getString(name);
 }
 
 
@@ -72,13 +64,9 @@ void foo::FooDescriptor::deserialize(ts::DuckContext& duck, const ts::Descriptor
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void foo::FooDescriptor::DisplayDescriptor(ts::TablesDisplay& display, ts::DID did, const uint8_t* payload, size_t size, int indent, ts::TID tid, ts::PDS pds)
+void foo::FooDescriptor::DisplayDescriptor(ts::TablesDisplay& disp, ts::PSIBuffer& buf, const ts::UString& margin, ts::DID did, ts::TID tid, ts::PDS pds)
 {
-    ts::DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
-    const std::string margin(indent, ' ');
-
-    strm << margin << "Name: \"" << duck.decoded(payload, size) << "\"" << std::endl;
+    disp << margin << "Name: \"" << buf.getString() << "\"" << std::endl;
 }
 
 

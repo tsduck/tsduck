@@ -122,31 +122,29 @@ void ts::URILinkageDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     // Important: With extension descriptors, the DisplayDescriptor() function is called
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 2) {
         const uint8_t type = data[0];
-        strm << margin << "URI linkage type: " << NameFromSection(u"URILinkageType", type, names::HEXA_FIRST) << std::endl;
+        disp << margin << "URI linkage type: " << NameFromSection(u"URILinkageType", type, names::HEXA_FIRST) << std::endl;
         data++; size--;
-        strm << margin << "URI: " << duck.decodedWithByteLength(data, size) << std::endl;
+        disp << margin << "URI: " << disp.duck().decodedWithByteLength(data, size) << std::endl;
 
         if ((type == 0x00 || type == 0x01) && size >= 2) {
             const int interval = GetUInt16(data);
             data += 2; size -= 2;
-            strm << margin << UString::Format(u"Min polling interval: %d (%d seconds)", {interval, 2 * interval}) << std::endl;
+            disp << margin << UString::Format(u"Min polling interval: %d (%d seconds)", {interval, 2 * interval}) << std::endl;
         }
-        display.displayPrivateData(u"Private data", data, size, margin);
+        disp.displayPrivateData(u"Private data", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

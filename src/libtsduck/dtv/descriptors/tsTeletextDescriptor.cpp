@@ -113,10 +113,8 @@ uint8_t ts::TeletextDescriptor::Entry::magazineNumber() const
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 5) {
@@ -125,13 +123,13 @@ void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
         const uint8_t page = data[4];
         Entry e;
         e.setFullNumber(mag, page);
-        strm << margin << UString::Format(u"Language: %s, Type: %d (0x%X)", {DeserializeLanguageCode(data), type, type}) << std::endl
+        disp << margin << UString::Format(u"Language: %s, Type: %d (0x%X)", {DeserializeLanguageCode(data), type, type}) << std::endl
              << margin << "Type: " << names::TeletextType(type) << std::endl
              << margin << "Magazine: " << int(mag) << ", page: " << int(page) << ", full page: " << e.page_number << std::endl;
         data += 5; size -= 5;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

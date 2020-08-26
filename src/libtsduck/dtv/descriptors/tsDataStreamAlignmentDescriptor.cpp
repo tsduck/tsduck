@@ -99,18 +99,16 @@ void ts::DataStreamAlignmentDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DataStreamAlignmentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DataStreamAlignmentDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
-        strm << margin << "Alignment type: " << NameFromSection(u"DataStreamAlignment", data[0], names::BOTH_FIRST) << std::endl;
+        disp << margin << "Alignment type: " << NameFromSection(u"DataStreamAlignment", data[0], names::BOTH_FIRST) << std::endl;
         data++; size--;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

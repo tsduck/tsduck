@@ -109,23 +109,21 @@ void ts::ServiceAvailabilityDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ServiceAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ServiceAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
-        strm << margin << "Availability: " << UString::TrueFalse((data[0] & 0x80) != 0) << std::endl;
+        disp << margin << "Availability: " << UString::TrueFalse((data[0] & 0x80) != 0) << std::endl;
         data++; size--;
         while (size >= 2) {
             const uint16_t id = GetUInt16(data);
             data += 2; size -= 2;
-            strm << margin << UString::Format(u"Cell id: 0x%X (%d)", {id, id}) << std::endl;
+            disp << margin << UString::Format(u"Cell id: 0x%X (%d)", {id, id}) << std::endl;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

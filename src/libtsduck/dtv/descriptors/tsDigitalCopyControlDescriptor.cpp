@@ -186,10 +186,8 @@ void ts::DigitalCopyControlDescriptor::deserialize(DuckContext& duck, const Desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DigitalCopyControlDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DigitalCopyControlDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size > 0) {
@@ -199,12 +197,12 @@ void ts::DigitalCopyControlDescriptor::DisplayDescriptor(TablesDisplay& display,
         uint8_t user = data[0] & 0x0F;
         data++; size--;
 
-        strm << margin << "Recording control: " << NameFromSection(u"ISDBCopyControl", rec_control, names::DECIMAL_FIRST) << std::endl
+        disp << margin << "Recording control: " << NameFromSection(u"ISDBCopyControl", rec_control, names::DECIMAL_FIRST) << std::endl
              << margin << UString::Format(u"User-defined: 0x%1X (%d)", {user, user}) << std::endl;
 
         if (bitrate_flag && size > 0) {
             // Bitrate unit is 1/4 Mb/s.
-            strm << margin << UString::Format(u"Maximum bitrate: %d (%'d b/s)", {data[0], BitRate(data[0]) * 250000}) << std::endl;
+            disp << margin << UString::Format(u"Maximum bitrate: %d (%'d b/s)", {data[0], BitRate(data[0]) * 250000}) << std::endl;
             data++; size--;
         }
         if (comp_flag && size > 0) {
@@ -217,19 +215,19 @@ void ts::DigitalCopyControlDescriptor::DisplayDescriptor(TablesDisplay& display,
                 user = data[1] & 0x0F;
                 data += 2; size -= 2; len -= 2;
 
-                strm << margin << UString::Format(u"- Component tag: 0x%X (%d)", {tag, tag}) << std::endl
+                disp << margin << UString::Format(u"- Component tag: 0x%X (%d)", {tag, tag}) << std::endl
                      << margin << "  Recording control: " << NameFromSection(u"ISDBCopyControl", rec_control, names::DECIMAL_FIRST) << std::endl
                      << margin << UString::Format(u"  User-defined: 0x%1X (%d)", {user, user}) << std::endl;
 
                 if (bitrate_flag && size > 0) {
-                    strm << margin << UString::Format(u"  Maximum bitrate: %d (%'d b/s)", {data[0], BitRate(data[0]) * 250000}) << std::endl;
+                    disp << margin << UString::Format(u"  Maximum bitrate: %d (%'d b/s)", {data[0], BitRate(data[0]) * 250000}) << std::endl;
                     data++; size--; len--;
                 }
             }
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

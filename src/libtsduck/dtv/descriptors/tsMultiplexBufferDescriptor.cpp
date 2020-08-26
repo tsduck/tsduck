@@ -102,21 +102,19 @@ void ts::MultiplexBufferDescriptor::deserialize(DuckContext& duck, const Descrip
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MultiplexBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 6) {
         const uint32_t mb = GetUInt24(data);
         const uint32_t tb = GetUInt24(data + 3);
         data += 6; size -= 6;
-        strm << margin << UString::Format(u"MB buffer size: %'d bytes", {mb}) << std::endl
+        disp << margin << UString::Format(u"MB buffer size: %'d bytes", {mb}) << std::endl
              << margin << UString::Format(u"TB leak rate: %'d (%'d bits/s)", {tb, 400 * tb}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -137,28 +137,26 @@ void ts::ServiceGroupDescriptor::deserialize(DuckContext& duck, const Descriptor
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ServiceGroupDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ServiceGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         const uint8_t type = (data[0] >> 4) & 0x0F;
         data++; size--;
-        strm << margin << "Group type: " << NameFromSection(u"ISDBServiceGroupType", type, names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Group type: " << NameFromSection(u"ISDBServiceGroupType", type, names::DECIMAL_FIRST) << std::endl;
 
         if (type == 1) {
-            strm << margin << "Simultaneous services:" << (size < 4 ? " none" : "") << std::endl;
+            disp << margin << "Simultaneous services:" << (size < 4 ? " none" : "") << std::endl;
             while (size >= 4) {
-                strm << margin << UString::Format(u"- Primary service id:   0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
+                disp << margin << UString::Format(u"- Primary service id:   0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
                      << margin << UString::Format(u"  Secondary service id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl;
                 data += 4; size -= 4;
             }
-            display.displayExtraData(data, size, margin);
+            disp.displayExtraData(data, size, margin);
         }
         else {
-            display.displayPrivateData(u"Private data", data, size, margin);
+            disp.displayPrivateData(u"Private data", data, size, margin);
         }
     }
 }

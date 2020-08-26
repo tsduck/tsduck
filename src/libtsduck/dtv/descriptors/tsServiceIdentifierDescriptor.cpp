@@ -98,13 +98,11 @@ void ts::ServiceIdentifierDescriptor::deserialize(DuckContext& duck, const Descr
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ServiceIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::ServiceIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
-    strm << margin << "Service identifier: \"" << duck.decoded(payload, size) << "\"" << std::endl;
+    disp << margin << "Service identifier: \"" << disp.duck().decoded(payload, size) << "\"" << std::endl;
 }
 
 

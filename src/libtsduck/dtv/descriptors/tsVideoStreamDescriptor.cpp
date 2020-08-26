@@ -133,15 +133,13 @@ void ts::VideoStreamDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::VideoStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::VideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         const bool mp1only = (data[0] & 0x04) != 0;
-        strm << margin
+        disp << margin
              << UString::Format(u"Multiple frame rate: %s, frame rate: %s",
                                 {UString::TrueFalse((data[0] & 0x80) != 0),
                                  NameFromSection(u"FrameRate", (data[0] >> 3) & 0x0F, names::FIRST)})
@@ -154,14 +152,14 @@ void ts::VideoStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
              << std::endl;
         data++; size--;
         if (!mp1only && size >= 2) {
-            strm << margin << UString::Format(u"Profile and level: 0x%X (%d)", {data[0], data[0]}) << std::endl
+            disp << margin << UString::Format(u"Profile and level: 0x%X (%d)", {data[0], data[0]}) << std::endl
                  << margin << "Chroma format: " << NameFromSection(u"ChromaFormat", (data[1] >> 6) & 0x03, names::FIRST) << std::endl
                  << margin << "Frame rate extension: " << UString::TrueFalse((data[1] & 0x20) != 0) << std::endl;
             data += 2; size -= 2;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -97,18 +97,15 @@ void ts::IPSignallingDescriptor::deserialize(DuckContext& duck, const Descriptor
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::IPSignallingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::IPSignallingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 3) {
-        strm << margin << "Platform id: " << names::PlatformId(GetUInt24(data), names::FIRST) << std::endl;
+        disp << margin << "Platform id: " << names::PlatformId(GetUInt24(data), names::FIRST) << std::endl;
         data += 3; size -= 3;
     }
-
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

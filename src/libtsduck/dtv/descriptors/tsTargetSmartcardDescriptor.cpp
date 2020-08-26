@@ -105,19 +105,17 @@ void ts::TargetSmartcardDescriptor::deserialize(DuckContext& duck, const Descrip
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetSmartcardDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TargetSmartcardDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
         const uint32_t id = GetUInt32(data);
-        strm << margin << UString::Format(u"Super CAS Id: 0x%X (%d)", {id, id}) << std::endl
+        disp << margin << UString::Format(u"Super CAS Id: 0x%X (%d)", {id, id}) << std::endl
              << margin << UString::Format(u"Private data (%d bytes): %s", {size - 4, UString::Dump(data + 4, size - 4, UString::SINGLE_LINE)}) << std::endl;
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

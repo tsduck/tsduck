@@ -119,29 +119,26 @@ void ts::SpliceDTMFDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 6) {
-        strm << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
-        duck.displayIfASCII(data, 4, u" (\"", u"\")");
-        strm << std::endl
-             << margin << UString::Format(u"Pre-roll: %d x 1/10 second", {GetUInt8(data + 4)})
-             << std::endl;
+        disp << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
+        disp.duck().displayIfASCII(data, 4, u" (\"", u"\")");
+        disp << std::endl;
+        disp << margin << UString::Format(u"Pre-roll: %d x 1/10 second", {GetUInt8(data + 4)}) << std::endl;
         size_t len = (GetUInt8(data + 5) >> 5) & 0x07;
         data += 6; size -= 6;
 
         if (len > size) {
             len = size;
         }
-        strm << margin << "DTMF: \"" << duck.decoded(data, len) << "\"" << std::endl;
+        disp << margin << "DTMF: \"" << disp.duck().decoded(data, len) << "\"" << std::endl;
         data += len; size -= len;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

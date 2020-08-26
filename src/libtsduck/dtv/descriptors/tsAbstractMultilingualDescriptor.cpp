@@ -130,22 +130,20 @@ void ts::AbstractMultilingualDescriptor::deserialize(DuckContext& duck, const De
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 4) {
         const size_t len = std::min<size_t>(data[3], size - 4);
-        strm << margin
+        disp << margin
              << "Language: " << DeserializeLanguageCode(data)
-             << ", name: \"" << duck.decoded(data + 4, len) << "\""
+             << ", name: \"" << disp.duck().decoded(data + 4, len) << "\""
              << std::endl;
         data += 4 + len; size -= 4 + len;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

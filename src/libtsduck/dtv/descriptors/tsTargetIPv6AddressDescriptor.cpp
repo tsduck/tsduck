@@ -111,20 +111,18 @@ void ts::TargetIPv6AddressDescriptor::deserialize(DuckContext& duck, const Descr
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6AddressDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TargetIPv6AddressDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     const char* header = "Address mask: ";
     while (size >= 16) {
-        strm << margin << header << IPv6Address(data, 16) << std::endl;
+        disp << margin << header << IPv6Address(data, 16) << std::endl;
         data += 16; size -= 16;
         header = "Address: ";
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

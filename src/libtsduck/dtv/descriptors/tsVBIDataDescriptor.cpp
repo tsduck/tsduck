@@ -103,10 +103,8 @@ bool ts::VBIDataDescriptor::EntryHasReservedBytes(uint8_t data_service_id)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 2) {
@@ -116,22 +114,22 @@ void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         if (length > size) {
             length = size;
         }
-        strm << margin << "Data service id: " << NameFromSection(u"VBIDataServiceId", data_id, names::HEXA_FIRST) << std::endl;
+        disp << margin << "Data service id: " << NameFromSection(u"VBIDataServiceId", data_id, names::HEXA_FIRST) << std::endl;
         if (!EntryHasReservedBytes(data_id)) {
             while (length > 0) {
                 const uint8_t field_parity = (data[0] >> 5) & 0x01;
                 const uint8_t line_offset = data[0] & 0x1F;
                 data++; size--; length--;
-                strm << margin << "Field parity: " << int(field_parity) << ", line offset: " << int(line_offset) << std::endl;
+                disp << margin << "Field parity: " << int(field_parity) << ", line offset: " << int(line_offset) << std::endl;
             }
         }
         else {
-            display.displayPrivateData(u"Associated data", data, length, margin);
+            disp.displayPrivateData(u"Associated data", data, length, margin);
             data += length; size -= length;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

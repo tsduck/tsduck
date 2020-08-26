@@ -145,35 +145,33 @@ void ts::DTGGuidanceDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTGGuidanceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DTGGuidanceDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         const uint8_t type = data[0] & 0x03;
         data++; size--;
-        strm << margin << UString::Format(u"Guidance type: %d", {type}) << std::endl;
+        disp << margin << UString::Format(u"Guidance type: %d", {type}) << std::endl;
 
         if (type == 0 && size >= 3) {
-            strm << margin << "Language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl
-                 << margin << "Text: \"" << duck.decoded(data + 3, size - 3) << "\"" << std::endl;
+            disp << margin << "Language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl
+                 << margin << "Text: \"" << disp.duck().decoded(data + 3, size - 3) << "\"" << std::endl;
             size = 0;
         }
         else if (type == 1 && size >= 4) {
-            strm << margin << "Guidance mode: " << UString::TrueFalse(data[0] & 0x01) << std::endl
+            disp << margin << "Guidance mode: " << UString::TrueFalse(data[0] & 0x01) << std::endl
                  << margin << "Language: \"" << DeserializeLanguageCode(data + 1) << "\"" << std::endl
-                 << margin << "Text: \"" << duck.decoded(data + 4, size - 4) << "\"" << std::endl;
+                 << margin << "Text: \"" << disp.duck().decoded(data + 4, size - 4) << "\"" << std::endl;
             size = 0;
         }
         else if (type >= 2) {
-            display.displayPrivateData(u"Reserved", data, size, margin);
+            disp.displayPrivateData(u"Reserved", data, size, margin);
             size = 0;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

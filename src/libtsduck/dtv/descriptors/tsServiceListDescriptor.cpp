@@ -146,20 +146,18 @@ void ts::ServiceListDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ServiceListDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ServiceListDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 3) {
         uint16_t sid = GetUInt16(data);
         uint8_t stype = data[2];
         data += 3; size -= 3;
-        strm << margin << UString::Format(u"Service id: %d (0x%X), Type: %s", {sid, sid, names::ServiceType(stype, names::FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"Service id: %d (0x%X), Type: %s", {sid, sid, names::ServiceType(stype, names::FIRST)}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

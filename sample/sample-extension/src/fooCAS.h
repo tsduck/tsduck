@@ -35,6 +35,6 @@ namespace foo {
 
     // Display the private part of a FooCAS CA_descriptor on the output stream.
     // Compatible with ts::DisplayCADescriptorFunction profile.
-    FOODLL void DisplayFooCASCADescriptor(ts::TablesDisplay& display, const uint8_t* data, size_t size, int indent, ts::TID tid);
+    FOODLL void DisplayFooCASCADescriptor(ts::TablesDisplay& display, ts::PSIBuffer& buf, const ts::UString& margin, ts::TID tid);
 
 }

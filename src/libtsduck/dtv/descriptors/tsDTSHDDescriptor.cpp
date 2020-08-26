@@ -283,7 +283,7 @@ bool ts::DTSHDDescriptor::DeserializeSubstreamInfo(Variable<SubstreamInfo>& info
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     // Important: With extension descriptors, the DisplayDescriptor() function is called
     // with extension payload. Meaning that data points after descriptor_tag_extension.
@@ -294,20 +294,20 @@ void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, con
     if (size >= 1) {
         const uint8_t flags = data[0];
         data++; size--;
-        if (DisplaySubstreamInfo(display, (flags & 0x80) != 0, indent, u"core", data, size) &&
-            DisplaySubstreamInfo(display, (flags & 0x40) != 0, indent, u"0", data, size) &&
-            DisplaySubstreamInfo(display, (flags & 0x20) != 0, indent, u"1", data, size) &&
-            DisplaySubstreamInfo(display, (flags & 0x10) != 0, indent, u"2", data, size) &&
-            DisplaySubstreamInfo(display, (flags & 0x08) != 0, indent, u"3", data, size))
+        if (DisplaySubstreamInfo(disp, (flags & 0x80) != 0, indent, u"core", data, size) &&
+            DisplaySubstreamInfo(disp, (flags & 0x40) != 0, indent, u"0", data, size) &&
+            DisplaySubstreamInfo(disp, (flags & 0x20) != 0, indent, u"1", data, size) &&
+            DisplaySubstreamInfo(disp, (flags & 0x10) != 0, indent, u"2", data, size) &&
+            DisplaySubstreamInfo(disp, (flags & 0x08) != 0, indent, u"3", data, size))
         {
-            display.displayPrivateData(u"Additional information", data, size, margin);
+            disp.displayPrivateData(u"Additional information", data, size, margin);
             data += size; size = 0;
         }
     }
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
-bool ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& display, bool present, int indent, const UString& name, const uint8_t*& data, size_t& size)
+bool ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& disp, bool present, int indent, const UString& name, const uint8_t*& data, size_t& size)
 {
     // Check presence and required size.
     if (!present) {
@@ -328,11 +328,9 @@ bool ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& display, bool pres
     data += 3;
     size -= length + 3;
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
-    strm << margin << "Substream " << name << ":" << std::endl
+    disp << margin << "Substream " << name << ":" << std::endl
          << margin << UString::Format(u"  Asset count: %d, channel count: %d", {num_assets, channel_count}) << std::endl
          << margin << UString::Format(u"  Low Frequency Effects (LFE): %s", {LFE}) << std::endl
          << margin << UString::Format(u"  Sampling frequency: %s", {NameFromSection(u"DTSHDSamplingFrequency", sampling_frequency, names::VALUE)}) << std::endl
@@ -352,28 +350,28 @@ bool ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& display, bool pres
         const uint16_t bit_rate = (GetUInt16(data + 1) >> 2) & 0x1FFF;
         data += 3; length -= 3;
 
-        strm << margin << UString::Format(u"  Asset %d:", {asset_index}) << std::endl
+        disp << margin << UString::Format(u"  Asset %d:", {asset_index}) << std::endl
              << margin << UString::Format(u"    Construction: %s", {NameFromSection(u"DTSHDAssetConstruction", asset_construction + (asset_index == 0 ? 0 : 0x0100), names::VALUE)}) << std::endl
              << margin << UString::Format(u"    VBR: %s, post-encode bitrate scaling: %s", {vbr, post_encode_br_scaling}) << std::endl
              << margin << "    Bit rate: ";
 
         if (bit_rate == 0) {
-            strm << "unknown";
+            disp << "unknown";
         }
         else if (post_encode_br_scaling) {
-            strm << (bit_rate >> 3) << "." << ((10 * (bit_rate & 0x07)) / 8) << " kb/s";
+            disp << (bit_rate >> 3) << "." << ((10 * (bit_rate & 0x07)) / 8) << " kb/s";
         }
         else {
-            strm << bit_rate << " kb/s";
+            disp << bit_rate << " kb/s";
         }
-        strm << std::endl;
+        disp << std::endl;
 
         if (component_type_flag) {
             if (length < 1) {
                 return false;
             }
             else {
-                strm << margin << UString::Format(u"    Component type: 0x%X", {data[0]}) << std::endl
+                disp << margin << UString::Format(u"    Component type: 0x%X", {data[0]}) << std::endl
                      << margin << UString::Format(u"      %s", {(data[0] & 0x40) != 0 ? u"Full service" : u"Combined service"}) << std::endl
                      << margin << UString::Format(u"      Service type: %s", {NameFromSection(u"DTSHDServiceType", (data[0] >> 3) & 0x07, names::VALUE)}) << std::endl
                      << margin << UString::Format(u"      Number of channels: %s", {NameFromSection(u"DTSHDNumberOfChannels", data[0] & 0x07, names::VALUE)}) << std::endl;
@@ -386,7 +384,7 @@ bool ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& display, bool pres
                 return false;
             }
             else {
-                strm << margin << UString::Format(u"    Language code: \"%s\"", {DeserializeLanguageCode(data)}) << std::endl;
+                disp << margin << UString::Format(u"    Language code: \"%s\"", {DeserializeLanguageCode(data)}) << std::endl;
                 data += 3; length -= 3;
             }
         }

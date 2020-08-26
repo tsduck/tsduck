@@ -129,14 +129,12 @@ void ts::HierarchyDescriptor::deserialize(DuckContext& duck, const Descriptor& d
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::HierarchyDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::HierarchyDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
-        strm << margin << "Temporal scalability: " << UString::TrueFalse((data[0] & 0x40) != 0) << std::endl
+        disp << margin << "Temporal scalability: " << UString::TrueFalse((data[0] & 0x40) != 0) << std::endl
              << margin << "Spatial scalability: " << UString::TrueFalse((data[0] & 0x20) != 0) << std::endl
              << margin << "Quality scalability: " << UString::TrueFalse((data[0] & 0x10) != 0) << std::endl
              << margin << "Hierarchy type: " << NameFromSection(u"HierarchyType", data[0] & 0x0F, names::BOTH_FIRST) << std::endl
@@ -147,7 +145,7 @@ void ts::HierarchyDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
         data += 4; size -= 4;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

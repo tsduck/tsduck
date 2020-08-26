@@ -111,20 +111,18 @@ void ts::TargetIPAddressDescriptor::deserialize(DuckContext& duck, const Descrip
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetIPAddressDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TargetIPAddressDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     const char* header = "Address mask: ";
     while (size >= 4) {
-        strm << margin << header << IPAddress(GetUInt32(data)) << std::endl;
+        disp << margin << header << IPAddress(GetUInt32(data)) << std::endl;
         data += 4; size -= 4;
         header = "Address: ";
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

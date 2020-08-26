@@ -97,19 +97,17 @@ void ts::DVBTimeShiftedServiceDescriptor::deserialize(DuckContext& duck, const D
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 2) {
         const uint16_t service = GetUInt16(data);
         data += 2; size -= 2;
-        strm << margin << UString::Format(u"Reference service id: 0x%X (%d)", {service, service}) << std::endl;
+        disp << margin << UString::Format(u"Reference service id: 0x%X (%d)", {service, service}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

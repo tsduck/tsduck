@@ -99,18 +99,16 @@ void ts::StereoscopicProgramInfoDescriptor::deserialize(DuckContext& duck, const
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::StereoscopicProgramInfoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::StereoscopicProgramInfoDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
-        strm << margin << "Stereoscopic service type: " << NameFromSection(u"StereoscopicServiceType", data[0] & 0x07, names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Stereoscopic service type: " << NameFromSection(u"StereoscopicServiceType", data[0] & 0x07, names::DECIMAL_FIRST) << std::endl;
         data += 1; size -= 1;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

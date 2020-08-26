@@ -132,30 +132,28 @@ void ts::ParentalRatingDescriptor::deserialize(DuckContext& duck, const Descript
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 4) {
         const uint8_t rating = data[3];
-        strm << margin << "Country code: " << DeserializeLanguageCode(data)
+        disp << margin << "Country code: " << DeserializeLanguageCode(data)
              << UString::Format(u", rating: 0x%X ", {rating});
         if (rating == 0) {
-            strm << "(undefined)";
+            disp << "(undefined)";
         }
         else if (rating <= 0x0F) {
-            strm << "(min. " << int(rating + 3) << " years)";
+            disp << "(min. " << int(rating + 3) << " years)";
         }
         else {
-            strm << "(broadcaster-defined)";
+            disp << "(broadcaster-defined)";
         }
-        strm << std::endl;
+        disp << std::endl;
         data += 4; size -= 4;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

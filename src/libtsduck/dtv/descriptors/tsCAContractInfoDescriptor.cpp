@@ -131,32 +131,30 @@ void ts::CAContractInfoDescriptor::deserialize(DuckContext& duck, const Descript
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CAContractInfoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CAContractInfoDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 5) {
         size_t count = data[2] & 0x0F;
-        strm << margin << "CA System Id: " << names::CASId(duck, GetUInt16(data), names::FIRST) << std::endl
+        disp << margin << "CA System Id: " << names::CASId(disp.duck(), GetUInt16(data), names::FIRST) << std::endl
              << margin << UString::Format(u"CA unit id: %d", {(data[2] >> 4) & 0x0F}) << std::endl;
         data += 3; size -= 3;
         while (size > 0 && count > 0) {
-            strm << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[0], data[0]}) << std::endl;
+            disp << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[0], data[0]}) << std::endl;
             data++; size--; count--;
         }
         if (size > 0) {
             count = std::min<size_t>(data[0], size - 1);
-            display.displayPrivateData(u"Contract verification info", data + 1, count, margin);
+            disp.displayPrivateData(u"Contract verification info", data + 1, count, margin);
             data += count + 1; size -= count + 1;
         }
         if (size > 0) {
-            strm << margin << "Fee name: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
+            disp << margin << "Fee name: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

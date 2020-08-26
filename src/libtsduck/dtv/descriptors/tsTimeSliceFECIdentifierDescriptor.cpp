@@ -157,10 +157,8 @@ bool ts::TimeSliceFECIdentifierDescriptor::analyzeXML(DuckContext& duck, const x
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 3) {
@@ -172,40 +170,41 @@ void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp
         const uint8_t time_slice_fec_id = data[2] & 0x0F;
         data += 3; size -= 3;
 
-        strm << margin << "Use time slice: " << UString::TrueFalse(time_slicing) << std::endl
+        disp << margin << "Use time slice: " << UString::TrueFalse(time_slicing) << std::endl
              << margin << "MPE FEC: ";
         switch (mpe_fec) {
-            case 0:  strm << "none"; break;
-            case 1:  strm << "Reed-Solomon(255, 191, 64)"; break;
-            default: strm << UString::Format(u"reserved value 0x%X", {mpe_fec}); break;
+            case 0:  disp << "none"; break;
+            case 1:  disp << "Reed-Solomon(255, 191, 64)"; break;
+            default: disp << UString::Format(u"reserved value 0x%X", {mpe_fec}); break;
         }
-        strm << std::endl << margin << "Frame size: ";
+        disp << std::endl;
+        disp << margin << "Frame size: ";
         switch (frame_size) {
-            case 0:  strm << "512 kbits, 256 rows"; break;
-            case 1:  strm << "1024 kbits, 512 rows"; break;
-            case 2:  strm << "1536 kbits, 768 rows"; break;
-            case 3:  strm << "2048 kbits, 1024 rows"; break;
-            default: strm << UString::Format(u"reserved value 0x%X", {frame_size}); break;
+            case 0:  disp << "512 kbits, 256 rows"; break;
+            case 1:  disp << "1024 kbits, 512 rows"; break;
+            case 2:  disp << "1536 kbits, 768 rows"; break;
+            case 3:  disp << "2048 kbits, 1024 rows"; break;
+            default: disp << UString::Format(u"reserved value 0x%X", {frame_size}); break;
         }
-        strm << std::endl
-             << margin << UString::Format(u"Max burst duration: 0x%X (%d)", {max_burst_duration, max_burst_duration}) << std::endl
-             << margin << "Max average rate: ";
+        disp << std::endl;
+        disp << margin << UString::Format(u"Max burst duration: 0x%X (%d)", {max_burst_duration, max_burst_duration}) << std::endl;
+        disp << margin << "Max average rate: ";
         switch (max_average_rate) {
-            case 0:  strm << "16 kbps"; break;
-            case 1:  strm << "32 kbps"; break;
-            case 2:  strm << "64 kbps"; break;
-            case 3:  strm << "128 kbps"; break;
-            case 4:  strm << "256 kbps"; break;
-            case 5:  strm << "512 kbps"; break;
-            case 6:  strm << "1024 kbps"; break;
-            case 7:  strm << "2048 kbps"; break;
-            default: strm << UString::Format(u"reserved value 0x%X", {max_average_rate}); break;
+            case 0:  disp << "16 kbps"; break;
+            case 1:  disp << "32 kbps"; break;
+            case 2:  disp << "64 kbps"; break;
+            case 3:  disp << "128 kbps"; break;
+            case 4:  disp << "256 kbps"; break;
+            case 5:  disp << "512 kbps"; break;
+            case 6:  disp << "1024 kbps"; break;
+            case 7:  disp << "2048 kbps"; break;
+            default: disp << UString::Format(u"reserved value 0x%X", {max_average_rate}); break;
         }
-        strm << std::endl
-             << margin << UString::Format(u"Time slice FEC id: 0x%X (%d)", {time_slice_fec_id, time_slice_fec_id}) << std::endl;
-        display.displayPrivateData(u"Id selector bytes", data, size, margin);
+        disp << std::endl;
+        disp << margin << UString::Format(u"Time slice FEC id: 0x%X (%d)", {time_slice_fec_id, time_slice_fec_id}) << std::endl;
+        disp.displayPrivateData(u"Id selector bytes", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }

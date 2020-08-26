@@ -110,20 +110,18 @@ void ts::DVBHTMLApplicationLocationDescriptor::deserialize(DuckContext& duck, co
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBHTMLApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         size_t len = std::min<size_t>(data[0], size - 1);
-        strm << margin << "Physical root: \"" << duck.decoded(data + 1, len) << "\"" << std::endl
-             << margin << "Initial path: \"" << duck.decoded(data + 1 + len, size - len - 1) << "\"" << std::endl;
+        disp << margin << "Physical root: \"" << disp.duck().decoded(data + 1, len) << "\"" << std::endl
+             << margin << "Initial path: \"" << disp.duck().decoded(data + 1 + len, size - len - 1) << "\"" << std::endl;
         size = 0;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

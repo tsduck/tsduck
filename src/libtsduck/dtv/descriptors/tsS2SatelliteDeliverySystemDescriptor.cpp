@@ -137,10 +137,8 @@ void ts::S2SatelliteDeliverySystemDescriptor::deserialize(DuckContext& duck, con
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
@@ -149,22 +147,22 @@ void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
         const bool backwards_compatibility_indicator = (data[0] & 0x20) != 0;
         data += 1; size -= 1;
 
-        strm << margin << "Scrambling sequence: " << UString::TrueFalse(scrambling_sequence_selector)
+        disp << margin << "Scrambling sequence: " << UString::TrueFalse(scrambling_sequence_selector)
              << ", multiple input stream: " << UString::TrueFalse(multiple_input_stream_flag)
              << ", backwards compatibility: " << UString::TrueFalse(backwards_compatibility_indicator)
              << std::endl;
 
         if (scrambling_sequence_selector && size >= 3) {
-            strm << margin << UString::Format(u"Scrambling sequence index: 0x%05X", {GetUInt24(data) & 0x0003FFFF}) << std::endl;
+            disp << margin << UString::Format(u"Scrambling sequence index: 0x%05X", {GetUInt24(data) & 0x0003FFFF}) << std::endl;
             data += 3; size -= 3;
         }
         if (multiple_input_stream_flag && size >= 1) {
-            strm << margin << UString::Format(u"Input stream identifier: 0x%X", {data[0]}) << std::endl;
+            disp << margin << UString::Format(u"Input stream identifier: 0x%X", {data[0]}) << std::endl;
             data += 1; size -= 1;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

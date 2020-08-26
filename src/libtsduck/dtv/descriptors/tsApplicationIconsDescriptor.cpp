@@ -117,23 +117,21 @@ void ts::ApplicationIconsDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ApplicationIconsDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ApplicationIconsDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size > 0) {
-        strm << margin << "Icon locator: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
+        disp << margin << "Icon locator: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
         if (size >= 2) {
             const uint16_t flags = GetUInt16(data);
-            strm << margin << UString::Format(u"Icon flags: 0x%X", {flags}) << std::endl;
+            disp << margin << UString::Format(u"Icon flags: 0x%X", {flags}) << std::endl;
             for (uint16_t mask = 0x0001; mask != 0; mask <<= 1) {
                 if ((flags & mask) != 0) {
-                    strm << margin << "  - " << NameFromSection(u"ApplicationIconFlags", mask) << std::endl;
+                    disp << margin << "  - " << NameFromSection(u"ApplicationIconFlags", mask) << std::endl;
                 }
             }
-            display.displayPrivateData(u"Reserved bytes", data + 2, size - 2, margin);
+            disp.displayPrivateData(u"Reserved bytes", data + 2, size - 2, margin);
         }
     }
 }

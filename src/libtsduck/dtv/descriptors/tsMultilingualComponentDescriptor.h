@@ -60,7 +60,7 @@ namespace ts {
         MultilingualComponentDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        DeclareDisplayDescriptor();
+        DeclareLegacyDisplayDescriptor();
 
     protected:
         // Inherited methods

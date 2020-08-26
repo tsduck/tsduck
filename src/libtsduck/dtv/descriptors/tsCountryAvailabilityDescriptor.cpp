@@ -125,23 +125,21 @@ void ts::CountryAvailabilityDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         bool available = (data[0] & 0x80) != 0;
         data += 1; size -= 1;
-        strm << margin << "Available: " << UString::YesNo(available) << std::endl;
+        disp << margin << "Available: " << UString::YesNo(available) << std::endl;
         while (size >= 3) {
-            strm << margin << "Country code: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
+            disp << margin << "Country code: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
             data += 3; size -= 3;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

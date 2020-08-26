@@ -166,10 +166,8 @@ void ts::AnnouncementSupportDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AnnouncementSupportDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AnnouncementSupportDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 2) {
@@ -177,7 +175,7 @@ void ts::AnnouncementSupportDescriptor::DisplayDescriptor(TablesDisplay& display
         // We will check later that all annoucement types are present.
         uint16_t indicator = GetUInt16(data);
         data += 2; size -= 2;
-        strm << margin << UString::Format(u"Annoucement support indicator: 0x%X", {indicator}) << std::endl;
+        disp << margin << UString::Format(u"Annoucement support indicator: 0x%X", {indicator}) << std::endl;
 
         // List all entries.
         while (size >= 1) {
@@ -188,13 +186,13 @@ void ts::AnnouncementSupportDescriptor::DisplayDescriptor(TablesDisplay& display
             // Clear types one by one in announcement_support_indicator.
             indicator &= ~uint16_t(1 << type);
 
-            strm << margin << "- Announcement type: " << NameFromSection(u"AnnouncementType", type, names::DECIMAL_FIRST) << std::endl
+            disp << margin << "- Announcement type: " << NameFromSection(u"AnnouncementType", type, names::DECIMAL_FIRST) << std::endl
                  << margin << "  Reference type: " << NameFromSection(u"AnnouncementReferenceType", ref, names::DECIMAL_FIRST) << std::endl;
             if (ref >= 1 && ref <= 3) {
                 if (size < 7) {
                     break;
                 }
-                strm << margin << UString::Format(u"  Original network id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
+                disp << margin << UString::Format(u"  Original network id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
                      << margin << UString::Format(u"  Transport stream id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl
                      << margin << UString::Format(u"  Service id: 0x%X (%d)", {GetUInt16(data + 4), GetUInt16(data + 4)}) << std::endl
                      << margin << UString::Format(u"  Component tag: 0x%X (%d)", {data[6], data[6]}) << std::endl;
@@ -207,12 +205,12 @@ void ts::AnnouncementSupportDescriptor::DisplayDescriptor(TablesDisplay& display
             const uint16_t mask = uint16_t(1 << type);
             if ((indicator & mask) != 0) {
                 indicator &= ~mask;
-                strm << margin << "- Missing announcement type: " << NameFromSection(u"AnnouncementType", type, names::DECIMAL_FIRST) << std::endl;
+                disp << margin << "- Missing announcement type: " << NameFromSection(u"AnnouncementType", type, names::DECIMAL_FIRST) << std::endl;
             }
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

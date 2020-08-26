@@ -120,26 +120,24 @@ void ts::SSULocationDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSULocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SSULocationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 2) {
         const uint16_t id = GetUInt16(data);
         data += 2; size -= 2;
-        strm << margin << "Data broadcast id: " << names::DataBroadcastId(id, names::HEXA_FIRST) << std::endl;
+        disp << margin << "Data broadcast id: " << names::DataBroadcastId(id, names::HEXA_FIRST) << std::endl;
 
         if (id == 0x000A && size >= 2) {
             const uint16_t tag = GetUInt16(data);
             data += 2; size -= 2;
-            strm << margin << UString::Format(u"Association tag: 0x%X (%d)", {tag, tag}) << std::endl;
+            disp << margin << UString::Format(u"Association tag: 0x%X (%d)", {tag, tag}) << std::endl;
         }
-        display.displayPrivateData(u"Private data", data, size, margin);
+        disp.displayPrivateData(u"Private data", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 

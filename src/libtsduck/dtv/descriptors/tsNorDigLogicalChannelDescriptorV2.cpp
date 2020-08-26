@@ -140,22 +140,20 @@ void ts::NorDigLogicalChannelDescriptorV2::deserialize(DuckContext& duck, const 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NorDigLogicalChannelDescriptorV2::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::NorDigLogicalChannelDescriptorV2::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 2) {
         const uint8_t id = data[0];
         data++; size--;
-        const UString name(duck.decodedWithByteLength(data, size));
-        strm << margin << UString::Format(u"- Channel list id: 0x%X (%d), name: \"%s\"", {id, id, name});
+        const UString name(disp.duck().decodedWithByteLength(data, size));
+        disp << margin << UString::Format(u"- Channel list id: 0x%X (%d), name: \"%s\"", {id, id, name});
         if (size < 3) {
-            strm << std::endl;
+            disp << std::endl;
             break;
         }
-        strm << ", country code: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
+        disp << ", country code: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
         data += 3; size -= 3;
         if (size < 1) {
             break;
@@ -166,7 +164,7 @@ void ts::NorDigLogicalChannelDescriptorV2::DisplayDescriptor(TablesDisplay& disp
             const uint16_t service = GetUInt16(data);
             const uint8_t visible = (data[2] >> 7) & 0x01;
             const uint16_t channel = GetUInt16(data + 2) & 0x03FF;
-            strm << margin
+            disp << margin
                  << UString::Format(u"  Service Id: %5d (0x%04X), Visible: %1d, Channel number: %3d", {service, service, visible, channel})
                  << std::endl;
             data += 4; size -= 4; len -= 4;
@@ -176,7 +174,7 @@ void ts::NorDigLogicalChannelDescriptorV2::DisplayDescriptor(TablesDisplay& disp
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

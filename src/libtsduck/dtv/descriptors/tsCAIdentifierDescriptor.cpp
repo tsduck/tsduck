@@ -113,19 +113,17 @@ void ts::CAIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 2) {
         uint16_t cas_id = GetUInt16(data);
         data += 2; size -= 2;
-        strm << margin << "CA System Id: " << names::CASId(duck, cas_id, names::FIRST) << std::endl;
+        disp << margin << "CA System Id: " << names::CASId(disp.duck(), cas_id, names::FIRST) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

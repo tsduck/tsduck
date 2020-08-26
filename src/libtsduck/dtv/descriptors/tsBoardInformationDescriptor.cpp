@@ -104,16 +104,14 @@ void ts::BoardInformationDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::BoardInformationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::BoardInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
-    strm << margin << "Title: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
-    strm << margin << "Text: \"" << duck.decodedWithByteLength(data, size) << "\"" << std::endl;
+    disp << margin << "Title: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
+    disp << margin << "Text: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

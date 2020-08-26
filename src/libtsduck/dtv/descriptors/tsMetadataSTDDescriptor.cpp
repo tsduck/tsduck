@@ -106,10 +106,8 @@ void ts::MetadataSTDDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MetadataSTDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MetadataSTDDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 9) {
@@ -117,12 +115,12 @@ void ts::MetadataSTDDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
         const uint32_t buffer = GetUInt24(data + 3) & 0x3FFFFF;
         const uint32_t output = GetUInt24(data + 6) & 0x3FFFFF;
         data += 9; size -= 9;
-        strm << margin << UString::Format(u"Metadata input leak rate: %'d (%'d bits/s)", {input, 400 * input}) << std::endl
+        disp << margin << UString::Format(u"Metadata input leak rate: %'d (%'d bits/s)", {input, 400 * input}) << std::endl
              << margin << UString::Format(u"Metadata buffer size: %'d (%'d bytes)", {buffer, 1024 * buffer}) << std::endl
              << margin << UString::Format(u"Metadata output leak rate: %'d (%'d bits/s)", {output, 400 * output}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

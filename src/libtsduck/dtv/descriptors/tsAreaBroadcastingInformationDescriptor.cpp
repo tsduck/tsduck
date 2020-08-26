@@ -136,10 +136,8 @@ void ts::AreaBroadcastingInformationDescriptor::deserialize(DuckContext& duck, c
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AreaBroadcastingInformationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AreaBroadcastingInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
@@ -147,17 +145,17 @@ void ts::AreaBroadcastingInformationDescriptor::DisplayDescriptor(TablesDisplay&
         data++; size--;
 
         while (count > 0 && size >= 7) {
-            strm << margin << UString::Format(u"- Station id: 0x%X (%d)", {GetUInt24(data), GetUInt24(data)}) << std::endl
+            disp << margin << UString::Format(u"- Station id: 0x%X (%d)", {GetUInt24(data), GetUInt24(data)}) << std::endl
                  << margin << UString::Format(u"  Location code: 0x%X (%d)", {GetUInt16(data + 3), GetUInt16(data + 3)}) << std::endl
                  << margin << "  Broadcast signal format: " << NameFromSection(u"ISDBBroadcastSignalFormat", GetUInt8(data + 5), names::HEXA_FIRST) << std::endl;
             size_t len = GetUInt8(data + 6);
             data += 7; size -= 7;
             len = std::min(len, size);
-            display.displayPrivateData(u"Additional station info", data, len, margin + u"  ");
+            disp.displayPrivateData(u"Additional station info", data, len, margin + u"  ");
             data += len; size -= len; count--;
         }
     }
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

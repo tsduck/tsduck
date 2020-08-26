@@ -101,19 +101,17 @@ void ts::ApplicationUsageDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ApplicationUsageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ApplicationUsageDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         uint8_t type = data[0];
         data += 1; size -= 1;
-        strm << margin << UString::Format(u"Usage type: %d (0x%X)", {type, type}) << std::endl;
+        disp << margin << UString::Format(u"Usage type: %d (0x%X)", {type, type}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

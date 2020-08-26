@@ -134,14 +134,12 @@ void ts::C2BundleDeliverySystemDescriptor::deserialize(DuckContext& duck, const 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::C2BundleDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::C2BundleDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     // Important: With extension descriptors, the DisplayDescriptor() function is called
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 8) {
@@ -155,7 +153,7 @@ void ts::C2BundleDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp
         const bool master = (data[7] & 0x80) != 0;
         data += 8; size -= 8;
 
-        strm << margin << UString::Format(u"- PLP id: 0x%X (%d), data slice id: 0x%X (%d)", {plp, plp, slice, slice}) << std::endl
+        disp << margin << UString::Format(u"- PLP id: 0x%X (%d), data slice id: 0x%X (%d)", {plp, plp, slice, slice}) << std::endl
              << margin << UString::Format(u"  Frequency: %'d Hz (0x%X)", {freq, freq}) << std::endl
              << margin << UString::Format(u"  Tuning frequency type: %s", {NameFromSection(u"C2TuningType", type, names::FIRST)}) << std::endl
              << margin << UString::Format(u"  Symbol duration: %s", {NameFromSection(u"C2SymbolDuration", duration, names::FIRST)}) << std::endl
@@ -163,7 +161,7 @@ void ts::C2BundleDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp
              << margin << UString::Format(u"  Master channel: %s", {master}) << std::endl;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

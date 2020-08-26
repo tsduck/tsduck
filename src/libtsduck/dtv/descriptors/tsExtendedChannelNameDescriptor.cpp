@@ -95,11 +95,11 @@ void ts::ExtendedChannelNameDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ExtendedChannelNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ExtendedChannelNameDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     const UString margin(indent, ' ');
-    ATSCMultipleString::Display(display, u"Long channel name: ", margin, data, size);
-    display.displayExtraData(data, size, margin);
+    ATSCMultipleString::Display(disp, u"Long channel name: ", margin, data, size);
+    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -327,10 +327,8 @@ void ts::LinkageDescriptor::deserialize(DuckContext& duck, const Descriptor& des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 7) {
@@ -341,7 +339,7 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         uint16_t servid = GetUInt16(data + 4);
         uint8_t ltype = data[6];
         data += 7; size -= 7;
-        strm << margin << UString::Format(u"Transport stream id: %d (0x%X)", {tsid, tsid}) << std::endl
+        disp << margin << UString::Format(u"Transport stream id: %d (0x%X)", {tsid, tsid}) << std::endl
              << margin << UString::Format(u"Original network Id: %d (0x%X)", {onid, onid}) << std::endl
              << margin << UString::Format(u"Service id: %d (0x%X)", {servid, servid}) << std::endl
              << margin << UString::Format(u"Linkage type: %s", {names::LinkageType(ltype, names::FIRST)}) << std::endl;
@@ -349,29 +347,29 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         // Variable part
         switch (ltype) {
             case 0x08:
-                DisplayPrivateMobileHandover(display, data, size, indent, ltype);
+                DisplayPrivateMobileHandover(disp, data, size, indent, ltype);
                 break;
             case 0x09:
-                DisplayPrivateSSU(display, data, size, indent, ltype);
+                DisplayPrivateSSU(disp, data, size, indent, ltype);
                 break;
             case 0x0A:
-                DisplayPrivateTableSSU(display, data, size, indent, ltype);
+                DisplayPrivateTableSSU(disp, data, size, indent, ltype);
                 break;
             case 0x0B:
-                DisplayPrivateINT(display, data, size, indent, ltype);
+                DisplayPrivateINT(disp, data, size, indent, ltype);
                 break;
             case 0x0C:
-                DisplayPrivateDeferredINT(display, data, size, indent, ltype);
+                DisplayPrivateDeferredINT(disp, data, size, indent, ltype);
                 break;
             default:
                 break;
         }
 
         // Remaining private data
-        display.displayPrivateData(u"Private data", data, size, margin);
+        disp.displayPrivateData(u"Private data", data, size, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }
 
@@ -380,14 +378,12 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 // Display linkage private data for mobile hand-over
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::DisplayPrivateMobileHandover(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
+void ts::LinkageDescriptor::DisplayPrivateMobileHandover(TablesDisplay& disp, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
 {
     if (size < 1) {
         return;
     }
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     uint8_t hand_over = *data >> 4;
@@ -401,18 +397,18 @@ void ts::LinkageDescriptor::DisplayPrivateMobileHandover(TablesDisplay& display,
         case 0x03: name = u"associated service"; break;
         default:   name = u"unknown"; break;
     }
-    strm << margin << UString::Format(u"Hand-over type: 0x%X, %s, Origin: %s", {hand_over, name, origin ? u"SDT" : u"NIT"}) << std::endl;
+    disp << margin << UString::Format(u"Hand-over type: 0x%X, %s, Origin: %s", {hand_over, name, origin ? u"SDT" : u"NIT"}) << std::endl;
 
     if ((hand_over == 0x01 || hand_over == 0x02 || hand_over == 0x03) && size >= 2) {
         uint16_t nwid = GetUInt16(data);
         data += 2; size -= 2;
-        strm << margin << UString::Format(u"Network id: %d (0x%X)", {nwid, nwid}) << std::endl;
+        disp << margin << UString::Format(u"Network id: %d (0x%X)", {nwid, nwid}) << std::endl;
     }
 
     if (origin == 0x00 && size >= 2) {
         uint16_t org_servid = GetUInt16(data);
         data += 2; size -= 2;
-        strm << margin << UString::Format(u"Original service id: %d (0x%X)", {org_servid, org_servid}) << std::endl;
+        disp << margin << UString::Format(u"Original service id: %d (0x%X)", {org_servid, org_servid}) << std::endl;
     }
 }
 
@@ -421,14 +417,12 @@ void ts::LinkageDescriptor::DisplayPrivateMobileHandover(TablesDisplay& display,
 // Display linkage private data for System Software Update (ETSI TS 102 006)
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::DisplayPrivateSSU(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
+void ts::LinkageDescriptor::DisplayPrivateSSU(TablesDisplay& disp, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
 {
     if (size < 1) {
         return;
     }
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     uint8_t dlength = data[0];
@@ -446,8 +440,8 @@ void ts::LinkageDescriptor::DisplayPrivateSSU(TablesDisplay& display, const uint
             slength = dlength;
         }
         data += slength; size -= slength; dlength -= slength;
-        strm << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl;
-        display.displayPrivateData(u"Selector data", sdata, slength, margin);
+        disp << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl;
+        disp.displayPrivateData(u"Selector data", sdata, slength, margin);
     }
 }
 
@@ -457,23 +451,21 @@ void ts::LinkageDescriptor::DisplayPrivateSSU(TablesDisplay& display, const uint
 // BAT or NIT (ETSI TS 102 006)
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::DisplayPrivateTableSSU(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
+void ts::LinkageDescriptor::DisplayPrivateTableSSU(TablesDisplay& disp, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
 {
     if (size >= 1) {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
         const UString margin(indent, ' ');
 
         uint8_t ttype = data[0];
         data += 1; size -= 1;
 
-        strm << margin << "SSU table type: ";
+        disp << margin << "SSU table type: ";
         switch (ttype) {
-            case 0x01: strm << "NIT"; break;
-            case 0x02: strm << "BAT"; break;
-            default:   strm << UString::Hexa(ttype); break;
+            case 0x01: disp << "NIT"; break;
+            case 0x02: disp << "BAT"; break;
+            default:   disp << UString::Hexa(ttype); break;
         }
-        strm << std::endl;
+        disp << std::endl;
     }
 }
 
@@ -482,14 +474,12 @@ void ts::LinkageDescriptor::DisplayPrivateTableSSU(TablesDisplay& display, const
 // Display linkage private data for INT.
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
+void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& disp, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
 {
     if (size < 1) {
         return;
     }
 
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     uint8_t data_length = data[0];
@@ -507,7 +497,7 @@ void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& display, const uint
             loop_length = data_length;
         }
 
-        strm << margin << UString::Format(u"- Platform id: %s", {ts::names::PlatformId(plf_id, names::HEXA_FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"- Platform id: %s", {ts::names::PlatformId(plf_id, names::HEXA_FIRST)}) << std::endl;
 
         while (loop_length >= 4) {
             const UString lang(DeserializeLanguageCode(data));
@@ -517,10 +507,10 @@ void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& display, const uint
                 name_length = loop_length;
             }
 
-            const UString name(duck.decoded(data, name_length));
+            const UString name(disp.duck().decoded(data, name_length));
             data += name_length; size -= name_length; data_length -= name_length; loop_length -= name_length;
 
-            strm << margin << "  Language: " << lang << ", name: \"" << name << "\"" << std::endl;
+            disp << margin << "  Language: " << lang << ", name: \"" << name << "\"" << std::endl;
         }
     }
 }
@@ -530,29 +520,25 @@ void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& display, const uint
 // Display linkage private data for deferred INT.
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::DisplayPrivateDeferredINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
+void ts::LinkageDescriptor::DisplayPrivateDeferredINT(TablesDisplay& disp, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
 {
-    if (size >= 1) {
-        DuckContext& duck(display.duck());
-        std::ostream& strm(duck.out());
-        const UString margin(indent, ' ');
+    const UString margin(indent, ' ');
 
+    if (size >= 1) {
         uint8_t ttype = data[0];
         data += 1; size -= 1;
-
-        strm << margin << "INT linkage table type: ";
+        disp << margin << "INT linkage table type: ";
         switch (ttype) {
-            case 0x00: strm << "unspecified"; break;
-            case 0x01: strm << "NIT"; break;
-            case 0x02: strm << "BAT"; break;
-            default:   strm << UString::Hexa(ttype); break;
+            case 0x00: disp << "unspecified"; break;
+            case 0x01: disp << "NIT"; break;
+            case 0x02: disp << "BAT"; break;
+            default:   disp << UString::Hexa(ttype); break;
         }
-        strm << std::endl;
-
+        disp << std::endl;
         if (ttype == 0x02 && size >= 2) {
             const uint16_t bid = GetUInt16(data);
             data += 2; size -= 2;
-            strm << margin << UString::Format(u"Bouquet id: 0x%X (%d)", {bid, bid}) << std::endl;
+            disp << margin << UString::Format(u"Bouquet id: 0x%X (%d)", {bid, bid}) << std::endl;
         }
     }
 }

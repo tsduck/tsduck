@@ -105,19 +105,17 @@ void ts::DCCDepartingRequestDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DCCDepartingRequestDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DCCDepartingRequestDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 2) {
-        strm << margin << UString::Format(u"DCC departing request type: 0x%X (%d)", {data[0], data[0]}) << std::endl;
+        disp << margin << UString::Format(u"DCC departing request type: 0x%X (%d)", {data[0], data[0]}) << std::endl;
         const size_t len = data[1];
         data += 2; size -= 2;
-        ATSCMultipleString::Display(display, u"DCC departing request text: ", margin, data, size, len);
+        ATSCMultipleString::Display(disp, u"DCC departing request text: ", margin, data, size, len);
     }
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

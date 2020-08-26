@@ -133,18 +133,16 @@ bool ts::ECMRepetitionRateDescriptor::analyzeXML(DuckContext& duck, const xml::E
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ECMRepetitionRateDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ECMRepetitionRateDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 4) {
-        strm << margin << UString::Format(u"CA System Id: %s", { names::CASId(duck, GetUInt16(data), names::FIRST) }) << std::endl
+        disp << margin << UString::Format(u"CA System Id: %s", { names::CASId(disp.duck(), GetUInt16(data), names::FIRST) }) << std::endl
              << margin << UString::Format(u"ECM repetition rate: %d ms", { GetUInt16(data + 2) }) << std::endl;
-        display.displayPrivateData(u"Private data", data + 4, size - 4, margin);
+        disp.displayPrivateData(u"Private data", data + 4, size - 4, margin);
     }
     else {
-        display.displayExtraData(data, size, margin);
+        disp.displayExtraData(data, size, margin);
     }
 }

@@ -157,23 +157,21 @@ void ts::FrequencyListDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::FrequencyListDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::FrequencyListDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 1) {
         const uint8_t type = data[0] & 0x03;
         data++; size--;
-        strm << margin << UString::Format(u"Coding type: %d (%s)", {type, CodingTypeEnum.name(type)}) << std::endl;
+        disp << margin << UString::Format(u"Coding type: %d (%s)", {type, CodingTypeEnum.name(type)}) << std::endl;
         while (size >= 4) {
-            strm << margin << UString::Format(u"Centre frequency: %'d Hz", {DecodeFrequency(type, data)}) << std::endl;
+            disp << margin << UString::Format(u"Centre frequency: %'d Hz", {DecodeFrequency(type, data)}) << std::endl;
             data += 4; size -= 4;
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

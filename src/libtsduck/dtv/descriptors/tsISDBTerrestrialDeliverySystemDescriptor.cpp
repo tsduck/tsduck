@@ -144,10 +144,8 @@ namespace {
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ISDBTerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ISDBTerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 2) {
@@ -157,17 +155,17 @@ void ts::ISDBTerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDispla
         const uint8_t mode = uint8_t(v & 0x03);
         data += 2; size -= 2;
 
-        strm << margin << UString::Format(u"Area code: 0x%3X (%d)", {area, area}) << std::endl
+        disp << margin << UString::Format(u"Area code: 0x%3X (%d)", {area, area}) << std::endl
              << margin << UString::Format(u"Guard interval: %d (%s)", {guard, GuardIntervalNames.name(guard)}) << std::endl
              << margin << UString::Format(u"Transmission mode: %d (%s)", {mode, TransmissionModeNames.name(mode)}) << std::endl;
     }
 
     while (size >= 2) {
-        strm << margin << UString::Format(u"Frequency: %'d Hz", {BinToHz(GetUInt16(data))}) << std::endl;
+        disp << margin << UString::Format(u"Frequency: %'d Hz", {BinToHz(GetUInt16(data))}) << std::endl;
         data += 2; size -= 2;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

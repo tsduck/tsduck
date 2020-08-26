@@ -107,19 +107,17 @@ void ts::IPMACPlatformNameDescriptor::deserialize(DuckContext& duck, const Descr
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::IPMACPlatformNameDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 3) {
-        strm << margin << "Language: " << DeserializeLanguageCode(data) << std::endl
-             << margin << "Platform name: " << duck.decoded(data + 3, size - 3) << std::endl;
+        disp << margin << "Language: " << DeserializeLanguageCode(data) << std::endl;
+        disp << margin << "Platform name: " << disp.duck().decoded(data + 3, size - 3) << std::endl;
         size = 0;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 

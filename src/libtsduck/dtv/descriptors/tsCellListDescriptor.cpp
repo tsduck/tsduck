@@ -156,21 +156,19 @@ void ts::CellListDescriptor::deserialize(DuckContext& duck, const Descriptor& de
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CellListDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CellListDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     while (size >= 10) {
-        strm << margin << UString::Format(u"- Cell id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl;
-        DisplayCoordinates(display, data + 2, size - 2, margin + u"  ");
+        disp << margin << UString::Format(u"- Cell id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl;
+        DisplayCoordinates(disp, data + 2, size - 2, margin + u"  ");
         size_t len = data[9];
         data += 10; size -= 10;
 
         while (size >= len && len >= 8) {
-            strm << margin << UString::Format(u"  - Subcell id ext: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-            DisplayCoordinates(display, data + 1, size - 1, margin + u"    ");
+            disp << margin << UString::Format(u"  - Subcell id ext: 0x%X (%d)", {data[0], data[0]}) << std::endl;
+            DisplayCoordinates(disp, data + 1, size - 1, margin + u"    ");
             data += 8; size -= 8; len -= 8;
         }
         if (len > 0) {
@@ -178,7 +176,7 @@ void ts::CellListDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
         }
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -186,10 +184,8 @@ void ts::CellListDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
 // Static method to display coordinates of a cell or subcell.
 //----------------------------------------------------------------------------
 
-void ts::CellListDescriptor::DisplayCoordinates(TablesDisplay& display, const uint8_t* data, size_t size, const UString& margin)
+void ts::CellListDescriptor::DisplayCoordinates(TablesDisplay& disp, const uint8_t* data, size_t size, const UString& margin)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
 
     int32_t latitude = GetInt16(data);
     int32_t longitude = GetInt16(data + 2);
@@ -197,7 +193,7 @@ void ts::CellListDescriptor::DisplayCoordinates(TablesDisplay& display, const ui
     uint16_t lat_ext = uint16_t(ext >> 12) & 0x0FFF;
     uint16_t long_ext = uint16_t(ext) & 0x0FFF;
 
-    strm << margin << UString::Format(u"Raw latitude/longitude: %d/%d, extent: %d/%d", {latitude, longitude, lat_ext, long_ext}) << std::endl
+    disp << margin << UString::Format(u"Raw latitude/longitude: %d/%d, extent: %d/%d", {latitude, longitude, lat_ext, long_ext}) << std::endl
          << margin << "Actual latitude range: " << ToDegrees(latitude, true) << " to " << ToDegrees(latitude + lat_ext, true) << std::endl
          << margin << "Actual longitude range: " << ToDegrees(longitude, false) << " to " << ToDegrees(longitude + long_ext, false) << std::endl;
 }

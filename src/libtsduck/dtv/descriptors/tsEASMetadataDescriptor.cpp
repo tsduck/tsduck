@@ -108,20 +108,18 @@ void ts::EASMetadataDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::EASMetadataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::EASMetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    DuckContext& duck(display.duck());
-    std::ostream& strm(duck.out());
     const UString margin(indent, ' ');
 
     if (size >= 2) {
         const size_t length = std::min<size_t>(data[1], size - 2);
-        strm << margin << "Fragment number: " << int(data[0]) << std::endl
+        disp << margin << "Fragment number: " << int(data[0]) << std::endl
              << margin << "XML fragment: \"" << std::string(reinterpret_cast<const char*>(data + 2), length) << "\"" << std::endl;
         data += 2 + length; size -=  2 + length;
     }
 
-    display.displayExtraData(data, size, margin);
+    disp.displayExtraData(data, size, margin);
 }
 
 
