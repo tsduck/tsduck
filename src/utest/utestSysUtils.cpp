@@ -510,11 +510,30 @@ void SysUtilsTest::testFileTime()
     TSUNIT_ASSERT(_CreateFile(tmpName, 0));
     const ts::Time after(ts::Time::CurrentUTC());
 
-    // Some systems may not store the milliseconds in the file time.
+    // Some systems (Linux) do not store the milliseconds in the file time.
     // So we use "before" without milliseconds.
+
+    // Additionally, it has been noticed that on Linux virtual machines,
+    // when the "before" time is exactly a second (ms = 0), then the
+    // file time (no ms) is one second less than the "before time".
+    // This is a system artefact, not a test failure. As a precaution,
+    // if the ms part of "before" is less than 100 ms, we compare with
+    // 1 second less. This can be seen using that command:
+    //
+    // $ while ! (utest -d -t SysUtilsTest::testFileTime 2>&1 | tee /dev/stderr | grep -q 'before:.*000$'); do true; done
+    // ...
+    // SysUtilsTest: file: /tmp/tstmp-0051DB3AA2B00000.tmp
+    // SysUtilsTest:      before:      2020/08/27 09:23:26.000  <== Time::CurrentUTC() has 000 as millisecond
+    // SysUtilsTest:      before base: 2020/08/27 09:23:25.000
+    // SysUtilsTest:      file UTC:    2020/08/27 09:23:25.000  <== GetFileModificationTimeUTC() is one second less
+    // SysUtilsTest:      after:       2020/08/27 09:23:26.000
+    // SysUtilsTest:      file local:  2020/08/27 11:23:25.000
+
     ts::Time::Fields beforeFields(before);
+    const ts::MilliSecond adjustment = beforeFields.millisecond < 100 ? ts::MilliSecPerSec : 0;
     beforeFields.millisecond = 0;
-    const ts::Time beforeBase(beforeFields);
+    ts::Time beforeBase(beforeFields);
+    beforeBase -= adjustment;
 
     TSUNIT_ASSERT(ts::FileExists(tmpName));
     const ts::Time fileUtc(ts::GetFileModificationTimeUTC(tmpName));
@@ -522,11 +541,11 @@ void SysUtilsTest::testFileTime()
 
     debug()
         << "SysUtilsTest: file: " << tmpName << std::endl
-        << "SysUtilsTest:      before:     " << before << std::endl
-        << "SysUtilsTest:      before/ms:  " << beforeBase << std::endl
-        << "SysUtilsTest:      file UTC:   " << fileUtc << std::endl
-        << "SysUtilsTest:      after:      " << after << std::endl
-        << "SysUtilsTest:      file local: " << fileLocal << std::endl;
+        << "SysUtilsTest:      before:      " << before << std::endl
+        << "SysUtilsTest:      before base: " << beforeBase << std::endl
+        << "SysUtilsTest:      file UTC:    " << fileUtc << std::endl
+        << "SysUtilsTest:      after:       " << after << std::endl
+        << "SysUtilsTest:      file local:  " << fileLocal << std::endl;
 
     // Check that file modification occured between before and after.
     // Some systems may not store the milliseconds in the file time.
