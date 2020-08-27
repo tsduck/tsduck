@@ -30,6 +30,7 @@
 #include "tsPluginRepository.h"
 #include "tsApplicationSharedLibrary.h"
 #include "tsAlgorithm.h"
+#include "tsCerrReport.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -50,23 +51,10 @@ const ts::Enumeration ts::PluginRepository::ListProcessorEnum({
 
 ts::PluginRepository::PluginRepository() :
     _sharedLibraryAllowed(true),
-    _debug(!GetEnvironment(u"TSPLUGIN_DEBUG").empty()),
     _inputPlugins(),
     _processorPlugins(),
     _outputPlugins()
 {
-}
-
-
-//----------------------------------------------------------------------------
-// Log a debug message if environment variable TSPLUGIN_DEBUG is defined and not empty.
-//----------------------------------------------------------------------------
-
-void ts::PluginRepository::debug(const UString& fmt, const std::initializer_list<ArgMixIn>& args) const
-{
-    if (_debug) {
-        std::cerr << "* debug: " << UString::Format(fmt, args) << std::endl << std::flush;
-    }
 }
 
 
@@ -76,7 +64,7 @@ void ts::PluginRepository::debug(const UString& fmt, const std::initializer_list
 
 void ts::PluginRepository::registerInput(const UString& name, InputPluginFactory allocator)
 {
-    debug(u"registering input plugin %s, status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
+    CERR.debug(u"registering input plugin \"%s\", status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
     if (allocator != nullptr) {
         _inputPlugins[name] = allocator;
     }
@@ -84,7 +72,7 @@ void ts::PluginRepository::registerInput(const UString& name, InputPluginFactory
 
 void ts::PluginRepository::registerProcessor(const UString& name, ProcessorPluginFactory allocator)
 {
-    debug(u"registering processor plugin %s, status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
+    CERR.debug(u"registering processor plugin \"%s\", status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
     if (allocator != nullptr) {
         _processorPlugins[name] = allocator;
     }
@@ -92,7 +80,7 @@ void ts::PluginRepository::registerProcessor(const UString& name, ProcessorPlugi
 
 void ts::PluginRepository::registerOutput(const UString& name, OutputPluginFactory allocator)
 {
-    debug(u"registering output plugin %s, status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
+    CERR.debug(u"registering output plugin \"%s\", status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
     if (allocator != nullptr) {
         _outputPlugins[name] = allocator;
     }
@@ -207,7 +195,7 @@ void ts::PluginRepository::loadAllPlugins(Report& report)
     for (size_t i = 0; i < files.size(); ++i) {
         // Permanent load.
         SharedLibrary shlib(files[i], SharedLibraryFlags::PERMANENT, report);
-        debug(u"loaded plugin file %s, status: %s", {files[i], shlib.isLoaded()});
+        CERR.debug(u"loaded plugin file \"%s\", status: %s", {files[i], shlib.isLoaded()});
     }
 }
 

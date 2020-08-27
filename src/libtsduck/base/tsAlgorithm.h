@@ -113,6 +113,20 @@ namespace ts {
     bool AppendUnique(CONTAINER& container, const ELEMENT& e);
 
     //!
+    //! Remove duplicated elements in a container.
+    //!
+    //! When duplicates are found, this first occurence is kept, aothers are removed.
+    //!
+    //! The predefined function @c std::unique() removes duplicated elements when they
+    //! are consecutive only. This function removes all duplicates.
+    //!
+    //! @tparam CONTAINER A container class as defined by the C++ Standard Template Library (STL).
+    //! @param [in,out] container A container into which duplicates are removed.
+    //!
+    template <class CONTAINER>
+    void RemoveDuplicates(CONTAINER& container);
+
+    //!
     //! Get the size of the smallest object in a container of objects having a @c size() method.
     //!
     //! @tparam CONTAINER A container class as defined by the C++ Standard Template Library (STL).

@@ -29,6 +29,7 @@
 
 #include "tsDuckExtensionRepository.h"
 #include "tsApplicationSharedLibrary.h"
+#include "tsCerrReport.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -52,27 +53,21 @@ TS_POP_WARNING()
 ts::DuckExtensionRepository::DuckExtensionRepository() :
     _extensions()
 {
-    // Get all environment variables.
-    const bool debug = !GetEnvironment(u"TSLIBEXT_DEBUG").empty();
-    const bool none = !GetEnvironment(u"TSLIBEXT_NONE").empty();
-
-#define EXTDEBUG(expr) do {if(debug) {std::cerr << "* debug: " << expr << std::endl << std::flush;}} while (0)
-
     // Give up now when TSLIBEXT_NONE is defined.
-    if (none) {
-        EXTDEBUG("TSLIBEXT_NONE defined, no extension loaded");
+    if (!GetEnvironment(u"TSLIBEXT_NONE").empty()) {
+        CERR.debug(u"TSLIBEXT_NONE defined, no extension loaded");
         return;
     }
 
     // Get the list of extensions to ignore.
     UStringVector ignore;
     GetEnvironment(u"TSLIBEXT_IGNORE").split(ignore, u',', true, true);
-    EXTDEBUG(ignore.size() << " extension ignored");
+    CERR.debug(u"%d extensions ignored", {ignore.size()});
 
     // Get list of shared library files
     UStringVector files;
     ApplicationSharedLibrary::GetPluginList(files, u"tslibext_", TS_PLUGINS_PATH);
-    EXTDEBUG("found " << files.size() << " possible extensions");
+    CERR.debug(u"found %d possible extensions", {files.size()});
 
     // Load all plugins and register allocator functions (when not zero).
     for (size_t i = 0; i < files.size(); ++i) {
@@ -84,21 +79,21 @@ ts::DuckExtensionRepository::DuckExtensionRepository() :
         const UString name(BaseName(filename, TS_SHARED_LIB_SUFFIX).toRemovedPrefix(u"tslibext_", FileSystemCaseSensitivity));
         if (name.containSimilar(ignore)) {
             // This extension is listed in TSLIBEXT_IGNORE.
-            EXTDEBUG("ignoring extension" << filename);
+            CERR.debug(u"ignoring extension \"%s\"", {filename});
         }
         else {
             // This extension shall be loaded.
             // Use the "permanent" load flag to make sure the shared library remains active.
-            EXTDEBUG("loading extension " << filename);
+            CERR.debug(u"loading extension \"%s\"", {filename});
             ApplicationSharedLibrary shlib(filename, UString(), UString(), SharedLibraryFlags::PERMANENT);
             if (!shlib.isLoaded()) {
-                EXTDEBUG("failed to load extension " << filename << " : " << shlib.errorMessage());
+                CERR.debug(u"failed to load extension \"%s\": %s", {filename, shlib.errorMessage()});
             }
             else {
                 // Finding TSDuckExtensionId symbol in the shared library.
                 void* sym = shlib.getSymbol("TSDuckExtensionId");
                 if (sym == nullptr) {
-                    EXTDEBUG("no symbol TSDuckExtensionId found in " << filename);
+                    CERR.debug(u"no symbol TSDuckExtensionId found in \"%s\"", {filename});
                 }
                 else {
                     // The returned address is the address of a pointer to ts::DuckExtension.
@@ -107,16 +102,14 @@ ts::DuckExtensionRepository::DuckExtensionRepository() :
                     if (ext != nullptr) {
                         // Now the extension is fully identified.
                         _extensions.push_back(std::make_pair(ext, filename));
-                        EXTDEBUG("extension \"" << ext->name() << "\" loaded from " << filename);
+                        CERR.debug(u"extension \"%s\" loaded from \"%s\"", {ext->name(), filename});
                     }
                 }
             }
         }
     }
 
-    EXTDEBUG("loaded " << _extensions.size() << " extensions");
-
-#undef EXTDEBUG
+    CERR.debug(u"loaded %d extensions", {_extensions.size()});
 }
 
 
