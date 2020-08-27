@@ -236,16 +236,12 @@ namespace ts {
         typedef std::map<UString, OutputPluginFactory>    OutputMap;
 
         bool         _sharedLibraryAllowed;
-        bool         _debug;
         InputMap     _inputPlugins;
         ProcessorMap _processorPlugins;
         OutputMap    _outputPlugins;
 
         template<typename FACTORY>
         FACTORY getFactory(const UString& name, const UString& type, const std::map<UString,FACTORY>&, Report&);
-
-        // Log a debug message if environment variable TSPLUGIN_DEBUG is defined and not empty.
-        void debug(const UString& fmt, const std::initializer_list<ArgMixIn>& args) const;
 
         // List one plugin.
         static void ListOnePlugin(UString& out, const UString& name, Plugin* plugin, size_t name_width, int flags);

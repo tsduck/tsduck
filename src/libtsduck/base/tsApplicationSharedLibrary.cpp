@@ -26,12 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Application shared libraries
-//
-//----------------------------------------------------------------------------
 
 #include "tsApplicationSharedLibrary.h"
+#include "tsAlgorithm.h"
+#include "tsCerrReport.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -92,6 +90,17 @@ ts::ApplicationSharedLibrary::~ApplicationSharedLibrary()
 
 
 //----------------------------------------------------------------------------
+// The module name is derived from the file name
+//----------------------------------------------------------------------------
+
+ts::UString ts::ApplicationSharedLibrary::moduleName() const
+{
+    const UString name(PathPrefix(BaseName(fileName())));
+    return !_prefix.empty() && name.find(_prefix) == 0 ? name.substr(_prefix.size()) : name;
+}
+
+
+//----------------------------------------------------------------------------
 // Get the list of directories where to search plugins.
 //----------------------------------------------------------------------------
 
@@ -122,17 +131,9 @@ void ts::ApplicationSharedLibrary::GetSearchPath(UStringList& directories, const
 #if defined(TS_WINDOWS)
     GetEnvironmentPathAppend(directories, TS_COMMAND_PATH);
 #endif
-}
 
-
-//----------------------------------------------------------------------------
-// The module name is derived from the file name
-//----------------------------------------------------------------------------
-
-ts::UString ts::ApplicationSharedLibrary::moduleName() const
-{
-    const UString name(PathPrefix(BaseName(fileName())));
-    return !_prefix.empty() && name.find(_prefix) == 0 ? name.substr(_prefix.size()) : name;
+    // Make sure that the same directory is not present twice.
+    RemoveDuplicates(directories);
 }
 
 
@@ -150,18 +151,26 @@ void ts::ApplicationSharedLibrary::GetPluginList(UStringVector& files, const USt
     GetSearchPath(dirs, library_path);
 
     // Try in each directory.
-    for (UStringList::const_iterator it = dirs.begin(); it != dirs.end(); ++it) {
+    size_t index = 0;
+    CERR.log(2, u"Searching for plugins %s*%s", {prefix, TS_SHARED_LIB_SUFFIX});
+    for (auto it = dirs.begin(); it != dirs.end(); ++it) {
         // Get list of shared library files matching the requested pattern in this directory.
+        CERR.log(2, u"Searching in \"%s\"", {*it});
         ExpandWildcardAndAppend(files, *it + PathSeparator + prefix + u"*" TS_SHARED_LIB_SUFFIX);
+        // Debug: list newly found files.
+        while (index < files.size()) {
+            CERR.log(2, u"  \"%s\"", {files[index++]});
+        }
     }
 
     // Sort the list of plugins.
     std::sort(files.begin(), files.end());
 
-    // Remove duplicates in case the same directory is listed several times.
-    // Starting with Visual Studio 2019 16.4, std::unique has "nodiscard" attribute, which is useless.
-    TS_PUSH_WARNING()
-    TS_MSC_NOWARNING(4834) // discarding return value of function with 'nodiscard' attribute
-    std::unique(files.begin(), files.end());
-    TS_POP_WARNING()
+    // Debug section when TS_CERR_DEBUG_LEVEL environment variable is 2 or higher.
+    if (CERR.maxSeverity() >= 2) {
+        CERR.log(2, u"Results for plugins %s*%s:", {prefix, TS_SHARED_LIB_SUFFIX});
+        for (auto it = files.begin(); it != files.end(); ++it) {
+            CERR.log(2, u"  \"%s\"", {*it});
+        }
+    }
 }

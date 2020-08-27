@@ -129,6 +129,28 @@ bool ts::AppendUnique(CONTAINER& container, const ELEMENT& e)
 
 
 //----------------------------------------------------------------------------
+// Remove duplicated elements in a container.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+void ts::RemoveDuplicates(CONTAINER& container)
+{
+    for (auto it = container.begin(); it != container.end(); ++it) {
+        auto it2 = it;
+        ++it2;
+        while (it2 != container.end()) {
+            if (*it2 == *it) {
+                it2 = container.erase(it2);
+            }
+            else {
+                ++it2;
+            }
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Get the size of the smallest/largest object in a container.
 //----------------------------------------------------------------------------
 
