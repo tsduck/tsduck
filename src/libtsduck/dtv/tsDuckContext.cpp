@@ -283,51 +283,6 @@ bool ts::DuckContext::setOutput(const UString& fileName, bool override)
 
 
 //----------------------------------------------------------------------------
-// A method to display data if it can be interpreted as an ASCII string.
-//----------------------------------------------------------------------------
-
-std::ostream& ts::DuckContext::displayIfASCII(const void *data, size_t size, const UString& prefix, const UString& suffix)
-{
-    const std::string ascii(toASCII(data, size));
-    if (!ascii.empty()) {
-        (*_out) << prefix << ascii << suffix;
-    }
-    return *_out;
-}
-
-
-//----------------------------------------------------------------------------
-// A utility method to interpret data as an ASCII string.
-//----------------------------------------------------------------------------
-
-std::string ts::DuckContext::toASCII(const void *data, size_t size) const
-{
-    const char* str = reinterpret_cast<const char*>(data);
-    size_t strSize = 0;
-
-    for (size_t i = 0; i < size; ++i) {
-        if (str[i] >= 0x20 && str[i] <= 0x7E) {
-            // This is an ASCII character.
-            if (i == strSize) {
-                strSize++;
-            }
-            else {
-                // But come after trailing zero.
-                return std::string();
-            }
-        }
-        else if (str[i] != 0) {
-            // Not ASCII, not trailing zero, unusable string.
-            return std::string();
-        }
-    }
-
-    // Found an ASCII string.
-    return std::string(str, strSize);
-}
-
-
-//----------------------------------------------------------------------------
 // Define several classes of command line options in an Args.
 //----------------------------------------------------------------------------
 

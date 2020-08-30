@@ -76,19 +76,17 @@ ts::SpliceDTMFDescriptor::SpliceDTMFDescriptor(DuckContext& duck, const Descript
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceDTMFDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SpliceDTMFDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    const ByteBlock binDTMF(duck.encoded(DTMF));
-    if (_is_valid && binDTMF.size() <= DTMF_MAX_SIZE) {
-        ByteBlockPtr bbp(serializeStart());
-        bbp->appendUInt32(identifier);
-        bbp->appendUInt8(preroll);
-        bbp->append(uint8_t((binDTMF.size() << 5) | 0x1F));
-        bbp->append(binDTMF);
-        serializeEnd(desc, bbp);
+    if (DTMF.size() > DTMF_MAX_SIZE) {
+        buf.setUserError();
     }
     else {
-        desc.invalidate();
+        buf.putUInt32(identifier);
+        buf.putUInt8(preroll);
+        buf.putBits(DTMF.size(), 3);
+        buf.putBits(0xFF, 5);
+        buf.putUTF8(DTMF);
     }
 }
 
@@ -97,22 +95,13 @@ void ts::SpliceDTMFDescriptor::serialize(DuckContext& duck, Descriptor& desc) co
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceDTMFDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SpliceDTMFDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 6;
-
-    if (_is_valid) {
-        identifier = GetUInt32(data);
-        preroll = GetUInt8(data + 4);
-        const size_t len = (GetUInt8(data + 5) >> 5) & 0x07;
-        _is_valid = len + 6 == size;
-        if (_is_valid) {
-            duck.decode(DTMF, data + 6, len);
-        }
-    }
+    identifier = buf.getUInt32();
+    preroll = buf.getUInt8();
+    const size_t len = buf.getBits<size_t>(3);
+    buf.skipBits(5);
+    buf.getUTF8(DTMF, len);
 }
 
 
@@ -120,26 +109,17 @@ void ts::SpliceDTMFDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 6) {
-        disp << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
-        disp.duck().displayIfASCII(data, 4, u" (\"", u"\")");
-        disp << std::endl;
-        disp << margin << UString::Format(u"Pre-roll: %d x 1/10 second", {GetUInt8(data + 4)}) << std::endl;
-        size_t len = (GetUInt8(data + 5) >> 5) & 0x07;
-        data += 6; size -= 6;
-
-        if (len > size) {
-            len = size;
-        }
-        disp << margin << "DTMF: \"" << disp.duck().decoded(data, len) << "\"" << std::endl;
-        data += len; size -= len;
+    if (buf.remainingReadBytes() >= 6) {
+        // Sometimes, the identifier is made of ASCII characters. Try to display them.
+        disp.displayIntAndASCII(u"Identifier: 0x%08X", buf, 4, margin);
+        disp << margin << UString::Format(u"Pre-roll: %d x 1/10 second", {buf.getUInt8()}) << std::endl;
+        const size_t len = buf.getBits<size_t>(3);
+        buf.skipBits(5);
+        disp << margin << "DTMF: \"" << buf.getUTF8(len) << "\"" << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

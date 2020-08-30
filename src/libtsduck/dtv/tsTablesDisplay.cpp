@@ -174,6 +174,49 @@ void ts::TablesDisplay::displayPrivateData(const UString& title, PSIBuffer& buf,
 
 
 //----------------------------------------------------------------------------
+// A utility method to display and integer and optional ASCII interpretation.
+//----------------------------------------------------------------------------
+
+void ts::TablesDisplay::displayIntAndASCII(const UString& format, PSIBuffer& buf, size_t size, const UString& margin)
+{
+    // Filter input errors.
+    size = std::min(size, buf.remainingReadBytes());
+    if (buf.error()) {
+        return;
+    }
+
+    // Try to interpret the data as ASCII.
+    std::string ascii;
+    const uint8_t* const data = buf.currentReadAddress();
+    for (size_t i = 0; i < size; ++i) {
+        if (data[i] >= 0x20 && data[i] <= 0x7E) {
+            // This is an ASCII character.
+            if (i == ascii.size()) {
+                ascii.push_back(char(data[i]));
+            }
+            else {
+                // But come after trailing zero.
+                ascii.clear();
+                break;
+            }
+        }
+        else if (data[i] != 0) {
+            // Not ASCII, not trailing zero, unusable string.
+            ascii.clear();
+            break;
+        }
+    }
+
+    // Now display the data.
+    _duck.out() << margin << UString::Format(format, {buf.getBits<uint64_t>(8 * size)});
+    if (!ascii.empty()) {
+        _duck.out() << " (\"" << ascii << "\")";
+    }
+    _duck.out() << std::endl;
+}
+
+
+//----------------------------------------------------------------------------
 // Display a table on the output stream.
 //----------------------------------------------------------------------------
 

@@ -55,11 +55,6 @@ ts::ContentDescriptor::ContentDescriptor() :
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 void ts::ContentDescriptor::clearContent()
 {
     entries.clear();
@@ -77,14 +72,14 @@ ts::ContentDescriptor::ContentDescriptor(DuckContext& duck, const Descriptor& de
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ContentDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ContentDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt8(uint8_t(it->content_nibble_level_1 << 4) | (it->content_nibble_level_2 & 0x0F));
-        bbp->appendUInt8(uint8_t(it->user_nibble_1 << 4) | (it->user_nibble_2 & 0x0F));
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        buf.putBits(it->content_nibble_level_1, 4);
+        buf.putBits(it->content_nibble_level_2, 4);
+        buf.putBits(it->user_nibble_1, 4);
+        buf.putBits(it->user_nibble_2, 4);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -92,18 +87,10 @@ void ts::ContentDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ContentDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ContentDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 2 == 0;
-    entries.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        while (size >= 2) {
-            entries.push_back (Entry (GetUInt16 (data)));
-            data += 2; size -= 2;
-        }
+    while (!buf.error() && !buf.endOfRead()) {
+        entries.push_back(Entry(buf.getUInt16()));
     }
 }
 
@@ -112,18 +99,13 @@ void ts::ContentDescriptor::deserialize(DuckContext& duck, const Descriptor& des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 2) {
-        uint8_t content = data[0];
-        uint8_t user = data[1];
-        data += 2; size -= 2;
-        disp << margin << UString::Format(u"Content: %s / User: 0x%X", {names::Content(content, names::FIRST), user}) << std::endl;
+    while (!buf.error() && buf.remainingReadBytes() >= 2) {
+        disp << margin << "Content: " << names::Content(buf.getUInt8(), names::FIRST);
+        disp << UString::Format(u" / User: 0x%X", {buf.getUInt8()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 
@@ -133,7 +115,7 @@ void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, cons
 
 void ts::ContentDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"content");
         e->setIntAttribute(u"content_nibble_level_1", it->content_nibble_level_1);
         e->setIntAttribute(u"content_nibble_level_2", it->content_nibble_level_2);

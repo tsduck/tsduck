@@ -70,35 +70,19 @@ ts::CopyrightDescriptor::CopyrightDescriptor(DuckContext& duck, const Descriptor
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Serialization / deserialization.
 //----------------------------------------------------------------------------
 
-void ts::CopyrightDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CopyrightDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt32(copyright_identifier);
-    bbp->append(additional_copyright_info);
-    serializeEnd(desc, bbp);
+    buf.putUInt32(copyright_identifier);
+    buf.putBytes(additional_copyright_info);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::CopyrightDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::CopyrightDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    additional_copyright_info.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4;
-
-    if (_is_valid) {
-        copyright_identifier = GetUInt32(data);
-        additional_copyright_info.copy(data + 4, size - 4);
-    }
+    copyright_identifier = buf.getUInt32();
+    buf.getByteBlock(additional_copyright_info, buf.remainingReadBytes());
 }
 
 
@@ -106,24 +90,19 @@ void ts::CopyrightDescriptor::deserialize(DuckContext& duck, const Descriptor& d
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CopyrightDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CopyrightDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
+    if (buf.remainingReadBytes() >= 4) {
         // Sometimes, the copyright identifier is made of ASCII characters. Try to display them.
-        disp << margin << UString::Format(u"Copyright identifier: 0x%X", {GetUInt32(data)});
-        disp.duck().displayIfASCII(data, 4, u" (\"", u"\")") << std::endl;
-        disp.displayPrivateData(u"Additional copyright info", data + 4, size - 4, margin);
+        disp.displayIntAndASCII(u"Copyright identifier: 0x%08X", buf, 4, margin);
+        disp.displayPrivateData(u"Additional copyright info", buf, NPOS, margin);
     }
-    else {
-        disp.displayExtraData(data, size, margin);
-    }
+    disp.displayExtraData(buf, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML serialization / deserialization.
 //----------------------------------------------------------------------------
 
 void ts::CopyrightDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -131,11 +110,6 @@ void ts::CopyrightDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
     root->setIntAttribute(u"copyright_identifier", copyright_identifier, true);
     root->addHexaTextChild(u"additional_copyright_info", additional_copyright_info, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::CopyrightDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

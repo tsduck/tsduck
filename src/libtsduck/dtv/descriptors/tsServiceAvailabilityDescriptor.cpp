@@ -73,14 +73,13 @@ ts::ServiceAvailabilityDescriptor::ServiceAvailabilityDescriptor(DuckContext& du
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceAvailabilityDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ServiceAvailabilityDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(availability ? 0xFF : 0x7F);
+    buf.putBit(availability);
+    buf.putBits(0xFF, 7);
     for (auto it = cell_ids.begin(); it != cell_ids.end(); ++it) {
-        bbp->appendUInt16(*it);
+        buf.putUInt16(*it);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -88,20 +87,12 @@ void ts::ServiceAvailabilityDescriptor::serialize(DuckContext& duck, Descriptor&
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceAvailabilityDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ServiceAvailabilityDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 2 == 1;
-    cell_ids.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        availability = (data[0] & 0x80) != 0;
-        data++; size--;
-        while (size >= 2) {
-            cell_ids.push_back(GetUInt16(data));
-            data += 2; size -= 2;
-        }
+    availability = buf.getBit() != 0;
+    buf.skipBits(7);
+    while (!buf.error() && !buf.endOfRead()) {
+        cell_ids.push_back(buf.getUInt16());
     }
 }
 
@@ -110,21 +101,16 @@ void ts::ServiceAvailabilityDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ServiceAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ServiceAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        disp << margin << "Availability: " << UString::TrueFalse((data[0] & 0x80) != 0) << std::endl;
-        data++; size--;
-        while (size >= 2) {
-            const uint16_t id = GetUInt16(data);
-            data += 2; size -= 2;
-            disp << margin << UString::Format(u"Cell id: 0x%X (%d)", {id, id}) << std::endl;
+    if (buf.remainingReadBytes() >= 1) {
+        disp << margin << "Availability: " << UString::TrueFalse(buf.getBit() != 0) << std::endl;
+        buf.skipBits(7);
+        while (!buf.error() && buf.remainingReadBytes() >= 2) {
+            disp << margin << UString::Format(u"Cell id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

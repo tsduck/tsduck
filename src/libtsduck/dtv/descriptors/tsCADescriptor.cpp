@@ -58,11 +58,6 @@ ts::CADescriptor::CADescriptor(uint16_t cas_id_, PID ca_pid_) :
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 void ts::CADescriptor::clearContent()
 {
     cas_id = 0;
@@ -84,13 +79,11 @@ ts::CADescriptor::CADescriptor(DuckContext& duck, const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CADescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CADescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(cas_id);
-    bbp->appendUInt16(0xE000 | (ca_pid & 0x1FFF));
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(cas_id);
+    buf.putPID(ca_pid);
+    buf.putBytes(private_data);
 }
 
 
@@ -98,17 +91,11 @@ void ts::CADescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CADescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::CADescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 4;
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        cas_id = GetUInt16 (data);
-        ca_pid = GetUInt16 (data + 2) & 0x1FFF;
-        private_data.copy (data + 4, size - 4);
-    }
+    cas_id = buf.getUInt16();
+    ca_pid = buf.getPID();
+    buf.getByteBlock(private_data, buf.remainingReadBytes());
 }
 
 
