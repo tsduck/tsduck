@@ -33,6 +33,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -78,6 +79,15 @@ ts::C2BundleDeliverySystemDescriptor::Entry::Entry() :
 {
 }
 
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::C2BundleDeliverySystemDescriptor::extendedTag() const
+{
+    return MY_EDID;
+}
 
 
 //----------------------------------------------------------------------------

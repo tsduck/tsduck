@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -76,20 +77,18 @@ void ts::AACDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AACDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::AACDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    bbp->appendUInt8(profile_and_level);
+    buf.putUInt8(profile_and_level);
     if (SAOC_DE || AAC_type.set() || !additional_info.empty()) {
-        bbp->appendUInt8((AAC_type.set() ? 0x80 : 0x00) | (SAOC_DE ? 0x40 : 0x00));
+        buf.putBit(AAC_type.set());
+        buf.putBit(SAOC_DE);
+        buf.putBits(0, 6);
         if (AAC_type.set()) {
-            bbp->appendUInt8(AAC_type.value());
+            buf.putUInt8(AAC_type.value());
         }
-        bbp->append(additional_info);
+        buf.putBytes(additional_info);
     }
-
-    serializeEnd(desc, bbp);
 }
 
 
@@ -97,32 +96,17 @@ void ts::AACDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AACDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AACDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        profile_and_level = data[0];
-        SAOC_DE = false;
-        AAC_type.clear();
-        additional_info.clear();
-        data++; size--;
-
-        if (size > 0) {
-            SAOC_DE = (data[0] & 0x40) != 0;
-            if ((data[0] & 0x40) != 0) {
-                _is_valid = size > 1;
-                if (_is_valid) {
-                    AAC_type = data[1];
-                    data++; size--;
-                }
-            }
-            data++; size--;
-            additional_info.copy(data, size);
+    profile_and_level = buf.getUInt8();
+    if (!buf.endOfRead()) {
+        bool has_AAC_type = buf.getBit() != 0;
+        SAOC_DE = buf.getBit();
+        buf.skipBits(6);
+        if (has_AAC_type) {
+            AAC_type = buf.getUInt8();
         }
+        buf.getByteBlock(additional_info, buf.remainingReadBytes());
     }
 }
 
@@ -131,28 +115,21 @@ void ts::AACDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        uint8_t prof_lev = data[0];
-        data++; size--;
-        disp << margin << UString::Format(u"Profile and level: 0x%X", {prof_lev}) << std::endl;
-        if (size >= 1) {
-            uint8_t flags = data[0];
-            data++; size--;
-            if ((flags & 0x80) && size >= 1) { // AAC_type
-                uint8_t type = data[0];
-                data++; size--;
-                disp << margin << "AAC type: " << NameFromSection(u"ComponentType", 0x6F00 | type, names::HEXA_FIRST, 8) << std::endl;
-            }
-            disp.displayPrivateData(u"Additional information", data, size, margin);
-            data += size; size = 0;
-        }
+    if (!buf.endOfRead()) {
+        disp << margin << UString::Format(u"Profile and level: 0x%X", {buf.getUInt8()}) << std::endl;
     }
 
-    disp.displayExtraData(data, size, margin);
+    if (!buf.endOfRead()) {
+        bool has_AAC_type = buf.getBit() != 0;
+        disp << margin << UString::Format(u"SOAC DE flag: %s", {buf.getBit() != 0}) << std::endl;
+        buf.skipBits(6);
+        if (has_AAC_type) {
+            disp << margin << "AAC type: " << NameFromSection(u"ComponentType", 0x6F00 | buf.getUInt8(), names::HEXA_FIRST, 8) << std::endl;
+        }
+        disp.displayPrivateData(u"Additional information", buf, NPOS, margin);
+    }
 }
 
 

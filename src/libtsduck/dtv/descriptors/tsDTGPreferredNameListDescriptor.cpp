@@ -29,6 +29,7 @@
 
 #include "tsDTGPreferredNameListDescriptor.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"dtg_preferred_name_list_descriptor"

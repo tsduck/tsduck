@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -70,6 +71,16 @@ ts::URILinkageDescriptor::URILinkageDescriptor(DuckContext& duck, const Descript
     URILinkageDescriptor()
 {
     deserialize(duck, desc);
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::URILinkageDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

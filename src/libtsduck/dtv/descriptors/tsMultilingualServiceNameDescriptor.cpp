@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -76,20 +77,13 @@ ts::MultilingualServiceNameDescriptor::Entry::Entry(const UString& lang_, const 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MultilingualServiceNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::MultilingualServiceNameDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->language)) {
-            desc.invalidate();
-            return;
-        }
-        bbp->append(duck.encodedWithByteLength(it->service_provider_name));
-        bbp->append(duck.encodedWithByteLength(it->service_name));
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        buf.putLanguageCode(it->language);
+        buf.putStringWithByteLength(it->service_provider_name);
+        buf.putStringWithByteLength(it->service_name);
     }
-
-    serializeEnd(desc, bbp);
 }
 
 
@@ -97,29 +91,15 @@ void ts::MultilingualServiceNameDescriptor::serialize(DuckContext& duck, Descrip
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::MultilingualServiceNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::MultilingualServiceNameDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag();
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    entries.clear();
-
-    while (_is_valid && size >= 4) {
-        const UString lang(DeserializeLanguageCode(data));
-        const size_t prov_len = data[3];
-        data += 4; size -= 4;
-        _is_valid = prov_len + 1 <= size;
-        if (_is_valid) {
-            const size_t name_len = data[prov_len];
-            _is_valid = prov_len + 1 + name_len <= size;
-            if (_is_valid) {
-                entries.push_back(Entry(lang, duck.decoded(data, prov_len), duck.decoded(data + prov_len + 1, name_len)));
-                data += prov_len + 1 + name_len;
-                size -= prov_len + 1 + name_len;
-            }
-        }
+    while (!buf.error() && !buf.endOfRead()) {
+        Entry e;
+        e.language = buf.getLanguageCode();
+        buf.getStringWithByteLength(e.service_provider_name);
+        buf.getStringWithByteLength(e.service_name);
+        entries.push_back(e);
     }
-    _is_valid = _is_valid && size == 0;
 }
 
 
@@ -127,25 +107,14 @@ void ts::MultilingualServiceNameDescriptor::deserialize(DuckContext& duck, const
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MultilingualServiceNameDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MultilingualServiceNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 4) {
-        const size_t prov_len = std::min<size_t>(data[3], size - 4);
-        disp << margin
-             << "Language: " << DeserializeLanguageCode(data)
-             << ", provider: \"" << disp.duck().decoded(data + 4, prov_len) << "\"";
-        data += 4 + prov_len; size -= 4 + prov_len;
-        if (size >= 1) {
-            const size_t name_len = std::min<size_t>(data[0], size - 1);
-            disp << ", service: \"" << disp.duck().decoded(data + 1, name_len) << "\"";
-            data += 1 + name_len; size -= 1 + name_len;
-        }
-        disp << std::endl;
+    while (!buf.error() && buf.remainingReadBytes() >= 4) {
+        disp << margin << "Language: " << buf.getLanguageCode();
+        disp << ", provider: \"" << buf.getStringWithByteLength() << "\"";
+        disp << ", service: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

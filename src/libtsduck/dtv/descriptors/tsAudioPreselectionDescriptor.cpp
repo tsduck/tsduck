@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -78,6 +79,16 @@ ts::AudioPreselectionDescriptor::PreSelection::PreSelection() :
     aux_component_tags(),
     future_extension()
 {
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::AudioPreselectionDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

@@ -51,6 +51,18 @@ ts::AbstractDescriptor::~AbstractDescriptor()
 
 
 //----------------------------------------------------------------------------
+// Get the extended descriptor tag (first byte in payload).
+//----------------------------------------------------------------------------
+
+ts::DID ts::AbstractDescriptor::extendedTag() const
+{
+    // By default, there no extended descriptor tag.
+    // MPEG-defined and DVB-defined extension descriptors must override this virtual method.
+    return EDID_NULL;
+}
+
+
+//----------------------------------------------------------------------------
 // Default implementations for serialization handlers.
 //----------------------------------------------------------------------------
 
@@ -84,6 +96,12 @@ void ts::AbstractDescriptor::serialize(DuckContext& duck, Descriptor& bin) const
 
         // Map a serialization buffer over the payload part.
         PSIBuffer buf(duck, bbp->data() + 2, bbp->size() - 2, false);
+
+        // If this is an extension descriptor, add extended tag.
+        const DID etag = extendedTag();
+        if (etag != EDID_NULL) {
+            buf.putUInt8(etag);
+        }
 
         // Let the subclass serialize the payload in the buffer.
         serializePayload(buf);
@@ -122,6 +140,13 @@ void ts::AbstractDescriptor::deserialize(DuckContext& duck, const Descriptor& bi
     else {
         // Map a deserialization read-only buffer over the payload part.
         PSIBuffer buf(duck, bin.payload(), bin.payloadSize());
+
+        // If this is an extension descriptor, check that the expected extended tag is present in the payload.
+        const DID etag = extendedTag();
+        if (etag != EDID_NULL && (buf.getUInt8() != etag || buf.error())) {
+            invalidate();
+            return;
+        }
 
         // Let the subclass deserialize the payload in the buffer.
         deserializePayload(buf);

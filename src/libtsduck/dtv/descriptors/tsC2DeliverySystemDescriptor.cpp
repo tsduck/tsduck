@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -73,6 +74,16 @@ ts::C2DeliverySystemDescriptor::C2DeliverySystemDescriptor(DuckContext& duck, co
     C2DeliverySystemDescriptor()
 {
     deserialize(duck, desc);
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::C2DeliverySystemDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

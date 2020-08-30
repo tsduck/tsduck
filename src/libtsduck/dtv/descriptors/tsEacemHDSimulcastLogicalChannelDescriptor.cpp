@@ -29,6 +29,7 @@
 
 #include "tsEacemHDSimulcastLogicalChannelDescriptor.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"eacem_HD_simulcast_logical_channel_descriptor"

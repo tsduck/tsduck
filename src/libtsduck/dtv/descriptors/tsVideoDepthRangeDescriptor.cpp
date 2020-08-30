@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsIntegerUtils.h"
@@ -73,6 +74,16 @@ ts::VideoDepthRangeDescriptor::Range::Range() :
 void ts::VideoDepthRangeDescriptor::clearContent()
 {
     ranges.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::VideoDepthRangeDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

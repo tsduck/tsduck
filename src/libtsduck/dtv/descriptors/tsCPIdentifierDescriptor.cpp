@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -64,6 +65,16 @@ ts::CPIdentifierDescriptor::CPIdentifierDescriptor(DuckContext& duck, const Desc
     CPIdentifierDescriptor()
 {
     deserialize(duck, desc);
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::CPIdentifierDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

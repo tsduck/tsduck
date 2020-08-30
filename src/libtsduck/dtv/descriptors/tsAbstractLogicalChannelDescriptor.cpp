@@ -30,6 +30,7 @@
 #include "tsAbstractLogicalChannelDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -78,14 +79,14 @@ ts::AbstractLogicalChannelDescriptor::Entry::Entry(uint16_t i, bool v, uint16_t 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractLogicalChannelDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::AbstractLogicalChannelDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt16(it->service_id);
-        bbp->appendUInt16((it->visible ? 0xFC00 : 0x7C00) | (it->lcn & 0x03FF));
+        buf.putUInt16(it->service_id);
+        buf.putBit(it->visible);
+        buf.putBits(0xFF, 5);
+        buf.putBits(it->lcn, 10);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -93,19 +94,15 @@ void ts::AbstractLogicalChannelDescriptor::serialize(DuckContext& duck, Descript
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractLogicalChannelDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AbstractLogicalChannelDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 4 == 0;
-    entries.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        while (size >= 4) {
-            entries.push_back(Entry(GetUInt16(data), (data[2] & 0x80) != 0, GetUInt16(data + 2) & 0x03FF));
-            data += 4;
-            size -= 4;
-        }
+    while (!buf.error() && !buf.endOfRead()) {
+        Entry e;
+        e.service_id = buf.getUInt16();
+        e.visible = buf.getBit() != 0;
+        buf.skipBits(5);
+        e.lcn = buf.getBits<uint16_t>(10);
+        entries.push_back(e);
     }
 }
 
@@ -114,21 +111,15 @@ void ts::AbstractLogicalChannelDescriptor::deserialize(DuckContext& duck, const 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AbstractLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AbstractLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 4) {
-        const uint16_t service = GetUInt16(data);
-        const uint8_t visible = (data[2] >> 7) & 0x01;
-        const uint16_t channel = GetUInt16(data + 2) & 0x03FF;
-        data += 4; size -= 4;
-        disp << margin
-             << UString::Format(u"Service Id: %5d (0x%04X), Visible: %1d, Channel number: %3d", {service, service, visible, channel})
-             << std::endl;
+    while (!buf.error() && buf.remainingReadBytes() >= 4) {
+        disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", {buf.getUInt16()});
+        disp << UString::Format(u", Visible: %1d", {buf.getBit()});
+        buf.skipBits(5);
+        disp << UString::Format(u", Channel number: %3d", {buf.getBits<int>(10)}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

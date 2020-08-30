@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -71,38 +72,30 @@ ts::MultilingualComponentDescriptor::MultilingualComponentDescriptor(DuckContext
 
 
 //----------------------------------------------------------------------------
-// Serialize / deserialize the prolog (overidden methods).
+// Serialize / deserialize / display.
 //----------------------------------------------------------------------------
 
-void ts::MultilingualComponentDescriptor::serializeProlog(DuckContext& duck, const ByteBlockPtr& bbp) const
+// Unlike other multilingual descriptors, there is a one-byte leading field in
+// a multilingual_component_descriptor. So, we override all three methods,
+// process the first byte and then delegate the rest to the super-class.
+
+void ts::MultilingualComponentDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    bbp->appendUInt8(component_tag);
+    buf.putUInt8(component_tag);
+    AbstractMultilingualDescriptor::serializePayload(buf);
 }
 
-void ts::MultilingualComponentDescriptor::deserializeProlog(DuckContext& duck, const uint8_t*& data, size_t& size)
+void ts::MultilingualComponentDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = _is_valid && size >= 1;
-    if (_is_valid) {
-        component_tag = data[0];
-        data++;
-        size--;
-    }
+    component_tag = buf.getUInt8();
+    AbstractMultilingualDescriptor::deserializePayload(buf);
 }
 
-
-//----------------------------------------------------------------------------
-// Static method to display a descriptor.
-//----------------------------------------------------------------------------
-
-void ts::MultilingualComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MultilingualComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        // Display prolog here
-        disp << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-        // Delegate the rest to the superclass.
-        AbstractMultilingualDescriptor::DisplayDescriptor(disp, did, data + 1, size - 1, indent, tid, pds);
+    if (!buf.endOfRead()) {
+        disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        AbstractMultilingualDescriptor::DisplayDescriptor(disp, buf, margin, did, tid, pds);
     }
 }
 

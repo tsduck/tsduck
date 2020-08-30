@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -97,17 +98,12 @@ ts::DTSHDDescriptor::AssetInfo::AssetInfo() :
 
 
 //----------------------------------------------------------------------------
-// Reset the content of this descriptor object.
+// This is an extension descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTSHDDescriptor::reset()
+ts::DID ts::DTSHDDescriptor::extendedTag() const
 {
-    substream_core.clear();
-    substream_0.clear();
-    substream_1.clear();
-    substream_2.clear();
-    substream_3.clear();
-    additional_info.clear();
+    return MY_EDID;
 }
 
 
@@ -187,7 +183,7 @@ void ts::DTSHDDescriptor::SerializeSubstreamInfo(const Variable<SubstreamInfo>& 
 
 void ts::DTSHDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    reset();
+    clear();
 
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();

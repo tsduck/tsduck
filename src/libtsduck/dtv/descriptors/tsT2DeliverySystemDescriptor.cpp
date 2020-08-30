@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -94,6 +95,16 @@ ts::T2DeliverySystemDescriptor::Subcell::Subcell() :
     cell_id_extension(0),
     transposer_frequency(0)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::T2DeliverySystemDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

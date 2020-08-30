@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -74,6 +75,16 @@ void ts::SupplementaryAudioDescriptor::clearContent()
     editorial_classification = 0;
     language_code.clear();
     private_data.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::SupplementaryAudioDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

@@ -117,7 +117,7 @@ namespace ts {
         // Inherited methods
         virtual void clearContent() override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
-        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
+        virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
         friend class S2XSatelliteDeliverySystemDescriptor;

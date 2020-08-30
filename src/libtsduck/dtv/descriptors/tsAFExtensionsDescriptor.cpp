@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -65,54 +66,40 @@ ts::AFExtensionsDescriptor::AFExtensionsDescriptor(DuckContext& duck, const Desc
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// This is an extension descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AFExtensionsDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+ts::DID ts::AFExtensionsDescriptor::extendedTag() const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    serializeEnd(desc, bbp);
+    return MY_EDID;
 }
 
 
 //----------------------------------------------------------------------------
-// Deserialization
+// Serialization / deserialization / display (empty extended payload).
 //----------------------------------------------------------------------------
 
-void ts::AFExtensionsDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AFExtensionsDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 1 && desc.payload()[0] == MY_EDID;
+}
+
+void ts::AFExtensionsDescriptor::deserializePayload(PSIBuffer& buf)
+{
+}
+
+void ts::AFExtensionsDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+{
+    disp.displayExtraData(buf, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// Static method to display a descriptor.
-//----------------------------------------------------------------------------
-
-void ts::AFExtensionsDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
-{
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-    disp.displayExtraData(data, size, margin);
-}
-
-
-//----------------------------------------------------------------------------
-// XML serialization
+// XML serialization / deserialization
 //----------------------------------------------------------------------------
 
 void ts::AFExtensionsDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::AFExtensionsDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsBCD.h"
@@ -85,6 +86,16 @@ ts::NetworkChangeNotifyDescriptor::Change::Change() :
     invariant_ts_tsid(),
     invariant_ts_onid()
 {
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::NetworkChangeNotifyDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -59,11 +60,6 @@ ts::DVBAC4Descriptor::DVBAC4Descriptor() :
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 void ts::DVBAC4Descriptor::clearContent()
 {
     ac4_dialog_enhancement_enabled.clear();
@@ -76,6 +72,16 @@ ts::DVBAC4Descriptor::DVBAC4Descriptor(DuckContext& duck, const Descriptor& desc
     DVBAC4Descriptor()
 {
     deserialize(duck, desc);
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::DVBAC4Descriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 
