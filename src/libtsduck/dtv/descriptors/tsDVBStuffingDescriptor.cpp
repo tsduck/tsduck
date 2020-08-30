@@ -69,31 +69,17 @@ void ts::DVBStuffingDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Serialization / deserialization.
 //----------------------------------------------------------------------------
 
-void ts::DVBStuffingDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DVBStuffingDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(stuffing);
-    serializeEnd(desc, bbp);
+    buf.putBytes(stuffing);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::DVBStuffingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DVBStuffingDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag();
-
-    if (_is_valid) {
-        stuffing.copy(desc.payload(), desc.payloadSize());
-    }
-    else {
-        stuffing.clear();
-    }
+    buf.getByteBlock(stuffing, buf.remainingReadBytes());
 }
 
 
@@ -101,26 +87,20 @@ void ts::DVBStuffingDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBStuffingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBStuffingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-    disp.displayPrivateData(u"Stuffing data", data, size, margin);
+    disp.displayPrivateData(u"Stuffing data", buf, NPOS, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML serialization / deserialization.
 //----------------------------------------------------------------------------
 
 void ts::DVBStuffingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->addHexaText(stuffing, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::DVBStuffingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

@@ -72,16 +72,15 @@ void ts::EutelsatChannelNumberDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EutelsatChannelNumberDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::EutelsatChannelNumberDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt16(it->onetw_id);
-        bbp->appendUInt16(it->ts_id);
-        bbp->appendUInt16(it->service_id);
-        bbp->appendUInt16(0xF000 | (it->ecn & 0x0FFF));
+        buf.putUInt16(it->onetw_id);
+        buf.putUInt16(it->ts_id);
+        buf.putUInt16(it->service_id);
+        buf.putBits(0xFF, 4);
+        buf.putBits(it->ecn, 12);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -89,19 +88,16 @@ void ts::EutelsatChannelNumberDescriptor::serialize(DuckContext& duck, Descripto
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EutelsatChannelNumberDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::EutelsatChannelNumberDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 8 == 0;
-    entries.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        while (size >= 8) {
-            entries.push_back(Entry(GetUInt16(data), GetUInt16(data + 2), GetUInt16(data + 4), GetUInt16(data + 6) & 0x0FFF));
-            data += 8;
-            size -= 8;
-        }
+    while (!buf.error() && !buf.endOfRead()) {
+        Entry e;
+        e.onetw_id = buf.getUInt16();
+        e.ts_id = buf.getUInt16();
+        e.service_id = buf.getUInt16();
+        buf.skipBits(4);
+        e.ecn = buf.getBits<uint16_t>(12);
+        entries.push_back(e);
     }
 }
 
@@ -110,23 +106,19 @@ void ts::EutelsatChannelNumberDescriptor::deserialize(DuckContext& duck, const D
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::EutelsatChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::EutelsatChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 8) {
-        const uint16_t onetw_id = GetUInt16(data);
-        const uint16_t ts_id = GetUInt16(data + 2);
-        const uint16_t service_id = GetUInt16(data + 4);
-        const uint16_t channel = GetUInt16(data + 6) & 0x0FFF;
-        data += 8; size -= 8;
+    while (!buf.error() && buf.remainingReadBytes() >= 8) {
+        const uint16_t onetw_id = buf.getUInt16();
+        const uint16_t ts_id = buf.getUInt16();
+        const uint16_t service_id = buf.getUInt16();
+        buf.skipBits(4);
+        const uint16_t channel = buf.getBits<uint16_t>(12);
         disp << margin
-             << UString::Format(u"Service Id: %5d (0x%04X), Channel number: %3d, TS Id: %5d (0x%04X), Net Id: %5d (0x%04X)",
-                                {service_id, service_id, channel, ts_id, ts_id, onetw_id, onetw_id})
+             << UString::Format(u"Service Id: %5d (0x%04<X), Channel number: %3d, TS Id: %5d (0x%<04X), Net Id: %5d (0x%<04X)", {service_id, channel, ts_id, onetw_id})
              << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

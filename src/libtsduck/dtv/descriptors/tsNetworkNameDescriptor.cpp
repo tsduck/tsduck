@@ -68,7 +68,7 @@ void ts::NetworkNameDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// Binary serialization
+// Binary serialization / deserialization.
 //----------------------------------------------------------------------------
 
 void ts::NetworkNameDescriptor::serializePayload(PSIBuffer& buf) const
@@ -93,7 +93,7 @@ void ts::NetworkNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization / deserialization.
 //----------------------------------------------------------------------------
 
 void ts::NetworkNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

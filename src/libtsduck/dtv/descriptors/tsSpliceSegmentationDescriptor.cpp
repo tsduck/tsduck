@@ -251,87 +251,104 @@ void ts::SpliceSegmentationDescriptor::deserialize(DuckContext& duck, const Desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    bool ok = size >= 9;
-    const uint8_t cancel = ok ? ((data[8] >> 7) & 0x01) : 0;
+    bool cancel = false;
     bool program_segmentation = false;
     bool has_duration = false;
+    bool not_restricted = false;
     uint8_t type_id = 0;
 
-    if (ok) {
-        disp << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
-        disp.duck().displayIfASCII(data, 4, u" (\"", u"\")");
-        disp << std::endl;
-        disp << margin << UString::Format(u"Segmentation event id: 0x%X, cancel: %d", {GetUInt32(data + 4), cancel}) << std::endl;
-        data += 9; size -= 9;
-        ok = !cancel || size > 0;
+    if (buf.remainingReadBytes() < 9) {
+        buf.setUserError();
+    }
+    else {
+        // Sometimes, the identifier is made of ASCII characters. Try to display them.
+        disp.displayIntAndASCII(u"Identifier: 0x%08X", buf, 4, margin);
+        disp << margin << UString::Format(u"Segmentation event id: 0x%X", {buf.getUInt32()});
+        cancel = buf.getBit() != 0;
+        buf.skipBits(7);
+        disp << UString::Format(u", cancel: %d", {cancel}) << std::endl;
     }
 
-    if (ok && !cancel) {
-        program_segmentation = (data[0] & 0x80) != 0x00;
-        has_duration = (data[0] & 0x40) != 0x00;
-        const bool not_restricted = (data[0] & 0x20) != 0x00;
+    if (!buf.error() && !cancel) {
+        program_segmentation = buf.getBit() != 0;
+        has_duration = buf.getBit() != 0;
+        not_restricted = buf.getBit() != 0;
         disp << margin << UString::Format(u"Program segmentation: %d, has duration: %d, not restricted: %d", {program_segmentation, has_duration, not_restricted}) << std::endl;
-        if (!not_restricted) {
-            const bool web_delivery_allowed = (data[0] & 0x10) != 0x00;
-            const bool no_regional_blackout = (data[0] & 0x08) != 0x00;
-            const bool archive_allowed = (data[0] & 0x04) != 0x00;
-            const uint8_t device_restrictions = data[0] & 0x03;
-            disp << margin << UString::Format(u"Web delivery allowed: %d, no regional blackout: %d", {web_delivery_allowed, no_regional_blackout}) << std::endl
-                 << margin << UString::Format(u"Archive allowed: %d, device restrictions: %d", {archive_allowed, device_restrictions}) << std::endl;
+        if (not_restricted) {
+            buf.skipBits(5);
         }
-        data += 1; size -= 1;
+        else {
+            disp << margin << UString::Format(u"Web delivery allowed: %d", {buf.getBit()});
+            disp << UString::Format(u", no regional blackout: %d", {buf.getBit()}) << std::endl;
+            disp << margin << UString::Format(u"Archive allowed: %d", {buf.getBit()});
+            disp << UString::Format(u", device restrictions: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
+        }
     }
 
-    if (ok && !cancel && !program_segmentation) {
-        ok = size > 0 && size > size_t(1 + 6 * data[0]);
-        if (ok) {
-            size_t count = data[0];
-            data += 1; size -= 1;
+    if (!buf.error() && !cancel && !program_segmentation) {
+        if (buf.remainingReadBytes() < 1) {
+            buf.setUserError();
+        }
+        else {
+            size_t count = buf.getUInt8();
             disp << margin << UString::Format(u"Component count: %d", {count}) << std::endl;
-            while (count > 0) {
-                disp << margin << UString::Format(u"Component tag: %d, PTS offset: %d", {data[0], GetUInt40(data + 1) & PTS_DTS_MASK}) << std::endl;
-                data += 6; size -= 6;
+            while (!buf.error() && buf.remainingReadBytes() >= 6 && count > 0) {
                 count--;
+                disp << margin << UString::Format(u"Component tag: %d", {buf.getUInt8()});
+                buf.skipBits(7);
+                disp << UString::Format(u", PTS offset: %d", {buf.getBits<uint64_t>(33)}) << std::endl;
+            }
+            if (count != 0) {
+                buf.setUserError();
             }
         }
     }
 
-    if (ok && !cancel && has_duration) {
-        ok = size >= 5;
-        if (ok) {
-            disp << margin << UString::Format(u"Segment duration: %d", {GetUInt40(data)}) << std::endl;
-            data += 5; size -= 5;
+    if (!buf.error() && !cancel && has_duration) {
+        if (buf.remainingReadBytes() < 5) {
+            buf.setUserError();
+        }
+        else {
+            disp << margin << UString::Format(u"Segment duration: %d", {buf.getUInt40()}) << std::endl;
         }
     }
 
-    if (ok && !cancel) {
-        ok = size >= 2 && size >= size_t(5 + data[1]);
-        if (ok) {
-            const size_t upid_size = data[1];
-            disp << margin << UString::Format(u"Segmentation upid type: %s, %d bytes", {NameFromSection(u"SpliceSegmentationUpIdType", data[0], names::HEXA_FIRST), upid_size}) << std::endl;
-            if (upid_size > 0) {
-                disp << UString::Dump(data + 2, upid_size, UString::BPL, margin.size() + 2, 16);
-            }
-            data += 2 + upid_size; size -= 2 + upid_size;
-
-            type_id = data[0];
-            disp << margin << UString::Format(u"Segmentation type id: %s", {NameFromSection(u"SpliceSegmentationTypeId", type_id, names::HEXA_FIRST)}) << std::endl
-                 << margin << UString::Format(u"Segment number: %d, expected segments: %d", {data[1], data[2]}) << std::endl;
-            data += 3; size -= 3;
+    if (!buf.error() && !cancel) {
+        if (buf.remainingReadBytes() < 2) {
+            buf.setUserError();
+        }
+        else {
+            disp << margin << UString::Format(u"Segmentation upid type: %s", {NameFromSection(u"SpliceSegmentationUpIdType", buf.getUInt8(), names::HEXA_FIRST)}) << std::endl;
+            const size_t upid_size = buf.getUInt8();
+            disp.displayPrivateData(u"Upid data", buf, upid_size, margin);
         }
     }
 
-    if (ok && !cancel && (type_id == 0x34 || type_id == 0x36)) {
-        ok = size >= 2;
-        disp << margin << UString::Format(u"Sub-segment number: %d, expected sub-segments: %d", {data[0], data[1]}) << std::endl;
-        data += 2; size -= 2;
+    if (!buf.error() && !cancel) {
+        if (buf.remainingReadBytes() < 3) {
+            buf.setUserError();
+        }
+        else {
+            type_id = buf.getUInt8();
+            disp << margin << UString::Format(u"Segmentation type id: %s", {NameFromSection(u"SpliceSegmentationTypeId", type_id, names::HEXA_FIRST)}) << std::endl;
+            disp << margin << UString::Format(u"Segment number: %d", {buf.getUInt8()});
+            disp << UString::Format(u", expected segments: %d", {buf.getUInt8()}) << std::endl;
+        }
     }
 
-    disp.displayExtraData(data, size, margin);
+    if (!buf.error() && !cancel && (type_id == 0x34 || type_id == 0x36 || type_id == 0x38 || type_id == 0x3A)) {
+        if (buf.remainingReadBytes() < 2) {
+            buf.setUserError();
+        }
+        else {
+            disp << margin << UString::Format(u"Sub-segment number: %d", {buf.getUInt8()});
+            disp << UString::Format(u", expected sub-segments: %d", {buf.getUInt8()}) << std::endl;
+        }
+    }
+
+    disp.displayExtraData(buf, margin);
 }
 
 

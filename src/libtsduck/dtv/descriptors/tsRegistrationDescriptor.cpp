@@ -70,33 +70,19 @@ ts::RegistrationDescriptor::RegistrationDescriptor(DuckContext& duck, const Desc
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Serialization / deserialization.
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::RegistrationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt32(format_identifier);
-    bbp->append(additional_identification_info);
-    serializeEnd(desc, bbp);
+    buf.putUInt32(format_identifier);
+    buf.putBytes(additional_identification_info);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::RegistrationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::RegistrationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 4;
-    additional_identification_info.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        format_identifier = GetUInt32(data);
-        additional_identification_info.copy(data + 4, size - 4);
-    }
+    format_identifier = buf.getUInt32();
+    buf.getByteBlock(additional_identification_info, buf.remainingReadBytes());
 }
 
 
@@ -104,24 +90,19 @@ void ts::RegistrationDescriptor::deserialize(DuckContext& duck, const Descriptor
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        // Sometimes, the format identifier is made of ASCII characters. Try to display them.
-        disp << margin << UString::Format(u"Format identifier: 0x%X", {GetUInt32(data)});
-        disp.duck().displayIfASCII(data, 4, u" (\"", u"\")") << std::endl;
-        disp.displayPrivateData(u"Additional identification info", data + 4, size - 4, margin);
+    if (buf.remainingReadBytes() >= 4) {
+        // Sometimes, the registration format identifier is made of ASCII characters. Try to display them.
+        disp.displayIntAndASCII(u"Format identifier: 0x%08X", buf, 4, margin);
+        disp.displayPrivateData(u"Additional identification info", buf, NPOS, margin);
     }
-    else {
-        disp.displayExtraData(data, size, margin);
-    }
+    disp.displayExtraData(buf, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization / deserialization.
 //----------------------------------------------------------------------------
 
 void ts::RegistrationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

@@ -83,40 +83,26 @@ ts::DID ts::CPDescriptor::extendedTag() const
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Serialization / deserialization
 //----------------------------------------------------------------------------
 
-void ts::CPDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CPDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    bbp->appendUInt16(cp_id);
-    bbp->appendUInt16(0xE000 | (cp_pid & 0x1FFF));
-    bbp->append (private_data);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(cp_id);
+    buf.putPID(cp_pid);
+    buf.putBytes(private_data);
+}
+
+void ts::CPDescriptor::deserializePayload(PSIBuffer& buf)
+{
+    cp_id = buf.getUInt16();
+    cp_pid = buf.getPID();
+    buf.getByteBlock(private_data, buf.remainingReadBytes());
 }
 
 
 //----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::CPDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
-{
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 5 && data[0] == MY_EDID;
-
-    if (_is_valid) {
-        cp_id = GetUInt16(data + 1);
-        cp_pid = GetUInt16(data + 3) & 0x1FFF;
-        private_data.copy(data + 5, size - 5);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// XML serialization
+// XML serialization / deserialization
 //----------------------------------------------------------------------------
 
 void ts::CPDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -125,11 +111,6 @@ void ts::CPDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"CP_PID", cp_pid, true);
     root->addHexaTextChild(u"private_data", private_data, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::CPDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
@@ -143,21 +124,12 @@ bool ts::CPDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        const uint16_t id = GetUInt16(data);
-        const uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
-        disp << margin << UString::Format(u"CP System Id: %s, CP PID: %d (0x%X)", {NameFromSection(u"CPSystemId", id, names::FIRST), pid, pid}) << std::endl;
-        disp.displayPrivateData(u"Private CP data", data + 4, size - 4, margin);
+    if (buf.remainingReadBytes() >= 4) {
+        disp << margin << "CP System Id: " << NameFromSection(u"CPSystemId", buf.getUInt16(), names::FIRST);
+        disp << UString::Format(u", CP PID: %d (0x%<X)", {buf.getPID()}) << std::endl;
+        disp.displayPrivateData(u"Private CP data", buf, NPOS, margin);
     }
-    else {
-        disp.displayExtraData(data, size, margin);
-    }
+    disp.displayExtraData(buf, margin);
 }

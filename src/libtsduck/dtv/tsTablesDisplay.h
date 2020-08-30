@@ -296,6 +296,16 @@ namespace ts {
         virtual void displayPrivateData(const UString& title, PSIBuffer& buf, size_t size = NPOS, const UString& margin = UString(), size_t single_line_max = 8);
 
         //!
+        //! A utility method to display and integer and its optional ASCII interpretation.
+        //! @param [in] format A format string for UString::Format(), including the '%' sequence for the integer
+        //! data. It the integer data can be interpreted as an ASCII string, the string is displayed after.
+        //! @param [in,out] buf Buffer containing the data to read.
+        //! @param [in] size Size of the integer data.
+        //! @param [in] margin Left margin content.
+        //!
+        void displayIntAndASCII(const UString& format, PSIBuffer& buf, size_t size, const UString& margin = UString());
+
+        //!
         //! Display the content of an unknown section.
         //! The command-line formatting options are used to analyze the content.
         //! @param [in] section The section to display.
