@@ -101,7 +101,7 @@ void ts::AACDescriptor::deserializePayload(PSIBuffer& buf)
     profile_and_level = buf.getUInt8();
     if (!buf.endOfRead()) {
         bool has_AAC_type = buf.getBit() != 0;
-        SAOC_DE = buf.getBit();
+        SAOC_DE = buf.getBit() != 0;
         buf.skipBits(6);
         if (has_AAC_type) {
             AAC_type = buf.getUInt8();
