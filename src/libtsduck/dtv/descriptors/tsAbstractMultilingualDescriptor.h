@@ -71,9 +71,7 @@ namespace ts {
         EntryList entries;  //!< List of language entries.
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         //!
@@ -84,24 +82,6 @@ namespace ts {
         //!
         AbstractMultilingualDescriptor(DID tag, const UChar* xml_name, const UChar* xml_attribute);
 
-        //!
-        //! The subclass serializes the "prolog".
-        //! The prolog is between the descriptor header and the multilingual names loop.
-        //! @param [in,out] duck TSDuck execution context.
-        //! @param [in,out] bbp Serialize the prolog in this byte block.
-        //!
-        virtual void serializeProlog(DuckContext& duck, const ByteBlockPtr& bbp) const;
-
-        //!
-        //! The subclass deserializes the "prolog".
-        //! The prolog is between the descriptor header and the multilingual names loop.
-        //! The subclass shall set _is_valid to false on error.
-        //! @param [in,out] duck TSDuck execution context.
-        //! @param [in,out] data Address of prolog. Updated after deserialization.
-        //! @param [in,out] size Remaining descriptor size, including prolog. Updated after deserialization.
-        //!
-        virtual void deserializeProlog(DuckContext& duck, const uint8_t*& data, size_t& size);
-
         // Use default assignment but declare it to make sure the compiler knows
         // that we have understood the consequences of a pointer member.
         //! @cond nodoxygen
@@ -109,11 +89,12 @@ namespace ts {
         AbstractMultilingualDescriptor& operator=(const AbstractMultilingualDescriptor&) = default;
         //! @endcond
 
-    protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
-        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
+        virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
         const UChar* _xml_attribute;

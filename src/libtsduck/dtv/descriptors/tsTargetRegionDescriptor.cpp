@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -74,6 +75,16 @@ ts::TargetRegionDescriptor::Region::Region() :
     secondary_region_code(0),
     tertiary_region_code(0)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::TargetRegionDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

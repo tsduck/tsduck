@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -67,28 +68,17 @@ ts::AdaptationFieldDataDescriptor::AdaptationFieldDataDescriptor(DuckContext& du
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Serialization / deserialization
 //----------------------------------------------------------------------------
 
-void ts::AdaptationFieldDataDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::AdaptationFieldDataDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(adaptation_field_data_identifier);
-    serializeEnd(desc, bbp);
+    buf.putUInt8(adaptation_field_data_identifier);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::AdaptationFieldDataDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AdaptationFieldDataDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 1;
-
-    if (_is_valid) {
-        adaptation_field_data_identifier = GetUInt8(desc.payload());
-    }
+    adaptation_field_data_identifier = buf.getUInt8();
 }
 
 
@@ -96,13 +86,10 @@ void ts::AdaptationFieldDataDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AdaptationFieldDataDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AdaptationFieldDataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        uint8_t id = data[0];
-        data += 1; size -= 1;
+    if (buf.remainingReadBytes() >= 1) {
+        const uint8_t id = buf.getUInt8();
         disp << margin << UString::Format(u"Adaptation field data identifier: 0x%X", {id}) << std::endl;
         for (int i = 0; i < 8; ++i) {
             if ((id & (1 << i)) != 0) {
@@ -110,8 +97,7 @@ void ts::AdaptationFieldDataDescriptor::DisplayDescriptor(TablesDisplay& disp, D
             }
         }
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

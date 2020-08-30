@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -60,39 +61,15 @@ void ts::AbstractMultilingualDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// Default implementation of prolog serialization.
-//----------------------------------------------------------------------------
-
-void ts::AbstractMultilingualDescriptor::serializeProlog(DuckContext& duck, const ByteBlockPtr& bbp) const
-{
-}
-
-void ts::AbstractMultilingualDescriptor::deserializeProlog(DuckContext& duck, const uint8_t*& data, size_t& size)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractMultilingualDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::AbstractMultilingualDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    // Let the subclass serialize the prolog here.
-    serializeProlog(duck, bbp);
-
-    // Serialize the multi-lingual name loop.
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->language)) {
-            desc.invalidate();
-            return;
-        }
-        bbp->append(duck.encodedWithByteLength(it->name));
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        buf.putLanguageCode(it->language);
+        buf.putStringWithByteLength(it->name);
     }
-
-    serializeEnd(desc, bbp);
 }
 
 
@@ -100,29 +77,14 @@ void ts::AbstractMultilingualDescriptor::serialize(DuckContext& duck, Descriptor
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractMultilingualDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AbstractMultilingualDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag();
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    entries.clear();
-
-    // Let the subclass deserialize the prolog here.
-    deserializeProlog(duck, data, size);
-
-    // Deserialize the multillingual name loop.
-    while (_is_valid && size >= 4) {
-        // Always default DVB character set for language code.
-        const UString lang(DeserializeLanguageCode(data));
-        const size_t len = data[3];
-        data += 4; size -= 4;
-        _is_valid = len <= size;
-        if (_is_valid) {
-            entries.push_back(Entry(lang, duck.decoded(data, len)));
-            data += len; size -= len;
-        }
+    while (!buf.error() && !buf.endOfRead()) {
+        Entry e;
+        e.language = buf.getLanguageCode();
+        buf.getStringWithByteLength(e.name);
+        entries.push_back(e);
     }
-    _is_valid = _is_valid && size == 0;
 }
 
 
@@ -130,20 +92,13 @@ void ts::AbstractMultilingualDescriptor::deserialize(DuckContext& duck, const De
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 4) {
-        const size_t len = std::min<size_t>(data[3], size - 4);
-        disp << margin
-             << "Language: " << DeserializeLanguageCode(data)
-             << ", name: \"" << disp.duck().decoded(data + 4, len) << "\""
-             << std::endl;
-        data += 4 + len; size -= 4 + len;
+    while (!buf.error() && buf.remainingReadBytes() >= 4) {
+        disp << margin << "Language: " << buf.getLanguageCode();
+        disp << ", name: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

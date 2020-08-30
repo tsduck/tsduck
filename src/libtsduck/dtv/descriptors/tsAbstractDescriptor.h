@@ -44,11 +44,21 @@ namespace ts {
     //! @ingroup descriptor
     //!
     //! A descriptor subclass shall override the following methods:
+    //! - extendedTag() (for MPEG-defined and DVB-defined extension descriptors)
     //! - clearContent()
     //! - serializePayload()
     //! - deserializePayload()
     //! - buildXML()
     //! - analyzeXML()
+    //!
+    //! Important: With extension descriptors (MPEG or DVB), note the following:
+    //! - extendedTag() must be overriden and must return the expected extended descriptor tag.
+    //! - serializePayload() does not need to add the extended descriptor tag, it has
+    //!   already been added in the buffer by the AbstractDescriptor.
+    //! - deserializePayload() must not read the extended descriptor tag, it has already
+    //!   been extracted from the buffer and verified by AbstractDescriptor.
+    //! - The DisplayDescriptor() function is called without extended descriptor tag.
+    //!   See ts::TablesDisplay::displayDescriptorData()
     //!
     class TSDUCKDLL AbstractDescriptor: public AbstractSignalization
     {
@@ -58,6 +68,12 @@ namespace ts {
         //! @return The descriptor tag.
         //!
         DID tag() const { return _tag; }
+
+        //!
+        //! For MPEG-defined and DVB-defined extension descriptors, get the extended descriptor tag (first byte in payload).
+        //! @return The extended descriptor tag or EDID_NULL if this is not an extended descriptor.
+        //!
+        virtual DID extendedTag() const;
 
         //!
         //! Get the required private data specifier.

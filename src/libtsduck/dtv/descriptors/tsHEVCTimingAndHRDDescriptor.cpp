@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -71,6 +72,16 @@ ts::HEVCTimingAndHRDDescriptor::HEVCTimingAndHRDDescriptor(DuckContext& duck, co
     HEVCTimingAndHRDDescriptor()
 {
     deserialize(duck, desc);
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::HEVCTimingAndHRDDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

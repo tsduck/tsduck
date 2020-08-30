@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -64,6 +65,16 @@ ts::CIAncillaryDataDescriptor::CIAncillaryDataDescriptor(DuckContext& duck, cons
 void ts::CIAncillaryDataDescriptor::clearContent()
 {
     ancillary_data.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::CIAncillaryDataDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

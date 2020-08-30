@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -68,6 +69,16 @@ void ts::ServiceRelocatedDescriptor::clearContent()
     old_original_network_id = 0;
     old_transport_stream_id = 0;
     old_service_id = 0;
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::ServiceRelocatedDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -66,6 +67,16 @@ void ts::DTSNeuralDescriptor::clearContent()
 {
     config_id = 0;
     additional_info.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::DTSNeuralDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

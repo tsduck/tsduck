@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -70,6 +71,16 @@ ts::T2MIDescriptor::T2MIDescriptor(DuckContext& duck, const Descriptor& desc) :
     T2MIDescriptor()
 {
     deserialize(duck, desc);
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::T2MIDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

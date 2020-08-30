@@ -69,6 +69,6 @@ namespace ts {
         virtual void serializePayload(PSIBuffer& buf) const override;
         virtual void deserializePayload(PSIBuffer& buf) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
-        virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) override;
+        virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };
 }

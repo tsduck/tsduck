@@ -33,6 +33,7 @@
 #include "tsVariable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -110,6 +111,16 @@ void ts::S2XSatelliteDeliverySystemDescriptor::Channel::clear()
     symbol_rate = 0;
     multiple_input_stream_flag = false;
     input_stream_identifier = 0;
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::S2XSatelliteDeliverySystemDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

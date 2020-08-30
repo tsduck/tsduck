@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -100,6 +101,16 @@ ts::SHDeliverySystemDescriptor::OFDM::OFDM() :
     transmission_mode(0),
     common_frequency(0)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::SHDeliverySystemDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 

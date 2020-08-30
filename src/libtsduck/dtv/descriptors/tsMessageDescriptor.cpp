@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -76,6 +77,16 @@ void ts::MessageDescriptor::clearContent()
     message_id = 0;
     language_code.clear();
     message.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::MessageDescriptor::extendedTag() const
+{
+    return MY_EDID;
 }
 
 
