@@ -2,6 +2,16 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.2-1954
+
+[IMP] Improvements on existing commands and plugins:
+
+  * With commands and plugins which access the Internet such as the "http"
+    plugin, the environment variables "http_proxy" and "https_proxy" are now
+    used on Windows also.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.22-1924
 
 [NEW] New commands and plugins:

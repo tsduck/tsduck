@@ -59,7 +59,7 @@ HOST_NAME=
 VMX_FILE=
 SSH_TIMEOUT=5
 SSH_PORT=22
-BOOT_TIMEOUT=120
+BOOT_TIMEOUT=500
 
 
 #-----------------------------------------------------------------------------
@@ -75,6 +75,9 @@ Build the TSDuck installers on a remote system and get them back.
 Usage: $SCRIPT [options]
 
 Options:
+
+  --boot-timeout seconds
+      Virtual machine boot timeout. Default: $BOOT_TIMEOUT seconds.
 
   -d path
   --directory path
@@ -120,6 +123,10 @@ EOF
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --boot-timeout)
+            [[ $# -gt 1 ]] || usage; shift
+            BOOT_TIMEOUT=$1
+            ;;
         -d|--directory)
             [[ $# -gt 1 ]] || usage; shift
             REMOTE_DIR=$1

@@ -117,8 +117,8 @@ Options::Options(int argc, char *argv[]) :
     option(u"integer", 'i');
     help(u"integer",
          u"Display the current version of TSDuck in integer format, suitable for "
-         u"comparison in a script. Example: " + ts::GetVersion(ts::VERSION_INTEGER) +
-         u" for " + ts::GetVersion(ts::VERSION_SHORT) + u".");
+         u"comparison in a script. Example: " + ts::VersionInfo::GetVersion(ts::VersionInfo::Format::INTEGER) +
+         u" for " + ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) + u".");
 
     option(u"latest", 'l');
     help(u"latest", u"Display the latest version of TSDuck from GitHub.");
@@ -275,7 +275,7 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    bool DisplayRelease(Options& opt, const ts::GitHubRelease rel)
+    bool DisplayRelease(Options& opt, const ts::GitHubRelease& rel)
     {
         // In non-verbose mode, simply display the version.
         if (!opt.verbose()) {
@@ -358,7 +358,7 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    bool DownloadRelease(Options& opt, const ts::GitHubRelease rel, bool forceBinary)
+    bool DownloadRelease(Options& opt, const ts::GitHubRelease& rel, bool forceBinary)
     {
         bool success = true;
 
@@ -434,7 +434,7 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    bool UpgradeRelease(Options& opt, const ts::GitHubRelease rel)
+    bool UpgradeRelease(Options& opt, const ts::GitHubRelease& rel)
     {
         // Download binaries if not yet done.
         if (!DownloadRelease(opt, rel, true)) {
@@ -492,11 +492,11 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    bool CheckNewVersion(Options& opt, const ts::GitHubRelease rel)
+    bool CheckNewVersion(Options& opt, const ts::GitHubRelease& rel)
     {
-        const ts::UString current(ts::GetVersion());
+        const ts::UString current(ts::VersionInfo::GetVersion());
         const ts::UString remote(rel.version());
-        const int comp = ts::CompareVersions(current, remote);
+        const int comp = ts::VersionInfo::CompareVersions(current, remote);
 
         // Cases where there is no new version.
         if (comp == 0) {
@@ -516,7 +516,7 @@ namespace {
         std::cout << "New version " << remote << " is available (yours is " << current << ")" << std::endl;
         if (opt.verbose() && !assets.empty()) {
             std::cout << "Available downloads for your system:" << std::endl;
-            for (ts::GitHubRelease::AssetList::const_iterator it = assets.begin(); it != assets.end();  ++it) {
+            for (ts::GitHubRelease::AssetList::const_iterator it = assets.begin(); it != assets.end(); ++it) {
                 std::cout << "  " << it->url << std::endl;
             }
         }
@@ -593,11 +593,11 @@ int MainCode(int argc, char *argv[])
     }
     else if (opt.current) {
         // Display current version.
-        std::cout << ts::GetVersion(opt.verbose() ? ts::VERSION_LONG : ts::VERSION_SHORT) << std::endl;
+        std::cout << ts::VersionInfo::GetVersion(opt.verbose() ? ts::VersionInfo::Format::LONG : ts::VersionInfo::Format::SHORT) << std::endl;
     }
     else if (opt.integer) {
         // Display current version in integer format.
-        std::cout << ts::GetVersion(ts::VERSION_INTEGER) << std::endl;
+        std::cout << ts::VersionInfo::GetVersion(ts::VersionInfo::Format::INTEGER) << std::endl;
     }
     else if (opt.all) {
         success = ListAllVersions(opt);

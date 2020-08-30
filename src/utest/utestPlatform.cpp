@@ -357,16 +357,16 @@ void PlatformTest::testStringify()
 // Test case: version string
 void PlatformTest::testVersion()
 {
-    debug() << "PlatformTest: GetVersion(VERSION_SHORT) = \"" << ts::GetVersion(ts::VERSION_SHORT) << "\"" << std::endl
-                 << "PlatformTest: GetVersion(VERSION_LONG) = \"" << ts::GetVersion(ts::VERSION_LONG) << "\"" << std::endl
-                 << "PlatformTest: GetVersion(VERSION_DATE) = \"" << ts::GetVersion(ts::VERSION_DATE) << "\"" << std::endl
-                 << "PlatformTest: GetVersion(VERSION_DEKTEC) = \"" << ts::GetVersion(ts::VERSION_DEKTEC) << "\"" << std::endl
-                 << "PlatformTest: GetVersion(VERSION_NSIS) = \"" << ts::GetVersion(ts::VERSION_NSIS) << "\"" << std::endl;
+    debug() << "PlatformTest: GetVersion(VERSION_SHORT) = \"" << ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) << "\"" << std::endl
+            << "PlatformTest: GetVersion(VERSION_LONG) = \"" << ts::VersionInfo::GetVersion(ts::VersionInfo::Format::LONG) << "\"" << std::endl
+            << "PlatformTest: GetVersion(VERSION_DATE) = \"" << ts::VersionInfo::GetVersion(ts::VersionInfo::Format::DATE) << "\"" << std::endl
+            << "PlatformTest: GetVersion(VERSION_DEKTEC) = \"" << ts::VersionInfo::GetVersion(ts::VersionInfo::Format::DEKTEC) << "\"" << std::endl
+            << "PlatformTest: GetVersion(VERSION_NSIS) = \"" << ts::VersionInfo::GetVersion(ts::VersionInfo::Format::NSIS) << "\"" << std::endl;
 
-    TSUNIT_EQUAL(TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR) u"-" TS_USTRINGIFY(TS_COMMIT), ts::GetVersion(ts::VERSION_SHORT));
-    TSUNIT_EQUAL(ts::GetVersion(), ts::GetVersion(ts::VERSION_SHORT));
-    TSUNIT_ASSERT(ts::GetVersion(ts::VERSION_SHORT) != ts::GetVersion(ts::VERSION_LONG));
-    TSUNIT_ASSERT(ts::GetVersion(ts::VERSION_SHORT) != ts::GetVersion(ts::VERSION_NSIS));
+    TSUNIT_EQUAL(TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR) u"-" TS_USTRINGIFY(TS_COMMIT), ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT));
+    TSUNIT_EQUAL(ts::VersionInfo::GetVersion(), ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT));
+    TSUNIT_ASSERT(ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) != ts::VersionInfo::GetVersion(ts::VersionInfo::Format::LONG));
+    TSUNIT_ASSERT(ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) != ts::VersionInfo::GetVersion(ts::VersionInfo::Format::NSIS));
 }
 
 // Test case: memory barrier.

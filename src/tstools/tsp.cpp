@@ -39,6 +39,7 @@
 #include "tsAsyncReport.h"
 #include "tsUserInterrupt.h"
 #include "tsOutputPager.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
@@ -195,6 +196,10 @@ int MainCode(int argc, char *argv[])
     if (!tsproc.start(opt.tsp_args)) {
         return EXIT_FAILURE;
     }
+
+    // Start checking for new TSDuck version in the background.
+    ts::VersionInfo version_check(report);
+    version_check.startNewVersionDetection();
 
     // And wait for TS processing termination.
     tsproc.waitForTermination();

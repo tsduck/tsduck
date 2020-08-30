@@ -39,7 +39,6 @@
 #include "tsVariable.h"
 
 namespace ts {
-
     //!
     //! An encapsulation of command line syntax and analysis.
     //! @ingroup cmd

@@ -384,7 +384,7 @@ void ts::Args::adjustPredefinedOptions()
         _iopts.erase(u"version");
     }
     else if (_iopts.find(u"version") == _iopts.end()) {
-        addOption(IOption(u"version", 0,  VersionFormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
+        addOption(IOption(u"version", 0,  VersionInfo::FormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
         help(u"version", u"Display the TSDuck version number.");
     }
 
@@ -1228,7 +1228,7 @@ void ts::Args::processHelp()
 void ts::Args::processVersion()
 {
     // The meaning of the option value is managed inside GetVersion.
-    info(GetVersion(enumValue(u"version", VERSION_LONG), _app_name));
+    info(VersionInfo::GetVersion(enumValue(u"version", VersionInfo::Format::LONG), _app_name));
 
     // Exit application, unless specified otherwise.
     if ((_flags & NO_EXIT_ON_VERSION) == 0) {
