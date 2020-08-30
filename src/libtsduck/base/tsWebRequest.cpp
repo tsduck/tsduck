@@ -36,12 +36,37 @@
 #include "tsFatal.h"
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
+#include "tsSingletonManager.h"
+#include "tsURL.h"
 TSDUCK_SOURCE;
 
-ts::UString ts::WebRequest::_defaultProxyHost;
-uint16_t    ts::WebRequest::_defaultProxyPort = 0;
-ts::UString ts::WebRequest::_defaultProxyUser;
-ts::UString ts::WebRequest::_defaultProxyPassword;
+
+//----------------------------------------------------------------------------
+// A private singleton to initialize the default proxy from environment
+// variables https_proxy and http_proxy.
+//----------------------------------------------------------------------------
+
+namespace {
+    class DefaultProxy
+    {
+        TS_DECLARE_SINGLETON(DefaultProxy);
+    public:
+        const ts::URL url;
+    };
+
+}
+
+TS_DEFINE_SINGLETON(DefaultProxy);
+
+DefaultProxy::DefaultProxy() :
+    url(ts::GetEnvironment(u"https_proxy", ts::GetEnvironment(u"http_proxy")))
+{
+}
+
+ts::UString ts::WebRequest::_defaultProxyHost(DefaultProxy::Instance()->url.getHost());
+uint16_t    ts::WebRequest::_defaultProxyPort = DefaultProxy::Instance()->url.getPort();
+ts::UString ts::WebRequest::_defaultProxyUser(DefaultProxy::Instance()->url.getUserName());
+ts::UString ts::WebRequest::_defaultProxyPassword(DefaultProxy::Instance()->url.getPassword());
 
 
 //----------------------------------------------------------------------------

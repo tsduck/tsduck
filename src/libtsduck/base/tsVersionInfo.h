@@ -28,56 +28,103 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup app
 //!  Information about version identification of TSDuck.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsEnumeration.h"
+#include "tsReport.h"
+#include "tsThread.h"
 
 //!
 //! TSDuck namespace, containing all TSDuck classes and functions.
 //!
 namespace ts {
+    //!
+    //! Information about version identification of TSDuck.
+    //! @ingroup app
+    //!
+    class TSDUCKDLL VersionInfo : private Thread
+    {
+        TS_NOBUILD_NOCOPY(VersionInfo);
+    public:
+        //!
+        //! Default constructor.
+        //! @param [in,out] report Reference to the report object through which new versions will be reported.
+        //!
+        VersionInfo(Report& report);
 
-    //!
-    //! Types of version formatting, for predefined option --version.
-    //!
-    enum VersionFormat {
-        VERSION_SHORT,    //!< Short format X.Y-R.
-        VERSION_LONG,     //!< Full explanatory format.
-        VERSION_INTEGER,  //!< Integer format XXYYRRRRR.
-        VERSION_DATE,     //!< Build date.
-        VERSION_NSIS,     //!< Output NSIS @c !define directives.
-        VERSION_DEKTEC,   //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
-        VERSION_HTTP,     //!< Version of HTTP library which is used.
-        VERSION_COMPILER, //!< Version of the compiler which was used to build the code.
-        VERSION_SRT,      //!< Version of SRT library which is used.
-        VERSION_ALL,      //!< Multi-line output with full details.
+        //!
+        //! Destructor.
+        //!
+        virtual ~VersionInfo();
+
+        //!
+        //! Start a thread which checks the availability of a new TSDuck version.
+        //!
+        //! If a new version is found, it is reported through the Report object that was specified in the constructor.
+        //! This can be done only once, further calls are ignored.
+        //! The destructor of this object waits for the completion of the thread.
+        //!
+        //! If the environment variable TSDUCK_NO_VERSION_CHECK is not empty, do not start the new version check.
+        //! To debug new version checking, define the environment variable TS_DEBUG_NEW_VERSION to any non-empty
+        //! value; debug and errors messages will be reported through the same Report object.
+        //!
+        void startNewVersionDetection();
+
+        //!
+        //! Types of version formatting, for predefined option -\-version.
+        //!
+        enum class Format {
+            SHORT,    //!< Short format X.Y-R.
+            LONG,     //!< Full explanatory format.
+            INTEGER,  //!< Integer format XXYYRRRRR.
+            DATE,     //!< Build date.
+            NSIS,     //!< Output NSIS @c !define directives.
+            DEKTEC,   //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
+            HTTP,     //!< Version of HTTP library which is used.
+            COMPILER, //!< Version of the compiler which was used to build the code.
+            SRT,      //!< Version of SRT library which is used.
+            ALL,      //!< Multi-line output with full details.
+        };
+
+        //!
+        //! Enumeration description of class Format.
+        //! Typically used to implement the -\-version command line option.
+        //!
+        static const Enumeration FormatEnum;
+
+        //!
+        //! Get the TSDuck formatted version number.
+        //! @param [in] format Type of output, short by default.
+        //! @param [in] applicationName Name of the application to prepend to the long format.
+        //! @return The formatted version string.
+        //!
+        static UString GetVersion(Format format = Format::SHORT, const UString& applicationName = UString());
+
+        //!
+        //! Compare two version strings.
+        //! @param [in] v1 First version string.
+        //! @param [in] v2 First version string.
+        //! @return One of -1, 0, 1 when @a v1 < @a v2, @a v1 == @a v2, @a v1 > @a v2.
+        //!
+        static int CompareVersions(const UString& v1, const UString& v2);
+
+    private:
+        Report& _report;
+        Report& _debug;
+        bool    _started;
+
+        // Inherited from Thread.
+        virtual void main() override;
+
+        // Build a string representing the version of the compiler which built this module.
+        static ts::UString GetCompilerVersion();
+
+        // Convert a version string into a vector of integers.
+        static void VersionToInts(std::vector<int>& ints, const ts::UString& version);
     };
-
-    //!
-    //! Enumeration description of ts::VersionFormat.
-    //! Typically used to implement the -\-version command line option.
-    //!
-    TSDUCKDLL extern const Enumeration VersionFormatEnum;
-
-    //!
-    //! Get the TSDuck formatted version number.
-    //! @param [in] format Type of output, short by default.
-    //! @param [in] applicationName Name of the application to prepend to the long format.
-    //! @return The formatted version string.
-    //!
-    TSDUCKDLL UString GetVersion(VersionFormat format = VERSION_SHORT, const UString& applicationName = UString());
-
-    //!
-    //! Compare two version strings.
-    //! @param [in] v1 First version string.
-    //! @param [in] v2 First version string.
-    //! @return One of -1, 0, 1 when @a v1 < @a v2, @a v1 == @a v2, @a v1 > @a v2.
-    //!
-    TSDUCKDLL int CompareVersions(const UString& v1, const UString& v2);
 }
 
 extern "C" {

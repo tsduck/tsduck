@@ -986,6 +986,18 @@ TS_POP_WARNING()
     #undef ERROR
 #endif
 
+#if defined(SHORT)
+    #undef SHORT
+#endif
+
+#if defined(LONG)
+    #undef LONG
+#endif
+
+#if defined(INTEGER)
+    #undef INTEGER
+#endif
+
 #if defined(Yield)
     #undef Yield
 #endif
