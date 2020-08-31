@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -68,23 +69,30 @@ ts::SkyLogicalChannelNumberDescriptor::SkyLogicalChannelNumberDescriptor(DuckCon
     deserialize(duck, desc);
 }
 
+ts::SkyLogicalChannelNumberDescriptor::Entry::Entry(uint16_t id_, uint8_t type_, uint16_t cid_, uint16_t lcn_, uint16_t skyid_):
+    service_id(id_),
+    service_type(type_),
+    channel_id(cid_),
+    lcn(lcn_),
+    sky_id(skyid_)
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SkyLogicalChannelNumberDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SkyLogicalChannelNumberDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(region_id);
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt16 (it->service_id);
-        bbp->appendUInt8  (it->service_type);
-        bbp->appendUInt16 (it->channel_id);
-        bbp->appendUInt16 (it->lcn);
-        bbp->appendUInt16 (it->sky_id);
+    buf.putUInt16(region_id);
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        buf.putUInt16(it->service_id);
+        buf.putUInt8(it->service_type);
+        buf.putUInt16(it->channel_id);
+        buf.putUInt16(it->lcn);
+        buf.putUInt16(it->sky_id);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -92,28 +100,17 @@ void ts::SkyLogicalChannelNumberDescriptor::serialize(DuckContext& duck, Descrip
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SkyLogicalChannelNumberDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SkyLogicalChannelNumberDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 9 == 2;
-    entries.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-
-        region_id = GetUInt16(data);
-        data += 2; size -= 2;
-
-        while (size >= 9) {
-            uint16_t sid = GetUInt16(data);
-            uint8_t stype = GetUInt8(data + 2);
-            uint16_t channel_id = GetUInt16(data + 3);
-            uint16_t lcn_id = GetUInt16(data + 5);
-            uint16_t sky_id = GetUInt16(data + 7);
-
-            entries.push_back(Entry(sid, stype, channel_id, lcn_id, sky_id));
-            data += 9; size -= 9;
-        }
+    region_id = buf.getUInt16();
+    while (!buf.error() && !buf.endOfRead()) {
+        Entry e;
+        e.service_id = buf.getUInt16();
+        e.service_type = buf.getUInt8();
+        e.channel_id = buf.getUInt16();
+        e.lcn = buf.getUInt16();
+        e.sky_id = buf.getUInt16();
+        entries.push_back(e);
     }
 }
 
@@ -122,34 +119,19 @@ void ts::SkyLogicalChannelNumberDescriptor::deserialize(DuckContext& duck, const
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    uint16_t region_id = GetUInt16(data);
-    data += 2; size -= 2;
-
-    disp << margin
-         << UString::Format(u"Region Id: %5d (0x%04X)", {region_id, region_id})
-         << std::endl;
-
-    while (size >= 9) {
-        const uint16_t service_id = GetUInt16(data);
-        const uint8_t service_type = GetUInt8(data + 2);
-        const uint16_t channel_id = GetUInt16(data + 3);
-        const uint16_t lcn_id = GetUInt16(data + 5);
-        const uint16_t sky_id = GetUInt16(data + 7);
-        data += 9; size -= 9;
-
-        disp << margin
-             << UString::Format(u"Service Id: %5d (0x%04X), Service Type: %s, Channel number: %3d, "
-                                 "Lcn: %5d, Sky Id: %5d (0x%04X)",
-                                 {service_id, service_id, names::ServiceType(service_type, names::FIRST),
-                                  channel_id, lcn_id, sky_id, sky_id})
-             << std::endl;
+    if (buf.remainingReadBytes() >= 2) {
+        disp << margin << UString::Format(u"Region Id: %5d (0x%<X)", {buf.getUInt16()}) << std::endl;
+        while (buf.remainingReadBytes() >= 9) {
+            disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", {buf.getUInt16()});
+            disp << ", Service Type: " << names::ServiceType(buf.getUInt8(), names::FIRST);
+            disp << UString::Format(u", Channel number: %3d", {buf.getUInt16()});
+            disp << UString::Format(u", Lcn: %5d",  {buf.getUInt16()});
+            disp << UString::Format(u", Sky Id: %5d (0x%<X)", {buf.getUInt16()}) << std::endl;
+        }
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

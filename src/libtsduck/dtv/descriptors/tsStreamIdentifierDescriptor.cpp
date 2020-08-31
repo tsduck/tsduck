@@ -68,7 +68,7 @@ ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(DuckContext& duck, co
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Serialization / deserialization.
 //----------------------------------------------------------------------------
 
 void ts::StreamIdentifierDescriptor::serializePayload(PSIBuffer& buf) const
@@ -96,7 +96,7 @@ void ts::StreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization / deserialization.
 //----------------------------------------------------------------------------
 
 void ts::StreamIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

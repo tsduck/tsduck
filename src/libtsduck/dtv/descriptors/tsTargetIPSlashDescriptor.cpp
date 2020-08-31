@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -76,14 +77,12 @@ ts::TargetIPSlashDescriptor::Address::Address(const IPAddress& addr, uint8_t mas
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPSlashDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TargetIPSlashDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
     for (auto it = addresses.begin(); it != addresses.end(); ++it) {
-        bbp->appendUInt32(it->IPv4_addr.address());
-        bbp->appendUInt8(it->IPv4_slash_mask);
+        buf.putUInt32(it->IPv4_addr.address());
+        buf.putUInt8(it->IPv4_slash_mask);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -91,19 +90,13 @@ void ts::TargetIPSlashDescriptor::serialize(DuckContext& duck, Descriptor& desc)
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPSlashDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TargetIPSlashDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size % 5 == 0;
-    addresses.clear();
-
-    if (_is_valid) {
-        while (size >= 5) {
-            addresses.push_back(Address(IPAddress(GetUInt32(data)), data[4]));
-            data += 5; size -= 5;
-        }
+    while (!buf.error() && !buf.endOfRead()) {
+        Address addr;
+        addr.IPv4_addr = IPAddress(buf.getUInt32());
+        addr.IPv4_slash_mask = buf.getUInt8();
+        addresses.push_back(addr);
     }
 }
 
@@ -112,16 +105,13 @@ void ts::TargetIPSlashDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetIPSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TargetIPSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 5) {
-        disp << margin << "Address/mask: " << IPAddress(GetUInt32(data)) << "/" << int(data[4]) << std::endl;
-        data += 5; size -= 5;
+    while (buf.remainingReadBytes() >= 5) {
+        disp << margin << "Address/mask: " << IPAddress(buf.getUInt32());
+        disp << "/" << int(buf.getUInt8()) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
@@ -77,14 +78,12 @@ ts::UpdateDescriptor::UpdateDescriptor(DuckContext& duck, const Descriptor& desc
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::UpdateDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::UpdateDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t((update_flag & 0x03) << 6) |
-                     uint8_t((update_method & 0x0F) << 2) |
-                     uint8_t(update_priority & 0x03));
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.putBits(update_flag, 2);
+    buf.putBits(update_method, 4);
+    buf.putBits(update_priority, 2);
+    buf.putBytes(private_data);
 }
 
 
@@ -92,22 +91,12 @@ void ts::UpdateDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::UpdateDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::UpdateDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        update_flag = (data[0] >> 6) & 0x03;
-        update_method = (data[0] >> 2) & 0x0F;
-        update_priority = data[0] & 0x03;
-        private_data.copy(data + 1, size - 1);
-    }
-    else {
-        private_data.clear();
-    }
+    update_flag = buf.getBits<uint8_t>(2);
+    update_method = buf.getBits<uint8_t>(4);
+    update_priority = buf.getBits<uint8_t>(2);
+    buf.getByteBlock(private_data, buf.remainingReadBytes());
 }
 
 
@@ -115,15 +104,13 @@ void ts::UpdateDescriptor::deserialize(DuckContext& duck, const Descriptor& desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::UpdateDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::UpdateDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size > 0) {
-        disp << margin << "Update flag: " << NameFromSection(u"SSUUpdateFlag", (data[0] >> 6) & 0x03, names::DECIMAL_FIRST) << std::endl
-             << margin << "Update method: " << NameFromSection(u"SSUUpdateMethod", (data[0] >> 2) & 0x0F, names::DECIMAL_FIRST) << std::endl
-             << margin << UString::Format(u"Update priority: %d", {data[0] & 0x03}) << std::endl;
-        disp.displayPrivateData(u"Private data", data + 1, size - 1, margin);
+    if (!buf.endOfRead()) {
+        disp << margin << "Update flag: " << NameFromSection(u"SSUUpdateFlag", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Update method: " << NameFromSection(u"SSUUpdateMethod", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << UString::Format(u"Update priority: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }
 

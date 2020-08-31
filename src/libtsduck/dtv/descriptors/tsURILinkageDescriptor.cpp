@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -87,17 +88,14 @@ ts::DID ts::URILinkageDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::URILinkageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::URILinkageDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    bbp->appendUInt8(uri_linkage_type);
-    bbp->append(duck.encodedWithByteLength(uri));
+    buf.putUInt8(uri_linkage_type);
+    buf.putStringWithByteLength(uri);
     if (uri_linkage_type == 0x00 || uri_linkage_type == 0x01) {
-        bbp->appendUInt16(min_polling_interval);
+        buf.putUInt16(min_polling_interval);
     }
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.putBytes(private_data);
 }
 
 
@@ -105,26 +103,14 @@ void ts::URILinkageDescriptor::serialize(DuckContext& duck, Descriptor& desc) co
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::URILinkageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::URILinkageDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    private_data.clear();
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 3 && data[0] == MY_EDID;
-
-    if (_is_valid) {
-        uri_linkage_type = data[1];
-        data += 2; size -= 2;
-        duck.decodeWithByteLength(uri, data, size);
-        if (uri_linkage_type == 0x00 || uri_linkage_type == 0x01) {
-            _is_valid = size >= 2;
-            if (_is_valid) {
-                min_polling_interval = GetUInt16(data);
-                data += 2; size -= 2;
-            }
-        }
-        private_data.copy(data, size);
+    uri_linkage_type = buf.getUInt8();
+    buf.getStringWithByteLength(uri);
+    if (uri_linkage_type == 0x00 || uri_linkage_type == 0x01) {
+        min_polling_interval = buf.getUInt16();
     }
+    buf.getByteBlock(private_data, buf.remainingReadBytes());
 }
 
 
@@ -132,30 +118,19 @@ void ts::URILinkageDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-
-    if (size >= 2) {
-        const uint8_t type = data[0];
+    if (buf.remainingReadBytes() >= 2) {
+        const uint8_t type = buf.getUInt8();
         disp << margin << "URI linkage type: " << NameFromSection(u"URILinkageType", type, names::HEXA_FIRST) << std::endl;
-        data++; size--;
-        disp << margin << "URI: " << disp.duck().decodedWithByteLength(data, size) << std::endl;
-
-        if ((type == 0x00 || type == 0x01) && size >= 2) {
-            const int interval = GetUInt16(data);
-            data += 2; size -= 2;
+        disp << margin << "URI: " << buf.getStringWithByteLength() << std::endl;
+        if ((type == 0x00 || type == 0x01) && buf.remainingReadBytes() >= 2) {
+            const int interval = buf.getUInt16();
             disp << margin << UString::Format(u"Min polling interval: %d (%d seconds)", {interval, 2 * interval}) << std::endl;
         }
-        disp.displayPrivateData(u"Private data", data, size, margin);
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
-    else {
-        disp.displayExtraData(data, size, margin);
-    }
+    disp.displayExtraData(buf, margin);
 }
 
 

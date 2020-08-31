@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -73,14 +74,12 @@ void ts::TargetMACAddressDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TargetMACAddressDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt48(MAC_addr_mask.address());
+    buf.putUInt48(MAC_addr_mask.address());
     for (auto it = MAC_addr.begin(); it != MAC_addr.end(); ++it) {
-        bbp->appendUInt48(it->address());
+        buf.putUInt48(it->address());
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -88,21 +87,11 @@ void ts::TargetMACAddressDescriptor::serialize(DuckContext& duck, Descriptor& de
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TargetMACAddressDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 6 && size % 6 == 0;
-    MAC_addr.clear();
-
-    if (_is_valid) {
-        MAC_addr_mask.setAddress(GetUInt48(data));
-        data += 6; size -= 6;
-        while (size >= 6) {
-            MAC_addr.push_back(MACAddress(GetUInt48(data)));
-            data += 6; size -= 6;
-        }
+    MAC_addr_mask.setAddress(buf.getUInt48());
+    while (!buf.error() && !buf.endOfRead()) {
+        MAC_addr.push_back(MACAddress(buf.getUInt48()));
     }
 }
 
@@ -111,18 +100,14 @@ void ts::TargetMACAddressDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TargetMACAddressDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
     const char* header = "Address mask: ";
-    while (size >= 6) {
-        disp << margin << header << MACAddress(GetUInt48(data)) << std::endl;
-        data += 6; size -= 6;
+    while (buf.remainingReadBytes() >= 6) {
+        disp << margin << header << MACAddress(buf.getUInt48()) << std::endl;
         header = "Address: ";
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

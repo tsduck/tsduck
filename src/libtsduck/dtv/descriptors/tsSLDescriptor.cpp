@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -66,31 +67,17 @@ ts::SLDescriptor::SLDescriptor(DuckContext& duck, const Descriptor& desc) :
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Serialization / deserialization.
 //----------------------------------------------------------------------------
 
-void ts::SLDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SLDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(ES_ID);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(ES_ID);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::SLDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SLDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 2;
-
-    if (_is_valid) {
-        ES_ID = GetUInt16(data);
-    }
+    ES_ID = buf.getUInt16();
 }
 
 
@@ -98,22 +85,17 @@ void ts::SLDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SLDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SLDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 2) {
-        const uint16_t id = GetUInt16(data);
-        data += 2; size -= 2;
-        disp << margin << UString::Format(u"ES id: 0x%X (%d)", {id, id}) << std::endl;
+    if (buf.remainingReadBytes() >= 2) {
+        disp << margin << UString::Format(u"ES id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization / deserialization.
 //----------------------------------------------------------------------------
 
 void ts::SLDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
