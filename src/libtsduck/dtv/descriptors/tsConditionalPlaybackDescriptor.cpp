@@ -73,36 +73,21 @@ ts::ConditionalPlaybackDescriptor::ConditionalPlaybackDescriptor(DuckContext& du
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Serialization / deserialization
 //----------------------------------------------------------------------------
 
-void ts::ConditionalPlaybackDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ConditionalPlaybackDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(CA_system_id);
-    bbp->appendUInt16(0xE000 | CA_pid);
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(CA_system_id);
+    buf.putPID(CA_pid);
+    buf.putBytes(private_data);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::ConditionalPlaybackDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ConditionalPlaybackDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4;
-
-    private_data.clear();
-
-    if (_is_valid) {
-        CA_system_id = GetUInt16(data);
-        CA_pid = GetUInt16(data + 2) & 0x1FFF;
-        private_data.copy(data + 4, size - 4);
-    }
+    CA_system_id= buf.getUInt16();
+    CA_pid = buf.getPID();
+    buf.getByteBlock(private_data, buf.remainingReadBytes());
 }
 
 
@@ -110,30 +95,20 @@ void ts::ConditionalPlaybackDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ConditionalPlaybackDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ConditionalPlaybackDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size < 4) {
-        disp.displayExtraData(data, size, margin);
-    }
-    else {
-        // Extract common part
-        const uint16_t casid = GetUInt16(data);
-        uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
+    if (buf.remainingReadBytes() >= 4) {
+        disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), names::FIRST) << std::endl;
         const UChar* const dtype = tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA");
-        data += 4; size -= 4;
-
-        disp << margin << "CA System Id: " << names::CASId(disp.duck(), casid, names::FIRST) << std::endl
-             << margin << UString::Format(u"%s PID: 0x%X (%d)", {dtype, pid, pid}) << std::endl;
-
-        disp.displayPrivateData(u"Private CA data", data, size, margin);
+        disp << margin << UString::Format(u"%s PID: 0x%X (%<d)", {dtype, buf.getPID()}) << std::endl;
+        disp.displayPrivateData(u"Private CA data", buf, NPOS, margin);
     }
+    disp.displayExtraData(buf, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML serialization / deserialization
 //----------------------------------------------------------------------------
 
 void ts::ConditionalPlaybackDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -142,11 +117,6 @@ void ts::ConditionalPlaybackDescriptor::buildXML(DuckContext& duck, xml::Element
     root->setIntAttribute(u"CA_PID", CA_pid, true);
     root->addHexaTextChild(u"private_data", private_data, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::ConditionalPlaybackDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

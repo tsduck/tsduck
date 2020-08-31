@@ -29,7 +29,6 @@
 
 #include "tsDTGLogicalChannelDescriptor.h"
 #include "tsPSIRepository.h"
-#include "tsPSIBuffer.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"dtg_logical_channel_descriptor"

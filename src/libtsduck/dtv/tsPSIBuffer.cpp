@@ -135,22 +135,30 @@ bool ts::PSIBuffer::putLanguageCode(const UString& str, bool allow_empty)
 
 ts::UString ts::PSIBuffer::getLanguageCode()
 {
+    UString str;
+    getLanguageCode(str);
+    return str;
+}
+
+bool ts::PSIBuffer::getLanguageCode(UString& str)
+{
+    str.clear();
+
     if (readError() || remainingReadBytes() < 3 || !readIsByteAligned()) {
         // No partial string read if not enough bytes are present.
         // Cannot read unaligned character codes.
         setReadError();
-        return UString();
+        return false;
     }
     else {
         // Read 3 characters. Ignore non-ASCII characters.
-        UString str;
         for (size_t i = 0; i < 3; ++i) {
             const uint8_t c = getUInt8();
             if (c >= 0x20 && c <= 0x7F) {
                 str.push_back(UChar(c));
             }
         }
-        return str;
+        return true;
     }
 }
 

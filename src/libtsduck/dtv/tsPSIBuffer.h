@@ -136,6 +136,15 @@ namespace ts {
         //! Read the next 24 bits as a 3-character language or country code and advance the read pointer.
         //! Set the read error flag if there are not enough bits to read or if the current read pointer
         //! is not at a byte boundary. Non-ASCII characters are ignored.
+        //! @param [out] str Returned decoded string.
+        //! @return True on success, false on error (truncated, unsupported format, etc.)
+        //!
+        bool getLanguageCode(UString& str);
+
+        //!
+        //! Read the next 24 bits as a 3-character language or country code and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read or if the current read pointer
+        //! is not at a byte boundary. Non-ASCII characters are ignored.
         //! @return The language or country code string.
         //!
         UString getLanguageCode();

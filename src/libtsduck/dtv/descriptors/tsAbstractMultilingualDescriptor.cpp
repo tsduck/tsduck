@@ -81,7 +81,7 @@ void ts::AbstractMultilingualDescriptor::deserializePayload(PSIBuffer& buf)
 {
     while (!buf.error() && !buf.endOfRead()) {
         Entry e;
-        e.language = buf.getLanguageCode();
+        buf.getLanguageCode(e.language);
         buf.getStringWithByteLength(e.name);
         entries.push_back(e);
     }

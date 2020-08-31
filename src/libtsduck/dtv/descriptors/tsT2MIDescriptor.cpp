@@ -85,43 +85,34 @@ ts::DID ts::T2MIDescriptor::extendedTag() const
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Serialization / deserialization.
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::T2MIDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    bbp->appendUInt8(t2mi_stream_id & 0x07);
-    bbp->appendUInt8(num_t2mi_streams_minus_one & 0x07);
-    bbp->appendUInt8(pcr_iscr_common_clock_flag ? 0x01 : 0x00);
-    bbp->append(reserved);
-    serializeEnd(desc, bbp);
+    buf.putBits(0, 5);
+    buf.putBits(t2mi_stream_id, 3);
+    buf.putBits(0, 5);
+    buf.putBits(num_t2mi_streams_minus_one, 3);
+    buf.putBits(0, 7);
+    buf.putBit(pcr_iscr_common_clock_flag);
+    buf.putBytes(reserved);
+}
+
+void ts::T2MIDescriptor::deserializePayload(PSIBuffer& buf)
+{
+    buf.skipBits(5);
+    t2mi_stream_id = buf.getBits<uint8_t>(3);
+    buf.skipBits(5);
+    num_t2mi_streams_minus_one = buf.getBits<uint8_t>(3);
+    buf.skipBits(7);
+    pcr_iscr_common_clock_flag = buf.getBit() != 0;
+    buf.getByteBlock(reserved, buf.remainingReadBytes());
 }
 
 
 //----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::T2MIDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
-{
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && size >= 4 && data[0] == MY_EDID)) {
-        return;
-    }
-
-    t2mi_stream_id = data[1] & 0x07;
-    num_t2mi_streams_minus_one = data[2] & 0x07;
-    pcr_iscr_common_clock_flag = (data[3] & 0x01) != 0;
-    reserved.copy(data + 4, size - 4);
-}
-
-
-//----------------------------------------------------------------------------
-// XML serialization
+// XML serialization / deserialization.
 //----------------------------------------------------------------------------
 
 void ts::T2MIDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -129,15 +120,8 @@ void ts::T2MIDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"t2mi_stream_id", t2mi_stream_id, true);
     root->setIntAttribute(u"num_t2mi_streams_minus_one", num_t2mi_streams_minus_one);
     root->setBoolAttribute(u"pcr_iscr_common_clock_flag", pcr_iscr_common_clock_flag);
-    if (!reserved.empty()) {
-        root->addHexaTextChild(u"reserved", reserved);
-    }
+    root->addHexaTextChild(u"reserved", reserved, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::T2MIDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
@@ -152,20 +136,15 @@ bool ts::T2MIDescriptor::analyzeXML(DuckContext& duck, const xml::Element* eleme
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-
-    if (size >= 3) {
-        disp << margin << "T2-MI stream id: " << int(data[0] & 0x07)
-             << ", T2-MI stream count: " << int((data[1] & 0x07) + 1)
-             << ", PCR/ISCR common clock: " << UString::YesNo(data[2] & 0x01)
-             << std::endl;
-        data += 3; size -= 3;
+    if (buf.remainingReadBytes() >= 3) {
+        buf.skipBits(5);
+        disp << margin << "T2-MI stream id: " << buf.getBits<int>(3);
+        buf.skipBits(5);
+        disp << ", T2-MI stream count: " << (buf.getBits<int>(3) + 1);
+        buf.skipBits(7);
+        disp << ", PCR/ISCR common clock: " << UString::YesNo(buf.getBit() != 0) << std::endl;
     }
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }

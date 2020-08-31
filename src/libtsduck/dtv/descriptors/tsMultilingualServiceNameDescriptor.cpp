@@ -95,7 +95,7 @@ void ts::MultilingualServiceNameDescriptor::deserializePayload(PSIBuffer& buf)
 {
     while (!buf.error() && !buf.endOfRead()) {
         Entry e;
-        e.language = buf.getLanguageCode();
+        buf.getLanguageCode(e.language);
         buf.getStringWithByteLength(e.service_provider_name);
         buf.getStringWithByteLength(e.service_name);
         entries.push_back(e);

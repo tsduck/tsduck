@@ -79,47 +79,28 @@ ts::DID ts::CIAncillaryDataDescriptor::extendedTag() const
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Serialization / deserialization
 //----------------------------------------------------------------------------
 
-void ts::CIAncillaryDataDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CIAncillaryDataDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    bbp->append(ancillary_data);
-    serializeEnd(desc, bbp);
+    buf.putBytes(ancillary_data);
+}
+
+void ts::CIAncillaryDataDescriptor::deserializePayload(PSIBuffer& buf)
+{
+    buf.getByteBlock(ancillary_data, buf.remainingReadBytes());
 }
 
 
 //----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::CIAncillaryDataDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
-{
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1 && data[0] == MY_EDID;
-
-    if (_is_valid) {
-        ancillary_data.copy(data + 1, size - 1);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// XML serialization
+// XML serialization / deserialization
 //----------------------------------------------------------------------------
 
 void ts::CIAncillaryDataDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->addHexaTextChild(u"ancillary_data", ancillary_data, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::CIAncillaryDataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
@@ -131,12 +112,7 @@ bool ts::CIAncillaryDataDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CIAncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CIAncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-    disp.displayPrivateData(u"Ancillary data", data, size, margin);
+    disp.displayPrivateData(u"Ancillary data", buf, NPOS, margin);
 }

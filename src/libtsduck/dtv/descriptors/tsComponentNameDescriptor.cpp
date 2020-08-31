@@ -68,27 +68,17 @@ ts::ComponentNameDescriptor::ComponentNameDescriptor(DuckContext& duck, const De
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Serialization / deserialization
 //----------------------------------------------------------------------------
 
-void ts::ComponentNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ComponentNameDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    component_name_string.serialize(duck, *bbp);
-    serializeEnd(desc, bbp);
+    buf.putMultipleString(component_name_string);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::ComponentNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ComponentNameDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    component_name_string.clear();
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && component_name_string.deserialize(duck, data, size);
+    buf.getMultipleString(component_name_string);
 }
 
 
@@ -96,16 +86,15 @@ void ts::ComponentNameDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ComponentNameDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ComponentNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-    ATSCMultipleString::Display(disp, u"Component name: ", margin, data, size);
-    disp.displayExtraData(data, size, margin);
+    disp.displayATSCMultipleString(buf, 0, margin, u"Component name: ");
+    disp.displayExtraData(buf, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization / deserialization
 //----------------------------------------------------------------------------
 
 void ts::ComponentNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

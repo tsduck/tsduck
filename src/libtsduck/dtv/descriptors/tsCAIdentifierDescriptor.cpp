@@ -77,15 +77,11 @@ ts::CAIdentifierDescriptor::CAIdentifierDescriptor(std::initializer_list<uint16_
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CAIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CAIdentifierDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
     for (size_t n = 0; n < casids.size(); ++n) {
-        bbp->appendUInt16(casids[n]);
+        buf.putUInt16(casids[n]);
     }
-
-    serializeEnd(desc, bbp);
 }
 
 
@@ -93,19 +89,10 @@ void ts::CAIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CAIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::CAIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 2 == 0;
-    casids.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        while (size >= 2) {
-            casids.push_back (GetUInt16 (data));
-            data += 2;
-            size -= 2;
-        }
+    while (!buf.error() && !buf.endOfRead()) {
+        casids.push_back(buf.getUInt16());
     }
 }
 
@@ -114,17 +101,12 @@ void ts::CAIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 2) {
-        uint16_t cas_id = GetUInt16(data);
-        data += 2; size -= 2;
-        disp << margin << "CA System Id: " << names::CASId(disp.duck(), cas_id, names::FIRST) << std::endl;
+    while (buf.remainingReadBytes() >= 2) {
+        disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), names::FIRST) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 
