@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -78,16 +79,14 @@ ts::TargetIPv6SourceSlashDescriptor::Address::Address(const IPv6Address& addr1, 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6SourceSlashDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TargetIPv6SourceSlashDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
     for (auto it = addresses.begin(); it != addresses.end(); ++it) {
-        bbp->append(it->IPv6_source_addr.toBytes());
-        bbp->appendUInt8(it->IPv6_source_slash_mask);
-        bbp->append(it->IPv6_dest_addr.toBytes());
-        bbp->appendUInt8(it->IPv6_dest_slash_mask);
+        buf.putBytes(it->IPv6_source_addr.toBytes());
+        buf.putUInt8(it->IPv6_source_slash_mask);
+        buf.putBytes(it->IPv6_dest_addr.toBytes());
+        buf.putUInt8(it->IPv6_dest_slash_mask);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -95,19 +94,15 @@ void ts::TargetIPv6SourceSlashDescriptor::serialize(DuckContext& duck, Descripto
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6SourceSlashDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TargetIPv6SourceSlashDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size % 34 == 0;
-    addresses.clear();
-
-    if (_is_valid) {
-        while (size >= 34) {
-            addresses.push_back(Address(IPv6Address(data, 16), data[16], IPv6Address(data + 17, 16), data[33]));
-            data += 34; size -= 34;
-        }
+    while (!buf.error() && !buf.endOfRead()) {
+        Address addr;
+        addr.IPv6_source_addr = IPv6Address(buf.getByteBlock(16));
+        addr.IPv6_source_slash_mask = buf.getUInt8();
+        addr.IPv6_dest_addr = IPv6Address(buf.getByteBlock(16));
+        addr.IPv6_dest_slash_mask = buf.getUInt8();
+        addresses.push_back(addr);
     }
 }
 
@@ -116,17 +111,15 @@ void ts::TargetIPv6SourceSlashDescriptor::deserialize(DuckContext& duck, const D
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6SourceSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TargetIPv6SourceSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 34) {
-        disp << margin << "- Source:      " << IPv6Address(data, 16) << "/" << int(data[16]) << std::endl
-             << margin << "  Destination: " << IPv6Address(data + 17, 16) << "/" << int(data[33]) << std::endl;
-        data += 34; size -= 34;
+    while (buf.remainingReadBytes() >= 34) {
+        disp << margin << "- Source:      " << IPv6Address(buf.getByteBlock(16));
+        disp << "/" << int(buf.getUInt8()) << std::endl;
+        disp << margin << "  Destination: " << IPv6Address(buf.getByteBlock(16));
+        disp << "/" << int(buf.getUInt8()) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

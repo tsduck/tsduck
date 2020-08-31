@@ -66,15 +66,7 @@ namespace ts {
             //! @param [in] lcn_ Logical channel number.
             //! @param [in] skyid_ Sky id.
             //!
-            Entry(uint16_t id_ = 0, uint8_t type_ = 0, uint16_t cid_ = 0,
-                  uint16_t lcn_ = 0, uint16_t skyid_ = 0):
-                service_id(id_),
-                service_type(type_),
-                channel_id(cid_),
-                lcn(lcn_),
-                sky_id(skyid_)
-            {
-            }
+            Entry(uint16_t id_ = 0, uint8_t type_ = 0, uint16_t cid_ = 0, uint16_t lcn_ = 0, uint16_t skyid_ = 0);
         };
 
         //!
@@ -88,8 +80,8 @@ namespace ts {
         static const size_t MAX_ENTRIES = 28;
 
         // SkyLogicalChannelNumberDescriptor public members:
-        EntryList entries;  //!< List of service entries.
-        uint16_t region_id; //!< Region id (maybe in the UK?, 0xFFFF for all country).
+        EntryList entries;   //!< List of service entries.
+        uint16_t  region_id; //!< Region id (maybe in the UK?, 0xFFFF for all country).
 
         //!
         //! Default constructor.
@@ -104,11 +96,14 @@ namespace ts {
         SkyLogicalChannelNumberDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
-        DeclareLegacyDisplayDescriptor();
     };
 }

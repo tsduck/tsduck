@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -73,14 +74,12 @@ ts::TargetIPv6AddressDescriptor::TargetIPv6AddressDescriptor(DuckContext& duck, 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6AddressDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TargetIPv6AddressDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(IPv6_addr_mask.toBytes());
+    buf.putBytes(IPv6_addr_mask.toBytes());
     for (auto it = IPv6_addr.begin(); it != IPv6_addr.end(); ++it) {
-        bbp->append(it->toBytes());
+        buf.putBytes(it->toBytes());
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -88,21 +87,11 @@ void ts::TargetIPv6AddressDescriptor::serialize(DuckContext& duck, Descriptor& d
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6AddressDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TargetIPv6AddressDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 16 && size % 16 == 0;
-    IPv6_addr.clear();
-
-    if (_is_valid) {
-        IPv6_addr_mask.setAddress(data, 16);
-        data += 16; size -= 16;
-        while (size >= 16) {
-            IPv6_addr.push_back(IPv6Address(data, 16));
-            data += 16; size -= 16;
-        }
+    IPv6_addr_mask.setAddress(buf.getByteBlock(16));
+    while (!buf.error() && !buf.endOfRead()) {
+        IPv6_addr.push_back(IPv6Address(buf.getByteBlock(16)));
     }
 }
 
@@ -111,18 +100,14 @@ void ts::TargetIPv6AddressDescriptor::deserialize(DuckContext& duck, const Descr
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6AddressDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TargetIPv6AddressDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
     const char* header = "Address mask: ";
-    while (size >= 16) {
-        disp << margin << header << IPv6Address(data, 16) << std::endl;
-        data += 16; size -= 16;
+    while (buf.remainingReadBytes() >= 16) {
+        disp << margin << header << IPv6Address(buf.getByteBlock(16)) << std::endl;
         header = "Address: ";
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

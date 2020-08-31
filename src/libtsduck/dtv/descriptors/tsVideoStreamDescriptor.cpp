@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -84,21 +85,19 @@ void ts::VideoStreamDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::VideoStreamDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::VideoStreamDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8((multiple_frame_rate ? 0x80 : 00) |
-                     uint8_t((frame_rate_code & 0x0F) << 3) |
-                     (MPEG_1_only ? 0x04 : 00) |
-                     (constrained_parameter ? 0x02 : 00) |
-                     (still_picture ? 0x01 : 00));
+    buf.putBit(multiple_frame_rate);
+    buf.putBits(frame_rate_code, 4);
+    buf.putBit(MPEG_1_only);
+    buf.putBit(constrained_parameter);
+    buf.putBit(still_picture);
     if (!MPEG_1_only) {
-        bbp->appendUInt8(profile_and_level_indication);
-        bbp->appendUInt8(uint8_t((chroma_format & 0x03) << 6) |
-                         (frame_rate_extension ? 0x20 : 00) |
-                         0x1F);
+        buf.putUInt8(profile_and_level_indication);
+        buf.putBits(chroma_format, 2);
+        buf.putBit(frame_rate_extension);
+        buf.putBits(0xFF, 5);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -106,25 +105,18 @@ void ts::VideoStreamDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::VideoStreamDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::VideoStreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        multiple_frame_rate = (data[0] & 0x80) != 0;
-        frame_rate_code = (data[0] >> 3) & 0x0F;
-        MPEG_1_only = (data[0] & 0x04) != 0;
-        constrained_parameter = (data[0] & 0x02) != 0;
-        still_picture = (data[0] & 0x01) != 0;
-        _is_valid = (MPEG_1_only && size == 1) || (!MPEG_1_only && size == 3);
-        if (_is_valid && !MPEG_1_only) {
-            profile_and_level_indication = data[1];
-            chroma_format = (data[2] >> 6) & 0x03;
-            frame_rate_extension = (data[2] & 0x20) != 0;
-        }
+    multiple_frame_rate = buf.getBit() != 0;
+    frame_rate_code = buf.getBits<uint8_t>(4);
+    MPEG_1_only = buf.getBit() != 0;
+    constrained_parameter = buf.getBit() != 0;
+    still_picture = buf.getBit() != 0;
+    if (!MPEG_1_only) {
+        profile_and_level_indication = buf.getUInt8();
+        chroma_format = buf.getBits<uint8_t>(2);
+        frame_rate_extension = buf.getBit() != 0;
+        buf.skipBits(5);
     }
 }
 
@@ -133,33 +125,22 @@ void ts::VideoStreamDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::VideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::VideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        const bool mp1only = (data[0] & 0x04) != 0;
-        disp << margin
-             << UString::Format(u"Multiple frame rate: %s, frame rate: %s",
-                                {UString::TrueFalse((data[0] & 0x80) != 0),
-                                 NameFromSection(u"FrameRate", (data[0] >> 3) & 0x0F, names::FIRST)})
-             << std::endl
-             << margin
-             << UString::Format(u"MPEG-1 only: %s, constained parameter: %s, still picture: %s",
-                                {UString::TrueFalse(mp1only),
-                                 UString::TrueFalse((data[0] & 0x02) != 0),
-                                 UString::TrueFalse((data[0] & 0x01) != 0)})
-             << std::endl;
-        data++; size--;
-        if (!mp1only && size >= 2) {
-            disp << margin << UString::Format(u"Profile and level: 0x%X (%d)", {data[0], data[0]}) << std::endl
-                 << margin << "Chroma format: " << NameFromSection(u"ChromaFormat", (data[1] >> 6) & 0x03, names::FIRST) << std::endl
-                 << margin << "Frame rate extension: " << UString::TrueFalse((data[1] & 0x20) != 0) << std::endl;
-            data += 2; size -= 2;
+    if (!buf.endOfRead()) {
+        disp << margin << UString::Format(u"Multiple frame rate: %s", {buf.getBit() != 0});
+        disp << ", frame rate: " << NameFromSection(u"FrameRate", buf.getBits<uint8_t>(4), names::FIRST) << std::endl;
+        const bool mp1only = buf.getBit() != 0;
+        disp << margin << UString::Format(u"MPEG-1 only: %s, constained parameter: %s", {mp1only, buf.getBit() != 0});
+        disp << UString::Format(u", still picture: %s", {buf.getBit() != 0}) << std::endl;
+        if (!mp1only && !buf.endOfRead()) {
+            disp << margin << UString::Format(u"Profile and level: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            disp << margin << "Chroma format: " << NameFromSection(u"ChromaFormat", buf.getBits<uint8_t>(2), names::FIRST) << std::endl;
+            disp << margin << UString::Format(u"Frame rate extension: %s", {buf.getBit() != 0}) << std::endl;
+            buf.skipBits(5);
         }
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

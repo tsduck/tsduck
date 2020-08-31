@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -74,13 +75,11 @@ void ts::VideoWindowDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::VideoWindowDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::VideoWindowDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt32((uint32_t(horizontal_offset & 0x3FFF) << 18) |
-                      (uint32_t(vertical_offset & 0x3FFF) << 4) |
-                      (window_priority & 0x0F));
-    serializeEnd(desc, bbp);
+    buf.putBits(horizontal_offset, 14);
+    buf.putBits(vertical_offset, 14);
+    buf.putBits(window_priority, 4);
 }
 
 
@@ -88,19 +87,11 @@ void ts::VideoWindowDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::VideoWindowDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::VideoWindowDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 4;
-
-    if (_is_valid) {
-        const uint32_t x = GetUInt32(data);
-        horizontal_offset = uint16_t(x >> 18) & 0x3FFF;
-        vertical_offset = uint16_t(x >> 4) & 0x3FFF;
-        window_priority = uint8_t(x) & 0x0F;
-    }
+    horizontal_offset = buf.getBits<uint16_t>(14);
+    vertical_offset = buf.getBits<uint16_t>(14);
+    window_priority = buf.getBits<uint16_t>(4);
 }
 
 
@@ -108,19 +99,14 @@ void ts::VideoWindowDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::VideoWindowDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::VideoWindowDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        const uint32_t x = GetUInt32(data);
-        disp << margin
-             << UString::Format(u"Offset x: %d, y: %d, window priority: %d", {(x >> 18) & 0x3FFF, (x >> 4) & 0x3FFF, x & 0x0F})
-             << std::endl;
-        data += 4; size -= 4;
+    if (buf.remainingReadBytes() >= 2) {
+        disp << margin << UString::Format(u"Offset x: %d", {buf.getBits<uint16_t>(14)});
+        disp << UString::Format(u", y: %d", {buf.getBits<uint16_t>(14)});
+        disp << UString::Format(u", window priority: %d", {buf.getBits<uint16_t>(4)})<< std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

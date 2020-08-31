@@ -38,6 +38,7 @@ for name in $*; do
 
     # Extract class name if a file name is given.
     name=${name/#ts/}
+    name=${name/%./}
     name=${name/%.h/}
     name=${name/%.cpp/}
     header=ts${name}.h
@@ -69,6 +70,9 @@ for name in $*; do
 
     # Adjust source file.
     sed -e 's/::serialize(DuckContext[^,)]*, Descriptor[^,)]*) const/::serializePayload(PSIBuffer\& buf) const/' \
+        -e 's/bbp->append/buf.put/g' \
+        -e '/ByteBlockPtr bbp(serializeStart());/d' \
+        -e '/serializeEnd(desc, bbp);/d' \
         -e 's/::deserialize(DuckContext[^,)]*, const Descriptor[^,)]*)/::deserializePayload(PSIBuffer\& buf)/' \
         -e 's/::DisplayDescriptor(TablesDisplay.*)/::DisplayDescriptor(TablesDisplay\& disp, PSIBuffer\& buf, const UString\& margin, DID did, TID tid, PDS pds)/' \
         -i $source
