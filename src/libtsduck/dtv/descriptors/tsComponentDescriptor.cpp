@@ -81,20 +81,14 @@ void ts::ComponentDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ComponentDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ComponentDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    bbp->appendUInt8(uint8_t(stream_content_ext << 4) | (stream_content & 0x0F));
-    bbp->appendUInt8(component_type);
-    bbp->appendUInt8(component_tag);
-    if (!SerializeLanguageCode(*bbp, language_code)) {
-        desc.invalidate();
-        return;
-    }
-    bbp->append(duck.encoded(text));
-
-    serializeEnd(desc, bbp);
+    buf.putBits(stream_content_ext, 4);
+    buf.putBits(stream_content, 4);
+    buf.putUInt8(component_type);
+    buf.putUInt8(component_tag);
+    buf.putLanguageCode(language_code);
+    buf.putString(text);
 }
 
 
@@ -102,21 +96,14 @@ void ts::ComponentDescriptor::serialize(DuckContext& duck, Descriptor& desc) con
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ComponentDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ComponentDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 6;
-
-    if (_is_valid) {
-        stream_content_ext = (data[0] >> 4) & 0x0F;
-        stream_content = data[0] & 0x0F;
-        component_type = data[1];
-        component_tag = data[2];
-        language_code = DeserializeLanguageCode(data + 3);
-        duck.decode(text, data + 6, size - 6);
-    }
+    stream_content_ext = buf.getBits<uint8_t>(4);
+    stream_content = buf.getBits<uint8_t>(4);
+    component_type = buf.getUInt8();
+    component_tag = buf.getUInt8();
+    buf.getLanguageCode(language_code);
+    buf.getString(text);
 }
 
 
@@ -124,24 +111,17 @@ void ts::ComponentDescriptor::deserialize(DuckContext& duck, const Descriptor& d
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 6) {
-        const uint16_t type = GetUInt16(data);
-        const uint8_t tag = data[2];
-        disp << margin << "Content/type: " << names::ComponentType(disp.duck(), type, names::FIRST) << std::endl
-             << margin << UString::Format(u"Component tag: %d (0x%X)", {tag, tag}) << std::endl
-             << margin << "Language: " << DeserializeLanguageCode(data + 3) << std::endl;
-        data += 6; size -= 6;
-        if (size > 0) {
-            disp << margin << "Description: \"" << disp.duck().decoded(data, size) << "\"" << std::endl;
+    if (buf.remainingReadBytes() >= 6) {
+        disp << margin << "Content/type: " << names::ComponentType(disp.duck(), buf.getUInt16(), names::FIRST) << std::endl;
+        disp << margin << UString::Format(u"Component tag: %d (0x%<X)", {buf.getUInt8()}) << std::endl;
+        disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
+        if (!buf.error() && !buf.endOfRead()) {
+            disp << margin << "Description: \"" << buf.getString() << "\"" << std::endl;
         }
-        data += size; size = 0;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

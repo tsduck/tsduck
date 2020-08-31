@@ -75,36 +75,23 @@ void ts::CAEMMTSDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// Serialization
+// Serialization / deserialization
 //----------------------------------------------------------------------------
 
-void ts::CAEMMTSDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CAEMMTSDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(CA_system_id);
-    bbp->appendUInt16(transport_stream_id);
-    bbp->appendUInt16(original_network_id);
-    bbp->appendUInt8(power_supply_period);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(CA_system_id);
+    buf.putUInt16(transport_stream_id);
+    buf.putUInt16(original_network_id);
+    buf.putUInt8(power_supply_period);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::CAEMMTSDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::CAEMMTSDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 7;
-
-    if (_is_valid) {
-        CA_system_id = GetUInt16(data);
-        transport_stream_id = GetUInt16(data + 2);
-        original_network_id = GetUInt16(data + 4);
-        power_supply_period = GetUInt8(data + 6);
-    }
+    CA_system_id = buf.getUInt16();
+    transport_stream_id = buf.getUInt16();
+    original_network_id = buf.getUInt16();
+    power_supply_period = buf.getUInt8();
 }
 
 
@@ -112,23 +99,20 @@ void ts::CAEMMTSDescriptor::deserialize(DuckContext& duck, const Descriptor& des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CAEMMTSDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CAEMMTSDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 7) {
-        disp << margin << "CA System Id: " << names::CASId(disp.duck(), GetUInt16(data), names::FIRST) << std::endl
-             << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl
-             << margin << UString::Format(u"Original network id: 0x%X (%d)", {GetUInt16(data + 4), GetUInt16(data + 4)}) << std::endl
-             << margin << UString::Format(u"Power-on time: %d minutes", {data[6]}) << std::endl;
-        data += 7; size -= 7;
+    if (buf.remainingReadBytes() >= 4) {
+        disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), names::FIRST) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Power-on time: %d minutes", {buf.getUInt8()}) << std::endl;
     }
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML serialization
+// XML serialization / deserialization
 //----------------------------------------------------------------------------
 
 void ts::CAEMMTSDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -138,11 +122,6 @@ void ts::CAEMMTSDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
     root->setIntAttribute(u"original_network_id", original_network_id, true);
     root->setIntAttribute(u"power_supply_period", power_supply_period);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::CAEMMTSDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

@@ -30,7 +30,6 @@
 #include "tsMultilingualNetworkNameDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsPSIRepository.h"
-#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 TSDUCK_SOURCE;
 
