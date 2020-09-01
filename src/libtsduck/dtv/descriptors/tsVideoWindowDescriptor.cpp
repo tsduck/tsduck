@@ -91,7 +91,7 @@ void ts::VideoWindowDescriptor::deserializePayload(PSIBuffer& buf)
 {
     horizontal_offset = buf.getBits<uint16_t>(14);
     vertical_offset = buf.getBits<uint16_t>(14);
-    window_priority = buf.getBits<uint16_t>(4);
+    window_priority = buf.getBits<uint8_t>(4);
 }
 
 
@@ -104,7 +104,7 @@ void ts::VideoWindowDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
     if (buf.remainingReadBytes() >= 2) {
         disp << margin << UString::Format(u"Offset x: %d", {buf.getBits<uint16_t>(14)});
         disp << UString::Format(u", y: %d", {buf.getBits<uint16_t>(14)});
-        disp << UString::Format(u", window priority: %d", {buf.getBits<uint16_t>(4)})<< std::endl;
+        disp << UString::Format(u", window priority: %d", {buf.getBits<uint8_t>(4)})<< std::endl;
     }
     disp.displayExtraData(buf, margin);
 }
