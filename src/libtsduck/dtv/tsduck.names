@@ -4068,3 +4068,12 @@ Bits = 4
 1 = Concatenation (sequential)
 2 = Selection (alternate)
 3 = Parallel
+
+[HEVCExtensionDimensionBits]
+# In HEVC_hierarchy_extension_descriptor
+0 = Multi-view enhancement
+1 = Spatial scalability, including SNR quality or fidelity enhancement
+2 = Depth enhancement
+3 = Temporal enhancement
+4 = Auxiliary enhancement
+5-15 = Reserved

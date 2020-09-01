@@ -13,9 +13,6 @@ TSDuck - List of features to be implemented or fixed
   - 2.6.56   content_labelling_descriptor
   - 2.6.58   metadata_pointer_descriptor
   - 2.6.60   metadata_descriptor
-  - 2.6.82   MVC_operation_point_descriptor
-  - 2.6.102  HEVC_hierarchy_extension_descriptor
-  - 2.6.104  green_extension_descriptor
   - 2.6.106  MPEGH_3D_audio_descriptor
   - 2.6.108  MPEGH_3D_audio_config_descriptor
   - 2.6.110  MPEGH_3D_audio_scene_descriptor

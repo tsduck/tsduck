@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an af_extensions_descriptor
+//!  Representation of an HEVC_hierarchy_extension_descriptor
 //!
 //----------------------------------------------------------------------------
 
@@ -37,25 +37,34 @@
 
 namespace ts {
     //!
-    //! Representation of an MPEG-defined af_extensions_descriptor.
+    //! Representation of an MPEG-defined HEVC_hierarchy_extension_descriptor.
     //!
-    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.99.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.102.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL AFExtensionsDescriptor : public AbstractDescriptor
+    class TSDUCKDLL HEVCHierarchyExtensionDescriptor : public AbstractDescriptor
     {
     public:
+        // HEVCHierarchyExtensionDescriptor public members:
+        uint16_t  extension_dimension_bits; //!< Bit mask.
+        uint8_t   hierarchy_layer_index;    //!< 6 bits.
+        uint8_t   temporal_id;              //!< 3 bits.
+        uint8_t   nuh_layer_id;             //!< 6 bits.
+        bool      tref_present;             //!< TREF field may be present in PES header.
+        uint8_t   hierarchy_channel;        //!< 6 bits.
+        ByteBlock hierarchy_ext_embedded_layer_index;  //!< List of 6-bit index values.
+
         //!
         //! Default constructor.
         //!
-        AFExtensionsDescriptor();
+        HEVCHierarchyExtensionDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        AFExtensionsDescriptor(DuckContext& duck, const Descriptor& bin);
+        HEVCHierarchyExtensionDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         DeclareDisplayDescriptor();

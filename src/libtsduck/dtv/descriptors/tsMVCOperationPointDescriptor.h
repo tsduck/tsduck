@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an af_extensions_descriptor
+//!  Representation of an MVC_operation_point_descriptor.
 //!
 //----------------------------------------------------------------------------
 
@@ -37,32 +37,72 @@
 
 namespace ts {
     //!
-    //! Representation of an MPEG-defined af_extensions_descriptor.
-    //!
-    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.99.
+    //! Representation of an MVC_operation_point_descriptor.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.82.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL AFExtensionsDescriptor : public AbstractDescriptor
+    class TSDUCKDLL MVCOperationPointDescriptor : public AbstractDescriptor
     {
     public:
         //!
+        //! Operation point entry.
+        //!
+        struct TSDUCKDLL Point
+        {
+            Point();                            //!< Contructor.
+            uint8_t   applicable_temporal_id;   //!< 3 bits.
+            uint8_t   num_target_output_views;  //!< 8 bits.
+            ByteBlock ES_references;            //!< List of 6-bit ES references.
+        };
+
+        //!
+        //! List of operation point entries.
+        //!
+        typedef std::list<Point> PointList;
+
+        //!
+        //! Level entry.
+        //!
+        struct TSDUCKDLL Level
+        {
+            Level();                     //!< Contructor.
+            uint8_t   level_idc;         //!< MVC level.
+            PointList operation_points;  //!< List of operational points.
+        };
+
+        //!
+        //! List of level entries.
+        //!
+        typedef std::list<Level> LevelList;
+
+        // MVCOperationPointDescriptor public members:
+        uint8_t   profile_idc;           //!< MVC profile.
+        bool      constraint_set0;       //!< Defined in H.264, ISO/IEC 14496-10
+        bool      constraint_set1;       //!< Defined in H.264, ISO/IEC 14496-10
+        bool      constraint_set2;       //!< Defined in H.264, ISO/IEC 14496-10
+        bool      constraint_set3;       //!< Defined in H.264, ISO/IEC 14496-10
+        bool      constraint_set4;       //!< Defined in H.264, ISO/IEC 14496-10
+        bool      constraint_set5;       //!< Defined in H.264, ISO/IEC 14496-10
+        uint8_t   AVC_compatible_flags;  //!< 2 bits, defined in H.264, ISO/IEC 14496-10
+        LevelList levels;                //!< List of level entries.
+
+        //!
         //! Default constructor.
         //!
-        AFExtensionsDescriptor();
+        MVCOperationPointDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        AFExtensionsDescriptor(DuckContext& duck, const Descriptor& bin);
+        MVCOperationPointDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods
-        virtual DID extendedTag() const override;
         virtual void clearContent() override;
         virtual void serializePayload(PSIBuffer&) const override;
         virtual void deserializePayload(PSIBuffer&) override;
