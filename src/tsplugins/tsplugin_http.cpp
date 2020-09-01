@@ -164,7 +164,7 @@ void ts::HttpInput::processInput()
     request.setArgs(_web_args);
 
     // Loop on request count.
-    for (size_t count = 0; count < _repeat_count && (ok || _ignore_errors) && !tsp->aborting(); count++) {
+    for (size_t count = 0; count < _repeat_count && (ok || _ignore_errors) && !tsp->aborting() && !isInterrupted(); count++) {
         // Wait between reconnections.
         if (count > 0 && _reconnect_delay > 0) {
             SleepThread(_reconnect_delay);

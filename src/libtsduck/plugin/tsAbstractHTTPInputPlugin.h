@@ -47,10 +47,10 @@ namespace ts {
         TS_NOBUILD_NOCOPY(AbstractHTTPInputPlugin);
     public:
         // Implementation of Plugin interface.
-        // If overridden by descrambler subclass, superclass must be explicitly invoked.
+        // If overridden by subclass, superclass must be explicitly invoked.
         virtual bool start() override;
 
-        // Inherited from PushInputPluginÒ.
+        // Inherited from PushInputPlugin.
         virtual bool pushPackets(const TSPacket* buffer, size_t count) override;
 
         //!

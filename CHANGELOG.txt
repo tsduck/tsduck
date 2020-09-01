@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.2-1955
+VERSION 3.23-1962
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -12,6 +12,12 @@ VERSION 3.2-1955
   * With commands and plugins which access the Internet such as the "http"
     plugin, the environment variables "http_proxy" and "https_proxy" are now
     used on Windows also.
+
+[BUG] Bug fixes:
+
+  * Fixed issue #632: When the input plugin "http" was used with --ignore-errors
+    and either --infinite or --repeat, restarting the plugin from "tspcontrol"
+    entered an infinite loop.
 
 -------------------------------------------------------------------------------
 
