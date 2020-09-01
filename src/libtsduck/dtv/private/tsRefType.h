@@ -139,6 +139,8 @@
     REF_TYPE(FTAContentManagementDescriptor);
     REF_TYPE(GenreDescriptor);
     REF_TYPE(GraphicsConstraintsDescriptor);
+    REF_TYPE(GreenExtensionDescriptor);
+    REF_TYPE(HEVCHierarchyExtensionDescriptor);
     REF_TYPE(HEVCTimingAndHRDDescriptor);
     REF_TYPE(HEVCVideoDescriptor);
     REF_TYPE(HierarchicalTransmissionDescriptor);
@@ -174,6 +176,7 @@
     REF_TYPE(MultiplexBufferDescriptor);
     REF_TYPE(MultiplexBufferUtilizationDescriptor);
     REF_TYPE(MVCExtensionDescriptor);
+    REF_TYPE(MVCOperationPointDescriptor);
     REF_TYPE(NetworkChangeNotifyDescriptor);
     REF_TYPE(NetworkNameDescriptor);
     REF_TYPE(NodeRelationDescriptor);
