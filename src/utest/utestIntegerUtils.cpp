@@ -53,6 +53,7 @@ public:
     void testRoundDown();
     void testRoundUp();
     void testSignExtend();
+    void testBitSize();
 
     TSUNIT_TEST_BEGIN(IntegerUtilsTest);
     TSUNIT_TEST(testBoundedAdd);
@@ -60,6 +61,7 @@ public:
     TSUNIT_TEST(testRoundDown);
     TSUNIT_TEST(testRoundUp);
     TSUNIT_TEST(testSignExtend);
+    TSUNIT_TEST(testBitSize);
     TSUNIT_TEST_END();
 };
 
@@ -190,4 +192,18 @@ void IntegerUtilsTest::testSignExtend()
     TSUNIT_EQUAL(-1, ts::SignExtend(int16_t(0x0FFF), 12));
     TSUNIT_EQUAL(-2047, ts::SignExtend(int16_t(0x0801), 12));
     TSUNIT_EQUAL(-2048, ts::SignExtend(int16_t(0x2800), 12));
+}
+
+void IntegerUtilsTest::testBitSize()
+{
+    TSUNIT_EQUAL(1, ts::BitSize(uint8_t(0)));
+    TSUNIT_EQUAL(1, ts::BitSize(int8_t(0)));
+    TSUNIT_EQUAL(1, ts::BitSize(uint8_t(1)));
+    TSUNIT_EQUAL(1, ts::BitSize(int8_t(1)));
+    TSUNIT_EQUAL(2, ts::BitSize(uint8_t(2)));
+    TSUNIT_EQUAL(2, ts::BitSize(int8_t(2)));
+    TSUNIT_EQUAL(3, ts::BitSize(uint8_t(5)));
+    TSUNIT_EQUAL(3, ts::BitSize(int8_t(5)));
+    TSUNIT_EQUAL(8, ts::BitSize(int8_t(-1)));
+    TSUNIT_EQUAL(51, ts::BitSize(TS_UCONST64(0x000500000A003000)));
 }

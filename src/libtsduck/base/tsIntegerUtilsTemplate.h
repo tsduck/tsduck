@@ -28,6 +28,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include <type_traits>
+
 
 //----------------------------------------------------------------------------
 // Perform a bounded addition without overflow.
@@ -157,4 +159,27 @@ INT ts::SignExtend(INT x, int bits)
         // Test the sign bit in the LSB signed value.
         return (x & (static_cast<INT>(1) << (bits - 1))) == 0 ? (x & ~mask) : (x | mask);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Get the size in bits of an unsigned integer value.
+//----------------------------------------------------------------------------
+
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
+size_t ts::BitSize(INT x)
+{
+    size_t size = 1;
+    const size_t maxbit = 8 * sizeof(INT);
+    for (size_t bit = 0; bit < maxbit && (x = x >> 1) != 0; ++bit) {
+        ++size;
+    }
+    return size;
+}
+
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+size_t ts::BitSize(INT x)
+{
+    typedef typename std::make_unsigned<INT>::type UINT;
+    return BitSize<UINT>(UINT(x));
 }

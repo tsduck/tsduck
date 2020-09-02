@@ -119,6 +119,21 @@ namespace ts {
     //! @return The maximum width in characters.
     //!
     size_t MaxHexaWidth(size_t typeSize, size_t digitSeparatorSize = 0);
+
+    //!
+    //! Get the size in bits of an integer value.
+    //! This is the minimum number of bits to represent the value up to its most-significant '1' bit.
+    //!
+    //! @tparam INT An integer type.
+    //! @param [in] x An integer containing a signed value in some number of LSB.
+    //! @return The minimum number of bits to represent the value up to its most-significant '1' bit.
+    //! This is never zero, at least one bit is needed to represent the value zero.
+    //!
+    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
+    size_t BitSize(INT x);
+
+    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+    size_t BitSize(INT x);
 }
 
 #include "tsIntegerUtilsTemplate.h"
