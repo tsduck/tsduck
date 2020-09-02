@@ -20,20 +20,21 @@ TSDuck - List of features to be implemented or fixed
   - 2.6.114  MPEGH_3D_audio_multi_stream_descriptor
   - 2.6.116  MPEGH_3D_audio_DRC_loudness_descriptor
   - 2.6.118  MPEGH_3D_audio_command_descriptor
-  - 2.6.119  quality_extension_descriptor
   - 2.6.120  virtual_segmentation_descriptor
   - With embedded data structures from ISO/IEC 14496-1 (MPEG-4 system):
     - 2.6.40   IOD_descriptor
     - 2.6.48   muxcode_descriptor
     - 2.6.50   FmxBufferSize_descriptor
-  - With embedded data structures from ISO/IEC 14496-3 (MPEG-4 Audio):
-    - 2.6.72   MPEG4_audio_extension_descriptor
   - With embedded data structures from ISO/IEC 14496-17 (MPEG-4 text subtitles):
     - 2.6.70   MPEG4_text_descriptor
+  - With embedded data structures from ISO/IEC 14496-3 (MPEG-4 Audio):
+    - 2.6.72   MPEG4_audio_extension_descriptor
   - With embedded data structures from ISO/IEC 23002-3 (MPEG-C auxiliairy video):
     - 2.6.74   auxiliary_video_stream_descriptor
   - With embedded data structures from ISO/IEC 23008-2 / H.265 (HEVC):
     - 2.6.100  HEVC_operation_point_descriptor
+  - With embedded data structures from ISO/IEC 23001-10 (Metrics in ISO-BMFF):
+    - 2.6.119  quality_extension_descriptor
 
   ETSI TS 102 323 (Carriage and signalling of TV-Anytime information)
   - 5.2.2    RNT (Resolution Notification Table)
