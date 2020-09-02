@@ -93,6 +93,7 @@ bool ts::ForkPacketPlugin::getOptions()
 
     // If packet buffering is requested, allocate the buffer
     _buffer.resize(_buffer_size);
+    _mdata.resize(_buffer_size);
 
     return true;
 }
