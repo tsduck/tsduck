@@ -180,6 +180,6 @@ size_t ts::BitSize(INT x)
 template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
 size_t ts::BitSize(INT x)
 {
-    typedef typename std::make_unsigned<INT>::type UINT;
-    return BitSize<UINT>(UINT(x));
+    typedef typename std::make_unsigned<INT>::type UNS_INT;
+    return BitSize<UNS_INT>(UNS_INT(x));
 }
