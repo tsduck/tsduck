@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.23-1962
+VERSION 3.23-1964
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -18,6 +18,8 @@ VERSION 3.23-1962
   * Fixed issue #632: When the input plugin "http" was used with --ignore-errors
     and either --infinite or --repeat, restarting the plugin from "tspcontrol"
     entered an infinite loop.
+  * Fixed issue #632: In version 3.22, a regression was introduced which crashed
+    the plugin "fork" in the packet processor version ("-P fork").
 
 -------------------------------------------------------------------------------
 
