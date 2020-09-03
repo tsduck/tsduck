@@ -858,6 +858,9 @@ else
     ifdef GCC_6_OR_MORE
         CXXFLAGS_WARNINGS += -Wsuggest-override
     endif
+    ifeq ($(MAIN_ARCH),arm)
+        CXXFLAGS_WARNINGS += -Wno-psabi
+    endif
 endif
 
 # Language levels.
