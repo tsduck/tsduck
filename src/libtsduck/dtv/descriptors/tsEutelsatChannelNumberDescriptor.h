@@ -66,13 +66,7 @@ namespace ts {
             //! @param [in] service_id_ Service id.
             //! @param [in] ecn_ Eutelsat channel number.
             //!
-            Entry(uint16_t onetw_id_ = 0, uint16_t ts_id_ = 0, uint16_t service_id_ = 0, uint16_t ecn_ = 0):
-                onetw_id(onetw_id_),
-                ts_id(ts_id_),
-                service_id(service_id_),
-                ecn(ecn_)
-            {
-            }
+            Entry(uint16_t onetw_id_ = 0, uint16_t ts_id_ = 0, uint16_t service_id_ = 0, uint16_t ecn_ = 0);
         };
 
         //!

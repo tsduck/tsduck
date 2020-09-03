@@ -310,3 +310,4 @@
 #include "tsVideoDepthRangeDescriptor.h"
 #include "tsVideoStreamDescriptor.h"
 #include "tsVideoWindowDescriptor.h"
+#include "tsVirtualSegmentationDescriptor.h"

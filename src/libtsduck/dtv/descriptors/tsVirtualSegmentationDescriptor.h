@@ -28,43 +28,61 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an MPEG-defined green_extension_descriptor
+//!  Representation of an MPEG-defined virtual_segmentation_descriptor
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsVariable.h"
 
 namespace ts {
     //!
-    //! Representation of an MPEG-defined green_extension_descriptor.
+    //! Representation of an MPEG-defined virtual_segmentation_descriptor.
     //!
-    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.104.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.120.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL GreenExtensionDescriptor : public AbstractDescriptor
+    class TSDUCKDLL VirtualSegmentationDescriptor : public AbstractDescriptor
     {
     public:
-        // GreenExtensionDescriptor public members:
-        std::vector<uint16_t> constant_backlight_voltage_time_intervals;  //!< Specified in 6.4 of ISO/IEC 23001-11.
-        std::vector<uint16_t> max_variations;                             //!< Specified in 6.4 of ISO/IEC 23001-11.
+        //!
+        //! Partition entry.
+        //!
+        struct TSDUCKDLL Partition
+        {
+            Partition();                          //!< Constructor.
+            uint8_t            partition_id;      //!< 3 bits
+            uint8_t            SAP_type_max;      //!< 3 bits
+            Variable<PID>      boundary_PID;      //!< Optional PID.
+            Variable<uint32_t> maximum_duration;  //!< Up to 29 bits, unit is tick (see ticks_per_second).
+        };
 
         //!
-        //! Maximum number of elements in each array (count must fit on 2 bits).
+        //! List of partition entries.
         //!
-        static constexpr size_t MAX_COUNT = 3;
+        typedef std::list<Partition> PartitionList;
+
+        //!
+        //! Maximum number of partitions (count must fit on 3 bits).
+        //!
+        static constexpr size_t MAX_PARTITION = 3;
+
+        // VirtualSegmentationDescriptor public members:
+        Variable<uint32_t> ticks_per_second;  //!< 21 bits, optional number of ticks per second
+        PartitionList      partitions;        //!< List of partitions.
 
         //!
         //! Default constructor.
         //!
-        GreenExtensionDescriptor();
+        VirtualSegmentationDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        GreenExtensionDescriptor(DuckContext& duck, const Descriptor& bin);
+        VirtualSegmentationDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         DeclareDisplayDescriptor();

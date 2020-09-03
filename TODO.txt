@@ -20,7 +20,6 @@ TSDuck - List of features to be implemented or fixed
   - 2.6.114  MPEGH_3D_audio_multi_stream_descriptor
   - 2.6.116  MPEGH_3D_audio_DRC_loudness_descriptor
   - 2.6.118  MPEGH_3D_audio_command_descriptor
-  - 2.6.120  virtual_segmentation_descriptor
   - With embedded data structures from ISO/IEC 14496-1 (MPEG-4 system):
     - 2.6.40   IOD_descriptor
     - 2.6.48   muxcode_descriptor

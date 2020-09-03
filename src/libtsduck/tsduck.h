@@ -645,6 +645,7 @@
 #include "tsVideoDepthRangeDescriptor.h"
 #include "tsVideoStreamDescriptor.h"
 #include "tsVideoWindowDescriptor.h"
+#include "tsVirtualSegmentationDescriptor.h"
 #include "tsWatchDog.h"
 #include "tsWatchDogHandlerInterface.h"
 #include "tsWebRequest.h"

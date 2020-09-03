@@ -276,3 +276,4 @@
     REF_TYPE(VideoDepthRangeDescriptor);
     REF_TYPE(VideoStreamDescriptor);
     REF_TYPE(VideoWindowDescriptor);
+    REF_TYPE(VirtualSegmentationDescriptor);
