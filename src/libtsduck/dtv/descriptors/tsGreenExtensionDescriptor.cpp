@@ -166,11 +166,11 @@ bool ts::GreenExtensionDescriptor::analyzeXML(DuckContext& duck, const xml::Elem
         element->getChildren(xvoltage, u"constant_backlight_voltage_time_interval", 0, MAX_COUNT) &&
         element->getChildren(xvariation, u"max_variation", 0, MAX_COUNT);
 
-    for (auto it = xvoltage.begin(); it != xvoltage.end(); ++it) {
+    for (auto it = xvoltage.begin(); ok && it != xvoltage.end(); ++it) {
         ok = (*it)->getIntAttribute<uint16_t>(id, u"value", true);
         constant_backlight_voltage_time_intervals.push_back(id);
     }
-    for (auto it = xvariation.begin(); it != xvariation.end(); ++it) {
+    for (auto it = xvariation.begin(); ok && it != xvariation.end(); ++it) {
         ok = (*it)->getIntAttribute<uint16_t>(id, u"value", true);
         max_variations.push_back(id);
     }

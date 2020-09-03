@@ -50,7 +50,7 @@ namespace ts {
         std::vector<uint16_t> max_variations;                             //!< Specified in 6.4 of ISO/IEC 23001-11.
 
         //!
-        //! Mximum number of elements in each array (count must fit on 2 bits).
+        //! Maximum number of elements in each array (count must fit on 2 bits).
         //!
         static constexpr size_t MAX_COUNT = 3;
 

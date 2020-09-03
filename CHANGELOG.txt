@@ -18,7 +18,7 @@ VERSION 3.23-1964
   * Fixed issue #632: When the input plugin "http" was used with --ignore-errors
     and either --infinite or --repeat, restarting the plugin from "tspcontrol"
     entered an infinite loop.
-  * Fixed issue #632: In version 3.22, a regression was introduced which crashed
+  * Fixed issue #633: In version 3.22, a regression was introduced which crashed
     the plugin "fork" in the packet processor version ("-P fork").
 
 -------------------------------------------------------------------------------

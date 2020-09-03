@@ -67,6 +67,14 @@ void ts::EutelsatChannelNumberDescriptor::clearContent()
     entries.clear();
 }
 
+ts::EutelsatChannelNumberDescriptor::Entry::Entry(uint16_t onetw_id_, uint16_t ts_id_, uint16_t service_id_, uint16_t ecn_) :
+    onetw_id(onetw_id_),
+    ts_id(ts_id_),
+    service_id(service_id_),
+    ecn(ecn_)
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Serialization
