@@ -79,6 +79,7 @@
     REF_TYPE(ContentAdvisoryDescriptor);
     REF_TYPE(ContentAvailabilityDescriptor);
     REF_TYPE(ContentDescriptor);
+    REF_TYPE(ContentLabellingDescriptor);
     REF_TYPE(CopyrightDescriptor);
     REF_TYPE(CountryAvailabilityDescriptor);
     REF_TYPE(CPDescriptor);
@@ -163,6 +164,8 @@
     REF_TYPE(LogoTransmissionDescriptor);
     REF_TYPE(MaximumBitrateDescriptor);
     REF_TYPE(MessageDescriptor);
+    REF_TYPE(MetadataDescriptor);
+    REF_TYPE(MetadataPointerDescriptor);
     REF_TYPE(MetadataSTDDescriptor);
     REF_TYPE(MosaicDescriptor);
     REF_TYPE(MPEG2AACAudioDescriptor);

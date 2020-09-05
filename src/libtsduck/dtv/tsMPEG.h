@@ -1025,10 +1025,10 @@ namespace ts {
         DID_MUXCODE             = 0x21, //!< DID for MuxCode_descriptor
         DID_FMX_BUFFER_SIZE     = 0x22, //!< DID for FmxBufferSize_descriptor
         DID_MUX_BUFFER          = 0x23, //!< DID for MultiplexBuffer_descriptor
-        DID_CONTENT_LABELING    = 0x24, //!< DID for Content_labeling_descriptor
-        DID_METADATA_ASSOC      = 0x25, //!< DID for Metadata_association_descriptor
-        DID_METADATA            = 0x26, //!< DID for Metadata_descriptor
-        DID_METADATA_STD        = 0x27, //!< DID for Metadata_STD_descriptor
+        DID_CONTENT_LABELLING   = 0x24, //!< DID for Content_labelling_descriptor
+        DID_METADATA_POINTER    = 0x25, //!< DID for metadata_pointer_descriptor
+        DID_METADATA            = 0x26, //!< DID for metadata_descriptor
+        DID_METADATA_STD        = 0x27, //!< DID for metadata_STD_descriptor
         DID_AVC_VIDEO           = 0x28, //!< DID for AVC_video_descriptor
         DID_MPEG2_IPMP          = 0x29, //!< DID for MPEG-2_IPMP_descriptor
         DID_AVC_TIMING_HRD      = 0x2A, //!< DID for AVC_timing_and_HRD_descriptor

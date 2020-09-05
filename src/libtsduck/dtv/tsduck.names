@@ -389,8 +389,8 @@ Bits = 8
 0x21 = MuxCode
 0x22 = FmxBufferSize
 0x23 = MultiplexBuffer
-0x24 = Content labeling
-0x25 = Metadata Association
+0x24 = Content Labelling
+0x25 = Metadata Pointer
 0x26 = Metadata
 0x27 = Metadata STD
 0x28 = AVC Video
@@ -4077,3 +4077,52 @@ Bits = 4
 3 = Temporal enhancement
 4 = Auxiliary enhancement
 5-15 = Reserved
+
+[MetadataApplicationFormat]
+# In MPEG-defined content_labelling_descriptor and metadata_pointer_descriptor
+Bits = 16
+0x0000-0x000F = Reserved
+0x0010 = ISO 15706 (ISAN) encoded in its binary form
+0x0011 = ISO 15706-2 (V-ISAN) encoded in its binary form
+0x0012-0x00FF = Reserved
+0x0100-0xFFFE = User defined
+0xFFFF = Defined by the metadata_application_format_identifier field
+
+[MetadataFormat]
+# In MPEG-defined metadata_pointer_descriptor
+Bits = 8
+0x00-0x0F = Reserved
+0x10 = ISO/IEC 15938-1 TeM
+0x11 = ISO/IEC 15938-1 BiM
+0x12-0x3E = Reserved
+0x40-0xFE = Defined by metadata application format Private use
+0xFF = Defined by metadata_format_identifier field
+
+[ContentTimeBaseIndicator]
+# In MPEG-defined content_labelling_descriptor
+Bits = 4
+0 = No content time base defined in this descriptor
+1 = Use of STC
+2 = Use of NPT
+3-7 = Reserved
+8-15 = Use of privately defined content time base
+
+[MetadataCarriageFlags]
+# In MPEG-defined metadata_pointer_descriptor
+Bits = 2
+0 = Carriage in the same TS
+1 = Carriage in a different TS
+2 = Carriage in a program stream
+3 = Undefined
+
+[MetadataDecoderConfigFlags]
+# In MPEG-defined metadata_descriptor
+Bits = 3
+0 = None
+1 = Configuration is in the decoder_config_byte field
+2 = Configuration is in the same metadata service
+3 = Configuration is in a DSM-CC carousel
+4 = Configuration is in another metadata service
+5 = Reserved
+6 = Reserved
+7 = Privately defined
