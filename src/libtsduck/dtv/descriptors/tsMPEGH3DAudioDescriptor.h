@@ -28,20 +28,50 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an MPEG-defined MPEGH_3D_audio_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1970
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of an MPEG-defined MPEGH_3D_audio_descriptor.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.106.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL MPEGH3DAudioDescriptor : public AbstractDescriptor
+    {
+    public:
+        // MPEGH3DAudioDescriptor public members:
+        uint8_t   mpegh_3da_profile_level_indication;  //!< MPEGH 3D-audio profile.
+        bool      interactivity_enabled;               //!< 3D audio stream contains elements which enables user interactivity.
+        uint8_t   reference_channel_layout;            //!< 6 bits, see "ChannelConfiguration" in ISO/IEC 23001-8.
+        ByteBlock reserved;                            //!< Reserved data.
+
+        //!
+        //! Default constructor.
+        //!
+        MPEGH3DAudioDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        MPEGH3DAudioDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        // Inherited methods
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual DID extendedTag() const override;
+        virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
+    };
+}

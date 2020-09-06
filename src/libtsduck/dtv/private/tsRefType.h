@@ -172,6 +172,8 @@
     REF_TYPE(MPEG2StereoscopicVideoFormatDescriptor);
     REF_TYPE(MPEG4AudioDescriptor);
     REF_TYPE(MPEG4VideoDescriptor);
+    REF_TYPE(MPEGH3DAudioDescriptor);
+    REF_TYPE(MPEGH3DAudioMultiStreamDescriptor);
     REF_TYPE(MultilingualBouquetNameDescriptor);
     REF_TYPE(MultilingualComponentDescriptor);
     REF_TYPE(MultilingualNetworkNameDescriptor);

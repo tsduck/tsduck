@@ -10,13 +10,6 @@ TSDuck - List of features to be implemented or fixed
 * Implement missing PSI/SI tables and descriptors (list below).
 
   ISO/IEC 13818-1 / H.222 (MPEG system layer)
-  - 2.6.106  MPEGH_3D_audio_descriptor
-  - 2.6.108  MPEGH_3D_audio_config_descriptor
-  - 2.6.110  MPEGH_3D_audio_scene_descriptor
-  - 2.6.112  MPEGH_3D_audio_text_label_descriptor
-  - 2.6.114  MPEGH_3D_audio_multi_stream_descriptor
-  - 2.6.116  MPEGH_3D_audio_DRC_loudness_descriptor
-  - 2.6.118  MPEGH_3D_audio_command_descriptor
   - With embedded data structures from ISO/IEC 14496-1 (MPEG-4 system):
     - 2.6.40   IOD_descriptor
     - 2.6.48   muxcode_descriptor
@@ -29,6 +22,12 @@ TSDuck - List of features to be implemented or fixed
     - 2.6.74   auxiliary_video_stream_descriptor
   - With embedded data structures from ISO/IEC 23008-2 / H.265 (HEVC):
     - 2.6.100  HEVC_operation_point_descriptor
+  - With embedded data structures from ISO/IEC 23008-3 (High efficiency 3D audio):
+    - 2.6.108  MPEGH_3D_audio_config_descriptor
+    - 2.6.110  MPEGH_3D_audio_scene_descriptor
+    - 2.6.112  MPEGH_3D_audio_text_label_descriptor
+    - 2.6.116  MPEGH_3D_audio_DRC_loudness_descriptor
+    - 2.6.118  MPEGH_3D_audio_command_descriptor
   - With embedded data structures from ISO/IEC 23001-10 (Metrics in ISO-BMFF):
     - 2.6.119  quality_extension_descriptor
 
