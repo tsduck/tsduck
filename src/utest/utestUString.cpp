@@ -674,6 +674,19 @@ void UStringTest::testSplit()
     TSUNIT_EQUAL(u"a", v4[0]);
     TSUNIT_EQUAL(u", ,  fr,  ", v4[1]);
     TSUNIT_EQUAL(u"e ,t", v4[2]);
+
+    // Make sure that the null character is a valid separator.
+    ts::UStringVector v5;
+    ts::UString s5(u"abcd");
+    s5.append(ts::CHAR_NULL);
+    s5.append(u"ef");
+    s5.append(ts::CHAR_NULL);
+    s5.append(u"ghi");
+    s5.split(v5, ts::CHAR_NULL);
+    TSUNIT_EQUAL(3, v5.size());
+    TSUNIT_EQUAL(u"abcd", v5[0]);
+    TSUNIT_EQUAL(u"ef", v5[1]);
+    TSUNIT_EQUAL(u"ghi", v5[2]);
 }
 
 void UStringTest::testSplitShellStyle()
