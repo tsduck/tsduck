@@ -142,11 +142,12 @@ template <class CONTAINER>
 void ts::UString::splitAppend(CONTAINER& container, UChar separator, bool trimSpaces, bool removeEmpty) const
 {
     const UChar* sep = nullptr;
-    const UChar* input = c_str();
+    const UChar* input = data();
+    const UChar* const end = data() + size();
 
     do {
         // Locate next separator
-        for (sep = input; *sep != separator && *sep != 0; ++sep) {
+        for (sep = input; sep < end && *sep != separator; ++sep) {
         }
         // Extract segment
         UString segment(input, sep - input);
@@ -157,8 +158,8 @@ void ts::UString::splitAppend(CONTAINER& container, UChar separator, bool trimSp
             container.push_back(segment);
         }
         // Move to beginning of next segment
-        input = *sep == 0 ? sep : sep + 1;
-    } while (*sep != 0);
+        input = sep + 1;
+    } while (sep < end);
 }
 
 
