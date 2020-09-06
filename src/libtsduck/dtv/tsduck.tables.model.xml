@@ -1912,6 +1912,30 @@
 
     <MPEG4_video_descriptor MPEG4_visual_profile_and_level="uint8, required"/>
 
+    <MPEGH_3D_audio_descriptor
+        mpegh_3da_profile_level_indication="uint8, required"
+        interactivity_enabled="bool, required"
+        reference_channel_layout="uint6, required">
+      <reserved>
+        Hexadecimal content
+      </reserved>
+    </MPEGH_3D_audio_descriptor>
+
+    <MPEGH_3D_audio_multi_stream_descriptor
+        this_is_main_stream="bool, required"
+        this_stream_id="uint7, required"
+        num_auxiliary_streams="uint7, optional">
+      <!-- One per group -->
+      <mae_group
+          mae_group_id="uint7, required"
+          is_in_main_stream="bool, required"
+          is_in_ts="bool, optional"
+          auxiliary_stream_id="uint7, optional"/>
+      <reserved>
+        Hexadecimal content
+      </reserved>
+    </MPEGH_3D_audio_multi_stream_descriptor>
+
     <multilingual_bouquet_name_descriptor>
       <!-- One per language -->
       <language code="char3, required" bouquet_name="string, required"/>

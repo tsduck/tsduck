@@ -362,6 +362,8 @@
 #include "tsMPEG2StereoscopicVideoFormatDescriptor.h"
 #include "tsMPEG4AudioDescriptor.h"
 #include "tsMPEG4VideoDescriptor.h"
+#include "tsMPEGH3DAudioDescriptor.h"
+#include "tsMPEGH3DAudioMultiStreamDescriptor.h"
 #include "tsMPEHandlerInterface.h"
 #include "tsMPEPacket.h"
 #include "tsMultilingualBouquetNameDescriptor.h"
