@@ -1116,6 +1116,13 @@
       </region>
     </content_advisory_descriptor>
 
+    <content_identifier_descriptor>
+      <crid crid_type="uint6, required"
+            crid_location="uint2, required"
+            crid_ref="uint16, optional"
+            crid="string, optional"/>
+    </content_identifier_descriptor>
+
     <content_labelling_descriptor
         metadata_application_format="uint16, required"
         metadata_application_format_identifier="uint32, optional"
@@ -2153,6 +2160,8 @@
       </additional_identification_info>
     </registration_descriptor>
 
+    <related_content_descriptor/>
+
     <satellite_delivery_system_descriptor
         frequency="SatelliteFrequencyHz, required"
         orbital_position="SatelliteOrbitalPosition, eg. 19.2, required"
@@ -2736,6 +2745,10 @@
         Hexadecimal content
       </reserved_future_use>
     </TS_information_descriptor>
+
+    <TVA_id_descriptor>
+      <TVA id="uint16, required" running_status="uint3, required"/>
+    </TVA_id_descriptor>
 
     <update_descriptor
         update_flag="uint2, required"

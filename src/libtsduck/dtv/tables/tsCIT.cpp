@@ -124,7 +124,7 @@ void ts::CIT::deserializePayload(PSIBuffer& buf, const Section& section)
         // Check if pstring[i1] is already in the global prepend_strings vector.
         for (size_t i2 = 0; i2 < prepend_strings.size(); ++i2) {
             if (prepend_strings[i2] == pstring[i1]) {
-                index_translation[i1] = i2;
+                index_translation[i1] = uint8_t(i2);
                 break;
             }
         }

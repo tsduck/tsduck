@@ -228,14 +228,9 @@ bool ts::xml::Element::getHexaText(ByteBlock& data, size_t minSize, size_t maxSi
 {
     data.clear();
 
-    // Get text children.
-    UString text;
-    if (!getText(text)) {
-        return false;
-    }
-
+    // Get text children. Ignore errors if no text found, simply empty.
     // Interpret hexa data.
-    if (!text.hexaDecode(data)) {
+    if (!text().hexaDecode(data)) {
         _report.error(u"Invalid hexadecimal content in <%s>, line %d", {name(), lineNumber()});
         return false;
     }

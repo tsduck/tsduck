@@ -58,11 +58,7 @@ namespace ts {
             //! @param [in] id Service id.
             //! @param [in] type Service type.
             //!
-            Entry(uint16_t id = 0, uint8_t type = 0) :
-                service_id(id),
-                service_type(type)
-            {
-            }
+            Entry(uint16_t id = 0, uint8_t type = 0);
         };
 
         //!
@@ -107,13 +103,13 @@ namespace ts {
         bool addService(uint16_t id, uint8_t type);
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };
