@@ -1653,6 +1653,18 @@ Bits = 3
 4 = running
 5 = off-air
 
+[TVARunningStatus]
+# In TVA_id_descriptor
+Bits = 3
+0 = reserved
+1 = not yet running
+2 = starting
+3 = paused
+4 = running
+5 = cancelled
+6 = completed
+7 = reserved
+
 [AudioType]
 # In ISO-639_language_descriptor
 Bits = 8
@@ -4143,3 +4155,21 @@ Bits = 2
 1 = CRID's are transient
 2 = CRID's may be either transient or permanent
 3 = Reserved
+
+[CRIDType]
+# In content_identifier_descriptor
+Bits = 6
+0x00 = No type defined
+0x01 = CRID references the item of content that this event is an instance of
+0x02 = CRID references a series that this event belongs to
+0x03 = CRID references a recommendation (group or single item of content)
+0x04-0x1F = DVB reserved
+0x20-0x3F = User private
+
+[CRIDLocation]
+# In content_identifier_descriptor
+Bits = 2
+0 = Carried explicitly within descriptor
+1 = Carried in Content Identifier Table (CIT)
+2 = DVB reserved
+3 = DVB reserved

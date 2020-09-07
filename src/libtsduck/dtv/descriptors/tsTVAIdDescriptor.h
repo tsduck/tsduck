@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a service_list_descriptor
+//!  Representation of a DVB-defined TVA_id_descriptor.
 //!
 //----------------------------------------------------------------------------
 
@@ -37,70 +37,48 @@
 
 namespace ts {
     //!
-    //! Representation of a service_list_descriptor
-    //! @see ETSI 300 468, 6.2.35.
+    //! Representation of a DVB-defined TVA_id_descriptor.
+    //! Note: TVA stands for TV-Anytime.
+    //! @see ETSI TS 102 323, 11.2.4.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL ServiceListDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TVAIdDescriptor : public AbstractDescriptor
     {
     public:
         //!
-        //! Service entry.
+        //! TVA_id entry.
         //!
-        struct TSDUCKDLL Entry
+        struct TSDUCKDLL TVAId
         {
-            // Public members
-            uint16_t service_id;     //!< Service id.
-            uint8_t  service_type;   //!< Service type.
-
-            //!
-            //! Default constructor.
-            //! @param [in] id Service id.
-            //! @param [in] type Service type.
-            //!
-            Entry(uint16_t id = 0, uint8_t type = 0);
+            TVAId();                  //!< Constructor.
+            uint16_t TVA_id;          //!< TV-Anytime id.
+            uint8_t  running_status;  //!< 3-bit running status.
         };
 
         //!
-        //! List of service entries.
+        //! List of TVA_id entries.
         //!
-        typedef std::list<Entry> EntryList;
+        typedef std::list<TVAId> TVAIdList;
 
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
         static const size_t MAX_ENTRIES = 85;
 
-        // ServiceListDescriptor public members:
-        EntryList entries;  //!< The list of service entries.
+        // TVAIdDescriptor public members:
+        TVAIdList TVA_ids;  //!< The list of TVA_id entries.
 
         //!
         //! Default constructor.
         //!
-        ServiceListDescriptor();
+        TVAIdDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        ServiceListDescriptor(DuckContext& duck, const Descriptor& bin);
-
-        //!
-        //! Check if a service is present.
-        //! @param [in] id Service id.
-        //! @return True if the service is present in the descriptor.
-        //!
-        bool hasService(uint16_t id) const;
-
-        //!
-        //! Add or replace a service.
-        //! If the service is already present, overwrite the service type.
-        //! @param [in] id Service id.
-        //! @param [in] type Service type.
-        //! @return True if the descriptor was modified.
-        //!
-        bool addService(uint16_t id, uint8_t type);
+        TVAIdDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         DeclareDisplayDescriptor();

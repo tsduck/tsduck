@@ -81,6 +81,7 @@
     REF_TYPE(ContentAdvisoryDescriptor);
     REF_TYPE(ContentAvailabilityDescriptor);
     REF_TYPE(ContentDescriptor);
+    REF_TYPE(ContentIdentifierDescriptor);
     REF_TYPE(ContentLabellingDescriptor);
     REF_TYPE(CopyrightDescriptor);
     REF_TYPE(CountryAvailabilityDescriptor);
@@ -203,6 +204,7 @@
     REF_TYPE(RedistributionControlDescriptor);
     REF_TYPE(ReferenceDescriptor);
     REF_TYPE(RegistrationDescriptor);
+    REF_TYPE(RelatedContentDescriptor);
     REF_TYPE(S2SatelliteDeliverySystemDescriptor);
     REF_TYPE(S2XSatelliteDeliverySystemDescriptor);
     REF_TYPE(SatelliteDeliverySystemDescriptor);
@@ -275,6 +277,7 @@
     REF_TYPE(TransportProtocolDescriptor);
     REF_TYPE(TransportStreamDescriptor);
     REF_TYPE(TSInformationDescriptor);
+    REF_TYPE(TVAIdDescriptor);
     REF_TYPE(UpdateDescriptor);
     REF_TYPE(URILinkageDescriptor);
     REF_TYPE(VBIDataDescriptor);

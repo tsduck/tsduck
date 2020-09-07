@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a service_list_descriptor
+//!  Representation of a DVB-defined content_identifier_descriptor.
 //!
 //----------------------------------------------------------------------------
 
@@ -37,70 +37,44 @@
 
 namespace ts {
     //!
-    //! Representation of a service_list_descriptor
-    //! @see ETSI 300 468, 6.2.35.
+    //! Representation of a DVB-defined content_identifier_descriptor.
+    //! @see ETSI TS 102 323, 12.1.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL ServiceListDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ContentIdentifierDescriptor : public AbstractDescriptor
     {
     public:
         //!
-        //! Service entry.
+        //! CRID entry.
         //!
-        struct TSDUCKDLL Entry
+        struct TSDUCKDLL CRID
         {
-            // Public members
-            uint16_t service_id;     //!< Service id.
-            uint8_t  service_type;   //!< Service type.
-
-            //!
-            //! Default constructor.
-            //! @param [in] id Service id.
-            //! @param [in] type Service type.
-            //!
-            Entry(uint16_t id = 0, uint8_t type = 0);
+            CRID();                  //!< Constructor.
+            uint8_t  crid_type;      //!< 6 bits.
+            uint8_t  crid_location;  //!< 2 bits.
+            uint16_t crid_ref;       //!< When crid_location == 1.
+            UString  crid;           //!< When crid_location == 0.
         };
 
         //!
-        //! List of service entries.
+        //! List of CRID entries.
         //!
-        typedef std::list<Entry> EntryList;
+        typedef std::list<CRID> CRIDList;
 
-        //!
-        //! Maximum number of entries to fit in 255 bytes.
-        //!
-        static const size_t MAX_ENTRIES = 85;
-
-        // ServiceListDescriptor public members:
-        EntryList entries;  //!< The list of service entries.
+        // ContentIdentifierDescriptor public members:
+        CRIDList crids;  //!< The list of CRID entries.
 
         //!
         //! Default constructor.
         //!
-        ServiceListDescriptor();
+        ContentIdentifierDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        ServiceListDescriptor(DuckContext& duck, const Descriptor& bin);
-
-        //!
-        //! Check if a service is present.
-        //! @param [in] id Service id.
-        //! @return True if the service is present in the descriptor.
-        //!
-        bool hasService(uint16_t id) const;
-
-        //!
-        //! Add or replace a service.
-        //! If the service is already present, overwrite the service type.
-        //! @param [in] id Service id.
-        //! @param [in] type Service type.
-        //! @return True if the descriptor was modified.
-        //!
-        bool addService(uint16_t id, uint8_t type);
+        ContentIdentifierDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         DeclareDisplayDescriptor();
