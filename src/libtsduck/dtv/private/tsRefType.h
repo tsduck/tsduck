@@ -4,6 +4,7 @@
     REF_TYPE(BIT);
     REF_TYPE(CableEmergencyAlertTable);
     REF_TYPE(CAT);
+    REF_TYPE(CIT);
     REF_TYPE(CVCT);
     REF_TYPE(DCCSCT);
     REF_TYPE(DCCT);
@@ -22,6 +23,7 @@
     REF_TYPE(PAT);
     REF_TYPE(PCAT);
     REF_TYPE(PMT);
+    REF_TYPE(RNT);
     REF_TYPE(RRT);
     REF_TYPE(RST);
     REF_TYPE(SDT);

@@ -292,11 +292,12 @@ namespace ts {
         PID_SDT        = 0x0011, //!< PID for Service Description Table
         PID_BAT        = 0x0011, //!< PID for Bouquet Association Table
         PID_EIT        = 0x0012, //!< PID for Event Information Table
+        PID_CIT        = 0x0012, //!< PID for Content Identifier Table (TV-Anytime)
         PID_RST        = 0x0013, //!< PID for Running Status Table
         PID_TDT        = 0x0014, //!< PID for Time & Date Table
         PID_TOT        = 0x0014, //!< PID for Time Offset Table
         PID_NETSYNC    = 0x0015, //!< PID for Network synchronization
-        PID_RNT        = 0x0016, //!< PID for TV-Anytime
+        PID_RNT        = 0x0016, //!< PID for Resolution Notification Table (TV-Anytime)
         PID_INBSIGN    = 0x001C, //!< PID for Inband Signalling
         PID_MEASURE    = 0x001D, //!< PID for Measurement
         PID_DIT        = 0x001E, //!< PID for Discontinuity Information Table
@@ -844,7 +845,7 @@ namespace ts {
         TID_RCT           = 0x76, //!< Table id for Related Content Table (TV-Anytime)
         TID_CIT           = 0x77, //!< Table id for Content Identifier Table (TV-Anytime)
         TID_MPE_FEC       = 0x78, //!< Table id for MPE-FEC Table (Data Broadcasting)
-        TID_RNT           = 0x79, //!< Table id for Resolution Notification (TV-Anytime)
+        TID_RNT           = 0x79, //!< Table id for Resolution Notification Table (TV-Anytime)
         TID_MPE_IFEC      = 0x7A, //!< Table id for MPE-IFEC Table
         TID_DIT           = 0x7E, //!< Table id for Discontinuity Information Table
         TID_SIT           = 0x7F, //!< Table id for Selection Information Table

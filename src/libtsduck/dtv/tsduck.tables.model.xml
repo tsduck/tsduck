@@ -247,6 +247,36 @@
       </application>
     </AIT>
 
+    <!-- DVB Content Identifier Table -->
+    <CIT version="uint5, default=0"
+         current="bool, default=true"
+         service_id="uint16, required"
+         transport_stream_id="uint16, required"
+         original_network_id="uint16, required">
+      <!-- One per prepend string -->
+      <prepend_string value="string, required"/>
+      <!-- One per CRID (Content Reference Identifier) -->
+      <crid crid_ref="uint16, required"
+            prepend_string_index="uint8, optional"
+            unique_string="string, required"/>
+    </CIT>
+
+    <!-- Resolution provider Notification Table -->
+    <RNT version="uint5, default=0"
+         current="bool, default=true"
+         context_id="uint16, required"
+         context_id_type="uint8, required">
+      <_any in="_descriptors"/>
+      <!-- One per resolution provider -->
+      <resolution_provider name="string, required">
+        <_any in="_descriptors"/>
+        <!-- One per CRID authority -->
+        <CRID_authority name="string, required" policy="uint2, required">
+          <_any in="_descriptors"/>
+        </CRID_authority>
+      </resolution_provider>
+    </RNT>
+
     <!-- Discontinuity Information Table -->
     <discontinuity_information_table transition="bool, required"/>
 
