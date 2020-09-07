@@ -32,7 +32,6 @@ TSDuck - List of features to be implemented or fixed
     - 2.6.119  quality_extension_descriptor
 
   ETSI TS 102 323 (Carriage and signalling of TV-Anytime information)
-  - 5.2.2   RNT (Resolution Notification Table)
   - 5.3.5   RAR_over_DVB_stream_descriptor (RNT-specific)
   - 5.3.6   RAR_over_IP_descriptor (RNT-specific)
   - 5.3.7   RNT_scan_descriptor (RNT-specific)
@@ -41,7 +40,6 @@ TSDuck - List of features to be implemented or fixed
   - 10.4.2  RCT (Related Content Table)
   - 11.2.4  TVA_id_descriptor
   - 12.1.4  content_identifier_descriptor
-  - 12.2    CIT (Content identifier table)
 
   ETSI TS 102 825-9 (CPCM System Adaptation Layer)
   - 4.1.5  CPCM_delivery_signalling_descriptor (details in ETSI TS 102 825-4, 5.4.5)

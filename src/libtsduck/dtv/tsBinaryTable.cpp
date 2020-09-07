@@ -585,6 +585,11 @@ bool ts::BinaryTable::fromXML(DuckContext& duck, const xml::Element* node)
         if (!table.isNull() && table->isValid()) {
             // Serialize the table.
             table->serialize(duck, *this);
+            if (!isValid()) {
+                // Serialization failed.
+                node->report().error(u"<%s>, line %d, is correct but the binary serialization failed", {node->name(), node->lineNumber()});
+                return false;
+            }
         }
         // The XML element name was valid.
         return true;
