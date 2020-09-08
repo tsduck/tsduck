@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -80,7 +81,7 @@ ts::AnnouncementSupportDescriptor::Announcement::Announcement(uint8_t type) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AnnouncementSupportDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::AnnouncementSupportDescriptor::serializePayload(PSIBuffer& buf) const
 {
     // Rebuild announcement_support_indicator
     uint16_t indicator = 0;
@@ -88,18 +89,18 @@ void ts::AnnouncementSupportDescriptor::serialize(DuckContext& duck, Descriptor&
         indicator |= uint16_t(1 << it->announcement_type);
     }
 
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(indicator);
+    buf.putUInt16(indicator);
     for (auto it = announcements.begin(); it != announcements.end(); ++it) {
-        bbp->appendUInt8(uint8_t(it->announcement_type << 4) | 0x08 | (it->reference_type & 0x07));
+        buf.putBits(it->announcement_type, 4);
+        buf.putBit(1);
+        buf.putBits(it->reference_type, 3);
         if (it->reference_type >= 1 && it->reference_type <= 3) {
-            bbp->appendUInt16(it->original_network_id);
-            bbp->appendUInt16(it->transport_stream_id);
-            bbp->appendUInt16(it->service_id);
-            bbp->appendUInt8(it->component_tag);
+            buf.putUInt16(it->original_network_id);
+            buf.putUInt16(it->transport_stream_id);
+            buf.putUInt16(it->service_id);
+            buf.putUInt8(it->component_tag);
         }
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -107,52 +108,32 @@ void ts::AnnouncementSupportDescriptor::serialize(DuckContext& duck, Descriptor&
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AnnouncementSupportDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AnnouncementSupportDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2;
-    announcements.clear();
-
-    if (!_is_valid) {
-        return;
-    }
-
     // Get announcement_support_indicator.
     // We will check later that all annoucement types are present.
-    uint16_t indicator = GetUInt16(data);
-    data += 2; size -= 2;
+    uint16_t indicator = buf.getUInt16();
 
-    while (_is_valid && size >= 1) {
+    while (!buf.error() && !buf.endOfRead()) {
         Announcement ann;
-        ann.announcement_type = (data[0] >> 4) & 0x0F;
-        ann.reference_type = data[0] & 0x07;
-        data++; size--;
+        ann.announcement_type = buf.getBits<uint8_t>(4);
+        buf.skipBits(1);
+        ann.reference_type = buf.getBits<uint8_t>(3);
 
         // Clear types one by one in announcement_support_indicator.
         indicator &= ~uint16_t(1 << ann.announcement_type);
 
         if (ann.reference_type >= 1 && ann.reference_type <= 3) {
-            _is_valid = size >= 7;
-            if (_is_valid) {
-                ann.original_network_id = GetUInt16(data);
-                ann.transport_stream_id = GetUInt16(data + 2);
-                ann.service_id = GetUInt16(data + 4);
-                ann.component_tag = data[6];
-                data += 7; size -= 7;
-            }
+            ann.original_network_id = buf.getUInt16();
+            ann.transport_stream_id = buf.getUInt16();
+            ann.service_id = buf.getUInt16();
+            ann.component_tag = buf.getUInt8();
         }
-
-        if (_is_valid) {
-            announcements.push_back(ann);
-        }
+        announcements.push_back(ann);
     }
 
-    // Make sure there is no truncated trailing data.
-    _is_valid = _is_valid && size == 0;
-
     // Create additional entries for missing types.
-    for (uint8_t type = 0; _is_valid && indicator != 0 && type < 16; ++type) {
+    for (uint8_t type = 0; indicator != 0 && type < 16; ++type) {
         const uint16_t mask = uint16_t(1 << type);
         if ((indicator & mask) != 0) {
             indicator &= ~mask;

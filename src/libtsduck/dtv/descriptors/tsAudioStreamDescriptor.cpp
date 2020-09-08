@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -76,35 +77,22 @@ void ts::AudioStreamDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AudioStreamDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::AudioStreamDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8((free_format ? 0x80 : 0x00) |
-                     uint8_t((ID & 0x01) << 6) |
-                     uint8_t((layer & 0x03) << 4) |
-                     (variable_rate_audio ? 0x08 : 0x00) |
-                     0x07);
-    serializeEnd(desc, bbp);
+    buf.putBit(free_format);
+    buf.putBit(ID);
+    buf.putBits(layer, 2);
+    buf.putBit(variable_rate_audio);
+    buf.putBits(0xFF, 3);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::AudioStreamDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AudioStreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 1;
-
-    if (_is_valid) {
-        free_format = (data[0] & 0x80) != 0;
-        ID = (data[0] >> 6) & 0x01;
-        layer = (data[0] >> 4) & 0x03;
-        variable_rate_audio = (data[0] & 0x08) != 0;
-    }
+    free_format = buf.getBit() != 0;
+    ID = buf.getBit();
+    layer = buf.getBits<uint8_t>(2);
+    variable_rate_audio = buf.getBit() != 0;
+    buf.skipBits(3);
 }
 
 
@@ -137,11 +125,6 @@ void ts::AudioStreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
     root->setIntAttribute(u"layer", layer);
     root->setBoolAttribute(u"variable_rate_audio", variable_rate_audio);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::AudioStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

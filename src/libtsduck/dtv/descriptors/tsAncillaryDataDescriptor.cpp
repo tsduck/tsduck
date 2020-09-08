@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -70,25 +71,14 @@ ts::AncillaryDataDescriptor::AncillaryDataDescriptor(DuckContext& duck, const De
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AncillaryDataDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::AncillaryDataDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(ancillary_data_identifier);
-    serializeEnd(desc, bbp);
+    buf.putUInt8(ancillary_data_identifier);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::AncillaryDataDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AncillaryDataDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 1;
-
-    if (_is_valid) {
-        ancillary_data_identifier = GetUInt8(desc.payload());
-    }
+    ancillary_data_identifier = buf.getUInt8();
 }
 
 
@@ -96,13 +86,10 @@ void ts::AncillaryDataDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        uint8_t id = data[0];
-        data += 1; size -= 1;
+    if (!buf.endOfRead()) {
+        const uint8_t id = buf.getUInt8();
         disp << margin << UString::Format(u"Ancillary data identifier: 0x%X", {id}) << std::endl;
         for (int i = 0; i < 8; ++i) {
             if ((id & (1 << i)) != 0) {
@@ -110,8 +97,7 @@ void ts::AncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did
             }
         }
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 
