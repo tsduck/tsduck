@@ -108,6 +108,8 @@ for name in $*; do
         # Adjust header file.
         sed -e 's/DeclareLegacyDisplayDescriptor();/DeclareDisplayDescriptor();/' -i $header
         # Adjust source file.
-        sed -e 's/::DisplayDescriptor(TablesDisplay.*)/::DisplayDescriptor(TablesDisplay\& disp, PSIBuffer\& buf, const UString\& margin, DID did, TID tid, PDS pds)/' -i $source
+        sed -e 's/::DisplayDescriptor(TablesDisplay.*)/::DisplayDescriptor(TablesDisplay\& disp, PSIBuffer\& buf, const UString\& margin, DID did, TID tid, PDS pds)/' \
+            -e 's/disp.displayExtraData(data, size, margin);/disp.displayExtraData(buf, margin);/' \
+            -i $source
     fi
 done

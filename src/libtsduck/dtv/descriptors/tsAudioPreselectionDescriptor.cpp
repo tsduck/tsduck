@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -113,44 +114,38 @@ bool ts::AudioPreselectionDescriptor::hasValidSizes() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AudioPreselectionDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::AudioPreselectionDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    if (!hasValidSizes()) {
-        desc.invalidate();
-        return;
-    }
-
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    bbp->appendUInt8(uint8_t(entries.size() << 3));
+    buf.putBits(entries.size(), 5);
+    buf.putBits(0x00, 3); // reserved_zero_future_use
     for (auto it = entries.begin(); it != entries.end(); ++ it) {
-        bbp->appendUInt8(uint8_t(it->preselection_id << 3) | (it->audio_rendering_indication & 0x07));
-        bbp->appendUInt8((it->audio_description ? 0x80 : 0x00) |
-                         (it->spoken_subtitles ? 0x40 : 0x00) |
-                         (it->dialogue_enhancement ? 0x20 : 0x00) |
-                         (it->interactivity_enabled ? 0x10 : 0x00) |
-                         (it->ISO_639_language_code.empty() ? 0x00 : 0x08) |
-                         (it->message_id.set() ? 0x04 : 0x00) |
-                         (it->aux_component_tags.empty() ? 0x00 : 0x02) |
-                         (it->future_extension.empty() ? 0x00 : 0x01));
-
-        if (!it->ISO_639_language_code.empty() && !SerializeLanguageCode(*bbp, it->ISO_639_language_code)) {
-            desc.invalidate();
-            return;
+        buf.putBits(it->preselection_id, 5);
+        buf.putBits(it->audio_rendering_indication, 3);
+        buf.putBit(it->audio_description);
+        buf.putBit(it->spoken_subtitles);
+        buf.putBit(it->dialogue_enhancement);
+        buf.putBit(it->interactivity_enabled);
+        buf.putBit(!it->ISO_639_language_code.empty());
+        buf.putBit(it->message_id.set());
+        buf.putBit(!it->aux_component_tags.empty());
+        buf.putBit(!it->future_extension.empty());
+        if (!it->ISO_639_language_code.empty()) {
+            buf.putLanguageCode(it->ISO_639_language_code, true);
         }
         if (it->message_id.set()) {
-            bbp->appendUInt8(it->message_id.value());
+            buf.putUInt8(it->message_id.value());
         }
         if (!it->aux_component_tags.empty()) {
-            bbp->appendUInt8(uint8_t(it->aux_component_tags.size() << 5));
-            bbp->append(it->aux_component_tags);
+            buf.putBits(it->aux_component_tags.size(), 3);
+            buf.putBits(0x00, 5); // reserved_zero_future_use
+            buf.putBytes(it->aux_component_tags);
         }
         if (!it->future_extension.empty()) {
-            bbp->appendUInt8(uint8_t(it->future_extension.size() & 0x1F));
-            bbp->append(it->future_extension);
+            buf.putBits(0x00, 3); // reserved_zero_future_use
+            buf.putBits(it->future_extension.size(), 5);
+            buf.putBytes(it->future_extension);
         }
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -158,79 +153,42 @@ void ts::AudioPreselectionDescriptor::serialize(DuckContext& duck, Descriptor& d
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AudioPreselectionDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AudioPreselectionDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
+    size_t numEntries = buf.getBits<size_t>(5);
+    buf.skipBits(3);
 
-    entries.clear();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2 && data[0] == MY_EDID;
+    while (!buf.error() && numEntries > 0) {
+        PreSelection sel;
+        sel.preselection_id = buf.getBits<uint8_t>(5);
+        sel.audio_rendering_indication = buf.getBits<uint8_t>(3);
+        sel.audio_description = buf.getBit() != 0;
+        sel.spoken_subtitles = buf.getBit() != 0;
+        sel.dialogue_enhancement = buf.getBit() != 0;
+        sel.interactivity_enabled = buf.getBit() != 0;
+        const bool hasLanguage = buf.getBit() != 0;
+        const bool hasLabel = buf.getBit() != 0;
+        const bool hasMultiStream = buf.getBit() != 0;
+        const bool hasExtension = buf.getBit() != 0;
 
-    if (_is_valid) {
-        size_t numEntries = data[1] >> 3;
-        data += 2;
-        size -= 2;
-
-        while (_is_valid && numEntries > 0 && size >= 2) {
-
-            PreSelection sel;
-            sel.preselection_id = data[0] >> 3;
-            sel.audio_rendering_indication = data[0] & 0x07;
-            sel.audio_description = (data[1] & 0x80) != 0;
-            sel.spoken_subtitles = (data[1] & 0x40) != 0;
-            sel.dialogue_enhancement = (data[1] & 0x20) != 0;
-            sel.interactivity_enabled = (data[1] & 0x10) != 0;
-            const bool hasLanguage = (data[1] & 0x08) != 0;
-            const bool hasLabel = (data[1] & 0x04) != 0;
-            const bool hasMultiStream = (data[1] & 0x02) != 0;
-            const bool hasExtension = (data[1] & 0x01) != 0;
-            data += 2;
-            size -= 2;
-
-            if (hasLanguage) {
-                _is_valid = size >= 3;
-                if (_is_valid) {
-                    sel.ISO_639_language_code = DeserializeLanguageCode(data);
-                    data += 3;
-                    size -= 3;
-                }
-            }
-            if (_is_valid && hasLabel) {
-                _is_valid = size >= 1;
-                if (_is_valid) {
-                    sel.message_id = data[0];
-                    data += 1;
-                    size -= 1;
-                }
-            }
-            if (_is_valid && hasMultiStream) {
-                _is_valid = size >= 1;
-                const size_t num = _is_valid ? (data[0] >> 5) : 0;
-                _is_valid = _is_valid && size >= 1 + num;
-                if (_is_valid) {
-                    sel.aux_component_tags.copy(data + 1, num);
-                    data += 1 + num;
-                    size -= 1 + num;
-                }
-            }
-            if (_is_valid && hasExtension) {
-                _is_valid = size >= 1;
-                const size_t len = _is_valid ? (data[0] & 0x1F) : 0;
-                _is_valid = _is_valid && size >= 1 + len;
-                if (_is_valid) {
-                    sel.future_extension.copy(data + 1, len);
-                    data += 1 + len;
-                    size -= 1 + len;
-                }
-            }
-
-            if (_is_valid) {
-                entries.push_back(sel);
-                numEntries--;
-            }
+        if (hasLanguage) {
+            buf.getLanguageCode(sel.ISO_639_language_code);
         }
-
-        _is_valid = _is_valid && numEntries == 0 && size == 0;
+        if (hasLabel) {
+            sel.message_id = buf.getUInt8();
+        }
+        if (hasMultiStream) {
+            const size_t num = buf.getBits<size_t>(3);
+            buf.skipBits(5);
+            buf.getByteBlock(sel.aux_component_tags, num);
+        }
+        if (hasExtension) {
+            buf.skipBits(3);
+            const size_t len = buf.getBits<size_t>(5);
+            buf.getByteBlock(sel.future_extension, len);
+        }
+        entries.push_back(sel);
+        numEntries--;
     }
 }
 
