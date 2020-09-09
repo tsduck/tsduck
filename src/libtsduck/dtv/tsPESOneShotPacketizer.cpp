@@ -26,22 +26,46 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsPESOneShotPacketizer.h"
+#include "tsNullReport.h"
+#include "tsTSPacket.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1975
+ts::PESOneShotPacketizer::PESOneShotPacketizer(const DuckContext& duck, PID pid, Report* report) :
+    PESStreamPacketizer(duck, pid, report)
+{
+}
+
+ts::PESOneShotPacketizer::~PESOneShotPacketizer()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Get complete cycle as one list of packets
+//----------------------------------------------------------------------------
+
+void ts::PESOneShotPacketizer::getPackets(TSPacketVector& packets)
+{
+    packets.clear();
+    while (!empty()) {
+        packets.resize(packets.size() + 1);
+        PESStreamPacketizer::getNextPacket(packets[packets.size() - 1]);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Hidden methods
+//----------------------------------------------------------------------------
+
+bool ts::PESOneShotPacketizer::getNextPacket(TSPacket&)
+{
+    return false;
+}

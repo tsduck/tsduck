@@ -28,20 +28,36 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Abstract interface for classes which provides PES packets into
+//!  a Packetizer.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1975
+#include "tsPESPacket.h"
+
+namespace ts {
+    //!
+    //! Abstract interface for classes which provide PES packets into a Packetizer.
+    //! @ingroup mpeg
+    //!
+    //! This abstract interface must be implemented by classes which provide PES packets into a Packetizer.
+    //!
+    class TSDUCKDLL PESProviderInterface
+    {
+    public:
+        //!
+        //! This hook is invoked when a new PES packet is required.
+        //! @param [in] counter The PES counter is an information on the progression
+        //! (zero the first time the hook is invoked from the packetizer).
+        //! @param [out] pes A smart pointer to the next PES packet to packetize.
+        //! If a null pointer is provided, no PES packet is available.
+        //!
+        virtual void providePESPacket(PacketCounter counter, PESPacketPtr& pes) = 0;
+
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~PESProviderInterface();
+    };
+}

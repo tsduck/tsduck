@@ -145,6 +145,7 @@ namespace ts {
             bool            sync;        // We are synchronous in this PID
             PacketCounter   first_pkt;   // Index of first TS packet for current PES packet
             PacketCounter   last_pkt;    // Index of last TS packet for current PES packet
+            uint64_t        pcr;         // First PCR for current PES packet
             ByteBlockPtr    ts;          // TS payload buffer
             AudioAttributes audio;       // Current audio attributes
             VideoAttributes video;       // Current video attributes (MPEG-1, MPEG-2)

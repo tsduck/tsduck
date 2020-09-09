@@ -39,15 +39,11 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::Packetizer::Packetizer(const DuckContext& duck, PID pid, SectionProviderInterface* provider, Report* report) :
-    _duck(duck),
+    AbstractPacketizer(duck, pid, report),
     _provider(provider),
-    _report(report == nullptr ? NULLREP : *report),
-    _pid(pid),
     _split_headers(false),
-    _continuity(0),
     _section(nullptr),
     _next_byte(0),
-    _packet_count(0),
     _section_out_count(0),
     _section_in_count(0)
 {
@@ -60,12 +56,11 @@ ts::Packetizer::~Packetizer()
 
 //----------------------------------------------------------------------------
 // Reset the content of a packetizer. Becomes empty.
-// If the last returned packet contained an unfinished
-// section, this section will be lost.
 //----------------------------------------------------------------------------
 
 void ts::Packetizer::reset()
 {
+    AbstractPacketizer::reset();
     _section.clear();
     _next_byte = 0;
 }
@@ -77,18 +72,18 @@ void ts::Packetizer::reset()
 
 bool ts::Packetizer::getNextPacket(TSPacket& pkt)
 {
-    // Count generated packets
-    _packet_count++;
-
     // If there is no current section, get the next one.
     if (_section.isNull() && _provider != nullptr) {
-        _provider->provideSection(_section_in_count++, _section);
+        _provider->provideSection(_section_in_count, _section);
         _next_byte = 0;
+        if (!_section.isNull()) {
+            _section_in_count++;
+        }
     }
 
     // If there is still no current section, return a null packet
     if (_section.isNull()) {
-        pkt = NullPacket;
+        configurePacket(pkt, true);
         return false;
     }
 
@@ -111,21 +106,20 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
         if (!do_stuffing) {
             // No stuffing before next section => get next section.
             // Note that _provider cannot be null here.
-            _provider->provideSection(_section_in_count++, next_section);
+            _provider->provideSection(_section_in_count, next_section);
             if (next_section.isNull()) {
                 // If no next section, do stuffing anyway.
                 do_stuffing = true;
             }
             else {
-                // Now that we know the actual header size of the next section,
-                // recheck if it fits in packet
+                // Now that we know the actual header size of the next section, recheck if it fits in packet
+                _section_in_count++;
                 do_stuffing = remain_in_section > PKT_SIZE - 5 - (_split_headers ? 0 : next_section->headerSize());
             }
         }
     }
 
     // Do we need to insert a pointer_field?
-
     if (_next_byte == 0) {
         // We are at the beginning of a section
         pusi = 0x4000;
@@ -138,29 +132,22 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
     }
 
     // Build the header
-
     pkt.b[0] = SYNC_BYTE;
-    PutUInt16(pkt.b + 1, (pusi | _pid));
-    pkt.b[3] = 0x10 | _continuity; // 0x10 = no adaptation field, has payload
-
-    // Update continuity counter for next packet
-
-    _continuity = (_continuity + 1) & 0x0F;
+    PutUInt16(pkt.b + 1, pusi);
+    pkt.b[3] = 0x10;  // no adaptation field, has payload
+    configurePacket(pkt, false);  // PID, continuity, count packets.
 
     // Remaining bytes in the packet.
-
     uint8_t* data = pkt.b + 4;
     size_t remain_in_packet = PKT_SIZE - 4;
 
     // Insert the pointer field if required.
-
     if (pusi) {
         *data++ = pointer_field;
         remain_in_packet--;
     }
 
     // Fill the packet payload
-
     while (remain_in_packet > 0) {
         // Copy a part of the current section in the packet
         size_t length = remain_in_section < remain_in_packet ? remain_in_section : remain_in_packet;
@@ -188,10 +175,13 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
                 if (_provider == nullptr || _provider->doStuffing()) {
                     break;
                 }
-                _provider->provideSection(_section_in_count++, _section);
+                _provider->provideSection(_section_in_count, _section);
                 // If no next section, stuff the end of packet
                 if (_section.isNull()) {
                     break;
+                }
+                else {
+                    _section_in_count++;
                 }
             }
             // We no longer know about stuffing after current section
@@ -224,13 +214,10 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
 
 std::ostream& ts::Packetizer::display(std::ostream& strm) const
 {
-    return strm
-        << UString::Format(u"  PID: %d (0x%X)", {_pid, _pid}) << std::endl
-        << "  Next CC: " << int(_continuity) << std::endl
-        << "  Current section: "
-        << (_section.isNull() ? UString(u"none") : UString::Format(u"%s, offset %d", {names::TID(_duck, _section->tableId()), _next_byte}))
-        << std::endl
-        << UString::Format(u"  Output packets: %'d", {_packet_count}) << std::endl
+    return AbstractPacketizer::display(strm)
         << UString::Format(u"  Output sections: %'d", {_section_out_count}) << std::endl
-        << UString::Format(u"  Provided sections: %'d", {_section_in_count}) << std::endl;
+        << UString::Format(u"  Provided sections: %'d", {_section_in_count}) << std::endl
+        << "  Current section: "
+        << (_section.isNull() ? UString(u"none") : UString::Format(u"%s, offset %d", {names::TID(duck(), _section->tableId()), _next_byte}))
+        << std::endl;
 }

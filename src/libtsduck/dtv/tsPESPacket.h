@@ -67,8 +67,8 @@ namespace ts {
         //!
         //! Copy constructor.
         //! @param [in] other Another instance to copy.
-        //! @param [in] mode The packet's data are either shared (ts::SHARE) between the
-        //! two instances or duplicated (ts::COPY).
+        //! @param [in] mode The packet's data are either shared (ts::ShareMode::SHARE) between the
+        //! two instances or duplicated (ts::ShareMode::COPY).
         //!
         PESPacket(const PESPacket& other, ShareMode mode);
 
@@ -205,6 +205,22 @@ namespace ts {
         {
             _source_pid = pid;
         }
+
+        //!
+        //! Get the optional PCR value which was associated to the PES packets.
+        //! It was typically extracted from the first TS packet of the PES packet.
+        //! @return The 42-bit PCR or INVALID_PCR if there is none.
+        //!
+        uint64_t getPCR() const
+        {
+            return _pcr;
+        }
+
+        //!
+        //! Set the PCR value for this PES packet.
+        //! @param [in] pcr The new 42-bit PCR value. Specify INVALID_PCR to clear the PCR.
+        //!
+        void setPCR(uint64_t pcr);
 
         //!
         //! Get the stream type, as specified in the PMT (optional).
@@ -388,6 +404,7 @@ namespace ts {
         size_t        _header_size;  // PES header size in bytes
         PID           _source_pid;   // Source PID (informational)
         uint8_t       _stream_type;  // Stream type from PMT (informational)
+        uint64_t      _pcr;          // PCR value from TS packets (informational)
         PacketCounter _first_pkt;    // Index of first packet in stream
         PacketCounter _last_pkt;     // Index of last packet in stream
         ByteBlockPtr  _data;         // Full binary content of the packet

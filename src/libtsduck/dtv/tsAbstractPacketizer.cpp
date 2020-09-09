@@ -26,12 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Packetization of MPEG sections into Transport Stream packets in one shot
-//
-//----------------------------------------------------------------------------
 
-#include "tsOneShotPacketizer.h"
+#include "tsAbstractPacketizer.h"
+#include "tsNullReport.h"
+#include "tsTSPacket.h"
 TSDUCK_SOURCE;
 
 
@@ -39,38 +37,56 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::OneShotPacketizer::OneShotPacketizer(const DuckContext& duck, PID pid, bool do_stuffing, BitRate bitrate) :
-    CyclingPacketizer(duck, pid, do_stuffing ? ALWAYS : AT_END, bitrate)
+ts::AbstractPacketizer::AbstractPacketizer(const DuckContext& duck, PID pid, Report* report) :
+    _duck(duck),
+    _report(report == nullptr ? NULLREP : *report),
+    _pid(pid),
+    _continuity(0),
+    _packet_count(0)
 {
 }
 
-ts::OneShotPacketizer::~OneShotPacketizer()
+ts::AbstractPacketizer::~AbstractPacketizer()
 {
 }
 
 
 //----------------------------------------------------------------------------
-// Get complete cycle as one list of packets
+// Reset the content of a packetizer. Becomes empty.
 //----------------------------------------------------------------------------
 
-void ts::OneShotPacketizer::getPackets(TSPacketVector& packets)
+void ts::AbstractPacketizer::reset()
 {
-    packets.clear();
+    // Subclasses should do more....
+}
 
-    if (storedSectionCount() > 0) {
-        do {
-            packets.resize(packets.size() + 1);
-            CyclingPacketizer::getNextPacket(packets[packets.size() - 1]);
-        } while (!atCycleBoundary());
+
+//----------------------------------------------------------------------------
+// Configure a TS packet with continuity and PID.
+//----------------------------------------------------------------------------
+
+void ts::AbstractPacketizer::configurePacket(TSPacket& pkt, bool nullify)
+{
+    if (nullify) {
+        pkt = NullPacket;
     }
+    else {
+        pkt.setPID(_pid);
+        pkt.setCC(_continuity);
+        _continuity = (_continuity + 1) & 0x0F;
+    }
+    _packet_count++;
 }
 
 
 //----------------------------------------------------------------------------
-// Hidden methods
+// Display the internal state of the packetizer, mainly for debug
 //----------------------------------------------------------------------------
 
-bool ts::OneShotPacketizer::getNextPacket(TSPacket&)
+std::ostream& ts::AbstractPacketizer::display(std::ostream& strm) const
 {
-    return false;
+    return strm
+        << UString::Format(u"  PID: %d (0x%X)", {_pid, _pid}) << std::endl
+        << "  Next CC: " << int(_continuity) << std::endl
+        << UString::Format(u"  Output packets: %'d", {_packet_count}) << std::endl;
 }

@@ -26,12 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Packetization of MPEG sections into Transport Stream packets in one shot
-//
-//----------------------------------------------------------------------------
 
-#include "tsOneShotPacketizer.h"
+#include "tsPESStreamPacketizer.h"
+#include "tsNullReport.h"
+#include "tsTSPacket.h"
 TSDUCK_SOURCE;
 
 
@@ -39,38 +37,80 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::OneShotPacketizer::OneShotPacketizer(const DuckContext& duck, PID pid, bool do_stuffing, BitRate bitrate) :
-    CyclingPacketizer(duck, pid, do_stuffing ? ALWAYS : AT_END, bitrate)
+ts::PESStreamPacketizer::PESStreamPacketizer(const DuckContext& duck, PID pid, Report* report) :
+    PESPacketizer(duck, pid, this, report),
+    _max_queued(0),
+    _pes_queue()
 {
 }
 
-ts::OneShotPacketizer::~OneShotPacketizer()
+ts::PESStreamPacketizer::~PESStreamPacketizer()
 {
 }
 
 
 //----------------------------------------------------------------------------
-// Get complete cycle as one list of packets
+// Reset the content of a packetizer. Becomes empty.
 //----------------------------------------------------------------------------
 
-void ts::OneShotPacketizer::getPackets(TSPacketVector& packets)
+void ts::PESStreamPacketizer::reset()
 {
-    packets.clear();
+    _pes_queue.clear();
+    PESPacketizer::reset();
+}
 
-    if (storedSectionCount() > 0) {
-        do {
-            packets.resize(packets.size() + 1);
-            CyclingPacketizer::getNextPacket(packets[packets.size() - 1]);
-        } while (!atCycleBoundary());
+
+//----------------------------------------------------------------------------
+// Implementation of PESProviderInterface
+//----------------------------------------------------------------------------
+
+void ts::PESStreamPacketizer::providePESPacket(PacketCounter counter, PESPacketPtr& pes)
+{
+    if (_pes_queue.empty()) {
+        pes.clear();
+    }
+    else {
+        pes = _pes_queue.front();
+        _pes_queue.pop_front();
     }
 }
 
 
 //----------------------------------------------------------------------------
-// Hidden methods
+// Add a PES packet to packetize.
 //----------------------------------------------------------------------------
 
-bool ts::OneShotPacketizer::getNextPacket(TSPacket&)
+bool ts::PESStreamPacketizer::addPES(const PESPacketPtr& pes)
 {
-    return false;
+    if (_max_queued != 0 && _pes_queue.size() >= _max_queued) {
+        return false;
+    }
+    else {
+        _pes_queue.push_back(pes);
+        return true;
+    }
+}
+
+
+bool ts::PESStreamPacketizer::addPES(const PESPacket& pes, ShareMode mode)
+{
+    if (_max_queued != 0 && _pes_queue.size() >= _max_queued) {
+        return false;
+    }
+    else {
+        _pes_queue.push_back(PESPacketPtr(new PESPacket(pes, mode)));
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Display the internal state of the packetizer, mainly for debug
+//----------------------------------------------------------------------------
+
+std::ostream& ts::PESStreamPacketizer::display(std::ostream& strm) const
+{
+    return AbstractPacketizer::display(strm)
+        << UString::Format(u"  Additional queued PES packets: %'d", {_pes_queue.size()}) << std::endl
+        << UString::Format(u"  Enqueue limit: %'d", {_max_queued}) << std::endl;
 }

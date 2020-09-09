@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Abstract interface for classes which provides MPEG Section into
+//!  Abstract interface for classes which provide MPEG sections into
 //!  a Packetizer.
 //!
 //----------------------------------------------------------------------------
@@ -38,7 +38,7 @@
 
 namespace ts {
     //!
-    //! Abstract interface for classes which provides MPEG Section into a Packetizer.
+    //! Abstract interface for classes which provide MPEG sections into a Packetizer.
     //! @ingroup mpeg
     //!
     //! This abstract interface must be implemented by classes which provide

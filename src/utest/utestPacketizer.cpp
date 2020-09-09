@@ -173,7 +173,7 @@ void PacketizerTest::testPacketizer()
     }
 
     debug() << "PacketizerTest: Table count: " << pat_count << " PAT, " << pmt_count << " PMT, " << sdt_count << " SDT" << std::endl
-                 << "PacketizerTest: Packetizer state after packetization: " << std::endl << pzer;
+            << "PacketizerTest: Packetizer state after packetization: " << std::endl << pzer;
 
     TSUNIT_ASSERT(pmt_count == 4);
     TSUNIT_ASSERT(sdt_count >= 15 && sdt_count <= 18);

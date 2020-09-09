@@ -265,6 +265,6 @@ namespace ts {
         virtual bool doStuffing() override;
 
         // Hide this method, we do not want the section provider to be replaced
-        void setSectionProvider(SectionProviderInterface*);
+        void setSectionProvider(SectionProviderInterface*) = delete;
     };
 }

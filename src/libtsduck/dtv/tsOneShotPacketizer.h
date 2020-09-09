@@ -70,7 +70,7 @@ namespace ts {
         }
 
         //!
-        //! Get a complete cycle as one list of packets.
+        //! Get a complete cycle as one list of TS packets.
         //! @param [out] packets Returned list of TS packets containing a complete cycle.
         //!
         void getPackets(TSPacketVector& packets);
@@ -78,6 +78,6 @@ namespace ts {
     private:
         // Hide these methods
         void setStuffingPolicy(StuffingPolicy) = delete;
-        bool getNextPacket(TSPacket&) = delete;
+        virtual bool getNextPacket(TSPacket&) override;
     };
 }

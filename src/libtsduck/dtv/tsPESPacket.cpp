@@ -40,6 +40,7 @@ ts::PESPacket::PESPacket(PID source_pid) :
     _header_size(0),
     _source_pid(source_pid),
     _stream_type(ST_NULL),
+    _pcr(INVALID_PCR),
     _first_pkt(0),
     _last_pkt(0),
     _data()
@@ -51,6 +52,7 @@ ts::PESPacket::PESPacket(const PESPacket& pp, ShareMode mode) :
     _header_size(pp._header_size),
     _source_pid(pp._source_pid),
     _stream_type(pp._stream_type),
+    _pcr(pp._pcr),
     _first_pkt(pp._first_pkt),
     _last_pkt(pp._last_pkt),
     _data()
@@ -73,6 +75,7 @@ ts::PESPacket::PESPacket(PESPacket&& pp) noexcept :
     _header_size(pp._header_size),
     _source_pid(pp._source_pid),
     _stream_type(pp._stream_type),
+    _pcr(pp._pcr),
     _first_pkt(pp._first_pkt),
     _last_pkt(pp._last_pkt),
     _data(std::move(pp._data))
@@ -106,6 +109,7 @@ void ts::PESPacket::initialize(const ByteBlockPtr& bbp)
 {
     _is_valid = false;
     _header_size = 0;
+    _pcr = INVALID_PCR;
     _first_pkt = 0;
     _last_pkt = 0;
     _data.clear();
@@ -158,7 +162,21 @@ void ts::PESPacket::clear()
     _header_size = 0;
     _source_pid = PID_NULL;
     _stream_type = ST_NULL;
+    _pcr = INVALID_PCR;
+    _first_pkt = 0;
+    _last_pkt = 0;
     _data.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// Set the PCR value for this PES packet.
+//----------------------------------------------------------------------------
+
+void ts::PESPacket::setPCR(uint64_t pcr)
+{
+    // Make sure that all invalid PCR values are represented by the same value.
+    _pcr = pcr <= MAX_PCR ? pcr : INVALID_PCR;
 }
 
 
@@ -226,6 +244,7 @@ ts::PESPacket& ts::PESPacket::operator=(const PESPacket& pp)
     _header_size = pp._header_size;
     _source_pid = pp._source_pid;
     _stream_type = pp._stream_type;
+    _pcr = pp._pcr;
     _first_pkt = pp._first_pkt;
     _last_pkt = pp._last_pkt;
     _data = pp._data;
@@ -238,6 +257,7 @@ ts::PESPacket& ts::PESPacket::operator=(PESPacket&& pp) noexcept
     _header_size = pp._header_size;
     _source_pid = pp._source_pid;
     _stream_type = pp._stream_type;
+    _pcr = pp._pcr;
     _first_pkt = pp._first_pkt;
     _last_pkt = pp._last_pkt;
     _data = std::move(pp._data);
@@ -256,6 +276,7 @@ ts::PESPacket& ts::PESPacket::copy(const PESPacket& pp)
     _header_size = pp._header_size;
     _source_pid = pp._source_pid;
     _stream_type = pp._stream_type;
+    _pcr = pp._pcr;
     _first_pkt = pp._first_pkt;
     _last_pkt = pp._last_pkt;
     _data = pp._is_valid ? new ByteBlock(*pp._data) : nullptr;

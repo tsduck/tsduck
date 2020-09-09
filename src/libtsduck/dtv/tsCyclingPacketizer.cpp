@@ -456,11 +456,11 @@ std::ostream& ts::CyclingPacketizer::display(std::ostream& strm) const
         << "  Scheduled sections: " << _sched_sections.size() << std::endl
         << "  Scheduled packets max: " << _sched_packets << std::endl;
     for (SectionDescList::const_iterator it = _sched_sections.begin(); it != _sched_sections.end(); ++it) {
-        (*it)->display(_duck, strm);
+        (*it)->display(duck(), strm);
     }
     strm << "  Unscheduled sections: " << _other_sections.size() << std::endl;
     for (SectionDescList::const_iterator it = _other_sections.begin(); it != _other_sections.end(); ++it) {
-        (*it)->display(_duck, strm);
+        (*it)->display(duck(), strm);
     }
     return strm;
 }
