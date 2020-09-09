@@ -85,6 +85,7 @@ ts::PESDemux::PIDContext::PIDContext() :
     sync(false),
     first_pkt(0),
     last_pkt(0),
+    pcr(INVALID_PCR),
     ts(new ByteBlock()),
     audio(),
     video(),
@@ -201,7 +202,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
 
     // Get PID and check if context exists
     PID pid = pkt.getPID();
-    PIDContextMap::iterator pci = _pids.find (pid);
+    PIDContextMap::iterator pci = _pids.find(pid);
     bool pc_exists = pci != _pids.end();
 
     // If no context established and not at a unit start, ignore packet
@@ -244,6 +245,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
             pc.ts->copy(pl, pl_size);
             pc.first_pkt = _packet_count;
             pc.last_pkt = _packet_count;
+            pc.pcr = pkt.getPCR(); // can be invalid
         }
         else if (pc_exists) {
             // This PID does not contain PES packet, reset context
@@ -294,6 +296,11 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
 
     // Last TS packet containing actual data for this PES packet
     pc.last_pkt = _packet_count;
+
+    // Keep track of first PCR in the PES packet.
+    if (pc.pcr == INVALID_PCR && pkt.hasPCR()) {
+        pc.pcr = pkt.getPCR();
+    }
 
     // Check if the complete PES packet is now present (without waiting for the next PUSI).
     if (pc.ts->size() >= 6 && pc.sync) {
@@ -377,6 +384,7 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
     // Location of the PES packet inside the demultiplexed stream
     pp.setFirstTSPacketIndex(pc.first_pkt);
     pp.setLastTSPacketIndex(pc.last_pkt);
+    pp.setPCR(pc.pcr);
 
     // Set stream type if known.
     const StreamTypeMap::const_iterator it = _stream_types.find(pid);

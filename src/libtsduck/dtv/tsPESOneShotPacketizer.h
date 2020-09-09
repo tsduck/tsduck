@@ -28,20 +28,44 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Packetization of PES data into Transport Stream packets in one shot.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1975
+#include "tsPESStreamPacketizer.h"
+#include "tsTSPacket.h"
+
+namespace ts {
+    //!
+    //! Packetization of PES data into Transport Stream packets in one shot.
+    //! @ingroup mpeg
+    //!
+    class TSDUCKDLL PESOneShotPacketizer: public PESStreamPacketizer
+    {
+        TS_NOBUILD_NOCOPY(PESOneShotPacketizer);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] duck TSDuck execution context. The reference is kept inside the packetizer.
+        //! @param [in] pid PID for generated TS packets.
+        //! @param [in] report Optional address of a Report object for debug and trace messages.
+        //!
+        PESOneShotPacketizer(const DuckContext& duck, PID pid = PID_NULL, Report* report = nullptr);
+
+        //!
+        //! Destructor
+        //!
+        virtual ~PESOneShotPacketizer();
+
+        //!
+        //! Get all enqueued PES packets as one list of TS packets.
+        //! @param [out] packets Returned list of TS packets containing all TS packets.
+        //!
+        void getPackets(TSPacketVector& packets);
+
+    private:
+        // Hide these methods
+        virtual bool getNextPacket(TSPacket&) override;
+    };
+}
