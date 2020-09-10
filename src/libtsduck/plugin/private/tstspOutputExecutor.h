@@ -63,6 +63,11 @@ namespace ts {
                            Mutex& global_mutex,
                            Report* report);
 
+            //!
+            //! Virtual destructor.
+            //!
+            virtual ~OutputExecutor();
+
             // Overridden methods.
             virtual size_t pluginIndex() const override;
 

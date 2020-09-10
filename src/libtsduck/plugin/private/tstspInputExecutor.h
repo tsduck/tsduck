@@ -67,6 +67,11 @@ namespace ts {
                           Report* report);
 
             //!
+            //! Virtual destructor.
+            //!
+            virtual ~InputExecutor();
+
+            //!
             //! Initializes the packet buffer for all plugin executors, starting at this input executor.
             //!
             //! The buffer is pre-loaded with initial data.

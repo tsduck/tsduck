@@ -32,7 +32,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::tsp::OutputExecutor::OutputExecutor(const TSProcessorArgs& options,
@@ -45,6 +45,11 @@ ts::tsp::OutputExecutor::OutputExecutor(const TSProcessorArgs& options,
     PluginExecutor(options, handlers, PluginType::OUTPUT, pl_options, attributes, global_mutex, report),
     _output(dynamic_cast<OutputPlugin*>(PluginThread::plugin()))
 {
+}
+
+ts::tsp::OutputExecutor::~OutputExecutor()
+{
+    waitForTermination();
 }
 
 
