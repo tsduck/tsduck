@@ -32,7 +32,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::tsp::ProcessorExecutor::ProcessorExecutor(const TSProcessorArgs& options,
@@ -46,6 +46,11 @@ ts::tsp::ProcessorExecutor::ProcessorExecutor(const TSProcessorArgs& options,
     _processor(dynamic_cast<ProcessorPlugin*>(PluginThread::plugin())),
     _plugin_index(1 + plugin_index) // include first input plugin in the count
 {
+}
+
+ts::tsp::ProcessorExecutor::~ProcessorExecutor()
+{
+    waitForTermination();
 }
 
 

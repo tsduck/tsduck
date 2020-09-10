@@ -68,6 +68,7 @@ ts::tsp::PluginExecutor::PluginExecutor(const TSProcessorArgs& options,
 
 ts::tsp::PluginExecutor::~PluginExecutor()
 {
+    waitForTermination();
 }
 
 

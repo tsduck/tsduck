@@ -111,6 +111,11 @@ namespace ts {
         //!
         PushInputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
 
+        //!
+        //! Destructor.
+        //!
+        ~PushInputPlugin();
+
         // Implementation of plugin API
         virtual bool abortInput() override;
 

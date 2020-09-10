@@ -44,6 +44,11 @@ ts::PushInputPlugin::PushInputPlugin(TSP* tsp_, const UString& description, cons
 {
 }
 
+ts::PushInputPlugin::~PushInputPlugin()
+{
+    _receiver.waitForTermination();
+}
+
 ts::PushInputPlugin::Receiver::Receiver(PushInputPlugin* plugin) :
     _plugin(plugin)
 {

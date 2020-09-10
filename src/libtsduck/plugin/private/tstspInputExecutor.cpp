@@ -38,7 +38,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::tsp::InputExecutor::InputExecutor(const TSProcessorArgs& options,
@@ -70,6 +70,11 @@ ts::tsp::InputExecutor::InputExecutor(const TSProcessorArgs& options,
         debug(u"%s input plugin does not support receive timeout, using watchdog and abort", {pluginName()});
         _use_watchdog = true;
     }
+}
+
+ts::tsp::InputExecutor::~InputExecutor()
+{
+    waitForTermination();
 }
 
 
@@ -274,11 +279,11 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(size_t index, size_t max_packe
             if (maxSeverity() >= 1) {
                 if (n > 0) {
                     debug(u"content of packet before lost of synchronization:\n%s",
-                          {UString::Dump(pkt[n-1].b, PKT_SIZE, UString::HEXA | UString::OFFSET | UString::BPL, 4, 16)});
+                          {UString::Dump(pkt[n-1].b, PKT_SIZE, UString::HEXA | UString::OFFSET | UString::ASCII | UString::BPL, 4, 16)});
                 }
                 const size_t dump_count = std::min<size_t>(3, count - n);
                 debug(u"data at lost of synchronization:\n%s",
-                      {UString::Dump(pkt[n].b, dump_count * PKT_SIZE, UString::HEXA | UString::OFFSET | UString::BPL, 4, 16)});
+                      {UString::Dump(pkt[n].b, dump_count * PKT_SIZE, UString::HEXA | UString::OFFSET | UString::ASCII | UString::BPL, 4, 16)});
             }
             // Ignore subsequent packets
             count = n;
