@@ -36,6 +36,7 @@
 #include "tsAbstractReadStreamInterface.h"
 #include "tsAbstractWriteStreamInterface.h"
 #include "tsTSPacketFormat.h"
+#include "tsTSPacketMetadata.h"
 #include "tsTSPacket.h"
 #include "tsEnumeration.h"
 
@@ -103,10 +104,30 @@ namespace ts {
         PacketCounter writePacketsCount() const { return _total_write; }
 
         //!
+        //! Maximum size in bytes of a packet header for non-TS format.
+        //! Must be lower than the TS packet size to allow auto-detection on read.
+        //!
+        static constexpr size_t MAX_HEADER_SIZE = ts::TSPacketMetadata::SERIALIZATION_SIZE;
+
+        //!
+        //! Maximum size in bytes of a packet trailer for non-TS format.
+        //! Must be lower than the TS packet size to allow auto-detection on read.
+        //!
+        static constexpr size_t MAX_TRAILER_SIZE = ts::RS_SIZE;
+
+        //!
         //! Get the packet header size, based on the packet format.
+        //! This "header" comes before the classical 188-byte TS packet.
         //! @return The packet header size in bytes (before the TS packet).
         //!
         size_t packetHeaderSize() const;
+
+        //!
+        //! Get the packet trailer size, based on the packet format.
+        //! This "trailer" comes after the classical 188-byte TS packet.
+        //! @return The packet trailer size in bytes (before the TS packet).
+        //!
+        size_t packetTrailerSize() const;
 
         //!
         //! Get the file format.
@@ -136,6 +157,8 @@ namespace ts {
         TSPacketFormat                _format;
         AbstractReadStreamInterface*  _reader;
         AbstractWriteStreamInterface* _writer;
-        uint64_t                      _last_timestamp; // Last write time stamp in PCR units (M2TS files).
+        uint64_t _last_timestamp;             // Last write time stamp in PCR units (M2TS files).
+        size_t   _trail_size;                 // Number of meaningful bytes in _trail
+        uint8_t  _trail[MAX_TRAILER_SIZE+1];  // Transient buffer for auto-detection of trailer
     };
 }

@@ -28,14 +28,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSPacketStream.h"
-#include "tsTSPacketMetadata.h"
+#include "tsMPEG.h"
 TSDUCK_SOURCE;
-
-// Maximum size of a packet header for non-TS format.
-// Must be lower than the TS packet size to allow auto-detection on read.
-namespace {
-    constexpr size_t MAX_HEADER_SIZE = ts::TSPacketMetadata::SERIALIZATION_SIZE;
-}
 
 
 //----------------------------------------------------------------------------
@@ -48,7 +42,9 @@ ts::TSPacketStream::TSPacketStream(TSPacketFormat format, AbstractReadStreamInte
     _format(format),
     _reader(reader),
     _writer(writer),
-    _last_timestamp(0)
+    _last_timestamp(0),
+    _trail_size(0),
+    _trail()
 {
 }
 
@@ -69,11 +65,12 @@ void ts::TSPacketStream::resetPacketStream(TSPacketFormat format, AbstractReadSt
     _reader = reader;
     _writer = writer;
     _last_timestamp = 0;
+    _trail_size = 0;
 }
 
 
 //----------------------------------------------------------------------------
-// Get header size in bytes before a packet.
+// Get packet header / trailer size in bytes.
 //----------------------------------------------------------------------------
 
 size_t ts::TSPacketStream::packetHeaderSize() const
@@ -82,7 +79,20 @@ size_t ts::TSPacketStream::packetHeaderSize() const
         case TSPacketFormat::AUTODETECT: return 0;
         case TSPacketFormat::TS:         return 0;
         case TSPacketFormat::M2TS:       return 4;
+        case TSPacketFormat::RS204:      return 0;
         case TSPacketFormat::DUCK:       return TSPacketMetadata::SERIALIZATION_SIZE;
+        default:                         return 0;
+    }
+}
+
+size_t ts::TSPacketStream::packetTrailerSize() const
+{
+    switch (_format) {
+        case TSPacketFormat::AUTODETECT: return 0;
+        case TSPacketFormat::TS:         return 0;
+        case TSPacketFormat::M2TS:       return 0;
+        case TSPacketFormat::RS204:      return RS_SIZE;
+        case TSPacketFormat::DUCK:       return 0;
         default:                         return 0;
     }
 }
@@ -103,7 +113,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
     size_t read_packets = 0;
     size_t read_size = 0;
 
-    // Header buffer for M2TS or M8TS formats.
+    // Header buffer for non-TS formats.
     uint8_t header[MAX_HEADER_SIZE];
     size_t header_size = packetHeaderSize();
     assert(header_size <= sizeof(header));
@@ -122,6 +132,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
         // Check the position of the 0x47 sync byte to detect a potential header.
         if (buffer->b[0] == SYNC_BYTE) {
             // No header (or header starting with 0x47...)
+            // Note that RS204 is also a possible format; we will check a trailer later.
             _format = TSPacketFormat::TS;
         }
         else if (buffer->b[4] == SYNC_BYTE) {
@@ -136,7 +147,6 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
             report.error(u"cannot detect TS file format");
             return 0;
         }
-        report.debug(u"detected TS file format %s", {packetFormatString()});
 
         // If there was a header, remove it and read the rest of the packet.
         header_size = packetHeaderSize();
@@ -157,6 +167,23 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
         if (metadata != nullptr) {
             *metadata++ = mdata;
         }
+
+        // Check the presence of a 16-byte trailer when the detected format is TS.
+        if (_format == TSPacketFormat::TS) {
+            // Read enough data in a trailer buffer. If there is no trailer, it will be used as start of next packet.
+            // Ignore errors since the input can be simply one packet.
+            assert(sizeof(_trail) > RS_SIZE);
+            _reader->readStreamComplete(_trail, RS_SIZE + 1, _trail_size, report);
+            if (_trail_size == RS_SIZE + 1 && _trail[0] != SYNC_BYTE && _trail[RS_SIZE] == SYNC_BYTE) {
+                // Found a Reed-Solomon trailer.
+                _format = TSPacketFormat::RS204;
+                // Remove trailer, keep start of second packet.
+                _trail[0] = SYNC_BYTE;
+                _trail_size = 1;
+            }
+        }
+
+        report.debug(u"detected TS file format %s", {packetFormatString()});
     }
 
     // Repeat reading packets until the buffer is full or error.
@@ -172,7 +199,12 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
             }
             case TSPacketFormat::TS: {
                 // Bulk read in TS format.
-                success = _reader->readStreamComplete(buffer, max_packets * PKT_SIZE, read_size, report);
+                // Make sure that the trailer buffer from first packet is used in second packet.
+                uint8_t* const cbuffer = reinterpret_cast<uint8_t*>(buffer);
+                ::memmove(cbuffer, _trail, _trail_size);
+                success = _reader->readStreamComplete(cbuffer + _trail_size, max_packets * PKT_SIZE - _trail_size, read_size, report);
+                read_size += _trail_size;
+                _trail_size = 0;
                 // Count packets. Truncate incomplete packets at end of file.
                 const size_t count = read_size / PKT_SIZE;
                 assert(count <= max_packets);
@@ -185,9 +217,29 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
                 }
                 break;
             }
+            case TSPacketFormat::RS204: {
+                // Read packet. Make sure that the trailer buffer from first packet is used in second packet.
+                uint8_t* const cbuffer = reinterpret_cast<uint8_t*>(buffer);
+                ::memmove(cbuffer, _trail, _trail_size);
+                success = _reader->readStreamComplete(cbuffer + _trail_size, PKT_SIZE - _trail_size, read_size, report);
+                read_size += _trail_size;
+                _trail_size = 0;
+                if (success && read_size == PKT_SIZE) {
+                    read_packets++;
+                    buffer++;
+                    max_packets--;
+                    if (metadata != nullptr) {
+                        metadata->reset();
+                        metadata++;
+                    }
+                    // Read trailer in unused buffer.
+                    success = _reader->readStreamComplete(_trail, RS_SIZE, read_size, report) && read_size == RS_SIZE;
+                }
+                break;
+            }
             case TSPacketFormat::M2TS:
             case TSPacketFormat::DUCK: {
-                // Read header + packet.
+                // Read header + packet. No trailer was read at first packet.
                 success = _reader->readStreamComplete(header, header_size, read_size, report);
                 if (success && read_size == header_size) {
                     success = _reader->readStreamComplete(buffer, PKT_SIZE, read_size, report);
@@ -244,6 +296,19 @@ bool ts::TSPacketStream::writePackets(const TSPacket *buffer, const TSPacketMeta
             size_t written_size = 0;
             success = _writer->writeStream(buffer, packet_count * PKT_SIZE, written_size, report);
             _total_write += written_size / PKT_SIZE;
+            break;
+        }
+        case TSPacketFormat::RS204: {
+            // Write packet + trailer, packet by packet.
+            static const uint8_t trailer[RS_SIZE] = {0x00, };
+            size_t written_size = 0;
+            for (size_t i = 0; success && i < packet_count; ++i) {
+                success = _writer->writeStream(&buffer[i], PKT_SIZE, written_size, report) &&
+                          _writer->writeStream(trailer, RS_SIZE, written_size, report);
+                if (success) {
+                    _total_write++;
+                }
+            }
             break;
         }
         case TSPacketFormat::M2TS:

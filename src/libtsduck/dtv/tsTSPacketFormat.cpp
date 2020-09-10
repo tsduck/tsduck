@@ -34,5 +34,6 @@ const ts::TypedEnumeration<ts::TSPacketFormat> ts::TSPacketFormatEnum({
     {u"autodetect", ts::TSPacketFormat::AUTODETECT},
     {u"TS",         ts::TSPacketFormat::TS},
     {u"M2TS",       ts::TSPacketFormat::M2TS},
+    {u"RS204",      ts::TSPacketFormat::RS204},
     {u"duck",       ts::TSPacketFormat::DUCK},
 });

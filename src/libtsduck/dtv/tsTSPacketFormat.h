@@ -43,6 +43,7 @@ namespace ts {
         AUTODETECT,  //!< Try to detect format (read), default to TS.
         TS,          //!< Raw transport stream format.
         M2TS,        //!< Bluray compatible, 4-byte timestamp header before each TS packet (30-bit time stamp in PCR units).
+        RS204,       //!< 204-byte packet with 16-byte trailing Reed-Solomon (ignored on input, zero place-holder on output).
         DUCK,        //!< Proprietary, 14-byte header before each TS packet (packet metadata).
     };
 
