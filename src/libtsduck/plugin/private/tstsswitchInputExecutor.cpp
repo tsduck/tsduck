@@ -65,6 +65,11 @@ ts::tsswitch::InputExecutor::InputExecutor(const InputSwitcherArgs& opt,
     setLogName(UString::Format(u"%s[%d]", {pluginName(), _pluginIndex}));
 }
 
+ts::tsswitch::InputExecutor::~InputExecutor()
+{
+    waitForTermination();
+}
+
 
 //----------------------------------------------------------------------------
 // Implementation of TSP.
