@@ -39,7 +39,7 @@
 
 # Default options.
 TARGET=release
-DISPLAY=false
+SHOW_PATH=false
 
 # Decode command line options.
 while [[ $# -gt 0 ]]; do
@@ -48,7 +48,7 @@ while [[ $# -gt 0 ]]; do
             TARGET=debug
             ;;
         --display)
-            DISPLAY=true
+            SHOW_PATH=true
             ;;
     esac
     shift
@@ -61,7 +61,7 @@ HOST=$(hostname | sed -e 's/\..*//')
 BINDIR="$ROOTDIR/bin/$TARGET-$ARCH-$HOST"
 
 # Display or set path.
-if $DISPLAY; then
+if $SHOW_PATH; then
     echo "$BINDIR"
 elif [[ ":$PATH:" != *:$BINDIR:* ]]; then
     export PATH="$BINDIR:$PATH"
