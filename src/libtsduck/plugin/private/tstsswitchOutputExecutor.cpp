@@ -47,6 +47,11 @@ ts::tsswitch::OutputExecutor::OutputExecutor(const InputSwitcherArgs& opt,
 {
 }
 
+ts::tsswitch::OutputExecutor::~OutputExecutor()
+{
+    waitForTermination();
+}
+
 
 //----------------------------------------------------------------------------
 // Implementation of TSP.

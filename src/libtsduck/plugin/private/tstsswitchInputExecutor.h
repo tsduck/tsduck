@@ -65,6 +65,11 @@ namespace ts {
                           Report& log);
 
             //!
+            //! Virtual destructor.
+            //!
+            virtual ~InputExecutor();
+
+            //!
             //! Tell the input executor thread to start an input session.
             //! @param [in] isCurrent True if the plugin immediately becomes the current one.
             //!

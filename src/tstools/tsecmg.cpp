@@ -302,9 +302,11 @@ class ECMGClientHandler: public ts::Thread
     TS_NOBUILD_NOCOPY(ECMGClientHandler);
 public:
     // Constructor.
-    // When deleteWhenTerminated is true, this object is automatically deleted
-    // when the thread terminates.
+    // When deleteWhenTerminated is true, this object is automatically deleted when the thread terminates.
     ECMGClientHandler(const ECMGOptions& opt, const ECMGConnectionPtr& conn, ECMGSharedData* shared, bool deleteWhenTerminated);
+
+    // Destructor.
+    virtual ~ECMGClientHandler();
 
     // Main code of the thread.
     virtual void main() override;
@@ -344,7 +346,7 @@ private:
 
 
 //----------------------------------------------------------------------------
-// ECMG client constructor.
+// ECMG client constructor and destructor.
 //----------------------------------------------------------------------------
 
 ECMGClientHandler::ECMGClientHandler(const ECMGOptions& opt, const ECMGConnectionPtr& conn, ECMGSharedData* shared, bool deleteWhenTerminated) :
@@ -361,6 +363,12 @@ ECMGClientHandler::ECMGClientHandler(const ECMGOptions& opt, const ECMGConnectio
     attr.setStackSize(CLIENT_STACK_SIZE);
     attr.setDeleteWhenTerminated(deleteWhenTerminated);
     setAttributes(attr);
+}
+
+ECMGClientHandler::~ECMGClientHandler()
+{
+    // Wait for completion of the thread.
+    waitForTermination();
 }
 
 
