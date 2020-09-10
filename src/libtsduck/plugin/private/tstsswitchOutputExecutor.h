@@ -60,6 +60,11 @@ namespace ts {
                            Report& log);
 
             //!
+            //! Virtual destructor.
+            //!
+            virtual ~OutputExecutor();
+
+            //!
             //! Request the termination of the thread.
             //! Actual termination will occur after completion of the current output operation.
             //!
