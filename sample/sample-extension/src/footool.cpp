@@ -56,7 +56,7 @@ int MainCode(int argc, char *argv[])
 {
     foo::FooToolOptions opt(argc, argv);
 
-    opt.info(u"This is a sample tool using extension 'foo' over TSDuck version %s", {ts::GetVersion()});
+    opt.info(u"This is a sample tool using extension 'foo' over TSDuck version %s", {ts::VersionInfo::GetVersion()});
     opt.verbose(u"Option --all is %s, number of input files: %d", {opt.all, opt.infiles.size()});
 
     return EXIT_SUCCESS;

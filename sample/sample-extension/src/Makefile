@@ -1,12 +1,11 @@
 # Makefile for TSDuck extension.
 # The TSDuck development package must have been installed.
 
+CXXFLAGS += $(shell tsconfig --cflags)
+LDLIBS += $(shell tsconfig --libs)
+
 # Default target is build all.
 default: all
-
-# TSDuck definitions are in /usr on Linux and /usr/local on Mac.
-SYSPREFIX ?= $(if $(subst Darwin,,$(shell uname -s)),/usr,/usr/local)
-include $(SYSPREFIX)/include/tsduck/tsduck.mk
 
 # Default installation directory prefix.
 # RPM packagers should override this in the "make install" command line.
@@ -54,8 +53,11 @@ $(PLUGINS_SO) $(TOOLS): $(LIBEXT_SO)
 
 # Installation in the same directories as TSDuck.
 install: all
-	install -d -m 755 $(DESTDIR)$(TS_BIN_DIR) $(DESTDIR)$(TS_LIB_DIR) $(DESTDIR)$(TS_PLUGIN_DIR) $(DESTDIR)$(TS_CONFIG_DIR)
-	$(if $(TOOLS),install -m 755 $(TOOLS) $(DESTDIR)$(TS_BIN_DIR),@true)
-	$(if $(LIBEXT_SO),install -m 644 $(LIBEXT_SO) $(DESTDIR)$(TS_LIB_DIR),@true)
-	$(if $(PLUGINS_SO),install -m 644 $(PLUGINS_SO) $(DESTDIR)$(TS_PLUGIN_DIR),@true)
-	$(if $(CONFIGS),install -m 644 $(CONFIGS) $(DESTDIR)$(TS_CONFIG_DIR),@true)
+	$(if $(TOOLS),install -d -m 755 $(DESTDIR)$(shell tsconfig --bin),@true)
+	$(if $(TOOLS),install -m 755 $(TOOLS) $(DESTDIR)$(shell tsconfig --bin),@true)
+	$(if $(LIBEXT_SO),install -d -m 755 $(DESTDIR)$(shell tsconfig --lib),@true)
+	$(if $(LIBEXT_SO),install -m 644 $(LIBEXT_SO) $(DESTDIR)$(shell tsconfig --lib),@true)
+	$(if $(PLUGINS_SO),install -d -m 755 $(DESTDIR)$(shell tsconfig --plugin),@true)
+	$(if $(PLUGINS_SO),install -m 644 $(PLUGINS_SO) $(DESTDIR)$(shell tsconfig --plugin),@true)
+	$(if $(CONFIGS),install -d -m 755 $(DESTDIR)$(shell tsconfig --config),@true)
+	$(if $(CONFIGS),install -m 644 $(CONFIGS) $(DESTDIR)$(shell tsconfig --config),@true)

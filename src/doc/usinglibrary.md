@@ -10,17 +10,19 @@ you must install the TSDuck development environment first.
   during the installation.
 - On Fedora, Red Hat and CentOS, you must install the package `tsduck-devel`.
 - On Ubuntu systems, you must install the package `tsduck-dev`.
+- On macOS systems, the development environment is always installed with TSDuck using Homebrew.
 
-# Building applications on Linux  {#liblinux}
+# Building applications on Linux and macOS  {#liblinux}
 
-The TSDuck header files are located in `/usr/include/tsduck`.
-In the same directory, a partial makefile named `tsduck.mk` defines
-all options and requirements to use the TSDuck library.
+The command `tsconfig` generates the appropriate build options for the
+current operating system. See the TSDuck user's guide for more details.
 
 The following sample makefile illustrates the creation of a simple
 application named `myexec` using one single source file `myexec.cpp`.
 ~~~~
-include /usr/include/tsduck/tsduck.mk
+CXXFLAGS += $(shell tsconfig --cflags)
+LDLIBS += $(shell tsconfig --libs)
+
 default: myexec
 ~~~~
 This is as simple as that.
@@ -28,13 +30,6 @@ This is as simple as that.
 Just run "make" to build the application.
 ~~~~
 $ make
-~~~~
-
-By default, the application is built against the TSDuck dynamic
-library in `/usr/bin`. Define the make symbol `TS_STATIC` to link against
-the TSDuck static library:
-~~~~
-$ make TS_STATIC=true
 ~~~~
 
 # Building applications on Windows  {#libwindows}
