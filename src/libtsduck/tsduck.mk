@@ -35,6 +35,9 @@
 #  If TS_STATIC is defined, the application is linked against the TSDuck
 #  library. Otherwise, the dynamic library is used.
 #
+#  WARNING: This file is considered obsolete. Application building systems
+#  should now use the command "tsconfig" to get the various options.
+#
 #------------------------------------------------------------------------------
 
 # Check local platform.

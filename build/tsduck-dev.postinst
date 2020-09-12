@@ -3,8 +3,8 @@
 
 if [[ "$1" = "configure" ]]; then
     # Fix file permissions and ownership.
-    chown -R root:root /usr/include/tsduck /usr/lib*/libtsduck.a
-    chmod 0755 /usr/include/tsduck
+    chown -R root:root /usr/bin/tsconfig /usr/include/tsduck /usr/lib*/libtsduck.a
+    chmod 0755 /usr/bin/tsconfig /usr/include/tsduck
     chmod 0644 /usr/include/tsduck/* /usr/lib*/libtsduck.a
 fi
 

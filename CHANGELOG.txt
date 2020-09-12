@@ -2,6 +2,22 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.24-1981
+
+[NEW] New commands and plugins:
+
+  * For developers who use the TSDuck library on Linux and macOS, the new
+    command "tsconfig" generates the various build options for the applications
+    depending on the current operating system.
+
+[IMP] Improvements on existing commands and plugins:
+
+  * In all commands and plugins which define the option --format (file format),
+    the new value "RS204" designates TS files containing 204-byte packets with
+    trailing Reed-Solomon code.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.23-1964
 
 [IMP] Improvements on existing commands and plugins:

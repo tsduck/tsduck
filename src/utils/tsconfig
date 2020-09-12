@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+#-----------------------------------------------------------------------------
+#
+#  TSDuck - The MPEG Transport Stream Toolkit
+#  Copyright (c) 2005-2020, Thierry Lelegard
+#  All rights reserved.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are met:
+#
+#  1. Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+#  THE POSSIBILITY OF SUCH DAMAGE.
+#
+#-----------------------------------------------------------------------------
+#
+#  This script is used with the TSDuck development environment.
+#  It displays various options to build applications with the TSDuck library.
+#
+#-----------------------------------------------------------------------------
+
+TSCONFIG=${BASH_SOURCE[0]}
+SCRIPT=$(basename $TSCONFIG)
+error() { echo >&2 "$SCRIPT: $*"; exit 1; }
+usage() { error "invalid option $*, try --help"; }
+
+# Display help text
+cmd_help() {
+    cat >&2 <<EOF
+
+Syntax: $SCRIPT [options]
+
+  --cflags      pre-processor and compiler flags
+  --libs        library linking flags
+  --static-libs static library linking flags
+
+  --prefix      installation prefix
+  --bin         directory for TSDuck executables
+  --lib         directory for TSDuck dynamic libraries (except plugins)
+  --plugin      directory for TSDuck plugins
+  --config      directory for TSDuck configuration files
+  --include     include directory
+
+  --help        display this help and exit
+  --version     output version information
+  --vernum      output the version information as a number
+
+EOF
+}
+
+# Process individual commands
+cmd_bin() {
+    dirname "$TSCONFIG"
+}
+
+cmd_prefix() {
+    (cd $(dirname "$TSCONFIG"); cd ..; pwd)
+}
+
+cmd_plugin() {
+    echo "$(cmd_lib)/tsduck"
+}
+
+cmd_config() {
+    echo "$(cmd_prefix)/share/tsduck"
+}
+
+cmd_include() {
+    echo "$(cmd_prefix)/include/tsduck"
+}
+
+cmd_lib() {
+    dirname $(ls $(cmd_prefix)/lib*/libtsduck.so | head -1)
+}
+
+cmd_cflags() {
+    [[ $(uname -s) == Darwin ]] && pcsc="/usr/local/opt/pcsc-lite/include/PCSC" || pcsc="/usr/include/PCSC"
+    echo "-I$(cmd_include) $(curl-config --cflags 2>/dev/null) -I$pcsc --std=c++11"
+}
+
+libs_common() {
+    [[ $(uname -s) == Darwin ]] && pcsc="-L/usr/local/opt/pcsc-lite/lib" || pcsc=""
+    [[ $(uname -s) == Darwin ]] && rt="" || rt="-lrt"
+    echo "$pcsc -lpcsclite -lpthread $rt -ldl -lm -lstdc++"
+}
+
+cmd_libs() {
+    lib=$(cmd_lib)
+    [[ -n $(ls /usr/lib64/libc.so* 2>/dev/null) ]] && usrlib=/usr/lib64 || usrlib=/usr/lib
+    [[ $lib == $usrlib ]] && lopt="" || lopt="-L$lib"
+    [[ -n $(ls /usr/include/srt/srt.h /usr/local/include/srt/srt.h 2>/dev/null) ]] && srt="-lsrt" || srt=""
+    echo "$lopt -ltsduck $srt $(curl-config --libs 2>/dev/null) $(libs_common)"
+}
+
+cmd_staticlibs() {
+    echo "$(cmd_lib)/libtsduck.a $(ls /usr/lib/libsrt.a /usr/local/lib/libsrt.a 2>/dev/null) $(curl-config --static-libs 2>/dev/null) $(libs_common)"
+}
+
+version_major() {
+    sed -e '/#define *TS_VERSION_MAJOR/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h
+}
+
+version_minor() {
+    sed -e '/#define *TS_VERSION_MINOR/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h
+}
+
+version_commit() {
+    sed -e '/#define *TS_COMMIT/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h
+}
+
+cmd_version() {
+    echo "$(version_major).$(version_minor).$(version_commit)"
+}
+
+cmd_vernum() {
+    echo $(( ($(version_major) * 10000000) + ($(version_minor) * 100000) + $(version_commit) ))
+}
+
+if [ $# -eq 0 ]; then
+    # No option, display everything.
+    echo "version: $(cmd_version)"
+    echo "prefix: $(cmd_prefix)"
+    echo "bin: $(cmd_bin)"
+    echo "lib: $(cmd_lib)"
+    echo "plugin: $(cmd_plugin)"
+    echo "config: $(cmd_config)"
+    echo "include: $(cmd_include)"
+    echo "cflags: $(cmd_cflags)"
+    echo "libs: $(cmd_libs)"
+    echo "static-libs: $(cmd_staticlibs)"
+else
+    # Display options one by one.
+    for arg in "$@"; do
+        case "$arg" in
+            --bin) cmd_bin ;;
+            --cflags) cmd_cflags ;;
+            --config) cmd_config ;;
+            --help) cmd_help ;;
+            --include) cmd_include ;;
+            --lib) cmd_lib ;;
+            --libs) cmd_libs ;;
+            --plugin) cmd_plugin ;;
+            --prefix) cmd_prefix ;;
+            --static-libs) cmd_staticlibs ;;
+            --version) cmd_version ;;
+            --vernum) cmd_vernum ;;
+            *) usage "$arg" ;;
+        esac
+        shift
+    done
+fi

@@ -52,5 +52,8 @@ else
 endif
 
 .PHONY: install install-devel
-install install-devel:
+install: $(EXECS)
 	@true
+install-devel:
+	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
+	install -m 755 tsconfig $(SYSROOT)$(SYSPREFIX)/bin
