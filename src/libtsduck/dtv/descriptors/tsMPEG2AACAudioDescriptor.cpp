@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -73,32 +74,18 @@ void ts::MPEG2AACAudioDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MPEG2AACAudioDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::MPEG2AACAudioDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MPEG2_AAC_profile);
-    bbp->appendUInt8(MPEG2_AAC_channel_configuration);
-    bbp->appendUInt8(MPEG2_AAC_additional_information);
-    serializeEnd(desc, bbp);
+    buf.putUInt8(MPEG2_AAC_profile);
+    buf.putUInt8(MPEG2_AAC_channel_configuration);
+    buf.putUInt8(MPEG2_AAC_additional_information);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::MPEG2AACAudioDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::MPEG2AACAudioDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 3;
-
-    if (_is_valid) {
-        MPEG2_AAC_profile = data[0];
-        MPEG2_AAC_channel_configuration = data[1];
-        MPEG2_AAC_additional_information = data[2];
-    }
+    MPEG2_AAC_profile = buf.getUInt8();
+    MPEG2_AAC_channel_configuration = buf.getUInt8();
+    MPEG2_AAC_additional_information = buf.getUInt8();
 }
 
 
@@ -106,18 +93,14 @@ void ts::MPEG2AACAudioDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MPEG2AACAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MPEG2AACAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 3) {
-        disp << margin << UString::Format(u"MPEG-2 AAC profile: 0x%X (%d)", {data[0], data[0]}) << std::endl
-             << margin << UString::Format(u"MPEG-2 AAC channel configuration: 0x%X (%d)", {data[1], data[1]}) << std::endl
-             << margin << UString::Format(u"MPEG-2 AAC additional information: 0x%X (%d)", {data[2], data[2]}) << std::endl;
-        data += 3; size -= 3;
+    if (buf.remainingReadBytes() >= 3) {
+        disp << margin << UString::Format(u"MPEG-2 AAC profile: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"MPEG-2 AAC channel configuration: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"MPEG-2 AAC additional information: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 
@@ -131,11 +114,6 @@ void ts::MPEG2AACAudioDescriptor::buildXML(DuckContext& duck, xml::Element* root
     root->setIntAttribute(u"MPEG2_AAC_channel_configuration", MPEG2_AAC_channel_configuration, true);
     root->setIntAttribute(u"MPEG2_AAC_additional_information", MPEG2_AAC_additional_information, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::MPEG2AACAudioDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

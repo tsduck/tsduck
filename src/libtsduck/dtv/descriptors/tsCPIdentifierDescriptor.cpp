@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -81,34 +82,17 @@ ts::DID ts::CPIdentifierDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CPIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CPIdentifierDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
     for (size_t n = 0; n < cpids.size(); ++n) {
-        bbp->appendUInt16(cpids[n]);
+        buf.putUInt16(cpids[n]);
     }
-    serializeEnd(desc, bbp);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::CPIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::CPIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1 && size % 2 == 1 && data[0] == MY_EDID;
-
-    cpids.clear();
-    if (_is_valid) {
-        while (size >= 3) {
-            cpids.push_back(GetUInt16(data + 1));
-            data += 2;
-            size -= 2;
-        }
+    while (!buf.error() && !buf.endOfRead()) {
+        cpids.push_back(buf.getUInt16());
     }
 }
 
@@ -147,19 +131,10 @@ bool ts::CPIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CPIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CPIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-
-    while (size >= 2) {
-        const uint16_t id = GetUInt16(data);
-        data += 2; size -= 2;
-        disp << margin << "CP System Id: " << NameFromSection(u"CPSystemId", id, names::FIRST) << std::endl;
+    while (!buf.error() && buf.remainingReadBytes() >= 2) {
+        disp << margin << "CP System Id: " << NameFromSection(u"CPSystemId", buf.getUInt16(), names::FIRST) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }

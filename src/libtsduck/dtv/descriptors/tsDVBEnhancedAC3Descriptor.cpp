@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -121,40 +122,38 @@ void ts::DVBEnhancedAC3Descriptor::merge(const DVBEnhancedAC3Descriptor& other)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBEnhancedAC3Descriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DVBEnhancedAC3Descriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8((component_type.set() ? 0x80 : 0x00) |
-                     (bsid.set()           ? 0x40 : 0x00) |
-                     (mainid.set()         ? 0x20 : 0x00) |
-                     (asvc.set()           ? 0x10 : 0x00) |
-                     (mixinfoexists        ? 0x08 : 0x00) |
-                     (substream1.set()     ? 0x04 : 0x00) |
-                     (substream2.set()     ? 0x02 : 0x00) |
-                     (substream3.set()     ? 0x01 : 0x00));
+    buf.putBit(component_type.set());
+    buf.putBit(bsid.set());
+    buf.putBit(mainid.set());
+    buf.putBit(asvc.set());
+    buf.putBit(mixinfoexists);
+    buf.putBit(substream1.set());
+    buf.putBit(substream2.set());
+    buf.putBit(substream3.set());
     if (component_type.set()) {
-        bbp->appendUInt8(component_type.value());
+        buf.putUInt8(component_type.value());
     }
     if (bsid.set()) {
-        bbp->appendUInt8(bsid.value());
+        buf.putUInt8(bsid.value());
     }
     if (mainid.set()) {
-        bbp->appendUInt8(mainid.value());
+        buf.putUInt8(mainid.value());
     }
     if (asvc.set()) {
-        bbp->appendUInt8(asvc.value());
+        buf.putUInt8(asvc.value());
     }
     if (substream1.set()) {
-        bbp->appendUInt8(substream1.value());
+        buf.putUInt8(substream1.value());
     }
     if (substream2.set()) {
-        bbp->appendUInt8(substream2.value());
+        buf.putUInt8(substream2.value());
     }
     if (substream3.set()) {
-        bbp->appendUInt8(substream3.value());
+        buf.putUInt8(substream3.value());
     }
-    bbp->append(additional_info);
-    serializeEnd(desc, bbp);
+    buf.putBytes(additional_info);
 }
 
 
@@ -162,55 +161,39 @@ void ts::DVBEnhancedAC3Descriptor::serialize(DuckContext& duck, Descriptor& desc
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBEnhancedAC3Descriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DVBEnhancedAC3Descriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 1;
+    const bool component_type_flag = buf.getBit() != 0;
+    const bool bsid_flag = buf.getBit() != 0;
+    const bool mainid_flag = buf.getBit() != 0;
+    const bool asvc_flag = buf.getBit() != 0;
+    mixinfoexists = buf.getBit() != 0;
+    const bool substream1_flag = buf.getBit() != 0;
+    const bool substream2_flag = buf.getBit() != 0;
+    const bool substream3_flag = buf.getBit() != 0;
 
-    component_type.clear();
-    bsid.clear();
-    mainid.clear();
-    asvc.clear();
-    substream1.clear();
-    substream2.clear();
-    substream3.clear();
-    additional_info.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        const uint8_t flags = *data;
-        mixinfoexists = (flags & 0x08) != 0;
-        data++; size--;
-        if ((flags & 0x80) != 0 && size >= 1) {
-            component_type = *data;
-            data++; size--;
-        }
-        if ((flags & 0x40) != 0 && size >= 1) {
-            bsid = *data;
-            data++; size--;
-        }
-        if ((flags & 0x20) != 0 && size >= 1) {
-            mainid = *data;
-            data++; size--;
-        }
-        if ((flags & 0x10) != 0 && size >= 1) {
-            asvc = *data;
-            data++; size--;
-        }
-        if ((flags & 0x04) != 0 && size >= 1) {
-            substream1 = *data;
-            data++; size--;
-        }
-        if ((flags & 0x02) != 0 && size >= 1) {
-            substream2 = *data;
-            data++; size--;
-        }
-        if ((flags & 0x01) != 0 && size >= 1) {
-            substream3 = *data;
-            data++; size--;
-        }
-        additional_info.copy (data, size);
+    if (component_type_flag) {
+        component_type = buf.getUInt8();
     }
+    if (bsid_flag) {
+        bsid = buf.getUInt8();
+    }
+    if (mainid_flag) {
+        mainid = buf.getUInt8();
+    }
+    if (asvc_flag) {
+        asvc = buf.getUInt8();
+    }
+    if (substream1_flag) {
+        substream1 = buf.getUInt8();
+    }
+    if (substream2_flag) {
+        substream2 = buf.getUInt8();
+    }
+    if (substream3_flag) {
+        substream3 = buf.getUInt8();
+    }
+    buf.getByteBlock(additional_info, buf.remainingReadBytes());
 }
 
 
