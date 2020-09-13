@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -108,27 +109,26 @@ void ts::DVBAC3Descriptor::merge(const DVBAC3Descriptor& other)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBAC3Descriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DVBAC3Descriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8((component_type.set() ? 0x80 : 0x00) |
-                     (bsid.set()           ? 0x40 : 0x00) |
-                     (mainid.set()         ? 0x20 : 0x00) |
-                     (asvc.set()           ? 0x10 : 0x00));
+    buf.putBit(component_type.set());
+    buf.putBit(bsid.set());
+    buf.putBit(mainid.set());
+    buf.putBit(asvc.set());
+    buf.putBits(0, 4); // reserved bits are zero here
     if (component_type.set()) {
-        bbp->appendUInt8(component_type.value());
+        buf.putUInt8(component_type.value());
     }
     if (bsid.set()) {
-        bbp->appendUInt8(bsid.value());
+        buf.putUInt8(bsid.value());
     }
     if (mainid.set()) {
-        bbp->appendUInt8(mainid.value());
+        buf.putUInt8(mainid.value());
     }
     if (asvc.set()) {
-        bbp->appendUInt8(asvc.value());
+        buf.putUInt8(asvc.value());
     }
-    bbp->append(additional_info);
-    serializeEnd(desc, bbp);
+    buf.putBytes(additional_info);
 }
 
 
@@ -136,39 +136,26 @@ void ts::DVBAC3Descriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBAC3Descriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DVBAC3Descriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 1;
-
-    component_type.clear();
-    bsid.clear();
-    mainid.clear();
-    asvc.clear();
-    additional_info.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        const uint8_t flags = *data;
-        data++; size--;
-        if ((flags & 0x80) != 0 && size >= 1) {
-            component_type = *data;
-            data++; size--;
-        }
-        if ((flags & 0x40) != 0 && size >= 1) {
-            bsid = *data;
-            data++; size--;
-        }
-        if ((flags & 0x20) != 0 && size >= 1) {
-            mainid = *data;
-            data++; size--;
-        }
-        if ((flags & 0x10) != 0 && size >= 1) {
-            asvc = *data;
-            data++; size--;
-        }
-        additional_info.copy(data, size);
+    const bool component_type_flag = buf.getBit() != 0;
+    const bool bsid_flag = buf.getBit() != 0;
+    const bool mainid_flag = buf.getBit() != 0;
+    const bool asvc_flag = buf.getBit() != 0;
+    buf.skipBits(4);
+    if (component_type_flag) {
+        component_type = buf.getUInt8();
     }
+    if (bsid_flag) {
+        bsid = buf.getUInt8();
+    }
+    if (mainid_flag) {
+        mainid = buf.getUInt8();
+    }
+    if (asvc_flag) {
+        asvc = buf.getUInt8();
+    }
+    buf.getByteBlock(additional_info, buf.remainingReadBytes());
 }
 
 

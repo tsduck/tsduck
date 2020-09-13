@@ -33,6 +33,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -91,19 +92,12 @@ ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const UString& code, uint
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ParentalRatingDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->country_code)) {
-            desc.invalidate();
-            return;
-        }
-        bbp->appendUInt8(it->rating);
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        buf.putLanguageCode(it->country_code);
+        buf.putUInt8(it->rating);
     }
-
-    serializeEnd(desc, bbp);
 }
 
 
@@ -111,19 +105,13 @@ void ts::ParentalRatingDescriptor::serialize(DuckContext& duck, Descriptor& desc
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ParentalRatingDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 4 == 0;
-    entries.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        while (size >= 4) {
-            entries.push_back(Entry(DeserializeLanguageCode(data), data[3]));
-            data += 4;
-            size -= 4;
-        }
+    while (!buf.error() && !buf.endOfRead()) {
+        Entry e;
+        buf.getLanguageCode(e.country_code);
+        e.rating = buf.getUInt8();
+        entries.push_back(e);
     }
 }
 
@@ -132,14 +120,12 @@ void ts::ParentalRatingDescriptor::deserialize(DuckContext& duck, const Descript
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 4) {
-        const uint8_t rating = data[3];
-        disp << margin << "Country code: " << DeserializeLanguageCode(data)
-             << UString::Format(u", rating: 0x%X ", {rating});
+    while (!buf.error() && buf.remainingReadBytes() >= 4) {
+        disp << margin << "Country code: " << buf.getLanguageCode();
+        const uint8_t rating = buf.getUInt8();
+        disp << UString::Format(u", rating: 0x%X ", {rating});
         if (rating == 0) {
             disp << "(undefined)";
         }
@@ -150,10 +136,8 @@ void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID di
             disp << "(broadcaster-defined)";
         }
         disp << std::endl;
-        data += 4; size -= 4;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 

@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -93,36 +94,18 @@ ts::DID ts::MessageDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MessageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::MessageDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    bbp->appendUInt8(message_id);
-    if (!SerializeLanguageCode(*bbp, language_code)) {
-        desc.invalidate();
-        return;
-    }
-    bbp->append(duck.encoded(message));
-    serializeEnd(desc, bbp);
+    buf.putUInt8(message_id);
+    buf.putLanguageCode(language_code);
+    buf.putString(message);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::MessageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::MessageDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && size >= 5 && data[0] == MY_EDID)) {
-        return;
-    }
-
-    message_id = data[1];
-    language_code = DeserializeLanguageCode(data + 2);
-    duck.decode(message, data + 5, size - 5);
+    message_id = buf.getUInt8();
+    buf.getLanguageCode(language_code);
+    buf.getString(message, buf.remainingReadBytes());
 }
 
 
@@ -138,10 +121,6 @@ void ts::MessageDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 }
 
 
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::MessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getIntAttribute(message_id, u"message_id", true) &&
@@ -154,20 +133,12 @@ bool ts::MessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MessageDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MessageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        disp << margin << "Message id: " << int(data[0])
-             << ", language: " << DeserializeLanguageCode(data + 1) << std::endl
-             << margin << "Message: \"" << disp.duck().decoded(data + 4, size - 4) << "\"" << std::endl;
+    if (buf.remainingReadBytes() >= 4) {
+        disp << margin << "Message id: " << int(buf.getUInt8());
+        disp << ", language: " << buf.getLanguageCode() << std::endl;
+        disp << margin << "Message: \"" << buf.getString(buf.remainingReadBytes()) << "\"" << std::endl;
     }
-    else {
-        disp.displayExtraData(data, size, margin);
-    }
+    disp.displayExtraData(buf, margin);
 }

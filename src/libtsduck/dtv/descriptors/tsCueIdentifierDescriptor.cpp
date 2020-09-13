@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -85,25 +86,14 @@ ts::CueIdentifierDescriptor::CueIdentifierDescriptor(DuckContext& duck, const De
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CueIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CueIdentifierDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(cue_stream_type);
-    serializeEnd(desc, bbp);
+    buf.putUInt8(cue_stream_type);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::CueIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::CueIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 1;
-
-    if (_is_valid) {
-        cue_stream_type = *desc.payload();
-    }
+    cue_stream_type = buf.getUInt8();
 }
 
 
@@ -111,13 +101,12 @@ void ts::CueIdentifierDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CueIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CueIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        disp << margin << UString::Format(u"Cue stream type: 0x%X", {data[0]});
-        switch (data[0]) {
+    if (!buf.endOfRead()) {
+        const uint8_t type = buf.getUInt8();
+        disp << margin << UString::Format(u"Cue stream type: 0x%X", {type});
+        switch (type) {
             case 0x00: disp << " (splice_insert, splice_null, splice_schedule)"; break;
             case 0x01: disp << " (All commands)"; break;
             case 0x02: disp << " (Segmentation)"; break;
@@ -126,15 +115,13 @@ void ts::CueIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did
             default: break;
         }
         disp << std::endl;
-        data += 1; size -= 1;
     }
-
-    disp.displayExtraData(data, size, margin);
+    disp.displayExtraData(buf, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::CueIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
