@@ -84,28 +84,7 @@ void ts::SharedLibrary::load(const UString& filename)
     _filename = filename;
     _report.debug(u"trying to load \"%s\"", {_filename});
 
-    // On UNIX systems, with option AUTO_PATH, add the directory part of the shared library file file in LD_LIBRARY_PATH
-#if defined(TS_UNIX)
-    if ((_flags & SharedLibraryFlags::AUTO_PATH) != SharedLibraryFlags::NONE) {
-        // Get directory part of file name.
-        const UString dirname(DirectoryName(filename));
-        if (dirname != u".") {
-            // An actual directory is specified, use it.
-            // Get current content of LD_LIBRARY_PATH.
-            UStringList dirs;
-            GetEnvironmentPath(dirs, u"LD_LIBRARY_PATH");
-            // Check if this directory is already in the list.
-            if (std::find(dirs.begin(), dirs.end(), dirname) == dirs.end()) {
-                // Not in the list, add the directory.
-                _report.debug(u"adding %s to LD_LIBRARY_PATH", {dirname});
-                dirs.push_back(dirname);
-                SetEnvironmentPath(u"LD_LIBRARY_PATH", dirs);
-            }
-        }
-    }
-#endif
-
-    // Load the sharealble library.
+    // Load the shared library.
 #if defined(TSDUCK_STATIC)
     _error = u"statically linked application";
 #elif defined(TS_WINDOWS)

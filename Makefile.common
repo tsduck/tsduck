@@ -611,7 +611,9 @@ first: default
 SHELL := /bin/bash --noprofile --norc
 
 # Enforce English locale by default.
-LANG=en_US
+export LANGUAGE = en_US.UTF-8
+export LC_ALL = en_US.UTF-8
+export LANG = en_US.UTF-8
 
 # Define functions to search commands (see comments in header)
 F_SEARCH = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH)) /usr/bin /usr/sbin /usr/local/bin $(HOME)/bin)))

@@ -37,7 +37,7 @@ include ../Makefile.tsduck
 # Default alphabetical order is fine here.
 
 # Do not recurse in utest and utils when NOTEST or CROSS is defined.
-NORECURSE_SUBDIRS += $(if $(NOTEST)$(CROSS),utest utils,)
+NORECURSE_SUBDIRS += $(if $(NOTEST),utest,) $(if $(CROSS),utils,)
 
 default:
 	+@$(RECURSE)

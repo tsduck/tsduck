@@ -73,6 +73,11 @@ namespace ts {
         //!
         bool isDebian() const { return _isDebian; }
         //!
+        //! Check if the running operating system is Linux Raspbian (Debian derivative on Raspberry Pi).
+        //! @return True if the running operating system is Linux Debian.
+        //!
+        bool isRaspbian() const { return _isRaspbian; }
+        //!
         //! Check if the running operating system is macOS.
         //! @return True if the running operating system is macOS.
         //!
@@ -119,6 +124,7 @@ namespace ts {
         bool    _isRedHat;
         bool    _isUbuntu;
         bool    _isDebian;
+        bool    _isRaspbian;
         bool    _isMacOS;
         bool    _isWindows;
         bool    _isIntel32;

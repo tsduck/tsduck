@@ -215,7 +215,7 @@ namespace {
 
         // In non-verbose mode, simply list the versions in the same order as returned by GitHub.
         if (!opt.verbose()) {
-            for (ts::GitHubReleaseVector::const_iterator it = rels.begin(); it != rels.end(); ++it) {
+            for (auto it = rels.begin(); it != rels.end(); ++it) {
                 std::cout << (*it)->version() << std::endl;
             }
             return true;
@@ -300,7 +300,7 @@ namespace {
         else {
             std::cout << "Binary packages:" << std::endl;
             size_t applyCount = 0;
-            for (ts::GitHubRelease::AssetList::const_iterator it = assets.begin(); it != assets.end();  ++it) {
+            for (auto it = assets.begin(); it != assets.end();  ++it) {
                 if (ts::GitHubRelease::IsPlatformAsset(it->name)) {
                     ++applyCount;
                 }
@@ -312,7 +312,7 @@ namespace {
             }
             if (applyCount > 0) {
                 std::cout << "Available downloads for your system:" << std::endl;
-                for (ts::GitHubRelease::AssetList::const_iterator it = assets.begin(); it != assets.end();  ++it) {
+                for (auto it = assets.begin(); it != assets.end();  ++it) {
                     if (ts::GitHubRelease::IsPlatformAsset(it->name)) {
                         std::cout << "  " << it->url << std::endl;
                     }
@@ -385,7 +385,7 @@ namespace {
                 }
             }
             else {
-                for (ts::GitHubRelease::AssetList::const_iterator it = assets.begin(); it != assets.end();  ++it) {
+                for (auto it = assets.begin(); it != assets.end();  ++it) {
                     success = DownloadFile(opt, it->url, opt.out_dir + it->name, it->size) && success;
                 }
             }
@@ -445,7 +445,7 @@ namespace {
         ts::GitHubRelease::AssetList assets;
         rel.getPlatformAssets(assets);
         ts::UStringList files;
-        for (ts::GitHubRelease::AssetList::const_iterator it = assets.begin(); it != assets.end();  ++it) {
+        for (auto it = assets.begin(); it != assets.end();  ++it) {
             files.push_back(opt.out_dir + it->name);
         }
 
@@ -476,7 +476,7 @@ namespace {
         else if (sys.isFedora() || sys.isRedHat()) {
             return RunUpgradeCommand(opt, u"rpm -Uvh " + ts::UString::Join(files, u" "), true);
         }
-        else if (sys.isUbuntu()) {
+        else if (sys.isUbuntu() || sys.isDebian() || sys.isRaspbian()) {
             return RunUpgradeCommand(opt, u"dpkg -i " + ts::UString::Join(files, u" "), true);
         }
         else {
@@ -516,7 +516,7 @@ namespace {
         std::cout << "New version " << remote << " is available (yours is " << current << ")" << std::endl;
         if (opt.verbose() && !assets.empty()) {
             std::cout << "Available downloads for your system:" << std::endl;
-            for (ts::GitHubRelease::AssetList::const_iterator it = assets.begin(); it != assets.end(); ++it) {
+            for (auto it = assets.begin(); it != assets.end(); ++it) {
                 std::cout << "  " << it->url << std::endl;
             }
         }

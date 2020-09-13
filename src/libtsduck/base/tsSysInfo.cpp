@@ -55,6 +55,7 @@ ts::SysInfo::SysInfo() :
     _isRedHat(false),
     _isUbuntu(false),
     _isDebian(false),
+    _isRaspbian(false),
 #if defined(TS_MAC)
     _isMacOS(true),
 #else
@@ -106,6 +107,7 @@ ts::SysInfo::SysInfo() :
         }
         _isUbuntu = _systemName.similar(u"Ubuntu");
         _isDebian = _systemName.similar(u"Debian");
+        _isRaspbian = _systemName.similar(u"Raspbian");
     }
     if (_systemName.empty() && UString::Load(lines, u"/etc/debian_version") && !lines.empty()) {
         _systemName = u"Debian";

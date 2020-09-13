@@ -416,10 +416,22 @@ bool ts::GitHubRelease::IsPlatformAsset(const UString& fileName)
         return fileName.contain(u".el") && (fileName.endWith(u".i386.rpm") || fileName.endWith(u".i686.rpm") || fileName.endWith(u".noarch.rpm"));
     }
     else if (sys.isUbuntu() && sys.isIntel64()) {
-        return fileName.endWith(u"_amd64.deb") || fileName.endWith(u"_all.deb");
+        return fileName.contain(u".ubuntu") && (fileName.endWith(u"_amd64.deb") || fileName.endWith(u"_all.deb"));
     }
     else if (sys.isUbuntu() && sys.isIntel32()) {
-        return fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb") || fileName.endWith(u"_all.deb");
+        return fileName.contain(u".ubuntu") && (fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb") || fileName.endWith(u"_all.deb"));
+    }
+    else if (sys.isDebian() && sys.isIntel64()) {
+        return fileName.contain(u".debian") && (fileName.endWith(u"_amd64.deb") || fileName.endWith(u"_all.deb"));
+    }
+    else if (sys.isDebian() && sys.isIntel32()) {
+        return fileName.contain(u".debian") && (fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb") || fileName.endWith(u"_all.deb"));
+    }
+    else if (sys.isRaspbian() && sys.isIntel64()) {
+        return fileName.contain(u".raspbian") && (fileName.endWith(u"_amd64.deb") || fileName.endWith(u"_all.deb"));
+    }
+    else if (sys.isRaspbian() && sys.isIntel32()) {
+        return fileName.contain(u".raspbian") && (fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb") || fileName.endWith(u"_all.deb"));
     }
     else {
         return false;  // unknown platform.

@@ -118,7 +118,7 @@ FACTORY ts::PluginRepository::getFactory(const UString& plugin_name, const UStri
         // the shareable image in memory after returning from this function. Also make
         // sure to include the plugin's directory in the shared library search path:
         // an extension may install a library in the same directory as the plugin.
-        ApplicationSharedLibrary shlib(plugin_name, u"tsplugin_", TS_PLUGINS_PATH, SharedLibraryFlags::PERMANENT | SharedLibraryFlags::AUTO_PATH, report);
+        ApplicationSharedLibrary shlib(plugin_name, u"tsplugin_", TS_PLUGINS_PATH, SharedLibraryFlags::PERMANENT, report);
         if (shlib.isLoaded()) {
             // Search again if the shareable library was loaded.
             // The shareable library is supposed to register its plugins on initialization.
