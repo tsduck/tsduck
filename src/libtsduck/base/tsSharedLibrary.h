@@ -44,7 +44,6 @@ namespace ts {
     enum class SharedLibraryFlags : uint16_t {
         NONE      = 0x00,  //!< No option
         PERMANENT = 0x01,  //!< The shared library remains active when the SharedLibrary object is destroyed (unloaded otherwise).
-        AUTO_PATH = 0x02,  //!< Automatically add the shared library directory (if specified) in LD_LIBRARY_PATH (UNIX only) before loading.
     };
 
     //!

@@ -55,7 +55,7 @@ namespace ts {
         //! Finally, when everything failed, @a filename is searched with the default system lookup mechanism.
         //! @param [in] prefix Prefix to add to @a filename if the file is not found.
         //! @param [in] library_path Name of an environment variable, an optional list of directories to search,
-        //! similar to @c LD_LIBARY_PATH.
+        //! similar to @c LD_LIBRARY_PATH.
         //! @param [in] flags Shared library options.
         //! @param [in,out] report Where to report errors.
         //! @see GetSearchPath()
@@ -93,7 +93,7 @@ namespace ts {
         //! - All directories in %Path% environment variable (Windows only).
         //! @param [out] directories List of directories in search order.
         //! @param [in] library_path Name of an environment variable, an optional list of directories to search,
-        //! similar to @c LD_LIBARY_PATH.
+        //! similar to @c LD_LIBRARY_PATH.
         //!
         static void GetSearchPath(UStringList& directories, const UString& library_path = UString());
 
@@ -101,7 +101,7 @@ namespace ts {
         //! Get a list of plugins.
         //! @param [out] files List of shared library files.
         //! @param [in] prefix Prefix for plugin names.
-        //! @param [in] library_path Name of an environment variable, an optional list of directories to search, similar to @c LD_LIBARY_PATH.
+        //! @param [in] library_path Name of an environment variable, an optional list of directories to search, similar to @c LD_LIBRARY_PATH.
         //!
         static void GetPluginList(UStringVector& files, const UString& prefix, const UString& library_path = UString());
 
