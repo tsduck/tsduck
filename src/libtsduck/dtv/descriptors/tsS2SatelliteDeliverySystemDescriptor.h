@@ -34,11 +34,11 @@
 
 #pragma once
 #include "tsAbstractDeliverySystemDescriptor.h"
+#include "tsVariable.h"
 
 namespace ts {
     //!
     //! Representation of an S2_satellite_delivery_system_descriptor.
-    //!
     //! @see ETSI 300 468, 6.2.13.3.
     //! @ingroup descriptor
     //!
@@ -46,11 +46,11 @@ namespace ts {
     {
     public:
         // Public members:
-        bool     scrambling_sequence_selector;        //!< See ETSI 300 468, 6.2.13.3.
-        bool     multiple_input_stream_flag;          //!< See ETSI 300 468, 6.2.13.3.
-        bool     backwards_compatibility_indicator;   //!< See ETSI 300 468, 6.2.13.3.
-        uint32_t scrambling_sequence_index;           //!< See ETSI 300 468, 6.2.13.3, 18-bit value.
-        uint8_t  input_stream_identifier;             //!< See ETSI 300 468, 6.2.13.3.
+        bool               backwards_compatibility_indicator;   //!< Deprecated.
+        uint8_t            TS_GS_mode;                          //!< See ETSI 300 468, 6.2.13.3.
+        Variable<uint32_t> scrambling_sequence_index;           //!< See ETSI 300 468, 6.2.13.3, 18-bit value.
+        Variable<uint8_t>  input_stream_identifier;             //!< See ETSI 300 468, 6.2.13.3.
+        Variable<uint8_t>  timeslice_number;                    //!< See ETSI 300 468, 6.2.13.3.
 
         //!
         //! Default constructor.
@@ -65,13 +65,13 @@ namespace ts {
         S2SatelliteDeliverySystemDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };

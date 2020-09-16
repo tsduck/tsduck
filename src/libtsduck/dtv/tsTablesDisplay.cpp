@@ -341,6 +341,7 @@ void ts::TablesDisplay::displaySectionData(const Section& section, const UString
     if (handler != nullptr) {
         PSIBuffer buf(_duck, section.payload(), section.payloadSize());
         handler(*this, section, buf, margin);
+        displayExtraData(buf, margin);
     }
     else {
         displayUnkownSectionData(section, margin);
@@ -705,6 +706,7 @@ void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, s
     if (handler != nullptr) {
         PSIBuffer buf(_duck, payload, size);
         handler(*this, buf, margin, did, tid, _duck.actualPDS(pds));
+        displayExtraData(buf, margin);
     }
     else {
         // Try to find a legacy display handler.

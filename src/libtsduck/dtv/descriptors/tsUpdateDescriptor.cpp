@@ -96,7 +96,7 @@ void ts::UpdateDescriptor::deserializePayload(PSIBuffer& buf)
     update_flag = buf.getBits<uint8_t>(2);
     update_method = buf.getBits<uint8_t>(4);
     update_priority = buf.getBits<uint8_t>(2);
-    buf.getByteBlock(private_data, buf.remainingReadBytes());
+    buf.getBytes(private_data);
 }
 
 
@@ -106,7 +106,7 @@ void ts::UpdateDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::UpdateDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (!buf.endOfRead()) {
+    if (buf.canRead()) {
         disp << margin << "Update flag: " << NameFromSection(u"SSUUpdateFlag", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
         disp << margin << "Update method: " << NameFromSection(u"SSUUpdateMethod", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
         disp << margin << UString::Format(u"Update priority: %d", {buf.getBits<uint8_t>(2)}) << std::endl;

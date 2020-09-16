@@ -91,7 +91,7 @@ void ts::ServiceAvailabilityDescriptor::deserializePayload(PSIBuffer& buf)
 {
     availability = buf.getBit() != 0;
     buf.skipBits(7);
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         cell_ids.push_back(buf.getUInt16());
     }
 }
@@ -103,14 +103,13 @@ void ts::ServiceAvailabilityDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::ServiceAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 1) {
+    if (buf.canReadBytes(1)) {
         disp << margin << "Availability: " << UString::TrueFalse(buf.getBit() != 0) << std::endl;
         buf.skipBits(7);
-        while (!buf.error() && buf.remainingReadBytes() >= 2) {
+        while (buf.canReadBytes(2)) {
             disp << margin << UString::Format(u"Cell id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

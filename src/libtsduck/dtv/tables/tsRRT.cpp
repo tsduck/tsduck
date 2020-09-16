@@ -196,7 +196,7 @@ void ts::RRT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 {
     disp << margin << UString::Format(u"Rating region: 0x%X (%<d)", {uint8_t(section.tableIdExtension())}) << std::endl;
 
-    if (buf.remainingReadBytes() < 2) {
+    if (!buf.canReadBytes(2)) {
         buf.setUserError();
     }
     else {
@@ -224,7 +224,6 @@ void ts::RRT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
     // Common descriptors.
     disp.displayDescriptorListWithLength(section, buf, margin, u"Descriptors", UString(), 10);
-    disp.displayExtraData(buf, margin);
 }
 
 

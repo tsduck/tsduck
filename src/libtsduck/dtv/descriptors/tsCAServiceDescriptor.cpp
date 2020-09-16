@@ -98,7 +98,7 @@ void ts::CAServiceDescriptor::deserializePayload(PSIBuffer& buf)
     CA_system_id = buf.getUInt16();
     ca_broadcaster_group_id = buf.getUInt8();
     message_control = buf.getUInt8();
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         service_ids.push_back(buf.getUInt16());
     }
 }
@@ -110,15 +110,14 @@ void ts::CAServiceDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::CAServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 4) {
+    if (buf.canReadBytes(4)) {
         disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), names::FIRST) << std::endl;
         disp << margin << UString::Format(u"CA broadcaster group id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         disp << margin << UString::Format(u"Delay time: %d days", {buf.getUInt8()}) << std::endl;
-        while (buf.remainingReadBytes() >= 2) {
+        while (buf.canReadBytes(2)) {
             disp << margin << UString::Format(u"Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

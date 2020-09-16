@@ -124,7 +124,7 @@ void ts::GreenExtensionDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::GreenExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 1) {
+    if (buf.canReadBytes(1)) {
         size_t count = buf.getBits<size_t>(2);
         buf.skipBits(6);
         disp << margin << UString::Format(u"Number of backlight voltage time intervals: %d", {count}) << std::endl;
@@ -134,11 +134,10 @@ void ts::GreenExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
         count = buf.getBits<size_t>(2);
         buf.skipBits(6);
         disp << margin << UString::Format(u"Number of variations: %d", {count}) << std::endl;
-        for (size_t i = 0; i < count && !buf.error(); ++i) {
+        for (size_t i = 0; i < count && buf.canReadBytes(2); ++i) {
             disp << margin << UString::Format(u"  Max variation [%d]: 0x%X (%<d)", {i, buf.getUInt16()}) << std::endl;
         }
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

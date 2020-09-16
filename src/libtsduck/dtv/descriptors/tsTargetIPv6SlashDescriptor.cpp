@@ -92,9 +92,9 @@ void ts::TargetIPv6SlashDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::TargetIPv6SlashDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Address addr;
-        addr.IPv6_addr = IPv6Address(buf.getByteBlock(16));
+        addr.IPv6_addr = IPv6Address(buf.getBytes(16));
         addr.IPv6_slash_mask = buf.getUInt8();
         addresses.push_back(addr);
     }
@@ -107,11 +107,10 @@ void ts::TargetIPv6SlashDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::TargetIPv6SlashDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (buf.remainingReadBytes() >= 17) {
-        disp << margin << "Address/mask: " << IPv6Address(buf.getByteBlock(16));
+    while (buf.canReadBytes(17)) {
+        disp << margin << "Address/mask: " << IPv6Address(buf.getBytes(16));
         disp << "/" << int(buf.getUInt8()) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

@@ -124,7 +124,7 @@ void ts::AIT::deserializePayload(PSIBuffer& buf, const Section& section)
     const size_t end_loop = buf.currentReadByteOffset() + loop_length;
 
     // Get application descriptions.
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         const uint32_t org_id = buf.getUInt32();
         const uint16_t app_id = buf.getUInt16();
         Application& app(applications[ApplicationIdentifier(org_id, app_id)]);
@@ -241,23 +241,17 @@ void ts::AIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     disp << margin << UString::Format(u"Application type: %d (0x%<04X), Test application: %d", {tidext & 0x7FFF, tidext >> 15}) << std::endl;
     disp.displayDescriptorListWithLength(section, buf, margin, u"Common descriptor loop:");
 
-    // Application loop length.
+    // Application loop
     buf.skipBits(4);
-    const size_t loop_length = buf.getBits<size_t>(12);
-    const size_t end_loop = buf.currentReadByteOffset() + loop_length;
-
-    // Loop across all applications.
-    while (!buf.error() && buf.currentReadByteOffset() + 9 <= end_loop && buf.remainingReadBytes() >= 9) {
-        const uint32_t org_id = buf.getUInt32();
-        const uint16_t app_id = buf.getUInt16();
-        const uint8_t code = buf.getUInt8();
-        disp << margin
-             << UString::Format(u"Application: Identifier: (Organization id: %d (0x%<X), Application id: %d (0x%<X)), Control code: %d", {org_id, app_id, code})
-             << std::endl;
+    buf.pushReadSizeFromLength(12);
+    while (buf.canReadBytes(9)) {
+        disp << margin << UString::Format(u"Application: Identifier: (Organization id: %d (0x%<X)", {buf.getUInt32()});
+        disp << UString::Format(u", Application id: %d (0x%<X))", {buf.getUInt16()});
+        disp << UString::Format(u", Control code: %d", {buf.getUInt8()}) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }
-
-    disp.displayExtraData(buf, margin);
+    disp.displayPrivateData(u"Extraneous application data", buf, NPOS, margin);
+    buf.popState();
 }
 
 

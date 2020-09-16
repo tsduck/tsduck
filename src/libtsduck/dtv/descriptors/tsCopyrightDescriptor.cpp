@@ -82,7 +82,7 @@ void ts::CopyrightDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::CopyrightDescriptor::deserializePayload(PSIBuffer& buf)
 {
     copyright_identifier = buf.getUInt32();
-    buf.getByteBlock(additional_copyright_info, buf.remainingReadBytes());
+    buf.getBytes(additional_copyright_info);
 }
 
 
@@ -92,12 +92,11 @@ void ts::CopyrightDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::CopyrightDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 4) {
+    if (buf.canReadBytes(4)) {
         // Sometimes, the copyright identifier is made of ASCII characters. Try to display them.
         disp.displayIntAndASCII(u"Copyright identifier: 0x%08X", buf, 4, margin);
         disp.displayPrivateData(u"Additional copyright info", buf, NPOS, margin);
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

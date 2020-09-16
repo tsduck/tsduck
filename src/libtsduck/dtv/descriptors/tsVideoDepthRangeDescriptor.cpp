@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsIntegerUtils.h"
@@ -90,27 +91,24 @@ ts::DID ts::VideoDepthRangeDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::VideoDepthRangeDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::VideoDepthRangeDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
     for (auto it = ranges.begin(); it != ranges.end(); ++it) {
-        bbp->appendUInt8(it->range_type);
+        buf.putUInt8(it->range_type);
+        buf.pushWriteSequenceWithLeadingLength(8); // range_length
         switch (it->range_type) {
             case 0:
-                bbp->appendUInt8(3);  // size
-                bbp->appendUInt24(uint32_t(uint32_t(it->video_max_disparity_hint & 0x0FFF) << 12) | (it->video_min_disparity_hint & 0x0FFF));
+                buf.putBits(it->video_max_disparity_hint, 12);
+                buf.putBits(it->video_min_disparity_hint, 12);
                 break;
             case 1:
-                bbp->appendUInt8(0);  // size
                 break;
             default:
-                bbp->appendUInt8(uint8_t(it->range_selector.size()));
-                bbp->append(it->range_selector);
+                buf.putBytes(it->range_selector);
                 break;
         }
+        buf.popState(); // update range_length
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -118,49 +116,26 @@ void ts::VideoDepthRangeDescriptor::serialize(DuckContext& duck, Descriptor& des
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::VideoDepthRangeDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::VideoDepthRangeDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1 && data[0] == MY_EDID;
-    data++; size--;
-    ranges.clear();
-
-    while (_is_valid && size >= 2) {
+    while (buf.canRead()) {
         Range range;
-        range.range_type = data[0];
-        size_t len = data[1];
-        data += 2; size -= 2;
-
+        range.range_type = buf.getUInt8();
+        buf.pushReadSizeFromLength(8); // range_length
         switch (range.range_type) {
             case 0:
-                _is_valid = len == 3;
-                if (_is_valid) {
-                    const int32_t hint = GetInt24(data);
-                    data += 3; size -= 3;
-                    range.video_max_disparity_hint = SignExtend(int16_t(hint >> 12), 12);
-                    range.video_min_disparity_hint = SignExtend(int16_t(hint), 12);
-                }
+                range.video_max_disparity_hint = buf.getBits<int16_t>(12);
+                range.video_min_disparity_hint = buf.getBits<int16_t>(12);
                 break;
             case 1:
-                _is_valid = len == 0;
                 break;
             default:
-                _is_valid = size >= len;
-                if (_is_valid) {
-                    range.range_selector.copy(data, len);
-                    data += len; size -= len;
-                }
+                buf.getBytes(range.range_selector);
                 break;
         }
-
-        if (_is_valid) {
-            ranges.push_back(range);
-        }
+        buf.popState(); // from range_length
+        ranges.push_back(range);
     }
-
-    // Make sure there is no truncated trailing data.
-    _is_valid = _is_valid && size == 0;
 }
 
 

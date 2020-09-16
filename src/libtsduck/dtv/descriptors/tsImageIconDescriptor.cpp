@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -101,34 +102,38 @@ ts::DID ts::ImageIconDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ImageIconDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ImageIconDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    bbp->appendUInt8(uint8_t(descriptor_number << 4) | (last_descriptor_number & 0x0F));
-    bbp->appendUInt8(0xF8 | icon_id);
+    buf.putBits(descriptor_number, 4);
+    buf.putBits(last_descriptor_number, 4);
+    buf.putBits(0xFF, 5);
+    buf.putBits(icon_id, 3);
+
     if (descriptor_number == 0) {
+        buf.putBits(icon_transport_mode, 2);
+        buf.putBit(has_position);
         if (has_position) {
-            bbp->appendUInt8(uint8_t(icon_transport_mode << 6) | 0x23 | uint8_t((coordinate_system & 0x07) << 2));
-            bbp->appendUInt24(uint32_t((icon_horizontal_origin & 0x0FFF) << 12) | (icon_vertical_origin & 0x0FFF));
+            buf.putBits(coordinate_system, 3);
+            buf.putBits(0xFF, 2);
+            buf.putBits(icon_horizontal_origin, 12);
+            buf.putBits(icon_vertical_origin, 12);
         }
         else {
-            bbp->appendUInt8(uint8_t(icon_transport_mode << 6) | 0x1F);
+            buf.putBits(0xFF, 5);
         }
-        bbp->append(duck.encodedWithByteLength(icon_type));
+        buf.putStringWithByteLength(icon_type);
         if (icon_transport_mode == 0) {
-            bbp->appendUInt8(uint8_t(icon_data.size()));
-            bbp->append(icon_data);
+            buf.putUInt8(uint8_t(icon_data.size()));
+            buf.putBytes(icon_data);
         }
         else if (icon_transport_mode == 1) {
-            bbp->append(duck.encodedWithByteLength(url));
+            buf.putStringWithByteLength(url);
         }
     }
     else {
-        bbp->appendUInt8(uint8_t(icon_data.size()));
-        bbp->append(icon_data);
+        buf.putUInt8(uint8_t(icon_data.size()));
+        buf.putBytes(icon_data);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -136,63 +141,38 @@ void ts::ImageIconDescriptor::serialize(DuckContext& duck, Descriptor& desc) con
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ImageIconDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ImageIconDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4 && data[0] == MY_EDID;
+    descriptor_number = buf.getBits<uint8_t>(4);
+    last_descriptor_number = buf.getBits<uint8_t>(4);
+    buf.skipBits(5);
+    icon_id = buf.getBits<uint8_t>(3);
 
-    icon_type.clear();
-    url.clear();
-    icon_data.clear();
-
-    if (_is_valid) {
-        descriptor_number = (data[1] >> 4) & 0x0F;
-        last_descriptor_number = data[1] & 0x0F;
-        icon_id = data[2] & 0x07;
-        data += 3; size -= 3;
-
-        if (descriptor_number == 0) {
-            icon_transport_mode = (data[0] >> 6) & 0x03;
-            has_position = (data[0] & 0x20) != 0;
-            coordinate_system = (data[0] >> 2) & 0x07;
-            data++; size--;
-
-            if (has_position) {
-                _is_valid = size >= 3;
-                if (_is_valid) {
-                    icon_horizontal_origin = (GetUInt16(data) >> 4) & 0x0FFF;
-                    icon_vertical_origin = GetUInt16(data + 1) & 0x0FFF;
-                    data += 3; size -= 3;
-                }
-            }
-            if (_is_valid) {
-                duck.decodeWithByteLength(icon_type, data, size);
-                if (icon_transport_mode == 0x00 ) {
-                    const size_t len = data[0];
-                    _is_valid = size > len;
-                    if (_is_valid) {
-                        icon_data.copy(data + 1, len);
-                        data += len + 1; size -= len + 1;
-                    }
-                }
-                else if (icon_transport_mode == 0x01) {
-                    duck.decodeWithByteLength(url, data, size);
-                }
-            }
+    if (descriptor_number == 0) {
+        icon_transport_mode = buf.getBits<uint8_t>(2);
+        has_position = buf.getBit() != 0;
+        if (has_position) {
+            coordinate_system = buf.getBits<uint8_t>(3);
+            buf.skipBits(2);
+            icon_horizontal_origin = buf.getBits<uint16_t>(12);
+            icon_vertical_origin = buf.getBits<uint16_t>(12);
         }
         else {
-            const size_t len = data[0];
-            _is_valid = size > len;
-            if (_is_valid) {
-                icon_data.copy(data + 1, len);
-                data += len + 1; size -= len + 1;
-            }
+            buf.skipBits(5);
+        }
+        buf.getStringWithByteLength(icon_type);
+        if (icon_transport_mode == 0x00 ) {
+            const size_t len = buf.getUInt8();
+            buf.getBytes(icon_data, len);
+        }
+        else if (icon_transport_mode == 0x01) {
+            buf.getStringWithByteLength(url);
         }
     }
-
-    // Make sure there is no truncated trailing data.
-    _is_valid = _is_valid && size == 0;
+    else {
+        const size_t len = buf.getUInt8();
+        buf.getBytes(icon_data, len);
+    }
 }
 
 

@@ -91,7 +91,7 @@ void ts::CAIdentifierDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::CAIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         casids.push_back(buf.getUInt16());
     }
 }
@@ -103,10 +103,9 @@ void ts::CAIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (buf.remainingReadBytes() >= 2) {
+    while (buf.canReadBytes(2)) {
         disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), names::FIRST) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

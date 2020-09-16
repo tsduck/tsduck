@@ -180,12 +180,12 @@ void ts::AudioPreselectionDescriptor::deserializePayload(PSIBuffer& buf)
         if (hasMultiStream) {
             const size_t num = buf.getBits<size_t>(3);
             buf.skipBits(5);
-            buf.getByteBlock(sel.aux_component_tags, num);
+            buf.getBytes(sel.aux_component_tags, num);
         }
         if (hasExtension) {
             buf.skipBits(3);
             const size_t len = buf.getBits<size_t>(5);
-            buf.getByteBlock(sel.future_extension, len);
+            buf.getBytes(sel.future_extension, len);
         }
         entries.push_back(sel);
         numEntries--;

@@ -116,7 +116,7 @@ void ts::AbstractDescriptorsTable::serializePayload(BinaryTable& table, PSIBuffe
 
 void ts::AbstractDescriptorsTable::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp.displayDescriptorList(section, section.payload(), section.payloadSize(), margin);
+    disp.displayDescriptorList(section, buf, margin);
 }
 
 

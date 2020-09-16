@@ -131,7 +131,7 @@ void ts::RNT::deserializePayload(PSIBuffer& buf, const Section& section)
     buf.getDescriptorListWithLength(descs);
 
     // Loop on resolution providers.
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         ResolutionProvider& rprov(providers.newEntry());
 
         // Open the resolution provider sequence with length field.
@@ -143,7 +143,7 @@ void ts::RNT::deserializePayload(PSIBuffer& buf, const Section& section)
         buf.getDescriptorListWithLength(rprov.descs);
 
         // Loop on CRID authorities.
-        while (!buf.error() && !buf.endOfRead()) {
+        while (buf.canRead()) {
             CRIDAuthority& auth(rprov.CRID_authorities.newEntry());
             buf.getStringWithByteLength(auth.name);
             buf.skipBits(2);
@@ -238,12 +238,12 @@ void ts::RNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 {
     disp << margin << UString::Format(u"Context id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
-    if (buf.remainingReadBytes() >= 3) {
+    if (buf.canReadBytes(3)) {
         disp << margin << "Context id type: " << NameFromSection(u"RNTContextIdType", buf.getUInt8(), names::HEXA_FIRST) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin, u"RNT top-level descriptors:", u"None");
 
         // Loop on resolution providers.
-        while (!buf.error() && buf.remainingReadBytes() >= 3) {
+        while (buf.canReadBytes(3)) {
             // Open the resolution provider sequence with length field.
             buf.skipBits(4);
             buf.pushReadSizeFromLength(12);
@@ -252,9 +252,9 @@ void ts::RNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             disp.displayDescriptorListWithLength(section, buf, margin + u"  ", u"Provider-level descriptors:", u"None");
 
             // Loop on CRID authorities.
-            while (!buf.error() && buf.remainingReadBytes() >= 1) {
+            while (buf.canReadBytes(1)) {
                 disp << margin << "  - CRID authority name: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
-                if (!buf.error() && buf.remainingReadBytes() >= 1) {
+                if (buf.canReadBytes(1)) {
                     buf.skipBits(2);
                     disp << margin << "    CRID authority policy: " << NameFromSection(u"CRIDAuthorityPolicy", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
                     disp.displayDescriptorListWithLength(section, buf, margin + u"    ", u"CRID authority-level descriptors:", u"None");
@@ -266,7 +266,6 @@ void ts::RNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             buf.popState();
         }
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

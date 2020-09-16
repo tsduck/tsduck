@@ -28,13 +28,22 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsIntegerUtils.h"
 
 
 //----------------------------------------------------------------------------
 // Read the next n bits as an integer value and advance the read pointer.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+INT ts::Buffer::getBits(size_t bits, INT def)
+{
+    typedef typename std::make_unsigned<INT>::type UNSINT;
+    const INT value = static_cast<INT>(getBits<UNSINT>(bits, static_cast<UNSINT>(def)));
+    return SignExtend(value, bits);
+}
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
 INT ts::Buffer::getBits(size_t bits, INT def)
 {
     // No read if read error is already set or not enough bits to read.
@@ -202,4 +211,57 @@ bool ts::Buffer::putint(INT value, size_t bytes, void (*putBE)(void*,INT), void 
         assert(_state.wbyte == new_wbyte);
         return true;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Read the next 4*n bits as a BCD value.
+//----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+INT ts::Buffer::getBCD(size_t bcd_count, INT def)
+{
+    typedef typename std::make_unsigned<INT>::type UNSINT;
+    UNSINT val = 0;
+
+    if (_read_error || currentReadBitOffset() + 4 * bcd_count > currentWriteBitOffset()) {
+        _read_error = true;
+    }
+    else {
+        while (bcd_count-- > 0) {
+            const UNSINT nibble = getBits<UNSINT>(4);
+            if (nibble > 9) {
+                _read_error = true;
+            }
+            val = 10 * val + nibble;
+        }
+    }
+    return _read_error ? def : static_cast<INT>(val);
+}
+
+
+//----------------------------------------------------------------------------
+// Put the next 4*n bits as a BCD value.
+//----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+bool ts::Buffer::putBCD(INT value, size_t bcd_count)
+{
+    // No write if write error is already set or read-only or not enough bits to write.
+    if (_write_error || _state.read_only || remainingWriteBits() < 4 * bcd_count) {
+        _write_error = true;
+        return false;
+    }
+
+    if (bcd_count > 0) {
+        typedef typename std::make_unsigned<INT>::type UNSINT;
+        UNSINT uvalue = static_cast<UNSINT>(value);
+        UNSINT factor = Power10<UNSINT>(bcd_count);
+        while (bcd_count-- > 0) {
+            uvalue %= factor;
+            factor /= 10;
+            putBits(uvalue / factor, 4);
+        }
+    }
+    return true;
 }

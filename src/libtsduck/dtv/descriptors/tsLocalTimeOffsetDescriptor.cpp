@@ -34,6 +34,7 @@
 #include "tsMJD.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -81,24 +82,19 @@ void ts::LocalTimeOffsetDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::LocalTimeOffsetDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::LocalTimeOffsetDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    for (RegionVector::const_iterator it = regions.begin(); it != regions.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->country)) {
-            desc.invalidate();
-            return;
-        }
-        bbp->appendUInt8(uint8_t(it->region_id << 2) | 0x02 | (it->time_offset < 0 ? 0x01 : 0x00));
-        bbp->appendUInt8(EncodeBCD(std::abs(it->time_offset) / 60));
-        bbp->appendUInt8(EncodeBCD(std::abs(it->time_offset) % 60));
-        EncodeMJD(it->next_change, bbp->enlarge(MJD_SIZE), MJD_SIZE);
-        bbp->appendUInt8(EncodeBCD(::abs(it->next_time_offset) / 60));
-        bbp->appendUInt8(EncodeBCD(::abs(it->next_time_offset) % 60));
+    for (auto it = regions.begin(); it != regions.end(); ++it) {
+        buf.putLanguageCode(it->country);
+        buf.putBits(it->region_id, 6);
+        buf.putBit(1);
+        buf.putBit(it->time_offset < 0);
+        buf.putBCD(std::abs(it->time_offset) / 60, 2);
+        buf.putBCD(std::abs(it->time_offset) % 60, 2);
+        buf.putMJD(it->next_change, MJD_SIZE);
+        buf.putBCD(std::abs(it->next_time_offset) / 60, 2);
+        buf.putBCD(std::abs(it->next_time_offset) % 60, 2);
     }
-
-    serializeEnd(desc, bbp);
 }
 
 
@@ -106,32 +102,22 @@ void ts::LocalTimeOffsetDescriptor::serialize(DuckContext& duck, Descriptor& des
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::LocalTimeOffsetDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::LocalTimeOffsetDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 13 == 0;
-    regions.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        while (size >= 13) {
-            Region region;
-            region.country = DeserializeLanguageCode(data);
-            region.region_id = data[3] >> 2;
-            const uint8_t polarity = data[3] & 0x01;
-            int hours = DecodeBCD(data[4]);
-            int minutes = DecodeBCD(data[5]);
-            region.time_offset = (polarity ? -1 : 1) * ((hours * 60) + minutes);
-            DecodeMJD(data + 6, 5, region.next_change);
-            hours = DecodeBCD(data[11]);
-            minutes = DecodeBCD(data[12]);
-            region.next_time_offset = (polarity ? -1 : 1) * ((hours * 60) + minutes);
-
-            data += 13;
-            size -= 13;
-
-            regions.push_back(region);
-        }
+    while (buf.canRead()) {
+        Region region;
+        buf.getLanguageCode(region.country);
+        region.region_id = buf.getBits<uint8_t>(6);
+        buf.skipBits(1);
+        const uint8_t polarity = buf.getBit();
+        int hours = buf.getBCD<int>(2);
+        int minutes = buf.getBCD<int>(2);
+        region.time_offset = (polarity ? -1 : 1) * ((hours * 60) + minutes);
+        region.next_change = buf.getMJD(MJD_SIZE);
+        hours = buf.getBCD<int>(2);
+        minutes = buf.getBCD<int>(2);
+        region.next_time_offset = (polarity ? -1 : 1) * ((hours * 60) + minutes);
+        regions.push_back(region);
     }
 }
 
@@ -186,7 +172,7 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& disp, DID d
 
 void ts::LocalTimeOffsetDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (RegionVector::const_iterator it = regions.begin(); it != regions.end(); ++it) {
+    for (auto it = regions.begin(); it != regions.end(); ++it) {
         xml::Element* e = root->addElement(u"region");
         e->setAttribute(u"country_code", it->country);
         e->setIntAttribute(u"country_region_id", it->region_id);

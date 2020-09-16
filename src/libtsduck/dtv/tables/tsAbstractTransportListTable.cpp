@@ -126,24 +126,17 @@ void ts::AbstractTransportListTable::deserializePayload(PSIBuffer& buf, const Se
     // Get top-level descriptor list
     buf.getDescriptorListWithLength(descs);
 
-    // Transport stream loop length.
+    // Transport stream loop.
     buf.skipBits(4);
-    const size_t loop_length = buf.getBits<size_t>(12);
-    const size_t end_loop = buf.currentReadByteOffset() + loop_length;
-
-    // Get transport streams description
-    while (!buf.error() && !buf.endOfRead()) {
+    buf.pushReadSizeFromLength(12); // transport_stream_loop_length
+    while (buf.canRead()) {
         const uint16_t tsid = buf.getUInt16();
         const uint16_t nwid = buf.getUInt16();
         const TransportStreamId id(tsid, nwid);
         buf.getDescriptorListWithLength(transports[id].descs);
         transports[id].preferred_section = section.sectionNumber();
     }
-
-    // Make sure we exactly reached the end of transport stream loop.
-    if (!buf.error() && buf.currentReadByteOffset() != end_loop) {
-        buf.setUserError();
-    }
+    buf.popState(); // transport_stream_loop_length
 }
 
 

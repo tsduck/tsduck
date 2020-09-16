@@ -133,7 +133,7 @@ void ts::ContentLabellingDescriptor::deserializePayload(PSIBuffer& buf)
     buf.skipBits(3);
     if (content_reference_id_record_flag) {
         const size_t length = buf.getUInt8();
-        buf.getByteBlock(content_reference_id, length);
+        buf.getBytes(content_reference_id, length);
     }
     if (content_time_base_indicator == 1 || content_time_base_indicator == 2) {
         buf.skipBits(7);
@@ -147,9 +147,9 @@ void ts::ContentLabellingDescriptor::deserializePayload(PSIBuffer& buf)
     }
     if (content_time_base_indicator >= 3 && content_time_base_indicator <= 7) {
         const size_t length = buf.getUInt8();
-        buf.getByteBlock(time_base_association_data, length);
+        buf.getBytes(time_base_association_data, length);
     }
-    buf.getByteBlock(private_data, buf.remainingReadBytes());
+    buf.getBytes(private_data);
 }
 
 
@@ -159,17 +159,17 @@ void ts::ContentLabellingDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::ContentLabellingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 2) {
+    if (buf.canReadBytes(2)) {
         const uint16_t format = buf.getUInt16();
         disp << margin << "Metadata application format: " << NameFromSection(u"MetadataApplicationFormat", format, names::HEXA_FIRST) << std::endl;
-        if (format == 0xFFFF && buf.remainingReadBytes() >= 4) {
+        if (format == 0xFFFF && buf.canReadBytes(4)) {
             disp << margin << UString::Format(u"Metadata application format identifier: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
         }
         const bool content_reference_id_record_flag = buf.getBit() != 0;
         const uint8_t time_base_indicator = buf.getBits<uint8_t>(4);
         disp << margin << "Content time base indicator: " << NameFromSection(u"ContentTimeBaseIndicator", time_base_indicator, names::HEXA_FIRST) << std::endl;
         buf.skipBits(3);
-        if (content_reference_id_record_flag && buf.remainingReadBytes() >= 1) {
+        if (content_reference_id_record_flag && buf.canReadBytes(1)) {
             const size_t length = buf.getUInt8();
             disp.displayPrivateData(u"Content reference id", buf, length, margin);
         }
@@ -187,9 +187,8 @@ void ts::ContentLabellingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
             const size_t length = buf.getUInt8();
             disp.displayPrivateData(u"Time base association data", buf, length, margin);
         }
-        disp.displayPrivateData(u"Private data", buf, buf.remainingReadBytes(), margin);
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

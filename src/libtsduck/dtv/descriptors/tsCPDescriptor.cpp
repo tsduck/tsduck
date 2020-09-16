@@ -97,7 +97,7 @@ void ts::CPDescriptor::deserializePayload(PSIBuffer& buf)
 {
     cp_id = buf.getUInt16();
     cp_pid = buf.getPID();
-    buf.getByteBlock(private_data, buf.remainingReadBytes());
+    buf.getBytes(private_data);
 }
 
 
@@ -126,10 +126,9 @@ bool ts::CPDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element
 
 void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 4) {
+    if (buf.canReadBytes(4)) {
         disp << margin << "CP System Id: " << NameFromSection(u"CPSystemId", buf.getUInt16(), names::FIRST);
         disp << UString::Format(u", CP PID: %d (0x%<X)", {buf.getPID()}) << std::endl;
         disp.displayPrivateData(u"Private CP data", buf, NPOS, margin);
     }
-    disp.displayExtraData(buf, margin);
 }

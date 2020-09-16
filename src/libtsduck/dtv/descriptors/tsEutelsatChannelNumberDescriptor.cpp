@@ -98,7 +98,7 @@ void ts::EutelsatChannelNumberDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::EutelsatChannelNumberDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Entry e;
         e.onetw_id = buf.getUInt16();
         e.ts_id = buf.getUInt16();
@@ -116,7 +116,7 @@ void ts::EutelsatChannelNumberDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::EutelsatChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (!buf.error() && buf.remainingReadBytes() >= 8) {
+    while (buf.canReadBytes(8)) {
         const uint16_t onetw_id = buf.getUInt16();
         const uint16_t ts_id = buf.getUInt16();
         const uint16_t service_id = buf.getUInt16();
@@ -126,7 +126,6 @@ void ts::EutelsatChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp,
              << UString::Format(u"Service Id: %5d (0x%04<X), Channel number: %3d, TS Id: %5d (0x%<04X), Net Id: %5d (0x%<04X)", {service_id, channel, ts_id, onetw_id})
              << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

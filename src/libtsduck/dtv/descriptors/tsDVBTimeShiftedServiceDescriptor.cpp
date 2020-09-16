@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -70,26 +71,14 @@ void ts::DVBTimeShiftedServiceDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBTimeShiftedServiceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DVBTimeShiftedServiceDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(reference_service_id);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(reference_service_id);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::DVBTimeShiftedServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DVBTimeShiftedServiceDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 2;
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        reference_service_id = GetUInt16(data);
-    }
+    reference_service_id = buf.getUInt16();
 }
 
 
@@ -97,17 +86,11 @@ void ts::DVBTimeShiftedServiceDescriptor::deserialize(DuckContext& duck, const D
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 2) {
-        const uint16_t service = GetUInt16(data);
-        data += 2; size -= 2;
-        disp << margin << UString::Format(u"Reference service id: 0x%X (%d)", {service, service}) << std::endl;
+    if (buf.canReadBytes(2)) {
+        disp << margin << UString::Format(u"Reference service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -119,11 +102,6 @@ void ts::DVBTimeShiftedServiceDescriptor::buildXML(DuckContext& duck, xml::Eleme
 {
     root->setIntAttribute(u"reference_service_id", reference_service_id, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::DVBTimeShiftedServiceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

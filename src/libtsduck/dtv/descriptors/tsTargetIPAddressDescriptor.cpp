@@ -90,7 +90,7 @@ void ts::TargetIPAddressDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::TargetIPAddressDescriptor::deserializePayload(PSIBuffer& buf)
 {
     IPv4_addr_mask.setAddress(buf.getUInt32());
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         IPv4_addr.push_back(IPAddress(buf.getUInt32()));
     }
 }
@@ -103,11 +103,10 @@ void ts::TargetIPAddressDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::TargetIPAddressDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     const char* header = "Address mask: ";
-    while (buf.remainingReadBytes() >= 4) {
+    while (buf.canReadBytes(4)) {
         disp << margin << header << IPAddress(buf.getUInt32()) << std::endl;
         header = "Address: ";
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

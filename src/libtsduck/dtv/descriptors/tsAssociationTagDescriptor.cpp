@@ -91,8 +91,8 @@ void ts::AssociationTagDescriptor::deserializePayload(PSIBuffer& buf)
     association_tag = buf.getUInt16();
     use = buf.getUInt16();
     const size_t len = buf.getUInt8();
-    buf.getByteBlock(selector_bytes, len);
-    buf.getByteBlock(private_data, buf.remainingReadBytes());
+    buf.getBytes(selector_bytes, len);
+    buf.getBytes(private_data);
 }
 
 

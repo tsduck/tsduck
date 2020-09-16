@@ -247,7 +247,7 @@ void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section,
 {
     uint16_t updates_defined = 0;
 
-    if (buf.remainingReadBytes() < 2) {
+    if (!buf.canReadBytes(2)) {
         buf.setUserError();
     }
     else {
@@ -258,7 +258,7 @@ void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section,
     // Loop on all updates definitions.
     while (!buf.error() && updates_defined-- > 0) {
 
-        if (buf.remainingReadBytes() < 2) {
+        if (!buf.canReadBytes(2)) {
             buf.setUserError();
             break;
         }
@@ -272,21 +272,21 @@ void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section,
         // Display variable part.
         switch (utype) {
             case new_genre_category: {
-                if (buf.remainingReadBytes() >= 1) {
+                if (buf.canReadBytes(1)) {
                     disp << margin << UString::Format(u"  Genre category code: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
                     disp.displayATSCMultipleString(buf, 0, margin + u"  ", u"Genre category name: ");
                 }
                 break;
             }
             case new_state: {
-                if (buf.remainingReadBytes() >= 1) {
+                if (buf.canReadBytes(1)) {
                     disp << margin << UString::Format(u"  DCC state location code: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
                     disp.displayATSCMultipleString(buf, 0, margin + u"  ", u"DCC state location: ");
                 }
                 break;
             }
             case new_county: {
-                if (buf.remainingReadBytes() >= 3) {
+                if (buf.canReadBytes(3)) {
                     disp << margin << UString::Format(u"  State code: 0x%X (%<d)", {buf.getUInt8()});
                     buf.skipBits(6);
                     disp << UString::Format(u", DCC county location code: 0x%03X (%<d)", {buf.getBits<uint16_t>(10)}) << std::endl;
@@ -301,7 +301,7 @@ void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section,
         }
 
         // Terminate update data.
-        disp.displayExtraData(buf, margin + u"  ");
+        disp.displayPrivateData(u"Extraneous update data", buf, NPOS, margin + u"  ");
         buf.popState();
 
         // Display descriptor list for this update.
@@ -310,7 +310,6 @@ void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section,
 
     // Display descriptor list for the global table.
     disp.displayDescriptorListWithLength(section, buf, margin, u"Additional descriptors:", UString(), 10);
-    disp.displayExtraData(buf, margin);
 }
 
 

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -74,28 +75,14 @@ ts::TransportStreamDescriptor::TransportStreamDescriptor(DuckContext& duck, cons
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TransportStreamDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TransportStreamDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.encoded(compliance));
-    serializeEnd(desc, bbp);
+    buf.putUTF8(compliance);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::TransportStreamDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TransportStreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag();
-
-    if (_is_valid) {
-        duck.decode(compliance, desc.payload(), desc.payloadSize());
-    }
-    else {
-        compliance.clear();
-    }
+    buf.getUTF8(compliance);
 }
 
 
@@ -103,16 +90,14 @@ void ts::TransportStreamDescriptor::deserialize(DuckContext& duck, const Descrip
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TransportStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::TransportStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    disp << margin << "Compliance: \"" << disp.duck().decoded(payload, size) << "\"" << std::endl;
+    disp << margin << "Compliance: \"" << buf.getUTF8() << "\"" << std::endl;
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::TransportStreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

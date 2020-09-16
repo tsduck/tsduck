@@ -134,7 +134,7 @@ static const ts::UChar psi_all_xml[] =
     u"      <country country_code=\"ger\" rating=\"0x07\"/>\n"
     u"    </parental_rating_descriptor>\n"
     u"    <private_data_specifier_descriptor private_data_specifier=\"0x54654BD5\"/>\n"
-    u"    <S2_satellite_delivery_system_descriptor backwards_compatibility=\"false\" scrambling_sequence_index=\"0x00000074\" input_stream_identifier=\"0x45\"/>\n"
+    u"    <S2_satellite_delivery_system_descriptor scrambling_sequence_index=\"0x00000074\" input_stream_identifier=\"0x45\"/>\n"
     u"    <satellite_delivery_system_descriptor frequency=\"12,094,000,000\" orbital_position=\"19.2\" west_east_flag=\"east\" polarization=\"vertical\" roll_off=\"0.20\" modulation_system=\"DVB-S2\" modulation_type=\"8PSK\" symbol_rate=\"23,900,000\" FEC_inner=\"5/6\"/>\n"
     u"    <service_descriptor service_type=\"0x65\" service_provider_name=\"Azerty\" service_name=\"The Service\"/>\n"
     u"    <service_list_descriptor>\n"

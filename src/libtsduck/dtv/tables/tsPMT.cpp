@@ -116,7 +116,7 @@ void ts::PMT::deserializePayload(PSIBuffer& buf, const Section& section)
     buf.getDescriptorListWithLength(descs);
 
     // Get elementary streams description
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         const uint8_t type = buf.getUInt8();
         const PID pid = buf.getPID();
         Stream& str(streams[pid]);
@@ -299,15 +299,13 @@ void ts::PMT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     disp.displayDescriptorListWithLength(section, buf, margin, u"Program information:");
 
     // Get elementary streams description
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         const uint8_t type = buf.getUInt8();
         const PID pid = buf.getPID();
         disp << margin << "Elementary stream: type " << names::StreamType(type, names::FIRST)
              << UString::Format(u", PID: %d (0x%<X)", {pid}) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

@@ -33,6 +33,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -111,21 +112,14 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DataBroadcastDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    bbp->appendUInt16(data_broadcast_id);
-    bbp->appendUInt8(component_tag);
-    bbp->appendUInt8(int8_t(selector_bytes.size()));
-    bbp->append(selector_bytes);
-    if (!SerializeLanguageCode(*bbp, language_code)) {
-        desc.invalidate();
-        return;
-    }
-    bbp->append(duck.encodedWithByteLength(text));
-
-    serializeEnd(desc, bbp);
+    buf.putUInt16(data_broadcast_id);
+    buf.putUInt8(component_tag);
+    buf.putUInt8(uint8_t(selector_bytes.size()));
+    buf.putBytes(selector_bytes);
+    buf.putLanguageCode(language_code);
+    buf.putStringWithByteLength(text);
 }
 
 
@@ -133,35 +127,14 @@ void ts::DataBroadcastDescriptor::serialize(DuckContext& duck, Descriptor& desc)
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DataBroadcastDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    selector_bytes.clear();
-    language_code.clear();
-    text.clear();
-
-    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 8)) {
-        return;
-    }
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    data_broadcast_id = GetUInt16(data);
-    component_tag = GetUInt8(data + 2);
-    size_t length = GetUInt8(data + 3);
-    data += 4; size -= 4;
-
-    if (length + 4 > size) {
-        _is_valid = false;
-        return;
-    }
-    selector_bytes.copy(data, length);
-    data += length; size -= length;
-
-    language_code = DeserializeLanguageCode(data);
-    data += 3; size -= 3;
-    duck.decodeWithByteLength(text, data, size);
-    _is_valid = size == 0;
+    data_broadcast_id = buf.getUInt16();
+    component_tag = buf.getUInt8();
+    const size_t length = buf.getUInt8();
+    buf.getBytes(selector_bytes, length);
+    buf.getLanguageCode(language_code);
+    buf.getStringWithByteLength(text);
 }
 
 

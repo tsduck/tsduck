@@ -92,10 +92,9 @@ void ts::EacemStreamIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::EacemStreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (!buf.endOfRead()) {
+    if (buf.canReadBytes(1)) {
         disp << margin << "Version: " << int(buf.getUInt8()) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

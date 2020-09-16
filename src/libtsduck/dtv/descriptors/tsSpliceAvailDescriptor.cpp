@@ -93,12 +93,11 @@ void ts::SpliceAvailDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::SpliceAvailDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 8) {
+    if (buf.canReadBytes(8)) {
         // Sometimes, the identifiers are made of ASCII characters. Try to display them.
         disp.displayIntAndASCII(u"Identifier: 0x%08X", buf, 4, margin);
         disp.displayIntAndASCII(u"Provider id: 0x%08X", buf, 4, margin);
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

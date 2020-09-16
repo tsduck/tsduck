@@ -33,6 +33,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -112,28 +113,28 @@ void ts::SatelliteDeliverySystemDescriptor::setDeliverySystem(const DuckContext&
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SatelliteDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendBCD(uint32_t(frequency / 10000), 8); // coded in 10 kHz units
-    bbp->appendBCD(orbital_position, 4);
+    buf.putBCD(frequency / 10000, 8); // coded in 10 kHz units
+    buf.putBCD(orbital_position, 4);
+    buf.putBit(east_not_west);
+    buf.putBits(polarization, 2);
 
-    // One byte is system-dependent.
-    const DeliverySystem delsys = deliverySystem(duck);
-    const uint8_t byte = (east_not_west ? 0x80 : 0x00) | uint8_t((polarization & 0x03) << 5);
+    // 5 bits are system-dependent (DVB vs. ISDB)
+    const DeliverySystem delsys = deliverySystem(buf.duck());
     if (delsys == DS_ISDB_S) {
         // ISDB-S variant.
-        bbp->appendUInt8(byte | (modulation & 0x1F));
+        buf.putBits(modulation, 5);
     }
     else {
         // DVB-S/S2 variant.
-        bbp->appendUInt8(byte |
-                         (delsys == DS_DVB_S2 ? (uint8_t((roll_off & 0x03) << 3) | 0x04) : 0x18) |
-                         (modulation & 0x03));
+        buf.putBits(delsys == DS_DVB_S2 ? roll_off : 0, 2);
+        buf.putBit(delsys == DS_DVB_S2);
+        buf.putBits(modulation, 2);
     }
 
-    bbp->appendBCD(uint32_t(symbol_rate / 100), 7, true, FEC_inner); // coded in 100 sym/s units, FEC in last nibble
-    serializeEnd(desc, bbp);
+    buf.putBCD(symbol_rate / 100, 7); // coded in 100 sym/s units
+    buf.putBits(FEC_inner, 4);
 }
 
 
@@ -141,33 +142,30 @@ void ts::SatelliteDeliverySystemDescriptor::serialize(DuckContext& duck, Descrip
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SatelliteDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
+    frequency = 10000 * buf.getBCD<uint64_t>(8); // coded in 10 kHz units
+    orbital_position = buf.getBCD<uint16_t>(4);
+    east_not_west = buf.getBit() != 0;
+    polarization = buf.getBits<uint8_t>(2);
 
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 11;
-
-    if (_is_valid) {
-        frequency = 10000 * uint64_t(DecodeBCD(data, 8)); // coded in 10 kHz units
-        orbital_position = uint16_t(DecodeBCD(data + 4, 4));
-        east_not_west = (data[6] & 0x80) != 0;
-        polarization = (data[6] >> 5) & 0x03;
-        symbol_rate = 100 * uint64_t(DecodeBCD(data + 7, 7, true)); // coded in 100 sym/s units
-        FEC_inner = data[10] & 0x0F;
-        if ((duck.standards() & Standards::ISDB) == Standards::ISDB) {
-            // ISDB-S variant.
-            _system = DS_ISDB_S;
-            roll_off = 0xFF;
-            modulation = data[6] & 0x1F;
-        }
-        else {
-            // DVB-S/S2 variant.
-            _system = (data[6] & 0x04) != 0 ? DS_DVB_S2 : DS_DVB_S;
-            roll_off = _system == DS_DVB_S2 ? ((data[6] >> 3) & 0x03) : 0xFF;
-            modulation = data[6] & 0x03;
-        }
+    if ((buf.duck().standards() & Standards::ISDB) == Standards::ISDB) {
+        // ISDB-S variant.
+        _system = DS_ISDB_S;
+        modulation = buf.getBits<uint8_t>(5);
     }
+    else {
+        // DVB-S/S2 variant.
+        roll_off = buf.getBits<uint8_t>(2);
+        _system = buf.getBit() != 0 ? DS_DVB_S2 : DS_DVB_S;
+        modulation = buf.getBits<uint8_t>(2);
+    }
+    if (_system != DS_DVB_S2) {
+        roll_off = 0xFF;
+    }
+
+    symbol_rate = 100 * buf.getBCD<uint64_t>(7); // coded in 100 sym/s units
+    FEC_inner = buf.getBits<uint8_t>(4);
 }
 
 

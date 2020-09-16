@@ -196,27 +196,22 @@ void ts::ATSCEIT::DisplaySection(TablesDisplay& disp, const ts::Section& section
 
     size_t event_count = 0;
 
-    if (buf.remainingReadBytes() < 2) {
-        buf.setUserError();
-    }
-    else {
+    if (buf.canReadBytes(2)) {
         disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
         disp << UString::Format(u", number of events: %d", {event_count = buf.getUInt8()}) << std::endl;
-    }
 
-    // Loop on all event definitions.
-    while (!buf.error() && event_count-- > 0) {
-        buf.skipBits(2);
-        disp << margin << UString::Format(u"- Event Id: 0x%X (%<d)", {buf.getBits<uint16_t>(14)}) << std::endl;
-        disp << margin << "  Start UTC: " << Time::GPSSecondsToUTC(buf.getUInt32()).format(Time::DATETIME) << std::endl;
-        buf.skipBits(2);
-        disp << margin << UString::Format(u"  ETM location: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
-        disp << margin << UString::Format(u"  Duration: %d seconds", {buf.getBits<Second>(20)}) << std::endl;
-        disp.displayATSCMultipleString(buf, 1, margin + u"  ", u"Title text: ");
-        disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
+        // Loop on all event definitions.
+        while (buf.canReadBytes(8) && event_count-- > 0) {
+            buf.skipBits(2);
+            disp << margin << UString::Format(u"- Event Id: 0x%X (%<d)", {buf.getBits<uint16_t>(14)}) << std::endl;
+            disp << margin << "  Start UTC: " << Time::GPSSecondsToUTC(buf.getUInt32()).format(Time::DATETIME) << std::endl;
+            buf.skipBits(2);
+            disp << margin << UString::Format(u"  ETM location: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
+            disp << margin << UString::Format(u"  Duration: %d seconds", {buf.getBits<Second>(20)}) << std::endl;
+            disp.displayATSCMultipleString(buf, 1, margin + u"  ", u"Title text: ");
+            disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
+        }
     }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

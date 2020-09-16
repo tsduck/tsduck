@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -83,19 +84,18 @@ ts::CellFrequencyLinkDescriptor::Subcell::Subcell() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CellFrequencyLinkDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CellFrequencyLinkDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
     for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
-        bbp->appendUInt16(it1->cell_id);
-        bbp->appendUInt32(uint32_t(it1->frequency / 10)); // coded in 10 Hz unit
-        bbp->appendUInt8(uint8_t(it1->subcells.size() * 5));
+        buf.putUInt16(it1->cell_id);
+        buf.putUInt32(uint32_t(it1->frequency / 10)); // coded in 10 Hz unit
+        buf.pushWriteSequenceWithLeadingLength(8);    // start write sequence
         for (auto it2 = it1->subcells.begin(); it2 != it1->subcells.end(); ++it2) {
-            bbp->appendUInt8(it2->cell_id_extension);
-            bbp->appendUInt32(uint32_t(it2->transposer_frequency / 10)); // coded in 10 Hz unit
+            buf.putUInt8(it2->cell_id_extension);
+            buf.putUInt32(uint32_t(it2->transposer_frequency / 10)); // coded in 10 Hz unit
         }
+        buf.popState(); // end write sequence
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -103,34 +103,22 @@ void ts::CellFrequencyLinkDescriptor::serialize(DuckContext& duck, Descriptor& d
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CellFrequencyLinkDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::CellFrequencyLinkDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag();
-    cells.clear();
-
-    while (_is_valid && size >= 7) {
+    while (buf.canRead()) {
         Cell cell;
-        cell.cell_id = GetUInt16(data);
-        cell.frequency = uint64_t(GetUInt32(data + 2)) * 10; // coded in 10 Hz unit
-        size_t len = data[6];
-        data += 7; size -= 7;
-
-        while (size >= len && len >= 5) {
+        cell.cell_id = buf.getUInt16();
+        cell.frequency = uint64_t(buf.getUInt32()) * 10; // coded in 10 Hz unit
+        buf.pushReadSizeFromLength(8); // start read sequence
+        while (buf.canRead()) {
             Subcell sub;
-            sub.cell_id_extension = data[0];
-            sub.transposer_frequency = uint64_t(GetUInt32(data + 1)) * 10; // coded in 10 Hz unit
+            sub.cell_id_extension = buf.getUInt8();
+            sub.transposer_frequency = uint64_t(buf.getUInt32()) * 10; // coded in 10 Hz unit
             cell.subcells.push_back(sub);
-            data += 5; size -= 5; len -= 5;
         }
-
-        _is_valid = len == 0;
+        buf.popState(); // end read sequence
         cells.push_back(cell);
     }
-
-    // Make sure there is no truncated trailing data.
-    _is_valid = _is_valid && size == 0;
 }
 
 

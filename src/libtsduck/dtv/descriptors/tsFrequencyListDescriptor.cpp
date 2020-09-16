@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsBCD.h"
@@ -64,7 +65,7 @@ ts::FrequencyListDescriptor::FrequencyListDescriptor(DuckContext& duck, const De
 
 void ts::FrequencyListDescriptor::clearContent()
 {
-    coding_type = 0;
+    coding_type = UNDEFINED;
     frequencies.clear();
 }
 
@@ -85,28 +86,27 @@ const ts::Enumeration ts::FrequencyListDescriptor::CodingTypeEnum({
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::FrequencyListDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::FrequencyListDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(0xFC | coding_type);
+    buf.putBits(0xFF, 6);
+    buf.putBits(coding_type, 2);
     for (auto it = frequencies.begin(); it != frequencies.end(); ++it) {
         switch (coding_type) {
             case TERRESTRIAL: // binary coding in 10 Hz unit
-                bbp->appendUInt32(uint32_t(*it / 10));
+                buf.putUInt32(uint32_t(*it / 10));
                 break;
             case SATELLITE: // 8-digit BCD coding in 10 kHz units
-                bbp->appendBCD(uint32_t(*it / 10000), 8);
+                buf.putBCD(uint32_t(*it / 10000), 8);
                 break;
             case CABLE:  // 8-digit BCD coding in 100 Hz units
-                bbp->appendBCD(uint32_t(*it / 100), 8);
+                buf.putBCD(uint32_t(*it / 100), 8);
                 break;
             case UNDEFINED: // assume binary coding in Hz.
             default:
-                bbp->appendUInt32(uint32_t(*it));
+                buf.putUInt32(uint32_t(*it));
                 break;
         }
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -114,18 +114,18 @@ void ts::FrequencyListDescriptor::serialize(DuckContext& duck, Descriptor& desc)
 // Decode a frequency at a 4-byte data area.
 //----------------------------------------------------------------------------
 
-uint64_t ts::FrequencyListDescriptor::DecodeFrequency(uint8_t coding_type, const uint8_t* data)
+uint64_t ts::FrequencyListDescriptor::DecodeFrequency(uint8_t coding_type, PSIBuffer& buf)
 {
     switch (coding_type) {
         case TERRESTRIAL: // binary coding in 10 Hz unit
-            return 10 * uint64_t(GetUInt32(data));
+            return 10 * uint64_t(buf.getUInt32());
         case SATELLITE: // 8-digit BCD coding in 10 kHz units
-            return 10000 * uint64_t(DecodeBCD(data, 8));
+            return 10000 * buf.getBCD<uint64_t>(8);
         case CABLE:  // 8-digit BCD coding in 100 Hz units
-            return 100 * uint64_t(DecodeBCD(data, 8));
+            return 100 * buf.getBCD<uint64_t>(8);
         case UNDEFINED: // assume binary coding in Hz.
         default:
-            return GetUInt32(data);
+            return buf.getUInt32();
     }
 }
 
@@ -134,21 +134,12 @@ uint64_t ts::FrequencyListDescriptor::DecodeFrequency(uint8_t coding_type, const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::FrequencyListDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::FrequencyListDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size % 4 == 1;
-    frequencies.clear();
-
-    if (_is_valid) {
-        coding_type = data[0] & 0x03;
-        data++; size--;
-        frequencies.reserve(size / 4);
-        while (size >= 4) {
-            frequencies.push_back(DecodeFrequency(coding_type, data));
-            data += 4; size -= 4;
-        }
+    buf.skipBits(6);
+    coding_type = buf.getBits<uint8_t>(2);
+    while (buf.canRead()) {
+        frequencies.push_back(DecodeFrequency(coding_type, buf));
     }
 }
 
@@ -157,21 +148,16 @@ void ts::FrequencyListDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::FrequencyListDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::FrequencyListDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        const uint8_t type = data[0] & 0x03;
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        buf.skipBits(6);
+        const uint8_t type = buf.getBits<uint8_t>(2);
         disp << margin << UString::Format(u"Coding type: %d (%s)", {type, CodingTypeEnum.name(type)}) << std::endl;
-        while (size >= 4) {
-            disp << margin << UString::Format(u"Centre frequency: %'d Hz", {DecodeFrequency(type, data)}) << std::endl;
-            data += 4; size -= 4;
+        while (buf.canReadBytes(4)) {
+            disp << margin << UString::Format(u"Centre frequency: %'d Hz", {DecodeFrequency(type, buf)}) << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

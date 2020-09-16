@@ -134,6 +134,23 @@ namespace ts {
 
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
     size_t BitSize(INT x);
+
+    //!
+    //! Get a power of 10 using a fast lookup table.
+    //!
+    //! @tparam INT An integer type.
+    //! @param [in] pow The requested power of 10.
+    //! @return The requested power of 10. If the value is larger than the largest integer on
+    //! this platform, the result is undefined.
+    //!
+    template<typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    inline INT Power10(size_t pow) { return static_cast<INT>(Power10<uint64_t>(pow)); }
+
+    //! @cond nodoxygen
+    // Template specialization.
+    template<>
+    uint64_t Power10<uint64_t>(size_t pow);
+    //! @endcond
 }
 
 #include "tsIntegerUtilsTemplate.h"

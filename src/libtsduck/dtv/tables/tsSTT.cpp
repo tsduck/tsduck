@@ -174,10 +174,7 @@ void ts::STT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::STT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    if (buf.remainingReadBytes() < 8) {
-        buf.setUserError();
-    }
-    else {
+    if (buf.canReadBytes(8)) {
         disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()}) << std::endl;
         const uint32_t time = buf.getUInt32();
         const uint8_t offset = buf.getUInt8();
@@ -190,8 +187,6 @@ void ts::STT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << UString::Format(u", hour: %d", {buf.getUInt8()}) << std::endl;
         disp.displayDescriptorList(section, buf, margin);
     }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

@@ -193,7 +193,7 @@ void ts::DVBEnhancedAC3Descriptor::deserializePayload(PSIBuffer& buf)
     if (substream3_flag) {
         substream3 = buf.getUInt8();
     }
-    buf.getByteBlock(additional_info, buf.remainingReadBytes());
+    buf.getBytes(additional_info);
 }
 
 

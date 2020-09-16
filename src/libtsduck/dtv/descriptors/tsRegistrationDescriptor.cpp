@@ -82,7 +82,7 @@ void ts::RegistrationDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::RegistrationDescriptor::deserializePayload(PSIBuffer& buf)
 {
     format_identifier = buf.getUInt32();
-    buf.getByteBlock(additional_identification_info, buf.remainingReadBytes());
+    buf.getBytes(additional_identification_info);
 }
 
 
@@ -92,12 +92,11 @@ void ts::RegistrationDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 4) {
+    if (buf.canReadBytes(4)) {
         // Sometimes, the registration format identifier is made of ASCII characters. Try to display them.
         disp.displayIntAndASCII(u"Format identifier: 0x%08X", buf, 4, margin);
         disp.displayPrivateData(u"Additional identification info", buf, NPOS, margin);
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

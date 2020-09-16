@@ -95,7 +95,7 @@ void ts::CADescriptor::deserializePayload(PSIBuffer& buf)
 {
     cas_id = buf.getUInt16();
     ca_pid = buf.getPID();
-    buf.getByteBlock(private_data, buf.remainingReadBytes());
+    buf.getBytes(private_data);
 }
 
 
@@ -105,10 +105,7 @@ void ts::CADescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() < 4) {
-        disp.displayExtraData(buf, margin);
-    }
-    else {
+    if (buf.canReadBytes(4)) {
         // Display common part
         const uint16_t casid = buf.getUInt16();
         disp << margin << "CA System Id: " << names::CASId(disp.duck(), casid, names::FIRST);
@@ -116,7 +113,7 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, co
         disp << UString::Format(u" PID: %d (0x%<X)", {buf.getPID()}) << std::endl;
 
         // CA private part.
-        if (!buf.endOfRead()) {
+        if (buf.canRead()) {
             // Check if a specific CAS registered its own display routine.
             DisplayCADescriptorFunction func = PSIRepository::Instance()->getCADescriptorDisplay(casid);
             if (func != nullptr) {

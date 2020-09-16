@@ -96,7 +96,7 @@ void ts::AbstractLogicalChannelDescriptor::serializePayload(PSIBuffer& buf) cons
 
 void ts::AbstractLogicalChannelDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Entry e;
         e.service_id = buf.getUInt16();
         e.visible = buf.getBit() != 0;
@@ -113,13 +113,12 @@ void ts::AbstractLogicalChannelDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::AbstractLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (!buf.error() && buf.remainingReadBytes() >= 4) {
+    while (buf.canReadBytes(4)) {
         disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", {buf.getUInt16()});
         disp << UString::Format(u", Visible: %1d", {buf.getBit()});
         buf.skipBits(5);
-        disp << UString::Format(u", Channel number: %3d", {buf.getBits<int>(10)}) << std::endl;
+        disp << UString::Format(u", Channel number: %3d", {buf.getBits<uint16_t>(10)}) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

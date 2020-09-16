@@ -488,6 +488,46 @@ namespace ts {
         bool endOfWrite() const { return _state.wbyte >= _state.end; }
 
         //!
+        //! Check if we can still read from the buffer.
+        //! @return True if we can still read from the buffer.
+        //!
+        bool canRead() const { return !error() && !endOfRead(); }
+
+        //!
+        //! Check if we can read at least the specified number of bytes from the buffer.
+        //! @param [in] bytes Number of bytes.
+        //! @return True if we can read at least @a bytes.
+        //!
+        bool canReadBytes(size_t bytes) const { return !error() && remainingReadBytes() >= bytes; }
+
+        //!
+        //! Check if we can read at least the specified number of bits from the buffer.
+        //! @param [in] bits Number of bits.
+        //! @return True if we can read at least @a bits.
+        //!
+        bool canReadBits(size_t bits) const { return !error() && remainingReadBits() >= bits; }
+
+        //!
+        //! Check if we can still write in the buffer.
+        //! @return True if we can still write in the buffer.
+        //!
+        bool canWrite() const { return !error() && !endOfWrite(); }
+
+        //!
+        //! Check if we can write at least the specified number of bytes in the buffer.
+        //! @param [in] bytes Number of bytes.
+        //! @return True if we can write at least @a bytes.
+        //!
+        bool canWriteBytes(size_t bytes) const { return !error() && remainingWriteBytes() >= bytes; }
+
+        //!
+        //! Check if we can write at least the specified number of bits in the buffer.
+        //! @param [in] bits Number of bits.
+        //! @return True if we can write at least @a bits.
+        //!
+        bool canWriteBits(size_t bits) const { return !error() && remainingWriteBits() >= bits; }
+
+        //!
         //! Push the current state of the read/write streams on a stack of saved states.
         //!
         //! There is an internal stack of read/write states. It is possible to save the current
@@ -643,8 +683,11 @@ namespace ts {
         //! @param [in] def Default value to return if less than @a n bits before end of stream.
         //! @return The value of the next @a bits.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-        INT getBits(size_t bits, INT def = 0);
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
+        INT getBits(size_t bits, INT def = 0); // unsigned version
+
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+        INT getBits(size_t bits, INT def = 0); // signed version
 
         //!
         //! Put the next n bits from an integer value and advance the write pointer.
@@ -671,31 +714,31 @@ namespace ts {
         //! Get bulk bytes from the buffer.
         //! The bit aligment is ignored, reading starts at the current read byte pointer,
         //! even if a few bits were already read from that byte.
-        //! @param [in] bytes Number of bytes to read.
+        //! @param [in] bytes Number of bytes to read. If specified as NPOS, return all remaining bytes.
         //! @return Read data as a byte block. If the requested number of bytes is not
         //! available, return as much as possible and set the read error.
         //!
-        ByteBlock getByteBlock(size_t bytes);
+        ByteBlock getBytes(size_t bytes = NPOS);
 
         //!
         //! Get bulk bytes from the buffer.
         //! The bit aligment is ignored, reading starts at the current read byte pointer,
         //! even if a few bits were already read from that byte.
         //! @param [out] bb Byte block receiving the read bytes.
-        //! @param [in] bytes Number of bytes to read.
+        //! @param [in] bytes Number of bytes to read. If specified as NPOS, return all remaining bytes.
         //!
-        void getByteBlock(ByteBlock& bb, size_t bytes);
+        void getBytes(ByteBlock& bb, size_t bytes = NPOS);
 
         //!
         //! Get bulk bytes from the buffer.
         //! The bit aligment is ignored, reading starts at the current read byte pointer,
         //! even if a few bits were already read from that byte.
         //! @param [in,out] bb Byte block receiving the read bytes. The read data are appended to @a bb.
-        //! @param [in] bytes Number of bytes to read.
+        //! @param [in] bytes Number of bytes to read. If specified as NPOS, return all remaining bytes.
         //! @return Actual number of appended bytes. If the requested number of bytes is not
         //! available, return as much as possible and set the read error.
         //!
-        size_t getByteBlockAppend(ByteBlock& bb, size_t bytes);
+        size_t getBytesAppend(ByteBlock& bb, size_t bytes = NPOS);
 
         //!
         //! Put bytes in the buffer.
@@ -915,19 +958,25 @@ namespace ts {
         bool putInt64(int64_t i) { return putint(i, 8, PutInt64BE, PutInt64LE); }
 
         //!
-        //! Read the next 8 bits as a Binary Coded Decimal (BCD) value and advance the read pointer.
-        //! Set the read error flag if there are not enough bits to read.
-        //! If a byte is successfully read but is not a valid BCD value, OxFF is returned but no read error is set.
-        //! @return The decoded integer value or 0xFF on error.
+        //! Read the next 4*n bits as a Binary Coded Decimal (BCD) value and advance the read pointer.
+        //! If an invalid BCD digit is found, the read error state of the buffer is set after reading all BCD digits.
+        //! @tparam INT An integer type.
+        //! @param [in] bcd_count Number of BCD digits (@a bcd_count * 4 bits).
+        //! @param [in] def Default value to return if less than @a bcd_count * 4 bits before end of stream.
+        //! @return The decoded BCD value or @a def in case of error.
         //!
-        int getBCD();
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        INT getBCD(size_t bcd_count, INT def = 0);
 
         //!
-        //! Write a Binary Coded Decimal (BCD) value in 8 bits and advance the write pointer.
-        //! @param [in] i Integer value to write in BCD format (must be in the range 0..99 or a write error is generated).
-        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //! Put the next 4*n bits as a Binary Coded Decimal (BCD) value and advance the write pointer.
+        //! @tparam INT An integer type.
+        //! @param [in] value Integer value to write.
+        //! @param [in] bcd_count Number of BCD digits (@a bcd_count * 4 bits).
+        //! @return True on success, false on error (read only or no more space to write).
         //!
-        bool putBCD(int i);
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool putBCD(INT value, size_t bcd_count);
 
         //!
         //! Get a UTF-8 string.
@@ -1219,6 +1268,7 @@ namespace ts {
         bool putint(INT value, size_t bytes, void (*putBE)(void*,INT), void (*putLE)(void*,INT));
 
         // Request some read size. Return actually possible read size. Set read error if lower than requested.
+        // If equal to NPOS, return maximum size.
         size_t requestReadBytes(size_t bytes);
 
         // Get bulk bytes, either aligned or not. Update read pointer.

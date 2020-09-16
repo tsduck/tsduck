@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -135,16 +136,11 @@ size_t ts::ShortEventDescriptor::splitAndAdd(DuckContext& duck, DescriptorList& 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ShortEventDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ShortEventDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    if (!SerializeLanguageCode(*bbp, language_code)) {
-        desc.invalidate();
-        return;
-    }
-    bbp->append(duck.encodedWithByteLength(event_name));
-    bbp->append(duck.encodedWithByteLength(text));
-    serializeEnd(desc, bbp);
+    buf.putLanguageCode(language_code);
+    buf.putStringWithByteLength(event_name);
+    buf.putStringWithByteLength(text);
 }
 
 
@@ -152,21 +148,11 @@ void ts::ShortEventDescriptor::serialize(DuckContext& duck, Descriptor& desc) co
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ShortEventDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ShortEventDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 4)) {
-        return;
-    }
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    language_code = DeserializeLanguageCode(data);
-    data += 3; size -= 3;
-
-    duck.decodeWithByteLength(event_name, data, size);
-    duck.decodeWithByteLength(text, data, size);
-    _is_valid = size == 0;
+    buf.getLanguageCode(language_code);
+    buf.getStringWithByteLength(event_name);
+    buf.getStringWithByteLength(text);
 }
 
 

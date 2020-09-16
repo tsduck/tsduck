@@ -3598,6 +3598,14 @@ Bits = 2
 2 = GSE high efficiency mode
 3 = Transport Stream
 
+[TSGSS2Mode]
+# In DVB S2_satellite_delivery_system_descriptor.
+Bits = 2
+0 = generic packetized
+1 = GSE
+2 = Transport Stream
+3 = reserved
+
 [NetworkChangeType]
 # In network_change_notify_descriptor
 Bits = 4

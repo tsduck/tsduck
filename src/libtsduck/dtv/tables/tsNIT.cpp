@@ -96,20 +96,16 @@ void ts::NIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     disp << margin << UString::Format(u"Network Id: %d (0x%<X)", {section.tableIdExtension()}) << std::endl;
     disp.displayDescriptorListWithLength(section, buf, margin, u"Network information:");
 
-    // Transport stream loop length.
+    // Transport stream loop
     buf.skipBits(4);
-    const size_t loop_length = buf.getBits<size_t>(12);
-    const size_t end_loop = buf.currentReadByteOffset() + loop_length;
-
-    // Loop across all transports
-    while (!buf.error() && buf.currentReadByteOffset() + 6 <= end_loop && buf.remainingReadBytes() >= 6) {
+    buf.pushReadSizeFromLength(12); // transport_stream_loop_length
+    while (buf.canReadBytes(6)) {
         const uint16_t tsid = buf.getUInt16();
         const uint16_t nwid = buf.getUInt16();
         disp << margin << UString::Format(u"Transport Stream Id: %d (0x%<X), Original Network Id: %d (0x%<X)", {tsid, nwid}) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }
-
-    disp.displayExtraData(buf, margin);
+    buf.popState(); // transport_stream_loop_length
 }
 
 

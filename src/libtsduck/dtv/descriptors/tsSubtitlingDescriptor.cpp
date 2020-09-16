@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -109,21 +110,14 @@ void ts::SubtitlingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, c
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SubtitlingDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SubtitlingDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->language_code)) {
-            desc.invalidate();
-            return;
-        }
-        bbp->appendUInt8(it->subtitling_type);
-        bbp->appendUInt16(it->composition_page_id);
-        bbp->appendUInt16(it->ancillary_page_id);
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        buf.putLanguageCode(it->language_code);
+        buf.putUInt8(it->subtitling_type);
+        buf.putUInt16(it->composition_page_id);
+        buf.putUInt16(it->ancillary_page_id);
     }
-
-    serializeEnd(desc, bbp);
 }
 
 
@@ -131,28 +125,16 @@ void ts::SubtitlingDescriptor::serialize(DuckContext& duck, Descriptor& desc) co
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SubtitlingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SubtitlingDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    entries.clear();
-
-    if (!(_is_valid = desc.isValid() && desc.tag() == tag())) {
-        return;
-    }
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    while (size >= 8) {
+    while (buf.canRead()) {
         Entry entry;
-        entry.language_code = DeserializeLanguageCode(data);
-        entry.subtitling_type = data[3];
-        entry.composition_page_id = GetUInt16(data + 4);
-        entry.ancillary_page_id = GetUInt16(data + 6);
+        buf.getLanguageCode(entry.language_code);
+        entry.subtitling_type = buf.getUInt8();
+        entry.composition_page_id = buf.getUInt16();
+        entry.ancillary_page_id = buf.getUInt16();
         entries.push_back(entry);
-        data += 8; size -= 8;
     }
-
-    _is_valid = size == 0;
 }
 
 
@@ -162,7 +144,7 @@ void ts::SubtitlingDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 
 void ts::SubtitlingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"subtitling");
         e->setAttribute(u"language_code", it->language_code);
         e->setIntAttribute(u"subtitling_type", it->subtitling_type, true);

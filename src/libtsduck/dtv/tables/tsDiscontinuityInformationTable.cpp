@@ -99,12 +99,10 @@ void ts::DiscontinuityInformationTable::serializePayload(BinaryTable& table, PSI
 
 void ts::DiscontinuityInformationTable::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    if (buf.remainingReadBytes() > 0) {
+    if (buf.canReadBytes(1)) {
         disp << margin << "Transition: " << UString::YesNo(buf.getBit() != 0) << std::endl;
         buf.skipBits(7);
     }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

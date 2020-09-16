@@ -113,15 +113,14 @@ void ts::ComponentDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 6) {
+    if (buf.canReadBytes(6)) {
         disp << margin << "Content/type: " << names::ComponentType(disp.duck(), buf.getUInt16(), names::FIRST) << std::endl;
         disp << margin << UString::Format(u"Component tag: %d (0x%<X)", {buf.getUInt8()}) << std::endl;
         disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
-        if (!buf.error() && !buf.endOfRead()) {
+        if (buf.canRead()) {
             disp << margin << "Description: \"" << buf.getString() << "\"" << std::endl;
         }
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

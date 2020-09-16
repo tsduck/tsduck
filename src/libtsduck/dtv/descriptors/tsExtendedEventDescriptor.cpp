@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -215,32 +216,18 @@ void ts::ExtendedEventDescriptor::splitAndAdd(DuckContext& duck, DescriptorList&
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ExtendedEventDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    bbp->appendUInt8(uint8_t(descriptor_number << 4) | (last_descriptor_number & 0x0F));
-    if (!SerializeLanguageCode(*bbp, language_code)) {
-        desc.invalidate();
-        return;
+    buf.putBits(descriptor_number, 4);
+    buf.putBits(last_descriptor_number, 4);
+    buf.putLanguageCode(language_code);
+    buf.pushWriteSequenceWithLeadingLength(8); // start length_of_items
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        buf.putStringWithByteLength(it->item_description);
+        buf.putStringWithByteLength(it->item);
     }
-
-    // Placeholder for length_of_items
-    const size_t length_index = bbp->size();
-    bbp->appendUInt8(0);
-
-    // Serialize all entries.
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        bbp->append(duck.encodedWithByteLength(it->item_description));
-        bbp->append(duck.encodedWithByteLength(it->item));
-    }
-
-    // Update length_of_items
-    (*bbp)[length_index] = uint8_t(bbp->size() - length_index - 1);
-
-    // Final text
-    bbp->append(duck.encodedWithByteLength(text));
-    serializeEnd(desc, bbp);
+    buf.popState(); // update length_of_items
+    buf.putStringWithByteLength(text);
 }
 
 
@@ -248,41 +235,20 @@ void ts::ExtendedEventDescriptor::serialize(DuckContext& duck, Descriptor& desc)
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ExtendedEventDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 5)) {
-        return;
-    }
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    descriptor_number = data[0] >> 4;
-    last_descriptor_number = data[0] & 0x0F;
-    language_code = DeserializeLanguageCode(data + 1);
-    size_t items_length = data[4];
-    data += 5; size -= 5;
-    _is_valid = items_length < size;
-
-    if (!_is_valid) {
-        return;
-    }
-
-    size -= items_length;
-    entries.clear();
-    while (items_length >= 2) {
+    descriptor_number = buf.getBits<uint8_t>(4);
+    last_descriptor_number = buf.getBits<uint8_t>(4);
+    buf.getLanguageCode(language_code);
+    buf.pushReadSizeFromLength(8); // start length_of_items
+    while (buf.canRead()) {
         Entry entry;
-        duck.decodeWithByteLength(entry.item_description, data, items_length);
-        duck.decodeWithByteLength(entry.item, data, items_length);
+        buf.getStringWithByteLength(entry.item_description);
+        buf.getStringWithByteLength(entry.item);
         entries.push_back(entry);
     }
-
-    if (!(_is_valid = items_length == 0 && size > 0)) {
-        return;
-    }
-
-    duck.decodeWithByteLength(text, data, size);
-    _is_valid = size == 0;
+    buf.popState(); // close length_of_items
+    buf.getStringWithByteLength(text);
 }
 
 

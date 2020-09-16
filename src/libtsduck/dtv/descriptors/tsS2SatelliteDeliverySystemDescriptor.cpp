@@ -29,11 +29,12 @@
 
 #include "tsS2SatelliteDeliverySystemDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsVariable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"S2_satellite_delivery_system_descriptor"
@@ -49,11 +50,11 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor() :
     AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S2, MY_XML_NAME),
-    scrambling_sequence_selector(false),
-    multiple_input_stream_flag(false),
     backwards_compatibility_indicator(false),
-    scrambling_sequence_index(0),
-    input_stream_identifier(0)
+    TS_GS_mode(0),
+    scrambling_sequence_index(),
+    input_stream_identifier(),
+    timeslice_number()
 {
 }
 
@@ -65,11 +66,11 @@ ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor(Duc
 
 void ts::S2SatelliteDeliverySystemDescriptor::clearContent()
 {
-    scrambling_sequence_selector = false;
-    multiple_input_stream_flag = false;
     backwards_compatibility_indicator = false;
-    scrambling_sequence_index = 0;
-    input_stream_identifier = 0;
+    TS_GS_mode = 0;
+    scrambling_sequence_index.clear();
+    input_stream_identifier.clear();
+    timeslice_number.clear();
 }
 
 
@@ -77,20 +78,24 @@ void ts::S2SatelliteDeliverySystemDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::S2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8((scrambling_sequence_selector ? 0x80 : 0x00) |
-                     (multiple_input_stream_flag ? 0x40 : 0x00) |
-                     (backwards_compatibility_indicator ? 0x20 : 0x00) |
-                     0x1F);
-    if (scrambling_sequence_selector) {
-        bbp->appendUInt24(0x00FC0000 | scrambling_sequence_index);
+    buf.putBit(scrambling_sequence_index.set());
+    buf.putBit(input_stream_identifier.set());
+    buf.putBit(backwards_compatibility_indicator);
+    buf.putBit(!timeslice_number.set());
+    buf.putBits(0xFF, 2);
+    buf.putBits(TS_GS_mode, 2);
+    if (scrambling_sequence_index.set()) {
+        buf.putBits(0xFF, 6);
+        buf.putBits(scrambling_sequence_index.value(), 18);
     }
-    if (multiple_input_stream_flag) {
-        bbp->appendUInt8(input_stream_identifier);
+    if (input_stream_identifier.set()) {
+        buf.putUInt8(input_stream_identifier.value());
     }
-    serializeEnd(desc, bbp);
+    if (timeslice_number.set()) {
+        buf.putUInt8(timeslice_number.value());
+    }
 }
 
 
@@ -98,38 +103,25 @@ void ts::S2SatelliteDeliverySystemDescriptor::serialize(DuckContext& duck, Descr
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::S2SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 1)) {
-        return;
-    }
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    scrambling_sequence_selector = (data[0] & 0x80) != 0;
-    multiple_input_stream_flag = (data[0] & 0x40) != 0;
-    backwards_compatibility_indicator = (data[0] & 0x20) != 0;
-    data += 1; size -= 1;
+    const bool scrambling_sequence_selector = buf.getBit() != 0;
+    const bool multiple_input_stream_flag = buf.getBit() != 0;
+    backwards_compatibility_indicator = buf.getBit() != 0;
+    const bool not_timeslice_flag = buf.getBit() != 0;
+    buf.skipBits(2);
+    TS_GS_mode = buf.getBits<uint8_t>(2);
 
     if (scrambling_sequence_selector) {
-        _is_valid = size >= 3;
-        if (!_is_valid) {
-            return;
-        }
-        scrambling_sequence_index = GetUInt24(data) & 0x0003FFFF;
-        data += 3; size -= 3;
+        buf.skipBits(6);
+        scrambling_sequence_index = buf.getBits<uint32_t>(18);
     }
     if (multiple_input_stream_flag) {
-        _is_valid = size >= 1;
-        if (!_is_valid) {
-            return;
-        }
-        input_stream_identifier = GetUInt8(data);
-        data += 1; size -= 1;
+        input_stream_identifier = buf.getUInt8();
     }
-
-    _is_valid = size == 0;
+    if (!not_timeslice_flag) {
+        timeslice_number = buf.getUInt8();
+    }
 }
 
 
@@ -137,32 +129,27 @@ void ts::S2SatelliteDeliverySystemDescriptor::deserialize(DuckContext& duck, con
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
+    if (buf.canReadBytes(1)) {
+        const bool scrambling_sequence_selector = buf.getBit() != 0;
+        const bool multiple_input_stream_flag = buf.getBit() != 0;
+        disp << margin << UString::Format(u"Backward compatibility: %s", {buf.getBit() != 0}) << std::endl;
+        const bool not_timeslice_flag = buf.getBit() != 0;
+        buf.skipBits(2);
+        disp << margin << "TS/GS mode: " << NameFromSection(u"TSGSS2Mode", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
 
-    if (size >= 1) {
-        const bool scrambling_sequence_selector = (data[0] & 0x80) != 0;
-        const bool multiple_input_stream_flag = (data[0] & 0x40) != 0;
-        const bool backwards_compatibility_indicator = (data[0] & 0x20) != 0;
-        data += 1; size -= 1;
-
-        disp << margin << "Scrambling sequence: " << UString::TrueFalse(scrambling_sequence_selector)
-             << ", multiple input stream: " << UString::TrueFalse(multiple_input_stream_flag)
-             << ", backwards compatibility: " << UString::TrueFalse(backwards_compatibility_indicator)
-             << std::endl;
-
-        if (scrambling_sequence_selector && size >= 3) {
-            disp << margin << UString::Format(u"Scrambling sequence index: 0x%05X", {GetUInt24(data) & 0x0003FFFF}) << std::endl;
-            data += 3; size -= 3;
+        if (scrambling_sequence_selector && buf.canReadBytes(3)) {
+            buf.skipBits(6);
+            disp << margin << UString::Format(u"Scrambling sequence index: 0x%05X", {buf.getBits<uint32_t>(18)}) << std::endl;
         }
-        if (multiple_input_stream_flag && size >= 1) {
-            disp << margin << UString::Format(u"Input stream identifier: 0x%X", {data[0]}) << std::endl;
-            data += 1; size -= 1;
+        if (multiple_input_stream_flag && buf.canReadBytes(1)) {
+            disp << margin << UString::Format(u"Input stream identifier: 0x%X", {buf.getUInt8()}) << std::endl;
+        }
+        if (!not_timeslice_flag && buf.canReadBytes(1)) {
+            disp << margin << UString::Format(u"Time slice number: 0x%X", {buf.getUInt8()}) << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -172,13 +159,15 @@ void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
 
 void ts::S2SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setBoolAttribute(u"backwards_compatibility", backwards_compatibility_indicator);
-    if (scrambling_sequence_selector) {
-        root->setIntAttribute(u"scrambling_sequence_index", scrambling_sequence_index, true);
+    if (backwards_compatibility_indicator) {
+        root->setBoolAttribute(u"backwards_compatibility", backwards_compatibility_indicator);
     }
-    if (multiple_input_stream_flag) {
-        root->setIntAttribute(u"input_stream_identifier", input_stream_identifier, true);
+    if (TS_GS_mode != 3) {
+        root->setIntAttribute(u"TS_GS_mode", TS_GS_mode);
     }
+    root->setOptionalIntAttribute(u"scrambling_sequence_index", scrambling_sequence_index, true);
+    root->setOptionalIntAttribute(u"input_stream_identifier", input_stream_identifier, true);
+    root->setOptionalIntAttribute(u"timeslice_number", timeslice_number, true);
 }
 
 
@@ -188,21 +177,9 @@ void ts::S2SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::E
 
 bool ts::S2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    Variable<uint32_t> scrambling;
-    Variable<uint8_t> stream;
-
-    bool ok =
-        element->getBoolAttribute(backwards_compatibility_indicator, u"backwards_compatibility", true) &&
-        element->getOptionalIntAttribute<uint32_t>(scrambling, u"scrambling_sequence_index", 0x00000000, 0x0003FFFF) &&
-        element->getOptionalIntAttribute<uint8_t>(stream, u"input_stream_identifier");
-
-    if (scrambling.set()) {
-        scrambling_sequence_selector = true;
-        scrambling_sequence_index = scrambling.value();
-    }
-    if (stream.set()) {
-        multiple_input_stream_flag = true;
-        input_stream_identifier = stream.value();
-    }
-    return ok;
+    return element->getBoolAttribute(backwards_compatibility_indicator, u"backwards_compatibility", false, false) &&
+           element->getIntAttribute<uint8_t>(TS_GS_mode, u"TS_GS_mode", false, 3, 0, 3) &&
+           element->getOptionalIntAttribute<uint32_t>(scrambling_sequence_index, u"scrambling_sequence_index", 0x00000000, 0x0003FFFF) &&
+           element->getOptionalIntAttribute<uint8_t>(input_stream_identifier, u"input_stream_identifier") &&
+           element->getOptionalIntAttribute<uint8_t>(timeslice_number, u"timeslice_number");
 }

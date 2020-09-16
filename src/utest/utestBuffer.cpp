@@ -82,6 +82,7 @@ public:
     void testGetInt48LE();
     void testGetInt64BE();
     void testGetInt64LE();
+    void testGetBitsSigned();
     void testPutBCD();
     void testGetBCD();
     void testGetUTF8();
@@ -136,6 +137,7 @@ public:
     TSUNIT_TEST(testGetInt48LE);
     TSUNIT_TEST(testGetInt64BE);
     TSUNIT_TEST(testGetInt64LE);
+    TSUNIT_TEST(testGetBitsSigned);
     TSUNIT_TEST(testPutBCD);
     TSUNIT_TEST(testGetBCD);
     TSUNIT_TEST(testGetUTF8);
@@ -1123,46 +1125,91 @@ void BufferTest::testGetInt64LE()
     TSUNIT_EQUAL(TS_CONST64(-3183251291827679796), b.getInt64()); // 0xD3D2D1D0CFCECDCC
 }
 
-void BufferTest::testPutBCD()
+void BufferTest::testGetBitsSigned()
 {
     uint8_t mem[10];
     ::memset(mem, 0, sizeof(mem));
     ts::Buffer b(mem, sizeof(mem));
+
+    b.putBits(2, 3);
+    TSUNIT_EQUAL(0, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(3, b.currentWriteBitOffset());
+    TSUNIT_EQUAL(0x40, mem[0]);
+
+    b.putBits(-333, 11);  // -333 = 0xFEB3 = 110 1011 0011 (bin)
+    TSUNIT_EQUAL(1, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(14, b.currentWriteBitOffset());
+    TSUNIT_EQUAL(0x5A, mem[0]);  // 0101 1010 1100 11..
+    TSUNIT_EQUAL(0xCC, mem[1]);
+
+    b.putBits(-1, 2);
+    TSUNIT_EQUAL(2, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(16, b.currentWriteBitOffset());
+    TSUNIT_ASSERT(b.writeIsByteAligned());
+    TSUNIT_EQUAL(0x5A, mem[0]);
+    TSUNIT_EQUAL(0xCF, mem[1]);
+
+    TSUNIT_EQUAL(2, b.getBits<int>(3));
+    TSUNIT_EQUAL(-333, b.getBits<int>(11));
+    TSUNIT_EQUAL(-1, b.getBits<int>(2));
+}
+
+
+void BufferTest::testPutBCD()
+{
+    uint8_t mem[10];
+    ::memset(mem, 0xFF, sizeof(mem));
+    ts::Buffer b(mem, sizeof(mem));
     TSUNIT_ASSERT(!b.readOnly());
     TSUNIT_EQUAL(0, b.currentWriteByteOffset());
 
-    TSUNIT_ASSERT(b.putBCD(45));
+    TSUNIT_ASSERT(b.putBCD(45, 2));
     TSUNIT_EQUAL(0x45, mem[0]);
     TSUNIT_ASSERT(!b.writeError());
     TSUNIT_EQUAL(1, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(8, b.currentWriteBitOffset());
 
-    TSUNIT_ASSERT(b.putBCD(91));
-    TSUNIT_EQUAL(0x91, mem[1]);
+    TSUNIT_ASSERT(b.putBCD(912, 5));
+    TSUNIT_EQUAL(0x00, mem[1]);
+    TSUNIT_EQUAL(0x91, mem[2]);
+    TSUNIT_EQUAL(0x2F, mem[3]);
     TSUNIT_ASSERT(!b.writeError());
-    TSUNIT_EQUAL(2, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(3, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(28, b.currentWriteBitOffset());
 
-    TSUNIT_ASSERT(!b.putBCD(125));
-    TSUNIT_EQUAL(0x00, mem[2]);
-    TSUNIT_ASSERT(b.writeError());
-    TSUNIT_EQUAL(2, b.currentWriteByteOffset());
+    TSUNIT_ASSERT(b.putBCD(358, 3));
+    TSUNIT_EQUAL(0x23, mem[3]);
+    TSUNIT_EQUAL(0x58, mem[4]);
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(5, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(40, b.currentWriteBitOffset());
 }
 
 void BufferTest::testGetBCD()
 {
-    ts::Buffer b(_bytes1 + 0x28, 2);
+    ts::Buffer b(_bytes1 + 0x25, 10);
     TSUNIT_ASSERT(b.readOnly());
 
-    TSUNIT_EQUAL(28, b.getBCD());
+    TSUNIT_EQUAL(25, b.getBCD<uint32_t>(2));
     TSUNIT_ASSERT(!b.readError());
     TSUNIT_ASSERT(!b.endOfRead());
+    TSUNIT_EQUAL(1, b.currentReadByteOffset());
+    TSUNIT_EQUAL(8, b.currentReadBitOffset());
 
-    TSUNIT_EQUAL(29, b.getBCD());
+    TSUNIT_EQUAL(26272, b.getBCD<uint32_t>(5));
     TSUNIT_ASSERT(!b.readError());
-    TSUNIT_ASSERT(b.endOfRead());
+    TSUNIT_EQUAL(3, b.currentReadByteOffset());
+    TSUNIT_EQUAL(28, b.currentReadBitOffset());
 
-    TSUNIT_EQUAL(0xFF, b.getBCD());
+    TSUNIT_EQUAL(8, b.getBCD<int>(1));
+    TSUNIT_ASSERT(!b.readError());
+    TSUNIT_EQUAL(4, b.currentReadByteOffset());
+    TSUNIT_EQUAL(32, b.currentReadBitOffset());
+
+    TSUNIT_EQUAL(0x12345678, b.getBCD<uint32_t>(4, 0x12345678));
     TSUNIT_ASSERT(b.readError());
-    TSUNIT_ASSERT(b.endOfRead());
+    TSUNIT_EQUAL(6, b.currentReadByteOffset());
+    TSUNIT_EQUAL(48, b.currentReadBitOffset());
 }
 
 void BufferTest::testGetUTF8()
@@ -1199,7 +1246,7 @@ void BufferTest::testGetUTF8WithLength()
     TSUNIT_ASSERT(!b.readError());
     TSUNIT_EQUAL(4, b.currentReadByteOffset());
 
-    TSUNIT_EQUAL(0x0F, b.getBits<int>(4));
+    TSUNIT_EQUAL(0x0F, b.getBits<uint8_t>(4));
     TSUNIT_EQUAL(u"de", b.getUTF8WithLength(12));
     TSUNIT_ASSERT(!b.readError());
     TSUNIT_EQUAL(8, b.currentReadByteOffset());

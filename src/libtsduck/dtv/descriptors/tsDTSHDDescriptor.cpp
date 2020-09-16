@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -110,68 +111,59 @@ ts::DID ts::DTSHDDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DTSHDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DTSHDDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    bbp->appendUInt8((substream_core.set() ? 0x80 : 0x00) |
-                     (substream_0.set() ? 0x40 : 0x00) |
-                     (substream_1.set() ? 0x20 : 0x00) |
-                     (substream_2.set() ? 0x10 : 0x00) |
-                     (substream_3.set() ? 0x08 : 0x00) |
-                     0x07);
-    SerializeSubstreamInfo(substream_core, *bbp);
-    SerializeSubstreamInfo(substream_0, *bbp);
-    SerializeSubstreamInfo(substream_1, *bbp);
-    SerializeSubstreamInfo(substream_2, *bbp);
-    SerializeSubstreamInfo(substream_3, *bbp);
-    bbp->append(additional_info);
-    serializeEnd(desc, bbp);
+    buf.putBit(substream_core.set());
+    buf.putBit(substream_0.set());
+    buf.putBit(substream_1.set());
+    buf.putBit(substream_2.set());
+    buf.putBit(substream_3.set());
+    buf.putBits(0xFF, 3);
+
+    SerializeSubstreamInfo(substream_core, buf);
+    SerializeSubstreamInfo(substream_0, buf);
+    SerializeSubstreamInfo(substream_1, buf);
+    SerializeSubstreamInfo(substream_2, buf);
+    SerializeSubstreamInfo(substream_3, buf);
+    buf.putBytes(additional_info);
 }
 
-void ts::DTSHDDescriptor::SerializeSubstreamInfo(const Variable<SubstreamInfo>& info, ByteBlock& bb)
+void ts::DTSHDDescriptor::SerializeSubstreamInfo(const Variable<SubstreamInfo>& info, PSIBuffer& buf)
 {
     if (info.set()) {
         const SubstreamInfo& si(info.value());
-
-        // Place-holder for length field.
-        const size_t len_index = bb.size();
-        bb.enlarge(1);
+        buf.pushWriteSequenceWithLeadingLength(8);  // start write sequence
 
         // There must be 1 to 8 asset_info.
         if (si.asset_info.empty() || si.asset_info.size() > 8) {
-            // Invalid number of asset_info, enlarge the data too much
-            // to ensure that the binary descriptor will be invalidated.
-            bb.enlarge(MAX_DESCRIPTOR_SIZE);
+            buf.setUserError();
         }
         else {
             // Serialize content.
-            bb.appendUInt8(uint8_t((si.asset_info.size() - 1) << 5) | (si.channel_count & 0x1F));
-            bb.appendUInt8((si.LFE ? 0x80 : 0x00) |
-                           uint8_t((si.sampling_frequency & 0x0F) << 3) |
-                           (si.sample_resolution ? 0x07 : 0x03));
-
+            buf.putBits(si.asset_info.size() - 1, 3);
+            buf.putBits(si.channel_count, 5);
+            buf.putBit(si.LFE);
+            buf.putBits(si.sampling_frequency, 4);
+            buf.putBit(si.sample_resolution);
+            buf.putBits(0xFF, 2);
             for (size_t i = 0; i < si.asset_info.size(); ++i) {
                 const AssetInfo& ai(si.asset_info[i]);
-                const bool language_code_flag = ai.ISO_639_language_code.set() && ai.ISO_639_language_code.value().size() == 3;
-                bb.appendUInt8(uint8_t(ai.asset_construction << 3) |
-                               (ai.vbr ? 0x04 : 0x00) |
-                               (ai.post_encode_br_scaling ? 0x02 : 0x00) |
-                               (ai.component_type.set() ? 0x01 : 0x00));
-                bb.appendUInt16((language_code_flag ? 0x8000 : 0x0000) |
-                                uint16_t((ai.bit_rate & 0x1FFF) << 2) |
-                                0x0003);
+                buf.putBits(ai.asset_construction, 5);
+                buf.putBit(ai.vbr);
+                buf.putBit(ai.post_encode_br_scaling);
+                buf.putBit(ai.component_type.set());
+                buf.putBit(ai.ISO_639_language_code.set());
+                buf.putBits(ai.bit_rate, 13);
+                buf.putBits(0xFF, 2);
                 if (ai.component_type.set()) {
-                    bb.appendUInt8(ai.component_type.value());
+                    buf.putUInt8(ai.component_type.value());
                 }
-                if (language_code_flag) {
-                    SerializeLanguageCode(bb, ai.ISO_639_language_code.value());
+                if (ai.ISO_639_language_code.set()) {
+                    buf.putLanguageCode(ai.ISO_639_language_code.value());
                 }
             }
         }
-
-        // Update length field.
-        bb[len_index] = uint8_t(bb.size() - len_index - 1);
+        buf.popState();  // end write sequence
     }
 }
 
@@ -180,96 +172,64 @@ void ts::DTSHDDescriptor::SerializeSubstreamInfo(const Variable<SubstreamInfo>& 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DTSHDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DTSHDDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    clear();
+    const bool substream_core_flag = buf.getBit() != 0;
+    const bool substream_0_flag = buf.getBit() != 0;
+    const bool substream_1_flag = buf.getBit() != 0;
+    const bool substream_2_flag = buf.getBit() != 0;
+    const bool substream_3_flag = buf.getBit() != 0;
+    buf.skipBits(3);
 
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2 && data[0] == MY_EDID;
-
-    if (_is_valid) {
-        const uint8_t flags = data[1];
-        data += 2; size -= 2;
-        _is_valid =
-            DeserializeSubstreamInfo(substream_core, (flags & 0x80) != 0, data, size) &&
-            DeserializeSubstreamInfo(substream_0, (flags & 0x40) != 0, data, size) &&
-            DeserializeSubstreamInfo(substream_1, (flags & 0x20) != 0, data, size) &&
-            DeserializeSubstreamInfo(substream_2, (flags & 0x10) != 0, data, size) &&
-            DeserializeSubstreamInfo(substream_3, (flags & 0x08) != 0, data, size);
-        if (_is_valid) {
-            additional_info.copy(data, size);
-        }
-    }
+    DeserializeSubstreamInfo(substream_core, substream_core_flag, buf);
+    DeserializeSubstreamInfo(substream_0, substream_0_flag, buf);
+    DeserializeSubstreamInfo(substream_1, substream_1_flag, buf);
+    DeserializeSubstreamInfo(substream_2, substream_2_flag, buf);
+    DeserializeSubstreamInfo(substream_3, substream_3_flag, buf);
+    buf.getBytes(additional_info);
 }
 
-bool ts::DTSHDDescriptor::DeserializeSubstreamInfo(Variable<SubstreamInfo>& info, bool present, const uint8_t*& data, size_t& size)
+void ts::DTSHDDescriptor::DeserializeSubstreamInfo(Variable<SubstreamInfo>& info, bool present, PSIBuffer& buf)
 {
-    if (!present) {
-        // Substream info not present
-        info.clear();
-        return true;
-    }
-    else {
-        // Substream info is present, deserialize it.
+    if (present) {
         info = SubstreamInfo();
         SubstreamInfo& si(info.value());
+        buf.pushReadSizeFromLength(8); // start read sequence
 
-        // Check required size.
-        if (size < 3 || size < 1 + size_t(data[0]) || data[0] < 2) {
-            return false;
-        }
-
-        // Immediately update size, use length to check the deserialization.
-        size_t length = data[0] - 2;
-        size_t num_assets = size_t((data[1] >> 5) & 0x07) + 1;
-        si.channel_count = data[1] & 0x1F;
-        si.LFE = (data[2] & 0x80) != 0;
-        si.sampling_frequency = (data[2] >> 3) & 0x0F;
-        si.sample_resolution = (data[2] & 0x40) != 0;
-        data += 3;
-        size -= length + 3;
+        size_t num_assets = buf.getBits<uint8_t>(3);
+        si.channel_count = buf.getBits<uint8_t>(5);
+        si.LFE = buf.getBit() != 0;
+        si.sampling_frequency = buf.getBits<uint8_t>(4);
+        si.sample_resolution = buf.getBit() != 0;
+        buf.skipBits(2);
 
         // Deserialize all asset info.
-        while (num_assets > 0 && length >= 3) {
-            --num_assets;
+        while (buf.canRead()) {
 
             // Add a new asset info.
             si.asset_info.resize(si.asset_info.size() + 1);
             AssetInfo& ai(si.asset_info.back());
 
-            ai.asset_construction = (data[0] >> 3) & 0x1F;
-            ai.vbr = (data[0] & 0x04) != 0;
-            ai.post_encode_br_scaling = (data[0] & 0x02) != 0;
-            const bool component_type_flag = (data[0] & 0x01) != 0;
-            const bool language_code_flag = (data[1] & 0x80) != 0;
-            ai.bit_rate = (GetUInt16(data + 1) >> 2) & 0x1FFF;
-            data += 3; length -= 3;
-
+            ai.asset_construction = buf.getBits<uint8_t>(5);
+            ai.vbr = buf.getBit() != 0;
+            ai.post_encode_br_scaling = buf.getBit() != 0;
+            const bool component_type_flag = buf.getBit() != 0;
+            const bool language_code_flag = buf.getBit() != 0;
+            ai.bit_rate = buf.getBits<uint16_t>(13);
+            buf.skipBits(2);
             if (component_type_flag) {
-                if (length < 1) {
-                    return false;
-                }
-                else {
-                    ai.component_type = data[0];
-                    data++; length--;
-                }
+                ai.component_type = buf.getUInt8();
             }
-
             if (language_code_flag) {
-                if (length < 3) {
-                    return false;
-                }
-                else {
-                    ai.ISO_639_language_code = DeserializeLanguageCode(data);
-                    data += 3; length -= 3;
-                }
+                ai.ISO_639_language_code = buf.getLanguageCode();
             }
         }
 
-        // Check that everything was deserialized.
-        return num_assets == 0 && length == 0;
+        // Check that the number of assets matches
+        if (si.asset_info.size() != num_assets + 1) {
+            buf.setUserError();
+        }
+        buf.popState();  // end read sequence
     }
 }
 

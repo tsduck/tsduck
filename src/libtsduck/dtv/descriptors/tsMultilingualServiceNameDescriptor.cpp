@@ -93,7 +93,7 @@ void ts::MultilingualServiceNameDescriptor::serializePayload(PSIBuffer& buf) con
 
 void ts::MultilingualServiceNameDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Entry e;
         buf.getLanguageCode(e.language);
         buf.getStringWithByteLength(e.service_provider_name);
@@ -109,12 +109,11 @@ void ts::MultilingualServiceNameDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::MultilingualServiceNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (!buf.error() && buf.remainingReadBytes() >= 4) {
+    while (buf.canReadBytes(4)) {
         disp << margin << "Language: " << buf.getLanguageCode();
         disp << ", provider: \"" << buf.getStringWithByteLength() << "\"";
         disp << ", service: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

@@ -117,7 +117,7 @@ void ts::BIT::deserializePayload(PSIBuffer& buf, const Section& section)
     buf.getDescriptorListWithLength(descs);
 
     // Loop across all broadcasters
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Broadcaster& bc(broadcasters[buf.getUInt8()]);
         buf.getDescriptorListWithLength(bc.descs);
     }
@@ -181,22 +181,17 @@ void ts::BIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 {
     disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
-    if (buf.endOfRead()) {
-        buf.setUserError();
-    }
-    else {
+    if (buf.canRead()) {
         buf.skipBits(3);
         disp << margin << UString::Format(u"Broadcast view property: %s", {buf.getBit() != 0}) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin, u"Common descriptors:");
     }
 
     // Loop across all broadcasters
-    while (!buf.error() && buf.remainingReadBytes() >= 3) {
+    while (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"Broadcaster id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

@@ -78,7 +78,7 @@ void ts::ATSCStuffingDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::ATSCStuffingDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    buf.getByteBlock(stuffing, buf.remainingReadBytes());
+    buf.getBytes(stuffing);
 }
 
 

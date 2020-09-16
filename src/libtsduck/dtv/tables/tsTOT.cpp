@@ -215,12 +215,11 @@ void ts::TOT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::TOT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    if (buf.remainingReadBytes() >= 5) {
+    if (buf.canReadBytes(5)) {
         disp << margin << "UTC time: " << buf.getFullMJD().format(Time::DATETIME) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
         disp.displayCRC32(section, buf, margin);
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

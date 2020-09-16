@@ -180,7 +180,7 @@ void ts::UNT::deserializePayload(PSIBuffer& buf, const Section& section)
     buf.getDescriptorListWithLength(descs);
 
     // Get descriptions of sets of devices.
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
 
         // Create a new entry in the list of devices.
         Devices& devs(devices.newEntry());
@@ -191,7 +191,7 @@ void ts::UNT::deserializePayload(PSIBuffer& buf, const Section& section)
         size_t descriptorCount = buf.getUInt16();
 
         // Get outer descriptor loop.
-        while (!buf.error() && !buf.endOfRead() && descriptorCount-- > 0) {
+        while (buf.canRead() && descriptorCount-- > 0) {
             CompatibilityDescriptor cdesc;
             cdesc.descriptorType = buf.getUInt8();
 
@@ -219,7 +219,7 @@ void ts::UNT::deserializePayload(PSIBuffer& buf, const Section& section)
         buf.pushReadSizeFromLength(16);
 
         // Get platform descriptions.
-        while (!buf.error() && !buf.endOfRead()) {
+        while (buf.canRead()) {
             Platform& platform(devs.platforms.newEntry());
             buf.getDescriptorListWithLength(platform.target_descs);
             buf.getDescriptorListWithLength(platform.operational_descs);
@@ -326,7 +326,7 @@ void ts::UNT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    if (buf.remainingReadBytes() < 4) {
+    if (!buf.canReadBytes(4)) {
         buf.setUserError();
     }
     else {
@@ -351,7 +351,7 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     }
 
     // Loop on sets of devices.
-    for (size_t dev_index = 0; !buf.error() && !buf.endOfRead(); ++dev_index) {
+    for (size_t dev_index = 0; buf.canRead(); ++dev_index) {
         disp << margin << "- Devices " << dev_index << ":" << std::endl;
 
         // Display list of compatibility descriptor.
@@ -361,7 +361,7 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << margin << UString::Format(u"  Compatibility descriptor: %d bytes, %d descriptors", {compatibilityDescriptorLength, descriptorCount}) << std::endl;
 
         // Display outer descriptor loop.
-        for (size_t desc_index = 0; !buf.error() && !buf.endOfRead() && descriptorCount-- > 0 && buf.remainingReadBytes() >= 11; ++desc_index) {
+        for (size_t desc_index = 0; buf.canRead() && descriptorCount-- > 0 && buf.canReadBytes(11); ++desc_index) {
             disp << margin
                  << "  - Descriptor " << desc_index
                  << ", type " << NameFromSection(u"CompatibilityDescriptorType", buf.getUInt8(), names::HEXA_FIRST)
@@ -378,7 +378,7 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             disp << margin << UString::Format(u"    Sub-descriptor count: %d", {subDescriptorCount}) << std::endl;
 
             // Display sub-descriptors. They are not real descriptors, so we display them in hexa.
-            for (size_t subdesc_index = 0; !buf.error() && !buf.endOfRead() && subdesc_index < subDescriptorCount; ++subdesc_index) {
+            for (size_t subdesc_index = 0; buf.canRead() && subdesc_index < subDescriptorCount; ++subdesc_index) {
                 disp << margin << UString::Format(u"    - Sub-descriptor %d, type: 0x%X (%<d)", {subdesc_index, buf.getUInt8()});
                 size_t length = buf.getUInt8();
                 disp << UString::Format(u", %d bytes", {length}) << std::endl;
@@ -390,30 +390,28 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             }
 
             // Close current compatibility descriptor.
-            disp.displayExtraData(buf, margin + u"    ");
+            disp.displayPrivateData(u"Extraneous data in compatibility descriptor", buf, NPOS, margin + u"    ");
             buf.popState();
         }
 
         // Close compatibilityDescriptor() list of compatibility descriptors.
-        disp.displayExtraData(buf, margin + u"  ");
+        disp.displayPrivateData(u"Extraneous data in compatibility descriptors list", buf, NPOS, margin + u"  ");
         buf.popState();
 
         // Open platform loop using 16-bit length field.
         buf.pushReadSizeFromLength(16);
 
         // Get platform descriptions.
-        for (size_t platform_index = 0; !buf.error() && !buf.endOfRead(); ++platform_index) {
+        for (size_t platform_index = 0; buf.canRead(); ++platform_index) {
             disp << margin << "  Platform " << platform_index << ":" << std::endl;
             disp.displayDescriptorListWithLength(section, buf, margin + u"    ", u"Target descriptors:", u"None");
             disp.displayDescriptorListWithLength(section, buf, margin + u"    ", u"Operational descriptors:", u"None");
         }
 
         // Close platform loop.
-        disp.displayExtraData(buf, margin + u"  ");
+        disp.displayPrivateData(u"Extraneous data in platform loop", buf, NPOS, margin + u"  ");
         buf.popState();
     }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

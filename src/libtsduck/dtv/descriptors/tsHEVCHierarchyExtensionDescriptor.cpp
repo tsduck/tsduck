@@ -135,7 +135,7 @@ void ts::HEVCHierarchyExtensionDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::HEVCHierarchyExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 6) {
+    if (buf.canReadBytes(6)) {
         const uint16_t bits = buf.getUInt16();
         disp << margin << UString::Format(u"Extension dimension bits: 0x%X", {bits}) << std::endl;
         for (size_t bit = 0; bit < 16; ++bit) {
@@ -152,12 +152,11 @@ void ts::HEVCHierarchyExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp
         disp << margin << UString::Format(u"Number of embedded layers: %d", {num_embedded_layers}) << std::endl;
         buf.skipBits(2);
         disp << margin << UString::Format(u"Hierarchy channel: 0x%X (%<d)", {buf.getBits<uint8_t>(6)}) << std::endl;
-        for (size_t i = 0; i < num_embedded_layers && !buf.error() && !buf.endOfRead(); ++i) {
+        for (size_t i = 0; i < num_embedded_layers && buf.canReadBytes(1); ++i) {
             buf.skipBits(2);
             disp << margin << UString::Format(u"Hierarchy embeddedlayer index[%d]: 0x%X (%<d)", {i, buf.getBits<uint8_t>(6)}) << std::endl;
         }
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

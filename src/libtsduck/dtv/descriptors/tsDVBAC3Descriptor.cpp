@@ -155,7 +155,7 @@ void ts::DVBAC3Descriptor::deserializePayload(PSIBuffer& buf)
     if (asvc_flag) {
         asvc = buf.getUInt8();
     }
-    buf.getByteBlock(additional_info, buf.remainingReadBytes());
+    buf.getBytes(additional_info);
 }
 
 

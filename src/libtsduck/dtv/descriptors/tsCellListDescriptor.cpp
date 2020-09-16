@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -89,23 +90,24 @@ ts::CellListDescriptor::Subcell::Subcell() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CellListDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CellListDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
     for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
-        bbp->appendUInt16(it1->cell_id);
-        bbp->appendInt16(it1->cell_latitude);
-        bbp->appendInt16(it1->cell_longitude);
-        bbp->appendUInt24((uint32_t(it1->cell_extent_of_latitude & 0x0FFF) << 12) | (it1->cell_extent_of_longitude & 0x0FFF));
-        bbp->appendUInt8(uint8_t(it1->subcells.size() * 8));
+        buf.putUInt16(it1->cell_id);
+        buf.putInt16(it1->cell_latitude);
+        buf.putInt16(it1->cell_longitude);
+        buf.putBits(it1->cell_extent_of_latitude, 12);
+        buf.putBits(it1->cell_extent_of_longitude, 12);
+        buf.pushWriteSequenceWithLeadingLength(8); // start write sequence
         for (auto it2 = it1->subcells.begin(); it2 != it1->subcells.end(); ++it2) {
-            bbp->appendUInt8(it2->cell_id_extension);
-            bbp->appendInt16(it2->subcell_latitude);
-            bbp->appendInt16(it2->subcell_longitude);
-            bbp->appendUInt24((uint32_t(it2->subcell_extent_of_latitude & 0x0FFF) << 12) | (it2->subcell_extent_of_longitude & 0x0FFF));
+            buf.putUInt8(it2->cell_id_extension);
+            buf.putInt16(it2->subcell_latitude);
+            buf.putInt16(it2->subcell_longitude);
+            buf.putBits(it2->subcell_extent_of_latitude, 12);
+            buf.putBits(it2->subcell_extent_of_longitude, 12);
         }
+        buf.popState(); // end write sequence
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -113,42 +115,28 @@ void ts::CellListDescriptor::serialize(DuckContext& duck, Descriptor& desc) cons
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CellListDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::CellListDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag();
-    cells.clear();
-
-    while (_is_valid && size >= 10) {
+    while (buf.canRead()) {
         Cell cell;
-        cell.cell_id = GetUInt16(data);
-        cell.cell_latitude = GetInt16(data + 2);
-        cell.cell_longitude = GetInt16(data + 4);
-        uint32_t ext = GetUInt24(data + 6);
-        cell.cell_extent_of_latitude = uint16_t(ext >> 12) & 0x0FFF;
-        cell.cell_extent_of_longitude = uint16_t(ext) & 0x0FFF;
-        size_t len = data[9];
-        data += 10; size -= 10;
-
-        while (size >= len && len >= 8) {
+        cell.cell_id = buf.getUInt16();
+        cell.cell_latitude = buf.getInt16();
+        cell.cell_longitude = buf.getInt16();
+        cell.cell_extent_of_latitude = buf.getBits<uint16_t>(12);
+        cell.cell_extent_of_longitude = buf.getBits<uint16_t>(12);
+        buf.pushReadSizeFromLength(8); // start read sequence
+        while (buf.canRead()) {
             Subcell sub;
-            sub.cell_id_extension = data[0];
-            sub.subcell_latitude = GetInt16(data + 1);
-            sub.subcell_longitude = GetInt16(data + 3);
-            ext = GetUInt24(data + 5);
-            sub.subcell_extent_of_latitude = uint16_t(ext >> 12) & 0x0FFF;
-            sub.subcell_extent_of_longitude = uint16_t(ext) & 0x0FFF;
+            sub.cell_id_extension = buf.getUInt8();
+            sub.subcell_latitude = buf.getInt16();
+            sub.subcell_longitude = buf.getInt16();
+            sub.subcell_extent_of_latitude = buf.getBits<uint16_t>(12);
+            sub.subcell_extent_of_longitude = buf.getBits<uint16_t>(12);
             cell.subcells.push_back(sub);
-            data += 8; size -= 8; len -= 8;
         }
-
-        _is_valid = len == 0;
+        buf.popState(); // end read sequence
         cells.push_back(cell);
     }
-
-    // Make sure there is no truncated trailing data.
-    _is_valid = _is_valid && size == 0;
 }
 
 

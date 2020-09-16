@@ -106,7 +106,7 @@ void ts::ISO639LanguageDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::ISO639LanguageDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         const UString lang(buf.getLanguageCode());
         entries.push_back(Entry(lang, buf.getUInt8()));
     }
@@ -119,11 +119,10 @@ void ts::ISO639LanguageDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (buf.remainingReadBytes() >= 4) {
+    while (buf.canReadBytes(4)) {
         disp << margin << "Language: " << buf.getLanguageCode();
         disp << ", Type: " << names::AudioType(buf.getUInt8(), names::FIRST) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 
@@ -133,7 +132,7 @@ void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
 
 void ts::ISO639LanguageDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"language");
         e->setAttribute(u"code", it->language_code);
         e->setIntAttribute(u"audio_type", it->audio_type, true);

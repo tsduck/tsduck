@@ -157,7 +157,8 @@ namespace ts {
         //! @a buf. If any kind of error is reported in the buffer, the serialization is considered as
         //! invalid and the binary descriptor is invalid. Such errors include write error, such as attempting
         //! to write more data than allowed in a binary descriptor or any user-generated error using
-        //! ts::Buffer::setUserError().
+        //! ts::Buffer::setUserError(). For "extended descriptors", the buffer starts after the "extension tag"
+        //! which was already written by the caller.
         //!
         virtual void serializePayload(PSIBuffer& buf) const;
 
@@ -173,6 +174,7 @@ namespace ts {
         //! @param [in,out] buf Deserialization buffer. The subclass shall read the descriptor payload from
         //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
         //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+        //! For "extended descriptors", the buffer starts after the "extension tag".
         //!
         virtual void deserializePayload(PSIBuffer& buf);
 

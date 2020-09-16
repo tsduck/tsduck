@@ -150,24 +150,24 @@ void ts::MetadataDescriptor::deserializePayload(PSIBuffer& buf)
     buf.skipBits(4);
     if (DSMCC_flag) {
         const size_t length = buf.getUInt8();
-        buf.getByteBlock(service_identification, length);
+        buf.getBytes(service_identification, length);
     }
     if (decoder_config_flags == 1) {
         const size_t length = buf.getUInt8();
-        buf.getByteBlock(decoder_config, length);
+        buf.getBytes(decoder_config, length);
     }
     else if (decoder_config_flags == 3) {
         const size_t length = buf.getUInt8();
-        buf.getByteBlock(dec_config_identification, length);
+        buf.getBytes(dec_config_identification, length);
     }
     else if (decoder_config_flags == 4) {
         decoder_config_metadata_service_id = buf.getUInt8();
     }
     else if (decoder_config_flags == 5 || decoder_config_flags == 6) {
         const size_t length = buf.getUInt8();
-        buf.getByteBlock(reserved_data, length);
+        buf.getBytes(reserved_data, length);
     }
-    buf.getByteBlock(private_data, buf.remainingReadBytes());
+    buf.getBytes(private_data);
 }
 
 
@@ -177,7 +177,7 @@ void ts::MetadataDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::MetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() < 2) {
+    if (!buf.canReadBytes(2)) {
         buf.setUserError();
     }
     else {
@@ -188,7 +188,7 @@ void ts::MetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         }
     }
 
-    if (buf.remainingReadBytes() < 1) {
+    if (!buf.canReadBytes(1)) {
         buf.setUserError();
     }
     else {
@@ -199,7 +199,7 @@ void ts::MetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         }
     }
 
-    if (buf.remainingReadBytes() < 2) {
+    if (!buf.canReadBytes(2)) {
         buf.setUserError();
     }
     else {
@@ -227,9 +227,8 @@ void ts::MetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
             const size_t length = buf.getUInt8();
             disp.displayPrivateData(u"Reserved data", buf, length, margin);
         }
-        disp.displayPrivateData(u"Private data", buf, buf.remainingReadBytes(), margin);
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

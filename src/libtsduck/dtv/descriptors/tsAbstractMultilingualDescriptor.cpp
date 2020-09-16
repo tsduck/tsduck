@@ -79,7 +79,7 @@ void ts::AbstractMultilingualDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::AbstractMultilingualDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Entry e;
         buf.getLanguageCode(e.language);
         buf.getStringWithByteLength(e.name);
@@ -94,11 +94,10 @@ void ts::AbstractMultilingualDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (!buf.error() && buf.remainingReadBytes() >= 4) {
+    while (buf.canReadBytes(4)) {
         disp << margin << "Language: " << buf.getLanguageCode();
         disp << ", name: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 
@@ -108,7 +107,7 @@ void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& disp, 
 
 void ts::AbstractMultilingualDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"language");
         e->setAttribute(u"code", it->language);
         e->setAttribute(_xml_attribute, it->name);
