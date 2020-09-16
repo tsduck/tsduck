@@ -92,7 +92,7 @@ void ts::TargetIPSlashDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::TargetIPSlashDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Address addr;
         addr.IPv4_addr = IPAddress(buf.getUInt32());
         addr.IPv4_slash_mask = buf.getUInt8();
@@ -107,11 +107,10 @@ void ts::TargetIPSlashDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::TargetIPSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (buf.remainingReadBytes() >= 5) {
+    while (buf.canReadBytes(5)) {
         disp << margin << "Address/mask: " << IPAddress(buf.getUInt32());
         disp << "/" << int(buf.getUInt8()) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

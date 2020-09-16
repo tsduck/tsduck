@@ -189,7 +189,7 @@ void ts::SpliceInformationTable::deserializePayload(PSIBuffer& buf, const Sectio
             break;
         case SPLICE_PRIVATE_COMMAND:
             private_command.identifier = buf.getUInt32();
-            buf.getByteBlock(private_command.private_bytes, command_length - 4);
+            buf.getBytes(private_command.private_bytes, command_length - 4);
             break;
         default:
             // Invalid command.
@@ -378,10 +378,7 @@ bool ts::SpliceInformationTable::analyzeXML(DuckContext& duck, const xml::Elemen
 
 void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    if (buf.remainingReadBytes() < 15) {
-        buf.setUserError();
-    }
-    else {
+    if (buf.canReadBytes(15)) {
         disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()}) << std::endl;
         disp << margin << "Encryption: ";
         const uint8_t encrypted_packet = buf.getBit();
@@ -454,9 +451,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::S
             disp.displayDescriptorListWithLength(section, buf, margin, UString(), UString(), 16);
         }
     }
-
     disp.displayCRC32(section, buf, margin);
-    disp.displayExtraData(buf, margin);
 }
 
 

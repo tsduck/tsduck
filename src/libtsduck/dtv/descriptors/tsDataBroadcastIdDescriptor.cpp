@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -74,12 +75,10 @@ void ts::DataBroadcastIdDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DataBroadcastIdDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(data_broadcast_id);
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(data_broadcast_id);
+    buf.putBytes(private_data);
 }
 
 
@@ -87,16 +86,10 @@ void ts::DataBroadcastIdDescriptor::serialize(DuckContext& duck, Descriptor& des
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DataBroadcastIdDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 2;
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        data_broadcast_id = GetUInt16 (data);
-        private_data.copy (data + 2, size - 2);
-    }
+    data_broadcast_id = buf.getUInt16();
+    buf.getBytes(private_data);
 }
 
 

@@ -145,7 +145,7 @@ void ts::VirtualSegmentationDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::VirtualSegmentationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    if (!buf.endOfRead()) {
+    if (buf.canRead()) {
         size_t mdl = 0;
         const size_t num_partitions = buf.getBits<size_t>(3);
         const bool timescale_flag = buf.getBit() != 0;
@@ -155,7 +155,7 @@ void ts::VirtualSegmentationDescriptor::deserializePayload(PSIBuffer& buf)
             mdl = buf.getBits<size_t>(2);
             buf.skipBits(1);
         }
-        for (size_t i = 0; i < num_partitions && !buf.error(); ++i) {
+        for (size_t i = 0; i < num_partitions && buf.canRead(); ++i) {
             Partition part;
             const bool explicit_boundary_flag = buf.getBit() != 0;
             part.partition_id = buf.getBits<uint8_t>(3);
@@ -181,20 +181,20 @@ void ts::VirtualSegmentationDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::VirtualSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 1) {
+    if (buf.canReadBytes(1)) {
         size_t mdl = 0;
         const size_t num_partitions = buf.getBits<size_t>(3);
         const bool timescale_flag = buf.getBit() != 0;
         buf.skipBits(4);
 
-        if (timescale_flag && buf.remainingReadBytes() >= 3) {
+        if (timescale_flag && buf.canReadBytes(3)) {
             disp << margin << UString::Format(u"Ticks per seconds: %'d", {buf.getBits<uint32_t>(21)}) << std::endl;
             mdl = buf.getBits<size_t>(2);
             disp << margin << UString::Format(u"Maximum duration length: %d bytes + 5 bits", {mdl}) << std::endl;
             buf.skipBits(1);
         }
 
-        for (size_t i = 0; i < num_partitions && buf.remainingReadBytes() >= 2; ++i) {
+        for (size_t i = 0; i < num_partitions && buf.canReadBytes(2); ++i) {
             const bool explicit_boundary_flag = buf.getBit() != 0;
             disp << margin << UString::Format(u"- Partition id: %d", {buf.getBits<uint8_t>(3)});
             buf.skipBits(4);
@@ -212,7 +212,6 @@ void ts::VirtualSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, P
             }
         }
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

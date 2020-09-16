@@ -89,7 +89,7 @@ void ts::CIAncillaryDataDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::CIAncillaryDataDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    buf.getByteBlock(ancillary_data, buf.remainingReadBytes());
+    buf.getBytes(ancillary_data);
 }
 
 

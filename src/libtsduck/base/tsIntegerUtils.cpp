@@ -76,3 +76,38 @@ size_t ts::MaxHexaWidth(size_t typeSize, size_t digitSeparatorSize)
     // Add the size of the separator every 4 characters.
     return AddSeparatorSize(2 * typeSize, digitSeparatorSize, 4);
 }
+
+
+//----------------------------------------------------------------------------
+// Get a power of 10 using a fast lookup table.
+//----------------------------------------------------------------------------
+
+template<>
+uint64_t ts::Power10<uint64_t>(size_t pow)
+{
+    // Assume that not integer type is larger than 64 bits => 10^19 is the largest unsigned value.
+    static const uint64_t pow10[] = {
+        /*  0 */ TS_UCONST64(1),
+        /*  1 */ TS_UCONST64(10),
+        /*  2 */ TS_UCONST64(100),
+        /*  3 */ TS_UCONST64(1000),
+        /*  4 */ TS_UCONST64(10000),
+        /*  5 */ TS_UCONST64(100000),
+        /*  6 */ TS_UCONST64(1000000),
+        /*  7 */ TS_UCONST64(10000000),
+        /*  8 */ TS_UCONST64(100000000),
+        /*  9 */ TS_UCONST64(1000000000),
+        /* 10 */ TS_UCONST64(10000000000),
+        /* 11 */ TS_UCONST64(100000000000),
+        /* 12 */ TS_UCONST64(1000000000000),
+        /* 13 */ TS_UCONST64(10000000000000),
+        /* 14 */ TS_UCONST64(100000000000000),
+        /* 15 */ TS_UCONST64(1000000000000000),
+        /* 16 */ TS_UCONST64(10000000000000000),
+        /* 17 */ TS_UCONST64(100000000000000000),
+        /* 18 */ TS_UCONST64(1000000000000000000),
+        /* 19 */ TS_UCONST64(10000000000000000000),
+    };
+
+    return pow < (sizeof(pow10) / sizeof(uint64_t)) ? pow10[pow] : 0;
+}

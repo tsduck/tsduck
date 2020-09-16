@@ -927,7 +927,10 @@ size_t ts::Buffer::requestReadBytes(size_t bytes)
     // Maximum possible bytes to read.
     const size_t max_bytes = _read_error ? 0 : remainingReadBits() / 8;
 
-    if (bytes <= max_bytes) {
+    if (bytes == NPOS) {
+        return max_bytes;
+    }
+    else if (bytes <= max_bytes) {
         return bytes;
     }
     else {
@@ -984,14 +987,14 @@ size_t ts::Buffer::getBytes(uint8_t* buffer, size_t bytes)
     }
 }
 
-void ts::Buffer::getByteBlock(ByteBlock& bb, size_t bytes)
+void ts::Buffer::getBytes(ByteBlock& bb, size_t bytes)
 {
     bytes = requestReadBytes(bytes);
     bb.resize(bytes);
     readBytesInternal(bb.data(), bytes);
 }
 
-ts::ByteBlock ts::Buffer::getByteBlock(size_t bytes)
+ts::ByteBlock ts::Buffer::getBytes(size_t bytes)
 {
     bytes = requestReadBytes(bytes);
     ByteBlock bb(bytes);
@@ -999,7 +1002,7 @@ ts::ByteBlock ts::Buffer::getByteBlock(size_t bytes)
     return bb;
 }
 
-size_t ts::Buffer::getByteBlockAppend(ByteBlock& bb, size_t bytes)
+size_t ts::Buffer::getBytesAppend(ByteBlock& bb, size_t bytes)
 {
     bytes = requestReadBytes(bytes);
     readBytesInternal(bb.enlarge(bytes), bytes);
@@ -1175,36 +1178,6 @@ const uint8_t* ts::Buffer::rdb(size_t bytes)
             }
             return _realigned;
         }
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Read / write Binary Coded Decimal (BCD) values.
-//----------------------------------------------------------------------------
-
-int ts::Buffer::getBCD()
-{
-    const uint8_t byte = getUInt8();
-    const uint8_t b1 = byte >> 4;
-    const uint8_t b2 = byte & 0x0F;
-    if (readError() || b1 > 9 || b2 > 9) {
-        return 0xFF;
-    }
-    else {
-        return 10 * b1 + b2;
-    }
-}
-
-bool ts::Buffer::putBCD(int i)
-{
-    if (i >= 0 && i <= 99) {
-        return putUInt8(uint8_t((i / 10) << 4) | (i % 10));
-    }
-    else {
-        // Cannot be represented as 2 decimal digits.
-        _write_error = true;
-        return false;
     }
 }
 

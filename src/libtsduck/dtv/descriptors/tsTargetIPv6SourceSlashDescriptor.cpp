@@ -96,11 +96,11 @@ void ts::TargetIPv6SourceSlashDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::TargetIPv6SourceSlashDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Address addr;
-        addr.IPv6_source_addr = IPv6Address(buf.getByteBlock(16));
+        addr.IPv6_source_addr = IPv6Address(buf.getBytes(16));
         addr.IPv6_source_slash_mask = buf.getUInt8();
-        addr.IPv6_dest_addr = IPv6Address(buf.getByteBlock(16));
+        addr.IPv6_dest_addr = IPv6Address(buf.getBytes(16));
         addr.IPv6_dest_slash_mask = buf.getUInt8();
         addresses.push_back(addr);
     }
@@ -113,13 +113,12 @@ void ts::TargetIPv6SourceSlashDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::TargetIPv6SourceSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (buf.remainingReadBytes() >= 34) {
-        disp << margin << "- Source:      " << IPv6Address(buf.getByteBlock(16));
+    while (buf.canReadBytes(34)) {
+        disp << margin << "- Source:      " << IPv6Address(buf.getBytes(16));
         disp << "/" << int(buf.getUInt8()) << std::endl;
-        disp << margin << "  Destination: " << IPv6Address(buf.getByteBlock(16));
+        disp << margin << "  Destination: " << IPv6Address(buf.getBytes(16));
         disp << "/" << int(buf.getUInt8()) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

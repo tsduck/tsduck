@@ -88,7 +88,7 @@ void ts::AncillaryDataDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::AncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (!buf.endOfRead()) {
+    if (buf.canRead()) {
         const uint8_t id = buf.getUInt8();
         disp << margin << UString::Format(u"Ancillary data identifier: 0x%X", {id}) << std::endl;
         for (int i = 0; i < 8; ++i) {
@@ -97,7 +97,6 @@ void ts::AncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
             }
         }
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

@@ -107,7 +107,7 @@ void ts::SelectionInformationTable::clearContent()
 void ts::SelectionInformationTable::deserializePayload(PSIBuffer& buf, const Section& section)
 {
     buf.getDescriptorListWithLength(descs);
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Service& srv(services[buf.getUInt16()]);
         buf.skipBits(1);
         srv.running_status = buf.getBits<uint8_t>(3);
@@ -141,13 +141,12 @@ void ts::SelectionInformationTable::serializePayload(BinaryTable& table, PSIBuff
 void ts::SelectionInformationTable::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
     disp.displayDescriptorListWithLength(section, buf, margin, u"Global information:");
-    while (!buf.error() && buf.remainingReadBytes() >= 4) {
+    while (buf.canReadBytes(4)) {
         disp << margin << UString::Format(u"Service id: %d (0x%<X)", {buf.getUInt16()});
         buf.skipBits(1);
         disp << ", Status: " << RST::RunningStatusNames.name(buf.getBits<uint8_t>(3)) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

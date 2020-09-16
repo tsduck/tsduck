@@ -92,7 +92,7 @@ void ts::AbstractPreferredNameListDescriptor::serializePayload(PSIBuffer& buf) c
 
 void ts::AbstractPreferredNameListDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         // Force the creation of a language entry.
         NameByIdMap& names(entries[buf.getLanguageCode()]);
 
@@ -112,16 +112,15 @@ void ts::AbstractPreferredNameListDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::AbstractPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (!buf.error() && buf.remainingReadBytes() >= 4) {
+    while (buf.canReadBytes(4)) {
         disp << margin << "Language: " << buf.getLanguageCode();
         uint8_t count = buf.getUInt8();
         disp << ", name count: " << int(count) << std::endl;
-        while (count-- > 0 && !buf.error() && buf.remainingReadBytes() >= 2) {
+        while (count-- > 0 && buf.canReadBytes(2)) {
             disp << margin << "Id: " << int(buf.getUInt8());
             disp << ", Name: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
         }
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

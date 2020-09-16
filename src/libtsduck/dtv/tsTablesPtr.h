@@ -108,6 +108,9 @@ namespace ts {
     //! @param [in,out] display Display engine.
     //! @param [in] section The section to display.
     //! @param [in,out] payload A read-only PSIBuffer over the section payload.
+    //! Everything that was not read from the buffer will be displayed by the
+    //! caller as "extraneous data". Consequently, the table subclasses do
+    //! not have to worry about those extraneous data.
     //! @param [in] margin Left margin content.
     //!
     typedef void (*DisplaySectionFunction)(TablesDisplay& display, const Section& section, PSIBuffer& payload, const UString& margin);
@@ -128,7 +131,11 @@ namespace ts {
     //! @e DisplayDescriptor which displays a descriptor of its type.
     //!
     //! @param [in,out] display Display engine.
-    //! @param [in,out] payload A read-only PSIBuffer over the section payload.
+    //! @param [in,out] payload A read-only PSIBuffer over the descriptor payload.
+    //! For "extended descriptors", the buffer starts after the "extension tag".
+    //! Everything that was not read from the buffer will be displayed by the
+    //! caller as "extraneous data". Consequently, the descriptor subclasses do
+    //! not have to worry about those extraneous data.
     //! @param [in] margin Left margin content.
     //! @param [in] did Descriptor id.
     //! @param [in] tid Table id of table containing the descriptors.
@@ -143,10 +150,9 @@ namespace ts {
     //! Each subclass of AbstractDescriptor should provide a static function named
     //! @e DisplayDescriptor which displays a descriptor of its type.
     //!
-    //! This is the legacy version of the DisplayDescriptor profile. It will be hard
-    //! to refactor all existing descriptor classes to use the new profile (the one
-    //! using a PSIBuffer to deserialize data). But all new descriptor classes should
-    //! use it.
+    //! This is the legacy version of the DisplayDescriptor profile. It will be hard to
+    //! refactor all existing descriptor classes to use the new profile (the one using
+    //! a PSIBuffer to deserialize data). But all new descriptor classes should use it.
     //!
     //! @param [in,out] display Display engine.
     //! @param [in] did Descriptor id.

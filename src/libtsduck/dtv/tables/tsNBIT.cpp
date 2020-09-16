@@ -118,7 +118,7 @@ void ts::NBIT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
     original_network_id = section.tableIdExtension();
 
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Information& info(informations[buf.getUInt16()]);
         info.information_type = buf.getBits<uint8_t>(4);
         info.description_body_location = buf.getBits<uint8_t>(2);
@@ -199,19 +199,17 @@ void ts::NBIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
 {
     disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
-    while (!buf.error() && buf.remainingReadBytes() >= 5) {
+    while (buf.canReadBytes(5)) {
         disp << margin << UString::Format(u"- Information id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         disp << margin << "  Information type: " << NameFromSection(u"ISDBInformationType", buf.getBits<uint8_t>(4), names::FIRST) << std::endl;
         disp << margin << "  Description body location: " << NameFromSection(u"ISDBDescriptionBodyLocation", buf.getBits<uint8_t>(2), names::FIRST) << std::endl;
         buf.skipBits(2);
         disp << margin << UString::Format(u"  User defined: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-        for (size_t count = buf.getUInt8(); !buf.error() && count > 0; count--) {
+        for (size_t count = buf.getUInt8(); buf.canReadBytes(2) && count > 0; count--) {
             disp << margin << UString::Format(u"  Key id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }
         disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
     }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

@@ -74,7 +74,6 @@ void ts::RelatedContentDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::RelatedContentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    disp.displayExtraData(buf, margin);
 }
 
 void ts::RelatedContentDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

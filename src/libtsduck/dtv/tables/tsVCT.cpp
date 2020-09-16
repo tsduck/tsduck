@@ -350,7 +350,7 @@ void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
     uint16_t num_channels = 0;
 
-    if (buf.remainingReadBytes() < 2) {
+    if (!buf.canReadBytes(2)) {
         buf.setUserError();
     }
     else {
@@ -361,7 +361,7 @@ void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     // Loop on all channel definitions.
     while (!buf.error() && num_channels-- > 0) {
 
-        if (buf.remainingReadBytes() < 32) {
+        if (!buf.canReadBytes(32)) {
             buf.setUserError();
             break;
         }
@@ -396,7 +396,6 @@ void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
     // Common descriptors.
     disp.displayDescriptorListWithLength(section, buf, margin, u"Additional descriptors:", UString(), 10);
-    disp.displayExtraData(buf, margin);
 }
 
 

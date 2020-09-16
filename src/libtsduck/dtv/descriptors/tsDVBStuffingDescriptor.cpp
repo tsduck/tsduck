@@ -79,7 +79,7 @@ void ts::DVBStuffingDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::DVBStuffingDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    buf.getByteBlock(stuffing, buf.remainingReadBytes());
+    buf.getBytes(stuffing);
 }
 
 

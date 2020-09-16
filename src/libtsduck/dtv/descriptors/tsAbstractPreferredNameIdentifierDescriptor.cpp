@@ -91,10 +91,9 @@ void ts::AbstractPreferredNameIdentifierDescriptor::deserializePayload(PSIBuffer
 
 void ts::AbstractPreferredNameIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 1) {
+    if (buf.canReadBytes(1)) {
         disp << margin << "Name identifier: " << int(buf.getUInt8()) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

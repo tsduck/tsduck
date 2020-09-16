@@ -92,7 +92,7 @@ void ts::RST::clearContent()
 
 void ts::RST::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Event event;
         event.transport_stream_id = buf.getUInt16();
         event.original_network_id = buf.getUInt16();
@@ -128,20 +128,14 @@ void ts::RST::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::RST::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    while (!buf.error() && buf.remainingReadBytes() >= 9) {
-        const uint16_t ts_id = buf.getUInt16();
-        const uint16_t onet_id = buf.getUInt16();
-        const uint16_t srv_id = buf.getUInt16();
-        const uint16_t ev_id = buf.getUInt16();
+    while (buf.canReadBytes(9)) {
+        disp << margin << UString::Format(u"TS: %d (0x%<X)", {buf.getUInt16()});
+        disp << UString::Format(u", Orig. Netw.: %d (0x%<X)", {buf.getUInt16()});
+        disp << UString::Format(u", Service: %d (0x%<X)", {buf.getUInt16()});
+        disp << UString::Format(u", Event: %d (0x%<X)", {buf.getUInt16()});
         buf.skipBits(5);
-        const uint8_t rs = buf.getBits<uint8_t>(3);
-
-        disp << margin
-             << UString::Format(u"TS: %d (0x%<X), Orig. Netw.: %d (0x%<X), Service: %d (0x%<X), Event: %d (0x%<X), Status: %s",
-                                {ts_id, onet_id, srv_id, ev_id, RunningStatusNames.name(rs)})
-             << std::endl;
+        disp << ", Status: " << RunningStatusNames.name(buf.getBits<uint8_t>(3)) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

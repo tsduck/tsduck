@@ -100,7 +100,7 @@ void ts::ContentIdentifierDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::ContentIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         CRID cr;
         cr.crid_type = buf.getBits<uint8_t>(6);
         cr.crid_location = buf.getBits<uint8_t>(2);
@@ -121,18 +121,17 @@ void ts::ContentIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::ContentIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (!buf.error() && buf.remainingReadBytes() >= 1) {
+    while (buf.canReadBytes(1)) {
         disp << margin << "- CRID type: " << NameFromSection(u"CRIDType", buf.getBits<uint8_t>(6), names::HEXA_FIRST) << std::endl;
         const uint8_t loc = buf.getBits<uint8_t>(2);
         disp << margin << "  CRID location: " << NameFromSection(u"CRIDLocation", loc, names::DECIMAL_FIRST) << std::endl;
-        if (loc == 0 && buf.remainingReadBytes() >= 1) {
+        if (loc == 0 && buf.canReadBytes(1)) {
             disp << margin << "  CRID: \"" << buf.getUTF8WithLength() << "\"" << std::endl;
         }
-        else if (loc == 1 && buf.remainingReadBytes() >= 2) {
+        else if (loc == 1 && buf.canReadBytes(2)) {
             disp << margin << UString::Format(u"  CRID reference: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

@@ -114,7 +114,7 @@ void ts::LDT::deserializePayload(PSIBuffer& buf, const Section& section)
     original_network_id = buf.getUInt16();
 
     // Loop across all descriptions
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Description& des(descriptions[buf.getUInt16()]);
         buf.skipBits(12);
         buf.getDescriptorListWithLength(des.descs);
@@ -179,21 +179,15 @@ void ts::LDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 {
     disp << margin << UString::Format(u"Original service id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
-    if (buf.remainingReadBytes() < 4) {
-        buf.setUserError();
-    }
-    else {
+    if (buf.canReadBytes(4)) {
         disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        while (buf.canReadBytes(5)) {
+            disp << margin << UString::Format(u"Description id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            buf.skipBits(12);
+            disp.displayDescriptorListWithLength(section, buf, margin);
+        }
     }
-
-    while (!buf.error() && buf.remainingReadBytes() >= 5) {
-        disp << margin << UString::Format(u"Description id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        buf.skipBits(12);
-        disp.displayDescriptorListWithLength(section, buf, margin);
-    }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

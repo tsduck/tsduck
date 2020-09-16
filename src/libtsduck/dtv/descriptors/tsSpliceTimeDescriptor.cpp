@@ -105,7 +105,7 @@ void ts::SpliceTimeDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::SpliceTimeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 16) {
+    if (buf.canReadBytes(16)) {
         // Sometimes, the identifiers are made of ASCII characters. Try to display them.
         disp.displayIntAndASCII(u"Identifier: 0x%08X", buf, 4, margin);
         const uint64_t tai = buf.getUInt48();
@@ -113,7 +113,6 @@ void ts::SpliceTimeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
         disp << UString::Format(u" + %'d ns", {buf.getUInt32()});
         disp << UString::Format(u", UTC offset: %'d", {buf.getUInt16()}) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

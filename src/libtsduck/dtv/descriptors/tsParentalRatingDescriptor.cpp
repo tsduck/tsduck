@@ -107,7 +107,7 @@ void ts::ParentalRatingDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::ParentalRatingDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Entry e;
         buf.getLanguageCode(e.country_code);
         e.rating = buf.getUInt8();
@@ -122,7 +122,7 @@ void ts::ParentalRatingDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (!buf.error() && buf.remainingReadBytes() >= 4) {
+    while (buf.canReadBytes(4)) {
         disp << margin << "Country code: " << buf.getLanguageCode();
         const uint8_t rating = buf.getUInt8();
         disp << UString::Format(u", rating: 0x%X ", {rating});
@@ -137,7 +137,6 @@ void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
         }
         disp << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

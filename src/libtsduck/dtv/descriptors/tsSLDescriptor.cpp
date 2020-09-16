@@ -87,10 +87,9 @@ void ts::SLDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::SLDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 2) {
+    if (buf.canReadBytes(2)) {
         disp << margin << UString::Format(u"ES id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

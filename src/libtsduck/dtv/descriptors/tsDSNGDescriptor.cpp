@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -69,28 +70,14 @@ ts::DSNGDescriptor::DSNGDescriptor(DuckContext& duck, const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DSNGDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DSNGDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.encoded(station_identification));
-    serializeEnd(desc, bbp);
+    buf.putString(station_identification);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::DSNGDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DSNGDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag();
-
-    if (_is_valid) {
-        duck.decode(station_identification, desc.payload(), desc.payloadSize());
-    }
-    else {
-        station_identification.clear();
-    }
+    buf.getString(station_identification);
 }
 
 
@@ -98,16 +85,14 @@ void ts::DSNGDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DSNGDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::DSNGDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    disp << margin << "Station identification: \"" << disp.duck().decoded(payload, size) << "\"" << std::endl;
+    disp << margin << "Station identification: \"" << buf.getString() << "\"" << std::endl;
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::DSNGDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

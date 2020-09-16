@@ -158,7 +158,7 @@ void ts::SDT::deserializePayload(PSIBuffer& buf, const Section& section)
     buf.skipBits(8);
 
     // Get services description
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Service& serv(services[buf.getUInt16()]);
         buf.skipBits(6);
         serv.EITs_present = buf.getBit() != 0;
@@ -322,7 +322,7 @@ void ts::SDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     buf.skipBits(8);
 
     // Services description
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         disp << margin << UString::Format(u"Service Id: %d (0x%<X)", {buf.getUInt16()});
         buf.skipBits(6);
         disp << ", EITs: " << UString::YesNo(buf.getBit() != 0);
@@ -332,8 +332,6 @@ void ts::SDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << margin << "Running status: " << names::RunningStatus(running_status) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

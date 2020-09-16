@@ -90,7 +90,7 @@ void ts::TargetMACAddressDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::TargetMACAddressDescriptor::deserializePayload(PSIBuffer& buf)
 {
     MAC_addr_mask.setAddress(buf.getUInt48());
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         MAC_addr.push_back(MACAddress(buf.getUInt48()));
     }
 }
@@ -103,11 +103,10 @@ void ts::TargetMACAddressDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::TargetMACAddressDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     const char* header = "Address mask: ";
-    while (buf.remainingReadBytes() >= 6) {
+    while (buf.canReadBytes(6)) {
         disp << margin << header << MACAddress(buf.getUInt48()) << std::endl;
         header = "Address: ";
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

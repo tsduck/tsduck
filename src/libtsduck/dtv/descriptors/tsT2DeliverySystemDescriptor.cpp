@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -111,39 +112,38 @@ ts::DID ts::T2DeliverySystemDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::T2DeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::T2DeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    bbp->appendUInt8(plp_id);
-    bbp->appendUInt16(T2_system_id);
+    buf.putUInt8(plp_id);
+    buf.putUInt16(T2_system_id);
     if (has_extension) {
-        bbp->appendUInt8(uint8_t((SISO_MISO & 0x03) << 6) |
-                         uint8_t((bandwidth & 0x0F) << 2) |
-                         0x03);
-        bbp->appendUInt8(uint8_t((guard_interval & 0x07) << 5) |
-                         uint8_t((transmission_mode & 0x07) << 2) |
-                         (other_frequency ? 0x02 : 0x00) |
-                         (tfs ? 0x01 : 0x00));
+        buf.putBits(SISO_MISO, 2);
+        buf.putBits(bandwidth, 4);
+        buf.putBits(0xFF, 2);
+        buf.putBits(guard_interval, 3);
+        buf.putBits(transmission_mode, 3);
+        buf.putBit(other_frequency);
+        buf.putBit(tfs);
         for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
-            bbp->appendUInt16(it1->cell_id);
+            buf.putUInt16(it1->cell_id);
             if (tfs) {
-                bbp->appendUInt8(uint8_t(4 * it1->centre_frequency.size()));
+                buf.pushWriteSequenceWithLeadingLength(8); // frequency_loop_length
                 for (auto it2 = it1->centre_frequency.begin(); it2 != it1->centre_frequency.end(); ++it2) {
-                    bbp->appendUInt32(uint32_t(*it2 / 10)); // encoded in units of 10 Hz
+                    buf.putUInt32(uint32_t(*it2 / 10)); // encoded in units of 10 Hz
                 }
+                buf.popState(); // update frequency_loop_length
             }
             else {
-                bbp->appendUInt32(uint32_t((it1->centre_frequency.empty() ? 0 : it1->centre_frequency.front()) / 10)); // encoded in units of 10 Hz
+                buf.putUInt32(uint32_t((it1->centre_frequency.empty() ? 0 : it1->centre_frequency.front()) / 10)); // encoded in units of 10 Hz
             }
-            bbp->appendUInt8(uint8_t(5 * it1->subcells.size()));
+            buf.pushWriteSequenceWithLeadingLength(8); // subcell_info_loop_length
             for (auto it2 = it1->subcells.begin(); it2 != it1->subcells.end(); ++it2) {
-                bbp->appendUInt8(it2->cell_id_extension);
-                bbp->appendUInt32(uint32_t(it2->transposer_frequency / 10)); // encoded in units of 10 Hz
+                buf.putUInt8(it2->cell_id_extension);
+                buf.putUInt32(uint32_t(it2->transposer_frequency / 10)); // encoded in units of 10 Hz
             }
+            buf.popState(); // update subcell_info_loop_length
         }
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -151,77 +151,42 @@ void ts::T2DeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& de
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::T2DeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::T2DeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    has_extension = false;
-    cells.clear();
+    plp_id = buf.getUInt8();
+    T2_system_id = buf.getUInt16();
+    has_extension = buf.canRead();
 
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4 && data[0] == MY_EDID;
-
-    if (_is_valid) {
-        plp_id = data[1];
-        T2_system_id = GetUInt16(data + 2);
-        data += 4; size -= 4;
-
-        _is_valid = size == 0 || size >= 2;
-        has_extension = size >= 2;
-
-        if (has_extension) {
-            SISO_MISO = (data[0] >> 6) & 0x03;
-            bandwidth = (data[0] >> 2) & 0x0F;
-            guard_interval = (data[1] >> 5) & 0x07;
-            transmission_mode = (data[1] >> 2) & 0x07;
-            other_frequency = (data[1] & 0x02) != 0;
-            tfs = (data[1] & 0x01) != 0;
-            data += 2; size -= 2;
-
-            while (size >= 3) {
-                Cell cell;
-                cell.cell_id = GetUInt16(data);
-                data += 2; size -= 2;
-
-                if (tfs) {
-                    size_t len = data[0];
-                    data++; size--;
-                    while (len >= 4 && size >= 4) {
-                        cell.centre_frequency.push_back(uint64_t(GetUInt32(data)) * 10); // encoded unit is 10 Hz
-                        data += 4; size -= 4; len -= 4;
-                    }
-                    if (len > 0) {
-                        _is_valid = false;
-                        return;
-                    }
+    if (has_extension) {
+        SISO_MISO = buf.getBits<uint8_t>(2);
+        bandwidth = buf.getBits<uint8_t>(4);
+        buf.skipBits(2);
+        guard_interval = buf.getBits<uint8_t>(3);
+        transmission_mode = buf.getBits<uint8_t>(3);
+        other_frequency = buf.getBit() != 0;
+        tfs = buf.getBit() != 0;
+        while (buf.canRead()) {
+            Cell cell;
+            cell.cell_id = buf.getUInt16();
+            if (tfs) {
+                buf.pushReadSizeFromLength(8); // frequency_loop_length
+                while (buf.canRead()) {
+                    cell.centre_frequency.push_back(uint64_t(buf.getUInt32()) * 10); // encoded unit is 10 Hz
                 }
-                else if (size < 4) {
-                    _is_valid = false;
-                    return;
-                }
-                else {
-                    cell.centre_frequency.push_back(uint64_t(GetUInt32(data)) * 10); // encoded unit is 10 Hz
-                    data += 4; size -= 4;
-                }
-
-                if (size < 1) {
-                    _is_valid = false;
-                    return;
-                }
-
-                size_t len = data[0];
-                data++; size--;
-                while (len >= 5 && size >= 5) {
-                    Subcell subcell;
-                    subcell.cell_id_extension = data[0];
-                    subcell.transposer_frequency = uint64_t(GetUInt32(data + 1)) * 10; // encoded unit is 10 Hz
-                    data += 5; size -= 5; len -= 5;
-                    cell.subcells.push_back(subcell);
-                }
-
-                cells.push_back(cell);
+                buf.popState(); // frequency_loop_length
             }
-
-            _is_valid = size == 0;
+            else {
+                cell.centre_frequency.push_back(uint64_t(buf.getUInt32()) * 10); // encoded unit is 10 Hz
+            }
+            buf.pushReadSizeFromLength(8); // subcell_info_loop_length
+            while (buf.canRead()) {
+                Subcell subcell;
+                subcell.cell_id_extension = buf.getUInt8();
+                subcell.transposer_frequency = uint64_t(buf.getUInt32()) * 10; // encoded unit is 10 Hz
+                cell.subcells.push_back(subcell);
+            }
+            buf.popState(); // subcell_info_loop_length
+            cells.push_back(cell);
         }
     }
 }

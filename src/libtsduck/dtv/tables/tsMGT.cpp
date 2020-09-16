@@ -216,7 +216,7 @@ void ts::MGT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 {
     uint16_t table_count = 0;
 
-    if (buf.remainingReadBytes() < 2) {
+    if (!buf.canReadBytes(2)) {
         buf.setUserError();
     }
     else {
@@ -227,7 +227,7 @@ void ts::MGT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     // Loop on all table types.
     while (!buf.error() && table_count-- > 0) {
 
-        if (buf.remainingReadBytes() < 11) {
+        if (!buf.canReadBytes(11)) {
             buf.setUserError();
             break;
         }
@@ -243,7 +243,6 @@ void ts::MGT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
     // Common descriptors.
     disp.displayDescriptorListWithLength(section, buf, margin, u"Global descriptors:");
-    disp.displayExtraData(buf, margin);
 }
 
 

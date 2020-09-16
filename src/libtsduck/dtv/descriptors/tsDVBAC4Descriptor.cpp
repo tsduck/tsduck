@@ -123,9 +123,9 @@ void ts::DVBAC4Descriptor::deserializePayload(PSIBuffer& buf)
     }
     if (ac4_toc_flag) {
         const size_t len = buf.getUInt8();
-        buf.getByteBlock(ac4_dsi_toc, len);
+        buf.getBytes(ac4_dsi_toc, len);
     }
-    buf.getByteBlock(additional_info, buf.remainingReadBytes());
+    buf.getBytes(additional_info);
 }
 
 

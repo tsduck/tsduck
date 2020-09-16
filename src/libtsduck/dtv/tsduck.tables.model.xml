@@ -2174,9 +2174,11 @@
         FEC_inner="undefined|1/2|2/3|3/4|5/6|7/8|8/9|3/5|4/5|9/10|ISDB-S|2.6GHzMobile|AdvancedCS|none, required"/>
 
     <S2_satellite_delivery_system_descriptor
-        backwards_compatibility="bool, required"
+        backwards_compatibility="bool, default=false"
+        TS_GS_mode="uint2, default=3"
         scrambling_sequence_index="uint18, optional"
-        input_stream_identifier="uint8, optional"/>
+        input_stream_identifier="uint8, optional"
+        timeslice_number="uint8, optional"/>
 
     <S2X_satellite_delivery_system_descriptor
         receiver_profiles="uint5, required"

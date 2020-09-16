@@ -93,21 +93,21 @@ namespace ts {
         DTSHDDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
         DeclareLegacyDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual DID extendedTag() const override;
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
         // Conversions of substrean info structures.
-        static void SerializeSubstreamInfo(const Variable<SubstreamInfo>&, ByteBlock&);
-        static bool DeserializeSubstreamInfo(Variable<SubstreamInfo>&, bool present, const uint8_t*& data, size_t& size);
+        static void SerializeSubstreamInfo(const Variable<SubstreamInfo>&, PSIBuffer&);
+        static void DeserializeSubstreamInfo(Variable<SubstreamInfo>&, bool present, PSIBuffer&);
         static bool DisplaySubstreamInfo(TablesDisplay& display, bool present, int indent, const UString& name, const uint8_t*& data, size_t& size);
         static void SubstreamInfoToXML(const Variable<SubstreamInfo>&, const UString& name, xml::Element* parent);
         static bool SubstreamInfoFromXML(Variable<SubstreamInfo>&, const UString& name, const xml::Element* parent);

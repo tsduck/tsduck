@@ -144,7 +144,7 @@ void ts::INT::deserializePayload(PSIBuffer& buf, const Section& section)
     buf.getDescriptorListWithLength(platform_descs);
 
     // Get device descriptions.
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Device& dev(devices.newEntry());
         buf.getDescriptorListWithLength(dev.target_descs);
         buf.getDescriptorListWithLength(dev.operational_descs);
@@ -213,7 +213,7 @@ void ts::INT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::INT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    if (buf.remainingReadBytes() >= 4) {
+    if (buf.canReadBytes(4)) {
         const uint8_t action = uint8_t(section.tableIdExtension() >> 8);
         const uint8_t id_hash = uint8_t(section.tableIdExtension());
         const uint32_t pfid = buf.getUInt24();
@@ -229,14 +229,12 @@ void ts::INT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp.displayDescriptorListWithLength(section, buf, margin, u"Platform descriptors:");
 
         // Get device descriptions.
-        for (int device_index = 0; !buf.error() && !buf.endOfRead(); device_index++) {
+        for (int device_index = 0; buf.canRead(); device_index++) {
             disp << margin << "Device #" << device_index << std::endl;
             disp.displayDescriptorListWithLength(section, buf, margin + u"  ", u"Target descriptors:", u"None");
             disp.displayDescriptorListWithLength(section, buf, margin + u"  ", u"Operational descriptors:", u"None");
         }
     }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

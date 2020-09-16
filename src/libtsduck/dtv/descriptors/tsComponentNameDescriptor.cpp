@@ -89,7 +89,6 @@ void ts::ComponentNameDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ComponentNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     disp.displayATSCMultipleString(buf, 0, margin, u"Component name: ");
-    disp.displayExtraData(buf, margin);
 }
 
 

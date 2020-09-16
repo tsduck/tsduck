@@ -33,6 +33,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -93,20 +94,18 @@ ts::DID ts::C2BundleDeliverySystemDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::C2BundleDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::C2BundleDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt8(it->plp_id);
-        bbp->appendUInt8(it->data_slice_id);
-        bbp->appendUInt32(it->C2_system_tuning_frequency);
-        bbp->appendUInt8(uint8_t((it->C2_system_tuning_frequency_type & 0x03) << 6) |
-                         uint8_t((it->active_OFDM_symbol_duration & 0x07) << 3) |
-                         (it->guard_interval & 0x07));
-        bbp->appendUInt8(it->master_channel ? 0xFF : 0x7F);
+        buf.putUInt8(it->plp_id);
+        buf.putUInt8(it->data_slice_id);
+        buf.putUInt32(it->C2_system_tuning_frequency);
+        buf.putBits(it->C2_system_tuning_frequency_type, 2);
+        buf.putBits(it->active_OFDM_symbol_duration, 3);
+        buf.putBits(it->guard_interval, 3);
+        buf.putBit(it->master_channel);
+        buf.putBits(0x00, 7); // reserved_zero_future_use
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -114,27 +113,19 @@ void ts::C2BundleDeliverySystemDescriptor::serialize(DuckContext& duck, Descript
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::C2BundleDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::C2BundleDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    entries.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size % 8 == 1 && data[0] == MY_EDID;
-    data++; size--;
-
-    while (_is_valid && size >= 8) {
+    while (buf.canRead()) {
         Entry e;
-        e.plp_id = data[0];
-        e.data_slice_id = data[1];
-        e.C2_system_tuning_frequency = GetUInt32(data + 2);
-        e.C2_system_tuning_frequency_type = (data[6] >> 6) & 0x03;
-        e.active_OFDM_symbol_duration = (data[6] >> 3) & 0x07;
-        e.guard_interval = data[6] & 0x07;
-        e.master_channel = (data[7] & 0x80) != 0;
+        e.plp_id = buf.getUInt8();
+        e.data_slice_id = buf.getUInt8();
+        e.C2_system_tuning_frequency = buf.getUInt32();
+        e.C2_system_tuning_frequency_type = buf.getBits<uint8_t>(2);
+        e.active_OFDM_symbol_duration = buf.getBits<uint8_t>(3);
+        e.guard_interval = buf.getBits<uint8_t>(3);
+        e.master_channel = buf.getBit() != 0;
+        buf.skipBits(7);
         entries.push_back(e);
-        data += 8; size -= 8;
     }
 }
 

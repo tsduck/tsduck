@@ -93,7 +93,7 @@ void ts::TVAIdDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::TVAIdDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         TVAId ti;
         ti.TVA_id = buf.getUInt16();
         buf.skipBits(5);
@@ -109,12 +109,11 @@ void ts::TVAIdDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::TVAIdDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (!buf.error() && buf.remainingReadBytes() >= 3) {
+    while (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"TVA id: 0x%X (%<d)", {buf.getUInt16()});
         buf.skipBits(5);
         disp << ", running status: " << NameFromSection(u"TVARunningStatus", buf.getBits<uint8_t>(3), names::DECIMAL_FIRST) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

@@ -124,7 +124,6 @@ void ts::ITT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 {
     disp << margin << UString::Format(u"Event id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
     disp.displayDescriptorListWithLength(section, buf, margin);
-    disp.displayExtraData(buf, margin);
 }
 
 

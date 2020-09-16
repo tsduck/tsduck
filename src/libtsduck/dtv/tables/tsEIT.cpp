@@ -261,13 +261,13 @@ void ts::EIT::deserializePayload(PSIBuffer& buf, const Section& section)
     last_table_id = buf.getUInt8();
 
     // Get events description
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Event& event(events.newEntry());
         event.event_id = buf.getUInt16();
         event.start_time = buf.getFullMJD();
-        const int hour = buf.getBCD();
-        const int min = buf.getBCD();
-        const int sec = buf.getBCD();
+        const int hour = buf.getBCD<int>(2);
+        const int min = buf.getBCD<int>(2);
+        const int sec = buf.getBCD<int>(2);
         event.duration = (hour * 3600) + (min * 60) + sec;
         event.running_status = buf.getBits<uint8_t>(3);
         event.CA_controlled = buf.getBit() != 0;
@@ -314,9 +314,9 @@ void ts::EIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         // Insert event entry.
         buf.putUInt16(ev.event_id);
         buf.putFullMJD(ev.start_time);
-        buf.putBCD(int(ev.duration / 3600));
-        buf.putBCD(int((ev.duration / 60) % 60));
-        buf.putBCD(int(ev.duration % 60));
+        buf.putBCD(ev.duration / 3600, 2);
+        buf.putBCD((ev.duration / 60) % 60, 2);
+        buf.putBCD(ev.duration % 60, 2);
         buf.putBits(ev.running_status, 3);
         buf.putBit(ev.CA_controlled);
         buf.putPartialDescriptorListWithLength(ev.descs);
@@ -454,26 +454,24 @@ void ts::EIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
     disp << margin << UString::Format(u"Service Id: %d (0x%<X)", {section.tableIdExtension()}) << std::endl;
 
-    if (buf.remainingReadBytes() >= 6) {
+    if (buf.canReadBytes(6)) {
         disp << margin << UString::Format(u"TS Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
         disp << margin << UString::Format(u"Original Network Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
         disp << margin << UString::Format(u"Segment last section: %d (0x%<X)", {buf.getUInt8()}) << std::endl;
         const uint8_t last_tid = buf.getUInt8();
         disp << margin << UString::Format(u"Last Table Id: %d (0x%<X), %s", {last_tid, names::TID(disp.duck(), last_tid)}) << std::endl;
-    }
 
-    while (!buf.error() && buf.remainingReadBytes() >= 12) {
-        disp << margin << UString::Format(u"- Event Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
-        disp << margin << "  Start " << zone << ": " << buf.getFullMJD().format(Time::DATE | Time::TIME) << std::endl;
-        disp << margin << UString::Format(u"  Duration: %02d", {buf.getBCD()});
-        disp << UString::Format(u":%02d", {buf.getBCD()});
-        disp << UString::Format(u":%02d", {buf.getBCD()}) << std::endl;
-        disp << margin << "  Running status: " << names::RunningStatus(buf.getBits<uint8_t>(3)) << std::endl;
-        disp << margin << "  CA mode: " << (buf.getBit() != 0 ? "controlled" : "free") << std::endl;
-        disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
+        while (buf.canReadBytes(12)) {
+            disp << margin << UString::Format(u"- Event Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
+            disp << margin << "  Start " << zone << ": " << buf.getFullMJD().format(Time::DATE | Time::TIME) << std::endl;
+            disp << margin << UString::Format(u"  Duration: %02d", {buf.getBCD<int>(2)});
+            disp << UString::Format(u":%02d", {buf.getBCD<int>(2)});
+            disp << UString::Format(u":%02d", {buf.getBCD<int>(2)}) << std::endl;
+            disp << margin << "  Running status: " << names::RunningStatus(buf.getBits<uint8_t>(3)) << std::endl;
+            disp << margin << "  CA mode: " << (buf.getBit() != 0 ? "controlled" : "free") << std::endl;
+            disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
+        }
     }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

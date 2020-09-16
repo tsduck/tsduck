@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -90,24 +91,22 @@ void ts::TerrestrialDeliverySystemDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TerrestrialDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TerrestrialDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt32(uint32_t(centre_frequency / 10)); // coded in 10 Hz unit
-    bbp->appendUInt8(uint8_t(bandwidth << 5) |
-                     uint8_t(uint8_t(high_priority) << 4) |
-                     uint8_t(uint8_t(no_time_slicing) << 3) |
-                     uint8_t(uint8_t(no_mpe_fec) << 2) |
-                     0x03);
-    bbp->appendUInt8(uint8_t(constellation << 6) |
-                     uint8_t((hierarchy & 0x07) << 3) |
-                     (code_rate_hp & 0x07));
-    bbp->appendUInt8(uint8_t(code_rate_lp << 5) |
-                     uint8_t((guard_interval & 0x03) << 3) |
-                     uint8_t((transmission_mode & 0x03) << 1) |
-                     uint8_t(other_frequency));
-    bbp->appendUInt32(0xFFFFFFFF);
-    serializeEnd(desc, bbp);
+    buf.putUInt32(uint32_t(centre_frequency / 10)); // coded in 10 Hz unit
+    buf.putBits(bandwidth, 3);
+    buf.putBit(high_priority);
+    buf.putBit(no_time_slicing);
+    buf.putBit(no_mpe_fec);
+    buf.putBits(0xFF, 2);
+    buf.putBits(constellation, 2);
+    buf.putBits(hierarchy, 3);
+    buf.putBits(code_rate_hp, 3);
+    buf.putBits(code_rate_lp, 3);
+    buf.putBits(guard_interval, 2);
+    buf.putBits(transmission_mode, 2);
+    buf.putBit(other_frequency);
+    buf.putUInt32(0xFFFFFFFF);
 }
 
 
@@ -115,25 +114,22 @@ void ts::TerrestrialDeliverySystemDescriptor::serialize(DuckContext& duck, Descr
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TerrestrialDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TerrestrialDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 7;
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        centre_frequency = uint64_t(GetUInt32(data)) * 10; // coded in 10 Hz unit
-        bandwidth = (data[4] >> 5) & 0x07;
-        high_priority = (data[4] & 0x10) != 0;
-        no_time_slicing = (data[4] & 0x08) != 0;
-        no_mpe_fec = (data[4] & 0x04) != 0;
-        constellation = (data[5] >> 6) & 0x03;
-        hierarchy = (data[5] >> 3) & 0x07;
-        code_rate_hp = data[5] & 0x07;
-        code_rate_lp = (data[6] >> 5) & 0x07;
-        guard_interval = (data[6] >> 3) & 0x03;
-        transmission_mode = (data[6] >> 1) & 0x03;
-        other_frequency = (data[6] & 0x01) != 0;
-    }
+    centre_frequency = uint64_t(buf.getUInt32()) * 10; // coded in 10 Hz unit
+    bandwidth = buf.getBits<uint8_t>(3);
+    high_priority = buf.getBit() != 0;
+    no_time_slicing = buf.getBit() != 0;
+    no_mpe_fec = buf.getBit() != 0;
+    buf.skipBits(2);
+    constellation = buf.getBits<uint8_t>(2);
+    hierarchy = buf.getBits<uint8_t>(3);
+    code_rate_hp = buf.getBits<uint8_t>(3);
+    code_rate_lp = buf.getBits<uint8_t>(3);
+    guard_interval = buf.getBits<uint8_t>(2);
+    transmission_mode = buf.getBits<uint8_t>(2);
+    other_frequency = buf.getBit() != 0;
+    buf.skipBits(32);
 }
 
 

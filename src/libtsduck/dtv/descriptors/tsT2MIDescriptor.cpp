@@ -107,7 +107,7 @@ void ts::T2MIDescriptor::deserializePayload(PSIBuffer& buf)
     num_t2mi_streams_minus_one = buf.getBits<uint8_t>(3);
     buf.skipBits(7);
     pcr_iscr_common_clock_flag = buf.getBit() != 0;
-    buf.getByteBlock(reserved, buf.remainingReadBytes());
+    buf.getBytes(reserved);
 }
 
 
@@ -138,7 +138,7 @@ bool ts::T2MIDescriptor::analyzeXML(DuckContext& duck, const xml::Element* eleme
 
 void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 3) {
+    if (buf.canReadBytes(3)) {
         buf.skipBits(5);
         disp << margin << "T2-MI stream id: " << buf.getBits<int>(3);
         buf.skipBits(5);
@@ -146,5 +146,4 @@ void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, 
         buf.skipBits(7);
         disp << ", PCR/ISCR common clock: " << UString::YesNo(buf.getBit() != 0) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }

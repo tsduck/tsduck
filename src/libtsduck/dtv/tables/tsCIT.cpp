@@ -136,7 +136,7 @@ void ts::CIT::deserializePayload(PSIBuffer& buf, const Section& section)
     }
 
     // Get list of CRID.
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         CRID cr;
         cr.crid_ref = buf.getUInt16();
         cr.prepend_string_index = buf.getUInt8();
@@ -202,7 +202,7 @@ void ts::CIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 {
     disp << margin << UString::Format(u"Service id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
-    if (buf.remainingReadBytes() >= 5) {
+    if (buf.canReadBytes(5)) {
         disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         UStringVector pstring;
@@ -211,13 +211,12 @@ void ts::CIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         for (size_t i = 0; i < pstring.size(); ++i) {
             disp << margin << "  Prepend[" << i << "] = \"" << pstring[i] << "\"" << std::endl;
         }
-        while (!buf.error() && buf.remainingReadBytes() >= 5) {
+        while (buf.canReadBytes(5)) {
             disp << margin << UString::Format(u"- CRID reference: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
             disp << margin << UString::Format(u"  Prepend string index: %d", {buf.getUInt8()}) << std::endl;
             disp << margin << "  Unique string: \"" << buf.getUTF8WithLength() << "\"" << std::endl;
         }
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

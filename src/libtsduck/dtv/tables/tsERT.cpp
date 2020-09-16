@@ -120,7 +120,7 @@ void ts::ERT::deserializePayload(PSIBuffer& buf, const Section& section)
     buf.skipBits(4);
 
     // Loop across all relations.
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Relation& rel(relations.newEntry());
         rel.node_id = buf.getUInt16();
         rel.collection_mode = buf.getBits<uint8_t>(4);
@@ -180,26 +180,19 @@ void ts::ERT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 {
     disp << margin << UString::Format(u"Event relation id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
-    if (buf.remainingReadBytes() < 3) {
-        buf.setUserError();
-    }
-    else {
+    if (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"Information provider id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         disp << margin << "Relation type: " << NameFromSection(u"ISDBRelationType", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
         buf.skipBits(4);
+        while (buf.canReadBytes(8)) {
+            disp << margin << UString::Format(u"- Node id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << "  Collection mode: " << NameFromSection(u"ISDBCollectionMode", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
+            buf.skipBits(4);
+            disp << margin << UString::Format(u"  Parent node id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"  Reference number: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
+        }
     }
-
-    // Loop across all relations.
-    while (!buf.error() && buf.remainingReadBytes() >= 8) {
-        disp << margin << UString::Format(u"- Node id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << "  Collection mode: " << NameFromSection(u"ISDBCollectionMode", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
-        buf.skipBits(4);
-        disp << margin << UString::Format(u"  Parent node id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"  Reference number: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-        disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
-    }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

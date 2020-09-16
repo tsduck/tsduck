@@ -114,7 +114,7 @@ void ts::AnnouncementSupportDescriptor::deserializePayload(PSIBuffer& buf)
     // We will check later that all annoucement types are present.
     uint16_t indicator = buf.getUInt16();
 
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Announcement ann;
         ann.announcement_type = buf.getBits<uint8_t>(4);
         buf.skipBits(1);

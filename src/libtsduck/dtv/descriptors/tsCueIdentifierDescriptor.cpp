@@ -103,7 +103,7 @@ void ts::CueIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::CueIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (!buf.endOfRead()) {
+    if (buf.canRead()) {
         const uint8_t type = buf.getUInt8();
         disp << margin << UString::Format(u"Cue stream type: 0x%X", {type});
         switch (type) {
@@ -116,7 +116,6 @@ void ts::CueIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
         }
         disp << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

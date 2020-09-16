@@ -89,9 +89,9 @@ void ts::TargetIPv6AddressDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::TargetIPv6AddressDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    IPv6_addr_mask.setAddress(buf.getByteBlock(16));
-    while (!buf.error() && !buf.endOfRead()) {
-        IPv6_addr.push_back(IPv6Address(buf.getByteBlock(16)));
+    IPv6_addr_mask.setAddress(buf.getBytes(16));
+    while (buf.canRead()) {
+        IPv6_addr.push_back(IPv6Address(buf.getBytes(16)));
     }
 }
 
@@ -103,11 +103,10 @@ void ts::TargetIPv6AddressDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::TargetIPv6AddressDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     const char* header = "Address mask: ";
-    while (buf.remainingReadBytes() >= 16) {
-        disp << margin << header << IPv6Address(buf.getByteBlock(16)) << std::endl;
+    while (buf.canReadBytes(16)) {
+        disp << margin << header << IPv6Address(buf.getBytes(16)) << std::endl;
         header = "Address: ";
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

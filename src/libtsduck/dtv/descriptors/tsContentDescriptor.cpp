@@ -89,7 +89,7 @@ void ts::ContentDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::ContentDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         entries.push_back(Entry(buf.getUInt16()));
     }
 }
@@ -101,11 +101,10 @@ void ts::ContentDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (!buf.error() && buf.remainingReadBytes() >= 2) {
+    while (buf.canReadBytes(2)) {
         disp << margin << "Content: " << names::Content(buf.getUInt8(), names::FIRST);
         disp << UString::Format(u" / User: 0x%X", {buf.getUInt8()}) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

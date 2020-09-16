@@ -150,15 +150,15 @@ void ts::PCAT::deserializePayload(PSIBuffer& buf, const Section& section)
         buf.pushReadSizeFromLength(12);
 
         // Get schedule loop.
-        while (!buf.error() && !buf.endOfRead()) {
+        while (buf.canRead()) {
             Schedule sched;
             // [Warning #2] Here, ARIB STD-B10 is ambiguous again. It says "duration: A 24-bit field
             // indicates the duration of the partial contents announcement by hours, minutes, and seconds."
             // It does not say if this is binary or BCD. We assume here the same format as in EIT, ie. BCD.
             sched.start_time = buf.getFullMJD();
-            const int hour = buf.getBCD();
-            const int min = buf.getBCD();
-            const int sec = buf.getBCD();
+            const int hour = buf.getBCD<int>(2);
+            const int min = buf.getBCD<int>(2);
+            const int sec = buf.getBCD<int>(2);
             sched.duration = (hour * 3600) + (min * 60) + sec;
             cv.schedules.push_back(sched);
         }
@@ -228,9 +228,9 @@ void ts::PCAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         for (auto it2 = cv.schedules.begin(); it2 != cv.schedules.end(); ++it2) {
             // Serialize the schedule. See [Warning #2] above.
             buf.putFullMJD(it2->start_time);
-            buf.putBCD(int(it2->duration / 3600));
-            buf.putBCD(int((it2->duration / 60) % 60));
-            buf.putBCD(int(it2->duration % 60));
+            buf.putBCD(it2->duration / 3600, 2);
+            buf.putBCD((it2->duration / 60) % 60, 2);
+            buf.putBCD(it2->duration % 60, 2);
         }
 
         // Close the schedule_description_length sequence.
@@ -260,16 +260,13 @@ void ts::PCAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
 {
     disp << margin << UString::Format(u"Service id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
-    if (buf.remainingReadBytes() < 9) {
-        buf.setUserError();
-    }
-    else {
+    if (buf.canReadBytes(9)) {
         disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         disp << margin << UString::Format(u"Content id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
 
         // Loop across all content versions.
-        for (size_t version_count = buf.getUInt8(); !buf.error() && buf.remainingReadBytes() >= 8 && version_count > 0; version_count--) {
+        for (size_t version_count = buf.getUInt8(); buf.canReadBytes(8) && version_count > 0; version_count--) {
             disp << margin << UString::Format(u"- Content version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
             disp << margin << UString::Format(u"  Content minor version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
             disp << margin << "  Version indicator: " << NameFromSection(u"PCATVersionIndicator", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
@@ -283,12 +280,12 @@ void ts::PCAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
             buf.pushReadSizeFromLength(12);
 
             // Display schedule loop.
-            while (!buf.error() && buf.remainingReadBytes() >= 8) {
+            while (buf.canReadBytes(8)) {
                 // See [Warning #2] above.
                 disp << margin << "  Schedule start: " << buf.getFullMJD().format(Time::DATE | Time::TIME);
-                disp << UString::Format(u", duration: %02d", {buf.getBCD()});
-                disp << UString::Format(u":%02d", {buf.getBCD()});
-                disp << UString::Format(u":%02d", {buf.getBCD()}) << std::endl;
+                disp << UString::Format(u", duration: %02d", {buf.getBCD<int>(2)});
+                disp << UString::Format(u":%02d", {buf.getBCD<int>(2)});
+                disp << UString::Format(u":%02d", {buf.getBCD<int>(2)}) << std::endl;
             }
 
             // Close the schedule_description_length sequence.
@@ -303,8 +300,6 @@ void ts::PCAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
             buf.popState();
         }
     }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

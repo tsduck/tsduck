@@ -119,16 +119,12 @@ void ts::ETT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::ETT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    if (buf.remainingReadBytes() < 5) {
-        buf.setUserError();
-    }
-    else {
+    if (buf.canReadBytes(5)) {
         disp << margin << UString::Format(u"ETT table id extension: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
         disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
         disp << UString::Format(u", ETM id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
         disp.displayATSCMultipleString(buf, 0, margin, u"Extended text message: ");
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

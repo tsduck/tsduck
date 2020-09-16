@@ -111,7 +111,7 @@ void ts::SpliceDTMFDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 6) {
+    if (buf.canReadBytes(6)) {
         // Sometimes, the identifier is made of ASCII characters. Try to display them.
         disp.displayIntAndASCII(u"Identifier: 0x%08X", buf, 4, margin);
         disp << margin << UString::Format(u"Pre-roll: %d x 1/10 second", {buf.getUInt8()}) << std::endl;
@@ -119,7 +119,6 @@ void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
         buf.skipBits(5);
         disp << margin << "DTMF: \"" << buf.getUTF8(len) << "\"" << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

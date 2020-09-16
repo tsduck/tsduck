@@ -110,7 +110,7 @@ void ts::URILinkageDescriptor::deserializePayload(PSIBuffer& buf)
     if (uri_linkage_type == 0x00 || uri_linkage_type == 0x01) {
         min_polling_interval = buf.getUInt16();
     }
-    buf.getByteBlock(private_data, buf.remainingReadBytes());
+    buf.getBytes(private_data);
 }
 
 
@@ -120,17 +120,16 @@ void ts::URILinkageDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 2) {
+    if (buf.canReadBytes(2)) {
         const uint8_t type = buf.getUInt8();
         disp << margin << "URI linkage type: " << NameFromSection(u"URILinkageType", type, names::HEXA_FIRST) << std::endl;
         disp << margin << "URI: " << buf.getStringWithByteLength() << std::endl;
-        if ((type == 0x00 || type == 0x01) && buf.remainingReadBytes() >= 2) {
+        if ((type == 0x00 || type == 0x01) && buf.canReadBytes(2)) {
             const int interval = buf.getUInt16();
             disp << margin << UString::Format(u"Min polling interval: %d (%d seconds)", {interval, 2 * interval}) << std::endl;
         }
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

@@ -99,14 +99,14 @@ void ts::AACDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::AACDescriptor::deserializePayload(PSIBuffer& buf)
 {
     profile_and_level = buf.getUInt8();
-    if (!buf.endOfRead()) {
+    if (buf.canRead()) {
         bool has_AAC_type = buf.getBit() != 0;
         SAOC_DE = buf.getBit() != 0;
         buf.skipBits(6);
         if (has_AAC_type) {
             AAC_type = buf.getUInt8();
         }
-        buf.getByteBlock(additional_info, buf.remainingReadBytes());
+        buf.getBytes(additional_info);
     }
 }
 
@@ -117,11 +117,11 @@ void ts::AACDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (!buf.endOfRead()) {
+    if (buf.canRead()) {
         disp << margin << UString::Format(u"Profile and level: 0x%X", {buf.getUInt8()}) << std::endl;
     }
 
-    if (!buf.endOfRead()) {
+    if (buf.canRead()) {
         bool has_AAC_type = buf.getBit() != 0;
         disp << margin << UString::Format(u"SOAC DE flag: %s", {buf.getBit() != 0}) << std::endl;
         buf.skipBits(6);

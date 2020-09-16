@@ -286,7 +286,7 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& 
         const bool sseq_sel = (data[1] & 0x20) != 0;
         disp << std::endl;
         disp << margin << "S2X mode: " << NameFromSection(u"S2XMode", mode, names::FIRST) << std::endl;
-        disp << margin << "TS/GS S2X mode: " << NameFromSection(u"TSGSS2XMode", data[1] & 0x03, names::FIRST) << std::endl;
+        disp << margin << "TS/GS S2X mode: " << NameFromSection(u"TSGSS2XMode", data[1] & 0x03, names::DECIMAL_FIRST) << std::endl;
         data += 2; size -= 2;
 
         if (ok && sseq_sel) {

@@ -101,7 +101,7 @@ void ts::PAT::deserializePayload(PSIBuffer& buf, const Section& section)
     ts_id = section.tableIdExtension();
 
     // The paylaod is a list of service_id/pmt_pid pairs
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         const uint16_t id = buf.getUInt16();
         const uint16_t pid = buf.getPID();
         if (id == 0) {
@@ -148,11 +148,10 @@ void ts::PAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 void ts::PAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
     disp << margin << UString::Format(u"TS id:   %5d (0x%<04X)", {section.tableIdExtension()}) << std::endl;
-    while (!buf.error() && buf.remainingReadBytes() >= 4) {
+    while (buf.canReadBytes(4)) {
         const uint16_t id = buf.getUInt16();
         disp << margin << UString::Format(u"%s %5d (0x%<04X)  PID: %4d (0x%<04X)", {id == 0 ? u"NIT:    " : u"Program:", id, buf.getPID()}) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

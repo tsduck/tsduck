@@ -91,7 +91,7 @@ void ts::CPIdentifierDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::CPIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         cpids.push_back(buf.getUInt16());
     }
 }
@@ -133,8 +133,7 @@ bool ts::CPIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
 
 void ts::CPIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    while (!buf.error() && buf.remainingReadBytes() >= 2) {
+    while (buf.canReadBytes(2)) {
         disp << margin << "CP System Id: " << NameFromSection(u"CPSystemId", buf.getUInt16(), names::FIRST) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }

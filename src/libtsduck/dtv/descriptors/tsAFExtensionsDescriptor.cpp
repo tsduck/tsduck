@@ -89,7 +89,6 @@ void ts::AFExtensionsDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::AFExtensionsDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    disp.displayExtraData(buf, margin);
 }
 
 

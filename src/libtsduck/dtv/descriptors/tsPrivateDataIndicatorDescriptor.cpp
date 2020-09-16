@@ -87,11 +87,10 @@ void ts::PrivateDataIndicatorDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::PrivateDataIndicatorDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 4) {
+    if (buf.canReadBytes(4)) {
         // Sometimes, the indicator is made of ASCII characters. Try to display them.
         disp.displayIntAndASCII(u"Private data indicator: 0x%08X", buf, 4, margin);
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

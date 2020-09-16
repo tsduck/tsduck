@@ -32,6 +32,7 @@
 #include "tsBCD.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -82,14 +83,14 @@ ts::CableDeliverySystemDescriptor::CableDeliverySystemDescriptor(DuckContext& du
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CableDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CableDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendBCD(uint32_t(frequency / 100), 8);  // coded in 100 Hz units
-    bbp->appendUInt16(0xFFF0 | FEC_outer);
-    bbp->appendUInt8(modulation);
-    bbp->appendBCD(uint32_t(symbol_rate / 100), 7, true, FEC_inner);  // coded in 100 sym/s units, FEC in last nibble
-    serializeEnd(desc, bbp);
+    buf.putBCD(frequency / 100, 8);  // coded in 100 Hz units
+    buf.putBits(0xFFFF, 12);
+    buf.putBits(FEC_outer, 4);
+    buf.putUInt8(modulation);
+    buf.putBCD(symbol_rate / 100, 7);  // coded in 100 sym/s units
+    buf.putBits(FEC_inner, 4);
 }
 
 
@@ -97,19 +98,14 @@ void ts::CableDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor&
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CableDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::CableDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 11)) {
-        return;
-    }
-
-    const uint8_t* data = desc.payload();
-
-    frequency = 100 * uint64_t(DecodeBCD(data, 8));  // coded in 100 Hz units
-    FEC_outer = data[5] & 0x0F;
-    modulation = data[6];
-    symbol_rate = 100 * uint64_t(DecodeBCD(data + 7, 7, true));  // coded in 100 sym/s units.
-    FEC_inner = data[10] & 0x0F;
+    frequency = 100 * buf.getBCD<uint64_t>(8);  // coded in 100 Hz units
+    buf.skipBits(12);
+    FEC_outer = buf.getBits<uint8_t>(4);
+    modulation = buf.getUInt8();
+    symbol_rate = 100 * buf.getBCD<uint64_t>(7);  // coded in 100 sym/s units.
+    FEC_inner = buf.getBits<uint8_t>(4);
 }
 
 

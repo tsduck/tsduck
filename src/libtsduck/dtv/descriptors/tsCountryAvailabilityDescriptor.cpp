@@ -99,7 +99,7 @@ void ts::CountryAvailabilityDescriptor::deserializePayload(PSIBuffer& buf)
 {
     country_availability = buf.getBit() != 0;
     buf.skipBits(7);
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         country_codes.push_back(buf.getLanguageCode());
     }
 }
@@ -111,14 +111,13 @@ void ts::CountryAvailabilityDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 1) {
+    if (buf.canReadBytes(1)) {
         disp << margin << "Available: " << UString::YesNo(buf.getBit() != 0) << std::endl;
         buf.skipBits(7);
-        while (!buf.error() && buf.remainingReadBytes() >= 3) {
+        while (buf.canReadBytes(3)) {
             disp << margin << "Country code: \"" << buf.getLanguageCode() << "\"" << std::endl;
         }
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

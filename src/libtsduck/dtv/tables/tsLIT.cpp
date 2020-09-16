@@ -120,7 +120,7 @@ void ts::LIT::deserializePayload(PSIBuffer& buf, const Section& section)
     original_network_id = buf.getUInt16();
 
     // Loop across all local events.
-    while (!buf.error() && !buf.endOfRead()) {
+    while (buf.canRead()) {
         Event& ev(events.newEntry());
         ev.local_event_id = buf.getUInt16();
         buf.getDescriptorListWithLength(ev.descs);
@@ -172,22 +172,15 @@ void ts::LIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 {
     disp << margin << UString::Format(u"Event id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
-    if (buf.remainingReadBytes() < 6) {
-        buf.setUserError();
-    }
-    else {
+    if (buf.canReadBytes(6)) {
         disp << margin << UString::Format(u"Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        while (buf.canReadBytes(4)) {
+            disp << margin << UString::Format(u"- Local event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
+        }
     }
-
-    // Loop across all local events.
-    while (!buf.error() && buf.remainingReadBytes() >= 4) {
-        disp << margin << UString::Format(u"- Local event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
-    }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

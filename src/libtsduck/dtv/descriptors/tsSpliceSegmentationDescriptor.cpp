@@ -259,7 +259,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
     bool not_restricted = false;
     uint8_t type_id = 0;
 
-    if (buf.remainingReadBytes() < 9) {
+    if (!buf.canReadBytes(9)) {
         buf.setUserError();
     }
     else {
@@ -271,7 +271,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         disp << UString::Format(u", cancel: %d", {cancel}) << std::endl;
     }
 
-    if (!buf.error() && !cancel) {
+    if (buf.canReadBytes(1) && !cancel) {
         program_segmentation = buf.getBit() != 0;
         has_duration = buf.getBit() != 0;
         not_restricted = buf.getBit() != 0;
@@ -288,13 +288,13 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
     }
 
     if (!buf.error() && !cancel && !program_segmentation) {
-        if (buf.remainingReadBytes() < 1) {
+        if (!buf.canReadBytes(1)) {
             buf.setUserError();
         }
         else {
             size_t count = buf.getUInt8();
             disp << margin << UString::Format(u"Component count: %d", {count}) << std::endl;
-            while (!buf.error() && buf.remainingReadBytes() >= 6 && count > 0) {
+            while (buf.canReadBytes(6) && count > 0) {
                 count--;
                 disp << margin << UString::Format(u"Component tag: %d", {buf.getUInt8()});
                 buf.skipBits(7);
@@ -307,7 +307,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
     }
 
     if (!buf.error() && !cancel && has_duration) {
-        if (buf.remainingReadBytes() < 5) {
+        if (!buf.canReadBytes(5)) {
             buf.setUserError();
         }
         else {
@@ -316,7 +316,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
     }
 
     if (!buf.error() && !cancel) {
-        if (buf.remainingReadBytes() < 2) {
+        if (!buf.canReadBytes(2)) {
             buf.setUserError();
         }
         else {
@@ -327,7 +327,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
     }
 
     if (!buf.error() && !cancel) {
-        if (buf.remainingReadBytes() < 3) {
+        if (!buf.canReadBytes(3)) {
             buf.setUserError();
         }
         else {
@@ -339,7 +339,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
     }
 
     if (!buf.error() && !cancel && (type_id == 0x34 || type_id == 0x36 || type_id == 0x38 || type_id == 0x3A)) {
-        if (buf.remainingReadBytes() < 2) {
+        if (!buf.canReadBytes(2)) {
             buf.setUserError();
         }
         else {
@@ -347,8 +347,6 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
             disp << UString::Format(u", expected sub-segments: %d", {buf.getUInt8()}) << std::endl;
         }
     }
-
-    disp.displayExtraData(buf, margin);
 }
 
 

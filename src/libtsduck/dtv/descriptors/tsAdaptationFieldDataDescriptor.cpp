@@ -88,7 +88,7 @@ void ts::AdaptationFieldDataDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::AdaptationFieldDataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 1) {
+    if (buf.canReadBytes(1)) {
         const uint8_t id = buf.getUInt8();
         disp << margin << UString::Format(u"Adaptation field data identifier: 0x%X", {id}) << std::endl;
         for (int i = 0; i < 8; ++i) {
@@ -97,7 +97,6 @@ void ts::AdaptationFieldDataDescriptor::DisplayDescriptor(TablesDisplay& disp, P
             }
         }
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

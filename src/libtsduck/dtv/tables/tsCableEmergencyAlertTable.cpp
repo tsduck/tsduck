@@ -416,7 +416,7 @@ bool ts::CableEmergencyAlertTable::analyzeXML(DuckContext& duck, const xml::Elem
 
 void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    if (buf.remainingReadBytes() < 7) {
+    if (!buf.canReadBytes(7)) {
         buf.setUserError();
     }
     else {
@@ -428,7 +428,7 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts:
 
     disp.displayATSCMultipleString(buf, 1, margin, u"Nature of activation: ");
 
-    if (!buf.error() && buf.remainingReadBytes() >= 17) {
+    if (buf.canReadBytes(17)) {
         disp << margin << UString::Format(u"Remaining: %d seconds", {buf.getUInt8()});
         const uint32_t start = buf.getUInt32();
         disp << ", start time: " << (start == 0 ? u"immediate" : Time::GPSSecondsToUTC(start).format(Time::DATETIME));
@@ -449,7 +449,7 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts:
     if (!buf.error()) {
         disp << margin << UString::Format(u"Number of locations: %d", {count}) << std::endl;
     }
-    while (!buf.error() && buf.remainingReadBytes() >= 3 && count-- > 0) {
+    while (buf.canReadBytes(3) && count-- > 0) {
         const uint8_t state = buf.getUInt8();
         const uint8_t subd = buf.getBits<uint8_t>(4);
         buf.skipBits(2);
@@ -464,7 +464,7 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts:
     if (!buf.error()) {
         disp << margin << UString::Format(u"Number of exceptions: %d", {count}) << std::endl;
     }
-    while (!buf.error() && buf.remainingReadBytes() >= 5 && count-- > 0) {
+    while (buf.canReadBytes(5) && count-- > 0) {
         const bool inband = buf.getBit() != 0;
         buf.skipBits(7);
         disp << margin << UString::Format(u"  In-band: %s", {inband});
@@ -483,5 +483,4 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts:
 
     // Display descriptor list with 10-bit length field.
     disp.displayDescriptorListWithLength(section, buf, margin, UString(), UString(), 10);
-    disp.displayExtraData(buf, margin);
 }

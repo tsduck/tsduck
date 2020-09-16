@@ -105,7 +105,7 @@ void ts::MessageDescriptor::deserializePayload(PSIBuffer& buf)
 {
     message_id = buf.getUInt8();
     buf.getLanguageCode(language_code);
-    buf.getString(message, buf.remainingReadBytes());
+    buf.getString(message);
 }
 
 
@@ -135,10 +135,9 @@ bool ts::MessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
 
 void ts::MessageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() >= 4) {
+    if (buf.canReadBytes(4)) {
         disp << margin << "Message id: " << int(buf.getUInt8());
         disp << ", language: " << buf.getLanguageCode() << std::endl;
-        disp << margin << "Message: \"" << buf.getString(buf.remainingReadBytes()) << "\"" << std::endl;
+        disp << margin << "Message: \"" << buf.getString() << "\"" << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }

@@ -111,10 +111,9 @@ void ts::TDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::TDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    if (buf.remainingReadBytes() >= 5) {
+    if (buf.canReadBytes(5)) {
         disp << margin << "UTC time: " << buf.getFullMJD().format(Time::DATETIME) << std::endl;
     }
-    disp.displayExtraData(buf, margin);
 }
 
 

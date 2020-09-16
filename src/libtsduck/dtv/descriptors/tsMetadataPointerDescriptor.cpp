@@ -140,7 +140,7 @@ void ts::MetadataPointerDescriptor::deserializePayload(PSIBuffer& buf)
     buf.skipBits(5);
     if (metadata_locator_record_flag) {
         const size_t length = buf.getUInt8();
-        buf.getByteBlock(metadata_locator, length);
+        buf.getBytes(metadata_locator, length);
     }
     if (MPEG_carriage_flags <= 2) {
         program_number = buf.getUInt16();
@@ -149,7 +149,7 @@ void ts::MetadataPointerDescriptor::deserializePayload(PSIBuffer& buf)
         transport_stream_location = buf.getUInt16();
         transport_stream_id = buf.getUInt16();
     }
-    buf.getByteBlock(private_data, buf.remainingReadBytes());
+    buf.getBytes(private_data);
 }
 
 
@@ -159,7 +159,7 @@ void ts::MetadataPointerDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.remainingReadBytes() < 2) {
+    if (!buf.canReadBytes(2)) {
         buf.setUserError();
     }
     else {
@@ -170,7 +170,7 @@ void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         }
     }
 
-    if (buf.remainingReadBytes() < 1) {
+    if (!buf.canReadBytes(1)) {
         buf.setUserError();
     }
     else {
@@ -181,7 +181,7 @@ void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         }
     }
 
-    if (buf.remainingReadBytes() < 2) {
+    if (!buf.canReadBytes(2)) {
         buf.setUserError();
     }
     else {
@@ -201,9 +201,8 @@ void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
             disp << margin << UString::Format(u"Transport stream location: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
             disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }
-        disp.displayPrivateData(u"Private data", buf, buf.remainingReadBytes(), margin);
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
-    disp.displayExtraData(buf, margin);
 }
 
 
