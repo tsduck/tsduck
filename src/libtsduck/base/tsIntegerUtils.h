@@ -148,8 +148,7 @@ namespace ts {
 
     //! @cond nodoxygen
     // Template specialization.
-    template<>
-    uint64_t Power10<uint64_t>(size_t pow);
+    template<> TSDUCKDLL uint64_t Power10<uint64_t>(size_t pow);
     //! @endcond
 }
 

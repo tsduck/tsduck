@@ -1324,8 +1324,7 @@ namespace ts {
 
     //! @cond nodoxygen
     // Template specialization for boolean.
-    template<>
-    inline bool Buffer::putBits<bool>(bool value, size_t bits) { return putBits<int>(value ? 1 : 0, bits); }
+    template<> TSDUCKDLL inline bool Buffer::putBits(bool value, size_t bits) { return putBits<int>(value ? 1 : 0, bits); }
     //! @endcond
 }
 
