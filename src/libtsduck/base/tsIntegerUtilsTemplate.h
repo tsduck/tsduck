@@ -139,7 +139,7 @@ INT ts::RoundUp(INT x, INT f)
 //----------------------------------------------------------------------------
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
-INT ts::SignExtend(INT x, int bits)
+INT ts::SignExtend(INT x, size_t bits)
 {
     if (bits < 2) {
         // We need at least two bits, one for the sign, one for the value.

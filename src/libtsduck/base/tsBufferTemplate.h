@@ -218,7 +218,7 @@ bool ts::Buffer::putint(INT value, size_t bytes, void (*putBE)(void*,INT), void 
 // Read the next 4*n bits as a BCD value.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 INT ts::Buffer::getBCD(size_t bcd_count, INT def)
 {
     typedef typename std::make_unsigned<INT>::type UNSINT;

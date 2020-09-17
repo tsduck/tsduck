@@ -102,7 +102,7 @@ namespace ts {
     //! @return A signed integer containing the same signed value with proper sign extension on the full size of INT.
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    INT SignExtend(INT x, int bits);
+    INT SignExtend(INT x, size_t bits);
 
     //!
     //! Compute the maximum width of the decimal representation of an integer type.
