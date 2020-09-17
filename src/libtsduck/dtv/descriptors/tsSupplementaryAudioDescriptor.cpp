@@ -114,7 +114,7 @@ void ts::SupplementaryAudioDescriptor::deserializePayload(PSIBuffer& buf)
     mix_type = buf.getBit();
     editorial_classification = buf.getBits<uint8_t>(5);
     buf.skipBits(1);
-    const bool has_lang = buf.getBit();
+    const bool has_lang = buf.getBit() != 0;
     if (has_lang) {
         buf.getLanguageCode(language_code);
     }
