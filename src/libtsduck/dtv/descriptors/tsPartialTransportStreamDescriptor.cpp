@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -74,13 +75,14 @@ void ts::PartialTransportStreamDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PartialTransportStreamDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::PartialTransportStreamDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt24(0x00C00000 | peak_rate);
-    bbp->appendUInt24(0x00C00000 | minimum_overall_smoothing_rate);
-    bbp->appendUInt16(0xC000 | maximum_overall_smoothing_buffer);
-    serializeEnd(desc, bbp);
+    buf.putBits(0xFF, 2);
+    buf.putBits(peak_rate, 22);
+    buf.putBits(0xFF, 2);
+    buf.putBits(minimum_overall_smoothing_rate, 22);
+    buf.putBits(0xFF, 2);
+    buf.putBits(maximum_overall_smoothing_buffer, 14);
 }
 
 
@@ -88,18 +90,14 @@ void ts::PartialTransportStreamDescriptor::serialize(DuckContext& duck, Descript
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PartialTransportStreamDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::PartialTransportStreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 8;
-
-    if (_is_valid) {
-        peak_rate = GetUInt24(data) & 0x003FFFFF;
-        minimum_overall_smoothing_rate = GetUInt24(data + 3) & 0x003FFFFF;
-        maximum_overall_smoothing_buffer = GetUInt16(data + 6) & 0x3FFF;
-    }
+    buf.skipBits(2);
+    peak_rate = buf.getBits<uint32_t>(22);
+    buf.skipBits(2);
+    minimum_overall_smoothing_rate = buf.getBits<uint32_t>(22);
+    buf.skipBits(2);
+    maximum_overall_smoothing_buffer = buf.getBits<uint16_t>(14);
 }
 
 
@@ -107,21 +105,23 @@ void ts::PartialTransportStreamDescriptor::deserialize(DuckContext& duck, const 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::PartialTransportStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::PartialTransportStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
+    if (buf.canReadBytes(8)) {
+        buf.skipBits(2);
+        const uint32_t peak = buf.getBits<uint32_t>(22);
+        buf.skipBits(2);
+        const uint32_t min_rate = buf.getBits<uint32_t>(22);
+        buf.skipBits(2);
+        const uint16_t max_buffer = buf.getBits<uint16_t>(14);
 
-    if (size >= 8) {
-        const uint32_t peak = GetUInt24(data) & 0x003FFFFF;
-        const uint32_t min_rate = GetUInt24(data + 3) & 0x003FFFFF;
-        const uint16_t max_buffer = GetUInt16(data + 6) & 0x3FFF;
-        disp << margin << UString::Format(u"Peak rate: 0x%X (%d) x 400 b/s", {peak, peak}) << std::endl
-             << margin << "Min smoothing rate: ";
+        disp << margin << UString::Format(u"Peak rate: 0x%X (%<d) x 400 b/s", {peak}) << std::endl;
+        disp << margin << "Min smoothing rate: ";
         if (min_rate == UNDEFINED_SMOOTHING_RATE) {
             disp << "undefined";
         }
         else {
-            disp << UString::Format(u"0x%X (%d) x 400 b/s", {min_rate, min_rate});
+            disp << UString::Format(u"0x%X (%<d) x 400 b/s", {min_rate});
         }
         disp << std::endl;
         disp << margin << "Max smoothing buffer: ";
@@ -129,13 +129,10 @@ void ts::PartialTransportStreamDescriptor::DisplayDescriptor(TablesDisplay& disp
             disp << "undefined";
         }
         else {
-            disp << UString::Format(u"0x%X (%d) bytes", {max_buffer, max_buffer});
+            disp << UString::Format(u"0x%X (%<d) bytes", {max_buffer});
         }
         disp << std::endl;
-        data += 8; size -= 8;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

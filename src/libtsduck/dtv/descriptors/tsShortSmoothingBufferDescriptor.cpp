@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -74,30 +75,18 @@ void ts::ShortSmoothingBufferDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ShortSmoothingBufferDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ShortSmoothingBufferDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(sb_size << 6) | (sb_leak_rate & 0x3F));
-    bbp->append(DVB_reserved);
-    serializeEnd(desc, bbp);
+    buf.putBits(sb_size, 2);
+    buf.putBits(sb_leak_rate, 6);
+    buf.putBytes(DVB_reserved);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::ShortSmoothingBufferDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ShortSmoothingBufferDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    const size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        sb_size = (data[0] >> 6) & 0x03;
-        sb_leak_rate = data[0] & 0x3F;
-        DVB_reserved.copy(data + 1, size - 1);
-    }
+    sb_size = buf.getBits<uint8_t>(2);
+    sb_leak_rate = buf.getBits<uint8_t>(6);
+    buf.getBytes(DVB_reserved);
 }
 
 
@@ -105,14 +94,12 @@ void ts::ShortSmoothingBufferDescriptor::deserialize(DuckContext& duck, const De
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ShortSmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ShortSmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        disp << margin << UString::Format(u"Smoothing buffer size: %s", {NameFromSection(u"SmoothingBufferSize", (data[0] >> 6) & 0x03, names::FIRST)}) << std::endl
-             << margin << UString::Format(u"Smoothing buffer leak rate: %s", {NameFromSection(u"SmoothingBufferLeakRate", data[0] & 0x3F, names::FIRST)}) << std::endl;
-        disp.displayPrivateData(u"DVB-reserved data", data + 1, size - 1, margin);
+    if (buf.canReadBytes(1)) {
+        disp << margin << UString::Format(u"Smoothing buffer size: %s", {NameFromSection(u"SmoothingBufferSize", buf.getBits<uint8_t>(2), names::FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"Smoothing buffer leak rate: %s", {NameFromSection(u"SmoothingBufferLeakRate", buf.getBits<uint8_t>(6), names::FIRST)}) << std::endl;
+        disp.displayPrivateData(u"DVB-reserved data", buf, NPOS, margin);
     }
 }
 
@@ -127,11 +114,6 @@ void ts::ShortSmoothingBufferDescriptor::buildXML(DuckContext& duck, xml::Elemen
     root->setIntAttribute(u"sb_leak_rate", sb_leak_rate);
     root->addHexaText(DVB_reserved, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::ShortSmoothingBufferDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

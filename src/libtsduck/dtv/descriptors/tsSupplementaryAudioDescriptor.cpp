@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -91,22 +92,16 @@ ts::DID ts::SupplementaryAudioDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SupplementaryAudioDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SupplementaryAudioDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    bbp->appendUInt8(MY_EDID);
-    bbp->appendUInt8(uint8_t(mix_type << 7) |
-                     uint8_t((editorial_classification & 0x1F) << 2) |
-                     0x02 |
-                     (language_code.empty() ? 0x00 : 0x01));
-    if (!language_code.empty() && !SerializeLanguageCode(*bbp, language_code)) {
-        desc.invalidate();
-        return;
+    buf.putBit(mix_type);
+    buf.putBits(editorial_classification, 5);
+    buf.putBit(1);
+    buf.putBit(!language_code.empty());
+    if (!language_code.empty()) {
+        buf.putLanguageCode(language_code);
     }
-    bbp->append(private_data);
-
-    serializeEnd(desc, bbp);
+    buf.putBytes(private_data);
 }
 
 
@@ -114,33 +109,16 @@ void ts::SupplementaryAudioDescriptor::serialize(DuckContext& duck, Descriptor& 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SupplementaryAudioDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SupplementaryAudioDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    language_code.clear();
-    private_data.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    if (!(_is_valid = desc.isValid() && desc.tag() == tag() && size >= 2 && data[0] == MY_EDID)) {
-        return;
-    }
-
-    mix_type = (data[1] >> 7) & 0x01;
-    editorial_classification = (data[1] >> 2) & 0x1F;
-    const bool has_lang = (data[1] & 0x01) != 0;
-    data += 2; size -= 2;
-
+    mix_type = buf.getBit();
+    editorial_classification = buf.getBits<uint8_t>(5);
+    buf.skipBits(1);
+    const bool has_lang = buf.getBit();
     if (has_lang) {
-        if (size < 3) {
-            _is_valid = false;
-            return;
-        }
-        language_code = DeserializeLanguageCode(data);
-        data += 3; size -= 3;
+        buf.getLanguageCode(language_code);
     }
-
-    private_data.copy(data, size);
+    buf.getBytes(private_data);
 }
 
 

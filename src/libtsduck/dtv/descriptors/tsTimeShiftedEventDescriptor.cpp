@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -71,28 +72,16 @@ void ts::TimeShiftedEventDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedEventDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TimeShiftedEventDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(reference_service_id);
-    bbp->appendUInt16(reference_event_id);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(reference_service_id);
+    buf.putUInt16(reference_event_id);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::TimeShiftedEventDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TimeShiftedEventDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 4;
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        reference_service_id = GetUInt16(data);
-        reference_event_id = GetUInt16(data + 2);
-    }
+    reference_service_id = buf.getUInt16();
+    reference_event_id = buf.getUInt16();
 }
 
 
@@ -100,19 +89,13 @@ void ts::TimeShiftedEventDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedEventDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TimeShiftedEventDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        const uint16_t service = GetUInt16(data);
-        const uint16_t event = GetUInt16(data + 2);
-        data += 4; size -= 4;
-        disp << margin << UString::Format(u"Reference service id: 0x%X (%d)", {service, service}) << std::endl
-             << margin << UString::Format(u"Reference event id: 0x%X (%d)", {event, event}) << std::endl;
+    if (buf.canReadBytes(4)) {
+        disp << margin << UString::Format(u"Reference service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Reference event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
     }
 
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -125,11 +108,6 @@ void ts::TimeShiftedEventDescriptor::buildXML(DuckContext& duck, xml::Element* r
     root->setIntAttribute(u"reference_service_id", reference_service_id, true);
     root->setIntAttribute(u"reference_event_id", reference_event_id, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::TimeShiftedEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

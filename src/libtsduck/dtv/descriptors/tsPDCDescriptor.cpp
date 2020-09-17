@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -75,15 +76,13 @@ ts::PDCDescriptor::PDCDescriptor(DuckContext& duck, const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PDCDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::PDCDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt24(0xF00000 |
-                      uint32_t(uint32_t(pil_day & 0x1F) << 15) |
-                      uint32_t(uint32_t(pil_month & 0x0F) << 11) |
-                      uint32_t(uint32_t(pil_hours & 0x1F) << 6) |
-                      (pil_minutes & 0x3F));
-    serializeEnd(desc, bbp);
+    buf.putBits(0xFF, 4);
+    buf.putBits(pil_day, 5);
+    buf.putBits(pil_month, 4);
+    buf.putBits(pil_hours, 5);
+    buf.putBits(pil_minutes, 6);
 }
 
 
@@ -91,17 +90,13 @@ void ts::PDCDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PDCDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::PDCDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 3;
-
-    if (_is_valid) {
-        const uint32_t date = GetUInt24(desc.payload());
-        pil_day = uint8_t((date >> 15) & 0x1F);
-        pil_month = uint8_t((date >> 11) & 0x0F);
-        pil_hours = uint8_t((date >> 6) & 0x1F);
-        pil_minutes = uint8_t(date & 0x3F);
-    }
+    buf.skipBits(4);
+    pil_day = buf.getBits<uint8_t>(5);
+    pil_month = buf.getBits<uint8_t>(4);
+    pil_hours = buf.getBits<uint8_t>(5);
+    pil_minutes = buf.getBits<uint8_t>(6);
 }
 
 
@@ -109,20 +104,16 @@ void ts::PDCDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::PDCDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::PDCDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 3) {
-        const uint32_t date = GetUInt24(data);
-        data += 3; size -= 3;
-        disp << margin
-             << UString::Format(u"Programme Identification Label: %02d-%02d %02d:%02d (MM-DD hh:mm)",
-                                {(date >> 11) & 0x0F, (date >> 15) & 0x1F, (date >> 6) & 0x1F, date & 0x3F})
-             << std::endl;
+    if (buf.canReadBytes(3)) {
+        buf.skipBits(4);
+        const uint8_t day = buf.getBits<uint8_t>(5);
+        const uint8_t month = buf.getBits<uint8_t>(4);
+        const uint8_t hours = buf.getBits<uint8_t>(5);
+        const uint8_t minutes = buf.getBits<uint8_t>(6);
+        disp << margin << UString::Format(u"Programme Identification Label: %02d-%02d %02d:%02d (MM-DD hh:mm)", {month, day, hours, minutes}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

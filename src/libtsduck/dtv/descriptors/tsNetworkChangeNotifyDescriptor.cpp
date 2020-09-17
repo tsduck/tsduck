@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsBCD.h"
@@ -102,39 +103,30 @@ ts::DID ts::NetworkChangeNotifyDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::NetworkChangeNotifyDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::NetworkChangeNotifyDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
     for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
-        bbp->appendUInt16(it1->cell_id);
-
-        // Place-holder for length field.
-        const size_t len_index = bbp->size();
-        bbp->enlarge(1);
-
+        buf.putUInt16(it1->cell_id);
+        buf.pushWriteSequenceWithLeadingLength(8); // loop_length
         for (auto it2 = it1->changes.begin(); it2 != it1->changes.end(); ++it2) {
             const bool invariant_ts_present = it2->invariant_ts_tsid.set() && it2->invariant_ts_onid.set();
-            bbp->appendUInt8(it2->network_change_id);
-            bbp->appendUInt8(it2->network_change_version);
-            EncodeMJD(it2->start_time_of_change, bbp->enlarge(MJD_SIZE), MJD_SIZE);
-            bbp->appendUInt8(EncodeBCD(int(it2->change_duration) / 3660));
-            bbp->appendUInt8(EncodeBCD((int(it2->change_duration) / 60) % 60));
-            bbp->appendUInt8(EncodeBCD(int(it2->change_duration) % 60));
-            bbp->appendUInt8(uint8_t(it2->receiver_category << 5) |
-                             (invariant_ts_present ? 0x10 : 0x00) |
-                             (it2->change_type & 0x0F));
-            bbp->appendUInt8(it2->message_id);
+            buf.putUInt8(it2->network_change_id);
+            buf.putUInt8(it2->network_change_version);
+            buf.putMJD(it2->start_time_of_change, MJD_SIZE);
+            buf.putBCD(it2->change_duration / 3660, 2);
+            buf.putBCD((it2->change_duration / 60) % 60, 2);
+            buf.putBCD(it2->change_duration % 60, 2);
+            buf.putBits(it2->receiver_category, 3);
+            buf.putBit(invariant_ts_present);
+            buf.putBits(it2->change_type, 4);
+            buf.putUInt8(it2->message_id);
             if (invariant_ts_present) {
-                bbp->appendUInt16(it2->invariant_ts_tsid.value());
-                bbp->appendUInt16(it2->invariant_ts_onid.value());
+                buf.putUInt16(it2->invariant_ts_tsid.value());
+                buf.putUInt16(it2->invariant_ts_onid.value());
             }
         }
-
-        // Update length field.
-        (*bbp)[len_index] = uint8_t(bbp->size() - len_index - 1);
+        buf.popState(); // update loop_length
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -142,48 +134,34 @@ void ts::NetworkChangeNotifyDescriptor::serialize(DuckContext& duck, Descriptor&
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::NetworkChangeNotifyDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::NetworkChangeNotifyDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1 && data[0] == MY_EDID;
-    data++; size--;
-    cells.clear();
-
-    while (_is_valid && size >= 3) {
+    while (buf.canRead()) {
         Cell cell;
-        cell.cell_id = GetUInt16(data);
-        size_t len = data[2];
-        data += 3; size -= 3;
-
-        while (_is_valid && size >= len && len >= 12) {
+        cell.cell_id = buf.getUInt16();
+        buf.pushReadSizeFromLength(8); // loop_length
+        while (buf.canRead()) {
             Change ch;
-            ch.network_change_id = data[0];
-            ch.network_change_version = data[1];
-            DecodeMJD(data + 2, 5, ch.start_time_of_change);
-            ch.change_duration = (DecodeBCD(data[7]) * 3600) + (DecodeBCD(data[8]) * 60) + DecodeBCD(data[9]);
-            ch.receiver_category = (data[10] >> 5) & 0x07;
-            const bool invariant_ts_present = (data[10] & 0x10) != 0;
-            ch.change_type = data[10] & 0x0F;
-            ch.message_id = data[11];
-            data += 12; size -= 12; len -= 12;
+            ch.network_change_id = buf.getUInt8();
+            ch.network_change_version = buf.getUInt8();
+            ch.start_time_of_change = buf.getMJD(MJD_SIZE);
+            const SubSecond hours = buf.getBCD<SubSecond>(2);
+            const SubSecond minutes = buf.getBCD<SubSecond>(2);
+            const SubSecond seconds = buf.getBCD<SubSecond>(2);
+            ch.change_duration = (hours * 3600) + (minutes * 60) + seconds;
+            ch.receiver_category = buf.getBits<uint8_t>(3);
+            const bool invariant_ts_present = buf.getBit() != 0;
+            ch.change_type = buf.getBits<uint8_t>(4);
+            ch.message_id = buf.getUInt8();
             if (invariant_ts_present) {
-                _is_valid = len >= 4;
-                if (_is_valid) {
-                    ch.invariant_ts_tsid = GetUInt16(data);
-                    ch.invariant_ts_onid = GetUInt16(data + 2);
-                    data += 4; size -= 4; len -= 4;
-                }
+                ch.invariant_ts_tsid = buf.getUInt16();
+                ch.invariant_ts_onid = buf.getUInt16();
             }
             cell.changes.push_back(ch);
         }
-
-        _is_valid = _is_valid && len == 0;
+        buf.popState(); // update loop_length
         cells.push_back(cell);
     }
-
-    // Make sure there is no truncated trailing data.
-    _is_valid = _is_valid && size == 0;
 }
 
 

@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -85,32 +86,18 @@ ts::DID ts::ServiceRelocatedDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceRelocatedDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ServiceRelocatedDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    bbp->appendUInt16(old_original_network_id);
-    bbp->appendUInt16(old_transport_stream_id);
-    bbp->appendUInt16(old_service_id);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(old_original_network_id);
+    buf.putUInt16(old_transport_stream_id);
+    buf.putUInt16(old_service_id);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::ServiceRelocatedDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ServiceRelocatedDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 7 && data[0] == MY_EDID;
-
-    if (_is_valid) {
-        old_original_network_id = GetUInt16(data + 1);
-        old_transport_stream_id = GetUInt16(data + 3);
-        old_service_id = GetUInt16(data + 5);
-    }
+    old_original_network_id = buf.getUInt16();
+    old_transport_stream_id = buf.getUInt16();
+    old_service_id = buf.getUInt16();
 }
 
 
@@ -118,22 +105,13 @@ void ts::ServiceRelocatedDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ServiceRelocatedDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ServiceRelocatedDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-
-    if (size >= 6) {
-        disp << margin << UString::Format(u"Old original network id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-             << margin << UString::Format(u"Old transport stream id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl
-             << margin << UString::Format(u"Old service id: 0x%X (%d)", {GetUInt16(data + 4), GetUInt16(data + 4)}) << std::endl;
-        data += 6; size -= 6;
+    if (buf.canReadBytes(6)) {
+        disp << margin << UString::Format(u"Old original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Old transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Old service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
