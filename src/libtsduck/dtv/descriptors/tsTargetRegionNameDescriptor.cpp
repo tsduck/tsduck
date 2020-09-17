@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -93,31 +94,24 @@ ts::DID ts::TargetRegionNameDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetRegionNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TargetRegionNameDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    if (!SerializeLanguageCode(*bbp, country_code) || !SerializeLanguageCode(*bbp, ISO_639_language_code)) {
-        return;
-    }
+    buf.putLanguageCode(country_code);
+    buf.putLanguageCode(ISO_639_language_code);
     for (auto it = regions.begin(); it != regions.end(); ++it) {
-        ByteBlock name(duck.encodedWithByteLength(it->region_name));
-        assert(!name.empty());
-        if (name[0] > 0x3F) {
-            return;
-        }
-        name[0] |= uint8_t(it->region_depth << 6);
-        bbp->append(name);
-
-        bbp->appendUInt8(it->primary_region_code);
+        buf.pushState();
+        buf.putStringWithByteLength(it->region_name);
+        buf.swapState();
+        buf.putBits(it->region_depth, 2);
+        buf.popState();
+        buf.putUInt8(it->primary_region_code);
         if (it->region_depth >= 2) {
-            bbp->appendUInt8(it->secondary_region_code);
+            buf.putUInt8(it->secondary_region_code);
             if (it->region_depth >= 3) {
-                bbp->appendUInt16(it->tertiary_region_code);
+                buf.putUInt16(it->tertiary_region_code);
             }
         }
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -125,50 +119,24 @@ void ts::TargetRegionNameDescriptor::serialize(DuckContext& duck, Descriptor& de
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetRegionNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TargetRegionNameDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 7 && data[0] == MY_EDID;
-    regions.clear();
-
-    if (_is_valid) {
-        data++; size--;
-        _is_valid = deserializeLanguageCode(country_code, data, size) && deserializeLanguageCode(ISO_639_language_code, data, size);
-    }
-    while (_is_valid && size >= 2) {
+    buf.getLanguageCode(country_code);
+    buf.getLanguageCode(ISO_639_language_code);
+    while (buf.canRead()) {
         Region region;
-        region.region_depth = (data[0] >> 6) & 0x03;
-        const size_t len = data[0] & 0x3F;
-        data++; size--;
-
-        _is_valid = size > len;
-        if (_is_valid) {
-            duck.decode(region.region_name, data, len);
-            region.primary_region_code = data[len];
-            data += len + 1; size -= len + 1;
-        }
-        if (_is_valid && region.region_depth >= 2) {
-            _is_valid = size >= 1;
-            if (_is_valid) {
-                region.secondary_region_code = data[0];
-                data++; size--;
+        region.region_depth = buf.getBits<uint8_t>(2);
+        const size_t len = buf.getBits<uint8_t>(6);
+        buf.getString(region.region_name, len);
+        region.primary_region_code = buf.getUInt8();
+        if (region.region_depth >= 2) {
+            region.secondary_region_code = buf.getUInt8();
+            if (region.region_depth >= 3) {
+                region.tertiary_region_code = buf.getUInt16();
             }
         }
-        if (_is_valid && region.region_depth >= 3) {
-            _is_valid = size >= 2;
-            if (_is_valid) {
-                region.tertiary_region_code = GetUInt16(data);
-                data += 2; size -= 2;
-            }
-        }
-        if (_is_valid) {
-            regions.push_back(region);
-        }
+        regions.push_back(region);
     }
-
-    // Make sure there is no truncated trailing data.
-    _is_valid = _is_valid && size == 0;
 }
 
 

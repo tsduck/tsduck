@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -77,15 +78,13 @@ void ts::NVODReferenceDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::NVODReferenceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::NVODReferenceDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt16(it->transport_stream_id);
-        bbp->appendUInt16(it->original_network_id);
-        bbp->appendUInt16(it->service_id);
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        buf.putUInt16(it->transport_stream_id);
+        buf.putUInt16(it->original_network_id);
+        buf.putUInt16(it->service_id);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -93,18 +92,14 @@ void ts::NVODReferenceDescriptor::serialize(DuckContext& duck, Descriptor& desc)
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::NVODReferenceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::NVODReferenceDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 6 == 0;
-    entries.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        while (size >= 6) {
-            entries.push_back(Entry(GetUInt16(data), GetUInt16(data + 2), GetUInt16(data + 4)));
-            data += 6; size -= 6;
-        }
+    while (buf.canRead()) {
+        Entry e;
+        e.transport_stream_id = buf.getUInt16();
+        e.original_network_id = buf.getUInt16();
+        e.service_id = buf.getUInt16();
+        entries.push_back(e);
     }
 }
 
@@ -113,21 +108,14 @@ void ts::NVODReferenceDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NVODReferenceDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::NVODReferenceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 6) {
-        const uint16_t ts = GetUInt16(data);
-        const uint16_t net = GetUInt16(data + 2);
-        const uint16_t srv = GetUInt16(data + 4);
-        data += 6; size -= 6;
-        disp << margin << UString::Format(u"- Transport stream id: 0x%X (%d)", {ts, ts}) << std::endl
-             << margin << UString::Format(u"  Original network id: 0x%X (%d)", {net, net}) << std::endl
-             << margin << UString::Format(u"  Service id: 0x%X (%d)", {srv, srv}) << std::endl;
+    while (buf.canReadBytes(6)) {
+        disp << margin << UString::Format(u"- Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"  Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"  Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
     }
 
-    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -91,30 +92,27 @@ ts::DID ts::TargetRegionDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetRegionDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TargetRegionDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    if (!SerializeLanguageCode(*bbp, country_code)) {
-        return;
-    }
+    buf.putLanguageCode(country_code);
     for (auto it = regions.begin(); it != regions.end(); ++it) {
         const bool has_cc = it->country_code.size() == 3;
-        bbp->appendUInt8((has_cc ? 0xFC : 0xF8) | (it->region_depth & 0x03));
+        buf.putBits(0xFF, 5);
+        buf.putBit(has_cc);
+        buf.putBits(it->region_depth, 2);
         if (has_cc) {
-            SerializeLanguageCode(*bbp, it->country_code);
+            buf.putLanguageCode(it->country_code);
         }
         if (it->region_depth >= 1) {
-            bbp->appendUInt8(it->primary_region_code);
+            buf.putUInt8(it->primary_region_code);
             if (it->region_depth >= 2) {
-                bbp->appendUInt8(it->secondary_region_code);
+                buf.putUInt8(it->secondary_region_code);
                 if (it->region_depth >= 3) {
-                    bbp->appendUInt16(it->tertiary_region_code);
+                    buf.putUInt16(it->tertiary_region_code);
                 }
             }
         }
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -122,50 +120,27 @@ void ts::TargetRegionDescriptor::serialize(DuckContext& duck, Descriptor& desc) 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetRegionDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TargetRegionDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4 && data[0] == MY_EDID;
-    regions.clear();
-
-    if (_is_valid) {
-        data++; size--;
-        _is_valid = deserializeLanguageCode(country_code, data, size);
-    }
-    while (_is_valid && size >= 1) {
+    buf.getLanguageCode(country_code);
+    while (buf.canRead()) {
         Region region;
-        region.region_depth = data[0] & 0x03;
-        const bool has_cc = (data[0] & 0x04) != 0;
-        data++; size--;
-
+        buf.skipBits(5);
+        const bool has_cc = buf.getBit() != 0;
+        region.region_depth = buf.getBits<uint8_t>(2);
         if (has_cc) {
-            _is_valid = deserializeLanguageCode(region.country_code, data, size);
+            buf.getLanguageCode(region.country_code);
         }
-        if (_is_valid && region.region_depth >= 1) {
-            _is_valid = size >= 1;
-            if (_is_valid) {
-                region.primary_region_code = data[0];
-                data++; size--;
+        if (region.region_depth >= 1) {
+            region.primary_region_code = buf.getUInt8();
+            if (region.region_depth >= 2) {
+                region.secondary_region_code = buf.getUInt8();
+                if (region.region_depth >= 3) {
+                    region.tertiary_region_code = buf.getUInt16();
+                }
             }
         }
-        if (_is_valid && region.region_depth >= 2) {
-            _is_valid = size >= 1;
-            if (_is_valid) {
-                region.secondary_region_code = data[0];
-                data++; size--;
-            }
-        }
-        if (_is_valid && region.region_depth >= 3) {
-            _is_valid = size >= 2;
-            if (_is_valid) {
-                region.tertiary_region_code = GetUInt16(data);
-                data += 2; size -= 2;
-            }
-        }
-        if (_is_valid) {
-            regions.push_back(region);
-        }
+        regions.push_back(region);
     }
 }
 

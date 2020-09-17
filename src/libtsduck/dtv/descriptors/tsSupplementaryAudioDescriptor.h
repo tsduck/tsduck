@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of a supplementary_audio_descriptor.
-    //! @see ETSI 300 468, 6.4.10.
+    //! @see ETSI 300 468, 6.4.11.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL SupplementaryAudioDescriptor : public AbstractDescriptor
@@ -64,14 +64,14 @@ namespace ts {
         SupplementaryAudioDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
         DeclareLegacyDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual DID extendedTag() const override;
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };
