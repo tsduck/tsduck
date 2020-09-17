@@ -556,8 +556,8 @@ namespace ts {
 
 #if !defined(DOXYGEN)
     // Template specializations for performance
-    template<> inline void ByteBlock::append(uint8_t i) {push_back(i);}
-    template<> inline void ByteBlock::append(int8_t i) {push_back(uint8_t(i));}
+    template<> inline void ByteBlock::append(uint8_t i) { push_back(i); }
+    template<> inline void ByteBlock::append(int8_t i) { push_back(uint8_t(i)); }
 #endif
 
     //!
