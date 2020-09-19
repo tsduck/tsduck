@@ -845,6 +845,10 @@ CFLAGS_WARNINGS = $(COMMON_WARNINGS)
 CXXFLAGS_WARNINGS = $(COMMON_WARNINGS)
 ifdef USE_LLVM
     COMMON_WARNINGS += -Weverything -Wno-c++98-compat-pedantic
+    ifdef MACOS
+        # On macOS, it is normal to include from /usr/local/include since some libraries come from HomeBrew.
+        COMMON_WARNINGS += -Wno-poison-system-directories
+    endif
 else
     COMMON_WARNINGS += -Wall -Wextra
     COMMON_WARNINGS += -Wformat-nonliteral -Wformat-security -Wswitch-default -Wuninitialized \
