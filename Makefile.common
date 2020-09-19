@@ -763,6 +763,8 @@ ifeq ($(GCC_VERSION_DONE),)
     export GCC_VERSION_DONE = true
     export GCC_VERSION := $(shell $(GCC) -dumpversion 2>/dev/null)
     export GCC_MAJOR := $(firstword $(subst .,$(SPACE),$(GCC_VERSION)))
+    export LLVM_VERSION := $(shell clang -dumpversion 2>/dev/null)
+    export LLVM_MAJOR := $(firstword $(subst .,$(SPACE),$(LLVM_VERSION)))
     ifeq ($(shell test 0$(GCC_MAJOR) -ge 5; echo $$?),0)
         export GCC_5_OR_MORE := true
     else
@@ -775,7 +777,12 @@ ifeq ($(GCC_VERSION_DONE),)
         GCC_6_OR_MORE :=
         unexport GCC_6_OR_MORE
     endif
-    export LLVM_VERSION := $(shell clang -dumpversion 2>/dev/null)
+    ifeq ($(shell test 0$(LLVM_MAJOR) -ge 12; echo $$?),0)
+        export LLVM_12_OR_MORE := true
+    else
+        LLVM_12_OR_MORE :=
+        unexport LLVM_12_OR_MORE
+    endif
     export USE_GCC := $(if $(shell $(CXX) --version 2>/dev/null | grep -i -e gcc -e g++),true,)
     export USE_LLVM := $(if $(shell $(CXX) --version 2>/dev/null | grep -i clang),true,)
 endif
@@ -846,8 +853,13 @@ CXXFLAGS_WARNINGS = $(COMMON_WARNINGS)
 ifdef USE_LLVM
     COMMON_WARNINGS += -Weverything -Wno-c++98-compat-pedantic
     ifdef MACOS
-        # On macOS, it is normal to include from /usr/local/include since some libraries come from HomeBrew.
-        COMMON_WARNINGS += -Wno-poison-system-directories
+        # On macOS, it is normal to include from /usr/local/include since some libraries come from Homebrew.
+        # Starting with clang 12, this generates a warning we need to disable. However, this disable option
+        # generates an error with previous versions. And we cannot disable this warning inside the code since
+        # this is a command-line-level error. So, we must check the version here...
+        ifdef LLVM_12_OR_MORE
+            COMMON_WARNINGS += -Wno-poison-system-directories
+        endif
     endif
 else
     COMMON_WARNINGS += -Wall -Wextra
