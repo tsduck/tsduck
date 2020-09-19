@@ -167,7 +167,7 @@ bool ts::PSIBuffer::getLanguageCode(UString& str)
 // Common code the various putString functions.
 //----------------------------------------------------------------------------
 
-size_t ts::PSIBuffer::putStringCommon(const UString& str, size_t start, size_t count, EncodeMethod em, bool partial, size_t min_req_size)
+size_t ts::PSIBuffer::putStringCommon(const UString& str, size_t start, size_t count, EncodeMethod em, bool partial, size_t min_req_size, const Charset* charset)
 {
     // Make sure we can write in the buffer and has the minimum required free size.
     if (readOnly() || writeError() || remainingWriteBytes() < min_req_size) {
@@ -183,7 +183,7 @@ size_t ts::PSIBuffer::putStringCommon(const UString& str, size_t start, size_t c
     uint8_t* data = currentWriteAddress();
     const size_t prev_size = remainingWriteBytes();
     size_t size = prev_size;
-    const size_t nchars = (_duck.charsetOut()->*em)(data, size, str, start, count);
+    const size_t nchars = (_duck.charsetOut(charset)->*em)(data, size, str, start, count);
 
     if (partial || nchars >= count) {
         // Some or all characters were serialized.
@@ -203,14 +203,14 @@ size_t ts::PSIBuffer::putStringCommon(const UString& str, size_t start, size_t c
 // Deserialize a string
 //----------------------------------------------------------------------------
 
-ts::UString ts::PSIBuffer::getString(size_t size)
+ts::UString ts::PSIBuffer::getString(size_t size, const Charset* charset)
 {
     UString str;
-    getString(str, size);
+    getString(str, size, charset);
     return str;
 }
 
-bool ts::PSIBuffer::getString(ts::UString& str, size_t size)
+bool ts::PSIBuffer::getString(ts::UString& str, size_t size, const Charset* charset)
 {
     // NPOS means exact size of the buffer.
     if (size == NPOS) {
@@ -223,7 +223,7 @@ bool ts::PSIBuffer::getString(ts::UString& str, size_t size)
     }
 
     // Decode characters.
-    if (_duck.charsetIn()->decode(str, currentReadAddress(), size)) {
+    if (_duck.charsetIn(charset)->decode(str, currentReadAddress(), size)) {
         // Include the deserialized bytes in the read part.
         readSeek(currentReadByteOffset() + size);
         return true;
@@ -240,20 +240,20 @@ bool ts::PSIBuffer::getString(ts::UString& str, size_t size)
 // Deserialize a string with byte length.
 //----------------------------------------------------------------------------
 
-ts::UString ts::PSIBuffer::getStringWithByteLength()
+ts::UString ts::PSIBuffer::getStringWithByteLength(const Charset* charset)
 {
     UString str;
-    getStringWithByteLength(str);
+    getStringWithByteLength(str, charset);
     return str;
 }
 
-bool ts::PSIBuffer::getStringWithByteLength(ts::UString& str)
+bool ts::PSIBuffer::getStringWithByteLength(ts::UString& str, const Charset* charset)
 {
     const uint8_t* data = currentReadAddress();
     const size_t prev_size = remainingReadBytes();
     size_t size = prev_size;
 
-    if (!readError() && _duck.charsetIn()->decodeWithByteLength(str, data, size)) {
+    if (!readError() && _duck.charsetIn(charset)->decodeWithByteLength(str, data, size)) {
         // Include the deserialized bytes in the read part.
         readSeek(currentReadByteOffset() + prev_size - size);
         return true;

@@ -135,15 +135,17 @@ namespace ts {
         //! The default is the DVB superset of ISO/IEC 6937 as defined in ETSI EN 300 468.
         //! Other defaults can be used in non-DVB contexts or when a DVB operator uses an incorrect
         //! signalization, assuming another default character set (usually from its own country).
+        //! @param [in] charset An optional specific character set to use instead of the default one.
         //! @return The default input character set (never null).
         //!
-        const Charset* charsetIn() const { return _charsetIn; }
+        const Charset* charsetIn(const Charset* charset = nullptr) const { return charset != nullptr ? charset : _charsetIn; }
 
         //!
         //! Get the preferred output character set for strings to insert in tables and descriptors.
+        //! @param [in] charset An optional specific character set to use instead of the default one.
         //! @return The preferred output character set (never null).
         //!
-        const Charset* charsetOut() const { return _charsetOut; }
+        const Charset* charsetOut(const Charset* charset = nullptr) const { return charset != nullptr ? charset : _charsetOut; }
 
         //!
         //! Convert a signalization string into UTF-16 using the default input character set.

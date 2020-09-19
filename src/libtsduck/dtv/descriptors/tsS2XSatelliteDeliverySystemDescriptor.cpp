@@ -33,6 +33,7 @@
 #include "tsVariable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -127,44 +128,47 @@ ts::DID ts::S2XSatelliteDeliverySystemDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::S2XSatelliteDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::S2XSatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    bbp->appendUInt8(uint8_t((receiver_profiles & 0x1F) << 3));
-    bbp->appendUInt8(uint8_t((S2X_mode & 0x03) << 6) |
-                     (scrambling_sequence_selector ? 0x20 : 0x00) |
-                     (TS_GS_S2X_mode & 0x03));
+    buf.putBits(receiver_profiles, 5);
+    buf.putBits(0x00, 3);
+    buf.putBits(S2X_mode, 2);
+    buf.putBit(scrambling_sequence_selector);
+    buf.putBits(0x00, 3);
+    buf.putBits(TS_GS_S2X_mode, 2);
     if (scrambling_sequence_selector) {
-        bbp->appendUInt24(scrambling_sequence_index & 0x03FFFF);
+        buf.putBits(0x00, 6);
+        buf.putBits(scrambling_sequence_index, 18);
     }
-    serializeChannel(master_channel, *bbp);
+    serializeChannel(master_channel, buf);
     if (S2X_mode == 2) {
-        bbp->appendUInt8(timeslice_number);
+        buf.putUInt8(timeslice_number);
     }
     else if (S2X_mode == 3) {
-        bbp->appendUInt8(num_channel_bonds_minus_one ? 0x01 : 0x00);
-        serializeChannel(channel_bond_0, *bbp);
+        buf.putBits(0x00, 7);
+        buf.putBit(num_channel_bonds_minus_one);
+        serializeChannel(channel_bond_0, buf);
         if (num_channel_bonds_minus_one) {
-            serializeChannel(channel_bond_1, *bbp);
+            serializeChannel(channel_bond_1, buf);
         }
     }
-    bbp->append(reserved_future_use);
-    serializeEnd(desc, bbp);
+    buf.putBytes(reserved_future_use);
 }
 
 // Serialization of a channel description.
-void ts::S2XSatelliteDeliverySystemDescriptor::serializeChannel(const Channel& channel, ByteBlock& bb) const
+void ts::S2XSatelliteDeliverySystemDescriptor::serializeChannel(const Channel& channel, PSIBuffer& buf) const
 {
-    bb.appendBCD(uint32_t(channel.frequency / 10000), 8);  // unit is 10 kHz
-    bb.appendBCD(channel.orbital_position, 4);
-    bb.appendUInt8((channel.east_not_west ? 0x80 : 0x00) |
-                   uint8_t((channel.polarization & 0x03) << 5) |
-                   (channel.multiple_input_stream_flag ? 0x10 : 0x00) |
-                   (channel.roll_off & 0x07));
-    bb.appendBCD(uint32_t(channel.symbol_rate / 100), 7, false); // unit is 100 sym/s
+    buf.putBCD(channel.frequency / 10000, 8);  // unit is 10 kHz
+    buf.putBCD(channel.orbital_position, 4);
+    buf.putBit(channel.east_not_west);
+    buf.putBits(channel.polarization, 2);
+    buf.putBit(channel.multiple_input_stream_flag);
+    buf.putBit(0);
+    buf.putBits(channel.roll_off, 3);
+    buf.putBits(0x00, 4);
+    buf.putBCD(channel.symbol_rate / 100, 7); // unit is 100 sym/s
     if (channel.multiple_input_stream_flag) {
-        bb.appendUInt8(channel.input_stream_identifier);
+        buf.putUInt8(channel.input_stream_identifier);
     }
 }
 
@@ -173,67 +177,48 @@ void ts::S2XSatelliteDeliverySystemDescriptor::serializeChannel(const Channel& c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::S2XSatelliteDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::S2XSatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    reserved_future_use.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 3 && data[0] == MY_EDID;
-
-    if (_is_valid) {
-        receiver_profiles = (data[1] >> 3) & 0x1F;
-        S2X_mode = (data[2] >> 6) & 0x03;
-        scrambling_sequence_selector = (data[2] & 0x20) != 0;
-        TS_GS_S2X_mode = data[2] & 0x03;
-        data += 3; size -= 3;
-
-        if (scrambling_sequence_selector) {
-            if (size < 3) {
-                _is_valid = false;
-                return;
-            }
-            else {
-                scrambling_sequence_index = GetUInt24(data) & 0x03FFFF;
-                data += 3; size -= 3;
-            }
-        }
-        if (!deserializeChannel(master_channel, data, size)) {
-            return;
-        }
-        if (S2X_mode == 2 && !deserializeInt(timeslice_number, data, size)) {
-            return;
-        }
-        if (S2X_mode == 3 &&
-            (!deserializeBool(num_channel_bonds_minus_one, data, size) ||
-             !deserializeChannel(channel_bond_0, data, size) ||
-             (num_channel_bonds_minus_one && !deserializeChannel(channel_bond_1, data, size))))
-        {
-            return;
-        }
-
-        reserved_future_use.copy(data, size);
+    receiver_profiles = buf.getBits<uint8_t>(5);
+    buf.skipBits(3);
+    S2X_mode = buf.getBits<uint8_t>(2);
+    scrambling_sequence_selector = buf.getBit() != 0;
+    buf.skipBits(3);
+    TS_GS_S2X_mode = buf.getBits<uint8_t>(2);
+    if (scrambling_sequence_selector) {
+        buf.skipBits(6);
+        scrambling_sequence_index = buf.getBits<uint32_t>(18);
     }
+    deserializeChannel(master_channel, buf);
+    if (S2X_mode == 2) {
+        timeslice_number = buf.getUInt8();
+    }
+    if (S2X_mode == 3) {
+        buf.skipBits(7);
+        num_channel_bonds_minus_one = buf.getBit() != 0;
+        deserializeChannel(channel_bond_0, buf);
+        if (num_channel_bonds_minus_one) {
+            deserializeChannel(channel_bond_1, buf);
+        }
+    }
+    buf.getBytes(reserved_future_use);
 }
 
 // Deserialization of a channel description.
-bool ts::S2XSatelliteDeliverySystemDescriptor::deserializeChannel(Channel& channel, const uint8_t*& data, size_t& size)
+void ts::S2XSatelliteDeliverySystemDescriptor::deserializeChannel(Channel& channel, PSIBuffer& buf)
 {
-    if (size < 11) {
-        _is_valid = false;
-        return false;
+    channel.frequency = buf.getBCD<uint64_t>(8) * 10000;  // unit is 10 Hz
+    channel.orbital_position = buf.getBCD<uint16_t>(4);
+    channel.east_not_west = buf.getBit() != 0;
+    channel.polarization = buf.getBits<uint8_t>(2);
+    channel.multiple_input_stream_flag = buf.getBit() != 0;
+    buf.skipBits(1);
+    channel.roll_off = buf.getBits<uint8_t>(3);
+    buf.skipBits(4);
+    channel.symbol_rate = buf.getBCD<uint64_t>(7) * 100;  // unit is 100 sym/sec
+    if (channel.multiple_input_stream_flag) {
+        channel.input_stream_identifier = buf.getUInt8();
     }
-
-    channel.frequency = uint64_t(DecodeBCD(data, 8)) * 10000;  // unit is 10 Hz
-    channel.orbital_position = uint16_t(DecodeBCD(data + 4, 4));
-    channel.east_not_west = (data[6] & 0x80) != 0;
-    channel.polarization = (data[6] >> 5) & 0x03;
-    channel.multiple_input_stream_flag = (data[6] & 0x10) != 0;
-    channel.roll_off = (data[6] & 0x07);
-    channel.symbol_rate = uint64_t(DecodeBCD(data + 7, 7, false)) * 100;  // unit is 100 sym/sec
-    data += 11; size -= 11;
-
-    return !channel.multiple_input_stream_flag || deserializeInt(channel.input_stream_identifier, data, size);
 }
 
 

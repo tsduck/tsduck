@@ -155,11 +155,12 @@ namespace ts {
         //! @param [in] str The UTF-16 string to encode.
         //! @param [in] start Starting offset to convert in this UTF-16 string.
         //! @param [in] count Maximum number of characters to convert.
+        //! @param [in] charset An optional specific character set to use instead of the default one.
         //! @return True on success, false if there is not enough space to write (and set write error flag).
         //!
-        bool putString(const UString& str, size_t start = 0, size_t count = NPOS)
+        bool putString(const UString& str, size_t start = 0, size_t count = NPOS, const Charset* charset = nullptr)
         {
-            return putStringCommon(str, start, count, &Charset::encode, false, 0) != 0;
+            return putStringCommon(str, start, count, &Charset::encode, false, 0, charset) != 0;
         }
 
         //!
@@ -169,11 +170,12 @@ namespace ts {
         //! @param [in] str The UTF-16 string to encode.
         //! @param [in] start Starting offset to convert in this UTF-16 string.
         //! @param [in] count Maximum number of characters to convert.
+        //! @param [in] charset An optional specific character set to use instead of the default one.
         //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
         //!
-        size_t putPartialString(const UString& str, size_t start = 0, size_t count = NPOS)
+        size_t putPartialString(const UString& str, size_t start = 0, size_t count = NPOS, const Charset* charset = nullptr)
         {
-            return putStringCommon(str, start, count, &Charset::encode, true, 0);
+            return putStringCommon(str, start, count, &Charset::encode, true, 0, charset);
         }
 
         //!
@@ -182,11 +184,12 @@ namespace ts {
         //! @param [in] str The UTF-16 string to encode.
         //! @param [in] start Starting offset to convert in this UTF-16 string.
         //! @param [in] count Maximum number of characters to convert.
+        //! @param [in] charset An optional specific character set to use instead of the default one.
         //! @return True on success, false if there is not enough space to write (and set write error flag).
         //!
-        bool putStringWithByteLength(const UString& str, size_t start = 0, size_t count = NPOS)
+        bool putStringWithByteLength(const UString& str, size_t start = 0, size_t count = NPOS, const Charset* charset = nullptr)
         {
-            return putStringCommon(str, start, count, &Charset::encodeWithByteLength, false, 1) != 0;
+            return putStringCommon(str, start, count, &Charset::encodeWithByteLength, false, 1, charset) != 0;
         }
 
         //!
@@ -196,11 +199,12 @@ namespace ts {
         //! @param [in] str The UTF-16 string to encode.
         //! @param [in] start Starting offset to convert in this UTF-16 string.
         //! @param [in] count Maximum number of characters to convert.
+        //! @param [in] charset An optional specific character set to use instead of the default one.
         //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
         //!
-        size_t putPartialStringWithByteLength(const UString& str, size_t start = 0, size_t count = NPOS)
+        size_t putPartialStringWithByteLength(const UString& str, size_t start = 0, size_t count = NPOS, const Charset* charset = nullptr)
         {
-            return putStringCommon(str, start, count, &Charset::encodeWithByteLength, true, 1);
+            return putStringCommon(str, start, count, &Charset::encodeWithByteLength, true, 1, charset);
         }
 
         //!
@@ -209,33 +213,37 @@ namespace ts {
         //! @param [in] size Size in bytes of the encoded string. If specified as @a NPOS (the default), read up to
         //! the end of the buffer. If different from @a NPOS, the exact number of bytes must be available or a read
         //! error is generated.
+        //! @param [in] charset An optional specific character set to use instead of the default one.
         //! @return True on success, false on error (truncated, unsupported format, etc.)
         //!
-        bool getString(UString& str, size_t size = NPOS);
+        bool getString(UString& str, size_t size = NPOS, const Charset* charset = nullptr);
 
         //!
         //! Get a string using the default input character set.
         //! @param [in] size Size in bytes of the encoded string. If specified as @a NPOS (the default), read up to
         //! the end of the buffer. If different from @a NPOS, the exact number of bytes must be available or a read
         //! error is generated.
+        //! @param [in] charset An optional specific character set to use instead of the default one.
         //! @return The decoded string.
         //!
-        UString getString(size_t size = NPOS);
+        UString getString(size_t size = NPOS, const Charset* charset = nullptr);
 
         //!
         //! Get a string (preceded by its one-byte length) using the default input character set.
         //! The specified number of bytes must be available or a read error is generated.
         //! @param [out] str Returned decoded string.
+        //! @param [in] charset An optional specific character set to use instead of the default one.
         //! @return True on success, false on error (truncated, unsupported format, etc.)
         //!
-        bool getStringWithByteLength(UString& str);
+        bool getStringWithByteLength(UString& str, const Charset* charset = nullptr);
 
         //!
         //! Get a string (preceded by its one-byte length) using the default input character set.
         //! The specified number of bytes must be available or a read error is generated.
+        //! @param [in] charset An optional specific character set to use instead of the default one.
         //! @return The decoded string.
         //!
-        UString getStringWithByteLength();
+        UString getStringWithByteLength(const Charset* charset = nullptr);
 
         //!
         //! Put (serialize) a full Modified Julian Date (MJD), date and time, 5 bytes.
@@ -440,6 +448,6 @@ namespace ts {
         // Common code the various putString functions.
         // When partial == true, return the number of encoded characters.
         // When partial == false, return 1 on success, 0 on error.
-        size_t putStringCommon(const UString& str, size_t start, size_t count, EncodeMethod em, bool partial, size_t min_req_size);
+        size_t putStringCommon(const UString& str, size_t start, size_t count, EncodeMethod em, bool partial, size_t min_req_size, const Charset*);
     };
 }
