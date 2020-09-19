@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -113,23 +114,19 @@ uint8_t ts::TeletextDescriptor::Entry::magazineNumber() const
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 5) {
-        const uint8_t type = data[3] >> 3;
-        const uint8_t mag = data[3] & 0x07;
-        const uint8_t page = data[4];
+    while (buf.canReadBytes(5)) {
+        disp << margin << "Language: " << buf.getLanguageCode();
+        const uint8_t type = buf.getBits<uint8_t>(5);
+        disp << UString::Format(u", Type: %d (0x%<X)", {type}) << std::endl;
+        disp << margin << "Type: " << names::TeletextType(type) << std::endl;
+        const uint8_t mag = buf.getBits<uint8_t>(3);
+        const uint8_t page = buf.getUInt8();
         Entry e;
         e.setFullNumber(mag, page);
-        disp << margin << UString::Format(u"Language: %s, Type: %d (0x%X)", {DeserializeLanguageCode(data), type, type}) << std::endl
-             << margin << "Type: " << names::TeletextType(type) << std::endl
-             << margin << "Magazine: " << int(mag) << ", page: " << int(page) << ", full page: " << e.page_number << std::endl;
-        data += 5; size -= 5;
+        disp << margin << "Magazine: " << int(mag) << ", page: " << int(page) << ", full page: " << e.page_number << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -137,20 +134,14 @@ void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, con
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TeletextDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->language_code)) {
-            desc.invalidate();
-            return;
-        }
-        bbp->appendUInt8(uint8_t(it->teletext_type << 3) | (it->magazineNumber() & 0x07));
-        bbp->appendUInt8(it->pageNumber());
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        buf.putLanguageCode(it->language_code);
+        buf.putBits(it->teletext_type, 5);
+        buf.putBits(it->magazineNumber(), 3);
+        buf.putUInt8(it->pageNumber());
     }
-
-    serializeEnd(desc, bbp);
 }
 
 
@@ -158,27 +149,17 @@ void ts::TeletextDescriptor::serialize(DuckContext& duck, Descriptor& desc) cons
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TeletextDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    entries.clear();
-
-    if (!(_is_valid = desc.isValid() && desc.tag() == tag())) {
-        return;
-    }
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    while (size >= 5) {
+    while (buf.canRead()) {
         Entry entry;
-        entry.language_code = DeserializeLanguageCode(data);
-        entry.teletext_type = data[3] >> 3;
-        entry.setFullNumber(data[3] & 0x07, data[4]);
+        buf.getLanguageCode(entry.language_code);
+        entry.teletext_type = buf.getBits<uint8_t>(5);
+        const uint8_t mag = buf.getBits<uint8_t>(3);
+        const uint8_t page = buf.getUInt8();
+        entry.setFullNumber(mag, page);
         entries.push_back(entry);
-        data += 5; size -= 5;
     }
-
-    _is_valid = size == 0;
 }
 
 
@@ -188,7 +169,7 @@ void ts::TeletextDescriptor::deserialize(DuckContext& duck, const Descriptor& de
 
 void ts::TeletextDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"teletext");
         e->setAttribute(u"language_code", it->language_code);
         e->setIntAttribute(u"teletext_type", it->teletext_type, true);

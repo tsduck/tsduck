@@ -37,6 +37,10 @@ error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 # Move to same directory as script, where all source files for descriptor classes are.
 cd $(dirname $0)
 
+# Used GNU versions on non-Linux OS.
+SED=$(which gsed 2>/dev/null)
+SED=${SED:-sed}
+
 # Analyze first parameter for partial conversion.
 case "$1" in
     -s) shift
@@ -79,37 +83,37 @@ for name in $*; do
 
     # PSIBuffer is always needed in the source.
     if ! grep -q '#include "tsPSIBuffer.h"' $source; then
-        sed -e '/#include "tsPSIRepository.h"/a\#include "tsPSIBuffer.h"' -i $source
+        $SED -e '/#include "tsPSIRepository.h"/a\#include "tsPSIBuffer.h"' -i $source
     fi
 
     # Adjust serialization/deserialization methods
     if $SERIAL; then
         # Adjust header file.
-        sed -e '/virtual void serialize(DuckContext/d' \
-            -e '/virtual void deserialize(DuckContext/d' \
-            -i $header
+        $SED -e '/virtual void serialize(DuckContext/d' \
+             -e '/virtual void deserialize(DuckContext/d' \
+             -i $header
         if ! grep -q 'virtual void serializePayload(PSIBuffer' $header; then
-            sed -e '/virtual void clearContent()/a\        virtual void serializePayload(PSIBuffer\&) const override;' -i $header
+            $SED -e '/virtual void clearContent()/a\        virtual void serializePayload(PSIBuffer\&) const override;' -i $header
         fi
         if ! grep -q 'virtual void deserializePayload(PSIBuffer' $header; then
-            sed -e '/virtual void serializePayload(PSIBuffer/a\        virtual void deserializePayload(PSIBuffer\&) override;' -i $header
+            $SED -e '/virtual void serializePayload(PSIBuffer/a\        virtual void deserializePayload(PSIBuffer\&) override;' -i $header
         fi
         # Adjust source file.
-        sed -e 's/::serialize(DuckContext[^,)]*, Descriptor[^,)]*) const/::serializePayload(PSIBuffer\& buf) const/' \
-            -e 's/bbp->append/buf.put/g' \
-            -e '/ByteBlockPtr bbp(serializeStart());/d' \
-            -e '/serializeEnd(desc, bbp);/d' \
-            -e 's/::deserialize(DuckContext[^,)]*, const Descriptor[^,)]*)/::deserializePayload(PSIBuffer\& buf)/' \
-            -i $source
+        $SED -e 's/::serialize(DuckContext[^,)]*, Descriptor[^,)]*) const/::serializePayload(PSIBuffer\& buf) const/' \
+             -e 's/bbp->append/buf.put/g' \
+             -e '/ByteBlockPtr bbp(serializeStart());/d' \
+             -e '/serializeEnd(desc, bbp);/d' \
+             -e 's/::deserialize(DuckContext[^,)]*, const Descriptor[^,)]*)/::deserializePayload(PSIBuffer\& buf)/' \
+             -i $source
     fi
 
     # Adjust display methods
     if $DISPLAY; then
         # Adjust header file.
-        sed -e 's/DeclareLegacyDisplayDescriptor();/DeclareDisplayDescriptor();/' -i $header
+        $SED -e 's/DeclareLegacyDisplayDescriptor();/DeclareDisplayDescriptor();/' -i $header
         # Adjust source file.
-        sed -e 's/::DisplayDescriptor(TablesDisplay.*)/::DisplayDescriptor(TablesDisplay\& disp, PSIBuffer\& buf, const UString\& margin, DID did, TID tid, PDS pds)/' \
-            -e '/disp.displayExtraData(data, size, margin);/d' \
-            -i $source
+        $SED -e 's/::DisplayDescriptor(TablesDisplay.*)/::DisplayDescriptor(TablesDisplay\& disp, PSIBuffer\& buf, const UString\& margin, DID did, TID tid, PDS pds)/' \
+             -e '/disp.displayExtraData(data, size, margin);/d' \
+             -i $source
     fi
 done

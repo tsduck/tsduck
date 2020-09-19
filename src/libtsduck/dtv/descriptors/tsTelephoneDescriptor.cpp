@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsDVBCharTableSingleByte.h"
@@ -82,7 +83,7 @@ void ts::TelephoneDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TelephoneDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TelephoneDescriptor::serializePayload(PSIBuffer& buf) const
 {
     // ETSI EN 300 468 says that encoding shall be done using ISO/IEC 8859-1.
     const ByteBlock bb_country_prefix(DVBCharTableSingleByte::RAW_ISO_8859_1.encoded(country_prefix));
@@ -98,27 +99,25 @@ void ts::TelephoneDescriptor::serialize(DuckContext& duck, Descriptor& desc) con
         bb_national_area_code.size() > MAX_NATIONAL_AREA_CODE_LENGTH ||
         bb_core_number.size() > MAX_CORE_NUMBER_LENGTH)
     {
-        desc.invalidate();
-        return;
+        buf.setUserError();
     }
-
-    // Now we can safely serialize.
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8((foreign_availability ? 0xE0 : 0xC0) |
-                     (connection_type & 0x1F));
-    bbp->appendUInt8(0x80 |
-                     uint8_t((bb_country_prefix.size() & 0x03) << 5) |
-                     uint8_t((bb_international_area_code.size() & 0x07) << 2) |
-                     uint8_t(bb_operator_code.size() & 0x03));
-    bbp->appendUInt8(0x80 |
-                     uint8_t((bb_national_area_code.size() & 0x07) << 4) |
-                     uint8_t(bb_core_number.size() & 0x0F));
-    bbp->append(bb_country_prefix);
-    bbp->append(bb_international_area_code);
-    bbp->append(bb_operator_code);
-    bbp->append(bb_national_area_code);
-    bbp->append(bb_core_number);
-    serializeEnd(desc, bbp);
+    else {
+        buf.putBits(0xFF, 2);
+        buf.putBit(foreign_availability);
+        buf.putBits(connection_type, 5);
+        buf.putBit(1);
+        buf.putBits(bb_country_prefix.size(), 2);
+        buf.putBits(bb_international_area_code.size(), 3);
+        buf.putBits(bb_operator_code.size(), 2);
+        buf.putBit(1);
+        buf.putBits(bb_national_area_code.size(), 3);
+        buf.putBits(bb_core_number.size(), 4);
+        buf.putBytes(bb_country_prefix);
+        buf.putBytes(bb_international_area_code);
+        buf.putBytes(bb_operator_code);
+        buf.putBytes(bb_national_area_code);
+        buf.putBytes(bb_core_number);
+    }
 }
 
 
@@ -126,31 +125,23 @@ void ts::TelephoneDescriptor::serialize(DuckContext& duck, Descriptor& desc) con
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TelephoneDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TelephoneDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 3;
-
-    if (_is_valid) {
-        foreign_availability = (data[0] & 0x20) != 0;
-        connection_type = data[0] & 0x1F;
-        const size_t country_len = (data[1] >> 5) & 0x03;
-        const size_t inter_len = (data[1] >> 2) & 0x07;
-        const size_t oper_len = data[1] & 0x03;
-        const size_t nat_len = (data[2] >> 4) & 0x07;
-        const size_t core_len = data[2] & 0x0F;
-        data += 3; size -= 3;
-
-        // ETSI EN 300 468 says that encoding shall be done using ISO/IEC 8859-1.
-        _is_valid =
-            size == country_len + inter_len + oper_len + nat_len + core_len &&
-            DVBCharTableSingleByte::RAW_ISO_8859_1.decode(country_prefix, data, country_len) &&
-            DVBCharTableSingleByte::RAW_ISO_8859_1.decode(international_area_code, data + country_len, inter_len) &&
-            DVBCharTableSingleByte::RAW_ISO_8859_1.decode(operator_code, data + country_len + inter_len, oper_len) &&
-            DVBCharTableSingleByte::RAW_ISO_8859_1.decode(national_area_code, data + country_len + inter_len + oper_len, nat_len) &&
-            DVBCharTableSingleByte::RAW_ISO_8859_1.decode(core_number, data + country_len + inter_len + oper_len + nat_len, core_len);
-    }
+    buf.skipBits(2);
+    foreign_availability = buf.getBit() != 0;
+    connection_type = buf.getBits<uint8_t>(5);
+    buf.skipBits(1);
+    const size_t country_len = buf.getBits<size_t>(2);
+    const size_t inter_len = buf.getBits<size_t>(3);
+    const size_t oper_len = buf.getBits<size_t>(2);
+    buf.skipBits(1);
+    const size_t nat_len = buf.getBits<size_t>(3);
+    const size_t core_len = buf.getBits<size_t>(4);
+    buf.getString(country_prefix, country_len, &DVBCharTableSingleByte::RAW_ISO_8859_1);
+    buf.getString(international_area_code, inter_len, &DVBCharTableSingleByte::RAW_ISO_8859_1);
+    buf.getString(operator_code, oper_len, &DVBCharTableSingleByte::RAW_ISO_8859_1);
+    buf.getString(national_area_code, nat_len, &DVBCharTableSingleByte::RAW_ISO_8859_1);
+    buf.getString(core_number, core_len, &DVBCharTableSingleByte::RAW_ISO_8859_1);
 }
 
 
