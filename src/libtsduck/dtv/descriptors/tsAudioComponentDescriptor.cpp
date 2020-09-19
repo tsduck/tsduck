@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -91,29 +92,24 @@ void ts::AudioComponentDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AudioComponentDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::AudioComponentDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(0xF0 | stream_content);
-    bbp->appendUInt8(component_type);
-    bbp->appendUInt8(component_tag);
-    bbp->appendUInt8(stream_type);
-    bbp->appendUInt8(simulcast_group_tag);
-    bbp->appendUInt8((ISO_639_language_code_2.empty() ? 0x00 : 0x80) |
-                     (main_component ? 0x40 : 0x00) |
-                     uint8_t((quality_indicator & 0x03) << 4) |
-                     uint8_t((sampling_rate & 0x07) << 1) |
-                     0x01);
-    if (!SerializeLanguageCode(*bbp, ISO_639_language_code)) {
-        desc.invalidate();
-        return;
+    buf.putBits(0xFF, 4);
+    buf.putBits(stream_content, 4);
+    buf.putUInt8(component_type);
+    buf.putUInt8(component_tag);
+    buf.putUInt8(stream_type);
+    buf.putUInt8(simulcast_group_tag);
+    buf.putBit(!ISO_639_language_code_2.empty());
+    buf.putBit(main_component);
+    buf.putBits(quality_indicator, 2);
+    buf.putBits(sampling_rate, 3);
+    buf.putBit(1);
+    buf.putLanguageCode(ISO_639_language_code);
+    if (!ISO_639_language_code_2.empty()) {
+        buf.putLanguageCode(ISO_639_language_code_2);
     }
-    if (!ISO_639_language_code_2.empty() && !SerializeLanguageCode(*bbp, ISO_639_language_code_2)) {
-        desc.invalidate();
-        return;
-    }
-    bbp->append(duck.encoded(text));
-    serializeEnd(desc, bbp);
+    buf.putString(text);
 }
 
 
@@ -121,36 +117,24 @@ void ts::AudioComponentDescriptor::serialize(DuckContext& duck, Descriptor& desc
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AudioComponentDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AudioComponentDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 9;
-
-    ISO_639_language_code.clear();
-    ISO_639_language_code_2.clear();
-    text.clear();
-
-    if (_is_valid) {
-        stream_content = data[0] & 0x0F;
-        component_type = data[1];
-        component_tag = data[2];
-        stream_type = data[3];
-        simulcast_group_tag = data[4];
-        const bool multi = (data[5] & 0x80) != 0;
-        main_component = (data[5] & 0x40) != 0;
-        quality_indicator = (data[5] >> 4) & 0x03;
-        sampling_rate = (data[5] >> 1) & 0x07;
-        data += 6; size -= 6;
-
-        deserializeLanguageCode(ISO_639_language_code, data, size);
-        if (multi) {
-            deserializeLanguageCode(ISO_639_language_code_2, data, size);
-        }
-        if (_is_valid) {
-            duck.decode(text, data, size);
-        }
+    buf.skipBits(4);
+    stream_content = buf.getBits<uint8_t>(4);
+    component_type = buf.getUInt8();
+    component_tag = buf.getUInt8();
+    stream_type = buf.getUInt8();
+    simulcast_group_tag = buf.getUInt8();
+    const bool multi = buf.getBit() != 0;
+    main_component = buf.getBit() != 0;
+    quality_indicator = buf.getBits<uint8_t>(2);
+    sampling_rate = buf.getBits<uint8_t>(3);
+    buf.skipBits(1);
+    buf.getLanguageCode(ISO_639_language_code);
+    if (multi) {
+        buf.getLanguageCode(ISO_639_language_code_2);
     }
+    buf.getString(text);
 }
 
 

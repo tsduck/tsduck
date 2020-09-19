@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -74,36 +75,18 @@ void ts::ShortNodeInformationDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ShortNodeInformationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ShortNodeInformationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    if (!SerializeLanguageCode(*bbp, ISO_639_language_code)) {
-        desc.invalidate();
-        return;
-    }
-    bbp->append(duck.encodedWithByteLength(node_name));
-    bbp->append(duck.encodedWithByteLength(text));
-    serializeEnd(desc, bbp);
+    buf.putLanguageCode(ISO_639_language_code);
+    buf.putStringWithByteLength(node_name);
+    buf.putStringWithByteLength(text);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::ShortNodeInformationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ShortNodeInformationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    ISO_639_language_code.clear();
-    node_name.clear();
-    text.clear();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() &&
-        deserializeLanguageCode(ISO_639_language_code, data, size) &&
-        duck.decodeWithByteLength(node_name, data, size) &&
-        duck.decodeWithByteLength(text, data, size);
+    buf.getLanguageCode(ISO_639_language_code);
+    buf.getStringWithByteLength(node_name);
+    buf.getStringWithByteLength(text);
 }
 
 
@@ -111,17 +94,13 @@ void ts::ShortNodeInformationDescriptor::deserialize(DuckContext& duck, const De
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ShortNodeInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ShortNodeInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 3) {
-        disp << margin << "Language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
-        data += 3; size -= 3;
-        disp << margin << "Node name: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
-        disp << margin << "Text: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
+    if (buf.canReadBytes(3)) {
+        disp << margin << "Language: \"" << buf.getLanguageCode() << "\"" << std::endl;
+        disp << margin << "Node name: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
+        disp << margin << "Text: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
     }
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -135,11 +114,6 @@ void ts::ShortNodeInformationDescriptor::buildXML(DuckContext& duck, xml::Elemen
     root->setAttribute(u"node_name", node_name, true);
     root->setAttribute(u"text", text, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::ShortNodeInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

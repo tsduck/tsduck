@@ -222,17 +222,12 @@ bool ts::PSIBuffer::getString(ts::UString& str, size_t size, const Charset* char
         return false;
     }
 
-    // Decode characters.
-    if (_duck.charsetIn(charset)->decode(str, currentReadAddress(), size)) {
-        // Include the deserialized bytes in the read part.
-        readSeek(currentReadByteOffset() + size);
-        return true;
-    }
-    else {
-        // Set read error and let bytes as unread.
-        setReadError();
-        return false;
-    }
+    // Decode characters. Ignore decoding errors since it could be simply an unsupported character.
+    _duck.charsetIn(charset)->decode(str, currentReadAddress(), size);
+
+    // Include the deserialized bytes in the read part.
+    readSeek(currentReadByteOffset() + size);
+    return true;
 }
 
 
@@ -249,20 +244,8 @@ ts::UString ts::PSIBuffer::getStringWithByteLength(const Charset* charset)
 
 bool ts::PSIBuffer::getStringWithByteLength(ts::UString& str, const Charset* charset)
 {
-    const uint8_t* data = currentReadAddress();
-    const size_t prev_size = remainingReadBytes();
-    size_t size = prev_size;
-
-    if (!readError() && _duck.charsetIn(charset)->decodeWithByteLength(str, data, size)) {
-        // Include the deserialized bytes in the read part.
-        readSeek(currentReadByteOffset() + prev_size - size);
-        return true;
-    }
-    else {
-        // Set read error and let bytes as unread.
-        setReadError();
-        return false;
-    }
+    const size_t size = getUInt8();
+    return getString(str, std::min<size_t>(size, remainingReadBytes()), charset);
 }
 
 
