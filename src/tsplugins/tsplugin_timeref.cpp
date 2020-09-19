@@ -418,9 +418,12 @@ void ts::TimeRefPlugin::processLocalTime(uint8_t* data, size_t size)
 {
     // Loop on all regions (13 bytes each)
     while (size >= 13) {
+        // Get country code from descriptor. Country codes are case-insensitive and stored in lower case.
+        UString country;
+        country.assignFromUTF8(reinterpret_cast<const char*>(data), 3);
+        country.toLower();
         // Apply country and region filters.
-        // Country code are case-insensitive and stored in lower case.
-        if ((_only_countries.empty() || _only_countries.find(AbstractSignalization::DeserializeLanguageCode(data).toLower()) != _only_countries.end()) &&
+        if ((_only_countries.empty() || _only_countries.find(country) != _only_countries.end()) &&
             (_only_regions.empty() || _only_regions.find(data[3] >> 2) != _only_regions.end()))
         {
             if (_local_offset != INT_MAX) {

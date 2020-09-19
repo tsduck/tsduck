@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -78,26 +79,21 @@ ts::DTGGuidanceDescriptor::DTGGuidanceDescriptor(DuckContext& duck, const Descri
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DTGGuidanceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DTGGuidanceDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(0xFC | guidance_type);
-    switch (guidance_type) {
-        case 0x01:
-            bbp->appendUInt8(guidance_mode ? 0xFF : 0xFE);
-            TS_FALLTHROUGH
-        case 0x00:
-            if (!SerializeLanguageCode(*bbp, ISO_639_language_code)) {
-                desc.invalidate();
-                return;
-            }
-            bbp->append(duck.encoded(text));
-            break;
-        default:
-            bbp->append(reserved_future_use);
-            break;
+    buf.putBits(0xFF, 6);
+    buf.putBits(guidance_type, 2);
+    if (guidance_type == 0x01) {
+        buf.putBits(0xFF, 7);
+        buf.putBit(guidance_mode);
     }
-    serializeEnd(desc, bbp);
+    if (guidance_type <= 0x01) {
+        buf.putLanguageCode(ISO_639_language_code);
+        buf.putString(text);
+    }
+    else {
+        buf.putBytes(reserved_future_use);
+    }
 }
 
 
@@ -105,38 +101,20 @@ void ts::DTGGuidanceDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DTGGuidanceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DTGGuidanceDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    ISO_639_language_code.clear();
-    text.clear();
-    reserved_future_use.clear();
-
-    if (_is_valid) {
-        guidance_type = data[0] & 0x03;
-        data++; size--;
-        if (guidance_type == 0x00) {
-            _is_valid = size >= 3;
-        }
-        else if (guidance_type == 0x01) {
-            _is_valid = size >= 4;
-        }
-        if (_is_valid) {
-            if (guidance_type == 0x01) {
-                guidance_mode = (data[0] & 0x01) != 0;
-                data++; size--;
-            }
-            if (guidance_type <= 0x01) {
-                deserializeLanguageCode(ISO_639_language_code, data, size);
-                duck.decode(text, data, size);
-            }
-            else {
-                reserved_future_use.copy(data, size);
-            }
-        }
+    buf.skipBits(6);
+    guidance_type = buf.getBits<uint8_t>(2);
+    if (guidance_type == 0x01) {
+        buf.skipBits(7);
+        guidance_mode = buf.getBit() != 0;
+    }
+    if (guidance_type <= 0x01) {
+        buf.getLanguageCode(ISO_639_language_code);
+        buf.getString(text);
+    }
+    else {
+        buf.getBytes(reserved_future_use);
     }
 }
 
