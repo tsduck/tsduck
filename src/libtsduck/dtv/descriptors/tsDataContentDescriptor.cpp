@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -81,21 +82,16 @@ ts::DataContentDescriptor::DataContentDescriptor(DuckContext& duck, const Descri
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DataContentDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DataContentDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(data_component_id);
-    bbp->appendUInt8(entry_component);
-    bbp->appendUInt8(uint8_t(selector_bytes.size()));
-    bbp->append(selector_bytes);
-    bbp->appendUInt8(uint8_t(component_refs.size()));
-    bbp->append(component_refs);
-    if (!SerializeLanguageCode(*bbp, ISO_639_language_code)) {
-        desc.invalidate();
-        return;
-    }
-    bbp->append(duck.encodedWithByteLength(text));
-    serializeEnd(desc, bbp);
+    buf.putUInt16(data_component_id);
+    buf.putUInt8(entry_component);
+    buf.putUInt8(uint8_t(selector_bytes.size()));
+    buf.putBytes(selector_bytes);
+    buf.putUInt8(uint8_t(component_refs.size()));
+    buf.putBytes(component_refs);
+    buf.putLanguageCode(ISO_639_language_code);
+    buf.putStringWithByteLength(text);
 }
 
 
@@ -103,40 +99,16 @@ void ts::DataContentDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataContentDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DataContentDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4;
-
-    selector_bytes.clear();
-    component_refs.clear();
-    ISO_639_language_code.clear();
-    text.clear();
-
-    if (_is_valid) {
-        data_component_id = GetUInt16(data);
-        entry_component = data[2];
-        size_t len1 = data[3];
-        data += 4; size -= 4;
-        _is_valid = len1 < size;
-
-        if (_is_valid) {
-            selector_bytes.copy(data, len1);
-            size_t len2 = data[len1];
-            data += len1 + 1; size -= len1 + 1;
-            _is_valid = len2 + 4 <= size;
-
-            if (_is_valid) {
-                component_refs.copy(data, len2);
-                ISO_639_language_code = DeserializeLanguageCode(data + len2);
-                data += len2 + 3; size -= len2 + 3;
-
-                _is_valid = duck.decodeWithByteLength(text, data, size) && size == 0;
-            }
-        }
-    }
+    data_component_id = buf.getUInt16();
+    entry_component = buf.getUInt8();
+    size_t len = buf.getUInt8();
+    buf.getBytes(selector_bytes, len);
+    len = buf.getUInt8();
+    buf.getBytes(component_refs, len);
+    buf.getLanguageCode(ISO_639_language_code);
+    buf.getStringWithByteLength(text);
 }
 
 

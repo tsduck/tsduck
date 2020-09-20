@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -80,20 +81,15 @@ ts::ServiceLocationDescriptor::Entry::Entry(uint8_t type, ts::PID pid, const ts:
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceLocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ServiceLocationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(0xE000 | PCR_PID);
-    bbp->appendUInt8(uint8_t(entries.size()));
+    buf.putPID(PCR_PID);
+    buf.putUInt8(uint8_t(entries.size()));
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt8(it->stream_type);
-        bbp->appendUInt16(0xE000 | it->elementary_PID);
-        if (!SerializeLanguageCode(*bbp, it->ISO_639_language_code, true)) {
-            desc.invalidate();
-            return;
-        }
+        buf.putUInt8(it->stream_type);
+        buf.putPID(it->elementary_PID);
+        buf.putLanguageCode(it->ISO_639_language_code, true);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -101,25 +97,16 @@ void ts::ServiceLocationDescriptor::serialize(DuckContext& duck, Descriptor& des
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceLocationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ServiceLocationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    entries.clear();
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 3 && (size - 3) % 6 == 0;
-
-    if (_is_valid) {
-        // Fixed part.
-        PCR_PID = GetUInt16(data) & 0x1FFF;
-        size_t count = data[2];
-        data += 3; size -= 3;
-
-        // Loop on all component entries.
-        while (count-- > 0 && size >= 6) {
-            entries.push_back(Entry(data[0], GetUInt16(data + 1) & 0x1FFF, DeserializeLanguageCode(data + 3)));
-            data += 6; size -= 6;
-        }
+    PCR_PID = buf.getPID();
+    const size_t count = buf.getUInt8();
+    for (size_t i = 0; i < count && buf.canRead(); ++i) {
+        Entry e;
+        e.stream_type = buf.getUInt8();
+        e.elementary_PID = buf.getPID();
+        buf.getLanguageCode(e.ISO_639_language_code);
+        entries.push_back(e);
     }
 }
 

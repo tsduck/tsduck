@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -85,23 +86,21 @@ void ts::NorDigLogicalChannelDescriptorV2::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::NorDigLogicalChannelDescriptorV2::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::NorDigLogicalChannelDescriptorV2::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
     for (auto it1 = entries.begin(); it1 != entries.end(); ++it1) {
-        bbp->appendUInt8(it1->channel_list_id);
-        bbp->append(duck.encodedWithByteLength(it1->channel_list_name));
-        if (!SerializeLanguageCode(*bbp, it1->country_code)) {
-            desc.invalidate();
-            return;
-        }
-        bbp->appendUInt8(uint8_t(it1->services.size() * 4));
+        buf.putUInt8(it1->channel_list_id);
+        buf.putStringWithByteLength(it1->channel_list_name);
+        buf.putLanguageCode(it1->country_code);
+        buf.pushWriteSequenceWithLeadingLength(8); // descriptor_length
         for (auto it2 = it1->services.begin(); it2 != it1->services.end(); ++it2) {
-            bbp->appendUInt16(it2->service_id);
-            bbp->appendUInt16((it2->visible ? 0xFC00 : 0x7C00) | (it2->lcn & 0x03FF));
+            buf.putUInt16(it2->service_id);
+            buf.putBit(it2->visible);
+            buf.putBits(0xFF, 5);
+            buf.putBits(it2->lcn, 10);
         }
+        buf.popState(); // update descriptor_length
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -109,29 +108,23 @@ void ts::NorDigLogicalChannelDescriptorV2::serialize(DuckContext& duck, Descript
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::NorDigLogicalChannelDescriptorV2::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::NorDigLogicalChannelDescriptorV2::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag();
-    entries.clear();
-
-    while (_is_valid && size >= 2) {
-        ChannelList clist(data[0]);
-        data++; size--;
-        duck.decodeWithByteLength(clist.channel_list_name, data, size);
-        _is_valid = size >= 4;
-        if (_is_valid) {
-            clist.country_code = DeserializeLanguageCode(data);
-            size_t len = data[3];
-            data += 4; size -= 4;
-            while (len >= 4 && size >= 4) {
-                clist.services.push_back(Service(GetUInt16(data), (data[2] & 0x80) != 0, GetUInt16(data + 2) & 0x03FF));
-                data += 4; size -= 4; len -= 4;
-            }
-            _is_valid = len == 0;
-            entries.push_back(clist);
+    while (buf.canRead()) {
+        ChannelList clist(buf.getUInt8());
+        buf.getStringWithByteLength(clist.channel_list_name);
+        buf.getLanguageCode(clist.country_code);
+        buf.pushReadSizeFromLength(8); // descriptor_length
+        while (buf.canRead()) {
+            Service srv;
+            srv.service_id = buf.getUInt16();
+            srv.visible = buf.getBit() != 0;
+            buf.skipBits(5);
+            srv.lcn = buf.getBits<uint16_t>(10);
+            clist.services.push_back(srv);
         }
+        buf.popState(); // descriptor_length
+        entries.push_back(clist);
     }
 }
 
