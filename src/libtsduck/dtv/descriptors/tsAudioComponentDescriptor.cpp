@@ -142,30 +142,26 @@ void ts::AudioComponentDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AudioComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AudioComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 9) {
-        const bool multi = (data[5] & 0x80) != 0;
-        disp << margin << UString::Format(u"Content type: 0x%X (%d)", {data[0] & 0x0F, data[0] & 0x0F}) << std::endl
-             << margin << "Component type: " << NameFromSection(u"ISDBAudioComponentType", data[1], names::FIRST) << std::endl
-             << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[2], data[2]}) << std::endl
-             << margin << "Stream type: " << names::StreamType(data[3], names::FIRST) << std::endl
-             << margin << UString::Format(u"Simulcast group: 0x%X (%d%s)", {data[4], data[4], data[4] == 0xFF ? u", none" : u""}) << std::endl
-             << margin << UString::Format(u"Main component: %s", {(data[5] & 0x40) != 0}) << std::endl
-             << margin << "Quality indicator: " << NameFromSection(u"ISDBAudioQuality", (data[5] >> 4) & 0x03, names::FIRST) << std::endl
-             << margin << "Sampling rate: " << NameFromSection(u"ISDBAudioSampling", (data[5] >> 1) & 0x07, names::FIRST) << std::endl
-             << margin << "Language code: \"" << DeserializeLanguageCode(data + 6) << "\"" << std::endl;
-        data += 9; size -= 9;
-        if (multi && size >= 3) {
-            disp << margin << "Language code 2: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
-            data += 3; size -= 3;
+    if (buf.canReadBytes(9)) {
+        buf.skipBits(4);
+        disp << margin << UString::Format(u"Content type: 0x%X (%<d)", {buf.getBits<uint8_t>(4)}) << std::endl;
+        disp << margin << "Component type: " << NameFromSection(u"ISDBAudioComponentType", buf.getUInt8(), names::FIRST) << std::endl;
+        disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << "Stream type: " << names::StreamType(buf.getUInt8(), names::FIRST) << std::endl;
+        const uint8_t group = buf.getUInt8();
+        disp << margin << UString::Format(u"Simulcast group: 0x%X (%<d%s)", {group, group == 0xFF ? u", none" : u""}) << std::endl;
+        const bool multi = buf.getBit() != 0;
+        disp << margin << UString::Format(u"Main component: %s", {buf.getBit() != 0}) << std::endl;
+        disp << margin << "Quality indicator: " << NameFromSection(u"ISDBAudioQuality", buf.getBits<uint8_t>(2), names::FIRST) << std::endl;
+        disp << margin << "Sampling rate: " << NameFromSection(u"ISDBAudioSampling", buf.getBits<uint8_t>(3), names::FIRST) << std::endl;
+        buf.skipBits(1);
+        disp << margin << "Language code: \"" << buf.getLanguageCode() << "\"" << std::endl;
+        if (multi && buf.canReadBytes(3)) {
+            disp << margin << "Language code 2: \"" << buf.getLanguageCode() << "\"" << std::endl;
         }
-        disp << margin << "Text: \"" << disp.duck().decoded(data, size) << "\"" << std::endl;
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+        disp << margin << "Text: \"" << buf.getString() << "\"" << std::endl;
     }
 }
 

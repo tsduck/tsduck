@@ -80,31 +80,22 @@ void ts::DataBroadcastDescriptor::clearContent()
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
+    if (buf.canReadBytes(4)) {
+        const uint16_t dbid = buf.getUInt16();
+        disp << margin << "Data broadcast id: " << names::DataBroadcastId(dbid, names::BOTH_FIRST) << std::endl;
+        disp << margin << UString::Format(u"Component tag: %d (0x%<X), ", {buf.getUInt8()}) << std::endl;
 
-    if (size >= 4) {
-        const uint16_t dbid = GetUInt16(data);
-        const uint8_t ctag = data[2];
-        size_t slength = data[3];
-        data += 4; size -= 4;
-        if (slength > size) {
-            slength = size;
-        }
-        disp << margin << "Data broadcast id: " << names::DataBroadcastId(dbid, names::BOTH_FIRST) << std::endl
-             << margin << UString::Format(u"Component tag: %d (0x%X), ", {ctag, ctag})
-             << std::endl;
-        DataBroadcastIdDescriptor::DisplaySelectorBytes(disp, data, slength, indent, dbid);
-        data += slength; size -= slength;
-        if (size >= 3) {
-            disp << margin << "Language: " << DeserializeLanguageCode(data) << std::endl;
-            data += 3; size -= 3;
-            disp << margin << "Description: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
+        buf.pushReadSizeFromLength(8); // selector_length
+        DataBroadcastIdDescriptor::DisplaySelectorBytes(disp, buf, margin, dbid);
+        buf.popState(); // end of selector_length
+
+        if (buf.canReadBytes(3)) {
+            disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
+            disp << margin << "Description: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

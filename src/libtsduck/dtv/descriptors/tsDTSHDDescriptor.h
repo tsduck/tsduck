@@ -93,7 +93,7 @@ namespace ts {
         DTSHDDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods
@@ -108,7 +108,7 @@ namespace ts {
         // Conversions of substrean info structures.
         static void SerializeSubstreamInfo(const Variable<SubstreamInfo>&, PSIBuffer&);
         static void DeserializeSubstreamInfo(Variable<SubstreamInfo>&, bool present, PSIBuffer&);
-        static bool DisplaySubstreamInfo(TablesDisplay& display, bool present, int indent, const UString& name, const uint8_t*& data, size_t& size);
+        static void DisplaySubstreamInfo(TablesDisplay& display, bool present, const UString& margin, const UString& name, PSIBuffer&);
         static void SubstreamInfoToXML(const Variable<SubstreamInfo>&, const UString& name, xml::Element* parent);
         static bool SubstreamInfoFromXML(Variable<SubstreamInfo>&, const UString& name, const xml::Element* parent);
     };

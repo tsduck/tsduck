@@ -86,7 +86,8 @@ template<>
 uint64_t ts::Power10<uint64_t>(size_t pow)
 {
     // Assume that not integer type is larger than 64 bits => 10^19 is the largest unsigned value.
-    static const uint64_t pow10[] = {
+    static constexpr size_t MAX_POW10 = 19;
+    static const uint64_t pow10[MAX_POW10 + 1] = {
         /*  0 */ TS_UCONST64(1),
         /*  1 */ TS_UCONST64(10),
         /*  2 */ TS_UCONST64(100),
@@ -109,5 +110,5 @@ uint64_t ts::Power10<uint64_t>(size_t pow)
         /* 19 */ TS_UCONST64(10000000000000000000),
     };
 
-    return pow < (sizeof(pow10) / sizeof(uint64_t)) ? pow10[pow] : 0;
+    return pow <= MAX_POW10 ? pow10[pow] : 0;
 }

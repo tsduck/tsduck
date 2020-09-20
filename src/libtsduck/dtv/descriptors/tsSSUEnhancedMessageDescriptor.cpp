@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -78,17 +79,14 @@ ts::SSUEnhancedMessageDescriptor::SSUEnhancedMessageDescriptor(DuckContext& duck
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SSUEnhancedMessageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SSUEnhancedMessageDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(descriptor_number << 4) | (last_descriptor_number & 0x0F));
-    if (!SerializeLanguageCode(*bbp, ISO_639_language_code)) {
-        desc.invalidate();
-        return;
-    }
-    bbp->appendUInt8(0xE0 | message_index);
-    bbp->append(duck.encoded(text));
-    serializeEnd(desc, bbp);
+    buf.putBits(descriptor_number, 4);
+    buf.putBits(last_descriptor_number, 4);
+    buf.putLanguageCode(ISO_639_language_code);
+    buf.putBits(0xFF, 3);
+    buf.putBits(message_index, 5);
+    buf.putString(text);
 }
 
 
@@ -96,23 +94,14 @@ void ts::SSUEnhancedMessageDescriptor::serialize(DuckContext& duck, Descriptor& 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSUEnhancedMessageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SSUEnhancedMessageDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 5;
-
-    if (_is_valid) {
-        descriptor_number = (data[0] >> 4) & 0x0F;
-        last_descriptor_number = data[0] & 0x0F;
-        ISO_639_language_code = DeserializeLanguageCode(data + 1);
-        message_index = data[4] & 0x1F;
-        duck.decode(text, data + 5, size - 5);
-    }
-    else {
-        text.clear();
-    }
+    descriptor_number = buf.getBits<uint8_t>(4);
+    last_descriptor_number = buf.getBits<uint8_t>(4);
+    buf.getLanguageCode(ISO_639_language_code);
+    buf.skipBits(3);
+    message_index = buf.getBits<uint8_t>(5);
+    buf.getString(text);
 }
 
 
@@ -120,18 +109,15 @@ void ts::SSUEnhancedMessageDescriptor::deserialize(DuckContext& duck, const Desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSUEnhancedMessageDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SSUEnhancedMessageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 5) {
-        disp << margin << UString::Format(u"Descriptor number: %d, last: %d", {(data[0] >> 4) & 0x0F, data[0] & 0x0F}) << std::endl
-             << margin << "Language: " << DeserializeLanguageCode(data + 1) << std::endl
-             << margin << UString::Format(u"Message index: %d", {data[4] & 0x1F}) << std::endl
-             << margin << "Text: \"" << disp.duck().decoded(data + 5, size - 5) << "\"" << std::endl;
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+    if (buf.canReadBytes(5)) {
+        disp << margin << UString::Format(u"Descriptor number: %d", {buf.getBits<uint8_t>(4)});
+        disp << UString::Format(u", last: %d", {buf.getBits<uint8_t>(4)}) << std::endl;
+        disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
+        buf.skipBits(3);
+        disp << margin << UString::Format(u"Message index: %d", {buf.getBits<uint8_t>(5)}) << std::endl;
+        disp << margin << "Text: \"" << buf.getString() << "\"" << std::endl;
     }
 }
 

@@ -238,87 +238,72 @@ void ts::ATSCEAC3AudioDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ATSCEAC3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ATSCEAC3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 2) {
+    if (buf.canReadBytes(2)) {
         // Fixed initial size: 2 bytes.
-        const bool bsid_flag = (data[0] & 0x40) != 0;
-        const bool mainid_flag = (data[0] & 0x20) != 0;
-        const bool asvc_flag = (data[0] & 0x10) != 0;
-        const bool mixinfo = (data[0] & 0x08) != 0;
-        const bool sub1_flag = (data[0] & 0x04) != 0;
-        const bool sub2_flag = (data[0] & 0x02) != 0;
-        const bool sub3_flag = (data[0] & 0x01) != 0;
-        const bool full = (data[1] & 0x40) != 0;
-        const uint8_t svc_type = (data[1] >> 3) & 0x07;
-        const uint8_t channels = data[1] & 0x07;
-        const bool lang_flag = size > 2 && (data[2] & 0x80) != 0;   // in next byte
-        const bool lang2_flag = size > 2 && (data[2] & 0x40) != 0;  // in next byte
-        data += 2; size -= 2;
+        buf.skipBits(1);
+        const bool bsid_flag = buf.getBit() != 0;
+        const bool mainid_flag = buf.getBit() != 0;
+        const bool asvc_flag = buf.getBit() != 0;
+        const bool mixinfo = buf.getBit() != 0;
+        const bool sub1_flag = buf.getBit() != 0;
+        const bool sub2_flag = buf.getBit() != 0;
+        const bool sub3_flag = buf.getBit() != 0;
+        bool lang_flag = false;
+        bool lang2_flag = false;
 
-        disp << margin << UString::Format(u"Mixinfo exists: %s", {mixinfo}) << std::endl
-             << margin << UString::Format(u"Full service: %s", {full}) << std::endl
-             << margin << UString::Format(u"Audio service type: %s", {NameFromSection(u"EAC3AudioServiceType", svc_type, names::VALUE)}) << std::endl
-             << margin << UString::Format(u"Num. channels: %s", {NameFromSection(u"ATSCEAC3NumChannels", channels, names::VALUE)}) << std::endl;
+        buf.skipBits(1);
+        disp << margin << UString::Format(u"Mixinfo exists: %s", {mixinfo}) << std::endl;
+        disp << margin << UString::Format(u"Full service: %s", {buf.getBit() != 0}) << std::endl;
+        disp << margin << "Audio service type: " << NameFromSection(u"EAC3AudioServiceType", buf.getBits<uint8_t>(3), names::VALUE) << std::endl;
+        disp << margin << "Num. channels: " << NameFromSection(u"ATSCEAC3NumChannels", buf.getBits<uint8_t>(3), names::VALUE) << std::endl;
 
-        if (size > 0) {
+        if (buf.canRead()) {
+            lang_flag = buf.getBit() != 0;
+            lang2_flag = buf.getBit() != 0;
+            buf.skipBits(1);
             if (bsid_flag) {
-                const uint8_t id = data[0] & 0x1F;
-                disp << margin << UString::Format(u"Bit stream id (bsid): 0x%X (%d)", {id, id}) << std::endl;
+                disp << margin << UString::Format(u"Bit stream id (bsid): 0x%X (%<d)", {buf.getBits<uint8_t>(5)}) << std::endl;
             }
-            data++; size--;
+            else {
+                buf.skipBits(5);
+            }
         }
-        if (mainid_flag && size > 0) {
-            const uint8_t id = data[0] & 0x07;
-            disp << margin << UString::Format(u"Priority: %d", {(data[0] >> 3) & 0x03}) << std::endl
-                 << margin << UString::Format(u"Main id: 0x%X (%d)", {id, id}) << std::endl;
-            data++; size--;
+        if (mainid_flag && buf.canRead()) {
+            buf.skipBits(3);
+            disp << margin << UString::Format(u"Priority: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
+            disp << margin << UString::Format(u"Main id: 0x%X (%<d)", {buf.getBits<uint8_t>(3)}) << std::endl;
         }
-        if (asvc_flag && size > 0) {
-            disp << margin << UString::Format(u"Associated service (asvc): 0x%X (%d)", {data[0], data[0]}) << std::endl;
-            data++; size--;
+        if (asvc_flag && buf.canRead()) {
+            disp << margin << UString::Format(u"Associated service (asvc): 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         }
-        if (sub1_flag && size > 0) {
-            disp << margin << UString::Format(u"Substream 1: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-            data++; size--;
+        if (sub1_flag && buf.canRead()) {
+            disp << margin << UString::Format(u"Substream 1: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         }
-        if (sub2_flag && size > 0) {
-            disp << margin << UString::Format(u"Substream 2: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-            data++; size--;
+        if (sub2_flag && buf.canRead()) {
+            disp << margin << UString::Format(u"Substream 2: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         }
-        if (sub3_flag && size > 0) {
-            disp << margin << UString::Format(u"Substream 3: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-            data++; size--;
+        if (sub3_flag && buf.canRead()) {
+            disp << margin << UString::Format(u"Substream 3: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         }
-        if (lang_flag && size >= 3) {
-            disp << margin << "Language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
-            data += 3; size -= 3;
+        if (lang_flag && buf.canReadBytes(3)) {
+            disp << margin << "Language: \"" << buf.getLanguageCode() << "\"" << std::endl;
         }
-        if (lang2_flag && size >= 3) {
-            disp << margin << "Language 2: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
-            data += 3; size -= 3;
+        if (lang2_flag && buf.canReadBytes(3)) {
+            disp << margin << "Language 2: \"" << buf.getLanguageCode() << "\"" << std::endl;
         }
-        if (sub1_flag && size >= 3) {
-            disp << margin << "Substream 1 language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
-            data += 3; size -= 3;
+        if (sub1_flag && buf.canReadBytes(3)) {
+            disp << margin << "Substream 1 language: \"" << buf.getLanguageCode() << "\"" << std::endl;
         }
-        if (sub2_flag && size >= 3) {
-            disp << margin << "Substream 2 language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
-            data += 3; size -= 3;
+        if (sub2_flag && buf.canReadBytes(3)) {
+            disp << margin << "Substream 2 language: \"" << buf.getLanguageCode() << "\"" << std::endl;
         }
-        if (sub3_flag && size >= 3) {
-            disp << margin << "Substream 3 language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
-            data += 3; size -= 3;
+        if (sub3_flag && buf.canReadBytes(3)) {
+            disp << margin << "Substream 3 language: \"" << buf.getLanguageCode() << "\"" << std::endl;
         }
-        if (size > 0) {
-            disp.displayPrivateData(u"Additional information", data, size, margin);
-            data += size; size = 0;
-        }
+        disp.displayPrivateData(u"Additional information", buf, NPOS, margin);
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

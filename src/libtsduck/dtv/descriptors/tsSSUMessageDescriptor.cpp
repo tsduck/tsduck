@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -76,39 +77,21 @@ ts::SSUMessageDescriptor::SSUMessageDescriptor(DuckContext& duck, const Descript
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SSUMessageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SSUMessageDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(descriptor_number << 4) | (last_descriptor_number & 0x0F));
-    if (!SerializeLanguageCode(*bbp, ISO_639_language_code)) {
-        desc.invalidate();
-        return;
-    }
-    bbp->append(duck.encoded(text));
-    serializeEnd(desc, bbp);
+    buf.putBits(descriptor_number, 4);
+    buf.putBits(last_descriptor_number, 4);
+    buf.putLanguageCode(ISO_639_language_code);
+    buf.putString(text);
 }
 
 
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::SSUMessageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SSUMessageDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4;
-
-    if (_is_valid) {
-        descriptor_number = (data[0] >> 4) & 0x0F;
-        last_descriptor_number = data[0] & 0x0F;
-        ISO_639_language_code = DeserializeLanguageCode(data + 1);
-        duck.decode(text, data + 4, size - 4);
-    }
-    else {
-        text.clear();
-    }
+    descriptor_number = buf.getBits<uint8_t>(4);
+    last_descriptor_number = buf.getBits<uint8_t>(4);
+    buf.getLanguageCode(ISO_639_language_code);
+    buf.getString(text);
 }
 
 
@@ -116,17 +99,13 @@ void ts::SSUMessageDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSUMessageDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SSUMessageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        disp << margin << UString::Format(u"Descriptor number: %d, last: %d", {(data[0] >> 4) & 0x0F, data[0] & 0x0F}) << std::endl
-            << margin << "Language: " << DeserializeLanguageCode(data + 1) << std::endl
-            << margin << "Text: \"" << disp.duck().decoded(data + 4, size - 4) << "\"" << std::endl;
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+    if (buf.canReadBytes(4)) {
+        disp << margin << UString::Format(u"Descriptor number: %d", {buf.getBits<uint8_t>(4)});
+        disp << UString::Format(u", last: %d", {buf.getBits<uint8_t>(4)}) << std::endl;
+        disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
+        disp << margin << "Text: \"" << buf.getString() << "\"" << std::endl;
     }
 }
 
@@ -142,11 +121,6 @@ void ts::SSUMessageDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
     root->setAttribute(u"ISO_639_language_code", ISO_639_language_code);
     root->addElement(u"text")->addText(text);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::SSUMessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

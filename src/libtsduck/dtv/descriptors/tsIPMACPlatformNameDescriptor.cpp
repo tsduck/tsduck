@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -72,34 +73,16 @@ void ts::IPMACPlatformNameDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::IPMACPlatformNameDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    if (SerializeLanguageCode(*bbp, language_code)) {
-        bbp->append(duck.encoded(text));
-        serializeEnd(desc, bbp);
-    }
-    else {
-        desc.invalidate();
-    }
+    buf.putLanguageCode(language_code);
+    buf.putString(text);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::IPMACPlatformNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::IPMACPlatformNameDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 3;
-
-    if (_is_valid) {
-        language_code = DeserializeLanguageCode(data);
-        duck.decode(text, data + 3, size - 3);
-    }
+    buf.getLanguageCode(language_code);
+    buf.getString(text);
 }
 
 
@@ -107,17 +90,12 @@ void ts::IPMACPlatformNameDescriptor::deserialize(DuckContext& duck, const Descr
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformNameDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::IPMACPlatformNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 3) {
-        disp << margin << "Language: " << DeserializeLanguageCode(data) << std::endl;
-        disp << margin << "Platform name: " << disp.duck().decoded(data + 3, size - 3) << std::endl;
-        size = 0;
+    if (buf.canReadBytes(3)) {
+        disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
+        disp << margin << "Platform name: " << buf.getString() << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -130,11 +108,6 @@ void ts::IPMACPlatformNameDescriptor::buildXML(DuckContext& duck, xml::Element* 
     root->setAttribute(u"language_code", language_code);
     root->setAttribute(u"text", text);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::IPMACPlatformNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

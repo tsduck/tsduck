@@ -152,42 +152,15 @@ bool ts::SupplementaryAudioDescriptor::analyzeXML(DuckContext& duck, const xml::
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        const uint8_t mix_type = (data[0] >> 7) & 0x01;
-        const uint8_t editorial = (data[0] >> 2) & 0x1F;
-        const uint8_t lang_present = data[0] & 0x01;
-        data++; size--;
-        disp << margin << "Mix type: ";
-        switch (mix_type) {
-            case 0:  disp << "supplementary stream"; break;
-            case 1:  disp << "complete and independent stream"; break;
-            default: assert(false);
+    if (buf.canReadBytes(1)) {
+        disp << margin << "Mix type: " << NameFromSection(u"SuppAudioMixType", buf.getBit()) << std::endl;
+        disp << margin << "Editorial classification: " << NameFromSection(u"SuppAudioClass", buf.getBits<uint8_t>(5)) << std::endl;
+        buf.skipBits(1);
+        if (buf.getBit() != 0 && buf.canReadBytes(3)) {
+            disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
         }
-        disp << std::endl;
-        disp << margin << "Editorial classification: ";
-        switch (editorial) {
-            case 0x00: disp << "main audio"; break;
-            case 0x01: disp << "audio description for the visually impaired"; break;
-            case 0x02: disp << "clean audio for the hearing impaired"; break;
-            case 0x03: disp << "spoken subtitles for the visually impaired"; break;
-            default:   disp << UString::Format(u"reserved value 0x%X", {editorial}); break;
-        }
-        disp << std::endl;
-        if (lang_present && size >= 3) {
-            disp << margin << "Language: " << DeserializeLanguageCode(data) << std::endl;
-            data += 3; size -= 3;
-        }
-        disp.displayPrivateData(u"Private data", data, size, margin);
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }

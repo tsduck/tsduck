@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -72,34 +73,16 @@ ts::IPMACPlatformProviderNameDescriptor::IPMACPlatformProviderNameDescriptor(Duc
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformProviderNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::IPMACPlatformProviderNameDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    if (SerializeLanguageCode(*bbp, language_code)) {
-        bbp->append(duck.encoded(text));
-        serializeEnd(desc, bbp);
-    }
-    else {
-        desc.invalidate();
-    }
+    buf.putLanguageCode(language_code);
+    buf.putString(text);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::IPMACPlatformProviderNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::IPMACPlatformProviderNameDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 3;
-
-    if (_is_valid) {
-        language_code = DeserializeLanguageCode(data);
-        duck.decode(text, data + 3, size - 3);
-    }
+    buf.getLanguageCode(language_code);
+    buf.getString(text);
 }
 
 
@@ -107,22 +90,17 @@ void ts::IPMACPlatformProviderNameDescriptor::deserialize(DuckContext& duck, con
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformProviderNameDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::IPMACPlatformProviderNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 3) {
-        disp << margin << "Language: " << DeserializeLanguageCode(data) << std::endl
-             << margin << "Platform name: " << disp.duck().decoded(data + 3, size - 3) << std::endl;
-        size = 0;
+    if (buf.canReadBytes(3)) {
+        disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
+        disp << margin << "Platform name: " << buf.getString() << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::IPMACPlatformProviderNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

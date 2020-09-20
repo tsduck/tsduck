@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -80,23 +81,25 @@ ts::CaptionServiceDescriptor::Entry::Entry() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CaptionServiceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CaptionServiceDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(0xE0 | (entries.size() & 0x1F)));
+    buf.putBits(0xFF, 3);
+    buf.putBits(entries.size(), 5);
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->language)) {
-            return;
-        }
+        buf.putLanguageCode(it->language);
+        buf.putBit(it->digital_cc);
+        buf.putBit(1);
         if (it->digital_cc) {
-            bbp->appendUInt8(uint8_t(0xC0 | (it->caption_service_number & 0x3F)));
+            buf.putBits(it->caption_service_number, 6);
         }
         else {
-            bbp->appendUInt8(it->line21_field ? 0x7F : 0x7E);
+            buf.putBits(0xFF, 5);
+            buf.putBit(it->line21_field);
         }
-        bbp->appendUInt16((it->easy_reader ? 0x8000 : 0x0000) | (it->wide_aspect_ratio ? 0x4000 : 0x0000) | 0x3FFF);
+        buf.putBit(it->easy_reader);
+        buf.putBit(it->wide_aspect_ratio);
+        buf.putBits(0xFFFF, 14);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -104,31 +107,26 @@ void ts::CaptionServiceDescriptor::serialize(DuckContext& duck, Descriptor& desc
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CaptionServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::CaptionServiceDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        size_t count = data[0] & 0x1F;
-        data++; size--;
-        while (size >= 6 && count > 0) {
-            Entry e;
-            e.language = DeserializeLanguageCode(data);
-            e.digital_cc = (data[3] & 0x80) != 0;
-            if (e.digital_cc) {
-                e.caption_service_number = data[3] & 0x3F;
-            }
-            else {
-                e.line21_field = (data[3] & 0x01) != 0;
-            }
-            e.easy_reader = (data[4] & 0x80) != 0;
-            e.wide_aspect_ratio = (data[4] & 0x40) != 0;
-            entries.push_back(e);
-            data += 6; size -= 6; count--;
+    buf.skipBits(3);
+    const size_t count = buf.getBits<size_t>(5);
+    for (size_t i = 0; i < count && buf.canRead(); ++i) {
+        Entry e;
+        buf.getLanguageCode(e.language);
+        e.digital_cc = buf.getBit() != 0;
+        buf.skipBits(1);
+        if (e.digital_cc) {
+            e.caption_service_number = buf.getBits<uint8_t>(6);
         }
+        else {
+            buf.skipBits(5);
+            e.line21_field = buf.getBit() != 0;
+        }
+        e.easy_reader = buf.getBit() != 0;
+        e.wide_aspect_ratio = buf.getBit() != 0;
+        buf.skipBits(14);
+        entries.push_back(e);
     }
 }
 
@@ -137,30 +135,29 @@ void ts::CaptionServiceDescriptor::deserialize(DuckContext& duck, const Descript
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CaptionServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CaptionServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        size_t count = data[0] & 0x1F;
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        buf.skipBits(3);
+        const size_t count = buf.getBits<size_t>(5);
         disp << margin << "Number of services: " << count << std::endl;
-        while (size >= 6 && count > 0) {
-            const bool digital = (data[3] & 0x80) != 0;
-            disp << margin << UString::Format(u"- Language: \"%s\", digital: %s", {DeserializeLanguageCode(data), digital});
+        for (size_t i = 0; i < count && buf.canReadBytes(6); ++i) {
+            disp << margin << "- Language: \"" << buf.getLanguageCode() << "\"";
+            const bool digital = buf.getBit() != 0;
+            buf.skipBits(1);
+            disp << UString::Format(u", digital: %s", {digital});
             if (digital) {
-                const uint8_t id = data[3] & 0x3F;
-                disp << UString::Format(u", service: 0x%X (%d)", {id, id});
+                disp << UString::Format(u", service: 0x%X (%<d)", {buf.getBits<uint8_t>(6)});
             }
             else {
-                disp << UString::Format(u", line 21: %s", {(data[3] & 0x01) != 0});
+                buf.skipBits(5);
+                disp << UString::Format(u", line 21: %s", {buf.getBit() != 0});
             }
-            disp << UString::Format(u", easy reader: %s, wide: %s", {(data[4] & 0x80) != 0, (data[4] & 0x40) != 0}) << std::endl;
-            data += 6; size -= 6; count--;
+            disp << UString::Format(u", easy reader: %s", {buf.getBit() != 0});
+            disp << UString::Format(u", wide: %s", {buf.getBit() != 0}) << std::endl;
+            buf.skipBits(14);
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -130,10 +130,12 @@ namespace ts {
     //! This is never zero, at least one bit is needed to represent the value zero.
     //!
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    size_t BitSize(INT x);
+    size_t BitSize(INT x); // unsigned version
 
+    //! @cond nodoxygen
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    size_t BitSize(INT x);
+    size_t BitSize(INT x); // signed version
+    //! @endcond
 
     //!
     //! Get a power of 10 using a fast lookup table.

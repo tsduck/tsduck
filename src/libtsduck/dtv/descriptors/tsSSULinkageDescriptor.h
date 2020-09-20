@@ -40,6 +40,8 @@ namespace ts {
     //!
     //! Representation of a linkage_descriptor for system software update.
     //! SSU uses linkage type 0x09.
+    //! @see ETSI EN 300 468, 6.2.19.
+    //! @see ETSI TS 102 006, 6.1.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL SSULinkageDescriptor : public AbstractDescriptor
@@ -58,11 +60,7 @@ namespace ts {
             //! Constructor.
             //! @param [in] oui_ OUI, 24 bits.
             //!
-            Entry(uint32_t oui_ = 0) :
-                oui(oui_),
-                selector()
-            {
-            }
+            Entry(uint32_t oui_ = 0);
         };
 
         //!
@@ -117,13 +115,13 @@ namespace ts {
         void toLinkageDescriptor(DuckContext& duck, LinkageDescriptor& desc) const;
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };

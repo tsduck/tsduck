@@ -97,20 +97,13 @@ void ts::DataBroadcastIdDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 2) {
-        uint16_t id = GetUInt16(data);
-        data += 2; size -= 2;
+    if (buf.canReadBytes(2)) {
+        const uint16_t id = buf.getUInt16();
         disp << margin << "Data broadcast id: " << names::DataBroadcastId(id, names::BOTH_FIRST) << std::endl;
-        // The rest of the descriptor is the "id selector".
-        DisplaySelectorBytes(disp, data, size, indent, id);
-        data += size; size = 0;
+        DisplaySelectorBytes(disp, buf, margin, id);
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -118,26 +111,26 @@ void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& disp, DID d
 // Static method to display a data broadcast selector bytes.
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& disp, const uint8_t* data, size_t size, int indent, uint16_t dbid)
+void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, uint16_t dbid)
 {
-    const UString margin(indent, ' ');
-
-    // Interpretation depends in the data broadcast id.
-    switch (dbid) {
-        case 0x0005:
-            DisplaySelectorMPE(disp, data, size, indent, dbid);
-            break;
-        case 0x000A:
-            DisplaySelectorSSU(disp, data, size, indent, dbid);
-            break;
-        case 0x000B:
-            DisplaySelectorINT(disp, data, size, indent, dbid);
-            break;
-        default:
-            DisplaySelectorGeneric(disp, data, size, indent, dbid);
-            break;
+    if (buf.canRead()) {
+        // Interpretation depends in the data broadcast id.
+        switch (dbid) {
+            case 0x0005:
+                DisplaySelectorMPE(disp, buf, margin, dbid);
+                break;
+            case 0x000A:
+                DisplaySelectorSSU(disp, buf, margin, dbid);
+                break;
+            case 0x000B:
+                DisplaySelectorINT(disp, buf, margin, dbid);
+                break;
+            default:
+                DisplaySelectorGeneric(disp, buf, margin, dbid);
+                break;
+        }
+        disp.displayPrivateData(u"Extraneous selector bytes", buf, NPOS, margin);
     }
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -145,11 +138,9 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& disp, co
 // Generic selector bytes
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::DisplaySelectorGeneric(TablesDisplay& disp, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
+void ts::DataBroadcastIdDescriptor::DisplaySelectorGeneric(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, uint16_t dbid)
 {
-    const UString margin(indent, ' ');
-    disp.displayPrivateData(u"Data Broadcast selector", data, size, margin);
-    data += size; size = 0;
+    disp.displayPrivateData(u"Data Broadcast selector", buf, NPOS, margin);
 }
 
 
@@ -158,38 +149,15 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorGeneric(TablesDisplay& disp, 
 // Id selector is a system_software_update_info structure.
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& disp, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
+void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, uint16_t dbid)
 {
-    const UString margin(indent, ' ');
+    buf.pushReadSizeFromLength(8); // OUI_data_length
 
-    // OUI_data_length:
-    if (size < 1) {
-        return;
-    }
-    uint8_t dlength = data[0];
-    data += 1; size -= 1;
-    if (dlength > size) {
-        dlength = uint8_t(size);
-    }
-
-    // OUI loop:
-    while (dlength >= 6) {
-        // Get fixed part (6 bytes)
-        uint32_t oui = GetUInt32(data - 1) & 0x00FFFFFF; // 24 bits
-        uint8_t upd_type = data[3] & 0x0F;
-        uint8_t upd_flag = (data[4] >> 5) & 0x01;
-        uint8_t upd_version = data[4] & 0x1F;
-        uint8_t slength = data[5];
-        data += 6; size -= 6; dlength -= 6;
-        // Get variable-length selector
-        const uint8_t* sdata = data;
-        if (slength > dlength) {
-            slength = dlength;
-        }
-        data += slength; size -= slength; dlength -= slength;
-        // Display
-        disp << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl
-            << margin << UString::Format(u"  Update type: 0x%X (", {upd_type});
+    while (buf.canReadBytes(6)) {
+        disp << margin << "OUI: " << names::OUI(buf.getUInt24(), names::FIRST) << std::endl;
+        buf.skipBits(4);
+        const uint8_t upd_type = buf.getBits<uint8_t>(4);
+        disp << margin << UString::Format(u"  Update type: 0x%X (", {upd_type});
         switch (upd_type) {
             case 0x00: disp << "proprietary update solution"; break;
             case 0x01: disp << "standard update carousel (no notification) via broadcast"; break;
@@ -197,28 +165,25 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& disp, cons
             case 0x03: disp << "system software update using return channel with UNT"; break;
             default:   disp << "reserved"; break;
         }
-        disp << ")" << std::endl << margin << "  Update version: ";
-        if (upd_flag == 0) {
-            disp << "none";
+        disp << ")" << std::endl;
+        buf.skipBits(2);
+        const bool upd_flag = buf.getBit() != 0;
+        const uint8_t upd_version = buf.getBits<uint8_t>(5);
+        disp << margin << "  Update version: ";
+        if (upd_flag) {
+            disp << UString::Format(u"%d (0x%<02X)", {upd_version});
         }
         else {
-            disp << UString::Format(u"%d (0x%02X)", {upd_version, upd_version});
+            disp << "none";
         }
         disp << std::endl;
-        disp.displayPrivateData(u"Selector data", sdata, slength, margin + u"  ");
+        const uint8_t slength = buf.getUInt8();
+        disp.displayPrivateData(u"Selector data", buf, slength, margin + u"  ");
     }
 
-    // Extraneous data in OUI_loop:
-    if (dlength > 0) {
-        disp.displayPrivateData(u"Extraneous data in OUI loop", data, dlength, margin);
-        data += dlength; size -= dlength;
-    }
-
-    // Private data
-    if (size > 0) {
-        disp.displayPrivateData(u"Private data", data, size, margin);
-        data += size; size = 0;
-    }
+    disp.displayPrivateData(u"Extraneous data in OUI loop", buf, NPOS, margin);
+    buf.popState(); // end of OUI_data_length
+    disp.displayPrivateData(u"Private data", buf, NPOS, margin);
 }
 
 
@@ -227,18 +192,14 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& disp, cons
 // Id selector is a multiprotocol_encapsulation_info structure.
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::DisplaySelectorMPE(TablesDisplay& disp, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
+void ts::DataBroadcastIdDescriptor::DisplaySelectorMPE(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, uint16_t dbid)
 {
-    const UString margin(indent, ' ');
-
-    // Fixed length: 2 bytes.
-    if (size >= 2) {
-        disp << margin << UString::Format(u"MAC address range: %d, MAC/IP mapping: %d, alignment: %d bits",
-                                          {(data[0] >> 5) & 0x07, (data[0] >> 4) & 0x01, (data[0] & 0x08) == 0 ? 8 : 32})
-             << std::endl
-             << margin << UString::Format(u"Max sections per datagram: %d", {data[1]})
-             << std::endl;
-        data += 2; size -= 2;
+    if (buf.canReadBytes(2)) {
+        disp << margin << UString::Format(u"MAC address range: %d", {buf.getBits<uint8_t>(3)});
+        disp << UString::Format(u", MAC/IP mapping: %d", {buf.getBit()});
+        disp << UString::Format(u", alignment: %d bits", {buf.getBit() == 0 ? 8 : 32}) << std::endl;
+        buf.skipBits(3);
+        disp << margin << UString::Format(u"Max sections per datagram: %d", {buf.getUInt8()}) << std::endl;
     }
 }
 
@@ -248,42 +209,25 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorMPE(TablesDisplay& disp, cons
 // Id selector is a IP/MAC_notification_info structure.
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& disp, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
+void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, uint16_t dbid)
 {
-    const UString margin(indent, ' ');
-
-    // platform_id_data_length:
-    if (size < 1) {
-        return;
-    }
-    uint8_t dlength = data[0];
-    data += 1; size -= 1;
-    if (dlength > size) {
-        dlength = uint8_t(size);
-    }
-
-    // Platform id loop.
-    while (dlength >= 5) {
-        disp << margin << UString::Format(u"- Platform id: %s", {ts::names::PlatformId(GetUInt24(data), names::HEXA_FIRST)}) << std::endl
-             << margin << UString::Format(u"  Action type: 0x%X, version: ", {data[3]});
-        if ((data[4] & 0x20) != 0) {
-            disp << UString::Decimal(data[4] & 0x1F);
+    buf.pushReadSizeFromLength(8); // platform_id_data_length
+    while (buf.canReadBytes(5)) {
+        disp << margin << "- Platform id: " << names::PlatformId(buf.getUInt24(), names::HEXA_FIRST) << std::endl;
+        disp << margin << UString::Format(u"  Action type: 0x%X, version: ", {buf.getUInt8()});
+        buf.skipBits(2);
+        if (buf.getBit() != 0) {
+            disp << buf.getBits<uint32_t>(5) << std::endl;
         }
         else {
-            disp << "unspecified";
+            buf.skipBits(5);
+            disp << "unspecified" << std::endl;
         }
-        disp << std::endl;
-        data += 5; size -= 5;  dlength -= 5;
     }
 
-    // Extraneous data in Platform id loop:
-    if (dlength > 0) {
-        disp.displayPrivateData(u"Extraneous data in platform_id loop", data, dlength, margin);
-        data += dlength; size -= dlength;
-    }
-
-    // Private data
-    disp.displayPrivateData(u"Private data", data, size, margin);
+    disp.displayPrivateData(u"Extraneous data in platform_id loop", buf, NPOS, margin);
+    buf.popState(); // end of platform_id_data_length
+    disp.displayPrivateData(u"Private data", buf, NPOS, margin);
 }
 
 

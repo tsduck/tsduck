@@ -183,8 +183,6 @@ namespace ts {
         //! @cond nodoxygen
         ByteBlockPtr serializeStart() const;
         bool serializeEnd(Descriptor& bin, const ByteBlockPtr& bbp) const;
-        static bool SerializeLanguageCode(ByteBlock& bb, const UString& str, bool allow_empty = false);
-        static UString DeserializeLanguageCode(const uint8_t* data);
         //! @endcond
 
     private:
