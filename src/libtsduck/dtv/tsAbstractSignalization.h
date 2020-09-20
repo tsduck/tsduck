@@ -89,7 +89,7 @@ namespace ts {
         //! @param [in,out] parent The parent node for the new XML tree.
         //! @return The new XML element.
         //!
-        virtual xml::Element* toXML(DuckContext& duck, xml::Element* parent) const final;
+        xml::Element* toXML(DuckContext& duck, xml::Element* parent) const;
 
         //!
         //! This method converts an XML structure to a table or descriptor in this object.
@@ -103,7 +103,7 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] element XML element to convert.
         //!
-        virtual void fromXML(DuckContext& duck, const xml::Element* element) final;
+        void fromXML(DuckContext& duck, const xml::Element* element);
 
         // Implementation of AbstractDefinedByStandards
         virtual Standards definingStandards() const override;
@@ -193,22 +193,6 @@ namespace ts {
         //! @return True if the analysis is correct, false otherwise.
         //!
         virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) = 0;
-
-        //!
-        //! This static method serializes a 3-byte language or country code.
-        //! @param [in,out] bb A byte-block where @a str will be appended if its size is correct.
-        //! @param [in] str String to serialize.
-        //! @param [in] allow_empty If true, an empty string is allowed and serialized as zeroes.
-        //! @return True if the size has the required length and has been serialized.
-        //!
-        static bool SerializeLanguageCode(ByteBlock& bb, const UString& str, bool allow_empty = false);
-
-        //!
-        //! This static method deserializes a 3-byte language or country code.
-        //! @param [in] data Address of a 3-byte memory area.
-        //! @return Deserialized string.
-        //!
-        static UString DeserializeLanguageCode(const uint8_t* data);
 
     private:
         const UChar* const _xml_name;         // XML table or descriptor name.

@@ -63,12 +63,7 @@ namespace ts {
             //! @param [in] visible_ Service is visible.
             //! @param [in] lcn_ Logical channel number.
             //!
-            Entry(uint16_t id_ = 0, bool visible_ = true, uint16_t lcn_ = 0):
-                service_id(id_),
-                visible(visible_),
-                lcn(lcn_)
-            {
-            }
+            Entry(uint16_t id_ = 0, bool visible_ = true, uint16_t lcn_ = 0);
         };
 
         //!
@@ -97,13 +92,13 @@ namespace ts {
         NorDigLogicalChannelDescriptorV1(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
         DeclareLegacyDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };

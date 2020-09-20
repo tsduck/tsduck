@@ -126,6 +126,10 @@ FACTORY ts::PluginRepository::getFactory(const UString& plugin_name, const UStri
         }
         else {
             report.error(shlib.errorMessage());
+            // If a shared library was loaded but registered its plugin with the wrong name,
+            // then plugin_map was modified but the previous 'plugin_map.end()' in invalidated.
+            // So, just to make sure  we don't fail on invalid plugins, reassign it.
+            it = plugin_map.end();
         }
     }
 

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -104,22 +105,26 @@ void ts::ATSCAC3AudioStreamDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ATSCAC3AudioStreamDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ATSCAC3AudioStreamDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    bbp->appendUInt8(uint8_t(((sample_rate_code & 0x07) << 5) | (bsid & 0x1F)));
-    bbp->appendUInt8(uint8_t(((bit_rate_code & 0x3F) << 2) | (surround_mode & 0x03)));
-    bbp->appendUInt8(uint8_t(((bsmod & 0x07) << 5) | ((num_channels & 0x0F) << 1) | (full_svc ? 0x01 : 0x00)));
-    bbp->appendUInt8(0xFF); // langcod, deprecated
-    if ((num_channels & 0x0F) == 0) {
-        bbp->appendUInt8(0xFF); // langcod2, deprecated
+    buf.putBits(sample_rate_code, 3);
+    buf.putBits(bsid, 5);
+    buf.putBits(bit_rate_code, 6);
+    buf.putBits(surround_mode, 2);
+    buf.putBits(bsmod, 3);
+    buf.putBits(num_channels, 4);
+    buf.putBit(full_svc);
+    buf.putUInt8(0xFF); // langcod, deprecated
+    if (num_channels == 0) {
+        buf.putUInt8(0xFF); // langcod2, deprecated
     }
-    if ((bsmod & 0x07) < 2) {
-        bbp->appendUInt8(uint8_t(((mainid & 0x07) << 5) | ((priority & 0x03) << 2) | 0x07));
+    if (bsmod < 2) {
+        buf.putBits(mainid, 3);
+        buf.putBits(priority, 2);
+        buf.putBits(0xFF, 3);
     }
     else {
-        bbp->appendUInt8(asvcflags);
+        buf.putUInt8(asvcflags);
     }
 
     // Check if text shall be encoded in ISO Latin-1 (ISO 8859-1) or UTF-16.
@@ -129,21 +134,23 @@ void ts::ATSCAC3AudioStreamDescriptor::serialize(DuckContext& duck, Descriptor& 
     const ByteBlock bb(latin1 ? DVBCharTableSingleByte::RAW_ISO_8859_1.encoded(text, 0, 127) : DVBCharTableUTF16::RAW_UNICODE.encoded(text, 0, 63));
 
     // Serialize the text.
-    bbp->appendUInt8(uint8_t((bb.size() << 1) | (latin1 ? 0x01 : 0x00)));
-    bbp->append(bb);
+    buf.putBits(bb.size(), 7);
+    buf.putBit(latin1);
+    buf.putBytes(bb);
 
     // Serialize the languages.
-    bbp->appendUInt8((language.empty() ? 0x00 : 0x80) | (language_2.empty() ? 0x00 : 0x40) | 0x3F);
+    buf.putBit(!language.empty());
+    buf.putBit(!language_2.empty());
+    buf.putBits(0xFF, 6);
     if (!language.empty()) {
-        SerializeLanguageCode(*bbp, language);
+        buf.putLanguageCode(language);
     }
     if (!language_2.empty()) {
-        SerializeLanguageCode(*bbp, language_2);
+        buf.putLanguageCode(language_2);
     }
 
     // Trailing info.
-    bbp->append(additional_info);
-    serializeEnd(desc, bbp);
+    buf.putBytes(additional_info);
 }
 
 
@@ -151,107 +158,84 @@ void ts::ATSCAC3AudioStreamDescriptor::serialize(DuckContext& duck, Descriptor& 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ATSCAC3AudioStreamDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ATSCAC3AudioStreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    clear();
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 3;
-
-    if (!_is_valid) {
-        return;
-    }
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    // Fixed initial size: 3 bytes.
-    sample_rate_code = uint8_t((data[0] >> 5) & 0x07);
-    bsid = uint8_t(data[0] & 0x1F);
-    bit_rate_code = uint8_t((data[1] >> 2) & 0x3F);
-    surround_mode = uint8_t(data[1] & 0x03);
-    bsmod = uint8_t((data[2] >> 5) & 0x07);
-    num_channels = uint8_t((data[2] >> 1) & 0x0F);
-    full_svc = (data[2] & 0x01) != 0;
-    data += 3; size -= 3;
+    sample_rate_code = buf.getBits<uint8_t>(3);
+    bsid = buf.getBits<uint8_t>(5);
+    bit_rate_code = buf.getBits<uint8_t>(6);
+    surround_mode = buf.getBits<uint8_t>(2);
+    bsmod = buf.getBits<uint8_t>(3);
+    num_channels = buf.getBits<uint8_t>(4);
+    full_svc = buf.getBit() != 0;
 
     // End of descriptor allowed here
-    if (size == 0) {
+    if (buf.endOfRead()) {
         return;
     }
 
     // Ignore langcode, deprecated
-    data++; size--;
+    buf.skipBits(8);
 
     // End of descriptor allowed here
-    if (size == 0) {
+    if (buf.endOfRead()) {
         return;
     }
 
     // Ignore langcode2, deprecated
     if (num_channels == 0) {
-        data++; size--;
+        buf.skipBits(8);
     }
 
     // End of descriptor allowed here
-    if (size == 0) {
+    if (buf.endOfRead()) {
         return;
     }
 
     // Decode one byte depending on bsmod.
     if (bsmod < 2) {
-        mainid = uint8_t((data[0] >> 5) & 0x07);
-        priority = uint8_t((data[0] >> 3) & 0x03);
+        mainid = buf.getBits<uint8_t>(3);
+        priority = buf.getBits<uint8_t>(2);
+        buf.skipBits(3);
     }
     else {
-        asvcflags = data[0];
+        asvcflags = buf.getUInt8();
     }
-    data++; size--;
 
     // End of descriptor allowed here
-    if (size == 0) {
+    if (buf.endOfRead()) {
         return;
     }
 
     // Deserialize text. Can be ISO Latin-1 or UTF-16.
-    const size_t textlen = (data[0] >> 1) & 0x7F;
-    const bool latin1 = (data[0] & 0x01) != 0;
-    data++; size--;
-    if (size < textlen) {
-        _is_valid = false; // text is truncated
-        return;
-    }
-    _is_valid = latin1 ?
-                DVBCharTableSingleByte::RAW_ISO_8859_1.decode(text, data, textlen) :
-                DVBCharTableUTF16::RAW_UNICODE.decode(text, data, textlen);
-    data += textlen; size -= textlen;
+    const size_t textlen = buf.getBits<size_t>(7);
+    const bool latin1 = buf.getBit() != 0;
+    buf.getString(text, textlen, latin1 ? static_cast<const Charset*>(&DVBCharTableSingleByte::RAW_ISO_8859_1) : static_cast<const Charset*>(&DVBCharTableUTF16::RAW_UNICODE));
 
     // End of descriptor allowed here
-    if (!_is_valid || size == 0) {
+    if (buf.endOfRead()) {
         return;
     }
 
     // Decode one byte flags.
-    const bool has_language = (data[0] & 0x80) != 0;
-    const bool has_language_2 = (data[0] & 0x40) != 0;
-    data++; size--;
-    _is_valid = size >= size_t((has_language ? 3 : 0) + (has_language_2 ? 3 : 0));
+    const bool has_language = buf.getBit() != 0;
+    const bool has_language_2 = buf.getBit() != 0;
+    buf.skipBits(6);
 
     // End of descriptor allowed here
-    if (!_is_valid || size == 0) {
+    if (buf.endOfRead()) {
         return;
     }
 
     // Deserialize languages.
     if (has_language) {
-        language = DeserializeLanguageCode(data);
-        data += 3; size -= 3;
+        buf.getLanguageCode(language);
     }
     if (has_language_2) {
-        language_2 = DeserializeLanguageCode(data);
-        data += 3; size -= 3;
+        buf.getLanguageCode(language_2);
     }
 
     // Trailing info.
-    additional_info.copy(data, size);
+    buf.getBytes(additional_info);
 }
 
 

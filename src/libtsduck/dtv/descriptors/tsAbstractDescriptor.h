@@ -178,26 +178,14 @@ namespace ts {
         //!
         virtual void deserializePayload(PSIBuffer& buf);
 
-        //!
-        //! Tool for serialization: get a byte buffer for serialization.
-        //! Legacy warning: This method is useful only when serialize() is directly overridden instead
-        //! of serializePayload(). This is consquently considered as a legacy feature.
-        //! @return A safe pointer to a two-byte byffer containing the descriptor tag and zero as length.
-        //! @see serializeEnd()
-        //!
+        // Obsolete tools for serialization, no longer needed with the new set of methods.
+        // Will be removed if all legacy code from descriptors are converted one day.
+        //! @cond nodoxygen
         ByteBlockPtr serializeStart() const;
-
-        //!
-        //! Tool for serialization: complete a serialization.
-        //! Legacy warning: This method is useful only when serialize() is directly overridden instead
-        //! of serializeContent(). This is consquently considered as a legacy feature.
-        //! @param [out] bin A binary descriptor object which receives the serialized object.
-        //! @param [in] bbp Safe pointer containing the serialized data, typically returned by serializeStart().
-        //! The tag and length will be updated.
-        //! @return True if the serialized descriptor is valid.
-        //! @see serializeStart()
-        //!
         bool serializeEnd(Descriptor& bin, const ByteBlockPtr& bbp) const;
+        static bool SerializeLanguageCode(ByteBlock& bb, const UString& str, bool allow_empty = false);
+        static UString DeserializeLanguageCode(const uint8_t* data);
+        //! @endcond
 
     private:
         DID _tag;           // Descriptor tag.

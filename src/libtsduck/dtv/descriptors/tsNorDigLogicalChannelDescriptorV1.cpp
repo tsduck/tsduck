@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -60,6 +61,13 @@ ts::NorDigLogicalChannelDescriptorV1::NorDigLogicalChannelDescriptorV1(DuckConte
     deserialize(duck, desc);
 }
 
+ts::NorDigLogicalChannelDescriptorV1::Entry::Entry(uint16_t id, bool vis, uint16_t lc) :
+    service_id(id),
+    visible(vis),
+    lcn(lc)
+{
+}
+
 void ts::NorDigLogicalChannelDescriptorV1::clearContent()
 {
     entries.clear();
@@ -70,14 +78,14 @@ void ts::NorDigLogicalChannelDescriptorV1::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::NorDigLogicalChannelDescriptorV1::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::NorDigLogicalChannelDescriptorV1::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt16(it->service_id);
-        bbp->appendUInt16((it->visible ? 0xC000 : 0x4000) | (it->lcn & 0x3FFF));
+        buf.putUInt16(it->service_id);
+        buf.putBit(it->visible);
+        buf.putBit(1);
+        buf.putBits(it->lcn, 14);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -85,19 +93,15 @@ void ts::NorDigLogicalChannelDescriptorV1::serialize(DuckContext& duck, Descript
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::NorDigLogicalChannelDescriptorV1::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::NorDigLogicalChannelDescriptorV1::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() % 4 == 0;
-    entries.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        while (size >= 4) {
-            entries.push_back(Entry(GetUInt16(data), (data[2] & 0x80) != 0, GetUInt16(data + 2) & 0x3FFF));
-            data += 4;
-            size -= 4;
-        }
+    while (buf.canRead()) {
+        Entry e;
+        e.service_id = buf.getUInt16();
+        e.visible = buf.getBit() != 0;
+        buf.skipBits(1);
+        e.lcn = buf.getBits<uint16_t>(14);
+        entries.push_back(e);
     }
 }
 
