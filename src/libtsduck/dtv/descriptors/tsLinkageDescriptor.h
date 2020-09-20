@@ -102,10 +102,10 @@ namespace ts {
         typedef std::list<ExtendedEventLinkageInfo> ExtendedEventLinkageList;
 
         // LinkageDescriptor public members:
-        uint16_t    ts_id;         //!< Transport stream id.
-        uint16_t    onetw_id;      //!< Original network id.
-        uint16_t    service_id;    //!< Service id.
-        uint8_t     linkage_type;  //!< Linkage type, LINKAGE_* constants, eg ts::LINKAGE_INFO.
+        uint16_t                 ts_id;                        //!< Transport stream id.
+        uint16_t                 onetw_id;                     //!< Original network id.
+        uint16_t                 service_id;                   //!< Service id.
+        uint8_t                  linkage_type;                 //!< Linkage type, LINKAGE_* constants, eg ts::LINKAGE_INFO.
         MobileHandoverInfo       mobile_handover_info;         //!< mobile_hand-over_info when linkage_type == LINKAGE_HAND_OVER.
         EventLinkageInfo         event_linkage_info;           //!< event_linkage_info when linkage_type == LINKAGE_EVENT.
         ExtendedEventLinkageList extended_event_linkage_info;  //!< extended_event_linkage_info when linkage_type in LINKAGE_EXT_EVENT_MIN .. LINKAGE_EXT_EVENT_MAX.
@@ -128,13 +128,13 @@ namespace ts {
         LinkageDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
@@ -144,10 +144,10 @@ namespace ts {
     private:
         // Display linkage private data of various types.
         // Fields data and size are updated.
-        static void DisplayPrivateMobileHandover(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype);
-        static void DisplayPrivateSSU(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype);
-        static void DisplayPrivateTableSSU(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype);
-        static void DisplayPrivateINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype);
-        static void DisplayPrivateDeferredINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype);
+        static void DisplayPrivateMobileHandover(TablesDisplay& display, PSIBuffer& buf, const UString& margin, uint8_t ltype);
+        static void DisplayPrivateSSU(TablesDisplay& display, PSIBuffer& buf, const UString& margin, uint8_t ltype);
+        static void DisplayPrivateTableSSU(TablesDisplay& display, PSIBuffer& buf, const UString& margin, uint8_t ltype);
+        static void DisplayPrivateINT(TablesDisplay& display, PSIBuffer& buf, const UString& margin, uint8_t ltype);
+        static void DisplayPrivateDeferredINT(TablesDisplay& display, PSIBuffer& buf, const UString& margin, uint8_t ltype);
     };
 }

@@ -2039,6 +2039,21 @@ Bits = 8
 2 = Multi-channel
 3 = Reserved
 
+[SuppAudioMixType]
+# In supplementary_audio_descriptor
+Bits = 1
+0 = supplementary stream
+1 = complete and independent stream
+
+[SuppAudioClass]
+# In supplementary_audio_descriptor
+Bits = 5
+0 = main audio
+1 = audio description for the visually impaired
+2 = clean audio for the hearing impaired
+3 = spoken subtitles for the visually impaired
+4 = dependent parametric data stream
+
 [ScramblingControl]
 # In TS header
 Bits = 2

@@ -168,9 +168,34 @@ void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, cons
     // Serialize binary tables to section data.
     std::ostringstream strm;
     TSUNIT_ASSERT(xml.saveBinary(strm, CERR));
+    const std::string sections(strm.str());
+
+    // In debug mode, analyze data before failing.
+    if (debugMode() && (ref_sections_size != sections.size() || ::memcmp(ref_sections, sections.data(), ref_sections_size) != 0)) {
+        const size_t size = std::min(ref_sections_size, sections.size());
+        // Search index of first differing byte.
+        size_t diff = 0;
+        while (diff < size && ref_sections[diff] == uint8_t(sections[diff])) {
+            ++diff;
+        }
+        debug() << "Reference sections size: " << ref_sections_size << " bytes, generated sections: " << sections.size() << " bytes" << std::endl
+                << "First differing bytes at index " << diff << std::endl;
+        const uint32_t flags = ts::UString::HEXA | ts::UString::ASCII | ts::UString::OFFSET | ts::UString::BPL;
+        if (diff > 0) {
+            const size_t pre = std::min<size_t>(16, diff);
+            debug() << "Before first difference:" << std::endl
+                    << ts::UString::Dump(ref_sections + diff - pre, pre, flags, 2, 16, diff - pre);
+        }
+        if (diff < size) {
+            const size_t post = std::min<size_t>(256, size - diff);
+            debug() << "After first difference (reference):" << std::endl
+                    << ts::UString::Dump(ref_sections + diff, post, flags, 2, 16, diff)
+                    << "After first difference (reference):" << std::endl
+                    << ts::UString::Dump(sections.data() + diff, post, flags, 2, 16, diff);
+        }
+    }
 
     // Compare serialized section data to reference section data.
-    const std::string sections(strm.str());
     TSUNIT_EQUAL(ref_sections_size, sections.size());
     TSUNIT_EQUAL(0, ::memcmp(ref_sections, sections.data(), ref_sections_size));
 

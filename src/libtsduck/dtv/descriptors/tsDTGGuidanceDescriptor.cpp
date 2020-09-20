@@ -123,33 +123,24 @@ void ts::DTGGuidanceDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTGGuidanceDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DTGGuidanceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        const uint8_t type = data[0] & 0x03;
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        buf.skipBits(6);
+        const uint8_t type = buf.getBits<uint8_t>(2);
         disp << margin << UString::Format(u"Guidance type: %d", {type}) << std::endl;
-
-        if (type == 0 && size >= 3) {
-            disp << margin << "Language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl
-                 << margin << "Text: \"" << disp.duck().decoded(data + 3, size - 3) << "\"" << std::endl;
-            size = 0;
+        if (type == 0x01 && buf.canReadBytes(1)) {
+            buf.skipBits(7);
+            disp << margin << "Guidance mode: " << UString::TrueFalse(buf.getBit() != 0) << std::endl;
         }
-        else if (type == 1 && size >= 4) {
-            disp << margin << "Guidance mode: " << UString::TrueFalse(data[0] & 0x01) << std::endl
-                 << margin << "Language: \"" << DeserializeLanguageCode(data + 1) << "\"" << std::endl
-                 << margin << "Text: \"" << disp.duck().decoded(data + 4, size - 4) << "\"" << std::endl;
-            size = 0;
+        if (type > 0x01) {
+            disp.displayPrivateData(u"Reserved", buf, NPOS, margin);
         }
-        else if (type >= 2) {
-            disp.displayPrivateData(u"Reserved", data, size, margin);
-            size = 0;
+        else if (buf.canReadBytes(3)) {
+            disp << margin << "Language: \"" << buf.getLanguageCode() << "\"" << std::endl;
+            disp << margin << "Text: \"" << buf.getString() << "\"" << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

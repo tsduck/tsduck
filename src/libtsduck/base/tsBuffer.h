@@ -686,8 +686,10 @@ namespace ts {
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
         INT getBits(size_t bits, INT def = 0); // unsigned version
 
+        //! @cond nodoxygen
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
         INT getBits(size_t bits, INT def = 0); // signed version
+        //! @endcond
 
         //!
         //! Put the next n bits from an integer value and advance the write pointer.

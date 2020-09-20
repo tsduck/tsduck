@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -74,41 +75,18 @@ void ts::SSUEventNameDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SSUEventNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SSUEventNameDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    if (!SerializeLanguageCode(*bbp, ISO_639_language_code)) {
-        desc.invalidate();
-        return;
-    }
-    bbp->append(duck.encodedWithByteLength(name));
-    bbp->append(duck.encodedWithByteLength(text));
-    serializeEnd(desc, bbp);
+    buf.putLanguageCode(ISO_639_language_code);
+    buf.putStringWithByteLength(name);
+    buf.putStringWithByteLength(text);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::SSUEventNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SSUEventNameDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 5;
-
-    if (_is_valid) {
-        ISO_639_language_code = DeserializeLanguageCode(data);
-        data += 3; size -= 3;
-        duck.decodeWithByteLength(name, data, size);
-        duck.decodeWithByteLength(text, data, size);
-    }
-    else {
-        ISO_639_language_code.clear();
-        name.clear();
-        text.clear();
-    }
+    buf.getLanguageCode(ISO_639_language_code);
+    buf.getStringWithByteLength(name);
+    buf.getStringWithByteLength(text);
 }
 
 
@@ -116,20 +94,13 @@ void ts::SSUEventNameDescriptor::deserialize(DuckContext& duck, const Descriptor
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSUEventNameDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SSUEventNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        const UString lang(DeserializeLanguageCode(data));
-        data += 3; size -= 3;
-        const UString name(disp.duck().decodedWithByteLength(data, size));
-        const UString text(disp.duck().decodedWithByteLength(data, size));
-        disp << margin << "Language: " << lang << std::endl
-             << margin << "Event name: \"" << name << "\"" << std::endl
-             << margin << "Event text: \"" << text << "\"" << std::endl;
+    if (buf.canReadBytes(4)) {
+        disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
+        disp << margin << "Event name: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
+        disp << margin << "Event text: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
     }
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -143,11 +114,6 @@ void ts::SSUEventNameDescriptor::buildXML(DuckContext& duck, xml::Element* root)
     root->addElement(u"name")->addText(name);
     root->addElement(u"text")->addText(text);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::SSUEventNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

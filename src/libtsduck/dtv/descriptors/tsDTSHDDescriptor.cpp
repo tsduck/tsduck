@@ -196,7 +196,7 @@ void ts::DTSHDDescriptor::DeserializeSubstreamInfo(Variable<SubstreamInfo>& info
         SubstreamInfo& si(info.value());
         buf.pushReadSizeFromLength(8); // start read sequence
 
-        size_t num_assets = buf.getBits<uint8_t>(3);
+        const size_t num_assets = buf.getBits<size_t>(3) + 1;
         si.channel_count = buf.getBits<uint8_t>(5);
         si.LFE = buf.getBit() != 0;
         si.sampling_frequency = buf.getBits<uint8_t>(4);
@@ -226,7 +226,7 @@ void ts::DTSHDDescriptor::DeserializeSubstreamInfo(Variable<SubstreamInfo>& info
         }
 
         // Check that the number of assets matches
-        if (si.asset_info.size() != num_assets + 1) {
+        if (si.asset_info.size() != num_assets) {
             buf.setUserError();
         }
         buf.popState();  // end read sequence
@@ -238,115 +238,75 @@ void ts::DTSHDDescriptor::DeserializeSubstreamInfo(Variable<SubstreamInfo>& info
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
+    const bool substream_core_flag = buf.getBit() != 0;
+    const bool substream_0_flag = buf.getBit() != 0;
+    const bool substream_1_flag = buf.getBit() != 0;
+    const bool substream_2_flag = buf.getBit() != 0;
+    const bool substream_3_flag = buf.getBit() != 0;
+    buf.skipBits(3);
 
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        const uint8_t flags = data[0];
-        data++; size--;
-        if (DisplaySubstreamInfo(disp, (flags & 0x80) != 0, indent, u"core", data, size) &&
-            DisplaySubstreamInfo(disp, (flags & 0x40) != 0, indent, u"0", data, size) &&
-            DisplaySubstreamInfo(disp, (flags & 0x20) != 0, indent, u"1", data, size) &&
-            DisplaySubstreamInfo(disp, (flags & 0x10) != 0, indent, u"2", data, size) &&
-            DisplaySubstreamInfo(disp, (flags & 0x08) != 0, indent, u"3", data, size))
-        {
-            disp.displayPrivateData(u"Additional information", data, size, margin);
-            data += size; size = 0;
-        }
-    }
-    disp.displayExtraData(data, size, margin);
+    DisplaySubstreamInfo(disp, substream_core_flag, margin, u"core", buf);
+    DisplaySubstreamInfo(disp, substream_0_flag, margin, u"0", buf);
+    DisplaySubstreamInfo(disp, substream_1_flag, margin, u"1", buf);
+    DisplaySubstreamInfo(disp, substream_2_flag, margin, u"2", buf);
+    DisplaySubstreamInfo(disp, substream_3_flag, margin, u"3", buf);
+    disp.displayPrivateData(u"Additional information", buf, NPOS, margin);
 }
 
-bool ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& disp, bool present, int indent, const UString& name, const uint8_t*& data, size_t& size)
+void ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& disp, bool present, const UString& margin, const UString& name, PSIBuffer& buf)
 {
-    // Check presence and required size.
-    if (!present) {
-        // Nothing to display, not an error.
-        return true;
-    }
-    else if (size < 3 || size < 1 + size_t(data[0]) || data[0] < 2) {
-        return false;
-    }
+    if (present && buf.canReadBytes(3)) {
+        disp << margin << "Substream " << name << ":" << std::endl;
+        buf.pushReadSizeFromLength(8); // start read sequence
+        const size_t num_assets = buf.getBits<size_t>(3) + 1;
+        disp << margin << UString::Format(u"  Asset count: %d, channel count: %d", {num_assets, buf.getBits<uint8_t>(5)}) << std::endl;
+        disp << margin << UString::Format(u"  Low Frequency Effects (LFE): %s", {buf.getBit() != 0}) << std::endl;
+        disp << margin << UString::Format(u"  Sampling frequency: %s", {NameFromSection(u"DTSHDSamplingFrequency", buf.getBits<uint8_t>(4), names::VALUE)}) << std::endl;
+        disp << margin << UString::Format(u"  Sample resolution > 16 bits: %s", {buf.getBit() != 0}) << std::endl;
+        buf.skipBits(2);
 
-    // Immediately update size, use length to check the deserialization.
-    size_t length = data[0] - 2;
-    size_t num_assets = size_t((data[1] >> 5) & 0x07) + 1;
-    const uint8_t channel_count = data[1] & 0x1F;
-    const bool LFE = (data[2] & 0x80) != 0;
-    const uint8_t sampling_frequency = (data[2] >> 3) & 0x0F;
-    const bool sample_resolution = (data[2] & 0x40) != 0;
-    data += 3;
-    size -= length + 3;
+        // Display all asset info.
+        for (size_t asset_index = 0; asset_index < num_assets && buf.canReadBytes(3); ++asset_index) {
+            disp << margin << UString::Format(u"  Asset %d:", {asset_index}) << std::endl;
+            disp << margin << "    Construction: "
+                 << NameFromSection(u"DTSHDAssetConstruction", buf.getBits<uint8_t>(5) + (asset_index == 0 ? 0 : 0x0100), names::VALUE)
+                 << std::endl;
+            disp << margin << UString::Format(u"    VBR: %s", {buf.getBit() != 0});
+            const bool br_scaling = buf.getBit() != 0;
+            disp << UString::Format(u", post-encode bitrate scaling: %s", {br_scaling}) << std::endl;
+            const bool component_type_flag = buf.getBit() != 0;
+            const bool language_code_flag = buf.getBit() != 0;
+            const uint16_t bit_rate = buf.getBits<uint16_t>(13);
+            buf.skipBits(2);
 
-    const UString margin(indent, ' ');
-
-    disp << margin << "Substream " << name << ":" << std::endl
-         << margin << UString::Format(u"  Asset count: %d, channel count: %d", {num_assets, channel_count}) << std::endl
-         << margin << UString::Format(u"  Low Frequency Effects (LFE): %s", {LFE}) << std::endl
-         << margin << UString::Format(u"  Sampling frequency: %s", {NameFromSection(u"DTSHDSamplingFrequency", sampling_frequency, names::VALUE)}) << std::endl
-         << margin << UString::Format(u"  Sample resultion > 16 bits: %s", {sample_resolution}) << std::endl;
-
-    // Deserialize all asset info.
-    int asset_index = -1;
-    while (num_assets > 0 && length >= 3) {
-        --num_assets;
-        ++asset_index;
-
-        const uint16_t asset_construction = (data[0] >> 3) & 0x1F;
-        const bool vbr = (data[0] & 0x04) != 0;
-        const bool post_encode_br_scaling = (data[0] & 0x02) != 0;
-        const bool component_type_flag = (data[0] & 0x01) != 0;
-        const bool language_code_flag = (data[1] & 0x80) != 0;
-        const uint16_t bit_rate = (GetUInt16(data + 1) >> 2) & 0x1FFF;
-        data += 3; length -= 3;
-
-        disp << margin << UString::Format(u"  Asset %d:", {asset_index}) << std::endl
-             << margin << UString::Format(u"    Construction: %s", {NameFromSection(u"DTSHDAssetConstruction", asset_construction + (asset_index == 0 ? 0 : 0x0100), names::VALUE)}) << std::endl
-             << margin << UString::Format(u"    VBR: %s, post-encode bitrate scaling: %s", {vbr, post_encode_br_scaling}) << std::endl
-             << margin << "    Bit rate: ";
-
-        if (bit_rate == 0) {
-            disp << "unknown";
-        }
-        else if (post_encode_br_scaling) {
-            disp << (bit_rate >> 3) << "." << ((10 * (bit_rate & 0x07)) / 8) << " kb/s";
-        }
-        else {
-            disp << bit_rate << " kb/s";
-        }
-        disp << std::endl;
-
-        if (component_type_flag) {
-            if (length < 1) {
-                return false;
+            disp << margin << "    Bit rate: ";
+            if (bit_rate == 0) {
+                disp << "unknown";
+            }
+            else if (br_scaling) {
+                disp << (bit_rate >> 3) << "." << ((10 * (bit_rate & 0x07)) / 8) << " kb/s";
             }
             else {
-                disp << margin << UString::Format(u"    Component type: 0x%X", {data[0]}) << std::endl
-                     << margin << UString::Format(u"      %s", {(data[0] & 0x40) != 0 ? u"Full service" : u"Combined service"}) << std::endl
-                     << margin << UString::Format(u"      Service type: %s", {NameFromSection(u"DTSHDServiceType", (data[0] >> 3) & 0x07, names::VALUE)}) << std::endl
-                     << margin << UString::Format(u"      Number of channels: %s", {NameFromSection(u"DTSHDNumberOfChannels", data[0] & 0x07, names::VALUE)}) << std::endl;
-                data++; length--;
+                disp << bit_rate << " kb/s";
             }
-        }
+            disp << std::endl;
 
-        if (language_code_flag) {
-            if (length < 3) {
-                return false;
+            if (component_type_flag && buf.canReadBytes(1)) {
+                const uint8_t type = buf.getUInt8();
+                disp << margin << UString::Format(u"    Component type: 0x%X", {type}) << std::endl;
+                disp << margin << UString::Format(u"      %s", {(type & 0x40) != 0 ? u"Full service" : u"Combined service"}) << std::endl;
+                disp << margin << UString::Format(u"      Service type: %s", {NameFromSection(u"DTSHDServiceType", (type >> 3) & 0x07, names::VALUE)}) << std::endl;
+                disp << margin << UString::Format(u"      Number of channels: %s", {NameFromSection(u"DTSHDNumberOfChannels", type & 0x07, names::VALUE)}) << std::endl;
             }
-            else {
-                disp << margin << UString::Format(u"    Language code: \"%s\"", {DeserializeLanguageCode(data)}) << std::endl;
-                data += 3; length -= 3;
+            if (language_code_flag && buf.canReadBytes(3)) {
+                disp << margin << "    Language code: \"" << buf.getLanguageCode() << "\"" << std::endl;
             }
         }
+        disp.displayPrivateData(u"Extraneous substream data", buf, NPOS, margin + u"  ");
+        buf.popState();  // end read sequence
     }
-
-    // Check that everything was deserialized.
-    return num_assets == 0 && length == 0;
 }
 
 

@@ -62,13 +62,7 @@ namespace ts {
             //! @param [in] oui_ OUI, 24 bits.
             //! @param [in] upd_ Update type, 4 bits.
             //!
-            Entry(uint32_t oui_ = 0, uint8_t upd_ = 0) :
-                oui(oui_),
-                update_type(upd_),
-                update_version(),
-                selector()
-            {
-            }
+            Entry(uint32_t oui_ = 0, uint8_t upd_ = 0);
         };
 
         //!
@@ -115,13 +109,13 @@ namespace ts {
         void toDataBroadcastIdDescriptor(DuckContext& duck, DataBroadcastIdDescriptor& desc) const;
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };

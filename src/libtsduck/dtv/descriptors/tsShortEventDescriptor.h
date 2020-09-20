@@ -80,7 +80,7 @@ namespace ts {
         size_t splitAndAdd(DuckContext& duck, DescriptorList& dlist) const;
 
         // Inherited methods
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods

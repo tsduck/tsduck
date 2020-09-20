@@ -66,15 +66,14 @@ namespace ts {
         //!
         //! Static method to display a data broadcast selector bytes.
         //! @param [in,out] display Display engine.
-        //! @param [in] data Address of the selector bytes.
-        //! @param [in] size Size in bytes of the selector bytes.
-        //! @param [in] indent Indentation width.
+        //! @param [in] buf Buffer from which the selector bytes are read.
+        //! @param [in] margin Left margin content.
         //! @param [in] dbid Data broadcast id.
         //!
-        static void DisplaySelectorBytes(TablesDisplay& display, const uint8_t* data, size_t size, int indent, uint16_t dbid);
+        static void DisplaySelectorBytes(TablesDisplay& display, PSIBuffer& buf, const UString& margin, uint16_t dbid);
 
         // Inherited methods
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods
@@ -90,9 +89,9 @@ namespace ts {
     private:
         // Display selector bytes of various types.
         // Fields data and size are updated.
-        static void DisplaySelectorSSU(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid);
-        static void DisplaySelectorINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid);
-        static void DisplaySelectorMPE(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid);
-        static void DisplaySelectorGeneric(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid);
+        static void DisplaySelectorSSU(TablesDisplay& display, PSIBuffer& buf, const UString& margin, uint16_t dbid);
+        static void DisplaySelectorINT(TablesDisplay& display, PSIBuffer& buf, const UString& margin, uint16_t dbid);
+        static void DisplaySelectorMPE(TablesDisplay& display, PSIBuffer& buf, const UString& margin, uint16_t dbid);
+        static void DisplaySelectorGeneric(TablesDisplay& display, PSIBuffer& buf, const UString& margin, uint16_t dbid);
     };
 }

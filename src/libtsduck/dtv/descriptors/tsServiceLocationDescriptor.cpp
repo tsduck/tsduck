@@ -115,36 +115,27 @@ void ts::ServiceLocationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ServiceLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ServiceLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 3) {
-        PID pid = GetUInt16(data) & 0x1FFF;
-        size_t count = data[2];
-        data += 3; size -= 3;
-
+    if (buf.canReadBytes(3)) {
+        const PID pid = buf.getPID();
+        const size_t count = buf.getUInt8();
         disp << margin << "PCR PID: ";
         if (pid == PID_NULL) {
             disp << "none";
         }
         else {
-            disp << UString::Format(u"0x%X (%d)", {pid, pid});
+            disp << UString::Format(u"0x%X (%<d)", {pid});
         }
         disp << ", number of elements: " << count << std::endl;
 
         // Loop on all component entries.
-        while (count-- > 0 && size >= 6) {
-            const uint8_t stype = data[0];
-            pid = GetUInt16(data + 1) & 0x1FFF;
-            const UString lang(DeserializeLanguageCode(data + 3));
-            data += 6; size -= 6;
-
-            disp << margin << UString::Format(u"- PID: 0x%X (%d), language: \"%s\", type: %s", {pid, pid, lang, names::ServiceType(stype, names::FIRST)}) << std::endl;
+        for (size_t i = 0; i < count && buf.canReadBytes(6); ++i) {
+            const uint8_t stype = buf.getUInt8();
+            disp << margin << UString::Format(u"- PID: 0x%X (%<d)", {buf.getPID()});
+            disp << ", language: \"" << buf.getLanguageCode() << "\", type: " << names::ServiceType(stype, names::FIRST) << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

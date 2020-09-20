@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -98,6 +99,12 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(DuckContext& duck, const ts::Link
     }
 }
 
+ts::SSULinkageDescriptor::Entry::Entry(uint32_t oui_) :
+    oui(oui_),
+    selector()
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Convert to a linkage_descriptor.
@@ -121,23 +128,20 @@ void ts::SSULinkageDescriptor::toLinkageDescriptor(DuckContext& duck, ts::Linkag
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SSULinkageDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(ts_id);
-    bbp->appendUInt16(onetw_id);
-    bbp->appendUInt16(service_id);
-    bbp->appendUInt8(LINKAGE_SSU);
-    uint8_t* len = bbp->enlarge(1); // placeholder for oui_data_length
+    buf.putUInt16(ts_id);
+    buf.putUInt16(onetw_id);
+    buf.putUInt16(service_id);
+    buf.putUInt8(LINKAGE_SSU);
+    buf.pushWriteSequenceWithLeadingLength(8); // OUI_data_length
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt8((it->oui >> 16) & 0xFF);
-        bbp->appendUInt16(it->oui & 0xFFFF);
-        bbp->appendUInt8(uint8_t(it->selector.size()));
-        bbp->append(it->selector);
+        buf.putUInt24(it->oui);
+        buf.putUInt8(uint8_t(it->selector.size()));
+        buf.putBytes(it->selector);
     }
-    *len = uint8_t(bbp->data() + bbp->size() - len - 1);  // update oui_data_length
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.popState(); // update OUI_data_length
+    buf.putBytes(private_data);
 }
 
 
@@ -145,45 +149,26 @@ void ts::SSULinkageDescriptor::serialize(DuckContext& duck, Descriptor& desc) co
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SSULinkageDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 8;
+    ts_id = buf.getUInt16();
+    onetw_id = buf.getUInt16();
+    service_id = buf.getUInt16();
 
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        ts_id = GetUInt16 (data);
-        onetw_id = GetUInt16 (data + 2);
-        service_id = GetUInt16 (data + 4);
-        entries.clear();
-        private_data.clear();
-        uint8_t linkage_type = data[6];
-        _is_valid = linkage_type == LINKAGE_SSU;
-        if (_is_valid) {
-            size_t oui_length = data[7];
-            data += 8;
-            size -= 8;
-            if (oui_length > size) {
-                oui_length = size;
-            }
-            while (oui_length >= 4) {
-                Entry entry (GetUInt32 (data - 1) & 0x00FFFFFF);
-                uint8_t sel_length = data[3];
-                data += 4;
-                size -= 4;
-                oui_length -= 4;
-                if (sel_length > oui_length) {
-                    sel_length = uint8_t(oui_length);
-                }
-                entry.selector.copy (data, sel_length);
-                data += sel_length;
-                size -= sel_length;
-                oui_length -= sel_length;
-                entries.push_back (entry);
-            }
-            private_data.copy (data, size);
-        }
+    if (buf.getUInt8() != LINKAGE_SSU) {
+        // Not an SSU linkage_descriptor.
+        buf.setUserError();
     }
+
+    buf.pushReadSizeFromLength(8); // OUI_data_length
+    while (buf.canRead()) {
+        Entry entry(buf.getUInt24());
+        const size_t len = buf.getUInt8();
+        buf.getBytes(entry.selector, len);
+        entries.push_back(entry);
+    }
+    buf.popState(); // end of OUI_data_length
+    buf.getBytes(private_data);
 }
 
 
@@ -218,7 +203,7 @@ bool ts::SSULinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element*
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::SSULinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    LinkageDescriptor::DisplayDescriptor(disp, did, payload, size, indent, tid, pds);
+    LinkageDescriptor::DisplayDescriptor(disp, buf, margin, did, tid, pds);
 }

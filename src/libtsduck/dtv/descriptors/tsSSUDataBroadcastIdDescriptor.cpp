@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -87,6 +88,14 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(DuckContext& duck
     }
 }
 
+ts::SSUDataBroadcastIdDescriptor::Entry::Entry(uint32_t oui_, uint8_t upd_) :
+    oui(oui_),
+    update_type(upd_),
+    update_version(),
+    selector()
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Convert to a data_broadcast_id_descriptor.
@@ -110,22 +119,22 @@ void ts::SSUDataBroadcastIdDescriptor::toDataBroadcastIdDescriptor(DuckContext& 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SSUDataBroadcastIdDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(0x000A);        // data_broadcast_id for SSU
-    uint8_t* len = bbp->enlarge(1);   // placeholder for oui_data_length
+    buf.putUInt16(0x000A); // data_broadcast_id for SSU
+    buf.pushWriteSequenceWithLeadingLength(8); // OUI_data_length
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt8((it->oui >> 16) & 0xFF);
-        bbp->appendUInt16(it->oui & 0xFFFF);
-        bbp->appendUInt8(0xF0 | (it->update_type & 0x0F));
-        bbp->appendUInt8(it->update_version.set() ? (0xE0 | (it->update_version.value() & 0x1F)) : 0xDF);
-        bbp->appendUInt8(uint8_t(it->selector.size()));
-        bbp->append(it->selector);
+        buf.putUInt24(it->oui);
+        buf.putBits(0xFF, 4);
+        buf.putBits(it->update_type, 4);
+        buf.putBits(0xFF, 2);
+        buf.putBit(it->update_version.set());
+        buf.putBits(it->update_version.value(0xFF), 5);
+        buf.putUInt8(uint8_t(it->selector.size()));
+        buf.putBytes(it->selector);
     }
-    *len = uint8_t(bbp->data() + bbp->size() - len - 1);  // update oui_data_length
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.popState(); // update OUI_data_length
+    buf.putBytes(private_data);
 }
 
 
@@ -133,40 +142,32 @@ void ts::SSUDataBroadcastIdDescriptor::serialize(DuckContext& duck, Descriptor& 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SSUDataBroadcastIdDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 3 && GetUInt16 (desc.payload()) == 0x000A;
-    entries.clear();
-    private_data.clear();
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        size_t oui_length = data[2];
-        data += 3;
-        size -= 3;
-        if (oui_length > size) {
-            oui_length = size;
-        }
-        while (oui_length >= 6) {
-            Entry entry (GetUInt32 (data - 1) & 0x00FFFFFF, data[3] & 0x0F);
-            if ((data[4] & 0x20) != 0) {
-                entry.update_version = data[4] & 0x1F;
+    if (buf.getUInt16() != 0x000A || buf.error()) {
+        // Not the right type of data_broadcast_id_descriptor
+        invalidate();
+    }
+    else {
+        buf.pushReadSizeFromLength(8); // OUI_data_length
+        while (buf.canRead()) {
+            Entry entry;
+            entry.oui = buf.getUInt24();
+            buf.skipBits(4);
+            entry.update_type = buf.getBits<uint8_t>(4);
+            buf.skipBits(2);
+            if (buf.getBit() != 0) {
+                entry.update_version = buf.getBits<uint8_t>(5);
             }
-            uint8_t sel_length = data[5];
-            data += 6;
-            size -= 6;
-            oui_length -= 6;
-            if (sel_length > oui_length) {
-                sel_length = uint8_t(oui_length);
+            else {
+                buf.skipBits(5);
             }
-            entry.selector.copy (data, sel_length);
-            data += sel_length;
-            size -= sel_length;
-            oui_length -= sel_length;
+            const uint8_t len = buf.getUInt8();
+            buf.getBytes(entry.selector, len);
             entries.push_back (entry);
         }
-        private_data.copy (data, size);
+        buf.popState(); // end of OUI_data_length
+        buf.getBytes(private_data);
     }
 }
 
@@ -202,7 +203,7 @@ bool ts::SSUDataBroadcastIdDescriptor::analyzeXML(DuckContext& duck, const xml::
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::SSUDataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    DataBroadcastIdDescriptor::DisplayDescriptor(disp, did, payload, size, indent, tid, pds);
+    DataBroadcastIdDescriptor::DisplayDescriptor(disp, buf, margin, did, tid, pds);
 }

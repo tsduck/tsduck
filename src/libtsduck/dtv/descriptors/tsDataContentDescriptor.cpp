@@ -116,37 +116,22 @@ void ts::DataContentDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DataContentDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DataContentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        disp << margin << "Data component id: " << NameFromSection(u"ISDBDataComponentId", GetUInt16(data), names::HEXA_FIRST) << std::endl
-             << margin << UString::Format(u"Entry component: 0x%X (%d)", {data[2], data[2]}) << std::endl;
-
-        size_t len = data[3];
-        data += 4; size -= 4;
-        len = std::min(len, size);
-        disp.displayPrivateData(u"Selector bytes", data, len, margin);
-        data += len; size -= len;
-
-        if (size > 0) {
-            len = data[0];
-            data++; size--;
-            for (size_t i = 0; size > 0 && i < len; ++i) {
-                disp << margin << UString::Format(u"Component ref: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-                data++; size--;
-            }
-
-            if (size >= 4) {
-                disp << margin << "Language: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
-                data += 3; size -= 3;
-                disp << margin << "Text: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
-            }
+    if (buf.canReadBytes(4)) {
+        disp << margin << "Data component id: " << NameFromSection(u"ISDBDataComponentId", buf.getUInt16(), names::HEXA_FIRST) << std::endl;
+        disp << margin << UString::Format(u"Entry component: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        size_t len = buf.getUInt8();
+        disp.displayPrivateData(u"Selector bytes", buf, len, margin);
+        len = buf.canRead() ? buf.getUInt8() : 0;
+        for (size_t i = 0; buf.canRead() && i < len; ++i) {
+            disp << margin << UString::Format(u"Component ref: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        }
+        if (buf.canReadBytes(3)) {
+            disp << margin << "Language: \"" << buf.getLanguageCode() << "\"" << std::endl;
+            disp << margin << "Text: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

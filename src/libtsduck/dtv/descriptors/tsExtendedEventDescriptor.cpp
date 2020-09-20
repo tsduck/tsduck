@@ -80,7 +80,7 @@ void ts::ExtendedEventDescriptor::clearContent()
 // Update all descriptor_number and last_descriptor_number.
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::NormalizeNumbering(DuckContext& duck,uint8_t* desc_base, size_t desc_size)
+void ts::ExtendedEventDescriptor::NormalizeNumbering(DuckContext& duck, uint8_t* desc_base, size_t desc_size)
 {
     typedef std::map<UString, size_t> SizeMap; // key=language_code
     SizeMap desc_last;
@@ -97,7 +97,8 @@ void ts::ExtendedEventDescriptor::NormalizeNumbering(DuckContext& duck,uint8_t* 
             len = uint8_t(size);
         }
         if (tag == MY_DID && len >= 4) {
-            const UString lang(DeserializeLanguageCode(data + 1));
+            UString lang;
+            lang.assignFromUTF8(reinterpret_cast<const char*>(data + 1), 3);
             SizeMap::iterator it(desc_last.find(lang));
             if (it == desc_last.end()) {
                 desc_last[lang] = 0;
@@ -121,7 +122,8 @@ void ts::ExtendedEventDescriptor::NormalizeNumbering(DuckContext& duck,uint8_t* 
             len = uint8_t(size);
         }
         if (tag == MY_DID && len >= 4) {
-            const UString lang(DeserializeLanguageCode(data + 1));
+            UString lang;
+            lang.assignFromUTF8(reinterpret_cast<const char*>(data + 1), 3);
             data[0] = uint8_t((desc_index[lang] & 0x0F) << 4) | (desc_last[lang] & 0x0F);
             desc_index[lang]++;
         }
@@ -256,33 +258,20 @@ void ts::ExtendedEventDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 5) {
-        const uint8_t desc_num = data[0];
-        const UString lang(DeserializeLanguageCode(data + 1));
-        size_t length = data[4];
-        data += 5; size -= 5;
-        if (length > size) {
-            length = size;
+    if (buf.canReadBytes(5)) {
+        disp << margin << "Descriptor number: " << buf.getBits<uint32_t>(4);
+        disp << ", last: " << buf.getBits<uint32_t>(4) << std::endl;
+        disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
+        buf.pushReadSizeFromLength(8); // start length_of_items
+        while (buf.canRead()) {
+            disp << margin << "\"" << buf.getStringWithByteLength();
+            disp << "\" : \"" << buf.getStringWithByteLength()<< "\"" << std::endl;
         }
-        disp << margin << "Descriptor number: " << int((desc_num >> 4) & 0x0F)
-             << ", last: " << int(desc_num & 0x0F) << std::endl
-             << margin << "Language: " << lang << std::endl;
-        size -= length;
-        while (length > 0) {
-            const UString description(disp.duck().decodedWithByteLength(data, length));
-            const UString item(disp.duck().decodedWithByteLength(data, length));
-            disp << margin << "\"" << description << "\" : \"" << item << "\"" << std::endl;
-        }
-        const UString text(disp.duck().decodedWithByteLength(data, size));
-        disp << margin << "Text: \"" << text << "\"" << std::endl;
-        data += length; size -= length;
+        buf.popState(); // close length_of_items
+        disp << margin << "Text: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

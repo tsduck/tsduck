@@ -160,21 +160,13 @@ void ts::ShortEventDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ShortEventDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ShortEventDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        const UString lang(DeserializeLanguageCode(data));
-        data += 3; size -= 3;
-        const UString name(disp.duck().decodedWithByteLength(data, size));
-        const UString text(disp.duck().decodedWithByteLength(data, size));
-        disp << margin << "Language: " << lang << std::endl
-             << margin << "Event name: \"" << name << "\"" << std::endl
-             << margin << "Description: \"" << text << "\"" << std::endl;
+    if (buf.canReadBytes(4)) {
+        disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
+        disp << margin << "Event name: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
+        disp << margin << "Description: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

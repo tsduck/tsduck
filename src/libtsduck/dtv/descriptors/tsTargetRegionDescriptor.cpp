@@ -149,58 +149,29 @@ void ts::TargetRegionDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetRegionDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TargetRegionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-    bool ok = size >= 3;
-    int index = 0;
-
-    if (ok) {
-        disp << margin << "Country code: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
-        data += 3; size -= 3;
-    }
-    while (ok && size >= 1) {
-        disp << margin << "- Region #" << index++ << std::endl;
-
-        const int depth = data[0] & 0x03;
-        const bool has_cc = (data[0] & 0x04) != 0;
-        data++; size--;
-
-        if (has_cc) {
-            ok = size >= 3;
-            if (ok) {
-                disp << margin << "  Country code: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
-                data += 3; size -= 3;
+    if (buf.canReadBytes(3)) {
+        disp << margin << "Country code: \"" << buf.getLanguageCode() << "\"" << std::endl;
+        for (size_t index = 0; buf.canReadBytes(1); ++index) {
+            disp << margin << "- Region #" << index << std::endl;
+            buf.skipBits(5);
+            const bool has_cc = buf.getBit() != 0;
+            const uint8_t depth = buf.getBits<uint8_t>(2);
+            if (has_cc) {
+                disp << margin << "  Country code: \"" << buf.getLanguageCode() << "\"" << std::endl;
             }
-        }
-        if (ok && depth >= 1) {
-            ok = size >= 1;
-            if (ok) {
-                disp << margin << UString::Format(u"  Primary region code: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-                data++; size--;
-            }
-        }
-        if (ok && depth >= 2) {
-            ok = size >= 1;
-            if (ok) {
-                disp << margin << UString::Format(u"  Secondary region code: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-                data++; size--;
-            }
-        }
-        if (ok && depth >= 3) {
-            ok = size >= 2;
-            if (ok) {
-                disp << margin << UString::Format(u"  Tertiary region code: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl;
-                data += 2; size -= 2;
+            if (depth >= 1) {
+                disp << margin << UString::Format(u"  Primary region code: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+                if (depth >= 2) {
+                    disp << margin << UString::Format(u"  Secondary region code: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+                    if (depth >= 3) {
+                        disp << margin << UString::Format(u"  Tertiary region code: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                    }
+                }
             }
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
