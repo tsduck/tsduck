@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -77,15 +78,17 @@ ts::ATSCTimeShiftedServiceDescriptor::Entry::Entry(uint16_t min, uint16_t major,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ATSCTimeShiftedServiceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ATSCTimeShiftedServiceDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(0xE0 | (entries.size() & 0x1F)));
+    buf.putBits(0xFF, 3);
+    buf.putBits(entries.size(), 5);
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt16(uint16_t(0xFC00 | (it->time_shift & 0x03FF)));
-        bbp->appendUInt24(0xF00000 | (uint32_t(it->major_channel_number & 0x03FF) << 10) | (it->minor_channel_number & 0x03FF));
+        buf.putBits(0xFF, 6);
+        buf.putBits(it->time_shift, 10);
+        buf.putBits(0xFF, 4);
+        buf.putBits(it->major_channel_number, 10);
+        buf.putBits(it->minor_channel_number, 10);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -93,23 +96,18 @@ void ts::ATSCTimeShiftedServiceDescriptor::serialize(DuckContext& duck, Descript
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ATSCTimeShiftedServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ATSCTimeShiftedServiceDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    entries.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        size_t count = data[0] & 0x1F;
-        data++; size--;
-        while (size >= 5 && count > 0) {
-            const uint32_t n = GetUInt24(data + 2);
-            entries.push_back(Entry(GetUInt16(data) & 0x03FF, uint16_t((n >> 10) & 0x03FF), uint16_t(n & 0x03FF)));
-            data += 5; size -= 5; count--;
-        }
+    buf.skipBits(3);
+    const size_t count = buf.getBits<size_t>(5);
+    for (size_t i = 0; i < count && buf.canRead(); ++i) {
+        Entry e;
+        buf.skipBits(6);
+        e.time_shift = buf.getBits<uint16_t>(10);
+        buf.skipBits(4);
+        e.major_channel_number = buf.getBits<uint16_t>(10);
+        e.minor_channel_number = buf.getBits<uint16_t>(10);
+        entries.push_back(e);
     }
 }
 
@@ -118,23 +116,20 @@ void ts::ATSCTimeShiftedServiceDescriptor::deserialize(DuckContext& duck, const 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ATSCTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ATSCTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        size_t count = data[0] & 0x1F;
-        data++; size--;
+    if (buf.canRead()) {
+        buf.skipBits(3);
+        const size_t count = buf.getBits<size_t>(5);
         disp << margin << "Number of services: " << count << std::endl;
-        while (size >= 5 && count > 0) {
-            const uint32_t n = GetUInt24(data + 2);
-            disp << margin << UString::Format(u"- Time shift: %d mn, service: %d.%d", {GetUInt16(data) & 0x03FF, (n >> 10) & 0x03FF, n & 0x03FF}) << std::endl;
-            data += 5; size -= 5; count--;
+        for (size_t i = 0; i < count && buf.canReadBytes(5); ++i) {
+            buf.skipBits(6);
+            disp << margin << UString::Format(u"- Time shift: %d mn", {buf.getBits<uint16_t>(10)});
+            buf.skipBits(4);
+            disp << UString::Format(u", service: %d", {buf.getBits<uint16_t>(10)});
+            disp << UString::Format(u".%d", {buf.getBits<uint16_t>(10)}) << std::endl;
         }
-
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

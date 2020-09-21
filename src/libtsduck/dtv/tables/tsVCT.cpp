@@ -224,12 +224,12 @@ void ts::VCT::deserializePayload(PSIBuffer& buf, const Section& section)
         ch.channel_TSID = buf.getUInt16();
         ch.program_number = buf.getUInt16();
         ch.ETM_location = buf.getBits<uint8_t>(2);
-        ch.access_controlled = buf.getBit() != 0;
-        ch.hidden = buf.getBit() != 0;
+        ch.access_controlled = buf.getBool();
+        ch.hidden = buf.getBool();
         if (_table_id == TID_CVCT) {
             // The following two bits are used in CVCT only.
             ch.path_select = buf.getBit();
-            ch.out_of_band = buf.getBit() != 0;
+            ch.out_of_band = buf.getBool();
         }
         else {
             // Unused field in other forms of VCT.
@@ -237,7 +237,7 @@ void ts::VCT::deserializePayload(PSIBuffer& buf, const Section& section)
             ch.path_select = 0;
             ch.out_of_band = false;
         }
-        ch.hide_guide = buf.getBit() != 0;
+        ch.hide_guide = buf.getBool();
         buf.skipBits(3);
         ch.service_type = buf.getBits<uint8_t>(6);
         ch.source_id = buf.getUInt16();
@@ -376,17 +376,17 @@ void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << margin << UString::Format(u"  TS id: 0x%X (%<d)", {buf.getUInt16()});
         disp << UString::Format(u", program number: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         disp << margin << UString::Format(u"  ETM location: %d", {buf.getBits<uint8_t>(2)});
-        disp << ", access controlled: " << UString::YesNo(buf.getBit() != 0) << std::endl;
-        const bool hidden = buf.getBit() != 0;
+        disp << ", access controlled: " << UString::YesNo(buf.getBool()) << std::endl;
+        const bool hidden = buf.getBool();
         if (section.tableId() == TID_CVCT) {
             // The following two bits are used in CVCT only.
             disp << margin << UString::Format(u"  Path select: %d", {buf.getBit()});
-            disp << ", out of band: " << UString::YesNo(buf.getBit() != 0) << std::endl;
+            disp << ", out of band: " << UString::YesNo(buf.getBool()) << std::endl;
         }
         else {
             buf.skipBits(2);
         }
-        disp << margin << "  Hidden: " << UString::YesNo(hidden) << ", hide guide: " << UString::YesNo(buf.getBit() != 0) << std::endl;
+        disp << margin << "  Hidden: " << UString::YesNo(hidden) << ", hide guide: " << UString::YesNo(buf.getBool()) << std::endl;
         buf.skipBits(3);
         disp << margin << "  Service type: " << NameFromSection(u"ATSCServiceType", buf.getBits<uint8_t>(6));
         disp << UString::Format(u", source id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;

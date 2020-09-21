@@ -98,7 +98,7 @@ void ts::NorDigLogicalChannelDescriptorV1::deserializePayload(PSIBuffer& buf)
     while (buf.canRead()) {
         Entry e;
         e.service_id = buf.getUInt16();
-        e.visible = buf.getBit() != 0;
+        e.visible = buf.getBool();
         buf.skipBits(1);
         e.lcn = buf.getBits<uint16_t>(14);
         entries.push_back(e);

@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a URI_linkage_descriptor.
-    //! @see ETSI 300 468, 6.4.15.
+    //! @see ETSI EN 300 468, 6.4.15.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL URILinkageDescriptor : public AbstractDescriptor

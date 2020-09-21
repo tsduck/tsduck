@@ -107,7 +107,7 @@ void ts::DTGGuidanceDescriptor::deserializePayload(PSIBuffer& buf)
     guidance_type = buf.getBits<uint8_t>(2);
     if (guidance_type == 0x01) {
         buf.skipBits(7);
-        guidance_mode = buf.getBit() != 0;
+        guidance_mode = buf.getBool();
     }
     if (guidance_type <= 0x01) {
         buf.getLanguageCode(ISO_639_language_code);
@@ -131,7 +131,7 @@ void ts::DTGGuidanceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
         disp << margin << UString::Format(u"Guidance type: %d", {type}) << std::endl;
         if (type == 0x01 && buf.canReadBytes(1)) {
             buf.skipBits(7);
-            disp << margin << "Guidance mode: " << UString::TrueFalse(buf.getBit() != 0) << std::endl;
+            disp << margin << "Guidance mode: " << UString::TrueFalse(buf.getBool()) << std::endl;
         }
         if (type > 0x01) {
             disp.displayPrivateData(u"Reserved", buf, NPOS, margin);

@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a DTS_neural_descriptor.
-    //! @see ETSI 300 468, L.1.
+    //! @see ETSI EN 300 468, L.1.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL DTSNeuralDescriptor : public AbstractDescriptor

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
@@ -74,34 +75,18 @@ ts::ECMRepetitionRateDescriptor::ECMRepetitionRateDescriptor(DuckContext& duck, 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ECMRepetitionRateDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ECMRepetitionRateDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(CA_system_id);
-    bbp->appendUInt16(ECM_repetition_rate);
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(CA_system_id);
+    buf.putUInt16(ECM_repetition_rate);
+    buf.putBytes(private_data);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::ECMRepetitionRateDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ECMRepetitionRateDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    private_data.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4;
-
-    if (_is_valid) {
-        CA_system_id = GetUInt16(data);
-        ECM_repetition_rate = GetUInt16(data + 2);
-        private_data.copy(data + 4, size - 4);
-    }
+    CA_system_id = buf.getUInt16();
+    ECM_repetition_rate = buf.getUInt16();
+    buf.getBytes(private_data);
 }
 
 
@@ -116,11 +101,6 @@ void ts::ECMRepetitionRateDescriptor::buildXML(DuckContext& duck, xml::Element* 
     root->addHexaTextChild(u"private_data", private_data, true);
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::ECMRepetitionRateDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
@@ -133,16 +113,11 @@ bool ts::ECMRepetitionRateDescriptor::analyzeXML(DuckContext& duck, const xml::E
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ECMRepetitionRateDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ECMRepetitionRateDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        disp << margin << UString::Format(u"CA System Id: %s", { names::CASId(disp.duck(), GetUInt16(data), names::FIRST) }) << std::endl
-             << margin << UString::Format(u"ECM repetition rate: %d ms", { GetUInt16(data + 2) }) << std::endl;
-        disp.displayPrivateData(u"Private data", data + 4, size - 4, margin);
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+    if (buf.canReadBytes(4)) {
+        disp << margin << UString::Format(u"CA System Id: %s", {names::CASId(disp.duck(), buf.getUInt16(), names::FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"ECM repetition rate: %d ms", {buf.getUInt16()}) << std::endl;
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }

@@ -39,22 +39,22 @@
 namespace ts {
     //!
     //! Representation of a DVB enhanced_AC-3_descriptor.
-    //! @see ETSI 300 468, D.5.
+    //! @see ETSI EN 300 468, D.5.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL DVBEnhancedAC3Descriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        Variable<uint8_t> component_type;  //!< See ETSI 300 468, D.5.
-        Variable<uint8_t> bsid;            //!< See ETSI 300 468, D.5.
-        Variable<uint8_t> mainid;          //!< See ETSI 300 468, D.5.
-        Variable<uint8_t> asvc;            //!< See ETSI 300 468, D.5.
-        bool              mixinfoexists;   //!< See ETSI 300 468, D.5.
-        Variable<uint8_t> substream1;      //!< See ETSI 300 468, D.5.
-        Variable<uint8_t> substream2;      //!< See ETSI 300 468, D.5.
-        Variable<uint8_t> substream3;      //!< See ETSI 300 468, D.5.
-        ByteBlock         additional_info; //!< See ETSI 300 468, D.5.
+        Variable<uint8_t> component_type;  //!< See ETSI EN 300 468, D.5.
+        Variable<uint8_t> bsid;            //!< See ETSI EN 300 468, D.5.
+        Variable<uint8_t> mainid;          //!< See ETSI EN 300 468, D.5.
+        Variable<uint8_t> asvc;            //!< See ETSI EN 300 468, D.5.
+        bool              mixinfoexists;   //!< See ETSI EN 300 468, D.5.
+        Variable<uint8_t> substream1;      //!< See ETSI EN 300 468, D.5.
+        Variable<uint8_t> substream2;      //!< See ETSI EN 300 468, D.5.
+        Variable<uint8_t> substream3;      //!< See ETSI EN 300 468, D.5.
+        ByteBlock         additional_info; //!< See ETSI EN 300 468, D.5.
 
         //!
         //! Default constructor.

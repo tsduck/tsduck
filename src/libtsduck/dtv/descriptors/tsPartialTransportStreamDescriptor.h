@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of a partial_transport_stream_descriptor.
-    //! @see ETSI 300 468, 7.2.1.
+    //! @see ETSI EN 300 468, 7.2.1.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL PartialTransportStreamDescriptor : public AbstractDescriptor

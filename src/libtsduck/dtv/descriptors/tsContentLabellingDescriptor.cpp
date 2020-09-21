@@ -128,7 +128,7 @@ void ts::ContentLabellingDescriptor::deserializePayload(PSIBuffer& buf)
     if (metadata_application_format == 0xFFFF) {
         metadata_application_format_identifier = buf.getUInt32();
     }
-    const bool content_reference_id_record_flag = buf.getBit() != 0;
+    const bool content_reference_id_record_flag = buf.getBool();
     content_time_base_indicator = buf.getBits<uint8_t>(4);
     buf.skipBits(3);
     if (content_reference_id_record_flag) {
@@ -165,7 +165,7 @@ void ts::ContentLabellingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
         if (format == 0xFFFF && buf.canReadBytes(4)) {
             disp << margin << UString::Format(u"Metadata application format identifier: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
         }
-        const bool content_reference_id_record_flag = buf.getBit() != 0;
+        const bool content_reference_id_record_flag = buf.getBool();
         const uint8_t time_base_indicator = buf.getBits<uint8_t>(4);
         disp << margin << "Content time base indicator: " << NameFromSection(u"ContentTimeBaseIndicator", time_base_indicator, names::HEXA_FIRST) << std::endl;
         buf.skipBits(3);

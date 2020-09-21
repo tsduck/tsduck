@@ -114,7 +114,7 @@ void ts::SupplementaryAudioDescriptor::deserializePayload(PSIBuffer& buf)
     mix_type = buf.getBit();
     editorial_classification = buf.getBits<uint8_t>(5);
     buf.skipBits(1);
-    const bool has_lang = buf.getBit() != 0;
+    const bool has_lang = buf.getBool();
     if (has_lang) {
         buf.getLanguageCode(language_code);
     }
@@ -158,7 +158,7 @@ void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         disp << margin << "Mix type: " << NameFromSection(u"SuppAudioMixType", buf.getBit()) << std::endl;
         disp << margin << "Editorial classification: " << NameFromSection(u"SuppAudioClass", buf.getBits<uint8_t>(5)) << std::endl;
         buf.skipBits(1);
-        if (buf.getBit() != 0 && buf.canReadBytes(3)) {
+        if (buf.getBool() && buf.canReadBytes(3)) {
             disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
         }
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);

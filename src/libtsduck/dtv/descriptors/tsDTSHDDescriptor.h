@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of a DTS_HD_descriptor.
-    //! @see ETSI 300 468, G.3.1.
+    //! @see ETSI EN 300 468, G.3.1.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL DTSHDDescriptor : public AbstractDescriptor

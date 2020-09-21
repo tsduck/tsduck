@@ -129,7 +129,7 @@ void ts::RRT::deserializePayload(PSIBuffer& buf, const Section& section)
         Dimension dim;
         buf.getMultipleStringWithLength(dim.dimension_name);
         buf.skipBits(3);
-        dim.graduated_scale = buf.getBit() != 0;
+        dim.graduated_scale = buf.getBool();
         size_t val_count = buf.getBits<size_t>(4);
 
         // Loop on all values.
@@ -211,7 +211,7 @@ void ts::RRT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << margin << "- Dimension " << dim_index << std::endl;
         disp.displayATSCMultipleString(buf, 1, margin + u"  ", u"Dimension name: ");
         buf.skipBits(3);
-        disp << margin << UString::Format(u"  Graduated scale: %s", {buf.getBit() != 0});
+        disp << margin << UString::Format(u"  Graduated scale: %s", {buf.getBool()});
         size_t val_count = buf.getBits<size_t>(4);
         disp << ", number of rating values: " << val_count << std::endl;
 

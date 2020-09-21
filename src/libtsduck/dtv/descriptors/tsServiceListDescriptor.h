@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a service_list_descriptor
-    //! @see ETSI 300 468, 6.2.35.
+    //! @see ETSI EN 300 468, 6.2.35.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL ServiceListDescriptor : public AbstractDescriptor

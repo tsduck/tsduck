@@ -142,7 +142,7 @@ void ts::STT::deserializePayload(PSIBuffer& buf, const Section& section)
     protocol_version = buf.getUInt8();
     system_time = buf.getUInt32();
     GPS_UTC_offset = buf.getUInt8();
-    DS_status = buf.getBit() != 0;
+    DS_status = buf.getBool();
     buf.skipBits(2);
     DS_day_of_month = buf.getBits<uint8_t>(5);
     DS_hour = buf.getUInt8();
@@ -181,7 +181,7 @@ void ts::STT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         const Time utc(Time::UnixTimeToUTC(time + Time::UnixEpochToGPS - offset));
         disp << margin << UString::Format(u"System time: 0x%X (%<d), GPS-UTC offset: 0x%X (%<d)", {time, offset}) << std::endl;
         disp << margin << "Corresponding UTC time: " << (time == 0 ? u"none" : utc.format(Time::DATE | Time::TIME)) << std::endl;
-        disp << margin << "Daylight saving time: " << UString::YesNo(buf.getBit() != 0);
+        disp << margin << "Daylight saving time: " << UString::YesNo(buf.getBool());
         buf.skipBits(2);
         disp << UString::Format(u", next switch day: %d", {buf.getBits<uint8_t>(5)});
         disp << UString::Format(u", hour: %d", {buf.getUInt8()}) << std::endl;

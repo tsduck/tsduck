@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a service_availability_descriptor
-    //! @see ETSI 300 468, 6.2.34.
+    //! @see ETSI EN 300 468, 6.2.34.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL ServiceAvailabilityDescriptor : public AbstractDescriptor

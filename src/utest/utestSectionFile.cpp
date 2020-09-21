@@ -49,8 +49,6 @@ TSDUCK_SOURCE;
 #include "tables/psi_pat1_sections.h"
 #include "tables/psi_pmt_scte35_xml.h"
 #include "tables/psi_pmt_scte35_sections.h"
-#include "tables/psi_all_xml.h"
-#include "tables/psi_all_sections.h"
 
 
 //----------------------------------------------------------------------------
@@ -71,7 +69,6 @@ public:
     void testGenericLongTable();
     void testPAT1();
     void testSCTE35();
-    void testAllTables();
     void testBuildSections();
     void testMultiSectionsCAT();
     void testMultiSectionsAtProgramLevelPMT();
@@ -84,7 +81,6 @@ public:
     TSUNIT_TEST(testGenericLongTable);
     TSUNIT_TEST(testPAT1);
     TSUNIT_TEST(testSCTE35);
-    TSUNIT_TEST(testAllTables);
     TSUNIT_TEST(testBuildSections);
     TSUNIT_TEST(testMultiSectionsCAT);
     TSUNIT_TEST(testMultiSectionsAtProgramLevelPMT);
@@ -154,7 +150,6 @@ ts::Report& SectionFileTest::report()
 
 TESTTABLE(PAT1, pat1)
 TESTTABLE(SCTE35, pmt_scte35)
-TESTTABLE(AllTables, all)
 
 void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size)
 {

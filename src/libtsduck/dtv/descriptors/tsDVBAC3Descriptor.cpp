@@ -138,10 +138,10 @@ void ts::DVBAC3Descriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::DVBAC3Descriptor::deserializePayload(PSIBuffer& buf)
 {
-    const bool component_type_flag = buf.getBit() != 0;
-    const bool bsid_flag = buf.getBit() != 0;
-    const bool mainid_flag = buf.getBit() != 0;
-    const bool asvc_flag = buf.getBit() != 0;
+    const bool component_type_flag = buf.getBool();
+    const bool bsid_flag = buf.getBool();
+    const bool mainid_flag = buf.getBool();
+    const bool asvc_flag = buf.getBool();
     buf.skipBits(4);
     if (component_type_flag) {
         component_type = buf.getUInt8();

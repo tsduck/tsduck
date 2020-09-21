@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -70,25 +71,16 @@ void ts::STDDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::STDDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(leak_valid ? 0xFF : 0xFE);
-    serializeEnd(desc, bbp);
+    buf.putBits(0xFF, 7);
+    buf.putBit(leak_valid);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::STDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::STDDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 1;
-
-    if (_is_valid) {
-        leak_valid = (*desc.payload() & 0x01) != 0;
-    }
+    buf.skipBits(7);
+    leak_valid = buf.getBool();
 }
 
 
@@ -96,22 +88,18 @@ void ts::STDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        uint8_t leak = data[0] & 0x01;
-        data += 1; size -= 1;
-        disp << margin << "Link valid flag: " << int(leak) << (leak != 0 ? " (leak)" : " (vbv_delay)") << std::endl;
+    if (buf.canReadBytes(1)) {
+        buf.skipBits(7);
+        const bool leak = buf.getBool();
+        disp << margin << "Link valid flag: " << int(leak) << (leak ? " (leak)" : " (vbv_delay)") << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::STDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

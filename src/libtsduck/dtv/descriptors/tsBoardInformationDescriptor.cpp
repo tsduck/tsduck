@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -72,31 +73,16 @@ void ts::BoardInformationDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::BoardInformationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::BoardInformationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.encodedWithByteLength(title));
-    bbp->append(duck.encodedWithByteLength(text));
-    serializeEnd(desc, bbp);
+    buf.putStringWithByteLength(title);
+    buf.putStringWithByteLength(text);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::BoardInformationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::BoardInformationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    title.clear();
-    text.clear();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() &&
-        duck.decodeWithByteLength(title, data, size) &&
-        duck.decodeWithByteLength(text, data, size) &&
-        size == 0;
+    buf.getStringWithByteLength(title);
+    buf.getStringWithByteLength(text);
 }
 
 
@@ -104,14 +90,10 @@ void ts::BoardInformationDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::BoardInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::BoardInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    disp << margin << "Title: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
-    disp << margin << "Text: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
-
-    disp.displayExtraData(data, size, margin);
+    disp << margin << "Title: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
+    disp << margin << "Text: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
 }
 
 
@@ -124,11 +106,6 @@ void ts::BoardInformationDescriptor::buildXML(DuckContext& duck, xml::Element* r
     root->setAttribute(u"title", title);
     root->setAttribute(u"text", text);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::BoardInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

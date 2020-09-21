@@ -162,14 +162,14 @@ void ts::AudioPreselectionDescriptor::deserializePayload(PSIBuffer& buf)
         PreSelection sel;
         sel.preselection_id = buf.getBits<uint8_t>(5);
         sel.audio_rendering_indication = buf.getBits<uint8_t>(3);
-        sel.audio_description = buf.getBit() != 0;
-        sel.spoken_subtitles = buf.getBit() != 0;
-        sel.dialogue_enhancement = buf.getBit() != 0;
-        sel.interactivity_enabled = buf.getBit() != 0;
-        const bool hasLanguage = buf.getBit() != 0;
-        const bool hasLabel = buf.getBit() != 0;
-        const bool hasMultiStream = buf.getBit() != 0;
-        const bool hasExtension = buf.getBit() != 0;
+        sel.audio_description = buf.getBool();
+        sel.spoken_subtitles = buf.getBool();
+        sel.dialogue_enhancement = buf.getBool();
+        sel.interactivity_enabled = buf.getBool();
+        const bool hasLanguage = buf.getBool();
+        const bool hasLabel = buf.getBool();
+        const bool hasMultiStream = buf.getBool();
+        const bool hasExtension = buf.getBool();
 
         if (hasLanguage) {
             buf.getLanguageCode(sel.ISO_639_language_code);
@@ -205,15 +205,15 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
         for (size_t i = 0; buf.canReadBytes(2) && i < count; ++i) {
             disp << margin << UString::Format(u"- Preselection id: %d", {buf.getBits<uint8_t>(5)}) << std::endl;
             disp << margin << "  Audio rendering indication: " << NameFromSection(u"AudioPreselectionRendering", buf.getBits<uint8_t>(3), names::DECIMAL_FIRST) << std::endl;
-            disp << margin << "  Audio description: " << UString::YesNo(buf.getBit() != 0) << std::endl;
-            disp << margin << "  Spoken subtitles: " << UString::YesNo(buf.getBit() != 0) << std::endl;
-            disp << margin << "  Dialogue enhancement: " << UString::YesNo(buf.getBit() != 0) << std::endl;
-            disp << margin << "  Interactivity enabled: " << UString::YesNo(buf.getBit() != 0) << std::endl;
+            disp << margin << "  Audio description: " << UString::YesNo(buf.getBool()) << std::endl;
+            disp << margin << "  Spoken subtitles: " << UString::YesNo(buf.getBool()) << std::endl;
+            disp << margin << "  Dialogue enhancement: " << UString::YesNo(buf.getBool()) << std::endl;
+            disp << margin << "  Interactivity enabled: " << UString::YesNo(buf.getBool()) << std::endl;
 
-            const bool hasLanguage = buf.getBit() != 0;
-            const bool hasLabel = buf.getBit() != 0;
-            const bool hasMultiStream = buf.getBit() != 0;
-            const bool hasExtension = buf.getBit() != 0;
+            const bool hasLanguage = buf.getBool();
+            const bool hasLabel = buf.getBool();
+            const bool hasMultiStream = buf.getBool();
+            const bool hasExtension = buf.getBool();
 
             if (hasLanguage && buf.canReadBytes(3)) {
                 disp << margin << "  Language code: \"" << buf.getLanguageCode() << '"' << std::endl;

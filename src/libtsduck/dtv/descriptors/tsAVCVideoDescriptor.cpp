@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -53,10 +54,14 @@ ts::AVCVideoDescriptor::AVCVideoDescriptor() :
     constraint_set0(false),
     constraint_set1(false),
     constraint_set2(false),
+    constraint_set3(false),
+    constraint_set4(false),
+    constraint_set5(false),
     AVC_compatible_flags(0),
     level_idc(0),
     AVC_still_present(false),
-    AVC_24_hour_picture(false)
+    AVC_24_hour_picture(false),
+    frame_packing_SEI_not_present(false)
 {
 }
 
@@ -72,10 +77,14 @@ void ts::AVCVideoDescriptor::clearContent()
     constraint_set0 = false;
     constraint_set1 = false;
     constraint_set2 = false;
+    constraint_set3 = false;
+    constraint_set4 = false;
+    constraint_set5 = false;
     AVC_compatible_flags = 0;
     level_idc = 0;
     AVC_still_present = false;
     AVC_24_hour_picture = false;
+    frame_packing_SEI_not_present = false;
 }
 
 
@@ -83,21 +92,21 @@ void ts::AVCVideoDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AVCVideoDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::AVCVideoDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    bbp->appendUInt8(profile_idc);
-    bbp->appendUInt8((constraint_set0 ? 0x80 : 0x00) |
-                     (constraint_set1 ? 0x40 : 0x00) |
-                     (constraint_set2 ? 0x20 : 0x00) |
-                     (AVC_compatible_flags & 0x1F));
-    bbp->appendUInt8(level_idc);
-    bbp->appendUInt8((AVC_still_present ? 0x80 : 0x00) |
-                     (AVC_24_hour_picture ? 0x40 : 0x00) |
-                     0x3F);
-
-    serializeEnd(desc, bbp);
+    buf.putUInt8(profile_idc);
+    buf.putBit(constraint_set0);
+    buf.putBit(constraint_set1);
+    buf.putBit(constraint_set2);
+    buf.putBit(constraint_set3);
+    buf.putBit(constraint_set4);
+    buf.putBit(constraint_set5);
+    buf.putBits(AVC_compatible_flags, 2);
+    buf.putUInt8(level_idc);
+    buf.putBit(AVC_still_present);
+    buf.putBit(AVC_24_hour_picture);
+    buf.putBit(frame_packing_SEI_not_present);
+    buf.putBits(0xFF, 5);
 }
 
 
@@ -105,21 +114,21 @@ void ts::AVCVideoDescriptor::serialize(DuckContext& duck, Descriptor& desc) cons
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AVCVideoDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 4;
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        profile_idc = data[0];
-        constraint_set0 = (data[1] & 0x80) != 0;
-        constraint_set1 = (data[1] & 0x40) != 0;
-        constraint_set2 = (data[1] & 0x20) != 0;
-        AVC_compatible_flags = data[1] & 0x1F;
-        level_idc = data[2];
-        AVC_still_present = (data[3] & 0x80) != 0;
-        AVC_24_hour_picture = (data[3] & 0x40) != 0;
-    }
+    profile_idc = buf.getUInt8();
+    constraint_set0 = buf.getBool();
+    constraint_set1 = buf.getBool();
+    constraint_set2 = buf.getBool();
+    constraint_set3 = buf.getBool();
+    constraint_set4 = buf.getBool();
+    constraint_set5 = buf.getBool();
+    AVC_compatible_flags = buf.getBits<uint8_t>(2);
+    level_idc = buf.getUInt8();
+    AVC_still_present = buf.getBool();
+    AVC_24_hour_picture = buf.getBool();
+    frame_packing_SEI_not_present = buf.getBool();
+    buf.skipBits(5);
 }
 
 
@@ -127,35 +136,27 @@ void ts::AVCVideoDescriptor::deserialize(DuckContext& duck, const Descriptor& de
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        const uint8_t profile_idc = data[0];
-        const bool constraint_set0 = (data[1] & 0x80) != 0;
-        const bool constraint_set1 = (data[1] & 0x40) != 0;
-        const bool constraint_set2 = (data[1] & 0x20) != 0;
-        const uint8_t AVC_compatible_flags = data[1] & 0x1F;
-        const uint8_t level_idc = data[2];
-        const bool AVC_still_present = (data[3] & 0x80) != 0;
-        const bool AVC_24_hour_picture = (data[3] & 0x40) != 0;
-        data += 4; size -= 4;
-
-        disp << margin << "Profile IDC: " << int(profile_idc)
-             << ", level IDC: " << int(level_idc)
-             << std::endl
-             << margin << "Constraint set0: " << UString::TrueFalse(constraint_set0)
-             << ", set1: " << UString::TrueFalse(constraint_set1)
-             << ", set2: " << UString::TrueFalse(constraint_set2)
-             << ", AVC compatible flags: " << UString::Hexa(AVC_compatible_flags)
-             << std::endl
-             << margin << "Still pictures: " << UString::TrueFalse(AVC_still_present)
-             << ", 24-hour pictures: " << UString::TrueFalse(AVC_24_hour_picture)
-             << std::endl;
+    if (buf.canReadBytes(4)) {
+        disp << margin << "Profile IDC: " << int(buf.getUInt8());
+        buf.pushState();
+        buf.skipBits(8);
+        disp << ", level IDC: " << int(buf.getUInt8()) << std::endl;
+        buf.popState();
+        disp << margin << "Constraint set0: " << UString::TrueFalse(buf.getBool());
+        disp << ", set1: " << UString::TrueFalse(buf.getBool());
+        disp << ", set2: " << UString::TrueFalse(buf.getBool());
+        disp << ", set3: " << UString::TrueFalse(buf.getBool());
+        disp << ", set4: " << UString::TrueFalse(buf.getBool());
+        disp << ", set5: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << "AVC compatible flags: " << UString::Hexa(buf.getBits<uint8_t>(2)) << std::endl;
+        buf.skipBits(8);
+        disp << margin << "Still pictures: " << UString::TrueFalse(buf.getBool());
+        disp << ", 24-hour pictures: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << "Frame packing SEI not present: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        buf.skipBits(5);
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -169,10 +170,14 @@ void ts::AVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
     root->setBoolAttribute(u"constraint_set0", constraint_set0);
     root->setBoolAttribute(u"constraint_set1", constraint_set1);
     root->setBoolAttribute(u"constraint_set2", constraint_set2);
+    root->setBoolAttribute(u"constraint_set3", constraint_set3);
+    root->setBoolAttribute(u"constraint_set4", constraint_set4);
+    root->setBoolAttribute(u"constraint_set5", constraint_set5);
     root->setIntAttribute(u"AVC_compatible_flags", AVC_compatible_flags, true);
     root->setIntAttribute(u"level_idc", level_idc, true);
     root->setBoolAttribute(u"AVC_still_present", AVC_still_present);
     root->setBoolAttribute(u"AVC_24_hour_picture", AVC_24_hour_picture);
+    root->setBoolAttribute(u"frame_packing_SEI_not_present", frame_packing_SEI_not_present);
 }
 
 
@@ -186,8 +191,12 @@ bool ts::AVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
             element->getBoolAttribute(constraint_set0, u"constraint_set0", true) &&
             element->getBoolAttribute(constraint_set1, u"constraint_set1", true) &&
             element->getBoolAttribute(constraint_set2, u"constraint_set2", true) &&
-            element->getIntAttribute<uint8_t>(AVC_compatible_flags, u"AVC_compatible_flags", true, 0, 0x00, 0x1F) &&
+            element->getBoolAttribute(constraint_set3, u"constraint_set3", false, false) &&
+            element->getBoolAttribute(constraint_set4, u"constraint_set4", false, false) &&
+            element->getBoolAttribute(constraint_set5, u"constraint_set5", false, false) &&
+            element->getIntAttribute<uint8_t>(AVC_compatible_flags, u"AVC_compatible_flags", true, 0, 0x00, 0x03) &&
             element->getIntAttribute<uint8_t>(level_idc, u"level_idc", true, 0, 0x00, 0xFF) &&
             element->getBoolAttribute(AVC_still_present, u"AVC_still_present", true) &&
-            element->getBoolAttribute(AVC_24_hour_picture, u"AVC_24_hour_picture", true);
+            element->getBoolAttribute(AVC_24_hour_picture, u"AVC_24_hour_picture", true) &&
+            element->getBoolAttribute(frame_packing_SEI_not_present, u"frame_packing_SEI_not_present", false, false);
 }

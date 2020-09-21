@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a multilingual_network_name_descriptor.
-    //! @see ETSI 300 468, 6.2.24.
+    //! @see ETSI EN 300 468, 6.2.24.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL MultilingualNetworkNameDescriptor : public AbstractMultilingualDescriptor

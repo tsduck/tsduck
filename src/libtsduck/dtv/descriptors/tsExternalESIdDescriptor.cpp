@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -70,28 +71,14 @@ ts::ExternalESIdDescriptor::ExternalESIdDescriptor(DuckContext& duck, const Desc
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ExternalESIdDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ExternalESIdDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(external_ES_ID);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(external_ES_ID);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::ExternalESIdDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ExternalESIdDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 2;
-
-    if (_is_valid) {
-        external_ES_ID = GetUInt16(data);
-    }
+    external_ES_ID = buf.getUInt16();
 }
 
 
@@ -99,22 +86,16 @@ void ts::ExternalESIdDescriptor::deserialize(DuckContext& duck, const Descriptor
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ExternalESIdDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ExternalESIdDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 2) {
-        const uint16_t id = GetUInt16(data);
-        data += 2; size -= 2;
-        disp << margin << UString::Format(u"External ES id: 0x%X (%d)", {id, id}) << std::endl;
+    if (buf.canReadBytes(2)) {
+        disp << margin << UString::Format(u"External ES id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::ExternalESIdDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

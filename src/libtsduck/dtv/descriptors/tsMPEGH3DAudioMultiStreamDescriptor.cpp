@@ -129,7 +129,7 @@ void ts::MPEGH3DAudioMultiStreamDescriptor::serializePayload(PSIBuffer& buf) con
 
 void ts::MPEGH3DAudioMultiStreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    this_is_main_stream = buf.getBit() != 0;
+    this_is_main_stream = buf.getBool();
     this_stream_id = buf.getBits<uint8_t>(7);
     if (this_is_main_stream) {
         buf.skipBits(1);
@@ -139,10 +139,10 @@ void ts::MPEGH3DAudioMultiStreamDescriptor::deserializePayload(PSIBuffer& buf)
         for (size_t i = 0; i < count && !buf.error(); ++i) {
             Group gr;
             gr.mae_group_id = buf.getBits<uint8_t>(7);
-            gr.is_in_main_stream = buf.getBit() != 0;
+            gr.is_in_main_stream = buf.getBool();
             // See warning [1] above.
             if (!gr.is_in_main_stream) {
-                gr.is_in_ts = buf.getBit() != 0;
+                gr.is_in_ts = buf.getBool();
                 gr.auxiliary_stream_id = buf.getBits<uint8_t>(7);
             }
             mae_groups.push_back(gr);
@@ -159,7 +159,7 @@ void ts::MPEGH3DAudioMultiStreamDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::MPEGH3DAudioMultiStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canRead()) {
-        const bool main = buf.getBit() != 0;
+        const bool main = buf.getBool();
         disp << margin << UString::Format(u"This is main stream: %s", {main}) << std::endl;
         disp << margin << UString::Format(u"This stream id: 0x%X (%<d)", {buf.getBits<uint8_t>(7)}) << std::endl;
         if (main && buf.canRead()) {
@@ -170,11 +170,11 @@ void ts::MPEGH3DAudioMultiStreamDescriptor::DisplayDescriptor(TablesDisplay& dis
             disp << margin << UString::Format(u"Number of mae groups: %d", {count}) << std::endl;
             for (size_t i = 0; i < count && buf.canRead(); ++i) {
                 disp << margin << UString::Format(u"- MAE group id: 0x%X (%<d)", {buf.getBits<uint8_t>(7)}) << std::endl;
-                const bool in_main = buf.getBit() != 0;
+                const bool in_main = buf.getBool();
                 disp << margin << UString::Format(u"  Is in main stream: %s", {in_main}) << std::endl;
                 // See warning [1] above.
                 if (!in_main && buf.canRead()) {
-                    disp << margin << UString::Format(u"  Is in TS: %s", {buf.getBit() != 0}) << std::endl;
+                    disp << margin << UString::Format(u"  Is in TS: %s", {buf.getBool()}) << std::endl;
                     disp << margin << UString::Format(u"  Auxiliary stream id: 0x%X (%<d)", {buf.getBits<uint8_t>(7)}) << std::endl;
                 }
             }

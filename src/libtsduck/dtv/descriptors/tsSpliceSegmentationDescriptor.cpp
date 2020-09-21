@@ -266,15 +266,15 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         // Sometimes, the identifier is made of ASCII characters. Try to display them.
         disp.displayIntAndASCII(u"Identifier: 0x%08X", buf, 4, margin);
         disp << margin << UString::Format(u"Segmentation event id: 0x%X", {buf.getUInt32()});
-        cancel = buf.getBit() != 0;
+        cancel = buf.getBool();
         buf.skipBits(7);
         disp << UString::Format(u", cancel: %d", {cancel}) << std::endl;
     }
 
     if (buf.canReadBytes(1) && !cancel) {
-        program_segmentation = buf.getBit() != 0;
-        has_duration = buf.getBit() != 0;
-        not_restricted = buf.getBit() != 0;
+        program_segmentation = buf.getBool();
+        has_duration = buf.getBool();
+        not_restricted = buf.getBool();
         disp << margin << UString::Format(u"Program segmentation: %d, has duration: %d, not restricted: %d", {program_segmentation, has_duration, not_restricted}) << std::endl;
         if (not_restricted) {
             buf.skipBits(5);

@@ -126,7 +126,7 @@ void ts::TargetRegionDescriptor::deserializePayload(PSIBuffer& buf)
     while (buf.canRead()) {
         Region region;
         buf.skipBits(5);
-        const bool has_cc = buf.getBit() != 0;
+        const bool has_cc = buf.getBool();
         region.region_depth = buf.getBits<uint8_t>(2);
         if (has_cc) {
             buf.getLanguageCode(region.country_code);
@@ -156,7 +156,7 @@ void ts::TargetRegionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
         for (size_t index = 0; buf.canReadBytes(1); ++index) {
             disp << margin << "- Region #" << index << std::endl;
             buf.skipBits(5);
-            const bool has_cc = buf.getBit() != 0;
+            const bool has_cc = buf.getBool();
             const uint8_t depth = buf.getBits<uint8_t>(2);
             if (has_cc) {
                 disp << margin << "  Country code: \"" << buf.getLanguageCode() << "\"" << std::endl;

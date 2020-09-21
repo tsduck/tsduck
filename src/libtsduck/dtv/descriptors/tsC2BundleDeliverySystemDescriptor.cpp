@@ -123,7 +123,7 @@ void ts::C2BundleDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
         e.C2_system_tuning_frequency_type = buf.getBits<uint8_t>(2);
         e.active_OFDM_symbol_duration = buf.getBits<uint8_t>(3);
         e.guard_interval = buf.getBits<uint8_t>(3);
-        e.master_channel = buf.getBit() != 0;
+        e.master_channel = buf.getBool();
         buf.skipBits(7);
         entries.push_back(e);
     }

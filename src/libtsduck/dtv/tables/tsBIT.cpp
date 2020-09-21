@@ -111,7 +111,7 @@ void ts::BIT::deserializePayload(PSIBuffer& buf, const Section& section)
     // Get common properties (should be identical in all sections)
     original_network_id = section.tableIdExtension();
     buf.skipBits(3);
-    broadcast_view_propriety = buf.getBit() != 0;
+    broadcast_view_propriety = buf.getBool();
 
     // Get top-level descriptor list.
     buf.getDescriptorListWithLength(descs);
@@ -183,7 +183,7 @@ void ts::BIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
     if (buf.canRead()) {
         buf.skipBits(3);
-        disp << margin << UString::Format(u"Broadcast view property: %s", {buf.getBit() != 0}) << std::endl;
+        disp << margin << UString::Format(u"Broadcast view property: %s", {buf.getBool()}) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin, u"Common descriptors:");
     }
 

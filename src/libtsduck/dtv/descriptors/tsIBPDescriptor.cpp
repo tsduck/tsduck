@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -73,13 +74,11 @@ void ts::IBPDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::IBPDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::IBPDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16((closed_gop ? 0x8000 : 0x0000) |
-                      (identical_gop ? 0x4000 : 0x0000) |
-                      (max_gop_length & 0x3FFF));
-    serializeEnd(desc, bbp);
+    buf.putBit(closed_gop);
+    buf.putBit(identical_gop);
+    buf.putBits(max_gop_length, 14);
 }
 
 
@@ -87,18 +86,11 @@ void ts::IBPDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::IBPDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::IBPDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 2;
-
-    if (_is_valid) {
-        closed_gop = (data[0] & 0x80) != 0;
-        identical_gop = (data[0] & 0x40) != 0;
-        max_gop_length = GetUInt16(data) & 0x3FFF;
-    }
+    closed_gop = buf.getBool();
+    identical_gop = buf.getBool();
+    max_gop_length = buf.getBits<uint16_t>(14);
 }
 
 

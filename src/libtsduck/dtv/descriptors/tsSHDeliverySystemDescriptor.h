@@ -39,7 +39,7 @@ namespace ts {
     //!
     //! Representation of a SH_delivery_system_descriptor.
     //!
-    //! @see ETSI 300 468, 6.4.6.2
+    //! @see ETSI EN 300 468, 6.4.6.2
     //! @ingroup descriptor
     //!
     class TSDUCKDLL SHDeliverySystemDescriptor : public AbstractDescriptor
@@ -113,14 +113,14 @@ namespace ts {
         SHDeliverySystemDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
         DeclareLegacyDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual DID extendedTag() const override;
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 

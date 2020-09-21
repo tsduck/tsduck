@@ -174,7 +174,7 @@ void ts::VBIDataDescriptor::deserializePayload(PSIBuffer& buf)
             while (buf.canRead()) {
                 Field fd;
                 buf.skipBits(2);
-                fd.field_parity = buf.getBit() != 0;
+                fd.field_parity = buf.getBool();
                 fd.line_offset = buf.getBits<uint8_t>(5);
                 service.fields.push_back(fd);
             }

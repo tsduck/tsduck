@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of a DSNG_descriptor
-    //! @see ETSI 300 468, 6.2.14.
+    //! @see ETSI EN 300 468, 6.2.14.
     //! @see ETSI 301 210, Annex D.
     //! @ingroup descriptor
     //!

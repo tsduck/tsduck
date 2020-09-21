@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -70,35 +71,23 @@ void ts::ExternalApplicationAuthorizationDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ExternalApplicationAuthorizationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ExternalApplicationAuthorizationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt32(it->application_identifier.organization_id);
-        bbp->appendUInt16(it->application_identifier.application_id);
-        bbp->appendUInt8(it->application_priority);
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        buf.putUInt32(it->application_identifier.organization_id);
+        buf.putUInt16(it->application_identifier.application_id);
+        buf.putUInt8(it->application_priority);
     }
-    serializeEnd(desc, bbp);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::ExternalApplicationAuthorizationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ExternalApplicationAuthorizationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    entries.clear();
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size % 7 == 0;
-
-    if (_is_valid) {
-        while (size >= 7) {
-            entries.push_back(Entry(GetUInt32(data), GetUInt16(data + 4), GetUInt8(data + 6)));
-            data += 7; size -= 7;
-        }
+    while (buf.canRead()) {
+        Entry e;
+        e.application_identifier.organization_id = buf.getUInt32();
+        e.application_identifier.application_id = buf.getUInt16();
+        e.application_priority = buf.getUInt8();
+        entries.push_back(e);
     }
 }
 
@@ -107,21 +96,13 @@ void ts::ExternalApplicationAuthorizationDescriptor::deserialize(DuckContext& du
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ExternalApplicationAuthorizationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ExternalApplicationAuthorizationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 7) {
-        const uint32_t org = GetUInt32(data);
-        const uint16_t app = GetUInt16(data + 4);
-        const uint8_t prio = GetUInt8(data + 6);
-        data += 7; size -= 7;
-        disp << margin << UString::Format(u"- Organization id: 0x%X (%d)", {org, org}) << std::endl
-             << margin << UString::Format(u"  Application id: 0x%X (%d)", {app, app}) << std::endl
-             << margin << UString::Format(u"  Priority: 0x%X (%d)", {prio, prio}) << std::endl;
+    while (buf.canReadBytes(7)) {
+        disp << margin << UString::Format(u"- Organization id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+        disp << margin << UString::Format(u"  Application id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"  Priority: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -131,18 +112,13 @@ void ts::ExternalApplicationAuthorizationDescriptor::DisplayDescriptor(TablesDis
 
 void ts::ExternalApplicationAuthorizationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"application");
         e->setIntAttribute(u"organization_id", it->application_identifier.organization_id, true);
         e->setIntAttribute(u"application_id", it->application_identifier.application_id, true);
         e->setIntAttribute(u"application_priority", it->application_priority, false);
     }
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::ExternalApplicationAuthorizationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

@@ -114,17 +114,17 @@ void ts::CaptionServiceDescriptor::deserializePayload(PSIBuffer& buf)
     for (size_t i = 0; i < count && buf.canRead(); ++i) {
         Entry e;
         buf.getLanguageCode(e.language);
-        e.digital_cc = buf.getBit() != 0;
+        e.digital_cc = buf.getBool();
         buf.skipBits(1);
         if (e.digital_cc) {
             e.caption_service_number = buf.getBits<uint8_t>(6);
         }
         else {
             buf.skipBits(5);
-            e.line21_field = buf.getBit() != 0;
+            e.line21_field = buf.getBool();
         }
-        e.easy_reader = buf.getBit() != 0;
-        e.wide_aspect_ratio = buf.getBit() != 0;
+        e.easy_reader = buf.getBool();
+        e.wide_aspect_ratio = buf.getBool();
         buf.skipBits(14);
         entries.push_back(e);
     }
@@ -143,7 +143,7 @@ void ts::CaptionServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
         disp << margin << "Number of services: " << count << std::endl;
         for (size_t i = 0; i < count && buf.canReadBytes(6); ++i) {
             disp << margin << "- Language: \"" << buf.getLanguageCode() << "\"";
-            const bool digital = buf.getBit() != 0;
+            const bool digital = buf.getBool();
             buf.skipBits(1);
             disp << UString::Format(u", digital: %s", {digital});
             if (digital) {
@@ -151,10 +151,10 @@ void ts::CaptionServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
             }
             else {
                 buf.skipBits(5);
-                disp << UString::Format(u", line 21: %s", {buf.getBit() != 0});
+                disp << UString::Format(u", line 21: %s", {buf.getBool()});
             }
-            disp << UString::Format(u", easy reader: %s", {buf.getBit() != 0});
-            disp << UString::Format(u", wide: %s", {buf.getBit() != 0}) << std::endl;
+            disp << UString::Format(u", easy reader: %s", {buf.getBool()});
+            disp << UString::Format(u", wide: %s", {buf.getBool()}) << std::endl;
             buf.skipBits(14);
         }
     }

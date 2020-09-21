@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -79,16 +80,15 @@ void ts::CAContractInfoDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CAContractInfoDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CAContractInfoDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(CA_system_id);
-    bbp->appendUInt8(uint8_t(CA_unit_id << 4) | uint8_t(component_tags.size() & 0x0F));
-    bbp->append(component_tags);
-    bbp->appendUInt8(uint8_t(contract_verification_info.size()));
-    bbp->append(contract_verification_info);
-    bbp->append(duck.encodedWithByteLength(fee_name));
-    serializeEnd(desc, bbp);
+    buf.putUInt16(CA_system_id);
+    buf.putBits(CA_unit_id, 4);
+    buf.putBits(component_tags.size(), 4);
+    buf.putBytes(component_tags);
+    buf.putUInt8(uint8_t(contract_verification_info.size()));
+    buf.putBytes(contract_verification_info);
+    buf.putStringWithByteLength(fee_name);
 }
 
 
@@ -96,34 +96,15 @@ void ts::CAContractInfoDescriptor::serialize(DuckContext& duck, Descriptor& desc
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CAContractInfoDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::CAContractInfoDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    component_tags.clear();
-    contract_verification_info.clear();
-    fee_name.clear();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 5;
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        CA_system_id = GetUInt16(data);
-        CA_unit_id = (data[2] >> 4) & 0x0F;
-        const size_t len1 = data[2] & 0x0F;
-        data += 3; size -= 3;
-        _is_valid = size >= len1 + 2;
-        if (_is_valid) {
-            component_tags.copy(data, len1);
-            const size_t len2 = data[len1];
-            data += len1 + 1; size -= len1 + 1;
-            _is_valid = size >= len2 + 1;
-            if (_is_valid) {
-                contract_verification_info.copy(data, len2);
-                data += len2; size -= len2;
-                duck.decodeWithByteLength(fee_name, data, size);
-            }
-        }
-    }
+    CA_system_id = buf.getUInt16();
+    CA_unit_id = buf.getBits<uint8_t>(4);
+    const size_t len1 = buf.getBits<size_t>(4);
+    buf.getBytes(component_tags, len1);
+    const size_t len2 = buf.getUInt8();
+    buf.getBytes(contract_verification_info, len2);
+    buf.getStringWithByteLength(fee_name);
 }
 
 

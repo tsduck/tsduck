@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of an audio_preselection_descriptor.
-    //! @see ETSI 300 468, 6.4.1
+    //! @see ETSI EN 300 468, 6.4.1
     //! @ingroup descriptor
     //!
     class TSDUCKDLL AudioPreselectionDescriptor : public AbstractDescriptor

@@ -106,7 +106,7 @@ void ts::T2MIDescriptor::deserializePayload(PSIBuffer& buf)
     buf.skipBits(5);
     num_t2mi_streams_minus_one = buf.getBits<uint8_t>(3);
     buf.skipBits(7);
-    pcr_iscr_common_clock_flag = buf.getBit() != 0;
+    pcr_iscr_common_clock_flag = buf.getBool();
     buf.getBytes(reserved);
 }
 
@@ -144,6 +144,6 @@ void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, 
         buf.skipBits(5);
         disp << ", T2-MI stream count: " << (buf.getBits<int>(3) + 1);
         buf.skipBits(7);
-        disp << ", PCR/ISCR common clock: " << UString::YesNo(buf.getBit() != 0) << std::endl;
+        disp << ", PCR/ISCR common clock: " << UString::YesNo(buf.getBool()) << std::endl;
     }
 }

@@ -670,6 +670,13 @@ namespace ts {
         uint8_t getBit(uint8_t def = 0);
 
         //!
+        //! Read the next bit as a boolean and advance the read pointer.
+        //! @param [in] def Default value to return if already at end of stream.
+        //! @return The value of the next bit.
+        //!
+        bool getBool(bool def = false) { return getBit(uint8_t(def)) != 0; }
+
+        //!
         //! Write the next bit and advance the write pointer.
         //! @param [in] bit The bit value (0 or 1).
         //! @return True on success, false on error (read only or no more space to write).

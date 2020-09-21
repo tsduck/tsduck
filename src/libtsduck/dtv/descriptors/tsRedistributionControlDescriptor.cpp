@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
@@ -72,28 +73,14 @@ void ts::RedistributionControlDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RedistributionControlDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::RedistributionControlDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(rc_information);
-    serializeEnd(desc, bbp);
+    buf.putBytes(rc_information);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::RedistributionControlDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::RedistributionControlDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag();
-
-    if (_is_valid) {
-        rc_information.copy(desc.payload(), desc.payloadSize());
-    }
-    else {
-        rc_information.clear();
-    }
+    buf.getBytes(rc_information);
 }
 
 
@@ -101,10 +88,9 @@ void ts::RedistributionControlDescriptor::deserialize(DuckContext& duck, const D
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::RedistributionControlDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::RedistributionControlDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-    disp.displayPrivateData(u"RC information", data, size, margin);
+    disp.displayPrivateData(u"RC information", buf, NPOS, margin);
 }
 
 
@@ -116,11 +102,6 @@ void ts::RedistributionControlDescriptor::buildXML(DuckContext& duck, xml::Eleme
 {
     root->addHexaTextChild(u"rc_information", rc_information, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::RedistributionControlDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -69,28 +70,14 @@ ts::ServiceIdentifierDescriptor::ServiceIdentifierDescriptor(DuckContext& duck, 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ServiceIdentifierDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.encoded(identifier));
-    serializeEnd(desc, bbp);
+    buf.putString(identifier);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::ServiceIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ServiceIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag();
-
-    if (_is_valid) {
-        duck.decode(identifier, desc.payload(), desc.payloadSize());
-    }
-    else {
-        identifier.clear();
-    }
+    buf.getString(identifier);
 }
 
 
@@ -98,16 +85,14 @@ void ts::ServiceIdentifierDescriptor::deserialize(DuckContext& duck, const Descr
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ServiceIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::ServiceIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    disp << margin << "Service identifier: \"" << disp.duck().decoded(payload, size) << "\"" << std::endl;
+    disp << margin << "Service identifier: \"" << buf.getString() << "\"" << std::endl;
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::ServiceIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

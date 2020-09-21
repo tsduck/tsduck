@@ -167,7 +167,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& disp, PSIB
         }
         disp << ")" << std::endl;
         buf.skipBits(2);
-        const bool upd_flag = buf.getBit() != 0;
+        const bool upd_flag = buf.getBool();
         const uint8_t upd_version = buf.getBits<uint8_t>(5);
         disp << margin << "  Update version: ";
         if (upd_flag) {
@@ -216,7 +216,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& disp, PSIB
         disp << margin << "- Platform id: " << names::PlatformId(buf.getUInt24(), names::HEXA_FIRST) << std::endl;
         disp << margin << UString::Format(u"  Action type: 0x%X, version: ", {buf.getUInt8()});
         buf.skipBits(2);
-        if (buf.getBit() != 0) {
+        if (buf.getBool()) {
             disp << buf.getBits<uint32_t>(5) << std::endl;
         }
         else {

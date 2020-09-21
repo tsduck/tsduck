@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of a supplementary_audio_descriptor.
-    //! @see ETSI 300 468, 6.4.11.
+    //! @see ETSI EN 300 468, 6.4.11.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL SupplementaryAudioDescriptor : public AbstractDescriptor

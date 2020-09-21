@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of a extended_event_descriptor.
-    //! @see ETSI 300 468, 6.2.15.
+    //! @see ETSI EN 300 468, 6.2.15.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL ExtendedEventDescriptor : public AbstractDescriptor
@@ -54,11 +54,11 @@ namespace ts {
         typedef std::list<Entry> EntryList;
 
         // Public members
-        uint8_t   descriptor_number;      //!< See ETSI 300 468, 6.2.15.
-        uint8_t   last_descriptor_number; //!< See ETSI 300 468, 6.2.15.
+        uint8_t   descriptor_number;      //!< See ETSI EN 300 468, 6.2.15.
+        uint8_t   last_descriptor_number; //!< See ETSI EN 300 468, 6.2.15.
         UString   language_code;          //!< ISO-639 language code, 3 characters.
         EntryList entries;                //!< The list of item entries.
-        UString   text;                   //!< See ETSI 300 468, 6.2.15.
+        UString   text;                   //!< See ETSI EN 300 468, 6.2.15.
 
         //!
         //! Default constructor.

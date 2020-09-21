@@ -88,10 +88,10 @@ void ts::AudioStreamDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::AudioStreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    free_format = buf.getBit() != 0;
+    free_format = buf.getBool();
     ID = buf.getBit();
     layer = buf.getBits<uint8_t>(2);
-    variable_rate_audio = buf.getBit() != 0;
+    variable_rate_audio = buf.getBool();
     buf.skipBits(3);
 }
 

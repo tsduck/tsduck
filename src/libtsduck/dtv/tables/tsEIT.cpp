@@ -270,7 +270,7 @@ void ts::EIT::deserializePayload(PSIBuffer& buf, const Section& section)
         const int sec = buf.getBCD<int>(2);
         event.duration = (hour * 3600) + (min * 60) + sec;
         event.running_status = buf.getBits<uint8_t>(3);
-        event.CA_controlled = buf.getBit() != 0;
+        event.CA_controlled = buf.getBool();
         buf.getDescriptorListWithLength(event.descs);
     }
 }
@@ -468,7 +468,7 @@ void ts::EIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             disp << UString::Format(u":%02d", {buf.getBCD<int>(2)});
             disp << UString::Format(u":%02d", {buf.getBCD<int>(2)}) << std::endl;
             disp << margin << "  Running status: " << names::RunningStatus(buf.getBits<uint8_t>(3)) << std::endl;
-            disp << margin << "  CA mode: " << (buf.getBit() != 0 ? "controlled" : "free") << std::endl;
+            disp << margin << "  CA mode: " << (buf.getBool() ? "controlled" : "free") << std::endl;
             disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
         }
     }

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -89,41 +90,45 @@ ts::MosaicDescriptor::Cell::Cell() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MosaicDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::MosaicDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8((mosaic_entry_point ? 0x88 : 0x08) |
-                     uint8_t((number_of_horizontal_elementary_cells & 0x07) << 4) |
-                     (number_of_vertical_elementary_cells & 0x07));
+    buf.putBit(mosaic_entry_point);
+    buf.putBits(number_of_horizontal_elementary_cells, 3);
+    buf.putBit(1);
+    buf.putBits(number_of_vertical_elementary_cells, 3);
+
     for (auto it = cells.begin(); it != cells.end(); ++it) {
-        bbp->appendUInt8(uint8_t(it->logical_cell_id << 2) | 0x03);
-        bbp->appendUInt8(0xF8 | (it->logical_cell_presentation_info & 0x07));
-        bbp->appendUInt8(uint8_t(it->elementary_cell_ids.size()));
+        buf.putBits(it->logical_cell_id, 6);
+        buf.putBits(0xFF, 7);
+        buf.putBits(it->logical_cell_presentation_info, 3);
+        buf.pushWriteSequenceWithLeadingLength(8); // elementary_cell_field_length
         for (size_t i = 0; i < it->elementary_cell_ids.size(); ++i) {
-            bbp->appendUInt8(0xC0 | it->elementary_cell_ids[i]);
+            buf.putBits(0xFF, 2);
+            buf.putBits(it->elementary_cell_ids[i], 6);
         }
-        bbp->appendUInt8(it->cell_linkage_info);
+        buf.popState(); // update elementary_cell_field_length
+        buf.putUInt8(it->cell_linkage_info);
+
         switch (it->cell_linkage_info) {
             case 0x01:
-                bbp->appendUInt16(it->bouquet_id);
+                buf.putUInt16(it->bouquet_id);
                 break;
             case 0x02:
             case 0x03:
-                bbp->appendUInt16(it->original_network_id);
-                bbp->appendUInt16(it->transport_stream_id);
-                bbp->appendUInt16(it->service_id);
+                buf.putUInt16(it->original_network_id);
+                buf.putUInt16(it->transport_stream_id);
+                buf.putUInt16(it->service_id);
                 break;
             case 0x04:
-                bbp->appendUInt16(it->original_network_id);
-                bbp->appendUInt16(it->transport_stream_id);
-                bbp->appendUInt16(it->service_id);
-                bbp->appendUInt16(it->event_id);
+                buf.putUInt16(it->original_network_id);
+                buf.putUInt16(it->transport_stream_id);
+                buf.putUInt16(it->service_id);
+                buf.putUInt16(it->event_id);
                 break;
             default:
                 break;
         }
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -131,75 +136,47 @@ void ts::MosaicDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::MosaicDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::MosaicDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-    cells.clear();
+    mosaic_entry_point = buf.getBool();
+    number_of_horizontal_elementary_cells = buf.getBits<uint8_t>(3);
+    buf.skipBits(1);
+    number_of_vertical_elementary_cells = buf.getBits<uint8_t>(3);
 
-    if (_is_valid) {
-        mosaic_entry_point = (data[0] & 0x80) != 0;
-        number_of_horizontal_elementary_cells = (data[0] >> 4) & 0x07;
-        number_of_vertical_elementary_cells = data[0] & 0x07;
-        data++; size--;
-    }
-
-    while (_is_valid && size >= 3) {
+    while (buf.canRead()) {
         Cell cell;
-        cell.logical_cell_id = (data[0] >> 2) & 0x3F;
-        cell.logical_cell_presentation_info = data[1] & 0x07;
-        size_t len = data[2];
-        data += 3; size -= 3;
-
-        _is_valid = size > len;
-        if (_is_valid) {
-            for (size_t i = 0; i < len; ++i) {
-                cell.elementary_cell_ids.push_back(data[i] & 0x3F);
-            }
-            cell.cell_linkage_info = data[len];
-            data += len + 1; size -= len + 1;
-
-            switch (cell.cell_linkage_info) {
-                case 0x01:
-                    _is_valid = size >= 2;
-                    if (_is_valid) {
-                        cell.bouquet_id = GetUInt16(data);
-                        data += 2; size -= 2;
-                    }
-                    break;
-                case 0x02:
-                case 0x03:
-                    _is_valid = size >= 6;
-                    if (_is_valid) {
-                        cell.original_network_id = GetUInt16(data);
-                        cell.transport_stream_id = GetUInt16(data + 2);
-                        cell.service_id = GetUInt16(data + 4);
-                        data += 6; size -= 6;
-                    }
-                    break;
-                case 0x04:
-                    _is_valid = size >= 8;
-                    if (_is_valid) {
-                        cell.original_network_id = GetUInt16(data);
-                        cell.transport_stream_id = GetUInt16(data + 2);
-                        cell.service_id = GetUInt16(data + 4);
-                        cell.event_id = GetUInt16(data + 6);
-                        data += 8; size -= 8;
-                    }
-                    break;
-                default:
-                    break;
-            }
+        cell.logical_cell_id = buf.getBits<uint8_t>(6);
+        buf.skipBits(7);
+        cell.logical_cell_presentation_info = buf.getBits<uint8_t>(3);
+        buf.pushReadSizeFromLength(8); // elementary_cell_field_length
+        while (buf.canRead()) {
+            buf.skipBits(2);
+            cell.elementary_cell_ids.push_back(buf.getBits<uint8_t>(6));
         }
+        buf.popState(); // end of elementary_cell_field_length
+        cell.cell_linkage_info = buf.getUInt8();
 
-        if (_is_valid) {
-            cells.push_back(cell);
+        switch (cell.cell_linkage_info) {
+            case 0x01:
+                cell.bouquet_id = buf.getUInt16();
+                break;
+            case 0x02:
+            case 0x03:
+                cell.original_network_id = buf.getUInt16();
+                cell.transport_stream_id = buf.getUInt16();
+                cell.service_id = buf.getUInt16();
+                break;
+            case 0x04:
+                cell.original_network_id = buf.getUInt16();
+                cell.transport_stream_id = buf.getUInt16();
+                cell.service_id = buf.getUInt16();
+                cell.event_id = buf.getUInt16();
+                break;
+            default:
+                break;
         }
+        cells.push_back(cell);
     }
-
-    // Make sure there is no truncated trailing data.
-    _is_valid = _is_valid && size == 0;
 }
 
 

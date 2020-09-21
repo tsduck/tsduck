@@ -38,15 +38,15 @@
 namespace ts {
     //!
     //! Representation of a country_availability_descriptor.
-    //! @see ETSI 300 468, 6.2.10.
+    //! @see ETSI EN 300 468, 6.2.10.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL CountryAvailabilityDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        bool          country_availability; //!< See ETSI 300 468, 6.2.10.
-        UStringVector country_codes;        //!< See ETSI 300 468, 6.2.10.
+        bool          country_availability; //!< See ETSI EN 300 468, 6.2.10.
+        UStringVector country_codes;        //!< See ETSI EN 300 468, 6.2.10.
 
         //!
         //! Maximum number of entries to fit in 255 bytes.

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -64,19 +65,23 @@ ts::FMCDescriptor::FMCDescriptor(DuckContext& duck, const Descriptor& desc) :
     deserialize(duck, desc);
 }
 
+ts::FMCDescriptor::Entry::Entry(uint16_t id, uint8_t fmc) :
+    ES_ID(id),
+    FlexMuxChannel(fmc)
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::FMCDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::FMCDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt16(it->ES_ID);
-        bbp->appendUInt8(it->FlexMuxChannel);
+        buf.putUInt16(it->ES_ID);
+        buf.putUInt8(it->FlexMuxChannel);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -84,18 +89,13 @@ void ts::FMCDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::FMCDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::FMCDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size % 3 == 0;
-    entries.clear();
-
-    if (_is_valid) {
-        while (size >= 3) {
-            entries.push_back(Entry(GetUInt16(data), data[2]));
-            data += 3; size -= 3;
-        }
+    while (buf.canRead()) {
+        Entry e;
+        e.ES_ID = buf.getUInt16();
+        e.FlexMuxChannel = buf.getUInt8();
+        entries.push_back(e);
     }
 }
 
@@ -104,18 +104,12 @@ void ts::FMCDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::FMCDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::FMCDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 3) {
-        const uint16_t id = GetUInt16(data);
-        const uint8_t fmc = data[2];
-        data += 3; size -= 3;
-        disp << margin << UString::Format(u"ES id: 0x%X (%d), FlexMux channel: 0x%X (%d)", {id, id, fmc, fmc}) << std::endl;
+    while (buf.canReadBytes(3)) {
+        disp << margin << UString::Format(u"ES id: 0x%X (%<d)", {buf.getUInt16()});
+        disp << UString::Format(u", FlexMux channel: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -125,7 +119,7 @@ void ts::FMCDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const ui
 
 void ts::FMCDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"stream");
         e->setIntAttribute(u"ES_ID", it->ES_ID, true);
         e->setIntAttribute(u"FlexMuxChannel", it->FlexMuxChannel, true);

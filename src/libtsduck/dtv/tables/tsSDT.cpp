@@ -161,10 +161,10 @@ void ts::SDT::deserializePayload(PSIBuffer& buf, const Section& section)
     while (buf.canRead()) {
         Service& serv(services[buf.getUInt16()]);
         buf.skipBits(6);
-        serv.EITs_present = buf.getBit() != 0;
-        serv.EITpf_present = buf.getBit() != 0;
+        serv.EITs_present = buf.getBool();
+        serv.EITpf_present = buf.getBool();
         serv.running_status = buf.getBits<uint8_t>(3);
-        serv.CA_controlled = buf.getBit() != 0;
+        serv.CA_controlled = buf.getBool();
         buf.getDescriptorListWithLength(serv.descs);
     }
 }
@@ -325,10 +325,10 @@ void ts::SDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     while (buf.canRead()) {
         disp << margin << UString::Format(u"Service Id: %d (0x%<X)", {buf.getUInt16()});
         buf.skipBits(6);
-        disp << ", EITs: " << UString::YesNo(buf.getBit() != 0);
-        disp << ", EITp/f: " << UString::YesNo(buf.getBit() != 0);
+        disp << ", EITs: " << UString::YesNo(buf.getBool());
+        disp << ", EITp/f: " << UString::YesNo(buf.getBool());
         const uint8_t running_status = buf.getBits<uint8_t>(3);
-        disp << ", CA mode: " << (buf.getBit() != 0 ? "controlled" : "free") << std::endl;
+        disp << ", CA mode: " << (buf.getBool() ? "controlled" : "free") << std::endl;
         disp << margin << "Running status: " << names::RunningStatus(running_status) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }

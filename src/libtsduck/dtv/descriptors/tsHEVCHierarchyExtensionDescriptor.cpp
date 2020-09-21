@@ -117,7 +117,7 @@ void ts::HEVCHierarchyExtensionDescriptor::deserializePayload(PSIBuffer& buf)
     hierarchy_layer_index = buf.getBits<uint8_t>(6);
     temporal_id = buf.getBits<uint8_t>(3);
     nuh_layer_id = buf.getBits<uint8_t>(6);
-    tref_present = buf.getBit() != 0;
+    tref_present = buf.getBool();
     buf.skipBits(2);
     const size_t num_embedded_layers = buf.getBits<uint8_t>(6);
     buf.skipBits(2);
@@ -146,7 +146,7 @@ void ts::HEVCHierarchyExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp
         disp << margin << UString::Format(u"Hierarchy layer index: 0x%X (%<d)", {buf.getBits<uint8_t>(6)}) << std::endl;
         disp << margin << UString::Format(u"Temporal id: %d", {buf.getBits<uint8_t>(3)}) << std::endl;
         disp << margin << UString::Format(u"NUH layer id: 0x%X (%<d)", {buf.getBits<uint8_t>(6)}) << std::endl;
-        disp << margin << UString::Format(u"TREF present: %s", {buf.getBit() != 0}) << std::endl;
+        disp << margin << UString::Format(u"TREF present: %s", {buf.getBool()}) << std::endl;
         buf.skipBits(2);
         const size_t num_embedded_layers = buf.getBits<uint8_t>(6);
         disp << margin << UString::Format(u"Number of embedded layers: %d", {num_embedded_layers}) << std::endl;

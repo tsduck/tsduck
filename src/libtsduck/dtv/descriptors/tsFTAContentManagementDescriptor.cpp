@@ -93,11 +93,11 @@ void ts::FTAContentManagementDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::FTAContentManagementDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    user_defined = buf.getBit() != 0;
+    user_defined = buf.getBool();
     buf.skipBits(3);
-    do_not_scramble = buf.getBit() != 0;
+    do_not_scramble = buf.getBool();
     control_remote_access_over_internet = buf.getBits<uint8_t>(2);
-    do_not_apply_revocation = buf.getBit() != 0;
+    do_not_apply_revocation = buf.getBool();
 }
 
 
@@ -108,11 +108,11 @@ void ts::FTAContentManagementDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::FTAContentManagementDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"User-defined: %s", {buf.getBit() != 0}) << std::endl;
+        disp << margin << UString::Format(u"User-defined: %s", {buf.getBool()}) << std::endl;
         buf.skipBits(3);
-        disp << margin << UString::Format(u"Do not scramble: %s", {buf.getBit() != 0}) << std::endl;
+        disp << margin << UString::Format(u"Do not scramble: %s", {buf.getBool()}) << std::endl;
         disp << margin << "Access over Internet: " << NameFromSection(u"FTARemoteAccessInternet", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
-        disp << margin << UString::Format(u"Do not apply revocation: %s", {buf.getBit() != 0}) << std::endl;
+        disp << margin << UString::Format(u"Do not apply revocation: %s", {buf.getBool()}) << std::endl;
     }
 }
 

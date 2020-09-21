@@ -128,7 +128,7 @@ void ts::TelephoneDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::TelephoneDescriptor::deserializePayload(PSIBuffer& buf)
 {
     buf.skipBits(2);
-    foreign_availability = buf.getBit() != 0;
+    foreign_availability = buf.getBool();
     connection_type = buf.getBits<uint8_t>(5);
     buf.skipBits(1);
     const size_t country_len = buf.getBits<size_t>(2);

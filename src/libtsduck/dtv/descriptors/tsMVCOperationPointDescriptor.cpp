@@ -137,12 +137,12 @@ void ts::MVCOperationPointDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::MVCOperationPointDescriptor::deserializePayload(PSIBuffer& buf)
 {
     profile_idc = buf.getUInt8();
-    constraint_set0 = buf.getBit() != 0;
-    constraint_set1 = buf.getBit() != 0;
-    constraint_set2 = buf.getBit() != 0;
-    constraint_set3 = buf.getBit() != 0;
-    constraint_set4 = buf.getBit() != 0;
-    constraint_set5 = buf.getBit() != 0;
+    constraint_set0 = buf.getBool();
+    constraint_set1 = buf.getBool();
+    constraint_set2 = buf.getBool();
+    constraint_set3 = buf.getBool();
+    constraint_set4 = buf.getBool();
+    constraint_set5 = buf.getBool();
     AVC_compatible_flags = buf.getBits<uint8_t>(2);
 
     for (uint8_t level_count = buf.getUInt8(); level_count > 0 && buf.canRead(); --level_count) {
@@ -172,12 +172,12 @@ void ts::MVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
 {
     if (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"Profile IDC: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-        disp << margin << UString::Format(u"Constraint set: 0:%s", {buf.getBit() != 0});
-        disp << UString::Format(u", 1:%s", {buf.getBit() != 0});
-        disp << UString::Format(u", 2:%s", {buf.getBit() != 0});
-        disp << UString::Format(u", 3:%s", {buf.getBit() != 0});
-        disp << UString::Format(u", 4:%s", {buf.getBit() != 0});
-        disp << UString::Format(u", 5:%s", {buf.getBit() != 0}) << std::endl;
+        disp << margin << UString::Format(u"Constraint set: 0:%s", {buf.getBool()});
+        disp << UString::Format(u", 1:%s", {buf.getBool()});
+        disp << UString::Format(u", 2:%s", {buf.getBool()});
+        disp << UString::Format(u", 3:%s", {buf.getBool()});
+        disp << UString::Format(u", 4:%s", {buf.getBool()});
+        disp << UString::Format(u", 5:%s", {buf.getBool()}) << std::endl;
         disp << margin << UString::Format(u"AVC compatible flags: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
         uint8_t level_count = buf.getUInt8();
         disp << margin << UString::Format(u"Level count: %d", {level_count}) << std::endl;
