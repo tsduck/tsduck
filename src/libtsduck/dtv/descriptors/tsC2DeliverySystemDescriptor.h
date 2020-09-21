@@ -39,7 +39,7 @@ namespace ts {
     //!
     //! Representation of a C2_delivery_system_descriptor.
     //!
-    //! @see ETSI 300 468, 6.4.6.1
+    //! @see ETSI EN 300 468, 6.4.6.1
     //! @ingroup descriptor
     //!
     class TSDUCKDLL C2DeliverySystemDescriptor : public AbstractDeliverySystemDescriptor

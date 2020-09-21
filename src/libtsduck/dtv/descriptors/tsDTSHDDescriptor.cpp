@@ -174,11 +174,11 @@ void ts::DTSHDDescriptor::SerializeSubstreamInfo(const Variable<SubstreamInfo>& 
 
 void ts::DTSHDDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const bool substream_core_flag = buf.getBit() != 0;
-    const bool substream_0_flag = buf.getBit() != 0;
-    const bool substream_1_flag = buf.getBit() != 0;
-    const bool substream_2_flag = buf.getBit() != 0;
-    const bool substream_3_flag = buf.getBit() != 0;
+    const bool substream_core_flag = buf.getBool();
+    const bool substream_0_flag = buf.getBool();
+    const bool substream_1_flag = buf.getBool();
+    const bool substream_2_flag = buf.getBool();
+    const bool substream_3_flag = buf.getBool();
     buf.skipBits(3);
 
     DeserializeSubstreamInfo(substream_core, substream_core_flag, buf);
@@ -198,9 +198,9 @@ void ts::DTSHDDescriptor::DeserializeSubstreamInfo(Variable<SubstreamInfo>& info
 
         const size_t num_assets = buf.getBits<size_t>(3) + 1;
         si.channel_count = buf.getBits<uint8_t>(5);
-        si.LFE = buf.getBit() != 0;
+        si.LFE = buf.getBool();
         si.sampling_frequency = buf.getBits<uint8_t>(4);
-        si.sample_resolution = buf.getBit() != 0;
+        si.sample_resolution = buf.getBool();
         buf.skipBits(2);
 
         // Deserialize all asset info.
@@ -211,10 +211,10 @@ void ts::DTSHDDescriptor::DeserializeSubstreamInfo(Variable<SubstreamInfo>& info
             AssetInfo& ai(si.asset_info.back());
 
             ai.asset_construction = buf.getBits<uint8_t>(5);
-            ai.vbr = buf.getBit() != 0;
-            ai.post_encode_br_scaling = buf.getBit() != 0;
-            const bool component_type_flag = buf.getBit() != 0;
-            const bool language_code_flag = buf.getBit() != 0;
+            ai.vbr = buf.getBool();
+            ai.post_encode_br_scaling = buf.getBool();
+            const bool component_type_flag = buf.getBool();
+            const bool language_code_flag = buf.getBool();
             ai.bit_rate = buf.getBits<uint16_t>(13);
             buf.skipBits(2);
             if (component_type_flag) {
@@ -240,11 +240,11 @@ void ts::DTSHDDescriptor::DeserializeSubstreamInfo(Variable<SubstreamInfo>& info
 
 void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const bool substream_core_flag = buf.getBit() != 0;
-    const bool substream_0_flag = buf.getBit() != 0;
-    const bool substream_1_flag = buf.getBit() != 0;
-    const bool substream_2_flag = buf.getBit() != 0;
-    const bool substream_3_flag = buf.getBit() != 0;
+    const bool substream_core_flag = buf.getBool();
+    const bool substream_0_flag = buf.getBool();
+    const bool substream_1_flag = buf.getBool();
+    const bool substream_2_flag = buf.getBool();
+    const bool substream_3_flag = buf.getBool();
     buf.skipBits(3);
 
     DisplaySubstreamInfo(disp, substream_core_flag, margin, u"core", buf);
@@ -262,9 +262,9 @@ void ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& disp, bool present
         buf.pushReadSizeFromLength(8); // start read sequence
         const size_t num_assets = buf.getBits<size_t>(3) + 1;
         disp << margin << UString::Format(u"  Asset count: %d, channel count: %d", {num_assets, buf.getBits<uint8_t>(5)}) << std::endl;
-        disp << margin << UString::Format(u"  Low Frequency Effects (LFE): %s", {buf.getBit() != 0}) << std::endl;
+        disp << margin << UString::Format(u"  Low Frequency Effects (LFE): %s", {buf.getBool()}) << std::endl;
         disp << margin << UString::Format(u"  Sampling frequency: %s", {NameFromSection(u"DTSHDSamplingFrequency", buf.getBits<uint8_t>(4), names::VALUE)}) << std::endl;
-        disp << margin << UString::Format(u"  Sample resolution > 16 bits: %s", {buf.getBit() != 0}) << std::endl;
+        disp << margin << UString::Format(u"  Sample resolution > 16 bits: %s", {buf.getBool()}) << std::endl;
         buf.skipBits(2);
 
         // Display all asset info.
@@ -273,11 +273,11 @@ void ts::DTSHDDescriptor::DisplaySubstreamInfo(TablesDisplay& disp, bool present
             disp << margin << "    Construction: "
                  << NameFromSection(u"DTSHDAssetConstruction", buf.getBits<uint8_t>(5) + (asset_index == 0 ? 0 : 0x0100), names::VALUE)
                  << std::endl;
-            disp << margin << UString::Format(u"    VBR: %s", {buf.getBit() != 0});
-            const bool br_scaling = buf.getBit() != 0;
+            disp << margin << UString::Format(u"    VBR: %s", {buf.getBool()});
+            const bool br_scaling = buf.getBool();
             disp << UString::Format(u", post-encode bitrate scaling: %s", {br_scaling}) << std::endl;
-            const bool component_type_flag = buf.getBit() != 0;
-            const bool language_code_flag = buf.getBit() != 0;
+            const bool component_type_flag = buf.getBool();
+            const bool language_code_flag = buf.getBool();
             const uint16_t bit_rate = buf.getBits<uint16_t>(13);
             buf.skipBits(2);
 

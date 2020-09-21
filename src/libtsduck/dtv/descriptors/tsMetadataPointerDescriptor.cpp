@@ -135,7 +135,7 @@ void ts::MetadataPointerDescriptor::deserializePayload(PSIBuffer& buf)
         metadata_format_identifier = buf.getUInt32();
     }
     metadata_service_id = buf.getUInt8();
-    const bool metadata_locator_record_flag = buf.getBit() != 0;
+    const bool metadata_locator_record_flag = buf.getBool();
     MPEG_carriage_flags = buf.getBits<uint8_t>(2);
     buf.skipBits(5);
     if (metadata_locator_record_flag) {
@@ -186,7 +186,7 @@ void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
     }
     else {
         disp << margin << UString::Format(u"Metadata service id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-        const bool metadata_locator_record_flag = buf.getBit() != 0;
+        const bool metadata_locator_record_flag = buf.getBool();
         const uint8_t flags = buf.getBits<uint8_t>(2);
         disp << margin << "MPEG carriage flags: " << NameFromSection(u"MetadataCarriageFlags", flags, names::DECIMAL_FIRST) << std::endl;
         buf.skipBits(5);

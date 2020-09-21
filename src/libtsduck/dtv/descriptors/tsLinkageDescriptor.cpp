@@ -231,8 +231,8 @@ void ts::LinkageDescriptor::deserializePayload(PSIBuffer& buf)
     }
     else if (linkage_type == LINKAGE_EVENT) {
         event_linkage_info.target_event_id = buf.getUInt16();
-        event_linkage_info.target_listed = buf.getBit() != 0;
-        event_linkage_info.event_simulcast = buf.getBit() != 0;
+        event_linkage_info.target_listed = buf.getBool();
+        event_linkage_info.event_simulcast = buf.getBool();
         buf.skipBits(6);
     }
     else if (linkage_type >= LINKAGE_EXT_EVENT_MIN && linkage_type <= LINKAGE_EXT_EVENT_MAX) {
@@ -240,12 +240,12 @@ void ts::LinkageDescriptor::deserializePayload(PSIBuffer& buf)
         while (buf.canRead()) {
             ExtendedEventLinkageInfo info;
             info.target_event_id = buf.getUInt16();
-            info.target_listed = buf.getBit() != 0;
-            info.event_simulcast = buf.getBit() != 0;
+            info.target_listed = buf.getBool();
+            info.event_simulcast = buf.getBool();
             info.link_type = buf.getBits<uint8_t>(2);
             info.target_id_type = buf.getBits<uint8_t>(2);
-            const bool onetw_flag = buf.getBit() != 0;
-            const bool serv_flag = buf.getBit()!= 0;
+            const bool onetw_flag = buf.getBool();
+            const bool serv_flag = buf.getBool();
             if (info.target_id_type == 3) {
                 info.user_defined_id = buf.getUInt16();
             }

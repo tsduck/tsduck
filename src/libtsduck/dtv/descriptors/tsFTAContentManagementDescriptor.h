@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a FTA_content_management_descriptor.
-    //! @see ETSI 300 468, 6.2.18.
+    //! @see ETSI EN 300 468, 6.2.18.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL FTAContentManagementDescriptor : public AbstractDescriptor

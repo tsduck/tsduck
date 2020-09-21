@@ -146,7 +146,7 @@ void ts::MetadataDescriptor::deserializePayload(PSIBuffer& buf)
     }
     metadata_service_id = buf.getUInt8();
     decoder_config_flags = buf.getBits<uint8_t>(3);
-    const bool DSMCC_flag = buf.getBit() != 0;
+    const bool DSMCC_flag = buf.getBool();
     buf.skipBits(4);
     if (DSMCC_flag) {
         const size_t length = buf.getUInt8();
@@ -205,7 +205,7 @@ void ts::MetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
     else {
         disp << margin << UString::Format(u"Metadata service id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         const uint8_t flags = buf.getBits<uint8_t>(3);
-        const bool DSMCC_flag = buf.getBit() != 0;
+        const bool DSMCC_flag = buf.getBool();
         buf.skipBits(4);
         disp << margin << "Decoder config flags: " << NameFromSection(u"MetadataDecoderConfigFlags", flags, names::DECIMAL_FIRST) << std::endl;
         if (DSMCC_flag) {

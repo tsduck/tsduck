@@ -148,7 +148,7 @@ void ts::VirtualSegmentationDescriptor::deserializePayload(PSIBuffer& buf)
     if (buf.canRead()) {
         size_t mdl = 0;
         const size_t num_partitions = buf.getBits<size_t>(3);
-        const bool timescale_flag = buf.getBit() != 0;
+        const bool timescale_flag = buf.getBool();
         buf.skipBits(4);
         if (timescale_flag) {
             ticks_per_second = buf.getBits<uint32_t>(21);
@@ -157,7 +157,7 @@ void ts::VirtualSegmentationDescriptor::deserializePayload(PSIBuffer& buf)
         }
         for (size_t i = 0; i < num_partitions && buf.canRead(); ++i) {
             Partition part;
-            const bool explicit_boundary_flag = buf.getBit() != 0;
+            const bool explicit_boundary_flag = buf.getBool();
             part.partition_id = buf.getBits<uint8_t>(3);
             buf.skipBits(4);
             part.SAP_type_max = buf.getBits<uint8_t>(3);
@@ -184,7 +184,7 @@ void ts::VirtualSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, P
     if (buf.canReadBytes(1)) {
         size_t mdl = 0;
         const size_t num_partitions = buf.getBits<size_t>(3);
-        const bool timescale_flag = buf.getBit() != 0;
+        const bool timescale_flag = buf.getBool();
         buf.skipBits(4);
 
         if (timescale_flag && buf.canReadBytes(3)) {
@@ -195,7 +195,7 @@ void ts::VirtualSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, P
         }
 
         for (size_t i = 0; i < num_partitions && buf.canReadBytes(2); ++i) {
-            const bool explicit_boundary_flag = buf.getBit() != 0;
+            const bool explicit_boundary_flag = buf.getBool();
             disp << margin << UString::Format(u"- Partition id: %d", {buf.getBits<uint8_t>(3)});
             buf.skipBits(4);
             disp << UString::Format(u", SAP type max: %d", {buf.getBits<uint8_t>(3)}) << std::endl;

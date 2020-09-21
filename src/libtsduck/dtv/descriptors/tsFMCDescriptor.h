@@ -58,11 +58,7 @@ namespace ts {
             //! @param [in] id Elementary stream id.
             //! @param [in] fmc FlexMux channel number.
             //!
-            Entry(uint16_t id = 0, uint8_t fmc = 0) :
-                ES_ID(id),
-                FlexMuxChannel(fmc)
-            {
-            }
+            Entry(uint16_t id = 0, uint8_t fmc = 0);
         };
 
         //!
@@ -91,13 +87,13 @@ namespace ts {
         FMCDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };

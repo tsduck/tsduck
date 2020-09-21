@@ -118,7 +118,7 @@ void ts::NorDigLogicalChannelDescriptorV2::deserializePayload(PSIBuffer& buf)
         while (buf.canRead()) {
             Service srv;
             srv.service_id = buf.getUInt16();
-            srv.visible = buf.getBit() != 0;
+            srv.visible = buf.getBool();
             buf.skipBits(5);
             srv.lcn = buf.getBits<uint16_t>(10);
             clist.services.push_back(srv);

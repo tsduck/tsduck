@@ -146,7 +146,7 @@ void ts::SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
     frequency = 10000 * buf.getBCD<uint64_t>(8); // coded in 10 kHz units
     orbital_position = buf.getBCD<uint16_t>(4);
-    east_not_west = buf.getBit() != 0;
+    east_not_west = buf.getBool();
     polarization = buf.getBits<uint8_t>(2);
 
     if ((buf.duck().standards() & Standards::ISDB) == Standards::ISDB) {
@@ -157,7 +157,7 @@ void ts::SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
     else {
         // DVB-S/S2 variant.
         roll_off = buf.getBits<uint8_t>(2);
-        _system = buf.getBit() != 0 ? DS_DVB_S2 : DS_DVB_S;
+        _system = buf.getBool() ? DS_DVB_S2 : DS_DVB_S;
         modulation = buf.getBits<uint8_t>(2);
     }
     if (_system != DS_DVB_S2) {

@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a T2MI_descriptor.
-    //! @see ETSI 300 468, 6.4.14.
+    //! @see ETSI EN 300 468, 6.4.14.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL T2MIDescriptor : public AbstractDescriptor

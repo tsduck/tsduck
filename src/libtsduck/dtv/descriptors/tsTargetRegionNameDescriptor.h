@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a target_region_name_descriptor
-    //! @see ETSI 300 468, 6.4.13.
+    //! @see ETSI EN 300 468, 6.4.13.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL TargetRegionNameDescriptor : public AbstractDescriptor

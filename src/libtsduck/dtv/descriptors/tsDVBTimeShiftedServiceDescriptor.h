@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a DVB time_shifted_service_descriptor.
-    //! @see ETSI 300 468, 6.2.45.
+    //! @see ETSI EN 300 468, 6.2.45.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL DVBTimeShiftedServiceDescriptor : public AbstractDescriptor

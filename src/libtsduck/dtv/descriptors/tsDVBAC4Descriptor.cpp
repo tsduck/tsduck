@@ -113,11 +113,11 @@ void ts::DVBAC4Descriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::DVBAC4Descriptor::deserializePayload(PSIBuffer& buf)
 {
-    const bool ac4_config_flag = buf.getBit() != 0;
-    const bool ac4_toc_flag = buf.getBit() != 0;
+    const bool ac4_config_flag = buf.getBool();
+    const bool ac4_toc_flag = buf.getBool();
     buf.skipBits(6);
     if (ac4_config_flag) {
-        ac4_dialog_enhancement_enabled = buf.getBit() != 0;
+        ac4_dialog_enhancement_enabled = buf.getBool();
         ac4_channel_mode = buf.getBits<uint8_t>(2);
         buf.skipBits(5);
     }

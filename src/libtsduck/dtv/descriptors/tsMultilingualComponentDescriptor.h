@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a multilingual_component_descriptor.
-    //! @see ETSI 300 468, 6.2.23.
+    //! @see ETSI EN 300 468, 6.2.23.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL MultilingualComponentDescriptor : public AbstractMultilingualDescriptor

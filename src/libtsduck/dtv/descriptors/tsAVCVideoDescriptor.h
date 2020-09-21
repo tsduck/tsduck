@@ -38,7 +38,6 @@
 namespace ts {
     //!
     //! Representation of an AVC_video_descriptor.
-    //!
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.64.
     //! @ingroup descriptor
     //!
@@ -50,10 +49,14 @@ namespace ts {
         bool    constraint_set0;       //!< Same as AVC concept.
         bool    constraint_set1;       //!< Same as AVC concept.
         bool    constraint_set2;       //!< Same as AVC concept.
-        uint8_t AVC_compatible_flags;  //!< Same as AVC concept.
+        bool    constraint_set3;       //!< Same as AVC concept.
+        bool    constraint_set4;       //!< Same as AVC concept.
+        bool    constraint_set5;       //!< Same as AVC concept.
+        uint8_t AVC_compatible_flags;  //!< 2 bits.
         uint8_t level_idc;             //!< Same as AVC concept.
         bool    AVC_still_present;     //!< May contain still pictures.
         bool    AVC_24_hour_picture;   //!< May contain 24-hour pictures.
+        bool    frame_packing_SEI_not_present;  //!< Same as AVC concept.
 
         //!
         //! Default constructor.
@@ -68,13 +71,13 @@ namespace ts {
         AVCVideoDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };

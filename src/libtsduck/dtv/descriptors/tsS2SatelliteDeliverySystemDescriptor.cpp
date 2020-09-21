@@ -105,10 +105,10 @@ void ts::S2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) c
 
 void ts::S2SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const bool scrambling_sequence_selector = buf.getBit() != 0;
-    const bool multiple_input_stream_flag = buf.getBit() != 0;
-    backwards_compatibility_indicator = buf.getBit() != 0;
-    const bool not_timeslice_flag = buf.getBit() != 0;
+    const bool scrambling_sequence_selector = buf.getBool();
+    const bool multiple_input_stream_flag = buf.getBool();
+    backwards_compatibility_indicator = buf.getBool();
+    const bool not_timeslice_flag = buf.getBool();
     buf.skipBits(2);
     TS_GS_mode = buf.getBits<uint8_t>(2);
 
@@ -132,10 +132,10 @@ void ts::S2SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        const bool scrambling_sequence_selector = buf.getBit() != 0;
-        const bool multiple_input_stream_flag = buf.getBit() != 0;
-        disp << margin << UString::Format(u"Backward compatibility: %s", {buf.getBit() != 0}) << std::endl;
-        const bool not_timeslice_flag = buf.getBit() != 0;
+        const bool scrambling_sequence_selector = buf.getBool();
+        const bool multiple_input_stream_flag = buf.getBool();
+        disp << margin << UString::Format(u"Backward compatibility: %s", {buf.getBool()}) << std::endl;
+        const bool not_timeslice_flag = buf.getBool();
         buf.skipBits(2);
         disp << margin << "TS/GS mode: " << NameFromSection(u"TSGSS2Mode", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
 

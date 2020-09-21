@@ -170,15 +170,15 @@ void ts::ATSCEAC3AudioDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::ATSCEAC3AudioDescriptor::deserializePayload(PSIBuffer& buf)
 {
     buf.skipBits(1);
-    const bool bsid_flag = buf.getBit() != 0;
-    const bool mainid_flag = buf.getBit() != 0;
-    const bool asvc_flag = buf.getBit() != 0;
-    mixinfoexists = buf.getBit() != 0;
-    const bool substream1_flag = buf.getBit() != 0;
-    const bool substream2_flag = buf.getBit() != 0;
-    const bool substream3_flag = buf.getBit() != 0;
+    const bool bsid_flag = buf.getBool();
+    const bool mainid_flag = buf.getBool();
+    const bool asvc_flag = buf.getBool();
+    mixinfoexists = buf.getBool();
+    const bool substream1_flag = buf.getBool();
+    const bool substream2_flag = buf.getBool();
+    const bool substream3_flag = buf.getBool();
     buf.skipBits(1);
-    full_service = buf.getBit() != 0;
+    full_service = buf.getBool();
     audio_service_type = buf.getBits<uint8_t>(3);
     number_of_channels = buf.getBits<uint8_t>(3);
 
@@ -188,8 +188,8 @@ void ts::ATSCEAC3AudioDescriptor::deserializePayload(PSIBuffer& buf)
     }
 
     // Decode one byte depending on bsid.
-    const bool language_flag = buf.getBit() != 0;
-    const bool language_2_flag = buf.getBit() != 0;
+    const bool language_flag = buf.getBool();
+    const bool language_2_flag = buf.getBool();
     buf.skipBits(1);
     if (bsid_flag) {
         bsid = buf.getBits<uint8_t>(5);
@@ -243,25 +243,25 @@ void ts::ATSCEAC3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
     if (buf.canReadBytes(2)) {
         // Fixed initial size: 2 bytes.
         buf.skipBits(1);
-        const bool bsid_flag = buf.getBit() != 0;
-        const bool mainid_flag = buf.getBit() != 0;
-        const bool asvc_flag = buf.getBit() != 0;
-        const bool mixinfo = buf.getBit() != 0;
-        const bool sub1_flag = buf.getBit() != 0;
-        const bool sub2_flag = buf.getBit() != 0;
-        const bool sub3_flag = buf.getBit() != 0;
+        const bool bsid_flag = buf.getBool();
+        const bool mainid_flag = buf.getBool();
+        const bool asvc_flag = buf.getBool();
+        const bool mixinfo = buf.getBool();
+        const bool sub1_flag = buf.getBool();
+        const bool sub2_flag = buf.getBool();
+        const bool sub3_flag = buf.getBool();
         bool lang_flag = false;
         bool lang2_flag = false;
 
         buf.skipBits(1);
         disp << margin << UString::Format(u"Mixinfo exists: %s", {mixinfo}) << std::endl;
-        disp << margin << UString::Format(u"Full service: %s", {buf.getBit() != 0}) << std::endl;
+        disp << margin << UString::Format(u"Full service: %s", {buf.getBool()}) << std::endl;
         disp << margin << "Audio service type: " << NameFromSection(u"EAC3AudioServiceType", buf.getBits<uint8_t>(3), names::VALUE) << std::endl;
         disp << margin << "Num. channels: " << NameFromSection(u"ATSCEAC3NumChannels", buf.getBits<uint8_t>(3), names::VALUE) << std::endl;
 
         if (buf.canRead()) {
-            lang_flag = buf.getBit() != 0;
-            lang2_flag = buf.getBit() != 0;
+            lang_flag = buf.getBool();
+            lang2_flag = buf.getBool();
             buf.skipBits(1);
             if (bsid_flag) {
                 disp << margin << UString::Format(u"Bit stream id (bsid): 0x%X (%<d)", {buf.getBits<uint8_t>(5)}) << std::endl;

@@ -166,7 +166,7 @@ void ts::ATSCAC3AudioStreamDescriptor::deserializePayload(PSIBuffer& buf)
     surround_mode = buf.getBits<uint8_t>(2);
     bsmod = buf.getBits<uint8_t>(3);
     num_channels = buf.getBits<uint8_t>(4);
-    full_svc = buf.getBit() != 0;
+    full_svc = buf.getBool();
 
     // End of descriptor allowed here
     if (buf.endOfRead()) {
@@ -208,7 +208,7 @@ void ts::ATSCAC3AudioStreamDescriptor::deserializePayload(PSIBuffer& buf)
 
     // Deserialize text. Can be ISO Latin-1 or UTF-16.
     const size_t textlen = buf.getBits<size_t>(7);
-    const bool latin1 = buf.getBit() != 0;
+    const bool latin1 = buf.getBool();
     buf.getString(text, textlen, latin1 ? static_cast<const Charset*>(&DVBCharTableSingleByte::RAW_ISO_8859_1) : static_cast<const Charset*>(&DVBCharTableUTF16::RAW_UNICODE));
 
     // End of descriptor allowed here
@@ -217,8 +217,8 @@ void ts::ATSCAC3AudioStreamDescriptor::deserializePayload(PSIBuffer& buf)
     }
 
     // Decode one byte flags.
-    const bool has_language = buf.getBit() != 0;
-    const bool has_language_2 = buf.getBit() != 0;
+    const bool has_language = buf.getBool();
+    const bool has_language_2 = buf.getBool();
     buf.skipBits(6);
 
     // End of descriptor allowed here
@@ -256,7 +256,7 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         disp << margin << "Bitstream mode: " << NameFromSection(u"AC3BitStreamMode", bsmod, names::VALUE) << std::endl;
         const uint8_t channels = buf.getBits<uint8_t>(4);
         disp << margin << "Num. channels: " << NameFromSection(u"ATSCAC3NumChannels", channels, names::VALUE) << std::endl;
-        disp << margin << UString::Format(u"Full service: %s", {buf.getBit() != 0}) << std::endl;
+        disp << margin << UString::Format(u"Full service: %s", {buf.getBool()}) << std::endl;
 
         // Ignore langcode and langcode2, deprecated
         buf.skipBits(8);
@@ -279,7 +279,7 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         // Decode text.
         if (buf.canRead()) {
             const size_t textlen = buf.getBits<size_t>(7);
-            const bool latin1 = buf.getBit() != 0;
+            const bool latin1 = buf.getBool();
             const Charset* charset = latin1 ? static_cast<const Charset*>(&DVBCharTableSingleByte::RAW_ISO_8859_1) : static_cast<const Charset*>(&DVBCharTableUTF16::RAW_UNICODE);
             disp << margin << "Text: \"" << buf.getString(textlen, charset) << "\"" << std::endl;
         }
@@ -288,8 +288,8 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         bool has_lang = false;
         bool has_lang2 = false;
         if (buf.canRead()) {
-            has_lang = buf.getBit() != 0;
-            has_lang2 = buf.getBit() != 0;
+            has_lang = buf.getBool();
+            has_lang2 = buf.getBool();
             buf.skipBits(6);
         }
 

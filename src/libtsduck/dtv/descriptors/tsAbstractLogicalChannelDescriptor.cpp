@@ -99,7 +99,7 @@ void ts::AbstractLogicalChannelDescriptor::deserializePayload(PSIBuffer& buf)
     while (buf.canRead()) {
         Entry e;
         e.service_id = buf.getUInt16();
-        e.visible = buf.getBit() != 0;
+        e.visible = buf.getBool();
         buf.skipBits(5);
         e.lcn = buf.getBits<uint16_t>(10);
         entries.push_back(e);

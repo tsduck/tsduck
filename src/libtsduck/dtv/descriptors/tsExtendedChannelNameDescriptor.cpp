@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -70,24 +71,14 @@ ts::ExtendedChannelNameDescriptor::ExtendedChannelNameDescriptor(DuckContext& du
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedChannelNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ExtendedChannelNameDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    long_channel_name_text.serialize(duck, *bbp);
-    serializeEnd(desc, bbp);
+    buf.putMultipleString(long_channel_name_text);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::ExtendedChannelNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ExtendedChannelNameDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    long_channel_name_text.clear();
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && long_channel_name_text.deserialize(duck, data, size);
+    buf.getMultipleString(long_channel_name_text);
 }
 
 
@@ -95,16 +86,14 @@ void ts::ExtendedChannelNameDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ExtendedChannelNameDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ExtendedChannelNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-    ATSCMultipleString::Display(disp, u"Long channel name: ", margin, data, size);
-    disp.displayExtraData(data, size, margin);
+    disp.displayATSCMultipleString(buf, 0, margin, u"Long channel name: ");
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::ExtendedChannelNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

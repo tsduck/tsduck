@@ -39,17 +39,17 @@
 namespace ts {
     //!
     //! Representation of a DVB AC-4_descriptor.
-    //! @see ETSI 300 468, D.7.
+    //! @see ETSI EN 300 468, D.7.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL DVBAC4Descriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        Variable<bool>    ac4_dialog_enhancement_enabled; //!< See ETSI 300 468, D.7.
-        Variable<uint8_t> ac4_channel_mode;               //!< 2 bits, see ETSI 300 468, D.7.
-        ByteBlock         ac4_dsi_toc;                    //!< See ETSI 300 468, D.7.
-        ByteBlock         additional_info;                //!< See ETSI 300 468, D.7.
+        Variable<bool>    ac4_dialog_enhancement_enabled; //!< See ETSI EN 300 468, D.7.
+        Variable<uint8_t> ac4_channel_mode;               //!< 2 bits, see ETSI EN 300 468, D.7.
+        ByteBlock         ac4_dsi_toc;                    //!< See ETSI EN 300 468, D.7.
+        ByteBlock         additional_info;                //!< See ETSI EN 300 468, D.7.
 
         //!
         //! Default constructor.

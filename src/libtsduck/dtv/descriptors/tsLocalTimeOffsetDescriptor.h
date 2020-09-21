@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of a local_time_offset_descriptor.
-    //! @see ETSI 300 468, 6.2.20.
+    //! @see ETSI EN 300 468, 6.2.20.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL LocalTimeOffsetDescriptor : public AbstractDescriptor

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -81,25 +82,26 @@ void ts::AVCTimingAndHRDDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AVCTimingAndHRDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::AVCTimingAndHRDDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
     const bool has_90kHz = N_90khz.set() && K_90khz.set();
     const bool info_present = num_units_in_tick.set();
-    bbp->appendUInt8((hrd_management_valid ? 0x80 : 0x00) | 0x7E | (info_present ? 0x01 : 0x00));
+    buf.putBit(hrd_management_valid);
+    buf.putBits(0xFF, 6);
+    buf.putBit(info_present);
     if (info_present) {
-        bbp->appendUInt8((has_90kHz ? 0x80 : 0x00) | 0x7F);
+        buf.putBit(has_90kHz);
+        buf.putBits(0xFF, 7);
         if (has_90kHz) {
-            bbp->appendUInt32(N_90khz.value());
-            bbp->appendUInt32(K_90khz.value());
+            buf.putUInt32(N_90khz.value());
+            buf.putUInt32(K_90khz.value());
         }
-        bbp->appendUInt32(num_units_in_tick.value());
+        buf.putUInt32(num_units_in_tick.value());
     }
-    bbp->appendUInt8((fixed_frame_rate ? 0x80 : 0x00) |
-                     (temporal_poc ? 0x40 : 0x00) |
-                     (picture_to_display_conversion ? 0x20 : 0x00) |
-                     0x1F);
-    serializeEnd(desc, bbp);
+    buf.putBit(fixed_frame_rate);
+    buf.putBit(temporal_poc);
+    buf.putBit(picture_to_display_conversion);
+    buf.putBits(0xFF, 5);
 }
 
 
@@ -107,47 +109,24 @@ void ts::AVCTimingAndHRDDescriptor::serialize(DuckContext& duck, Descriptor& des
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AVCTimingAndHRDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2;
-
-    N_90khz.clear();
-    K_90khz.clear();
-    num_units_in_tick.clear();
-
-    if (_is_valid) {
-        hrd_management_valid = (data[0] & 0x80) != 0;
-        const bool info_present = (data[0] & 0x01) != 0;
-        data++; size--;
-
-        if (info_present) {
-            const bool has_90kHz = (data[0] & 0x80) != 0;
-            data++; size--;
-            _is_valid = (!has_90kHz && size >= 4) || (has_90kHz && size >= 12);
-            if (_is_valid) {
-                if (has_90kHz) {
-                    N_90khz = GetUInt32(data);
-                    K_90khz = GetUInt32(data + 4);
-                    data += 8; size -= 8;
-                }
-                num_units_in_tick = GetUInt32(data);
-                data += 4; size -= 4;
-            }
+    hrd_management_valid = buf.getBool();
+    buf.skipBits(6);
+    const bool info_present = buf.getBool();
+    if (info_present) {
+        const bool has_90kHz = buf.getBool();
+        buf.skipBits(7);
+        if (has_90kHz) {
+            N_90khz = buf.getUInt32();
+            K_90khz = buf.getUInt32();
         }
-
-        _is_valid = _is_valid && size == 1;
-        if (_is_valid) {
-            fixed_frame_rate = (data[0] & 0x80) != 0;
-            temporal_poc = (data[0] & 0x40) != 0;
-            picture_to_display_conversion = (data[0] & 0x20) != 0;
-            data++; size--;
-        }
+        num_units_in_tick = buf.getUInt32();
     }
-
-    _is_valid = _is_valid && size == 0;
+    fixed_frame_rate = buf.getBool();
+    temporal_poc = buf.getBool();
+    picture_to_display_conversion = buf.getBool();
+    buf.skipBits(5);
 }
 
 

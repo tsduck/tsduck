@@ -38,21 +38,21 @@
 namespace ts {
     //!
     //! Representation of a DTS_descriptor.
-    //! @see ETSI 300 468, G.2.1.
+    //! @see ETSI EN 300 468, G.2.1.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL DTSDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        uint8_t   sample_rate_code;     //!< 4 bits, see ETSI 300 468, G.2.1.
-        uint8_t   bit_rate_code;        //!< 6 bits, see ETSI 300 468, G.2.1.
-        uint8_t   nblks;                //!< 7 bits, see ETSI 300 468, G.2.1.
-        uint16_t  fsize;                //!< 14 bits, see ETSI 300 468, G.2.1.
-        uint8_t   surround_mode;        //!< 6 bits, see ETSI 300 468, G.2.1.
-        bool      lfe;                  //!< See ETSI 300 468, G.2.1.
-        uint8_t   extended_surround;    //!< 2 bits, see ETSI 300 468, G.2.1.
-        ByteBlock additional_info;      //!< See ETSI 300 468, G.2.1.
+        uint8_t   sample_rate_code;     //!< 4 bits, see ETSI EN 300 468, G.2.1.
+        uint8_t   bit_rate_code;        //!< 6 bits, see ETSI EN 300 468, G.2.1.
+        uint8_t   nblks;                //!< 7 bits, see ETSI EN 300 468, G.2.1.
+        uint16_t  fsize;                //!< 14 bits, see ETSI EN 300 468, G.2.1.
+        uint8_t   surround_mode;        //!< 6 bits, see ETSI EN 300 468, G.2.1.
+        bool      lfe;                  //!< See ETSI EN 300 468, G.2.1.
+        uint8_t   extended_surround;    //!< 2 bits, see ETSI EN 300 468, G.2.1.
+        ByteBlock additional_info;      //!< See ETSI EN 300 468, G.2.1.
 
         //!
         //! Default constructor.

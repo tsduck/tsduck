@@ -105,7 +105,7 @@ void ts::MPEGH3DAudioDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::MPEGH3DAudioDescriptor::deserializePayload(PSIBuffer& buf)
 {
     mpegh_3da_profile_level_indication = buf.getUInt8();
-    interactivity_enabled = buf.getBit() != 0;
+    interactivity_enabled = buf.getBool();
     buf.skipBits(9);
     reference_channel_layout = buf.getBits<uint8_t>(6);
     buf.getBytes(reserved);
@@ -120,7 +120,7 @@ void ts::MPEGH3DAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
 {
     if (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"3D-audio profile level indication: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-        disp << margin << UString::Format(u"Interactivity enabled: %s", {buf.getBit() != 0}) << std::endl;
+        disp << margin << UString::Format(u"Interactivity enabled: %s", {buf.getBool()}) << std::endl;
         buf.skipBits(9);
         disp << margin << UString::Format(u"Reference channel layout: 0x%X (%<d)", {buf.getBits<uint8_t>(6)}) << std::endl;
         disp.displayPrivateData(u"Reserved data", buf, NPOS, margin);

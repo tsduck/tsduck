@@ -163,8 +163,8 @@ void ts::T2DeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
         buf.skipBits(2);
         guard_interval = buf.getBits<uint8_t>(3);
         transmission_mode = buf.getBits<uint8_t>(3);
-        other_frequency = buf.getBit() != 0;
-        tfs = buf.getBit() != 0;
+        other_frequency = buf.getBool();
+        tfs = buf.getBool();
         while (buf.canRead()) {
             Cell cell;
             cell.cell_id = buf.getUInt16();

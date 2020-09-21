@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a announcement_support_descriptor
-    //! @see ETSI 300 468, 6.2.3.
+    //! @see ETSI EN 300 468, 6.2.3.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL AnnouncementSupportDescriptor : public AbstractDescriptor

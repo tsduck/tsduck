@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of an S2_satellite_delivery_system_descriptor.
-    //! @see ETSI 300 468, 6.2.13.3.
+    //! @see ETSI EN 300 468, 6.2.13.3.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL S2SatelliteDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
@@ -47,10 +47,10 @@ namespace ts {
     public:
         // Public members:
         bool               backwards_compatibility_indicator;   //!< Deprecated.
-        uint8_t            TS_GS_mode;                          //!< See ETSI 300 468, 6.2.13.3.
-        Variable<uint32_t> scrambling_sequence_index;           //!< See ETSI 300 468, 6.2.13.3, 18-bit value.
-        Variable<uint8_t>  input_stream_identifier;             //!< See ETSI 300 468, 6.2.13.3.
-        Variable<uint8_t>  timeslice_number;                    //!< See ETSI 300 468, 6.2.13.3.
+        uint8_t            TS_GS_mode;                          //!< See ETSI EN 300 468, 6.2.13.3.
+        Variable<uint32_t> scrambling_sequence_index;           //!< See ETSI EN 300 468, 6.2.13.3, 18-bit value.
+        Variable<uint8_t>  input_stream_identifier;             //!< See ETSI EN 300 468, 6.2.13.3.
+        Variable<uint8_t>  timeslice_number;                    //!< See ETSI EN 300 468, 6.2.13.3.
 
         //!
         //! Default constructor.

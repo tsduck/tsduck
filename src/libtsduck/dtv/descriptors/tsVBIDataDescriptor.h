@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a VBI_data_descriptor.
-    //! @see ETSI 300 468, 6.2.47.
+    //! @see ETSI EN 300 468, 6.2.47.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL VBIDataDescriptor : public AbstractDescriptor

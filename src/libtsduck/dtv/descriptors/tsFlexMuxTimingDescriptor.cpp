@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -75,34 +76,20 @@ ts::FlexMuxTimingDescriptor::FlexMuxTimingDescriptor(DuckContext& duck, const De
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::FlexMuxTimingDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::FlexMuxTimingDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(FCR_ES_ID);
-    bbp->appendUInt32(FCRResolution);
-    bbp->appendUInt8(FCRLength);
-    bbp->appendUInt8(FmxRateLength);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(FCR_ES_ID);
+    buf.putUInt32(FCRResolution);
+    buf.putUInt8(FCRLength);
+    buf.putUInt8(FmxRateLength);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::FlexMuxTimingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::FlexMuxTimingDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 8;
-
-    if (_is_valid) {
-        FCR_ES_ID = GetUInt16(data);
-        FCRResolution = GetUInt32(data + 2);
-        FCRLength = GetUInt8(data + 6);
-        FmxRateLength = GetUInt8(data + 7);
-    }
+    FCR_ES_ID = buf.getUInt16();
+    FCRResolution = buf.getUInt32();
+    FCRLength = buf.getUInt8();
+    FmxRateLength = buf.getUInt8();
 }
 
 
@@ -110,23 +97,15 @@ void ts::FlexMuxTimingDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::FlexMuxTimingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::FlexMuxTimingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 8) {
-        const uint16_t id = GetUInt16(data);
-        const uint32_t res = GetUInt32(data + 2);
-        const uint8_t len = GetUInt8(data + 6);
-        const uint8_t fmx = GetUInt8(data + 7);
-        data += 8; size -= 8;
-        disp << margin << UString::Format(u"FCR ES ID: 0x%X (%d)", {id, id}) << std::endl
-             << margin << UString::Format(u"FCR resolution: %'d cycles/second", {res}) << std::endl
-             << margin << UString::Format(u"FCR length: %'d", {len}) << std::endl
-             << margin << UString::Format(u"FMX rate length: %d", {fmx}) << std::endl;
+    if (buf.canReadBytes(8)) {
+        disp << margin << UString::Format(u"FCR ES ID: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"FCR resolution: %'d cycles/second", {buf.getUInt32()}) << std::endl;
+        disp << margin << UString::Format(u"FCR length: %'d", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"FMX rate length: %d", {buf.getUInt8()}) << std::endl;
     }
 
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -141,11 +120,6 @@ void ts::FlexMuxTimingDescriptor::buildXML(DuckContext& duck, xml::Element* root
     root->setIntAttribute(u"FCRLength", FCRLength);
     root->setIntAttribute(u"FmxRateLength", FmxRateLength);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::FlexMuxTimingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

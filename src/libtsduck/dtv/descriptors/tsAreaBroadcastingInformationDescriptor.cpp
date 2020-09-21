@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -79,18 +80,16 @@ ts::AreaBroadcastingInformationDescriptor::Station::Station() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AreaBroadcastingInformationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::AreaBroadcastingInformationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(stations.size()));
+    buf.putUInt8(uint8_t(stations.size()));
     for (auto it = stations.begin(); it != stations.end(); ++it) {
-        bbp->appendUInt24(it->station_id);
-        bbp->appendUInt16(it->location_code);
-        bbp->appendUInt8(it->broadcast_signal_format);
-        bbp->appendUInt8(uint8_t(it->additional_station_info.size()));
-        bbp->append(it->additional_station_info);
+        buf.putUInt24(it->station_id);
+        buf.putUInt16(it->location_code);
+        buf.putUInt8(it->broadcast_signal_format);
+        buf.putUInt8(uint8_t(it->additional_station_info.size()));
+        buf.putBytes(it->additional_station_info);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -98,36 +97,17 @@ void ts::AreaBroadcastingInformationDescriptor::serialize(DuckContext& duck, Des
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AreaBroadcastingInformationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::AreaBroadcastingInformationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    stations.clear();
-
-    if (_is_valid) {
-        size_t count = data[0];
-        data++; size--;
-
-        while (_is_valid && count > 0 && size >= 7) {
-            Station st;
-            st.station_id = GetUInt24(data);
-            st.location_code = GetUInt16(data + 3);
-            st.broadcast_signal_format = GetUInt8(data + 5);
-            const size_t len = GetUInt8(data + 6);
-            data += 7; size -= 7;
-
-            if (len > size) {
-                _is_valid = false;
-            }
-            else {
-                st.additional_station_info.copy(data, len);
-                data += len; size -= len; count--;
-                stations.push_back(st);
-            }
-        }
-        _is_valid = _is_valid && size == 0 && count == 0;
+    const size_t count = buf.getUInt8();
+    for (size_t i = 0; i < count && buf.canRead(); ++i) {
+        Station st;
+        st.station_id = buf.getUInt24();
+        st.location_code = buf.getUInt16();
+        st.broadcast_signal_format = buf.getUInt8();
+        const size_t len = buf.getUInt8();
+        buf.getBytes(st.additional_station_info, len);
+        stations.push_back(st);
     }
 }
 

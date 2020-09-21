@@ -157,7 +157,7 @@ void ts::SpliceInformationTable::deserializePayload(PSIBuffer& buf, const Sectio
 
     // Fixed part.
     protocol_version = buf.getUInt8();
-    const bool encrypted = buf.getBit() != 0;
+    const bool encrypted = buf.getBool();
     buf.skipBits(6); // skip encryption_algorithm
     pts_adjustment = buf.getBits<uint64_t>(33);
     buf.skipBits(8); // skip cw_index

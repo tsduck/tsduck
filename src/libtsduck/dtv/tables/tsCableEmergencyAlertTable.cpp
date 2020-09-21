@@ -206,7 +206,7 @@ void ts::CableEmergencyAlertTable::deserializePayload(PSIBuffer& buf, const Sect
     count = buf.getUInt8();
     while (!buf.readError() && count-- > 0) {
         Exception exc;
-        exc.in_band = buf.getBit() != 0;
+        exc.in_band = buf.getBool();
         buf.skipBits(7);
         if (exc.in_band) {
             buf.skipBits(6);
@@ -465,7 +465,7 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts:
         disp << margin << UString::Format(u"Number of exceptions: %d", {count}) << std::endl;
     }
     while (buf.canReadBytes(5) && count-- > 0) {
-        const bool inband = buf.getBit() != 0;
+        const bool inband = buf.getBool();
         buf.skipBits(7);
         disp << margin << UString::Format(u"  In-band: %s", {inband});
         if (inband) {

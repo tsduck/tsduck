@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a cell_frequency_link_descriptor
-    //! @see ETSI 300 468, 6.2.6.
+    //! @see ETSI EN 300 468, 6.2.6.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL CellFrequencyLinkDescriptor : public AbstractDescriptor

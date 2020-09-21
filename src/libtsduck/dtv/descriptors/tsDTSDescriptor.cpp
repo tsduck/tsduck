@@ -109,7 +109,7 @@ void ts::DTSDescriptor::deserializePayload(PSIBuffer& buf)
     nblks = buf.getBits<uint8_t>(7);
     fsize = buf.getBits<uint16_t>(14);
     surround_mode = buf.getBits<uint8_t>(6);
-    lfe = buf.getBit() != 0;
+    lfe = buf.getBool();
     extended_surround = buf.getBits<uint8_t>(2);
     buf.getBytes(additional_info);
 }

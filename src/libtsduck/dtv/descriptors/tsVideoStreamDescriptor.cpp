@@ -107,15 +107,15 @@ void ts::VideoStreamDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::VideoStreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    multiple_frame_rate = buf.getBit() != 0;
+    multiple_frame_rate = buf.getBool();
     frame_rate_code = buf.getBits<uint8_t>(4);
-    MPEG_1_only = buf.getBit() != 0;
-    constrained_parameter = buf.getBit() != 0;
-    still_picture = buf.getBit() != 0;
+    MPEG_1_only = buf.getBool();
+    constrained_parameter = buf.getBool();
+    still_picture = buf.getBool();
     if (!MPEG_1_only) {
         profile_and_level_indication = buf.getUInt8();
         chroma_format = buf.getBits<uint8_t>(2);
-        frame_rate_extension = buf.getBit() != 0;
+        frame_rate_extension = buf.getBool();
         buf.skipBits(5);
     }
 }
@@ -128,15 +128,15 @@ void ts::VideoStreamDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::VideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canRead()) {
-        disp << margin << UString::Format(u"Multiple frame rate: %s", {buf.getBit() != 0});
+        disp << margin << UString::Format(u"Multiple frame rate: %s", {buf.getBool()});
         disp << ", frame rate: " << NameFromSection(u"FrameRate", buf.getBits<uint8_t>(4), names::FIRST) << std::endl;
-        const bool mp1only = buf.getBit() != 0;
-        disp << margin << UString::Format(u"MPEG-1 only: %s, constained parameter: %s", {mp1only, buf.getBit() != 0});
-        disp << UString::Format(u", still picture: %s", {buf.getBit() != 0}) << std::endl;
+        const bool mp1only = buf.getBool();
+        disp << margin << UString::Format(u"MPEG-1 only: %s, constained parameter: %s", {mp1only, buf.getBool()});
+        disp << UString::Format(u", still picture: %s", {buf.getBool()}) << std::endl;
         if (!mp1only && buf.canRead()) {
             disp << margin << UString::Format(u"Profile and level: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
             disp << margin << "Chroma format: " << NameFromSection(u"ChromaFormat", buf.getBits<uint8_t>(2), names::FIRST) << std::endl;
-            disp << margin << UString::Format(u"Frame rate extension: %s", {buf.getBit() != 0}) << std::endl;
+            disp << margin << UString::Format(u"Frame rate extension: %s", {buf.getBool()}) << std::endl;
             buf.skipBits(5);
         }
     }

@@ -39,17 +39,17 @@
 namespace ts {
     //!
     //! Representation of an AAC_descriptor.
-    //! @see ETSI 300 468, H.2.1.
+    //! @see ETSI EN 300 468, H.2.1.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL AACDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        uint8_t           profile_and_level;  //!< See ETSI 300 468, H.2.1.
-        bool              SAOC_DE;            //!< See ETSI 300 468, H.2.1.
-        Variable<uint8_t> AAC_type;           //!< See ETSI 300 468, H.2.1.
-        ByteBlock         additional_info;    //!< See ETSI 300 468, H.2.1.
+        uint8_t           profile_and_level;  //!< See ETSI EN 300 468, H.2.1.
+        bool              SAOC_DE;            //!< See ETSI EN 300 468, H.2.1.
+        Variable<uint8_t> AAC_type;           //!< See ETSI EN 300 468, H.2.1.
+        ByteBlock         additional_info;    //!< See ETSI EN 300 468, H.2.1.
 
         //!
         //! Default constructor.

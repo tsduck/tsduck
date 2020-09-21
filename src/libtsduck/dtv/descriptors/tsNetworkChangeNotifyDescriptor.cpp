@@ -150,7 +150,7 @@ void ts::NetworkChangeNotifyDescriptor::deserializePayload(PSIBuffer& buf)
             const SubSecond seconds = buf.getBCD<SubSecond>(2);
             ch.change_duration = (hours * 3600) + (minutes * 60) + seconds;
             ch.receiver_category = buf.getBits<uint8_t>(3);
-            const bool invariant_ts_present = buf.getBit() != 0;
+            const bool invariant_ts_present = buf.getBool();
             ch.change_type = buf.getBits<uint8_t>(4);
             ch.message_id = buf.getUInt8();
             if (invariant_ts_present) {

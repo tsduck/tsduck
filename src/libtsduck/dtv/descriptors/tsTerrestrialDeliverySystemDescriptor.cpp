@@ -118,9 +118,9 @@ void ts::TerrestrialDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
     centre_frequency = uint64_t(buf.getUInt32()) * 10; // coded in 10 Hz unit
     bandwidth = buf.getBits<uint8_t>(3);
-    high_priority = buf.getBit() != 0;
-    no_time_slicing = buf.getBit() != 0;
-    no_mpe_fec = buf.getBit() != 0;
+    high_priority = buf.getBool();
+    no_time_slicing = buf.getBool();
+    no_mpe_fec = buf.getBool();
     buf.skipBits(2);
     constellation = buf.getBits<uint8_t>(2);
     hierarchy = buf.getBits<uint8_t>(3);
@@ -128,7 +128,7 @@ void ts::TerrestrialDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
     code_rate_lp = buf.getBits<uint8_t>(3);
     guard_interval = buf.getBits<uint8_t>(2);
     transmission_mode = buf.getBits<uint8_t>(2);
-    other_frequency = buf.getBit() != 0;
+    other_frequency = buf.getBool();
     buf.skipBits(32);
 }
 

@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -70,28 +71,14 @@ void ts::DataStreamAlignmentDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DataStreamAlignmentDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DataStreamAlignmentDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(alignment_type);
-    serializeEnd(desc, bbp);
+    buf.putUInt8(alignment_type);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::DataStreamAlignmentDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DataStreamAlignmentDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 1;
-
-    if (_is_valid) {
-        alignment_type = data[0];
-    }
+    alignment_type = buf.getUInt8();
 }
 
 
@@ -99,16 +86,11 @@ void ts::DataStreamAlignmentDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DataStreamAlignmentDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DataStreamAlignmentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        disp << margin << "Alignment type: " << NameFromSection(u"DataStreamAlignment", data[0], names::BOTH_FIRST) << std::endl;
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        disp << margin << "Alignment type: " << NameFromSection(u"DataStreamAlignment", buf.getUInt8(), names::BOTH_FIRST) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

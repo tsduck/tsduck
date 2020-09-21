@@ -100,8 +100,8 @@ void ts::AACDescriptor::deserializePayload(PSIBuffer& buf)
 {
     profile_and_level = buf.getUInt8();
     if (buf.canRead()) {
-        bool has_AAC_type = buf.getBit() != 0;
-        SAOC_DE = buf.getBit() != 0;
+        bool has_AAC_type = buf.getBool();
+        SAOC_DE = buf.getBool();
         buf.skipBits(6);
         if (has_AAC_type) {
             AAC_type = buf.getUInt8();
@@ -122,8 +122,8 @@ void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, c
     }
 
     if (buf.canRead()) {
-        bool has_AAC_type = buf.getBit() != 0;
-        disp << margin << UString::Format(u"SOAC DE flag: %s", {buf.getBit() != 0}) << std::endl;
+        bool has_AAC_type = buf.getBool();
+        disp << margin << UString::Format(u"SOAC DE flag: %s", {buf.getBool()}) << std::endl;
         buf.skipBits(6);
         if (has_AAC_type) {
             disp << margin << "AAC type: " << NameFromSection(u"ComponentType", 0x6F00 | buf.getUInt8(), names::HEXA_FIRST, 8) << std::endl;

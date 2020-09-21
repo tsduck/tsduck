@@ -150,7 +150,7 @@ void ts::ImageIconDescriptor::deserializePayload(PSIBuffer& buf)
 
     if (descriptor_number == 0) {
         icon_transport_mode = buf.getBits<uint8_t>(2);
-        has_position = buf.getBit() != 0;
+        has_position = buf.getBool();
         if (has_position) {
             coordinate_system = buf.getBits<uint8_t>(3);
             buf.skipBits(2);

@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a cell_list_descriptor
-    //! @see ETSI 300 468, 6.2.7.
+    //! @see ETSI EN 300 468, 6.2.7.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL CellListDescriptor : public AbstractDescriptor

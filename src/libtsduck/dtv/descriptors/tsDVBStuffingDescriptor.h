@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of a DVB stuffing_descriptor.
-    //! @see ETSI 300 468, 6.2.40.
+    //! @see ETSI EN 300 468, 6.2.40.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL DVBStuffingDescriptor : public AbstractDescriptor

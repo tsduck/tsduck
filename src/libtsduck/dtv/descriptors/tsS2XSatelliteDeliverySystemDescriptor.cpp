@@ -182,7 +182,7 @@ void ts::S2XSatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf
     receiver_profiles = buf.getBits<uint8_t>(5);
     buf.skipBits(3);
     S2X_mode = buf.getBits<uint8_t>(2);
-    scrambling_sequence_selector = buf.getBit() != 0;
+    scrambling_sequence_selector = buf.getBool();
     buf.skipBits(3);
     TS_GS_S2X_mode = buf.getBits<uint8_t>(2);
     if (scrambling_sequence_selector) {
@@ -195,7 +195,7 @@ void ts::S2XSatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf
     }
     if (S2X_mode == 3) {
         buf.skipBits(7);
-        num_channel_bonds_minus_one = buf.getBit() != 0;
+        num_channel_bonds_minus_one = buf.getBool();
         deserializeChannel(channel_bond_0, buf);
         if (num_channel_bonds_minus_one) {
             deserializeChannel(channel_bond_1, buf);
@@ -209,9 +209,9 @@ void ts::S2XSatelliteDeliverySystemDescriptor::deserializeChannel(Channel& chann
 {
     channel.frequency = buf.getBCD<uint64_t>(8) * 10000;  // unit is 10 Hz
     channel.orbital_position = buf.getBCD<uint16_t>(4);
-    channel.east_not_west = buf.getBit() != 0;
+    channel.east_not_west = buf.getBool();
     channel.polarization = buf.getBits<uint8_t>(2);
-    channel.multiple_input_stream_flag = buf.getBit() != 0;
+    channel.multiple_input_stream_flag = buf.getBool();
     buf.skipBits(1);
     channel.roll_off = buf.getBits<uint8_t>(3);
     buf.skipBits(4);

@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of a frequency_list_descriptor
-    //! @see ETSI 300 468, 6.2.17.
+    //! @see ETSI EN 300 468, 6.2.17.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL FrequencyListDescriptor : public AbstractDescriptor
