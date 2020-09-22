@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -73,31 +74,16 @@ ts::TargetSmartcardDescriptor::TargetSmartcardDescriptor(DuckContext& duck, cons
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetSmartcardDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TargetSmartcardDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt32(super_CA_system_id);
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.putUInt32(super_CA_system_id);
+    buf.putBytes(private_data);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::TargetSmartcardDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TargetSmartcardDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4;
-    private_data.clear();
-
-    if (_is_valid) {
-        super_CA_system_id = GetUInt32(data);
-        private_data.copy(data + 4, size - 4);
-    }
+    super_CA_system_id = buf.getUInt32();
+    buf.getBytes(private_data);
 }
 
 
@@ -105,17 +91,11 @@ void ts::TargetSmartcardDescriptor::deserialize(DuckContext& duck, const Descrip
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetSmartcardDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TargetSmartcardDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        const uint32_t id = GetUInt32(data);
-        disp << margin << UString::Format(u"Super CAS Id: 0x%X (%d)", {id, id}) << std::endl
-             << margin << UString::Format(u"Private data (%d bytes): %s", {size - 4, UString::Dump(data + 4, size - 4, UString::SINGLE_LINE)}) << std::endl;
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+    if (buf.canReadBytes(4)) {
+        disp << margin << UString::Format(u"Super CAS Id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }
 
@@ -129,11 +109,6 @@ void ts::TargetSmartcardDescriptor::buildXML(DuckContext& duck, xml::Element* ro
     root->setIntAttribute(u"super_CA_system_id", super_CA_system_id, true);
     root->addHexaText(private_data, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::TargetSmartcardDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

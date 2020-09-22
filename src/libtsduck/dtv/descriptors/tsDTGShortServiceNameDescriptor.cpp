@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -70,28 +71,14 @@ void ts::DTGShortServiceNameDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DTGShortServiceNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DTGShortServiceNameDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.encoded(name));
-    serializeEnd(desc, bbp);
+    buf.putString(name);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::DTGShortServiceNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DTGShortServiceNameDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag();
-
-    if (_is_valid) {
-        duck.decode(name, desc.payload(), desc.payloadSize());
-    }
-    else {
-        name.clear();
-    }
+    buf.getString(name);
 }
 
 
@@ -99,10 +86,9 @@ void ts::DTGShortServiceNameDescriptor::deserialize(DuckContext& duck, const Des
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTGShortServiceNameDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::DTGShortServiceNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-    disp << margin << "Name: \"" << disp.duck().decoded(payload, size) << "\"" << std::endl;
+    disp << margin << "Name: \"" << buf.getString() << "\"" << std::endl;
 }
 
 
@@ -114,11 +100,6 @@ void ts::DTGShortServiceNameDescriptor::buildXML(DuckContext& duck, xml::Element
 {
     root->setAttribute(u"name", name);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::DTGShortServiceNameDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

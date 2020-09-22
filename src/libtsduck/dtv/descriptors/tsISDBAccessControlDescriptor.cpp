@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -77,13 +78,12 @@ ts::ISDBAccessControlDescriptor::ISDBAccessControlDescriptor(DuckContext& duck, 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ISDBAccessControlDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ISDBAccessControlDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(CA_system_id);
-    bbp->appendUInt16(uint16_t(uint16_t(transmission_type & 0x07) << 13) | pid);
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(CA_system_id);
+    buf.putBits(transmission_type, 3);
+    buf.putPID(pid);
+    buf.putBytes(private_data);
 }
 
 
@@ -91,18 +91,12 @@ void ts::ISDBAccessControlDescriptor::serialize(DuckContext& duck, Descriptor& d
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISDBAccessControlDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ISDBAccessControlDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 4;
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        CA_system_id = GetUInt16(data);
-        transmission_type = (data[2] >> 5) & 0x07;
-        pid = GetUInt16(data + 2) & 0x1FFF;
-        private_data.copy(data + 4, size - 4);
-    }
+    CA_system_id = buf.getUInt16();
+    transmission_type = buf.getBits<uint8_t>(3);
+    pid = buf.getPID();
+    buf.getBytes(private_data);
 }
 
 

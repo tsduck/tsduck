@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -78,18 +79,18 @@ ts::NodeRelationDescriptor::NodeRelationDescriptor(DuckContext& duck, const Desc
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::NodeRelationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::NodeRelationDescriptor::serializePayload(PSIBuffer& buf) const
 {
     const bool has_external = information_provider_id.set() && event_relation_id.set();
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(reference_type << 4) | (has_external ? 0x0F : 0x07));
+    buf.putBits(reference_type, 4);
+    buf.putBit(has_external);
+    buf.putBits(0xFF, 3);
     if (has_external) {
-        bbp->appendUInt16(information_provider_id.value());
-        bbp->appendUInt16(event_relation_id.value());
+        buf.putUInt16(information_provider_id.value());
+        buf.putUInt16(event_relation_id.value());
     }
-    bbp->appendUInt16(reference_node_id);
-    bbp->appendUInt8(reference_number);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(reference_node_id);
+    buf.putUInt8(reference_number);
 }
 
 
@@ -97,30 +98,17 @@ void ts::NodeRelationDescriptor::serialize(DuckContext& duck, Descriptor& desc) 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::NodeRelationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::NodeRelationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4;
-
-    information_provider_id.clear();
-    event_relation_id.clear();
-
-    if (_is_valid) {
-        reference_type = (data[0] >> 4) & 0x0F;
-        const bool has_external = (data[0] & 0x08) != 0;
-        data++; size--;
-        _is_valid = size == size_t(has_external ? 7 : 3);
-        if (_is_valid) {
-            if (has_external) {
-                information_provider_id = GetUInt16(data);
-                event_relation_id = GetUInt16(data + 2);
-                data += 4; size -= 4;
-            }
-            reference_node_id = GetUInt16(data);
-            reference_number = data[2];
-        }
+    reference_type = buf.getBits<uint8_t>(4);
+    const bool has_external = buf.getBool();
+    buf.skipBits(3);
+    if (has_external) {
+        information_provider_id = buf.getUInt16();
+        event_relation_id = buf.getUInt16();
     }
+    reference_node_id = buf.getUInt16();
+    reference_number = buf.getUInt8();
 }
 
 

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -70,25 +71,14 @@ ts::SimpleApplicationLocationDescriptor::SimpleApplicationLocationDescriptor(Duc
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationLocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SimpleApplicationLocationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.encoded(initial_path));
-    serializeEnd(desc, bbp);
+    buf.putString(initial_path);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::SimpleApplicationLocationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SimpleApplicationLocationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag();
-
-    if (_is_valid) {
-        duck.decode(initial_path, desc.payload(), desc.payloadSize());
-    }
+    buf.getString(initial_path);
 }
 
 
@@ -96,16 +86,14 @@ void ts::SimpleApplicationLocationDescriptor::deserialize(DuckContext& duck, con
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SimpleApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    disp << margin << "Initial path: \"" << disp.duck().decoded(data, size) << "\"" << std::endl;
+    disp << margin << "Initial path: \"" << buf.getString() << "\"" << std::endl;
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::SimpleApplicationLocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -77,34 +78,20 @@ ts::SystemManagementDescriptor::SystemManagementDescriptor(DuckContext& duck, co
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SystemManagementDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SystemManagementDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(broadcasting_flag << 6) | (broadcasting_identifier & 0x3F));
-    bbp->appendUInt8(additional_broadcasting_identification);
-    bbp->append(additional_identification_info);
-    serializeEnd(desc, bbp);
+    buf.putBits(broadcasting_flag, 2);
+    buf.putBits(broadcasting_identifier, 6);
+    buf.putUInt8(additional_broadcasting_identification);
+    buf.putBytes(additional_identification_info);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::SystemManagementDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SystemManagementDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2;
-
-    additional_identification_info.clear();
-
-    if (_is_valid) {
-        broadcasting_flag = (data[0] >> 6) & 0x03;
-        broadcasting_identifier = data[0] & 0x3F;
-        additional_broadcasting_identification = data[1];
-        additional_identification_info.copy(data + 2, size - 2);
-    }
+    broadcasting_flag = buf.getBits<uint8_t>(2);
+    broadcasting_identifier = buf.getBits<uint8_t>(6);
+    additional_broadcasting_identification = buf.getUInt8();
+    buf.getBytes(additional_identification_info);
 }
 
 
@@ -112,18 +99,13 @@ void ts::SystemManagementDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SystemManagementDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SystemManagementDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size < 2) {
-        disp.displayExtraData(data, size, margin);
-    }
-    else {
-        disp << margin << "Broadcasting flag: " << NameFromSection(u"SystemManagementBroadcasting", (data[0] >> 6) & 0x03, names::DECIMAL_FIRST) << std::endl
-             << margin << "Broadcasting identifier: " << NameFromSection(u"SystemManagementIdentifier", data[0] & 0x3F, names::DECIMAL_FIRST) << std::endl
-             << margin << UString::Format(u"Additional broadcasting id: 0x%X (%d)", {data[1], data[1]}) << std::endl;
-        disp.displayPrivateData(u"Additional identification info", data + 2, size - 2, margin);
+    if (buf.canReadBytes(2)) {
+        disp << margin << "Broadcasting flag: " << NameFromSection(u"SystemManagementBroadcasting", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Broadcasting identifier: " << NameFromSection(u"SystemManagementIdentifier", buf.getBits<uint8_t>(6), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << UString::Format(u"Additional broadcasting id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp.displayPrivateData(u"Additional identification info", buf, NPOS, margin);
     }
 }
 
@@ -139,11 +121,6 @@ void ts::SystemManagementDescriptor::buildXML(DuckContext& duck, xml::Element* r
     root->setIntAttribute(u"additional_broadcasting_identification", additional_broadcasting_identification, true);
     root->addHexaTextChild(u"additional_identification_info", additional_identification_info, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::SystemManagementDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

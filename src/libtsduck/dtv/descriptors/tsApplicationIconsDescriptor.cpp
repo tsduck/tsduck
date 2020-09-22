@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -80,36 +81,18 @@ ts::ApplicationIconsDescriptor::ApplicationIconsDescriptor(DuckContext& duck, co
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationIconsDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ApplicationIconsDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.encodedWithByteLength(icon_locator));
-    bbp->appendUInt16(icon_flags);
-    bbp->append(reserved_future_use);
-    serializeEnd(desc, bbp);
+    buf.putStringWithByteLength(icon_locator);
+    buf.putUInt16(icon_flags);
+    buf.putBytes(reserved_future_use);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::ApplicationIconsDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ApplicationIconsDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    icon_locator.clear();
-    reserved_future_use.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1 && size >= size_t(data[0]) + 3;
-
-    if (_is_valid) {
-        duck.decodeWithByteLength(icon_locator, data, size);
-        assert(size >= 2);
-        icon_flags = GetUInt16(data);
-        reserved_future_use.copy(data + 2, size - 2);
-    }
+    buf.getStringWithByteLength(icon_locator);
+    icon_flags = buf.getUInt16();
+    buf.getBytes(reserved_future_use);
 }
 
 
@@ -147,11 +130,6 @@ void ts::ApplicationIconsDescriptor::buildXML(DuckContext& duck, xml::Element* r
     root->setIntAttribute(u"icon_flags", icon_flags, true);
     root->addHexaTextChild(u"reserved_future_use", reserved_future_use, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::ApplicationIconsDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
