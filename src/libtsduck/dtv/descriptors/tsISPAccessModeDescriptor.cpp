@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -76,28 +77,14 @@ void ts::ISPAccessModeDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ISPAccessModeDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ISPAccessModeDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(access_mode);
-    serializeEnd(desc, bbp);
+    buf.putUInt8(access_mode);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::ISPAccessModeDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ISPAccessModeDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 1;
-
-    if (_is_valid) {
-        access_mode = data[0];
-    }
+    access_mode = buf.getUInt8();
 }
 
 
@@ -105,16 +92,12 @@ void ts::ISPAccessModeDescriptor::deserialize(DuckContext& duck, const Descripto
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ISPAccessModeDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ISPAccessModeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        disp << margin << UString::Format(u"Access mode: 0x%X (%s)", {data[0], AccessModeNames.name(data[0])}) << std::endl;
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        const uint8_t mode = buf.getUInt8();
+        disp << margin << UString::Format(u"Access mode: 0x%X (%s)", {mode, AccessModeNames.name(mode)}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -126,11 +109,6 @@ void ts::ISPAccessModeDescriptor::buildXML(DuckContext& duck, xml::Element* root
 {
     root->setIntEnumAttribute(AccessModeNames, u"access_mode", access_mode);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::ISPAccessModeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

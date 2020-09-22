@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -75,25 +76,14 @@ ts::ApplicationUsageDescriptor::ApplicationUsageDescriptor(DuckContext& duck, co
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationUsageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ApplicationUsageDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(usage_type);
-    serializeEnd(desc, bbp);
+    buf.putUInt8(usage_type);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::ApplicationUsageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ApplicationUsageDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 1;
-
-    if (_is_valid) {
-        usage_type = GetUInt8(desc.payload());
-    }
+    usage_type = buf.getUInt8();
 }
 
 
@@ -101,22 +91,16 @@ void ts::ApplicationUsageDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ApplicationUsageDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ApplicationUsageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        uint8_t type = data[0];
-        data += 1; size -= 1;
-        disp << margin << UString::Format(u"Usage type: %d (0x%X)", {type, type}) << std::endl;
+    if (buf.canReadBytes(1)) {
+        disp << margin << UString::Format(u"Usage type: %d (0x%<X)", {buf.getUInt8()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::ApplicationUsageDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

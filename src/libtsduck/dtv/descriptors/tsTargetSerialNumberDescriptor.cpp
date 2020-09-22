@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -71,28 +72,14 @@ ts::TargetSerialNumberDescriptor::TargetSerialNumberDescriptor(DuckContext& duck
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetSerialNumberDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TargetSerialNumberDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(serial_data);
-    serializeEnd(desc, bbp);
+    buf.putBytes(serial_data);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::TargetSerialNumberDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TargetSerialNumberDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag();
-
-    if (_is_valid) {
-        serial_data.copy(desc.payload(), desc.payloadSize());
-    }
-    else {
-        serial_data.clear();
-    }
+    buf.getBytes(serial_data);
 }
 
 
@@ -100,18 +87,14 @@ void ts::TargetSerialNumberDescriptor::deserialize(DuckContext& duck, const Desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetSerialNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TargetSerialNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    disp << margin
-         << UString::Format(u"Serial number (%d bytes): %s", {size, UString::Dump(data, size, UString::SINGLE_LINE)})
-         << std::endl;
+    disp.displayPrivateData(u"Serial number", buf, NPOS, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::TargetSerialNumberDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

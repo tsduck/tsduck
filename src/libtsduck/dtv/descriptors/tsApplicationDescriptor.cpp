@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -86,20 +87,21 @@ ts::ApplicationDescriptor::Profile::Profile() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ApplicationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(5 * profiles.size()));
+    buf.pushWriteSequenceWithLeadingLength(8); // application_profiles_length
     for (auto it = profiles.begin(); it != profiles.end(); ++it) {
-        bbp->appendUInt16(it->application_profile);
-        bbp->appendUInt8(it->version_major);
-        bbp->appendUInt8(it->version_minor);
-        bbp->appendUInt8(it->version_micro);
+        buf.putUInt16(it->application_profile);
+        buf.putUInt8(it->version_major);
+        buf.putUInt8(it->version_minor);
+        buf.putUInt8(it->version_micro);
     }
-    bbp->appendUInt8((service_bound ? 0x80 : 0x00) | uint8_t((visibility & 0x03) << 5) | 0x1F);
-    bbp->appendUInt8(application_priority);
-    bbp->append(transport_protocol_labels);
-    serializeEnd(desc, bbp);
+    buf.popState(); // update application_profiles_length
+    buf.putBit(service_bound);
+    buf.putBits(visibility, 2);
+    buf.putBits(0xFF, 5);
+    buf.putUInt8(application_priority);
+    buf.putBytes(transport_protocol_labels);
 }
 
 
@@ -107,38 +109,23 @@ void ts::ApplicationDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ApplicationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    profiles.clear();
-    transport_protocol_labels.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-    size_t profiles_count = 0;
-
-    if (_is_valid) {
-        _is_valid = data[0] % 5 == 0 && size >= size_t(1 + data[0]);
-        profiles_count = data[0] / 5;
-        data++; size--;
-    }
-    while (_is_valid && profiles_count-- > 0) {
+    buf.pushReadSizeFromLength(8); // application_profiles_length
+    while (buf.canRead()) {
         Profile p;
-        p.application_profile = GetUInt16(data);
-        p.version_major = data[2];
-        p.version_minor = data[3];
-        p.version_micro = data[4];
-        data += 5; size -= 5;
+        p.application_profile = buf.getUInt16();
+        p.version_major = buf.getUInt8();
+        p.version_minor = buf.getUInt8();
+        p.version_micro = buf.getUInt8();
         profiles.push_back(p);
     }
-    _is_valid = _is_valid && size >= 2;
-    if (_is_valid) {
-        service_bound = (data[0] & 0x80) != 0;
-        visibility = (data[0] >> 5) & 0x03;
-        application_priority = data[1];
-        transport_protocol_labels.copy(data + 2, size - 2);
-    }
+    buf.popState(); // update application_profiles_length
+    service_bound = buf.getBool();
+    visibility = buf.getBits<uint8_t>(2);
+    buf.skipBits(5);
+    application_priority = buf.getUInt8();
+    buf.getBytes(transport_protocol_labels);
 }
 
 

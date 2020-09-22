@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -74,13 +75,11 @@ void ts::SSUURIDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SSUURIDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SSUURIDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(max_holdoff_time);
-    bbp->appendUInt8(min_polling_interval);
-    bbp->append(duck.encoded(uri));
-    serializeEnd(desc, bbp);
+    buf.putUInt8(max_holdoff_time);
+    buf.putUInt8(min_polling_interval);
+    buf.putString(uri);
 }
 
 
@@ -88,21 +87,11 @@ void ts::SSUURIDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSUURIDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SSUURIDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2;
-
-    if (_is_valid) {
-        max_holdoff_time = data[0];
-        min_polling_interval = data[1];
-        duck.decode(uri, data + 2, size - 2);
-    }
-    else {
-        uri.clear();
-    }
+    max_holdoff_time = buf.getUInt8();
+    min_polling_interval = buf.getUInt8();
+    buf.getString(uri);
 }
 
 
@@ -110,17 +99,12 @@ void ts::SSUURIDescriptor::deserialize(DuckContext& duck, const Descriptor& desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSUURIDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SSUURIDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 2) {
-        disp << margin << UString::Format(u"Max holdoff time: %d minutes", {data[0]}) << std::endl
-             << margin << UString::Format(u"Min polling interval: %d hours", {data[1]}) << std::endl
-             << margin << "URI: \"" << disp.duck().decoded(data + 2, size - 2) << "\"" << std::endl;
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+    if (buf.canReadBytes(2)) {
+        disp << margin << UString::Format(u"Max holdoff time: %d minutes", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Min polling interval: %d hours", {buf.getUInt8()}) << std::endl;
+        disp << margin << "URI: \"" << buf.getString() << "\"" << std::endl;
     }
 }
 

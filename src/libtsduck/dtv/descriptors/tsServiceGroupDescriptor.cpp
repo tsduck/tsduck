@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsMJD.h"
@@ -82,20 +83,19 @@ ts::ServiceGroupDescriptor::SimultaneousService::SimultaneousService() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceGroupDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ServiceGroupDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(service_group_type << 4) | 0x0F);
+    buf.putBits(service_group_type, 4);
+    buf.putBits(0xFF, 4);
     if (service_group_type == 1) {
         for (auto it = simultaneous_services.begin(); it != simultaneous_services.end(); ++it) {
-            bbp->appendUInt16(it->primary_service_id);
-            bbp->appendUInt16(it->secondary_service_id);
+            buf.putUInt16(it->primary_service_id);
+            buf.putUInt16(it->secondary_service_id);
         }
     }
     else {
-        bbp->append(private_data);
+        buf.putBytes(private_data);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -103,32 +103,20 @@ void ts::ServiceGroupDescriptor::serialize(DuckContext& duck, Descriptor& desc) 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceGroupDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ServiceGroupDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    simultaneous_services.clear();
-    private_data.clear();
-
-    if (_is_valid) {
-        service_group_type = (data[0] >> 4) & 0x0F;
-        data++; size--;
-
-        if (service_group_type == 1) {
-            while (size >= 4) {
-                SimultaneousService ss;
-                ss.primary_service_id = GetUInt16(data);
-                ss.secondary_service_id = GetUInt16(data + 2);
-                simultaneous_services.push_back(ss);
-                data += 4; size -= 4;
-            }
-            _is_valid = size == 0;
+    service_group_type = buf.getBits<uint8_t>(4);
+    buf.skipBits(4);
+    if (service_group_type == 1) {
+        while (buf.canRead()) {
+            SimultaneousService ss;
+            ss.primary_service_id = buf.getUInt16();
+            ss.secondary_service_id = buf.getUInt16();
+            simultaneous_services.push_back(ss);
         }
-        else {
-            private_data.copy(data, size);
-        }
+    }
+    else {
+        buf.getBytes(private_data);
     }
 }
 
@@ -137,26 +125,21 @@ void ts::ServiceGroupDescriptor::deserialize(DuckContext& duck, const Descriptor
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ServiceGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ServiceGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        const uint8_t type = (data[0] >> 4) & 0x0F;
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        const uint8_t type = buf.getBits<uint8_t>(4);
+        buf.skipBits(4);
         disp << margin << "Group type: " << NameFromSection(u"ISDBServiceGroupType", type, names::DECIMAL_FIRST) << std::endl;
-
         if (type == 1) {
-            disp << margin << "Simultaneous services:" << (size < 4 ? " none" : "") << std::endl;
-            while (size >= 4) {
-                disp << margin << UString::Format(u"- Primary service id:   0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-                     << margin << UString::Format(u"  Secondary service id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl;
-                data += 4; size -= 4;
+            disp << margin << "Simultaneous services:" << (buf.canRead() ? "" : " none") << std::endl;
+            while (buf.canReadBytes(4)) {
+                disp << margin << UString::Format(u"- Primary service id:   0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                disp << margin << UString::Format(u"  Secondary service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
             }
-            disp.displayExtraData(data, size, margin);
         }
         else {
-            disp.displayPrivateData(u"Private data", data, size, margin);
+            disp.displayPrivateData(u"Private data", buf, NPOS, margin);
         }
     }
 }

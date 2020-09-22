@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsMJD.h"
@@ -82,17 +83,15 @@ ts::SIParameterDescriptor::Entry::Entry() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SIParameterDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SIParameterDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(parameter_version);
-    EncodeMJD(update_time, bbp->enlarge(2), 2);  // date only
+    buf.putUInt8(parameter_version);
+    buf.putMJD(update_time, 2);  // 2 bytes: date only
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt8(it->table_id);
-        bbp->appendUInt8(uint8_t(it->table_description.size()));
-        bbp->append(it->table_description);
+        buf.putUInt8(it->table_id);
+        buf.putUInt8(uint8_t(it->table_description.size()));
+        buf.putBytes(it->table_description);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -100,26 +99,16 @@ void ts::SIParameterDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SIParameterDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SIParameterDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 3;
-    entries.clear();
-
-    if (_is_valid) {
-        parameter_version = data[0];
-        DecodeMJD(data + 1, 2, update_time);
-        data += 3; size -= 3;
-
-        while (size >= 2) {
-            Entry e;
-            e.table_id = data[0];
-            const size_t len = std::min<size_t>(data[1], size - 2);
-            e.table_description.copy(data + 2, len);
-            entries.push_back(e);
-            data += 2 + len; size -= 2 + len;
-        }
+    parameter_version = buf.getUInt8();
+    update_time = buf.getMJD(2); // 2 bytes: date only
+    while (buf.canRead()) {
+        Entry e;
+        e.table_id = buf.getUInt8();
+        const size_t len = buf.getUInt8();
+        buf.getBytes(e.table_description, len);
+        entries.push_back(e);
     }
 }
 

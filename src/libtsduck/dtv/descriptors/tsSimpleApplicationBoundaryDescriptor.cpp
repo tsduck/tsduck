@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -70,14 +71,12 @@ ts::SimpleApplicationBoundaryDescriptor::SimpleApplicationBoundaryDescriptor(Duc
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationBoundaryDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SimpleApplicationBoundaryDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(boundary_extension.size()));
+    buf.putUInt8(uint8_t(boundary_extension.size()));
     for (auto it = boundary_extension.begin(); it != boundary_extension.end(); ++it) {
-        bbp->append(duck.encodedWithByteLength(*it));
+        buf.putStringWithByteLength(*it);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -85,21 +84,11 @@ void ts::SimpleApplicationBoundaryDescriptor::serialize(DuckContext& duck, Descr
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationBoundaryDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SimpleApplicationBoundaryDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    boundary_extension.clear();
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        const size_t count = data[0];
-        data++; size--;
-        while (size > 0) {
-            boundary_extension.push_back(duck.decodedWithByteLength(data, size));
-        }
-        _is_valid = count == boundary_extension.size();
+    const size_t count = buf.getUInt8();
+    for (size_t i = 0; i < count && buf.canRead(); ++i) {
+        boundary_extension.push_back(buf.getStringWithByteLength());
     }
 }
 
@@ -108,17 +97,14 @@ void ts::SimpleApplicationBoundaryDescriptor::deserialize(DuckContext& duck, con
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SimpleApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size > 0) {
-        disp << margin << UString::Format(u"Number of prefixes: %d", {data[0]}) << std::endl;
-        data++; size--;
-    }
-
-    while (size > 0) {
-        disp << margin << "Boundary extension: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
+    if (buf.canReadBytes(1)) {
+        const size_t count = buf.getUInt8();
+        disp << margin << UString::Format(u"Number of prefixes: %d", {count}) << std::endl;
+        for (size_t i = 0; i < count && buf.canRead(); ++i) {
+            disp << margin << "Boundary extension: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
+        }
     }
 }
 

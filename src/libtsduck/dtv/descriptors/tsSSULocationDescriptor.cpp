@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -75,15 +76,13 @@ ts::SSULocationDescriptor::SSULocationDescriptor(DuckContext& duck, const Descri
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SSULocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SSULocationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(data_broadcast_id);
+    buf.putUInt16(data_broadcast_id);
     if (data_broadcast_id == 0x000A) {
-        bbp->appendUInt16(association_tag);
+        buf.putUInt16(association_tag);
     }
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.putBytes(private_data);
 }
 
 
@@ -91,28 +90,13 @@ void ts::SSULocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSULocationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SSULocationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2;
-    private_data.clear();
-
-    if (_is_valid) {
-        data_broadcast_id = GetUInt16(data);
-        data += 2; size -= 2;
-        if (data_broadcast_id == 0x000A) {
-            if (size < 2) {
-                _is_valid = false;
-            }
-            else {
-                association_tag = GetUInt16(data);
-                data += 2; size -= 2;
-            }
-        }
-        private_data.copy(data, size);
+    data_broadcast_id = buf.getUInt16();
+    if (data_broadcast_id == 0x000A) {
+        association_tag = buf.getUInt16();
     }
+    buf.getBytes(private_data);
 }
 
 
@@ -120,24 +104,15 @@ void ts::SSULocationDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSULocationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SSULocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 2) {
-        const uint16_t id = GetUInt16(data);
-        data += 2; size -= 2;
+    if (buf.canReadBytes(2)) {
+        const uint16_t id = buf.getUInt16();
         disp << margin << "Data broadcast id: " << names::DataBroadcastId(id, names::HEXA_FIRST) << std::endl;
-
-        if (id == 0x000A && size >= 2) {
-            const uint16_t tag = GetUInt16(data);
-            data += 2; size -= 2;
-            disp << margin << UString::Format(u"Association tag: 0x%X (%d)", {tag, tag}) << std::endl;
+        if (id == 0x000A && buf.canReadBytes(2)) {
+            disp << margin << UString::Format(u"Association tag: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }
-        disp.displayPrivateData(u"Private data", data, size, margin);
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }
 
@@ -152,9 +127,7 @@ void ts::SSULocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
     if (data_broadcast_id == 0x000A) {
         root->setIntAttribute(u"association_tag", association_tag, true);
     }
-    if (!private_data.empty()) {
-        root->addHexaTextChild(u"private_data", private_data);
-    }
+    root->addHexaTextChild(u"private_data", private_data, true);
 }
 
 

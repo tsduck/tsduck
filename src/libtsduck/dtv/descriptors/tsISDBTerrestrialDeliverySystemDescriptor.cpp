@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -77,16 +78,14 @@ ts::ISDBTerrestrialDeliverySystemDescriptor::ISDBTerrestrialDeliverySystemDescri
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ISDBTerrestrialDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ISDBTerrestrialDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(uint16_t(area_code << 4) |
-                      uint16_t((guard_interval & 0x03) << 2) |
-                      (transmission_mode & 0x03));
+    buf.putBits(area_code, 12);
+    buf.putBits(guard_interval, 2);
+    buf.putBits(transmission_mode, 2);
     for (auto it = frequencies.begin(); it != frequencies.end(); ++it) {
-        bbp->appendUInt16(HzToBin(*it));
+        buf.putUInt16(HzToBin(*it));
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -94,25 +93,13 @@ void ts::ISDBTerrestrialDeliverySystemDescriptor::serialize(DuckContext& duck, D
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISDBTerrestrialDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ISDBTerrestrialDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2 && size % 2 == 0;
-
-    frequencies.clear();
-    if (_is_valid) {
-        const uint16_t v = GetUInt16(data);
-        data += 2; size -= 2;
-
-        area_code = (v >> 4) & 0x0FFF;
-        guard_interval = uint8_t((v >> 2) & 0x03);
-        transmission_mode = uint8_t(v & 0x03);
-
-        while (size >= 2) {
-            frequencies.push_back(BinToHz(GetUInt16(data)));
-            data += 2; size -= 2;
-        }
+    area_code = buf.getBits<uint16_t>(12);
+    guard_interval = buf.getBits<uint8_t>(2);
+    transmission_mode = buf.getBits<uint8_t>(2);
+    while (buf.canRead()) {
+        frequencies.push_back(BinToHz(buf.getUInt16()));
     }
 }
 

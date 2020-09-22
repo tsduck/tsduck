@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -81,16 +82,15 @@ ts::ContentAvailabilityDescriptor::ContentAvailabilityDescriptor(DuckContext& du
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ContentAvailabilityDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ContentAvailabilityDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8((copy_restriction_mode ? 0xC0 : 0x80) |
-                     (image_constraint_token ? 0x20 : 0x00) |
-                     (retention_mode ? 0x10 : 0x00) |
-                     uint8_t((retention_state & 0x07) << 1) |
-                     (encryption_mode ? 0x01 : 0x00));
-    bbp->append(reserved_future_use);
-    serializeEnd(desc, bbp);
+    buf.putBit(1);
+    buf.putBit(copy_restriction_mode);
+    buf.putBit(image_constraint_token);
+    buf.putBit(retention_mode);
+    buf.putBits(retention_state, 3);
+    buf.putBit(encryption_mode);
+    buf.putBytes(reserved_future_use);
 }
 
 
@@ -98,22 +98,15 @@ void ts::ContentAvailabilityDescriptor::serialize(DuckContext& duck, Descriptor&
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ContentAvailabilityDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ContentAvailabilityDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    reserved_future_use.clear();
-
-    if (_is_valid) {
-        copy_restriction_mode = (data[0] & 0x40) != 0;
-        image_constraint_token = (data[0] & 0x20) != 0;
-        retention_mode = (data[0] & 0x10) != 0;
-        retention_state = (data[0] >> 1) & 0x07;
-        encryption_mode = (data[0] & 0x01) != 0;
-        reserved_future_use.copy(data + 1, size - 1);
-    }
+    buf.skipBits(1);
+    copy_restriction_mode = buf.getBool();
+    image_constraint_token = buf.getBool();
+    retention_mode = buf.getBool();
+    retention_state = buf.getBits<uint8_t>(3);
+    encryption_mode = buf.getBool();
+    buf.getBytes(reserved_future_use);
 }
 
 

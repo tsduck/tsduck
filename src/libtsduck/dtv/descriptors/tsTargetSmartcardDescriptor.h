@@ -45,7 +45,7 @@ namespace ts {
     //! because its tag reuses an MPEG-defined one.
     //!
     //! @see ETSI EN 301 192, 8.4.5.5
-    //! @see ETSI TS 102 006, 6.5.2.1
+    //! @see ETSI TS 102 006, 9.5.2.1
     //! @ingroup descriptor
     //!
     class TSDUCKDLL TargetSmartcardDescriptor : public AbstractDescriptor
@@ -68,13 +68,13 @@ namespace ts {
         TargetSmartcardDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };

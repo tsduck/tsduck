@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -72,30 +73,16 @@ void ts::TransportProfileDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TransportProfileDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TransportProfileDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(transport_profile);
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.putUInt8(transport_profile);
+    buf.putBytes(private_data);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::TransportProfileDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TransportProfileDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        transport_profile = data[0];
-        private_data.copy(data + 1, size - 1);
-    }
+    transport_profile = buf.getUInt8();
+    buf.getBytes(private_data);
 }
 
 
@@ -103,13 +90,11 @@ void ts::TransportProfileDescriptor::deserialize(DuckContext& duck, const Descri
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TransportProfileDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TransportProfileDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (size > 0) {
-        const UString margin(indent, ' ');
-
-        disp << margin << "Transport profile: " << NameFromSection(u"TransportProfile", data[0], names::HEXA_FIRST) << std::endl;
-        disp.displayPrivateData(u"Private data", data + 1, size - 1, margin);
+    if (buf.canReadBytes(1)) {
+        disp << margin << "Transport profile: " << NameFromSection(u"TransportProfile", buf.getUInt8(), names::HEXA_FIRST) << std::endl;
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }
 
@@ -123,11 +108,6 @@ void ts::TransportProfileDescriptor::buildXML(DuckContext& duck, xml::Element* r
     root->setIntAttribute(u"transport_profile", transport_profile, true);
     root->addHexaTextChild(u"private_data", private_data, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::TransportProfileDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
