@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -72,35 +73,16 @@ void ts::EASMetadataDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EASMetadataDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::EASMetadataDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    const std::string utf8(XML_fragment.toUTF8());
-    const size_t length = std::min<size_t>(253, utf8.size());
-
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(fragment_number);
-    bbp->appendUInt8(uint8_t(length));
-    bbp->append(utf8.data(), length);
-    serializeEnd(desc, bbp);
+    buf.putUInt8(fragment_number);
+    buf.putUTF8WithLength(XML_fragment);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::EASMetadataDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::EASMetadataDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2;
-
-    if (_is_valid) {
-        fragment_number = data[0];
-        const size_t length = std::min<size_t>(data[1], size - 2);
-        XML_fragment.assignFromUTF8(reinterpret_cast<const char*>(data + 2), length);
-    }
+    fragment_number = buf.getUInt8();
+    buf.getUTF8WithLength(XML_fragment);
 }
 
 
@@ -111,14 +93,12 @@ void ts::EASMetadataDescriptor::deserialize(DuckContext& duck, const Descriptor&
 void ts::EASMetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     const UString margin(indent, ' ');
-
     if (size >= 2) {
         const size_t length = std::min<size_t>(data[1], size - 2);
         disp << margin << "Fragment number: " << int(data[0]) << std::endl
              << margin << "XML fragment: \"" << std::string(reinterpret_cast<const char*>(data + 2), length) << "\"" << std::endl;
         data += 2 + length; size -=  2 + length;
     }
-
     disp.displayExtraData(data, size, margin);
 }
 
@@ -132,11 +112,6 @@ void ts::EASMetadataDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
     root->setIntAttribute(u"fragment_number", fragment_number, false);
     root->addText(XML_fragment, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::EASMetadataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

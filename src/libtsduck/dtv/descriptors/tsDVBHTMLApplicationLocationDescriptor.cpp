@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -72,37 +73,16 @@ ts::DVBHTMLApplicationLocationDescriptor::DVBHTMLApplicationLocationDescriptor(D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationLocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DVBHTMLApplicationLocationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.encodedWithByteLength(physical_root));
-    bbp->append(duck.encoded(initial_path));
-    serializeEnd(desc, bbp);
+    buf.putStringWithByteLength(physical_root);
+    buf.putString(initial_path);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::DVBHTMLApplicationLocationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DVBHTMLApplicationLocationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    physical_root.clear();
-    initial_path.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        const size_t len = data[0];
-        _is_valid = len + 1 <= size;
-        if (_is_valid) {
-            duck.decode(physical_root, data + 1, len);
-            duck.decode(initial_path, data + 1 + len, size - len - 1);
-        }
-    }
+    buf.getStringWithByteLength(physical_root);
+    buf.getString(initial_path);
 }
 
 
@@ -134,11 +114,6 @@ void ts::DVBHTMLApplicationLocationDescriptor::buildXML(DuckContext& duck, xml::
     root->setAttribute(u"physical_root", physical_root);
     root->setAttribute(u"initial_path", initial_path);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::DVBHTMLApplicationLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

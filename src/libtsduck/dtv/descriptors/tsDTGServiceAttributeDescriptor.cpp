@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -77,14 +78,14 @@ void ts::DTGServiceAttributeDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DTGServiceAttributeDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DTGServiceAttributeDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt16(it->service_id);
-        bbp->appendUInt8((it->numeric_selection ? 0xFE : 0xFC) | (it->visible_service ? 0x01 : 0x00));
+        buf.putUInt16(it->service_id);
+        buf.putBits(0xFF, 6);
+        buf.putBit(it->numeric_selection);
+        buf.putBit(it->visible_service);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -92,18 +93,15 @@ void ts::DTGServiceAttributeDescriptor::serialize(DuckContext& duck, Descriptor&
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DTGServiceAttributeDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DTGServiceAttributeDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size % 3 == 0;
-    entries.clear();
-
-    if (_is_valid) {
-        while (size >= 3) {
-            entries.push_back(Entry(GetUInt16(data), (data[2] & 0x02) != 0, (data[2] & 0x01) != 0));
-            data += 3; size -= 3;
-        }
+    while (buf.canRead()) {
+        Entry e;
+        e.service_id = buf.getUInt16();
+        buf.skipBits(6);
+        e.numeric_selection = buf.getBool();
+        e.visible_service = buf.getBool();
+        entries.push_back(e);
     }
 }
 

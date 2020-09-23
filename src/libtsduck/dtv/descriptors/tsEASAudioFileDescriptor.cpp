@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -83,35 +84,30 @@ ts::EASAudioFileDescriptor::Entry::Entry() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EASAudioFileDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::EASAudioFileDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(entries.size()));
+    buf.putUInt8(uint8_t(entries.size()));
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        const size_t loop_length_index = bbp->size();
-        bbp->appendUInt8(0); // place-holder for loop_length
-        bbp->appendUInt8((it->file_name.empty() ? 0x00 : 0x80) | (it->audio_format & 0x7F));
+        buf.pushWriteSequenceWithLeadingLength(8); // loop_length
+        buf.putBit(!it->file_name.empty());
+        buf.putBits(it->audio_format, 7);
         if (!it->file_name.empty()) {
-            const std::string utf8(it->file_name.toUTF8());
-            bbp->appendUInt8(uint8_t(utf8.size()));
-            bbp->append(utf8);
+            buf.putUTF8WithLength(it->file_name);
         }
-        bbp->appendUInt8(it->audio_source);
+        buf.putUInt8(it->audio_source);
         if (it->audio_source == 0x01) {
-            bbp->appendUInt16(it->program_number);
-            bbp->appendUInt32(it->carousel_id);
-            bbp->appendUInt16(it->application_id);
+            buf.putUInt16(it->program_number);
+            buf.putUInt32(it->carousel_id);
+            buf.putUInt16(it->application_id);
         }
         else if (it->audio_source == 0x02) {
-            bbp->appendUInt16(it->program_number);
-            bbp->appendUInt32(it->download_id);
-            bbp->appendUInt32(it->module_id);
-            bbp->appendUInt16(it->application_id);
+            buf.putUInt16(it->program_number);
+            buf.putUInt32(it->download_id);
+            buf.putUInt32(it->module_id);
+            buf.putUInt16(it->application_id);
         }
-        // Update loop_length;
-        (*bbp)[loop_length_index] = uint8_t(bbp->size() - loop_length_index - 1);
+        buf.popState(); // update loop_length;
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -119,74 +115,32 @@ void ts::EASAudioFileDescriptor::serialize(DuckContext& duck, Descriptor& desc) 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EASAudioFileDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::EASAudioFileDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    entries.clear();
-    _is_valid = false;
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    if (!desc.isValid() || desc.tag() != tag() || size == 0) {
-        return;
-    }
-
-    // Number of audio sources.
-    size_t count = data[0];
-    data++; size--;
-
-    while (count-- > 0) {
+    const size_t number_of_audio_sources = buf.getUInt8();
+    for (size_t i = 0; i < number_of_audio_sources && buf.canRead(); ++i) {
         Entry entry;
-        size_t loop_length = size == 0 ? 0 : data[0];
-        if (loop_length < 2 || size < 1 + loop_length) {
-            return; // loop instance does not fit here
-        }
-        const bool file_name_present = (data[1] & 0x80) != 0;
-        entry.audio_format = data[1] & 0x7F;
-        data += 2; size -= 2;
-        loop_length--;
+        buf.pushReadSizeFromLength(8); // loop_length
+        const bool file_name_present = buf.getBool();
+        buf.getBits(entry.audio_format, 7);
         if (file_name_present) {
-            if (loop_length == 0 || 1 + size_t(data[0]) > loop_length) {
-                return;
-            }
-            const size_t file_name_length = data[0];
-            entry.file_name.assignFromUTF8(reinterpret_cast<const char*>(data + 1), file_name_length);
-            data += 1 + file_name_length; size -= 1 + file_name_length;
-            loop_length -= 1 + file_name_length;
+            buf.getUTF8WithLength(entry.file_name);
         }
-        if (loop_length < 1) {
-            return;
-        }
-        entry.audio_source = data[0];
-        data++; size--;
-        loop_length--;
+        entry.audio_source = buf.getUInt8();
         if (entry.audio_source == 0x01) {
-            if (loop_length < 8) {
-                return;
-            }
-            entry.program_number = GetUInt16(data);
-            entry.carousel_id = GetUInt32(data + 2);
-            entry.application_id = GetUInt16(data + 6);
-            data += 8; size -= 8;
-            loop_length -= 8;
+            entry.program_number = buf.getUInt16();
+            entry.carousel_id = buf.getUInt32();
+            entry.application_id = buf.getUInt16();
         }
         else if (entry.audio_source == 0x02) {
-            if (loop_length < 12) {
-                return;
-            }
-            entry.program_number = GetUInt16(data);
-            entry.download_id = GetUInt32(data + 2);
-            entry.module_id = GetUInt32(data + 6);
-            entry.application_id = GetUInt16(data + 10);
-            data += 12; size -= 12;
-            loop_length -= 12;
+            entry.program_number = buf.getUInt16();
+            entry.download_id = buf.getUInt32();
+            entry.module_id = buf.getUInt32();
+            entry.application_id = buf.getUInt16();
         }
-        // Skip unused part of loop instance, if any.
-        data += loop_length; size -= loop_length;
+        buf.popState(); // end of loop_length;
         entries.push_back(entry);
     }
-
-    _is_valid = true;
 }
 
 

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -80,17 +81,15 @@ ts::ApplicationStorageDescriptor::ApplicationStorageDescriptor(DuckContext& duck
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationStorageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ApplicationStorageDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(storage_property);
-    bbp->appendUInt8((not_launchable_from_broadcast ? 0x80 : 0x00) |
-                     (launchable_completely_from_cache ? 0x40 : 0x00) |
-                     (is_launchable_with_older_version ? 0x20 : 0x00) |
-                     0x1F);
-    bbp->appendUInt32(0x80000000 | version);
-    bbp->appendUInt8(priority);
-    serializeEnd(desc, bbp);
+    buf.putUInt8(storage_property);
+    buf.putBit(not_launchable_from_broadcast);
+    buf.putBit(launchable_completely_from_cache);
+    buf.putBit(is_launchable_with_older_version);
+    buf.putBits(0xFF, 6);
+    buf.putBits(version, 31);
+    buf.putUInt8(priority);
 }
 
 
@@ -98,21 +97,15 @@ void ts::ApplicationStorageDescriptor::serialize(DuckContext& duck, Descriptor& 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationStorageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ApplicationStorageDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 7;
-
-    if (_is_valid) {
-        storage_property = data[0];
-        not_launchable_from_broadcast = (data[1] & 0x80) != 0;
-        launchable_completely_from_cache = (data[1] & 0x40) != 0;
-        is_launchable_with_older_version = (data[1] & 0x20) != 0;
-        version = GetUInt32(data + 2) & 0x7FFFFFFF;
-        priority = data[6];
-    }
+    storage_property = buf.getUInt8();
+    not_launchable_from_broadcast = buf.getBool();
+    launchable_completely_from_cache = buf.getBool();
+    is_launchable_with_older_version = buf.getBool();
+    buf.skipBits(6);
+    buf.getBits(version, 31);
+    priority = buf.getUInt8();
 }
 
 

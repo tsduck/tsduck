@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -77,23 +78,20 @@ ts::ContentAdvisoryDescriptor::Entry::Entry() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ContentAdvisoryDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ContentAdvisoryDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(0xC0 | (entries.size() & 0x3F)));
+    buf.putBits(0xFF, 2);
+    buf.putBits(entries.size(), 6);
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt8(it->rating_region);
-        bbp->appendUInt8(uint8_t(it->rating_values.size()));
+        buf.putUInt8(it->rating_region);
+        buf.putUInt8(uint8_t(it->rating_values.size()));
         for (auto it2 = it->rating_values.begin(); it2 != it->rating_values.end(); ++it2) {
-            bbp->appendUInt8(it2->first);          // rating_dimension_j
-            bbp->appendUInt8(0xF0 | it2->second);  // rating_value
+            buf.putUInt8(it2->first);     // rating_dimension_j
+            buf.putBits(0xFF, 4);
+            buf.putBits(it2->second, 4);  // rating_value
         }
-        const size_t len_index = bbp->size();
-        bbp->appendUInt8(0x00);  // place-holder for rating_description_length
-        const size_t nbytes = it->rating_description.serialize(duck, *bbp, 255, true);
-        (*bbp)[len_index] = uint8_t(nbytes);
+        buf.putMultipleStringWithLength(it->rating_description);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -101,34 +99,21 @@ void ts::ContentAdvisoryDescriptor::serialize(DuckContext& duck, Descriptor& des
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ContentAdvisoryDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ContentAdvisoryDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    entries.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        size_t reg_count = data[0] & 0x3F;
-        data++; size--;
-        while (size >= 2 && reg_count > 0) {
-            Entry entry;
-            entry.rating_region = data[0];
-            size_t dim_count = data[1];
-            data += 2; size -= 2;
-            while (size >= 2 && dim_count > 0) {
-                entry.rating_values[data[0]] = data[1] & 0x0F;
-                data += 2; size -= 2; dim_count--;
-            }
-            if (!entry.rating_description.lengthDeserialize(duck, data, size)) {
-                _is_valid = false;
-                break;
-            }
-            entries.push_back(entry);
-            reg_count--;
+    buf.skipBits(2);
+    const size_t reg_count = buf.getBits<size_t>(6);
+    for (size_t i1 = 0; i1 < reg_count && buf.canRead(); ++i1) {
+        Entry entry;
+        entry.rating_region = buf.getUInt8();
+        const size_t dim_count = buf.getUInt8();
+        for (size_t i2 = 0; i2 < dim_count && buf.canRead(); ++i2) {
+            const size_t dim = buf.getUInt8();
+            buf.skipBits(4);
+            buf.getBits(entry.rating_values[dim], 4);
         }
+        buf.getMultipleStringWithLength(entry.rating_description);
+        entries.push_back(entry);
     }
 }
 

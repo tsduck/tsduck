@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -73,29 +74,16 @@ void ts::DataComponentDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DataComponentDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DataComponentDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(data_component_id);
-    bbp->append(additional_data_component_info);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(data_component_id);
+    buf.putBytes(additional_data_component_info);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::DataComponentDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DataComponentDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 2;
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        data_component_id = GetUInt16(data);
-        additional_data_component_info.copy(data + 2, size - 2);
-    }
+    data_component_id = buf.getUInt16();
+    buf.getBytes(additional_data_component_info);
 }
 
 
@@ -126,11 +114,6 @@ void ts::DataComponentDescriptor::buildXML(DuckContext& duck, xml::Element* root
     root->setIntAttribute(u"data_component_id", data_component_id, true);
     root->addHexaTextChild(u"additional_data_component_info", additional_data_component_info, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::DataComponentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

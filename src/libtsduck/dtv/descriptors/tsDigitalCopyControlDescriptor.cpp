@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -85,34 +86,29 @@ ts::DigitalCopyControlDescriptor::Component::Component() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DigitalCopyControlDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DigitalCopyControlDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(digital_recording_control_data << 6) |
-                     (maximum_bitrate.set() ? 0x20 : 0x00) |
-                     (components.empty() ? 0x00 : 0x10) |
-                     (user_defined & 0x0F));
+    buf.putBits(digital_recording_control_data, 2);
+    buf.putBit(maximum_bitrate.set());
+    buf.putBit(!components.empty());
+    buf.putBits(user_defined, 4);
     if (maximum_bitrate.set()) {
-        bbp->appendUInt8(maximum_bitrate.value());
+        buf.putUInt8(maximum_bitrate.value());
     }
     if (!components.empty()) {
-        // Placeholder for component_control_length.
-        const size_t len = bbp->size();
-        bbp->appendUInt8(0);
-        // Serialize components.
+        buf.pushWriteSequenceWithLeadingLength(8); // component_control_length
         for (auto it = components.begin(); it != components.end(); ++it) {
-            bbp->appendUInt8(it->component_tag);
-            bbp->appendUInt8(uint8_t(it->digital_recording_control_data << 6) |
-                             (it->maximum_bitrate.set() ? 0x30 : 0x10) |
-                             (it->user_defined & 0x0F));
+            buf.putUInt8(it->component_tag);
+            buf.putBits(it->digital_recording_control_data, 2);
+            buf.putBit(it->maximum_bitrate.set());
+            buf.putBit(1);
+            buf.putBits(it->user_defined, 4);
             if (it->maximum_bitrate.set()) {
-                bbp->appendUInt8(it->maximum_bitrate.value());
+                buf.putUInt8(it->maximum_bitrate.value());
             }
         }
-        // Update component_control_length.
-        (*bbp)[len] = uint8_t(bbp->size() - len - 1);
+        buf.popState(); // update component_control_length
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -120,64 +116,30 @@ void ts::DigitalCopyControlDescriptor::serialize(DuckContext& duck, Descriptor& 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DigitalCopyControlDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DigitalCopyControlDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() >= 1;
-
-    maximum_bitrate.clear();
-    components.clear();
-
-    if (_is_valid) {
-        // Fixed part.
-        digital_recording_control_data = (data[0] >> 6) & 0x03;
-        bool bitrate_flag = (data[0] & 0x20) != 0;
-        bool comp_flag = (data[0] & 0x10) != 0;
-        user_defined = data[0] & 0x0F;
-        data++; size--;
-
-        if (bitrate_flag) {
-            _is_valid = size > 0;
-            if (_is_valid) {
-                maximum_bitrate = data[0];
-                data++; size--;
-            }
-        }
-
-        // Component loop.
-        if (_is_valid) {
-            if (comp_flag) {
-                _is_valid = size > 0;
-                if (_is_valid) {
-                    const size_t len = data[0];
-                    data++; size--;
-                    _is_valid = len == size;
-                }
-            }
-            else {
-                _is_valid = size == 0;
-            }
-        }
-        while (_is_valid && size >= 2) {
+    buf.getBits(digital_recording_control_data, 2);
+    bool bitrate_flag = buf.getBool();
+    bool comp_flag = buf.getBool();
+    buf.getBits(user_defined, 4);
+    if (bitrate_flag) {
+        maximum_bitrate = buf.getUInt8();
+    }
+    if (comp_flag) {
+        buf.pushReadSizeFromLength(8); // component_control_length
+        while (buf.canRead()) {
             Component comp;
-            comp.component_tag = data[0];
-            comp.digital_recording_control_data = (data[1] >> 6) & 0x03;
-            bitrate_flag = (data[1] & 0x20) != 0;
-            comp.user_defined = data[1] & 0x0F;
-            data += 2; size -= 2;
+            comp.component_tag = buf.getUInt8();
+            buf.getBits(comp.digital_recording_control_data, 2);
+            bitrate_flag = buf.getBool();
+            buf.skipBits(1);
+            buf.getBits(comp.user_defined, 4);
             if (bitrate_flag) {
-                _is_valid = size > 0;
-                if (_is_valid) {
-                    comp.maximum_bitrate = data[0];
-                    data++; size--;
-                }
+                comp.maximum_bitrate = buf.getUInt8();
             }
-            if (_is_valid) {
-                components.push_back(comp);
-            }
+            components.push_back(comp);
         }
-        _is_valid = _is_valid && size == 0;
+        buf.popState(); // component_control_length
     }
 }
 
