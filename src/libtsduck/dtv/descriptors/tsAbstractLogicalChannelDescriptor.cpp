@@ -101,7 +101,7 @@ void ts::AbstractLogicalChannelDescriptor::deserializePayload(PSIBuffer& buf)
         e.service_id = buf.getUInt16();
         e.visible = buf.getBool();
         buf.skipBits(5);
-        e.lcn = buf.getBits<uint16_t>(10);
+        buf.getBits(e.lcn, 10);
         entries.push_back(e);
     }
 }
@@ -148,8 +148,8 @@ bool ts::AbstractLogicalChannelDescriptor::analyzeXML(DuckContext& duck, const x
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        ok = children[i]->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-             children[i]->getIntAttribute<uint16_t>(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0x03FF) &&
+        ok = children[i]->getIntAttribute(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+             children[i]->getIntAttribute(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0x03FF) &&
              children[i]->getBoolAttribute(entry.visible, u"visible_service", false, true);
         if (ok) {
             entries.push_back(entry);

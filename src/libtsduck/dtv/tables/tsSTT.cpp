@@ -144,7 +144,7 @@ void ts::STT::deserializePayload(PSIBuffer& buf, const Section& section)
     GPS_UTC_offset = buf.getUInt8();
     DS_status = buf.getBool();
     buf.skipBits(2);
-    DS_day_of_month = buf.getBits<uint8_t>(5);
+    buf.getBits(DS_day_of_month, 5);
     DS_hour = buf.getUInt8();
     buf.getDescriptorList(descs);
 }
@@ -216,11 +216,11 @@ void ts::STT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::STT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
-           element->getIntAttribute<uint32_t>(system_time, u"system_time", true) &&
-           element->getIntAttribute<uint8_t>(GPS_UTC_offset, u"GPS_UTC_offset", true) &&
+    return element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
+           element->getIntAttribute(system_time, u"system_time", true) &&
+           element->getIntAttribute(GPS_UTC_offset, u"GPS_UTC_offset", true) &&
            element->getBoolAttribute(DS_status, u"DS_status", true) &&
-           element->getIntAttribute<uint8_t>(DS_day_of_month, u"DS_day_of_month", false, 0, 0, 31) &&
-           element->getIntAttribute<uint8_t>(DS_hour, u"DS_hour", false, 0, 0, 23) &&
+           element->getIntAttribute(DS_day_of_month, u"DS_day_of_month", false, 0, 0, 31) &&
+           element->getIntAttribute(DS_hour, u"DS_hour", false, 0, 0, 23) &&
            descs.fromXML(duck, element);
 }

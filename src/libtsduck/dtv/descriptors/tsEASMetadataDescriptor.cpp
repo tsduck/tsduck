@@ -140,6 +140,6 @@ void ts::EASMetadataDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::EASMetadataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(fragment_number, u"fragment_number", false, 1, 1, 255) &&
+    return element->getIntAttribute(fragment_number, u"fragment_number", false, 1, 1, 255) &&
            element->getText(XML_fragment, false, 0, 253);
 }

@@ -105,7 +105,7 @@ void ts::ServiceGroupDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::ServiceGroupDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    service_group_type = buf.getBits<uint8_t>(4);
+    buf.getBits(service_group_type, 4);
     buf.skipBits(4);
     if (service_group_type == 1) {
         while (buf.canRead()) {
@@ -173,14 +173,14 @@ bool ts::ServiceGroupDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
 {
     xml::ElementVector xserv;
     bool ok =
-        element->getIntAttribute<uint8_t>(service_group_type, u"service_group_type", true, 0, 0, 15) &&
+        element->getIntAttribute(service_group_type, u"service_group_type", true, 0, 0, 15) &&
         element->getChildren(xserv, u"service", 0, service_group_type == 1 ? 63 : 0) &&
         element->getHexaTextChild(private_data, u"private_data", false, 0, service_group_type == 1 ? 0 : 254);
 
     for (auto it = xserv.begin(); ok && it != xserv.end(); ++it) {
         SimultaneousService ss;
-        ok = (*it)->getIntAttribute<uint16_t>(ss.primary_service_id, u"primary_service_id", true) &&
-             (*it)->getIntAttribute<uint16_t>(ss.secondary_service_id, u"secondary_service_id", true);
+        ok = (*it)->getIntAttribute(ss.primary_service_id, u"primary_service_id", true) &&
+             (*it)->getIntAttribute(ss.secondary_service_id, u"secondary_service_id", true);
         simultaneous_services.push_back(ss);
     }
     return ok;

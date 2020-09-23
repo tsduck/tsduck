@@ -146,7 +146,7 @@ void ts::CADescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::CADescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(cas_id, u"CA_system_id", true, 0, 0x0000, 0xFFFF) &&
+    return element->getIntAttribute(cas_id, u"CA_system_id", true, 0, 0x0000, 0xFFFF) &&
            element->getIntAttribute<PID>(ca_pid, u"CA_PID", true, 0, 0x0000, 0x1FFF) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 4);
 }

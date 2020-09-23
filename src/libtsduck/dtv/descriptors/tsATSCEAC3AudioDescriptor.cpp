@@ -179,8 +179,8 @@ void ts::ATSCEAC3AudioDescriptor::deserializePayload(PSIBuffer& buf)
     const bool substream3_flag = buf.getBool();
     buf.skipBits(1);
     full_service = buf.getBool();
-    audio_service_type = buf.getBits<uint8_t>(3);
-    number_of_channels = buf.getBits<uint8_t>(3);
+    buf.getBits(audio_service_type, 3);
+    buf.getBits(number_of_channels, 3);
 
     // End of descriptor allowed here
     if (buf.endOfRead()) {
@@ -192,7 +192,7 @@ void ts::ATSCEAC3AudioDescriptor::deserializePayload(PSIBuffer& buf)
     const bool language_2_flag = buf.getBool();
     buf.skipBits(1);
     if (bsid_flag) {
-        bsid = buf.getBits<uint8_t>(5);
+        buf.getBits(bsid, 5);
     }
     else {
         buf.skipBits(5);
@@ -200,8 +200,8 @@ void ts::ATSCEAC3AudioDescriptor::deserializePayload(PSIBuffer& buf)
 
     if (mainid_flag) {
         buf.skipBits(3);
-        priority = buf.getBits<uint8_t>(2);
-        mainid = buf.getBits<uint8_t>(3);
+        buf.getBits(priority, 2);
+        buf.getBits(mainid, 3);
     }
     if (asvc_flag) {
         asvc = buf.getUInt8();
@@ -343,15 +343,15 @@ bool ts::ATSCEAC3AudioDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
 {
     return  element->getBoolAttribute(mixinfoexists, u"mixinfoexists", true) &&
             element->getBoolAttribute(full_service, u"full_service", true) &&
-            element->getIntAttribute<uint8_t>(audio_service_type, u"audio_service_type", true, 0, 0, 0x07) &&
-            element->getIntAttribute<uint8_t>(number_of_channels, u"number_of_channels", true, 0, 0, 0x07) &&
-            element->getOptionalIntAttribute<uint8_t>(bsid, u"bsid", 0, 0x1F) &&
-            element->getOptionalIntAttribute<uint8_t>(priority, u"priority", 0, 0x03) &&
-            element->getOptionalIntAttribute<uint8_t>(mainid, u"mainid", 0, 0x07) &&
-            element->getOptionalIntAttribute<uint8_t>(asvc, u"asvc") &&
-            element->getOptionalIntAttribute<uint8_t>(substream1, u"substream1") &&
-            element->getOptionalIntAttribute<uint8_t>(substream2, u"substream2") &&
-            element->getOptionalIntAttribute<uint8_t>(substream3, u"substream3") &&
+            element->getIntAttribute(audio_service_type, u"audio_service_type", true, 0, 0, 0x07) &&
+            element->getIntAttribute(number_of_channels, u"number_of_channels", true, 0, 0, 0x07) &&
+            element->getOptionalIntAttribute(bsid, u"bsid", 0, 0x1F) &&
+            element->getOptionalIntAttribute(priority, u"priority", 0, 0x03) &&
+            element->getOptionalIntAttribute(mainid, u"mainid", 0, 0x07) &&
+            element->getOptionalIntAttribute(asvc, u"asvc") &&
+            element->getOptionalIntAttribute(substream1, u"substream1") &&
+            element->getOptionalIntAttribute(substream2, u"substream2") &&
+            element->getOptionalIntAttribute(substream3, u"substream3") &&
             element->getAttribute(language, u"language", false, UString(), 0, 3) &&
             element->getAttribute(language_2, u"language_2", false, UString(), 0, 3) &&
             element->getAttribute(substream1_lang, u"substream1_lang", false, UString(), 0, 3) &&

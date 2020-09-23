@@ -154,10 +154,10 @@ void ts::SSUDataBroadcastIdDescriptor::deserializePayload(PSIBuffer& buf)
             Entry entry;
             entry.oui = buf.getUInt24();
             buf.skipBits(4);
-            entry.update_type = buf.getBits<uint8_t>(4);
+            buf.getBits(entry.update_type, 4);
             buf.skipBits(2);
             if (buf.getBool()) {
-                entry.update_version = buf.getBits<uint8_t>(5);
+                buf.getBits(entry.update_version, 5);
             }
             else {
                 buf.skipBits(5);

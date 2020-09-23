@@ -607,9 +607,9 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
     else if (elem->name().similar(u"dvbs")) {
         mod.delivery_system = DS_DVB_S;
         return
-            elem->getOptionalIntAttribute<size_t>(mod.satellite_number, u"satellite", 0, 3) &&
-            elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
-            elem->getVariableIntAttribute<uint32_t>(mod.symbol_rate, u"symbolrate", false, 27500000) &&
+            elem->getOptionalIntAttribute(mod.satellite_number, u"satellite", 0, 3) &&
+            elem->getVariableIntAttribute(mod.frequency, u"frequency", true) &&
+            elem->getVariableIntAttribute(mod.symbol_rate, u"symbolrate", false, 27500000) &&
             elem->getVariableIntEnumAttribute(mod.modulation, ModulationEnum, u"modulation", false, QPSK) &&
             elem->getVariableIntEnumAttribute(mod.delivery_system, DeliverySystemEnum, u"system", false, DS_DVB_S) &&
             elem->getOptionalIntEnumAttribute(mod.inner_fec, InnerFECEnum, u"FEC") &&
@@ -624,7 +624,7 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
     else if (elem->name().similar(u"dvbt")) {
         mod.delivery_system = DS_DVB_T;
         return
-            elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
+            elem->getVariableIntAttribute(mod.frequency, u"frequency", true) &&
             elem->getVariableIntEnumAttribute(mod.modulation, ModulationEnum, u"modulation", false, QAM_64) &&
             elem->getOptionalIntEnumAttribute(mod.bandwidth, BandWidthEnum, u"bandwidth") &&
             elem->getOptionalIntEnumAttribute(mod.transmission_mode, TransmissionModeEnum, u"transmission") &&
@@ -633,13 +633,13 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
             elem->getOptionalIntEnumAttribute(mod.fec_lp, InnerFECEnum, u"LPFEC") &&
             elem->getOptionalIntEnumAttribute(mod.inversion, SpectralInversionEnum, u"inversion") &&
             elem->getOptionalIntEnumAttribute(mod.hierarchy, HierarchyEnum, u"hierarchy") &&
-            elem->getOptionalIntAttribute<uint32_t>(mod.plp, u"PLP", 0, 255);
+            elem->getOptionalIntAttribute(mod.plp, u"PLP", 0, 255);
     }
     else if (elem->name().similar(u"dvbc")) {
         mod.delivery_system = DS_DVB_C;
         return
-            elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
-            elem->getVariableIntAttribute<uint32_t>(mod.symbol_rate, u"symbolrate", false, 6900000) &&
+            elem->getVariableIntAttribute(mod.frequency, u"frequency", true) &&
+            elem->getVariableIntAttribute(mod.symbol_rate, u"symbolrate", false, 6900000) &&
             elem->getVariableIntEnumAttribute(mod.modulation, ModulationEnum, u"modulation", false, QAM_64) &&
             elem->getOptionalIntEnumAttribute(mod.inner_fec, InnerFECEnum, u"FEC") &&
             elem->getOptionalIntEnumAttribute(mod.inversion, SpectralInversionEnum, u"inversion");
@@ -647,14 +647,14 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
     else if (elem->name().similar(u"atsc")) {
         mod.delivery_system = DS_ATSC;
         return
-            elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
+            elem->getVariableIntAttribute(mod.frequency, u"frequency", true) &&
             elem->getVariableIntEnumAttribute(mod.modulation, ModulationEnum, u"modulation", false, VSB_8) &&
             elem->getOptionalIntEnumAttribute(mod.inversion, SpectralInversionEnum, u"inversion");
     }
     else if (elem->name().similar(u"isdbt")) {
         mod.delivery_system = DS_ISDB_T;
         return
-            elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
+            elem->getVariableIntAttribute(mod.frequency, u"frequency", true) &&
             elem->getOptionalIntEnumAttribute(mod.bandwidth, BandWidthEnum, u"bandwidth") &&
             elem->getOptionalIntEnumAttribute(mod.transmission_mode, TransmissionModeEnum, u"transmission") &&
             elem->getOptionalIntEnumAttribute(mod.guard_interval, GuardIntervalEnum, u"guard") &&
@@ -664,9 +664,9 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
         mod.delivery_system = DS_ISDB_S;
         mod.stream_id = ts_id;
         return
-            elem->getOptionalIntAttribute<size_t>(mod.satellite_number, u"satellite", 0, 3) &&
-            elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
-            elem->getVariableIntAttribute<uint32_t>(mod.symbol_rate, u"symbolrate", false, 27500000) &&
+            elem->getOptionalIntAttribute(mod.satellite_number, u"satellite", 0, 3) &&
+            elem->getVariableIntAttribute(mod.frequency, u"frequency", true) &&
+            elem->getVariableIntAttribute(mod.symbol_rate, u"symbolrate", false, 27500000) &&
             elem->getOptionalIntEnumAttribute(mod.inner_fec, InnerFECEnum, u"FEC") &&
             elem->getOptionalIntEnumAttribute(mod.inversion, SpectralInversionEnum, u"inversion") &&
             elem->getOptionalIntEnumAttribute(mod.polarity, PolarizationEnum, u"polarity");

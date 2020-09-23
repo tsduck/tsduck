@@ -118,7 +118,7 @@ void ts::DVBAC4Descriptor::deserializePayload(PSIBuffer& buf)
     buf.skipBits(6);
     if (ac4_config_flag) {
         ac4_dialog_enhancement_enabled = buf.getBool();
-        ac4_channel_mode = buf.getBits<uint8_t>(2);
+        buf.getBits(ac4_channel_mode, 2);
         buf.skipBits(5);
     }
     if (ac4_toc_flag) {
@@ -189,7 +189,7 @@ void ts::DVBAC4Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
 bool ts::DVBAC4Descriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getOptionalBoolAttribute(ac4_dialog_enhancement_enabled, u"ac4_dialog_enhancement_enabled") &&
-           element->getOptionalIntAttribute<uint8_t>(ac4_channel_mode, u"ac4_channel_mode", 0, 3) &&
+           element->getOptionalIntAttribute(ac4_channel_mode, u"ac4_channel_mode", 0, 3) &&
            element->getHexaTextChild(ac4_dsi_toc, u"ac4_dsi_toc", false, 0, MAX_DESCRIPTOR_SIZE - 6) &&
            element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 6 - ac4_dsi_toc.size());
 }

@@ -141,7 +141,7 @@ bool ts::PartialReceptionDescriptor::analyzeXML(DuckContext& duck, const xml::El
 
     for (auto it = xserv.begin(); ok && it != xserv.end(); ++it) {
         uint16_t id = 0;
-        ok = (*it)->getIntAttribute<uint16_t>(id, u"id", true);
+        ok = (*it)->getIntAttribute(id, u"id", true);
         service_ids.push_back(id);
     }
     return ok;

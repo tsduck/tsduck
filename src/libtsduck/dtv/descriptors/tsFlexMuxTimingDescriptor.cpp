@@ -123,8 +123,8 @@ void ts::FlexMuxTimingDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::FlexMuxTimingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(FCR_ES_ID, u"FCR_ES_ID", true) &&
-           element->getIntAttribute<uint32_t>(FCRResolution, u"FCRResolution", true) &&
-           element->getIntAttribute<uint8_t>(FCRLength, u"FCRLength", true) &&
-           element->getIntAttribute<uint8_t>(FmxRateLength, u"FmxRateLength", true);
+    return element->getIntAttribute(FCR_ES_ID, u"FCR_ES_ID", true) &&
+           element->getIntAttribute(FCRResolution, u"FCRResolution", true) &&
+           element->getIntAttribute(FCRLength, u"FCRLength", true) &&
+           element->getIntAttribute(FmxRateLength, u"FmxRateLength", true);
 }

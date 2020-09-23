@@ -129,5 +129,5 @@ void ts::SSUSubgroupAssociationDescriptor::buildXML(DuckContext& duck, xml::Elem
 
 bool ts::SSUSubgroupAssociationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint64_t>(subgroup_tag, u"subgroup_tag", true, 0, 0, TS_UCONST64(0x000000FFFFFFFFFF));
+    return element->getIntAttribute(subgroup_tag, u"subgroup_tag", true, 0, 0, TS_UCONST64(0x000000FFFFFFFFFF));
 }

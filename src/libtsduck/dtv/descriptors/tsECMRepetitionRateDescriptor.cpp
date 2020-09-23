@@ -103,8 +103,8 @@ void ts::ECMRepetitionRateDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::ECMRepetitionRateDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
-           element->getIntAttribute<uint16_t>(ECM_repetition_rate, u"ECM_repetition_rate", true) &&
+    return element->getIntAttribute(CA_system_id, u"CA_system_id", true) &&
+           element->getIntAttribute(ECM_repetition_rate, u"ECM_repetition_rate", true) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 6);
 }
 

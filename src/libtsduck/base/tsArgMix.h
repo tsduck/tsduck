@@ -35,6 +35,7 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsUChar.h"
+#include "tsEnumUtils.h"
 #include "tsStringifyInterface.h"
 
 // There is a problem here with Microsoft C/C++.
@@ -311,27 +312,6 @@ namespace ts {
         // It is correct, it works, but it is not immediately easy to understand. So, do not modify it if you
         // are not 100% sure to have understood it and you know what you are doing. You have been warned...
 
-        // The meta-type "underlying_type_impl" is the basis for underlying_type.
-        // The default definition, when ISENUM is false is T and applies to integer types.
-        template<bool ISENUM, typename T>
-        struct underlying_type_impl {
-            typedef T type;
-        };
-
-        // The following specialized definition applies to enum types.
-        template<typename T>
-        struct underlying_type_impl<true,T> {
-            typedef typename std::underlying_type<T>::type type;
-        };
-
-        // The meta-type "underlying_type" is a generalization of std::underlying_type
-        // which works on integer types as well. The underlying type of an integer
-        // type is the type itself.
-        template<typename T>
-        struct underlying_type {
-            typedef typename underlying_type_impl<std::is_enum<T>::value, T>::type type;
-        };
-
         // The meta-type "storage_type" defines the characteristics of the type which is
         // used to store an integer or enum type in an ArgMixIn.
         template <typename T>
@@ -339,14 +319,14 @@ namespace ts {
 
             // The meta-type "type" is the storage type, namely one of int32_t, uint32_t, int64_t, uint64_t.
             typedef typename std::conditional<
-                std::is_signed<typename underlying_type<T>::type>::value,
+                std::is_signed<typename ts::underlying_type<T>::type>::value,
                 typename std::conditional<(sizeof(T) > 4), int64_t, int32_t>::type,
                 typename std::conditional<(sizeof(T) > 4), uint64_t, uint32_t>::type
             >::type type;
 
             // The meta-type "type_constant" defines the ArgMix type flags value for the type T.
             typedef typename std::conditional<
-                std::is_signed<typename underlying_type<T>::type>::value,
+                std::is_signed<typename ts::underlying_type<T>::type>::value,
                 typename std::conditional<
                     (sizeof(T) > 4),
                     std::integral_constant<TypeFlags, INTEGER | SIGNED | BIT64>,
@@ -370,14 +350,14 @@ namespace ts {
 
             // The meta-type "type" is the storage type.
             typedef typename std::conditional<
-                std::is_signed<typename underlying_type<T>::type>::value,
+                std::is_signed<typename ts::underlying_type<T>::type>::value,
                 typename std::conditional<(sizeof(T) > 4), int64_t, std::conditional<(sizeof(T) > 2), int32_t, std::conditional<(sizeof(T) > 1), int16_t, int8_t>>>::type,
                 typename std::conditional<(sizeof(T) > 4), uint64_t, std::conditional<(sizeof(T) > 2), uint32_t, std::conditional<(sizeof(T) > 1), uint16_t, uint8_t>>>::type
             >::type type;
 
             // The meta-type "type_constant" defines the ArgMix type flags value for the type T.
             typedef typename std::conditional<
-                std::is_signed<typename underlying_type<T>::type>::value,
+                std::is_signed<typename ts::underlying_type<T>::type>::value,
                 typename std::conditional<
                     (sizeof(T) > 4),
                     std::integral_constant<TypeFlags, POINTER | INTEGER | SIGNED | BIT64>,

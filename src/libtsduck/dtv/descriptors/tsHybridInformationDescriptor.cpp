@@ -228,7 +228,7 @@ bool ts::HybridInformationDescriptor::analyzeXML(DuckContext& duck, const xml::E
         element->report().error(u"attribute 'URL' and attributes 'component_tag', 'module_id' are mutually exclusive in <%s>, line %d", {element->name(), element->lineNumber()});
         return false;
     }
-    else if (!element->getIntAttribute<uint8_t>(format, u"format", true, 0, 0, 15)) {
+    else if (!element->getIntAttribute(format, u"format", true, 0, 0, 15)) {
         return false;
     }
     else if (!has_location) {
@@ -238,6 +238,6 @@ bool ts::HybridInformationDescriptor::analyzeXML(DuckContext& duck, const xml::E
         return element->getAttribute(URL, u"URL");
     }
     else {
-        return element->getIntAttribute<uint8_t>(component_tag, u"component_tag") && element->getIntAttribute<uint16_t>(module_id, u"module_id");
+        return element->getIntAttribute(component_tag, u"component_tag") && element->getIntAttribute(module_id, u"module_id");
     }
 }

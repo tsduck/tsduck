@@ -102,10 +102,10 @@ void ts::CableDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
     frequency = 100 * buf.getBCD<uint64_t>(8);  // coded in 100 Hz units
     buf.skipBits(12);
-    FEC_outer = buf.getBits<uint8_t>(4);
+    buf.getBits(FEC_outer, 4);
     modulation = buf.getUInt8();
     symbol_rate = 100 * buf.getBCD<uint64_t>(7);  // coded in 100 sym/s units.
-    FEC_inner = buf.getBits<uint8_t>(4);
+    buf.getBits(FEC_inner, 4);
 }
 
 
@@ -164,10 +164,10 @@ void ts::CableDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::CableDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
-           element->getIntEnumAttribute<uint8_t>(FEC_outer, OuterFecNames, u"FEC_outer", false, 2) &&
-           element->getIntEnumAttribute<uint8_t>(modulation, ModulationNames, u"modulation", false, 1) &&
-           element->getIntAttribute<uint64_t>(symbol_rate, u"symbol_rate", true) &&
+    return element->getIntAttribute(frequency, u"frequency", true) &&
+           element->getIntEnumAttribute(FEC_outer, OuterFecNames, u"FEC_outer", false, 2) &&
+           element->getIntEnumAttribute(modulation, ModulationNames, u"modulation", false, 1) &&
+           element->getIntAttribute(symbol_rate, u"symbol_rate", true) &&
            element->getIntEnumAttribute(FEC_inner, InnerFecNames, u"FEC_inner", true);
 }
 

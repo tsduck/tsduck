@@ -187,11 +187,11 @@ void ts::SeriesDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 bool ts::SeriesDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     bool ok =
-        element->getIntAttribute<uint16_t>(series_id, u"series_id", true) &&
-        element->getIntAttribute<uint8_t>(repeat_label, u"repeat_label", true, 0, 0, 15) &&
-        element->getIntAttribute<uint8_t>(program_pattern, u"program_pattern", true, 0, 0, 7) &&
-        element->getIntAttribute<uint16_t>(episode_number, u"episode_number", true, 0, 0, 0x0FFF) &&
-        element->getIntAttribute<uint16_t>(last_episode_number, u"last_episode_number", true, 0, 0, 0x0FFF) &&
+        element->getIntAttribute(series_id, u"series_id", true) &&
+        element->getIntAttribute(repeat_label, u"repeat_label", true, 0, 0, 15) &&
+        element->getIntAttribute(program_pattern, u"program_pattern", true, 0, 0, 7) &&
+        element->getIntAttribute(episode_number, u"episode_number", true, 0, 0, 0x0FFF) &&
+        element->getIntAttribute(last_episode_number, u"last_episode_number", true, 0, 0, 0x0FFF) &&
         element->getAttribute(series_name, u"series_name");
 
     if (ok && element->hasAttribute(u"expire_date")) {

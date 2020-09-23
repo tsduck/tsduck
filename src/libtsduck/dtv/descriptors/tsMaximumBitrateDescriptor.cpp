@@ -79,7 +79,7 @@ void ts::MaximumBitrateDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::MaximumBitrateDescriptor::deserializePayload(PSIBuffer& buf)
 {
     buf.skipBits(2);
-    maximum_bitrate = buf.getBits<uint32_t>(22);
+    buf.getBits(maximum_bitrate, 22);
 }
 
 
@@ -109,7 +109,7 @@ void ts::MaximumBitrateDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 bool ts::MaximumBitrateDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     uint32_t mbr = 0;
-    bool ok = element->getIntAttribute<uint32_t>(mbr, u"maximum_bitrate", true, 0, 0, 0x003FFFFF * BITRATE_UNIT);
+    bool ok = element->getIntAttribute(mbr, u"maximum_bitrate", true, 0, 0, 0x003FFFFF * BITRATE_UNIT);
     maximum_bitrate = mbr / BITRATE_UNIT;
     return ok;
 }

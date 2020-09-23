@@ -221,8 +221,8 @@ void ts::HEVCTimingAndHRDDescriptor::buildXML(DuckContext& duck, xml::Element* r
 bool ts::HEVCTimingAndHRDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getBoolAttribute(hrd_management_valid, u"hrd_management_valid", true) &&
-           element->getOptionalIntAttribute<uint8_t>(target_schedule_idx, u"target_schedule_idx", 0x00, 0x1F) &&
-           element->getOptionalIntAttribute<uint32_t>(N_90khz, u"N_90khz") &&
-           element->getOptionalIntAttribute<uint32_t>(K_90khz, u"K_90khz") &&
-           element->getOptionalIntAttribute<uint32_t>(num_units_in_tick, u"num_units_in_tick");
+           element->getOptionalIntAttribute(target_schedule_idx, u"target_schedule_idx", 0x00, 0x1F) &&
+           element->getOptionalIntAttribute(N_90khz, u"N_90khz") &&
+           element->getOptionalIntAttribute(K_90khz, u"K_90khz") &&
+           element->getOptionalIntAttribute(num_units_in_tick, u"num_units_in_tick");
 }

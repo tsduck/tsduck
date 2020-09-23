@@ -157,13 +157,13 @@ bool ts::DIILocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute<uint8_t>(transport_protocol_label, u"transport_protocol_label", true) &&
+        element->getIntAttribute(transport_protocol_label, u"transport_protocol_label", true) &&
         element->getChildren(children, u"module", 0, MAX_ENTRIES);
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        ok = children[i]->getIntAttribute<uint16_t>(entry.DII_identification, u"DII_identification", true, 0, 0x0000, 0x7FFF) &&
-             children[i]->getIntAttribute<uint16_t>(entry.association_tag, u"association_tag", true);
+        ok = children[i]->getIntAttribute(entry.DII_identification, u"DII_identification", true, 0, 0x0000, 0x7FFF) &&
+             children[i]->getIntAttribute(entry.association_tag, u"association_tag", true);
         entries.push_back(entry);
     }
     return ok;

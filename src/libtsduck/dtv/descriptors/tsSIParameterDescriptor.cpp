@@ -168,13 +168,13 @@ bool ts::SIParameterDescriptor::analyzeXML(DuckContext& duck, const xml::Element
 {
     xml::ElementVector xtables;
     bool ok =
-        element->getIntAttribute<uint8_t>(parameter_version, u"parameter_version", true) &&
+        element->getIntAttribute(parameter_version, u"parameter_version", true) &&
         element->getDateAttribute(update_time, u"update_time", true) &&
         element->getChildren(xtables, u"table");
 
     for (auto it = xtables.begin(); ok && it != xtables.end(); ++it) {
         Entry entry;
-        ok = (*it)->getIntAttribute<uint8_t>(entry.table_id, u"id", true) &&
+        ok = (*it)->getIntAttribute(entry.table_id, u"id", true) &&
              (*it)->getHexaText(entry.table_description, 0, 255);
         entries.push_back(entry);
     }

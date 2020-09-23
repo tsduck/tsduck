@@ -116,5 +116,5 @@ void ts::AdaptationFieldDataDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::AdaptationFieldDataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(adaptation_field_data_identifier, u"adaptation_field_data_identifier", true);
+    return element->getIntAttribute(adaptation_field_data_identifier, u"adaptation_field_data_identifier", true);
 }

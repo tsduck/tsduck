@@ -107,7 +107,7 @@ void ts::MPEGH3DAudioDescriptor::deserializePayload(PSIBuffer& buf)
     mpegh_3da_profile_level_indication = buf.getUInt8();
     interactivity_enabled = buf.getBool();
     buf.skipBits(9);
-    reference_channel_layout = buf.getBits<uint8_t>(6);
+    buf.getBits(reference_channel_layout, 6);
     buf.getBytes(reserved);
 }
 
@@ -147,8 +147,8 @@ void ts::MPEGH3DAudioDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::MPEGH3DAudioDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(mpegh_3da_profile_level_indication, u"mpegh_3da_profile_level_indication", true) &&
+    return element->getIntAttribute(mpegh_3da_profile_level_indication, u"mpegh_3da_profile_level_indication", true) &&
            element->getBoolAttribute(interactivity_enabled, u"interactivity_enabled", true) &&
-           element->getIntAttribute<uint8_t>(reference_channel_layout, u"reference_channel_layout", true, 0, 0, 0x3F) &&
+           element->getIntAttribute(reference_channel_layout, u"reference_channel_layout", true, 0, 0, 0x3F) &&
            element->getHexaTextChild(reserved, u"reserved", false, 0, 251);
 }

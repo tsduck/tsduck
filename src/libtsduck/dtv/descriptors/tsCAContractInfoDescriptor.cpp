@@ -99,7 +99,7 @@ void ts::CAContractInfoDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::CAContractInfoDescriptor::deserializePayload(PSIBuffer& buf)
 {
     CA_system_id = buf.getUInt16();
-    CA_unit_id = buf.getBits<uint8_t>(4);
+    buf.getBits(CA_unit_id, 4);
     const size_t len1 = buf.getBits<size_t>(4);
     buf.getBytes(component_tags, len1);
     const size_t len2 = buf.getUInt8();
@@ -163,15 +163,15 @@ bool ts::CAContractInfoDescriptor::analyzeXML(DuckContext& duck, const xml::Elem
 {
     xml::ElementVector xcomp;
     bool ok =
-        element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
-        element->getIntAttribute<uint8_t>(CA_unit_id, u"CA_unit_id", true, 0, 0x00, 0x0F) &&
+        element->getIntAttribute(CA_system_id, u"CA_system_id", true) &&
+        element->getIntAttribute(CA_unit_id, u"CA_unit_id", true, 0, 0x00, 0x0F) &&
         element->getAttribute(fee_name, u"fee_name") &&
         element->getChildren(xcomp, u"component", 0, 15) &&
         element->getHexaTextChild(contract_verification_info, u"contract_verification_info", false);
 
     for (auto it = xcomp.begin(); ok && it != xcomp.end(); ++it) {
         uint8_t tag = 0;
-        ok = (*it)->getIntAttribute<uint8_t>(tag, u"tag", true);
+        ok = (*it)->getIntAttribute(tag, u"tag", true);
         component_tags.push_back(tag);
     }
     return ok;

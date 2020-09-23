@@ -209,7 +209,6 @@ namespace ts {
         //! contain equal values or if both instance and not initialized.
         //!
         bool identical(const Variable<T>& other) const;
-
     };
 }
 

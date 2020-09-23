@@ -149,8 +149,8 @@ void ts::MultiplexBufferUtilizationDescriptor::buildXML(DuckContext& duck, xml::
 bool ts::MultiplexBufferUtilizationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     bool ok =
-        element->getOptionalIntAttribute<uint16_t>(LTW_offset_lower_bound, u"LTW_offset_lower_bound", 0x0000, 0x7FFF) &&
-        element->getOptionalIntAttribute<uint16_t>(LTW_offset_upper_bound, u"LTW_offset_upper_bound", 0x0000, 0x7FFF);
+        element->getOptionalIntAttribute(LTW_offset_lower_bound, u"LTW_offset_lower_bound", 0x0000, 0x7FFF) &&
+        element->getOptionalIntAttribute(LTW_offset_upper_bound, u"LTW_offset_upper_bound", 0x0000, 0x7FFF);
 
     if (ok && LTW_offset_lower_bound.set() + LTW_offset_upper_bound.set() == 1) {
         ok = false;

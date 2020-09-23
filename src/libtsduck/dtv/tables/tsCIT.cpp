@@ -252,11 +252,11 @@ bool ts::CIT::analyzeXML(DuckContext& duck, const xml::Element* element)
     xml::ElementVector xprepend;
     xml::ElementVector xcrid;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint16_t>(service_id, u"service_id", true) &&
-        element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", true) &&
-        element->getIntAttribute<uint16_t>(original_network_id, u"original_network_id", true) &&
+        element->getIntAttribute(service_id, u"service_id", true) &&
+        element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
+        element->getIntAttribute(original_network_id, u"original_network_id", true) &&
         element->getChildren(xprepend, u"prepend_string", 0, 254) &&
         element->getChildren(xcrid, u"crid");
 
@@ -268,8 +268,8 @@ bool ts::CIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 
     for (auto it = xcrid.begin(); ok && it != xcrid.end(); ++it) {
         CRID cr;
-        ok = (*it)->getIntAttribute<uint16_t>(cr.crid_ref, u"crid_ref", true) &&
-             (*it)->getIntAttribute<uint8_t>(cr.prepend_string_index, u"prepend_string_index", true) &&
+        ok = (*it)->getIntAttribute(cr.crid_ref, u"crid_ref", true) &&
+             (*it)->getIntAttribute(cr.prepend_string_index, u"prepend_string_index", true) &&
              (*it)->getAttribute(cr.unique_string, u"unique_string", true, UString(), 0, 255);
         if (ok && cr.prepend_string_index >= prepend_strings.size() && cr.prepend_string_index != 0xFF) {
             element->report().error(u"line %d, attribute 'prepend_string_index' out of range", {(*it)->lineNumber()});

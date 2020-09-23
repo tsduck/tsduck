@@ -127,7 +127,7 @@ void ts::TargetRegionDescriptor::deserializePayload(PSIBuffer& buf)
         Region region;
         buf.skipBits(5);
         const bool has_cc = buf.getBool();
-        region.region_depth = buf.getBits<uint8_t>(2);
+        buf.getBits(region.region_depth, 2);
         if (has_cc) {
             buf.getLanguageCode(region.country_code);
         }
@@ -212,9 +212,9 @@ bool ts::TargetRegionDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
     for (size_t i = 0; ok && i < xregions.size(); ++i) {
         Region region;
         ok = xregions[i]->getAttribute(region.country_code, u"country_code", false, u"", 3, 3) &&
-             xregions[i]->getIntAttribute<uint8_t>(region.primary_region_code, u"primary_region_code", false) &&
-             xregions[i]->getIntAttribute<uint8_t>(region.secondary_region_code, u"secondary_region_code", false) &&
-             xregions[i]->getIntAttribute<uint16_t>(region.tertiary_region_code, u"tertiary_region_code", false);
+             xregions[i]->getIntAttribute(region.primary_region_code, u"primary_region_code", false) &&
+             xregions[i]->getIntAttribute(region.secondary_region_code, u"secondary_region_code", false) &&
+             xregions[i]->getIntAttribute(region.tertiary_region_code, u"tertiary_region_code", false);
         if (xregions[i]->hasAttribute(u"tertiary_region_code")) {
             region.region_depth = 3;
         }

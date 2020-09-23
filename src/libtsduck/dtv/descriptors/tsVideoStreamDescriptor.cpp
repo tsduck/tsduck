@@ -108,13 +108,13 @@ void ts::VideoStreamDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::VideoStreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
     multiple_frame_rate = buf.getBool();
-    frame_rate_code = buf.getBits<uint8_t>(4);
+    buf.getBits(frame_rate_code, 4);
     MPEG_1_only = buf.getBool();
     constrained_parameter = buf.getBool();
     still_picture = buf.getBool();
     if (!MPEG_1_only) {
         profile_and_level_indication = buf.getUInt8();
-        chroma_format = buf.getBits<uint8_t>(2);
+        buf.getBits(chroma_format, 2);
         frame_rate_extension = buf.getBool();
         buf.skipBits(5);
     }
@@ -169,11 +169,11 @@ void ts::VideoStreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 bool ts::VideoStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return  element->getBoolAttribute(multiple_frame_rate, u"multiple_frame_rate", true) &&
-            element->getIntAttribute<uint8_t>(frame_rate_code, u"frame_rate_code", true, 0, 0x00, 0x0F) &&
+            element->getIntAttribute(frame_rate_code, u"frame_rate_code", true, 0, 0x00, 0x0F) &&
             element->getBoolAttribute(MPEG_1_only, u"MPEG_1_only", true) &&
             element->getBoolAttribute(constrained_parameter, u"constrained_parameter", true) &&
             element->getBoolAttribute(still_picture, u"still_picture", true) &&
-            element->getIntAttribute<uint8_t>(profile_and_level_indication, u"profile_and_level_indication", !MPEG_1_only) &&
-            element->getIntAttribute<uint8_t>(chroma_format, u"chroma_format", !MPEG_1_only, 0, 0x00, 0x03) &&
+            element->getIntAttribute(profile_and_level_indication, u"profile_and_level_indication", !MPEG_1_only) &&
+            element->getIntAttribute(chroma_format, u"chroma_format", !MPEG_1_only, 0, 0x00, 0x03) &&
             element->getBoolAttribute(frame_rate_extension, u"frame_rate_extension", !MPEG_1_only);
 }

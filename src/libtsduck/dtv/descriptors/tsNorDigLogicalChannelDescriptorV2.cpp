@@ -120,7 +120,7 @@ void ts::NorDigLogicalChannelDescriptorV2::deserializePayload(PSIBuffer& buf)
             srv.service_id = buf.getUInt16();
             srv.visible = buf.getBool();
             buf.skipBits(5);
-            srv.lcn = buf.getBits<uint16_t>(10);
+            buf.getBits(srv.lcn, 10);
             clist.services.push_back(srv);
         }
         buf.popState(); // descriptor_length
@@ -188,14 +188,14 @@ bool ts::NorDigLogicalChannelDescriptorV2::analyzeXML(DuckContext& duck, const x
     for (size_t i1 = 0; ok && i1 < xclists.size(); ++i1) {
         ChannelList clist;
         xml::ElementVector xsrv;
-        ok = xclists[i1]->getIntAttribute<uint8_t>(clist.channel_list_id, u"id", true) &&
+        ok = xclists[i1]->getIntAttribute(clist.channel_list_id, u"id", true) &&
              xclists[i1]->getAttribute(clist.channel_list_name, u"name", true) &&
              xclists[i1]->getAttribute(clist.country_code, u"country_code", true, UString(), 3, 3) &&
              xclists[i1]->getChildren(xsrv, u"service");
         for (size_t i2 = 0; ok && i2 < xsrv.size(); ++i2) {
             Service srv;
-            ok = xsrv[i2]->getIntAttribute<uint16_t>(srv.service_id, u"service_id", true) &&
-                 xsrv[i2]->getIntAttribute<uint16_t>(srv.lcn, u"logical_channel_number", true, 0, 0x0000, 0x03FF) &&
+            ok = xsrv[i2]->getIntAttribute(srv.service_id, u"service_id", true) &&
+                 xsrv[i2]->getIntAttribute(srv.lcn, u"logical_channel_number", true, 0, 0x0000, 0x03FF) &&
                  xsrv[i2]->getBoolAttribute(srv.visible, u"visible_service", false, true);
             clist.services.push_back(srv);
         }

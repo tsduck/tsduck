@@ -118,7 +118,7 @@ void ts::ServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 
 bool ts::ServiceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(service_type, u"service_type", true) &&
+    return element->getIntAttribute(service_type, u"service_type", true) &&
            element->getAttribute(provider_name, u"service_provider_name", true) &&
            element->getAttribute(service_name, u"service_name", true);
 }

@@ -228,10 +228,10 @@ void ts::LogoTransmissionDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::LogoTransmissionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(logo_transmission_type, u"logo_transmission_type", true) &&
-           element->getIntAttribute<uint16_t>(logo_id, u"logo_id", logo_transmission_type == 0x01 || logo_transmission_type == 0x02, 0, 0, 0x01FF) &&
-           element->getIntAttribute<uint16_t>(logo_version, u"logo_version", logo_transmission_type == 0x01, 0, 0, 0x0FFF) &&
-           element->getIntAttribute<uint16_t>(download_data_id, u"download_data_id", logo_transmission_type == 0x01) &&
+    return element->getIntAttribute(logo_transmission_type, u"logo_transmission_type", true) &&
+           element->getIntAttribute(logo_id, u"logo_id", logo_transmission_type == 0x01 || logo_transmission_type == 0x02, 0, 0, 0x01FF) &&
+           element->getIntAttribute(logo_version, u"logo_version", logo_transmission_type == 0x01, 0, 0, 0x0FFF) &&
+           element->getIntAttribute(download_data_id, u"download_data_id", logo_transmission_type == 0x01) &&
            element->getAttribute(logo_char, u"logo_char", logo_transmission_type == 0x03) &&
            element->getHexaTextChild(reserved_future_use, u"reserved_future_use");
 }

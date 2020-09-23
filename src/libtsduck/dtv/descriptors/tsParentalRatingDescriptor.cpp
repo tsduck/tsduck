@@ -166,7 +166,7 @@ bool ts::ParentalRatingDescriptor::analyzeXML(DuckContext& duck, const xml::Elem
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
         ok = children[i]->getAttribute(entry.country_code, u"country_code", true, u"", 3, 3) &&
-             children[i]->getIntAttribute<uint8_t>(entry.rating, u"rating", true, 0, 0x00, 0xFF);
+             children[i]->getIntAttribute(entry.rating, u"rating", true, 0, 0x00, 0xFF);
         entries.push_back(entry);
     }
     return ok;

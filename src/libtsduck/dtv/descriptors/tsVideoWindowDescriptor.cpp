@@ -89,9 +89,9 @@ void ts::VideoWindowDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::VideoWindowDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    horizontal_offset = buf.getBits<uint16_t>(14);
-    vertical_offset = buf.getBits<uint16_t>(14);
-    window_priority = buf.getBits<uint8_t>(4);
+    buf.getBits(horizontal_offset, 14);
+    buf.getBits(vertical_offset, 14);
+    buf.getBits(window_priority, 4);
 }
 
 
@@ -127,7 +127,7 @@ void ts::VideoWindowDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::VideoWindowDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(horizontal_offset, u"horizontal_offset", true, 0, 0, 0x3FFF) &&
-           element->getIntAttribute<uint16_t>(vertical_offset, u"vertical_offset", true, 0, 0, 0x3FFF) &&
-           element->getIntAttribute<uint8_t>(window_priority, u"window_priority", true, 0, 0, 0x0F);
+    return element->getIntAttribute(horizontal_offset, u"horizontal_offset", true, 0, 0, 0x3FFF) &&
+           element->getIntAttribute(vertical_offset, u"vertical_offset", true, 0, 0, 0x3FFF) &&
+           element->getIntAttribute(window_priority, u"window_priority", true, 0, 0, 0x0F);
 }

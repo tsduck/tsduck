@@ -91,7 +91,7 @@ void ts::StreamEventDescriptor::deserializePayload(PSIBuffer& buf)
 {
     event_id = buf.getUInt16();
     buf.skipBits(31);
-    event_NPT = buf.getBits<uint64_t>(33);
+    buf.getBits(event_NPT, 33);
     buf.getBytes(private_data);
 }
 
@@ -152,8 +152,8 @@ bool ts::StreamEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element
 {
     UString text;
     bool ok =
-        element->getIntAttribute<uint16_t>(event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
-        element->getIntAttribute<uint64_t>(event_NPT, u"event_NPT", true, 0, 0, TS_UCONST64(0x00000001FFFFFFFF)) &&
+        element->getIntAttribute(event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getIntAttribute(event_NPT, u"event_NPT", true, 0, 0, TS_UCONST64(0x00000001FFFFFFFF)) &&
         element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 10) &&
         element->getTextChild(text, u"private_text", false, false, UString(), 0, MAX_DESCRIPTOR_SIZE - 10);
 

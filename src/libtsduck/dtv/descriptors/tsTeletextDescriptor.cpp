@@ -154,7 +154,7 @@ void ts::TeletextDescriptor::deserializePayload(PSIBuffer& buf)
     while (buf.canRead()) {
         Entry entry;
         buf.getLanguageCode(entry.language_code);
-        entry.teletext_type = buf.getBits<uint8_t>(5);
+        buf.getBits(entry.teletext_type, 5);
         const uint8_t mag = buf.getBits<uint8_t>(3);
         const uint8_t page = buf.getUInt8();
         entry.setFullNumber(mag, page);
@@ -190,8 +190,8 @@ bool ts::TeletextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
         ok = children[i]->getAttribute(entry.language_code, u"language_code", true, u"", 3, 3) &&
-             children[i]->getIntAttribute<uint8_t>(entry.teletext_type, u"teletext_type", true) &&
-             children[i]->getIntAttribute<uint16_t>(entry.page_number, u"page_number", true);
+             children[i]->getIntAttribute(entry.teletext_type, u"teletext_type", true) &&
+             children[i]->getIntAttribute(entry.page_number, u"page_number", true);
         entries.push_back(entry);
     }
     return ok;

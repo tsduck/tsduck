@@ -130,6 +130,6 @@ void ts::MultiplexBufferDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::MultiplexBufferDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint32_t>(MB_buffer_size, u"MB_buffer_size", true, 0, 0, 0x00FFFFFF) &&
-           element->getIntAttribute<uint32_t>(TB_leak_rate, u"TB_leak_rate", true, 0, 0, 0x00FFFFFF);
+    return element->getIntAttribute(MB_buffer_size, u"MB_buffer_size", true, 0, 0, 0x00FFFFFF) &&
+           element->getIntAttribute(TB_leak_rate, u"TB_leak_rate", true, 0, 0, 0x00FFFFFF);
 }

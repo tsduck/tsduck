@@ -183,16 +183,16 @@ bool ts::PAT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xservice;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint16_t>(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getIntAttribute(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
         element->getIntAttribute<PID>(nit_pid, u"network_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
         element->getChildren(xservice, u"service", 0, 0x10000);
 
     for (auto it = xservice.begin(); it != xservice.end(); ++it) {
         uint16_t id = 0;
         PID pid = PID_NULL;
-        ok = (*it)->getIntAttribute<uint16_t>(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+        ok = (*it)->getIntAttribute(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
              (*it)->getIntAttribute<PID>(pid, u"program_map_PID", true, 0, 0x0000, 0x1FFF);
         if (ok) {
             pmts[id] = pid;

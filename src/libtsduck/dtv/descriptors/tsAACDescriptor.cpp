@@ -152,7 +152,7 @@ void ts::AACDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::AACDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(profile_and_level, u"profile_and_level", true) &&
+    return element->getIntAttribute(profile_and_level, u"profile_and_level", true) &&
            element->getBoolAttribute(SAOC_DE, u"SAOC_DE", false) &&
            element->getOptionalIntAttribute(AAC_type, u"AAC_type") &&
            element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 5);

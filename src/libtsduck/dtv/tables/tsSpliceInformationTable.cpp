@@ -159,9 +159,9 @@ void ts::SpliceInformationTable::deserializePayload(PSIBuffer& buf, const Sectio
     protocol_version = buf.getUInt8();
     const bool encrypted = buf.getBool();
     buf.skipBits(6); // skip encryption_algorithm
-    pts_adjustment = buf.getBits<uint64_t>(33);
+    buf.getBits(pts_adjustment, 33);
     buf.skipBits(8); // skip cw_index
-    tier = buf.getBits<uint16_t>(12);
+    buf.getBits(tier, 12);
     const size_t command_length = buf.getBits<size_t>(12);
     splice_command_type = buf.getUInt8();
 
@@ -325,9 +325,9 @@ bool ts::SpliceInformationTable::analyzeXML(DuckContext& duck, const xml::Elemen
 {
     xml::ElementVector command;
     bool ok =
-        element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
-        element->getIntAttribute<uint64_t>(pts_adjustment, u"pts_adjustment", false, 0) &&
-        element->getIntAttribute<uint16_t>(tier, u"tier", false, 0x0FFF, 0, 0x0FFF) &&
+        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
+        element->getIntAttribute(pts_adjustment, u"pts_adjustment", false, 0) &&
+        element->getIntAttribute(tier, u"tier", false, 0x0FFF, 0, 0x0FFF) &&
         descs.fromXML(duck, command, element, u"splice_null,splice_schedule,splice_insert,time_signal,bandwidth_reservation,private_command");
 
     if (ok && command.size() != 1) {
@@ -353,14 +353,14 @@ bool ts::SpliceInformationTable::analyzeXML(DuckContext& duck, const xml::Elemen
         }
         else if (cmd->name() == u"time_signal") {
             splice_command_type = SPLICE_TIME_SIGNAL;
-            ok = cmd->getOptionalIntAttribute<uint64_t>(time_signal, u"pts_time", 0, PTS_DTS_MASK);
+            ok = cmd->getOptionalIntAttribute(time_signal, u"pts_time", 0, PTS_DTS_MASK);
         }
         else if (cmd->name() == u"bandwidth_reservation") {
             splice_command_type = SPLICE_BANDWIDTH_RESERVATION;
         }
         else if (cmd->name() == u"private_command") {
             splice_command_type = SPLICE_PRIVATE_COMMAND;
-            ok = cmd->getIntAttribute<uint32_t>(private_command.identifier, u"identifier", true) &&
+            ok = cmd->getIntAttribute(private_command.identifier, u"identifier", true) &&
                  cmd->getHexaText(private_command.private_bytes);
         }
         else {

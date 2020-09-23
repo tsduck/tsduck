@@ -96,7 +96,7 @@ void ts::FTAContentManagementDescriptor::deserializePayload(PSIBuffer& buf)
     user_defined = buf.getBool();
     buf.skipBits(3);
     do_not_scramble = buf.getBool();
-    control_remote_access_over_internet = buf.getBits<uint8_t>(2);
+    buf.getBits(control_remote_access_over_internet, 2);
     do_not_apply_revocation = buf.getBool();
 }
 
@@ -138,6 +138,6 @@ bool ts::FTAContentManagementDescriptor::analyzeXML(DuckContext& duck, const xml
 {
     return element->getBoolAttribute(user_defined, u"user_defined", true) &&
            element->getBoolAttribute(do_not_scramble, u"do_not_scramble", true) &&
-           element->getIntAttribute<uint8_t>(control_remote_access_over_internet, u"control_remote_access_over_internet", true, 0, 0, 3) &&
+           element->getIntAttribute(control_remote_access_over_internet, u"control_remote_access_over_internet", true, 0, 0, 3) &&
            element->getBoolAttribute(do_not_apply_revocation, u"do_not_apply_revocation", true);
 }

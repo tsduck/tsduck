@@ -94,7 +94,7 @@ void ts::ISDBAccessControlDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::ISDBAccessControlDescriptor::deserializePayload(PSIBuffer& buf)
 {
     CA_system_id = buf.getUInt16();
-    transmission_type = buf.getBits<uint8_t>(3);
+    buf.getBits(transmission_type, 3);
     pid = buf.getPID();
     buf.getBytes(private_data);
 }
@@ -147,8 +147,8 @@ void ts::ISDBAccessControlDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::ISDBAccessControlDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
-           element->getIntAttribute<uint8_t>(transmission_type, u"transmission_type", false, 7, 0, 7) &&
+    return element->getIntAttribute(CA_system_id, u"CA_system_id", true) &&
+           element->getIntAttribute(transmission_type, u"transmission_type", false, 7, 0, 7) &&
            element->getIntAttribute<PID>(pid, u"PID", true, 0, 0x0000, 0x1FFF) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 4);
 }

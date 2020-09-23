@@ -156,8 +156,8 @@ void ts::URILinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::URILinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(uri_linkage_type, u"uri_linkage_type", true) &&
+    return element->getIntAttribute(uri_linkage_type, u"uri_linkage_type", true) &&
            element->getAttribute(uri, u"uri", true) &&
-           element->getIntAttribute<uint16_t>(min_polling_interval, u"min_polling_interval", uri_linkage_type <= 1) &&
+           element->getIntAttribute(min_polling_interval, u"min_polling_interval", uri_linkage_type <= 1) &&
            element->getHexaTextChild(private_data, u"private_data", false);
 }

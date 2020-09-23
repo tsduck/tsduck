@@ -142,7 +142,7 @@ void ts::MetadataSTDDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::MetadataSTDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint32_t>(metadata_input_leak_rate, u"metadata_input_leak_rate", true, 0, 0, 0x3FFFFF) &&
-           element->getIntAttribute<uint32_t>(metadata_buffer_size, u"metadata_buffer_size", true, 0, 0, 0x3FFFFF) &&
-           element->getIntAttribute<uint32_t>(metadata_output_leak_rate, u"metadata_output_leak_rate", true, 0, 0, 0x3FFFFF);
+    return element->getIntAttribute(metadata_input_leak_rate, u"metadata_input_leak_rate", true, 0, 0, 0x3FFFFF) &&
+           element->getIntAttribute(metadata_buffer_size, u"metadata_buffer_size", true, 0, 0, 0x3FFFFF) &&
+           element->getIntAttribute(metadata_output_leak_rate, u"metadata_output_leak_rate", true, 0, 0, 0x3FFFFF);
 }

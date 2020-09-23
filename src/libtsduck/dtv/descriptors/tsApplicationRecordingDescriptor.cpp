@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -89,27 +90,26 @@ ts::ApplicationRecordingDescriptor::ApplicationRecordingDescriptor(DuckContext& 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationRecordingDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ApplicationRecordingDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8((scheduled_recording ? 0x80 : 0x00) |
-                     (trick_mode_aware ? 0x40 : 0x00) |
-                     (time_shift ? 0x20 : 0x00) |
-                     (dynamic ? 0x10 : 0x00) |
-                     (av_synced ? 0x08 : 0x00) |
-                     (initiating_replay ? 0x04 : 0x00) |
-                     0x03);
-    bbp->appendUInt8(uint8_t(labels.size()));
+    buf.putBit(scheduled_recording);
+    buf.putBit(trick_mode_aware);
+    buf.putBit(time_shift);
+    buf.putBit(dynamic);
+    buf.putBit(av_synced);
+    buf.putBit(initiating_replay);
+    buf.putBits(0xFF, 2);
+    buf.putUInt8(uint8_t(labels.size()));
     for (auto it = labels.begin(); it != labels.end(); ++it) {
-        bbp->append(duck.encodedWithByteLength(it->label));
-        bbp->appendUInt8(uint8_t(it->storage_properties << 6) | 0x3F);
+        buf.putStringWithByteLength(it->label);
+        buf.putBits(it->storage_properties, 2);
+        buf.putBits(0xFF, 6);
     }
-    bbp->appendUInt8(uint8_t(component_tags.size()));
-    bbp->append(component_tags);
-    bbp->appendUInt8(uint8_t(private_data.size()));
-    bbp->append(private_data);
-    bbp->append(reserved_future_use);
-    serializeEnd(desc, bbp);
+    buf.putUInt8(uint8_t(component_tags.size()));
+    buf.putBytes(component_tags);
+    buf.putUInt8(uint8_t(private_data.size()));
+    buf.putBytes(private_data);
+    buf.putBytes(reserved_future_use);
 }
 
 
@@ -117,63 +117,30 @@ void ts::ApplicationRecordingDescriptor::serialize(DuckContext& duck, Descriptor
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationRecordingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ApplicationRecordingDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    labels.clear();
-    component_tags.clear();
-    private_data.clear();
-    reserved_future_use.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4;
-
-    // Flags in first byte.
-    scheduled_recording = (data[0] & 0x80) != 0;
-    trick_mode_aware = (data[0] & 0x40) != 0;
-    time_shift = (data[0] & 0x20) != 0;
-    dynamic = (data[0] & 0x10) != 0;
-    av_synced = (data[0] & 0x08) != 0;
-    initiating_replay = (data[0] & 0x04) != 0;
-
-    // Labels
-    uint8_t labelCount = data[1];
-    data += 2;
-    size -= 2;
-    while (_is_valid && labelCount > 0) {
-        _is_valid = size >= 1 && size >= size_t(data[0] + 2);
-        if (_is_valid) {
-            const size_t len = data[0];
-            labels.push_back(RecodingLabel(duck.decoded(data + 1, len), (data[len + 1] >> 6) & 0x03));
-            data += len + 2;
-            size -= len + 2;
-            labelCount--;
-        }
+    scheduled_recording = buf.getBool();
+    trick_mode_aware = buf.getBool();
+    time_shift = buf.getBool();
+    dynamic = buf.getBool();
+    av_synced = buf.getBool();
+    initiating_replay = buf.getBool();
+    buf.skipBits(2);
+    const uint8_t label_count = buf.getUInt8();
+    for (size_t i = 0; i < label_count && !buf.error(); ++i) {
+        RecodingLabel rl;
+        buf.getStringWithByteLength(rl.label);
+        buf.getBits(rl.storage_properties, 2);
+        buf.skipBits(6);
+        labels.push_back(rl);
     }
-
-    // Component tags.
-    _is_valid = _is_valid && size >= 1 && size >= size_t(1 + data[0]);
-    if (_is_valid) {
-        const size_t len = data[0];
-        component_tags.copy(data + 1, len);
-        data += len + 1;
-        size -= len + 1;
-    }
-
-    // Private data.
-    _is_valid = _is_valid && size >= 1 && size >= size_t(1 + data[0]);
-    if (_is_valid) {
-        const size_t len = data[0];
-        private_data.copy(data + 1, len);
-        data += len + 1;
-        size -= len + 1;
-    }
-
-    // Reserved area.
-    if (_is_valid) {
-        reserved_future_use.copy(data, size);
-    }
+    buf.pushReadSizeFromLength(8); // component_tag_list_length
+    buf.getBytes(component_tags);
+    buf.popState();
+    buf.pushReadSizeFromLength(8); // private_length
+    buf.getBytes(private_data);
+    buf.popState();
+    buf.getBytes(reserved_future_use);
 }
 
 
@@ -293,13 +260,13 @@ bool ts::ApplicationRecordingDescriptor::analyzeXML(DuckContext& duck, const xml
     for (size_t i = 0; ok && i < labelChildren.size(); ++i) {
         RecodingLabel lab;
         ok = labelChildren[i]->getAttribute(lab.label, u"label", true) &&
-             labelChildren[i]->getIntAttribute<uint8_t>(lab.storage_properties, u"storage_properties", true, 0, 0, 3);
+             labelChildren[i]->getIntAttribute(lab.storage_properties, u"storage_properties", true, 0, 0, 3);
         labels.push_back(lab);
     }
 
     for (size_t i = 0; ok && i < compChildren.size(); ++i) {
         uint8_t tag = 0;
-        ok = compChildren[i]->getIntAttribute<uint8_t>(tag, u"tag", true);
+        ok = compChildren[i]->getIntAttribute(tag, u"tag", true);
         component_tags.push_back(tag);
     }
     return ok;

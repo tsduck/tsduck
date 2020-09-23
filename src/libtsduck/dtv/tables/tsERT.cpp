@@ -116,14 +116,14 @@ void ts::ERT::deserializePayload(PSIBuffer& buf, const Section& section)
     // Get common properties (should be identical in all sections)
     event_relation_id = section.tableIdExtension();
     information_provider_id = buf.getUInt16();
-    relation_type = buf.getBits<uint8_t>(4);
+    buf.getBits(relation_type, 4);
     buf.skipBits(4);
 
     // Loop across all relations.
     while (buf.canRead()) {
         Relation& rel(relations.newEntry());
         rel.node_id = buf.getUInt16();
-        rel.collection_mode = buf.getBits<uint8_t>(4);
+        buf.getBits(rel.collection_mode, 4);
         buf.skipBits(4);
         rel.parent_node_id = buf.getUInt16();
         rel.reference_number = buf.getUInt8();
@@ -227,19 +227,19 @@ bool ts::ERT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xrel;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint16_t>(event_relation_id, u"event_relation_id", true) &&
-        element->getIntAttribute<uint16_t>(information_provider_id, u"information_provider_id", true) &&
-        element->getIntAttribute<uint8_t>(relation_type, u"relation_type", true, 0, 0, 15) &&
+        element->getIntAttribute(event_relation_id, u"event_relation_id", true) &&
+        element->getIntAttribute(information_provider_id, u"information_provider_id", true) &&
+        element->getIntAttribute(relation_type, u"relation_type", true, 0, 0, 15) &&
         element->getChildren(xrel, u"relation");
 
     for (auto it = xrel.begin(); ok && it != xrel.end(); ++it) {
         Relation& rel(relations.newEntry());
-        ok = (*it)->getIntAttribute<uint16_t>(rel.node_id, u"node_id", true) &&
-             (*it)->getIntAttribute<uint8_t>(rel.collection_mode, u"collection_mode", true, 0, 0, 15) &&
-             (*it)->getIntAttribute<uint16_t>(rel.parent_node_id, u"parent_node_id", true) &&
-             (*it)->getIntAttribute<uint8_t>(rel.reference_number, u"reference_number", true) &&
+        ok = (*it)->getIntAttribute(rel.node_id, u"node_id", true) &&
+             (*it)->getIntAttribute(rel.collection_mode, u"collection_mode", true, 0, 0, 15) &&
+             (*it)->getIntAttribute(rel.parent_node_id, u"parent_node_id", true) &&
+             (*it)->getIntAttribute(rel.reference_number, u"reference_number", true) &&
              rel.descs.fromXML(duck, *it);
     }
     return ok;

@@ -112,6 +112,6 @@ void ts::RegistrationDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::RegistrationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint32_t>(format_identifier, u"format_identifier", true) &&
+    return element->getIntAttribute(format_identifier, u"format_identifier", true) &&
            element->getHexaTextChild(additional_identification_info, u"additional_identification_info", false, 0, MAX_DESCRIPTOR_SIZE - 6);
 }

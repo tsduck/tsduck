@@ -120,15 +120,15 @@ void ts::AudioComponentDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::AudioComponentDescriptor::deserializePayload(PSIBuffer& buf)
 {
     buf.skipBits(4);
-    stream_content = buf.getBits<uint8_t>(4);
+    buf.getBits(stream_content, 4);
     component_type = buf.getUInt8();
     component_tag = buf.getUInt8();
     stream_type = buf.getUInt8();
     simulcast_group_tag = buf.getUInt8();
     const bool multi = buf.getBool();
     main_component = buf.getBool();
-    quality_indicator = buf.getBits<uint8_t>(2);
-    sampling_rate = buf.getBits<uint8_t>(3);
+    buf.getBits(quality_indicator, 2);
+    buf.getBits(sampling_rate, 3);
     buf.skipBits(1);
     buf.getLanguageCode(ISO_639_language_code);
     if (multi) {
@@ -194,14 +194,14 @@ void ts::AudioComponentDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::AudioComponentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return  element->getIntAttribute<uint8_t>(stream_content, u"stream_content", false, 0x02, 0x00, 0x0F) &&
-            element->getIntAttribute<uint8_t>(component_type, u"component_type", true) &&
-            element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true) &&
-            element->getIntAttribute<uint8_t>(stream_type, u"stream_type", true) &&
-            element->getIntAttribute<uint8_t>(simulcast_group_tag, u"simulcast_group_tag", false, 0xFF) &&
+    return  element->getIntAttribute(stream_content, u"stream_content", false, 0x02, 0x00, 0x0F) &&
+            element->getIntAttribute(component_type, u"component_type", true) &&
+            element->getIntAttribute(component_tag, u"component_tag", true) &&
+            element->getIntAttribute(stream_type, u"stream_type", true) &&
+            element->getIntAttribute(simulcast_group_tag, u"simulcast_group_tag", false, 0xFF) &&
             element->getBoolAttribute(main_component, u"main_component", false, true) &&
-            element->getIntAttribute<uint8_t>(quality_indicator, u"quality_indicator", true, 0, 0, 3) &&
-            element->getIntAttribute<uint8_t>(sampling_rate, u"sampling_rate", true, 0, 0, 7) &&
+            element->getIntAttribute(quality_indicator, u"quality_indicator", true, 0, 0, 3) &&
+            element->getIntAttribute(sampling_rate, u"sampling_rate", true, 0, 0, 7) &&
             element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, UString(), 3, 3) &&
             element->getAttribute(ISO_639_language_code_2, u"ISO_639_language_code_2", false, UString(), 3, 3) &&
             element->getAttribute(text, u"text");

@@ -131,18 +131,18 @@ bool ts::BAT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint16_t>(bouquet_id, u"bouquet_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getIntAttribute(bouquet_id, u"bouquet_id", true, 0, 0x0000, 0xFFFF) &&
         descs.fromXML(duck, children, element, u"transport_stream");
 
     for (size_t index = 0; ok && index < children.size(); ++index) {
         TransportStreamId ts;
-        ok = children[index]->getIntAttribute<uint16_t>(ts.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-             children[index]->getIntAttribute<uint16_t>(ts.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
+        ok = children[index]->getIntAttribute(ts.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+             children[index]->getIntAttribute(ts.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
              transports[ts].descs.fromXML(duck, children[index]);
         if (ok && children[index]->hasAttribute(u"preferred_section")) {
-            ok = children[index]->getIntAttribute<int>(transports[ts].preferred_section, u"preferred_section", true, 0, 0, 255);
+            ok = children[index]->getIntAttribute(transports[ts].preferred_section, u"preferred_section", true, 0, 0, 255);
         }
         else {
             transports[ts].preferred_section = -1;

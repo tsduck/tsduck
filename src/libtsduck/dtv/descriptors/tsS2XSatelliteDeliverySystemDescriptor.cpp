@@ -179,15 +179,15 @@ void ts::S2XSatelliteDeliverySystemDescriptor::serializeChannel(const Channel& c
 
 void ts::S2XSatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    receiver_profiles = buf.getBits<uint8_t>(5);
+    buf.getBits(receiver_profiles, 5);
     buf.skipBits(3);
-    S2X_mode = buf.getBits<uint8_t>(2);
+    buf.getBits(S2X_mode, 2);
     scrambling_sequence_selector = buf.getBool();
     buf.skipBits(3);
-    TS_GS_S2X_mode = buf.getBits<uint8_t>(2);
+    buf.getBits(TS_GS_S2X_mode, 2);
     if (scrambling_sequence_selector) {
         buf.skipBits(6);
-        scrambling_sequence_index = buf.getBits<uint32_t>(18);
+        buf.getBits(scrambling_sequence_index, 18);
     }
     deserializeChannel(master_channel, buf);
     if (S2X_mode == 2) {
@@ -210,10 +210,10 @@ void ts::S2XSatelliteDeliverySystemDescriptor::deserializeChannel(Channel& chann
     channel.frequency = buf.getBCD<uint64_t>(8) * 10000;  // unit is 10 Hz
     channel.orbital_position = buf.getBCD<uint16_t>(4);
     channel.east_not_west = buf.getBool();
-    channel.polarization = buf.getBits<uint8_t>(2);
+    buf.getBits(channel.polarization, 2);
     channel.multiple_input_stream_flag = buf.getBool();
     buf.skipBits(1);
-    channel.roll_off = buf.getBits<uint8_t>(3);
+    buf.getBits(channel.roll_off, 3);
     buf.skipBits(4);
     channel.symbol_rate = buf.getBCD<uint64_t>(7) * 100;  // unit is 100 sym/sec
     if (channel.multiple_input_stream_flag) {
@@ -399,11 +399,11 @@ bool ts::S2XSatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, con
     xml::ElementVector xbond;
 
     bool ok =
-        element->getIntAttribute<uint8_t>(receiver_profiles, u"receiver_profiles", true, 0, 0, 0x1F) &&
-        element->getIntAttribute<uint8_t>(S2X_mode, u"S2X_mode", true, 0, 0, 0x03) &&
-        element->getIntAttribute<uint8_t>(TS_GS_S2X_mode, u"TS_GS_S2X_mode", true, 0, 0, 0x03) &&
-        element->getOptionalIntAttribute<uint32_t>(scrambling, u"scrambling_sequence_index", 0x00000000, 0x0003FFFF) &&
-        (S2X_mode != 2 || element->getIntAttribute<uint8_t>(timeslice_number, u"timeslice_number", true)) &&
+        element->getIntAttribute(receiver_profiles, u"receiver_profiles", true, 0, 0, 0x1F) &&
+        element->getIntAttribute(S2X_mode, u"S2X_mode", true, 0, 0, 0x03) &&
+        element->getIntAttribute(TS_GS_S2X_mode, u"TS_GS_S2X_mode", true, 0, 0, 0x03) &&
+        element->getOptionalIntAttribute(scrambling, u"scrambling_sequence_index", 0x00000000, 0x0003FFFF) &&
+        (S2X_mode != 2 || element->getIntAttribute(timeslice_number, u"timeslice_number", true)) &&
         element->getHexaTextChild(reserved_future_use, u"reserved_future_use") &&
         element->getChildren(xmaster, u"master_channel", 1, 1) &&
         element->getChildren(xbond, u"channel_bond", S2X_mode == 3 ? 1 : 0, S2X_mode == 3 ? 2 : 0) &&
@@ -429,13 +429,13 @@ bool ts::S2XSatelliteDeliverySystemDescriptor::getChannelXML(Channel& channel, D
 
     bool ok =
         element != nullptr &&
-        element->getIntAttribute<uint64_t>(channel.frequency, u"frequency", true) &&
-        element->getIntAttribute<uint64_t>(channel.symbol_rate, u"symbol_rate", true) &&
+        element->getIntAttribute(channel.frequency, u"frequency", true) &&
+        element->getIntAttribute(channel.symbol_rate, u"symbol_rate", true) &&
         element->getAttribute(orbit, u"orbital_position", true) &&
         element->getIntEnumAttribute(channel.east_not_west, SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", true) &&
         element->getIntEnumAttribute(channel.polarization, SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", true) &&
         element->getIntEnumAttribute(channel.roll_off, RollOffNames, u"roll_off", true) &&
-        element->getOptionalIntAttribute<uint8_t>(stream, u"input_stream_identifier");
+        element->getOptionalIntAttribute(stream, u"input_stream_identifier");
 
     if (ok) {
         channel.multiple_input_stream_flag = stream.set();

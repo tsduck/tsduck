@@ -59,11 +59,7 @@ namespace ts {
             //! @param [in] type Application type.
             //! @param [in] version AIT version number.
             //!
-            Entry(uint16_t type = 0, uint8_t version = 0) :
-                application_type(type),
-                AIT_version_number(version)
-            {
-            }
+            Entry(uint16_t type = 0, uint8_t version = 0);
         };
 
         //!
@@ -92,13 +88,13 @@ namespace ts {
         ApplicationSignallingDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
         DeclareLegacyDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };

@@ -468,7 +468,7 @@ bool ts::TransportProtocolDescriptor::analyzeXML(DuckContext& duck, const xml::E
     xml::ElementVector urls;
 
     bool ok =
-        element->getIntAttribute<uint8_t>(transport_protocol_label, u"transport_protocol_label", true) &&
+        element->getIntAttribute(transport_protocol_label, u"transport_protocol_label", true) &&
         element->getChildren(objcar, u"object_carousel", 0, 1) &&
         element->getChildren(ip, u"ip_mpe", 0, 1) &&
         element->getChildren(htt, u"http", 0, 1) &&
@@ -483,7 +483,7 @@ bool ts::TransportProtocolDescriptor::analyzeXML(DuckContext& duck, const xml::E
         ok = objcar[0]->getOptionalIntAttribute(carousel.original_network_id, u"original_network_id") &&
              objcar[0]->getOptionalIntAttribute(carousel.transport_stream_id, u"transport_stream_id") &&
              objcar[0]->getOptionalIntAttribute(carousel.service_id, u"service_id") &&
-             objcar[0]->getIntAttribute<uint8_t>(carousel.component_tag, u"component_tag", true);
+             objcar[0]->getIntAttribute(carousel.component_tag, u"component_tag", true);
     }
     else if (ok && !ip.empty()) {
         protocol_id = MHP_PROTO_MPE;
@@ -515,7 +515,7 @@ bool ts::TransportProtocolDescriptor::analyzeXML(DuckContext& duck, const xml::E
         }
     }
     else if (ok && !proto.empty()) {
-        ok = proto[0]->getIntAttribute<uint16_t>(protocol_id, u"id", true) &&
+        ok = proto[0]->getIntAttribute(protocol_id, u"id", true) &&
             proto[0]->getHexaText(selector) &&
             transferSelectorBytes(duck);
     }

@@ -107,7 +107,7 @@ void ts::LocalTimeOffsetDescriptor::deserializePayload(PSIBuffer& buf)
     while (buf.canRead()) {
         Region region;
         buf.getLanguageCode(region.country);
-        region.region_id = buf.getBits<uint8_t>(6);
+        buf.getBits(region.region_id, 6);
         buf.skipBits(1);
         const uint8_t polarity = buf.getBit();
         int hours = buf.getBCD<int>(2);
@@ -174,9 +174,9 @@ bool ts::LocalTimeOffsetDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
         Region region;
         ok = children[index]->getAttribute(region.country, u"country_code", true, u"", 3, 3) &&
              children[index]->getIntAttribute<unsigned int>(region.region_id, u"country_region_id", true, 0, 0, 63) &&
-             children[index]->getIntAttribute<int>(region.time_offset, u"local_time_offset", true, 0, -780, 780) &&
+             children[index]->getIntAttribute(region.time_offset, u"local_time_offset", true, 0, -780, 780) &&
              children[index]->getDateTimeAttribute(region.next_change, u"time_of_change", true) &&
-             children[index]->getIntAttribute<int>(region.next_time_offset, u"next_time_offset", true, 0, -780, 780);
+             children[index]->getIntAttribute(region.next_time_offset, u"next_time_offset", true, 0, -780, 780);
         regions.push_back(region);
     }
     return ok;

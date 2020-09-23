@@ -120,8 +120,8 @@ void ts::NBIT::deserializePayload(PSIBuffer& buf, const Section& section)
 
     while (buf.canRead()) {
         Information& info(informations[buf.getUInt16()]);
-        info.information_type = buf.getBits<uint8_t>(4);
-        info.description_body_location = buf.getBits<uint8_t>(2);
+        buf.getBits(info.information_type, 4);
+        buf.getBits(info.description_body_location, 2);
         buf.skipBits(2);
         info.user_defined = buf.getUInt8();
         for (size_t count = buf.getUInt8(); !buf.error() && count > 0; count--) {
@@ -249,9 +249,9 @@ bool ts::NBIT::analyzeXML(DuckContext& duck, const xml::Element* element)
     xml::ElementVector xinfo;
     bool body = true;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint16_t>(original_network_id, u"original_network_id", true) &&
+        element->getIntAttribute(original_network_id, u"original_network_id", true) &&
         element->getBoolAttribute(body, u"body", false, true) &&
         element->getChildren(xinfo, u"information");
 
@@ -265,14 +265,14 @@ bool ts::NBIT::analyzeXML(DuckContext& duck, const xml::Element* element)
     for (auto it1 = xinfo.begin(); ok && it1 != xinfo.end(); ++it1) {
         uint16_t id = 0;
         xml::ElementVector xkey;
-        ok = (*it1)->getIntAttribute<uint16_t>(id, u"information_id", true) &&
-             (*it1)->getIntAttribute<uint8_t>(informations[id].information_type, u"information_type", true, 0, 0, 15) &&
-             (*it1)->getIntAttribute<uint8_t>(informations[id].description_body_location, u"description_body_location", true, 0, 0, 3) &&
-             (*it1)->getIntAttribute<uint8_t>(informations[id].user_defined, u"user_defined", false, 0xFF) &&
+        ok = (*it1)->getIntAttribute(id, u"information_id", true) &&
+             (*it1)->getIntAttribute(informations[id].information_type, u"information_type", true, 0, 0, 15) &&
+             (*it1)->getIntAttribute(informations[id].description_body_location, u"description_body_location", true, 0, 0, 3) &&
+             (*it1)->getIntAttribute(informations[id].user_defined, u"user_defined", false, 0xFF) &&
              informations[id].descs.fromXML(duck, xkey, *it1, u"key");
         for (auto it2 = xkey.begin(); ok && it2 != xkey.end(); ++it2) {
             uint16_t kid = 0;
-            ok = (*it2)->getIntAttribute<uint16_t>(kid, u"id", true);
+            ok = (*it2)->getIntAttribute(kid, u"id", true);
             if (ok) {
                 informations[id].key_ids.push_back(kid);
             }

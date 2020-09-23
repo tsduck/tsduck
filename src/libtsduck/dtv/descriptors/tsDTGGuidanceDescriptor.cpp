@@ -104,7 +104,7 @@ void ts::DTGGuidanceDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::DTGGuidanceDescriptor::deserializePayload(PSIBuffer& buf)
 {
     buf.skipBits(6);
-    guidance_type = buf.getBits<uint8_t>(2);
+    buf.getBits(guidance_type, 2);
     if (guidance_type == 0x01) {
         buf.skipBits(7);
         guidance_mode = buf.getBool();
@@ -172,7 +172,7 @@ void ts::DTGGuidanceDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::DTGGuidanceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(guidance_type, u"guidance_type", true, 0, 0, 3) &&
+    return element->getIntAttribute(guidance_type, u"guidance_type", true, 0, 0, 3) &&
            element->getBoolAttribute(guidance_mode, u"guidance_mode", guidance_type == 1) &&
            element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", guidance_type < 2, UString(), 3, 3) &&
            element->getAttribute(text, u"text", guidance_type < 2, UString(), 0, 250) &&

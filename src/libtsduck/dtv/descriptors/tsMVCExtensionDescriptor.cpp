@@ -181,14 +181,14 @@ void ts::MVCExtensionDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::MVCExtensionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return  element->getIntAttribute<uint16_t>(average_bitrate, u"average_bitrate", true) &&
-            element->getIntAttribute<uint16_t>(maximum_bitrate, u"maximum_bitrate", true) &&
+    return  element->getIntAttribute(average_bitrate, u"average_bitrate", true) &&
+            element->getIntAttribute(maximum_bitrate, u"maximum_bitrate", true) &&
             element->getBoolAttribute(view_association_not_present, u"view_association_not_present", true) &&
             element->getBoolAttribute(base_view_is_left_eyeview, u"base_view_is_left_eyeview", true) &&
-            element->getIntAttribute<uint16_t>(view_order_index_min, u"view_order_index_min", true, 0, 0x0000, 0x03FF) &&
-            element->getIntAttribute<uint16_t>(view_order_index_max, u"view_order_index_max", true, 0, 0x0000, 0x03FF) &&
-            element->getIntAttribute<uint8_t>(temporal_id_start, u"temporal_id_start", true, 0, 0x00, 0x07) &&
-            element->getIntAttribute<uint8_t>(temporal_id_end, u"temporal_id_end", true, 0, 0x00, 0x07) &&
+            element->getIntAttribute(view_order_index_min, u"view_order_index_min", true, 0, 0x0000, 0x03FF) &&
+            element->getIntAttribute(view_order_index_max, u"view_order_index_max", true, 0, 0x0000, 0x03FF) &&
+            element->getIntAttribute(temporal_id_start, u"temporal_id_start", true, 0, 0x00, 0x07) &&
+            element->getIntAttribute(temporal_id_end, u"temporal_id_end", true, 0, 0x00, 0x07) &&
             element->getBoolAttribute(no_sei_nal_unit_present, u"no_sei_nal_unit_present", true) &&
             element->getBoolAttribute(no_prefix_nal_unit_present, u"no_prefix_nal_unit_present", true);
 }

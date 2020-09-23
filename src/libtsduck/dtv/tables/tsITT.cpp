@@ -146,8 +146,8 @@ void ts::ITT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::ITT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+    return element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
            element->getBoolAttribute(is_current, u"current", false, true) &&
-           element->getIntAttribute<uint16_t>(event_id, u"event_id", true) &&
+           element->getIntAttribute(event_id, u"event_id", true) &&
            descs.fromXML(duck, element);
 }

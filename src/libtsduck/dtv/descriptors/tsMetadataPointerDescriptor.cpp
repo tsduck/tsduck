@@ -136,7 +136,7 @@ void ts::MetadataPointerDescriptor::deserializePayload(PSIBuffer& buf)
     }
     metadata_service_id = buf.getUInt8();
     const bool metadata_locator_record_flag = buf.getBool();
-    MPEG_carriage_flags = buf.getBits<uint8_t>(2);
+    buf.getBits(MPEG_carriage_flags, 2);
     buf.skipBits(5);
     if (metadata_locator_record_flag) {
         const size_t length = buf.getUInt8();
@@ -240,15 +240,15 @@ void ts::MetadataPointerDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::MetadataPointerDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(metadata_application_format, u"metadata_application_format", true) &&
-           element->getIntAttribute<uint32_t>(metadata_application_format_identifier, u"metadata_application_format_identifier", metadata_application_format == 0xFFFF) &&
-           element->getIntAttribute<uint8_t>(metadata_format, u"metadata_format", true) &&
-           element->getIntAttribute<uint32_t>(metadata_format_identifier, u"metadata_format_identifier", metadata_format == 0xFF) &&
-           element->getIntAttribute<uint8_t>(metadata_service_id, u"metadata_service_id", true) &&
-           element->getIntAttribute<uint8_t>(MPEG_carriage_flags, u"MPEG_carriage_flags", true, 0, 0, 3) &&
+    return element->getIntAttribute(metadata_application_format, u"metadata_application_format", true) &&
+           element->getIntAttribute(metadata_application_format_identifier, u"metadata_application_format_identifier", metadata_application_format == 0xFFFF) &&
+           element->getIntAttribute(metadata_format, u"metadata_format", true) &&
+           element->getIntAttribute(metadata_format_identifier, u"metadata_format_identifier", metadata_format == 0xFF) &&
+           element->getIntAttribute(metadata_service_id, u"metadata_service_id", true) &&
+           element->getIntAttribute(MPEG_carriage_flags, u"MPEG_carriage_flags", true, 0, 0, 3) &&
            element->getHexaTextChild(metadata_locator, u"metadata_locator", false, 0, 255) &&
-           element->getIntAttribute<uint16_t>(program_number, u"program_number", MPEG_carriage_flags <= 2) &&
-           element->getIntAttribute<uint16_t>(transport_stream_location, u"transport_stream_location", MPEG_carriage_flags == 1) &&
-           element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", MPEG_carriage_flags == 1) &&
+           element->getIntAttribute(program_number, u"program_number", MPEG_carriage_flags <= 2) &&
+           element->getIntAttribute(transport_stream_location, u"transport_stream_location", MPEG_carriage_flags == 1) &&
+           element->getIntAttribute(transport_stream_id, u"transport_stream_id", MPEG_carriage_flags == 1) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, 255);
 }

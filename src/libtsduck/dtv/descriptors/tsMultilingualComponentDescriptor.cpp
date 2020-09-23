@@ -118,5 +118,5 @@ void ts::MultilingualComponentDescriptor::buildXML(DuckContext& duck, xml::Eleme
 bool ts::MultilingualComponentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return AbstractMultilingualDescriptor::analyzeXML(duck, element) &&
-           element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true);
+           element->getIntAttribute(component_tag, u"component_tag", true);
 }

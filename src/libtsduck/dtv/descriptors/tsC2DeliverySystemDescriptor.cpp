@@ -111,9 +111,9 @@ void ts::C2DeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
     plp_id = buf.getUInt8();
     data_slice_id = buf.getUInt8();
     C2_system_tuning_frequency = buf.getUInt32();
-    C2_system_tuning_frequency_type = buf.getBits<uint8_t>(2);
-    active_OFDM_symbol_duration = buf.getBits<uint8_t>(3);
-    guard_interval = buf.getBits<uint8_t>(3);
+    buf.getBits(C2_system_tuning_frequency_type, 2);
+    buf.getBits(active_OFDM_symbol_duration, 3);
+    buf.getBits(guard_interval, 3);
 }
 
 
@@ -180,10 +180,10 @@ void ts::C2DeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::C2DeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return  element->getIntAttribute<uint8_t>(plp_id, u"plp_id", true) &&
-            element->getIntAttribute<uint8_t>(data_slice_id, u"data_slice_id", true) &&
-            element->getIntAttribute<uint32_t>(C2_system_tuning_frequency, u"C2_system_tuning_frequency", true) &&
-            element->getIntAttribute<uint8_t>(C2_system_tuning_frequency_type, u"C2_system_tuning_frequency_type", true, 0, 0, 3) &&
-            element->getIntAttribute<uint8_t>(active_OFDM_symbol_duration, u"active_OFDM_symbol_duration", true, 0, 0, 7) &&
+    return  element->getIntAttribute(plp_id, u"plp_id", true) &&
+            element->getIntAttribute(data_slice_id, u"data_slice_id", true) &&
+            element->getIntAttribute(C2_system_tuning_frequency, u"C2_system_tuning_frequency", true) &&
+            element->getIntAttribute(C2_system_tuning_frequency_type, u"C2_system_tuning_frequency_type", true, 0, 0, 3) &&
+            element->getIntAttribute(active_OFDM_symbol_duration, u"active_OFDM_symbol_duration", true, 0, 0, 7) &&
             element->getIntEnumAttribute(guard_interval, C2GuardIntervalNames, u"guard_interval", true);
 }

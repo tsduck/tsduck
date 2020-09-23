@@ -498,13 +498,17 @@ namespace ts {
             //! @param [in] maxValue Maximum allowed value for the attribute.
             //! @return True on success, false on error.
             //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            template <typename INT,
+                      typename INT1 = INT,
+                      typename INT2 = INT,
+                      typename INT3 = INT,
+                      typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             bool getIntAttribute(INT& value,
                                  const UString& name,
                                  bool required = false,
-                                 INT defValue = 0,
-                                 INT minValue = std::numeric_limits<INT>::min(),
-                                 INT maxValue = std::numeric_limits<INT>::max()) const;
+                                 INT1 defValue = static_cast<INT>(0),
+                                 INT2 minValue = std::numeric_limits<INT>::min(),
+                                 INT3 maxValue = std::numeric_limits<INT>::max()) const;
 
 #if !defined(TSXML_GCC_TEMPLATE_SUBSTITUTION_BUG) || defined(DOXYGEN)
             //!
@@ -518,13 +522,16 @@ namespace ts {
             //! @param [in] maxValue Maximum allowed value for the attribute.
             //! @return True on success, false on error.
             //!
-            template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr, typename INT = typename std::underlying_type<ENUM>::type>
+            template <typename ENUM,
+                      typename INT1 = typename ts::underlying_type<ENUM>::type,
+                      typename INT2 = typename ts::underlying_type<ENUM>::type,
+                      typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr, typename INT = typename std::underlying_type<ENUM>::type>
             bool getIntAttribute(ENUM& value,
                                  const UString& name,
                                  bool required = false,
                                  ENUM defValue = 0,
-                                 INT minValue = 0,
-                                 INT maxValue = std::numeric_limits<INT>::max()) const;
+                                 INT1 minValue = static_cast<typename ts::underlying_type<ENUM>::type>(0),
+                                 INT2 maxValue = std::numeric_limits<typename ts::underlying_type<ENUM>::type>::max()) const;
 #endif
 
             //!
@@ -536,11 +543,14 @@ namespace ts {
             //! @param [in] maxValue Maximum allowed value for the attribute.
             //! @return True on success, false on error.
             //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            template <typename INT,
+                      typename INT1 = INT,
+                      typename INT2 = INT,
+                      typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             bool getOptionalIntAttribute(Variable<INT>& value,
                                          const UString& name,
-                                         INT minValue = std::numeric_limits<INT>::min(),
-                                         INT maxValue = std::numeric_limits<INT>::max()) const;
+                                         INT1 minValue = std::numeric_limits<INT>::min(),
+                                         INT2 maxValue = std::numeric_limits<INT>::max()) const;
 
             //!
             //! Get an optional integer attribute of an XML element.
@@ -556,13 +566,17 @@ namespace ts {
             //! @param [in] maxValue Maximum allowed value for the attribute.
             //! @return True on success, false on error.
             //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            template <typename INT,
+                      typename INT1 = INT,
+                      typename INT2 = INT,
+                      typename INT3 = INT,
+                      typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             bool getVariableIntAttribute(Variable<INT>& value,
                                          const UString& name,
                                          bool required = false,
-                                         INT defValue = 0,
-                                         INT minValue = std::numeric_limits<INT>::min(),
-                                         INT maxValue = std::numeric_limits<INT>::max()) const
+                                         INT1 defValue = static_cast<INT>(0),
+                                         INT2 minValue = std::numeric_limits<INT>::min(),
+                                         INT3 maxValue = std::numeric_limits<INT>::max()) const
             {
                 value.setDefault(defValue);
                 return getIntAttribute(value.value(), name, required, defValue, minValue, maxValue);
@@ -591,8 +605,10 @@ namespace ts {
             //! @param [in] defValue Default value to return if the attribute is not present.
             //! @return True on success, false on error.
             //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
-            bool getIntEnumAttribute(INT& value, const Enumeration& definition, const UString& name, bool required = false, INT defValue = INT(0)) const;
+            template <typename INT,
+                      typename INT1 = INT,
+                      typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+            bool getIntEnumAttribute(INT& value, const Enumeration& definition, const UString& name, bool required = false, INT1 defValue = INT(0)) const;
 
             //!
             //! Get an optional enumeration attribute of an XML element.
@@ -620,8 +636,10 @@ namespace ts {
             //! @param [in] defValue Default value to return if the attribute is not present.
             //! @return True on success, false on error.
             //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
-            bool getVariableIntEnumAttribute(Variable<INT>& value, const Enumeration& definition, const UString& name, bool required = false, INT defValue = INT(0)) const
+            template <typename INT,
+                      typename INT1 = INT,
+                      typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+            bool getVariableIntEnumAttribute(Variable<INT>& value, const Enumeration& definition, const UString& name, bool required = false, INT1 defValue = INT(0)) const
             {
                 value.setDefault(defValue);
                 return getIntEnumAttribute(value.value(), definition, name, required, defValue);

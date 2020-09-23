@@ -134,6 +134,6 @@ void ts::DataComponentDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::DataComponentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(data_component_id, u"data_component_id", true) &&
+    return element->getIntAttribute(data_component_id, u"data_component_id", true) &&
            element->getHexaTextChild(additional_data_component_info, u"additional_data_component_info", false, 0, MAX_DESCRIPTOR_SIZE - 2);
 }

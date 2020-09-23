@@ -110,7 +110,7 @@ void ts::SelectionInformationTable::deserializePayload(PSIBuffer& buf, const Sec
     while (buf.canRead()) {
         Service& srv(services[buf.getUInt16()]);
         buf.skipBits(1);
-        srv.running_status = buf.getBits<uint8_t>(3);
+        buf.getBits(srv.running_status, 3);
         buf.getDescriptorListWithLength(srv.descs);
     }
 }
@@ -177,14 +177,14 @@ bool ts::SelectionInformationTable::analyzeXML(DuckContext& duck, const xml::Ele
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         descs.fromXML(duck, children, element, u"service");
 
     for (size_t index = 0; ok && index < children.size(); ++index) {
         uint16_t id = 0;
-        ok = children[index]->getIntAttribute<uint16_t>(id, u"service_id", true) &&
-             children[index]->getIntEnumAttribute<uint8_t>(services[id].running_status, RST::RunningStatusNames, u"running_status", true);
+        ok = children[index]->getIntAttribute(id, u"service_id", true) &&
+             children[index]->getIntEnumAttribute(services[id].running_status, RST::RunningStatusNames, u"running_status", true);
              services[id].descs.fromXML(duck, children[index]);
     }
     return ok;

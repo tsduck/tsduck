@@ -116,5 +116,5 @@ void ts::AncillaryDataDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::AncillaryDataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(ancillary_data_identifier, u"ancillary_data_identifier", true);
+    return element->getIntAttribute(ancillary_data_identifier, u"ancillary_data_identifier", true);
 }

@@ -147,25 +147,25 @@ void ts::SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
     frequency = 10000 * buf.getBCD<uint64_t>(8); // coded in 10 kHz units
     orbital_position = buf.getBCD<uint16_t>(4);
     east_not_west = buf.getBool();
-    polarization = buf.getBits<uint8_t>(2);
+    buf.getBits(polarization, 2);
 
     if ((buf.duck().standards() & Standards::ISDB) == Standards::ISDB) {
         // ISDB-S variant.
         _system = DS_ISDB_S;
-        modulation = buf.getBits<uint8_t>(5);
+        buf.getBits(modulation, 5);
     }
     else {
         // DVB-S/S2 variant.
-        roll_off = buf.getBits<uint8_t>(2);
+        buf.getBits(roll_off, 2);
         _system = buf.getBool() ? DS_DVB_S2 : DS_DVB_S;
-        modulation = buf.getBits<uint8_t>(2);
+        buf.getBits(modulation, 2);
     }
     if (_system != DS_DVB_S2) {
         roll_off = 0xFF;
     }
 
     symbol_rate = 100 * buf.getBCD<uint64_t>(7); // coded in 100 sym/s units
-    FEC_inner = buf.getBits<uint8_t>(4);
+    buf.getBits(FEC_inner, 4);
 }
 
 
@@ -266,12 +266,12 @@ bool ts::SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const 
 {
     UString orbit;
     bool ok =
-        element->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
+        element->getIntAttribute(frequency, u"frequency", true) &&
         element->getAttribute(orbit, u"orbital_position", true) &&
         element->getIntEnumAttribute(east_not_west, DirectionNames, u"west_east_flag", true) &&
         element->getIntEnumAttribute(polarization, PolarizationNames, u"polarization", true) &&
-        element->getIntEnumAttribute<uint8_t>(roll_off, RollOffNames, u"roll_off", false, 0) &&
-        element->getIntAttribute<uint64_t>(symbol_rate, u"symbol_rate", true) &&
+        element->getIntEnumAttribute(roll_off, RollOffNames, u"roll_off", false, 0) &&
+        element->getIntAttribute(symbol_rate, u"symbol_rate", true) &&
         element->getIntEnumAttribute<DeliverySystem>(_system, DeliverySystemEnum, u"modulation_system", true);
 
     if (ok) {
@@ -280,13 +280,13 @@ bool ts::SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const 
         if (_system == DS_ISDB_S) {
             // ISDB-S variant.
             // Default modulation: ISDB-S (8)
-            ok = element->getIntEnumAttribute<uint8_t>(modulation, ModulationNamesISDB, u"modulation_type", false, 8) &&
+            ok = element->getIntEnumAttribute(modulation, ModulationNamesISDB, u"modulation_type", false, 8) &&
                  element->getIntEnumAttribute(FEC_inner, CodeRateNamesISDB, u"FEC_inner", true);
         }
         else {
             // DVB-S/S2 variant.
             // Default modulation: QPSK (1)
-            ok = element->getIntEnumAttribute<uint8_t>(modulation, ModulationNamesDVB, u"modulation_type", false, 1) &&
+            ok = element->getIntEnumAttribute(modulation, ModulationNamesDVB, u"modulation_type", false, 1) &&
                  element->getIntEnumAttribute(FEC_inner, CodeRateNamesDVB, u"FEC_inner", true);
         }
     }

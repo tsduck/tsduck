@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -72,30 +73,16 @@ ts::CarouselIdentifierDescriptor::CarouselIdentifierDescriptor(DuckContext& duck
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CarouselIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::CarouselIdentifierDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt32(carousel_id);
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.putUInt32(carousel_id);
+    buf.putBytes(private_data);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::CarouselIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::CarouselIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4;
-
-    if (_is_valid) {
-        carousel_id = GetUInt32(data);
-        private_data.copy(data + 4, size - 4);
-    }
+    carousel_id = buf.getUInt32();
+    buf.getBytes(private_data);
 }
 
 
@@ -103,16 +90,11 @@ void ts::CarouselIdentifierDescriptor::deserialize(DuckContext& duck, const Desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CarouselIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CarouselIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        disp << margin << UString::Format(u"Carousel id: 0x%X (%d)", { GetUInt32(data), GetUInt32(data) }) << std::endl;
-        disp.displayPrivateData(u"Private data", data + 4, size - 4, margin);
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+    if (buf.canReadBytes(4)) {
+        disp << margin << UString::Format(u"Carousel id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }
 
@@ -129,13 +111,8 @@ void ts::CarouselIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element*
     }
 }
 
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
 bool ts::CarouselIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint32_t>(carousel_id, u"carousel_id", true) &&
+    return element->getIntAttribute(carousel_id, u"carousel_id", true) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 6);
 }

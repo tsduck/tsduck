@@ -160,8 +160,8 @@ void ts::AudioPreselectionDescriptor::deserializePayload(PSIBuffer& buf)
 
     while (!buf.error() && numEntries > 0) {
         PreSelection sel;
-        sel.preselection_id = buf.getBits<uint8_t>(5);
-        sel.audio_rendering_indication = buf.getBits<uint8_t>(3);
+        buf.getBits(sel.preselection_id, 5);
+        buf.getBits(sel.audio_rendering_indication, 3);
         sel.audio_description = buf.getBool();
         sel.spoken_subtitles = buf.getBool();
         sel.dialogue_enhancement = buf.getBool();
@@ -283,21 +283,21 @@ bool ts::AudioPreselectionDescriptor::analyzeXML(DuckContext& duck, const xml::E
         PreSelection sel;
         xml::ElementVector msi;
         xml::ElementVector comps;
-        ok = children[i]->getIntAttribute<uint8_t>(sel.preselection_id, u"preselection_id", true, 0, 0x00, 0x1F) &&
-             children[i]->getIntAttribute<uint8_t>(sel.audio_rendering_indication, u"audio_rendering_indication", true, 0, 0x00, 0x07) &&
+        ok = children[i]->getIntAttribute(sel.preselection_id, u"preselection_id", true, 0, 0x00, 0x1F) &&
+             children[i]->getIntAttribute(sel.audio_rendering_indication, u"audio_rendering_indication", true, 0, 0x00, 0x07) &&
              children[i]->getBoolAttribute(sel.audio_description, u"audio_description", false, false) &&
              children[i]->getBoolAttribute(sel.spoken_subtitles, u"spoken_subtitles", false, false) &&
              children[i]->getBoolAttribute(sel.dialogue_enhancement, u"dialogue_enhancement", false, false) &&
              children[i]->getBoolAttribute(sel.interactivity_enabled, u"interactivity_enabled", false, false) &&
              children[i]->getAttribute(sel.ISO_639_language_code, u"ISO_639_language_code", false, u"", 3, 3) &&
-             children[i]->getOptionalIntAttribute<uint8_t>(sel.message_id, u"message_id") &&
+             children[i]->getOptionalIntAttribute(sel.message_id, u"message_id") &&
              children[i]->getChildren(msi, u"multi_stream_info", 0, 1) &&
              (msi.empty() || msi.front()->getChildren(comps, u"component", 0, 0x07)) &&
              children[i]->getHexaTextChild(sel.future_extension, u"future_extension", false, 0, 0x1F);
 
         for (size_t i2 = 0; ok && i2 < comps.size(); ++i2) {
             uint8_t t = 0;
-            ok = comps[i2]->getIntAttribute<uint8_t>(t, u"tag", true);
+            ok = comps[i2]->getIntAttribute(t, u"tag", true);
             sel.aux_component_tags.push_back(t);
         }
         entries.push_back(sel);

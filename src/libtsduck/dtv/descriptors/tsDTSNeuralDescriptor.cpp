@@ -109,7 +109,7 @@ void ts::DTSNeuralDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::DTSNeuralDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(config_id, u"config_id", true) &&
+    return element->getIntAttribute(config_id, u"config_id", true) &&
            element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 4);
 }
 

@@ -217,7 +217,7 @@ bool ts::TSInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
 {
     xml::ElementVector xtype;
     bool ok =
-        element->getIntAttribute<uint8_t>(remote_control_key_id, u"remote_control_key_id", true) &&
+        element->getIntAttribute(remote_control_key_id, u"remote_control_key_id", true) &&
         element->getAttribute(ts_name, u"ts_name", true) &&
         element->getHexaTextChild(reserved_future_use, u"reserved_future_use") &&
         element->getChildren(xtype, u"transmission_type", 0, 3);
@@ -225,11 +225,11 @@ bool ts::TSInformationDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
     for (auto it1 = xtype.begin(); ok && it1 != xtype.end(); ++it1) {
         Entry e;
         xml::ElementVector xserv;
-        ok = (*it1)->getIntAttribute<uint8_t>(e.transmission_type_info, u"transmission_type_info", true) &&
+        ok = (*it1)->getIntAttribute(e.transmission_type_info, u"transmission_type_info", true) &&
              (*it1)->getChildren(xserv, u"service");
         for (auto it2 = xserv.begin(); ok && it2 != xserv.end(); ++it2) {
             uint16_t id = 0;
-            ok = (*it2)->getIntAttribute<uint16_t>(id, u"id", true);
+            ok = (*it2)->getIntAttribute(id, u"id", true);
             e.service_ids.push_back(id);
         }
         transmission_types.push_back(e);

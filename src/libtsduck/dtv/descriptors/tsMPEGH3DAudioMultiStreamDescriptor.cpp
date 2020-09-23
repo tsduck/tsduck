@@ -130,20 +130,20 @@ void ts::MPEGH3DAudioMultiStreamDescriptor::serializePayload(PSIBuffer& buf) con
 void ts::MPEGH3DAudioMultiStreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
     this_is_main_stream = buf.getBool();
-    this_stream_id = buf.getBits<uint8_t>(7);
+    buf.getBits(this_stream_id, 7);
     if (this_is_main_stream) {
         buf.skipBits(1);
-        num_auxiliary_streams = buf.getBits<uint8_t>(7);
+        buf.getBits(num_auxiliary_streams, 7);
         buf.skipBits(1);
         const size_t count = buf.getBits<size_t>(7);
         for (size_t i = 0; i < count && !buf.error(); ++i) {
             Group gr;
-            gr.mae_group_id = buf.getBits<uint8_t>(7);
+            buf.getBits(gr.mae_group_id, 7);
             gr.is_in_main_stream = buf.getBool();
             // See warning [1] above.
             if (!gr.is_in_main_stream) {
                 gr.is_in_ts = buf.getBool();
-                gr.auxiliary_stream_id = buf.getBits<uint8_t>(7);
+                buf.getBits(gr.auxiliary_stream_id, 7);
             }
             mae_groups.push_back(gr);
         }
@@ -218,18 +218,18 @@ bool ts::MPEGH3DAudioMultiStreamDescriptor::analyzeXML(DuckContext& duck, const 
     xml::ElementVector xgroup;
     bool ok =
         element->getBoolAttribute(this_is_main_stream, u"this_is_main_stream", true) &&
-        element->getIntAttribute<uint8_t>(this_stream_id, u"this_stream_id", true, 0, 0, 0x7F) &&
-        element->getIntAttribute<uint8_t>(num_auxiliary_streams, u"num_auxiliary_streams", this_is_main_stream, 0, 0, 0x7F) &&
+        element->getIntAttribute(this_stream_id, u"this_stream_id", true, 0, 0, 0x7F) &&
+        element->getIntAttribute(num_auxiliary_streams, u"num_auxiliary_streams", this_is_main_stream, 0, 0, 0x7F) &&
         element->getChildren(xgroup, u"mae_group", 0, this_is_main_stream ? 127 : 0) &&
         element->getHexaTextChild(reserved, u"reserved", false, 0, 255);
 
     for (auto it = xgroup.begin(); it != xgroup.end(); ++it) {
         Group gr;
-        ok = (*it)->getIntAttribute<uint8_t>(gr.mae_group_id, u"mae_group_id", true, 0, 0, 0x7F) &&
+        ok = (*it)->getIntAttribute(gr.mae_group_id, u"mae_group_id", true, 0, 0, 0x7F) &&
              (*it)->getBoolAttribute(gr.is_in_main_stream, u"is_in_main_stream", true) &&
              // See warning [1] above.
              (*it)->getBoolAttribute(gr.is_in_ts, u"is_in_ts", !gr.is_in_main_stream) &&
-             (*it)->getIntAttribute<uint8_t>(gr.auxiliary_stream_id, u"auxiliary_stream_id", !gr.is_in_main_stream, 0, 0, 0x7F);
+             (*it)->getIntAttribute(gr.auxiliary_stream_id, u"auxiliary_stream_id", !gr.is_in_main_stream, 0, 0, 0x7F);
         mae_groups.push_back(gr);
     }
     return ok;

@@ -287,10 +287,10 @@ bool ts::AIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getBoolAttribute(test_application_flag, u"test_application_flag", false, true) &&
-        element->getIntAttribute<uint16_t>(application_type, u"application_type", true, 0, 0x0000, 0x7FFF) &&
+        element->getIntAttribute(application_type, u"application_type", true, 0, 0x0000, 0x7FFF) &&
         descs.fromXML(duck, children, element, u"application");
 
     // Iterate through applications
@@ -301,11 +301,11 @@ bool ts::AIT::analyzeXML(DuckContext& duck, const xml::Element* element)
         xml::ElementVector others;
         UStringList allowed({ u"application_identifier" });
 
-        ok = children[index]->getIntAttribute<uint8_t>(application.control_code, u"control_code", true, 0, 0x00, 0xFF) &&
+        ok = children[index]->getIntAttribute(application.control_code, u"control_code", true, 0, 0x00, 0xFF) &&
              application.descs.fromXML(duck, others, children[index], allowed) &&
              id != nullptr &&
-             id->getIntAttribute<uint32_t>(identifier.organization_id, u"organization_id", true, 0, 0, 0xFFFFFFFF) &&
-             id->getIntAttribute<uint16_t>(identifier.application_id, u"application_id", true, 0, 0, 0xFFFF);
+             id->getIntAttribute(identifier.organization_id, u"organization_id", true, 0, 0, 0xFFFFFFFF) &&
+             id->getIntAttribute(identifier.application_id, u"application_id", true, 0, 0, 0xFFFF);
 
         if (ok) {
             applications[identifier] = application;

@@ -148,9 +148,9 @@ void ts::ETT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::ETT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
-           element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
-           element->getIntAttribute<uint16_t>(ETT_table_id_extension, u"ETT_table_id_extension", true) &&
-           element->getIntAttribute<uint32_t>(ETM_id, u"ETM_id", true) &&
+    return element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
+           element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
+           element->getIntAttribute(ETT_table_id_extension, u"ETT_table_id_extension", true) &&
+           element->getIntAttribute(ETM_id, u"ETM_id", true) &&
            extended_text_message.fromXML(duck, element, u"extended_text_message", false);
 }

@@ -143,19 +143,19 @@ void ts::ImageIconDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::ImageIconDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    descriptor_number = buf.getBits<uint8_t>(4);
-    last_descriptor_number = buf.getBits<uint8_t>(4);
+    buf.getBits(descriptor_number, 4);
+    buf.getBits(last_descriptor_number, 4);
     buf.skipBits(5);
-    icon_id = buf.getBits<uint8_t>(3);
+    buf.getBits(icon_id, 3);
 
     if (descriptor_number == 0) {
-        icon_transport_mode = buf.getBits<uint8_t>(2);
+        buf.getBits(icon_transport_mode, 2);
         has_position = buf.getBool();
         if (has_position) {
-            coordinate_system = buf.getBits<uint8_t>(3);
+            buf.getBits(coordinate_system, 3);
             buf.skipBits(2);
-            icon_horizontal_origin = buf.getBits<uint16_t>(12);
-            icon_vertical_origin = buf.getBits<uint16_t>(12);
+            buf.getBits(icon_horizontal_origin, 12);
+            buf.getBits(icon_vertical_origin, 12);
         }
         else {
             buf.skipBits(5);
@@ -283,13 +283,13 @@ bool ts::ImageIconDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->hasAttribute(u"icon_horizontal_origin") ||
         element->hasAttribute(u"icon_vertical_origin");
 
-    return  element->getIntAttribute<uint8_t>(descriptor_number, u"descriptor_number", true, 0, 0x00, 0x0F) &&
-            element->getIntAttribute<uint8_t>(last_descriptor_number, u"last_descriptor_number", true, 0, 0x00, 0x0F) &&
-            element->getIntAttribute<uint8_t>(icon_id, u"icon_id", true, 0, 0x00, 0x07) &&
-            element->getIntAttribute<uint8_t>(icon_transport_mode, u"icon_transport_mode", descriptor_number == 0, 0, 0x00, 0x03) &&
-            element->getIntAttribute<uint8_t>(coordinate_system, u"coordinate_system", descriptor_number == 0 && has_position, 0, 0x00, 0x07) &&
-            element->getIntAttribute<uint16_t>(icon_horizontal_origin, u"icon_horizontal_origin", descriptor_number == 0 && has_position, 0, 0x0000, 0x0FFF) &&
-            element->getIntAttribute<uint16_t>(icon_vertical_origin, u"icon_vertical_origin", descriptor_number == 0 && has_position, 0, 0x0000, 0x0FFF) &&
+    return  element->getIntAttribute(descriptor_number, u"descriptor_number", true, 0, 0x00, 0x0F) &&
+            element->getIntAttribute(last_descriptor_number, u"last_descriptor_number", true, 0, 0x00, 0x0F) &&
+            element->getIntAttribute(icon_id, u"icon_id", true, 0, 0x00, 0x07) &&
+            element->getIntAttribute(icon_transport_mode, u"icon_transport_mode", descriptor_number == 0, 0, 0x00, 0x03) &&
+            element->getIntAttribute(coordinate_system, u"coordinate_system", descriptor_number == 0 && has_position, 0, 0x00, 0x07) &&
+            element->getIntAttribute(icon_horizontal_origin, u"icon_horizontal_origin", descriptor_number == 0 && has_position, 0, 0x0000, 0x0FFF) &&
+            element->getIntAttribute(icon_vertical_origin, u"icon_vertical_origin", descriptor_number == 0 && has_position, 0, 0x0000, 0x0FFF) &&
             element->getAttribute(icon_type, u"icon_type", descriptor_number == 0) &&
             element->getAttribute(url, u"url", descriptor_number == 0 && icon_transport_mode == 1) &&
             element->getHexaTextChild(icon_data, u"icon_data", false);

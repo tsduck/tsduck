@@ -119,7 +119,7 @@ void ts::ConditionalPlaybackDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::ConditionalPlaybackDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
+    return element->getIntAttribute(CA_system_id, u"CA_system_id", true) &&
            element->getIntAttribute<PID>(CA_pid, u"CA_PID", true, 0, 0x0000, 0x1FFF) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 4);
 }

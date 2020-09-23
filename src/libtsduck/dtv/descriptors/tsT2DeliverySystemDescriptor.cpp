@@ -158,11 +158,11 @@ void ts::T2DeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
     has_extension = buf.canRead();
 
     if (has_extension) {
-        SISO_MISO = buf.getBits<uint8_t>(2);
-        bandwidth = buf.getBits<uint8_t>(4);
+        buf.getBits(SISO_MISO, 2);
+        buf.getBits(bandwidth, 4);
         buf.skipBits(2);
-        guard_interval = buf.getBits<uint8_t>(3);
-        transmission_mode = buf.getBits<uint8_t>(3);
+        buf.getBits(guard_interval, 3);
+        buf.getBits(transmission_mode, 3);
         other_frequency = buf.getBool();
         tfs = buf.getBool();
         while (buf.canRead()) {

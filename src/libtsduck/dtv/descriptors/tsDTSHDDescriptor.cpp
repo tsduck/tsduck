@@ -197,9 +197,9 @@ void ts::DTSHDDescriptor::DeserializeSubstreamInfo(Variable<SubstreamInfo>& info
         buf.pushReadSizeFromLength(8); // start read sequence
 
         const size_t num_assets = buf.getBits<size_t>(3) + 1;
-        si.channel_count = buf.getBits<uint8_t>(5);
+        buf.getBits(si.channel_count, 5);
         si.LFE = buf.getBool();
-        si.sampling_frequency = buf.getBits<uint8_t>(4);
+        buf.getBits(si.sampling_frequency, 4);
         si.sample_resolution = buf.getBool();
         buf.skipBits(2);
 
@@ -210,12 +210,12 @@ void ts::DTSHDDescriptor::DeserializeSubstreamInfo(Variable<SubstreamInfo>& info
             si.asset_info.resize(si.asset_info.size() + 1);
             AssetInfo& ai(si.asset_info.back());
 
-            ai.asset_construction = buf.getBits<uint8_t>(5);
+            buf.getBits(ai.asset_construction, 5);
             ai.vbr = buf.getBool();
             ai.post_encode_br_scaling = buf.getBool();
             const bool component_type_flag = buf.getBool();
             const bool language_code_flag = buf.getBool();
-            ai.bit_rate = buf.getBits<uint16_t>(13);
+            buf.getBits(ai.bit_rate, 13);
             buf.skipBits(2);
             if (component_type_flag) {
                 ai.component_type = buf.getUInt8();
@@ -386,9 +386,9 @@ bool ts::DTSHDDescriptor::SubstreamInfoFromXML(Variable<SubstreamInfo>& info, co
         xml::ElementVector xassets;
 
         bool valid =
-            x->getIntAttribute<uint8_t>(si.channel_count, u"channel_count", true, 0, 0, 0x1F) &&
+            x->getIntAttribute(si.channel_count, u"channel_count", true, 0, 0, 0x1F) &&
             x->getBoolAttribute(si.LFE, u"LFE", true) &&
-            x->getIntAttribute<uint8_t>(si.sampling_frequency, u"sampling_frequency", true, 0, 0, 0x0F) &&
+            x->getIntAttribute(si.sampling_frequency, u"sampling_frequency", true, 0, 0, 0x0F) &&
             x->getBoolAttribute(si.sample_resolution, u"sample_resolution", true) &&
             x->getChildren(xassets, u"asset_info", 1, 8);
 
@@ -396,11 +396,11 @@ bool ts::DTSHDDescriptor::SubstreamInfoFromXML(Variable<SubstreamInfo>& info, co
             si.asset_info.resize(si.asset_info.size() + 1);
             AssetInfo& ai(si.asset_info.back());
             valid =
-                xassets[i]->getIntAttribute<uint8_t>(ai.asset_construction, u"asset_construction", true, 0, 0, 0x1F) &&
+                xassets[i]->getIntAttribute(ai.asset_construction, u"asset_construction", true, 0, 0, 0x1F) &&
                 xassets[i]->getBoolAttribute(ai.vbr, u"vbr", true) &&
                 xassets[i]->getBoolAttribute(ai.post_encode_br_scaling, u"post_encode_br_scaling", true) &&
-                xassets[i]->getIntAttribute<uint16_t>(ai.bit_rate, u"bit_rate", true, 0, 0, 0x1FFF) &&
-                xassets[i]->getOptionalIntAttribute<uint8_t>(ai.component_type, u"component_type") &&
+                xassets[i]->getIntAttribute(ai.bit_rate, u"bit_rate", true, 0, 0, 0x1FFF) &&
+                xassets[i]->getOptionalIntAttribute(ai.component_type, u"component_type") &&
                 xassets[i]->getOptionalAttribute(ai.ISO_639_language_code, u"ISO_639_language_code", 3, 3);
         }
         return valid;

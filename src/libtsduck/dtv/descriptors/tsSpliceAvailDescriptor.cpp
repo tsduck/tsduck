@@ -113,6 +113,6 @@ void ts::SpliceAvailDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::SpliceAvailDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint32_t>(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
-           element->getIntAttribute<uint32_t>(provider_avail_id, u"provider_avail_id", true);
+    return element->getIntAttribute(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
+           element->getIntAttribute(provider_avail_id, u"provider_avail_id", true);
 }

@@ -1080,11 +1080,11 @@ size_t ts::Buffer::putBytes(const uint8_t* buffer, size_t bytes)
 // Read the next bit and advance the bitstream pointer.
 //----------------------------------------------------------------------------
 
-uint8_t ts::Buffer::getBit(uint8_t def)
+uint8_t ts::Buffer::getBit()
 {
     if (_read_error || endOfRead()) {
         _read_error = true;
-        return def;
+        return 0;
     }
 
     assert(_state.rbyte < _buffer_size);

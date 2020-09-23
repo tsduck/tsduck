@@ -163,7 +163,7 @@ void ts::SDT::deserializePayload(PSIBuffer& buf, const Section& section)
         buf.skipBits(6);
         serv.EITs_present = buf.getBool();
         serv.EITpf_present = buf.getBool();
-        serv.running_status = buf.getBits<uint8_t>(3);
+        buf.getBits(serv.running_status, 3);
         serv.CA_controlled = buf.getBool();
         buf.getDescriptorListWithLength(serv.descs);
     }
@@ -368,10 +368,10 @@ bool ts::SDT::analyzeXML(DuckContext& duck, const xml::Element* element)
     xml::ElementVector children;
     bool actual = true;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint16_t>(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-        element->getIntAttribute<uint16_t>(onetw_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getIntAttribute(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getIntAttribute(onetw_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
         element->getBoolAttribute(actual, u"actual", false, true) &&
         element->getChildren(children, u"service");
 
@@ -380,7 +380,7 @@ bool ts::SDT::analyzeXML(DuckContext& duck, const xml::Element* element)
     for (size_t index = 0; ok && index < children.size(); ++index) {
         uint16_t id = 0;
         int rs = 0;
-        ok = children[index]->getIntAttribute<uint16_t>(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+        ok = children[index]->getIntAttribute(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
              children[index]->getBoolAttribute(services[id].EITs_present, u"EIT_schedule", false, false) &&
              children[index]->getBoolAttribute(services[id].EITpf_present, u"EIT_present_following", false, false) &&
              children[index]->getBoolAttribute(services[id].CA_controlled, u"CA_mode", false, false) &&

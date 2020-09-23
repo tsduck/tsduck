@@ -102,9 +102,9 @@ void ts::T2MIDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::T2MIDescriptor::deserializePayload(PSIBuffer& buf)
 {
     buf.skipBits(5);
-    t2mi_stream_id = buf.getBits<uint8_t>(3);
+    buf.getBits(t2mi_stream_id, 3);
     buf.skipBits(5);
-    num_t2mi_streams_minus_one = buf.getBits<uint8_t>(3);
+    buf.getBits(num_t2mi_streams_minus_one, 3);
     buf.skipBits(7);
     pcr_iscr_common_clock_flag = buf.getBool();
     buf.getBytes(reserved);
@@ -125,8 +125,8 @@ void ts::T2MIDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::T2MIDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(t2mi_stream_id, u"t2mi_stream_id", true, 0, 0, 7) &&
-           element->getIntAttribute<uint8_t>(num_t2mi_streams_minus_one, u"num_t2mi_streams_minus_one", false, 0, 0, 7) &&
+    return element->getIntAttribute(t2mi_stream_id, u"t2mi_stream_id", true, 0, 0, 7) &&
+           element->getIntAttribute(num_t2mi_streams_minus_one, u"num_t2mi_streams_minus_one", false, 0, 0, 7) &&
            element->getBoolAttribute(pcr_iscr_common_clock_flag, u"pcr_iscr_common_clock_flag", false, false) &&
            element->getHexaTextChild(reserved, u"reserved", false, 0, MAX_DESCRIPTOR_SIZE - 6);
 }

@@ -139,7 +139,7 @@ bool ts::ServiceAvailabilityDescriptor::analyzeXML(DuckContext& duck, const xml:
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         uint16_t id = 0;
-        ok = children[i]->getIntAttribute<uint16_t>(id, u"id", true);
+        ok = children[i]->getIntAttribute(id, u"id", true);
         cell_ids.push_back(id);
     }
     return ok;

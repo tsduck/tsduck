@@ -110,5 +110,5 @@ void ts::ApplicationUsageDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::ApplicationUsageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(usage_type, u"usage_type", true);
+    return element->getIntAttribute(usage_type, u"usage_type", true);
 }

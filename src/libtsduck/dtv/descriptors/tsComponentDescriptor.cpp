@@ -98,8 +98,8 @@ void ts::ComponentDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::ComponentDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    stream_content_ext = buf.getBits<uint8_t>(4);
-    stream_content = buf.getBits<uint8_t>(4);
+    buf.getBits(stream_content_ext, 4);
+    buf.getBits(stream_content, 4);
     component_type = buf.getUInt8();
     component_tag = buf.getUInt8();
     buf.getLanguageCode(language_code);
@@ -145,10 +145,10 @@ void ts::ComponentDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::ComponentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(stream_content, u"stream_content", true, 0x00, 0x00, 0x0F) &&
-           element->getIntAttribute<uint8_t>(stream_content_ext, u"stream_content_ext", false, 0x0F, 0x00, 0x0F) &&
-           element->getIntAttribute<uint8_t>(component_type, u"component_type", true, 0x00, 0x00, 0xFF) &&
-           element->getIntAttribute<uint8_t>(component_tag, u"component_tag", false, 0x00, 0x00, 0xFF) &&
+    return element->getIntAttribute(stream_content, u"stream_content", true, 0x00, 0x00, 0x0F) &&
+           element->getIntAttribute(stream_content_ext, u"stream_content_ext", false, 0x0F, 0x00, 0x0F) &&
+           element->getIntAttribute(component_type, u"component_type", true, 0x00, 0x00, 0xFF) &&
+           element->getIntAttribute(component_tag, u"component_tag", false, 0x00, 0x00, 0xFF) &&
            element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
            element->getAttribute(text, u"text", false, u"", 0, MAX_DESCRIPTOR_SIZE - 8);
 }

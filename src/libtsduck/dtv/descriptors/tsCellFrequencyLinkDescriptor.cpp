@@ -179,13 +179,13 @@ bool ts::CellFrequencyLinkDescriptor::analyzeXML(DuckContext& duck, const xml::E
     for (size_t i1 = 0; ok && i1 < xcells.size(); ++i1) {
         Cell cell;
         xml::ElementVector xsubcells;
-        ok = xcells[i1]->getIntAttribute<uint16_t>(cell.cell_id, u"cell_id", true) &&
-             xcells[i1]->getIntAttribute<uint64_t>(cell.frequency, u"frequency", true) &&
+        ok = xcells[i1]->getIntAttribute(cell.cell_id, u"cell_id", true) &&
+             xcells[i1]->getIntAttribute(cell.frequency, u"frequency", true) &&
              xcells[i1]->getChildren(xsubcells, u"subcell");
         for (size_t i2 = 0; ok && i2 < xsubcells.size(); ++i2) {
             Subcell sub;
-            ok = xsubcells[i2]->getIntAttribute<uint8_t>(sub.cell_id_extension, u"cell_id_extension", true) &&
-                 xsubcells[i2]->getIntAttribute<uint64_t>(sub.transposer_frequency, u"transposer_frequency", true);
+            ok = xsubcells[i2]->getIntAttribute(sub.cell_id_extension, u"cell_id_extension", true) &&
+                 xsubcells[i2]->getIntAttribute(sub.transposer_frequency, u"transposer_frequency", true);
             cell.subcells.push_back(sub);
         }
         cells.push_back(cell);

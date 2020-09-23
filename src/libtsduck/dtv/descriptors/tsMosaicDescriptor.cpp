@@ -139,15 +139,15 @@ void ts::MosaicDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::MosaicDescriptor::deserializePayload(PSIBuffer& buf)
 {
     mosaic_entry_point = buf.getBool();
-    number_of_horizontal_elementary_cells = buf.getBits<uint8_t>(3);
+    buf.getBits(number_of_horizontal_elementary_cells, 3);
     buf.skipBits(1);
-    number_of_vertical_elementary_cells = buf.getBits<uint8_t>(3);
+    buf.getBits(number_of_vertical_elementary_cells, 3);
 
     while (buf.canRead()) {
         Cell cell;
-        cell.logical_cell_id = buf.getBits<uint8_t>(6);
+        buf.getBits(cell.logical_cell_id, 6);
         buf.skipBits(7);
-        cell.logical_cell_presentation_info = buf.getBits<uint8_t>(3);
+        buf.getBits(cell.logical_cell_presentation_info, 3);
         buf.pushReadSizeFromLength(8); // elementary_cell_field_length
         while (buf.canRead()) {
             buf.skipBits(2);
@@ -305,25 +305,25 @@ bool ts::MosaicDescriptor::analyzeXML(DuckContext& duck, const xml::Element* ele
     xml::ElementVector xcells;
     bool ok =
         element->getBoolAttribute(mosaic_entry_point, u"mosaic_entry_point", true) &&
-        element->getIntAttribute<uint8_t>(number_of_horizontal_elementary_cells, u"number_of_horizontal_elementary_cells", true, 0, 0, 7) &&
-        element->getIntAttribute<uint8_t>(number_of_vertical_elementary_cells, u"number_of_vertical_elementary_cells", true, 0, 0, 7) &&
+        element->getIntAttribute(number_of_horizontal_elementary_cells, u"number_of_horizontal_elementary_cells", true, 0, 0, 7) &&
+        element->getIntAttribute(number_of_vertical_elementary_cells, u"number_of_vertical_elementary_cells", true, 0, 0, 7) &&
         element->getChildren(xcells, u"cell");
 
     for (size_t i1 = 0; ok && i1 < xcells.size(); ++i1) {
         Cell cell;
         xml::ElementVector xids;
-        ok = xcells[i1]->getIntAttribute<uint8_t>(cell.logical_cell_id, u"logical_cell_id", true, 0, 0x00, 0x3F) &&
-             xcells[i1]->getIntAttribute<uint8_t>(cell.logical_cell_presentation_info, u"logical_cell_presentation_info", true, 0, 0x00, 0x07) &&
-             xcells[i1]->getIntAttribute<uint8_t>(cell.cell_linkage_info, u"cell_linkage_info", true) &&
-             xcells[i1]->getIntAttribute<uint16_t>(cell.bouquet_id, u"bouquet_id", cell.cell_linkage_info == 1) &&
-             xcells[i1]->getIntAttribute<uint16_t>(cell.original_network_id, u"original_network_id", cell.cell_linkage_info >= 2 && cell.cell_linkage_info <= 4) &&
-             xcells[i1]->getIntAttribute<uint16_t>(cell.transport_stream_id, u"transport_stream_id", cell.cell_linkage_info >= 2 && cell.cell_linkage_info <= 4) &&
-             xcells[i1]->getIntAttribute<uint16_t>(cell.service_id, u"service_id", cell.cell_linkage_info >= 2 && cell.cell_linkage_info <= 4) &&
-             xcells[i1]->getIntAttribute<uint16_t>(cell.event_id, u"event_id", cell.cell_linkage_info == 4) &&
+        ok = xcells[i1]->getIntAttribute(cell.logical_cell_id, u"logical_cell_id", true, 0, 0x00, 0x3F) &&
+             xcells[i1]->getIntAttribute(cell.logical_cell_presentation_info, u"logical_cell_presentation_info", true, 0, 0x00, 0x07) &&
+             xcells[i1]->getIntAttribute(cell.cell_linkage_info, u"cell_linkage_info", true) &&
+             xcells[i1]->getIntAttribute(cell.bouquet_id, u"bouquet_id", cell.cell_linkage_info == 1) &&
+             xcells[i1]->getIntAttribute(cell.original_network_id, u"original_network_id", cell.cell_linkage_info >= 2 && cell.cell_linkage_info <= 4) &&
+             xcells[i1]->getIntAttribute(cell.transport_stream_id, u"transport_stream_id", cell.cell_linkage_info >= 2 && cell.cell_linkage_info <= 4) &&
+             xcells[i1]->getIntAttribute(cell.service_id, u"service_id", cell.cell_linkage_info >= 2 && cell.cell_linkage_info <= 4) &&
+             xcells[i1]->getIntAttribute(cell.event_id, u"event_id", cell.cell_linkage_info == 4) &&
              xcells[i1]->getChildren(xids, u"elementary_cell");
         for (size_t i2 = 0; ok && i2 < xids.size(); ++i2) {
             uint8_t id = 0;
-            ok = xids[i2]->getIntAttribute<uint8_t>(id, u"id", true, 0, 0x00, 0x3F);
+            ok = xids[i2]->getIntAttribute(id, u"id", true, 0, 0x00, 0x3F);
             cell.elementary_cell_ids.push_back(id);
         }
         cells.push_back(cell);

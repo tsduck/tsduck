@@ -145,9 +145,9 @@ bool ts::NVODReferenceDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        ok = children[i]->getIntAttribute<uint16_t>(entry.transport_stream_id, u"transport_stream_id", true) &&
-             children[i]->getIntAttribute<uint16_t>(entry.original_network_id, u"original_network_id", true) &&
-             children[i]->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true);
+        ok = children[i]->getIntAttribute(entry.transport_stream_id, u"transport_stream_id", true) &&
+             children[i]->getIntAttribute(entry.original_network_id, u"original_network_id", true) &&
+             children[i]->getIntAttribute(entry.service_id, u"service_id", true);
         entries.push_back(entry);
     }
     return ok;

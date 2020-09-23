@@ -123,7 +123,7 @@ void ts::AVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
     constraint_set3 = buf.getBool();
     constraint_set4 = buf.getBool();
     constraint_set5 = buf.getBool();
-    AVC_compatible_flags = buf.getBits<uint8_t>(2);
+    buf.getBits(AVC_compatible_flags, 2);
     level_idc = buf.getUInt8();
     AVC_still_present = buf.getBool();
     AVC_24_hour_picture = buf.getBool();
@@ -187,15 +187,15 @@ void ts::AVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 
 bool ts::AVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return  element->getIntAttribute<uint8_t>(profile_idc, u"profile_idc", true, 0, 0x00, 0xFF) &&
+    return  element->getIntAttribute(profile_idc, u"profile_idc", true, 0, 0x00, 0xFF) &&
             element->getBoolAttribute(constraint_set0, u"constraint_set0", true) &&
             element->getBoolAttribute(constraint_set1, u"constraint_set1", true) &&
             element->getBoolAttribute(constraint_set2, u"constraint_set2", true) &&
             element->getBoolAttribute(constraint_set3, u"constraint_set3", false, false) &&
             element->getBoolAttribute(constraint_set4, u"constraint_set4", false, false) &&
             element->getBoolAttribute(constraint_set5, u"constraint_set5", false, false) &&
-            element->getIntAttribute<uint8_t>(AVC_compatible_flags, u"AVC_compatible_flags", true, 0, 0x00, 0x03) &&
-            element->getIntAttribute<uint8_t>(level_idc, u"level_idc", true, 0, 0x00, 0xFF) &&
+            element->getIntAttribute(AVC_compatible_flags, u"AVC_compatible_flags", true, 0, 0x00, 0x03) &&
+            element->getIntAttribute(level_idc, u"level_idc", true, 0, 0x00, 0xFF) &&
             element->getBoolAttribute(AVC_still_present, u"AVC_still_present", true) &&
             element->getBoolAttribute(AVC_24_hour_picture, u"AVC_24_hour_picture", true) &&
             element->getBoolAttribute(frame_packing_SEI_not_present, u"frame_packing_SEI_not_present", false, false);

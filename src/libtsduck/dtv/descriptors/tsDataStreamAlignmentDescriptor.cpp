@@ -105,5 +105,5 @@ void ts::DataStreamAlignmentDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::DataStreamAlignmentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(alignment_type, u"alignment_type", true);
+    return element->getIntAttribute(alignment_type, u"alignment_type", true);
 }

@@ -167,13 +167,13 @@ bool ts::ServiceLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute<uint16_t>(PCR_PID, u"PCR_PID", false, PID_NULL, 0, 0x1FFF) &&
+        element->getIntAttribute(PCR_PID, u"PCR_PID", false, PID_NULL, 0, 0x1FFF) &&
         element->getChildren(children, u"component", 0, MAX_ENTRIES);
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        ok = children[i]->getIntAttribute<uint8_t>(entry.stream_type, u"stream_type", true) &&
-             children[i]->getIntAttribute<uint16_t>(entry.elementary_PID, u"elementary_PID", true, 0, 0, 0x1FFF) &&
+        ok = children[i]->getIntAttribute(entry.stream_type, u"stream_type", true) &&
+             children[i]->getIntAttribute(entry.elementary_PID, u"elementary_PID", true, 0, 0, 0x1FFF) &&
              children[i]->getAttribute(entry.ISO_639_language_code, u"ISO_639_language_code", false, UString(), 0, 3);
         entries.push_back(entry);
     }

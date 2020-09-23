@@ -114,5 +114,5 @@ void ts::DSMCCStreamDescriptorsTable::buildXML(DuckContext& duck, xml::Element* 
 bool ts::DSMCCStreamDescriptorsTable::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return AbstractDescriptorsTable::analyzeXML(duck, element) &&
-           element->getIntAttribute<uint16_t>(_tid_ext, u"table_id_extension", false, 0xFFFF);
+           element->getIntAttribute(_tid_ext, u"table_id_extension", false, 0xFFFF);
 }

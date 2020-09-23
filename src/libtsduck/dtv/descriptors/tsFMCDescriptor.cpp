@@ -138,8 +138,8 @@ bool ts::FMCDescriptor::analyzeXML(DuckContext& duck, const xml::Element* elemen
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        ok = children[i]->getIntAttribute<uint16_t>(entry.ES_ID, u"ES_ID", true) &&
-             children[i]->getIntAttribute<uint8_t>(entry.FlexMuxChannel, u"FlexMuxChannel", true);
+        ok = children[i]->getIntAttribute(entry.ES_ID, u"ES_ID", true) &&
+             children[i]->getIntAttribute(entry.FlexMuxChannel, u"FlexMuxChannel", true);
         entries.push_back(entry);
     }
     return ok;

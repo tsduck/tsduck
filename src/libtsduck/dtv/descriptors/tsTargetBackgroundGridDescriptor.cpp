@@ -145,7 +145,7 @@ void ts::TargetBackgroundGridDescriptor::buildXML(DuckContext& duck, xml::Elemen
 
 bool ts::TargetBackgroundGridDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(horizontal_size, u"horizontal_size", true, 0, 0, 0x3FFF) &&
-           element->getIntAttribute<uint16_t>(vertical_size, u"vertical_size", true, 0, 0, 0x3FFF) &&
-           element->getIntAttribute<uint8_t>(aspect_ratio_information, u"aspect_ratio_information", true, 0, 0, 0x0F);
+    return element->getIntAttribute(horizontal_size, u"horizontal_size", true, 0, 0, 0x3FFF) &&
+           element->getIntAttribute(vertical_size, u"vertical_size", true, 0, 0, 0x3FFF) &&
+           element->getIntAttribute(aspect_ratio_information, u"aspect_ratio_information", true, 0, 0, 0x0F);
 }

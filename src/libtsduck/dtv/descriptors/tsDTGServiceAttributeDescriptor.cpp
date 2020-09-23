@@ -153,7 +153,7 @@ bool ts::DTGServiceAttributeDescriptor::analyzeXML(DuckContext& duck, const xml:
 
     for (auto it = xservice.begin(); ok && it != xservice.end(); ++it) {
         Entry entry;
-        ok = (*it)->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true) &&
+        ok = (*it)->getIntAttribute(entry.service_id, u"service_id", true) &&
              (*it)->getBoolAttribute(entry.numeric_selection, u"numeric_selection", true) &&
              (*it)->getBoolAttribute(entry.visible_service, u"visible_service", true);
         entries.push_back(entry);

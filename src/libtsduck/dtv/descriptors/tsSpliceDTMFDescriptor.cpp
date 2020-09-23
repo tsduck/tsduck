@@ -140,7 +140,7 @@ void ts::SpliceDTMFDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::SpliceDTMFDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint32_t>(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
-           element->getIntAttribute<uint8_t>(preroll, u"preroll", true) &&
+    return element->getIntAttribute(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
+           element->getIntAttribute(preroll, u"preroll", true) &&
            element->getAttribute(DTMF, u"DTMF", true, u"", 0, DTMF_MAX_SIZE);
 }

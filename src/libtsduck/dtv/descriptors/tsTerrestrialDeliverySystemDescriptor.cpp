@@ -117,17 +117,17 @@ void ts::TerrestrialDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) c
 void ts::TerrestrialDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
     centre_frequency = uint64_t(buf.getUInt32()) * 10; // coded in 10 Hz unit
-    bandwidth = buf.getBits<uint8_t>(3);
+    buf.getBits(bandwidth, 3);
     high_priority = buf.getBool();
     no_time_slicing = buf.getBool();
     no_mpe_fec = buf.getBool();
     buf.skipBits(2);
-    constellation = buf.getBits<uint8_t>(2);
-    hierarchy = buf.getBits<uint8_t>(3);
-    code_rate_hp = buf.getBits<uint8_t>(3);
-    code_rate_lp = buf.getBits<uint8_t>(3);
-    guard_interval = buf.getBits<uint8_t>(2);
-    transmission_mode = buf.getBits<uint8_t>(2);
+    buf.getBits(constellation, 2);
+    buf.getBits(hierarchy, 3);
+    buf.getBits(code_rate_hp, 3);
+    buf.getBits(code_rate_lp, 3);
+    buf.getBits(guard_interval, 2);
+    buf.getBits(transmission_mode, 2);
     other_frequency = buf.getBool();
     buf.skipBits(32);
 }
@@ -300,13 +300,13 @@ void ts::TerrestrialDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::E
 
 bool ts::TerrestrialDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return  element->getIntAttribute<uint64_t>(centre_frequency, u"centre_frequency", true) &&
+    return  element->getIntAttribute(centre_frequency, u"centre_frequency", true) &&
             element->getIntEnumAttribute(bandwidth, BandwidthNames, u"bandwidth", true) &&
             element->getIntEnumAttribute(high_priority, PriorityNames, u"priority", true) &&
             element->getBoolAttribute(no_time_slicing, u"no_time_slicing", true) &&
             element->getBoolAttribute(no_mpe_fec, u"no_MPE_FEC", true) &&
             element->getIntEnumAttribute(constellation, ConstellationNames, u"constellation", true) &&
-            element->getIntAttribute<uint8_t>(hierarchy, u"hierarchy_information", true) &&
+            element->getIntAttribute(hierarchy, u"hierarchy_information", true) &&
             element->getIntEnumAttribute(code_rate_hp, CodeRateNames, u"code_rate_HP_stream", true) &&
             element->getIntEnumAttribute(code_rate_lp, CodeRateNames, u"code_rate_LP_stream", true) &&
             element->getIntEnumAttribute(guard_interval, GuardIntervalNames, u"guard_interval", true) &&

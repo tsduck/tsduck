@@ -174,15 +174,15 @@ bool ts::ReferenceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
 {
     xml::ElementVector xref;
     bool ok =
-        element->getIntAttribute<uint16_t>(information_provider_id, u"information_provider_id", true) &&
-        element->getIntAttribute<uint16_t>(event_relation_id, u"event_relation_id", true) &&
+        element->getIntAttribute(information_provider_id, u"information_provider_id", true) &&
+        element->getIntAttribute(event_relation_id, u"event_relation_id", true) &&
         element->getChildren(xref, u"reference");
 
     for (auto it = xref.begin(); ok && it != xref.end(); ++it) {
         Reference ref;
-        ok = (*it)->getIntAttribute<uint16_t>(ref.reference_node_id, u"reference_node_id", true) &&
-             (*it)->getIntAttribute<uint8_t>(ref.reference_number, u"reference_number", true) &&
-             (*it)->getIntAttribute<uint8_t>(ref.last_reference_number, u"last_reference_number", true);
+        ok = (*it)->getIntAttribute(ref.reference_node_id, u"reference_node_id", true) &&
+             (*it)->getIntAttribute(ref.reference_number, u"reference_number", true) &&
+             (*it)->getIntAttribute(ref.last_reference_number, u"last_reference_number", true);
         references.push_back(ref);
     }
     return ok;

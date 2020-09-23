@@ -104,13 +104,13 @@ void ts::DTSDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::DTSDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    sample_rate_code = buf.getBits<uint8_t>(4);
-    bit_rate_code = buf.getBits<uint8_t>(6);
-    nblks = buf.getBits<uint8_t>(7);
-    fsize = buf.getBits<uint16_t>(14);
-    surround_mode = buf.getBits<uint8_t>(6);
+    buf.getBits(sample_rate_code, 4);
+    buf.getBits(bit_rate_code, 6);
+    buf.getBits(nblks, 7);
+    buf.getBits(fsize, 14);
+    buf.getBits(surround_mode, 6);
     lfe = buf.getBool();
-    extended_surround = buf.getBits<uint8_t>(2);
+    buf.getBits(extended_surround, 2);
     buf.getBytes(additional_info);
 }
 
@@ -172,12 +172,12 @@ void ts::DTSDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::DTSDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return  element->getIntAttribute<uint8_t>(sample_rate_code, u"sample_rate_code", true, 0x00, 0x00, 0x0F) &&
-            element->getIntAttribute<uint8_t>(bit_rate_code, u"bit_rate_code", true, 0x00, 0x00, 0x3F) &&
-            element->getIntAttribute<uint8_t>(nblks, u"nblks", true, 0x00, 0x05, 0x7F) &&
-            element->getIntAttribute<uint16_t>(fsize, u"fsize", true, 0x0000, 0x005F, 0x2000) &&
-            element->getIntAttribute<uint8_t>(surround_mode, u"surround_mode", true, 0x00, 0x00, 0x3F) &&
+    return  element->getIntAttribute(sample_rate_code, u"sample_rate_code", true, 0x00, 0x00, 0x0F) &&
+            element->getIntAttribute(bit_rate_code, u"bit_rate_code", true, 0x00, 0x00, 0x3F) &&
+            element->getIntAttribute(nblks, u"nblks", true, 0x00, 0x05, 0x7F) &&
+            element->getIntAttribute(fsize, u"fsize", true, 0x0000, 0x005F, 0x2000) &&
+            element->getIntAttribute(surround_mode, u"surround_mode", true, 0x00, 0x00, 0x3F) &&
             element->getBoolAttribute(lfe, u"lfe", false, false) &&
-            element->getIntAttribute<uint8_t>(extended_surround, u"extended_surround", false, 0x00, 0x00, 0x03) &&
+            element->getIntAttribute(extended_surround, u"extended_surround", false, 0x00, 0x00, 0x03) &&
             element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 7);
 }

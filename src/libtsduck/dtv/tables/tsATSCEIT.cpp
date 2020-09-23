@@ -119,11 +119,11 @@ void ts::ATSCEIT::deserializePayload(PSIBuffer& buf, const Section& section)
     while (!buf.error() && event_count-- > 0) {
         Event& event(events.newEntry());
         buf.skipBits(2);
-        event.event_id = buf.getBits<uint16_t>(14);
+        buf.getBits(event.event_id, 14);
         event.start_time = Time::GPSSecondsToUTC(buf.getUInt32());
         buf.skipBits(2);
-        event.ETM_location = buf.getBits<uint8_t>(2);
-        event.length_in_seconds = buf.getBits<Second>(20);
+        buf.getBits(event.ETM_location, 2);
+        buf.getBits(event.length_in_seconds, 20);
         buf.getMultipleStringWithLength(event.title_text);
         buf.getDescriptorListWithLength(event.descs);
     }
@@ -245,18 +245,18 @@ bool ts::ATSCEIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xevent;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
-        element->getIntAttribute<uint16_t>(source_id, u"source_id", true) &&
-        element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(source_id, u"source_id", true) &&
+        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
         element->getChildren(xevent, u"event");
 
     // Get all events.
     for (size_t i = 0; ok && i < xevent.size(); ++i) {
         Event& event(events.newEntry());
         xml::ElementVector xtitle;
-        ok = xevent[i]->getIntAttribute<uint16_t>(event.event_id, u"event_id", true, 0, 0, 0x3FFF) &&
+        ok = xevent[i]->getIntAttribute(event.event_id, u"event_id", true, 0, 0, 0x3FFF) &&
              xevent[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
-             xevent[i]->getIntAttribute<uint8_t>(event.ETM_location, u"ETM_location", true, 0, 0, 3) &&
+             xevent[i]->getIntAttribute(event.ETM_location, u"ETM_location", true, 0, 0, 3) &&
              xevent[i]->getIntAttribute<Second>(event.length_in_seconds, u"length_in_seconds", true, 0, 0, 0x000FFFFF) &&
              event.descs.fromXML(duck, xtitle, xevent[i], u"title_text") &&
              (xtitle.empty() || event.title_text.fromXML(duck, xtitle[0]));

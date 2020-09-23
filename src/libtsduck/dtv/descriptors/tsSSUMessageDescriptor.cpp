@@ -88,8 +88,8 @@ void ts::SSUMessageDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::SSUMessageDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    descriptor_number = buf.getBits<uint8_t>(4);
-    last_descriptor_number = buf.getBits<uint8_t>(4);
+    buf.getBits(descriptor_number, 4);
+    buf.getBits(last_descriptor_number, 4);
     buf.getLanguageCode(ISO_639_language_code);
     buf.getString(text);
 }
@@ -124,8 +124,8 @@ void ts::SSUMessageDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::SSUMessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(descriptor_number, u"descriptor_number", true, 0, 0, 15) &&
-           element->getIntAttribute<uint8_t>(last_descriptor_number, u"last_descriptor_number", true, 0, 0, 15) &&
+    return element->getIntAttribute(descriptor_number, u"descriptor_number", true, 0, 0, 15) &&
+           element->getIntAttribute(last_descriptor_number, u"last_descriptor_number", true, 0, 0, 15) &&
            element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, u"", 3, 3) &&
            element->getTextChild(text, u"text");
 }

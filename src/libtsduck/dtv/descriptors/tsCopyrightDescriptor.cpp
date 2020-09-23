@@ -112,6 +112,6 @@ void ts::CopyrightDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::CopyrightDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint32_t>(copyright_identifier, u"copyright_identifier", true) &&
+    return element->getIntAttribute(copyright_identifier, u"copyright_identifier", true) &&
            element->getHexaTextChild(additional_copyright_info, u"additional_copyright_info", false, 0, MAX_DESCRIPTOR_SIZE - 6);
 }

@@ -178,8 +178,8 @@ bool ts::ServiceListDescriptor::analyzeXML(DuckContext& duck, const xml::Element
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        ok = children[i]->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-             children[i]->getIntAttribute<uint8_t>(entry.service_type, u"service_type", true, 0, 0x00, 0xFF);
+        ok = children[i]->getIntAttribute(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+             children[i]->getIntAttribute(entry.service_type, u"service_type", true, 0, 0x00, 0xFF);
         entries.push_back(entry);
     }
     return ok;

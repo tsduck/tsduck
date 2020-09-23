@@ -120,7 +120,7 @@ void ts::MGT::deserializePayload(PSIBuffer& buf, const Section& section)
         tt.table_type = buf.getUInt16();
         tt.table_type_PID = buf.getPID();
         buf.skipBits(3);
-        tt.table_type_version_number = buf.getBits<uint8_t>(5);
+        buf.getBits(tt.table_type_version_number, 5);
         tt.number_bytes = buf.getUInt32();
         buf.getDescriptorListWithLength(tt.descs);
     }
@@ -275,8 +275,8 @@ bool ts::MGT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
-        element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
         descs.fromXML(duck, children, element, u"table");
 
     for (size_t index = 0; ok && index < children.size(); ++index) {
@@ -284,8 +284,8 @@ bool ts::MGT::analyzeXML(DuckContext& duck, const xml::Element* element)
         TableType& tt(tables.newEntry());
         ok = children[index]->getIntEnumAttribute(tt.table_type, *TableTypeEnum::Instance(), u"type", true) &&
              children[index]->getIntAttribute<PID>(tt.table_type_PID, u"PID", true, 0, 0x0000, 0x1FFF) &&
-             children[index]->getIntAttribute<uint8_t>(tt.table_type_version_number, u"version_number", true, 0, 0, 31) &&
-             children[index]->getIntAttribute<uint32_t>(tt.number_bytes, u"number_bytes", true) &&
+             children[index]->getIntAttribute(tt.table_type_version_number, u"version_number", true, 0, 0, 31) &&
+             children[index]->getIntAttribute(tt.number_bytes, u"number_bytes", true) &&
              tt.descs.fromXML(duck, children[index]);
     }
     return ok;

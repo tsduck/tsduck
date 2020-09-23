@@ -93,9 +93,9 @@ void ts::UpdateDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::UpdateDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    update_flag = buf.getBits<uint8_t>(2);
-    update_method = buf.getBits<uint8_t>(4);
-    update_priority = buf.getBits<uint8_t>(2);
+    buf.getBits(update_flag, 2);
+    buf.getBits(update_method, 4);
+    buf.getBits(update_priority, 2);
     buf.getBytes(private_data);
 }
 
@@ -134,8 +134,8 @@ void ts::UpdateDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::UpdateDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(update_flag, u"update_flag", true, 0, 0, 3) &&
-           element->getIntAttribute<uint8_t>(update_method, u"update_method", true, 0, 0, 15) &&
-           element->getIntAttribute<uint8_t>(update_priority, u"update_priority", true, 0, 0, 3) &&
+    return element->getIntAttribute(update_flag, u"update_flag", true, 0, 0, 3) &&
+           element->getIntAttribute(update_method, u"update_method", true, 0, 0, 15) &&
+           element->getIntAttribute(update_priority, u"update_priority", true, 0, 0, 3) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 3);
 }

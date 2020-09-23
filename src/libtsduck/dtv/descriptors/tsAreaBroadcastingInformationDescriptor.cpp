@@ -166,9 +166,9 @@ bool ts::AreaBroadcastingInformationDescriptor::analyzeXML(DuckContext& duck, co
 
     for (auto it = xstation.begin(); _is_valid && it != xstation.end(); ++it) {
         Station st;
-        ok = (*it)->getIntAttribute<uint32_t>(st.station_id, u"station_id", true, 0, 0, 0x00FFFFFF) &&
-             (*it)->getIntAttribute<uint16_t>(st.location_code, u"location_code", true) &&
-             (*it)->getIntAttribute<uint8_t>(st.broadcast_signal_format, u"broadcast_signal_format", true) &&
+        ok = (*it)->getIntAttribute(st.station_id, u"station_id", true, 0, 0, 0x00FFFFFF) &&
+             (*it)->getIntAttribute(st.location_code, u"location_code", true) &&
+             (*it)->getIntAttribute(st.broadcast_signal_format, u"broadcast_signal_format", true) &&
              (*it)->getHexaTextChild(st.additional_station_info, u"additional_station_info", false);
         stations.push_back(st);
     }

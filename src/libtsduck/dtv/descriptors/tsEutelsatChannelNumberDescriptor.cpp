@@ -104,7 +104,7 @@ void ts::EutelsatChannelNumberDescriptor::deserializePayload(PSIBuffer& buf)
         e.ts_id = buf.getUInt16();
         e.service_id = buf.getUInt16();
         buf.skipBits(4);
-        e.ecn = buf.getBits<uint16_t>(12);
+        buf.getBits(e.ecn, 12);
         entries.push_back(e);
     }
 }
@@ -157,10 +157,10 @@ bool ts::EutelsatChannelNumberDescriptor::analyzeXML(DuckContext& duck, const xm
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
         ok =
-            children[i]->getIntAttribute<uint16_t>(entry.onetw_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            children[i]->getIntAttribute<uint16_t>(entry.ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-            children[i]->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-            children[i]->getIntAttribute<uint16_t>(entry.ecn, u"eutelsat_channel_number", true, 0, 0x0000, 0x03FF);
+            children[i]->getIntAttribute(entry.onetw_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
+            children[i]->getIntAttribute(entry.ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+            children[i]->getIntAttribute(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+            children[i]->getIntAttribute(entry.ecn, u"eutelsat_channel_number", true, 0, 0x0000, 0x03FF);
         entries.push_back(entry);
     }
     return ok;
