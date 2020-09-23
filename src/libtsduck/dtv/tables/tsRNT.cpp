@@ -147,7 +147,7 @@ void ts::RNT::deserializePayload(PSIBuffer& buf, const Section& section)
             CRIDAuthority& auth(rprov.CRID_authorities.newEntry());
             buf.getStringWithByteLength(auth.name);
             buf.skipBits(2);
-            auth.policy = buf.getBits<uint8_t>(2);
+            buf.getBits(auth.policy, 2);
             buf.getDescriptorListWithLength(auth.descs);
         }
 
@@ -302,10 +302,10 @@ bool ts::RNT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xprov;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint16_t>(context_id, u"context_id", true) &&
-        element->getIntAttribute<uint8_t>(context_id_type, u"context_id_type", true) &&
+        element->getIntAttribute(context_id, u"context_id", true) &&
+        element->getIntAttribute(context_id_type, u"context_id_type", true) &&
         descs.fromXML(duck, xprov, element, u"resolution_provider");
 
     for (auto it1 = xprov.begin(); ok && it1 != xprov.end(); ++it1) {
@@ -316,7 +316,7 @@ bool ts::RNT::analyzeXML(DuckContext& duck, const xml::Element* element)
         for (auto it2 = xauth.begin(); ok && it2 != xauth.end(); ++it2) {
             CRIDAuthority& auth(rprov.CRID_authorities.newEntry());
             ok = (*it2)->getAttribute(auth.name, u"name", true, UString(), 0, 255) &&
-                 (*it2)->getIntAttribute<uint8_t>(auth.policy, u"policy", true, 0, 0, 3) &&
+                 (*it2)->getIntAttribute(auth.policy, u"policy", true, 0, 0, 3) &&
                  auth.descs.fromXML(duck, *it2);
         }
     }

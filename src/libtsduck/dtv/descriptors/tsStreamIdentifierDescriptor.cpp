@@ -105,5 +105,5 @@ void ts::StreamIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::StreamIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true);
+    return element->getIntAttribute(component_tag, u"component_tag", true);
 }

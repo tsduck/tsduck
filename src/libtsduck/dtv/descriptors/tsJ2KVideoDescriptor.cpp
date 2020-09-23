@@ -198,14 +198,14 @@ void ts::J2KVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 
 bool ts::J2KVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return  element->getIntAttribute<uint16_t>(profile_and_level, u"profile_and_level", true) &&
-            element->getIntAttribute<uint32_t>(horizontal_size, u"horizontal_size", true) &&
-            element->getIntAttribute<uint32_t>(vertical_size, u"vertical_size", true) &&
-            element->getIntAttribute<uint32_t>(max_bit_rate, u"max_bit_rate", true) &&
-            element->getIntAttribute<uint32_t>(max_buffer_size, u"max_buffer_size", true) &&
-            element->getIntAttribute<uint16_t>(DEN_frame_rate, u"DEN_frame_rate", true) &&
-            element->getIntAttribute<uint16_t>(NUM_frame_rate, u"NUM_frame_rate", true) &&
-            element->getIntAttribute<uint8_t>(color_specification, u"color_specification", true) &&
+    return  element->getIntAttribute(profile_and_level, u"profile_and_level", true) &&
+            element->getIntAttribute(horizontal_size, u"horizontal_size", true) &&
+            element->getIntAttribute(vertical_size, u"vertical_size", true) &&
+            element->getIntAttribute(max_bit_rate, u"max_bit_rate", true) &&
+            element->getIntAttribute(max_buffer_size, u"max_buffer_size", true) &&
+            element->getIntAttribute(DEN_frame_rate, u"DEN_frame_rate", true) &&
+            element->getIntAttribute(NUM_frame_rate, u"NUM_frame_rate", true) &&
+            element->getIntAttribute(color_specification, u"color_specification", true) &&
             element->getBoolAttribute(still_mode, u"still_mode", true) &&
             element->getBoolAttribute(interlaced_video, u"interlaced_video", true) &&
             element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 26);

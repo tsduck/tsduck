@@ -135,9 +135,9 @@ bool ts::ContentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
         uint8_t user = 0;
-        ok = children[i]->getIntAttribute<uint8_t>(entry.content_nibble_level_1, u"content_nibble_level_1", true, 0, 0x00, 0x0F) &&
-             children[i]->getIntAttribute<uint8_t>(entry.content_nibble_level_2, u"content_nibble_level_2", true, 0, 0x00, 0x0F) &&
-             children[i]->getIntAttribute<uint8_t>(user, u"user_byte", true, 0, 0x00, 0xFF);
+        ok = children[i]->getIntAttribute(entry.content_nibble_level_1, u"content_nibble_level_1", true, 0, 0x00, 0x0F) &&
+             children[i]->getIntAttribute(entry.content_nibble_level_2, u"content_nibble_level_2", true, 0, 0x00, 0x0F) &&
+             children[i]->getIntAttribute(user, u"user_byte", true, 0, 0x00, 0xFF);
         entry.user_nibble_1 = (user >> 4) & 0x0F;
         entry.user_nibble_2 = user & 0x0F;
         entries.push_back(entry);

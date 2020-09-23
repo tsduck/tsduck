@@ -138,7 +138,7 @@ void ts::AbstractDescriptorsTable::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::AbstractDescriptorsTable::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+    return element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
            element->getBoolAttribute(is_current, u"current", false, true) &&
            descs.fromXML(duck, element);
 }

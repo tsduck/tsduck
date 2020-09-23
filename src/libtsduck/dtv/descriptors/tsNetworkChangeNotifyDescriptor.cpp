@@ -149,9 +149,9 @@ void ts::NetworkChangeNotifyDescriptor::deserializePayload(PSIBuffer& buf)
             const SubSecond minutes = buf.getBCD<SubSecond>(2);
             const SubSecond seconds = buf.getBCD<SubSecond>(2);
             ch.change_duration = (hours * 3600) + (minutes * 60) + seconds;
-            ch.receiver_category = buf.getBits<uint8_t>(3);
+            buf.getBits(ch.receiver_category, 3);
             const bool invariant_ts_present = buf.getBool();
-            ch.change_type = buf.getBits<uint8_t>(4);
+            buf.getBits(ch.change_type, 4);
             ch.message_id = buf.getUInt8();
             if (invariant_ts_present) {
                 ch.invariant_ts_tsid = buf.getUInt16();
@@ -257,19 +257,19 @@ bool ts::NetworkChangeNotifyDescriptor::analyzeXML(DuckContext& duck, const xml:
     for (size_t i1 = 0; ok && i1 < xcells.size(); ++i1) {
         Cell cell;
         xml::ElementVector xchanges;
-        ok = xcells[i1]->getIntAttribute<uint16_t>(cell.cell_id, u"cell_id", true) &&
+        ok = xcells[i1]->getIntAttribute(cell.cell_id, u"cell_id", true) &&
              xcells[i1]->getChildren(xchanges, u"change");
         for (size_t i2 = 0; ok && i2 < xchanges.size(); ++i2) {
             Change ch;
-            ok = xchanges[i2]->getIntAttribute<uint8_t>(ch.network_change_id, u"network_change_id", true) &&
-                 xchanges[i2]->getIntAttribute<uint8_t>(ch.network_change_version, u"network_change_version", true) &&
+            ok = xchanges[i2]->getIntAttribute(ch.network_change_id, u"network_change_id", true) &&
+                 xchanges[i2]->getIntAttribute(ch.network_change_version, u"network_change_version", true) &&
                  xchanges[i2]->getDateTimeAttribute(ch.start_time_of_change, u"start_time_of_change", true) &&
                  xchanges[i2]->getTimeAttribute(ch.change_duration, u"change_duration", true) &&
-                 xchanges[i2]->getIntAttribute<uint8_t>(ch.receiver_category, u"receiver_category", true, 0, 0x00, 0x07) &&
-                 xchanges[i2]->getIntAttribute<uint8_t>(ch.change_type, u"change_type", true, 0, 0x00, 0x0F) &&
-                 xchanges[i2]->getIntAttribute<uint8_t>(ch.message_id, u"message_id", true) &&
-                 xchanges[i2]->getOptionalIntAttribute<uint16_t>(ch.invariant_ts_tsid, u"invariant_ts_tsid") &&
-                 xchanges[i2]->getOptionalIntAttribute<uint16_t>(ch.invariant_ts_onid, u"invariant_ts_onid");
+                 xchanges[i2]->getIntAttribute(ch.receiver_category, u"receiver_category", true, 0, 0x00, 0x07) &&
+                 xchanges[i2]->getIntAttribute(ch.change_type, u"change_type", true, 0, 0x00, 0x0F) &&
+                 xchanges[i2]->getIntAttribute(ch.message_id, u"message_id", true) &&
+                 xchanges[i2]->getOptionalIntAttribute(ch.invariant_ts_tsid, u"invariant_ts_tsid") &&
+                 xchanges[i2]->getOptionalIntAttribute(ch.invariant_ts_onid, u"invariant_ts_onid");
             cell.changes.push_back(ch);
         }
         cells.push_back(cell);

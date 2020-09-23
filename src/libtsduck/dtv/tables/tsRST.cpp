@@ -99,7 +99,7 @@ void ts::RST::deserializePayload(PSIBuffer& buf, const Section& section)
         event.service_id = buf.getUInt16();
         event.event_id = buf.getUInt16();
         buf.skipBits(5);
-        event.running_status = buf.getBits<uint8_t>(3);
+        buf.getBits(event.running_status, 3);
         events.push_back(event);
     }
 }
@@ -167,11 +167,11 @@ bool ts::RST::analyzeXML(DuckContext& duck, const xml::Element* element)
 
     for (size_t index = 0; ok && index < children.size(); ++index) {
         Event event;
-        ok = children[index]->getIntAttribute<uint16_t>(event.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-             children[index]->getIntAttribute<uint16_t>(event.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-             children[index]->getIntAttribute<uint16_t>(event.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-             children[index]->getIntAttribute<uint16_t>(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
-             children[index]->getIntEnumAttribute<uint8_t>(event.running_status, RunningStatusNames, u"running_status", true);
+        ok = children[index]->getIntAttribute(event.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+             children[index]->getIntAttribute(event.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
+             children[index]->getIntAttribute(event.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+             children[index]->getIntAttribute(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
+             children[index]->getIntEnumAttribute(event.running_status, RunningStatusNames, u"running_status", true);
         if (ok) {
             events.push_back(event);
         }

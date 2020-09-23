@@ -195,9 +195,9 @@ void ts::AVCTimingAndHRDDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 bool ts::AVCTimingAndHRDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return  element->getBoolAttribute(hrd_management_valid, u"hrd_management_valid", true) &&
-            element->getOptionalIntAttribute<uint32_t>(N_90khz, u"N_90khz") &&
-            element->getOptionalIntAttribute<uint32_t>(K_90khz, u"K_90khz") &&
-            element->getOptionalIntAttribute<uint32_t>(num_units_in_tick, u"num_units_in_tick") &&
+            element->getOptionalIntAttribute(N_90khz, u"N_90khz") &&
+            element->getOptionalIntAttribute(K_90khz, u"K_90khz") &&
+            element->getOptionalIntAttribute(num_units_in_tick, u"num_units_in_tick") &&
             element->getBoolAttribute(fixed_frame_rate, u"fixed_frame_rate", true) &&
             element->getBoolAttribute(temporal_poc, u"temporal_poc", true) &&
             element->getBoolAttribute(picture_to_display_conversion, u"picture_to_display_conversion", true);

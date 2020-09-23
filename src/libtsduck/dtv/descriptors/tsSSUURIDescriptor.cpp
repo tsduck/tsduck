@@ -127,7 +127,7 @@ void ts::SSUURIDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::SSUURIDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(max_holdoff_time, u"max_holdoff_time", true) &&
-           element->getIntAttribute<uint8_t>(min_polling_interval, u"min_polling_interval", true) &&
+    return element->getIntAttribute(max_holdoff_time, u"max_holdoff_time", true) &&
+           element->getIntAttribute(min_polling_interval, u"min_polling_interval", true) &&
            element->getAttribute(uri, u"uri", true, u"", 0, MAX_DESCRIPTOR_SIZE - 4);
 }

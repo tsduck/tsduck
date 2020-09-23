@@ -127,9 +127,9 @@ bool ts::ExternalApplicationAuthorizationDescriptor::analyzeXML(DuckContext& duc
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        ok = children[i]->getIntAttribute<uint32_t>(entry.application_identifier.organization_id, u"organization_id", true) &&
-             children[i]->getIntAttribute<uint16_t>(entry.application_identifier.application_id, u"application_id", true) &&
-             children[i]->getIntAttribute<uint8_t>(entry.application_priority, u"application_priority", true);
+        ok = children[i]->getIntAttribute(entry.application_identifier.organization_id, u"organization_id", true) &&
+             children[i]->getIntAttribute(entry.application_identifier.application_id, u"application_id", true) &&
+             children[i]->getIntAttribute(entry.application_priority, u"application_priority", true);
         entries.push_back(entry);
     }
     return ok;

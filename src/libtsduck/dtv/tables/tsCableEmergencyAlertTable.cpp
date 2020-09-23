@@ -182,12 +182,12 @@ void ts::CableEmergencyAlertTable::deserializePayload(PSIBuffer& buf, const Sect
     event_start_time = start == 0 ? Time::Epoch : Time::GPSSecondsToUTC(start);
     event_duration = buf.getUInt16();
     buf.skipBits(12);
-    alert_priority = buf.getBits<uint8_t>(4);
+    buf.getBits(alert_priority, 4);
     details_OOB_source_ID = buf.getUInt16();
     buf.skipBits(6);
-    details_major_channel_number = buf.getBits<uint16_t>(10);
+    buf.getBits(details_major_channel_number, 10);
     buf.skipBits(6);
-    details_minor_channel_number = buf.getBits<uint16_t>(10);
+    buf.getBits(details_minor_channel_number, 10);
     audio_OOB_source_ID = buf.getUInt16();
     buf.getMultipleStringWithLength(alert_text, 2); // unusual 2-byte length field
 
@@ -196,9 +196,9 @@ void ts::CableEmergencyAlertTable::deserializePayload(PSIBuffer& buf, const Sect
     while (!buf.readError() && count-- > 0) {
         Location loc;
         loc.state_code = buf.getUInt8();
-        loc.county_subdivision = buf.getBits<uint8_t>(4);
+        buf.getBits(loc.county_subdivision, 4);
         buf.skipBits(2);
-        loc.county_code = buf.getBits<uint16_t>(10);
+        buf.getBits(loc.county_code, 10);
         locations.push_back(loc);
     }
 
@@ -210,9 +210,9 @@ void ts::CableEmergencyAlertTable::deserializePayload(PSIBuffer& buf, const Sect
         buf.skipBits(7);
         if (exc.in_band) {
             buf.skipBits(6);
-            exc.major_channel_number = buf.getBits<uint16_t>(10);
+            buf.getBits(exc.major_channel_number, 10);
             buf.skipBits(6);
-            exc.minor_channel_number = buf.getBits<uint16_t>(10);
+            buf.getBits(exc.minor_channel_number, 10);
         }
         else {
             buf.skipBits(16);
@@ -355,20 +355,20 @@ bool ts::CableEmergencyAlertTable::analyzeXML(DuckContext& duck, const xml::Elem
     xml::ElementVector exceps;
 
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"sequence_number", true, 0, 0, 31) &&
-        element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
-        element->getIntAttribute<uint16_t>(EAS_event_ID, u"EAS_event_ID", true) &&
+        element->getIntAttribute(version, u"sequence_number", true, 0, 0, 31) &&
+        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
+        element->getIntAttribute(EAS_event_ID, u"EAS_event_ID", true) &&
         element->getAttribute(EAS_originator_code, u"EAS_originator_code", true, UString(), 3, 3) &&
         element->getAttribute(EAS_event_code, u"EAS_event_code", true, UString(), 0, 255) &&
         nature_of_activation_text.fromXML(duck, element, u"nature_of_activation_text", false) &&
-        element->getIntAttribute<uint8_t>(alert_message_time_remaining, u"alert_message_time_remaining", false, 0, 0, 120) &&
+        element->getIntAttribute(alert_message_time_remaining, u"alert_message_time_remaining", false, 0, 0, 120) &&
         element->getDateTimeAttribute(event_start_time, u"event_start_time", false, Time::Epoch) &&
-        element->getIntAttribute<uint16_t>(event_duration, u"event_duration", false, 0, 0, 6000) &&
-        element->getIntAttribute<uint8_t>(alert_priority, u"alert_priority", true, 0, 0, 15) &&
-        element->getIntAttribute<uint16_t>(details_OOB_source_ID, u"details_OOB_source_ID", false) &&
-        element->getIntAttribute<uint16_t>(details_major_channel_number, u"details_major_channel_number", false, 0, 0, 0x03FF) &&
-        element->getIntAttribute<uint16_t>(details_minor_channel_number, u"details_minor_channel_number", false, 0, 0, 0x03FF) &&
-        element->getIntAttribute<uint16_t>(audio_OOB_source_ID, u"audio_OOB_source_ID", false) &&
+        element->getIntAttribute(event_duration, u"event_duration", false, 0, 0, 6000) &&
+        element->getIntAttribute(alert_priority, u"alert_priority", true, 0, 0, 15) &&
+        element->getIntAttribute(details_OOB_source_ID, u"details_OOB_source_ID", false) &&
+        element->getIntAttribute(details_major_channel_number, u"details_major_channel_number", false, 0, 0, 0x03FF) &&
+        element->getIntAttribute(details_minor_channel_number, u"details_minor_channel_number", false, 0, 0, 0x03FF) &&
+        element->getIntAttribute(audio_OOB_source_ID, u"audio_OOB_source_ID", false) &&
         alert_text.fromXML(duck, element, u"alert_text", false) &&
         element->getChildren(locs, u"location", 1, 31) &&
         element->getChildren(exceps, u"exception", 0, 255) &&
@@ -376,9 +376,9 @@ bool ts::CableEmergencyAlertTable::analyzeXML(DuckContext& duck, const xml::Elem
 
     for (size_t i = 0; ok && i < locs.size(); ++i) {
         Location loc;
-        ok = locs[i]->getIntAttribute<uint8_t>(loc.state_code, u"state_code", true, 0, 0, 99) &&
-             locs[i]->getIntAttribute<uint8_t>(loc.county_subdivision, u"county_subdivision", true, 0, 0, 9) &&
-             locs[i]->getIntAttribute<uint16_t>(loc.county_code, u"county_code", true, 0, 0, 909);
+        ok = locs[i]->getIntAttribute(loc.state_code, u"state_code", true, 0, 0, 99) &&
+             locs[i]->getIntAttribute(loc.county_subdivision, u"county_subdivision", true, 0, 0, 9) &&
+             locs[i]->getIntAttribute(loc.county_code, u"county_code", true, 0, 0, 909);
         if (ok) {
             locations.push_back(loc);
         }
@@ -391,12 +391,12 @@ bool ts::CableEmergencyAlertTable::analyzeXML(DuckContext& duck, const xml::Elem
         if (exc.in_band) {
             wrong = exceps[i]->hasAttribute(u"OOB_source_ID");
             ok =
-                exceps[i]->getIntAttribute<uint16_t>(exc.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
-                exceps[i]->getIntAttribute<uint16_t>(exc.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF);
+                exceps[i]->getIntAttribute(exc.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
+                exceps[i]->getIntAttribute(exc.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF);
         }
         else {
             wrong = exceps[i]->hasAttribute(u"major_channel_number") || exceps[i]->hasAttribute(u"minor_channel_number");
-            ok = exceps[i]->getIntAttribute<uint16_t>(exc.OOB_source_ID, u"OOB_source_ID", true);
+            ok = exceps[i]->getIntAttribute(exc.OOB_source_ID, u"OOB_source_ID", true);
         }
         if (wrong) {
             ok = false;

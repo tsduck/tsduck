@@ -175,9 +175,9 @@ bool ts::HierarchyDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
     return element->getBoolAttribute(temporal_scalability, u"temporal_scalability", true) &&
            element->getBoolAttribute(spatial_scalability, u"spatial_scalability", true) &&
            element->getBoolAttribute(quality_scalability, u"quality_scalability", true) &&
-           element->getIntAttribute<uint8_t>(hierarchy_type, u"hierarchy_type", true, 0x00, 0x00, 0x0F) &&
-           element->getIntAttribute<uint8_t>(hierarchy_layer_index, u"hierarchy_layer_index", true, 0x00, 0x00, 0x3F) &&
+           element->getIntAttribute(hierarchy_type, u"hierarchy_type", true, 0x00, 0x00, 0x0F) &&
+           element->getIntAttribute(hierarchy_layer_index, u"hierarchy_layer_index", true, 0x00, 0x00, 0x3F) &&
            element->getBoolAttribute(tref_present, u"tref_present", true) &&
-           element->getIntAttribute<uint8_t>(hierarchy_embedded_layer_index, u"hierarchy_embedded_layer_index", true, 0x00, 0x00, 0x3F) &&
-           element->getIntAttribute<uint8_t>(hierarchy_channel, u"hierarchy_channel", true, 0x00, 0x00, 0x3F);
+           element->getIntAttribute(hierarchy_embedded_layer_index, u"hierarchy_embedded_layer_index", true, 0x00, 0x00, 0x3F) &&
+           element->getIntAttribute(hierarchy_channel, u"hierarchy_channel", true, 0x00, 0x00, 0x3F);
 }

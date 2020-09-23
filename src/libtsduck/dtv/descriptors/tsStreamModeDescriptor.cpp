@@ -108,5 +108,5 @@ void ts::StreamModeDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::StreamModeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(stream_mode, u"stream_mode", true);
+    return element->getIntAttribute(stream_mode, u"stream_mode", true);
 }

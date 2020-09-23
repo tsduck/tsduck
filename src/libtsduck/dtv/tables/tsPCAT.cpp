@@ -136,7 +136,7 @@ void ts::PCAT::deserializePayload(PSIBuffer& buf, const Section& section)
         ContentVersion& cv(versions.newEntry());
         cv.content_version = buf.getUInt16();
         cv.content_minor_version = buf.getUInt16();
-        cv.version_indicator = buf.getBits<uint8_t>(2);
+        buf.getBits(cv.version_indicator, 2);
         buf.skipBits(2);
 
         // [Warning #1] Here, ARIB STD-B10 is ambiguous. It says "content_descriptor_length: This 12-bit
@@ -339,20 +339,20 @@ bool ts::PCAT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xversion;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint16_t>(service_id, u"service_id", true) &&
-        element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", true) &&
-        element->getIntAttribute<uint16_t>(original_network_id, u"original_network_id", true) &&
-        element->getIntAttribute<uint32_t>(content_id, u"content_id", true) &&
+        element->getIntAttribute(service_id, u"service_id", true) &&
+        element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
+        element->getIntAttribute(original_network_id, u"original_network_id", true) &&
+        element->getIntAttribute(content_id, u"content_id", true) &&
         element->getChildren(xversion, u"version");
 
     for (auto it1 = xversion.begin(); ok && it1 != xversion.end(); ++it1) {
         ContentVersion& cv(versions.newEntry());
         xml::ElementVector xschedule;
-        ok = (*it1)->getIntAttribute<uint16_t>(cv.content_version, u"content_version", true) &&
-             (*it1)->getIntAttribute<uint16_t>(cv.content_minor_version, u"content_minor_version", true) &&
-             (*it1)->getIntAttribute<uint8_t>(cv.version_indicator, u"version_indicator", true, 0, 0, 3) &&
+        ok = (*it1)->getIntAttribute(cv.content_version, u"content_version", true) &&
+             (*it1)->getIntAttribute(cv.content_minor_version, u"content_minor_version", true) &&
+             (*it1)->getIntAttribute(cv.version_indicator, u"version_indicator", true, 0, 0, 3) &&
              cv.descs.fromXML(duck, xschedule, *it1, u"schedule");
         for (auto it2 = xschedule.begin(); ok && it2 != xschedule.end(); ++it2) {
             Schedule sched;

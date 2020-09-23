@@ -161,9 +161,9 @@ bool ts::SubtitlingDescriptor::analyzeXML(DuckContext& duck, const xml::Element*
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
         ok = children[i]->getAttribute(entry.language_code, u"language_code", true, u"", 3, 3) &&
-             children[i]->getIntAttribute<uint8_t>(entry.subtitling_type, u"subtitling_type", true) &&
-             children[i]->getIntAttribute<uint16_t>(entry.composition_page_id, u"composition_page_id", true) &&
-             children[i]->getIntAttribute<uint16_t>(entry.ancillary_page_id, u"ancillary_page_id", true);
+             children[i]->getIntAttribute(entry.subtitling_type, u"subtitling_type", true) &&
+             children[i]->getIntAttribute(entry.composition_page_id, u"composition_page_id", true) &&
+             children[i]->getIntAttribute(entry.ancillary_page_id, u"ancillary_page_id", true);
         entries.push_back(entry);
     }
     return ok;

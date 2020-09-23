@@ -109,5 +109,5 @@ void ts::EacemStreamIdentifierDescriptor::buildXML(DuckContext& duck, xml::Eleme
 
 bool ts::EacemStreamIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(version, u"version_byte", true, 0, 0x00, 0xFF);
+    return element->getIntAttribute(version, u"version_byte", true, 0, 0x00, 0xFF);
 }

@@ -204,8 +204,8 @@ bool ts::SchedulingDescriptor::analyzeXML(DuckContext& duck, const xml::Element*
             element->getIntEnumAttribute(period_unit, SchedulingUnitNames, u"period_unit", true) &&
             element->getIntEnumAttribute(duration_unit, SchedulingUnitNames, u"duration_unit", true) &&
             element->getIntEnumAttribute(estimated_cycle_time_unit, SchedulingUnitNames, u"estimated_cycle_time_unit", true) &&
-            element->getIntAttribute<uint8_t>(period, u"period", true) &&
-            element->getIntAttribute<uint8_t>(duration, u"duration", true) &&
-            element->getIntAttribute<uint8_t>(estimated_cycle_time, u"estimated_cycle_time", true) &&
+            element->getIntAttribute(period, u"period", true) &&
+            element->getIntAttribute(duration, u"duration", true) &&
+            element->getIntAttribute(estimated_cycle_time, u"estimated_cycle_time", true) &&
             element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 16);
 }

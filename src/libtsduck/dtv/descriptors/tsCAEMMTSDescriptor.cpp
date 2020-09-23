@@ -124,8 +124,8 @@ void ts::CAEMMTSDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 
 bool ts::CAEMMTSDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(CA_system_id, u"CA_system_id", true) &&
-           element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", true) &&
-           element->getIntAttribute<uint16_t>(original_network_id, u"original_network_id", true) &&
-           element->getIntAttribute<uint8_t>(power_supply_period, u"power_supply_period", true);
+    return element->getIntAttribute(CA_system_id, u"CA_system_id", true) &&
+           element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
+           element->getIntAttribute(original_network_id, u"original_network_id", true) &&
+           element->getIntAttribute(power_supply_period, u"power_supply_period", true);
 }

@@ -100,7 +100,7 @@ void ts::NodeRelationDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::NodeRelationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    reference_type = buf.getBits<uint8_t>(4);
+    buf.getBits(reference_type, 4);
     const bool has_external = buf.getBool();
     buf.skipBits(3);
     if (has_external) {
@@ -170,11 +170,11 @@ void ts::NodeRelationDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 bool ts::NodeRelationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     bool ok =
-        element->getIntAttribute<uint8_t>(reference_type, u"reference_type", false, 0, 0, 15) &&
-        element->getOptionalIntAttribute<uint16_t>(information_provider_id, u"information_provider_id", true) &&
-        element->getOptionalIntAttribute<uint16_t>(event_relation_id, u"event_relation_id", true) &&
-        element->getIntAttribute<uint16_t>(reference_node_id, u"reference_node_id", true) &&
-        element->getIntAttribute<uint8_t>(reference_number, u"reference_number", true);
+        element->getIntAttribute(reference_type, u"reference_type", false, 0, 0, 15) &&
+        element->getOptionalIntAttribute(information_provider_id, u"information_provider_id", true) &&
+        element->getOptionalIntAttribute(event_relation_id, u"event_relation_id", true) &&
+        element->getIntAttribute(reference_node_id, u"reference_node_id", true) &&
+        element->getIntAttribute(reference_number, u"reference_number", true);
 
     if (ok && (information_provider_id.set() + event_relation_id.set()) == 1) {
         element->report().error(u"in <%s> line %d, attributes 'information_provider_id' and 'event_relation_id' must be both present or both absent", {element->name(), element->lineNumber()});

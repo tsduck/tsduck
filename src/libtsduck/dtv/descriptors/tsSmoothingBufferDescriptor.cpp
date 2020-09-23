@@ -131,6 +131,6 @@ void ts::SmoothingBufferDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::SmoothingBufferDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint32_t>(sb_leak_rate, u"sb_leak_rate", true, 0, 0, 0x003FFFFF) &&
-           element->getIntAttribute<uint32_t>(sb_size, u"sb_size", true, 0, 0, 0x003FFFFF);
+    return element->getIntAttribute(sb_leak_rate, u"sb_leak_rate", true, 0, 0, 0x003FFFFF) &&
+           element->getIntAttribute(sb_size, u"sb_size", true, 0, 0, 0x003FFFFF);
 }

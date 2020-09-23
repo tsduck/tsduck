@@ -306,20 +306,20 @@ bool ts::EASAudioFileDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        ok = children[i]->getIntAttribute<uint8_t>(entry.audio_format, u"audio_format", true, 0, 0, 127) &&
+        ok = children[i]->getIntAttribute(entry.audio_format, u"audio_format", true, 0, 0, 127) &&
              children[i]->getAttribute(entry.file_name, u"file_name", false) &&
-             children[i]->getIntAttribute<uint8_t>(entry.audio_source, u"audio_source", true);
+             children[i]->getIntAttribute(entry.audio_source, u"audio_source", true);
         if (ok) {
             if (entry.audio_source == 0x01) {
-                ok = children[i]->getIntAttribute<uint16_t>(entry.program_number, u"program_number", true) &&
-                     children[i]->getIntAttribute<uint32_t>(entry.carousel_id, u"carousel_id", true) &&
-                     children[i]->getIntAttribute<uint16_t>(entry.application_id, u"application_id", true);
+                ok = children[i]->getIntAttribute(entry.program_number, u"program_number", true) &&
+                     children[i]->getIntAttribute(entry.carousel_id, u"carousel_id", true) &&
+                     children[i]->getIntAttribute(entry.application_id, u"application_id", true);
             }
             else if (entry.audio_source == 0x02) {
-                ok = children[i]->getIntAttribute<uint16_t>(entry.program_number, u"program_number", true) &&
-                     children[i]->getIntAttribute<uint32_t>(entry.download_id, u"download_id", true) &&
-                     children[i]->getIntAttribute<uint32_t>(entry.module_id, u"module_id", true) &&
-                     children[i]->getIntAttribute<uint16_t>(entry.application_id, u"application_id", true);
+                ok = children[i]->getIntAttribute(entry.program_number, u"program_number", true) &&
+                     children[i]->getIntAttribute(entry.download_id, u"download_id", true) &&
+                     children[i]->getIntAttribute(entry.module_id, u"module_id", true) &&
+                     children[i]->getIntAttribute(entry.application_id, u"application_id", true);
             }
         }
         entries.push_back(entry);

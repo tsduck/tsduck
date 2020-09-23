@@ -144,11 +144,11 @@ void ts::TimeSliceFECIdentifierDescriptor::buildXML(DuckContext& duck, xml::Elem
 bool ts::TimeSliceFECIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return  element->getBoolAttribute(time_slicing, u"time_slicing", true) &&
-            element->getIntAttribute<uint8_t>(mpe_fec, u"mpe_fec", true, 0, 0, 0x03) &&
-            element->getIntAttribute<uint8_t>(frame_size, u"frame_size", true, 0, 0x00, 0x07) &&
-            element->getIntAttribute<uint8_t>(max_burst_duration, u"max_burst_duration", true) &&
-            element->getIntAttribute<uint8_t>(max_average_rate, u"max_average_rate", true, 0, 0x00, 0x0F) &&
-            element->getIntAttribute<uint8_t>(time_slice_fec_id, u"time_slice_fec_id", false, 0, 0x00, 0x0F) &&
+            element->getIntAttribute(mpe_fec, u"mpe_fec", true, 0, 0, 0x03) &&
+            element->getIntAttribute(frame_size, u"frame_size", true, 0, 0x00, 0x07) &&
+            element->getIntAttribute(max_burst_duration, u"max_burst_duration", true) &&
+            element->getIntAttribute(max_average_rate, u"max_average_rate", true, 0, 0x00, 0x0F) &&
+            element->getIntAttribute(time_slice_fec_id, u"time_slice_fec_id", false, 0, 0x00, 0x0F) &&
             element->getHexaTextChild(id_selector_bytes, u"id_selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 5);
 }
 

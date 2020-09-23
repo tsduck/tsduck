@@ -93,10 +93,10 @@ void ts::PDCDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::PDCDescriptor::deserializePayload(PSIBuffer& buf)
 {
     buf.skipBits(4);
-    pil_day = buf.getBits<uint8_t>(5);
-    pil_month = buf.getBits<uint8_t>(4);
-    pil_hours = buf.getBits<uint8_t>(5);
-    pil_minutes = buf.getBits<uint8_t>(6);
+    buf.getBits(pil_day, 5);
+    buf.getBits(pil_month, 4);
+    buf.getBits(pil_hours, 5);
+    buf.getBits(pil_minutes, 6);
 }
 
 

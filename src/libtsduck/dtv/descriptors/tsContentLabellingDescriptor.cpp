@@ -129,7 +129,7 @@ void ts::ContentLabellingDescriptor::deserializePayload(PSIBuffer& buf)
         metadata_application_format_identifier = buf.getUInt32();
     }
     const bool content_reference_id_record_flag = buf.getBool();
-    content_time_base_indicator = buf.getBits<uint8_t>(4);
+    buf.getBits(content_time_base_indicator, 4);
     buf.skipBits(3);
     if (content_reference_id_record_flag) {
         const size_t length = buf.getUInt8();
@@ -137,13 +137,13 @@ void ts::ContentLabellingDescriptor::deserializePayload(PSIBuffer& buf)
     }
     if (content_time_base_indicator == 1 || content_time_base_indicator == 2) {
         buf.skipBits(7);
-        content_time_base_value = buf.getBits<uint64_t>(33);
+        buf.getBits(content_time_base_value, 33);
         buf.skipBits(7);
-        metadata_time_base_value = buf.getBits<uint64_t>(33);
+        buf.getBits(metadata_time_base_value, 33);
     }
     if (content_time_base_indicator == 2) {
         buf.skipBits(1);
-        content_id = buf.getBits<uint8_t>(7);
+        buf.getBits(content_id, 7);
     }
     if (content_time_base_indicator >= 3 && content_time_base_indicator <= 7) {
         const size_t length = buf.getUInt8();
@@ -224,13 +224,13 @@ void ts::ContentLabellingDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::ContentLabellingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(metadata_application_format, u"metadata_application_format", true) &&
-           element->getIntAttribute<uint32_t>(metadata_application_format_identifier, u"metadata_application_format_identifier", metadata_application_format == 0xFFFF) &&
-           element->getIntAttribute<uint8_t>(content_time_base_indicator, u"content_time_base_indicator", true, 0, 0, 15) &&
+    return element->getIntAttribute(metadata_application_format, u"metadata_application_format", true) &&
+           element->getIntAttribute(metadata_application_format_identifier, u"metadata_application_format_identifier", metadata_application_format == 0xFFFF) &&
+           element->getIntAttribute(content_time_base_indicator, u"content_time_base_indicator", true, 0, 0, 15) &&
            element->getHexaTextChild(content_reference_id, u"content_reference_id", false, 0, 255) &&
-           element->getIntAttribute<uint64_t>(content_time_base_value, u"content_time_base_value", content_time_base_indicator == 1 || content_time_base_indicator == 2, 0, 0, TS_UCONST64(0x1FFFFFFFF)) &&
-           element->getIntAttribute<uint64_t>(metadata_time_base_value, u"metadata_time_base_value", content_time_base_indicator == 1 || content_time_base_indicator == 2, 0, 0, TS_UCONST64(0x1FFFFFFFF)) &&
-           element->getIntAttribute<uint8_t>(content_id, u"content_id", content_time_base_indicator == 2, 0, 0, 0x7F) &&
+           element->getIntAttribute(content_time_base_value, u"content_time_base_value", content_time_base_indicator == 1 || content_time_base_indicator == 2, 0, 0, TS_UCONST64(0x1FFFFFFFF)) &&
+           element->getIntAttribute(metadata_time_base_value, u"metadata_time_base_value", content_time_base_indicator == 1 || content_time_base_indicator == 2, 0, 0, TS_UCONST64(0x1FFFFFFFF)) &&
+           element->getIntAttribute(content_id, u"content_id", content_time_base_indicator == 2, 0, 0, 0x7F) &&
            element->getHexaTextChild(time_base_association_data, u"time_base_association_data", false, 0, 255) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, 255);
 }

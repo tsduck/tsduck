@@ -139,6 +139,6 @@ void ts::SystemClockDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 bool ts::SystemClockDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getBoolAttribute(external_clock_reference, u"external_clock_reference", true) &&
-           element->getIntAttribute<uint8_t>(clock_accuracy_integer, u"clock_accuracy_integer", true, 0, 0x00, 0x3F) &&
-           element->getIntAttribute<uint8_t>(clock_accuracy_exponent, u"clock_accuracy_exponent", true, 0, 0x00, 0x07);
+           element->getIntAttribute(clock_accuracy_integer, u"clock_accuracy_integer", true, 0, 0x00, 0x3F) &&
+           element->getIntAttribute(clock_accuracy_exponent, u"clock_accuracy_exponent", true, 0, 0x00, 0x07);
 }

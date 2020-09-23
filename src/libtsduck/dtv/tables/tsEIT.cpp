@@ -269,7 +269,7 @@ void ts::EIT::deserializePayload(PSIBuffer& buf, const Section& section)
         const int min = buf.getBCD<int>(2);
         const int sec = buf.getBCD<int>(2);
         event.duration = (hour * 3600) + (min * 60) + sec;
-        event.running_status = buf.getBits<uint8_t>(3);
+        buf.getBits(event.running_status, 3);
         event.CA_controlled = buf.getBool();
         buf.getDescriptorListWithLength(event.descs);
     }
@@ -516,21 +516,21 @@ bool ts::EIT::analyzeXML(DuckContext& duck, const xml::Element* element)
     xml::ElementVector children;
     bool ok =
         getTableId(element) &&
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint16_t>(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-        element->getIntAttribute<uint16_t>(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-        element->getIntAttribute<uint16_t>(onetw_id, u"original_network_id", true, 0, 0x00, 0xFFFF) &&
+        element->getIntAttribute(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getIntAttribute(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getIntAttribute(onetw_id, u"original_network_id", true, 0, 0x00, 0xFFFF) &&
         element->getIntAttribute<TID>(last_table_id, u"last_table_id", false, _table_id, 0x00, 0xFF) &&
         element->getChildren(children, u"event");
 
     // Get all events.
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Event& event(events.newEntry());
-        ok = children[i]->getIntAttribute<uint16_t>(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
+        ok = children[i]->getIntAttribute(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
              children[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
              children[i]->getTimeAttribute(event.duration, u"duration", true) &&
-             children[i]->getIntEnumAttribute<uint8_t>(event.running_status, RST::RunningStatusNames, u"running_status", false, 0) &&
+             children[i]->getIntEnumAttribute(event.running_status, RST::RunningStatusNames, u"running_status", false, 0) &&
              children[i]->getBoolAttribute(event.CA_controlled, u"CA_mode", false, false) &&
              event.descs.fromXML(duck, children[i]);
     }

@@ -88,8 +88,8 @@ void ts::SystemManagementDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::SystemManagementDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    broadcasting_flag = buf.getBits<uint8_t>(2);
-    broadcasting_identifier = buf.getBits<uint8_t>(6);
+    buf.getBits(broadcasting_flag, 2);
+    buf.getBits(broadcasting_identifier, 6);
     additional_broadcasting_identification = buf.getUInt8();
     buf.getBytes(additional_identification_info);
 }
@@ -124,8 +124,8 @@ void ts::SystemManagementDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::SystemManagementDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(broadcasting_flag, u"broadcasting_flag", true, 0, 0, 3) &&
-           element->getIntAttribute<uint8_t>(broadcasting_identifier, u"broadcasting_identifier", true, 0, 0, 0x3F) &&
-           element->getIntAttribute<uint8_t>(additional_broadcasting_identification, u"additional_broadcasting_identification", true) &&
+    return element->getIntAttribute(broadcasting_flag, u"broadcasting_flag", true, 0, 0, 3) &&
+           element->getIntAttribute(broadcasting_identifier, u"broadcasting_identifier", true, 0, 0, 0x3F) &&
+           element->getIntAttribute(additional_broadcasting_identification, u"additional_broadcasting_identification", true) &&
            element->getHexaTextChild(additional_identification_info, u"additional_identification_info", false, 0, 253);
 }

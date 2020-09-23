@@ -219,7 +219,7 @@ void ts::LinkageDescriptor::deserializePayload(PSIBuffer& buf)
 
     // Known variable parts.
     if (linkage_type == LINKAGE_HAND_OVER) {
-        mobile_handover_info.handover_type = buf.getBits<uint8_t>(4);
+        buf.getBits(mobile_handover_info.handover_type, 4);
         buf.skipBits(3);
         mobile_handover_info.origin_type = buf.getBit();
         if (mobile_handover_info.handover_type >= 1 && mobile_handover_info.handover_type <= 3) {
@@ -242,8 +242,8 @@ void ts::LinkageDescriptor::deserializePayload(PSIBuffer& buf)
             info.target_event_id = buf.getUInt16();
             info.target_listed = buf.getBool();
             info.event_simulcast = buf.getBool();
-            info.link_type = buf.getBits<uint8_t>(2);
-            info.target_id_type = buf.getBits<uint8_t>(2);
+            buf.getBits(info.link_type, 2);
+            buf.getBits(info.target_id_type, 2);
             const bool onetw_flag = buf.getBool();
             const bool serv_flag = buf.getBool();
             if (info.target_id_type == 3) {
@@ -498,10 +498,10 @@ void ts::LinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 bool ts::LinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     bool ok =
-        element->getIntAttribute<uint16_t>(ts_id, u"transport_stream_id", true) &&
-        element->getIntAttribute<uint16_t>(onetw_id, u"original_network_id", true) &&
-        element->getIntAttribute<uint16_t>(service_id, u"service_id", true) &&
-        element->getIntAttribute<uint8_t>(linkage_type, u"linkage_type", true) &&
+        element->getIntAttribute(ts_id, u"transport_stream_id", true) &&
+        element->getIntAttribute(onetw_id, u"original_network_id", true) &&
+        element->getIntAttribute(service_id, u"service_id", true) &&
+        element->getIntAttribute(linkage_type, u"linkage_type", true) &&
         element->getHexaTextChild(private_data, u"private_data", false);
 
     xml::ElementVector mobileElements;
@@ -518,16 +518,16 @@ bool ts::LinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
     }
 
     if (ok && !mobileElements.empty()) {
-        ok = mobileElements[0]->getIntAttribute<uint8_t>(mobile_handover_info.handover_type, u"handover_type", true, 0, 0, 0x0F) &&
+        ok = mobileElements[0]->getIntAttribute(mobile_handover_info.handover_type, u"handover_type", true, 0, 0, 0x0F) &&
              mobileElements[0]->getIntEnumAttribute(mobile_handover_info.origin_type, OriginTypeNames, u"origin_type", true) &&
-             mobileElements[0]->getIntAttribute<uint16_t>(mobile_handover_info.network_id, u"network_id",
+             mobileElements[0]->getIntAttribute(mobile_handover_info.network_id, u"network_id",
                                                           mobile_handover_info.handover_type >= 1 && mobile_handover_info.handover_type <= 3) &&
-             mobileElements[0]->getIntAttribute<uint16_t>(mobile_handover_info.initial_service_id, u"initial_service_id",
+             mobileElements[0]->getIntAttribute(mobile_handover_info.initial_service_id, u"initial_service_id",
                                                           mobile_handover_info.origin_type == 0x00);
     }
 
     if (ok && !eventElements.empty()) {
-        ok = eventElements[0]->getIntAttribute<uint16_t>(event_linkage_info.target_event_id, u"target_event_id", true) &&
+        ok = eventElements[0]->getIntAttribute(event_linkage_info.target_event_id, u"target_event_id", true) &&
              eventElements[0]->getBoolAttribute(event_linkage_info.target_listed, u"target_listed", true) &&
              eventElements[0]->getBoolAttribute(event_linkage_info.event_simulcast, u"event_simulcast", true);
     }
@@ -536,15 +536,15 @@ bool ts::LinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
         ok = extEventElements[0]->getChildren(eventElements, u"event");
         for (size_t i = 0; ok && i < eventElements.size(); ++i) {
             ExtendedEventLinkageInfo info;
-            ok = eventElements[i]->getIntAttribute<uint16_t>(info.target_event_id, u"target_event_id", true) &&
+            ok = eventElements[i]->getIntAttribute(info.target_event_id, u"target_event_id", true) &&
                  eventElements[i]->getBoolAttribute(info.target_listed, u"target_listed", true) &&
                  eventElements[i]->getBoolAttribute(info.event_simulcast, u"event_simulcast", true) &&
-                 eventElements[i]->getIntAttribute<uint8_t>(info.link_type, u"link_type", true, 0, 0, 3) &&
-                 eventElements[i]->getIntAttribute<uint8_t>(info.target_id_type, u"target_id_type", true, 0, 0, 3) &&
-                 eventElements[i]->getIntAttribute<uint16_t>(info.user_defined_id, u"user_defined_id", info.target_id_type == 3) &&
-                 eventElements[i]->getIntAttribute<uint16_t>(info.target_transport_stream_id, u"target_transport_stream_id", info.target_id_type == 1) &&
-                 eventElements[i]->getOptionalIntAttribute<uint16_t>(info.target_original_network_id, u"target_original_network_id") &&
-                 eventElements[i]->getOptionalIntAttribute<uint16_t>(info.target_service_id, u"target_service_id");
+                 eventElements[i]->getIntAttribute(info.link_type, u"link_type", true, 0, 0, 3) &&
+                 eventElements[i]->getIntAttribute(info.target_id_type, u"target_id_type", true, 0, 0, 3) &&
+                 eventElements[i]->getIntAttribute(info.user_defined_id, u"user_defined_id", info.target_id_type == 3) &&
+                 eventElements[i]->getIntAttribute(info.target_transport_stream_id, u"target_transport_stream_id", info.target_id_type == 1) &&
+                 eventElements[i]->getOptionalIntAttribute(info.target_original_network_id, u"target_original_network_id") &&
+                 eventElements[i]->getOptionalIntAttribute(info.target_service_id, u"target_service_id");
             extended_event_linkage_info.push_back(info);
         }
     }

@@ -261,24 +261,24 @@ void ts::HEVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 bool ts::HEVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     bool ok =
-        element->getIntAttribute<uint8_t>(profile_space, u"profile_space", true, 0, 0x00, 0x03) &&
+        element->getIntAttribute(profile_space, u"profile_space", true, 0, 0x00, 0x03) &&
         element->getBoolAttribute(tier, u"tier_flag", true) &&
-        element->getIntAttribute<uint8_t>(profile_idc, u"profile_idc", true, 0, 0x00, 0x1F) &&
-        element->getIntAttribute<uint32_t>(profile_compatibility_indication, u"profile_compatibility_indication", true) &&
+        element->getIntAttribute(profile_idc, u"profile_idc", true, 0, 0x00, 0x1F) &&
+        element->getIntAttribute(profile_compatibility_indication, u"profile_compatibility_indication", true) &&
         element->getBoolAttribute(progressive_source, u"progressive_source_flag", true) &&
         element->getBoolAttribute(interlaced_source, u"interlaced_source_flag", true) &&
         element->getBoolAttribute(non_packed_constraint, u"non_packed_constraint_flag", true) &&
         element->getBoolAttribute(frame_only_constraint, u"frame_only_constraint_flag", true) &&
         // copied_44bits and reserved_zero_44bits are synonyms
-        element->getIntAttribute<uint64_t>(copied_44bits, u"copied_44bits", false, 0, 0, TS_UCONST64(0x00000FFFFFFFFFFF)) &&
-        element->getIntAttribute<uint64_t>(copied_44bits, u"reserved_zero_44bits", false, copied_44bits, 0, TS_UCONST64(0x00000FFFFFFFFFFF)) &&
-        element->getIntAttribute<uint8_t>(level_idc, u"level_idc", true) &&
+        element->getIntAttribute(copied_44bits, u"copied_44bits", false, 0, 0, TS_UCONST64(0x00000FFFFFFFFFFF)) &&
+        element->getIntAttribute(copied_44bits, u"reserved_zero_44bits", false, copied_44bits, 0, TS_UCONST64(0x00000FFFFFFFFFFF)) &&
+        element->getIntAttribute(level_idc, u"level_idc", true) &&
         element->getBoolAttribute(HEVC_still_present, u"HEVC_still_present_flag", true) &&
         element->getBoolAttribute(HEVC_24hr_picture_present, u"HEVC_24hr_picture_present_flag", true) &&
         element->getBoolAttribute(sub_pic_hrd_params_not_present, u"sub_pic_hrd_params_not_present", false, true) &&
-        element->getIntAttribute<uint8_t>(HDR_WCG_idc, u"HDR_WCG_idc", false, 3, 0, 3) &&
-        element->getOptionalIntAttribute<uint8_t>(temporal_id_min, u"temporal_id_min", 0x00, 0x07) &&
-        element->getOptionalIntAttribute<uint8_t>(temporal_id_max, u"temporal_id_max", 0x00, 0x07);
+        element->getIntAttribute(HDR_WCG_idc, u"HDR_WCG_idc", false, 3, 0, 3) &&
+        element->getOptionalIntAttribute(temporal_id_min, u"temporal_id_min", 0x00, 0x07) &&
+        element->getOptionalIntAttribute(temporal_id_max, u"temporal_id_max", 0x00, 0x07);
 
     if (ok && temporal_id_min.set() + temporal_id_max.set() == 1) {
         element->report().error(u"line %d: in <%s>, attributes 'temporal_id_min' and 'temporal_id_max' must be both present or both omitted", {element->lineNumber(), element->name()});

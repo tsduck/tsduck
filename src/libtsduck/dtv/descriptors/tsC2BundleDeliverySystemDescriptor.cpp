@@ -120,9 +120,9 @@ void ts::C2BundleDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
         e.plp_id = buf.getUInt8();
         e.data_slice_id = buf.getUInt8();
         e.C2_system_tuning_frequency = buf.getUInt32();
-        e.C2_system_tuning_frequency_type = buf.getBits<uint8_t>(2);
-        e.active_OFDM_symbol_duration = buf.getBits<uint8_t>(3);
-        e.guard_interval = buf.getBits<uint8_t>(3);
+        buf.getBits(e.C2_system_tuning_frequency_type, 2);
+        buf.getBits(e.active_OFDM_symbol_duration, 3);
+        buf.getBits(e.guard_interval, 3);
         e.master_channel = buf.getBool();
         buf.skipBits(7);
         entries.push_back(e);
@@ -195,11 +195,11 @@ bool ts::C2BundleDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const x
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry e;
-        ok = children[i]->getIntAttribute<uint8_t>(e.plp_id, u"plp_id", true) &&
-             children[i]->getIntAttribute<uint8_t>(e.data_slice_id, u"data_slice_id", true) &&
-             children[i]->getIntAttribute<uint32_t>(e.C2_system_tuning_frequency, u"C2_system_tuning_frequency", true) &&
-             children[i]->getIntAttribute<uint8_t>(e.C2_system_tuning_frequency_type, u"C2_system_tuning_frequency_type", true, 0, 0, 3) &&
-             children[i]->getIntAttribute<uint8_t>(e.active_OFDM_symbol_duration, u"active_OFDM_symbol_duration", true, 0, 0, 7) &&
+        ok = children[i]->getIntAttribute(e.plp_id, u"plp_id", true) &&
+             children[i]->getIntAttribute(e.data_slice_id, u"data_slice_id", true) &&
+             children[i]->getIntAttribute(e.C2_system_tuning_frequency, u"C2_system_tuning_frequency", true) &&
+             children[i]->getIntAttribute(e.C2_system_tuning_frequency_type, u"C2_system_tuning_frequency_type", true, 0, 0, 3) &&
+             children[i]->getIntAttribute(e.active_OFDM_symbol_duration, u"active_OFDM_symbol_duration", true, 0, 0, 7) &&
              children[i]->getIntEnumAttribute(e.guard_interval, C2DeliverySystemDescriptor::C2GuardIntervalNames, u"guard_interval", true) &&
              children[i]->getBoolAttribute(e.master_channel, u"master_channel", true);
         entries.push_back(e);

@@ -149,8 +149,8 @@ void ts::DataBroadcastDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::DataBroadcastDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return  element->getIntAttribute<uint16_t>(data_broadcast_id, u"data_broadcast_id", true) &&
-            element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true) &&
+    return  element->getIntAttribute(data_broadcast_id, u"data_broadcast_id", true) &&
+            element->getIntAttribute(component_tag, u"component_tag", true) &&
             element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
             element->getHexaTextChild(selector_bytes, u"selector_bytes", true) &&
             element->getTextChild(text, u"text");

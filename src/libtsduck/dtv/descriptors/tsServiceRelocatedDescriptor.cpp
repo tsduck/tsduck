@@ -133,7 +133,7 @@ void ts::ServiceRelocatedDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::ServiceRelocatedDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(old_original_network_id, u"old_original_network_id", true) &&
-           element->getIntAttribute<uint16_t>(old_transport_stream_id, u"old_transport_stream_id", true) &&
-           element->getIntAttribute<uint16_t>(old_service_id, u"old_service_id", true);
+    return element->getIntAttribute(old_original_network_id, u"old_original_network_id", true) &&
+           element->getIntAttribute(old_transport_stream_id, u"old_transport_stream_id", true) &&
+           element->getIntAttribute(old_service_id, u"old_service_id", true);
 }

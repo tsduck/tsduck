@@ -124,8 +124,8 @@ void ts::VideoDepthRangeDescriptor::deserializePayload(PSIBuffer& buf)
         buf.pushReadSizeFromLength(8); // range_length
         switch (range.range_type) {
             case 0:
-                range.video_max_disparity_hint = buf.getBits<int16_t>(12);
-                range.video_min_disparity_hint = buf.getBits<int16_t>(12);
+                buf.getBits(range.video_max_disparity_hint, 12);
+                buf.getBits(range.video_min_disparity_hint, 12);
                 break;
             case 1:
                 break;
@@ -217,9 +217,9 @@ bool ts::VideoDepthRangeDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
 
     for (size_t i = 0; ok && i < xranges.size(); ++i) {
         Range range;
-        ok = xranges[i]->getIntAttribute<uint8_t>(range.range_type, u"range_type", true) &&
-             xranges[i]->getIntAttribute<int16_t>(range.video_max_disparity_hint, u"video_max_disparity_hint", range.range_type == 0) &&
-             xranges[i]->getIntAttribute<int16_t>(range.video_min_disparity_hint, u"video_min_disparity_hint", range.range_type == 0) &&
+        ok = xranges[i]->getIntAttribute(range.range_type, u"range_type", true) &&
+             xranges[i]->getIntAttribute(range.video_max_disparity_hint, u"video_max_disparity_hint", range.range_type == 0) &&
+             xranges[i]->getIntAttribute(range.video_min_disparity_hint, u"video_min_disparity_hint", range.range_type == 0) &&
              xranges[i]->getHexaTextChild(range.range_selector, u"range_selector", false, 0, range.range_type < 2 ? 0 : MAX_DESCRIPTOR_SIZE);
         ranges.push_back(range);
     }

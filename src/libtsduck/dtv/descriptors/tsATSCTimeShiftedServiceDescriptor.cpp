@@ -103,10 +103,10 @@ void ts::ATSCTimeShiftedServiceDescriptor::deserializePayload(PSIBuffer& buf)
     for (size_t i = 0; i < count && buf.canRead(); ++i) {
         Entry e;
         buf.skipBits(6);
-        e.time_shift = buf.getBits<uint16_t>(10);
+        buf.getBits(e.time_shift, 10);
         buf.skipBits(4);
-        e.major_channel_number = buf.getBits<uint16_t>(10);
-        e.minor_channel_number = buf.getBits<uint16_t>(10);
+        buf.getBits(e.major_channel_number, 10);
+        buf.getBits(e.minor_channel_number, 10);
         entries.push_back(e);
     }
 }
@@ -159,9 +159,9 @@ bool ts::ATSCTimeShiftedServiceDescriptor::analyzeXML(DuckContext& duck, const x
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Entry entry;
-        ok = children[i]->getIntAttribute<uint16_t>(entry.time_shift, u"time_shift", true, 0, 0, 0x03FF) &&
-             children[i]->getIntAttribute<uint16_t>(entry.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
-             children[i]->getIntAttribute<uint16_t>(entry.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF);
+        ok = children[i]->getIntAttribute(entry.time_shift, u"time_shift", true, 0, 0, 0x03FF) &&
+             children[i]->getIntAttribute(entry.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
+             children[i]->getIntAttribute(entry.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF);
         entries.push_back(entry);
     }
     return ok;

@@ -105,5 +105,5 @@ void ts::DVBTimeShiftedServiceDescriptor::buildXML(DuckContext& duck, xml::Eleme
 
 bool ts::DVBTimeShiftedServiceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(reference_service_id, u"reference_service_id", true);
+    return element->getIntAttribute(reference_service_id, u"reference_service_id", true);
 }

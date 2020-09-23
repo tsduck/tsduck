@@ -111,6 +111,6 @@ void ts::TimeShiftedEventDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::TimeShiftedEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(reference_service_id, u"reference_service_id", true) &&
-           element->getIntAttribute<uint16_t>(reference_event_id, u"reference_event_id", true);
+    return element->getIntAttribute(reference_service_id, u"reference_service_id", true) &&
+           element->getIntAttribute(reference_event_id, u"reference_event_id", true);
 }

@@ -126,5 +126,5 @@ void ts::MPEG2StereoscopicVideoFormatDescriptor::buildXML(DuckContext& duck, xml
 
 bool ts::MPEG2StereoscopicVideoFormatDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getOptionalIntAttribute<uint8_t>(arrangement_type, u"arrangement_type", 0x00, 0x7F);
+    return element->getOptionalIntAttribute(arrangement_type, u"arrangement_type", 0x00, 0x7F);
 }

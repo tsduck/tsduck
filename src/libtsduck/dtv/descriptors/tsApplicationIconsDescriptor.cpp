@@ -134,6 +134,6 @@ void ts::ApplicationIconsDescriptor::buildXML(DuckContext& duck, xml::Element* r
 bool ts::ApplicationIconsDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getAttribute(icon_locator, u"icon_locator", true) &&
-           element->getIntAttribute<uint16_t>(icon_flags, u"icon_flags", true) &&
+           element->getIntAttribute(icon_flags, u"icon_flags", true) &&
            element->getHexaTextChild(reserved_future_use, u"reserved_future_use");
 }

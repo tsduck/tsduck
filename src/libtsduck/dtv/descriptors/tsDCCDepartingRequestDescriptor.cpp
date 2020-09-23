@@ -136,6 +136,6 @@ void ts::DCCDepartingRequestDescriptor::buildXML(DuckContext& duck, xml::Element
 
 bool ts::DCCDepartingRequestDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(dcc_departing_request_type, u"dcc_departing_request_type", true) &&
+    return element->getIntAttribute(dcc_departing_request_type, u"dcc_departing_request_type", true) &&
            dcc_departing_request_text.fromXML(duck, element, u"dcc_departing_request_text", false);
 }

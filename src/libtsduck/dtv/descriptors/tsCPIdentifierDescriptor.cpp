@@ -120,7 +120,7 @@ bool ts::CPIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         uint16_t id = 0;
-        ok = children[i]->getIntAttribute<uint16_t>(id, u"value", true);
+        ok = children[i]->getIntAttribute(id, u"value", true);
         cpids.push_back(id);
     }
     return ok;

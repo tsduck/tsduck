@@ -134,8 +134,8 @@ void ts::AssociationTagDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::AssociationTagDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(association_tag, u"association_tag", true) &&
-           element->getIntAttribute<uint16_t>(use, u"use", true) &&
+    return element->getIntAttribute(association_tag, u"association_tag", true) &&
+           element->getIntAttribute(use, u"use", true) &&
            element->getHexaTextChild(selector_bytes, u"selector_bytes", false) &&
            element->getHexaTextChild(private_data, u"private_data", false);
 }

@@ -105,5 +105,5 @@ void ts::PrivateDataIndicatorDescriptor::buildXML(DuckContext& duck, xml::Elemen
 
 bool ts::PrivateDataIndicatorDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint32_t>(private_data_indicator, u"private_data_indicator", true);
+    return element->getIntAttribute(private_data_indicator, u"private_data_indicator", true);
 }

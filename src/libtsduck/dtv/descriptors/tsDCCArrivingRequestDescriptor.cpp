@@ -137,6 +137,6 @@ void ts::DCCArrivingRequestDescriptor::buildXML(DuckContext& duck, xml::Element*
 
 bool ts::DCCArrivingRequestDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(dcc_arriving_request_type, u"dcc_arriving_request_type", true) &&
+    return element->getIntAttribute(dcc_arriving_request_type, u"dcc_arriving_request_type", true) &&
            dcc_arriving_request_text.fromXML(duck, element, u"dcc_arriving_request_text", false);
 }

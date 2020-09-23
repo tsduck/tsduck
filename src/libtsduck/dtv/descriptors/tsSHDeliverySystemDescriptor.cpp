@@ -166,7 +166,7 @@ void ts::SHDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::SHDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    diversity_mode = buf.getBits<uint8_t>(4);
+    buf.getBits(diversity_mode, 4);
     buf.skipBits(4);
     while (buf.canRead()) {
         Modulation mod;
@@ -175,32 +175,32 @@ void ts::SHDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
         mod.short_interleaver = buf.getBool();
         buf.skipBits(5);
         if (mod.is_ofdm) {
-            mod.ofdm.bandwidth = buf.getBits<uint8_t>(3);
+            buf.getBits(mod.ofdm.bandwidth, 3);
             mod.ofdm.priority = buf.getBit();
-            mod.ofdm.constellation_and_hierarchy = buf.getBits<uint8_t>(3);
-            mod.ofdm.code_rate = buf.getBits<uint8_t>(4);
-            mod.ofdm.guard_interval = buf.getBits<uint8_t>(2);
-            mod.ofdm.transmission_mode = buf.getBits<uint8_t>(2);
+            buf.getBits(mod.ofdm.constellation_and_hierarchy, 3);
+            buf.getBits(mod.ofdm.code_rate, 4);
+            buf.getBits(mod.ofdm.guard_interval, 2);
+            buf.getBits(mod.ofdm.transmission_mode, 2);
             mod.ofdm.common_frequency = buf.getBool();
         }
         else {
-            mod.tdm.polarization = buf.getBits<uint8_t>(2);
-            mod.tdm.roll_off = buf.getBits<uint8_t>(2);
-            mod.tdm.modulation_mode = buf.getBits<uint8_t>(2);
-            mod.tdm.code_rate = buf.getBits<uint8_t>(4);
-            mod.tdm.symbol_rate = buf.getBits<uint8_t>(5);
+            buf.getBits(mod.tdm.polarization, 2);
+            buf.getBits(mod.tdm.roll_off, 2);
+            buf.getBits(mod.tdm.modulation_mode, 2);
+            buf.getBits(mod.tdm.code_rate, 4);
+            buf.getBits(mod.tdm.symbol_rate, 5);
             buf.skipBits(1);
         }
         if (mod.interleaver_presence) {
-            mod.common_multiplier = buf.getBits<uint8_t>(6);
+            buf.getBits(mod.common_multiplier, 6);
             if (mod.short_interleaver) {
                 buf.skipBits(2);
             }
             else {
-                mod.nof_late_taps = buf.getBits<uint8_t>(6);
-                mod.nof_slices = buf.getBits<uint8_t>(6);
-                mod.slice_distance = buf.getBits<uint8_t>(8);
-                mod.non_late_increments = buf.getBits<uint8_t>(6);
+                buf.getBits(mod.nof_late_taps, 6);
+                buf.getBits(mod.nof_slices, 6);
+                buf.getBits(mod.slice_distance, 8);
+                buf.getBits(mod.non_late_increments, 6);
             }
         }
         modulations.push_back(mod);
@@ -385,7 +385,7 @@ bool ts::SHDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::El
 {
     xml::ElementVector xmods;
     bool ok =
-        element->getIntAttribute<uint8_t>(diversity_mode, u"diversity_mode", true, 0, 0, 15) &&
+        element->getIntAttribute(diversity_mode, u"diversity_mode", true, 0, 0, 15) &&
         element->getChildren(xmods, u"modulation");
 
     for (size_t i = 0; ok && i < xmods.size(); ++i) {
@@ -402,9 +402,9 @@ bool ts::SHDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::El
             if (mod.is_ofdm) {
                 assert(xofdm.size() == 1);
                 ok = xofdm[0]->getIntEnumAttribute(mod.ofdm.bandwidth, BandwidthNames, u"bandwidth", true) &&
-                     xofdm[0]->getIntAttribute<uint8_t>(mod.ofdm.priority, u"priority", true, 0, 0, 1) &&
-                     xofdm[0]->getIntAttribute<uint8_t>(mod.ofdm.constellation_and_hierarchy, u"constellation_and_hierarchy", true, 0, 0, 0x07) &&
-                     xofdm[0]->getIntAttribute<uint8_t>(mod.ofdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
+                     xofdm[0]->getIntAttribute(mod.ofdm.priority, u"priority", true, 0, 0, 1) &&
+                     xofdm[0]->getIntAttribute(mod.ofdm.constellation_and_hierarchy, u"constellation_and_hierarchy", true, 0, 0, 0x07) &&
+                     xofdm[0]->getIntAttribute(mod.ofdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
                      xofdm[0]->getIntEnumAttribute(mod.ofdm.guard_interval, GuardIntervalNames, u"guard_interval", true) &&
                      xofdm[0]->getIntEnumAttribute(mod.ofdm.transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
                      xofdm[0]->getBoolAttribute(mod.ofdm.common_frequency, u"common_frequency", true);
@@ -414,15 +414,15 @@ bool ts::SHDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::El
                 ok = xtdm[0]->getIntEnumAttribute(mod.tdm.polarization, PolarizationNames, u"polarization", true) &&
                      xtdm[0]->getIntEnumAttribute(mod.tdm.roll_off, RollOffNames, u"roll_off", true) &&
                      xtdm[0]->getIntEnumAttribute(mod.tdm.modulation_mode, ModulationNames, u"modulation_mode", true) &&
-                     xtdm[0]->getIntAttribute<uint8_t>(mod.tdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
-                     xtdm[0]->getIntAttribute<uint8_t>(mod.tdm.symbol_rate, u"symbol_rate", true, 0, 0, 0x1F);
+                     xtdm[0]->getIntAttribute(mod.tdm.code_rate, u"code_rate", true, 0, 0, 0x0F) &&
+                     xtdm[0]->getIntAttribute(mod.tdm.symbol_rate, u"symbol_rate", true, 0, 0, 0x1F);
             }
         }
 
         mod.interleaver_presence = ok && !xint.empty();
         if (mod.interleaver_presence) {
             assert(xint.size() == 1);
-            ok = xint[0]->getIntAttribute<uint8_t>(mod.common_multiplier, u"common_multiplier", true, 0, 0, 0x3F);
+            ok = xint[0]->getIntAttribute(mod.common_multiplier, u"common_multiplier", true, 0, 0, 0x3F);
             if (ok) {
                 const int attr_count =
                     xint[0]->hasAttribute(u"nof_late_taps") +
@@ -431,10 +431,10 @@ bool ts::SHDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::El
                     xint[0]->hasAttribute(u"non_late_increments");
                 mod.short_interleaver = attr_count == 0;
                 if (attr_count == 4) {
-                    ok = xint[0]->getIntAttribute<uint8_t>(mod.nof_late_taps, u"nof_late_taps", true, 0, 0, 0x3F) &&
-                         xint[0]->getIntAttribute<uint8_t>(mod.nof_slices, u"nof_slices", true, 0, 0, 0x3F) &&
-                         xint[0]->getIntAttribute<uint8_t>(mod.slice_distance, u"slice_distance", true, 0, 0, 0xFF) &&
-                         xint[0]->getIntAttribute<uint8_t>(mod.non_late_increments, u"non_late_increments", true, 0, 0, 0x3F);
+                    ok = xint[0]->getIntAttribute(mod.nof_late_taps, u"nof_late_taps", true, 0, 0, 0x3F) &&
+                         xint[0]->getIntAttribute(mod.nof_slices, u"nof_slices", true, 0, 0, 0x3F) &&
+                         xint[0]->getIntAttribute(mod.slice_distance, u"slice_distance", true, 0, 0, 0xFF) &&
+                         xint[0]->getIntAttribute(mod.non_late_increments, u"non_late_increments", true, 0, 0, 0x3F);
                 }
                 else if (attr_count != 0) {
                     ok = false;

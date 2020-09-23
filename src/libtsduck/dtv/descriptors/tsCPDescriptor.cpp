@@ -114,7 +114,7 @@ void ts::CPDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::CPDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(cp_id, u"CP_system_id", true, 0, 0x0000, 0xFFFF) &&
+    return element->getIntAttribute(cp_id, u"CP_system_id", true, 0, 0x0000, 0xFFFF) &&
            element->getIntAttribute<PID>(cp_pid, u"CP_PID", true, 0, 0x0000, 0x1FFF) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 4);
 }

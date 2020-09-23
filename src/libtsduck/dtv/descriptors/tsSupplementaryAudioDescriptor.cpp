@@ -112,7 +112,7 @@ void ts::SupplementaryAudioDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::SupplementaryAudioDescriptor::deserializePayload(PSIBuffer& buf)
 {
     mix_type = buf.getBit();
-    editorial_classification = buf.getBits<uint8_t>(5);
+    buf.getBits(editorial_classification, 5);
     buf.skipBits(1);
     const bool has_lang = buf.getBool();
     if (has_lang) {
@@ -141,8 +141,8 @@ void ts::SupplementaryAudioDescriptor::buildXML(DuckContext& duck, xml::Element*
 
 bool ts::SupplementaryAudioDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(mix_type, u"mix_type", true, 0, 0, 1) &&
-           element->getIntAttribute<uint8_t>(editorial_classification, u"editorial_classification", true, 0, 0x00, 0x1F) &&
+    return element->getIntAttribute(mix_type, u"mix_type", true, 0, 0, 1) &&
+           element->getIntAttribute(editorial_classification, u"editorial_classification", true, 0, 0x00, 0x1F) &&
            element->getAttribute(language_code, u"language_code", false, u"", 3, 3) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 7);
 }

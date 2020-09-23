@@ -102,8 +102,8 @@ void ts::ContentIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 {
     while (buf.canRead()) {
         CRID cr;
-        cr.crid_type = buf.getBits<uint8_t>(6);
-        cr.crid_location = buf.getBits<uint8_t>(2);
+        buf.getBits(cr.crid_type, 6);
+        buf.getBits(cr.crid_location, 2);
         if (cr.crid_location == 0) {
             buf.getUTF8WithLength(cr.crid);
         }
@@ -165,9 +165,9 @@ bool ts::ContentIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::E
     bool ok = element->getChildren(xcrid, u"crid");
     for (auto it = xcrid.begin(); ok && it != xcrid.end(); ++it) {
         CRID cr;
-        ok = (*it)->getIntAttribute<uint8_t>(cr.crid_type, u"crid_type", true, 0, 0, 0x3F) &&
-             (*it)->getIntAttribute<uint8_t>(cr.crid_location, u"crid_location", true, 0, 0, 3) &&
-             (*it)->getIntAttribute<uint16_t>(cr.crid_ref, u"crid_ref", cr.crid_location == 1) &&
+        ok = (*it)->getIntAttribute(cr.crid_type, u"crid_type", true, 0, 0, 0x3F) &&
+             (*it)->getIntAttribute(cr.crid_location, u"crid_location", true, 0, 0, 3) &&
+             (*it)->getIntAttribute(cr.crid_ref, u"crid_ref", cr.crid_location == 1) &&
              (*it)->getAttribute(cr.crid, u"crid", cr.crid_location == 0, UString(), 0, 255);
         crids.push_back(cr);
     }

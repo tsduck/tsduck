@@ -261,9 +261,9 @@ bool ts::RRT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xdim;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
-        element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
-        element->getIntAttribute<uint8_t>(rating_region, u"rating_region", true) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
+        element->getIntAttribute(rating_region, u"rating_region", true) &&
         rating_region_name.fromXML(duck, element, u"rating_region_name", false) &&
         descs.fromXML(duck, xdim, element, u"rating_region_name,dimension");
 

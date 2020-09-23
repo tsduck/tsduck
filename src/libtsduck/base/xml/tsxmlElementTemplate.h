@@ -34,13 +34,13 @@
 // Get an integer attribute of an XML element.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
-bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool required, INT defValue, INT minValue, INT maxValue) const
+template <typename INT, typename INT1, typename INT2, typename INT3, typename std::enable_if<std::is_integral<INT>::value>::type*>
+bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool required, INT1 defValue, INT2 minValue, INT3 maxValue) const
 {
     const Attribute& attr(attribute(name, !required));
     if (!attr.isValid()) {
         // Attribute not present.
-        value = defValue;
+        value = INT(defValue);
         return !required;
     }
 
@@ -51,7 +51,7 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
         _report.error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
         return false;
     }
-    else if (val < minValue || val > maxValue) {
+    else if (val < INT(minValue) || val > INT(maxValue)) {
         _report.error(u"'%s' must be in range %'d to %'d for attribute '%s' in <%s>, line %d", {str, minValue, maxValue, name, this->name(), lineNumber()});
         return false;
     }
@@ -62,8 +62,8 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
 }
 
 #if !defined(TSXML_GCC_TEMPLATE_SUBSTITUTION_BUG)
-template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type*, typename INT>
-bool ts::xml::Element::getIntAttribute(ENUM& value, const UString& name, bool required, ENUM defValue, INT minValue, INT maxValue) const
+template <typename ENUM, typename INT1, typename INT2, typename std::enable_if<std::is_enum<ENUM>::value>::type*, typename INT>
+bool ts::xml::Element::getIntAttribute(ENUM& value, const UString& name, bool required, ENUM defValue, INT1 minValue, INT2 maxValue) const
 {
     INT val = INT(0);
     const bool ok = getIntAttribute<INT>(val, name, required, defValue, minValue, maxValue);
@@ -79,8 +79,8 @@ bool ts::xml::Element::getIntAttribute(ENUM& value, const UString& name, bool re
 // Get an optional integer attribute of an XML element.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
-bool ts::xml::Element::getOptionalIntAttribute(Variable<INT>& value, const UString& name, INT minValue, INT maxValue) const
+template <typename INT, typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT>::value>::type*>
+bool ts::xml::Element::getOptionalIntAttribute(Variable<INT>& value, const UString& name, INT1 minValue, INT2 maxValue) const
 {
     INT v = INT(0);
     if (!hasAttribute(name)) {
@@ -88,7 +88,7 @@ bool ts::xml::Element::getOptionalIntAttribute(Variable<INT>& value, const UStri
         value.clear();
         return true;
     }
-    else if (getIntAttribute<INT>(v, name, false, 0, minValue, maxValue)) {
+    else if (getIntAttribute<INT>(v, name, false, INT(0), minValue, maxValue)) {
         // Attribute present, correct value.
         value = v;
         return true;
@@ -105,12 +105,12 @@ bool ts::xml::Element::getOptionalIntAttribute(Variable<INT>& value, const UStri
 // Get an enumeration attribute of an XML element.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
-bool ts::xml::Element::getIntEnumAttribute(INT& value, const Enumeration& definition, const UString& name, bool required, INT defValue) const
+template <typename INT, typename INT1, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+bool ts::xml::Element::getIntEnumAttribute(INT& value, const Enumeration& definition, const UString& name, bool required, INT1 defValue) const
 {
     int v = 0;
     const bool ok = getEnumAttribute(v, definition, name, required, int(defValue));
-    value = ok ? INT(v) : defValue;
+    value = ok ? INT(v) : INT(defValue);
     return ok;
 }
 

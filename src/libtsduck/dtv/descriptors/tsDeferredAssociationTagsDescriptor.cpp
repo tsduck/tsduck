@@ -171,14 +171,14 @@ bool ts::DeferredAssociationTagsDescriptor::analyzeXML(DuckContext& duck, const 
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", true) &&
-        element->getIntAttribute<uint16_t>(program_number, u"program_number", true) &&
+        element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
+        element->getIntAttribute(program_number, u"program_number", true) &&
         element->getChildren(children, u"association") &&
         element->getHexaTextChild(private_data, u"private_data", false);
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         uint16_t tag = 0;
-        ok = children[i]->getIntAttribute<uint16_t>(tag, u"tag", true);
+        ok = children[i]->getIntAttribute(tag, u"tag", true);
         association_tags.push_back(tag);
     }
     return ok;

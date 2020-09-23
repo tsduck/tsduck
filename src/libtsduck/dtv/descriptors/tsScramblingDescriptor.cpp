@@ -105,5 +105,5 @@ void ts::ScramblingDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::ScramblingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(scrambling_mode, u"scrambling_mode", true);
+    return element->getIntAttribute(scrambling_mode, u"scrambling_mode", true);
 }

@@ -137,7 +137,7 @@ void ts::SSULocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::SSULocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(data_broadcast_id, u"data_broadcast_id", true) &&
-           element->getIntAttribute<uint16_t>(association_tag, u"association_tag", data_broadcast_id == 0x000A) &&
+    return element->getIntAttribute(data_broadcast_id, u"data_broadcast_id", true) &&
+           element->getIntAttribute(association_tag, u"association_tag", data_broadcast_id == 0x000A) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 3);
 }

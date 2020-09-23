@@ -128,6 +128,6 @@ void ts::EASInbandDetailsChannelDescriptor::buildXML(DuckContext& duck, xml::Ele
 
 bool ts::EASInbandDetailsChannelDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(details_RF_channel, u"details_RF_channel", true) &&
-           element->getIntAttribute<uint16_t>(details_program_number, u"details_program_number", true);
+    return element->getIntAttribute(details_RF_channel, u"details_RF_channel", true) &&
+           element->getIntAttribute(details_program_number, u"details_program_number", true);
 }

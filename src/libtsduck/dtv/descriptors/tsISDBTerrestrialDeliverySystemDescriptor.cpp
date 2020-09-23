@@ -95,9 +95,9 @@ void ts::ISDBTerrestrialDeliverySystemDescriptor::serializePayload(PSIBuffer& bu
 
 void ts::ISDBTerrestrialDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    area_code = buf.getBits<uint16_t>(12);
-    guard_interval = buf.getBits<uint8_t>(2);
-    transmission_mode = buf.getBits<uint8_t>(2);
+    buf.getBits(area_code, 12);
+    buf.getBits(guard_interval, 2);
+    buf.getBits(transmission_mode, 2);
     while (buf.canRead()) {
         frequencies.push_back(BinToHz(buf.getUInt16()));
     }
@@ -179,14 +179,14 @@ bool ts::ISDBTerrestrialDeliverySystemDescriptor::analyzeXML(DuckContext& duck, 
 {
     xml::ElementVector xfreq;
     bool ok =
-        element->getIntAttribute<uint16_t>(area_code, u"area_code", true, 0, 0, 0x0FFF) &&
+        element->getIntAttribute(area_code, u"area_code", true, 0, 0, 0x0FFF) &&
         element->getIntEnumAttribute(guard_interval, GuardIntervalNames, u"guard_interval", true) &&
         element->getIntEnumAttribute(transmission_mode, TransmissionModeNames, u"transmission_mode", true) &&
         element->getChildren(xfreq, u"frequency", 0, 126);
 
     for (auto it = xfreq.begin(); ok && it != xfreq.end(); ++it) {
         uint64_t f = 0;
-        ok = (*it)->getIntAttribute<uint64_t>(f, u"value", true);
+        ok = (*it)->getIntAttribute(f, u"value", true);
         frequencies.push_back(f);
     }
     return ok;

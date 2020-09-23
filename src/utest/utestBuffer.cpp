@@ -687,8 +687,7 @@ void BufferTest::testReadBitBigEndian()
     TSUNIT_ASSERT(b.readError());
     TSUNIT_ASSERT(!b.writeError());
     TSUNIT_ASSERT(b.error());
-    TSUNIT_EQUAL(1, b.getBit(1));
-    TSUNIT_EQUAL(0, b.getBit(0));
+    TSUNIT_EQUAL(0, b.getBit());
 }
 
 void BufferTest::testReadBitLittleEndian()
@@ -851,8 +850,7 @@ void BufferTest::testReadBitLittleEndian()
     TSUNIT_ASSERT(b.readError());
     TSUNIT_ASSERT(!b.writeError());
     TSUNIT_ASSERT(b.error());
-    TSUNIT_EQUAL(1, b.getBit(1));
-    TSUNIT_EQUAL(0, b.getBit(0));
+    TSUNIT_EQUAL(0, b.getBit());
 }
 
 void BufferTest::testReadBitsBigEndian()
@@ -879,7 +877,7 @@ void BufferTest::testReadBitsBigEndian()
     // must be explicitly provided when instantiated on 64-bit integer types.
 
     // 100110101010001010101010101100101011101101000011010010110101
-    TSUNIT_EQUAL(TS_UCONST64(0x9AA2AAB2BB434B5), b.getBits<uint64_t>(60, 0));
+    TSUNIT_EQUAL(TS_UCONST64(0x9AA2AAB2BB434B5), b.getBits<uint64_t>(60));
     TSUNIT_EQUAL(87, b.currentReadBitOffset());
 
     // 001101011 (9 remaining bits)
@@ -887,7 +885,7 @@ void BufferTest::testReadBitsBigEndian()
     TSUNIT_ASSERT(!b.readError());
     TSUNIT_ASSERT(!b.endOfRead());
 
-    TSUNIT_EQUAL(-1, b.getBits<int32_t>(10, -1)); // after eof
+    TSUNIT_EQUAL(0, b.getBits<int32_t>(10)); // after eof
     TSUNIT_EQUAL(87, b.currentReadBitOffset());
     TSUNIT_EQUAL(9, b.remainingReadBits());
     TSUNIT_ASSERT(b.readError());
@@ -896,7 +894,7 @@ void BufferTest::testReadBitsBigEndian()
     TSUNIT_ASSERT(!b.readError());
     TSUNIT_ASSERT(!b.endOfRead());
 
-    TSUNIT_EQUAL(0x6B, b.getBits<int32_t>(9, -1));
+    TSUNIT_EQUAL(0x6B, b.getBits<int32_t>(9));
     TSUNIT_ASSERT(!b.readError());
     TSUNIT_ASSERT(b.endOfRead());
     TSUNIT_EQUAL(96, b.currentReadBitOffset());
@@ -1206,7 +1204,7 @@ void BufferTest::testGetBCD()
     TSUNIT_EQUAL(4, b.currentReadByteOffset());
     TSUNIT_EQUAL(32, b.currentReadBitOffset());
 
-    TSUNIT_EQUAL(0x12345678, b.getBCD<uint32_t>(4, 0x12345678));
+    TSUNIT_EQUAL(292000, b.getBCD<uint32_t>(6));
     TSUNIT_ASSERT(b.readError());
     TSUNIT_EQUAL(6, b.currentReadByteOffset());
     TSUNIT_EQUAL(48, b.currentReadBitOffset());

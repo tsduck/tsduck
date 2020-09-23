@@ -125,7 +125,7 @@ void ts::TargetRegionNameDescriptor::deserializePayload(PSIBuffer& buf)
     buf.getLanguageCode(ISO_639_language_code);
     while (buf.canRead()) {
         Region region;
-        region.region_depth = buf.getBits<uint8_t>(2);
+        buf.getBits(region.region_depth, 2);
         const size_t len = buf.getBits<uint8_t>(6);
         buf.getString(region.region_name, len);
         region.primary_region_code = buf.getUInt8();
@@ -203,9 +203,9 @@ bool ts::TargetRegionNameDescriptor::analyzeXML(DuckContext& duck, const xml::El
     for (size_t i = 0; ok && i < xregions.size(); ++i) {
         Region region;
         ok = xregions[i]->getAttribute(region.region_name, u"region_name", true) &&
-             xregions[i]->getIntAttribute<uint8_t>(region.primary_region_code, u"primary_region_code", true) &&
-             xregions[i]->getIntAttribute<uint8_t>(region.secondary_region_code, u"secondary_region_code", false) &&
-             xregions[i]->getIntAttribute<uint16_t>(region.tertiary_region_code, u"tertiary_region_code", false);
+             xregions[i]->getIntAttribute(region.primary_region_code, u"primary_region_code", true) &&
+             xregions[i]->getIntAttribute(region.secondary_region_code, u"secondary_region_code", false) &&
+             xregions[i]->getIntAttribute(region.tertiary_region_code, u"tertiary_region_code", false);
         if (xregions[i]->hasAttribute(u"tertiary_region_code")) {
             region.region_depth = 3;
         }

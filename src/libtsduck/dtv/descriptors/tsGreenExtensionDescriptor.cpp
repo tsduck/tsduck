@@ -110,7 +110,7 @@ void ts::GreenExtensionDescriptor::deserializePayload(PSIBuffer& buf)
     for (size_t i = 0; i < count && !buf.error(); ++i) {
         constant_backlight_voltage_time_intervals.push_back(buf.getUInt16());
     }
-    count = buf.getBits<size_t>(2);
+    buf.getBits(count, 2);
     buf.skipBits(6);
     for (size_t i = 0; i < count && !buf.error(); ++i) {
         max_variations.push_back(buf.getUInt16());
@@ -131,7 +131,7 @@ void ts::GreenExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
         for (size_t i = 0; i < count && !buf.error(); ++i) {
             disp << margin << UString::Format(u"  Constant backlight voltage time intervals [%d]: 0x%X (%<d)", {i, buf.getUInt16()}) << std::endl;
         }
-        count = buf.getBits<size_t>(2);
+        buf.getBits(count, 2);
         buf.skipBits(6);
         disp << margin << UString::Format(u"Number of variations: %d", {count}) << std::endl;
         for (size_t i = 0; i < count && buf.canReadBytes(2); ++i) {
@@ -166,11 +166,11 @@ bool ts::GreenExtensionDescriptor::analyzeXML(DuckContext& duck, const xml::Elem
         element->getChildren(xvariation, u"max_variation", 0, MAX_COUNT);
 
     for (auto it = xvoltage.begin(); ok && it != xvoltage.end(); ++it) {
-        ok = (*it)->getIntAttribute<uint16_t>(id, u"value", true);
+        ok = (*it)->getIntAttribute(id, u"value", true);
         constant_backlight_voltage_time_intervals.push_back(id);
     }
     for (auto it = xvariation.begin(); ok && it != xvariation.end(); ++it) {
-        ok = (*it)->getIntAttribute<uint16_t>(id, u"value", true);
+        ok = (*it)->getIntAttribute(id, u"value", true);
         max_variations.push_back(id);
     }
     return ok;

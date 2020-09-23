@@ -129,7 +129,7 @@ void ts::TelephoneDescriptor::deserializePayload(PSIBuffer& buf)
 {
     buf.skipBits(2);
     foreign_availability = buf.getBool();
-    connection_type = buf.getBits<uint8_t>(5);
+    buf.getBits(connection_type, 5);
     buf.skipBits(1);
     const size_t country_len = buf.getBits<size_t>(2);
     const size_t inter_len = buf.getBits<size_t>(3);
@@ -218,7 +218,7 @@ void ts::TelephoneDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 bool ts::TelephoneDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return  element->getBoolAttribute(foreign_availability, u"foreign_availability", true) &&
-            element->getIntAttribute<uint8_t>(connection_type, u"connection_type", true, 0, 0x00, 0x1F) &&
+            element->getIntAttribute(connection_type, u"connection_type", true, 0, 0x00, 0x1F) &&
             element->getAttribute(country_prefix, u"country_prefix", false, UString(), 0, MAX_COUNTRY_PREFIX_LENGTH) &&
             element->getAttribute(international_area_code, u"international_area_code", false, UString(), 0, MAX_INTERNATIONAL_AREA_CODE_LENGTH) &&
             element->getAttribute(operator_code, u"operator_code", false, UString(), 0, MAX_OPERATOR_CODE_LENGTH) &&

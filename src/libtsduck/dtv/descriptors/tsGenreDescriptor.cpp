@@ -148,7 +148,7 @@ bool ts::GenreDescriptor::analyzeXML(DuckContext& duck, const xml::Element* elem
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         uint8_t attr = 0;
-        ok = children[i]->getIntAttribute<uint8_t>(attr, u"value", true);
+        ok = children[i]->getIntAttribute(attr, u"value", true);
         attributes.push_back(attr);
     }
     return ok;

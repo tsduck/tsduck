@@ -135,8 +135,8 @@ void ts::SpliceTimeDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::SpliceTimeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint32_t>(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
-           element->getIntAttribute<uint64_t>(TAI_seconds, u"TAI_seconds", true, 0, 0, TS_UCONST64(0x0000FFFFFFFFFFFF)) &&
-           element->getIntAttribute<uint32_t>(TAI_ns, u"TAI_ns", true) &&
-           element->getIntAttribute<uint16_t>(UTC_offset, u"UTC_offset", true);
+    return element->getIntAttribute(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
+           element->getIntAttribute(TAI_seconds, u"TAI_seconds", true, 0, 0, TS_UCONST64(0x0000FFFFFFFFFFFF)) &&
+           element->getIntAttribute(TAI_ns, u"TAI_ns", true) &&
+           element->getIntAttribute(UTC_offset, u"UTC_offset", true);
 }

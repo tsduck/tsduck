@@ -118,7 +118,7 @@ void ts::ServiceMoveDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::ServiceMoveDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(new_original_network_id, u"new_original_network_id", true) &&
-           element->getIntAttribute<uint16_t>(new_transport_stream_id, u"new_transport_stream_id", true) &&
-           element->getIntAttribute<uint16_t>(new_service_id, u"new_service_id", true);
+    return element->getIntAttribute(new_original_network_id, u"new_original_network_id", true) &&
+           element->getIntAttribute(new_transport_stream_id, u"new_transport_stream_id", true) &&
+           element->getIntAttribute(new_service_id, u"new_service_id", true);
 }

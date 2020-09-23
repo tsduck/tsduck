@@ -219,16 +219,16 @@ bool ts::LDT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xdescriptions;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint16_t>(original_service_id, u"original_service_id", true) &&
-        element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", true) &&
-        element->getIntAttribute<uint16_t>(original_network_id, u"original_network_id", true) &&
+        element->getIntAttribute(original_service_id, u"original_service_id", true) &&
+        element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
+        element->getIntAttribute(original_network_id, u"original_network_id", true) &&
         element->getChildren(xdescriptions, u"description");
 
     for (auto it = xdescriptions.begin(); ok && it != xdescriptions.end(); ++it) {
         uint16_t id;
-        ok = (*it)->getIntAttribute<uint16_t>(id, u"description_id", true) &&
+        ok = (*it)->getIntAttribute(id, u"description_id", true) &&
              descriptions[id].descs.fromXML(duck, *it);
     }
     return ok;

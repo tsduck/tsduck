@@ -90,7 +90,7 @@ void ts::AudioStreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
     free_format = buf.getBool();
     ID = buf.getBit();
-    layer = buf.getBits<uint8_t>(2);
+    buf.getBits(layer, 2);
     variable_rate_audio = buf.getBool();
     buf.skipBits(3);
 }
@@ -129,7 +129,7 @@ void ts::AudioStreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 bool ts::AudioStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getBoolAttribute(free_format, u"free_format", true) &&
-           element->getIntAttribute<uint8_t>(ID, u"ID", true, 0, 0, 1) &&
-           element->getIntAttribute<uint8_t>(layer, u"layer", true, 0, 0, 3) &&
+           element->getIntAttribute(ID, u"ID", true, 0, 0, 1) &&
+           element->getIntAttribute(layer, u"layer", true, 0, 0, 3) &&
            element->getBoolAttribute(variable_rate_audio, u"variable_rate_audio", true);
 }

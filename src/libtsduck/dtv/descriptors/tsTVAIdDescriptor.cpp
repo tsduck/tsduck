@@ -97,7 +97,7 @@ void ts::TVAIdDescriptor::deserializePayload(PSIBuffer& buf)
         TVAId ti;
         ti.TVA_id = buf.getUInt16();
         buf.skipBits(5);
-        ti.running_status = buf.getBits<uint8_t>(3);
+        buf.getBits(ti.running_status, 3);
         TVA_ids.push_back(ti);
     }
 }
@@ -141,8 +141,8 @@ bool ts::TVAIdDescriptor::analyzeXML(DuckContext& duck, const xml::Element* elem
     bool ok = element->getChildren(xtva, u"TVA", 0, MAX_ENTRIES);
     for (auto it = xtva.begin(); ok && it != xtva.end(); ++it) {
         TVAId ti;
-        ok = (*it)->getIntAttribute<uint16_t>(ti.TVA_id, u"id", true) &&
-             (*it)->getIntAttribute<uint8_t>(ti.running_status, u"running_status", true, 0, 0, 7);
+        ok = (*it)->getIntAttribute(ti.TVA_id, u"id", true) &&
+             (*it)->getIntAttribute(ti.running_status, u"running_status", true, 0, 0, 7);
         TVA_ids.push_back(ti);
     }
     return ok;

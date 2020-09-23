@@ -137,7 +137,7 @@ uint64_t ts::FrequencyListDescriptor::DecodeFrequency(uint8_t coding_type, PSIBu
 void ts::FrequencyListDescriptor::deserializePayload(PSIBuffer& buf)
 {
     buf.skipBits(6);
-    coding_type = buf.getBits<uint8_t>(2);
+    buf.getBits(coding_type, 2);
     while (buf.canRead()) {
         frequencies.push_back(DecodeFrequency(coding_type, buf));
     }
@@ -187,7 +187,7 @@ bool ts::FrequencyListDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         uint64_t freq = 0;
-        ok = children[i]->getIntAttribute<uint64_t>(freq, u"value", true);
+        ok = children[i]->getIntAttribute(freq, u"value", true);
         frequencies.push_back(freq);
     }
     return ok;

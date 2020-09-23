@@ -122,16 +122,16 @@ void ts::CellListDescriptor::deserializePayload(PSIBuffer& buf)
         cell.cell_id = buf.getUInt16();
         cell.cell_latitude = buf.getInt16();
         cell.cell_longitude = buf.getInt16();
-        cell.cell_extent_of_latitude = buf.getBits<uint16_t>(12);
-        cell.cell_extent_of_longitude = buf.getBits<uint16_t>(12);
+        buf.getBits(cell.cell_extent_of_latitude, 12);
+        buf.getBits(cell.cell_extent_of_longitude, 12);
         buf.pushReadSizeFromLength(8); // start read sequence
         while (buf.canRead()) {
             Subcell sub;
             sub.cell_id_extension = buf.getUInt8();
             sub.subcell_latitude = buf.getInt16();
             sub.subcell_longitude = buf.getInt16();
-            sub.subcell_extent_of_latitude = buf.getBits<uint16_t>(12);
-            sub.subcell_extent_of_longitude = buf.getBits<uint16_t>(12);
+            buf.getBits(sub.subcell_extent_of_latitude, 12);
+            buf.getBits(sub.subcell_extent_of_longitude, 12);
             cell.subcells.push_back(sub);
         }
         buf.popState(); // end read sequence
@@ -260,19 +260,19 @@ bool ts::CellListDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
     for (size_t i1 = 0; ok && i1 < xcells.size(); ++i1) {
         Cell cell;
         xml::ElementVector xsubcells;
-        ok = xcells[i1]->getIntAttribute<uint16_t>(cell.cell_id, u"cell_id", true) &&
-             xcells[i1]->getIntAttribute<int16_t>(cell.cell_latitude, u"cell_latitude", true) &&
-             xcells[i1]->getIntAttribute<int16_t>(cell.cell_longitude, u"cell_longitude", true) &&
-             xcells[i1]->getIntAttribute<uint16_t>(cell.cell_extent_of_latitude, u"cell_extent_of_latitude", true, 0, 0, 0x0FFF) &&
-             xcells[i1]->getIntAttribute<uint16_t>(cell.cell_extent_of_longitude, u"cell_extent_of_longitude", true, 0, 0, 0x0FFF) &&
+        ok = xcells[i1]->getIntAttribute(cell.cell_id, u"cell_id", true) &&
+             xcells[i1]->getIntAttribute(cell.cell_latitude, u"cell_latitude", true) &&
+             xcells[i1]->getIntAttribute(cell.cell_longitude, u"cell_longitude", true) &&
+             xcells[i1]->getIntAttribute(cell.cell_extent_of_latitude, u"cell_extent_of_latitude", true, 0, 0, 0x0FFF) &&
+             xcells[i1]->getIntAttribute(cell.cell_extent_of_longitude, u"cell_extent_of_longitude", true, 0, 0, 0x0FFF) &&
              xcells[i1]->getChildren(xsubcells, u"subcell");
         for (size_t i2 = 0; ok && i2 < xsubcells.size(); ++i2) {
             Subcell sub;
-            ok = xsubcells[i2]->getIntAttribute<uint8_t>(sub.cell_id_extension, u"cell_id_extension", true) &&
-                 xsubcells[i2]->getIntAttribute<int16_t>(sub.subcell_latitude, u"subcell_latitude", true) &&
-                 xsubcells[i2]->getIntAttribute<int16_t>(sub.subcell_longitude, u"subcell_longitude", true) &&
-                 xsubcells[i2]->getIntAttribute<uint16_t>(sub.subcell_extent_of_latitude, u"subcell_extent_of_latitude", true, 0, 0, 0x0FFF) &&
-                 xsubcells[i2]->getIntAttribute<uint16_t>(sub.subcell_extent_of_longitude, u"subcell_extent_of_longitude", true, 0, 0, 0x0FFF);
+            ok = xsubcells[i2]->getIntAttribute(sub.cell_id_extension, u"cell_id_extension", true) &&
+                 xsubcells[i2]->getIntAttribute(sub.subcell_latitude, u"subcell_latitude", true) &&
+                 xsubcells[i2]->getIntAttribute(sub.subcell_longitude, u"subcell_longitude", true) &&
+                 xsubcells[i2]->getIntAttribute(sub.subcell_extent_of_latitude, u"subcell_extent_of_latitude", true, 0, 0, 0x0FFF) &&
+                 xsubcells[i2]->getIntAttribute(sub.subcell_extent_of_longitude, u"subcell_extent_of_longitude", true, 0, 0, 0x0FFF);
             cell.subcells.push_back(sub);
         }
         cells.push_back(cell);

@@ -104,5 +104,5 @@ void ts::SLDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::SLDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(ES_ID, u"ES_ID", true);
+    return element->getIntAttribute(ES_ID, u"ES_ID", true);
 }

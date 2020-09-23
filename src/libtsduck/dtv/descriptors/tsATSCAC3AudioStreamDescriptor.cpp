@@ -160,12 +160,12 @@ void ts::ATSCAC3AudioStreamDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::ATSCAC3AudioStreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    sample_rate_code = buf.getBits<uint8_t>(3);
-    bsid = buf.getBits<uint8_t>(5);
-    bit_rate_code = buf.getBits<uint8_t>(6);
-    surround_mode = buf.getBits<uint8_t>(2);
-    bsmod = buf.getBits<uint8_t>(3);
-    num_channels = buf.getBits<uint8_t>(4);
+    buf.getBits(sample_rate_code, 3);
+    buf.getBits(bsid, 5);
+    buf.getBits(bit_rate_code, 6);
+    buf.getBits(surround_mode, 2);
+    buf.getBits(bsmod, 3);
+    buf.getBits(num_channels, 4);
     full_svc = buf.getBool();
 
     // End of descriptor allowed here
@@ -193,8 +193,8 @@ void ts::ATSCAC3AudioStreamDescriptor::deserializePayload(PSIBuffer& buf)
 
     // Decode one byte depending on bsmod.
     if (bsmod < 2) {
-        mainid = buf.getBits<uint8_t>(3);
-        priority = buf.getBits<uint8_t>(2);
+        buf.getBits(mainid, 3);
+        buf.getBits(priority, 2);
         buf.skipBits(3);
     }
     else {
@@ -342,16 +342,16 @@ void ts::ATSCAC3AudioStreamDescriptor::buildXML(DuckContext& duck, xml::Element*
 
 bool ts::ATSCAC3AudioStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(sample_rate_code, u"sample_rate_code", true, 0, 0, 0x07) &&
-           element->getIntAttribute<uint8_t>(bsid, u"bsid", true, 0, 0, 0x1F) &&
-           element->getIntAttribute<uint8_t>(bit_rate_code, u"bit_rate_code", true, 0, 0, 0x3F) &&
-           element->getIntAttribute<uint8_t>(surround_mode, u"surround_mode", true, 0, 0, 0x03) &&
-           element->getIntAttribute<uint8_t>(bsmod, u"bsmod", true, 0, 0, 0x07) &&
-           element->getIntAttribute<uint8_t>(num_channels, u"num_channels", true, 0, 0, 0x0F) &&
+    return element->getIntAttribute(sample_rate_code, u"sample_rate_code", true, 0, 0, 0x07) &&
+           element->getIntAttribute(bsid, u"bsid", true, 0, 0, 0x1F) &&
+           element->getIntAttribute(bit_rate_code, u"bit_rate_code", true, 0, 0, 0x3F) &&
+           element->getIntAttribute(surround_mode, u"surround_mode", true, 0, 0, 0x03) &&
+           element->getIntAttribute(bsmod, u"bsmod", true, 0, 0, 0x07) &&
+           element->getIntAttribute(num_channels, u"num_channels", true, 0, 0, 0x0F) &&
            element->getBoolAttribute(full_svc, u"full_svc", true) &&
-           element->getIntAttribute<uint8_t>(mainid, u"mainid", bsmod < 2, 0, 0, 0x07) &&
-           element->getIntAttribute<uint8_t>(priority, u"priority", bsmod < 2, 0, 0, 0x03) &&
-           element->getIntAttribute<uint8_t>(asvcflags, u"asvcflags", bsmod >= 2, 0, 0, 0xFF) &&
+           element->getIntAttribute(mainid, u"mainid", bsmod < 2, 0, 0, 0x07) &&
+           element->getIntAttribute(priority, u"priority", bsmod < 2, 0, 0, 0x03) &&
+           element->getIntAttribute(asvcflags, u"asvcflags", bsmod >= 2, 0, 0, 0xFF) &&
            element->getAttribute(text, u"text") &&
            element->getAttribute(language, u"language") &&
            element->getAttribute(language_2, u"language_2") &&

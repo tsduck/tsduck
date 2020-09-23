@@ -156,8 +156,8 @@ bool ts::EASInbandExceptionChannelsDescriptor::analyzeXML(DuckContext& duck, con
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        ok = children[i]->getIntAttribute<uint8_t>(entry.RF_channel, u"RF_channel", true) &&
-             children[i]->getIntAttribute<uint16_t>(entry.program_number, u"program_number", true);
+        ok = children[i]->getIntAttribute(entry.RF_channel, u"RF_channel", true) &&
+             children[i]->getIntAttribute(entry.program_number, u"program_number", true);
         entries.push_back(entry);
     }
     return ok;

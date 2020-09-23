@@ -239,8 +239,8 @@ void ts::ExtendedEventDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::ExtendedEventDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    descriptor_number = buf.getBits<uint8_t>(4);
-    last_descriptor_number = buf.getBits<uint8_t>(4);
+    buf.getBits(descriptor_number, 4);
+    buf.getBits(last_descriptor_number, 4);
     buf.getLanguageCode(language_code);
     buf.pushReadSizeFromLength(8); // start length_of_items
     while (buf.canRead()) {

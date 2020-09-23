@@ -108,5 +108,5 @@ void ts::AbstractPreferredNameIdentifierDescriptor::buildXML(DuckContext& duck, 
 
 bool ts::AbstractPreferredNameIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(name_id, u"name_id", true, 0, 0x00, 0xFF);
+    return element->getIntAttribute(name_id, u"name_id", true, 0, 0x00, 0xFF);
 }

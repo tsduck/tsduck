@@ -105,5 +105,5 @@ void ts::ExternalESIdDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::ExternalESIdDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(external_ES_ID, u"external_ES_ID", true);
+    return element->getIntAttribute(external_ES_ID, u"external_ES_ID", true);
 }

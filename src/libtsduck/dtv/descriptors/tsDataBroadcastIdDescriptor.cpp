@@ -248,6 +248,6 @@ void ts::DataBroadcastIdDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::DataBroadcastIdDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(data_broadcast_id, u"data_broadcast_id", true, 0, 0x0000, 0xFFFF) &&
+    return element->getIntAttribute(data_broadcast_id, u"data_broadcast_id", true, 0, 0x0000, 0xFFFF) &&
            element->getHexaTextChild(private_data, u"selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 2);
 }

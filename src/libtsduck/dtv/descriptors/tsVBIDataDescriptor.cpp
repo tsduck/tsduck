@@ -175,7 +175,7 @@ void ts::VBIDataDescriptor::deserializePayload(PSIBuffer& buf)
                 Field fd;
                 buf.skipBits(2);
                 fd.field_parity = buf.getBool();
-                fd.line_offset = buf.getBits<uint8_t>(5);
+                buf.getBits(fd.line_offset, 5);
                 service.fields.push_back(fd);
             }
         }
@@ -220,7 +220,7 @@ bool ts::VBIDataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
     for (size_t srvIndex = 0; ok && srvIndex < srv.size(); ++srvIndex) {
         Service service;
         xml::ElementVector fld;
-        ok = srv[srvIndex]->getIntAttribute<uint8_t>(service.data_service_id, u"data_service_id", true) &&
+        ok = srv[srvIndex]->getIntAttribute(service.data_service_id, u"data_service_id", true) &&
              srv[srvIndex]->getChildren(fld, u"field") &&
              srv[srvIndex]->getHexaTextChild(service.reserved, u"reserved", false);
 
@@ -242,7 +242,7 @@ bool ts::VBIDataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
         for (size_t fldIndex = 0; ok && fldIndex < fld.size(); ++fldIndex) {
             Field field;
             ok = fld[fldIndex]->getBoolAttribute(field.field_parity, u"field_parity", false, false) &&
-                 fld[fldIndex]->getIntAttribute<uint8_t>(field.line_offset, u"line_offset", false, 0x00, 0x00, 0x1F);
+                 fld[fldIndex]->getIntAttribute(field.line_offset, u"line_offset", false, 0x00, 0x00, 0x1F);
             service.fields.push_back(field);
         }
         services.push_back(service);

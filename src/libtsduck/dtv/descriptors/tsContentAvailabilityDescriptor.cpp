@@ -104,7 +104,7 @@ void ts::ContentAvailabilityDescriptor::deserializePayload(PSIBuffer& buf)
     copy_restriction_mode = buf.getBool();
     image_constraint_token = buf.getBool();
     retention_mode = buf.getBool();
-    retention_state = buf.getBits<uint8_t>(3);
+    buf.getBits(retention_state, 3);
     encryption_mode = buf.getBool();
     buf.getBytes(reserved_future_use);
 }
@@ -153,7 +153,7 @@ bool ts::ContentAvailabilityDescriptor::analyzeXML(DuckContext& duck, const xml:
     return element->getBoolAttribute(copy_restriction_mode, u"copy_restriction_mode", true) &&
            element->getBoolAttribute(image_constraint_token, u"image_constraint_token", true) &&
            element->getBoolAttribute(retention_mode, u"retention_mode", true) &&
-           element->getIntAttribute<uint8_t>(retention_state, u"retention_state", true, 0, 0, 7) &&
+           element->getIntAttribute(retention_state, u"retention_state", true, 0, 0, 7) &&
            element->getBoolAttribute(encryption_mode, u"encryption_mode", true) &&
            element->getHexaTextChild(reserved_future_use, u"reserved_future_use", false, 0, 253);
 }

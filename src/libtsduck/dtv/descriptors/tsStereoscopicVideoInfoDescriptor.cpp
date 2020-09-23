@@ -176,6 +176,6 @@ bool ts::StereoscopicVideoInfoDescriptor::analyzeXML(DuckContext& duck, const xm
     return element->getBoolAttribute(base_video, u"base_video", true) &&
            element->getBoolAttribute(leftview, u"leftview", base_video) &&
            element->getBoolAttribute(usable_as_2D, u"usable_as_2D", !base_video) &&
-           element->getIntAttribute<uint8_t>(horizontal_upsampling_factor, u"horizontal_upsampling_factor", !base_video, 0, 0, 15) &&
-           element->getIntAttribute<uint8_t>(vertical_upsampling_factor, u"vertical_upsampling_factor", !base_video, 0, 0, 15);
+           element->getIntAttribute(horizontal_upsampling_factor, u"horizontal_upsampling_factor", !base_video, 0, 0, 15) &&
+           element->getIntAttribute(vertical_upsampling_factor, u"vertical_upsampling_factor", !base_video, 0, 0, 15);
 }

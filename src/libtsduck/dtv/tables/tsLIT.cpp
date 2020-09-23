@@ -213,18 +213,18 @@ bool ts::LIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xevent;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint16_t>(event_id, u"event_id", true) &&
-        element->getIntAttribute<uint16_t>(service_id, u"service_id", true) &&
-        element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", true) &&
-        element->getIntAttribute<uint16_t>(original_network_id, u"original_network_id", true) &&
+        element->getIntAttribute(event_id, u"event_id", true) &&
+        element->getIntAttribute(service_id, u"service_id", true) &&
+        element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
+        element->getIntAttribute(original_network_id, u"original_network_id", true) &&
         element->getChildren(xevent, u"event");
 
     for (auto it = xevent.begin(); ok && it != xevent.end(); ++it) {
         Event& ev(events.newEntry());
         xml::ElementVector xschedule;
-        ok = (*it)->getIntAttribute<uint16_t>(ev.local_event_id, u"local_event_id", true) &&
+        ok = (*it)->getIntAttribute(ev.local_event_id, u"local_event_id", true) &&
              ev.descs.fromXML(duck, *it);
     }
     return ok;

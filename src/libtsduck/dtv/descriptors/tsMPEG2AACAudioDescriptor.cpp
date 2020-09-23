@@ -116,7 +116,7 @@ void ts::MPEG2AACAudioDescriptor::buildXML(DuckContext& duck, xml::Element* root
 
 bool ts::MPEG2AACAudioDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(MPEG2_AAC_profile, u"MPEG2_AAC_profile", true) &&
-           element->getIntAttribute<uint8_t>(MPEG2_AAC_channel_configuration, u"MPEG2_AAC_channel_configuration", true) &&
-           element->getIntAttribute<uint8_t>(MPEG2_AAC_additional_information, u"MPEG2_AAC_additional_information", true);
+    return element->getIntAttribute(MPEG2_AAC_profile, u"MPEG2_AAC_profile", true) &&
+           element->getIntAttribute(MPEG2_AAC_channel_configuration, u"MPEG2_AAC_channel_configuration", true) &&
+           element->getIntAttribute(MPEG2_AAC_additional_information, u"MPEG2_AAC_additional_information", true);
 }

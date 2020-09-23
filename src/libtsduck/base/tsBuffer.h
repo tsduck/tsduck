@@ -36,6 +36,7 @@
 #include "tsMemory.h"
 #include "tsByteBlock.h"
 #include "tsUString.h"
+#include "tsVariable.h"
 
 namespace ts {
     //!
@@ -664,17 +665,15 @@ namespace ts {
 
         //!
         //! Read the next bit and advance the read pointer.
-        //! @param [in] def Default value to return if already at end of stream.
         //! @return The value of the next bit.
         //!
-        uint8_t getBit(uint8_t def = 0);
+        uint8_t getBit();
 
         //!
         //! Read the next bit as a boolean and advance the read pointer.
-        //! @param [in] def Default value to return if already at end of stream.
         //! @return The value of the next bit.
         //!
-        bool getBool(bool def = false) { return getBit(uint8_t(def)) != 0; }
+        bool getBool() { return getBit() != 0; }
 
         //!
         //! Write the next bit and advance the write pointer.
@@ -687,16 +686,33 @@ namespace ts {
         //! Read the next n bits as an integer value and advance the read pointer.
         //! @tparam INT An integer type for the result.
         //! @param [in] bits Number of bits to read.
-        //! @param [in] def Default value to return if less than @a n bits before end of stream.
         //! @return The value of the next @a bits.
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-        INT getBits(size_t bits, INT def = 0); // unsigned version
+        INT getBits(size_t bits); // unsigned version
 
         //! @cond nodoxygen
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-        INT getBits(size_t bits, INT def = 0); // signed version
+        INT getBits(size_t bits); // signed version
         //! @endcond
+
+        //!
+        //! Read the next n bits as an integer value and advance the read pointer.
+        //! @tparam INT An integer type for the result.
+        //! @param [out] value The value of the next @a bits.
+        //! @param [in] bits Number of bits to read.
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        void getBits(INT& value, size_t bits) { value = getBits<INT>(bits); }
+
+        //!
+        //! Read the next n bits as an integer value and advance the read pointer.
+        //! @tparam INT An integer type for the result.
+        //! @param [out] value The value of the next @a bits as a Variable instance. If no integer can be read, the Variable is unset.
+        //! @param [in] bits Number of bits to read.
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        void getBits(Variable<INT>& value, size_t bits);
 
         //!
         //! Put the next n bits from an integer value and advance the write pointer.
@@ -971,11 +987,21 @@ namespace ts {
         //! If an invalid BCD digit is found, the read error state of the buffer is set after reading all BCD digits.
         //! @tparam INT An integer type.
         //! @param [in] bcd_count Number of BCD digits (@a bcd_count * 4 bits).
-        //! @param [in] def Default value to return if less than @a bcd_count * 4 bits before end of stream.
-        //! @return The decoded BCD value or @a def in case of error.
+        //! @return The decoded BCD value or zero in case of error.
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-        INT getBCD(size_t bcd_count, INT def = 0);
+        INT getBCD(size_t bcd_count);
+
+        //!
+        //! Read the next 4*n bits as a Binary Coded Decimal (BCD) value and advance the read pointer.
+        //! If an invalid BCD digit is found, the read error state of the buffer is set after reading all BCD digits.
+        //! @tparam INT An integer type.
+        //! @param [out] value The decoded BCD value or zero in case of error.
+        //! @param [in] bcd_count Number of BCD digits (@a bcd_count * 4 bits).
+        //! @return True on success, false on error.
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool getBCD(INT& value, size_t bcd_count);
 
         //!
         //! Put the next 4*n bits as a Binary Coded Decimal (BCD) value and advance the write pointer.

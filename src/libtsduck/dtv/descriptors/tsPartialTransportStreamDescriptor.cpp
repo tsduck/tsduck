@@ -93,11 +93,11 @@ void ts::PartialTransportStreamDescriptor::serializePayload(PSIBuffer& buf) cons
 void ts::PartialTransportStreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
     buf.skipBits(2);
-    peak_rate = buf.getBits<uint32_t>(22);
+    buf.getBits(peak_rate, 22);
     buf.skipBits(2);
-    minimum_overall_smoothing_rate = buf.getBits<uint32_t>(22);
+    buf.getBits(minimum_overall_smoothing_rate, 22);
     buf.skipBits(2);
-    maximum_overall_smoothing_buffer = buf.getBits<uint16_t>(14);
+    buf.getBits(maximum_overall_smoothing_buffer, 14);
 }
 
 
@@ -158,7 +158,7 @@ void ts::PartialTransportStreamDescriptor::buildXML(DuckContext& duck, xml::Elem
 
 bool ts::PartialTransportStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint32_t>(peak_rate, u"peak_rate", true, 0, 0, 0x003FFFFF) &&
-           element->getIntAttribute<uint32_t>(minimum_overall_smoothing_rate, u"minimum_overall_smoothing_rate", false, 0x003FFFFF, 0, 0x003FFFFF) &&
-           element->getIntAttribute<uint16_t>(maximum_overall_smoothing_buffer, u"maximum_overall_smoothing_buffer", false, 0x3FFF, 0, 0x3FFF);
+    return element->getIntAttribute(peak_rate, u"peak_rate", true, 0, 0, 0x003FFFFF) &&
+           element->getIntAttribute(minimum_overall_smoothing_rate, u"minimum_overall_smoothing_rate", false, 0x003FFFFF, 0, 0x003FFFFF) &&
+           element->getIntAttribute(maximum_overall_smoothing_buffer, u"maximum_overall_smoothing_buffer", false, 0x3FFF, 0, 0x3FFF);
 }

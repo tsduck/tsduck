@@ -161,16 +161,16 @@ bool ts::SkyLogicalChannelNumberDescriptor::analyzeXML(DuckContext& duck, const 
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute<uint16_t>(region_id, u"region_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getIntAttribute(region_id, u"region_id", true, 0, 0x0000, 0xFFFF) &&
         element->getChildren(children, u"service", 0, MAX_ENTRIES);
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        ok = children[i]->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-             children[i]->getIntAttribute<uint8_t>(entry.service_type, u"service_type", true, 0, 0x00, 0xFF) &&
-             children[i]->getIntAttribute<uint16_t>(entry.channel_id, u"channel_id", true, 0, 0x0000, 0xFFFF) &&
-             children[i]->getIntAttribute<uint16_t>(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0xFFFF) &&
-             children[i]->getIntAttribute<uint16_t>(entry.sky_id, u"sky_id", true, 0, 0x0000, 0xFFFF);
+        ok = children[i]->getIntAttribute(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+             children[i]->getIntAttribute(entry.service_type, u"service_type", true, 0, 0x00, 0xFF) &&
+             children[i]->getIntAttribute(entry.channel_id, u"channel_id", true, 0, 0x0000, 0xFFFF) &&
+             children[i]->getIntAttribute(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0xFFFF) &&
+             children[i]->getIntAttribute(entry.sky_id, u"sky_id", true, 0, 0x0000, 0xFFFF);
         entries.push_back(entry);
     }
     return ok;

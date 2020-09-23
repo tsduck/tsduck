@@ -117,7 +117,7 @@ void ts::CaptionServiceDescriptor::deserializePayload(PSIBuffer& buf)
         e.digital_cc = buf.getBool();
         buf.skipBits(1);
         if (e.digital_cc) {
-            e.caption_service_number = buf.getBits<uint8_t>(6);
+            buf.getBits(e.caption_service_number, 6);
         }
         else {
             buf.skipBits(5);
@@ -197,7 +197,7 @@ bool ts::CaptionServiceDescriptor::analyzeXML(DuckContext& duck, const xml::Elem
         ok = children[i]->getAttribute(entry.language, u"language", true, UString(), 3, 3) &&
              children[i]->getBoolAttribute(entry.digital_cc, u"digital_cc", true) &&
              children[i]->getBoolAttribute(entry.line21_field, u"line21_field", false) &&
-             children[i]->getIntAttribute<uint8_t>(entry.caption_service_number, u"caption_service_number", false, 0, 0, 0x3F) &&
+             children[i]->getIntAttribute(entry.caption_service_number, u"caption_service_number", false, 0, 0, 0x3F) &&
              children[i]->getBoolAttribute(entry.easy_reader, u"easy_reader", true) &&
              children[i]->getBoolAttribute(entry.wide_aspect_ratio, u"wide_aspect_ratio", true);
         entries.push_back(entry);

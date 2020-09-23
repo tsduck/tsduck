@@ -111,6 +111,6 @@ void ts::TransportProfileDescriptor::buildXML(DuckContext& duck, xml::Element* r
 
 bool ts::TransportProfileDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(transport_profile, u"transport_profile", true) &&
+    return element->getIntAttribute(transport_profile, u"transport_profile", true) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 3);
 }

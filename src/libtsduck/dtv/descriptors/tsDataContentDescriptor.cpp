@@ -160,8 +160,8 @@ bool ts::DataContentDescriptor::analyzeXML(DuckContext& duck, const xml::Element
 {
     xml::ElementVector xcomp;
     bool ok =
-        element->getIntAttribute<uint16_t>(data_component_id, u"data_component_id", true) &&
-        element->getIntAttribute<uint8_t>(entry_component, u"entry_component", true) &&
+        element->getIntAttribute(data_component_id, u"data_component_id", true) &&
+        element->getIntAttribute(entry_component, u"entry_component", true) &&
         element->getAttribute(ISO_639_language_code, u"ISO_639_language_code", true, UString(), 3, 3) &&
         element->getAttribute(text, u"text", true) &&
         element->getHexaTextChild(selector_bytes, u"selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 8) &&
@@ -169,7 +169,7 @@ bool ts::DataContentDescriptor::analyzeXML(DuckContext& duck, const xml::Element
 
     for (auto it = xcomp.begin(); ok && it != xcomp.end(); ++it) {
         uint8_t ref = 0;
-        ok = (*it)->getIntAttribute<uint8_t>(ref, u"ref", true);
+        ok = (*it)->getIntAttribute(ref, u"ref", true);
         component_refs.push_back(ref);
     }
     return ok;

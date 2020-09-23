@@ -100,7 +100,7 @@ void ts::NorDigLogicalChannelDescriptorV1::deserializePayload(PSIBuffer& buf)
         e.service_id = buf.getUInt16();
         e.visible = buf.getBool();
         buf.skipBits(1);
-        e.lcn = buf.getBits<uint16_t>(14);
+        buf.getBits(e.lcn, 14);
         entries.push_back(e);
     }
 }
@@ -154,8 +154,8 @@ bool ts::NorDigLogicalChannelDescriptorV1::analyzeXML(DuckContext& duck, const x
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
-        ok = children[i]->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true) &&
-             children[i]->getIntAttribute<uint16_t>(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0x3FFF) &&
+        ok = children[i]->getIntAttribute(entry.service_id, u"service_id", true) &&
+             children[i]->getIntAttribute(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0x3FFF) &&
              children[i]->getBoolAttribute(entry.visible, u"visible_service", false, true);
         entries.push_back(entry);
     }

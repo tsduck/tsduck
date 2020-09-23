@@ -36,20 +36,32 @@
 //----------------------------------------------------------------------------
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
-INT ts::Buffer::getBits(size_t bits, INT def)
+INT ts::Buffer::getBits(size_t bits)
 {
     typedef typename std::make_unsigned<INT>::type UNSINT;
-    const INT value = static_cast<INT>(getBits<UNSINT>(bits, static_cast<UNSINT>(def)));
+    const INT value = static_cast<INT>(getBits<UNSINT>(bits));
     return SignExtend(value, bits);
 }
 
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+void ts::Buffer::getBits(Variable<INT>& value, size_t bits)
+{
+    if (_read_error || currentReadBitOffset() + bits > currentWriteBitOffset()) {
+        _read_error = true;
+        value.clear();
+    }
+    else {
+        value = getBits<INT>(bits);
+    }
+}
+
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
-INT ts::Buffer::getBits(size_t bits, INT def)
+INT ts::Buffer::getBits(size_t bits)
 {
     // No read if read error is already set or not enough bits to read.
     if (_read_error || currentReadBitOffset() + bits > currentWriteBitOffset()) {
         _read_error = true;
-        return def;
+        return 0;
     }
 
     INT val = 0;
@@ -219,24 +231,36 @@ bool ts::Buffer::putint(INT value, size_t bytes, void (*putBE)(void*,INT), void 
 //----------------------------------------------------------------------------
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
-INT ts::Buffer::getBCD(size_t bcd_count, INT def)
+INT ts::Buffer::getBCD(size_t bcd_count)
+{
+    INT value = 0;
+    getBCD(value, bcd_count);
+    return value;
+}
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+bool ts::Buffer::getBCD(INT& value, size_t bcd_count)
 {
     typedef typename std::make_unsigned<INT>::type UNSINT;
-    UNSINT val = 0;
+    UNSINT uvalue = 0;
 
     if (_read_error || currentReadBitOffset() + 4 * bcd_count > currentWriteBitOffset()) {
         _read_error = true;
+        value = 0;
+        return false;
     }
     else {
         while (bcd_count-- > 0) {
-            const UNSINT nibble = getBits<UNSINT>(4);
+            UNSINT nibble = getBits<UNSINT>(4);
             if (nibble > 9) {
                 _read_error = true;
+                nibble = 0;
             }
-            val = 10 * val + nibble;
+            uvalue = 10 * uvalue + nibble;
         }
+        value = static_cast<INT>(uvalue);
+        return true;
     }
-    return _read_error ? def : static_cast<INT>(val);
 }
 
 

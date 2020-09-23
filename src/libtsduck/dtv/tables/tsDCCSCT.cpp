@@ -151,7 +151,7 @@ void ts::DCCSCT::deserializePayload(PSIBuffer& buf, const Section& section)
             case new_county: {
                 upd.state_code = buf.getUInt8();
                 buf.skipBits(6);
-                upd.dcc_county_location_code = buf.getBits<uint16_t>(10);
+                buf.getBits(upd.dcc_county_location_code, 10);
                 buf.getMultipleString(upd.dcc_county_location_code_text);
                 break;
             }
@@ -361,9 +361,9 @@ bool ts::DCCSCT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
-        element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
-        element->getIntAttribute<uint16_t>(dccsct_type, u"dccsct_type", false, 0) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
+        element->getIntAttribute(dccsct_type, u"dccsct_type", false, 0) &&
         descs.fromXML(duck, children, element, u"update");
 
     for (size_t index = 0; ok && index < children.size(); ++index) {
@@ -371,10 +371,10 @@ bool ts::DCCSCT::analyzeXML(DuckContext& duck, const xml::Element* element)
         Update& upd(updates.newEntry());
         xml::ElementVector unused;
         ok = children[index]->getIntEnumAttribute(upd.update_type, UpdateTypeNames, u"update_type", true) &&
-            children[index]->getIntAttribute<uint8_t>(upd.genre_category_code, u"genre_category_code", upd.update_type == new_genre_category) &&
-            children[index]->getIntAttribute<uint8_t>(upd.dcc_state_location_code, u"dcc_state_location_code", upd.update_type == new_state) &&
-            children[index]->getIntAttribute<uint8_t>(upd.state_code, u"state_code", upd.update_type == new_county) &&
-            children[index]->getIntAttribute<uint16_t>(upd.dcc_county_location_code, u"dcc_county_location_code", upd.update_type == new_county, 0, 0, 0x03FF) &&
+            children[index]->getIntAttribute(upd.genre_category_code, u"genre_category_code", upd.update_type == new_genre_category) &&
+            children[index]->getIntAttribute(upd.dcc_state_location_code, u"dcc_state_location_code", upd.update_type == new_state) &&
+            children[index]->getIntAttribute(upd.state_code, u"state_code", upd.update_type == new_county) &&
+            children[index]->getIntAttribute(upd.dcc_county_location_code, u"dcc_county_location_code", upd.update_type == new_county, 0, 0, 0x03FF) &&
             upd.genre_category_name_text.fromXML(duck, children[index], u"genre_category_name_text", upd.update_type == new_genre_category) &&
             upd.dcc_state_location_code_text.fromXML(duck, children[index], u"dcc_state_location_code_text", upd.update_type == new_state) &&
             upd.dcc_county_location_code_text.fromXML(duck, children[index], u"dcc_county_location_code_text", upd.update_type == new_county) &&

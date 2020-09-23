@@ -473,11 +473,11 @@ bool ts::UNT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xdevices;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint8_t>(action_type, u"action_type", false, 0x01) &&
-        element->getIntAttribute<uint32_t>(OUI, u"OUI", true, 0, 0x000000, 0xFFFFFF) &&
-        element->getIntAttribute<uint8_t>(processing_order, u"processing_order", false, 0x00) &&
+        element->getIntAttribute(action_type, u"action_type", false, 0x01) &&
+        element->getIntAttribute(OUI, u"OUI", true, 0, 0x000000, 0xFFFFFF) &&
+        element->getIntAttribute(processing_order, u"processing_order", false, 0x00) &&
         descs.fromXML(duck, xdevices, element, u"devices");
 
     for (size_t i1 = 0; ok && i1 < xdevices.size(); ++i1) {
@@ -490,16 +490,16 @@ bool ts::UNT::analyzeXML(DuckContext& duck, const xml::Element* element)
         for (size_t i2 = 0; ok && i2 < xcomdesc.size(); ++i2) {
             CompatibilityDescriptor comdesc;
             xml::ElementVector xsubdesc;
-            ok = xcomdesc[i2]->getIntAttribute<uint8_t>(comdesc.descriptorType, u"descriptorType", true) &&
-                 xcomdesc[i2]->getIntAttribute<uint8_t>(comdesc.specifierType, u"specifierType", false, 0x01) &&
-                 xcomdesc[i2]->getIntAttribute<uint32_t>(comdesc.specifierData, u"specifierData", true, 0, 0, 0xFFFFFF) &&
-                 xcomdesc[i2]->getIntAttribute<uint16_t>(comdesc.model, u"model", false, 0) &&
-                 xcomdesc[i2]->getIntAttribute<uint16_t>(comdesc.version, u"version", false, 0) &&
+            ok = xcomdesc[i2]->getIntAttribute(comdesc.descriptorType, u"descriptorType", true) &&
+                 xcomdesc[i2]->getIntAttribute(comdesc.specifierType, u"specifierType", false, 0x01) &&
+                 xcomdesc[i2]->getIntAttribute(comdesc.specifierData, u"specifierData", true, 0, 0, 0xFFFFFF) &&
+                 xcomdesc[i2]->getIntAttribute(comdesc.model, u"model", false, 0) &&
+                 xcomdesc[i2]->getIntAttribute(comdesc.version, u"version", false, 0) &&
                  xcomdesc[i2]->getChildren(xsubdesc, u"subDescriptor");
             for (size_t i3 = 0; ok && i3 < xsubdesc.size(); ++i3) {
                 uint8_t type = 0;
                 ByteBlock content;
-                ok = xsubdesc[i3]->getIntAttribute<uint8_t>(type, u"subDescriptorType", true) &&
+                ok = xsubdesc[i3]->getIntAttribute(type, u"subDescriptorType", true) &&
                      xsubdesc[i3]->getHexaText(content, 0, 255);
                 if (ok) {
                     // Build complete descriptor.

@@ -166,7 +166,7 @@ bool ts::ProtectionMessageDescriptor::analyzeXML(DuckContext& duck, const xml::E
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         uint8_t t = 0;
-        ok = children[i]->getIntAttribute<uint8_t>(t, u"tag", true);
+        ok = children[i]->getIntAttribute(t, u"tag", true);
         component_tags.push_back(t);
     }
     return ok;

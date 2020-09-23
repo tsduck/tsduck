@@ -128,5 +128,5 @@ void ts::MPEG4VideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::MPEG4VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(MPEG4_visual_profile_and_level, u"MPEG4_visual_profile_and_level", true);
+    return element->getIntAttribute(MPEG4_visual_profile_and_level, u"MPEG4_visual_profile_and_level", true);
 }

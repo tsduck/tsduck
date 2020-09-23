@@ -166,13 +166,13 @@ bool ts::PrefetchDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute<uint8_t>(transport_protocol_label, u"transport_protocol_label", true) &&
+        element->getIntAttribute(transport_protocol_label, u"transport_protocol_label", true) &&
         element->getChildren(children, u"module");
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
         ok = children[i]->getAttribute(entry.label, u"label", true) &&
-             children[i]->getIntAttribute<uint8_t>(entry.prefetch_priority, u"prefetch_priority", true, 1, 1, 100);
+             children[i]->getIntAttribute(entry.prefetch_priority, u"prefetch_priority", true, 1, 1, 100);
         entries.push_back(entry);
     }
     return ok;

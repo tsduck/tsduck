@@ -149,6 +149,6 @@ bool ts::VideoDecodeControlDescriptor::analyzeXML(DuckContext& duck, const xml::
 {
     return element->getBoolAttribute(still_picture, u"still_picture", true) &&
            element->getBoolAttribute(sequence_end_code, u"sequence_end_code", true) &&
-           element->getIntAttribute<uint8_t>(video_encode_format, u"video_encode_format", true, 0, 0, 0x0F) &&
-           element->getIntAttribute<uint8_t>(reserved_future_use, u"reserved_future_use", false, 3, 0, 3);
+           element->getIntAttribute(video_encode_format, u"video_encode_format", true, 0, 0, 0x0F) &&
+           element->getIntAttribute(reserved_future_use, u"reserved_future_use", false, 3, 0, 3);
 }

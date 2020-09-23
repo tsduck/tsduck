@@ -123,5 +123,5 @@ void ts::StereoscopicProgramInfoDescriptor::buildXML(DuckContext& duck, xml::Ele
 
 bool ts::StereoscopicProgramInfoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(stereoscopic_service_type, u"stereoscopic_service_type", true, 0, 0, 7);
+    return element->getIntAttribute(stereoscopic_service_type, u"stereoscopic_service_type", true, 0, 0, 7);
 }

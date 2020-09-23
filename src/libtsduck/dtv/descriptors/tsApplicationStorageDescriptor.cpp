@@ -160,10 +160,10 @@ void ts::ApplicationStorageDescriptor::buildXML(DuckContext& duck, xml::Element*
 
 bool ts::ApplicationStorageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(storage_property, u"storage_property", true) &&
+    return element->getIntAttribute(storage_property, u"storage_property", true) &&
            element->getBoolAttribute(not_launchable_from_broadcast, u"not_launchable_from_broadcast", true) &&
            element->getBoolAttribute(launchable_completely_from_cache, u"launchable_completely_from_cache", true) &&
            element->getBoolAttribute(is_launchable_with_older_version, u"is_launchable_with_older_version", true) &&
-           element->getIntAttribute<uint32_t>(version, u"version", true, 0, 0, 0x7FFFFFFF) &&
-           element->getIntAttribute<uint8_t>(priority, u"priority", true);
+           element->getIntAttribute(version, u"version", true, 0, 0, 0x7FFFFFFF) &&
+           element->getIntAttribute(priority, u"priority", true);
 }

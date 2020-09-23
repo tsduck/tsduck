@@ -90,7 +90,7 @@ void ts::IBPDescriptor::deserializePayload(PSIBuffer& buf)
 {
     closed_gop = buf.getBool();
     identical_gop = buf.getBool();
-    max_gop_length = buf.getBits<uint16_t>(14);
+    buf.getBits(max_gop_length, 14);
 }
 
 
@@ -137,5 +137,5 @@ bool ts::IBPDescriptor::analyzeXML(DuckContext& duck, const xml::Element* elemen
 {
     return element->getBoolAttribute(closed_gop, u"closed_gop", true) &&
            element->getBoolAttribute(identical_gop, u"identical_gop", true) &&
-           element->getIntAttribute<uint16_t>(max_gop_length, u"max_gop_length", true, 0, 0x0001, 0x3FFF);
+           element->getIntAttribute(max_gop_length, u"max_gop_length", true, 0, 0x0001, 0x3FFF);
 }

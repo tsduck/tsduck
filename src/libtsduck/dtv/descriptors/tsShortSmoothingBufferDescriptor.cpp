@@ -84,8 +84,8 @@ void ts::ShortSmoothingBufferDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::ShortSmoothingBufferDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    sb_size = buf.getBits<uint8_t>(2);
-    sb_leak_rate = buf.getBits<uint8_t>(6);
+    buf.getBits(sb_size, 2);
+    buf.getBits(sb_leak_rate, 6);
     buf.getBytes(DVB_reserved);
 }
 
@@ -117,7 +117,7 @@ void ts::ShortSmoothingBufferDescriptor::buildXML(DuckContext& duck, xml::Elemen
 
 bool ts::ShortSmoothingBufferDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint8_t>(sb_size, u"sb_size", true, 0, 0, 3) &&
-           element->getIntAttribute<uint8_t>(sb_leak_rate, u"sb_leak_rate", true, 0, 0, 0x3F) &&
+    return element->getIntAttribute(sb_size, u"sb_size", true, 0, 0, 3) &&
+           element->getIntAttribute(sb_leak_rate, u"sb_leak_rate", true, 0, 0, 0x3F) &&
            element->getHexaText(DVB_reserved, 0, MAX_DESCRIPTOR_SIZE - 3);
 }

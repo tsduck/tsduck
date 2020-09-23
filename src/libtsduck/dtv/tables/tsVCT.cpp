@@ -217,13 +217,13 @@ void ts::VCT::deserializePayload(PSIBuffer& buf, const Section& section)
 
         buf.getUTF16(ch.short_name, 14);
         buf.skipBits(4);
-        ch.major_channel_number = buf.getBits<uint16_t>(10);
-        ch.minor_channel_number = buf.getBits<uint16_t>(10);
+        buf.getBits(ch.major_channel_number, 10);
+        buf.getBits(ch.minor_channel_number, 10);
         ch.modulation_mode = buf.getUInt8();
         ch.carrier_frequency = buf.getUInt32();
         ch.channel_TSID = buf.getUInt16();
         ch.program_number = buf.getUInt16();
-        ch.ETM_location = buf.getBits<uint8_t>(2);
+        buf.getBits(ch.ETM_location, 2);
         ch.access_controlled = buf.getBool();
         ch.hidden = buf.getBool();
         if (_table_id == TID_CVCT) {
@@ -239,7 +239,7 @@ void ts::VCT::deserializePayload(PSIBuffer& buf, const Section& section)
         }
         ch.hide_guide = buf.getBool();
         buf.skipBits(3);
-        ch.service_type = buf.getBits<uint8_t>(6);
+        buf.getBits(ch.service_type, 6);
         ch.source_id = buf.getUInt16();
 
         // Descriptors for this channel (with 10-bit length field).
@@ -465,33 +465,33 @@ bool ts::VCT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     bool ok =
-        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getIntAttribute(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
-        element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", true) &&
+        element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
+        element->getIntAttribute(transport_stream_id, u"transport_stream_id", true) &&
         descs.fromXML(duck, children, element, u"channel");
 
     for (size_t index = 0; ok && index < children.size(); ++index) {
         // Add a new Channel at the end of the list.
         Channel& ch(channels.newEntry());
         ok = children[index]->getAttribute(ch.short_name, u"short_name", true, UString(), 0, 7) &&
-             children[index]->getIntAttribute<uint16_t>(ch.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
-             children[index]->getIntAttribute<uint16_t>(ch.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF) &&
+             children[index]->getIntAttribute(ch.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
+             children[index]->getIntAttribute(ch.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF) &&
              children[index]->getIntEnumAttribute(ch.modulation_mode, ModulationModeEnum, u"modulation_mode", true) &&
-             children[index]->getIntAttribute<uint32_t>(ch.carrier_frequency, u"carrier_frequency", false, 0) &&
-             children[index]->getIntAttribute<uint16_t>(ch.channel_TSID, u"channel_TSID", true) &&
-             children[index]->getIntAttribute<uint16_t>(ch.program_number, u"program_number", true) &&
-             children[index]->getIntAttribute<uint8_t>(ch.ETM_location, u"ETM_location", false, 0, 0x00, 0x03) &&
+             children[index]->getIntAttribute(ch.carrier_frequency, u"carrier_frequency", false, 0) &&
+             children[index]->getIntAttribute(ch.channel_TSID, u"channel_TSID", true) &&
+             children[index]->getIntAttribute(ch.program_number, u"program_number", true) &&
+             children[index]->getIntAttribute(ch.ETM_location, u"ETM_location", false, 0, 0x00, 0x03) &&
              children[index]->getBoolAttribute(ch.access_controlled, u"access_controlled", false, false) &&
              children[index]->getBoolAttribute(ch.hidden, u"hidden", false, false) &&
              children[index]->getBoolAttribute(ch.hide_guide, u"hide_guide", false, false) &&
-             children[index]->getIntEnumAttribute<uint8_t>(ch.service_type, ServiceTypeEnum, u"service_type", false, ATSC_STYPE_DTV) &&
-             children[index]->getIntAttribute<uint16_t>(ch.source_id, u"source_id", true) &&
+             children[index]->getIntEnumAttribute(ch.service_type, ServiceTypeEnum, u"service_type", false, ATSC_STYPE_DTV) &&
+             children[index]->getIntAttribute(ch.source_id, u"source_id", true) &&
              ch.descs.fromXML(duck, children[index]);
 
         if (ok && _table_id == TID_CVCT) {
             // CVCT-specific fields.
-            ok = children[index]->getIntAttribute<uint8_t>(ch.path_select, u"path_select", false, 0, 0, 1) &&
+            ok = children[index]->getIntAttribute(ch.path_select, u"path_select", false, 0, 0, 1) &&
                  children[index]->getBoolAttribute(ch.out_of_band, u"out_of_band", false, false);
         }
     }

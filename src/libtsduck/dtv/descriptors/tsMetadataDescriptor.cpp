@@ -145,7 +145,7 @@ void ts::MetadataDescriptor::deserializePayload(PSIBuffer& buf)
         metadata_format_identifier = buf.getUInt32();
     }
     metadata_service_id = buf.getUInt8();
-    decoder_config_flags = buf.getBits<uint8_t>(3);
+    buf.getBits(decoder_config_flags, 3);
     const bool DSMCC_flag = buf.getBool();
     buf.skipBits(4);
     if (DSMCC_flag) {
@@ -265,13 +265,13 @@ void ts::MetadataDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 
 bool ts::MetadataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint16_t>(metadata_application_format, u"metadata_application_format", true) &&
-           element->getIntAttribute<uint32_t>(metadata_application_format_identifier, u"metadata_application_format_identifier", metadata_application_format == 0xFFFF) &&
-           element->getIntAttribute<uint8_t>(metadata_format, u"metadata_format", true) &&
-           element->getIntAttribute<uint32_t>(metadata_format_identifier, u"metadata_format_identifier", metadata_format == 0xFF) &&
-           element->getIntAttribute<uint8_t>(metadata_service_id, u"metadata_service_id", true) &&
-           element->getIntAttribute<uint8_t>(decoder_config_flags, u"decoder_config_flags", true, 0, 0, 15) &&
-           element->getIntAttribute<uint8_t>(decoder_config_metadata_service_id, u"decoder_config_metadata_service_id", decoder_config_flags == 4) &&
+    return element->getIntAttribute(metadata_application_format, u"metadata_application_format", true) &&
+           element->getIntAttribute(metadata_application_format_identifier, u"metadata_application_format_identifier", metadata_application_format == 0xFFFF) &&
+           element->getIntAttribute(metadata_format, u"metadata_format", true) &&
+           element->getIntAttribute(metadata_format_identifier, u"metadata_format_identifier", metadata_format == 0xFF) &&
+           element->getIntAttribute(metadata_service_id, u"metadata_service_id", true) &&
+           element->getIntAttribute(decoder_config_flags, u"decoder_config_flags", true, 0, 0, 15) &&
+           element->getIntAttribute(decoder_config_metadata_service_id, u"decoder_config_metadata_service_id", decoder_config_flags == 4) &&
            element->getHexaTextChild(service_identification, u"service_identification", false, 0, 255) &&
            element->getHexaTextChild(decoder_config, u"decoder_config", false, 0, 255) &&
            element->getHexaTextChild(dec_config_identification, u"dec_config_identification", false, 0, 255) &&

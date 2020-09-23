@@ -134,6 +134,6 @@ void ts::NPTEndpointDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::NPTEndpointDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint64_t>(start_NPT, u"start_NPT", true, 0, 0, TS_UCONST64(0x00000001FFFFFFFF)) &&
-           element->getIntAttribute<uint64_t>(stop_NPT, u"stop_NPT", true, 0, 0, TS_UCONST64(0x00000001FFFFFFFF));
+    return element->getIntAttribute(start_NPT, u"start_NPT", true, 0, 0, TS_UCONST64(0x00000001FFFFFFFF)) &&
+           element->getIntAttribute(stop_NPT, u"stop_NPT", true, 0, 0, TS_UCONST64(0x00000001FFFFFFFF));
 }

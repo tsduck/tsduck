@@ -125,5 +125,5 @@ void ts::IPSignallingDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::IPSignallingDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute<uint32_t>(platform_id, u"platform_id", true, 0, 0, 0x00FFFFFF);
+    return element->getIntAttribute(platform_id, u"platform_id", true, 0, 0, 0x00FFFFFF);
 }

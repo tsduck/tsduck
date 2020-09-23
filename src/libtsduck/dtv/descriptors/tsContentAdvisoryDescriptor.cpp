@@ -197,14 +197,14 @@ bool ts::ContentAdvisoryDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
         xml::ElementVector children2;
-        ok = children[i]->getIntAttribute<uint8_t>(entry.rating_region, u"rating_region", true) &&
+        ok = children[i]->getIntAttribute(entry.rating_region, u"rating_region", true) &&
              children[i]->getChildren(children2, u"dimension", 0, 255) &&
              entry.rating_description.fromXML(duck, children[i], u"rating_description", false);
         for (size_t i2 = 0; ok && i2 < children2.size(); ++i2) {
             uint8_t dim = 0;
             uint8_t val = 0;
-            ok = children2[i2]->getIntAttribute<uint8_t>(dim, u"rating_dimension_j", true) &&
-                 children2[i2]->getIntAttribute<uint8_t>(val, u"rating_value", true, 0, 0, 0x0F);
+            ok = children2[i2]->getIntAttribute(dim, u"rating_dimension_j", true) &&
+                 children2[i2]->getIntAttribute(val, u"rating_value", true, 0, 0, 0x0F);
             entry.rating_values[dim] = val;
         }
         entries.push_back(entry);

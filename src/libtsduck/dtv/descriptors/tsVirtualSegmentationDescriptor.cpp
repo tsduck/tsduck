@@ -151,19 +151,19 @@ void ts::VirtualSegmentationDescriptor::deserializePayload(PSIBuffer& buf)
         const bool timescale_flag = buf.getBool();
         buf.skipBits(4);
         if (timescale_flag) {
-            ticks_per_second = buf.getBits<uint32_t>(21);
-            mdl = buf.getBits<size_t>(2);
+            buf.getBits(ticks_per_second, 21);
+            buf.getBits(mdl, 2);
             buf.skipBits(1);
         }
         for (size_t i = 0; i < num_partitions && buf.canRead(); ++i) {
             Partition part;
             const bool explicit_boundary_flag = buf.getBool();
-            part.partition_id = buf.getBits<uint8_t>(3);
+            buf.getBits(part.partition_id, 3);
             buf.skipBits(4);
-            part.SAP_type_max = buf.getBits<uint8_t>(3);
+            buf.getBits(part.SAP_type_max, 3);
             if (!explicit_boundary_flag) {
                 buf.skipBits(5);
-                part.boundary_PID = buf.getBits<PID>(13);
+                buf.getBits(part.boundary_PID, 13);
                 buf.skipBits(3);
             }
             else {
@@ -189,7 +189,7 @@ void ts::VirtualSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, P
 
         if (timescale_flag && buf.canReadBytes(3)) {
             disp << margin << UString::Format(u"Ticks per seconds: %'d", {buf.getBits<uint32_t>(21)}) << std::endl;
-            mdl = buf.getBits<size_t>(2);
+            buf.getBits(mdl, 2);
             disp << margin << UString::Format(u"Maximum duration length: %d bytes + 5 bits", {mdl}) << std::endl;
             buf.skipBits(1);
         }
@@ -235,15 +235,15 @@ bool ts::VirtualSegmentationDescriptor::analyzeXML(DuckContext& duck, const xml:
 {
     xml::ElementVector xpart;
     bool ok =
-        element->getOptionalIntAttribute<uint32_t>(ticks_per_second, u"ticks_per_second", 0, 0x001FFFFF) &&
+        element->getOptionalIntAttribute(ticks_per_second, u"ticks_per_second", 0, 0x001FFFFF) &&
         element->getChildren(xpart, u"partition", 0, MAX_PARTITION);
 
     for (auto it = xpart.begin(); ok && it != xpart.end(); ++it) {
         Partition part;
-        ok = (*it)->getIntAttribute<uint8_t>(part.partition_id, u"partition_id", true, 0, 0, 7) &&
-             (*it)->getIntAttribute<uint8_t>(part.SAP_type_max, u"SAP_type_max", true, 0, 0, 7) &&
+        ok = (*it)->getIntAttribute(part.partition_id, u"partition_id", true, 0, 0, 7) &&
+             (*it)->getIntAttribute(part.SAP_type_max, u"SAP_type_max", true, 0, 0, 7) &&
              (*it)->getOptionalIntAttribute<PID>(part.boundary_PID, u"boundary_PID", 0, 0x1FFF) &&
-             (*it)->getOptionalIntAttribute<uint32_t>(part.maximum_duration, u"maximum_duration", 0, 0x1FFFFFFF);
+             (*it)->getOptionalIntAttribute(part.maximum_duration, u"maximum_duration", 0, 0x1FFFFFFF);
         if (part.boundary_PID.set() && part.maximum_duration.set()) {
             element->report().error(u"attributes 'boundary_PID' and 'maximum_duration' are mutually exclusive in <%s>, line %d", {element->name(), (*it)->lineNumber()});
         }

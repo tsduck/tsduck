@@ -122,7 +122,7 @@ void ts::ApplicationDescriptor::deserializePayload(PSIBuffer& buf)
     }
     buf.popState(); // update application_profiles_length
     service_bound = buf.getBool();
-    visibility = buf.getBits<uint8_t>(2);
+    buf.getBits(visibility, 2);
     buf.skipBits(5);
     application_priority = buf.getUInt8();
     buf.getBytes(transport_protocol_labels);
@@ -191,15 +191,15 @@ bool ts::ApplicationDescriptor::analyzeXML(DuckContext& duck, const xml::Element
     xml::ElementVector label;
     bool ok =
         element->getBoolAttribute(service_bound, u"service_bound", true) &&
-        element->getIntAttribute<uint8_t>(visibility, u"visibility", true, 0, 0, 3) &&
-        element->getIntAttribute<uint8_t>(application_priority, u"application_priority", true) &&
+        element->getIntAttribute(visibility, u"visibility", true, 0, 0, 3) &&
+        element->getIntAttribute(application_priority, u"application_priority", true) &&
         element->getChildren(prof, u"profile") &&
         element->getChildren(label, u"transport_protocol");
 
     for (size_t i = 0; ok && i < prof.size(); ++i) {
         Profile p;
         UString version;
-        ok = prof[i]->getIntAttribute<uint16_t>(p.application_profile, u"application_profile", true) &&
+        ok = prof[i]->getIntAttribute(p.application_profile, u"application_profile", true) &&
              prof[i]->getAttribute(version, u"version", true);
         if (ok && !version.scan(u"%d.%d.%d", {&p.version_major, &p.version_minor, &p.version_micro})) {
             ok = false;
@@ -211,7 +211,7 @@ bool ts::ApplicationDescriptor::analyzeXML(DuckContext& duck, const xml::Element
     }
     for (size_t i = 0; ok && i < label.size(); ++i) {
         uint8_t l;
-        ok = label[i]->getIntAttribute<uint8_t>(l, u"label", true);
+        ok = label[i]->getIntAttribute(l, u"label", true);
         if (ok) {
             transport_protocol_labels.push_back(l);
         }
