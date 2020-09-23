@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -74,46 +75,18 @@ void ts::DVBJApplicationLocationDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBJApplicationLocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DVBJApplicationLocationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->append(duck.encodedWithByteLength(base_directory));
-    bbp->append(duck.encodedWithByteLength(classpath_extension));
-    bbp->append(duck.encoded(initial_class));
-    serializeEnd(desc, bbp);
+    buf.putStringWithByteLength(base_directory);
+    buf.putStringWithByteLength(classpath_extension);
+    buf.putString(initial_class);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::DVBJApplicationLocationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DVBJApplicationLocationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    base_directory.clear();
-    classpath_extension.clear();
-    initial_class.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        const size_t len1 = data[0];
-        data += 1; size -= 1;
-        _is_valid = len1 + 1 <= size;
-        if (_is_valid) {
-            duck.decode(base_directory, data, len1);
-            const size_t len2 = data[len1];
-            data += len1 + 1; size -= len1 + 1;
-            _is_valid = len2 <= size;
-            if (_is_valid) {
-                duck.decode(classpath_extension, data, len2);
-                duck.decode(initial_class, data + len2, size - len2);
-            }
-        }
-    }
+    buf.getStringWithByteLength(base_directory);
+    buf.getStringWithByteLength(classpath_extension);
+    buf.getString(initial_class);
 }
 
 
@@ -151,11 +124,6 @@ void ts::DVBJApplicationLocationDescriptor::buildXML(DuckContext& duck, xml::Ele
     root->setAttribute(u"classpath_extension", classpath_extension);
     root->setAttribute(u"initial_class", initial_class);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::DVBJApplicationLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

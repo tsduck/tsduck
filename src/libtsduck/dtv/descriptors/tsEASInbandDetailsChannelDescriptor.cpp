@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -72,30 +73,16 @@ ts::EASInbandDetailsChannelDescriptor::EASInbandDetailsChannelDescriptor(DuckCon
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EASInbandDetailsChannelDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::EASInbandDetailsChannelDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(details_RF_channel);
-    bbp->appendUInt16(details_program_number);
-    serializeEnd(desc, bbp);
+    buf.putUInt8(details_RF_channel);
+    buf.putUInt16(details_program_number);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::EASInbandDetailsChannelDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::EASInbandDetailsChannelDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 3;
-
-    if (_is_valid) {
-        details_RF_channel= GetUInt8(data);
-        details_program_number = GetUInt16(data + 1);
-    }
+    details_RF_channel= buf.getUInt8();
+    details_program_number = buf.getUInt16();
 }
 
 
@@ -106,18 +93,16 @@ void ts::EASInbandDetailsChannelDescriptor::deserialize(DuckContext& duck, const
 void ts::EASInbandDetailsChannelDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     const UString margin(indent, ' ');
-
     if (size >= 3) {
         disp << margin << UString::Format(u"RF channel: %d, program number: 0x%X (%d)", {data[0], GetUInt16(data + 1), GetUInt16(data + 1)}) << std::endl;
         data += 3; size -= 3;
     }
-
     disp.displayExtraData(data, size, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::EASInbandDetailsChannelDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -76,17 +77,16 @@ ts::DeferredAssociationTagsDescriptor::DeferredAssociationTagsDescriptor(DuckCon
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DeferredAssociationTagsDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DeferredAssociationTagsDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(association_tags.size() * sizeof(uint16_t)));
+    buf.pushWriteSequenceWithLeadingLength(8); // association_tags_loop_length
     for (auto it = association_tags.begin(); it != association_tags.end(); ++it) {
-        bbp->appendUInt16(*it);
+        buf.putUInt16(*it);
     }
-    bbp->appendUInt16(transport_stream_id);
-    bbp->appendUInt16(program_number);
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.popState(); // update association_tags_loop_length
+    buf.putUInt16(transport_stream_id);
+    buf.putUInt16(program_number);
+    buf.putBytes(private_data);
 }
 
 
@@ -94,30 +94,16 @@ void ts::DeferredAssociationTagsDescriptor::serialize(DuckContext& duck, Descrip
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DeferredAssociationTagsDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DeferredAssociationTagsDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    association_tags.clear();
-    private_data.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        size_t len = data[0];
-        data++; size--;
-        _is_valid = len % 2 == 0 && size >= len + 4;
-        if (_is_valid) {
-            while (len > 0) {
-                association_tags.push_back(GetUInt16(data));
-                data += 2; size -= 2; len -= 2;
-            }
-            transport_stream_id = GetUInt16(data);
-            program_number = GetUInt16(data + 2);
-            private_data.copy(data + 4, size - 4);
-        }
+    buf.pushReadSizeFromLength(8); // association_tags_loop_length
+    while (buf.canRead()) {
+        association_tags.push_back(buf.getUInt16());
     }
+    buf.popState(); // update association_tags_loop_length
+    transport_stream_id = buf.getUInt16();
+    program_number = buf.getUInt16();
+    buf.getBytes(private_data);
 }
 
 

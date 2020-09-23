@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
@@ -73,15 +74,14 @@ void ts::DIILocationDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DIILocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DIILocationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(transport_protocol_label);
+    buf.putUInt8(transport_protocol_label);
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt16(0x8000 | it->DII_identification);
-        bbp->appendUInt16(it->association_tag);
+        buf.putBit(1);
+        buf.putBits(it->DII_identification, 15);
+        buf.putUInt16(it->association_tag);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -89,24 +89,15 @@ void ts::DIILocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DIILocationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DIILocationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    entries.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size % 4 == 1;
-
-    if (_is_valid) {
-        transport_protocol_label = data[0];
-        data++; size--;
-        while (size >= 4) {
-            const uint16_t id = GetUInt16(data) & 0x7FFF;
-            const uint16_t tag = GetUInt16(data + 2);
-            data += 4; size -= 4;
-            entries.push_back(Entry(id, tag));
-        }
+    transport_protocol_label = buf.getUInt8();
+    while (buf.canRead()) {
+        Entry e;
+        buf.skipBits(1);
+        buf.getBits(e.DII_identification, 15);
+        e.association_tag = buf.getUInt16();
+        entries.push_back(e);
     }
 }
 

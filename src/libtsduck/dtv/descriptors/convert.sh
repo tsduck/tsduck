@@ -28,6 +28,7 @@
 # Options: By default, the serialization/deserialization and the display methods
 # are converted. The first argument may be "-s" or "-d", in which case only the
 # serialization/deserialization (-s) or the display (-d) methods are converted.
+# Option "-t" tests the conversion after completion of the code update.
 #
 
 SCRIPT=$(basename $0 .sh)
@@ -42,14 +43,18 @@ SED=$(which gsed 2>/dev/null)
 SED=${SED:-sed}
 
 # Analyze first parameter for partial conversion.
+DISPLAY=false
+SERIAL=false
+TEST=false
 case "$1" in
     -s) shift
         SERIAL=true
-        DISPLAY=false
         ;;
     -d) shift
-        SERIAL=false
         DISPLAY=true
+        ;;
+    -t) shift
+        TEST=true
         ;;
     -*) error "invalid parameter $1"
         ;;
@@ -115,5 +120,18 @@ for name in $*; do
         $SED -e 's/::DisplayDescriptor(TablesDisplay.*)/::DisplayDescriptor(TablesDisplay\& disp, PSIBuffer\& buf, const UString\& margin, DID did, TID tid, PDS pds)/' \
              -e '/disp.displayExtraData(data, size, margin);/d' \
              -i $source
+    fi
+
+    # Test using test-suite
+    if $TEST; then
+        root=$(cd ../../../..; pwd)
+        tsuite=$(cd $root/../tsduck-test; pwd)
+        make -C $root -j10 || exit
+        xmlname=$(grep '#define MY_XML_NAME' $source | head -1 | sed -e 's/^[^"]*"//' -e 's/" *$//')
+        if [[ -n "$xmlname" ]]; then
+            for xmlfile in $(grep -l "<$xmlname" $tsuite/input/*.xml); do
+                $tsuite/tests/$(basename $xmlfile .xml).sh --dev
+            done
+        fi
     fi
 done

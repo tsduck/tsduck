@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -64,6 +65,12 @@ ts::EASInbandExceptionChannelsDescriptor::EASInbandExceptionChannelsDescriptor(D
     deserialize(duck, desc);
 }
 
+ts::EASInbandExceptionChannelsDescriptor::Entry::Entry(uint8_t chan, uint16_t prog) :
+    RF_channel(chan),
+    program_number(prog)
+{
+}
+
 void ts::EASInbandExceptionChannelsDescriptor::clearContent()
 {
     entries.clear();
@@ -74,16 +81,13 @@ void ts::EASInbandExceptionChannelsDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EASInbandExceptionChannelsDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::EASInbandExceptionChannelsDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    size_t count = std::min(entries.size(), MAX_ENTRIES);
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(count));
-    for (auto it = entries.begin(); count > 0 && it != entries.end(); ++it, --count) {
-        bbp->appendUInt8(it->RF_channel);
-        bbp->appendUInt16(it->program_number);
+    buf.putUInt8(uint8_t(entries.size()));
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        buf.putUInt8(it->RF_channel);
+        buf.putUInt16(it->program_number);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -91,20 +95,14 @@ void ts::EASInbandExceptionChannelsDescriptor::serialize(DuckContext& duck, Desc
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EASInbandExceptionChannelsDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::EASInbandExceptionChannelsDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size > 0 && (size - 1) % 3 == 0;
-    entries.clear();
-
-    if (_is_valid) {
-        uint8_t count = data[0];
-        data++; size--;
-        while (size >= 3 && count-- > 0) {
-            entries.push_back(Entry(data[0], GetUInt16(data + 1)));
-            data += 3; size -= 3;
-        }
+    const uint8_t count = buf.getUInt8();
+    for (size_t i = 0; i < count && buf.canRead(); ++i) {
+        Entry e;
+        e.RF_channel = buf.getUInt8();
+        e.program_number = buf.getUInt16();
+        entries.push_back(e);
     }
 }
 

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -72,15 +73,14 @@ ts::DVBHTMLApplicationDescriptor::DVBHTMLApplicationDescriptor(DuckContext& duck
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DVBHTMLApplicationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(application_ids.size() * sizeof(uint16_t)));
+    buf.pushWriteSequenceWithLeadingLength(8); // appid_set_length
     for (size_t i = 0; i < application_ids.size(); ++i) {
-        bbp->appendUInt16(application_ids[i]);
+        buf.putUInt16(application_ids[i]);
     }
-    bbp->append(duck.encoded(parameter));
-    serializeEnd(desc, bbp);
+    buf.popState(); // update appid_set_length
+    buf.putString(parameter);
 }
 
 
@@ -88,28 +88,14 @@ void ts::DVBHTMLApplicationDescriptor::serialize(DuckContext& duck, Descriptor& 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DVBHTMLApplicationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    application_ids.clear();
-    parameter.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        size_t len = data[0];
-        data++; size--;
-        _is_valid = len % 2 == 0 && len <= size;
-        if (_is_valid) {
-            while (len >= 2) {
-                application_ids.push_back(GetUInt16(data));
-                data += 2; size -= 2; len -= 2;
-            }
-            duck.decode(parameter, data, size);
-        }
+    buf.pushReadSizeFromLength(8); // appid_set_length
+    while (buf.canRead()) {
+        application_ids.push_back(buf.getUInt16());
     }
+    buf.popState(); // end of appid_set_length
+    buf.getString(parameter);
 }
 
 

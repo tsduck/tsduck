@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -72,32 +73,16 @@ ts::DCCDepartingRequestDescriptor::DCCDepartingRequestDescriptor(DuckContext& du
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DCCDepartingRequestDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DCCDepartingRequestDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(dcc_departing_request_type);
-    dcc_departing_request_text.lengthSerialize(duck, *bbp);
-    serializeEnd(desc, bbp);
+    buf.putUInt8(dcc_departing_request_type);
+    buf.putMultipleStringWithLength(dcc_departing_request_text);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::DCCDepartingRequestDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DCCDepartingRequestDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    dcc_departing_request_text.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2;
-
-    if (_is_valid) {
-        dcc_departing_request_type = *data++;
-        size--;
-        _is_valid = dcc_departing_request_text.lengthDeserialize(duck, data, size);
-    }
+    dcc_departing_request_type = buf.getUInt8();
+    buf.getMultipleStringWithLength(dcc_departing_request_text);
 }
 
 
@@ -128,11 +113,6 @@ void ts::DCCDepartingRequestDescriptor::buildXML(DuckContext& duck, xml::Element
     root->setIntAttribute(u"dcc_departing_request_type", dcc_departing_request_type, true);
     dcc_departing_request_text.toXML(duck, root, u"dcc_departing_request_text", true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::DCCDepartingRequestDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
