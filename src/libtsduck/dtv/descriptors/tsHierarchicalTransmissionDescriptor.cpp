@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -72,30 +73,18 @@ ts::HierarchicalTransmissionDescriptor::HierarchicalTransmissionDescriptor(DuckC
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::HierarchicalTransmissionDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::HierarchicalTransmissionDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(high_quality ? 0xFF : 0xFE);
-    bbp->appendUInt16(0xE000 | reference_PID);
-    serializeEnd(desc, bbp);
+    buf.putBits(0xFF, 7);
+    buf.putBit(high_quality);
+    buf.putPID(reference_PID);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::HierarchicalTransmissionDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::HierarchicalTransmissionDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 3;
-
-    if (_is_valid) {
-        high_quality = (data[0] & 0x01) != 0;
-        reference_PID = GetUInt16(data + 1) & 0x1FFF;
-    }
+    buf.skipBits(7);
+    high_quality = buf.getBool();
+    reference_PID = buf.getPID();
 }
 
 
@@ -106,20 +95,18 @@ void ts::HierarchicalTransmissionDescriptor::deserialize(DuckContext& duck, cons
 void ts::HierarchicalTransmissionDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     const UString margin(indent, ' ');
-
     if (size >= 3) {
         const PID pid = GetUInt16(data + 1) & 0x1FFF;
         disp << margin << UString::Format(u"Quality level: %s", {(data[0] & 0x01) != 0 ? u"high" : u"low"}) << std::endl
              << margin << UString::Format(u"Reference PID: 0x%X (%d)", {pid, pid}) << std::endl;
         data += 3; size -= 3;
     }
-
     disp.displayExtraData(data, size, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::HierarchicalTransmissionDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

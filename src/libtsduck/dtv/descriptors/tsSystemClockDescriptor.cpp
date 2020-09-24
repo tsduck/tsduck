@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -74,12 +75,13 @@ void ts::SystemClockDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SystemClockDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SystemClockDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8((external_clock_reference ? 0x80 : 0x00) | 0x40 | (clock_accuracy_integer & 0x3F));
-    bbp->appendUInt8(uint8_t((clock_accuracy_exponent & 0x07) << 5) | 0x1F);
-    serializeEnd(desc, bbp);
+    buf.putBit(external_clock_reference);
+    buf.putBit(1);
+    buf.putBits(clock_accuracy_integer, 6);
+    buf.putBits(clock_accuracy_exponent, 3);
+    buf.putBits(0xFF, 5);
 }
 
 
@@ -87,18 +89,13 @@ void ts::SystemClockDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SystemClockDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SystemClockDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 2;
-
-    if (_is_valid) {
-        external_clock_reference = (data[0] & 0x80) != 0;
-        clock_accuracy_integer = data[0] & 0x3F;
-        clock_accuracy_exponent = (data[1] >> 5) & 0x07;
-    }
+    external_clock_reference = buf.getBool();
+    buf.skipBits(1);
+    buf.getBits(clock_accuracy_integer, 6);
+    buf.getBits(clock_accuracy_exponent, 3);
+    buf.skipBits(5);
 }
 
 

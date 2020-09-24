@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -88,24 +89,23 @@ ts::DID ts::HEVCTimingAndHRDDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::HEVCTimingAndHRDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::HEVCTimingAndHRDDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
     const bool has_90kHz = N_90khz.set() && K_90khz.set();
     const bool info_present = num_units_in_tick.set();
-    bbp->appendUInt8((hrd_management_valid ? 0x80 : 0x00) |
-                     (target_schedule_idx.set() ? uint8_t((target_schedule_idx.value() & 0x1F) << 1) : 0x7E) |
-                     (info_present ? 0x01 : 0x00));
+    buf.putBit(hrd_management_valid);
+    buf.putBit(!target_schedule_idx.set());
+    buf.putBits(target_schedule_idx.value(0xFF), 5);
+    buf.putBit(info_present);
     if (info_present) {
-        bbp->appendUInt8((has_90kHz ? 0x80 : 0x00) | 0x7F);
+        buf.putBit(has_90kHz);
+        buf.putBits(0xFF, 7);
         if (has_90kHz) {
-            bbp->appendUInt32(N_90khz.value());
-            bbp->appendUInt32(K_90khz.value());
+            buf.putUInt32(N_90khz.value());
+            buf.putUInt32(K_90khz.value());
         }
-        bbp->appendUInt32(num_units_in_tick.value());
+        buf.putUInt32(num_units_in_tick.value());
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -113,46 +113,26 @@ void ts::HEVCTimingAndHRDDescriptor::serialize(DuckContext& duck, Descriptor& de
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::HEVCTimingAndHRDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::HEVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2 && data[0] == MY_EDID;
-
-    target_schedule_idx.clear();
-    N_90khz.clear();
-    K_90khz.clear();
-    num_units_in_tick.clear();
-
-    if (_is_valid) {
-        hrd_management_valid = (data[1] & 0x80) != 0;
-        const bool info_present = (data[1] & 0x01) != 0;
-        if ((data[1] & 0x40) == 0) {
-            target_schedule_idx = (data[1] >> 1) & 0x1F;
-        }
-        data += 2; size -= 2;
-
-        if (info_present) {
-            _is_valid = size >= 1;
-            if (_is_valid) {
-                const bool has_90kHz = (data[0] & 0x80) != 0;
-                data++; size--;
-                _is_valid = (!has_90kHz && size >= 4) || (has_90kHz && size >= 12);
-                if (_is_valid) {
-                    if (has_90kHz) {
-                        N_90khz = GetUInt32(data);
-                        K_90khz = GetUInt32(data + 4);
-                        data += 8; size -= 8;
-                    }
-                    num_units_in_tick = GetUInt32(data);
-                    data += 4; size -= 4;
-                }
-            }
-        }
+    hrd_management_valid = buf.getBool();
+    const bool target_schedule_idx_not_present= buf.getBool();
+    if (target_schedule_idx_not_present) {
+        buf.skipBits(5);
     }
-
-    _is_valid = _is_valid && size == 0;
+    else {
+        buf.getBits(target_schedule_idx, 5);
+    }
+    const bool info_present = buf.getBool();
+    if (info_present) {
+        const bool has_90kHz = buf.getBool();
+        buf.skipBits(7);
+        if (has_90kHz) {
+            N_90khz = buf.getUInt32();
+            K_90khz = buf.getUInt32();
+        }
+        num_units_in_tick = buf.getUInt32();
+    }
 }
 
 

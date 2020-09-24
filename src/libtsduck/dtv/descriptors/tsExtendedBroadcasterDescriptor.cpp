@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -85,21 +86,21 @@ void ts::ExtendedBroadcasterDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedBroadcasterDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ExtendedBroadcasterDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(broadcaster_type << 4) | 0x0F);
+    buf.putBits(broadcaster_type, 4);
+    buf.putBits(0xFF, 4);
     if (broadcaster_type == 0x01 || broadcaster_type == 0x02) {
-        bbp->appendUInt16(terrestrial_broadcaster_id);
-        bbp->appendUInt8(uint8_t(affiliation_ids.size() << 4) | uint8_t(broadcasters.size() & 0x0F));
-        bbp->append(affiliation_ids);
+        buf.putUInt16(terrestrial_broadcaster_id);
+        buf.putBits(affiliation_ids.size(), 4);
+        buf.putBits(broadcasters.size(), 4);
+        buf.putBytes(affiliation_ids);
         for (auto it = broadcasters.begin(); it != broadcasters.end(); ++ it) {
-            bbp->appendUInt16(it->original_network_id);
-            bbp->appendUInt8(it->broadcaster_id);
+            buf.putUInt16(it->original_network_id);
+            buf.putUInt8(it->broadcaster_id);
         }
     }
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.putBytes(private_data);
 }
 
 
@@ -107,51 +108,25 @@ void ts::ExtendedBroadcasterDescriptor::serialize(DuckContext& duck, Descriptor&
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedBroadcasterDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ExtendedBroadcasterDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    affiliation_ids.clear();
-    broadcasters.clear();
-    private_data.clear();
-
-    if (_is_valid) {
-        broadcaster_type = (data[0] >> 4) & 0x0F;
-        data++; size--;
-        if (broadcaster_type == 0x01 || broadcaster_type == 0x02) {
-
-            // Same layout in both cases. Fixed part is 3 bytes.
-            if (size < 3) {
-                _is_valid = false;
-                return;
-            }
-            terrestrial_broadcaster_id = GetUInt16(data);
-            size_t aff_count = (data[2] >> 4) & 0x0F;
-            size_t bc_count = data[2] & 0x0F;
-            data += 3; size -= 3;
-
-            // Affiliation ids use 1 byte per id.
-            if (aff_count > size) {
-                _is_valid = false;
-                return;
-            }
-            affiliation_ids.copy(data, aff_count);
-            data += aff_count; size -= aff_count;
-
-            // Broadcasters ids use 3 bytes per id.
-            if (bc_count * 3 > size) {
-                _is_valid = false;
-                return;
-            }
-            while (bc_count-- > 0) {
-                broadcasters.push_back(Broadcaster(GetUInt16(data), data[2]));
-                data += 3; size -= 3;
-            }
+    buf.getBits(broadcaster_type, 4);
+    buf.skipBits(4);
+    if (broadcaster_type == 0x01 || broadcaster_type == 0x02) {
+        terrestrial_broadcaster_id = buf.getUInt16();
+        size_t aff_count = buf.getBits<size_t>(4);
+        size_t bc_count = buf.getBits<size_t>(4);
+        // Affiliation ids use 1 byte per id.
+        buf.getBytes(affiliation_ids, aff_count);
+        // Broadcasters ids use 3 bytes per id.
+        for (size_t i = 0; i < bc_count && buf.canRead(); ++i) {
+            Broadcaster bc;
+            bc.original_network_id = buf.getUInt16();
+            bc.broadcaster_id = buf.getUInt8();
+            broadcasters.push_back(bc);
         }
-        private_data.copy(data, size);
     }
+    buf.getBytes(private_data);
 }
 
 

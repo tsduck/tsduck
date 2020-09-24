@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -89,20 +90,20 @@ ts::J2KVideoDescriptor::J2KVideoDescriptor(DuckContext& duck, const Descriptor& 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::J2KVideoDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::J2KVideoDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(profile_and_level);
-    bbp->appendUInt32(horizontal_size);
-    bbp->appendUInt32(vertical_size);
-    bbp->appendUInt32(max_bit_rate);
-    bbp->appendUInt32(max_buffer_size);
-    bbp->appendUInt16(DEN_frame_rate);
-    bbp->appendUInt16(NUM_frame_rate);
-    bbp->appendUInt8(color_specification);
-    bbp->appendUInt8((still_mode ? 0x80 : 0x00) | (interlaced_video ? 0x40 : 0x00) | 0x3F);
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(profile_and_level);
+    buf.putUInt32(horizontal_size);
+    buf.putUInt32(vertical_size);
+    buf.putUInt32(max_bit_rate);
+    buf.putUInt32(max_buffer_size);
+    buf.putUInt16(DEN_frame_rate);
+    buf.putUInt16(NUM_frame_rate);
+    buf.putUInt8(color_specification);
+    buf.putBit(still_mode);
+    buf.putBit(interlaced_video);
+    buf.putBits(0xFF, 6);
+    buf.putBytes(private_data);
 }
 
 
@@ -110,27 +111,20 @@ void ts::J2KVideoDescriptor::serialize(DuckContext& duck, Descriptor& desc) cons
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::J2KVideoDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::J2KVideoDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 24;
-    private_data.clear();
-
-    if (_is_valid) {
-        profile_and_level = GetUInt16(data);
-        horizontal_size = GetUInt32(data + 2);
-        vertical_size = GetUInt32(data + 6);
-        max_bit_rate = GetUInt32(data + 10);
-        max_buffer_size = GetUInt32(data + 14);
-        DEN_frame_rate = GetUInt16(data + 18);
-        NUM_frame_rate = GetUInt16(data + 20);
-        color_specification = GetUInt8(data + 22);
-        still_mode = (data[23] & 0x80) != 0;
-        interlaced_video = (data[23] & 0x40) != 0;
-        private_data.copy(data + 24, size - 24);
-    }
+    profile_and_level = buf.getUInt16();
+    horizontal_size = buf.getUInt32();
+    vertical_size = buf.getUInt32();
+    max_bit_rate = buf.getUInt32();
+    max_buffer_size = buf.getUInt32();
+    DEN_frame_rate = buf.getUInt16();
+    NUM_frame_rate = buf.getUInt16();
+    color_specification = buf.getUInt8();
+    still_mode = buf.getBool();
+    interlaced_video = buf.getBool();
+    buf.skipBits(6);
+    buf.getBytes(private_data);
 }
 
 

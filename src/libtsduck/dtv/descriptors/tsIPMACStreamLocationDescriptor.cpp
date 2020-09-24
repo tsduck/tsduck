@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -78,36 +79,22 @@ ts::IPMACStreamLocationDescriptor::IPMACStreamLocationDescriptor(DuckContext& du
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACStreamLocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::IPMACStreamLocationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(network_id);
-    bbp->appendUInt16(original_network_id);
-    bbp->appendUInt16(transport_stream_id);
-    bbp->appendUInt16(service_id);
-    bbp->appendUInt8(component_tag);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(network_id);
+    buf.putUInt16(original_network_id);
+    buf.putUInt16(transport_stream_id);
+    buf.putUInt16(service_id);
+    buf.putUInt8(component_tag);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::IPMACStreamLocationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::IPMACStreamLocationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 9;
-
-    if (_is_valid) {
-        network_id = GetUInt16(data);
-        original_network_id = GetUInt16(data + 2);
-        transport_stream_id = GetUInt16(data + 4);
-        service_id = GetUInt16(data + 6);
-        component_tag = data[8];
-    }
+    network_id = buf.getUInt16();
+    original_network_id = buf.getUInt16();
+    transport_stream_id = buf.getUInt16();
+    service_id = buf.getUInt16();
+    component_tag = buf.getUInt8();
 }
 
 
@@ -149,11 +136,6 @@ void ts::IPMACStreamLocationDescriptor::buildXML(DuckContext& duck, xml::Element
     root->setIntAttribute(u"service_id", service_id, true);
     root->setIntAttribute(u"component_tag", component_tag, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::IPMACStreamLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

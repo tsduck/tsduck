@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -78,18 +79,20 @@ ts::EmergencyInformationDescriptor::Event::Event() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EmergencyInformationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::EmergencyInformationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
     for (auto it1 = events.begin(); it1 != events.end(); ++it1) {
-        bbp->appendUInt16(it1->service_id);
-        bbp->appendUInt8((it1->started ? 0x80 : 0x00) | (it1->signal_level != 0 ? 0x7F : 0x3F));
-        bbp->appendUInt8(uint8_t(2 * it1->area_codes.size()));
+        buf.putUInt16(it1->service_id);
+        buf.putBit(it1->started);
+        buf.putBit(it1->signal_level);
+        buf.putBits(0xFF, 6);
+        buf.pushWriteSequenceWithLeadingLength(8); // area_code_length
         for (auto it2 = it1->area_codes.begin(); it2 != it1->area_codes.end(); ++it2) {
-            bbp->appendUInt16(uint16_t(*it2 << 4) | 0x000F);
+            buf.putBits(*it2, 12);
+            buf.putBits(0xFF, 4);
         }
+        buf.popState(); // update area_code_length
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -97,34 +100,22 @@ void ts::EmergencyInformationDescriptor::serialize(DuckContext& duck, Descriptor
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EmergencyInformationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::EmergencyInformationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag();
-
-    events.clear();
-
-    while (_is_valid && size >= 4) {
+    while (buf.canRead()) {
         Event ev;
-        ev.service_id = GetUInt16(data);
-        ev.started = (data[2] & 0x80) != 0;
-        ev.signal_level = (data[2] >> 6) & 0x01;
-        size_t len = data[3];
-        data += 4; size -= 4;
-
-        if (len > size || len % 2 != 0) {
-            _is_valid = false;
+        ev.service_id = buf.getUInt16();
+        ev.started = buf.getBool();
+        ev.signal_level = buf.getBool();
+        buf.skipBits(6);
+        buf.pushReadSizeFromLength(8); // area_code_length
+        while (buf.canRead()) {
+            ev.area_codes.push_back(buf.getBits<uint16_t>(12));
+            buf.skipBits(4);
         }
-        else {
-            while (len >= 2) {
-                ev.area_codes.push_back((GetUInt16(data) >> 4) & 0x0FFF);
-                data += 2; size -= 2; len -= 2;
-            }
-            events.push_back(ev);
-        }
+        buf.popState(); // end of  area_code_length
+        events.push_back(ev);
     }
-    _is_valid = _is_valid && size == 0;
 }
 
 

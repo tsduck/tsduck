@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -86,36 +87,22 @@ void ts::IPMACGenericStreamLocationDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACGenericStreamLocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::IPMACGenericStreamLocationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(interactive_network_id);
-    bbp->appendUInt8(modulation_system_type);
-    bbp->appendUInt16(modulation_system_id);
-    bbp->appendUInt16(PHY_stream_id);
-    bbp->append(selector_bytes);
-    serializeEnd(desc, bbp);
+    buf.putUInt16(interactive_network_id);
+    buf.putUInt8(modulation_system_type);
+    buf.putUInt16(modulation_system_id);
+    buf.putUInt16(PHY_stream_id);
+    buf.putBytes(selector_bytes);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::IPMACGenericStreamLocationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::IPMACGenericStreamLocationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 7;
-
-    if (_is_valid) {
-        interactive_network_id = GetUInt16(data);
-        modulation_system_type = GetUInt8(data + 2);
-        modulation_system_id = GetUInt16(data + 3);
-        PHY_stream_id = GetUInt16(data + 5);
-        selector_bytes.copy(data + 7, size - 7);
-    }
+    interactive_network_id = buf.getUInt16();
+    modulation_system_type = buf.getUInt8();
+    modulation_system_id = buf.getUInt16();
+    PHY_stream_id = buf.getUInt16();
+    buf.getBytes(selector_bytes);
 }
 
 
@@ -156,11 +143,6 @@ void ts::IPMACGenericStreamLocationDescriptor::buildXML(DuckContext& duck, xml::
     root->setIntAttribute(u"PHY_stream_id", PHY_stream_id, true);
     root->addHexaTextChild(u"selector_bytes", selector_bytes, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::IPMACGenericStreamLocationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

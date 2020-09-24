@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -76,15 +77,13 @@ void ts::GraphicsConstraintsDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::GraphicsConstraintsDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::GraphicsConstraintsDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(0xF8 |
-                     (can_run_without_visible_ui ? 0x04 : 0x00) |
-                     (handles_configuration_changed ? 0x02 : 0x00) |
-                     (handles_externally_controlled_video ? 0x01 : 0x00));
-    bbp->append(graphics_configuration);
-    serializeEnd(desc, bbp);
+    buf.putBits(0xFF, 5);
+    buf.putBit(can_run_without_visible_ui);
+    buf.putBit(handles_configuration_changed);
+    buf.putBit(handles_externally_controlled_video);
+    buf.putBytes(graphics_configuration);
 }
 
 
@@ -92,20 +91,13 @@ void ts::GraphicsConstraintsDescriptor::serialize(DuckContext& duck, Descriptor&
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::GraphicsConstraintsDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::GraphicsConstraintsDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    graphics_configuration.clear();
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        can_run_without_visible_ui = (data[0] & 0x04) != 0;
-        handles_configuration_changed = (data[0] & 0x02) != 0;
-        handles_externally_controlled_video = (data[0] & 0x01) != 0;
-        graphics_configuration.copy(data + 1, size - 1);
-    }
+    buf.skipBits(5);
+    can_run_without_visible_ui = buf.getBool();
+    handles_configuration_changed = buf.getBool();
+    handles_externally_controlled_video = buf.getBool();
+    buf.getBytes(graphics_configuration);
 }
 
 
