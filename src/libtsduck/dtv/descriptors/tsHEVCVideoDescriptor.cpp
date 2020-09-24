@@ -35,6 +35,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -103,32 +104,31 @@ ts::HEVCVideoDescriptor::HEVCVideoDescriptor(DuckContext& duck, const Descriptor
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::HEVCVideoDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::HEVCVideoDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-
-    bbp->appendUInt8(uint8_t((profile_space & 0x03) << 6) | (tier ? 0x20 : 0x00) | (profile_idc & 0x1F));
-    bbp->appendUInt32(profile_compatibility_indication);
-    bbp->appendUInt16((progressive_source    ? 0x8000 : 0x0000) |
-                      (interlaced_source     ? 0x4000 : 0x0000) |
-                      (non_packed_constraint ? 0x2000 : 0x0000) |
-                      (frame_only_constraint ? 0x1000 : 0x0000) |
-                      (uint16_t(copied_44bits >> 32) & 0x0FFF));
-    bbp->appendUInt32(uint32_t(copied_44bits));
-    bbp->appendUInt8(level_idc);
+    buf.putBits(profile_space, 2);
+    buf.putBit(tier);
+    buf.putBits(profile_idc, 5);
+    buf.putUInt32(profile_compatibility_indication);
+    buf.putBit(progressive_source);
+    buf.putBit(interlaced_source);
+    buf.putBit(non_packed_constraint);
+    buf.putBit(frame_only_constraint);
+    buf.putBits(copied_44bits, 44);
+    buf.putUInt8(level_idc);
     const bool temporal = temporal_id_min.set() && temporal_id_max.set();
-    bbp->appendUInt8((temporal ? 0x80 : 0x00) |
-                     (HEVC_still_present ? 0x40 : 0x00) |
-                     (HEVC_24hr_picture_present ? 0x20 : 0x00) |
-                     (sub_pic_hrd_params_not_present ? 0x10 : 0x00) |
-                     0x0C |
-                     (HDR_WCG_idc & 0x03));
+    buf.putBit(temporal);
+    buf.putBit(HEVC_still_present);
+    buf.putBit(HEVC_24hr_picture_present);
+    buf.putBit(sub_pic_hrd_params_not_present);
+    buf.putBits(0xFF, 2);
+    buf.putBits(HDR_WCG_idc, 2);
     if (temporal) {
-        bbp->appendUInt8(uint8_t((temporal_id_min.value() << 5) | 0x1F));
-        bbp->appendUInt8(uint8_t((temporal_id_max.value() << 5) | 0x1F));
+        buf.putBits(temporal_id_min.value(), 3);
+        buf.putBits(0xFF, 5);
+        buf.putBits(temporal_id_max.value(), 3);
+        buf.putBits(0xFF, 5);
     }
-
-    serializeEnd(desc, bbp);
 }
 
 
@@ -136,37 +136,29 @@ void ts::HEVCVideoDescriptor::serialize(DuckContext& duck, Descriptor& desc) con
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::HEVCVideoDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::HEVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && (desc.payloadSize() == 13 || desc.payloadSize() == 15);
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-
-        profile_space = (data[0] >> 6) & 0x03;
-        tier = (data[0] & 0x20) != 0;
-        profile_idc = data[0] & 0x1F;
-        profile_compatibility_indication = GetUInt32(data + 1);
-        progressive_source = (data[5] & 0x80) != 0;
-        interlaced_source = (data[5] & 0x40) != 0;
-        non_packed_constraint = (data[5] & 0x20) != 0;
-        frame_only_constraint = (data[5] & 0x10) != 0;
-        copied_44bits = (uint64_t(GetUInt16(data + 5) & 0x0FFF) << 32) | GetUInt32(data + 7);
-        level_idc = data[11];
-        const bool temporal = (data[12] & 0x80) != 0;
-        HEVC_still_present = (data[12] & 0x40) != 0;
-        HEVC_24hr_picture_present = (data[12] & 0x20) != 0;
-        sub_pic_hrd_params_not_present = (data[12] & 0x10) != 0;
-        HDR_WCG_idc = data[12] & 0x03;
-        temporal_id_min.clear();
-        temporal_id_max.clear();
-        if (temporal) {
-            _is_valid = desc.payloadSize() >= 15;
-            if (_is_valid) {
-                temporal_id_min = (data[13] >> 5) & 0x07;
-                temporal_id_max = (data[14] >> 5) & 0x07;
-            }
-        }
+    buf.getBits(profile_space, 2);
+    tier = buf.getBool();
+    buf.getBits(profile_idc, 5);
+    profile_compatibility_indication = buf.getUInt32();
+    progressive_source = buf.getBool();
+    interlaced_source = buf.getBool();
+    non_packed_constraint = buf.getBool();
+    frame_only_constraint = buf.getBool();
+    buf.getBits(copied_44bits, 44);
+    level_idc = buf.getUInt8();
+    const bool temporal = buf.getBool();
+    HEVC_still_present = buf.getBool();
+    HEVC_24hr_picture_present = buf.getBool();
+    sub_pic_hrd_params_not_present = buf.getBool();
+    buf.skipBits(2);
+    buf.getBits(HDR_WCG_idc, 2);
+    if (temporal) {
+        buf.getBits(temporal_id_min, 3);
+        buf.skipBits(5);
+        buf.getBits(temporal_id_max, 3);
+        buf.skipBits(5);
     }
 }
 

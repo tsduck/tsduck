@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsMJD.h"
@@ -92,26 +93,25 @@ ts::EventGroupDescriptor::OtherEvent::OtherEvent() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EventGroupDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::EventGroupDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(group_type << 4) | uint8_t(actual_events.size() & 0x0F));
+    buf.putBits(group_type, 4);
+    buf.putBits(actual_events.size(), 4);
     for (auto it = actual_events.begin(); it != actual_events.end(); ++it) {
-        bbp->appendUInt16(it->service_id);
-        bbp->appendUInt16(it->event_id);
+        buf.putUInt16(it->service_id);
+        buf.putUInt16(it->event_id);
     }
     if (group_type == 4 || group_type == 5) {
         for (auto it = other_events.begin(); it != other_events.end(); ++it) {
-            bbp->appendUInt16(it->original_network_id);
-            bbp->appendUInt16(it->transport_stream_id);
-            bbp->appendUInt16(it->service_id);
-            bbp->appendUInt16(it->event_id);
+            buf.putUInt16(it->original_network_id);
+            buf.putUInt16(it->transport_stream_id);
+            buf.putUInt16(it->service_id);
+            buf.putUInt16(it->event_id);
         }
     }
     else {
-        bbp->append(private_data);
+        buf.putBytes(private_data);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -119,47 +119,28 @@ void ts::EventGroupDescriptor::serialize(DuckContext& duck, Descriptor& desc) co
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EventGroupDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::EventGroupDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    actual_events.clear();
-    other_events.clear();
-    private_data.clear();
-
-    if (_is_valid) {
-        group_type = (data[0] >> 4) & 0x0F;
-        size_t count = data[0] & 0x0F;
-        data++; size--;
-
-        while (count > 0 && size >= 4) {
-            ActualEvent ev;
-            ev.service_id = GetUInt16(data);
-            ev.event_id = GetUInt16(data + 2);
-            actual_events.push_back(ev);
-            data += 4; size -= 4; count--;
+    buf.getBits(group_type, 4);
+    const size_t event_count = buf.getBits<size_t>(4);
+    for (size_t i = 0; i < event_count && buf.canRead(); ++i) {
+        ActualEvent ev;
+        ev.service_id = buf.getUInt16();
+        ev.event_id = buf.getUInt16();
+        actual_events.push_back(ev);
+    }
+    if (group_type == 4 || group_type == 5) {
+        while (buf.canRead()) {
+            OtherEvent ev;
+            ev.original_network_id = buf.getUInt16();
+            ev.transport_stream_id = buf.getUInt16();
+            ev.service_id = buf.getUInt16();
+            ev.event_id = buf.getUInt16();
+            other_events.push_back(ev);
         }
-        _is_valid = count == 0;
-
-        if (_is_valid) {
-            if (group_type == 4 || group_type == 5) {
-                while (size >= 8) {
-                    OtherEvent ev;
-                    ev.original_network_id = GetUInt16(data);
-                    ev.transport_stream_id = GetUInt16(data + 2);
-                    ev.service_id = GetUInt16(data + 4);
-                    ev.event_id = GetUInt16(data + 6);
-                    other_events.push_back(ev);
-                    data += 8; size -= 8;
-                }
-                _is_valid = size == 0;
-            }
-            else {
-                private_data.copy(data, size);
-            }
-        }
+    }
+    else {
+        buf.getBytes(private_data);
     }
 }
 

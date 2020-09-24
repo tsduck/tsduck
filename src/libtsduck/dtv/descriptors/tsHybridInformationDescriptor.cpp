@@ -48,6 +48,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -96,24 +97,22 @@ void ts::HybridInformationDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::HybridInformationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::HybridInformationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8((has_location ? 0x80 : 0x00) |
-                     (location_type ? 0x40 : 0x00) |
-                     uint8_t((format & 0x0F) << 2) |
-                     0x03);
+    buf.putBit(has_location);
+    buf.putBit(location_type);
+    buf.putBits(format, 4);
+    buf.putBits(0xFF, 2);
     if (has_location) {
         if (location_type) {
             // We assume here that the URL is encoded in ARIB STD-B24. Could be in ASCII ?
-            bbp->append(duck.encodedWithByteLength(URL));
+            buf.putStringWithByteLength(URL);
         }
         else {
-            bbp->appendUInt8(component_tag);
-            bbp->appendUInt16(module_id);
+            buf.putUInt8(component_tag);
+            buf.putUInt16(module_id);
         }
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -121,35 +120,20 @@ void ts::HybridInformationDescriptor::serialize(DuckContext& duck, Descriptor& d
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::HybridInformationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::HybridInformationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-    URL.clear();
-
-    if (_is_valid) {
-        has_location = (data[0] & 0x80) != 0;
-        location_type = (data[0] & 0x40) != 0;
-        format = (data[0] >> 2) & 0x0F;
-        data++; size--;
-
-        if (has_location) {
-            if (location_type) {
-                _is_valid = size > 0;
-                if (_is_valid) {
-                    // We assume here that the URL is encoded in ARIB STD-B24. Could be in ASCII ?
-                    duck.decodeWithByteLength(URL, data, size);
-                    _is_valid = size == 0;
-                }
-            }
-            else {
-                _is_valid = size == 3;
-                if (_is_valid) {
-                    component_tag = data[0];
-                    module_id = GetUInt16(data + 1);
-                }
-            }
+    has_location = buf.getBool();
+    location_type = buf.getBool();
+    buf.getBits(format, 4);
+    buf.skipBits(2);
+    if (has_location) {
+        if (location_type) {
+            // We assume here that the URL is encoded in ARIB STD-B24. Could be in ASCII ?
+            buf.getStringWithByteLength(URL);
+        }
+        else {
+            component_tag = buf.getUInt8();
+            module_id = buf.getUInt16();
         }
     }
 }

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
@@ -71,35 +72,18 @@ void ts::GenreDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::GenreDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::GenreDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(0xE0 | (attributes.size() & 0x1F)));
-    bbp->append(attributes);
-    serializeEnd(desc, bbp);
+    buf.putBits(0xFF, 3);
+    buf.putBits(attributes.size(), 5);
+    buf.putBytes(attributes);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::GenreDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::GenreDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    attributes.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size > 0;
-
-    if (_is_valid) {
-        const size_t count = data[0] & 0x1F;
-        _is_valid = 1 + count <= size;
-        if (_is_valid) {
-            attributes.copy(data + 1, count);
-        }
-    }
+    buf.skipBits(3);
+    const size_t count = buf.getBits<size_t>(5);
+    buf.getBytes(attributes, count);
 }
 
 

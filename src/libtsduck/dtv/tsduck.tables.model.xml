@@ -1686,9 +1686,14 @@
         reference_PID="uint13, required"/>
 
     <hierarchy_descriptor
-        temporal_scalability="bool, required"
-        spatial_scalability="bool, required"
-        quality_scalability="bool, required"
+        view_scalability_flag="bool, default=true"
+        temporal_scalability="bool, default=true"
+        spatial_scalability="bool, default=true"
+        quality_scalability="bool, default=true"
+        no_view_scalability_flag="bool, default=true"
+        no_temporal_scalability="bool, default=true"
+        no_spatial_scalability="bool, default=true"
+        no_quality_scalability="bool, default=true"
         hierarchy_type="uint4, required"
         hierarchy_layer_index="uint6, required"
         tref_present="bool, required"

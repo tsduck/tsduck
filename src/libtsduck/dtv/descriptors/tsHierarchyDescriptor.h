@@ -45,9 +45,10 @@ namespace ts {
     {
     public:
         // HierarchyDescriptor public members:
-        bool    temporal_scalability;            //!< Temporal scalability.
-        bool    spatial_scalability;             //!< Spatial scalability.
-        bool    quality_scalability;             //!< Quality scalability.
+        bool    no_view_scalability_flag;        //!< No view scalability.
+        bool    no_temporal_scalability;         //!< No temporal scalability.
+        bool    no_spatial_scalability;          //!< No spatial scalability.
+        bool    no_quality_scalability;          //!< No quality scalability.
         uint8_t hierarchy_type;                  //!< 4 bits, hierarchy type.
         uint8_t hierarchy_layer_index;           //!< 6 bits, hierarchy layer index.
         bool    tref_present;                    //!< tref present.
@@ -67,13 +68,13 @@ namespace ts {
         HierarchyDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
         DeclareLegacyDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };
