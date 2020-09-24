@@ -108,7 +108,7 @@ void ts::ContentAdvisoryDescriptor::deserializePayload(PSIBuffer& buf)
         entry.rating_region = buf.getUInt8();
         const size_t dim_count = buf.getUInt8();
         for (size_t i2 = 0; i2 < dim_count && buf.canRead(); ++i2) {
-            const size_t dim = buf.getUInt8();
+            const uint8_t dim = buf.getUInt8();
             buf.skipBits(4);
             buf.getBits(entry.rating_values[dim], 4);
         }
