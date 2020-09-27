@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
@@ -70,28 +71,16 @@ ts::StereoscopicProgramInfoDescriptor::StereoscopicProgramInfoDescriptor(DuckCon
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::StereoscopicProgramInfoDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::StereoscopicProgramInfoDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(0xF8 | stereoscopic_service_type);
-    serializeEnd(desc, bbp);
+    buf.putBits(0xFF, 5);
+    buf.putBits(stereoscopic_service_type, 3);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::StereoscopicProgramInfoDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::StereoscopicProgramInfoDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 1;
-
-    if (_is_valid) {
-        stereoscopic_service_type = data[0] & 0x07;
-    }
+    buf.skipBits(5);
+    buf.getBits(stereoscopic_service_type, 3);
 }
 
 
@@ -99,21 +88,17 @@ void ts::StereoscopicProgramInfoDescriptor::deserialize(DuckContext& duck, const
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::StereoscopicProgramInfoDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::StereoscopicProgramInfoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        disp << margin << "Stereoscopic service type: " << NameFromSection(u"StereoscopicServiceType", data[0] & 0x07, names::DECIMAL_FIRST) << std::endl;
-        data += 1; size -= 1;
+    if (buf.canReadBytes(1)) {
+        buf.skipBits(5);
+        disp << margin << "Stereoscopic service type: " << NameFromSection(u"StereoscopicServiceType", buf.getBits<uint8_t>(3), names::DECIMAL_FIRST) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::StereoscopicProgramInfoDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

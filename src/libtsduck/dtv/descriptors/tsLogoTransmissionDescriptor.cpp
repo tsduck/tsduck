@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -81,27 +82,28 @@ ts::LogoTransmissionDescriptor::LogoTransmissionDescriptor(DuckContext& duck, co
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::LogoTransmissionDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::LogoTransmissionDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(logo_transmission_type);
+    buf.putUInt8(logo_transmission_type);
     switch (logo_transmission_type) {
         case 0x01:
-            bbp->appendUInt16(0xFE00 | logo_id);
-            bbp->appendUInt16(0xF000 | logo_version);
-            bbp->appendUInt16(download_data_id);
+            buf.putBits(0xFF, 7);
+            buf.putBits(logo_id, 9);
+            buf.putBits(0xFF, 4);
+            buf.putBits(logo_version, 12);
+            buf.putUInt16(download_data_id);
             break;
         case 0x02:
-            bbp->appendUInt16(0xFE00 | logo_id);
+            buf.putBits(0xFF, 7);
+            buf.putBits(logo_id, 9);
             break;
         case 0x03:
-            bbp->append(duck.encoded(logo_char));
+            buf.putString(logo_char);
             break;
         default:
-            bbp->append(reserved_future_use);
+            buf.putBytes(reserved_future_use);
             break;
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -109,44 +111,27 @@ void ts::LogoTransmissionDescriptor::serialize(DuckContext& duck, Descriptor& de
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::LogoTransmissionDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::LogoTransmissionDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    logo_char.clear();
-    reserved_future_use.clear();
-
-    if (_is_valid) {
-        logo_transmission_type = data[0];
-        data += 1; size -= 1;
-        switch (logo_transmission_type) {
-            case 0x01:
-                if (size != 6) {
-                    _is_valid = false;
-                }
-                else {
-                    logo_id = GetUInt16(data) & 0x01FF;
-                    logo_version = GetUInt16(data + 2) & 0x0FFF;
-                    download_data_id = GetUInt16(data + 4);
-                }
-                break;
-            case 0x02:
-                if (size != 2) {
-                    _is_valid = false;
-                }
-                else {
-                    logo_id = GetUInt16(data) & 0x01FF;
-                }
-                break;
-            case 0x03:
-                duck.decode(logo_char, data, size);
-                break;
-            default:
-                reserved_future_use.copy(data, size);
-                break;
-        }
+    logo_transmission_type = buf.getUInt8();
+    switch (logo_transmission_type) {
+        case 0x01:
+            buf.skipBits(7);
+            buf.getBits(logo_id, 9);
+            buf.skipBits(4);
+            buf.getBits(logo_version, 12);
+            download_data_id = buf.getUInt16();
+            break;
+        case 0x02:
+            buf.skipBits(7);
+            buf.getBits(logo_id, 9);
+            break;
+        case 0x03:
+            buf.getString(logo_char);
+            break;
+        default:
+            buf.getBytes(reserved_future_use);
+            break;
     }
 }
 

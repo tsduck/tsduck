@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsMJD.h"
@@ -84,20 +85,21 @@ void ts::SeriesDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SeriesDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SeriesDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(series_id);
-    bbp->appendUInt8(uint8_t(repeat_label << 4) | uint8_t((program_pattern & 0x07) << 1) | (expire_date.set() ? 0x01 : 0x00));
+    buf.putUInt16(series_id);
+    buf.putBits(repeat_label, 4);
+    buf.putBits(program_pattern, 3);
+    buf.putBit(expire_date.set());
     if (expire_date.set()) {
-        EncodeMJD(expire_date.value(), bbp->enlarge(2), 2);  // date only
+        buf.putMJD(expire_date.value(), 2);  // 2 bytes, date only
     }
     else {
-        bbp->appendUInt16(0xFFFF);
+        buf.putUInt16(0xFFFF);
     }
-    bbp->appendUInt24(uint32_t(uint32_t(episode_number & 0x0FFF) << 12) | (last_episode_number & 0x0FFF));
-    bbp->append(duck.encoded(series_name));
-    serializeEnd(desc, bbp);
+    buf.putBits(episode_number, 12);
+    buf.putBits(last_episode_number, 12);
+    buf.putString(series_name);
 }
 
 
@@ -105,27 +107,20 @@ void ts::SeriesDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SeriesDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SeriesDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 8;
-    expire_date.clear();
-    series_name.clear();
-
-    if (_is_valid) {
-        series_id = GetUInt16(data);
-        repeat_label = (data[2] >> 4) & 0x0F;
-        program_pattern = (data[2] >> 1) & 0x07;
-        if ((data[2] & 0x01) != 0) {
-            Time date;
-            DecodeMJD(data + 3, 2, date);
-            expire_date = date;
-        }
-        episode_number = (GetUInt16(data + 5) >> 4) & 0x0FFF;
-        last_episode_number = GetUInt16(data + 6) & 0x0FFF;
-        duck.decode(series_name, data + 8, size - 8);
+    series_id = buf.getUInt16();
+    buf.getBits(repeat_label, 4);
+    buf.getBits(program_pattern, 3);
+    if (buf.getBool()) {
+        expire_date = buf.getMJD(2);  // 2 bytes, date only
     }
+    else {
+        buf.skipBits(16);
+    }
+    buf.getBits(episode_number, 12);
+    buf.getBits(last_episode_number, 12);
+    buf.getString(series_name);
 }
 
 

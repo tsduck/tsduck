@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -89,20 +90,21 @@ void ts::SVCExtensionDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SVCExtensionDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SVCExtensionDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(width);
-    bbp->appendUInt16(height);
-    bbp->appendUInt16(frame_rate);
-    bbp->appendUInt16(average_bitrate);
-    bbp->appendUInt16(maximum_bitrate);
-    bbp->appendUInt8(uint8_t(dependency_id << 5) | 0x1F);
-    bbp->appendUInt8(uint8_t(quality_id_start << 4) | (quality_id_end & 0x0F));
-    bbp->appendUInt8(uint8_t(temporal_id_start << 5) |
-                     uint8_t((temporal_id_end & 0x07) << 2) |
-                     (no_sei_nal_unit_present ? 0x03 : 0x01));
-    serializeEnd(desc, bbp);
+    buf.putUInt16(width);
+    buf.putUInt16(height);
+    buf.putUInt16(frame_rate);
+    buf.putUInt16(average_bitrate);
+    buf.putUInt16(maximum_bitrate);
+    buf.putBits(dependency_id, 3);
+    buf.putBits(0xFF, 5);
+    buf.putBits(quality_id_start, 4);
+    buf.putBits(quality_id_end, 4);
+    buf.putBits(temporal_id_start, 3);
+    buf.putBits(temporal_id_end, 3);
+    buf.putBit(no_sei_nal_unit_present);
+    buf.putBit(1);
 }
 
 
@@ -110,26 +112,21 @@ void ts::SVCExtensionDescriptor::serialize(DuckContext& duck, Descriptor& desc) 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SVCExtensionDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SVCExtensionDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 13;
-
-    if (_is_valid) {
-        width = GetUInt16(data);
-        height = GetUInt16(data + 2);
-        frame_rate = GetUInt16(data + 4);
-        average_bitrate = GetUInt16(data + 6);
-        maximum_bitrate = GetUInt16(data + 8);
-        dependency_id = (data[10] >> 5) & 0x07;
-        quality_id_start = (data[11] >> 4) & 0x0F;
-        quality_id_end = data[11] & 0x0F;
-        temporal_id_start = (data[12] >> 5) & 0x07;
-        temporal_id_end = (data[12] >> 2) & 0x07;
-        no_sei_nal_unit_present = (data[12] & 0x02) != 0;
-    }
+    width = buf.getUInt16();
+    height = buf.getUInt16();
+    frame_rate = buf.getUInt16();
+    average_bitrate = buf.getUInt16();
+    maximum_bitrate = buf.getUInt16();
+    buf.getBits(dependency_id, 3);
+    buf.skipBits(5);
+    buf.getBits(quality_id_start, 4);
+    buf.getBits(quality_id_end, 4);
+    buf.getBits(temporal_id_start, 3);
+    buf.getBits(temporal_id_end, 3);
+    no_sei_nal_unit_present = buf.getBool();
+    buf.skipBits(1);
 }
 
 

@@ -157,7 +157,7 @@ bool ts::ATSCTimeShiftedServiceDescriptor::analyzeXML(DuckContext& duck, const x
     xml::ElementVector children;
     bool ok = element->getChildren(children, u"service", 0, MAX_ENTRIES);
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
         ok = children[i]->getIntAttribute(entry.time_shift, u"time_shift", true, 0, 0, 0x03FF) &&
              children[i]->getIntAttribute(entry.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&

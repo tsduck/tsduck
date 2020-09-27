@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -70,28 +71,14 @@ void ts::MPEG4AudioDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MPEG4AudioDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::MPEG4AudioDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MPEG4_audio_profile_and_level);
-    serializeEnd(desc, bbp);
+    buf.putUInt8(MPEG4_audio_profile_and_level);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::MPEG4AudioDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::MPEG4AudioDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 1;
-
-    if (_is_valid) {
-        MPEG4_audio_profile_and_level = data[0];
-    }
+    MPEG4_audio_profile_and_level = buf.getUInt8();
 }
 
 
@@ -99,16 +86,11 @@ void ts::MPEG4AudioDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MPEG4AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MPEG4AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        disp << margin << UString::Format(u"MPEG-4 Audio profile and level: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        disp << margin << UString::Format(u"MPEG-4 Audio profile and level: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -120,11 +102,6 @@ void ts::MPEG4AudioDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 {
     root->setIntAttribute(u"MPEG4_audio_profile_and_level", MPEG4_audio_profile_and_level, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::MPEG4AudioDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {

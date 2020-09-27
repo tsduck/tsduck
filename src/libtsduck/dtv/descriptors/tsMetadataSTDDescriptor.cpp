@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -73,13 +74,14 @@ ts::MetadataSTDDescriptor::MetadataSTDDescriptor(DuckContext& duck, const Descri
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MetadataSTDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::MetadataSTDDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt24(0xC00000 | metadata_input_leak_rate);
-    bbp->appendUInt24(0xC00000 | metadata_buffer_size);
-    bbp->appendUInt24(0xC00000 | metadata_output_leak_rate);
-    serializeEnd(desc, bbp);
+    buf.putBits(0xFF, 2);
+    buf.putBits(metadata_input_leak_rate, 22);
+    buf.putBits(0xFF, 2);
+    buf.putBits(metadata_buffer_size, 22);
+    buf.putBits(0xFF, 2);
+    buf.putBits(metadata_output_leak_rate, 22);
 }
 
 
@@ -87,18 +89,14 @@ void ts::MetadataSTDDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::MetadataSTDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::MetadataSTDDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 9;
-
-    if (_is_valid) {
-        metadata_input_leak_rate = GetUInt24(data) & 0x3FFFFF;
-        metadata_buffer_size = GetUInt24(data + 3) & 0x3FFFFF;
-        metadata_output_leak_rate = GetUInt24(data + 6) & 0x3FFFFF;
-    }
+    buf.skipBits(2);
+    buf.getBits(metadata_input_leak_rate, 22);
+    buf.skipBits(2);
+    buf.getBits(metadata_buffer_size, 22);
+    buf.skipBits(2);
+    buf.getBits(metadata_output_leak_rate, 22);
 }
 
 
@@ -106,21 +104,19 @@ void ts::MetadataSTDDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MetadataSTDDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MetadataSTDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 9) {
-        const uint32_t input = GetUInt24(data) & 0x3FFFFF;
-        const uint32_t buffer = GetUInt24(data + 3) & 0x3FFFFF;
-        const uint32_t output = GetUInt24(data + 6) & 0x3FFFFF;
-        data += 9; size -= 9;
-        disp << margin << UString::Format(u"Metadata input leak rate: %'d (%'d bits/s)", {input, 400 * input}) << std::endl
-             << margin << UString::Format(u"Metadata buffer size: %'d (%'d bytes)", {buffer, 1024 * buffer}) << std::endl
-             << margin << UString::Format(u"Metadata output leak rate: %'d (%'d bits/s)", {output, 400 * output}) << std::endl;
+    if (buf.canReadBytes(9)) {
+        buf.skipBits(2);
+        const uint32_t input = buf.getBits<uint32_t>(22);
+        buf.skipBits(2);
+        const uint32_t buffer = buf.getBits<uint32_t>(22);
+        buf.skipBits(2);
+        const uint32_t output = buf.getBits<uint32_t>(22);
+        disp << margin << UString::Format(u"Metadata input leak rate: %'d (%'d bits/s)", {input, 400 * input}) << std::endl;
+        disp << margin << UString::Format(u"Metadata buffer size: %'d (%'d bytes)", {buffer, 1024 * buffer}) << std::endl;
+        disp << margin << UString::Format(u"Metadata output leak rate: %'d (%'d bits/s)", {output, 400 * output}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

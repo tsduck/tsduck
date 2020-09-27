@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -77,14 +78,12 @@ ts::VideoDecodeControlDescriptor::VideoDecodeControlDescriptor(DuckContext& duck
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::VideoDecodeControlDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::VideoDecodeControlDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8((still_picture ? 0x80 : 0x00) |
-                     (sequence_end_code ? 0x40 : 0x00) |
-                     uint8_t((video_encode_format & 0x0F) << 2) |
-                     (reserved_future_use & 0x03));
-    serializeEnd(desc, bbp);
+    buf.putBit(still_picture);
+    buf.putBit(sequence_end_code);
+    buf.putBits(video_encode_format, 4);
+    buf.putBits(reserved_future_use, 2);
 }
 
 
@@ -92,18 +91,12 @@ void ts::VideoDecodeControlDescriptor::serialize(DuckContext& duck, Descriptor& 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::VideoDecodeControlDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::VideoDecodeControlDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 1;
-
-    if (_is_valid) {
-        still_picture = (data[0] & 0x80) != 0;
-        sequence_end_code = (data[0] & 0x40) != 0;
-        video_encode_format = (data[0] >> 2) & 0x0F;
-        reserved_future_use = data[0] & 0x03;
-    }
+    still_picture = buf.getBool();
+    sequence_end_code = buf.getBool();
+    buf.getBits(video_encode_format, 4);
+    buf.getBits(reserved_future_use, 2);
 }
 
 

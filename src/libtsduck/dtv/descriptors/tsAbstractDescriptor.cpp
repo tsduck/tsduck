@@ -63,23 +63,6 @@ ts::DID ts::AbstractDescriptor::extendedTag() const
 
 
 //----------------------------------------------------------------------------
-// Default implementations for serialization handlers.
-//----------------------------------------------------------------------------
-
-void ts::AbstractDescriptor::serializePayload(ts::PSIBuffer& buf) const
-{
-    // Generate an error to invalidate the serialization.
-    buf.setUserError();
-}
-
-void ts::AbstractDescriptor::deserializePayload(ts::PSIBuffer& buf)
-{
-    // Generate an error to invalidate the serialization.
-    buf.setUserError();
-}
-
-
-//----------------------------------------------------------------------------
 // Descriptor serialization.
 //----------------------------------------------------------------------------
 
@@ -171,35 +154,5 @@ void ts::AbstractDescriptor::deserialize(DuckContext& duck, const DescriptorList
     }
     else {
         deserialize(duck, *dlist[index]);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Legacy tools for serialization
-//----------------------------------------------------------------------------
-
-ts::ByteBlockPtr ts::AbstractDescriptor::serializeStart() const
-{
-    ByteBlockPtr bbp(new ByteBlock(2));
-    CheckNonNull(bbp.pointer());
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = 0;
-    return bbp;
-}
-
-bool ts::AbstractDescriptor::serializeEnd(Descriptor& desc, const ByteBlockPtr& bbp) const
-{
-    if (!_is_valid || bbp.isNull() || bbp->size() < 2 || bbp->size() > MAX_DESCRIPTOR_SIZE) {
-        // Invalid descriptor instance or invalid serialized descriptor.
-        desc.invalidate();
-        return false;
-    }
-    else {
-        // Update descriptor tag and size.
-        (*bbp)[0] = _tag;
-        (*bbp)[1] = uint8_t(bbp->size() - 2);
-        desc = Descriptor(bbp, ShareMode::SHARE);
-        return true;
     }
 }

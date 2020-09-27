@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
@@ -68,20 +69,24 @@ ts::PrefetchDescriptor::PrefetchDescriptor(DuckContext& duck, const Descriptor& 
     deserialize(duck, desc);
 }
 
+ts::PrefetchDescriptor::Entry::Entry(const UString& str, uint8_t pri) :
+    label(str),
+    prefetch_priority(pri)
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PrefetchDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::PrefetchDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(transport_protocol_label);
+    buf.putUInt8(transport_protocol_label);
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->append(duck.encodedWithByteLength(it->label));
-        bbp->appendUInt8(it->prefetch_priority);
+        buf.putStringWithByteLength(it->label);
+        buf.putUInt8(it->prefetch_priority);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -89,30 +94,15 @@ void ts::PrefetchDescriptor::serialize(DuckContext& duck, Descriptor& desc) cons
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PrefetchDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::PrefetchDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    entries.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 1;
-
-    if (_is_valid) {
-        transport_protocol_label = data[0];
-        data++; size--;
-        while (_is_valid && size >= 1) {
-            const size_t len = data[0];
-            data++; size--;
-            _is_valid = len + 1 <= size;
-            if (_is_valid) {
-                entries.push_back(Entry(duck.decoded(data, len), data[len]));
-                data += len + 1; size -= len + 1;
-            }
-        }
+    transport_protocol_label = buf.getUInt8();
+    while (buf.canRead()) {
+        Entry e;
+        buf.getStringWithByteLength(e.label);
+        e.prefetch_priority = buf.getUInt8();
+        entries.push_back(e);
     }
-
-    _is_valid = _is_valid && size == 0;
 }
 
 

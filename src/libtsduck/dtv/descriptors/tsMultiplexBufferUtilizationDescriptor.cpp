@@ -32,6 +32,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -72,18 +73,17 @@ void ts::MultiplexBufferUtilizationDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferUtilizationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::MultiplexBufferUtilizationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
     if (LTW_offset_lower_bound.set() && LTW_offset_upper_bound.set()) {
-        bbp->appendUInt16(0x8000 | LTW_offset_lower_bound.value());
-        bbp->appendUInt16(0x8000 | LTW_offset_upper_bound.value());
+        buf.putBit(1);
+        buf.putBits(LTW_offset_lower_bound.value(), 15);
+        buf.putBit(1);
+        buf.putBits(LTW_offset_upper_bound.value(), 15);
     }
     else {
-        bbp->appendUInt16(0x7FFF);
-        bbp->appendUInt16(0xFFFF);
+        buf.putUInt32(0x7FFFFFFF);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -91,19 +91,15 @@ void ts::MultiplexBufferUtilizationDescriptor::serialize(DuckContext& duck, Desc
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferUtilizationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::MultiplexBufferUtilizationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    LTW_offset_lower_bound.clear();
-    LTW_offset_upper_bound.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 4;
-
-    if (_is_valid && (data[0] & 0x80) != 0) {
-        LTW_offset_lower_bound = GetUInt16(data) & 0x7FFF;
-        LTW_offset_upper_bound = GetUInt16(data + 2) & 0x7FFF;
+    if (buf.getBool()) {
+        buf.getBits(LTW_offset_lower_bound, 15);
+        buf.skipBits(1);
+        buf.getBits(LTW_offset_upper_bound, 15);
+    }
+    else {
+        buf.skipBits(31);
     }
 }
 
@@ -112,22 +108,20 @@ void ts::MultiplexBufferUtilizationDescriptor::deserialize(DuckContext& duck, co
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferUtilizationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MultiplexBufferUtilizationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        const bool valid = (data[0] & 0x80) != 0;
-        const uint16_t low = GetUInt16(data) & 0x7FFF;
-        const uint16_t upp = GetUInt16(data + 2) & 0x7FFF;
+    if (buf.canReadBytes(4)) {
+        const bool valid = buf.getBool();
         disp << margin << "Bound valid: " << UString::YesNo(valid) << std::endl;
         if (valid) {
-            disp << margin << UString::Format(u"LTW offset bounds: lower: 0x%X (%d), upper: 0x%X (%d)", {low, low, upp, upp}) << std::endl;
+            disp << margin << UString::Format(u"LTW offset bounds: lower: 0x%X (%<d)", {buf.getBits<uint16_t>(15)});
+            buf.skipBits(1);
+            disp << UString::Format(u", upper: 0x%X (%<d)", {buf.getBits<uint16_t>(15)}) << std::endl;
         }
-        data += 4; size -= 4;
+        else {
+            buf.skipBits(31);
+        }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

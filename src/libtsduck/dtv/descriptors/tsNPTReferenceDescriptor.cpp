@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -64,6 +65,15 @@ ts::NPTReferenceDescriptor::NPTReferenceDescriptor(DuckContext& duck, const Desc
     deserialize(duck, desc);
 }
 
+void ts::NPTReferenceDescriptor::clearContent()
+{
+    post_discontinuity = false;
+    content_id = 0;
+    STC_reference = 0;
+    NPT_reference = 0;
+    scale_numerator = 0;
+    scale_denominator = 0;
+}
 
 
 //----------------------------------------------------------------------------
@@ -117,15 +127,16 @@ uint64_t ts::NPTReferenceDescriptor::nptToSTC(uint64_t npt) const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::NPTReferenceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::NPTReferenceDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8((post_discontinuity ? 0x80 : 0x00) | (content_id & 0x7F));
-    bbp->appendUInt40(TS_UCONST64(0x000000FE00000000) | STC_reference);
-    bbp->appendUInt64(TS_UCONST64(0xFFFFFFFE00000000) | NPT_reference);
-    bbp->appendUInt16(scale_numerator);
-    bbp->appendUInt16(scale_denominator);
-    serializeEnd(desc, bbp);
+    buf.putBit(post_discontinuity);
+    buf.putBits(content_id, 7);
+    buf.putBits(0xFF, 7);
+    buf.putBits(STC_reference, 33);
+    buf.putBits(0xFFFFFFFF, 31);
+    buf.putBits(NPT_reference, 33);
+    buf.putUInt16(scale_numerator);
+    buf.putUInt16(scale_denominator);
 }
 
 
@@ -133,29 +144,16 @@ void ts::NPTReferenceDescriptor::serialize(DuckContext& duck, Descriptor& desc) 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::NPTReferenceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::NPTReferenceDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 18;
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        post_discontinuity = (data[0] & 0x80) != 0;
-        content_id = data[0] & 0x7F;
-        STC_reference = GetUInt40(data + 1) & TS_UCONST64(0x00000001FFFFFFFF);
-        NPT_reference = GetUInt64(data + 6) & TS_UCONST64(0x00000001FFFFFFFF);
-        scale_numerator = GetUInt16(data + 14);
-        scale_denominator = GetUInt16(data + 16);
-    }
-}
-
-void ts::NPTReferenceDescriptor::clearContent()
-{
-    post_discontinuity = false;
-    content_id = 0;
-    STC_reference = 0;
-    NPT_reference = 0;
-    scale_numerator = 0;
-    scale_denominator = 0;
+    post_discontinuity = buf.getBool();
+    buf.getBits(content_id, 7);
+    buf.skipBits(7);
+    buf.getBits(STC_reference, 33);
+    buf.skipBits(31);
+    buf.getBits(NPT_reference, 33);
+    scale_numerator = buf.getUInt16();
+    scale_denominator = buf.getUInt16();
 }
 
 

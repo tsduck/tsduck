@@ -103,7 +103,7 @@ ts::SSUDataBroadcastIdDescriptor::Entry::Entry(uint32_t oui_, uint8_t upd_) :
 
 void ts::SSUDataBroadcastIdDescriptor::toDataBroadcastIdDescriptor(DuckContext& duck, DataBroadcastIdDescriptor& desc) const
 {
-    if (_is_valid) {
+    if (isValid()) {
         // Convert using serialization / deserialization.
         Descriptor bin;
         serialize(duck, bin);

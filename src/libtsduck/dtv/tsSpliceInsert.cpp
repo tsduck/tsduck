@@ -201,9 +201,12 @@ void ts::SpliceInsert::display(TablesDisplay& disp, const UString& margin) const
 
 int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
 {
-    const uint8_t* const start = data;
+    // Clear object content, make it a valid empty object.
     clear();
+
+    const uint8_t* const start = data;
     if (size < 5) {
+        invalidate();
         return -1; // too short
     }
 
@@ -212,10 +215,10 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
     data += 5; size -= 5;
 
     if (canceled) {
-        _is_valid = true;
         return int(data - start);  // end of command
     }
     if (size < 1) {
+        invalidate();
         return -1; // too short
     }
 
@@ -229,6 +232,7 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
         // The complete program switches at a given time.
         const int s = program_pts.deserialize(data, size);
         if (s < 0) {
+            invalidate();
             return -1; // invalid
         }
         data += s; size -= s;
@@ -236,12 +240,14 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
     if (!program_splice) {
         // Program components switch individually.
         if (size < 1) {
+            invalidate();
             return -1; // too short
         }
         size_t count = data[0];
         data++; size--;
         while (count-- > 0) {
             if (size < 1) {
+                invalidate();
                 return -1; // too short
             }
             const uint8_t ctag = data[0];
@@ -250,6 +256,7 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
             if (!immediate) {
                 const int s = pts.deserialize(data, size);
                 if (s < 0) {
+                    invalidate();
                     return -1; // invalid
                 }
                 data += s; size -= s;
@@ -259,6 +266,7 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
     }
     if (use_duration) {
         if (size < 5) {
+            invalidate();
             return -1; // too short
         }
         auto_return = (data[0] & 0x80) != 0;
@@ -266,6 +274,7 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
         data += 5; size -= 5;
     }
     if (size < 4) {
+        invalidate();
         return -1; // too short
     }
     program_id = GetUInt16(data);
@@ -273,7 +282,6 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
     avails_expected = data[3];
     data += 4; size -= 4;
 
-    _is_valid = true;
     return int(data - start);
 }
 

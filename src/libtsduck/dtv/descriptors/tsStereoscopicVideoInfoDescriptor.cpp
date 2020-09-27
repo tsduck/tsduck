@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
@@ -78,18 +79,20 @@ ts::StereoscopicVideoInfoDescriptor::StereoscopicVideoInfoDescriptor(DuckContext
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::StereoscopicVideoInfoDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::StereoscopicVideoInfoDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(base_video ? 0xFF : 0xFE);
+    buf.putBits(0xFF, 7);
+    buf.putBit(base_video);
     if (base_video) {
-        bbp->appendUInt8(leftview ? 0xFF : 0xFE);
+        buf.putBits(0xFF, 7);
+        buf.putBit(leftview);
     }
     else {
-        bbp->appendUInt8(usable_as_2D ? 0xFF : 0xFE);
-        bbp->appendUInt8(uint8_t(horizontal_upsampling_factor << 4) | (vertical_upsampling_factor & 0x0F));
+        buf.putBits(0xFF, 7);
+        buf.putBit(usable_as_2D);
+        buf.putBits(horizontal_upsampling_factor, 4);
+        buf.putBits(vertical_upsampling_factor, 4);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -97,26 +100,19 @@ void ts::StereoscopicVideoInfoDescriptor::serialize(DuckContext& duck, Descripto
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::StereoscopicVideoInfoDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::StereoscopicVideoInfoDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size > 1;
-
-    if (_is_valid) {
-        base_video = (data[0] & 0x01) != 0;
-        if (base_video && size == 2) {
-            leftview = (data[1] & 0x01) != 0;
-        }
-        else if (!base_video && size == 3) {
-            usable_as_2D = (data[1] & 0x01) != 0;
-            horizontal_upsampling_factor = (data[2] >> 4) & 0x0F;
-            vertical_upsampling_factor = data[2] & 0x0F;
-        }
-        else {
-            _is_valid = false;
-        }
+    buf.skipBits(7);
+    base_video = buf.getBool();
+    if (base_video) {
+        buf.skipBits(7);
+        leftview = buf.getBool();
+    }
+    else {
+        buf.skipBits(7);
+        usable_as_2D = buf.getBool();
+        buf.getBits(horizontal_upsampling_factor, 4);
+        buf.getBits(vertical_upsampling_factor, 4);
     }
 }
 

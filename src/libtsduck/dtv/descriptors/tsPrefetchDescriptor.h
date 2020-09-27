@@ -62,11 +62,7 @@ namespace ts {
             //! @param [in] str Label.
             //! @param [in] pri Prefetch priority, 1 to 100.
             //!
-            Entry(const UString& str = UString(), uint8_t pri = 1) :
-                label(str),
-                prefetch_priority(pri)
-            {
-            }
+            Entry(const UString& str = UString(), uint8_t pri = 1);
         };
 
         //!
@@ -91,13 +87,13 @@ namespace ts {
         PrefetchDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
         DeclareLegacyDisplayDescriptor();
 
     protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };

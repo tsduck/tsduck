@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -70,28 +71,14 @@ void ts::SSUSubgroupAssociationDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SSUSubgroupAssociationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SSUSubgroupAssociationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt40(subgroup_tag);
-    serializeEnd(desc, bbp);
+    buf.putUInt40(subgroup_tag);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::SSUSubgroupAssociationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SSUSubgroupAssociationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 5;
-
-    if (_is_valid) {
-        subgroup_tag = GetUInt40(data);
-    }
+    subgroup_tag = buf.getUInt40();
 }
 
 
@@ -99,17 +86,11 @@ void ts::SSUSubgroupAssociationDescriptor::deserialize(DuckContext& duck, const 
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSUSubgroupAssociationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SSUSubgroupAssociationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 5) {
-        const uint64_t tag = GetUInt40(data);
-        disp << margin << UString::Format(u"Subgroup tag: 0x%010X (%d)", {tag, tag}) << std::endl;
-        data += 5; size -= 5;
+    if (buf.canReadBits(40)) {
+        disp << margin << UString::Format(u"Subgroup tag: 0x%010X (%<d)", {buf.getUInt40()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -121,11 +102,6 @@ void ts::SSUSubgroupAssociationDescriptor::buildXML(DuckContext& duck, xml::Elem
 {
     root->setIntAttribute(u"subgroup_tag", subgroup_tag, true);
 }
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
 
 bool ts::SSUSubgroupAssociationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
