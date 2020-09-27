@@ -817,15 +817,22 @@ ifndef LDCXX
     endif
 endif
 
-# Check if option -ffile-prefix-map is supported
-ifneq ($(USE_GCC),)
-    ifneq ($(GCC_8_OR_MORE),)
+# Check if option -ffile-prefix-map is supported.
+# GCC: v8 and higher, clang on Linux: v10 and higher, clang on macOS: v12 and higher.
+# Note on clang: the option is not documenter, the abover versions were checked by experimentation.
+ifdef USE_GCC
+    ifdef GCC_8_OR_MORE
         export CC_FILE_PREFIX_MAP = true
     endif
-endif
-ifneq ($(USE_LLVM),)
-    ifneq ($(LLVM_10_OR_MORE),)
-        export CC_FILE_PREFIX_MAP = true
+else ifdef USE_LLVM
+    ifdef MACOS
+        ifdef LLVM_12_OR_MORE
+            export CC_FILE_PREFIX_MAP = true
+        endif
+    else
+        ifdef LLVM_10_OR_MORE
+            export CC_FILE_PREFIX_MAP = true
+        endif
     endif
 endif
 
