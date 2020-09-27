@@ -115,43 +115,42 @@ bool ts::SpliceSegmentationDescriptor::deliveryNotRestricted() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SpliceSegmentationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt32(identifier);
-    bbp->appendUInt32(segmentation_event_id);
-    bbp->appendUInt8(segmentation_event_cancel ? 0xFF : 0x7F);
+    buf.putUInt32(identifier);
+    buf.putUInt32(segmentation_event_id);
+    buf.putBit(segmentation_event_cancel);
+    buf.putBits(0xFF, 7);
     if (!segmentation_event_cancel) {
-        bbp->appendUInt8((program_segmentation ? 0x80 : 0x00) |
-                         (segmentation_duration.set() ? 0x40 : 0x00) |
-                         (deliveryNotRestricted() ? 0x20 : 0x00) |
-                         (web_delivery_allowed ? 0x10 : 0x00) |
-                         (no_regional_blackout ? 0x08 : 0x00) |
-                         (archive_allowed ? 0x04 : 0x00) |
-                         (device_restrictions & 0x03));
+        buf.putBit(program_segmentation);
+        buf.putBit(segmentation_duration.set());
+        buf.putBit(deliveryNotRestricted());
+        buf.putBit(web_delivery_allowed);
+        buf.putBit(no_regional_blackout);
+        buf.putBit(archive_allowed);
+        buf.putBits(device_restrictions, 2);
         if (!program_segmentation) {
-            bbp->appendUInt8(uint8_t(pts_offsets.size()));
+            buf.putUInt8(uint8_t(pts_offsets.size()));
             for (auto it = pts_offsets.begin(); it != pts_offsets.end(); ++it) {
-                bbp->appendUInt8(it->first);
-                bbp->appendUInt8(((it->second >> 32) & 0x01) == 0x00 ? 0xFE : 0xFF);
-                bbp->appendUInt32(uint32_t(it->second));
+                buf.putUInt8(it->first);     // component_tag
+                buf.putBits(0xFF, 7);
+                buf.putBits(it->second, 33); // pts_offset
             }
         }
         if (segmentation_duration.set()) {
-            bbp->appendUInt40(segmentation_duration.value());
+            buf.putUInt40(segmentation_duration.value());
         }
-        bbp->appendUInt8(segmentation_upid_type);
-        bbp->appendUInt8(uint8_t(segmentation_upid.size()));
-        bbp->append(segmentation_upid);
-        bbp->appendUInt8(segmentation_type_id);
-        bbp->appendUInt8(segment_num);
-        bbp->appendUInt8(segments_expected);
-        if (segmentation_type_id == 0x34 || segmentation_type_id == 0x36) {
-            bbp->appendUInt8(sub_segment_num);
-            bbp->appendUInt8(sub_segments_expected);
+        buf.putUInt8(segmentation_upid_type);
+        buf.putUInt8(uint8_t(segmentation_upid.size()));
+        buf.putBytes(segmentation_upid);
+        buf.putUInt8(segmentation_type_id);
+        buf.putUInt8(segment_num);
+        buf.putUInt8(segments_expected);
+        if (segmentation_type_id == 0x34 || segmentation_type_id == 0x36 || segmentation_type_id == 0x38 || segmentation_type_id == 0x3A) {
+            buf.putUInt8(sub_segment_num);
+            buf.putUInt8(sub_segments_expected);
         }
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -159,91 +158,51 @@ void ts::SpliceSegmentationDescriptor::serialize(DuckContext& duck, Descriptor& 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SpliceSegmentationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    clear();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 9;
-
-    if (_is_valid) {
-        identifier = GetUInt32(data);
-        segmentation_event_id = GetUInt32(data + 4);
-        segmentation_event_cancel = (data[8] & 0x80) != 0;
-        data += 9; size -= 9;
-
-        if (segmentation_event_cancel) {
-            _is_valid = size == 0;
-            return; // end of descriptor
+    identifier = buf.getUInt32();
+    segmentation_event_id = buf.getUInt32();
+    segmentation_event_cancel = buf.getBool();
+    buf.skipBits(7);
+    if (!segmentation_event_cancel) {
+        program_segmentation = buf.getBool();
+        const bool has_duration = buf.getBool();
+        const bool not_restricted = buf.getBool();
+        if (not_restricted) {
+            buf.skipBits(5);
+            web_delivery_allowed = true;
+            no_regional_blackout = true;
+            archive_allowed = true;
+            device_restrictions = 3;
         }
-
-        _is_valid = size > 0;
-        bool has_duration = false;
-        if (_is_valid) {
-            program_segmentation = (data[0] & 0x80) != 0x00;
-            has_duration = (data[0] & 0x40) != 0x00;
-            const bool not_restricted = (data[0] & 0x20) != 0x00;
-            if (not_restricted) {
-                web_delivery_allowed = true;
-                no_regional_blackout = true;
-                archive_allowed = true;
-                device_restrictions = 3;
-            }
-            else {
-                web_delivery_allowed = (data[0] & 0x10) != 0x00;
-                no_regional_blackout = (data[0] & 0x08) != 0x00;
-                archive_allowed = (data[0] & 0x04) != 0x00;
-                device_restrictions = data[0] & 0x03;
-            }
-            data += 1; size -= 1;
+        else {
+            web_delivery_allowed = buf.getBool();
+            no_regional_blackout = buf.getBool();
+            archive_allowed = buf.getBool();
+            buf.getBits(device_restrictions, 2);
         }
-
-        if (_is_valid && !program_segmentation) {
-            _is_valid = size > 0 && size > size_t(1 + 6 * data[0]);
-            if (_is_valid) {
-                size_t count = data[0];
-                data += 1; size -= 1;
-                while (count > 0) {
-                    pts_offsets[data[0]] = GetUInt40(data + 1) & PTS_DTS_MASK;
-                    data += 6; size -= 6;
-                    count--;
-                }
+        if (!program_segmentation) {
+            const size_t count = buf.getUInt8();
+            for (size_t i = 0; i < count && buf.canRead(); ++i) {
+                const uint8_t component_tag = buf.getUInt8();
+                buf.skipBits(7);
+                buf.getBits(pts_offsets[component_tag], 33);
             }
         }
-
-        if (_is_valid && has_duration) {
-            _is_valid = size >= 5;
-            if (_is_valid) {
-                segmentation_duration = GetUInt40(data);
-                data += 5; size -= 5;
-            }
+        if (has_duration) {
+            segmentation_duration = buf.getUInt40();
         }
-
-        _is_valid = _is_valid && size >= 2 && size >= size_t(5 + data[1]);
-        if (_is_valid) {
-            segmentation_upid_type = data[0];
-            const size_t upid_size = data[1];
-            segmentation_upid.copy(data + 2, upid_size);
-            data += 2 + upid_size; size -= 2 + upid_size;
-
-            segmentation_type_id = data[0];
-            segment_num = data[1];
-            segments_expected = data[2];
-            data += 3; size -= 3;
-        }
-
-        if (_is_valid && (segmentation_type_id == 0x34 || segmentation_type_id == 0x36)) {
-            _is_valid = size >= 2;
-            if (_is_valid) {
-                sub_segment_num = data[0];
-                sub_segments_expected = data[1];
-                data += 2; size -= 2;
-            }
+        segmentation_upid_type = buf.getUInt8();
+        const size_t upid_size = buf.getUInt8();
+        buf.getBytes(segmentation_upid, upid_size);
+        segmentation_type_id = buf.getUInt8();
+        segment_num = buf.getUInt8();
+        segments_expected = buf.getUInt8();
+        if (segmentation_type_id == 0x34 || segmentation_type_id == 0x36 || segmentation_type_id == 0x38 || segmentation_type_id == 0x3A) {
+            sub_segment_num = buf.getUInt8();
+            sub_segments_expected = buf.getUInt8();
         }
     }
-
-    _is_valid = size == 0;
 }
 
 

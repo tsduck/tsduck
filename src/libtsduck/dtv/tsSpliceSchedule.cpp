@@ -124,10 +124,12 @@ void ts::SpliceSchedule::display(TablesDisplay& disp, const UString& margin) con
 
 int ts::SpliceSchedule::deserialize(const uint8_t* data, size_t size)
 {
-    const uint8_t* const start = data;
+    // Clear object content, make it a valid empty object.
     clear();
 
+    const uint8_t* const start = data;
     if (size < 1) {
+        invalidate();
         return -1; // too short
     }
 
@@ -145,6 +147,7 @@ int ts::SpliceSchedule::deserialize(const uint8_t* data, size_t size)
 
         if (!ev.canceled) {
             if (size < 1) {
+                invalidate();
                 return -1; // too short
             }
 
@@ -156,6 +159,7 @@ int ts::SpliceSchedule::deserialize(const uint8_t* data, size_t size)
             if (ev.program_splice) {
                 // The complete program switches at a given time.
                 if (size < 4) {
+                    invalidate();
                     return -1; // too short
                 }
                 ev.program_utc = GetUInt32(data);
@@ -164,12 +168,14 @@ int ts::SpliceSchedule::deserialize(const uint8_t* data, size_t size)
             else {
                 // Program components switch individually.
                 if (size < 1) {
+                    invalidate();
                     return -1; // too short
                 }
                 size_t count = data[0];
                 data++; size--;
                 while (count-- > 0) {
                     if (size < 5) {
+                        invalidate();
                         return -1; // too short
                     }
                     ev.components_utc.insert(std::make_pair(GetUInt8(data), GetUInt32(data + 1)));
@@ -178,6 +184,7 @@ int ts::SpliceSchedule::deserialize(const uint8_t* data, size_t size)
             }
             if (ev.use_duration) {
                 if (size < 5) {
+                    invalidate();
                     return -1; // too short
                 }
                 ev.auto_return = (data[0] & 0x80) != 0;
@@ -185,6 +192,7 @@ int ts::SpliceSchedule::deserialize(const uint8_t* data, size_t size)
                 data += 5; size -= 5;
             }
             if (size < 4) {
+                invalidate();
                 return -1; // too short
             }
             ev.program_id = GetUInt16(data);
@@ -198,7 +206,6 @@ int ts::SpliceSchedule::deserialize(const uint8_t* data, size_t size)
         spliceCount--;
     }
 
-    _is_valid = true;
     return int(data - start);
 }
 

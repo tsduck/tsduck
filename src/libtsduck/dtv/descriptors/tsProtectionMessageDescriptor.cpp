@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -80,18 +81,11 @@ ts::DID ts::ProtectionMessageDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ProtectionMessageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ProtectionMessageDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    if (component_tags.size() > 15) {
-        desc.invalidate();
-        return;
-    }
-
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(MY_EDID);
-    bbp->appendUInt8(0xF0 | uint8_t(component_tags.size()));
-    bbp->append(component_tags);
-    serializeEnd(desc, bbp);
+    buf.putBits(0xFF, 4);
+    buf.putBits(component_tags.size(), 4);
+    buf.putBytes(component_tags);
 }
 
 
@@ -99,21 +93,11 @@ void ts::ProtectionMessageDescriptor::serialize(DuckContext& duck, Descriptor& d
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ProtectionMessageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ProtectionMessageDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    component_tags.clear();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2 && data[0] == MY_EDID;
-
-    if (_is_valid) {
-        const size_t count = data[1] & 0x0F;
-        _is_valid = size == 2 + count;
-        if (_is_valid) {
-            component_tags.copy(data + 2, count);
-        }
-    }
+    buf.skipBits(4);
+    const size_t count = buf.getBits<size_t>(4);
+    buf.getBytes(component_tags, count);
 }
 
 

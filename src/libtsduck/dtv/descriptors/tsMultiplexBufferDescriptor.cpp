@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -71,30 +72,16 @@ ts::MultiplexBufferDescriptor::MultiplexBufferDescriptor(DuckContext& duck, cons
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::MultiplexBufferDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt24(MB_buffer_size);
-    bbp->appendUInt24(TB_leak_rate);
-    serializeEnd(desc, bbp);
+    buf.putUInt24(MB_buffer_size);
+    buf.putUInt24(TB_leak_rate);
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
-void ts::MultiplexBufferDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::MultiplexBufferDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size == 6;
-
-    if (_is_valid) {
-        MB_buffer_size = GetUInt24(data);
-        TB_leak_rate = GetUInt24(data + 3);
-    }
+    MB_buffer_size = buf.getUInt24();
+    TB_leak_rate = buf.getUInt24();
 }
 
 
@@ -102,24 +89,18 @@ void ts::MultiplexBufferDescriptor::deserialize(DuckContext& duck, const Descrip
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::MultiplexBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 6) {
-        const uint32_t mb = GetUInt24(data);
-        const uint32_t tb = GetUInt24(data + 3);
-        data += 6; size -= 6;
-        disp << margin << UString::Format(u"MB buffer size: %'d bytes", {mb}) << std::endl
-             << margin << UString::Format(u"TB leak rate: %'d (%'d bits/s)", {tb, 400 * tb}) << std::endl;
+    if (buf.canReadBytes(6)) {
+        disp << margin << UString::Format(u"MB buffer size: %'d bytes", {buf.getUInt24()}) << std::endl;
+        const uint32_t tb = buf.getUInt24();
+        disp << margin << UString::Format(u"TB leak rate: %'d (%'d bits/s)", {tb, 400 * tb}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
 //----------------------------------------------------------------------------
-// XML
+// XML serialization
 //----------------------------------------------------------------------------
 
 void ts::MultiplexBufferDescriptor::buildXML(DuckContext& duck, xml::Element* root) const

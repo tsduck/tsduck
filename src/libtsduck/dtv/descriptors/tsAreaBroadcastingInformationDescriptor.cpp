@@ -164,7 +164,7 @@ bool ts::AreaBroadcastingInformationDescriptor::analyzeXML(DuckContext& duck, co
     xml::ElementVector xstation;
     bool ok = element->getChildren(xstation, u"station");
 
-    for (auto it = xstation.begin(); _is_valid && it != xstation.end(); ++it) {
+    for (auto it = xstation.begin(); ok && it != xstation.end(); ++it) {
         Station st;
         ok = (*it)->getIntAttribute(st.station_id, u"station_id", true, 0, 0, 0x00FFFFFF) &&
              (*it)->getIntAttribute(st.location_code, u"location_code", true) &&

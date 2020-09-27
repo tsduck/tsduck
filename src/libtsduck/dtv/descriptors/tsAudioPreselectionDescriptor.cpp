@@ -279,7 +279,7 @@ bool ts::AudioPreselectionDescriptor::analyzeXML(DuckContext& duck, const xml::E
     xml::ElementVector children;
     bool ok = element->getChildren(children, u"preselection");
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+    for (size_t i = 0; ok && i < children.size(); ++i) {
         PreSelection sel;
         xml::ElementVector msi;
         xml::ElementVector comps;

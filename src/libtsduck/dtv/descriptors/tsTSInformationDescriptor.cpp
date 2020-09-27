@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -82,22 +83,28 @@ ts::TSInformationDescriptor::Entry::Entry() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TSInformationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TSInformationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    const ByteBlock name(duck.encoded(ts_name));
-    bbp->appendUInt8(remote_control_key_id);
-    bbp->appendUInt8(uint8_t(name.size() << 2) | uint8_t(transmission_types.size() & 0x03));
-    bbp->append(name);
+    buf.putUInt8(remote_control_key_id);
+
+    buf.pushState();    // save position of length_of_ts_name
+    buf.putBits(0, 6);  // placeholder for length_of_ts_name
+    buf.putBits(transmission_types.size(), 2);
+    const size_t start = buf.currentWriteByteOffset();
+    buf.putString(ts_name);
+    const size_t length_of_ts_name = buf.currentWriteByteOffset() - start;
+    buf.swapState();    // move back at length_of_ts_name
+    buf.putBits(length_of_ts_name, 6);
+    buf.popState();     // move at current end of descriptor
+
     for (auto it1 = transmission_types.begin(); it1 != transmission_types.end(); ++it1) {
-        bbp->appendUInt8(it1->transmission_type_info);
-        bbp->appendUInt8(uint8_t(it1->service_ids.size()));
+        buf.putUInt8(it1->transmission_type_info);
+        buf.putUInt8(uint8_t(it1->service_ids.size()));
         for (auto it2 = it1->service_ids.begin(); it2 != it1->service_ids.end(); ++it2) {
-            bbp->appendUInt16(*it2);
+            buf.putUInt16(*it2);
         }
     }
-    bbp->append(reserved_future_use);
-    serializeEnd(desc, bbp);
+    buf.putBytes(reserved_future_use);
 }
 
 
@@ -105,52 +112,22 @@ void ts::TSInformationDescriptor::serialize(DuckContext& duck, Descriptor& desc)
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TSInformationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TSInformationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 2;
-
-    ts_name.clear();
-    transmission_types.clear();
-    reserved_future_use.clear();
-
-    if (_is_valid) {
-        remote_control_key_id = data[0];
-        const size_t nlen = (data[1] >> 2) & 0x3F;
-        const size_t tcount = data[1] & 0x03;
-        data += 2; size -= 2;
-
-        if (size < nlen) {
-            _is_valid = false;
-            return;
+    remote_control_key_id = buf.getUInt8();
+    const size_t nlen = buf.getBits<size_t>(6);
+    const size_t tcount = buf.getBits<size_t>(2);
+    buf.getString(ts_name, nlen);
+    for (size_t i1 = 0; i1 < tcount && !buf.error(); ++i1) {
+        Entry e;
+        e.transmission_type_info = buf.getUInt8();
+        const size_t scount = buf.getUInt8();
+        for (size_t i2 = 0; i2 < scount && !buf.error(); ++i2) {
+            e.service_ids.push_back(buf.getUInt16());
         }
-
-        duck.decode(ts_name, data, nlen);
-        data += nlen; size -= nlen;
-
-        for (size_t i1 = 0; i1 < tcount; ++i1) {
-            if (size < 2) {
-                _is_valid = false;
-                return;
-            }
-            Entry e;
-            e.transmission_type_info = data[0];
-            const size_t scount = data[1];
-            data += 2; size -= 2;
-            if (size < 2 * scount) {
-                _is_valid = false;
-                return;
-            }
-            for (size_t i2 = 0; i2 < scount; ++i2) {
-                e.service_ids.push_back(GetUInt16(data));
-                data += 2; size -= 2;
-            }
-            transmission_types.push_back(e);
-        }
-
-        reserved_future_use.copy(data, size);
+        transmission_types.push_back(e);
     }
+    buf.getBytes(reserved_future_use);
 }
 
 

@@ -112,7 +112,7 @@ ts::SSULinkageDescriptor::Entry::Entry(uint32_t oui_) :
 
 void ts::SSULinkageDescriptor::toLinkageDescriptor(DuckContext& duck, ts::LinkageDescriptor& desc) const
 {
-    if (_is_valid) {
+    if (isValid()) {
         // Convert using serialization / deserialization.
         Descriptor bin;
         serialize(duck, bin);

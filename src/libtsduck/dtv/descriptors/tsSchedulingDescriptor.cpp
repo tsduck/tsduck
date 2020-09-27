@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsMJD.h"
@@ -98,21 +99,19 @@ ts::SchedulingDescriptor::SchedulingDescriptor(DuckContext& duck, const Descript
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SchedulingDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::SchedulingDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    EncodeMJD(start_date_time, bbp->enlarge(MJD_SIZE), MJD_SIZE);
-    EncodeMJD(end_date_time, bbp->enlarge(MJD_SIZE), MJD_SIZE);
-    bbp->appendUInt8((final_availability ? 0x80 : 0x00) |
-                     (periodicity ? 0x40 : 0x00) |
-                     uint8_t((period_unit & 0x03) << 4) |
-                     uint8_t((duration_unit & 0x03) << 2) |
-                     (estimated_cycle_time_unit & 0x03));
-    bbp->appendUInt8(period);
-    bbp->appendUInt8(duration);
-    bbp->appendUInt8(estimated_cycle_time);
-    bbp->append(private_data);
-    serializeEnd(desc, bbp);
+    buf.putMJD(start_date_time, MJD_SIZE);
+    buf.putMJD(end_date_time, MJD_SIZE);
+    buf.putBit(final_availability);
+    buf.putBit(periodicity);
+    buf.putBits(period_unit, 2);
+    buf.putBits(duration_unit, 2);
+    buf.putBits(estimated_cycle_time_unit, 2);
+    buf.putUInt8(period);
+    buf.putUInt8(duration);
+    buf.putUInt8(estimated_cycle_time);
+    buf.putBytes(private_data);
 }
 
 
@@ -120,27 +119,19 @@ void ts::SchedulingDescriptor::serialize(DuckContext& duck, Descriptor& desc) co
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SchedulingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::SchedulingDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 14;
-    private_data.clear();
-
-    if (_is_valid) {
-        DecodeMJD(data, 5, start_date_time);
-        DecodeMJD(data + 5, 5, end_date_time);
-        final_availability = (data[10] & 0x80) != 0;
-        periodicity = (data[10] & 0x40) != 0;
-        period_unit = (data[10] >> 4) & 0x03;
-        duration_unit = (data[10] >> 2) & 0x03;
-        estimated_cycle_time_unit = data[10] & 0x03;
-        period = data[11];
-        duration = data[12];
-        estimated_cycle_time = data[13];
-        private_data.copy(data + 14, size - 14);
-    }
+    start_date_time = buf.getMJD(MJD_SIZE);
+    end_date_time = buf.getMJD(MJD_SIZE);
+    final_availability = buf.getBool();
+    periodicity = buf.getBool();
+    buf.getBits(period_unit, 2);
+    buf.getBits(duration_unit, 2);
+    buf.getBits(estimated_cycle_time_unit, 2);
+    period = buf.getUInt8();
+    duration = buf.getUInt8();
+    estimated_cycle_time = buf.getUInt8();
+    buf.getBytes(private_data);
 }
 
 

@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -81,18 +82,16 @@ ts::TimeSliceFECIdentifierDescriptor::TimeSliceFECIdentifierDescriptor(DuckConte
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TimeSliceFECIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TimeSliceFECIdentifierDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8((time_slicing ? 0x80 : 0x00) |
-                     uint8_t((mpe_fec & 0x03) << 5) |
-                     0x18 |
-                     (frame_size & 0x07));
-    bbp->appendUInt8(max_burst_duration);
-    bbp->appendUInt8(uint8_t((max_average_rate & 0x0F) << 4) |
-                     (time_slice_fec_id & 0x0F));
-    bbp->append(id_selector_bytes);
-    serializeEnd(desc, bbp);
+    buf.putBit(time_slicing);
+    buf.putBits(mpe_fec, 2);
+    buf.putBits(0xFF, 2);
+    buf.putBits(frame_size, 3);
+    buf.putUInt8(max_burst_duration);
+    buf.putBits(max_average_rate, 4);
+    buf.putBits(time_slice_fec_id, 4);
+    buf.putBytes(id_selector_bytes);
 }
 
 
@@ -100,24 +99,16 @@ void ts::TimeSliceFECIdentifierDescriptor::serialize(DuckContext& duck, Descript
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeSliceFECIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TimeSliceFECIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    id_selector_bytes.clear();
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 3;
-
-    if (_is_valid) {
-        time_slicing = (data[0] & 0x80) != 0;
-        mpe_fec = (data[0] >> 5) & 0x03;
-        frame_size = data[0] & 0x07;
-        max_burst_duration = data[1];
-        max_average_rate = (data[2] >> 4) & 0x0F;
-        time_slice_fec_id = data[2] & 0x0F;
-        id_selector_bytes.copy(data + 3, size - 3);
-    }
+    time_slicing = buf.getBool();
+    buf.getBits(mpe_fec, 2);
+    buf.skipBits(2);
+    buf.getBits(frame_size, 3);
+    max_burst_duration = buf.getUInt8();
+    buf.getBits(max_average_rate, 4);
+    buf.getBits(time_slice_fec_id, 4);
+    buf.getBytes(id_selector_bytes);
 }
 
 

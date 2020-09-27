@@ -158,7 +158,7 @@ bool ts::AbstractPreferredNameListDescriptor::analyzeXML(DuckContext& duck, cons
         if (ok) {
             // Force the creation of a language entry.
             NameByIdMap& names(entries[lang]);
-            for (size_t i2 = 0; _is_valid && i2 < children2.size(); ++i2) {
+            for (size_t i2 = 0; ok && i2 < children2.size(); ++i2) {
                 uint8_t id = 0;
                 ok = children2[i2]->getIntAttribute(id, u"name_id", true) && children2[i2]->getAttribute(names[id], u"name");
             }

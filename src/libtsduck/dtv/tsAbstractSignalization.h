@@ -127,15 +127,6 @@ namespace ts {
         static const UChar* const XML_GENERIC_LONG_TABLE;
 
     protected:
-        // Implementation node: Try to make _is_valid private some day.
-        // It should not be used outside legacy serialize() / deserialize() implementations.
-        // Also remove SerializeLanguageCode et al. when all descriptors use PSIBuffer.
-
-        //!
-        //! It is the responsibility of the subclasses to set the valid flag
-        //!
-        bool _is_valid;
-
         //!
         //! Protected constructor for subclasses.
         //! @param [in] xml_name Table or descriptor name, as used in XML structures.
@@ -195,6 +186,7 @@ namespace ts {
         virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) = 0;
 
     private:
+        bool               _is_valid;         // This object is valid.
         const UChar* const _xml_name;         // XML table or descriptor name.
         const UChar* const _xml_legacy_name;  // Optional XML table or descriptor legacy name. Ignored if null pointer.
         const Standards    _standards;        // Defining standards (usually only one).

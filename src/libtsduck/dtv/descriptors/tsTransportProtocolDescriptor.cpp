@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
@@ -126,57 +127,56 @@ ts::TransportProtocolDescriptor::HTTPEntry::HTTPEntry() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TransportProtocolDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::TransportProtocolDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(protocol_id);
-    bbp->appendUInt8(transport_protocol_label);
+    buf.putUInt16(protocol_id);
+    buf.putUInt8(transport_protocol_label);
     switch (protocol_id) {
         case MHP_PROTO_CAROUSEL: {
-            if (carousel.original_network_id.set() && carousel.transport_stream_id.set() && carousel.service_id.set()) {
-                bbp->appendUInt8(0xFF);
-                bbp->appendUInt16(carousel.original_network_id.value());
-                bbp->appendUInt16(carousel.transport_stream_id.value());
-                bbp->appendUInt16(carousel.service_id.value());
+            // See ETSI TS 101 812, section 10.8.1.1
+            const bool remote = carousel.original_network_id.set() && carousel.transport_stream_id.set() && carousel.service_id.set();
+            buf.putBit(remote);
+            buf.putBits(0xFF, 7);
+            if (remote) {
+                buf.putUInt16(carousel.original_network_id.value());
+                buf.putUInt16(carousel.transport_stream_id.value());
+                buf.putUInt16(carousel.service_id.value());
             }
-            else {
-                bbp->appendUInt8(0x7F);
-            }
-            bbp->appendUInt8(carousel.component_tag);
+            buf.putUInt8(carousel.component_tag);
             break;
         }
         case MHP_PROTO_MPE: {
-            if (mpe.original_network_id.set() && mpe.transport_stream_id.set() && mpe.service_id.set()) {
-                bbp->appendUInt8(0xFF);
-                bbp->appendUInt16(mpe.original_network_id.value());
-                bbp->appendUInt16(mpe.transport_stream_id.value());
-                bbp->appendUInt16(mpe.service_id.value());
+            // See ETSI TS 101 812, section 10.8.1.2
+            const bool remote = mpe.original_network_id.set() && mpe.transport_stream_id.set() && mpe.service_id.set();
+            buf.putBit(remote);
+            buf.putBits(0xFF, 7);
+            if (remote) {
+                buf.putUInt16(mpe.original_network_id.value());
+                buf.putUInt16(mpe.transport_stream_id.value());
+                buf.putUInt16(mpe.service_id.value());
             }
-            else {
-                bbp->appendUInt8(0x7F);
-            }
-            bbp->appendUInt8(mpe.alignment_indicator ? 0xFF : 0x7F);
+            buf.putBit(mpe.alignment_indicator);
+            buf.putBits(0xFF, 7);
             for (auto it = mpe.urls.begin(); it != mpe.urls.end(); ++it) {
-                bbp->append(duck.encodedWithByteLength(*it));
+                buf.putStringWithByteLength(*it);
             }
             break;
         }
         case MHP_PROTO_HTTP: {
             for (auto it1 = http.begin(); it1 != http.end(); ++it1) {
-                bbp->append(duck.encodedWithByteLength(it1->URL_base));
-                bbp->appendUInt8(uint8_t(it1->URL_extensions.size()));
+                buf.putStringWithByteLength(it1->URL_base);
+                buf.putUInt8(uint8_t(it1->URL_extensions.size()));
                 for (auto it2 = it1->URL_extensions.begin(); it2 != it1->URL_extensions.end(); ++it2) {
-                    bbp->append(duck.encodedWithByteLength(*it2));
+                    buf.putStringWithByteLength(*it2);
                 }
             }
             break;
         }
         default: {
-            bbp->append(selector);
+            buf.putBytes(selector);
             break;
         }
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -187,87 +187,46 @@ void ts::TransportProtocolDescriptor::serialize(DuckContext& duck, Descriptor& d
 
 bool ts::TransportProtocolDescriptor::transferSelectorBytes(DuckContext& duck)
 {
-    // Clear other protocols.
-    carousel.clear();
-    mpe.clear();
-    http.clear();
-
-    // Build one selected protocol by analyzing the selector bytes.
-    const uint8_t* data = selector.data();
-    size_t size = selector.size();
+    PSIBuffer buf(duck, selector.data(), selector.size(), true);
 
     switch (protocol_id) {
         case MHP_PROTO_CAROUSEL: {
-            if (size == 0) {
-                return false;
-            }
-            const bool remote = (data[0] & 0x80) != 0;
-            if ((remote && size != 8) || (!remote && size != 2)) {
-                return false;
-            }
+            carousel.clear();
+            const bool remote = buf.getBool();
+            buf.skipBits(7);
             if (remote) {
-                carousel.original_network_id = GetUInt16(data + 1);
-                carousel.transport_stream_id = GetUInt16(data + 3);
-                carousel.service_id = GetUInt16(data + 5);
-                carousel.component_tag = data[7];
+                carousel.original_network_id = buf.getUInt16();
+                carousel.transport_stream_id = buf.getUInt16();
+                carousel.service_id = buf.getUInt16();
             }
-            else {
-                carousel.component_tag = data[1];
-            }
+            carousel.component_tag = buf.getUInt8();
             break;
         }
         case MHP_PROTO_MPE: {
-            if (size == 0) {
-                return false;
-            }
-            const bool remote = (data[0] & 0x80) != 0;
-            if ((remote && size < 8) || (!remote && size < 2)) {
-                return false;
-            }
-            data++; size--;
+            mpe.clear();
+            const bool remote = buf.getBool();
+            buf.skipBits(7);
             if (remote) {
-                mpe.original_network_id = GetUInt16(data);
-                mpe.transport_stream_id = GetUInt16(data + 2);
-                mpe.service_id = GetUInt16(data + 4);
-                data += 6; size -= 6;
+                mpe.original_network_id = buf.getUInt16();
+                mpe.transport_stream_id = buf.getUInt16();
+                mpe.service_id = buf.getUInt16();
             }
-            mpe.alignment_indicator = (data[0] & 0x80) != 0;
-            data++; size--;
-            while (size > 0) {
-                const size_t len = data[0];
-                if (size < 1 + len) {
-                    return false;
-                }
-                mpe.urls.push_back(duck.decoded(data + 1, len));
-                data += 1 + len; size -= 1 + len;
+            mpe.alignment_indicator = buf.getBool();
+            buf.skipBits(7);
+            while (buf.canRead()) {
+                mpe.urls.push_back(buf.getStringWithByteLength());
             }
             break;
         }
         case MHP_PROTO_HTTP: {
-            while (size > 0) {
-                // Deserialize one URL entry.
+            http.clear();
+            while (buf.canRead()) {
                 HTTPEntry e;
-                // Get URL base.
-                const size_t len = data[0];
-                if (size < 2 + len) {
-                    return false;
+                buf.getStringWithByteLength(e.URL_base);
+                const size_t count = buf.getUInt8();
+                for (size_t i = 0; i < count && !buf.error(); ++i) {
+                    e.URL_extensions.push_back(buf.getStringWithByteLength());
                 }
-                duck.decode(e.URL_base, data + 1, len);
-                size_t count = data[1 + len];
-                data += 2 + len; size -= 2 + len;
-                // Loop on all URL extensions.
-                while (count-- > 0) {
-                    if (size == 0) {
-                        return false;
-                    }
-                    const size_t extlen = data[0];
-                    if (size < 1 + extlen) {
-                        return false;
-                    }
-                    e.URL_extensions.push_back(duck.decoded(data + 1, extlen));
-                    data += 1 + extlen; size -= 1 + extlen;
-                }
-                // URL entry completed.
                 http.push_back(e);
             }
             break;
@@ -278,9 +237,14 @@ bool ts::TransportProtocolDescriptor::transferSelectorBytes(DuckContext& duck)
         }
     }
 
-    // When a protocol was built, clear the selector byte array.
-    selector.clear();
-    return true;
+    if (buf.error()) {
+        return false;
+    }
+    else {
+        // When a protocol was built, clear the selector byte array.
+        selector.clear();
+        return true;
+    }
 }
 
 
@@ -288,20 +252,14 @@ bool ts::TransportProtocolDescriptor::transferSelectorBytes(DuckContext& duck)
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TransportProtocolDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::TransportProtocolDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    clear();
+    protocol_id = buf.getUInt16();
+    transport_protocol_label = buf.getUInt8();
+    buf.getBytes(selector);
 
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 3;
-
-    if (_is_valid) {
-        protocol_id = GetUInt16(data);
-        transport_protocol_label = data[2];
-        selector.copy(data + 3, size - 3);
-        _is_valid = transferSelectorBytes(duck);
+    if (!transferSelectorBytes(buf.duck())) {
+        invalidate();
     }
 }
 

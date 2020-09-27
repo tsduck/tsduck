@@ -777,6 +777,18 @@ ifeq ($(GCC_VERSION_DONE),)
         GCC_6_OR_MORE :=
         unexport GCC_6_OR_MORE
     endif
+    ifeq ($(shell test 0$(GCC_MAJOR) -ge 8; echo $$?),0)
+        export GCC_8_OR_MORE := true
+    else
+        GCC_8_OR_MORE :=
+        unexport GCC_8_OR_MORE
+    endif 
+    ifeq ($(shell test 0$(LLVM_MAJOR) -ge 10; echo $$?),0)
+        export LLVM_10_OR_MORE := true
+    else
+        LLVM_10_OR_MORE :=
+        unexport LLVM_10_OR_MORE
+    endif
     ifeq ($(shell test 0$(LLVM_MAJOR) -ge 12; echo $$?),0)
         export LLVM_12_OR_MORE := true
     else
@@ -802,6 +814,18 @@ ifndef LDCXX
         ifdef LLVM
             CC = clang++
         endif
+    endif
+endif
+
+# Check if option -ffile-prefix-map is supported
+ifneq ($(USE_GCC),)
+    ifneq ($(GCC_8_OR_MORE),)
+        export CC_FILE_PREFIX_MAP = true
+    endif
+endif
+ifneq ($(USE_LLVM),)
+    ifneq ($(LLVM_10_OR_MORE),)
+        export CC_FILE_PREFIX_MAP = true
     endif
 endif
 

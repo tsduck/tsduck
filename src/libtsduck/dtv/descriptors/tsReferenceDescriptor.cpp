@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -81,17 +82,15 @@ ts::ReferenceDescriptor::Reference::Reference() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ReferenceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ReferenceDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(information_provider_id);
-    bbp->appendUInt16(event_relation_id);
+    buf.putUInt16(information_provider_id);
+    buf.putUInt16(event_relation_id);
     for (auto it = references.begin(); it != references.end(); ++it) {
-        bbp->appendUInt16(it->reference_node_id);
-        bbp->appendUInt8(it->reference_number);
-        bbp->appendUInt8(it->last_reference_number);
+        buf.putUInt16(it->reference_node_id);
+        buf.putUInt8(it->reference_number);
+        buf.putUInt8(it->last_reference_number);
     }
-    serializeEnd(desc, bbp);
 }
 
 
@@ -99,27 +98,16 @@ void ts::ReferenceDescriptor::serialize(DuckContext& duck, Descriptor& desc) con
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ReferenceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ReferenceDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    _is_valid = desc.isValid() && desc.tag() == tag() && size >= 4 && size % 4 == 0;
-
-    references.clear();
-
-    if (_is_valid) {
-        information_provider_id = GetUInt16(data);
-        event_relation_id = GetUInt16(data + 2);
-        data += 4; size -= 4;
-
-        while (_is_valid && size >= 4) {
-            Reference ref;
-            ref.reference_node_id = GetUInt16(data);
-            ref.reference_number = data[2];
-            ref.last_reference_number = data[3];
-            data += 4; size -= 4;
-            references.push_back(ref);
-        }
+    information_provider_id = buf.getUInt16();
+    event_relation_id = buf.getUInt16();
+    while (buf.canRead()) {
+        Reference ref;
+        ref.reference_node_id = buf.getUInt16();
+        ref.reference_number = buf.getUInt8();
+        ref.last_reference_number = buf.getUInt8();
+        references.push_back(ref);
     }
 }
 

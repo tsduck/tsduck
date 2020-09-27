@@ -31,6 +31,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
+#include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -71,12 +72,12 @@ void ts::NPTEndpointDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::NPTEndpointDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::NPTEndpointDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt48(TS_UCONST64(0x0000FFFE00000000) | start_NPT);
-    bbp->appendUInt64(TS_UCONST64(0xFFFFFFFE00000000) | stop_NPT);
-    serializeEnd(desc, bbp);
+    buf.putBits(0xFFFF, 15);
+    buf.putBits(start_NPT, 33);
+    buf.putBits(0xFFFFFFFF, 31);
+    buf.putBits(stop_NPT, 33);
 }
 
 
@@ -84,15 +85,12 @@ void ts::NPTEndpointDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::NPTEndpointDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::NPTEndpointDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    _is_valid = desc.isValid() && desc.tag() == tag() && desc.payloadSize() == 14;
-
-    if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        start_NPT = GetUInt48(data) & TS_UCONST64(0x00000001FFFFFFFF);
-        stop_NPT = GetUInt64(data + 6) & TS_UCONST64(0x00000001FFFFFFFF);
-    }
+    buf.skipBits(15);
+    buf.getBits(start_NPT, 33);
+    buf.skipBits(31);
+    buf.getBits(stop_NPT, 33);
 }
 
 
@@ -100,20 +98,14 @@ void ts::NPTEndpointDescriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NPTEndpointDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::NPTEndpointDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 14) {
-        const uint64_t start = GetUInt48(data) & TS_UCONST64(0x00000001FFFFFFFF);
-        const uint64_t stop = GetUInt64(data + 6) & TS_UCONST64(0x00000001FFFFFFFF);
-        data += 14; size -= 14;
-
-        disp << margin << UString::Format(u"Start NPT: 0x%09X (%d)", {start, start}) << std::endl
-             << margin << UString::Format(u"Stop NPT:  0x%09X (%d)", {stop, stop}) << std::endl;
+    if (buf.canReadBytes(14)) {
+        buf.skipBits(15);
+        disp << margin << UString::Format(u"Start NPT: 0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
+        buf.skipBits(31);
+        disp << margin << UString::Format(u"Stop NPT:  0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

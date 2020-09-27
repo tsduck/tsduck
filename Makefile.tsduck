@@ -160,3 +160,9 @@ CFLAGS_INCLUDES += $(addprefix -I,$(shell find $(LIBTSDUCKDIR) -type d ! -name p
 ifneq ($(TS_NO_BUILD_VERSION),)
     CPPFLAGS += -DTS_NO_BUILD_VERSION
 endif
+
+# Make sure that full paths of source files never appear in binaries.
+
+ifneq ($(CC_FILE_PREFIX_MAP),)
+    CXXFLAGS += -ffile-prefix-map=$(SRCROOT)/=
+endif
