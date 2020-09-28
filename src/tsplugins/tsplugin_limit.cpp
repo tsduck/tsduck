@@ -312,8 +312,8 @@ void ts::LimitPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
                 for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
                     const PID pid = it->first;
                     const PIDContextPtr pc(getContext(pid));
-                    pc->audio = it->second.isAudio();
-                    pc->video = it->second.isVideo();
+                    pc->audio = it->second.isAudio(duck);
+                    pc->video = it->second.isVideo(duck);
                     tsp->debug(u"Found component PID 0x%X (%d)", {pid, pid});
                 }
             }

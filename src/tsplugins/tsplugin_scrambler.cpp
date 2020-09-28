@@ -529,7 +529,7 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
         const PID pid = it->first;
         const PMT::Stream& stream(it->second);
         _input_pids.set(pid);
-        if ((_scramble_audio && stream.isAudio()) || (_scramble_video && stream.isVideo()) || (_scramble_subtitles && stream.isSubtitles())) {
+        if ((_scramble_audio && stream.isAudio(duck)) || (_scramble_video && stream.isVideo(duck)) || (_scramble_subtitles && stream.isSubtitles(duck))) {
             _scrambled_pids.set(pid);
             tsp->verbose(u"starting scrambling PID 0x%X", {pid});
         }

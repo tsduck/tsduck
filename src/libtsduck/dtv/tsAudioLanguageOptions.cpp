@@ -132,7 +132,7 @@ bool ts::AudioLanguageOptions::getFromArgs(Args& args, const UChar* option_name,
 // Assign from a list of command-line options.
 //----------------------------------------------------------------------------
 
-bool ts::AudioLanguageOptionsVector::getFromArgs (Args& args, const UChar* option_name)
+bool ts::AudioLanguageOptionsVector::getFromArgs(Args& args, const UChar* option_name)
 {
     clear();
     AudioLanguageOptions opt;
@@ -171,7 +171,7 @@ bool ts::AudioLanguageOptionsVector::apply(DuckContext& duck, PMT& pmt, int seve
             size_t audio_count = 0;
             smi = pmt.streams.begin();
             while (smi != pmt.streams.end()) {
-                if (smi->second.isAudio() && ++audio_count >= it->getAudioStreamNumber()) {
+                if (smi->second.isAudio(duck) && ++audio_count >= it->getAudioStreamNumber()) {
                     break;
                 }
                 ++smi;

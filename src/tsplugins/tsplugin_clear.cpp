@@ -299,10 +299,10 @@ void ts::ClearPlugin::processPMT(PMT& pmt)
 {
     // Collect all audio/video PIDS
     _clear_pids.reset();
-    for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
+    for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
         const PID pid = it->first;
         const PMT::Stream& stream (it->second);
-        if ((stream.isAudio() && !_video_only) || (stream.isVideo() && !_audio_only)) {
+        if ((stream.isAudio(duck) && !_video_only) || (stream.isVideo(duck) && !_audio_only)) {
             _clear_pids.set (pid);
         }
     }

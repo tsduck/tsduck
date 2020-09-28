@@ -403,7 +403,7 @@ void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& 
             const PMT pmt(duck, table);
             if (pmt.isValid()) {
                 packets = &_pmtPackets;
-                _videoPID = pmt.firstVideoPID();
+                _videoPID = pmt.firstVideoPID(duck);
                 if (_videoPID == PID_NULL) {
                     tsp->warning(u"no video PID found in service 0x%X (%d)", {pmt.service_id, pmt.service_id});
                 }

@@ -176,10 +176,10 @@ void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 
 //----------------------------------------------------------------------------
-// Check if an elementary stream carries audio, video or subtitles.
+// Check if an elementary stream carries video.
 //----------------------------------------------------------------------------
 
-bool ts::PMT::Stream::isVideo() const
+bool ts::PMT::Stream::isVideo(const DuckContext& duck) const
 {
     return IsVideoST(stream_type) ||
         descs.search(DID_AVC_VIDEO) < descs.count() ||
@@ -188,43 +188,81 @@ bool ts::PMT::Stream::isVideo() const
         descs.search(DID_J2K_VIDEO) < descs.count();
 }
 
-bool ts::PMT::Stream::isAudio() const
-{
-    // AC-3 or HE-AAC components may have "PES private data" stream type
-    // but are identified by specific descriptors.
 
-    return IsAudioST(stream_type) ||
-        descs.search(DID_DTS) < descs.count() ||
-        descs.search(DID_AC3) < descs.count() ||
-        descs.search(DID_ENHANCED_AC3) < descs.count() ||
-        descs.search(DID_AAC) < descs.count() ||
-        descs.search(EDID::ExtensionDVB(EDID_AC4)) < descs.count() ||
-        descs.search(EDID::ExtensionDVB(EDID_DTS_NEURAL)) < descs.count() ||
-        descs.search(EDID::ExtensionDVB(EDID_DTS_HD_AUDIO)) < descs.count();
-}
+//----------------------------------------------------------------------------
+// Check if an elementary stream carries audio.
+//----------------------------------------------------------------------------
 
-bool ts::PMT::Stream::isSubtitles() const
+bool ts::PMT::Stream::isAudio(const DuckContext& duck) const
 {
-    // A subtitling descriptor always indicates subtitles.
-    if (descs.search(DID_SUBTITLING) < descs.count()) {
+    // Check obvious audio stream types.
+    if (IsAudioST(stream_type)) {
         return true;
     }
-    // A teletext descriptor may indicate subtitles
-    for (size_t index = 0; (index = descs.search(DID_TELETEXT, index)) < descs.count(); ++index) {
-        // Get descriptor payload
-        const uint8_t* data = descs[index]->payload();
-        size_t size = descs[index]->payloadSize();
-        // Loop on all language entries, check if teletext type is a subtitle
-        while (size >= 5) {
-            uint8_t ttype = data[3] >> 3;
-            if (ttype == 0x02 || ttype == 0x05) {
-                return true; // teletext subtitles types
+
+    const bool isdb = (duck.standards() & Standards::ISDB) != Standards::NONE;
+
+    // Other audio components may have "PES private data" stream type
+    // but are identified by specific descriptors.
+    for (size_t index = 0; index < descs.count(); ++index) {
+        const DescriptorPtr& dsc(descs[index]);
+        if (!dsc.isNull() && dsc->isValid()) {
+            const DID did = dsc->tag();
+            const EDID edid(descs.edid(index));
+            if (did == DID_DTS ||
+                did == DID_AC3 ||
+                did == DID_ENHANCED_AC3 ||
+                did == DID_AAC ||
+                did == DID_MPEG2_AAC_AUDIO ||
+                did == DID_MPEG4_AUDIO ||
+                did == DID_MPEG4_AUDIO_EXT ||
+                edid == EDID::ExtensionDVB(EDID_AC4) ||
+                edid == EDID::ExtensionDVB(EDID_DTS_NEURAL) ||
+                edid == EDID::ExtensionDVB(EDID_DTS_HD_AUDIO) ||
+                (isdb && did == DID_ISDB_AUDIO_COMP))
+            {
+                return true;
             }
-            data += 5;
-            size -= 5;
         }
     }
-    // After all, no subtitle here...
+
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
+// Check if an elementary stream carries subtitles.
+//----------------------------------------------------------------------------
+
+bool ts::PMT::Stream::isSubtitles(const DuckContext& duck) const
+{
+    const bool atsc = (duck.standards() & Standards::ATSC) != Standards::NONE;
+
+    for (size_t index = 0; index < descs.count(); ++index) {
+        const DescriptorPtr& dsc(descs[index]);
+        if (!dsc.isNull() && dsc->isValid()) {
+            const DID did = dsc->tag();
+            if (did == DID_SUBTITLING || (atsc && did == DID_ATSC_CAPTION)) {
+                // Always indicate a subtitle stream.
+                return true;
+            }
+            if (did == DID_TELETEXT || did == DID_VBI_TELETEXT) {
+                // A teletext descriptor may indicate subtitles, need to check the teletext type.
+                const uint8_t* data = dsc->payload();
+                size_t size = dsc->payloadSize();
+                // Loop on all language entries, check if teletext type is a subtitle
+                while (size >= 5) {
+                    const uint8_t ttype = data[3] >> 3;
+                    if (ttype == 0x02 || ttype == 0x05) {
+                        return true; // teletext subtitles types
+                    }
+                    data += 5;
+                    size -= 5;
+                }
+            }
+        }
+    }
+
     return false;
 }
 
@@ -273,10 +311,10 @@ ts::PID ts::PMT::componentTagToPID(uint8_t tag) const
 // Search the first video PID in the service.
 //----------------------------------------------------------------------------
 
-ts::PID ts::PMT::firstVideoPID() const
+ts::PID ts::PMT::firstVideoPID(const DuckContext& duck) const
 {
     for (auto it = streams.begin(); it != streams.end(); ++it) {
-        if (it->second.isVideo()) {
+        if (it->second.isVideo(duck)) {
             return it->first;
         }
     }
