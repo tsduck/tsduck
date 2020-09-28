@@ -33,6 +33,7 @@
 #include "tsPrivateDataSpecifierDescriptor.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -181,13 +182,35 @@ const ts::DescriptorPtr& ts::DescriptorList::operator[](size_t index) const
 
 
 //----------------------------------------------------------------------------
+// Get the extended descriptor id of a descriptor in the list.
+//----------------------------------------------------------------------------
+
+ts::EDID ts::DescriptorList::edid(size_t index) const
+{
+    // Eliminate invalid descriptor, index out of range.
+    if (index >= _list.size() || _list[index].desc.isNull() || !_list[index].desc->isValid()) {
+        return EDID(); // invalid value
+    }
+
+    const DID did = _list[index].desc->tag();
+
+    if (_table != nullptr && names::HasTableSpecificName(did, _table->tableId())) {
+        // This descriptor is table-specific.
+        return EDID::TableSpecific(did, _table->tableId());
+    }
+    else {
+        return _list[index].desc->edid(_list[index].pds);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Return the "private data specifier" associated to a descriptor in the list.
 //----------------------------------------------------------------------------
 
 ts::PDS ts::DescriptorList::privateDataSpecifier(size_t index) const
 {
-    assert(index < _list.size());
-    return _list[index].pds;
+    return index < _list.size() ? _list[index].pds : PDS_NULL;
 }
 
 
@@ -449,38 +472,123 @@ size_t ts::DescriptorList::search(const ts::EDID& edid, size_t start_index) cons
 
 
 //----------------------------------------------------------------------------
-// Search a language descriptor for the specified language, starting at
-// the specified index. Return the index of the descriptor in the list
-// or count() if no such descriptor is found.
+// Search a descriptor for the specified language.
 //----------------------------------------------------------------------------
 
-size_t ts::DescriptorList::searchLanguage(const UString& language, size_t start_index) const
+size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString& language, size_t start_index) const
 {
+    // Check that an actual language code was provided.
+    if (language.size() != 3) {
+        return count(); // not found
+    }
+
+    // Standards of the context and the parent table.
+    const Standards standards = duck.standards() | (_table == nullptr ? Standards::NONE : _table->definingStandards());
+    const bool atsc = (standards & Standards::ATSC) != Standards::NONE;
+    const bool isdb = (standards & Standards::ISDB) != Standards::NONE;
+
+    // Seach all known types of descriptors containing languages.
     for (size_t index = start_index; index < _list.size(); index++) {
-        if (_list[index].desc->tag() == DID_LANGUAGE) {
-            // Got a language descriptor
-            const uint8_t* desc = _list[index].desc->payload();
-            size_t size = _list[index].desc->payloadSize();
-            // The language code uses 3 bytes after the size
-            if (size >= 3 && language.similar(desc, 3)) {
+        const DescriptorPtr& desc(_list[index].desc);
+        if (!desc.isNull() && desc->isValid()) {
+
+            const DID tag = desc->tag();
+            const PDS pds = _list[index].pds;
+            const uint8_t* data = desc->payload();
+            size_t size = desc->payloadSize();
+
+            if (tag == DID_LANGUAGE) {
+                while (size >= 4) {
+                    if (language.similar(data, 3)) {
+                        return index;
+                    }
+                    data += 4; size -= 4;
+                }
+            }
+            else if (tag == DID_COMPONENT && size >= 6 && language.similar(data + 3, 3)) {
                 return index;
+            }
+            else if (tag == DID_SUBTITLING) {
+                while (size >= 8) {
+                    if (language.similar(data, 3)) {
+                        return index;
+                    }
+                    data += 8; size -= 8;
+                }
+            }
+            else if (tag == DID_TELETEXT || tag == DID_VBI_TELETEXT) {
+                while (size >= 5) {
+                    if (language.similar(data, 3)) {
+                        return index;
+                    }
+                    data += 5; size -= 5;
+                }
+            }
+            else if (tag == DID_MLINGUAL_COMPONENT || tag == DID_MLINGUAL_BOUQUET || tag == DID_MLINGUAL_NETWORK) {
+                if (tag == DID_MLINGUAL_COMPONENT && size > 0) {
+                    // Skip leading component_tag in multilingual_component_descriptor.
+                    data++; size--;
+                }
+                while (size >= 4) {
+                    if (language.similar(data, 3)) {
+                        return index;
+                    }
+                    const size_t len = std::min<size_t>(4 + data[3], size);
+                    data += len; size -= len;
+                }
+            }
+            else if (tag == DID_MLINGUAL_SERVICE) {
+                while (size >= 4) {
+                    if (language.similar(data, 3)) {
+                        return index;
+                    }
+                    size_t len = std::min<size_t>(4 + data[3], size);
+                    if (len < size) {
+                        len = std::min<size_t>(len + 1 + data[len], size);
+                    }
+                    data += len; size -= len;
+                }
+            }
+            else if (tag == DID_SHORT_EVENT && size >= 3 && language.similar(data, 3)) {
+                return index;
+            }
+            else if (tag == DID_EXTENDED_EVENT && size >= 4 && language.similar(data + 1, 3)) {
+                return index;
+            }
+            else if ((atsc || pds == PDS_ATSC) && tag == DID_ATSC_CAPTION && size > 0) {
+                data++; size--;
+                while (size >= 6) {
+                    if (language.similar(data, 3)) {
+                        return index;
+                    }
+                    data += 6; size -= 6;
+                }
+            }
+            else if ((isdb || pds == PDS_ISDB) && tag == DID_ISDB_AUDIO_COMP) {
+                if (size >= 9 && language.similar(data + 6, 3)) {
+                    return index;
+                }
+                if (size >= 12 && (data[5] & 0x80) != 0 && language.similar(data + 9, 3)) {
+                    return index;
+                }
+            }
+            else if ((isdb || pds == PDS_ISDB) && tag == DID_ISDB_DATA_CONTENT && size >= 4) {
+                size_t len = std::min<size_t>(4 + data[3], size);
+                if (len < size) {
+                    len = std::min<size_t>(len + 1 + data[len], size);
+                }
+                if (len + 3 <= size && language.similar(data + len, 3)) {
+                    return index;
+                }
             }
         }
     }
-
     return count(); // not found
 }
 
 
 //----------------------------------------------------------------------------
-// Search any kind of subtitle descriptor, starting at the specified
-// index. Return the index of the descriptor in the list.
-// Return count() if no such descriptor is found.
-//
-// If the specified language is non-empty, look only for a subtitle
-// descriptor matching the specified language. In this case, if some
-// kind of subtitle descriptor exists in the list but none matches the
-// language, return count()+1.
+// Search any kind of subtitle descriptor.
 //----------------------------------------------------------------------------
 
 size_t ts::DescriptorList::searchSubtitle(const UString& language, size_t start_index) const

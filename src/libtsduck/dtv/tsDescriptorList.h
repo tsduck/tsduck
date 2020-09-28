@@ -38,6 +38,7 @@
 namespace ts {
 
     class AbstractTable;
+    class AbstractDescriptor;
     class DuckContext;
 
     //!
@@ -150,6 +151,13 @@ namespace ts {
         const DescriptorPtr& operator[](size_t index) const;
 
         //!
+        //! Get the extended descriptor id of a descriptor in the list.
+        //! @param [in] index Index of a descriptor in the list. Valid index are 0 to count()-1.
+        //! @return The extended descriptor id at @a index.
+        //!
+        EDID edid(size_t index) const;
+
+        //!
         //! Return the "private data specifier" associated to a descriptor in the list.
         //! @param [in] index Index of a descriptor in the list. Valid index are 0 to count()-1.
         //! @return The "private data specifier" associated to a descriptor at @a index.
@@ -260,12 +268,14 @@ namespace ts {
         size_t search(const EDID& edid, size_t start_index = 0) const;
 
         //!
-        //! Search a language descriptor for the specified language.
+        //! Search a descriptor for the specified language.
+        //! This can be an audio, subtitles or other component descriptor.
+        //! @param [in] duck TSDuck execution context.
         //! @param [in] language The 3-character language name to search.
         //! @param [in] start_index Start searching at this index.
         //! @return The index of the descriptor in the list or count() if no such descriptor is found.
         //!
-        size_t searchLanguage(const UString& language, size_t start_index = 0) const;
+        size_t searchLanguage(const DuckContext& duck, const UString& language, size_t start_index = 0) const;
 
         //!
         //! Search any kind of subtitle descriptor.
@@ -292,7 +302,7 @@ namespace ts {
         //! a descriptor with the corresponding private data specifier.
         //! @return The index of the descriptor in the list or count() if no such descriptor is found.
         //!
-        template <class DESC>
+        template <class DESC, typename std::enable_if<std::is_base_of<AbstractDescriptor, DESC>::value>::type* = nullptr>
         size_t search(DID tag, DESC& desc, size_t start_index = 0, PDS pds = 0) const;
 
         //!

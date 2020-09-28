@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-1981
+VERSION 3.24-2005
 
 [NEW] New commands and plugins:
 
@@ -15,6 +15,8 @@ VERSION 3.24-1981
   * In all commands and plugins which define the option --format (file format),
     the new value "RS204" designates TS files containing 204-byte packets with
     trailing Reed-Solomon code.
+  * New options in exiting commands and plugins:
+    - Option --subtitles-pid in plugin "zap".
 
 -------------------------------------------------------------------------------
 

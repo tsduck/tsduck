@@ -70,25 +70,28 @@ namespace ts {
             //! Check if an elementary stream carries audio.
             //! Does not just look at the stream type.
             //! Also analyzes the descriptor list for additional information.
+            //! @param [in] duck TSDuck execution context.
             //! @return True if the elementary stream carries audio.
             //!
-            bool isAudio() const;
+            bool isAudio(const DuckContext& duck) const;
 
             //!
             //! Check if an elementary stream carries video.
             //! Does not just look at the stream type.
             //! Also analyzes the descriptor list for additional information.
+            //! @param [in] duck TSDuck execution context.
             //! @return True if the elementary stream carries video.
             //!
-            bool isVideo() const;
+            bool isVideo(const DuckContext& duck) const;
 
             //!
             //! Check if an elementary stream carries subtitles.
             //! Does not just look at the stream type.
             //! Also analyzes the descriptor list for additional information.
+            //! @param [in] duck TSDuck execution context.
             //! @return True if the elementary stream carries subtitles.
             //!
-            bool isSubtitles() const;
+            bool isSubtitles(const DuckContext& duck) const;
 
             //!
             //! Look for a component tag in a stream_identifier_descriptor.
@@ -155,9 +158,10 @@ namespace ts {
 
         //!
         //! Search the first video PID in the service.
+        //! @param [in] duck TSDuck execution context.
         //! @return The first video PID or PID_NULL if none is found.
         //!
-        PID firstVideoPID() const;
+        PID firstVideoPID(const DuckContext& duck) const;
 
         // Inherited methods
         virtual bool isPrivate() const override;

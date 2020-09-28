@@ -291,14 +291,14 @@ void ts::RMSplicePlugin::handlePMT(const PMT& pmt, PID)
         else {
             // Other component, possibly a PID to splice.
             if (_states.find(pid) == _states.end()) {
-                // Remember the first video PID in the service.
-                if (_videoPID == PID_NULL && stream.isVideo()) {
-                    _videoPID = pid;
-                }
                 // Enforce the creation of the state for this PID if non-existent.
                 PIDState& pidState(_states[pid]);
-                pidState.isAudio = stream.isAudio();
-                pidState.isVideo = stream.isVideo();
+                pidState.isAudio = stream.isAudio(duck);
+                pidState.isVideo = stream.isVideo(duck);
+                // Remember the first video PID in the service.
+                if (_videoPID == PID_NULL && pidState.isVideo) {
+                    _videoPID = pid;
+                }
             }
 
             // Look for an optional stream_identifier_descriptor for this component.

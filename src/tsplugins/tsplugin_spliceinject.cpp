@@ -550,7 +550,7 @@ void ts::SpliceInjectPlugin::handlePMT(const PMT& pmt, PID)
     // Inspect all components.
     for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
         // By default, PTS are taken from the first video PID.
-        if (_pts_pid == PID_NULL && it->second.isVideo()) {
+        if (_pts_pid == PID_NULL && it->second.isVideo(duck)) {
             _pts_pid = it->first;
         }
         // Look for a component with a stream type 0x86.

@@ -392,8 +392,8 @@ void ts::AESPlugin::processPMT(PMT& pmt)
     // Loop on all elementary streams of the PMT.
     // Mark all video, audio and subtitles PIDs for scrambling
     _scrambled.reset();
-    for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-        if (it->second.isVideo() || it->second.isAudio() || it->second.isSubtitles()) {
+    for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
+        if (it->second.isVideo(duck) || it->second.isAudio(duck) || it->second.isSubtitles(duck)) {
             _scrambled.set(it->first);
             tsp->verbose(u"scrambling PID %d (0x%X)", {it->first, it->first});
         }

@@ -78,6 +78,7 @@ namespace ts {
         UString _audio;          // Audio language code to keep
         PID     _audio_pid;      // Audio PID to keep
         UString _subtitles;      // Subtitles language code to keep
+        PID     _subtitles_pid;  // Subtitles PID to keep
         bool    _no_subtitles;   // Remove all subtitles
         bool    _no_ecm;         // Remove all ECM PIDs
         bool    _include_cas;    // Include CAS info (CAT & EMM)
@@ -137,6 +138,7 @@ ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
     _audio(),
     _audio_pid(PID_NULL),
     _subtitles(),
+    _subtitles_pid(PID_NULL),
     _no_subtitles(false),
     _no_ecm (false),
     _include_cas(false),
@@ -174,8 +176,8 @@ ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
 
     option(u"audio-pid", 0, PIDVAL);
     help(u"audio-pid",
-         u"Remove all audio components except the specified audio PID. By default, "
-         u"keep all audio components. "
+         u"Remove all audio components except the specified audio PID. "
+         u"By default, keep all audio components. "
          u"This option and the --audio option are mutually exclusive.");
 
     option(u"cas", 'c');
@@ -217,6 +219,12 @@ ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
     help(u"subtitles",
          u"Remove all subtitles except the specified one. The name is a "
          u"three-letters language code. By default, keep all subtitles.");
+
+    option(u"subtitles-pid", 0, PIDVAL);
+    help(u"subtitles-pid",
+         u"Remove all subtitles except the specified PID. "
+         u"By default, keep all subtitles. "
+         u"This option and the --subtitles option are mutually exclusive.");
 }
 
 
@@ -228,15 +236,11 @@ bool ts::ZapPlugin::getOptions()
 {
     duck.loadArgs(*this);
 
-    if (present(u"audio") + present(u"audio-pid") > 1) {
-        tsp->error(u"options --audio and --audio-pid are mutually exclusive");
-        return false;
-    }
-
     _service_spec = value(u"");
     _audio = value(u"audio");
-    _audio_pid = intValue<PID>(u"audio-pid", PID_NULL, 0);
+    _audio_pid = intValue<PID>(u"audio-pid", PID_NULL);
     _subtitles = value(u"subtitles");
+    _subtitles_pid = intValue<PID>(u"subtitles-pid", PID_NULL);
     _no_subtitles = present(u"no-subtitles");
     _no_ecm = present(u"no-ecm");
     _include_cas = present(u"cas");
@@ -248,6 +252,16 @@ bool ts::ZapPlugin::getOptions()
     // Check if service is specified by name or by id.
     Service srv(_service_spec);
     _spec_by_id = srv.hasId();
+
+    // Check option conflicts.
+    if (!_audio.empty() && _audio_pid != PID_NULL) {
+        tsp->error(u"options --audio and --audio-pid are mutually exclusive");
+        return false;
+    }
+    if (_no_subtitles + (!_subtitles.empty()) + (_subtitles_pid != PID_NULL) > 1) {
+        tsp->error(u"options --no-subtitles, --subtitles and --subtitles-pid are mutually exclusive");
+        return false;
+    }
 
     return true;
 }
@@ -572,36 +586,28 @@ void ts::ZapPlugin::handlePMT(const PMT& pmt_in, PID pid)
         analyzeCADescriptors(pmt.descs, TSPID_DATA);
     }
 
-    // Loop on all elementary streams of the PMT and remove streams we do not
-    // need. It is unsafe to iterate through a map and erase elements while
-    // iterating. Alternatively, we build a list of PID's (map keys) and
-    // we will use the PID's to iterate and erase.
-    std::vector<PID> pids;
-    pids.reserve(pmt.streams.size());
-    for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-        pids.push_back(it->first);
-    }
-
-    // Number of input and output audio streams
+    // Number of input and output audio and subtitles streams.
     size_t audio_in = 0;
     size_t audio_out = 0;
+    size_t subtitles_in = 0;
+    size_t subtitles_out = 0;
 
-    // Now iterate through the list of streams
-    for (size_t i = 0; i < pids.size(); ++i) {
+    // Loop on all elementary streams of the PMT and remove streams we do not need.
+    // Note: no "++i" in "for" expression since "it" can be updated by erase().
+    for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ) {
 
-        const PID cpid = pids[i];
-        PMT::Stream& stream(pmt.streams[cpid]);
+        // Component PID and description.
+        const PID cpid = it->first;
+        PMT::Stream& stream(it->second);
 
-        // Check if the component is an audio one with a language
-        // other than the one specified on the command line.
-        if (stream.isAudio()) {
+        // Check if the component contains audio.
+        if (stream.isAudio(duck)) {
             audio_in++;
-            if (!_audio.empty() && stream.descs.searchLanguage(_audio) >= stream.descs.count()) {
-                pmt.streams.erase(cpid);
-                continue;
-            }
-            else if ((_audio_pid != PID_NULL) && (cpid != _audio_pid)) {
-                pmt.streams.erase(cpid);
+            if ((!_audio.empty() && stream.descs.searchLanguage(duck, _audio) >= stream.descs.count()) ||
+                (_audio_pid != PID_NULL && cpid != _audio_pid))
+            {
+                // Remove this audio stream.
+                it = pmt.streams.erase(it);
                 continue;
             }
             else {
@@ -609,11 +615,20 @@ void ts::ZapPlugin::handlePMT(const PMT& pmt_in, PID pid)
             }
         }
 
-        // Check if the component contains subtitles
-        size_t subt = stream.descs.searchSubtitle(_subtitles);
-        if ((_no_subtitles && subt != stream.descs.count()) || (!_subtitles.empty() && subt > stream.descs.count())) {
-            pmt.streams.erase(pid);
-            continue;
+        // Check if the component contains subtitles.
+        if (stream.isSubtitles(duck)) {
+            subtitles_in++;
+            if (_no_subtitles ||
+                (!_subtitles.empty() && stream.descs.searchLanguage(duck, _subtitles) >= stream.descs.count()) ||
+                (_subtitles_pid != PID_NULL && cpid != _subtitles_pid))
+            {
+                // Remove this subtitles stream.
+                it = pmt.streams.erase(it);
+                continue;
+            }
+            else {
+                subtitles_out++;
+            }
         }
 
         // We keep this component, record component PID
@@ -628,16 +643,29 @@ void ts::ZapPlugin::handlePMT(const PMT& pmt_in, PID pid)
             // Locate all ECM PID's and record them
             analyzeCADescriptors(stream.descs, TSPID_DATA);
         }
+
+        // Now iterate to next stream (not done in "for" loop, see comment above).
+        ++it;
     }
 
-    // Check that the requested audio exists
+    // Check that the requested audio and subtitles exist.
     if (!_audio.empty() && audio_in > 0 && audio_out == 0) {
         tsp->error(u"audio language \"%s\" not found in PMT", {_audio});
         _abort = true;
         return;
     }
-    else if ((_audio_pid != PID_NULL) && (audio_in > 0) && (audio_out == 0)) {
-        tsp->error(u"audio pid \"%d\" not found in PMT", {int32_t(_audio_pid)});
+    if (_audio_pid != PID_NULL && audio_in > 0 && audio_out == 0) {
+        tsp->error(u"audio PID 0x%X (%<d) not found in PMT", {_audio_pid});
+        _abort = true;
+        return;
+    }
+    if (!_subtitles.empty() && subtitles_in > 0 && subtitles_out == 0) {
+        tsp->error(u"subtitles language \"%s\" not found in PMT", {_subtitles});
+        _abort = true;
+        return;
+    }
+    if (_subtitles_pid != PID_NULL && subtitles_in > 0 && subtitles_out == 0) {
+        tsp->error(u"subtitles PID 0x%X (%<d) not found in PMT", {_subtitles_pid});
         _abort = true;
         return;
     }
