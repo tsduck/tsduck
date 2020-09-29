@@ -55,14 +55,22 @@ namespace ts {
             virtual void print(TextFormatter& output) const override;
             virtual size_t size() const override;
             virtual const Value& value(const UString& name) const override;
+            virtual Value& value(const UString& name, bool create = false, Type type = TypeObject) override;
             virtual void remove(const UString& name) override;
             virtual ValuePtr extract(const UString& name) override;
             virtual void add(const UString& name, const ValuePtr& value) override;
+            virtual void add(const UString& name, int64_t value) override;
+            virtual void add(const UString& name, const UString& value) override;
             virtual void clear() override;
             virtual void getNames(UStringList& names) const override;
+            virtual const Value& query(const UString& path) const override;
+            virtual Value& query(const UString& path, bool create = false, Type type = TypeObject) override;
 
         private:
             std::map<UString, ValuePtr> _fields;
+
+            // Split and validate a query path.
+            static bool splitPath(const UString& path, UString& field, UString& next);
         };
     }
 }

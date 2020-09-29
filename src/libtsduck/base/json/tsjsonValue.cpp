@@ -86,7 +86,25 @@ void ts::json::Value::add(const UString& name, const ValuePtr& value)
 {
 }
 
+void ts::json::Value::add(const UString& name, int64_t value)
+{
+}
+
+void ts::json::Value::add(const UString& name, const UString& value)
+{
+}
+
 size_t ts::json::Value::set(const ValuePtr& value, size_t index)
+{
+    return 0;
+}
+
+size_t ts::json::Value::set(int64_t value, size_t index)
+{
+    return 0;
+}
+
+size_t ts::json::Value::set(const UString& value, size_t index)
 {
     return 0;
 }
@@ -105,9 +123,29 @@ const ts::json::Value& ts::json::Value::at(size_t index) const
     return NullValue;
 }
 
+ts::json::Value& ts::json::Value::at(size_t index)
+{
+    return NullValue;
+}
+
 const ts::json::Value& ts::json::Value::value(const UString& name) const
 {
     return NullValue;
+}
+
+ts::json::Value& ts::json::Value::value(const UString& name, bool create, Type type)
+{
+    return NullValue;
+}
+
+const ts::json::Value& ts::json::Value::query(const UString& path) const
+{
+    return path.empty() ? *this : NullValue;
+}
+
+ts::json::Value& ts::json::Value::query(const UString& path, bool create, Type type)
+{
+    return path.empty() ? *this : NullValue;
 }
 
 

@@ -28,6 +28,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsjsonObject.h"
+#include "tsjsonString.h"
+#include "tsjsonNumber.h"
+#include "tsjsonTrue.h"
+#include "tsjsonFalse.h"
 #include "tsjsonNull.h"
 TSDUCK_SOURCE;
 
@@ -60,12 +64,28 @@ void ts::json::Object::clear()
 
 const ts::json::Value& ts::json::Object::value(const UString& name) const
 {
-    std::map<UString, ValuePtr>::const_iterator it = _fields.find(name);
+    auto it = _fields.find(name);
     if (it == _fields.end() || it->second.isNull()) {
         return NullValue;
     }
     else {
         return *it->second;
+    }
+}
+
+ts::json::Value& ts::json::Object::value(const UString& name, bool create, Type type)
+{
+    auto it = _fields.find(name);
+    if (it != _fields.end() && !it->second.isNull()) {
+        return *it->second;
+    }
+    else if (create) {
+        ValuePtr val(Factory(type));
+        _fields[name] = val;
+        return *val;
+    }
+    else {
+        return NullValue;
     }
 }
 
@@ -89,6 +109,16 @@ void ts::json::Object::add(const UString& name, const ValuePtr& value)
 {
     // If the pointer is null, explicitly create a "null" value.
     _fields[name] = value.isNull() ? ValuePtr(new Null) : value;
+}
+
+void ts::json::Object::add(const UString& name, int64_t value)
+{
+    add(name, ValuePtr(new Number(value)));
+}
+
+void ts::json::Object::add(const UString& name, const UString& value)
+{
+    add(name, ValuePtr(new String(value)));
 }
 
 void ts::json::Object::getNames(UStringList& names) const
@@ -120,4 +150,95 @@ void ts::json::Object::print(TextFormatter& output) const
 
     // Unindent and closing sequence.
     output << std::endl << ts::unindent << ts::margin << "}";
+}
+
+
+//----------------------------------------------------------------------------
+// Split and validate a query path.
+//----------------------------------------------------------------------------
+
+bool ts::json::Object::splitPath(const UString& path, UString& field, UString& next)
+{
+    field.clear();
+    next.clear();
+
+    if (path.empty()) {
+        return true; // root object.
+    }
+    else if (path.front() == u'[') {
+        return false; // array syntax => error.
+    }
+    else {
+        // Extract first field name.
+        size_t end = std::min(path.size(), std::min(path.find(u'.'), path.find(u'[')));
+        field = path.substr(0, end);
+
+        // Skip separators, point to next field name or array index.
+        while (end < path.size() && path[end] == u'.') {
+            ++end;
+        }
+        next = path.substr(end);
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Deep query of an object, constant version.
+//----------------------------------------------------------------------------
+
+const ts::json::Value& ts::json::Object::query(const UString& path) const
+{
+    UString field, next;
+
+    if (!splitPath(path, field, next)) {
+        return NullValue; // error
+    }
+    else if (field.empty()) {
+        return *this; // root object.
+    }
+    else {
+        // Search first field.
+        const auto it = _fields.find(field);
+        if (it == _fields.end() || it->second.isNull()) {
+            return NullValue; // field does not exist
+        }
+        else {
+            return it->second->query(next); // recursive query
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Deep query of an object, modifiable version.
+//----------------------------------------------------------------------------
+
+ts::json::Value& ts::json::Object::query(const UString& path, bool create, Type type)
+{
+    UString field, next;
+
+    if (!splitPath(path, field, next)) {
+        return NullValue; // error
+    }
+    else if (field.empty()) {
+        return *this; // root object.
+    }
+    else {
+        // Search first field.
+        const auto it = _fields.find(field);
+        if (it != _fields.end() && !it->second.isNull()) {
+            return it->second->query(next, create, type); // recursive query
+        }
+        else if (create) {
+            // Determine next field type
+            ValuePtr val(Factory(next.empty() ? type : (next.startWith(u"[") ? TypeArray : TypeObject)));
+            _fields[field] = val;
+            return val->query(next, create, type); // recursive query
+        }
+        else {
+            // Non existent field and don't create it.
+            return NullValue;
+        }
+    }
 }

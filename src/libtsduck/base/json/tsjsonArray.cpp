@@ -28,6 +28,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsjsonArray.h"
+#include "tsjsonString.h"
+#include "tsjsonNumber.h"
 #include "tsjsonNull.h"
 TSDUCK_SOURCE;
 
@@ -67,6 +69,16 @@ const ts::json::Value& ts::json::Array::at(size_t index) const
     }
 }
 
+ts::json::Value& ts::json::Array::at(size_t index)
+{
+    if (index >= _value.size() || _value[index].isNull()) {
+        return NullValue;
+    }
+    else {
+        return *_value[index];
+    }
+}
+
 size_t ts::json::Array::set(const ValuePtr& value, size_t index)
 {
     // If the pointer is null, explicitly create a "null" value.
@@ -80,6 +92,16 @@ size_t ts::json::Array::set(const ValuePtr& value, size_t index)
         _value.push_back(actualValue);
         return _value.size() - 1;
     }
+}
+
+size_t ts::json::Array::set(int64_t value, size_t index)
+{
+    return set(new Number(value), index);
+}
+
+size_t ts::json::Array::set(const UString& value, size_t index)
+{
+    return set(new String(value), index);
 }
 
 void ts::json::Array::erase(size_t index, size_t count)
@@ -120,4 +142,96 @@ void ts::json::Array::print(TextFormatter& output) const
 
     // Unindent and closing sequence.
     output << std::endl << ts::unindent << ts::margin << "]";
+}
+
+
+//----------------------------------------------------------------------------
+// Split and validate a query path.
+//----------------------------------------------------------------------------
+
+bool ts::json::Array::splitPath(const UString& path, size_t& index, UString& next)
+{
+    index = 0;
+    next.clear();
+
+    if (path.empty()) {
+        return true; // root object.
+    }
+    else if (path.front() != u'[') {
+        return false; // not an array index syntax => error.
+    }
+    else {
+        // Extract index.
+        size_t end = path.find(u']', 1);
+        if (end >= path.size()) {
+            return false; // no closing ']', invalid index syntax
+        }
+        else if (end == 1) {
+            index = NPOS; // syntax '[]' means add at end of array
+        }
+        else if (!path.substr(1, end - 1).toInteger(index, u",")) {
+            return false; // invalid index syntax
+        }
+
+        // Skip separators, point to next field name or array index.
+        while (++end < path.size() && path[end] == u'.') {
+        }
+        next = path.substr(end);
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Deep query of an object, constant version.
+//----------------------------------------------------------------------------
+
+const ts::json::Value& ts::json::Array::query(const UString& path) const
+{
+    size_t index = 0;
+    UString next;
+
+    if (path.empty()) {
+        return *this; // root object.
+    }
+    else if (!splitPath(path, index, next)) {
+        return NullValue; // error
+    }
+    else if (index >= _value.size() || _value[index].isNull()) {
+        return NullValue; // non existent element.
+    }
+    else {
+        return _value[index]->query(next); // recursive query
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Deep query of an object, modifiable version.
+//----------------------------------------------------------------------------
+
+ts::json::Value& ts::json::Array::query(const UString& path, bool create, Type type)
+{
+    size_t index = 0;
+    UString next;
+
+    if (path.empty()) {
+        return *this; // root object.
+    }
+    else if (!splitPath(path, index, next)) {
+        return NullValue; // error
+    }
+    else if (index < _value.size() && !_value[index].isNull()) {
+        return _value[index]->query(next, create, type); // recursive query
+    }
+    else if (create) {
+        // Determine next field type
+        ValuePtr val(Factory(next.empty() ? type : (next.startWith(u"[") ? TypeArray : TypeObject)));
+        set(val, index);
+        return val->query(next, create, type); // recursive query
+    }
+    else {
+        // Non existent field and don't create it.
+        return NullValue;
+    }
 }

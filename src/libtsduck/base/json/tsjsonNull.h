@@ -56,8 +56,10 @@ namespace ts {
         };
 
         //!
-        //! A general-purpose constant null JSON value.
+        //! A general-purpose null JSON value.
+        //! This object is not marked as "const" but, like any Null value,
+        //! all modificaton operations do nothing.
         //!
-        extern const Null NullValue;
+        extern Null NullValue;
     }
 }

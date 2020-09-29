@@ -35,7 +35,9 @@
 #pragma once
 #include "tsTSAnalyzer.h"
 #include "tsTSAnalyzerOptions.h"
+#include "tsNullReport.h"
 #include "tsGrid.h"
+#include "tsjson.h"
 
 namespace ts {
     //!
@@ -72,15 +74,17 @@ namespace ts {
         //! General reporting method, using the specified options.
         //! @param [in,out] strm Output text stream.
         //! @param [in] opt Analysis options.
+        //! @param [in,out] rep Where to report errors.
         //!
-        void report(std::ostream& strm, const TSAnalyzerOptions& opt);
+        void report(std::ostream& strm, const TSAnalyzerOptions& opt, Report& rep = NULLREP);
 
         //!
         //! General reporting method, using the specified options.
         //! @param [in] opt Analysis options.
+        //! @param [in,out] rep Where to report errors.
         //! @return The analysis as a String.
         //!
-        UString reportToString(const TSAnalyzerOptions& opt);
+        UString reportToString(const TSAnalyzerOptions& opt, Report& rep = NULLREP);
 
         //!
         //! Report formatted analysis about the global transport stream.
@@ -124,6 +128,14 @@ namespace ts {
         //!
         void reportNormalized(std::ostream& strm, const UString& title = UString());
 
+        //!
+        //! This methods displays a JSON report.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] title Title string.
+        //! @param [in,out] rep Where to report errors.
+        //!
+        void reportJSON(std::ostream& strm, const UString& title = UString(), Report& rep = NULLREP);
+
     private:
         // Display header of a service PID list.
         void reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool wide) const;
@@ -142,5 +154,8 @@ namespace ts {
 
         // Display one normalized line of a time value.
         static void reportNormalizedTime(std::ostream&, const Time&, const char* type, const UString& country = UString());
+
+        // Build a JSON time.
+        static void jsonTime(json::Value& root, const UString& path, const Time&, const UString& country = UString());
     };
 }

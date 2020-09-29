@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2005
+VERSION 3.24-2006
 
 [NEW] New commands and plugins:
 
@@ -12,11 +12,15 @@ VERSION 3.24-2005
 
 [IMP] Improvements on existing commands and plugins:
 
+  * In all commands and plugins which produce "normalized" output, a JSON output
+    format has been added. The traditional "normalized" format was designed for
+    use with grep & sed and dates back from a time where JSON did not exist.
   * In all commands and plugins which define the option --format (file format),
     the new value "RS204" designates TS files containing 204-byte packets with
     trailing Reed-Solomon code.
   * New options in exiting commands and plugins:
     - Option --subtitles-pid in plugin "zap".
+    - Option --json in "tsanalyze", plugin "analyze".
 
 -------------------------------------------------------------------------------
 

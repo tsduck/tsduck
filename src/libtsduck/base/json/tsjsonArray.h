@@ -56,12 +56,20 @@ namespace ts {
             virtual size_t size() const override;
             virtual void clear() override;
             virtual const Value& at(size_t index) const override;
+            virtual Value& at(size_t index) override;
             virtual size_t set(const ValuePtr& value, size_t index = std::numeric_limits<size_t>::max()) override;
+            virtual size_t set(int64_t value, size_t index = std::numeric_limits<size_t>::max()) override;
+            virtual size_t set(const UString& value, size_t index = std::numeric_limits<size_t>::max()) override;
             virtual void erase(size_t index, size_t count = 1) override;
             virtual ValuePtr extractAt(size_t index) override;
+            virtual const Value& query(const UString& path) const override;
+            virtual Value& query(const UString& path, bool create = false, Type type = TypeObject) override;
 
         private:
             std::vector<ValuePtr> _value;
+
+            // Split and validate a query path.
+            static bool splitPath(const UString& path, size_t& index, UString& next);
         };
     }
 }

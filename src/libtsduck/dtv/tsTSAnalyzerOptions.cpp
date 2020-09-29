@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Report options for the class TSAnalyzer.
-//
-//----------------------------------------------------------------------------
 
 #include "tsTSAnalyzerOptions.h"
 #include "tsException.h"
@@ -49,6 +45,7 @@ ts::TSAnalyzerOptions::TSAnalyzerOptions() :
     table_analysis(false),
     error_analysis(false),
     normalized(false),
+    json(false),
     service_list(false),
     pid_list(false),
     global_pid_list(false),
@@ -99,6 +96,11 @@ void ts::TSAnalyzerOptions::defineArgs(Args &args) const
 
     args.option(u"error-analysis");
     args.help(u"error-analysis", u"Report analysis about detected errors.");
+
+    args.option(u"json");
+    args.help(u"json",
+              u"Complete report about the transport stream, the services and the "
+              u"PID's in JSON format (useful for automatic analysis).");
 
     args.option(u"normalized");
     args.help(u"normalized",
@@ -184,6 +186,7 @@ bool ts::TSAnalyzerOptions::loadArgs(DuckContext &duck, Args &args)
     table_analysis = args.present(u"table-analysis");
     error_analysis = args.present(u"error-analysis");
     normalized = args.present(u"normalized");
+    json = args.present(u"json");
     service_list = args.present(u"service-list");
     pid_list = args.present(u"pid-list");
     global_pid_list = args.present(u"global-pid-list");
@@ -203,6 +206,7 @@ bool ts::TSAnalyzerOptions::loadArgs(DuckContext &duck, Args &args)
         !table_analysis &&
         !error_analysis &&
         !normalized &&
+        !json &&
         !service_list &&
         !pid_list &&
         !global_pid_list &&
