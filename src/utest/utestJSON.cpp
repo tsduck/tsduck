@@ -58,10 +58,14 @@ public:
 
     void testSimple();
     void testGitHub();
+    void testFactory();
+    void testQuery();
 
     TSUNIT_TEST_BEGIN(JsonTest);
     TSUNIT_TEST(testSimple);
     TSUNIT_TEST(testGitHub);
+    TSUNIT_TEST(testFactory);
+    TSUNIT_TEST(testQuery);
     TSUNIT_TEST_END();
 };
 
@@ -602,4 +606,93 @@ void JsonTest::testGitHub()
         u"  \"zipball_url\": \"https://api.github.com/repos/tsduck/tsduck/zipball/v3.5-419\"\n"
         u"}",
         jv->printed());
+}
+
+void JsonTest::testFactory()
+{
+    ts::json::ValuePtr jv;
+
+    jv = ts::json::Factory(ts::json::TypeTrue);
+    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_EQUAL(ts::json::TypeTrue, jv->type());
+    TSUNIT_ASSERT(jv->isTrue());
+
+    jv = ts::json::Factory(ts::json::TypeObject);
+    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_EQUAL(ts::json::TypeObject, jv->type());
+    TSUNIT_ASSERT(jv->isObject());
+
+    jv = ts::json::Factory(ts::json::TypeString, u"abcdef");
+    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_EQUAL(ts::json::TypeString, jv->type());
+    TSUNIT_ASSERT(jv->isString());
+    TSUNIT_EQUAL(u"abcdef", jv->toString());
+
+    jv = ts::json::Factory(ts::json::TypeNumber, u"1,234");
+    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_EQUAL(ts::json::TypeNumber, jv->type());
+    TSUNIT_ASSERT(jv->isNumber());
+    TSUNIT_EQUAL(1234, jv->toInteger());
+}
+
+void JsonTest::testQuery()
+{
+    ts::json::Object root;
+
+    root.value(u"obj1", true).value(u"obj2", true).value(u"obj3", true).add(u"num4", new ts::json::Number(123));
+    root.value(u"obj1").value(u"obj2").value(u"obj3").add(u"str4", new ts::json::String(u"abc"));
+    root.value(u"obj1").add(u"arr2", new ts::json::Array());
+    root.value(u"obj1").value(u"arr2").set(new ts::json::Number(456));
+    root.value(u"obj1").value(u"arr2").set(new ts::json::String(u"def"));
+
+    TSUNIT_EQUAL(
+        u"{\n"
+        u"  \"obj1\": {\n"
+        u"    \"arr2\": [\n"
+        u"      456,\n"
+        u"      \"def\"\n"
+        u"    ],\n"
+        u"    \"obj2\": {\n"
+        u"      \"obj3\": {\n"
+        u"        \"num4\": 123,\n"
+        u"        \"str4\": \"abc\"\n"
+        u"      }\n"
+        u"    }\n"
+        u"  }\n"
+        u"}",
+        root.printed());
+
+    TSUNIT_EQUAL(123, root.value(u"obj1").value(u"obj2").value(u"obj3").value(u"num4").toInteger());
+    TSUNIT_ASSERT(root.value(u"obj1").value(u"arr2").isArray());
+
+    // Constant queries
+    TSUNIT_ASSERT(root.query(u"foo1").isNull());
+    TSUNIT_ASSERT(root.query(u"obj1").isObject());
+    TSUNIT_ASSERT(root.query(u"obj1.foo").isNull());
+    TSUNIT_ASSERT(root.query(u"obj1.obj2.obj3").isObject());
+    TSUNIT_ASSERT(root.query(u"obj1.obj2.obj3.num4").isNumber());
+    TSUNIT_ASSERT(root.query(u"obj1.obj2.obj3.str4").isString());
+    TSUNIT_ASSERT(root.query(u"obj1.obj2.obj3.foo4").isNull());
+    TSUNIT_ASSERT(root.query(u"obj1.arr2").isArray());
+    TSUNIT_EQUAL(2, root.query(u"obj1.arr2").size());
+    TSUNIT_ASSERT(root.query(u"obj1.arr2[0]").isNumber());
+    TSUNIT_EQUAL(456, root.query(u"obj1.arr2[0]").toInteger());
+    TSUNIT_ASSERT(root.query(u"obj1.arr2[1]").isString());
+    TSUNIT_EQUAL(u"def", root.query(u"obj1.arr2[1]").toString());
+    TSUNIT_ASSERT(root.query(u"obj1.arr2[2]").isNull());
+
+    // Creation queries
+    TSUNIT_ASSERT(root.query(u"foo1.foo2.foo3[2].foo4", true).isObject());
+    TSUNIT_ASSERT(root.query(u"foo1").isObject());
+    TSUNIT_ASSERT(root.query(u"foo1.foo2").isObject());
+    TSUNIT_ASSERT(root.query(u"foo1.foo2.foo3").isArray());
+    TSUNIT_EQUAL(1, root.query(u"foo1.foo2.foo3").size());
+    TSUNIT_ASSERT(root.query(u"foo1.foo2.foo3[0].foo4").isObject());
+    TSUNIT_ASSERT(root.query(u"foo1.foo2.foo3[1]").isNull());
+
+    TSUNIT_ASSERT(root.query(u"foo1.foo2.foo3[].bar4", true).isObject());
+    TSUNIT_EQUAL(2, root.query(u"foo1.foo2.foo3").size());
+    TSUNIT_ASSERT(root.query(u"foo1.foo2.foo3[1].bar4").isObject());
+
+    debug() << "JsonTest::testQuery:" << std::endl << root.printed() << std::endl;
 }

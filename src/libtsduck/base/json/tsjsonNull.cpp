@@ -31,7 +31,7 @@
 TSDUCK_SOURCE;
 
 // A general-purpose constant null JSON value.
-const ts::json::Null ts::json::NullValue;
+ts::json::Null ts::json::NullValue;
 
 
 //----------------------------------------------------------------------------

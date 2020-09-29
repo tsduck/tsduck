@@ -40,6 +40,40 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
+// Create a JSON value by type.
+//----------------------------------------------------------------------------
+
+ts::json::ValuePtr ts::json::Bool(bool value)
+{
+    return value ? ValuePtr(new True) : ValuePtr(new False);
+}
+
+ts::json::ValuePtr ts::json::Factory(Type type, const UString& value)
+{
+    switch (type) {
+        case TypeTrue:
+            return ValuePtr(new True);
+        case TypeFalse:
+            return ValuePtr(new False);
+        case TypeString:
+            return ValuePtr(new String(value));
+        case TypeNumber: {
+            int64_t ivalue = 0;
+            value.toInteger(ivalue, u",");
+            return ValuePtr(new Number(ivalue));
+        }
+        case TypeObject:
+            return ValuePtr(new Object);
+        case TypeArray:
+            return ValuePtr(new Array);
+        case TypeNull:
+        default:
+            return ValuePtr(new Null);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Parse a JSON value (typically an object or array).
 //----------------------------------------------------------------------------
 

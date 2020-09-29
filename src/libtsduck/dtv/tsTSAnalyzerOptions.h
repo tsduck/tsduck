@@ -67,6 +67,7 @@ namespace ts {
 
         // Normalized output:
         bool normalized;             //!< Option -\-normalized
+        bool json;                   //!< Option -\-json
 
         // One-line report options:
         bool service_list;           //!< Option -\-service-list

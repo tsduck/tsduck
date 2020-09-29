@@ -67,6 +67,23 @@ namespace ts {
         };
 
         //!
+        //! Create a JSON value by type.
+        //! @param [in] type The type JSON object to create.
+        //! @param [in] value Optional value. For TypeString, use this value.
+        //! For TypeNumber, convert the string into a number (zero on error).
+        //! For all other types, the value is ignored.
+        //! @return A smart pointer to the created JSON value.
+        //!
+        TSDUCKDLL ValuePtr Factory(Type type, const UString& value = UString());
+
+        //!
+        //! Create a boolean JSON value.
+        //! @param [in] value A boolean value.
+        //! @return A smart pointer to the created JSON value, either a True or False literal.
+        //!
+        TSDUCKDLL ValuePtr Bool(bool value);
+
+        //!
         //! Parse a JSON value (typically an object or array.
         //! @param [out] value A smart pointer to the parsed JSON value (null on error).
         //! @param [in] lines List of text lines forming the JSON value.
