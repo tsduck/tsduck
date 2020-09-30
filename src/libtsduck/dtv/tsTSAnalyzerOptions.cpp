@@ -46,6 +46,7 @@ ts::TSAnalyzerOptions::TSAnalyzerOptions() :
     error_analysis(false),
     normalized(false),
     json(false),
+    deterministic(false),
     service_list(false),
     pid_list(false),
     global_pid_list(false),
@@ -106,6 +107,12 @@ void ts::TSAnalyzerOptions::defineArgs(Args &args) const
     args.help(u"normalized",
               u"Complete report about the transport stream, the services and the "
               u"PID's in a normalized output format (useful for automatic analysis).");
+
+    args.option(u"deterministic");
+    args.help(u"deterministic",
+              u"Enforce a deterministic and reproduceable output. "
+              u"Do not output non-reproduceable information such as system time "
+              u"(useful for automated tests).");
 
     args.option(u"service-list");
     args.help(u"service-list", u"Report the list of all service ids.");
@@ -187,6 +194,7 @@ bool ts::TSAnalyzerOptions::loadArgs(DuckContext &duck, Args &args)
     error_analysis = args.present(u"error-analysis");
     normalized = args.present(u"normalized");
     json = args.present(u"json");
+    deterministic = args.present(u"deterministic");
     service_list = args.present(u"service-list");
     pid_list = args.present(u"pid-list");
     global_pid_list = args.present(u"global-pid-list");
