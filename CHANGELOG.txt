@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2008
+VERSION 3.24-2009
 
 [NEW] New commands and plugins:
 
@@ -20,6 +20,7 @@ VERSION 3.24-2008
     trailing Reed-Solomon code.
   * New options in exiting commands and plugins:
     - Option --subtitles-pid in plugin "zap".
+    - Option --json in "tscmp" an "tsdektec".
     - Options --json and --deterministic in "tsanalyze" and plugin "analyze".
 
 -------------------------------------------------------------------------------

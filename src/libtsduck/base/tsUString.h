@@ -498,6 +498,53 @@ namespace ts {
         UString& assign(const std::array<CHARTYPE, SIZE>& arr);
 
         //!
+        //! Convert a C++ "wide string" into UTF-16.
+        //! @param [in] wstr A C++ "wide string".
+        //! @return The equivalent UTF-16 string.
+        //!
+        static UString FromWChar(const std::wstring& wstr);
+
+        //!
+        //! Convert a C++ "wide string" into UTF-16.
+        //! @param [in] wstr Address of a nul-terminated "wide string". Can be null.
+        //! @return The equivalent UTF-16 string. Empty string if @a wstr is a null pointer.
+        //!
+        static UString FromWChar(const wchar_t* wstr);
+
+        //!
+        //! Convert a C++ "wide string" into UTF-16.
+        //! @param [in] wstr Address of a "wide string". Can be null.
+        //! @param [in] count Number of characters in @a wstr.
+        //! @return The equivalent UTF-16 string. Empty string if @a utf8 is a null pointer.
+        //!
+        static UString FromWChar(const wchar_t* wstr, size_type count);
+
+        //!
+        //! Convert a C++ "wide string" into this object.
+        //! @param [in] wstr A C++ "wide string".
+        //! @return A reference to this object.
+        //!
+        UString& assignFromWChar(const std::wstring& wstr)
+        {
+            return assignFromWChar(wstr.data(), wstr.size());
+        }
+
+        //!
+        //! Convert a C++ "wide string" into this object.
+        //! @param [in] wstr Address of a nul-terminated "wide string". Can be null.
+        //! @return A reference to this object.
+        //!
+        UString& assignFromWChar(const wchar_t* wstr);
+
+        //!
+        //! Convert a C++ "wide string" into this object.
+        //! @param [in] wstr Address of a "wide string". Can be null.
+        //! @param [in] count Number of characters in @a wstr.
+        //! @return A reference to this object.
+        //!
+        UString& assignFromWChar(const wchar_t* wstr, size_type count);
+
+        //!
         //! Get the display width in characters.
         //! Any combining diacritical character is not counted in the width since it is combined with the preceding
         //! character. Similarly, any surrogate pair is considered as one single character. As a general rule,

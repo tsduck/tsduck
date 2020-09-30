@@ -38,6 +38,10 @@
 #include "tsSection.h"
 #include "tsPMT.h"
 #include "tsStreamIdentifierDescriptor.h"
+#include "tsTextFormatter.h"
+#include "tsjsonObject.h"
+#include "tsjsonString.h"
+#include "tsjsonNumber.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
@@ -65,6 +69,7 @@ namespace {
         bool               dump;
         uint32_t           dump_flags;
         bool               normalized;
+        bool               json;
         bool               quiet;
         bool               payload_only;
         bool               pcr_ignore;
@@ -86,6 +91,7 @@ Options::Options(int argc, char *argv[]) :
     dump(false),
     dump_flags(0),
     normalized(false),
+    json(false),
     quiet(false),
     payload_only(false),
     pcr_ignore(false),
@@ -121,6 +127,9 @@ Options::Options(int argc, char *argv[]) :
          u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
          u"Using this option forces a specific format. "
          u"If a specific format is specified, the two input files must have the same format.");
+
+    option(u"json", 'j');
+    help(u"json", u"Report in JSON output format (useful for automatic analysis).");
 
     option(u"normalized", 'n');
     help(u"normalized", u"Report in a normalized output format (useful for automatic analysis).");
@@ -175,7 +184,12 @@ Options::Options(int argc, char *argv[]) :
     continue_all = present(u"continue");
     quiet = present(u"quiet");
     normalized = !quiet && present(u"normalized");
+    json = !quiet && present(u"json");
     dump = !quiet && present(u"dump");
+
+    if (json && normalized) {
+        error(u"options --json and --normalized are mutually exclusive");
+    }
 
     if (quiet) {
         setMaxSeverity(ts::Severity::Info);
@@ -311,7 +325,7 @@ bool Comparator::compare(const ts::TSPacket& pkt1, const ts::TSPacket& pkt2, Opt
 
 int MainCode(int argc, char *argv[])
 {
-    Options opt (argc, argv);
+    Options opt(argc, argv);
     ts::TSFileInputBuffered file1(opt.buffered_packets);
     ts::TSFileInputBuffered file2(opt.buffered_packets);
 
@@ -320,10 +334,18 @@ int MainCode(int argc, char *argv[])
     file2.openRead(opt.filename2, 1, opt.byte_offset, opt, opt.format);
     opt.exitOnError();
 
+    // JSON root.
+    ts::json::Object root;
+
     // Display headers
-    if (opt.normalized) {
-        std::cout << "file:file=1:filename=" << file1.getFileName() << ":" << std::endl
-                  << "file:file=2:filename=" << file2.getFileName() << ":" << std::endl;
+    if (opt.json) {
+        ts::json::Value& jfiles(root.query(u"files", true, ts::json::TypeArray));
+        jfiles.set(ts::AbsoluteFilePath(file1.getFileName()));
+        jfiles.set(ts::AbsoluteFilePath(file2.getFileName()));
+    }
+    else if (opt.normalized) {
+        std::cout << "file:file=1:filename=" << file1.getFileName() << ":" << std::endl;
+        std::cout << "file:file=2:filename=" << file2.getFileName() << ":" << std::endl;
 
     }
     else if (opt.verbose()) {
@@ -370,7 +392,13 @@ int MainCode(int argc, char *argv[])
             }
             if (read1 != 0) {
                 // File 2 is truncated
-                if (opt.normalized) {
+                if (opt.json) {
+                    ts::json::Value& jv(root.query(u"events[]", true));
+                    jv.add(u"type", u"truncated");
+                    jv.add(u"packet", file2.readPacketsCount());
+                    jv.add(u"file-index", 1);
+                }
+                else if (opt.normalized) {
                     std::cout << "truncated:file=2:packet=" << file2.readPacketsCount()
                               << ":filename=" << file2.getFileName() << ":" << std::endl;
                 }
@@ -381,7 +409,13 @@ int MainCode(int argc, char *argv[])
             }
             if (read2 != 0) {
                 // File 1 is truncated
-                if (opt.normalized) {
+                if (opt.json) {
+                    ts::json::Value& jv(root.query(u"events[]", true));
+                    jv.add(u"type", u"truncated");
+                    jv.add(u"packet", file1.readPacketsCount());
+                    jv.add(u"file-index", 0);
+                }
+                else if (opt.normalized) {
                     std::cout << "truncated:file=1:packet=" << file1.readPacketsCount()
                               << ":filename=" << file1.getFileName() << ":" << std::endl;
                 }
@@ -404,7 +438,13 @@ int MainCode(int argc, char *argv[])
 
         // Report resynchronization after missing packets
         if (subset_skipped > 0) {
-            if (opt.normalized) {
+            if (opt.json) {
+                ts::json::Value& jv(root.query(u"events[]", true));
+                jv.add(u"type", u"skipped");
+                jv.add(u"packet", file1.readPacketsCount() - 1 - subset_skipped);
+                jv.add(u"skipped", subset_skipped);
+            }
+            else if (opt.normalized) {
                 std::cout << "skip:packet=" << (file1.readPacketsCount() - 1 - subset_skipped)
                           << ":skipped=" << ts::UString::Decimal(subset_skipped)
                           << ":" << std::endl;
@@ -422,7 +462,23 @@ int MainCode(int argc, char *argv[])
         // Report a difference
         if (!comp.equal) {
             diff_count++;
-            if (opt.normalized) {
+            if (opt.json) {
+                ts::json::Value& jv(root.query(u"events[]", true));
+                jv.add(u"type", u"difference");
+                jv.add(u"packet", file1.readPacketsCount() - 1);
+                jv.add(u"payload-only", ts::json::Bool(opt.payload_only));
+                jv.add(u"offset", comp.first_diff);
+                jv.add(u"end-offset", comp.end_diff);
+                jv.add(u"diff-bytes", comp.diff_count);
+                jv.add(u"comp-size", comp.compared_size);
+                jv.add(u"pid0", pid1);
+                jv.add(u"pid1", pid2);
+                jv.add(u"pid0-index", count1[pid1] - 1);
+                jv.add(u"pid1-index", count2[pid2] - 1);
+                jv.add(u"same-pid", ts::json::Bool(pid1 == pid2));
+                jv.add(u"same-index", ts::json::Bool(count2[pid2] == count1[pid1]));
+            }
+            else if (opt.normalized) {
                 std::cout << "diff:packet=" << (file1.readPacketsCount() - 1)
                           << (opt.payload_only ? ":payload" : "")
                           << ":offset=" << comp.first_diff
@@ -475,7 +531,14 @@ int MainCode(int argc, char *argv[])
     }
 
     // Final report
-    if (opt.normalized) {
+    if (opt.json) {
+        ts::json::Value& jv(root.query(u"summary", true));
+        jv.add(u"packets", file1.readPacketsCount());
+        jv.add(u"differences", diff_count);
+        jv.add(u"missing", total_subset_skipped);
+        jv.add(u"holes", subset_skipped_chunks);
+    }
+    else if (opt.normalized) {
         std::cout << "total:packets=" << file1.readPacketsCount()
                   << ":diff=" << diff_count
                   << ":missing=" << total_subset_skipped
@@ -492,8 +555,16 @@ int MainCode(int argc, char *argv[])
         std::cout << std::endl;
     }
 
+    // JSON output if required.
+    if (opt.json) {
+        ts::TextFormatter text(opt);
+        text.setStream(std::cout);
+        root.print(text);
+        text << std::endl;
+    }
+
     // End of processing, close file
-    file1.close (opt);
-    file2.close (opt);
+    file1.close(opt);
+    file2.close(opt);
     return diff_count == 0 && opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
