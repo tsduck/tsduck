@@ -176,12 +176,12 @@ void ts::TSAnalyzerReport::report(std::ostream& stm, const TSAnalyzerOptions& op
 
     // Normalized report.
     if (opt.normalized) {
-        reportNormalized(stm, opt.title);
+        reportNormalized(opt, stm, opt.title);
     }
 
     // JSON report.
     if (opt.json) {
-        reportJSON(stm, opt.title, rep);
+        reportJSON(opt, stm, opt.title, rep);
     }
 }
 
@@ -788,7 +788,7 @@ void ts::TSAnalyzerReport::reportNormalizedTime(std::ostream& stm, const Time& t
 // This method displays a normalized report.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::reportNormalized(std::ostream& stm, const UString& title)
+void ts::TSAnalyzerReport::reportNormalized(const TSAnalyzerOptions& opt, std::ostream& stm, const UString& title)
 {
     // Update the global statistics value if internal data were modified.
     recomputeStatistics();
@@ -831,10 +831,12 @@ void ts::TSAnalyzerReport::reportNormalized(std::ostream& stm, const UString& ti
     reportNormalizedTime(stm, _last_tdt, "time:utc:tdt:last");
     reportNormalizedTime(stm, _first_tot, "time:local:tot:first", _country_code);
     reportNormalizedTime(stm, _last_tot, "time:local:tot:last", _country_code);
-    reportNormalizedTime(stm, _first_utc, "time:utc:system:first");
-    reportNormalizedTime(stm, _last_utc, "time:utc:system:last");
-    reportNormalizedTime(stm, _first_local, "time:local:system:first");
-    reportNormalizedTime(stm, _last_local, "time:local:system:last");
+    if (!opt.deterministic) {
+        reportNormalizedTime(stm, _first_utc, "time:utc:system:first");
+        reportNormalizedTime(stm, _last_utc, "time:utc:system:last");
+        reportNormalizedTime(stm, _first_local, "time:local:system:first");
+        reportNormalizedTime(stm, _last_local, "time:local:system:last");
+    }
 
     // Print one line for global PIDs
     stm << "global:"
@@ -1056,7 +1058,7 @@ void ts::TSAnalyzerReport::reportNormalized(std::ostream& stm, const UString& ti
 // This method displays a JSON report.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::reportJSON(std::ostream& stm, const UString& title, Report& rep)
+void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream& stm, const UString& title, Report& rep)
 {
     // Update the global statistics value if internal data were modified.
     recomputeStatistics();
@@ -1138,10 +1140,12 @@ void ts::TSAnalyzerReport::reportJSON(std::ostream& stm, const UString& title, R
     jsonTime(root, u"time.utc.tdt.last", _last_tdt);
     jsonTime(root, u"time.local.tot.first", _first_tot, _country_code);
     jsonTime(root, u"time.local.tot.last", _last_tot, _country_code);
-    jsonTime(root, u"time.utc.system.first", _first_utc);
-    jsonTime(root, u"time.utc.system.last", _last_utc);
-    jsonTime(root, u"time.local.system.first", _first_local);
-    jsonTime(root, u"time.local.system.last", _last_local);
+    if (!opt.deterministic) {
+        jsonTime(root, u"time.utc.system.first", _first_utc);
+        jsonTime(root, u"time.utc.system.last", _last_utc);
+        jsonTime(root, u"time.local.system.first", _first_local);
+        jsonTime(root, u"time.local.system.last", _last_local);
+    }
 
     // One node per service
     for (auto it = _services.begin(); it != _services.end(); ++it) {
@@ -1290,7 +1294,7 @@ void ts::TSAnalyzerReport::jsonTime(json::Value& parent, const UString& path, co
         json::Value& tm(parent.query(path, true));
         tm.add(u"date", time.format(Time::DATE));
         tm.add(u"time", time.format(Time::TIME | Time::MILLISECOND));
-        tm.add(u"secondsince2000", (time - Time(2000, 1, 1, 0, 0, 0)) / MilliSecPerSec);
+        tm.add(u"seconds-since-2000", (time - Time(2000, 1, 1, 0, 0, 0)) / MilliSecPerSec);
         if (!country.empty()) {
             tm.add(u"country", country);
         }

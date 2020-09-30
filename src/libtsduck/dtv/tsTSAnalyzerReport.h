@@ -123,18 +123,20 @@ namespace ts {
 
         //!
         //! This methods displays a normalized report.
+        //! @param [in] opt Analysis options.
         //! @param [in,out] strm Output text stream.
         //! @param [in] title Title string to display.
         //!
-        void reportNormalized(std::ostream& strm, const UString& title = UString());
+        void reportNormalized(const TSAnalyzerOptions& opt, std::ostream& strm, const UString& title = UString());
 
         //!
         //! This methods displays a JSON report.
+        //! @param [in] opt Analysis options.
         //! @param [in,out] strm Output text stream.
         //! @param [in] title Title string.
         //! @param [in,out] rep Where to report errors.
         //!
-        void reportJSON(std::ostream& strm, const UString& title = UString(), Report& rep = NULLREP);
+        void reportJSON(const TSAnalyzerOptions& opt, std::ostream& strm, const UString& title = UString(), Report& rep = NULLREP);
 
     private:
         // Display header of a service PID list.
