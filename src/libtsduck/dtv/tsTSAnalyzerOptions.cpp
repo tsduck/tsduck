@@ -75,7 +75,7 @@ void ts::TSAnalyzerOptions::defineArgs(Args &args) const
     args.help(u"ts-analysis",
               u"Report global transport stream analysis.\n\n"
               u"The output can include full synthetic analysis (options *-analysis), "
-              u"fully normalized output (option --normalized) or a simple list of "
+              u"fully normalized output (options --normalized and --json) or a simple list of "
               u"values on one line (options --*-list). The second and third type of "
               u"options are useful to write automated scripts.\n\n"
               u"If output-control options are specified, only the selected outputs "

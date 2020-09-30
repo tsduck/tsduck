@@ -945,7 +945,7 @@ void ts::TSAnalyzerReport::reportNormalized(std::ostream& stm, const UString& ti
             stm << "cryptoperiod=" << ((pc.crypto_period * PKT_SIZE * 8) / _ts_bitrate) << ":";
         }
         if (pc.same_stream_id) {
-            stm << "streamid=" << int (pc.pes_stream_id) << ":";
+            stm << "streamid=" << int(pc.pes_stream_id) << ":";
         }
         if (pc.carry_audio) {
             stm << "audio:";
@@ -1075,11 +1075,11 @@ void ts::TSAnalyzerReport::reportJSON(std::ostream& stm, const UString& title, R
     }
     root.query(u"ts", true).add(u"bytes", PKT_SIZE * _ts_pkt_cnt);
     root.query(u"ts", true).add(u"bitrate", _ts_bitrate);
-    root.query(u"ts", true).add(u"bitrate204", ToBitrate204(_ts_bitrate));
-    root.query(u"ts", true).add(u"userbitrate", _ts_user_bitrate);
-    root.query(u"ts", true).add(u"userbitrate204", ToBitrate204(_ts_user_bitrate));
-    root.query(u"ts", true).add(u"pcrbitrate", _ts_pcr_bitrate_188);
-    root.query(u"ts", true).add(u"pcrbitrate204", _ts_pcr_bitrate_204);
+    root.query(u"ts", true).add(u"bitrate-204", ToBitrate204(_ts_bitrate));
+    root.query(u"ts", true).add(u"user-bitrate", _ts_user_bitrate);
+    root.query(u"ts", true).add(u"user-bitrate-204", ToBitrate204(_ts_user_bitrate));
+    root.query(u"ts", true).add(u"pcr-bitrate", _ts_pcr_bitrate_188);
+    root.query(u"ts", true).add(u"pcr-bitrate-204", _ts_pcr_bitrate_204);
     root.query(u"ts", true).add(u"duration", _duration / 1000);
     if (!_country_code.empty()) {
         root.query(u"ts", true).add(u"country", _country_code);
@@ -1090,9 +1090,9 @@ void ts::TSAnalyzerReport::reportJSON(std::ostream& stm, const UString& title, R
     root.query(u"ts.services", true).add(u"scrambled", _scrambled_services_cnt);
 
     root.query(u"ts.packets", true).add(u"total", _ts_pkt_cnt);
-    root.query(u"ts.packets", true).add(u"invalidsyncs", _invalid_sync);
-    root.query(u"ts.packets", true).add(u"transporterrors", _transport_errors);
-    root.query(u"ts.packets", true).add(u"suspectignored", _suspect_ignored);
+    root.query(u"ts.packets", true).add(u"invalid-syncs", _invalid_sync);
+    root.query(u"ts.packets", true).add(u"transport-errors", _transport_errors);
+    root.query(u"ts.packets", true).add(u"suspect-ignored", _suspect_ignored);
 
     // Add PID's info.
     root.query(u"ts.pids", true).add(u"total", _pid_cnt);
@@ -1107,8 +1107,8 @@ void ts::TSAnalyzerReport::reportJSON(std::ostream& stm, const UString& title, R
     root.query(u"ts.pids.global", true).add(u"scrambled", _global_scr_pids);
     root.query(u"ts.pids.global", true).add(u"packets", _global_pkt_cnt);
     root.query(u"ts.pids.global", true).add(u"bitrate", _global_bitrate);
-    root.query(u"ts.pids.global", true).add(u"bitrate204", ToBitrate204(_global_bitrate));
-    root.query(u"ts.pids.global", true).add(u"access", _global_scr_pids > 0 ? u"scrambled" : u"clear");
+    root.query(u"ts.pids.global", true).add(u"bitrate-204", ToBitrate204(_global_bitrate));
+    root.query(u"ts.pids.global", true).add(u"is-scrambled", json::Bool(_global_scr_pids > 0));
     for (auto it = _pids.begin(); it != _pids.end(); ++it) {
         const PIDContext& pc(*it->second);
         if (pc.referenced && pc.services.size() == 0 && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
@@ -1122,8 +1122,8 @@ void ts::TSAnalyzerReport::reportJSON(std::ostream& stm, const UString& title, R
     root.query(u"ts.pids.unreferenced", true).add(u"scrambled", _unref_scr_pids);
     root.query(u"ts.pids.unreferenced", true).add(u"packets", _unref_pkt_cnt);
     root.query(u"ts.pids.unreferenced", true).add(u"bitrate", _unref_bitrate);
-    root.query(u"ts.pids.unreferenced", true).add(u"bitrate204", ToBitrate204(_unref_bitrate));
-    root.query(u"ts.pids.unreferenced", true).add(u"access", _unref_scr_pids > 0 ? u"scrambled" : u"clear");
+    root.query(u"ts.pids.unreferenced", true).add(u"bitrate-204", ToBitrate204(_unref_bitrate));
+    root.query(u"ts.pids.unreferenced", true).add(u"is-scrambled", json::Bool(_unref_scr_pids > 0));
     for (auto it = _pids.begin(); it != _pids.end(); ++it) {
         const PIDContext& pc (*it->second);
         if (!pc.referenced && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
@@ -1150,23 +1150,24 @@ void ts::TSAnalyzerReport::reportJSON(std::ostream& stm, const UString& title, R
         jv.add(u"id", sv.service_id);
         jv.add(u"provider", sv.getProvider());
         jv.add(u"name", sv.getName());
+        jv.add(u"type", sv.service_type);
+        jv.add(u"type-name", names::StreamType(sv.service_type));
         jv.add(u"tsid", _ts_id);
-        jv.add(u"orignetwid", sv.orig_netw_id);
-        jv.add(u"scrambled", json::Bool(sv.scrambled_pid_cnt > 0));
-        jv.query(u"pids", true).add(u"total", sv.pid_cnt);
-        jv.query(u"pids", true).add(u"clear", sv.pid_cnt - sv.scrambled_pid_cnt);
-        jv.query(u"pids", true).add(u"scrambled", sv.scrambled_pid_cnt);
+        jv.add(u"original-network-id", sv.orig_netw_id);
+        jv.add(u"is-scrambled", json::Bool(sv.scrambled_pid_cnt > 0));
+        jv.query(u"components", true).add(u"total", sv.pid_cnt);
+        jv.query(u"components", true).add(u"clear", sv.pid_cnt - sv.scrambled_pid_cnt);
+        jv.query(u"components", true).add(u"scrambled", sv.scrambled_pid_cnt);
         jv.add(u"packets", sv.ts_pkt_cnt);
         jv.add(u"bitrate", sv.bitrate);
-        jv.add(u"bitrate204", ToBitrate204(sv.bitrate));
-        jv.add(u"type", sv.service_type); //@@@
+        jv.add(u"bitrate-204", ToBitrate204(sv.bitrate));
         jv.add(u"ssu", json::Bool(sv.carry_ssu));
         jv.add(u"t2mi", json::Bool(sv.carry_t2mi));
         if (sv.pmt_pid != 0) {
-            jv.add(u"pmtpid", sv.pmt_pid);
+            jv.add(u"pmt-pid", sv.pmt_pid);
         }
         if (sv.pcr_pid != 0 && sv.pcr_pid != PID_NULL) {
-            jv.add(u"pcrpid", sv.pcr_pid);
+            jv.add(u"pcr-pid", sv.pcr_pid);
         }
         for (auto it_pid = _pids.begin(); it_pid != _pids.end(); ++it_pid) {
             if (it_pid->second->services.count(sv.service_id) != 0) {
@@ -1176,141 +1177,100 @@ void ts::TSAnalyzerReport::reportJSON(std::ostream& stm, const UString& title, R
         }
     }
 
-    /*@@@@@@@@@@@@
-
-    // Print one line per PID
+    // One node per PID
     for (auto it = _pids.begin(); it != _pids.end(); ++it) {
         const PIDContext& pc(*it->second);
         if (pc.ts_pkt_cnt == 0 && pc.optional) {
             continue;
         }
-        stm << "pid:pid=" << pc.pid << ":";
-        if (pc.is_pmt_pid) {
-            stm << "pmt:";
-        }
-        if (pc.carry_ecm) {
-            stm << "ecm:";
-        }
-        if (pc.carry_emm) {
-            stm << "emm:";
-        }
+        json::Value& jv(root.query(u"pids[]", true));
+        jv.add(u"id", pc.pid);
+        jv.add(u"description", pc.fullDescription(true));
+        jv.add(u"pmt", json::Bool(pc.is_pmt_pid));
+        jv.add(u"audio", json::Bool(pc.carry_audio));
+        jv.add(u"video", json::Bool(pc.carry_video));
+        jv.add(u"ecm", json::Bool(pc.carry_ecm));
+        jv.add(u"emm", json::Bool(pc.carry_emm));
         if (pc.cas_id != 0) {
-            stm << "cas=" << pc.cas_id << ":";
+            jv.add(u"cas", pc.cas_id);
         }
         for (auto it2 = pc.cas_operators.begin(); it2 != pc.cas_operators.end(); ++it2) {
-            stm << "operator=" << (*it2) << ":";
+            jv.query(u"operators", true, json::TypeArray).set(*it2);
         }
-        stm << "access=" << (pc.scrambled ? "scrambled" : "clear") << ":";
+        jv.add(u"is-scrambled", json::Bool(pc.scrambled));
         if (pc.crypto_period != 0 && _ts_bitrate != 0) {
-            stm << "cryptoperiod=" << ((pc.crypto_period * PKT_SIZE * 8) / _ts_bitrate) << ":";
+            jv.add(u"crypto-period", (pc.crypto_period * PKT_SIZE * 8) / _ts_bitrate);
         }
         if (pc.same_stream_id) {
-            stm << "streamid=" << int (pc.pes_stream_id) << ":";
-        }
-        if (pc.carry_audio) {
-            stm << "audio:";
-        }
-        if (pc.carry_video) {
-            stm << "video:";
+            jv.add(u"pes-stream-id", pc.pes_stream_id);
         }
         if (!pc.language.empty()) {
-            stm << "language=" << pc.language << ":";
+            jv.add(u"language", pc.language);
         }
-        stm << "servcount=" << pc.services.size() << ":";
-        if (!pc.referenced) {
-            stm << "unreferenced:";
+        jv.add(u"service-count", pc.services.size());
+        jv.add(u"unreferenced", json::Bool(!pc.referenced));
+        jv.add(u"global", json::Bool(pc.services.size() == 0));
+        for (auto it1 = pc.services.begin(); it1 != pc.services.end(); ++it1) {
+            jv.query(u"services", true, json::TypeArray).set(*it1);
         }
-        else if (pc.services.size() == 0) {
-            stm << "global:";
-        }
-        else {
-            first = true;
-            for (auto it1 = pc.services.begin(); it1 != pc.services.end(); ++it1) {
-                stm << (first ? "servlist=" : ",") << *it1;
-                first = false;
-            }
-            if (!first) {
-                stm << ":";
-            }
-        }
-        first = true;
         for (auto it1 = pc.ssu_oui.begin(); it1 != pc.ssu_oui.end(); ++it1) {
-            stm << (first ? "ssuoui=" : ",") << *it1;
-            first = false;
+            jv.query(u"ssu-oui", true, json::TypeArray).set(*it1);
         }
-        if (!first) {
-            stm << ":";
+        jv.add(u"t2mi", json::Bool(pc.carry_t2mi));
+        for (auto it1 = pc.t2mi_plp_ts.begin(); it1 != pc.t2mi_plp_ts.end(); ++it1) {
+            jv.query(u"plp", true, json::TypeArray).set(it1->first);
         }
-        if (pc.carry_t2mi) {
-            stm << "t2mi:";
-            first = true;
-            for (auto it1 = pc.t2mi_plp_ts.begin(); it1 != pc.t2mi_plp_ts.end(); ++it1) {
-                stm << (first ? "plp=" : ",") << int(it1->first);
-                first = false;
-            }
-            if (!first) {
-                stm << ":";
-            }
-        }
-        stm << "bitrate=" << pc.bitrate << ":"
-            << "bitrate204=" << ToBitrate204(pc.bitrate) << ":"
-            << "packets=" << pc.ts_pkt_cnt << ":"
-            << "clear=" << (pc.ts_pkt_cnt - pc.ts_sc_cnt - pc.inv_ts_sc_cnt) << ":"
-            << "scrambled=" << pc.ts_sc_cnt << ":"
-            << "invalidscrambling=" << pc.inv_ts_sc_cnt << ":"
-            << "af=" << pc.ts_af_cnt << ":"
-            << "pcr=" << pc.pcr_cnt << ":"
-            << "discontinuities=" << pc.unexp_discont << ":"
-            << "duplicated=" << pc.duplicated << ":";
+        jv.add(u"bitrate", pc.bitrate);
+        jv.add(u"bitrate-204", ToBitrate204(pc.bitrate));
+        jv.query(u"packets", true).add(u"total", pc.ts_pkt_cnt);
+        jv.query(u"packets", true).add(u"clear", pc.ts_pkt_cnt - pc.ts_sc_cnt - pc.inv_ts_sc_cnt);
+        jv.query(u"packets", true).add(u"scrambled", pc.ts_sc_cnt);
+        jv.query(u"packets", true).add(u"invalid-scrambling", pc.inv_ts_sc_cnt);
+        jv.query(u"packets", true).add(u"af", pc.ts_af_cnt);
+        jv.query(u"packets", true).add(u"pcr", pc.pcr_cnt);
+        jv.query(u"packets", true).add(u"discontinuities", pc.unexp_discont);
+        jv.query(u"packets", true).add(u"duplicated", pc.duplicated);
         if (pc.carry_pes) {
-            stm << "pes=" << pc.pl_start_cnt << ":"
-                << "invalidpesprefix=" << pc.inv_pes_start << ":";
+            jv.add(u"pes", pc.pl_start_cnt);
+            jv.add(u"invalid-pes-prefix", pc.inv_pes_start);
         }
         else {
-            stm << "unitstart=" << pc.unit_start_cnt << ":";
+            jv.add(u"unit-start", pc.unit_start_cnt);
         }
-        stm << "description=" << pc.fullDescription(true) << std::endl;
     }
 
-    // Print one line per table
+    // One node per table
     for (auto pci = _pids.begin(); pci != _pids.end(); ++pci) {
         const PIDContext& pc(*pci->second);
         for (auto it = pc.sections.begin(); it != pc.sections.end(); ++it) {
             const ETIDContext& etc(*it->second);
-            stm << "table:"
-                << "pid=" << pc.pid << ":"
-                << "tid=" << int(etc.etid.tid()) << ":";
+            json::Value& jv(root.query(u"tables[]", true));
+            jv.add(u"pid", pc.pid);
+            jv.add(u"tid", etc.etid.tid());
             if (etc.etid.isLongSection()) {
-                stm << "tidext=" << etc.etid.tidExt() << ":";
+                jv.add(u"tid-ext", etc.etid.tidExt());
             }
-            stm << "tables=" << etc.table_count << ":"
-                << "sections=" << etc.section_count << ":"
-                << "repetitionpkt=" << etc.repetition_ts << ":"
-                << "minrepetitionpkt=" << etc.min_repetition_ts << ":"
-                << "maxrepetitionpkt=" << etc.max_repetition_ts << ":";
+            jv.add(u"tables", etc.table_count);
+            jv.add(u"sections", etc.section_count);
+            jv.add(u"repetition-pkt", etc.repetition_ts);
+            jv.add(u"min-repetition-pkt", etc.min_repetition_ts);
+            jv.add(u"max-repetition-pkt", etc.max_repetition_ts);
             if (_ts_bitrate != 0) {
-                stm << "repetitionms=" << PacketInterval(_ts_bitrate, etc.repetition_ts) << ":"
-                    << "minrepetitionms=" << PacketInterval(_ts_bitrate, etc.min_repetition_ts) << ":"
-                    << "maxrepetitionms=" << PacketInterval(_ts_bitrate, etc.max_repetition_ts) << ":";
+                jv.add(u"repetition-ms", PacketInterval(_ts_bitrate, etc.repetition_ts));
+                jv.add(u"min-repetition-ms", PacketInterval(_ts_bitrate, etc.min_repetition_ts));
+                jv.add(u"max-repetition-ms", PacketInterval(_ts_bitrate, etc.max_repetition_ts));
             }
             if (etc.versions.any()) {
-                stm << "firstversion=" << int(etc.first_version) << ":"
-                    << "lastversion=" << int(etc.last_version) << ":"
-                    << "versions=";
-                first = true;
+                jv.add(u"first-version", etc.first_version);
+                jv.add(u"last-version", etc.last_version);
                 for (size_t i = 0; i < etc.versions.size(); ++i) {
                     if (etc.versions.test(i)) {
-                        stm << (first ? "" : ",") << i;
-                        first = false;
+                        jv.query(u"versions", true, json::TypeArray).set(i);
                     }
                 }
-                stm << ":";
             }
-            stm << std::endl;
         }
     }
-    @@@@@@@@@@@@@*/
-    //@@@@@@@@@@@@@@@@@
 
     // An output text formatter for JSON output.
     TextFormatter text(rep);
