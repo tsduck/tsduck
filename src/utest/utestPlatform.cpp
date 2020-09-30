@@ -249,8 +249,8 @@ void PlatformTest::testIntegerTypes()
         << "PlatformTest: sizeof(int) = " << sizeof(int)
         << ", sizeof(long) = " << sizeof(long)
         << ", sizeof(long long) = " << sizeof(long long)
-        << ", sizeof(void*) = " << sizeof(void*)
-        << std::endl;
+        << ", sizeof(void*) = " << sizeof(void*) << std::endl
+        << "PlatformTest: TS_WCHAR_SIZE = " << TS_WCHAR_SIZE << std::endl;
 
     TSUNIT_EQUAL(1, sizeof(int8_t));
     TSUNIT_EQUAL(2, sizeof(int16_t));
@@ -277,6 +277,8 @@ void PlatformTest::testIntegerTypes()
     TSUNIT_ASSERT(!std::numeric_limits<uint16_t>::is_signed);
     TSUNIT_ASSERT(!std::numeric_limits<uint32_t>::is_signed);
     TSUNIT_ASSERT(!std::numeric_limits<uint64_t>::is_signed);
+
+    TSUNIT_EQUAL(sizeof(wchar_t), TS_WCHAR_SIZE);
 
     int8_t  i8  = -1;
     int16_t i16 = -1;

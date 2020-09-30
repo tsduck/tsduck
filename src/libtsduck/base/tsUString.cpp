@@ -399,6 +399,72 @@ std::ostream& operator<<(std::ostream& strm, const ts::UChar* str)
 
 
 //----------------------------------------------------------------------------
+// Convert a C++ "wide string" into a new UString.
+//----------------------------------------------------------------------------
+
+ts::UString ts::UString::FromWChar(const std::wstring& wstr)
+{
+    UString str;
+    str.assignFromWChar(wstr);
+    return str;
+}
+
+ts::UString ts::UString::FromWChar(const wchar_t* wstr)
+{
+    UString str;
+    str.assignFromWChar(wstr);
+    return str;
+}
+
+ts::UString ts::UString::FromWChar(const wchar_t* wstr, size_type count)
+{
+    UString str;
+    str.assignFromWChar(wstr, count);
+    return str;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a C++ "wide string" into this object.
+//----------------------------------------------------------------------------
+
+ts::UString& ts::UString::assignFromWChar(const wchar_t* wstr)
+{
+    return assignFromWChar(wstr, wstr == nullptr ? 0 : ::wcslen(wstr));
+}
+
+ts::UString& ts::UString::assignFromWChar(const wchar_t* wstr, size_type count)
+{
+    if (wstr == nullptr) {
+        clear();
+    }
+    else {
+#if TS_WCHAR_SIZE == 1
+        // Convert from UTF-8.
+        assignFromUTF8(reinterpret_cast<const char*>(wstr), count);
+#elif TS_WCHAR_SIZE == 2
+        // Already in UTF-16, direct binary copy.
+        resize(count);
+        ::memcpy(&(*this)[0], wstr, 2 * count);
+#else
+        // Assume that wchar_t is a full Unicode code point.
+        while (count-- > 0) {
+            const char32_t cp = *wstr++;
+            if (NeedSurrogate(cp)) {
+                append(LeadingSurrogate(cp));
+                append(TrailingSurrogate(cp));
+            }
+            else {
+                append(UChar(cp));
+            }
+        }
+#endif
+    }
+    return *this;
+}
+
+
+//----------------------------------------------------------------------------
 // Check if a character uses no space on display.
 //----------------------------------------------------------------------------
 

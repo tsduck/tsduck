@@ -95,8 +95,14 @@ namespace ts {
     TSDUCKDLL bool HasDektecSupport();
 
     //!
-    //! Get the versions of Dektec API and drivers.
+    //! Get the versions of Dektec API and drivers in one single string.
     //! @return A string describing the Dektec versions (or the lack of Dektec support).
     //!
     TSDUCKDLL UString GetDektecVersions();
+
+    //!
+    //! Get the versions of Dektec API and drivers.
+    //! @param [out] versions All versions. The map index is the driver or API name and the map value is its version.
+    //!
+    TSDUCKDLL void GetDektecVersions(std::map<UString,UString>& versions);
 }

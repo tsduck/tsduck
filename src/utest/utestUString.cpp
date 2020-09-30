@@ -54,6 +54,7 @@ public:
     void testUTF();
     void testDiacritical();
     void testSurrogate();
+    void testFromWChar();
     void testWidth();
     void testDisplayPosition();
     void testTrim();
@@ -108,6 +109,7 @@ public:
     TSUNIT_TEST(testUTF);
     TSUNIT_TEST(testDiacritical);
     TSUNIT_TEST(testSurrogate);
+    TSUNIT_TEST(testFromWChar);
     TSUNIT_TEST(testWidth);
     TSUNIT_TEST(testDisplayPosition);
     TSUNIT_TEST(testTrim);
@@ -344,6 +346,13 @@ void UStringTest::testSurrogate()
     TSUNIT_ASSERT(!ts::IsTrailingSurrogate(MATH_B1));
     TSUNIT_ASSERT(!ts::IsLeadingSurrogate(MATH_B2));
     TSUNIT_ASSERT(ts::IsTrailingSurrogate(MATH_B2));
+}
+
+void UStringTest::testFromWChar()
+{
+    TSUNIT_EQUAL(u"", ts::UString::FromWChar(nullptr));
+    TSUNIT_EQUAL(u"", ts::UString::FromWChar(L""));
+    TSUNIT_EQUAL(u"abcdef", ts::UString::FromWChar(L"abcdef"));
 }
 
 void UStringTest::testWidth()

@@ -32,6 +32,9 @@
 #include "tsDektecUtils.h"
 #include "tsDektecDevice.h"
 #include "tsDektecVPD.h"
+#include "tsjsonObject.h"
+#include "tsjsonString.h"
+#include "tsjsonNumber.h"
 TSDUCK_SOURCE;
 
 
@@ -43,6 +46,7 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     Args(u"Control Dektec devices", u"[options] [device]"),
     _list_all(false),
     _normalized(false),
+    _json(false),
     _wait_sec(0),
     _devindex(0),
     _reset(false),
@@ -80,6 +84,9 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
          u"option --wait (the led state is automatically returned to "
          u"\"hardware\" after exit).");
 
+    option(u"json", 'j');
+    help(u"json", u"With --all, list the Dektec devices in JSON format (useful for automatic analysis).");
+
     option(u"normalized", 'n');
     help(u"normalized", u"With --all, list the Dektec devices in a normalized output format (useful for automatic analysis).");
 
@@ -104,6 +111,7 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     _devindex   = intValue(u"", 0);
     _list_all   = present(u"all");
     _normalized = present(u"normalized");
+    _json       = present(u"json");
     _reset      = present(u"reset");
     _set_led    = present(u"led");
     _led_state  = intValue(u"led", DTAPI_LED_OFF);
@@ -111,6 +119,10 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     _set_output = intValue(u"output", -1);
     _wait_sec   = intValue(u"wait", _set_led ? 5 : 0);
     _power_mode = intValue(u"power-mode", -1);
+
+    if (_json && _normalized) {
+        error(u"options --json and --normalized are mutually exclusive");
+    }
 
     exitOnError();
 }
@@ -126,7 +138,7 @@ ts::DektecControl::~DektecControl()
 
 
 //----------------------------------------------------------------------------
-//  Display a long line on multiple lines
+// Display a long line on multiple lines
 //----------------------------------------------------------------------------
 
 void ts::DektecControl::wideDisplay(const UString& line)
@@ -140,7 +152,7 @@ void ts::DektecControl::wideDisplay(const UString& line)
 
 
 //----------------------------------------------------------------------------
-//  This routine displays a list of all Dektec devices. Return status.
+// Display a list of all Dektec devices. Return main() status.
 //----------------------------------------------------------------------------
 
 int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
@@ -239,8 +251,7 @@ int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
 
 
 //----------------------------------------------------------------------------
-//  This routine displays the capability of a hardware function in normalized
-//  format.
+// Display the capability of a hardware function in normalized format.
 //----------------------------------------------------------------------------
 
 void ts::DektecControl::listNormalizedCapabilities(size_t device_index, size_t channel_index, const char* type, const Dtapi::DtHwFuncDesc& hw)
@@ -317,8 +328,7 @@ void ts::DektecControl::listNormalizedCapabilities(size_t device_index, size_t c
 
 
 //----------------------------------------------------------------------------
-//  This routine displays a list of all Dektec devices in normalized format.
-//  Return status.
+// List all Dektec devices in normalized format. Return main() status.
 //----------------------------------------------------------------------------
 
 int ts::DektecControl::listNormalizedDevices(const DektecDeviceVector& devices)
@@ -415,7 +425,174 @@ int ts::DektecControl::listNormalizedDevices(const DektecDeviceVector& devices)
 
 
 //----------------------------------------------------------------------------
-//  Apply commands to one device. Return status.
+// Display the capability of a hardware function in JSON format.
+//----------------------------------------------------------------------------
+
+void ts::DektecControl::listCapabilitiesJSON(ts::json::Value& jv, size_t device_index, size_t channel_index, const Dtapi::DtHwFuncDesc &hw)
+{
+#if !defined(TS_NO_DTAPI)
+
+    jv.add(u"device", device_index);
+    jv.add(u"channel", channel_index);
+    jv.add(u"port", hw.m_Port);
+    jv.add(u"asi", json::Bool((hw.m_Flags & DTAPI_CAP_ASI) != 0));
+    jv.add(u"spi", json::Bool((hw.m_Flags & DTAPI_CAP_SPI) != 0));
+    jv.add(u"sdi", json::Bool((hw.m_Flags & DTAPI_CAP_SDI) != 0));
+    jv.add(u"spi-sdi", json::Bool((hw.m_Flags & DTAPI_CAP_SPISDI) != 0));
+    jv.add(u"modulator", json::Bool((hw.m_Flags & DTAPI_CAP_MOD) != 0));
+    jv.add(u"virtual-stream", json::Bool((hw.m_Flags & DTAPI_CAP_VIRTUAL) != 0));
+    jv.add(u"double-buffer", json::Bool((hw.m_Flags & DTAPI_CAP_DBLBUF) != 0));
+    jv.add(u"ts-over-ip", json::Bool((hw.m_Flags & DTAPI_CAP_IP) != 0));
+    jv.add(u"failsafe", json::Bool((hw.m_Flags & DTAPI_CAP_FAILSAFE) != 0));
+    jv.add(u"loop-through", json::Bool((hw.m_Flags & DTAPI_CAP_LOOPTHR) != 0));
+    jv.add(u"transparent", json::Bool((hw.m_Flags & DTAPI_CAP_TRPMODE) != 0));
+    jv.add(u"sdi-time-stamp", json::Bool((hw.m_Flags & DTAPI_CAP_SDITIME) != 0));
+    jv.add(u"sdi-time-stamp-64", json::Bool((hw.m_Flags & DTAPI_CAP_TIMESTAMP64) != 0));
+    jv.add(u"transmit-on-time-stamp", json::Bool((hw.m_Flags & DTAPI_CAP_TXONTIME) != 0));
+    jv.add(u"atsc", json::Bool((hw.m_Flags & DTAPI_CAP_TX_ATSC) != 0));
+    jv.add(u"cmmb", json::Bool((hw.m_Flags & DTAPI_CAP_TX_CMMB) != 0));
+    jv.add(u"dtmb", json::Bool((hw.m_Flags & DTAPI_CAP_TX_DTMB) != 0));
+    jv.add(u"dvb-c2", json::Bool((hw.m_Flags & DTAPI_CAP_TX_DVBC2) != 0));
+    jv.add(u"dvb-s", json::Bool((hw.m_Flags & DTAPI_CAP_TX_DVBS) != 0));
+    jv.add(u"dvb-s2", json::Bool((hw.m_Flags & DTAPI_CAP_TX_DVBS2) != 0));
+    jv.add(u"dvb-t", json::Bool((hw.m_Flags & DTAPI_CAP_TX_DVBT) != 0));
+    jv.add(u"dvb-t2", json::Bool((hw.m_Flags & DTAPI_CAP_TX_DVBT2) != 0));
+    jv.add(u"iq-samples", json::Bool((hw.m_Flags & DTAPI_CAP_TX_IQ) != 0));
+    jv.add(u"isdb-s", json::Bool((hw.m_Flags & DTAPI_CAP_TX_ISDBS) != 0));
+    jv.add(u"isdb-t", json::Bool((hw.m_Flags & DTAPI_CAP_TX_ISDBT) != 0));
+    jv.add(u"qam:qam-a:dvb-c", json::Bool((hw.m_Flags & DTAPI_CAP_TX_QAMA) != 0));
+    jv.add(u"qam:qam-b", json::Bool((hw.m_Flags & DTAPI_CAP_TX_QAMB) != 0));
+    jv.add(u"qam:qam-c", json::Bool((hw.m_Flags & DTAPI_CAP_TX_QAMC) != 0));
+    jv.add(u"vhf", json::Bool((hw.m_Flags & DTAPI_CAP_VHF) != 0));
+    jv.add(u"uhf", json::Bool((hw.m_Flags & DTAPI_CAP_UHF) != 0));
+    jv.add(u"lband", json::Bool((hw.m_Flags & DTAPI_CAP_LBAND) != 0));
+    jv.add(u"if-output", json::Bool((hw.m_Flags & DTAPI_CAP_IF) != 0));
+    jv.add(u"iq-output", json::Bool((hw.m_Flags & DTAPI_CAP_DIGIQ) != 0));
+    jv.add(u"adjust-level", json::Bool((hw.m_Flags & DTAPI_CAP_ADJLVL) != 0));
+    jv.add(u"access-down-converted", json::Bool((hw.m_Flags & DTAPI_CAP_IFADC) != 0));
+    jv.add(u"shared-input", json::Bool((hw.m_Flags & DTAPI_CAP_SHAREDANT) != 0));
+    jv.add(u"snr-setting", json::Bool((hw.m_Flags & DTAPI_CAP_SNR) != 0));
+    jv.add(u"channel-modelling", json::Bool((hw.m_Flags & DTAPI_CAP_CM) != 0));
+    jv.add(u"asi-raw-10bit", json::Bool((hw.m_Flags & DTAPI_CAP_RAWASI) != 0));
+    jv.add(u"lock-io-rate", json::Bool((hw.m_Flags & DTAPI_CAP_LOCK2INP) != 0));
+    jv.add(u"dedicated-clock-input", json::Bool((hw.m_Flags & DTAPI_CAP_EXTTSRATE) != 0));
+    jv.add(u"dedicated-clock-input-ratio", json::Bool((hw.m_Flags & DTAPI_CAP_EXTRATIO) != 0));
+    jv.add(u"spi-external-clock", json::Bool((hw.m_Flags & DTAPI_CAP_SPICLKEXT) != 0));
+    jv.add(u"lvds1", json::Bool((hw.m_Flags & DTAPI_CAP_SPILVDS1) != 0));
+    jv.add(u"lvds2", json::Bool((hw.m_Flags & DTAPI_CAP_SPILVDS2) != 0));
+    jv.add(u"lvttl", json::Bool((hw.m_Flags & DTAPI_CAP_SPILVTTL) != 0));
+    jv.add(u"spi-fixed-clock", json::Bool((hw.m_Flags & DTAPI_CAP_SPICLKINT) != 0));
+    jv.add(u"spi-serial-10-bit", json::Bool((hw.m_Flags & DTAPI_CAP_SPISER10B) != 0));
+    jv.add(u"spi-serial-8-bit", json::Bool((hw.m_Flags & DTAPI_CAP_SPISER8B) != 0));
+
+    if ((hw.m_Flags & DTAPI_CAP_IP) != 0) {
+        jv.add(u"ip", UString::Format(u"%d.%d.%d.%d", {hw.m_Ip[0] & 0xFF, hw.m_Ip[1] & 0xFF, hw.m_Ip[2] & 0xFF, hw.m_Ip[3] & 0xFF}));
+        jv.add(u"mac", UString::Format(u"%02X-%02X-%02X-%02X-%02X-%02X:",
+                                       {hw.m_MacAddr[0] & 0xFF, hw.m_MacAddr[1] & 0xFF, hw.m_MacAddr[2] & 0xFF,
+                                        hw.m_MacAddr[3] & 0xFF, hw.m_MacAddr[4] & 0xFF, hw.m_MacAddr[5] & 0xFF}));
+    }
+
+#endif // TS_NO_DTAPI
+}
+
+
+//----------------------------------------------------------------------------
+// List all Dektec devices in JSON format. Return main() status.
+//----------------------------------------------------------------------------
+
+int ts::DektecControl::listDevicesJSON(const DektecDeviceVector& devices)
+{
+#if !defined(TS_NO_DTAPI)
+
+    ts::json::Object root;
+
+    // Display DTAPI and device drivers versions
+    std::map<UString,UString> versions;
+    GetDektecVersions(versions);
+    for (auto it = versions.begin(); it != versions.end(); ++it) {
+        root.query(u"versions", true).add(it->first, it->second);
+    }
+
+    // Display device list
+    for (size_t index = 0; index < devices.size(); index++) {
+
+        const DektecDevice& device(devices[index]);
+        DektecVPD vpd(device.desc);
+        Dtapi::DtDevice dtdev;
+        json::Value& jdev(root.query(u"devices[]", true));
+
+        jdev.add(u"index", index);
+        jdev.add(u"model", device.model);
+
+        switch (device.desc.m_Category) {
+            case DTAPI_CAT_PCI:
+                jdev.query(u"pci", true).add(u"bus", device.desc.m_PciBusNumber);
+                jdev.query(u"pci", true).add(u"slot", device.desc.m_SlotNumber);
+                break;
+            case DTAPI_CAT_USB:
+                jdev.query(u"usb", true).add(u"address", device.desc.m_UsbAddress);
+                break;
+            default:
+                break;
+        }
+
+        jdev.add(u"nb-port", device.desc.m_NumPorts);
+        jdev.add(u"nb-input", device.input.size());
+        jdev.add(u"nb-output", device.output.size());
+        jdev.add(u"subsys-id", device.desc.m_SubsystemId);
+        jdev.add(u"subsys-vendor-id", device.desc.m_SubVendorId);
+        jdev.add(u"device-id", device.desc.m_DeviceId);
+        jdev.add(u"vendor-id", device.desc.m_VendorId);
+        jdev.add(u"serial", int64_t(device.desc.m_Serial));
+        jdev.add(u"fw-version", device.desc.m_FirmwareVersion);
+        jdev.add(u"fw-variant", device.desc.m_FirmwareVariant);
+        if (vpd.vpdid[0] != 0) {
+            jdev.add(u"vpd-id", UString::FromUTF8(vpd.vpdid));
+        }
+        if (vpd.cl[0] != 0) {
+            jdev.add(u"vpd-cl", UString::FromUTF8(vpd.cl));
+        }
+        if (vpd.ec[0] != 0) {
+            jdev.add(u"vpd-ec", UString::FromUTF8(vpd.ec));
+        }
+        if (vpd.mn[0] != 0) {
+            jdev.add(u"vpd-mn", UString::FromUTF8(vpd.mn));
+        }
+        if (vpd.pd[0] != 0) {
+            jdev.add(u"vpd-pd", UString::FromUTF8(vpd.pd));
+        }
+        if (vpd.pn[0] != 0) {
+            jdev.add(u"vpd-pn", UString::FromUTF8(vpd.pn));
+        }
+        if (vpd.xt[0] != 0) {
+            jdev.add(u"vpd-xt", UString::FromUTF8(vpd.xt));
+        }
+        if (vpd.bo[0] != 0) {
+            jdev.add(u"vpd-bo", UString::FromUTF8(vpd.bo));
+        }
+
+        for (size_t i = 0; i < device.input.size(); i++) {
+            listCapabilitiesJSON(jdev.query(u"inputs[]", true), index, i, device.input[i]);
+        }
+        for (size_t i = 0; i < device.output.size(); i++) {
+            listCapabilitiesJSON(jdev.query(u"outputs[]", true), index, i, device.output[i]);
+        }
+    }
+
+    // JSON output if required.
+    ts::TextFormatter text(*this);
+    text.setStream(std::cout);
+    root.print(text);
+    text << std::endl;
+
+#endif // TS_NO_DTAPI
+
+    return EXIT_SUCCESS;
+}
+
+
+//----------------------------------------------------------------------------
+// Apply commands to one device. Return main() status.
 //----------------------------------------------------------------------------
 
 int ts::DektecControl::oneDevice(const DektecDevice& device)
@@ -524,7 +701,7 @@ int ts::DektecControl::oneDevice(const DektecDevice& device)
 
 
 //----------------------------------------------------------------------------
-// Execute the command.
+// Execute the dektec control command.
 //----------------------------------------------------------------------------
 
 int ts::DektecControl::execute()
@@ -538,16 +715,29 @@ int ts::DektecControl::execute()
 
     DektecDeviceVector devices;
     DektecDevice::GetAllDevices(devices);
+
     if (_list_all) {
-        return _normalized ? listNormalizedDevices(devices) : listDevices(devices);
-    }
-    else if (_devindex >= devices.size()) {
-        // Invalid device index specified
-        error(u"invalid device index: %d", {_devindex});
-        return EXIT_FAILURE;
+        // List all devices
+        if (_json) {
+            return listDevicesJSON(devices);
+        }
+        else if(_normalized) {
+            return listNormalizedDevices(devices);
+        }
+        else {
+            return listDevices(devices);
+        }
     }
     else {
-        return oneDevice(devices[_devindex]);
+        // List only one device
+        if (_devindex >= devices.size()) {
+            // Invalid device index specified
+            error(u"invalid device index: %d", {_devindex});
+            return EXIT_FAILURE;
+        }
+        else {
+            return oneDevice(devices[_devindex]);
+        }
     }
 
 #endif // TS_NO_DTAPI

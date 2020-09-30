@@ -1212,6 +1212,31 @@ TS_POP_WARNING()
     #define TS_SIZE_T_IS_STDINT 1
 #endif
 
+//!
+//! Size of @c wchar_t in bytes.
+//!
+#if defined(DOXYGEN)
+    #define TS_WCHAR_SIZE
+#elif defined(__SIZEOF_WCHAR_T__) && !defined(TS_WCHAR_SIZE)
+    // Typically gcc and clang.
+    #define TS_WCHAR_SIZE __SIZEOF_WCHAR_T__
+#elif (defined(__WCHAR_MAX__) && __WCHAR_MAX__ < 0x10000) && !defined(TS_WCHAR_SIZE)
+    #define TS_WCHAR_SIZE 2
+#elif (defined(__WCHAR_MAX__) && __WCHAR_MAX__ >= 0x10000) && !defined(TS_WCHAR_SIZE)
+    // Assume that wchar_t is 32-bit if larger than 16-bit
+    #define TS_WCHAR_SIZE 4
+#elif (defined(WCHAR_MAX) && WCHAR_MAX < 0x10000) && !defined(TS_WCHAR_SIZE)
+    #define TS_WCHAR_SIZE 2
+#elif (defined(WCHAR_MAX) && WCHAR_MAX >= 0x10000) && !defined(TS_WCHAR_SIZE)
+    // Assume that wchar_t is 32-bit if larger than 16-bit
+    #define TS_WCHAR_SIZE 4
+#elif defined(TS_MSC)
+    // Microsoft compiler used to use 16-bit "wide characters".
+    #define TS_WCHAR_SIZE 2
+#else
+    #error "size of wchar_t is unknown on this platform"
+#endif
+
 
 //----------------------------------------------------------------------------
 // Definition of common integer literals.

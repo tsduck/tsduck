@@ -142,7 +142,7 @@ bool ts::HasDektecSupport()
 
 
 //-----------------------------------------------------------------------------
-// Get the versions of Dektec API and drivers.
+// Get the versions of Dektec API and drivers in one single string.
 //-----------------------------------------------------------------------------
 
 ts::UString ts::GetDektecVersions()
@@ -150,36 +150,54 @@ ts::UString ts::GetDektecVersions()
 #if defined(TS_NO_DTAPI)
     return TS_NO_DTAPI_MESSAGE;
 #else
-    // DTAPI version is always available.
+    std::map<UString,UString> versions;
+    GetDektecVersions(versions);
+
+    UString result;
+    for (auto it = versions.begin(); it != versions.end(); ++it) {
+        if (!result.empty()) {
+            result.append(u", ");
+        }
+        result.append(it->first);
+        result.append(u": ");
+        result.append(it->second);
+    }
+    return result;
+#endif
+}
+
+
+//-----------------------------------------------------------------------------
+// Get the versions of Dektec API and drivers.
+//-----------------------------------------------------------------------------
+
+void ts::GetDektecVersions(std::map<UString,UString>& versions)
+{
+    versions.clear();
+
+#if !defined(TS_NO_DTAPI)
+
     int major = 0;
     int minor = 0;
     int bugfix = 0;
     int build = 0;
-    Dtapi::DtapiGetVersion(major, minor, bugfix, build);
-    UString result(UString::Format(u"DTAPI: %d.%d.%d.%d", {major, minor, bugfix, build}));
 
-    // Services and drivers are optional.
+    // DTAPI version is always available.
+    Dtapi::DtapiGetVersion(major, minor, bugfix, build);
+    versions[u"DTAPI"].format(u"%d.%d.%d.%d", {major, minor, bugfix, build});
+
+    // DTAPI service is optional.
     major = minor = bugfix = build = 0;
     if (Dtapi::DtapiGetDtapiServiceVersion(major, minor, bugfix, build) == DTAPI_OK) {
-        result.append(UString::Format(u", Service: %d.%d.%d.%d", {major, minor, bugfix, build}));
-    }
-    major = minor = bugfix = build = 0;
-    if (Dtapi::DtapiGetDeviceDriverVersion(DTAPI_CAT_PCI, major, minor, bugfix, build) == DTAPI_OK) {
-        result.append(UString::Format(u", Dta: %d.%d.%d.%d", {major, minor, bugfix, build}));
-    }
-    major = minor = bugfix = build = 0;
-    if (Dtapi::DtapiGetDeviceDriverVersion(DTAPI_CAT_USB, major, minor, bugfix, build) == DTAPI_OK) {
-        result.append(UString::Format(u", Dtu: %d.%d.%d.%d", {major, minor, bugfix, build}));
-    }
-    major = minor = bugfix = build = 0;
-    if (Dtapi::DtapiGetDeviceDriverVersion(DTAPI_CAT_NW, major, minor, bugfix, build) == DTAPI_OK) {
-        result.append(UString::Format(u", DtaNw: %d.%d.%d.%d", {major, minor, bugfix, build}));
-    }
-    major = minor = bugfix = build = 0;
-    if (Dtapi::DtapiGetDeviceDriverVersion(DTAPI_CAT_NWAP, major, minor, bugfix, build) == DTAPI_OK) {
-        result.append(UString::Format(u", DtaNwAp: %d.%d.%d.%d", {major, minor, bugfix, build}));
+        versions[u"Service"].format(u"%d.%d.%d.%d", {major, minor, bugfix, build});
     }
 
-    return result;
+    // Get all Dektec drivers versions.
+    std::vector<Dtapi::DtDriverVersionInfo> drv;
+    if (Dtapi::DtapiGetDeviceDriverVersion(DTAPI_CAT_ALL, drv) == DTAPI_OK) {
+        for (auto it = drv.begin(); it != drv.end(); ++it) {
+            versions[UString::FromWChar(it->m_Name)].format(u"%d.%d.%d.%d", {it->m_Major, it->m_Minor, it->m_BugFix, it->m_Build});
+        }
+    }
 #endif
 }

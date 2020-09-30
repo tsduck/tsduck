@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsArgs.h"
+#include "tsjson.h"
 
 #if !defined(DOXYGEN)
 // Forward definitions for private part only.
@@ -80,6 +81,7 @@ namespace ts {
         // Command line parameters.
         bool   _list_all;      //!< List all Dektec devices
         bool   _normalized;    //!< List in "normalized" format
+        bool   _json;          //!< List in JSON format
         int    _wait_sec;      //!< Wait time before exit
         size_t _devindex;      //!< Dektec device
         bool   _reset;         //!< Reset the device
@@ -100,6 +102,12 @@ namespace ts {
 
         // Displays the capability of a hardware function in normalized format.
         void listNormalizedCapabilities(size_t device_index, size_t channel_index, const char* type, const Dtapi::DtHwFuncDesc& hw);
+
+        // Displays a list of all Dektec devices in JSON format. Return command status.
+        int listDevicesJSON(const DektecDeviceVector& devices);
+
+        // Displays the capability of a hardware function in JSON format.
+        void listCapabilitiesJSON(ts::json::Value&, size_t device_index, size_t channel_index, const Dtapi::DtHwFuncDesc& hw);
 
         // Display a long line on multiple lines
         void wideDisplay(const UString& line);
