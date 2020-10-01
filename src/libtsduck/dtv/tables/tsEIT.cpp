@@ -265,10 +265,7 @@ void ts::EIT::deserializePayload(PSIBuffer& buf, const Section& section)
         Event& event(events.newEntry());
         event.event_id = buf.getUInt16();
         event.start_time = buf.getFullMJD();
-        const int hour = buf.getBCD<int>(2);
-        const int min = buf.getBCD<int>(2);
-        const int sec = buf.getBCD<int>(2);
-        event.duration = (hour * 3600) + (min * 60) + sec;
+        event.duration = buf.getSecondsBCD();
         buf.getBits(event.running_status, 3);
         event.CA_controlled = buf.getBool();
         buf.getDescriptorListWithLength(event.descs);
@@ -314,9 +311,7 @@ void ts::EIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         // Insert event entry.
         buf.putUInt16(ev.event_id);
         buf.putFullMJD(ev.start_time);
-        buf.putBCD(ev.duration / 3600, 2);
-        buf.putBCD((ev.duration / 60) % 60, 2);
-        buf.putBCD(ev.duration % 60, 2);
+        buf.putSecondsBCD(ev.duration);
         buf.putBits(ev.running_status, 3);
         buf.putBit(ev.CA_controlled);
         buf.putPartialDescriptorListWithLength(ev.descs);

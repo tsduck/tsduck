@@ -305,6 +305,36 @@ namespace ts {
         Time getMJD(size_t mjd_size);
 
         //!
+        //! Put (serialize) a duration in minutes as 4 BCD digits (HHMM), 2 bytes.
+        //! Generate a write error when the buffer is not large enough.
+        //! @param [in] duration A number of minutes.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putMinutesBCD(SubSecond duration);
+
+        //!
+        //! Put (serialize) a duration in seconds as 6 BCD digits (HHMMSS), 3 bytes.
+        //! Generate a write error when the buffer is not large enough.
+        //! @param [in] duration A number of seconds.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putSecondsBCD(Second duration);
+
+        //!
+        //! Get (deserialize) a duration in minutes as 4 BCD digits (HHMM), 2 bytes.
+        //! Generate a read error when there is not enough bytes.
+        //! @return The duration in minutes.
+        //!
+        SubSecond getMinutesBCD();
+
+        //!
+        //! Get (deserialize) a duration in seconds as 6 BCD digits (HHMMSS), 3 bytes.
+        //! Generate a read error when there is not enough bytes.
+        //! @return The duration in minutes.
+        //!
+        Second getSecondsBCD();
+
+        //!
         //! Put (serialize) a complete descriptor list.
         //!
         //! Generate a write error when the buffer is not large enough to write all descriptors or when the

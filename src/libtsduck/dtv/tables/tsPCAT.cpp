@@ -156,10 +156,7 @@ void ts::PCAT::deserializePayload(PSIBuffer& buf, const Section& section)
             // indicates the duration of the partial contents announcement by hours, minutes, and seconds."
             // It does not say if this is binary or BCD. We assume here the same format as in EIT, ie. BCD.
             sched.start_time = buf.getFullMJD();
-            const int hour = buf.getBCD<int>(2);
-            const int min = buf.getBCD<int>(2);
-            const int sec = buf.getBCD<int>(2);
-            sched.duration = (hour * 3600) + (min * 60) + sec;
+            sched.duration = buf.getSecondsBCD();
             cv.schedules.push_back(sched);
         }
 
@@ -228,9 +225,7 @@ void ts::PCAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         for (auto it2 = cv.schedules.begin(); it2 != cv.schedules.end(); ++it2) {
             // Serialize the schedule. See [Warning #2] above.
             buf.putFullMJD(it2->start_time);
-            buf.putBCD(it2->duration / 3600, 2);
-            buf.putBCD((it2->duration / 60) % 60, 2);
-            buf.putBCD(it2->duration % 60, 2);
+            buf.putSecondsBCD(it2->duration);
         }
 
         // Close the schedule_description_length sequence.

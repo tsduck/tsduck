@@ -59,6 +59,7 @@
     REF_TYPE(AudioStreamDescriptor);
     REF_TYPE(AVCTimingAndHRDDescriptor);
     REF_TYPE(AVCVideoDescriptor);
+    REF_TYPE(BasicLocalEventDescriptor);
     REF_TYPE(BoardInformationDescriptor);
     REF_TYPE(BouquetNameDescriptor);
     REF_TYPE(BroadcasterNameDescriptor);
@@ -242,6 +243,7 @@
     REF_TYPE(SSUMessageDescriptor);
     REF_TYPE(SSUSubgroupAssociationDescriptor);
     REF_TYPE(SSUURIDescriptor);
+    REF_TYPE(STCReferenceDescriptor);
     REF_TYPE(STDDescriptor);
     REF_TYPE(StereoscopicProgramInfoDescriptor);
     REF_TYPE(StereoscopicVideoInfoDescriptor);
