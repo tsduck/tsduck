@@ -4196,3 +4196,25 @@ Bits = 2
 1 = Carried in Content Identifier Table (CIT)
 2 = DVB reserved
 3 = DVB reserved
+
+[BasicLocalEventSegmentation]
+# In ISDB basic_local_event_descriptor
+Bits = 4
+0 = Invalid
+1 = NPT
+2 = Relative time
+3 = Relative time (STC reference descriptor is used together)
+4 = JST time
+5 = JST time (STC reference descriptor is used together)
+6-15 = Reserved
+
+[STCReferenceMode]
+# In ISDB STC_reference_descriptor
+Bits = 4
+0 = Invalid
+1 = NPT
+2 = Undefined
+3 = Relative time
+4 = Undefined
+5 = JST time
+6-15 = Reserved

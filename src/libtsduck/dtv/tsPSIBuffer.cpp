@@ -285,6 +285,38 @@ ts::Time ts::PSIBuffer::getMJD(size_t mjd_size)
 }
 
 
+//----------------------------------------------------------------------------
+// Serialize and deserialize durations in BCD digits.
+//----------------------------------------------------------------------------
+
+bool ts::PSIBuffer::putMinutesBCD(SubSecond duration)
+{
+    return putBCD(std::abs(duration) / 60, 2) &&
+           putBCD(std::abs(duration) % 60, 2);
+}
+
+bool ts::PSIBuffer::putSecondsBCD(Second duration)
+{
+    return putBCD(std::abs(duration) / 3600, 2) &&
+           putBCD((std::abs(duration) / 60) % 60, 2) &&
+           putBCD(std::abs(duration) % 60, 2);
+}
+
+ts::SubSecond ts::PSIBuffer::getMinutesBCD()
+{
+    const SubSecond hours = getBCD<SubSecond>(2);
+    const SubSecond minutes = getBCD<SubSecond>(2);
+    return (hours * 60) + minutes;
+}
+
+ts::Second ts::PSIBuffer::getSecondsBCD()
+{
+    const SubSecond hours = getBCD<SubSecond>(2);
+    const SubSecond minutes = getBCD<SubSecond>(2);
+    const SubSecond seconds = getBCD<SubSecond>(2);
+    return (hours * 3600) + (minutes * 60) + seconds;
+}
+
 
 //----------------------------------------------------------------------------
 // Put (serialize) a complete descriptor list.

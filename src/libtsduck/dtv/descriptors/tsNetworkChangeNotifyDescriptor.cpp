@@ -113,9 +113,7 @@ void ts::NetworkChangeNotifyDescriptor::serializePayload(PSIBuffer& buf) const
             buf.putUInt8(it2->network_change_id);
             buf.putUInt8(it2->network_change_version);
             buf.putMJD(it2->start_time_of_change, MJD_SIZE);
-            buf.putBCD(it2->change_duration / 3660, 2);
-            buf.putBCD((it2->change_duration / 60) % 60, 2);
-            buf.putBCD(it2->change_duration % 60, 2);
+            buf.putSecondsBCD(it2->change_duration);
             buf.putBits(it2->receiver_category, 3);
             buf.putBit(invariant_ts_present);
             buf.putBits(it2->change_type, 4);

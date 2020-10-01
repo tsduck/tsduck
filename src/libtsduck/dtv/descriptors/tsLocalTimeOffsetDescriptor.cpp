@@ -89,11 +89,9 @@ void ts::LocalTimeOffsetDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBits(it->region_id, 6);
         buf.putBit(1);
         buf.putBit(it->time_offset < 0);
-        buf.putBCD(std::abs(it->time_offset) / 60, 2);
-        buf.putBCD(std::abs(it->time_offset) % 60, 2);
+        buf.putMinutesBCD(it->time_offset);
         buf.putMJD(it->next_change, MJD_SIZE);
-        buf.putBCD(std::abs(it->next_time_offset) / 60, 2);
-        buf.putBCD(std::abs(it->next_time_offset) % 60, 2);
+        buf.putMinutesBCD(it->next_time_offset);
     }
 }
 
@@ -109,14 +107,10 @@ void ts::LocalTimeOffsetDescriptor::deserializePayload(PSIBuffer& buf)
         buf.getLanguageCode(region.country);
         buf.getBits(region.region_id, 6);
         buf.skipBits(1);
-        const uint8_t polarity = buf.getBit();
-        int hours = buf.getBCD<int>(2);
-        int minutes = buf.getBCD<int>(2);
-        region.time_offset = (polarity ? -1 : 1) * ((hours * 60) + minutes);
+        const int polarity = buf.getBool() ? -1 : 1;
+        region.time_offset = polarity * int(buf.getMinutesBCD());
         region.next_change = buf.getMJD(MJD_SIZE);
-        hours = buf.getBCD<int>(2);
-        minutes = buf.getBCD<int>(2);
-        region.next_time_offset = (polarity ? -1 : 1) * ((hours * 60) + minutes);
+        region.next_time_offset = polarity * int(buf.getMinutesBCD());
         regions.push_back(region);
     }
 }

@@ -949,6 +949,20 @@
         AVC_24_hour_picture="bool, required"
         frame_packing_SEI_not_present="bool, default=false"/>
 
+    <basic_local_event_descriptor
+        segmentation_mode="uint4, required"
+        start_time_NPT="uint33, optional"
+        end_time_NPT="uint33, optional"
+        start_time="hh:mm:ss, optional"
+        duration="hh:mm:ss, optional"
+        start_time_extension="mmm, optional"
+        duration_extension="mmm, optional">
+      <reserved_data>
+        Hexadecimal content
+      </reserved_data>
+      <component tag="uint8, required"/>
+    </basic_local_event_descriptor>
+
     <board_information_descriptor
         title="string, required"
         text="string, required"/>
@@ -2440,6 +2454,20 @@
         max_holdoff_time="uint8, required"
         min_polling_interval="uint8, required"
         uri="string, required"/>
+
+    <STC_reference_descriptor
+        STC_reference_mode="uint4, required"
+        external_event_id="uint16, optional"
+        external_service_id="uint16, optional"
+        external_network_id="uint16, optional"
+        NPT_reference="uint33, optional"
+        STC_reference="uint33, optional"
+        time_reference="hh:mm:ss, optional"
+        time_reference_extension="mmm, optional">
+      <reserved_data>
+        Hexadecimal content
+      </reserved_data>
+    </STC_reference_descriptor>
 
     <STD_descriptor leak_valid="bool, required"/>
 
