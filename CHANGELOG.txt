@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2009
+VERSION 3.24-2011
 
 [NEW] New commands and plugins:
 
@@ -22,6 +22,12 @@ VERSION 3.24-2009
     - Option --subtitles-pid in plugin "zap".
     - Option --json in "tscmp" an "tsdektec".
     - Options --json and --deterministic in "tsanalyze" and plugin "analyze".
+
+[BUG] Bug fixes:
+
+  * Fixed issue #646: Several commands and plugins crashed in case of invalid
+    PES packets when the specified PES length was not zero but lower than the
+    PES header size.
 
 -------------------------------------------------------------------------------
 

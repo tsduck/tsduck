@@ -119,8 +119,8 @@ void ts::PESPacket::initialize(const ByteBlockPtr& bbp)
     }
 
     // Fixed common header size
-    const uint8_t* data = bbp->data();
-    size_t size = bbp->size();
+    const uint8_t* const data = bbp->data();
+    const size_t size = bbp->size();
     if (size < 6) {
         return;
     }
@@ -136,7 +136,7 @@ void ts::PESPacket::initialize(const ByteBlockPtr& bbp)
         if (size < 9) {
             return;
         }
-        _header_size = 9 + size_t (data[8]);
+        _header_size = 9 + size_t(data[8]);
         if (size < _header_size) {
             return;
         }
@@ -144,6 +144,13 @@ void ts::PESPacket::initialize(const ByteBlockPtr& bbp)
     else {
         // No additional header fields
         _header_size = 6;
+    }
+
+    // Check that the embedded size is either zero (unbounded) or within actual data size.
+    // This field indicates the packet length _after_ that field (ie. after offset 6).
+    const size_t psize = 6 + size_t(GetUInt16(data + 4));
+    if (psize != 6 && (psize < _header_size || psize > size)) {
+        return;
     }
 
     // Passed all checks
