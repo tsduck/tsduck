@@ -266,6 +266,8 @@ ts::UString ts::SRTSocket::GetLibraryVersion() { return NOSRT_ERROR_MSG; }
 TS_PUSH_WARNING()
 TS_LLVM_NOWARNING(documentation)
 TS_LLVM_NOWARNING(old-style-cast)
+TS_LLVM_NOWARNING(undef)
+TS_GCC_NOWARNING(undef)
 TS_MSC_NOWARNING(4005)  // 'xxx' : macro redefinition
 TS_MSC_NOWARNING(4668)  // 'xxx' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 #include <srt/srt.h>
