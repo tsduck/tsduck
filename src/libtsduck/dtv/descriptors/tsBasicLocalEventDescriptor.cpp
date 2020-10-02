@@ -195,7 +195,7 @@ void ts::BasicLocalEventDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         else {
             disp.displayPrivateData(u"Reserved data", buf, NPOS, margin);
         }
-        disp.displayPrivateData(u"Extraneous segmentation info data", buf, NPOS, margin),
+        disp.displayPrivateData(u"Extraneous segmentation info data", buf, NPOS, margin);
         buf.popState(); // end of segmentation_info_length
         while (buf.canRead()) {
             disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;

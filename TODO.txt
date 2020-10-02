@@ -52,9 +52,6 @@ TSDuck - List of features to be implemented or fixed
     - 6.2.40  LDT_linkage_descriptor
     - 6.2.41  connected_transmission_descriptor
     - 6.2.46  carousel_compatible_composite_descriptor
-  - Part 3:
-    - 5.2.1   basic_local_event_descriptor
-    - 5.2.5   STC_reference_descriptor
 
   ARIB STD-B21 (ISDB Receiver for Digital Broadcasting)
   - 9.1.8.3   partial_transport_stream_time_descriptor
