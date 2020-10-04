@@ -122,32 +122,28 @@ void ts::ContentAdvisoryDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ContentAdvisoryDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ContentAdvisoryDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        size_t reg_count = data[0] & 0x3F;
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        buf.skipBits(2);
+        size_t reg_count = buf.getBits<size_t>(6);
         disp << margin << "Number of regions: " << reg_count << std::endl;
-        while (size >= 2 && reg_count > 0) {
-            size_t dim_count = data[1];
-            disp << margin << UString::Format(u"- Rating region: 0x%X (%d), number of dimensions: %d", {data[0], data[0], dim_count}) << std::endl;
-            data += 2; size -= 2;
-            while (size >= 2 && dim_count > 0) {
-                disp << margin << UString::Format(u"    Rating dimension j: 0x%X (%d), rating value: %d", {data[0], data[0], data[1] & 0x0F}) << std::endl;
-                data += 2; size -= 2; dim_count--;
+        while (buf.canReadBytes(2) && reg_count > 0) {
+            disp << margin << UString::Format(u"- Rating region: 0x%X (%<d)", {buf.getUInt8()});
+            size_t dim_count = buf.getUInt8();
+            disp << UString::Format(u", number of dimensions: %d", {dim_count}) << std::endl;
+            while (buf.canReadBytes(2) && dim_count > 0) {
+                disp << margin << UString::Format(u"    Rating dimension j: 0x%X (%<d)", {buf.getUInt8()});
+                buf.skipBits(4);
+                disp << UString::Format(u", rating value: %d", {buf.getBits<uint8_t>(4)}) << std::endl;
+                dim_count--;
             }
-            if (size >= 1) {
-                size_t len = data[0];
-                data++; size--;
-                ATSCMultipleString::Display(disp, u"Rating description: ", margin + u"  ", data, size, len);
+            if (buf.canReadBytes(1)) {
+                disp.displayATSCMultipleString(buf, 1, margin + u"  ", u"Rating description: ");
             }
             reg_count--;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

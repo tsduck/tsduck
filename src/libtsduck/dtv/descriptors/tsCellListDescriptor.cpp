@@ -144,27 +144,19 @@ void ts::CellListDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CellListDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CellListDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 10) {
-        disp << margin << UString::Format(u"- Cell id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl;
-        DisplayCoordinates(disp, data + 2, size - 2, margin + u"  ");
-        size_t len = data[9];
-        data += 10; size -= 10;
-
-        while (size >= len && len >= 8) {
-            disp << margin << UString::Format(u"  - Subcell id ext: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-            DisplayCoordinates(disp, data + 1, size - 1, margin + u"    ");
-            data += 8; size -= 8; len -= 8;
+    while (buf.canReadBytes(10)) {
+        disp << margin << UString::Format(u"- Cell id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        DisplayCoordinates(disp, buf, margin + u"  ");
+        buf.pushReadSizeFromLength(8); // start read sequence
+        while (buf.canReadBytes(8)) {
+            disp << margin << UString::Format(u"  - Subcell id ext: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            DisplayCoordinates(disp, buf, margin + u"    ");
         }
-        if (len > 0) {
-            break;
-        }
+        disp.displayPrivateData(u"Extraneous subcell data", buf, NPOS, margin + u"  ");
+        buf.popState(); // end read sequence
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
@@ -172,18 +164,16 @@ void ts::CellListDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, con
 // Static method to display coordinates of a cell or subcell.
 //----------------------------------------------------------------------------
 
-void ts::CellListDescriptor::DisplayCoordinates(TablesDisplay& disp, const uint8_t* data, size_t size, const UString& margin)
+void ts::CellListDescriptor::DisplayCoordinates(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
+    const int32_t latitude = buf.getInt16();
+    const int32_t longitude = buf.getInt16();
+    const uint16_t lat_ext = buf.getBits<uint16_t>(12);
+    const uint16_t long_ext = buf.getBits<uint16_t>(12);
 
-    int32_t latitude = GetInt16(data);
-    int32_t longitude = GetInt16(data + 2);
-    uint32_t ext = GetUInt24(data + 4);
-    uint16_t lat_ext = uint16_t(ext >> 12) & 0x0FFF;
-    uint16_t long_ext = uint16_t(ext) & 0x0FFF;
-
-    disp << margin << UString::Format(u"Raw latitude/longitude: %d/%d, extent: %d/%d", {latitude, longitude, lat_ext, long_ext}) << std::endl
-         << margin << "Actual latitude range: " << ToDegrees(latitude, true) << " to " << ToDegrees(latitude + lat_ext, true) << std::endl
-         << margin << "Actual longitude range: " << ToDegrees(longitude, false) << " to " << ToDegrees(longitude + long_ext, false) << std::endl;
+    disp << margin << UString::Format(u"Raw latitude/longitude: %d/%d, extent: %d/%d", {latitude, longitude, lat_ext, long_ext}) << std::endl;
+    disp << margin << "Actual latitude range: " << ToDegrees(latitude, true) << " to " << ToDegrees(latitude + lat_ext, true) << std::endl;
+    disp << margin << "Actual longitude range: " << ToDegrees(longitude, false) << " to " << ToDegrees(longitude + long_ext, false) << std::endl;
 }
 
 

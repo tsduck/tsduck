@@ -120,7 +120,7 @@ void ts::ApplicationDescriptor::deserializePayload(PSIBuffer& buf)
         p.version_micro = buf.getUInt8();
         profiles.push_back(p);
     }
-    buf.popState(); // update application_profiles_length
+    buf.popState(); // end of application_profiles_length
     service_bound = buf.getBool();
     buf.getBits(visibility, 2);
     buf.skipBits(5);
@@ -133,31 +133,25 @@ void ts::ApplicationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ApplicationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ApplicationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        size_t len = std::min<size_t>(data[0], size - 1);
-        data++; size--;
-        while (size >= 5 && len >= 5) {
-            const uint16_t pr = GetUInt16(data);
-            disp << margin << UString::Format(u"Profile: 0x%X (%d), version: %d.%d.%d", {pr, pr, data[2], data[3], data[4]}) << std::endl;
-            data += 5; size -= 5; len -= 5;
-        }
-        if (size >= 1) {
-            disp << margin
-                 << UString::Format(u"Service bound: %d, visibility: %d, priority: %d", {data[0] >> 7, (data[0] >> 5) & 0x03, data[1]})
-                 << std::endl;
-            data += 2; size -= 2;
-        }
-        while (size > 0) {
-            disp << margin << UString::Format(u"Transport protocol label: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-            data++; size--;
-        }
+    buf.pushReadSizeFromLength(8); // application_profiles_length
+    while (buf.canReadBytes(5)) {
+        disp << margin << UString::Format(u"Profile: 0x%X (%<d)", {buf.getUInt16()});
+        disp << UString::Format(u", version: %d", {buf.getUInt8()});
+        disp << UString::Format(u".%d", {buf.getUInt8()});
+        disp << UString::Format(u".%d", {buf.getUInt8()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    buf.popState(); // end of application_profiles_length
+    if (buf.canReadBytes(1)) {
+        disp << margin << UString::Format(u"Service bound: %d", {buf.getBool()});
+        disp << UString::Format(u", visibility: %d", {buf.getBits<uint8_t>(2)});
+        buf.skipBits(5);
+        disp << UString::Format(u", priority: %d", {buf.getUInt8()}) << std::endl;
+    }
+    while (buf.canReadBytes(1)) {
+        disp << margin << UString::Format(u"Transport protocol label: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+    }
 }
 
 

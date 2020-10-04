@@ -112,30 +112,21 @@ void ts::CAContractInfoDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CAContractInfoDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CAContractInfoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 5) {
-        size_t count = data[2] & 0x0F;
-        disp << margin << "CA System Id: " << names::CASId(disp.duck(), GetUInt16(data), names::FIRST) << std::endl
-             << margin << UString::Format(u"CA unit id: %d", {(data[2] >> 4) & 0x0F}) << std::endl;
-        data += 3; size -= 3;
-        while (size > 0 && count > 0) {
-            disp << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-            data++; size--; count--;
+    if (buf.canReadBytes(5)) {
+        disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), names::FIRST) << std::endl;
+        disp << margin << UString::Format(u"CA unit id: %d", {buf.getBits<uint8_t>(4)}) << std::endl;
+        for (size_t count = buf.getBits<size_t>(4); buf.canRead() && count > 0; count--) {
+            disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         }
-        if (size > 0) {
-            count = std::min<size_t>(data[0], size - 1);
-            disp.displayPrivateData(u"Contract verification info", data + 1, count, margin);
-            data += count + 1; size -= count + 1;
+        if (buf.canReadBytes(1)) {
+            disp.displayPrivateData(u"Contract verification info", buf, buf.getUInt8(), margin);
         }
-        if (size > 0) {
-            disp << margin << "Fee name: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
+        if (buf.canReadBytes(1)) {
+            disp << margin << "Fee name: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

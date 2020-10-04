@@ -116,26 +116,17 @@ void ts::AreaBroadcastingInformationDescriptor::deserializePayload(PSIBuffer& bu
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AreaBroadcastingInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AreaBroadcastingInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        size_t count = data[0];
-        data++; size--;
-
-        while (count > 0 && size >= 7) {
-            disp << margin << UString::Format(u"- Station id: 0x%X (%d)", {GetUInt24(data), GetUInt24(data)}) << std::endl
-                 << margin << UString::Format(u"  Location code: 0x%X (%d)", {GetUInt16(data + 3), GetUInt16(data + 3)}) << std::endl
-                 << margin << "  Broadcast signal format: " << NameFromSection(u"ISDBBroadcastSignalFormat", GetUInt8(data + 5), names::HEXA_FIRST) << std::endl;
-            size_t len = GetUInt8(data + 6);
-            data += 7; size -= 7;
-            len = std::min(len, size);
-            disp.displayPrivateData(u"Additional station info", data, len, margin + u"  ");
-            data += len; size -= len; count--;
+    if (buf.canReadBytes(1)) {
+        size_t count = buf.getUInt8();
+        while (count > 0 && buf.canReadBytes(7)) {
+            disp << margin << UString::Format(u"- Station id: 0x%X (%<d)", {buf.getUInt24()}) << std::endl;
+            disp << margin << UString::Format(u"  Location code: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << "  Broadcast signal format: " << NameFromSection(u"ISDBBroadcastSignalFormat", buf.getUInt8(), names::HEXA_FIRST) << std::endl;
+            disp.displayPrivateData(u"Additional station info", buf, buf.getUInt8(), margin + u"  ");
         }
     }
-    disp.displayExtraData(data, size, margin);
 }
 
 

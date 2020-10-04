@@ -90,8 +90,7 @@ void ts::AssociationTagDescriptor::deserializePayload(PSIBuffer& buf)
 {
     association_tag = buf.getUInt16();
     use = buf.getUInt16();
-    const size_t len = buf.getUInt8();
-    buf.getBytes(selector_bytes, len);
+    buf.getBytes(selector_bytes, buf.getUInt8());
     buf.getBytes(private_data);
 }
 
@@ -100,22 +99,13 @@ void ts::AssociationTagDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AssociationTagDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AssociationTagDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 5) {
-        const uint16_t tag = GetUInt16(data);
-        const uint16_t use = GetUInt16(data + 2);
-        const size_t len = std::min<size_t>(size - 5, GetUInt8(data + 4));
-        data += 5; size -= 5;
-
-        disp << margin << UString::Format(u"Association tag: 0x%X (%d), use: 0x%X (%d)", {tag, tag, use, use}) << std::endl;
-        disp.displayPrivateData(u"Selector bytes", data, len, margin);
-        disp.displayPrivateData(u"Private data", data + len, size - len, margin);
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+    if (buf.canReadBytes(5)) {
+        disp << margin << UString::Format(u"Association tag: 0x%X (%<d)", {buf.getUInt16()});
+        disp << UString::Format(u", use: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp.displayPrivateData(u"Selector bytes", buf, buf.getUInt8(), margin);
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }
 

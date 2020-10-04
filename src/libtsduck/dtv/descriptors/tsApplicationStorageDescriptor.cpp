@@ -113,22 +113,17 @@ void ts::ApplicationStorageDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ApplicationStorageDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ApplicationStorageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 7) {
-        const uint32_t vers = GetUInt32(data + 2) & 0x7FFFFFFF;
-        disp << margin << UString::Format(u"Storage property: 0x%X (%d)", {data[0], data[0]}) << std::endl
-             << margin << "Not launchable from broadcast: " << UString::YesNo((data[1] & 0x80) != 0) << std::endl
-             << margin << "Launchable completely from cache: " << UString::YesNo((data[1] & 0x40) != 0) << std::endl
-             << margin << "Is launchable with older version: " << UString::YesNo((data[1] & 0x20) != 0) << std::endl
-             << margin << UString::Format(u"Version: 0x%X (%d)", {vers, vers}) << std::endl
-             << margin << UString::Format(u"Storage property: 0x%X (%d)", {data[6], data[6]}) << std::endl;
-        data += 7; size -= 7;
+    if (buf.canReadBytes(7)) {
+        disp << margin << UString::Format(u"Storage property: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << "Not launchable from broadcast: " << UString::YesNo(buf.getBool()) << std::endl;
+        disp << margin << "Launchable completely from cache: " << UString::YesNo(buf.getBool()) << std::endl;
+        disp << margin << "Is launchable with older version: " << UString::YesNo(buf.getBool()) << std::endl;
+        buf.skipBits(6);
+        disp << margin << UString::Format(u"Version: 0x%X (%<d)", {buf.getBits<uint32_t>(31)}) << std::endl;
+        disp << margin << UString::Format(u"Storage property: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

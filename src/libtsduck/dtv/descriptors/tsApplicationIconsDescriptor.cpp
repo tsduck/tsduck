@@ -100,21 +100,19 @@ void ts::ApplicationIconsDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ApplicationIconsDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ApplicationIconsDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size > 0) {
-        disp << margin << "Icon locator: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
-        if (size >= 2) {
-            const uint16_t flags = GetUInt16(data);
+    if (buf.canReadBytes(1)) {
+        disp << margin << "Icon locator: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
+        if (buf.canReadBytes(2)) {
+            const uint16_t flags = buf.getUInt16();
             disp << margin << UString::Format(u"Icon flags: 0x%X", {flags}) << std::endl;
             for (uint16_t mask = 0x0001; mask != 0; mask <<= 1) {
                 if ((flags & mask) != 0) {
                     disp << margin << "  - " << NameFromSection(u"ApplicationIconFlags", mask) << std::endl;
                 }
             }
-            disp.displayPrivateData(u"Reserved bytes", data + 2, size - 2, margin);
+            disp.displayPrivateData(u"Reserved bytes", buf, NPOS, margin);
         }
     }
 }

@@ -112,6 +112,21 @@ void ts::ApplicationSignallingDescriptor::deserializePayload(PSIBuffer& buf)
 
 
 //----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::ApplicationSignallingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+{
+    while (buf.canReadBytes(3)) {
+        buf.skipBits(1);
+        disp << margin << UString::Format(u"Application type: %d (0x%<X)", {buf.getBits<uint16_t>(15)});
+        buf.skipBits(3);
+        disp << UString::Format(u", AIT Version: %d (0x%<X)", {buf.getBits<uint8_t>(5)}) << std::endl;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // XML serialization
 //----------------------------------------------------------------------------
 
@@ -141,23 +156,4 @@ bool ts::ApplicationSignallingDescriptor::analyzeXML(DuckContext& duck, const xm
         entries.push_back(entry);
     }
     return ok;
-}
-
-
-//----------------------------------------------------------------------------
-// Static method to display a descriptor.
-//----------------------------------------------------------------------------
-
-void ts::ApplicationSignallingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
-{
-    const UString margin(indent, ' ');
-
-    while (size >= 3) {
-        uint16_t app_type = GetUInt16(data) & 0x7FFF;
-        uint8_t ait_version = data[2] & 0x1F;
-        data += 3; size -= 3;
-        disp << margin << UString::Format(u"Application type: %d (0x%X), AIT Version: %d (0x%X)", {app_type, app_type, ait_version, ait_version}) << std::endl;
-    }
-
-    disp.displayExtraData(data, size, margin);
 }

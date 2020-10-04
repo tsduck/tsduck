@@ -100,17 +100,16 @@ void ts::AudioStreamDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        disp << margin << UString::Format(u"Free format: %s, variable rate: %s", {UString::TrueFalse((data[0] & 0x80) != 0), UString::TrueFalse((data[0] & 0x08) != 0)}) << std::endl
-             << margin << UString::Format(u"ID: %d, layer: %d", {(data[0] >> 6) & 0x01, (data[0] >> 4) & 0x03}) << std::endl;
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        disp << margin << "Free format: " << UString::TrueFalse(buf.getBool());
+        const uint8_t id = buf.getBit();
+        const uint8_t layer = buf.getBits<uint8_t>(2);
+        disp << ", variable rate: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << UString::Format(u"ID: %d, layer: %d", {id, layer}) << std::endl;
+        buf.skipBits(3);
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

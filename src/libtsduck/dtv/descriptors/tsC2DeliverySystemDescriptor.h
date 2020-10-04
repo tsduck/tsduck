@@ -66,7 +66,7 @@ namespace ts {
         C2DeliverySystemDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods
