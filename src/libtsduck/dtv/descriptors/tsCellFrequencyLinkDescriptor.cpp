@@ -126,25 +126,18 @@ void ts::CellFrequencyLinkDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CellFrequencyLinkDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CellFrequencyLinkDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 7) {
-        size_t len = data[6];
-        disp << margin << UString::Format(u"- Cell id: 0x%X, frequency: %'d Hz", {GetUInt16(data), uint64_t(GetUInt32(data + 2)) * 10}) << std::endl;
-        data += 7; size -= 7;
-
-        while (size >= len && len >= 5) {
-            disp << margin << UString::Format(u"  Subcell id ext: 0x%X, frequency: %'d Hz", {data[0], uint64_t(GetUInt32(data + 1)) * 10}) << std::endl;
-            data += 5; size -= 5; len -= 5;
+    while (buf.canReadBytes(7)) {
+        disp << margin << UString::Format(u"- Cell id: 0x%X", {buf.getUInt16()});
+        disp << UString::Format(u", frequency: %'d Hz", {10 * uint64_t(buf.getUInt32())}) << std::endl;
+        buf.pushReadSizeFromLength(8); // start read sequence
+        while (buf.canRead()) {
+            disp << margin << UString::Format(u"  Subcell id ext: 0x%X", {buf.getUInt8()});
+            disp << UString::Format(u", frequency: %'d Hz", {10 * uint64_t(buf.getUInt32())}) << std::endl;
         }
-        if (len > 0) {
-            break;
-        }
+        buf.popState(); // end read sequence
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

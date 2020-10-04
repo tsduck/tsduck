@@ -148,66 +148,45 @@ void ts::ApplicationRecordingDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
     // Flags in first byte.
-    bool valid = size >= 1;
-    if (valid) {
-        disp << margin << "Scheduled recording: " << UString::TrueFalse((data[0] & 0x80) != 0) << std::endl
-             << margin << "Trick mode aware: " << UString::TrueFalse((data[0] & 0x40) != 0) << std::endl
-             << margin << "Time shift: " << UString::TrueFalse((data[0] & 0x20) != 0) << std::endl
-             << margin << "Dynamic: " << UString::TrueFalse((data[0] & 0x10) != 0) << std::endl
-             << margin << "Av synced: " << UString::TrueFalse((data[0] & 0x08) != 0) << std::endl
-             << margin << "Initiating replay: " << UString::TrueFalse((data[0] & 0x04) != 0) << std::endl;
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        disp << margin << "Scheduled recording: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << "Trick mode aware: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << "Time shift: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << "Dynamic: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << "Av synced: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << "Initiating replay: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        buf.skipBits(2);
     }
 
     // Labels
-    valid = valid && size >= 1;
-    if (valid) {
-        uint8_t labelCount = data[0];
-        data++; size--;
-        while (valid && labelCount > 0) {
-            valid = size >= 1 && size >= size_t(data[0] + 2);
-            if (valid) {
-                const size_t len = data[0];
-                disp << margin
-                     << UString::Format(u"Label: \"%s\", storage properties: 0x%X", {disp.duck().decoded(data + 1, len), uint8_t((data[len + 1] >> 6) & 0x03)})
-                     << std::endl;
-                data += len + 2;
-                size -= len + 2;
-                labelCount--;
-            }
+    if (buf.canReadBytes(1)) {
+        uint8_t labelCount = buf.getUInt8();
+        while (buf.canReadBytes(1) && labelCount > 0) {
+            disp << margin << "Label: \"" << buf.getStringWithByteLength();
+            disp << UString::Format(u"\", storage properties: 0x%X", {buf.getBits<uint8_t>(2)}) << std::endl;
+            buf.skipBits(6);
+            labelCount--;
         }
-        valid = valid && labelCount == 0;
     }
 
     // Component tags.
-    valid = valid && size >= 1 && size >= size_t(1 + data[0]);
-    if (valid) {
-        uint8_t count = data[0];
-        data++; size--;
-        while (count > 0) {
-            disp << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-            data++; size--;
+    if (buf.canReadBytes(1)) {
+        uint8_t count = buf.getUInt8();
+        while (count > 0 && buf.canReadBytes(1)) {
+            disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
             count--;
         }
     }
 
     // Private data.
-    valid = valid && size >= 1 && size >= size_t(1 + data[0]);
-    if (valid) {
-        uint8_t count = data[0];
-        data++; size--;
-        disp.displayPrivateData(u"Private data", data, count, margin);
-        data += count; size -= count;
-        disp.displayPrivateData(u"Reserved bytes", data, size, margin);
-        size = 0;
+    if (buf.canReadBytes(1)) {
+        uint8_t count = buf.getUInt8();
+        disp.displayPrivateData(u"Private data", buf, count, margin);
+        disp.displayPrivateData(u"Reserved bytes", buf, NPOS, margin);
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

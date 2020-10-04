@@ -176,22 +176,17 @@ bool ts::CableDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml:
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 11) {
-        uint8_t fec_outer = data[5] & 0x0F;
-        uint8_t modulation = data[6];
-        uint8_t fec_inner = data[10] & 0x0F;
-        std::string freq, srate;
-        BCDToString(freq, data, 8, 4);
-        BCDToString(srate, data + 7, 7, 3, true);
-        data += 11; size -= 11;
-
-        disp << margin << "Frequency: " << freq << " MHz" << std::endl
-             << margin << "Symbol rate: " << srate << " Msymbol/s" << std::endl
-             << margin << "Modulation: ";
+    if (buf.canReadBytes(11)) {
+        disp << margin << UString::Format(u"Frequency: %d", {buf.getBCD<uint32_t>(4)});
+        disp << UString::Format(u".%04d MHz", {buf.getBCD<uint32_t>(4)}) << std::endl;
+        buf.skipBits(12);
+        const uint8_t fec_outer = buf.getBits<uint8_t>(4);
+        const uint8_t modulation = buf.getUInt8();
+        disp << margin << UString::Format(u"Symbol rate: %d", {buf.getBCD<uint32_t>(3)});
+        disp << UString::Format(u".%04d Msymbol/s", {buf.getBCD<uint32_t>(4)}) << std::endl;
+        disp << margin << "Modulation: ";
         switch (modulation) {
             case 0:  disp << "not defined"; break;
             case 1:  disp << "16-QAM"; break;
@@ -209,6 +204,7 @@ void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, D
             case 2:  disp << "RS(204/188)"; break;
             default: disp << "code " << int(fec_outer) << " (reserved)"; break;
         }
+        const uint8_t fec_inner = buf.getBits<uint8_t>(4);
         disp << ", Inner FEC: ";
         switch (fec_inner) {
             case 0:  disp << "not defined"; break;
@@ -226,6 +222,4 @@ void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, D
         }
         disp << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }

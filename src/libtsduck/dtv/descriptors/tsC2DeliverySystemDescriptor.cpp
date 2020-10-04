@@ -131,31 +131,17 @@ const ts::Enumeration ts::C2DeliverySystemDescriptor::C2GuardIntervalNames({
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::C2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::C2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-
-    if (size >= 7) {
-        const uint8_t plp = data[0];
-        const uint8_t slice = data[1];
-        const uint32_t freq = GetUInt32(data + 2);
-        const uint8_t type = (data[6] >> 6) & 0x03;
-        const uint8_t duration = (data[6] >> 3) & 0x07;
-        const uint8_t guard = data[6] & 0x07;
-        data += 7; size -= 7;
-
-        disp << margin << UString::Format(u"PLP id: 0x%X (%d), data slice id: 0x%X (%d)", {plp, plp, slice, slice}) << std::endl
-             << margin << UString::Format(u"Frequency: %'d Hz (0x%X)", {freq, freq}) << std::endl
-             << margin << UString::Format(u"Tuning frequency type: %s", {NameFromSection(u"C2TuningType", type, names::FIRST)}) << std::endl
-             << margin << UString::Format(u"Symbol duration: %s", {NameFromSection(u"C2SymbolDuration", duration, names::FIRST)}) << std::endl
-             << margin << UString::Format(u"Guard interval: %d (%s)", {guard, C2GuardIntervalNames.name(guard)}) << std::endl;
+    if (buf.canReadBytes(7)) {
+        disp << margin << UString::Format(u"PLP id: 0x%X (%<d)", {buf.getUInt8()});
+        disp << UString::Format(u", data slice id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Frequency: %'d Hz (0x%<X)", {buf.getUInt32()}) << std::endl;
+        disp << margin << UString::Format(u"Tuning frequency type: %s", {NameFromSection(u"C2TuningType", buf.getBits<uint8_t>(2), names::FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"Symbol duration: %s", {NameFromSection(u"C2SymbolDuration", buf.getBits<uint8_t>(3), names::FIRST)}) << std::endl;
+        const uint8_t guard = buf.getBits<uint8_t>(3);
+        disp << margin << UString::Format(u"Guard interval: %d (%s)", {guard, C2GuardIntervalNames.name(guard)}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
