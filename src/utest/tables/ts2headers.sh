@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Parameters: A list of .ts files.
 # Each file contains captured TS packets with one table.

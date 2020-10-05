@@ -149,49 +149,25 @@ void ts::TelephoneDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TelephoneDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TelephoneDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 3) {
-        const uint8_t ctype = data[0] & 0x1F;
-        disp << margin << UString::Format(u"Foreign availability: %s", {(data[0] & 0x20) != 0}) << std::endl
-             << margin << UString::Format(u"Connection type: 0x%X (%d)", {ctype, ctype}) << std::endl;
-        const size_t country_len = (data[1] >> 5) & 0x03;
-        const size_t inter_len = (data[1] >> 2) & 0x07;
-        const size_t oper_len = data[1] & 0x03;
-        const size_t nat_len = (data[2] >> 4) & 0x07;
-        const size_t core_len = data[2] & 0x0F;
-        data += 3; size -= 3;
-
-        UString str;
-        if (size >= country_len && DVBCharTableSingleByte::RAW_ISO_8859_1.decode(str, data, country_len)) {
-            data += country_len; size -= country_len;
-            disp << margin << "Country prefix: \"" << str << "\"" << std::endl;
-
-            if (size >= inter_len && DVBCharTableSingleByte::RAW_ISO_8859_1.decode(str, data, inter_len)) {
-                data += inter_len; size -= inter_len;
-                disp << margin << "International area code: \"" << str << "\"" << std::endl;
-
-                if (size >= oper_len && DVBCharTableSingleByte::RAW_ISO_8859_1.decode(str, data, oper_len)) {
-                    data += oper_len; size -= oper_len;
-                    disp << margin << "Operator code: \"" << str << "\"" << std::endl;
-
-                    if (size >= nat_len && DVBCharTableSingleByte::RAW_ISO_8859_1.decode(str, data, nat_len)) {
-                        data += nat_len; size -= nat_len;
-                        disp << margin << "National area code: \"" << str << "\"" << std::endl;
-
-                        if (size >= core_len && DVBCharTableSingleByte::RAW_ISO_8859_1.decode(str, data, core_len)) {
-                            data += core_len; size -= core_len;
-                            disp << margin << "Core number: \"" << str << "\"" << std::endl;
-                        }
-                    }
-                }
-            }
-        }
+    if (buf.canReadBytes(3)) {
+        buf.skipBits(2);
+        disp << margin << UString::Format(u"Foreign availability: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"Connection type: 0x%X (%<d)", {buf.getBits<uint8_t>(5)}) << std::endl;
+        buf.skipBits(1);
+        const size_t country_len = buf.getBits<size_t>(2);
+        const size_t inter_len = buf.getBits<size_t>(3);
+        const size_t oper_len = buf.getBits<size_t>(2);
+        buf.skipBits(1);
+        const size_t nat_len = buf.getBits<size_t>(3);
+        const size_t core_len = buf.getBits<size_t>(4);
+        disp << margin << "Country prefix: \"" << buf.getString(country_len, &DVBCharTableSingleByte::RAW_ISO_8859_1) << "\"" << std::endl;
+        disp << margin << "International area code: \"" << buf.getString(inter_len, &DVBCharTableSingleByte::RAW_ISO_8859_1) << "\"" << std::endl;
+        disp << margin << "Operator code: \"" << buf.getString(oper_len, &DVBCharTableSingleByte::RAW_ISO_8859_1) << "\"" << std::endl;
+        disp << margin << "National area code: \"" << buf.getString(nat_len, &DVBCharTableSingleByte::RAW_ISO_8859_1) << "\"" << std::endl;
+        disp << margin << "Core number: \"" << buf.getString(core_len, &DVBCharTableSingleByte::RAW_ISO_8859_1) << "\"" << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

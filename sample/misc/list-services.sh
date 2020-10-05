@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # List all services from a set of TS files.
 
 group_digits() { sed <<<$1 -r ':L;s=\b([0-9]+)([0-9]{3})\b=\1,\2=g;t L'; }

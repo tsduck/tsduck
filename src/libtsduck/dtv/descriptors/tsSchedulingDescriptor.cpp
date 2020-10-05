@@ -139,25 +139,20 @@ void ts::SchedulingDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SchedulingDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SchedulingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 14) {
-        Time start, end;
-        DecodeMJD(data, 5, start);
-        DecodeMJD(data + 5, 5, end);
-        disp << margin << "Start time: " << start.format(Time::DATETIME) << std::endl
-             << margin << "End time:   " << end.format(Time::DATETIME) << std::endl
-             << margin << UString::Format(u"Final availability: %s", {(data[10] & 0x80) != 0}) << std::endl
-             << margin << UString::Format(u"Periodicity: %s", {(data[10] & 0x40) != 0}) << std::endl
-             << margin << UString::Format(u"Period: %d %ss", {data[11], SchedulingUnitNames.name((data[10] >> 4) & 0x03)}) << std::endl
-             << margin << UString::Format(u"Duration: %d %ss", {data[12], SchedulingUnitNames.name((data[10] >> 2) & 0x03)}) << std::endl
-             << margin << UString::Format(u"Estimated cycle time: %d %ss", {data[13], SchedulingUnitNames.name(data[10] & 0x03)}) << std::endl;
-        disp.displayPrivateData(u"Private data", data + 14, size - 14, margin);
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+    if (buf.canReadBytes(14)) {
+        disp << margin << "Start time: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
+        disp << margin << "End time:   " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
+        disp << margin << UString::Format(u"Final availability: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"Periodicity: %s", {buf.getBool()}) << std::endl;
+        const uint8_t period_unit = buf.getBits<uint8_t>(2);
+        const uint8_t duration_unit = buf.getBits<uint8_t>(2);
+        const uint8_t cycle_unit = buf.getBits<uint8_t>(2);
+        disp << margin << UString::Format(u"Period: %d %ss", {buf.getUInt8(), SchedulingUnitNames.name(period_unit)}) << std::endl;
+        disp << margin << UString::Format(u"Duration: %d %ss", {buf.getUInt8(), SchedulingUnitNames.name(duration_unit)}) << std::endl;
+        disp << margin << UString::Format(u"Estimated cycle time: %d %ss", {buf.getUInt8(), SchedulingUnitNames.name(cycle_unit)}) << std::endl;
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Scan a few known broadcast networks.
 # See function showhelp() below.
 

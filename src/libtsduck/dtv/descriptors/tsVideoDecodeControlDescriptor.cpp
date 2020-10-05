@@ -104,18 +104,14 @@ void ts::VideoDecodeControlDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::VideoDecodeControlDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::VideoDecodeControlDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size > 0) {
-        disp << margin << UString::Format(u"Still picture: %s", {(data[0] & 0x80) != 0}) << std::endl
-             << margin << UString::Format(u"Sequence end code: %s", {(data[0] & 0x40) != 0}) << std::endl
-             << margin << "Video encode format: " << NameFromSection(u"VideoEncodeFormat", (data[0] >> 2) & 0x0F, names::DECIMAL_FIRST) << std::endl
-             << margin << UString::Format(u"Reserve future use: %d", {data[0] & 0x03}) << std::endl;
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        disp << margin << UString::Format(u"Still picture: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"Sequence end code: %s", {buf.getBool()}) << std::endl;
+        disp << margin << "Video encode format: " << NameFromSection(u"VideoEncodeFormat", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << UString::Format(u"Reserve future use: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
     }
-    disp.displayExtraData(data, size, margin);
 }
 
 

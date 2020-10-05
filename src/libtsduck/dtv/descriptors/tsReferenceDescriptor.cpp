@@ -116,24 +116,17 @@ void ts::ReferenceDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ReferenceDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ReferenceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        disp << margin << UString::Format(u"Information provider id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-             << margin << UString::Format(u"Event relation id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl;
-        data += 4; size -= 4;
-
-        while (size >= 4) {
-            disp << margin << UString::Format(u"- Reference node id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-                 << margin << UString::Format(u"  Reference number: 0x%X (%d)", {data[2], data[2]}) << std::endl
-                 << margin << UString::Format(u"  Last reference number: 0x%X (%d)", {data[3], data[3]}) << std::endl;
-            data += 4; size -= 4;
+    if (buf.canReadBytes(4)) {
+        disp << margin << UString::Format(u"Information provider id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Event relation id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        while (buf.canReadBytes(4)) {
+            disp << margin << UString::Format(u"- Reference node id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"  Reference number: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"  Last reference number: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -163,37 +163,27 @@ void ts::DVBAC3Descriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBAC3Descriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBAC3Descriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        uint8_t flags = data[0];
-        data++; size--;
-        if ((flags & 0x80) && size >= 1) { // component_type
-            uint8_t type = data[0];
-            data++; size--;
-            disp << margin << "Component type: " << names::AC3ComponentType(type, names::FIRST) << std::endl;
+    if (buf.canReadBytes(1)) {
+        const bool component_type_flag = buf.getBool();
+        const bool bsid_flag = buf.getBool();
+        const bool mainid_flag = buf.getBool();
+        const bool asvc_flag = buf.getBool();
+        buf.skipBits(4);
+        if (component_type_flag && buf.canReadBytes(1)) {
+            disp << margin << "Component type: " << names::AC3ComponentType(buf.getUInt8(), names::FIRST) << std::endl;
         }
-        if ((flags & 0x40) && size >= 1) { // bsid
-            uint8_t bsid = data[0];
-            data++; size--;
-            disp << margin << UString::Format(u"AC-3 coding version: %d (0x%X)", {bsid, bsid}) << std::endl;
+        if (bsid_flag && buf.canReadBytes(1)) {
+            disp << margin << UString::Format(u"AC-3 coding version: %d (0x%<X)", {buf.getUInt8()}) << std::endl;
         }
-        if ((flags & 0x20) && size >= 1) { // mainid
-            uint8_t mainid = data[0];
-            data++; size--;
-            disp << margin << UString::Format(u"Main audio service id: %d (0x%X)", {mainid, mainid}) << std::endl;
+        if (mainid_flag && buf.canReadBytes(1)) {
+            disp << margin << UString::Format(u"Main audio service id: %d (0x%<X)", {buf.getUInt8()}) << std::endl;
         }
-        if ((flags & 0x10) && size >= 1) { // asvc
-            uint8_t asvc = data[0];
-            data++; size--;
-            disp << margin << UString::Format(u"Associated to: 0x%X", {asvc}) << std::endl;
+        if (asvc_flag && buf.canReadBytes(1)) {
+            disp << margin << UString::Format(u"Associated to: 0x%X", {buf.getUInt8()}) << std::endl;
         }
-        disp.displayPrivateData(u"Additional information", data, size, margin);
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+        disp.displayPrivateData(u"Additional information", buf, NPOS, margin);
     }
 }
 

@@ -143,46 +143,23 @@ void ts::VideoDepthRangeDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
+    while (buf.canReadBytes(2)) {
+        const uint8_t type = buf.getUInt8();
+        disp << margin << UString::Format(u"- Range type: 0x%X (%<d)", {type}) << std::endl;
 
-    const UString margin(indent, ' ');
-    bool ok = true;
-
-    while (ok && size >= 2) {
-        const uint8_t type = data[0];
-        size_t len = data[1];
-        data += 2; size -= 2;
-        disp << margin << UString::Format(u"- Range type: 0x%X (%d)", {type, type}) << std::endl;
-
-        switch (type) {
-            case 0:
-                ok = len == 3;
-                if (ok) {
-                    const int32_t hint = GetInt24(data);
-                    const int16_t max = SignExtend(int16_t(hint >> 12), 12);
-                    const int16_t min = SignExtend(int16_t(hint), 12);
-                    data += 3; size -= 3;
-                    disp << margin << UString::Format(u"  Video max disparity hint: %d, min: %d", {max, min}) << std::endl;
-                }
-                break;
-            case 1:
-                ok = len == 0;
-                break;
-            default:
-                ok = size >= len;
-                if (ok) {
-                    disp.displayPrivateData(u"Range selector bytes", data, len, margin + u"  ");
-                    data += len; size -= len;
-                }
-                break;
+        buf.pushReadSizeFromLength(8); // range_length
+        if (type == 0 && buf.canReadBytes(3)) {
+            disp << margin << UString::Format(u"  Video max disparity hint: %d", {buf.getBits<int16_t>(12)});
+            disp << UString::Format(u", min: %d", {buf.getBits<int16_t>(12)}) << std::endl;
         }
+        else if (type > 1) {
+            disp.displayPrivateData(u"Range selector bytes", buf, NPOS, margin + u"  ");
+        }
+        disp.displayPrivateData(u"Extraneous range selector bytes", buf, NPOS, margin + u"  ");
+        buf.popState(); // from range_length
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

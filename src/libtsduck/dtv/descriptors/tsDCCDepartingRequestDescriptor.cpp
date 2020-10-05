@@ -90,17 +90,12 @@ void ts::DCCDepartingRequestDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DCCDepartingRequestDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DCCDepartingRequestDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 2) {
-        disp << margin << UString::Format(u"DCC departing request type: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-        const size_t len = data[1];
-        data += 2; size -= 2;
-        ATSCMultipleString::Display(disp, u"DCC departing request text: ", margin, data, size, len);
+    if (buf.canReadBytes(2)) {
+        disp << margin << UString::Format(u"DCC departing request type: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp.displayATSCMultipleString(buf, 1, margin, u"DCC departing request text: ");
     }
-    disp.displayExtraData(data, size, margin);
 }
 
 

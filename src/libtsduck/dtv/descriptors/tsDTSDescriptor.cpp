@@ -119,32 +119,17 @@ void ts::DTSDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTSDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DTSDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 5) {
-        uint8_t sample_rate_code = (data[0] >> 4) & 0x0F;
-        uint8_t bit_rate_code = (GetUInt16(data) >> 6) & 0x3F;
-        uint8_t nblks = (GetUInt16(data + 1) >> 7) & 0x7F;
-        uint16_t fsize = (GetUInt16(data + 2) >> 1) & 0x3FFF;
-        uint8_t surround_mode = (GetUInt16(data + 3) >> 3) & 0x3F;
-        bool lfe_flag = ((data[4] >> 2) & 0x01) != 0;
-        uint8_t extended_surround_flag = data[4] & 0x03;
-        data += 5; size -= 5;
-
-        disp << margin << "Sample rate code: " << names::DTSSampleRateCode(sample_rate_code) << std::endl
-             << margin << "Bit rate code: " << names::DTSBitRateCode(bit_rate_code) << std::endl
-             << margin << "NBLKS: " << int(nblks) << std::endl
-             << margin << "FSIZE: " << int(fsize) << std::endl
-             << margin << "Surround mode: " << names::DTSSurroundMode(surround_mode) << std::endl
-             << margin << "LFE (Low Frequency Effect) audio channel: " << UString::OnOff(lfe_flag) << std::endl
-             << margin << "Extended surround flag: " << names::DTSExtendedSurroundMode(extended_surround_flag) << std::endl;
-
-        disp.displayPrivateData(u"Additional information", data, size, margin);
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+    if (buf.canReadBytes(5)) {
+        disp << margin << "Sample rate code: " << names::DTSSampleRateCode(buf.getBits<uint8_t>(4)) << std::endl;
+        disp << margin << "Bit rate code: " << names::DTSBitRateCode(buf.getBits<uint8_t>(6)) << std::endl;
+        disp << margin << "NBLKS: " << buf.getBits<uint16_t>(7) << std::endl;
+        disp << margin << "FSIZE: " << buf.getBits<uint16_t>(14) << std::endl;
+        disp << margin << "Surround mode: " << names::DTSSurroundMode(buf.getBits<uint8_t>(6)) << std::endl;
+        disp << margin << "LFE (Low Frequency Effect) audio channel: " << UString::OnOff(buf.getBool()) << std::endl;
+        disp << margin << "Extended surround flag: " << names::DTSExtendedSurroundMode(buf.getBits<uint8_t>(2)) << std::endl;
+        disp.displayPrivateData(u"Additional information", buf, NPOS, margin);
     }
 }
 

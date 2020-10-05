@@ -111,21 +111,16 @@ void ts::EASInbandExceptionChannelsDescriptor::deserializePayload(PSIBuffer& buf
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::EASInbandExceptionChannelsDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::EASInbandExceptionChannelsDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size > 0) {
-        uint8_t count = data[0];
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        uint8_t count = buf.getUInt8();
         disp << margin << UString::Format(u"Exception channel count: %d", {count}) << std::endl;
-        while (size >= 3 && count-- > 0) {
-            disp << margin << UString::Format(u"  RF channel: %d, program number 0x%X (%d)", {data[0], GetUInt16(data + 1), GetUInt16(data + 1)}) << std::endl;
-            data += 3; size -= 3;
+        while (buf.canReadBytes(3) && count-- > 0) {
+            disp << margin << UString::Format(u"  RF channel: %d", {buf.getUInt8()});
+            disp << UString::Format(u", program number 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

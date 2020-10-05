@@ -98,6 +98,19 @@ void ts::DTSNeuralDescriptor::deserializePayload(PSIBuffer& buf)
 
 
 //----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::DTSNeuralDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+{
+    if (buf.canReadBytes(1)) {
+        disp << margin << UString::Format(u"Config Id: 0x%X (%<d))", {buf.getUInt8()}) << std::endl;
+        disp.displayPrivateData(u"Additional info", buf, NPOS, margin);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // XML serialization
 //----------------------------------------------------------------------------
 
@@ -111,23 +124,4 @@ bool ts::DTSNeuralDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
 {
     return element->getIntAttribute(config_id, u"config_id", true) &&
            element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 4);
-}
-
-
-//----------------------------------------------------------------------------
-// Static method to display a descriptor.
-//----------------------------------------------------------------------------
-
-void ts::DTSNeuralDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
-{
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    if (size > 0) {
-        const UString margin(indent, ' ');
-
-        disp << margin << UString::Format(u"Config Id: 0x%X (%d))", {data[0], data[0]}) << std::endl;
-        disp.displayPrivateData(u"Additional info", data + 1, size - 1, margin);
-    }
 }

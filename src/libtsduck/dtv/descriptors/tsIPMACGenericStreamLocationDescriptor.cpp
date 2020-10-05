@@ -110,23 +110,15 @@ void ts::IPMACGenericStreamLocationDescriptor::deserializePayload(PSIBuffer& buf
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::IPMACGenericStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::IPMACGenericStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 7) {
-        const uint16_t netid = GetUInt16(data);
-        const uint8_t systype = GetUInt8(data + 2);
-        const uint16_t sysid = GetUInt16(data + 3);
-        const uint16_t strid  = GetUInt16(data + 5);
-        disp << margin << UString::Format(u"Interactive network id: 0x%X (%d)", {netid, netid}) << std::endl
-             << margin << UString::Format(u"Modulation system type: 0x%X (%s)", {systype, ModulationTypeNames.name(systype)}) << std::endl
-             << margin << UString::Format(u"Modulation system id: 0x%X (%d)", {sysid, sysid}) << std::endl
-             << margin << UString::Format(u"Physical stream id: 0x%X (%d)", {strid, strid}) << std::endl;
-        disp.displayPrivateData(u"Selector bytes", data + 7, size - 7, margin);
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+    if (buf.canReadBytes(7)) {
+        disp << margin << UString::Format(u"Interactive network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        const uint8_t systype = buf.getUInt8();
+        disp << margin << UString::Format(u"Modulation system type: 0x%X (%s)", {systype, ModulationTypeNames.name(systype)}) << std::endl;
+        disp << margin << UString::Format(u"Modulation system id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Physical stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp.displayPrivateData(u"Selector bytes", buf, NPOS, margin);
     }
 }
 

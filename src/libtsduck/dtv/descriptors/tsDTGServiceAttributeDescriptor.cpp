@@ -110,18 +110,14 @@ void ts::DTGServiceAttributeDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTGServiceAttributeDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DTGServiceAttributeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 3) {
-        disp << margin
-             << UString::Format(u"Service Id: %5d (0x%04X), numeric selection: %s, visible: %s", {GetUInt16(data), GetUInt16(data), (data[2] & 0x02) != 0, (data[2] & 0x01) != 0})
-             << std::endl;
-        data += 3; size -= 3;
+    while (buf.canReadBytes(3)) {
+        disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", {buf.getUInt16()});
+        buf.skipBits(6);
+        disp << UString::Format(u", numeric selection: %s", {buf.getBool()});
+        disp << UString::Format(u", visible: %s", {buf.getBool()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -163,9 +163,43 @@ void ts::SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
     if (_system != DS_DVB_S2) {
         roll_off = 0xFF;
     }
-
     symbol_rate = 100 * buf.getBCD<uint64_t>(7); // coded in 100 sym/s units
     buf.getBits(FEC_inner, 4);
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+{
+    if (buf.canReadBytes(11)) {
+        disp << margin << UString::Format(u"Frequency: %d", {buf.getBCD<uint32_t>(3)});
+        disp << UString::Format(u".%05d GHz", {buf.getBCD<uint32_t>(5)}) << std::endl;
+        disp << margin << UString::Format(u"Orbital position: %d", {buf.getBCD<uint32_t>(3)});
+        disp << UString::Format(u".%d degree, ", {buf.getBCD<uint32_t>(1)});
+        disp << (buf.getBool() ? "east" : "west") << std::endl;
+        disp << margin << "Polarization: " << NameFromSection(u"SatellitePolarization", buf.getBits<uint8_t>(2), names::VALUE | names::DECIMAL) << std::endl;
+        const bool isdb = (disp.duck().standards() & Standards::ISDB) == Standards::ISDB;
+        if (isdb) {
+            disp << margin << "Delivery system: " << DeliverySystemEnum.name(DS_ISDB_S) << std::endl;
+            disp << margin << "Modulation: " << NameFromSection(u"ISDBSatelliteModulationType", buf.getBits<uint8_t>(5), names::VALUE | names::DECIMAL) << std::endl;
+        }
+        else {
+            const uint8_t roll_off = buf.getBits<uint8_t>(2);
+            const bool s2 = buf.getBool();
+            disp << margin << "Delivery system: " << DeliverySystemEnum.name(s2 ? DS_DVB_S2 : DS_DVB_S) << std::endl;
+            disp << margin << "Modulation: " << NameFromSection(u"DVBSatelliteModulationType", buf.getBits<uint8_t>(2), names::VALUE | names::DECIMAL);
+            if (s2) {
+                disp << ", roll off: " << NameFromSection(u"DVBS2RollOff", roll_off, names::VALUE | names::DECIMAL);
+            }
+            disp << std::endl;
+        }
+        disp << margin << UString::Format(u"Symbol rate: %d", {buf.getBCD<uint32_t>(3)});
+        disp << UString::Format(u".%04d Msymbol/s", {buf.getBCD<uint32_t>(4)}) << std::endl;
+        disp << margin << "Inner FEC: " << NameFromSection(isdb ? u"ISDBSatelliteFEC" : u"DVBSatelliteFEC", buf.getBits<uint8_t>(4), names::VALUE | names::DECIMAL) << std::endl;
+    }
 }
 
 
@@ -306,43 +340,4 @@ bool ts::SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const 
         }
     }
     return ok;
-}
-
-
-//----------------------------------------------------------------------------
-// Static method to display a descriptor.
-//----------------------------------------------------------------------------
-
-void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
-{
-    const UString margin(indent, ' ');
-
-    if (size >= 11) {
-        const bool isDVB = (disp.duck().standards() & Standards::ISDB) == Standards::NONE;
-        const uint8_t east = data[6] >> 7;
-        const uint8_t polar = (data[6] >> 5) & 0x03;
-        const uint8_t roll_off = (data[6] >> 3) & 0x03;
-        const DeliverySystem delsys = isDVB ? (((data[6] >> 2) & 0x01) != 0 ? DS_DVB_S2 : DS_DVB_S) : DS_ISDB_S;
-        const uint8_t mod_type = isDVB ? (data[6] & 0x03) : (data[6] & 0x1F);
-        const uint8_t fec = data[10] & 0x0F;
-        std::string freq, srate, orbital;
-        BCDToString(freq, data, 8, 3);
-        BCDToString(orbital, data + 4, 4, 3);
-        BCDToString(srate, data + 7, 7, 3, true);
-        data += 11; size -= 11;
-
-        disp << margin << "Orbital position: " << orbital << " degree, " << (east ? "east" : "west") << std::endl
-             << margin << "Frequency: " << freq << " GHz" << std::endl
-             << margin << "Symbol rate: " << srate << " Msymbol/s" << std::endl
-             << margin << "Polarization: " << NameFromSection(u"SatellitePolarization", polar, names::VALUE | names::DECIMAL) << std::endl
-             << margin << "Delivery system: " << DeliverySystemEnum.name(delsys) << std::endl
-             << margin << "Modulation: " << NameFromSection(isDVB ? u"DVBSatelliteModulationType" : u"ISDBSatelliteModulationType", mod_type, names::VALUE | names::DECIMAL);
-        if (delsys == DS_DVB_S2) {
-            disp << ", roll off: " << NameFromSection(u"DVBS2RollOff", roll_off, names::VALUE | names::DECIMAL);
-        }
-        disp << std::endl;
-        disp << margin << "Inner FEC: " << NameFromSection(isDVB ? u"DVBSatelliteFEC" : u"ISDBSatelliteFEC", fec, names::VALUE | names::DECIMAL) << std::endl;
-    }
-
-    disp.displayExtraData(data, size, margin);
 }

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Build the TSDuck extension RPM's for Fedora, Red Hat, CentOS.
 
 BUILDDIR=$(cd $(dirname $0); pwd)

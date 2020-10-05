@@ -111,26 +111,18 @@ void ts::DeferredAssociationTagsDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DeferredAssociationTagsDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DeferredAssociationTagsDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        size_t len = data[0];
-        data++; size--;
-        while (size >= 2 && len >= 2) {
-            disp << margin << UString::Format(u"Association tag: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl;
-            data += 2; size -= 2; len -= 2;
-        }
-        if (size >= 4 && len == 0) {
-            disp << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-                 << margin << UString::Format(u"Program number: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl;
-            disp.displayPrivateData(u"Private data", data + 4, size - 4, margin);
-            size = 0;
-        }
+    buf.pushReadSizeFromLength(8); // association_tags_loop_length
+    while (buf.canReadBytes(2)) {
+        disp << margin << UString::Format(u"Association tag: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    buf.popState(); // update association_tags_loop_length
+    if (buf.canReadBytes(4)) {
+        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Program number: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
+    }
 }
 
 

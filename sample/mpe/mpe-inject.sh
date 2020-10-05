@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Script which creates a TS from scratch and then insert MPE from an UDP stream.
 # The output TS has two data services and no PCR at all.
 

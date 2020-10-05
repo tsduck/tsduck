@@ -94,23 +94,11 @@ void ts::DVBJApplicationLocationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBJApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBJApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        size_t len = std::min<size_t>(data[0], size - 1);
-        disp << margin << "Base directory: \"" << disp.duck().decoded(data + 1, len) << "\"" << std::endl;
-        data += 1 + len; size -= 1 + len;
-        if (size >= 1) {
-            len = std::min<size_t>(data[0], size - 1);
-            disp << margin << "Classpath ext: \"" << disp.duck().decoded(data + 1, len) << "\"" << std::endl
-                 << margin << "Initial class: \"" << disp.duck().decoded(data + 1 + len, size - len - 1) << "\"" << std::endl;
-            size = 0;
-        }
-    }
-
-    disp.displayExtraData(data, size, margin);
+    disp << margin << "Base directory: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
+    disp << margin << "Classpath ext: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
+    disp << margin << "Initial class: \"" << buf.getString() << "\"" << std::endl;
 }
 
 

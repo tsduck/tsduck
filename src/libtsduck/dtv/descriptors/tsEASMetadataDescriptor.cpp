@@ -90,16 +90,12 @@ void ts::EASMetadataDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::EASMetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::EASMetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-    if (size >= 2) {
-        const size_t length = std::min<size_t>(data[1], size - 2);
-        disp << margin << "Fragment number: " << int(data[0]) << std::endl
-             << margin << "XML fragment: \"" << std::string(reinterpret_cast<const char*>(data + 2), length) << "\"" << std::endl;
-        data += 2 + length; size -=  2 + length;
+    if (buf.canReadBytes(2)) {
+        disp << margin << "Fragment number: " << int(buf.getUInt8()) << std::endl;
+        disp << margin << "XML fragment: \"" << buf.getUTF8WithLength() << "\"" << std::endl;
     }
-    disp.displayExtraData(data, size, margin);
 }
 
 

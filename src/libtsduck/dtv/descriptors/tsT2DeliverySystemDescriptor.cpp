@@ -233,71 +233,43 @@ namespace {
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::T2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::T2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
+    if (buf.canReadBytes(3)) {
+        disp << margin << UString::Format(u"PLP id: 0x%X (%<d)", {buf.getUInt8()});
+        disp << UString::Format(u", T2 system id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
 
-    const UString margin(indent, ' ');
+        if (buf.canReadBytes(2)) {
+            disp << margin << "SISO/MISO: " << SisoNames.name(buf.getBits<uint8_t>(2)) << std::endl;
+            disp << margin << "Bandwidth: " << BandwidthNames.name(buf.getBits<uint8_t>(4)) << std::endl;
+            buf.skipBits(2);
+            disp << margin << "Guard interval: " << GuardIntervalNames.name(buf.getBits<uint8_t>(3)) << std::endl;
+            disp << margin << "Transmission mode: " << TransmissionModeNames.name(buf.getBits<uint8_t>(3)) << std::endl;
+            disp << margin << UString::Format(u"Other frequency: %s", {buf.getBool()}) << std::endl;
+            const bool tfs = buf.getBool();
+            disp << margin << UString::Format(u"TFS arrangement: %s", {tfs}) << std::endl;
 
-    if (size >= 3) {
-        const uint8_t plp = data[0];
-        const uint16_t sys = GetUInt16(data + 1);
-        data += 3; size -= 3;
-        disp << margin << UString::Format(u"PLP id: 0x%X (%d), T2 system id: 0x%X (%d)", {plp, plp, sys, sys}) << std::endl;
-
-        if (size >= 2) {
-            const bool tfs = (data[1] & 0x01) != 0;
-            disp << margin << UString::Format(u"SISO/MISO: %s", {SisoNames.name((data[0] >> 6) & 0x03)}) << std::endl
-                 << margin << UString::Format(u"Bandwidth: %s", {BandwidthNames.name((data[0] >> 2) & 0x0F)}) << std::endl
-                 << margin << UString::Format(u"Guard interval: %s", {GuardIntervalNames.name((data[1] >> 5) & 0x07)}) << std::endl
-                 << margin << UString::Format(u"Transmission mode: %s", {TransmissionModeNames.name((data[1] >> 2) & 0x07)}) << std::endl
-                 << margin << UString::Format(u"Other frequency: %s", {(data[1] & 0x02) != 0}) << std::endl
-                 << margin << UString::Format(u"TFS arrangement: %s", {tfs}) << std::endl;
-            data += 2; size -= 2;
-
-            while (size >= 3) {
-                const uint16_t cell = GetUInt16(data);
-                data += 2; size -= 2;
-                disp << margin << UString::Format(u"- Cell id: 0x%X (%d)", {cell, cell}) << std::endl;
-
+            while (buf.canReadBytes(3)) {
+                disp << margin << UString::Format(u"- Cell id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
                 if (tfs) {
-                    size_t len = data[0];
-                    data++; size--;
-                    while (len >= 4 && size >= 4) {
-                        disp << margin << UString::Format(u"  Centre frequency: %'d Hz", {uint64_t(GetUInt32(data)) * 10}) << std::endl;
-                        data += 4; size -= 4; len -= 4;
+                    buf.pushReadSizeFromLength(8); // frequency_loop_length
+                    while (buf.canRead()) {
+                        disp << margin << UString::Format(u"  Centre frequency: %'d Hz", {uint64_t(buf.getUInt32()) * 10}) << std::endl;
                     }
-                    if (len > 0) {
-                        break;
-                    }
+                    buf.popState(); // frequency_loop_length
                 }
-                else if (size < 4) {
-                    break;
+                else if (buf.canReadBytes(4)) {
+                    disp << margin << UString::Format(u"  Centre frequency: %'d Hz", {uint64_t(buf.getUInt32()) * 10}) << std::endl;
                 }
-                else {
-                    disp << margin << UString::Format(u"  Centre frequency: %'d Hz", {uint64_t(GetUInt32(data)) * 10}) << std::endl;
-                    data += 4; size -= 4;
+                buf.pushReadSizeFromLength(8); // subcell_info_loop_length
+                while (buf.canReadBytes(5)) {
+                    disp << margin << UString::Format(u"  Cell id ext: 0x%X (%<d)", {buf.getUInt8()});
+                    disp << UString::Format(u", transp. frequency: %'d Hz", {uint64_t(buf.getUInt32()) * 10}) << std::endl;
                 }
-
-                if (size < 1) {
-                    break;
-                }
-
-                size_t len = data[0];
-                data++; size--;
-                while (len >= 5 && size >= 5) {
-                    disp << margin
-                         << UString::Format(u"  Cell id ext: 0x%X (%d), transp. frequency: %'d Hz", {data[0], data[0], uint64_t(GetUInt32(data + 1)) * 10})
-                         << std::endl;
-                    data += 5; size -= 5; len -= 5;
-                }
+                buf.popState(); // subcell_info_loop_length
             }
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

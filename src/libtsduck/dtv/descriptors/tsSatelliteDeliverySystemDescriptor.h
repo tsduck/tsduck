@@ -109,7 +109,7 @@ namespace ts {
 
         // Inherited methods
         virtual DeliverySystem deliverySystem(const DuckContext&) const override;
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods

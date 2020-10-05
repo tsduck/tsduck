@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This script demonstrates the impact of the "foo" section filter on tstables.
 
 cd $(dirname $0)

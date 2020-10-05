@@ -128,31 +128,18 @@ void ts::SeriesDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SeriesDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SeriesDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size < 8) {
-        disp.displayExtraData(data, size, margin);
-    }
-    else {
-        const uint16_t id = GetUInt16(data);
-        const uint8_t repeat = (data[2] >> 4) & 0x0F;
-        const uint8_t pattern = (data[2] >> 1) & 0x07;
-        const bool date_valid = (data[2] & 0x01) != 0;
-        Time date;
-        if (date_valid) {
-            DecodeMJD(data + 3, 2, date);
-        }
-        const uint16_t episode = (GetUInt16(data + 5) >> 4) & 0x0FFF;
-        const uint16_t last = GetUInt16(data + 6) & 0x0FFF;
-
-        disp << margin << UString::Format(u"Series id: 0x%X (%d)", {id, id}) << std::endl
-             << margin << UString::Format(u"Repeat label: %d", {repeat, repeat}) << std::endl
-             << margin << "Program pattern: " << NameFromSection(u"ISDBProgramPattern", pattern, names::DECIMAL_FIRST) << std::endl
-             << margin << "Expire date: " << (date_valid ? date.format(Time::DATE) : u"unspecified") << std::endl
-             << margin << UString::Format(u"Episode: %d/%d", {episode, last}) << std::endl
-             << margin << "Series name: \"" << disp.duck().decoded(data + 8, size - 8) << u"\"" << std::endl;
+    if (buf.canReadBytes(8)) {
+        disp << margin << UString::Format(u"Series id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Repeat label: %d", {buf.getBits<uint8_t>(4)}) << std::endl;
+        disp << margin << "Program pattern: " << NameFromSection(u"ISDBProgramPattern", buf.getBits<uint8_t>(3), names::DECIMAL_FIRST) << std::endl;
+        const bool date_valid = buf.getBool();
+        const Time exp(buf.getMJD(2));
+        disp << margin << "Expire date: " << (date_valid ? exp.format(Time::DATE) : u"unspecified") << std::endl;
+        disp << margin << UString::Format(u"Episode: %d", {buf.getBits<uint16_t>(12)});
+        disp << UString::Format(u"/%d", {buf.getBits<uint16_t>(12)}) << std::endl;
+        disp << margin << "Series name: \"" << buf.getString() << u"\"" << std::endl;
     }
 }
 

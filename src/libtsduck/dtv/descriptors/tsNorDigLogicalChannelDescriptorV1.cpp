@@ -110,21 +110,14 @@ void ts::NorDigLogicalChannelDescriptorV1::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NorDigLogicalChannelDescriptorV1::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::NorDigLogicalChannelDescriptorV1::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 4) {
-        const uint16_t service = GetUInt16(data);
-        const uint8_t visible = (data[2] >> 7) & 0x01;
-        const uint16_t channel = GetUInt16(data + 2) & 0x3FFF;
-        data += 4; size -= 4;
-        disp << margin
-             << UString::Format(u"Service Id: %5d (0x%04X), Visible: %1d, Channel number: %3d", {service, service, visible, channel})
-             << std::endl;
+    while (buf.canReadBytes(4)) {
+        disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", {buf.getUInt16()});
+        disp << UString::Format(u", Visible: %1d", {buf.getBool()});
+        buf.skipBits(1);
+        disp << UString::Format(u", Channel number: %3d", {buf.getBits<uint16_t>(14)}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

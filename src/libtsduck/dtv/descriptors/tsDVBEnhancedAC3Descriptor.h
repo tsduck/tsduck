@@ -75,7 +75,7 @@ namespace ts {
         void merge(const DVBEnhancedAC3Descriptor& other);
 
         // Inherited methods
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods

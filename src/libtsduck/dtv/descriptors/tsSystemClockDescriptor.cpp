@@ -103,17 +103,15 @@ void ts::SystemClockDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SystemClockDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SystemClockDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 2) {
-        disp << margin << "External clock reference: " << UString::TrueFalse((data[0] & 0x80) != 0) << std::endl
-             << margin << UString::Format(u"Clock accuracy integer: %d, exponent: %d", {data[0] & 0x3F, (data[1] >> 5) & 0x07}) << std::endl;
-        data += 2; size -= 2;
+    if (buf.canReadBytes(2)) {
+        disp << margin << UString::Format(u"External clock reference: %s", {buf.getBool()}) << std::endl;
+        buf.skipBits(1);
+        disp << margin << UString::Format(u"Clock accuracy integer: %d", {buf.getBits<uint8_t>(6)});
+        disp << UString::Format(u", exponent: %d", {buf.getBits<uint8_t>(3)}) << std::endl;
+        buf.skipBits(5);
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -137,26 +137,11 @@ void ts::TerrestrialDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 11) {
-        uint32_t cfreq = GetUInt32(data);
-        uint8_t bwidth = data[4] >> 5;
-        uint8_t prio = (data[4] >> 4) & 0x01;
-        uint8_t tslice = (data[4] >> 3) & 0x01;
-        uint8_t mpe_fec = (data[4] >> 2) & 0x01;
-        uint8_t constel = data[5] >> 6;
-        uint8_t hierarchy = (data[5] >> 3) & 0x07;
-        uint8_t rate_hp = data[5] & 0x07;
-        uint8_t rate_lp = data[6] >> 5;
-        uint8_t guard = (data[6] >> 3) & 0x03;
-        uint8_t transm = (data[6] >> 1) & 0x03;
-        bool other_freq = (data[6] & 0x01) != 0;
-        data += 11; size -= 11;
-
-        disp << margin << "Centre frequency: " << UString::Decimal(10 * uint64_t(cfreq)) << " Hz, Bandwidth: ";
+    if (buf.canReadBytes(11)) {
+        disp << margin << "Centre frequency: " << UString::Decimal(10 * uint64_t(buf.getUInt32())) << " Hz, Bandwidth: ";
+        const uint8_t bwidth = buf.getBits<uint8_t>(3);
         switch (bwidth) {
             case 0:  disp << "8 MHz"; break;
             case 1:  disp << "7 MHz"; break;
@@ -165,12 +150,12 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
             default: disp << "code " << int(bwidth) << " (reserved)"; break;
         }
         disp << std::endl;
-        disp << margin << "Priority: " << (prio ? "high" : "low")
-             << ", Time slicing: " << (tslice ? "unused" : "used")
-             << ", MPE-FEC: " << (mpe_fec ? "unused" : "used")
-             << std::endl
-             << margin << "Constellation pattern: ";
-        switch (constel) {
+        disp << margin << "Priority: " << (buf.getBool() ? "high" : "low");
+        disp << ", Time slicing: " << (buf.getBool() ? "unused" : "used");
+        disp << ", MPE-FEC: " << (buf.getBool() ? "unused" : "used") << std::endl;
+        buf.skipBits(2);
+        disp << margin << "Constellation pattern: ";
+        switch (buf.getBits<uint8_t>(2)) {
             case 0:  disp << "QPSK"; break;
             case 1:  disp << "16-QAM"; break;
             case 2:  disp << "64-QAM"; break;
@@ -179,7 +164,7 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
         }
         disp << std::endl;
         disp << margin << "Hierarchy: ";
-        assert(hierarchy < 8);
+        const uint8_t hierarchy = buf.getBits<uint8_t>(3);
         switch (hierarchy & 0x03) {
             case 0:  disp << "non-hierarchical"; break;
             case 1:  disp << "alpha = 1"; break;
@@ -187,9 +172,9 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
             case 3:  disp << "alpha = 4"; break;
             default: assert(false);
         }
-        disp << ", " << ((hierarchy & 0x04) ? "in-depth" : "native")
-             << " interleaver" << std::endl
-             << margin << "Code rate: high prio: ";
+        disp << ", " << ((hierarchy & 0x04) ? "in-depth" : "native") << " interleaver" << std::endl;
+        const uint8_t rate_hp = buf.getBits<uint8_t>(3);
+        disp << margin << "Code rate: high prio: ";
         switch (rate_hp) {
             case 0:  disp << "1/2"; break;
             case 1:  disp << "2/3"; break;
@@ -198,6 +183,7 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
             case 4:  disp << "7/8"; break;
             default: disp << "code " << int(rate_hp) << " (reserved)"; break;
         }
+        const uint8_t rate_lp = buf.getBits<uint8_t>(3);
         disp << ", low prio: ";
         switch (rate_lp) {
             case 0:  disp << "1/2"; break;
@@ -209,7 +195,7 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
         }
         disp << std::endl;
         disp << margin << "Guard interval: ";
-        switch (guard) {
+        switch (buf.getBits<uint8_t>(2)) {
             case 0:  disp << "1/32"; break;
             case 1:  disp << "1/16"; break;
             case 2:  disp << "1/8"; break;
@@ -218,17 +204,16 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
         }
         disp << std::endl;
         disp << margin << "OFDM transmission mode: ";
-        switch (transm) {
+        switch (buf.getBits<uint8_t>(2)) {
             case 0:  disp << "2k"; break;
             case 1:  disp << "8k"; break;
             case 2:  disp << "4k"; break;
             case 3:  disp << "reserved"; break;
             default: assert(false);
         }
-        disp << ", other frequencies: " << UString::YesNo(other_freq) << std::endl;
+        disp << ", other frequencies: " << UString::YesNo(buf.getBool()) << std::endl;
+        buf.skipBits(32);
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

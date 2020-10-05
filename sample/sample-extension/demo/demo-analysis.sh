@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This script demonstrates the impact of the "foo" extension on the various TSDuck analysis tool.
 
 cd $(dirname $0)
