@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Script which simulates the UDP/IP which will be encapsulated in MPE stream.
 # The input file is an SPTS which is generated from the TSDuck stream repository.
 # It can be any TS in fact.

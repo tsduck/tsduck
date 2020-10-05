@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Demonstrate the use of the "foot" plugin.
 
 cd $(dirname $0)

@@ -90,18 +90,12 @@ void ts::DVBHTMLApplicationLocationDescriptor::deserializePayload(PSIBuffer& buf
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBHTMLApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        size_t len = std::min<size_t>(data[0], size - 1);
-        disp << margin << "Physical root: \"" << disp.duck().decoded(data + 1, len) << "\"" << std::endl
-             << margin << "Initial path: \"" << disp.duck().decoded(data + 1 + len, size - len - 1) << "\"" << std::endl;
-        size = 0;
+    if (buf.canReadBytes(1)) {
+        disp << margin << "Physical root: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
+        disp << margin << "Initial path: \"" << buf.getString() << "\"" << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

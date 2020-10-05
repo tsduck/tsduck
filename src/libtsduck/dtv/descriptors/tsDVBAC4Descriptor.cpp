@@ -133,34 +133,21 @@ void ts::DVBAC4Descriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBAC4Descriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBAC4Descriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        const uint8_t flags = data[0];
-        data++; size--;
-        if ((flags & 0x80) != 0 && size >= 1) {
-            uint8_t type = data[0];
-            data++; size--;
-            disp << margin
-                 << UString::Format(u"Dialog enhancement enabled: %d, channel mode: %s",
-                                    {(type >> 7) & 0x01, NameFromSection(u"AC4ChannelMode", (type >> 5) & 0x03, names::FIRST)})
-                 << std::endl;
+    if (buf.canReadBytes(1)) {
+        const bool ac4_config_flag = buf.getBool();
+        const bool ac4_toc_flag = buf.getBool();
+        buf.skipBits(6);
+        if (ac4_config_flag && buf.canReadBytes(1)) {
+            disp << margin << UString::Format(u"Dialog enhancement enabled: %d", {buf.getBool()});
+            disp << ", channel mode: " << NameFromSection(u"AC4ChannelMode", buf.getBits<uint8_t>(2), names::FIRST) << std::endl;
+            buf.skipBits(5);
         }
-        if ((flags & 0x40) != 0 && size >= 1) {
-            const size_t toc_size = std::min<size_t>(data[0], size - 1);
-            disp.displayPrivateData(u"AC-4 TOC (in DSI)", data + 1, toc_size, margin);
-            data += 1 + toc_size; size -= 1 + toc_size;
+        if (ac4_toc_flag && buf.canReadBytes(1)) {
+            disp.displayPrivateData(u"AC-4 TOC (in DSI)", buf, buf.getUInt8(), margin);
         }
-        disp.displayPrivateData(u"Additional information", data, size, margin);
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+        disp.displayPrivateData(u"Additional information", buf, NPOS, margin);
     }
 }
 

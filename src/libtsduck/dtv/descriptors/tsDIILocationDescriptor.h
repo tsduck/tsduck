@@ -62,11 +62,7 @@ namespace ts {
             //! @param [in] id DII id.
             //! @param [in] tag Association tag.
             //!
-            Entry(uint16_t id = 0, uint16_t tag = 0) :
-                DII_identification(id),
-                association_tag(tag)
-            {
-            }
+            Entry(uint16_t id = 0, uint16_t tag = 0);
         };
 
         //!
@@ -96,7 +92,7 @@ namespace ts {
         DIILocationDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods

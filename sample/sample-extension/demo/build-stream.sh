@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This script builds a fake TS with specific data from the TSDuck "foo" extension.
 
 cd $(dirname $0)

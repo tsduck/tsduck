@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Parameters: A list of .xml files.
 # For each X.xml file, create X_xml.h and X_sections.h

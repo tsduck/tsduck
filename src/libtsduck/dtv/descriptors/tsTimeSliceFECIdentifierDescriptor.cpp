@@ -148,27 +148,20 @@ bool ts::TimeSliceFECIdentifierDescriptor::analyzeXML(DuckContext& duck, const x
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 3) {
-        const bool time_slicing = (data[0] & 0x80) != 0;
-        const uint8_t mpe_fec = (data[0] >> 5) & 0x03;
-        const uint8_t frame_size = data[0] & 0x07;
-        const uint8_t max_burst_duration = data[1];
-        const uint8_t max_average_rate = (data[2] >> 4) & 0x0F;
-        const uint8_t time_slice_fec_id = data[2] & 0x0F;
-        data += 3; size -= 3;
-
-        disp << margin << "Use time slice: " << UString::TrueFalse(time_slicing) << std::endl
-             << margin << "MPE FEC: ";
+    if (buf.canReadBytes(3)) {
+        disp << margin << "Use time slice: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        const uint8_t mpe_fec = buf.getBits<uint8_t>(2);
+        disp << margin << "MPE FEC: ";
         switch (mpe_fec) {
             case 0:  disp << "none"; break;
             case 1:  disp << "Reed-Solomon(255, 191, 64)"; break;
             default: disp << UString::Format(u"reserved value 0x%X", {mpe_fec}); break;
         }
         disp << std::endl;
+        buf.skipBits(2);
+        const uint8_t frame_size = buf.getBits<uint8_t>(3);
         disp << margin << "Frame size: ";
         switch (frame_size) {
             case 0:  disp << "512 kbits, 256 rows"; break;
@@ -178,7 +171,8 @@ void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp
             default: disp << UString::Format(u"reserved value 0x%X", {frame_size}); break;
         }
         disp << std::endl;
-        disp << margin << UString::Format(u"Max burst duration: 0x%X (%d)", {max_burst_duration, max_burst_duration}) << std::endl;
+        disp << margin << UString::Format(u"Max burst duration: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        const uint8_t max_average_rate = buf.getBits<uint8_t>(4);
         disp << margin << "Max average rate: ";
         switch (max_average_rate) {
             case 0:  disp << "16 kbps"; break;
@@ -192,10 +186,7 @@ void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp
             default: disp << UString::Format(u"reserved value 0x%X", {max_average_rate}); break;
         }
         disp << std::endl;
-        disp << margin << UString::Format(u"Time slice FEC id: 0x%X (%d)", {time_slice_fec_id, time_slice_fec_id}) << std::endl;
-        disp.displayPrivateData(u"Id selector bytes", data, size, margin);
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+        disp << margin << UString::Format(u"Time slice FEC id: 0x%X (%<d)", {buf.getBits<uint8_t>(4)}) << std::endl;
+        disp.displayPrivateData(u"Id selector bytes", buf, NPOS, margin);
     }
 }

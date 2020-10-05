@@ -104,26 +104,14 @@ void ts::ISDBAccessControlDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ISDBAccessControlDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ISDBAccessControlDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size < 4) {
-        disp.displayExtraData(data, size, margin);
-    }
-    else {
-        // Extract common part
-        const uint16_t casid = GetUInt16(data);
-        const uint8_t type = (data[2] >> 5) & 0x07;
-        uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
+    if (buf.canReadBytes(4)) {
         const UChar* const dtype = tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA");
-        data += 4; size -= 4;
-
-        disp << margin << "CA System Id: " << names::CASId(disp.duck(), casid, names::FIRST) << std::endl
-             << margin << "Transmission type: " << NameFromSection(u"ISDBCATransmissionType", type, names::DECIMAL_FIRST) << std::endl
-             << margin << UString::Format(u"%s PID: 0x%X (%d)", {dtype, pid, pid}) << std::endl;
-
-        disp.displayPrivateData(u"Private CA data", data, size, margin);
+        disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), names::FIRST) << std::endl;
+        disp << margin << "Transmission type: " << NameFromSection(u"ISDBCATransmissionType", buf.getBits<uint8_t>(3), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << UString::Format(u"%s PID: 0x%X (%<d)", {dtype, buf.getPID()}) << std::endl;
+        disp.displayPrivateData(u"Private CA data", buf, NPOS, margin);
     }
 }
 

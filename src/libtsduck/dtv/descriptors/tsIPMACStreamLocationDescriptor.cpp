@@ -102,25 +102,15 @@ void ts::IPMACStreamLocationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::IPMACStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::IPMACStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 9) {
-        const uint16_t net = GetUInt16(data);
-        const uint16_t onet = GetUInt16(data + 2);
-        const uint16_t ts = GetUInt16(data + 4);
-        const uint16_t srv = GetUInt16(data + 6);
-        const uint8_t comp = data[8];
-        disp << margin << UString::Format(u"Network id: 0x%X (%d)", {net, net}) << std::endl
-             << margin << UString::Format(u"Original network id: 0x%X (%d)", {onet, onet}) << std::endl
-             << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {ts, ts}) << std::endl
-             << margin << UString::Format(u"Service id: 0x%X (%d)", {srv, srv}) << std::endl
-             << margin << UString::Format(u"Component tag: 0x%X (%d)", {comp, comp}) << std::endl;
-        data += 9; size -= 9;
+    if (buf.canReadBytes(9)) {
+        disp << margin << UString::Format(u"Network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

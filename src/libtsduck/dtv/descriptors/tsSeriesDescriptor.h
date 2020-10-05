@@ -68,7 +68,7 @@ namespace ts {
         SeriesDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods

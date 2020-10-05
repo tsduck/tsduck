@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Build the TSDuck extension .deb package for Ubuntu or Debian.
 
 BUILDDIR=$(cd $(dirname $0); pwd)

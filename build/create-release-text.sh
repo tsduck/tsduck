@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Create the markdown text for a GitHub release.
 # Steps:

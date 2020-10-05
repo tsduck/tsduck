@@ -90,14 +90,12 @@ void ts::EASInbandDetailsChannelDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::EASInbandDetailsChannelDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::EASInbandDetailsChannelDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-    if (size >= 3) {
-        disp << margin << UString::Format(u"RF channel: %d, program number: 0x%X (%d)", {data[0], GetUInt16(data + 1), GetUInt16(data + 1)}) << std::endl;
-        data += 3; size -= 3;
+    if (buf.canReadBytes(3)) {
+        disp << margin << UString::Format(u"RF channel: %d", {buf.getUInt8()});
+        disp << UString::Format(u", program number: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
     }
-    disp.displayExtraData(data, size, margin);
 }
 
 

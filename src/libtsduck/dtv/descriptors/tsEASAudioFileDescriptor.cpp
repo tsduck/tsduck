@@ -148,76 +148,40 @@ void ts::EASAudioFileDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::EASAudioFileDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::EASAudioFileDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size > 0) {
-        // Number of audio sources.
-        size_t count = data[0];
-        data++; size--;
-        disp << margin << UString::Format(u"Number of audio sources: %d", {count}) << std::endl;
-
-        while (count-- > 0) {
-            size_t loop_length = size == 0 ? 0 : data[0];
-            if (loop_length < 2 || size < 1 + loop_length) {
-                break; // loop instance does not fit here
-            }
-            const bool file_name_present = (data[1] & 0x80) != 0;
-            const uint8_t audio_format = data[1] & 0x7F;
-            data += 2; size -= 2;
-            loop_length--;
-
-            disp << margin << "- Audio format: " << NameFromSection(u"EASAudioFormat", audio_format, names::VALUE) << std::endl;
-
-            if (file_name_present) {
-                if (loop_length == 0 || 1 + size_t(data[0]) > loop_length) {
-                    break;
+    if (buf.canReadBytes(1)) {
+        const size_t number_of_audio_sources = buf.getUInt8();
+        disp << margin << UString::Format(u"Number of audio sources: %d", {number_of_audio_sources}) << std::endl;
+        for (size_t i = 0; i < number_of_audio_sources && buf.canReadBytes(1); ++i) {
+            buf.pushReadSizeFromLength(8); // loop_length
+            if (buf.canReadBytes(1)) {
+                const bool file_name_present = buf.getBool();
+                disp << margin << "- Audio format: " << NameFromSection(u"EASAudioFormat", buf.getBits<uint8_t>(7), names::VALUE) << std::endl;
+                if (file_name_present && buf.canReadBytes(1)) {
+                    disp << margin << "  File name: \"" << buf.getUTF8WithLength() << "\"" << std::endl;
                 }
-                const size_t file_name_length = data[0];
-                disp << margin << "  File name: \"" << std::string(reinterpret_cast<const char*>(data + 1), file_name_length) << "\"" << std::endl;
-                data += 1 + file_name_length; size -= 1 + file_name_length;
-                loop_length -= 1 + file_name_length;
-            }
-            if (loop_length < 1) {
-                break;
-            }
-
-            const uint8_t audio_source = data[0];
-            data++; size--;
-            loop_length--;
-
-            disp << margin << "  Audio source: " << NameFromSection(u"EASAudioSource", audio_source, names::VALUE) << std::endl;
-
-            if (audio_source == 0x01) {
-                if (loop_length < 8) {
-                    break;
+                if (buf.canReadBytes(1)) {
+                    const uint8_t audio_source = buf.getUInt8();
+                    disp << margin << "  Audio source: " << NameFromSection(u"EASAudioSource", audio_source, names::VALUE) << std::endl;
+                    if (audio_source == 0x01 && buf.canReadBytes(8)) {
+                        disp << margin << UString::Format(u"  Program number: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                        disp << margin << UString::Format(u"  Carousel id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+                        disp << margin << UString::Format(u"  Application id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                    }
+                    else if (audio_source == 0x02 && buf.canReadBytes(12)) {
+                        disp << margin << UString::Format(u"  Program number: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                        disp << margin << UString::Format(u"  Download id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+                        disp << margin << UString::Format(u"  Module id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+                        disp << margin << UString::Format(u"  Application id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                    }
                 }
-                disp << margin << UString::Format(u"  Program number: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-                     << margin << UString::Format(u"  Carousel id: 0x%X (%d)", {GetUInt32(data + 2), GetUInt32(data + 2)}) << std::endl
-                     << margin << UString::Format(u"  Application id: 0x%X (%d)", {GetUInt16(data + 6), GetUInt16(data + 6)}) << std::endl;
-                data += 8; size -= 8;
-                loop_length -= 8;
             }
-            else if (audio_source == 0x02) {
-                if (loop_length < 12) {
-                    break;
-                }
-                disp << margin << UString::Format(u"  Program number: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-                     << margin << UString::Format(u"  Download id: 0x%X (%d)", {GetUInt32(data + 2), GetUInt32(data + 2)}) << std::endl
-                     << margin << UString::Format(u"  Module id: 0x%X (%d)", {GetUInt32(data + 6), GetUInt32(data + 6)}) << std::endl
-                     << margin << UString::Format(u"  Application id: 0x%X (%d)", {GetUInt16(data + 10), GetUInt16(data + 10)}) << std::endl;
-                data += 12; size -= 12;
-                loop_length -= 12;
-            }
-
             // Unused part of loop instance, if any.
-            disp.displayExtraData(data, loop_length, margin + u"  ");
-            data += loop_length; size -= loop_length;
+            disp.displayPrivateData(u"Extraneous data", buf, NPOS, margin + u"  ");
+            buf.popState(); // end of loop_length;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

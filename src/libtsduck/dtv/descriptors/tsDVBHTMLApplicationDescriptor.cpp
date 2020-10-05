@@ -103,25 +103,14 @@ void ts::DVBHTMLApplicationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBHTMLApplicationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        size_t len = data[0];
-        if (len % 2 == 0 && len + 1 <= size) {
-            data++; size--;
-            while (len >= 2) {
-                const uint16_t id = GetUInt16(data);
-                data += 2; size -= 2; len -= 2;
-                disp << margin << UString::Format(u"Application id: 0x%X (%d)", {id, id}) << std::endl;
-            }
-            disp << margin << "Parameter: \"" << disp.duck().decoded(data, size) << "\"" << std::endl;
-            size = 0;
-        }
+    buf.pushReadSizeFromLength(8); // appid_set_length
+    while (buf.canReadBytes(2)) {
+        disp << margin << UString::Format(u"Application id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
+    buf.popState(); // end of appid_set_length
+    disp << margin << "Parameter: \"" << buf.getString() << "\"" << std::endl;
 }
 
 

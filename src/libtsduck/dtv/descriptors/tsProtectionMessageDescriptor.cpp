@@ -105,25 +105,16 @@ void ts::ProtectionMessageDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ProtectionMessageDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ProtectionMessageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        size_t count = data[0] & 0x0F;
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        buf.skipBits(4);
+        size_t count = buf.getBits<size_t>(4);
         disp << margin << UString::Format(u"Component count: %d", {count}) << std::endl;
-        while (count > 0 && size > 0) {
-            disp << margin << UString::Format(u"Component tag: 0x%0X (%d)", {data[0], data[0]}) << std::endl;
-            data++; size--; count--;
+        while (count > 0 && buf.canReadBytes(1)) {
+            disp << margin << UString::Format(u"Component tag: 0x%0X (%<d)", {buf.getUInt8()}) << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

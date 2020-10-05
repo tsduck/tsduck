@@ -104,33 +104,24 @@ bool ts::VBIDataDescriptor::EntryHasReservedBytes(uint8_t data_service_id)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 2) {
-        const uint8_t data_id = data[0];
-        size_t length = data[1];
-        data += 2; size -= 2;
-        if (length > size) {
-            length = size;
-        }
+    while (buf.canReadBytes(2)) {
+        const uint8_t data_id = buf.getUInt8();
         disp << margin << "Data service id: " << NameFromSection(u"VBIDataServiceId", data_id, names::HEXA_FIRST) << std::endl;
+        buf.pushReadSizeFromLength(8); // data_service_descriptor_length
         if (!EntryHasReservedBytes(data_id)) {
-            while (length > 0) {
-                const uint8_t field_parity = (data[0] >> 5) & 0x01;
-                const uint8_t line_offset = data[0] & 0x1F;
-                data++; size--; length--;
-                disp << margin << "Field parity: " << int(field_parity) << ", line offset: " << int(line_offset) << std::endl;
+            while (buf.canReadBytes(1)) {
+                buf.skipBits(2);
+                disp << margin << "Field parity: " << int(buf.getBool());
+                disp << ", line offset: " << buf.getBits<uint16_t>(5) << std::endl;
             }
         }
         else {
-            disp.displayPrivateData(u"Associated data", data, length, margin);
-            data += length; size -= length;
+            disp.displayPrivateData(u"Associated data", buf, NPOS, margin);
         }
+        buf.popState(); // data_service_descriptor_length
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

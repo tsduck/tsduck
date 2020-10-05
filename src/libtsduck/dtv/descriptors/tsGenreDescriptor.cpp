@@ -91,21 +91,16 @@ void ts::GenreDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::GenreDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::GenreDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size > 0) {
-        size_t count = data[0] & 0x1F;
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        buf.skipBits(3);
+        size_t count = buf.getBits<size_t>(5);
         disp << margin << UString::Format(u"Attribute count: %d", {count}) << std::endl;
-        while (count > 0 && size > 0) {
-            disp << margin << " - Attribute: " << NameFromSection(u"ATSCGenreCode", data[0], names::FIRST) << std::endl;
-            data++; size--; count--;
+        while (count-- > 0 && buf.canReadBytes(1)) {
+            disp << margin << " - Attribute: " << NameFromSection(u"ATSCGenreCode", buf.getUInt8(), names::FIRST) << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

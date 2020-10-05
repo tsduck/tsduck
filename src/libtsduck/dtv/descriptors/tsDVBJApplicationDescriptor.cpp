@@ -78,11 +78,6 @@ void ts::DVBJApplicationDescriptor::serializePayload(PSIBuffer& buf) const
     }
 }
 
-
-//----------------------------------------------------------------------------
-// Deserialization
-//----------------------------------------------------------------------------
-
 void ts::DVBJApplicationDescriptor::deserializePayload(PSIBuffer& buf)
 {
     while (buf.canRead()) {
@@ -95,17 +90,11 @@ void ts::DVBJApplicationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBJApplicationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBJApplicationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 1) {
-        const size_t len = std::min<size_t>(data[0], size - 1);
-        disp << margin << "Parameter: \"" << disp.duck().decoded(data + 1, len) << "\"" << std::endl;
-        data += 1 + len; size -= 1 + len;
+    while (buf.canReadBytes(1)) {
+        disp << margin << "Parameter: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

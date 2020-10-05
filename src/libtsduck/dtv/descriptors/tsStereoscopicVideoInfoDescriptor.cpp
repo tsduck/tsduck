@@ -121,27 +121,23 @@ void ts::StereoscopicVideoInfoDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::StereoscopicVideoInfoDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::StereoscopicVideoInfoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        const bool base = (data[0] & 0x01) != 0;
+    if (buf.canReadBytes(1)) {
+        buf.skipBits(7);
+        const bool base = buf.getBool();
         disp << margin << UString::Format(u"Base video: %s", {base}) << std::endl;
-        data += 1; size -= 1;
-        if (base && size >= 1) {
-            disp << margin << UString::Format(u"Left view: %s", {(data[0] & 0x01) != 0}) << std::endl;
-            data += 1; size -= 1;
+        if (base && buf.canReadBytes(1)) {
+            buf.skipBits(7);
+            disp << margin << UString::Format(u"Left view: %s", {buf.getBool()}) << std::endl;
         }
-        else if (!base && size >= 2) {
-            disp << margin << UString::Format(u"Usable as 2D: %s", {(data[0] & 0x01) != 0}) << std::endl
-                 << margin << "Horizontal upsampling factor: " << NameFromSection(u"StereoscopicUpsamplingFactor", (data[1] >> 4) & 0x0F, names::DECIMAL_FIRST) << std::endl
-                 << margin << "Vertical upsampling factor: " << NameFromSection(u"StereoscopicUpsamplingFactor", data[1] & 0x0F, names::DECIMAL_FIRST) << std::endl;
-            data += 2; size -= 2;
+        else if (!base && buf.canReadBytes(2)) {
+            buf.skipBits(7);
+            disp << margin << UString::Format(u"Usable as 2D: %s", {buf.getBool()}) << std::endl;
+            disp << margin << "Horizontal upsampling factor: " << NameFromSection(u"StereoscopicUpsamplingFactor", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
+            disp << margin << "Vertical upsampling factor: " << NameFromSection(u"StereoscopicUpsamplingFactor", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

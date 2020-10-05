@@ -135,34 +135,22 @@ void ts::TSInformationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TSInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TSInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
+    if (buf.canReadBytes(2)) {
+        disp << margin << UString::Format(u"Remote control key id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        const size_t nlen = buf.getBits<size_t>(6);
+        const size_t tcount = buf.getBits<size_t>(2);
+        disp << margin << "TS name: \"" << buf.getString(nlen) << "\"" << std::endl;
 
-    if (size < 2) {
-        disp.displayExtraData(data, size, margin);
-    }
-    else {
-        disp << margin << UString::Format(u"Remote control key id: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-        const size_t nlen = std::min<size_t>(size - 2, (data[1] >> 2) & 0x3F);
-        const size_t tcount = data[1] & 0x03;
-        data += 2; size -= 2;
-
-        disp << margin << "TS name: \"" << disp.duck().decoded(data, nlen) << "\"" << std::endl;
-        data += nlen; size -= nlen;
-
-        for (size_t i1 = 0; size >= 2 && i1 < tcount; ++i1) {
-            disp << margin << UString::Format(u"- Transmission type info: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-            const size_t scount = data[1];
-            data += 2; size -= 2;
-            for (size_t i2 = 0; size >= 2 && i2 < scount; ++i2) {
-                const uint16_t id = GetUInt16(data);
-                disp << margin << UString::Format(u"  Service id: 0x%X (%d)", {id, id}) << std::endl;
-                data += 2; size -= 2;
+        for (size_t i1 = 0; buf.canReadBytes(2) && i1 < tcount; ++i1) {
+            disp << margin << UString::Format(u"- Transmission type info: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            const size_t scount = buf.getUInt8();
+            for (size_t i2 = 0; buf.canReadBytes(2) && i2 < scount; ++i2) {
+                disp << margin << UString::Format(u"  Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
             }
         }
-
-        disp.displayPrivateData(u"Reserved for future use", data, size, margin);
+        disp.displayPrivateData(u"Reserved for future use", buf, NPOS, margin);
     }
 }
 

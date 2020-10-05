@@ -148,48 +148,35 @@ void ts::DigitalCopyControlDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DigitalCopyControlDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DigitalCopyControlDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
+    if (buf.canReadBytes(1)) {
+        disp << margin << "Recording control: " << NameFromSection(u"ISDBCopyControl", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
+        const bool bitrate_flag = buf.getBool();
+        const bool comp_flag = buf.getBool();
+        disp << margin << UString::Format(u"User-defined: 0x%1X (%<d)", {buf.getBits<uint8_t>(4)}) << std::endl;
 
-    if (size > 0) {
-        uint8_t rec_control = (data[0] >> 6) & 0x03;
-        bool bitrate_flag = (data[0] & 0x20) != 0;
-        bool comp_flag = (data[0] & 0x10) != 0;
-        uint8_t user = data[0] & 0x0F;
-        data++; size--;
-
-        disp << margin << "Recording control: " << NameFromSection(u"ISDBCopyControl", rec_control, names::DECIMAL_FIRST) << std::endl
-             << margin << UString::Format(u"User-defined: 0x%1X (%d)", {user, user}) << std::endl;
-
-        if (bitrate_flag && size > 0) {
+        if (bitrate_flag && buf.canReadBytes(1)) {
             // Bitrate unit is 1/4 Mb/s.
-            disp << margin << UString::Format(u"Maximum bitrate: %d (%'d b/s)", {data[0], BitRate(data[0]) * 250000}) << std::endl;
-            data++; size--;
+            const BitRate mbr = buf.getUInt8();
+            disp << margin << UString::Format(u"Maximum bitrate: %d (%'d b/s)", {mbr, mbr * 250000}) << std::endl;
         }
-        if (comp_flag && size > 0) {
-            size_t len = std::min<size_t>(data[0], size - 1);
-            data++; size--;
-            while (len >= 2) {
-                const uint8_t tag = data[0];
-                rec_control = (data[1] >> 6) & 0x03;
-                bitrate_flag = (data[1] & 0x20) != 0;
-                user = data[1] & 0x0F;
-                data += 2; size -= 2; len -= 2;
-
-                disp << margin << UString::Format(u"- Component tag: 0x%X (%d)", {tag, tag}) << std::endl
-                     << margin << "  Recording control: " << NameFromSection(u"ISDBCopyControl", rec_control, names::DECIMAL_FIRST) << std::endl
-                     << margin << UString::Format(u"  User-defined: 0x%1X (%d)", {user, user}) << std::endl;
-
-                if (bitrate_flag && size > 0) {
-                    disp << margin << UString::Format(u"  Maximum bitrate: %d (%'d b/s)", {data[0], BitRate(data[0]) * 250000}) << std::endl;
-                    data++; size--; len--;
+        if (comp_flag) {
+            buf.pushReadSizeFromLength(8); // component_control_length
+            while (buf.canReadBytes(2)) {
+                disp << margin << UString::Format(u"- Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+                disp << margin << "  Recording control: " << NameFromSection(u"ISDBCopyControl", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
+                const bool bflag = buf.getBool();
+                buf.skipBits(1);
+                disp << margin << UString::Format(u"  User-defined: 0x%1X (%<d)", {buf.getBits<uint8_t>(4)}) << std::endl;
+                if (bflag && buf.canReadBytes(1)) {
+                    const BitRate mbr = buf.getUInt8();
+                    disp << margin << UString::Format(u"  Maximum bitrate: %d (%'d b/s)", {mbr, mbr * 250000}) << std::endl;
                 }
             }
+            buf.popState(); // component_control_length
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

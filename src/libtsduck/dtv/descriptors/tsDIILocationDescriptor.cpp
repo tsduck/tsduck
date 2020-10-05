@@ -69,6 +69,12 @@ void ts::DIILocationDescriptor::clearContent()
     entries.clear();
 }
 
+ts::DIILocationDescriptor::Entry::Entry(uint16_t id, uint16_t tag) :
+    DII_identification(id),
+    association_tag(tag)
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Serialization
@@ -106,22 +112,16 @@ void ts::DIILocationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DIILocationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DIILocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        disp << margin << UString::Format(u"Transport protocol label: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-        data++; size--;
-        while (size >= 4) {
-            const uint16_t id = GetUInt16(data) & 0x7FFF;
-            const uint16_t tag = GetUInt16(data + 2);
-            data += 4; size -= 4;
-            disp << margin << UString::Format(u"DII id: 0x%X (%d), tag: 0x%X (%d)", {id, id, tag, tag}) << std::endl;
+    if (buf.canReadBytes(1)) {
+        disp << margin << UString::Format(u"Transport protocol label: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        while (buf.canReadBytes(4)) {
+            buf.skipBits(1);
+            disp << margin << UString::Format(u"DII id: 0x%X (%<d)", {buf.getBits<uint16_t>(15)});
+            disp << UString::Format(u", tag: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

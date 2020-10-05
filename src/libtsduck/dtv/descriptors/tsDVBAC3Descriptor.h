@@ -71,7 +71,7 @@ namespace ts {
         void merge(const DVBAC3Descriptor& other);
 
         // Inherited methods
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods

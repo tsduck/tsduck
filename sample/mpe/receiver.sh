@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Script which analyzes the final TS with embedded MPE.
 
 cd $(dirname "$0")
