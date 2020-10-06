@@ -129,24 +129,22 @@ void ts::HierarchyDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::HierarchyDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::HierarchyDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 4) {
-        disp << margin << "No view scalability: " << UString::TrueFalse((data[0] & 0x80) != 0) << std::endl
-             << margin << "No temporal scalability: " << UString::TrueFalse((data[0] & 0x40) != 0) << std::endl
-             << margin << "No spatial scalability: " << UString::TrueFalse((data[0] & 0x20) != 0) << std::endl
-             << margin << "No quality scalability: " << UString::TrueFalse((data[0] & 0x10) != 0) << std::endl
-             << margin << "Hierarchy type: " << NameFromSection(u"HierarchyType", data[0] & 0x0F, names::BOTH_FIRST) << std::endl
-             << margin << UString::Format(u"Hierarchy layer index: %d", {data[1] & 0x3F}) << std::endl
-             << margin << "Tref present: " << UString::TrueFalse((data[2] & 0x80) != 0) << std::endl
-             << margin << UString::Format(u"Hierarchy embedded layer index: %d", {data[2] & 0x3F}) << std::endl
-             << margin << UString::Format(u"Hierarchy channel: %d", {data[3] & 0x3F}) << std::endl;
-        data += 4; size -= 4;
+    if (buf.canReadBytes(4)) {
+        disp << margin << "No view scalability: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << "No temporal scalability: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << "No spatial scalability: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << "No quality scalability: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << "Hierarchy type: " << NameFromSection(u"HierarchyType", buf.getBits<uint8_t>(4), names::BOTH_FIRST) << std::endl;
+        buf.skipBits(2);
+        disp << margin << UString::Format(u"Hierarchy layer index: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
+        disp << margin << "Tref present: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        buf.skipBits(1);
+        disp << margin << UString::Format(u"Hierarchy embedded layer index: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
+        buf.skipBits(2);
+        disp << margin << UString::Format(u"Hierarchy channel: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

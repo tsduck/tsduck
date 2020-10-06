@@ -131,28 +131,18 @@ namespace {
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ISDBTerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ISDBTerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 2) {
-        const uint16_t v = GetUInt16(data);
-        const uint16_t area = (v >> 4) & 0x0FFF;
-        const uint8_t guard = uint8_t((v >> 2) & 0x03);
-        const uint8_t mode = uint8_t(v & 0x03);
-        data += 2; size -= 2;
-
-        disp << margin << UString::Format(u"Area code: 0x%3X (%d)", {area, area}) << std::endl
-             << margin << UString::Format(u"Guard interval: %d (%s)", {guard, GuardIntervalNames.name(guard)}) << std::endl
-             << margin << UString::Format(u"Transmission mode: %d (%s)", {mode, TransmissionModeNames.name(mode)}) << std::endl;
+    if (buf.canReadBytes(2)) {
+        disp << margin << UString::Format(u"Area code: 0x%3X (%<d)", {buf.getBits<uint16_t>(12)}) << std::endl;
+        const uint8_t guard = buf.getBits<uint8_t>(2);
+        const uint8_t mode = buf.getBits<uint8_t>(2);
+        disp << margin << UString::Format(u"Guard interval: %d (%s)", {guard, GuardIntervalNames.name(guard)}) << std::endl;
+        disp << margin << UString::Format(u"Transmission mode: %d (%s)", {mode, TransmissionModeNames.name(mode)}) << std::endl;
     }
-
-    while (size >= 2) {
-        disp << margin << UString::Format(u"Frequency: %'d Hz", {BinToHz(GetUInt16(data))}) << std::endl;
-        data += 2; size -= 2;
+    while (buf.canReadBytes(2)) {
+        disp << margin << UString::Format(u"Frequency: %'d Hz", {BinToHz(buf.getUInt16())}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

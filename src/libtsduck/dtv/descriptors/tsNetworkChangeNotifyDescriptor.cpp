@@ -143,10 +143,7 @@ void ts::NetworkChangeNotifyDescriptor::deserializePayload(PSIBuffer& buf)
             ch.network_change_id = buf.getUInt8();
             ch.network_change_version = buf.getUInt8();
             ch.start_time_of_change = buf.getMJD(MJD_SIZE);
-            const SubSecond hours = buf.getBCD<SubSecond>(2);
-            const SubSecond minutes = buf.getBCD<SubSecond>(2);
-            const SubSecond seconds = buf.getBCD<SubSecond>(2);
-            ch.change_duration = (hours * 3600) + (minutes * 60) + seconds;
+            ch.change_duration = buf.getSecondsBCD();
             buf.getBits(ch.receiver_category, 3);
             const bool invariant_ts_present = buf.getBool();
             buf.getBits(ch.change_type, 4);
@@ -157,7 +154,7 @@ void ts::NetworkChangeNotifyDescriptor::deserializePayload(PSIBuffer& buf)
             }
             cell.changes.push_back(ch);
         }
-        buf.popState(); // update loop_length
+        buf.popState(); // loop_length
         cells.push_back(cell);
     }
 }
@@ -167,54 +164,30 @@ void ts::NetworkChangeNotifyDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NetworkChangeNotifyDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::NetworkChangeNotifyDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-    bool ok = true;
-
-    while (ok && size >= 3) {
-        disp << margin << UString::Format(u"- Cell id: 0x%X", {GetUInt16(data)}) << std::endl;
-        size_t len = data[2];
-        data += 3; size -= 3;
-
-        while (ok && size >= len && len >= 12) {
-            Time start;
-            DecodeMJD(data + 2, 5, start);
-            disp << margin
-                 << UString::Format(u"  - Network change id: 0x%X, version: 0x%X", {data[0], data[1]})
-                 << std::endl
-                 << margin
-                 << UString::Format(u"    Start: %s, duration: %02d:%02d:%02d", {start.format(Time::DATE | Time::TIME), DecodeBCD(data[7]), DecodeBCD(data[8]), DecodeBCD(data[9])})
-                 << std::endl
-                 << margin
-                 << UString::Format(u"    Receiver category: 0x%X", {uint8_t((data[10] >> 5) & 0x07)})
-                 << std::endl
-                 << margin
-                 << "    Change type: " << NameFromSection(u"NetworkChangeType", data[10] & 0x0F, names::HEXA_FIRST)
-                 << std::endl
-                 << margin
-                 << UString::Format(u"    Message id: 0x%X", {data[11]})
-                 << std::endl;
-            const bool invariant_ts_present = (data[10] & 0x10) != 0;
-            data += 12; size -= 12; len -= 12;
-            if (invariant_ts_present) {
-                ok = len >= 4;
-                if (ok) {
-                    disp << margin
-                         << UString::Format(u"    Invariant TS id: 0x%X, orig. net. id: 0x%X", {GetUInt16(data), GetUInt16(data + 2)})
-                         << std::endl;
-                    data += 4; size -= 4; len -= 4;
-                }
+    while (buf.canReadBytes(3)) {
+        disp << margin << UString::Format(u"- Cell id: 0x%X", {buf.getUInt16()}) << std::endl;
+        buf.pushReadSizeFromLength(8); // loop_length
+        while (buf.canReadBytes(12)) {
+            disp << margin << UString::Format(u"  - Network change id: 0x%X", {buf.getUInt8()});
+            disp << UString::Format(u", version: 0x%X", {buf.getUInt8()}) << std::endl;
+            disp << margin << "    Start: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME);
+            disp << UString::Format(u", duration: %02d", {buf.getBCD<uint8_t>(2)});
+            disp << UString::Format(u":%02d", {buf.getBCD<uint8_t>(2)});
+            disp << UString::Format(u":%02d", {buf.getBCD<uint8_t>(2)}) << std::endl;
+            disp << margin << UString::Format(u"    Receiver category: 0x%X", {buf.getBits<uint8_t>(3)}) << std::endl;
+            const bool invariant_ts_present = buf.getBool();
+            disp << margin << "    Change type: " << NameFromSection(u"NetworkChangeType", buf.getBits<uint8_t>(4), names::HEXA_FIRST) << std::endl;
+            disp << margin << UString::Format(u"    Message id: 0x%X", {buf.getUInt8()}) << std::endl;
+            if (invariant_ts_present && buf.canReadBytes(4)) {
+                disp << margin << UString::Format(u"    Invariant TS id: 0x%X", {buf.getUInt16()});
+                disp << UString::Format(u", orig. net. id: 0x%X", {buf.getUInt16()}) << std::endl;
             }
         }
-        ok = ok && len == 0;
+        disp.displayPrivateData(u"Extraneous cell data", buf, NPOS, margin + u"  ");
+        buf.popState(); // loop_length
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

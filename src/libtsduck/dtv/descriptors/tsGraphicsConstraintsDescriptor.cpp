@@ -105,18 +105,14 @@ void ts::GraphicsConstraintsDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::GraphicsConstraintsDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::GraphicsConstraintsDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        disp << margin << "Can run without visible UI: " << UString::TrueFalse((data[0] & 0x04) != 0) << std::endl
-             << margin << "Handles configuration changed: " << UString::TrueFalse((data[0] & 0x02) != 0) << std::endl
-             << margin << "Handles externally controlled video: " << UString::TrueFalse((data[0] & 0x01) != 0) << std::endl;
-        disp.displayPrivateData(u"Graphics configuration", data + 1, size - 1, margin);
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+    if (buf.canReadBytes(1)) {
+        buf.skipBits(5);
+        disp << margin << "Can run without visible UI: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << "Handles configuration changed: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << "Handles externally controlled video: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp.displayPrivateData(u"Graphics configuration", buf, NPOS, margin);
     }
 }
 

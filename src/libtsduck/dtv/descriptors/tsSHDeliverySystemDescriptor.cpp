@@ -261,18 +261,11 @@ const ts::Enumeration ts::SHDeliverySystemDescriptor::ModulationNames({
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        const uint8_t div = (data[0] >> 4) & 0x0F;
-        data++; size--;
-
+    if (buf.canReadBytes(1)) {
+        const uint8_t div = buf.getBits<uint8_t>(4);
+        buf.skipBits(4);
         disp << margin << UString::Format(u"Diversity mode: 0x%X", {div});
         if ((div & 0x08) != 0) {
             disp << ", paTS";
@@ -288,51 +281,44 @@ void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID 
         }
         disp << std::endl;
 
-        while (size >= 3) {
-            const uint8_t flags = data[0];
-            const uint16_t mval = GetUInt16(data + 1);
-            data += 3; size -= 3;
-
-            if ((flags & 0x80) != 0) {
-                disp << margin << "- Modulation type: OFDM" << std::endl
-                     << margin << UString::Format(u"  Bandwidth: %s", {BandwidthNames.name((mval >> 13) & 0x07)}) << std::endl
-                     << margin << UString::Format(u"  Priority: %d", {(mval >> 12) & 0x01}) << std::endl
-                     << margin << UString::Format(u"  Constellation & hierarchy: %s", {NameFromSection(u"SHConstellationHierarchy", (mval >> 9) & 0x07, names::FIRST)}) << std::endl
-                     << margin << UString::Format(u"  Code rate: %s", {NameFromSection(u"SHCodeRate", (mval >> 5) & 0x0F, names::FIRST)}) << std::endl
-                     << margin << UString::Format(u"  Guard interval: %s", {GuardIntervalNames.name((mval >> 3) & 0x03)}) << std::endl
-                     << margin << UString::Format(u"  Transmission mode: %s", {TransmissionModeNames.name((mval >> 1) & 0x03)}) << std::endl
-                     << margin << UString::Format(u"  Common frequency: %s", {(mval & 0x01) != 0}) << std::endl;
+        while (buf.canReadBytes(3)) {
+            const bool is_ofdm = buf.getBool();
+            const bool interleaver = buf.getBool();
+            const bool short_interleaver = buf.getBool();
+            buf.skipBits(5);
+            if (is_ofdm) {
+                disp << margin << "- Modulation type: OFDM" << std::endl;
+                disp << margin << "  Bandwidth: " << BandwidthNames.name(buf.getBits<uint8_t>(3)) << std::endl;
+                disp << margin << UString::Format(u"  Priority: %d", {buf.getBit()}) << std::endl;
+                disp << margin << "  Constellation & hierarchy: " << NameFromSection(u"SHConstellationHierarchy", buf.getBits<uint8_t>(3), names::FIRST) << std::endl;
+                disp << margin << "  Code rate: " << NameFromSection(u"SHCodeRate", buf.getBits<uint8_t>(4), names::FIRST) << std::endl;
+                disp << margin << "  Guard interval: " << GuardIntervalNames.name(buf.getBits<uint8_t>(2)) << std::endl;
+                disp << margin << "  Transmission mode: " << TransmissionModeNames.name(buf.getBits<uint8_t>(2)) << std::endl;
+                disp << margin << UString::Format(u"  Common frequency: %s", {buf.getBool()}) << std::endl;
             }
             else {
-                const uint8_t symrate = uint8_t(mval >> 1) & 0x1F;
-                disp << margin << "- Modulation type: TDM" << std::endl
-                     << margin << UString::Format(u"  Polarization: %s", {PolarizationNames.name((mval >> 14) & 0x03)}) << std::endl
-                     << margin << UString::Format(u"  Roll off: %s", {RollOffNames.name((mval >> 12) & 0x03)}) << std::endl
-                     << margin << UString::Format(u"  Modulation mode: %s", {ModulationNames.name((mval >> 10) & 0x03)}) << std::endl
-                     << margin << UString::Format(u"  Code rate: %s", {NameFromSection(u"SHCodeRate", (mval >> 6) & 0x0F, names::FIRST)}) << std::endl
-                     << margin << UString::Format(u"  Symbol rate code: 0x%X (%d)", {symrate, symrate}) << std::endl;
+                disp << margin << "- Modulation type: TDM" << std::endl;
+                disp << margin << "  Polarization: " << PolarizationNames.name(buf.getBits<uint8_t>(2)) << std::endl;
+                disp << margin << "  Roll off: " << RollOffNames.name(buf.getBits<uint8_t>(2)) << std::endl;
+                disp << margin << "  Modulation mode: " << ModulationNames.name(buf.getBits<uint8_t>(2)) << std::endl;
+                disp << margin << "  Code rate: " << NameFromSection(u"SHCodeRate", buf.getBits<uint8_t>(4), names::FIRST) << std::endl;
+                disp << margin << UString::Format(u"  Symbol rate code: 0x%X (%<d)", {buf.getBits<uint8_t>(5)}) << std::endl;
+                buf.skipBits(1);
             }
-
-            if ((flags & 0x40) != 0) {
-                const bool short_interleaver = (flags & 0x20) != 0;
-                const size_t min_size = short_interleaver ? 1 : 4;
-                if (size < min_size) {
-                    break;
+            if (interleaver && buf.canReadBytes(short_interleaver ? 1 : 4)) {
+                disp << margin << UString::Format(u"  Common multiplier: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
+                if (short_interleaver) {
+                    buf.skipBits(2);
                 }
-                disp << margin << UString::Format(u"  Common multiplier: %d", {(data[0] >> 2) & 0x3F}) << std::endl;
-                if (!short_interleaver) {
-                    const uint32_t val = GetUInt32(data);
-                    disp << margin << UString::Format(u"  Number of late taps: %d", {(val >> 20) & 0x3F}) << std::endl
-                         << margin << UString::Format(u"  Number of slices: %d", {(val >> 14) & 0x3F}) << std::endl
-                         << margin << UString::Format(u"  Slice distance: %d", {(val >> 6) & 0xFF}) << std::endl
-                         << margin << UString::Format(u"  Non-late increments: %d", {val & 0x3F}) << std::endl;
+                else {
+                    disp << margin << UString::Format(u"  Number of late taps: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
+                    disp << margin << UString::Format(u"  Number of slices: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
+                    disp << margin << UString::Format(u"  Slice distance: %d", {buf.getBits<uint8_t>(8)}) << std::endl;
+                    disp << margin << UString::Format(u"  Non-late increments: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
                 }
-                data += min_size; size -= min_size;
             }
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

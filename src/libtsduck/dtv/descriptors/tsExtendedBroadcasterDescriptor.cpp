@@ -134,41 +134,30 @@ void ts::ExtendedBroadcasterDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ExtendedBroadcasterDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ExtendedBroadcasterDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
+    if (buf.canReadBytes(1)) {
+        const uint8_t btype = buf.getBits<uint8_t>(4);
+        buf.skipBits(4);
+        disp << margin << "Broadcaster type: " << NameFromSection(u"ISDBBroadcasterType", btype, names::HEXA_FIRST) << std::endl;
 
-    if (size == 0) {
-        return;
-    }
+        if ((btype == 0x01 || btype == 0x02) && buf.canReadBytes(3)) {
+            disp << margin << UString::Format(u"Terrestrial%s broadcaster id: 0x%X (%<d)", {btype == 0x02 ? u" sound" : u"", buf.getUInt16()}) << std::endl;
+            size_t aff_count = buf.getBits<size_t>(4);
+            size_t bc_count = buf.getBits<size_t>(4);
+            disp << margin << UString::Format(u"Number of affiliations: %d, number of broadcaster ids: %d", {aff_count, bc_count}) << std::endl;
 
-    const uint8_t btype = (data[0] >> 4) & 0x0F;
-    data++; size--;
-    disp << margin << "Broadcaster type: " << NameFromSection(u"ISDBBroadcasterType", btype, names::HEXA_FIRST) << std::endl;
+            while (aff_count-- > 0 && buf.canReadBytes(1)) {
+                disp << margin << UString::Format(u"- %s id: 0x%X (%<d)", {btype == 0x02 ? u"Sound broadcast affiliation" : u"Affiliation", buf.getUInt8()}) << std::endl;
+            }
 
-    if ((btype == 0x01 || btype == 0x02) && size >= 3) {
-
-        const uint16_t bcid = GetUInt16(data);
-        size_t aff_count = (data[2] >> 4) & 0x0F;
-        size_t bc_count = data[2] & 0x0F;
-        data += 3; size -= 3;
-
-        disp << margin << UString::Format(u"Terrestrial%s broadcaster id: 0x%X (%d)", {btype == 0x02 ? u" sound" : u"", bcid, bcid}) << std::endl
-             << margin << UString::Format(u"Number of affiliations: %d, number of broadcaster ids: %d", {aff_count, bc_count}) << std::endl;
-
-        while (aff_count > 0 && size > 0) {
-            disp << margin << UString::Format(u"- %s id: 0x%X (%d)", {btype == 0x02 ? u"Sound broadcast affiliation" : u"Affiliation", data[0], data[0]}) << std::endl;
-            data++; size--; aff_count--;
+            while (bc_count-- > 0 && buf.canReadBytes(3)) {
+                disp << margin << UString::Format(u"- Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                disp << margin << UString::Format(u"  Broadcaster id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            }
         }
-
-        while (bc_count > 0 && size >= 3) {
-            disp << margin << UString::Format(u"- Original network id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-                 << margin << UString::Format(u"  Broadcaster id: 0x%X (%d)", {data[2], data[2]}) << std::endl;
-            data += 3; size -= 3; bc_count--;
-        }
+        disp.displayPrivateData(btype == 0x01 || btype == 0x02 ? u"Private data" : u"Reserve future use", buf, NPOS, margin);
     }
-
-    disp.displayPrivateData(btype == 0x01 || btype == 0x02 ? u"Private data" : u"Reserve future use", data, size, margin);
 }
 
 

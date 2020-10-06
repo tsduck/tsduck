@@ -116,28 +116,21 @@ void ts::NodeRelationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NodeRelationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::NodeRelationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        disp << margin << UString::Format(u"Reference type: %d", {(data[0] >> 4) & 0x0F}) << std::endl;
-        const bool has_external = (data[0] & 0x08) != 0;
-        data++; size--;
-
-        if (size >= size_t(has_external ? 7 : 3)) {
-            if (has_external) {
-                disp << margin << UString::Format(u"Information provider id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-                     << margin << UString::Format(u"Event relation id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl;
-                data += 4; size -= 4;
-            }
-            disp << margin << UString::Format(u"Reference node id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-                 << margin << UString::Format(u"Reference number: 0x%X (%d)", {data[2], data[2]}) << std::endl;
-            data += 3; size -= 3;
+    if (buf.canReadBytes(1)) {
+        disp << margin << UString::Format(u"Reference type: %d", {buf.getBits<uint8_t>(4)}) << std::endl;
+        const bool has_external = buf.getBool();
+        buf.skipBits(3);
+        if (has_external && buf.canReadBytes(4)) {
+            disp << margin << UString::Format(u"Information provider id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"Event relation id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        }
+        if (buf.canReadBytes(3)) {
+            disp << margin << UString::Format(u"Reference node id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"Reference number: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

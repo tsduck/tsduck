@@ -140,43 +140,28 @@ void ts::HEVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::HEVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::HEVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        disp << margin << "HRD management valid: " << UString::TrueFalse((data[0] & 0x80) != 0) << std::endl;
-        bool info_present = (data[0] & 0x01) != 0;
-        if ((data[0] & 0x40) == 0) {
-            const uint8_t idx = (data[0] >> 1) & 0x1F;
-            disp << margin << UString::Format(u"Target schedule idx: 0x%x (%d)", {idx, idx}) << std::endl;
+    if (buf.canReadBytes(1)) {
+        disp << margin << "HRD management valid: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        if (buf.getBool()) { // target_schedule_idx_not_present
+            buf.skipBits(5);
         }
-        data++; size--;
-
-        bool ok = size >= 1;
-        if (info_present) {
-            const bool has_90kHz = (data[0] & 0x80) != 0;
-            data++; size--;
-            if (has_90kHz) {
-                ok = size >= 8;
-                if (ok) {
-                    disp << margin << UString::Format(u"90 kHz: N = %'d, K = %'d", {GetUInt32(data), GetUInt32(data + 4)}) << std::endl;
-                    data += 8; size -= 8;
-                }
+        else {
+            disp << margin << UString::Format(u"Target schedule idx: 0x%x (%<d)", {buf.getBits<uint8_t>(5)}) << std::endl;
+        }
+        if (buf.getBool()) { // info_present
+            const bool has_90kHz = buf.getBool();
+            buf.skipBits(7);
+            if (has_90kHz && buf.canReadBytes(8)) {
+                disp << margin << UString::Format(u"90 kHz: N = %'d", {buf.getUInt32()});
+                disp << UString::Format(u", K = %'d", {buf.getUInt32()}) << std::endl;
             }
-            ok = ok && size >= 4;
-            if (ok) {
-                disp << margin << UString::Format(u"Num. units in tick: %'d", {GetUInt32(data)}) << std::endl;
-                data += 4; size -= 4;
+            if (buf.canReadBytes(4)) {
+                disp << margin << UString::Format(u"Num. units in tick: %'d", {buf.getUInt32()}) << std::endl;
             }
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

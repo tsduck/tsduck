@@ -161,22 +161,18 @@ void ts::NPTReferenceDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NPTReferenceDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::NPTReferenceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 18) {
-        const uint64_t stc = GetUInt40(data + 1) & TS_UCONST64(0x00000001FFFFFFFF);
-        const uint64_t npt = GetUInt64(data + 6) & TS_UCONST64(0x00000001FFFFFFFF);
-        disp << margin << "Post discontinuity: " << UString::TrueFalse((data[0] & 0x80) != 0) << std::endl
-             << margin << UString::Format(u"Content id: 0x%X (%d)", {data[0] & 0x7F, data[0] & 0x7F}) << std::endl
-             << margin << UString::Format(u"STC reference: 0x%09X (%d)", {stc, stc}) << std::endl
-             << margin << UString::Format(u"NPT reference: 0x%09X (%d)", {npt, npt}) << std::endl
-             << margin << UString::Format(u"NPT/STC scale: %d/%d", {GetUInt16(data + 14), GetUInt16(data + 16)}) << std::endl;
-        data += 18; size -= 18;
+    if (buf.canReadBytes(18)) {
+        disp << margin << "Post discontinuity: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << UString::Format(u"Content id: 0x%X (%<d)", {buf.getBits<uint8_t>(7)}) << std::endl;
+        buf.skipBits(7);
+        disp << margin << UString::Format(u"STC reference: 0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
+        buf.skipBits(31);
+        disp << margin << UString::Format(u"NPT reference: 0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
+        disp << margin << UString::Format(u"NPT/STC scale: %d", {buf.getUInt16()});
+        disp << UString::Format(u"/%d", {buf.getUInt16()}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -149,36 +149,28 @@ void ts::EventGroupDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::EventGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::EventGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 1) {
-        const uint8_t type = (data[0] >> 4) & 0x0F;
-        size_t count = data[0] & 0x0F;
-        data++; size--;
+    if (buf.canReadBytes(1)) {
+        const uint8_t type = buf.getBits<uint8_t>(4);
         disp << margin << "Group type: " << NameFromSection(u"ISDBEventGroupType", type, names::DECIMAL_FIRST) << std::endl;
-
+        size_t count = buf.getBits<size_t>(4);
         disp << margin << "Actual events:" << (count == 0 ? " none" : "") << std::endl;
-        while (count > 0 && size >= 4) {
-            disp << margin << UString::Format(u"- Service id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-                 << margin << UString::Format(u"  Event id:   0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl;
-            data += 4; size -= 4; count--;
+        while (count-- > 0 && buf.canReadBytes(4)) {
+            disp << margin << UString::Format(u"- Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"  Event id:   0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }
-
         if (type == 4 || type == 5) {
-            disp << margin << "Other networks events:" << (size < 8 ? " none" : "") << std::endl;
-            while (size >= 8) {
-                disp << margin << UString::Format(u"- Original network id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-                     << margin << UString::Format(u"  Transport stream id: 0x%X (%d)", {GetUInt16(data + 2), GetUInt16(data + 2)}) << std::endl
-                     << margin << UString::Format(u"  Service id:          0x%X (%d)", {GetUInt16(data + 4), GetUInt16(data + 4)}) << std::endl
-                     << margin << UString::Format(u"  Event id:            0x%X (%d)", {GetUInt16(data + 6), GetUInt16(data + 6)}) << std::endl;
-                data += 8; size -= 8;
+            disp << margin << "Other networks events:" << (buf.canReadBytes(8) ? "" : " none") << std::endl;
+            while (buf.canReadBytes(8)) {
+                disp << margin << UString::Format(u"- Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                disp << margin << UString::Format(u"  Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                disp << margin << UString::Format(u"  Service id:          0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                disp << margin << UString::Format(u"  Event id:            0x%X (%<d)", {buf.getUInt16()}) << std::endl;
             }
-            disp.displayExtraData(data, size, margin);
         }
         else {
-            disp.displayPrivateData(u"Private data", data, size, margin);
+            disp.displayPrivateData(u"Private data", buf, NPOS, margin);
         }
     }
 }

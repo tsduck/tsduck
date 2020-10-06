@@ -98,22 +98,13 @@ void ts::IBPDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::IBPDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::IBPDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 2) {
-        const uint16_t n = GetUInt16(data);
-        data += 2; size -= 2;
-        disp << margin
-             << UString::Format(u"Closed GOP: %s, identical GOP: %s, max GOP length: 0x%X (%'d)",
-                                {UString::YesNo((n & 0x8000) != 0),
-                                 UString::YesNo((n & 0x4000) != 0),
-                                 n & 0x3FFF, n & 0x3FFF})
-             << std::endl;
+    if (buf.canReadBytes(2)) {
+        disp << margin << UString::Format(u"Closed GOP: %s", {buf.getBool()});
+        disp << UString::Format(u", identical GOP: %s", {buf.getBool()});
+        disp << UString::Format(u", max GOP length: 0x%X (%<'d)", {buf.getBits<uint16_t>(14)}) << std::endl;
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -123,28 +123,20 @@ void ts::EmergencyInformationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::EmergencyInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::EmergencyInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    while (size >= 4) {
-        disp << margin << UString::Format(u"- Event service id: 0x%X (%d)", {GetUInt16(data), GetUInt16(data)}) << std::endl
-             << margin << UString::Format(u"  Event is started: %s", {(data[2] & 0x80) != 0}) << std::endl
-             << margin << UString::Format(u"  Signal level: %d", {(data[2] >> 6) & 0x01}) << std::endl;
-        size_t len = data[3];
-        data += 4; size -= 4;
-        len = std::min(len, size);
-        while (len >= 2) {
-            const uint16_t ac = (GetUInt16(data) >> 4) & 0x0FFF;
-            disp << margin << UString::Format(u"  Area code: 0x%03X (%d)", {ac, ac}) << std::endl;
-            data += 2; size -= 2; len -= 2;
+    while (buf.canReadBytes(4)) {
+        disp << margin << UString::Format(u"- Event service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"  Event is started: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"  Signal level: %d", {buf.getBit()}) << std::endl;
+        buf.skipBits(6);
+        buf.pushReadSizeFromLength(8); // area_code_length
+        while (buf.canRead()) {
+            disp << margin << UString::Format(u"  Area code: 0x%03X (%<d)", {buf.getBits<uint16_t>(12)}) << std::endl;
+            buf.skipBits(4);
         }
-        if (len > 0) {
-            break;
-        }
+        buf.popState(); // end of  area_code_length
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

@@ -240,17 +240,11 @@ const ts::Enumeration ts::S2XSatelliteDeliverySystemDescriptor::RollOffNames({
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::S2XSatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::S2XSatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-    bool ok = true;
-
-    if (size >= 2) {
-        const uint8_t profiles = (data[0] >> 3) & 0x1F;
+    if (buf.canReadBytes(2)) {
+        const uint8_t profiles = buf.getBits<uint8_t>(5);
+        buf.skipBits(3);
         disp << margin << UString::Format(u"Receiver profiles: 0x%X", {profiles});
         if ((profiles & 0x01) != 0) {
             disp << ", broadcast services";
@@ -267,81 +261,58 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& 
         if ((profiles & 0x10) != 0) {
             disp << ", VL-SNR";
         }
-        const uint8_t mode = (data[1] >> 6) & 0x03;
-        const bool sseq_sel = (data[1] & 0x20) != 0;
         disp << std::endl;
+        const uint8_t mode = buf.getBits<uint8_t>(2);
+        const bool sseq_sel = buf.getBool();
+        buf.skipBits(3);
         disp << margin << "S2X mode: " << NameFromSection(u"S2XMode", mode, names::FIRST) << std::endl;
-        disp << margin << "TS/GS S2X mode: " << NameFromSection(u"TSGSS2XMode", data[1] & 0x03, names::DECIMAL_FIRST) << std::endl;
-        data += 2; size -= 2;
+        disp << margin << "TS/GS S2X mode: " << NameFromSection(u"TSGSS2XMode", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
 
-        if (ok && sseq_sel) {
-            ok = size >= 3;
-            if (ok) {
-                disp << margin << UString::Format(u"Scrambling sequence index: 0x%05X", { GetUInt24(data) & 0x03FFFF }) << std::endl;
-                data += 3; size -= 3;
+        if (sseq_sel && buf.canReadBytes(3)) {
+            buf.skipBits(6);
+            disp << margin << UString::Format(u"Scrambling sequence index: 0x%05X", {buf.getBits<uint32_t>(18)}) << std::endl;
+        }
+        DisplayChannel(disp, u"Master channel", buf, margin);
+        if (mode == 2 && buf.canReadBytes(1)) {
+            disp << margin << UString::Format(u"Timeslice number: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        }
+        if (mode == 3 && buf.canReadBytes(1)) {
+            buf.skipBits(7);
+            const bool num = buf.getBool();
+            DisplayChannel(disp, u"Channel bond 0", buf, margin);
+            if (num) {
+                DisplayChannel(disp, u"Channel bond 1", buf, margin);
             }
         }
-        ok = ok && DisplayChannel(disp, u"Master channel", data, size, indent);
-        if (ok && mode == 2) {
-            ok = size >= 1;
-            if (ok) {
-                disp << margin << UString::Format(u"Timeslice number: 0x%X (%d)", {data[0], data[0]}) << std::endl;
-                data++; size--;
-            }
-        }
-        if (ok && mode == 3) {
-            ok = size >= 1;
-            if (ok) {
-                const bool num = (data[0] & 0x01) != 0;
-                data++; size--;
-                ok = DisplayChannel(disp, u"Channel bond 0", data, size, indent) &&
-                    (!num || DisplayChannel(disp, u"Channel bond 1", data, size, indent));
-            }
-        }
-        disp.displayPrivateData(u"Reserved for future use", data, size, margin);
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+        disp.displayPrivateData(u"Reserved for future use", buf, NPOS, margin);
     }
 }
 
 // Display a channel description.
-bool ts::S2XSatelliteDeliverySystemDescriptor::DisplayChannel(TablesDisplay& disp, const UString& title, const uint8_t*& data, size_t& size, int indent)
+void ts::S2XSatelliteDeliverySystemDescriptor::DisplayChannel(TablesDisplay& disp, const UString& title, PSIBuffer& buf, const UString& margin)
 {
-    if (size < 11) {
-        return false;
+    if (!buf.canReadBytes(11)) {
+        buf.setUserError();
     }
-
-    const UString margin(indent, ' ');
-
-    const bool east = (data[6] & 0x80) != 0;
-    const uint8_t polar = (data[6] >> 5) & 0x03;
-    const bool multiple = (data[6] & 0x10) != 0;
-    const uint8_t roll_off = data[6] & 0x07;
-    std::string freq, srate, orbital;
-    BCDToString(freq, data, 8, 3);
-    BCDToString(orbital, data + 4, 4, 3);
-    BCDToString(srate, data + 7, 7, 3, false);
-    data += 11; size -= 11;
-
-    disp << margin << title << ":" << std::endl
-         << margin << "  Orbital position: " << orbital << " degree, " << (east ? "east" : "west") << std::endl
-         << margin << "  Frequency: " << freq << " GHz" << std::endl
-         << margin << "  Symbol rate: " << srate << " Msymbol/s" << std::endl
-         << margin << "  Polarization: " << SatelliteDeliverySystemDescriptor::PolarizationNames.name(polar) << std::endl
-         << margin << "  Roll-off factor: " << RollOffNames.name(roll_off) << std::endl
-         << margin << "  Multiple input stream: " << UString::YesNo(multiple) << std::endl;
-
-    if (multiple) {
-        if (size < 1) {
-            return false;
+    else {
+        disp << margin << title << ":" << std::endl;
+        disp << margin << UString::Format(u"  Frequency: %d", {buf.getBCD<uint32_t>(3)});
+        disp << UString::Format(u".%05d GHz", {buf.getBCD<uint32_t>(5)}) << std::endl;
+        disp << margin << UString::Format(u"  Orbital position: %d", {buf.getBCD<uint32_t>(3)});
+        disp << UString::Format(u".%d degree, ", {buf.getBCD<uint32_t>(1)});
+        disp << (buf.getBool() ? "east" : "west") << std::endl;
+        disp << margin << "  Polarization: " << NameFromSection(u"SatellitePolarization", buf.getBits<uint8_t>(2), names::VALUE | names::DECIMAL) << std::endl;
+        const bool multiple = buf.getBool();
+        disp << margin << "  Multiple input stream: " << UString::YesNo(multiple) << std::endl;
+        buf.skipBits(1);
+        disp << margin << "  Roll-off factor: " << RollOffNames.name(buf.getBits<uint8_t>(3)) << std::endl;
+        buf.skipBits(4);
+        disp << margin << UString::Format(u"  Symbol rate: %d", {buf.getBCD<uint32_t>(3)});
+        disp << UString::Format(u".%04d Msymbol/s", {buf.getBCD<uint32_t>(4)}) << std::endl;
+        if (multiple && buf.canReadBytes(1)) {
+            disp << margin << UString::Format(u"  Input stream identifier: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         }
-        const uint8_t id = data[0];
-        data++; size--;
-        disp << margin << UString::Format(u"  Input stream identifier: 0x%X (%d)", {id, id}) << std::endl;
     }
-
-    return true;
 }
 
 
