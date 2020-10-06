@@ -119,7 +119,7 @@ namespace ts {
         bool transferSelectorBytes(DuckContext& duck);
 
         // Inherited methods
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods

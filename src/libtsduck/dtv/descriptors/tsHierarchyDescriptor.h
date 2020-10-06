@@ -68,7 +68,7 @@ namespace ts {
         HierarchyDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods

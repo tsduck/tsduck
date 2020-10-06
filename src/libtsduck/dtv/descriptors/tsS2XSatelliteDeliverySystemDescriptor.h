@@ -91,7 +91,7 @@ namespace ts {
         S2XSatelliteDeliverySystemDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods
@@ -111,6 +111,6 @@ namespace ts {
         void deserializeChannel(Channel&, PSIBuffer&);
         void buildChannelXML(const Channel&, xml::Element* parent, const UString& name) const;
         bool getChannelXML(Channel&, DuckContext&, const xml::Element*);
-        static bool DisplayChannel(TablesDisplay&, const UString& title, const uint8_t*& data, size_t& size, int indent);
+        static void DisplayChannel(TablesDisplay&, const UString& title, PSIBuffer&, const UString& margin);
     };
 }

@@ -110,7 +110,7 @@ namespace ts {
         uint64_t stcToNPT(uint64_t stc) const;
 
         // Inherited methods
-        DeclareLegacyDisplayDescriptor();
+        DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods

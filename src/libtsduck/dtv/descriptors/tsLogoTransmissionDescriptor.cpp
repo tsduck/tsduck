@@ -140,42 +140,27 @@ void ts::LogoTransmissionDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::LogoTransmissionDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::LogoTransmissionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size > 0) {
-        const uint8_t ttype = data[0];
+    if (buf.canReadBytes(1)) {
+        const uint8_t ttype = buf.getUInt8();
         disp << margin << "Logo transmission type: " << NameFromSection(u"LogoTransmissionType", ttype, names::HEXA_FIRST) << std::endl;
-        data += 1; size -= 1;
-
-        switch (ttype) {
-            case 0x01:
-                if (size >= 6) {
-                    const uint16_t id = GetUInt16(data) & 0x01FF;
-                    const uint16_t version = GetUInt16(data + 2) & 0x0FFF;
-                    const uint16_t ddid = GetUInt16(data + 4);
-                    data += 6; size -= 6;
-                    disp << margin << UString::Format(u"Logo id: 0x%03X (%d)", {id, id}) << std::endl
-                         << margin << UString::Format(u"Logo version: 0x%03X (%d)", {version, version}) << std::endl
-                         << margin << UString::Format(u"Download data id: 0x%X (%d)", {ddid, ddid}) << std::endl;
-                }
-                disp.displayExtraData(data, size, margin);
-                break;
-            case 0x02:
-                if (size >= 2) {
-                    const uint16_t id = GetUInt16(data) & 0x01FF;
-                    data += 2; size -= 2;
-                    disp << margin << UString::Format(u"Logo id: 0x%03X (%d)", {id, id}) << std::endl;
-                }
-                disp.displayExtraData(data, size, margin);
-                break;
-            case 0x03:
-                disp << margin << "Logo characters: \"" << disp.duck().decoded(data, size) << "\"" << std::endl;
-                break;
-            default:
-                disp.displayPrivateData(u"Reserved for future use", data, size, margin);
-                break;
+        if (ttype == 0x01 && buf.canReadBytes(6)) {
+            buf.skipBits(7);
+            disp << margin << UString::Format(u"Logo id: 0x%03X (%<d)", {buf.getBits<uint16_t>(9)}) << std::endl;
+            buf.skipBits(4);
+            disp << margin << UString::Format(u"Logo version: 0x%03X (%<d)", {buf.getBits<uint16_t>(12)}) << std::endl;
+            disp << margin << UString::Format(u"Download data id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        }
+        else if (ttype == 0x02 && buf.canReadBytes(2)) {
+            buf.skipBits(7);
+            disp << margin << UString::Format(u"Logo id: 0x%03X (%<d)", {buf.getBits<uint16_t>(9)}) << std::endl;
+        }
+        else if (ttype == 0x03) {
+            disp << margin << "Logo characters: \"" << buf.getString() << "\"" << std::endl;
+        }
+        else {
+            disp.displayPrivateData(u"Reserved for future use", buf, NPOS, margin);
         }
     }
 }

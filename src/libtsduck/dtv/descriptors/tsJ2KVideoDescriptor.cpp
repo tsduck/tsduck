@@ -132,36 +132,21 @@ void ts::J2KVideoDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::J2KVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::J2KVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 24) {
-        const uint16_t profile_and_level = GetUInt16(data);
-        const uint32_t horizontal_size = GetUInt32(data + 2);
-        const uint32_t vertical_size = GetUInt32(data + 6);
-        const uint32_t max_bit_rate = GetUInt32(data + 10);
-        const uint32_t max_buffer_size = GetUInt32(data + 14);
-        const uint16_t DEN_frame_rate = GetUInt16(data + 18);
-        const uint16_t NUM_frame_rate = GetUInt16(data + 20);
-        const uint8_t color_specification = GetUInt8(data + 22);
-        const bool still_mode = (data[23] & 0x80) != 0;
-        const bool interlaced_video = (data[23] & 0x40) != 0;
-
-        disp << margin << UString::Format(u"Profile and level: 0x%X (%d)", {profile_and_level, profile_and_level}) << std::endl
-             << margin << UString::Format(u"Horizontal size: 0x%X (%d)", {horizontal_size, horizontal_size}) << std::endl
-             << margin << UString::Format(u"Vertical size: 0x%X (%d)", {vertical_size, vertical_size}) << std::endl
-             << margin << UString::Format(u"Max bit rate: 0x%X (%d)", {max_bit_rate, max_bit_rate}) << std::endl
-             << margin << UString::Format(u"Max buffer size: 0x%X (%d)", {max_buffer_size, max_buffer_size}) << std::endl
-             << margin << UString::Format(u"Frame rate: %d/%d", {NUM_frame_rate, DEN_frame_rate}) << std::endl
-             << margin << UString::Format(u"Color specification: 0x%X (%d)", {color_specification, color_specification}) << std::endl
-             << margin << UString::Format(u"Still mode: %s", {still_mode}) << std::endl
-             << margin << UString::Format(u"Interlaced video: %s", {interlaced_video}) << std::endl;
-
-        disp.displayPrivateData(u"Private data", data + 24, size - 24, margin);
-    }
-    else {
-        disp.displayExtraData(data, size, margin);
+    if (buf.canReadBytes(24)) {
+        disp << margin << UString::Format(u"Profile and level: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Horizontal size: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+        disp << margin << UString::Format(u"Vertical size: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+        disp << margin << UString::Format(u"Max bit rate: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+        disp << margin << UString::Format(u"Max buffer size: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+        const uint16_t DEN_frame_rate = buf.getUInt16();
+        disp << margin << UString::Format(u"Frame rate: %d/%d", {buf.getUInt16(), DEN_frame_rate}) << std::endl;
+        disp << margin << UString::Format(u"Color specification: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Still mode: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"Interlaced video: %s", {buf.getBool()}) << std::endl;
+        buf.skipBits(6);
+        disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }
 

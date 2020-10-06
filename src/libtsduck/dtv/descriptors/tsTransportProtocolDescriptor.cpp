@@ -268,98 +268,66 @@ void ts::TransportProtocolDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 3) {
-        const uint16_t proto = GetUInt16(data);
-        disp << margin << "Protocol id: " << NameFromSection(u"MHPTransportProtocolId", proto, names::BOTH_FIRST) << std::endl
-             << margin << UString::Format(u"Transport protocol label: 0x%X (%d)", {data[2], data[2]}) << std::endl;
-        data += 3; size -= 3;
+    if (buf.canReadBytes(3)) {
+        const uint16_t proto = buf.getUInt16();
+        disp << margin << "Protocol id: " << NameFromSection(u"MHPTransportProtocolId", proto, names::BOTH_FIRST) << std::endl;
+        disp << margin << UString::Format(u"Transport protocol label: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
 
         switch (proto) {
             case MHP_PROTO_CAROUSEL: {
-                if (size > 0) {
-                    const bool remote = (data[0] & 0x80) != 0;
-                    if (remote && size >= 8) {
-                        const uint16_t net = GetUInt16(data + 1);
-                        const uint16_t ts  = GetUInt16(data + 3);
-                        const uint16_t srv = GetUInt16(data + 5);
-                        disp << margin << UString::Format(u"Original network id: 0x%X (%d)", {net, net}) << std::endl
-                             << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {ts, ts}) << std::endl
-                             << margin << UString::Format(u"Service id: 0x%X (%d)", {srv, srv}) << std::endl
-                             << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[7], data[7]}) << std::endl;
-                        data += 8; size -= 8;
+                if (buf.canReadBytes(1)) {
+                    const bool remote = buf.getBool();
+                    buf.skipBits(7);
+                    if (remote && buf.canReadBytes(6)) {
+                        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                        disp << margin << UString::Format(u"Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
                     }
-                    else if (!remote && size >= 2) {
-                        disp << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[1], data[1]}) << std::endl;
-                        data += 2; size -= 2;
+                    if (buf.canReadBytes(1)) {
+                        disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
                     }
                 }
                 break;
             }
             case MHP_PROTO_MPE: {
-                if (size > 0) {
-                    const bool remote = (data[0] & 0x80) != 0;
-                    bool ok = true;
-                    if (remote && size >= 8) {
-                        const uint16_t net = GetUInt16(data + 1);
-                        const uint16_t ts  = GetUInt16(data + 3);
-                        const uint16_t srv = GetUInt16(data + 5);
-                        disp << margin << UString::Format(u"Original network id: 0x%X (%d)", {net, net}) << std::endl
-                             << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {ts, ts}) << std::endl
-                             << margin << UString::Format(u"Service id: 0x%X (%d)", {srv, srv}) << std::endl
-                             << margin << UString::Format(u"Alignment indicator: %d", {(data[7] >> 7) & 0x01}) << std::endl;
-                        data += 8; size -= 8;
+                if (buf.canReadBytes(1)) {
+                    const bool remote = buf.getBool();
+                    buf.skipBits(7);
+                    if (remote && buf.canReadBytes(6)) {
+                        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                        disp << margin << UString::Format(u"Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
                     }
-                    else if (!remote && size >= 2) {
-                        disp << margin << UString::Format(u"Alignment indicator: %d", {(data[1] >> 7) & 0x01}) << std::endl;
-                        data += 2; size -= 2;
-                    }
-                    else {
-                        ok = false;
-                    }
-                    while (ok && size > 0) {
-                        const size_t len = data[0];
-                        ok = size >= 1 + len;
-                        if (ok) {
-                            disp << margin << "URL: \"" << disp.duck().decoded(data + 1, len) << "\"" << std::endl;
-                            data += 1 + len; size -= 1 + len;
+                    if (buf.canReadBytes(1)) {
+                        disp << margin << UString::Format(u"Alignment indicator: %d", {buf.getBool()}) << std::endl;
+                        buf.skipBits(7);
+                        while (buf.canRead()) {
+                            disp << margin << "URL: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
                         }
                     }
                 }
                 break;
             }
             case MHP_PROTO_HTTP: {
-                bool ok = true;
-                while (ok && size > 0) {
-                    const size_t len = data[0];
-                    ok = size >= 2 + len;
-                    if (ok) {
-                        disp << margin << "URL base: \"" << disp.duck().decoded(data + 1, len) << "\"" << std::endl;
-                        size_t count = data[1 + len];
-                        data += 2 + len; size -= 2 + len;
-                        while (count-- > 0) {
-                            const size_t extlen = data[0];
-                            ok = size >= 1 + extlen;
-                            if (ok) {
-                                disp << margin << "  Extension: \"" << disp.duck().decoded(data + 1, extlen) << "\"" << std::endl;
-                                data += 1 + extlen; size -= 1 + extlen;
-                            }
+                while (buf.canReadBytes(1)) {
+                    disp << margin << "URL base: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
+                    if (buf.canReadBytes(1)) {
+                        const size_t count = buf.getUInt8();
+                        for (size_t i = 0; i < count && buf.canReadBytes(1); ++i) {
+                            disp << margin << "  Extension: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
                         }
                     }
                 }
                 break;
             }
             default: {
-                disp.displayPrivateData(u"Selector", data, size, margin);
+                disp.displayPrivateData(u"Selector", buf, NPOS, margin);
                 break;
             }
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

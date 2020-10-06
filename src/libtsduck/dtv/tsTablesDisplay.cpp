@@ -709,14 +709,7 @@ void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, s
         displayExtraData(buf, margin);
     }
     else {
-        // Try to find a legacy display handler.
-        LegacyDisplayDescriptorFunction legacy_handler = PSIRepository::Instance()->getLegacyDescriptorDisplay(edid, tid);
-        if (legacy_handler != nullptr) {
-            legacy_handler(*this, did, payload, size, int(margin.size()), tid, _duck.actualPDS(pds));
-        }
-        else {
-            displayUnkownDescriptor(did, payload, size, margin, tid, _duck.actualPDS(pds));
-        }
+        displayUnkownDescriptor(did, payload, size, margin, tid, _duck.actualPDS(pds));
     }
 }
 

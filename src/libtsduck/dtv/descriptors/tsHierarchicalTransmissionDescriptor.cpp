@@ -92,16 +92,13 @@ void ts::HierarchicalTransmissionDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::HierarchicalTransmissionDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::HierarchicalTransmissionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-    if (size >= 3) {
-        const PID pid = GetUInt16(data + 1) & 0x1FFF;
-        disp << margin << UString::Format(u"Quality level: %s", {(data[0] & 0x01) != 0 ? u"high" : u"low"}) << std::endl
-             << margin << UString::Format(u"Reference PID: 0x%X (%d)", {pid, pid}) << std::endl;
-        data += 3; size -= 3;
+    if (buf.canReadBytes(3)) {
+        buf.skipBits(7);
+        disp << margin << "Quality level: " << (buf.getBool() ? u"high" : u"low") << std::endl;
+        disp << margin << UString::Format(u"Reference PID: 0x%X (%<d)", {buf.getPID()}) << std::endl;
     }
-    disp.displayExtraData(data, size, margin);
 }
 
 

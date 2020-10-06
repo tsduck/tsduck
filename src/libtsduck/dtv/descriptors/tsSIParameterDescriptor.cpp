@@ -117,28 +117,16 @@ void ts::SIParameterDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SIParameterDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SIParameterDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size >= 3) {
-        const uint8_t version = data[0];
-        Time update;
-        DecodeMJD(data + 1, 2, update);
-        data += 3; size -= 3;
-
-        disp << margin << UString::Format(u"Parameter version: 0x%X (%d)", {version, version}) << std::endl
-             << margin << "Update time: " << update.format(Time::DATE) << std::endl;
-
-        while (size >= 2) {
-            disp << margin << "- Table id: " << names::TID(disp.duck(), data[0], CASID_NULL, names::HEXA_FIRST) << std::endl;
-            const size_t len = std::min<size_t>(data[1], size - 2);
-            disp.displayPrivateData(u"Table description", data + 2, len, margin + u"  ");
-            data += 2 + len; size -= 2 + len;
+    if (buf.canReadBytes(3)) {
+        disp << margin << UString::Format(u"Parameter version: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << "Update time: " << buf.getMJD(2).format(Time::DATE) << std::endl;
+        while (buf.canReadBytes(2)) {
+            disp << margin << "- Table id: " << names::TID(disp.duck(), buf.getUInt8(), CASID_NULL, names::HEXA_FIRST) << std::endl;
+            disp.displayPrivateData(u"Table description", buf, buf.getUInt8(), margin + u"  ");
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 

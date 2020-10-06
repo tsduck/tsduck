@@ -143,32 +143,24 @@ void ts::HybridInformationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::HybridInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::HybridInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    const UString margin(indent, ' ');
-
-    if (size > 0) {
-        const bool has = (data[0] & 0x80) != 0;
-        const bool type = (data[0] & 0x40) != 0;
-        const uint8_t format = (data[0] >> 2) & 0x0F;
-        data++; size--;
-
-        disp << margin << "Has location: " << UString::YesNo(has) << std::endl
-             << margin << "Location type: " << (type ? "connected" : "broadcast") << std::endl
-             << margin << "Format: " << NameFromSection(u"ISDBHybridInformationFormat", format, names::DECIMAL_FIRST) << std::endl;
-
-        if (has) {
-            if (type) {
-                disp << margin << "URL: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
+    if (buf.canReadBytes(1)) {
+        const bool has_location = buf.getBool();
+        const bool location_type = buf.getBool();
+        disp << margin << "Has location: " << UString::YesNo(has_location) << std::endl;
+        disp << margin << "Location type: " << (location_type ? "connected" : "broadcast") << std::endl;
+        disp << margin << "Format: " << NameFromSection(u"ISDBHybridInformationFormat", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
+        buf.skipBits(2);
+        if (has_location) {
+            if (location_type) {
+                disp << margin << "URL: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
             }
-            else if (size >= 3) {
-                disp << margin << UString::Format(u"Component tag: 0x0%X (%d)", {data[0], data[0]}) << std::endl
-                     << margin << UString::Format(u"Module id: 0x0%X (%d)", {GetUInt16(data + 1), GetUInt16(data + 1)}) << std::endl;
-                data += 3; size -= 3;
+            else if (buf.canReadBytes(3)) {
+                disp << margin << UString::Format(u"Component tag: 0x0%X (%<d)", {buf.getUInt8()}) << std::endl;
+                disp << margin << UString::Format(u"Module id: 0x0%X (%<d)", {buf.getUInt16()}) << std::endl;
             }
         }
-
-        disp.displayExtraData(data, size, margin);
     }
 }
 

@@ -180,64 +180,42 @@ void ts::ImageIconDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& disp, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    // Important: With extension descriptors, the DisplayDescriptor() function is called
-    // with extension payload. Meaning that data points after descriptor_tag_extension.
-    // See ts::TablesDisplay::displayDescriptorData()
-
-    const UString margin(indent, ' ');
-    bool ok = size >= 3;
-
-    if (ok) {
-        const uint8_t desc = (data[0] >> 4) & 0x0F;
-        disp << margin << UString::Format(u"Descriptor number: %d, last: %d", {desc, data[0] & 0x0F}) << std::endl
-             << margin << UString::Format(u"Icon id: %d", {data[1] & 0x07}) << std::endl;
-        data += 2; size -= 2;
+    if (buf.canReadBytes(3)) {
+        const uint8_t desc = buf.getBits<uint8_t>(4);
+        disp << margin << UString::Format(u"Descriptor number: %d, last: %d", {desc, buf.getBits<uint8_t>(4)}) << std::endl;
+        buf.skipBits(5);
+        disp << margin << UString::Format(u"Icon id: %d", {buf.getBits<uint8_t>(3)}) << std::endl;
 
         if (desc == 0) {
-            const uint8_t transport = (data[0] >> 6) & 0x03;
-            const bool pos = (data[0] & 0x20) != 0;
-            const uint8_t coord = (data[0] >> 2) & 0x07;
-            data++; size--;
-
-            disp << margin << "Transport mode: " << NameFromSection(u"IconTransportMode", transport, names::DECIMAL_FIRST) << std::endl
-                 << margin << "Position specified: " << UString::YesNo(pos) << std::endl;
-
-            if (pos) {
-                disp << margin << "Coordinate system: " << NameFromSection(u"IconCoordinateSystem", coord, names::DECIMAL_FIRST) << std::endl;
-                ok = size >= 3;
-                if (ok) {
-                    disp << margin << UString::Format(u"Horizontal origin: %d, vertical: %d", {(GetUInt16(data) >> 4) & 0x0FFF, GetUInt16(data + 1) & 0x0FFF}) << std::endl;
-                    data += 3; size -= 3;
+            const uint8_t transport = buf.getBits<uint8_t>(2);
+            disp << margin << "Transport mode: " << NameFromSection(u"IconTransportMode", transport, names::DECIMAL_FIRST) << std::endl;
+            const bool has_position = buf.getBool();
+            disp << margin << "Position specified: " << UString::YesNo(has_position) << std::endl;
+            if (has_position) {
+                disp << margin << "Coordinate system: " << NameFromSection(u"IconCoordinateSystem", buf.getBits<uint8_t>(3), names::DECIMAL_FIRST) << std::endl;
+                buf.skipBits(2);
+                if (buf.canReadBytes(3)) {
+                    disp << margin << UString::Format(u"Horizontal origin: %d", {buf.getBits<uint16_t>(12)});
+                    disp << UString::Format(u", vertical: %d", {buf.getBits<uint16_t>(12)}) << std::endl;
                 }
             }
-            if (ok) {
-                disp << margin << "Icon type: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
-                if (transport == 0x00 ) {
-                    const size_t len = data[0];
-                    ok = size > len;
-                    if (ok) {
-                        disp.displayPrivateData(u"Icon data", data + 1, len, margin);
-                        data += len + 1; size -= len + 1;
-                    }
-                }
-                else if (transport == 0x01) {
-                    disp << margin << "URL: \"" << disp.duck().decodedWithByteLength(data, size) << "\"" << std::endl;
-                }
+            else {
+                buf.skipBits(5);
+            }
+            disp << margin << "Icon type: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
+            if (transport == 0x00 && buf.canReadBytes(1)) {
+                disp.displayPrivateData(u"Icon data", buf, buf.getUInt8(), margin);
+            }
+            else if (transport == 0x01 && buf.canReadBytes(1)) {
+                disp << margin << "URL: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
             }
         }
-        else {
-            const size_t len = data[0];
-            ok = size > len;
-            if (ok) {
-                disp.displayPrivateData(u"Icon data", data + 1, len, margin);
-                data += len + 1; size -= len + 1;
-            }
+        else if (buf.canReadBytes(1)) {
+            disp.displayPrivateData(u"Icon data", buf, buf.getUInt8(), margin);
         }
     }
-
-    disp.displayExtraData(data, size, margin);
 }
 
 
