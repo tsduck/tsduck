@@ -140,7 +140,14 @@ if (-not $NoInstall) {
 # Propagate LIBSRT in next jobs for GitHub Actions.
 if ($GitHubActions) {
     $libsrt = [System.Environment]::GetEnvironmentVariable("LIBSRT","Machine")
-    Write-Output "::set-env name=LIBSRT::$libsrt"
+    if ((-not -not $env:GITHUB_ENV) -and (Test-Path $env:GITHUB_ENV)) {
+        # New version using environment file
+        Write-Output "LIBSRT=$libsrt" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    }
+    else {
+        # Old version using command on stdout.
+        Write-Output "::set-env name=LIBSRT::$libsrt"
+    }
 }
 
 Exit-Script

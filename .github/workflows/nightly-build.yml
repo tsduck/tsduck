@@ -61,8 +61,8 @@ jobs:
         $rebuild = ($version -ne $remote_version).ToString().ToLower()
         $version | Out-File version.txt
         Write-Output "Current version: $version, latest on tsduck.io: $remote_version"
-        Write-Output "::set-env name=VERSION::$version"
-        Write-Output "::set-env name=REBUILD::$rebuild"
+        Write-Output "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        Write-Output "REBUILD=$rebuild" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Check same version
       if: env.REBUILD == 'false'
@@ -139,9 +139,9 @@ jobs:
         fullversion=$(build/get-version-from-sources.sh --full)
         [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
         echo "Current version: $version, latest on tsduck.io: $remote_version"
-        echo "::set-env name=VERSION::$version"
-        echo "::set-env name=FULLVERSION::$fullversion"
-        echo "::set-env name=REBUILD::$rebuild"
+        echo "VERSION=$version" >>$GITHUB_ENV
+        echo "FULLVERSION=$fullversion" >>$GITHUB_ENV
+        echo "REBUILD=$rebuild" >>$GITHUB_ENV
 
     - name: Check same version
       if: env.REBUILD == 'false'
@@ -207,8 +207,8 @@ jobs:
         version=$(build/get-version-from-sources.sh)
         [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
         echo "Current version: $version, latest on tsduck.io: $remote_version"
-        echo "::set-env name=VERSION::$version"
-        echo "::set-env name=REBUILD::$rebuild"
+        echo "VERSION=$version" >>$GITHUB_ENV
+        echo "REBUILD=$rebuild" >>$GITHUB_ENV
 
     - name: Check same version
       if: env.REBUILD == 'false'
