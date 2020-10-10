@@ -90,6 +90,7 @@ jobs:
       with:
         name: version
         path: version.txt
+        retention-days: 5
 
     - name: Upload 64-bit installer
       if: env.REBUILD == 'true'
@@ -97,6 +98,7 @@ jobs:
       with:
         name: installer-64
         path: installers/TSDuck-Win64-${{ env.VERSION }}.exe
+        retention-days: 5
 
     - name: Upload 64-bit portable
       if: env.REBUILD == 'true'
@@ -104,6 +106,7 @@ jobs:
       with:
         name: portable-64
         path: installers/TSDuck-Win64-${{ env.VERSION }}-Portable.zip
+        retention-days: 5
 
     - name: Upload 32-bit installer
       if: env.REBUILD == 'true'
@@ -111,6 +114,7 @@ jobs:
       with:
         name: installer-32
         path: installers/TSDuck-Win32-${{ env.VERSION }}.exe
+        retention-days: 5
 
     - name: Upload 32-bit portable
       if: env.REBUILD == 'true'
@@ -118,6 +122,7 @@ jobs:
       with:
         name: portable-32
         path: installers/TSDuck-Win32-${{ env.VERSION }}-Portable.zip
+        retention-days: 5
 
   linux:
     name: Linux build
@@ -175,6 +180,7 @@ jobs:
       with:
         name: command-lists
         path: tsduck.commands.zip
+        retention-days: 5
 
     - name: Upload Ubuntu package
       if: env.REBUILD == 'true'
@@ -182,6 +188,7 @@ jobs:
       with:
         name: ubuntu-package
         path: installers/tsduck_${{ env.FULLVERSION }}_amd64.deb
+        retention-days: 5
         
     - name: Upload Ubuntu dev package
       if: env.REBUILD == 'true'
@@ -189,6 +196,7 @@ jobs:
       with:
         name: ubuntu-dev-package
         path: installers/tsduck-dev_${{ env.FULLVERSION }}_amd64.deb
+        retention-days: 5
         
   doc:
     name: Documentation build
@@ -227,3 +235,4 @@ jobs:
       with:
         name: doxy-package
         path: doxy.zip
+        retention-days: 5
