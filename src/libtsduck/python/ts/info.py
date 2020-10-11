@@ -28,12 +28,28 @@
 #-----------------------------------------------------------------------------
 
 import ts
-from ctypes import *
+import ctypes
 
 #
 # C function: uint32_t tspyVersionInteger()
 # Python function (direct binding): intVersion()
 #
 intVersion = ts._lib.tspyVersionInteger
-intVersion.restype = c_uint32
+intVersion.restype = ctypes.c_uint32
 intVersion.argtypes = []
+
+#
+# C function: void tspyVersionString(uint8_t* buffer, size_t* size)
+# Python function: version()
+#
+tspyVersionString = ts._lib.tspyVersionString
+tspyVersionString.restype = None
+tspyVersionString.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_size_t)]
+
+def version():
+    size = ctypes.c_size_t(64)
+    buf = bytearray(size.value)
+    buf_ptr = ctypes.cast(ctypes.create_string_buffer(bytes(buf)), ctypes.POINTER(ctypes.c_uint8)).contents
+    tspyVersionString(buf_ptr, ctypes.byref(size))
+    print("size:", size.value, "buf:", buf[0], buf[1], buf[2], buf[3], buf[4])
+    return buf[:size.value].decode("utf-16")

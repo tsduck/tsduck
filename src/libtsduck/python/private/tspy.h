@@ -35,9 +35,34 @@
 
 #pragma once
 #include "tsPlatform.h"
+#include "tsUString.h"
 
 //!
 //! @hideinitializer
 //! Attribute to export a function to Python
 //!
 #define TSDUCKPY extern "C" TSDUCKDLL
+
+//!
+//! Namespace for internal utilities to support Python bindings.
+//!
+namespace tspy {
+    //!
+    //! Convert an UTF-16 buffer in a UString.
+    //! @param [in] buffer Address of a buffer with UTF-16 content.
+    //! @param [in] size Size in bytes of the buffer.
+    //! @return The converted string.
+    //!
+    inline ts::UString ToString(const uint8_t* buffer, size_t size)
+    {
+        return buffer == nullptr ? ts::UString() : ts::UString(reinterpret_cast<const ts::UChar*>(buffer), size / 2);
+    }
+
+    //!
+    //! Convert a string into a UTF-16 buffer.
+    //! @param [in] str The initial string.
+    //! @param [out] buffer Address of a buffer where the string is returned in UTF-16 format.
+    //! @param [in,out] size Initial/maximum size in bytes of the buffer. Upon return, contains the written size in bytes.
+    //!
+    void FromString(const ts::UString& str, uint8_t* buffer, size_t* size);
+}
