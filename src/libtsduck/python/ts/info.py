@@ -47,9 +47,6 @@ tspyVersionString.restype = None
 tspyVersionString.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_size_t)]
 
 def version():
-    size = ctypes.c_size_t(64)
-    buf = bytearray(size.value)
-    buf_ptr = ctypes.cast(ctypes.create_string_buffer(bytes(buf)), ctypes.POINTER(ctypes.c_uint8)).contents
-    tspyVersionString(buf_ptr, ctypes.byref(size))
-    print("size:", size.value, "buf:", buf[0], buf[1], buf[2], buf[3], buf[4])
-    return buf[:size.value].decode("utf-16")
+    buf = ts.OutByteBuffer(64)
+    tspyVersionString(buf.data_ptr(), buf.size_ptr())
+    return buf.to_string()
