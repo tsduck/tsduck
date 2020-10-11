@@ -83,7 +83,7 @@ MINOR=$(lsb_release -r 2>/dev/null | sed -e '/\./!d' -e 's/.*:[\t ]*//' -e 's/.*
 if [[ $(uname -s) == Darwin ]]; then
 
     # macOS
-    pkglist="gnu-sed grep dos2unix coreutils pcsc-lite srt"
+    pkglist="gnu-sed grep dos2unix coreutils pcsc-lite srt python3"
     if [[ -z $(which clang 2>/dev/null) ]]; then
         # Build tools not installed
         xcode-select --install
@@ -102,7 +102,7 @@ if [[ $(uname -s) == Darwin ]]; then
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
     # Ubuntu
-    pkglist="g++ dos2unix curl tar zip doxygen graphviz pcscd libpcsclite-dev dpkg-dev"
+    pkglist="g++ dos2unix curl tar zip doxygen graphviz pcscd libpcsclite-dev dpkg-dev python3"
     if [[ "$MAJOR" -le 17 ]]; then
         pkglist="$pkglist libcurl3 libcurl3-dev"
     else
@@ -120,7 +120,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
 elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
 
     # Debian or Raspbian (Raspberry Pi)
-    pkglist="g++ dos2unix curl tar zip doxygen graphviz pcscd libpcsclite-dev dpkg-dev"
+    pkglist="g++ dos2unix curl tar zip doxygen graphviz pcscd libpcsclite-dev dpkg-dev python3"
     if $M32; then
         pkglist="$pkglist gcc-multilib"
     fi
@@ -136,7 +136,7 @@ elif [[ -f /etc/fedora-release ]]; then
 
     # Fedora
     FC=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9\.]*\) .*$/\1/')
-    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz pcsc-tools pcsc-lite-devel libcurl libcurl-devel rpmdevtools"
+    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz pcsc-tools pcsc-lite-devel libcurl libcurl-devel rpmdevtools python3"
     if $STATIC; then
         pkglist="$pkglist glibc-static libstdc++-static"
     fi
@@ -154,7 +154,7 @@ elif [[ -f /etc/fedora-release ]]; then
 elif [[ -f /etc/redhat-release ]]; then
 
     # Red Hat or CentOS
-    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz pcsc-lite pcsc-lite-devel libcurl libcurl-devel rpmdevtools"
+    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz pcsc-lite pcsc-lite-devel libcurl libcurl-devel rpmdevtools python3"
     if $STATIC; then
         pkglist="$pkglist glibc-static libstdc++-static"
     fi
@@ -166,13 +166,13 @@ elif [[ -f /etc/redhat-release ]]; then
 elif [[ -f /etc/arch-release ]]; then
 
     # Arch Linux
-    pkglist="gcc dos2unix curl tar zip doxygen graphviz pcsclite srt"
+    pkglist="gcc dos2unix curl tar zip doxygen graphviz pcsclite srt python"
     sudo pacman -Sy $pkglist
 
 elif [[ -f /etc/alpine-release ]]; then
 
     # Alpine Linux
-    pkglist="bash coreutils diffutils procps util-linux linux-headers git make g++ dos2unix curl tar zip doxygen graphviz pcsc-lite-dev curl-dev"
+    pkglist="bash coreutils diffutils procps util-linux linux-headers git make g++ dos2unix curl tar zip doxygen graphviz pcsc-lite-dev curl-dev python3"
     sudo apk add $pkglist
 
 fi
