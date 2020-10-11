@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
@@ -27,51 +26,42 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
-#
-#  This script builds the name of the directory which contains binaries.
-#  The typical usage is to 'source' it: it adds the binary directory to
-#  the path. Other options:
-#
-#     --display : only display the binary directory, don't set PATH
-#     --debug : use debug build
-#
-#-----------------------------------------------------------------------------
 
-# Default options.
-TARGET=release
-SHOW_PATH=false
 
-# Decode command line options.
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        --debug)
-            TARGET=debug
-            ;;
-        --display)
-            SHOW_PATH=true
-            ;;
-    esac
-    shift
-done
+import os
+import ctypes
+import ctypes.util
 
-# Build binary directory.
-ROOTDIR=$(cd $(dirname "${BASH_SOURCE[0]}")/..; pwd)
-ARCH=$(uname -m | sed -e 's/i.86/i386/' -e 's/^arm.*$/arm/')
-HOST=$(hostname | sed -e 's/\..*//')
-BINDIR="$ROOTDIR/bin/$TARGET-$ARCH-$HOST"
-TSPYDIR="$ROOTDIR/src/libtsduck/python"
-
-# Display or set path.
-if $SHOW_PATH; then
-    echo "$BINDIR"
-else
-    [[ ":$PATH:" != *:$BINDIR:* ]] && export PATH="$BINDIR:$PATH"
-    [[ ":$LD_LIBRARY_PATH:" != *:$BINDIR:* ]] && export LD_LIBRARY_PATH="$BINDIR:$LD_LIBRARY_PATH"
-    [[ ":$PYTHONPATH:" != *:$TSPYDIR:* ]] && export PYTHONPATH="$TSPYDIR:$PYTHONPATH"
+# Name of the TSDuck library.
+if os.name == 'nt':
+    _lib_base = 'tsduck.dll'
+    _lib_search = [os.getenv('TSDUCK','')]
+    _lib_search.extend(os.getenv('Path','').split(os.pathsep))
+else:
+    _lib_base = 'libtsduck.so'
     # For macOS only: LD_LIBRARY_PATH is not passed to shell-scripts for security reasons.
-    # Define a backup version which can be explicitly checked in scripts (typically Python bindings).
-    export LD_LIBRARY_PATH2="$LD_LIBRARY_PATH"
-fi
+    # A backup version is defined in build/setenv.sh to test development versions.
+    _lib_search = os.getenv('LD_LIBRARY_PATH2','').split(os.pathsep)
+    _lib_search.extend(os.getenv('LD_LIBRARY_PATH','').split(os.pathsep))
 
-# Make sure to exit with success status
-true
+# Search the TSDuck library.
+_lib_path = ''
+for __dir in _lib_search:
+    if __dir != '':
+        __file = __dir + os.sep + _lib_base
+        if os.path.exists(__file):
+            _lib_path = __file
+            break
+
+# If not found in various explicit paths, try system search.
+if _lib_path == '':
+    _lib_path = ctypes.util.find_library(_lib_base)
+
+# Load the TSDuck library.
+_lib = ctypes.CDLL(_lib_path)
+
+# Load names from "ts" submodules as part of ts namespace.
+from .info import *
+
+# Prevent application namespace pollution: nothing can be exported by "from ts import *".
+__all__ = []

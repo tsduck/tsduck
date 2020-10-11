@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
@@ -27,51 +26,14 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
+
+import ts
+from ctypes import *
+
 #
-#  This script builds the name of the directory which contains binaries.
-#  The typical usage is to 'source' it: it adds the binary directory to
-#  the path. Other options:
+# C function: uint32_t tspyVersionInteger()
+# Python function (direct binding): intVersion()
 #
-#     --display : only display the binary directory, don't set PATH
-#     --debug : use debug build
-#
-#-----------------------------------------------------------------------------
-
-# Default options.
-TARGET=release
-SHOW_PATH=false
-
-# Decode command line options.
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        --debug)
-            TARGET=debug
-            ;;
-        --display)
-            SHOW_PATH=true
-            ;;
-    esac
-    shift
-done
-
-# Build binary directory.
-ROOTDIR=$(cd $(dirname "${BASH_SOURCE[0]}")/..; pwd)
-ARCH=$(uname -m | sed -e 's/i.86/i386/' -e 's/^arm.*$/arm/')
-HOST=$(hostname | sed -e 's/\..*//')
-BINDIR="$ROOTDIR/bin/$TARGET-$ARCH-$HOST"
-TSPYDIR="$ROOTDIR/src/libtsduck/python"
-
-# Display or set path.
-if $SHOW_PATH; then
-    echo "$BINDIR"
-else
-    [[ ":$PATH:" != *:$BINDIR:* ]] && export PATH="$BINDIR:$PATH"
-    [[ ":$LD_LIBRARY_PATH:" != *:$BINDIR:* ]] && export LD_LIBRARY_PATH="$BINDIR:$LD_LIBRARY_PATH"
-    [[ ":$PYTHONPATH:" != *:$TSPYDIR:* ]] && export PYTHONPATH="$TSPYDIR:$PYTHONPATH"
-    # For macOS only: LD_LIBRARY_PATH is not passed to shell-scripts for security reasons.
-    # Define a backup version which can be explicitly checked in scripts (typically Python bindings).
-    export LD_LIBRARY_PATH2="$LD_LIBRARY_PATH"
-fi
-
-# Make sure to exit with success status
-true
+intVersion = ts._lib.tspyVersionInteger
+intVersion.restype = c_uint32
+intVersion.argtypes = []
