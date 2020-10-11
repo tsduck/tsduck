@@ -49,3 +49,4 @@ cov-int
 .DS_Store
 ._*
 bin
+__pycache__
