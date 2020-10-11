@@ -26,25 +26,24 @@
 //  THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  @ingroup python
-//!  TSDuck Python bindings: information features.
-//!
-//----------------------------------------------------------------------------
 
-#pragma once
 #include "tspy.h"
+TSDUCK_SOURCE;
 
-//!
-//! Get the TSDuck version as an integer, suitable for comparisons.
-//! @return the TSDuck version as Mmmccccc (Major, minor, commit).
-//!
-TSDUCKPY uint32_t tspyVersionInteger();
 
-//!
-//! Get the TSDuck version as a string.
-//! @param [out] buffer Address of a buffer where the version string is returned in UTF-16 format.
-//! @param [in,out] size Initial/maximum size in bytes of the buffer. Upon return, contains the written size in bytes.
-//!
-TSDUCKPY void tspyVersionString(uint8_t* buffer, size_t* size);
+//-----------------------------------------------------------------------------
+// Convert between strings and UTF-16 buffers.
+//-----------------------------------------------------------------------------
+
+void tspy::FromString(const ts::UString& str, uint8_t* buffer, size_t* size)
+{
+    if (size != nullptr) {
+        if (buffer == nullptr) {
+            *size = 0;
+        }
+        else {
+            *size = std::min(*size, 2 * str.length()) & ~1;
+            ::memcpy(buffer, str.data(), *size);
+        }
+    }
+}

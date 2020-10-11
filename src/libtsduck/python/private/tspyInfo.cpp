@@ -40,3 +40,9 @@ uint32_t tspyVersionInteger()
 {
     return TS_VERSION_INTEGER;
 }
+
+
+void tspyVersionString(uint8_t* buffer, size_t* size)
+{
+    tspy::FromString(ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT), buffer, size);
+}
