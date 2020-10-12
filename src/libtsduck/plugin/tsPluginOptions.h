@@ -62,6 +62,13 @@ namespace ts {
         //!
         void clear();
 
+        //!
+        //! Format the options as a string.
+        //! @param [in] type Plugin type.
+        //! @return The command line equivalent.
+        //!
+        UString toString(PluginType type) const;
+
         UString       name;  //!< Plugin name.
         UStringVector args;  //!< Plugin options.
     };

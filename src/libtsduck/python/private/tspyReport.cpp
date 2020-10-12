@@ -27,66 +27,80 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tspy.h"
+#include "tspyReport.h"
+#include "tsAsyncReport.h"
+#include "tsCerrReport.h"
+#include "tsNullReport.h"
 TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------
-// Convert a UTF-16 buffer in a UString.
+// Get static report instances.
 //-----------------------------------------------------------------------------
 
-ts::UString tspy::ToString(const uint8_t* buffer, size_t size)
+void* tspyStdErrReport()
 {
-    ts::UString str;
-    if (buffer != nullptr) {
-        str.assign(reinterpret_cast<const ts::UChar*>(buffer), size / 2);
-        str.remove(ts::BYTE_ORDER_MARK);
-    }
-    return str;
+    return ts::CerrReport::Instance();
+}
+
+void* tspyNullReport()
+{
+    return ts::NullReport::Instance();
 }
 
 
 //-----------------------------------------------------------------------------
-// Convert a UTF-16 buffer in a list of UString.
+// Interface to AsyncReport.
 //-----------------------------------------------------------------------------
 
-ts::UStringList tspy::ToStringList(const uint8_t* buffer, size_t size)
+void* tspyNewAsyncReport(int severity, bool sync_log, bool timed_log, size_t log_msg_count)
 {
-    ts::UStringList list;
-    if (buffer != nullptr) {
-        const ts::UChar* start = reinterpret_cast<const ts::UChar*>(buffer);
-        const ts::UChar* end = start + size / 2; // number of UChar
-        for (;;) {
-            const ts::UChar* cur = start;
-            while (cur < end && *cur != ts::UChar(0xFFFF)) {
-                ++cur;
-            }
-            ts::UString str(start, cur - start);
-            str.remove(ts::BYTE_ORDER_MARK);
-            list.push_back(str);
-            if (cur >= end) {
-                break;
-            }
-            start = cur + 1; // skip 0xFFFF
-        }
+    ts::AsyncReportArgs args;
+    args.sync_log = sync_log;
+    args.timed_log = timed_log;
+    args.log_msg_count = log_msg_count > 0 ? log_msg_count : ts::AsyncReportArgs::MAX_LOG_MESSAGES;
+    return new ts::AsyncReport(severity, args);
+}
+
+void tspyTerminateAsyncReport(void* report)
+{
+    ts::AsyncReport* rep = reinterpret_cast<ts::AsyncReport*>(report);
+    if (rep != nullptr) {
+        rep->terminate();
     }
-    return list;
 }
 
 
 //-----------------------------------------------------------------------------
-// Convert a string into a UTF-16 buffer.
+// Delete a previously allocated instance of Report.
 //-----------------------------------------------------------------------------
 
-void tspy::FromString(const ts::UString& str, uint8_t* buffer, size_t* size)
+void tspyDeleteReport(void* report)
 {
-    if (size != nullptr) {
-        if (buffer == nullptr) {
-            *size = 0;
-        }
-        else {
-            *size = std::min(*size, 2 * str.length()) & ~1;
-            ::memcpy(buffer, str.data(), *size);
-        }
+    delete reinterpret_cast<ts::Report*>(report);
+}
+
+
+//-----------------------------------------------------------------------------
+// Set the maximum severity of an instance of Report.
+//-----------------------------------------------------------------------------
+
+void tspySetMaxSeverity(void* report, int severity)
+{
+    ts::Report* rep = reinterpret_cast<ts::Report*>(report);
+    if (rep != nullptr) {
+        rep->setMaxSeverity(severity);
+    }
+}
+
+//-----------------------------------------------------------------------------
+// Log a message on an instance of Report.
+//-----------------------------------------------------------------------------
+
+void tspyLogReport(void* report, int severity, const uint8_t* buffer, size_t size)
+{
+    ts::Report* rep = reinterpret_cast<ts::Report*>(report);
+    if (rep != nullptr) {
+        rep->log(severity, tspy::ToString(buffer, size));
     }
 }

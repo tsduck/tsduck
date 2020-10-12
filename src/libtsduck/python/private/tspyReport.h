@@ -29,46 +29,59 @@
 //!
 //!  @file
 //!  @ingroup python
-//!  Base definitions for the TSDuck Python bindings (C++ implementation).
+//!  TSDuck Python bindings: encapsulates Report objects for Python.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
-#include "tsUString.h"
+#include "tspy.h"
 
 //!
-//! @hideinitializer
-//! Attribute to export a function to Python
+//! Get the TSDuck CERR report instance.
+//! @return CERR report instance.
 //!
-#define TSDUCKPY extern "C" TSDUCKDLL
+TSDUCKPY void* tspyStdErrReport();
 
 //!
-//! Namespace for internal utilities to support Python bindings.
+//! Get the TSDuck NULLREP instance.
+//! @return NULLREP instance.
 //!
-namespace tspy {
-    //!
-    //! Convert a UTF-16 buffer in a UString.
-    //! @param [in] buffer Address of a buffer with UTF-16 content.
-    //! @param [in] size Size in bytes of the buffer.
-    //! @return The converted string.
-    //!
-    ts::UString ToString(const uint8_t* buffer, size_t size);
+TSDUCKPY void* tspyNullReport();
 
-    //!
-    //! Convert a UTF-16 buffer in a list of UString.
-    //! The various strings in the buffer are separated with 0xFFFF code points (invalid UTF-16 value)
-    //! @param [in] buffer Address of a buffer with UTF-16 content.
-    //! @param [in] size Size in bytes of the buffer.
-    //! @return The converted strings.
-    //!
-    ts::UStringList ToStringList(const uint8_t* buffer, size_t size);
+//!
+//! Create a new instance of AsyncReport.
+//! @param [in] severity Initial severity.
+//! @param [in] sync_log Synchronous log.
+//! @param [in] timed_log Add time stamps in log messages.
+//! @param [in] log_msg_count Maximum buffered log messages.
+//! @return A new AsyncReport instance.
+//!
+TSDUCKPY void* tspyNewAsyncReport(int severity, bool sync_log, bool timed_log, size_t log_msg_count);
 
-    //!
-    //! Convert a string into a UTF-16 buffer.
-    //! @param [in] str The initial string.
-    //! @param [out] buffer Address of a buffer where the string is returned in UTF-16 format.
-    //! @param [in,out] size Initial/maximum size in bytes of the buffer. Upon return, contains the written size in bytes.
-    //!
-    void FromString(const ts::UString& str, uint8_t* buffer, size_t* size);
-}
+//!
+//! Synchronously terminate an AsyncReport.
+//! @param [in] report A previously allocated instance of Report.
+//!
+TSDUCKPY void tspyTerminateAsyncReport(void* report);
+
+//!
+//! Delete a previously allocated instance of Report.
+//! @param [in] report A previously allocated instance of Report.
+//!
+TSDUCKPY void tspyDeleteReport(void* report);
+
+//!
+//! Set the maximum severity of an instance of Report.
+//! @param [in] report Address of an instance of Report.
+//! @param [in] severity Message severity.
+//!
+TSDUCKPY void tspySetMaxSeverity(void* report, int severity);
+
+//!
+//! Log a message on an instance of Report.
+//! @param [in] report Address of an instance of Report.
+//! @param [in] severity Message severity.
+//! @param [in] buffer Address of a buffer containing a UTF-16 string.
+//! @param [in] size Size in bytes of the buffer.
+//!
+TSDUCKPY void tspyLogReport(void* report, int severity, const uint8_t* buffer, size_t size);

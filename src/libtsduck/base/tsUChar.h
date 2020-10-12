@@ -1136,6 +1136,7 @@ namespace ts {
     static constexpr UChar EN_SPACE                                    = UChar(0x2002); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar EM_SPACE                                    = UChar(0x2003); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar THIN_SPACE                                  = UChar(0x2009); //!< Non-ISO-8859 Unicode character.
+    static constexpr UChar ZERO_WIDTH_SPACE                            = UChar(0x200B); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar ZERO_WIDTH_NON_JOINER                       = UChar(0x200C); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar ZERO_WIDTH_JOINER                           = UChar(0x200D); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar LEFT_TO_RIGHT_MARK                          = UChar(0x200E); //!< ISO-8859 Unicode character.
@@ -1161,6 +1162,7 @@ namespace ts {
     static constexpr UChar SINGLE_RIGHT_POINTING_ANGLE_QUOTATION_MARK  = UChar(0x203A); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar OVERLINE                                    = UChar(0x203E); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar FRACTION_SLASH                              = UChar(0x2044); //!< Non-ISO-8859 Unicode character.
+    static constexpr UChar WORD_JOINER                                 = UChar(0x2060); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar EURO_SIGN                                   = UChar(0x20AC); //!< ISO-8859 Unicode character.
     static constexpr UChar DRACHMA_SIGN                                = UChar(0x20AF); //!< ISO-8859 Unicode character.
     static constexpr UChar BLACKLETTER_CAPITAL_I                       = UChar(0x2111); //!< Non-ISO-8859 Unicode character.
@@ -1229,5 +1231,7 @@ namespace ts {
     static constexpr UChar BLACK_CLUB_SUIT                             = UChar(0x2663); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar BLACK_HEART_SUIT                            = UChar(0x2665); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar BLACK_DIAMOND_SUIT                          = UChar(0x2666); //!< Non-ISO-8859 Unicode character.
-    static constexpr UChar IDEOGRAPHIC_SPACE                           = UChar(0x3000); //!< CJK character for space. 
+    static constexpr UChar IDEOGRAPHIC_SPACE                           = UChar(0x3000); //!< CJK character for space.
+    static constexpr UChar BYTE_ORDER_MARK                             = UChar(0xFEFF); //!< UTF-16 BOM, aka "ZERO WIDTH NO-BREAK SPACE".
+    static constexpr UChar SWAPPED_BYTE_ORDER_MARK                     = UChar(0xFFFE); //!< UTF-16 BOM in wrong byte order, not a character.
 }

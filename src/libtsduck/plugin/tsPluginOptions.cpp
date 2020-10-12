@@ -47,3 +47,30 @@ void ts::PluginOptions::clear()
     name.clear();
     args.clear();
 }
+
+ts::UString ts::PluginOptions::toString(PluginType type) const
+{
+    if (name.empty()) {
+        return UString();
+    }
+    UString str;
+    switch (type) {
+        case PluginType::INPUT:
+            str = u"-I ";
+            break;
+        case PluginType::OUTPUT:
+            str = u"-O ";
+            break;
+        case PluginType::PROCESSOR:
+            str = u"-P ";
+            break;
+        default:
+            break;
+    }
+    str.append(name);
+    for (auto it = args.begin(); it != args.end(); ++it) {
+        str.append(u" ");
+        str.append(it->toQuoted());
+    }
+    return str;
+}

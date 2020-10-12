@@ -26,27 +26,19 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
-
-import ts
-import ctypes
-
 #
-# C function: uint32_t tspyVersionInteger()
-# Python function (direct binding): intVersion()
+#  TSDuck library general information.
 #
-intVersion = ts._lib.tspyVersionInteger
-intVersion.restype = ctypes.c_uint32
-intVersion.argtypes = []
+#-----------------------------------------------------------------------------
 
-#
-# C function: void tspyVersionString(uint8_t* buffer, size_t* size)
-# Python function: version()
-#
-tspyVersionString = ts._lib.tspyVersionString
-tspyVersionString.restype = None
-tspyVersionString.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_size_t)]
+from . import lib
 
+# TSDuck version as an integer.
+def intVersion():
+    return lib.tspyVersionInteger()
+
+# TSDuck version as a string.
 def version():
-    buf = ts.OutByteBuffer(64)
-    tspyVersionString(buf.data_ptr(), buf.size_ptr())
+    buf = lib.OutByteBuffer(64)
+    lib.tspyVersionString(buf.data_ptr(), buf.size_ptr())
     return buf.to_string()
