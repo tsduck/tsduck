@@ -8,13 +8,11 @@ optional "Development" component during the installation. On Ubuntu systems,
 you must install the package tsduck-dev. On Fedora, Red Hat and CentOS, you
 must install the package tsduck-devel.
 
-Building the plugin on Linux:
+Building the application on Linux:
 
-Just run "make". The makefile in this directory contains the following line:
-
-  include /usr/include/tsduck/tsduck.mk
-
-The included makefile sets all required options to use the TSDuck library.
+Just run "make". The makefile in this directory contains various calls to
+the 'tsconfig' utility which generates the various required compilation
+and link options.
 
 Building the plugin on Windows:
 

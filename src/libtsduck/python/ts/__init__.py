@@ -26,74 +26,15 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
+#
+#  TSDuck Python bindings initialization
+#
+#-----------------------------------------------------------------------------
 
+from .info import version, intVersion
+from .report import Report, NullReport, StdErrReport, AsyncReport
+from .tsp import TSProcessor
 
 __all__ = []
 __author__ = 'Thierry Lelegard'
-__version__ = '(see later)'
-
-import os
-import ctypes
-import ctypes.util
-
-
-# Search the TSDuck library.
-def search_libtsduck():
-    if os.name == 'nt':
-        base = 'tsduck.dll'
-        search = [os.getenv('TSDUCK','')]
-        search.extend(os.getenv('Path','').split(os.pathsep))
-    else:
-        base = 'libtsduck.so'
-        # For macOS only: LD_LIBRARY_PATH is not passed to shell-scripts for security reasons.
-        # A backup version is defined in build/setenv.sh to test development versions.
-        search = os.getenv('LD_LIBRARY_PATH2','').split(os.pathsep)
-        search.extend(os.getenv('LD_LIBRARY_PATH','').split(os.pathsep))
-
-    # Search the TSDuck library.
-    path = ''
-    for dir in (dir for dir in search if dir != ''):
-        file = dir + os.sep + base
-        if os.path.exists(file):
-            return file
-
-    # If not found in various explicit paths, try system search.
-    return ctypes.util.find_library(base)
-
-
-# Load the TSDuck library.
-_lib = ctypes.CDLL(search_libtsduck())
-
-
-# An internal utility class to encapsulate a binary buffer returning data or string from a C++ function.
-# The C++ function typically use (uint8_t* buffer, size_t* size) parameters. The size parameter contains
-# the maximum buffer size on input and the actual returned data size on output.
-class OutByteBuffer:
-    # Constructor with maximum buffer size in bytes.
-    def __init__(self, size):
-        self._size = ctypes.c_size_t(size)
-        self._data = bytearray(self._size.value)
-
-    # "uint8_t* buffer" parameter for the C++ function.
-    def data_ptr(self):
-        carray_type = ctypes.c_uint8 * self._size.value
-        return ctypes.cast(carray_type.from_buffer(self._data), ctypes.POINTER(ctypes.c_uint8))
-
-    # "size_t* size" parameter for the C++ function.
-    def size_ptr(self):
-        return ctypes.byref(self._size)
-
-    # Get the returned data as a byte array.
-    def to_bytearray(self):
-        return self._data[:self._size.value]
-
-    # Get the returned data as a UTF-16 string.
-    def to_string(self):
-        return self._data[:self._size.value].decode("utf-16")
-
-
-# Load names from "ts" submodules as part of ts namespace.
-from .info import *
-
-# Now update module version.
 __version__ = version()

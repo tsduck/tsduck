@@ -76,6 +76,12 @@ namespace ts {
         ~TSProcessor();
 
         //!
+        //! Get a reference to the report object for the TS processor.
+        //! @return A reference to the report object for the TS processor.
+        //!
+        Report& report() const { return _report; }
+
+        //!
         //! Start the TS processing.
         //! @param [in] args Arguments and options.
         //! @return True on success, false on failure to start.

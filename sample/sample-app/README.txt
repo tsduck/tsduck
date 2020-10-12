@@ -11,11 +11,9 @@ must install the package tsduck-devel.
 
 Building the application on Linux:
 
-Just run "make". The makefile in this directory contains the following line:
-
-  include /usr/include/tsduck/tsduck.mk
-
-The included makefile sets all required options to use the TSDuck library.
+Just run "make". The makefile in this directory contains various calls to
+the 'tsconfig' utility which generates the various required compilation
+and link options.
 
 Building the application on Windows:
 

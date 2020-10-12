@@ -2,15 +2,6 @@
 //
 // TSDuck sample application running a chain of plugins.
 //
-// To run this test, you may need to define the following:
-//   export TSPLUGINS_PATH=/usr/lib/tsduck
-//
-// Notes:
-//   - With TSDuck 3.21 and below, use export TSPLUGINS_PATH=/usr/bin
-//   - With TSDuck 3.22 and above, use export TSPLUGINS_PATH=/usr/lib/tsduck
-//   - Use /usr/local instead of /usr on macOS.
-//   - On some 64-bit systems, use lib64 instead of lib.
-//
 //----------------------------------------------------------------------------
 
 #include "tsduck.h"
