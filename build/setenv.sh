@@ -66,6 +66,7 @@ if $SHOW_PATH; then
     echo "$BINDIR"
 else
     [[ ":$PATH:" != *:$BINDIR:* ]] && export PATH="$BINDIR:$PATH"
+    [[ ":$TSPLUGINS_PATH:" != *:$BINDIR:* ]] && export TSPLUGINS_PATH="$BINDIR:$TSPLUGINS_PATH"
     [[ ":$LD_LIBRARY_PATH:" != *:$BINDIR:* ]] && export LD_LIBRARY_PATH="$BINDIR:$LD_LIBRARY_PATH"
     [[ ":$PYTHONPATH:" != *:$TSPYDIR:* ]] && export PYTHONPATH="$TSPYDIR:$PYTHONPATH"
     # For macOS only: LD_LIBRARY_PATH is not passed to shell-scripts for security reasons.
