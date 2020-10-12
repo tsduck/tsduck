@@ -36,6 +36,9 @@
 #pragma once
 #include "tspy.h"
 
+TS_PUSH_WARNING()
+TS_MSC_NOWARNING(4091) // '__declspec(dllexport)': ignored on left of 'struct type' when no variable is declared
+
 //!
 //! Create a new instance of TSProcessor.
 //! @param [in] report A previously allocated instance of Report.
@@ -93,3 +96,5 @@ TSDUCKPY void tspyAbortTSProcessor(void* tsp);
 //! @param [in] tsp A previously allocated instance of TSProcessor.
 //!
 TSDUCKPY void tspyWaitTSProcessor(void* tsp);
+
+TS_POP_WARNING()

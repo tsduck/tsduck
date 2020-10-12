@@ -29,6 +29,7 @@
 
 #include "tspyInfo.h"
 #include "tsVersionInfo.h"
+#include "tsVersionString.h"
 TSDUCK_SOURCE;
 
 
