@@ -82,23 +82,29 @@ namespace ts {
         UString        _command;           // Command which generates the main stream.
         TSPacketFormat _format;            // Packet format on the pipe
         size_t         _max_queue;         // Maximum number of queued packets.
+        size_t         _force_threshold;   // Queue threshold after which insertion is forced.
         bool           _no_wait;           // Do not wait for command completion.
         bool           _merge_psi;         // Merge PSI/SI information.
         bool           _pcr_restamp;       // Restamp PCR from the merged stream.
+        bool           _incremental_pcr;   // Use incremental method to restamp PCR's.
+        bool           _merge_smoothing;   // Smoothen packet insertion.
         bool           _ignore_conflicts;  // Ignore PID conflicts.
         bool           _terminate;         // Terminate processing after last merged packet.
+        BitRate        _user_bitrate;      // User-specified bitrate of the merged stream.
         PIDSet         _allowed_pids;      // List of PID's to merge (other PID's from the merged stream are dropped).
         TSPacketMetadata::LabelSet _setLabels;    // Labels to set on output packets.
         TSPacketMetadata::LabelSet _resetLabels;  // Labels to reset on output packets.
 
         // Working data.
-        bool          _got_eof;     // Got end of merged stream.
-        TSForkPipe    _pipe;        // Executed command.
-        TSPacketQueue _queue;       // TS packet queur from merge to main.
-        PIDSet        _main_pids;   // Set of detected PID's in main stream.
-        PIDSet        _merge_pids;  // Set of detected PID's in merged stream that we pass in main stream.
-        PIDContextMap _pcr_pids;    // Description of PID's with PCR's from the merged stream.
-        PSIMerger     _psi_merger;  // Used to merge PSI/SI from both streams.
+        bool          _got_eof;            // Got end of merged stream.
+        BitRate       _merge_bitrate;      // User-specified bitrate of the merged stream.
+        PacketCounter _merged_count;       // Insertion point of last merged packet.
+        TSForkPipe    _pipe;               // Executed command.
+        TSPacketQueue _queue;              // TS packet queur from merge to main.
+        PIDSet        _main_pids;          // Set of detected PID's in main stream.
+        PIDSet        _merge_pids;         // Set of detected PID's in merged stream that we pass in main stream.
+        PIDContextMap _pcr_pids;           // Description of PID's with PCR's from the merged stream.
+        PSIMerger     _psi_merger;         // Used to merge PSI/SI from both streams.
 
         // Process a --drop or --pass option.
         bool processDropPassOption(const UChar* option, bool allowed);
@@ -125,15 +131,21 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _command(),
     _format(TSPacketFormat::AUTODETECT),
     _max_queue(DEFAULT_MAX_QUEUED_PACKETS),
+    _force_threshold(_max_queue / 2),
     _no_wait(false),
     _merge_psi(false),
     _pcr_restamp(false),
+    _incremental_pcr(false),
+    _merge_smoothing(false),
     _ignore_conflicts(false),
     _terminate(false),
+    _user_bitrate(0),
     _allowed_pids(),
     _setLabels(),
     _resetLabels(),
     _got_eof(false),
+    _merge_bitrate(0),
+    _merged_count(0),
     _pipe(),
     _queue(),
     _main_pids(),
@@ -145,12 +157,28 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     help(u"",
          u"Specifies the command line to execute in the created process.");
 
+    option(u"bitrate", 'b', POSITIVE);
+    help(u"bitrate",
+         u"Specify the target bitrate of the merged stream, in bits/seconds. "
+         u"By default, the bitrate of the merged stream is computed from its PCR. "
+         u"The bitrate of the merged stream is used to smoothen packet insertion "
+         u"in the main stream.");
+
     option(u"drop", 'd', STRING, 0, UNLIMITED_COUNT);
     help(u"drop", u"pid[-pid]",
          u"Drop the specified PID or range of PID's from the merged stream. By "
          u"default, the PID's 0x00 to 0x1F are dropped and all other PID's are "
          u"passed. This can be modified using options --drop and --pass. Several "
          u"options --drop can be specified.");
+
+    option(u"force-threshold", 0, POSITIVE);
+    help(u"force-threshold",
+         u"When the insertion of the merged stream is smoothened, packets are inserted "
+         u"in the main stream at some regular interval, leaving additional packets in "
+         u"the queue until their natural insertion point. However, to avoid losing packets, "
+         u"if the number of packets in the queue is above the specified threshold, "
+         u"the insertion is forced. "
+         u"The default threshold is half the size of the packet queue.");
 
     option(u"format", 0, TSPacketFormatEnum);
     help(u"format", u"name",
@@ -166,6 +194,14 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"present in the two streams, the PID is dropped from the merged stream. "
          u"Warning: this is a dangerous option which can result in an inconsistent "
          u"transport stream.");
+
+    option(u"incremental-pcr-restamp");
+    help(u"incremental-pcr-restamp",
+         u"When restamping PCR's from the merged TS into the main TS, compute each new "
+         u"PCR from the last restampted one. By default, all PCR's are restampted from "
+         u"the initial PCR in the PID. The default method is more precise on constant "
+         u"bitrate (CBR) streams. The incremental method gives better results on "
+         u"variable bitrate (VBR) streams. See also option --no-pcr-restamp.");
 
     option(u"joint-termination", 'j');
     help(u"joint-termination",
@@ -194,6 +230,15 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"PAT, CAT and SDT are merged so that the services from the merged stream "
          u"are properly referenced and PID's 0x00 to 0x1F are dropped from the merged "
          u"stream.");
+
+    option(u"no-smoothing");
+    help(u"no-smoothing",
+         u"Do not attempt to smoothen the insertion of the merged stream. "
+         u"Incoming packets from the merged stream are inserted as soon as null "
+         u"packets are available in the main stream. If the main stream contains "
+         u"a lot of null packets, this may lead to bursts in the merged packets. "
+         u"By default, if the bitrate of the merged stream is known, the merged "
+         u"packets are inserted at the target interval in the main stream.");
 
     option(u"no-wait");
     help(u"no-wait",
@@ -241,11 +286,15 @@ bool ts::MergePlugin::getOptions()
     _no_wait = present(u"no-wait");
     const bool transparent = present(u"transparent");
     _max_queue = intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS);
+    _force_threshold = intValue<size_t>(u"force-threshold", _max_queue / 2);
     _format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::AUTODETECT);
     _merge_psi = !transparent && !present(u"no-psi-merge");
     _pcr_restamp = !present(u"no-pcr-restamp");
+    _incremental_pcr = present(u"incremental-pcr-restamp");
+    _merge_smoothing = !present(u"no-smoothing");
     _ignore_conflicts = transparent || present(u"ignore-conflicts");
     _terminate = present(u"terminate");
+    _user_bitrate = intValue<BitRate>(u"bitrate", 0);
     tsp->useJointTermination(present(u"joint-termination"));
     getIntValues(_setLabels, u"set-label");
     getIntValues(_resetLabels, u"reset-label");
@@ -336,6 +385,8 @@ bool ts::MergePlugin::start()
     _main_pids.reset();
     _merge_pids.reset();
     _pcr_pids.clear();
+    _merge_bitrate = _user_bitrate; // zero if unspecified
+    _merged_count = 0;
     _got_eof = false;
 
     // Create pipe & process.
@@ -386,6 +437,10 @@ bool ts::MergePlugin::stop()
 void ts::MergePlugin::main()
 {
     tsp->debug(u"receiver thread started");
+
+    // Specify the bitrate of the incoming stream.
+    // When zero, packet queue will compute it from the PCR.
+    _queue.setBitrate(_user_bitrate);
 
     // Loop on packet reception until the plugin request to stop.
     while (!_queue.stopped()) {
@@ -458,10 +513,22 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processPacket(TSPacket& pkt, TSPack
 
 ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    BitRate merge_bitrate = 0;
+    const PacketCounter current_pkt = tsp->pluginPackets();
+    const BitRate main_bitrate = tsp->bitrate();
+
+    // In case of packet insertion smoothing, check if we need to insert packets here.
+    if (_merge_smoothing &&
+        _merge_bitrate > 0 &&
+        main_bitrate > 0 &&
+        main_bitrate * _merged_count > _merge_bitrate * current_pkt &&
+        _queue.currentSize() < _force_threshold)
+    {
+        // Don't insert now, would burst over target merged bitrate.
+        return TSP_NULL;
+    }
 
     // Replace current null packet in main stream with next packet from merged stream.
-    if (!_queue.getPacket(pkt, merge_bitrate)) {
+    if (!_queue.getPacket(pkt, _merge_bitrate)) {
         // No packet available, keep original null packet.
         if (!_got_eof && _queue.eof()) {
             // Report end of input stream once.
@@ -478,6 +545,10 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
         }
         return TSP_OK;
     }
+
+    // Count merged packets. Must be done here, before dropping unused PID's, because it
+    // is used in computation involving the bitrate of the complete merged stream.
+    _merged_count++;
 
     // Merge PSI/SI.
     if (_merge_psi) {
@@ -524,8 +595,6 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
         // _processed_, not _transmitted_.
 
         const uint64_t pcr = pkt.getPCR();
-        const BitRate main_bitrate = tsp->bitrate();
-        const PacketCounter current_pkt = tsp->pluginPackets();
 
         // Check if we know this PID.
         PIDContextMap::iterator ctx(_pcr_pids.find(pid));
@@ -538,14 +607,17 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
             // We have already seen some PCR's in this PID.
             // Compute the transmission time since some previous PCR in PCR units.
             // We base the result on the main stream bitrate and the number of packets.
-            assert(current_pkt > ctx->second.last_pcr_pkt);
-            // Previous computation was based on PCR increment but it seems that small errors accumulate.
-            // ctx->second.last_pcr += ((current_pkt - ctx->second.last_pcr_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(main_bitrate);
-            // New computation is based on distance from first PCR.
+            // By default, compute PCR based on distance from first PCR.
             // On the long run, this is more precise on CBR but can be devastating on VBR.
-            ctx->second.last_pcr = ctx->second.first_pcr + ((current_pkt - ctx->second.first_pcr_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(main_bitrate);
-            // Remember position of the mast PCR.
-            // No longer needed in the new PCR computation but kept in case we need to revert.
+            uint64_t base_pcr = ctx->second.first_pcr;
+            PacketCounter base_pkt = ctx->second.first_pcr_pkt;
+            if (_incremental_pcr) {
+                // Compute PCR based in increment from the last one. Small errors may accumulate.
+                base_pcr = ctx->second.last_pcr;
+                base_pkt = ctx->second.last_pcr_pkt;
+            }
+            assert(base_pkt < current_pkt);
+            ctx->second.last_pcr = base_pcr + ((current_pkt - base_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(main_bitrate);
             ctx->second.last_pcr_pkt = current_pkt;
             // Update the PCR in the packet.
             pkt.setPCR(ctx->second.last_pcr);
@@ -556,7 +628,7 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
         }
     }
 
-    // Apply labels on muxed packets.
+    // Apply labels on merged packets.
     pkt_data.setLabels(_setLabels);
     pkt_data.clearLabels(_resetLabels);
 

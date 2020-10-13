@@ -4,9 +4,6 @@ TSDuck - List of features to be implemented or fixed
 
 * Issue #324: Fix tsswitch --delayed-switch --receive-timeout.
 
-* Improve packet distribution in plugin "merge". Evaluate average stuffing
-  distribution, evaluate merged stream bitrate, then smoothen merged packets.
-
 * Implement missing PSI/SI tables and descriptors (list below).
 
   ISO/IEC 13818-1 / H.222 (MPEG system layer)
