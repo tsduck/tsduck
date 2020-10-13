@@ -89,6 +89,12 @@ namespace ts {
         size_t bufferSize() const;
 
         //!
+        //! Get the current number of packets in the buffer.
+        //! @return The current number of packets in the buffer.
+        //!
+        size_t currentSize() const;
+
+        //!
         //! Called by the writer thread to get a write buffer.
         //! The writer thread is suspended until enough free space is made in the buffer
         //! or the reader thread triggers a stop condition.

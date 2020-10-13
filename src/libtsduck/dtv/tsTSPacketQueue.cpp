@@ -86,6 +86,12 @@ size_t ts::TSPacketQueue::bufferSize() const
     return _buffer.size();
 }
 
+size_t ts::TSPacketQueue::currentSize() const
+{
+    Guard lock(_mutex);
+    return _inCount;
+}
+
 
 //----------------------------------------------------------------------------
 // Called by the writer thread to get a write buffer.
