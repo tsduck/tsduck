@@ -29,6 +29,8 @@ VERSION 3.24-2015
   * Fixed issue #646: Several commands and plugins crashed in case of invalid
     PES packets when the specified PES length was not zero but lower than the
     PES header size.
+  * Fixed issue #651: When fixing the PCR's in the "merge" plugin, there was a
+    slow drift on merged PCR values after several hours.
 
 -------------------------------------------------------------------------------
 
