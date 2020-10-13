@@ -54,6 +54,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         MergePlugin (TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
@@ -67,34 +68,37 @@ namespace ts {
         class PIDContext
         {
         public:
-            uint64_t      last_pcr;  // Last PCR value in this PID, after adjustment in main stream.
-            PacketCounter pcr_pkt;   // Index of the packet with the last PCR in the main stream.
-
-            // Constructor:
-            PIDContext(uint64_t pcr = 0, PacketCounter pkt = 0) : last_pcr(pcr), pcr_pkt(pkt) {}
+            PIDContext(uint64_t pcr = INVALID_PCR, PacketCounter pkt = 0);  // Constructor.
+            uint64_t      first_pcr;      // First original PCR value in this PID.
+            PacketCounter first_pcr_pkt;  // Index in the main stream of the packet with the first PCR.
+            uint64_t      last_pcr;       // Last PCR value in this PID, after adjustment in main stream.
+            PacketCounter last_pcr_pkt;   // Index in the main stream of the packet with the last PCR.
         };
 
         // Map of PID contexts, indexed by PID.
         typedef std::map<PID,PIDContext> PIDContextMap;
 
-        // Plugin private data.
-        bool              _merge_psi;         // Merge PSI/SI information.
-        bool              _pcr_restamp;       // Restamp PCR from the merged stream.
-        bool              _ignore_conflicts;  // Ignore PID conflicts.
-        bool              _terminate;         // Terminate processing after last merged packet.
-        PIDSet            _allowed_pids;      // List of PID's to merge.
-        bool              _abort;             // Error, give up asap.
-        bool              _got_eof;           // Got end of merged stream.
-        PacketCounter     _pkt_count;         // Packet counter in the main stream.
-        TSForkPipe        _pipe;              // Executed command.
-        TSPacketQueue     _queue;             // TS packet queur from merge to main.
-        PIDSet            _main_pids;         // Set of detected PID's in main stream.
-        PIDSet            _merge_pids;        // Set of detected PID's in merged stream that we pass in main stream.
-        PIDContextMap     _pcr_pids;          // Description of PID's with PCR's from the merged stream.
-        PSIMerger         _psi_merger;        // Used to merge PSI/SI from both streams.
-        TSPacketFormat    _format;            // Packet format on the pipe
+        // Command line options.
+        UString        _command;           // Command which generates the main stream.
+        TSPacketFormat _format;            // Packet format on the pipe
+        size_t         _max_queue;         // Maximum number of queued packets.
+        bool           _no_wait;           // Do not wait for command completion.
+        bool           _merge_psi;         // Merge PSI/SI information.
+        bool           _pcr_restamp;       // Restamp PCR from the merged stream.
+        bool           _ignore_conflicts;  // Ignore PID conflicts.
+        bool           _terminate;         // Terminate processing after last merged packet.
+        PIDSet         _allowed_pids;      // List of PID's to merge (other PID's from the merged stream are dropped).
         TSPacketMetadata::LabelSet _setLabels;    // Labels to set on output packets.
         TSPacketMetadata::LabelSet _resetLabels;  // Labels to reset on output packets.
+
+        // Working data.
+        bool          _got_eof;     // Got end of merged stream.
+        TSForkPipe    _pipe;        // Executed command.
+        TSPacketQueue _queue;       // TS packet queur from merge to main.
+        PIDSet        _main_pids;   // Set of detected PID's in main stream.
+        PIDSet        _merge_pids;  // Set of detected PID's in merged stream that we pass in main stream.
+        PIDContextMap _pcr_pids;    // Description of PID's with PCR's from the merged stream.
+        PSIMerger     _psi_merger;  // Used to merge PSI/SI from both streams.
 
         // Process a --drop or --pass option.
         bool processDropPassOption(const UChar* option, bool allowed);
@@ -118,23 +122,24 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"merge", ts::MergePlugin);
 ts::MergePlugin::MergePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Merge TS packets coming from the standard output of a command", u"[options] 'command'"),
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
+    _command(),
+    _format(TSPacketFormat::AUTODETECT),
+    _max_queue(DEFAULT_MAX_QUEUED_PACKETS),
+    _no_wait(false),
     _merge_psi(false),
     _pcr_restamp(false),
     _ignore_conflicts(false),
     _terminate(false),
     _allowed_pids(),
-    _abort(false),
+    _setLabels(),
+    _resetLabels(),
     _got_eof(false),
-    _pkt_count(0),
     _pipe(),
     _queue(),
     _main_pids(),
     _merge_pids(),
     _pcr_pids(),
-    _psi_merger(duck, PSIMerger::NONE, *tsp),
-    _format(TSPacketFormat::AUTODETECT),
-    _setLabels(),
-    _resetLabels()
+    _psi_merger(duck, PSIMerger::NONE, *tsp)
 {
     option(u"", 0, STRING, 1, 1);
     help(u"",
@@ -227,16 +232,15 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get command line options.
 //----------------------------------------------------------------------------
 
-bool ts::MergePlugin::start()
+bool ts::MergePlugin::getOptions()
 {
-    // Get command line arguments
-    UString command(value());
-    const bool nowait = present(u"no-wait");
+    getValue(_command);
+    _no_wait = present(u"no-wait");
     const bool transparent = present(u"transparent");
-    const size_t max_queue = intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS);
+    _max_queue = intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS);
     _format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::AUTODETECT);
     _merge_psi = !transparent && !present(u"no-psi-merge");
     _pcr_restamp = !present(u"no-pcr-restamp");
@@ -251,9 +255,10 @@ bool ts::MergePlugin::start()
         return false;
     }
 
-    // By default, drop all base PSI/SI (PID 0x00 to 0x1F).
+    // Compute list of allowed PID's from the merged stream.
     _allowed_pids.set();
     if (!transparent) {
+        // By default, drop all base PSI/SI (PID 0x00 to 0x1F).
         for (PID pid = 0x00; pid <= PID_DVB_LAST; ++pid) {
             _allowed_pids.reset(pid);
         }
@@ -261,19 +266,7 @@ bool ts::MergePlugin::start()
     if (!processDropPassOption(u"drop", false) || !processDropPassOption(u"pass", true)) {
         return false;
     }
-
-    // Resize the inter-thread packet queue.
-    _queue.reset(max_queue);
-
-    // Configure the PSI merger.
     if (_merge_psi) {
-        _psi_merger.reset(PSIMerger::MERGE_PAT |
-                          PSIMerger::MERGE_CAT |
-                          PSIMerger::MERGE_SDT |
-                          PSIMerger::MERGE_EIT |
-                          PSIMerger::NULL_MERGED |
-                          PSIMerger::NULL_UNMERGED);
-
         // Let the PSI Merger manage the packets from the merged PID's.
         _allowed_pids.set(PID_PAT);
         _allowed_pids.set(PID_CAT);
@@ -281,29 +274,7 @@ bool ts::MergePlugin::start()
         _allowed_pids.set(PID_EIT);
     }
 
-    // Other states.
-    _main_pids.reset();
-    _merge_pids.reset();
-    _pcr_pids.clear();
-    _pkt_count = 0;
-    _got_eof = false;
-    _abort = false;
-
-    // Create pipe & process
-    const bool ok = _pipe.open(command,
-                               nowait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
-                               PKT_SIZE * DEFAULT_MAX_QUEUED_PACKETS,
-                               *tsp,
-                               ForkPipe::STDOUT_PIPE,
-                               ForkPipe::STDIN_NONE,
-                               _format);
-
-    // Start the internal thread which receives the TS to merge.
-    if (ok) {
-        Thread::start();
-    }
-
-    return ok;
+    return true;
 }
 
 
@@ -339,6 +310,53 @@ bool ts::MergePlugin::processDropPassOption(const UChar* option, bool allowed)
         }
     }
     return status;
+}
+
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::MergePlugin::start()
+{
+    // Resize the inter-thread packet queue.
+    _queue.reset(_max_queue);
+
+    // Configure the PSI merger.
+    if (_merge_psi) {
+        _psi_merger.reset(PSIMerger::MERGE_PAT |
+                          PSIMerger::MERGE_CAT |
+                          PSIMerger::MERGE_SDT |
+                          PSIMerger::MERGE_EIT |
+                          PSIMerger::NULL_MERGED |
+                          PSIMerger::NULL_UNMERGED);
+    }
+
+    // Other states.
+    _main_pids.reset();
+    _merge_pids.reset();
+    _pcr_pids.clear();
+    _got_eof = false;
+
+    // Create pipe & process.
+    // Note on buffer size: we use DEFAULT_MAX_QUEUED_PACKETS instead of _max_queue
+    // because this is the size of the system pipe buffer (Windows only). This is
+    // a limited resource and we cannot let a user set an arbitrary large value for it.
+    // The user can only change the queue size in tsp's virtual memory.
+    const bool ok = _pipe.open(_command,
+                               _no_wait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
+                               PKT_SIZE * DEFAULT_MAX_QUEUED_PACKETS,
+                               *tsp,
+                               ForkPipe::STDOUT_PIPE,
+                               ForkPipe::STDIN_NONE,
+                               _format);
+
+    // Start the internal thread which receives the TS to merge.
+    if (ok) {
+        Thread::start();
+    }
+
+    return ok;
 }
 
 
@@ -429,18 +447,8 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processPacket(TSPacket& pkt, TSPack
         }
     }
 
-    // If a fatal error occured during section analysis, give up.
-    if (_abort) {
-        return TSP_END;
-    }
-
     // Stuffing packets are potential candidate for replacement from merged stream.
-    const Status status = pid == PID_NULL ? processMergePacket(pkt, pkt_data) : TSP_OK;
-
-    // Count packets in the main stream.
-    _pkt_count++;
-
-    return status;
+    return pid == PID_NULL ? processMergePacket(pkt, pkt_data): TSP_OK;
 }
 
 
@@ -483,15 +491,15 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
     }
 
     // Check PID conflicts.
-    if (!_ignore_conflicts) {
-        if (pid != PID_NULL && !_merge_pids.test(pid)) {
+    if (!_ignore_conflicts && pid != PID_NULL) {
+        if (!_merge_pids.test(pid)) {
             // First time we see that PID on the merged stream.
             _merge_pids.set(pid);
             if (_main_pids.test(pid)){
                 tsp->error(u"PID conflict: PID 0x%X (%d) exists in the two streams, dropping from merged stream", {pid, pid});
             }
         }
-        if (pid != PID_NULL && _main_pids.test(pid)) {
+        if (_main_pids.test(pid)) {
             // The same PID already exists in the main PID, drop from merged stream.
             // Error message already reported.
             return TSP_NULL;
@@ -517,21 +525,28 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
 
         const uint64_t pcr = pkt.getPCR();
         const BitRate main_bitrate = tsp->bitrate();
+        const PacketCounter current_pkt = tsp->pluginPackets();
 
         // Check if we know this PID.
         PIDContextMap::iterator ctx(_pcr_pids.find(pid));
         if (ctx == _pcr_pids.end()) {
             // First time we see a PCR in this PID, create the context.
-            // Save the initial PCR value bu do not modify it.
-            _pcr_pids.insert(std::make_pair(pid, PIDContext(pcr, _pkt_count)));
+            // Save the initial PCR value but do not modify it.
+            _pcr_pids.insert(std::make_pair(pid, PIDContext(pcr, current_pkt)));
         }
         else if (main_bitrate > 0) {
-            // We have seen PCR's in this PID.
-            // Compute the transmission time since last PCR in PCR units.
+            // We have already seen some PCR's in this PID.
+            // Compute the transmission time since some previous PCR in PCR units.
             // We base the result on the main stream bitrate and the number of packets.
-            assert(_pkt_count > ctx->second.pcr_pkt);
-            ctx->second.last_pcr += ((_pkt_count - ctx->second.pcr_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(main_bitrate);
-            ctx->second.pcr_pkt = _pkt_count;
+            assert(current_pkt > ctx->second.last_pcr_pkt);
+            // Previous computation was based on PCR increment but it seems that small errors accumulate.
+            // ctx->second.last_pcr += ((current_pkt - ctx->second.last_pcr_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(main_bitrate);
+            // New computation is based on distance from first PCR.
+            // On the long run, this is more precise on CBR but can be devastating on VBR.
+            ctx->second.last_pcr = ctx->second.first_pcr + ((current_pkt - ctx->second.first_pcr_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(main_bitrate);
+            // Remember position of the mast PCR.
+            // No longer needed in the new PCR computation but kept in case we need to revert.
+            ctx->second.last_pcr_pkt = current_pkt;
             // Update the PCR in the packet.
             pkt.setPCR(ctx->second.last_pcr);
             // In debug mode, report the displacement of the PCR.
@@ -546,4 +561,17 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
     pkt_data.clearLabels(_resetLabels);
 
     return TSP_OK;
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor of PID context in the merged stream.
+//----------------------------------------------------------------------------
+
+ts::MergePlugin::PIDContext::PIDContext(uint64_t pcr, PacketCounter pkt) :
+    first_pcr(pcr),
+    first_pcr_pkt(pkt),
+    last_pcr(pcr),
+    last_pcr_pkt(pkt)
+{
 }
