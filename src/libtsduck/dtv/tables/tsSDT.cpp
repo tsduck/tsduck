@@ -93,6 +93,17 @@ uint16_t ts::SDT::tableIdExtension() const
 
 
 //----------------------------------------------------------------------------
+// Get the maximum size in bytes of the payload of sections of this table.
+//----------------------------------------------------------------------------
+
+size_t ts::SDT::maxPayloadSize() const
+{
+    // Although a "private section" in the MPEG sense, the SDT section is limited to 1024 bytes in ETSI EN 300 468.
+    return MAX_PSI_LONG_SECTION_PAYLOAD_SIZE;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 

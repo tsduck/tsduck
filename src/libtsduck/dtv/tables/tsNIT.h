@@ -100,6 +100,7 @@ namespace ts {
     protected:
         // Inherited methods
         virtual bool isValidTableId(TID) const override;
+        virtual size_t maxPayloadSize() const override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };
