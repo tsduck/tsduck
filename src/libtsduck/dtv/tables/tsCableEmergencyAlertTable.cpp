@@ -129,7 +129,7 @@ ts::CableEmergencyAlertTable::Exception::Exception(uint16_t major, uint16_t mino
 
 bool ts::CableEmergencyAlertTable::isPrivate() const
 {
-    // Although not MPEG-defined, SCTE section are "non private".
+    // Although not MPEG-defined, SCTE sections are "non private".
     return false;
 }
 
@@ -137,6 +137,13 @@ uint16_t ts::CableEmergencyAlertTable::tableIdExtension() const
 {
     // Specified as zero in this table.
     return 0;
+}
+
+size_t ts::CableEmergencyAlertTable::maxPayloadSize() const
+{
+    // Although declared as a "non-private section" in the MPEG sense, the
+    // CableEmergencyAlertTable section can use up to 4096 bytes in SCTE 18.
+    return MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE;
 }
 
 

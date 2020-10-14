@@ -39,7 +39,7 @@ namespace ts {
     //!
     //! Representation of a DSM-CC Stream Descriptors table.
     //!
-    //! @see ISO/IEC 13818-6, ITU-T Rec. 9.2.2 and 9.2.7.
+    //! @see ISO/IEC 13818-6, 9.2.2 and 9.2.7
     //! @ingroup table
     //!
     class TSDUCKDLL DSMCCStreamDescriptorsTable : public AbstractDescriptorsTable

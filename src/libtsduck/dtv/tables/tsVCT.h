@@ -170,6 +170,7 @@ namespace ts {
 
         // Inherited methods
         virtual void clearContent() override;
+        virtual size_t maxPayloadSize() const override;
         virtual void serializePayload(BinaryTable&, PSIBuffer&) const override;
         virtual void deserializePayload(PSIBuffer&, const Section&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;

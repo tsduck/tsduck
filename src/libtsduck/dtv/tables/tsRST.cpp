@@ -77,6 +77,17 @@ ts::RST::RST(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
+// Get the maximum size in bytes of the payload of sections of this table.
+//----------------------------------------------------------------------------
+
+size_t ts::RST::maxPayloadSize() const
+{
+    // Although a "private section" in the MPEG sense, the RST section is limited to 1024 bytes in ETSI EN 300 468.
+    return MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 

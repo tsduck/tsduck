@@ -71,8 +71,8 @@ namespace ts {
     //!   This option has the effect of invoking EIT::ReorganizeSections() over all sections
     //!   which are created from each XML file.
     //!
-    //! @see ETSI EN 300 468, 5.2.4.
-    //! @see ETSI TS 101 211, 4.1.4.
+    //! @see ETSI EN 300 468, 5.2.4
+    //! @see ETSI TS 101 211, 4.1.4
     //! @ingroup table
     //!
     class TSDUCKDLL EIT : public AbstractLongTable
@@ -344,7 +344,7 @@ namespace ts {
         //! This is the "last midnight" according to which EIT segments are assigned. By
         //! default, the oldest event start time is used.
         //!
-        //! @see ETSI TS 101 211, section 4.1.4
+        //! @see ETSI TS 101 211, 4.1.4
         //!
         static void ReorganizeSections(SectionPtrVector& sections, const Time& reftime = Time());
 

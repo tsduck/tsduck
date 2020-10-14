@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of DVB Content Identifier Table (CIT).
-    //! @see ETSI TS 102 323, section 12.2.
+    //! @see ETSI TS 102 323, 12.2
     //! @ingroup table
     //!
     class TSDUCKDLL CIT : public AbstractLongTable

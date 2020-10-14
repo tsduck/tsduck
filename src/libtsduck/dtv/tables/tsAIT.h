@@ -40,7 +40,7 @@
 namespace ts {
     //!
     //! Representation of an Application Information Table (AIT)
-    //! @see ETSI TS 101 812, 10.4.6.
+    //! @see ETSI TS 101 812, 10.4.6
     //! @ingroup table
     //!
     class TSDUCKDLL AIT : public AbstractLongTable
@@ -118,6 +118,7 @@ namespace ts {
     protected:
         // Inherited methods
         virtual void clearContent() override;
+        virtual size_t maxPayloadSize() const override;
         virtual void serializePayload(BinaryTable&, PSIBuffer&) const override;
         virtual void deserializePayload(PSIBuffer&, const Section&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;

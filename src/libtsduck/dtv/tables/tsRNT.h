@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a DVB Resolution provider Notification Table (RNT).
-    //! @see ETSI TS 102 323, section 5.2.2.
+    //! @see ETSI TS 102 323, 5.2.2
     //! @ingroup table
     //!
     class TSDUCKDLL RNT : public AbstractLongTable

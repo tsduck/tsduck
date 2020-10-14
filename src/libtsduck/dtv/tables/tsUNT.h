@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of an Update Notification Table (INT).
-    //! @see ETSI TS 102 006, section 9.4.1.
+    //! @see ETSI TS 102 006, 9.4.1
     //! @ingroup table
     //!
     class TSDUCKDLL UNT : public AbstractLongTable
