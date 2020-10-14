@@ -88,10 +88,12 @@ bool ts::SpliceInformationTable::isPrivate() const
     return false;
 }
 
-
-//----------------------------------------------------------------------------
-// Check if the sections of this table have a trailing CRC32.
-//----------------------------------------------------------------------------
+size_t ts::SpliceInformationTable::maxPayloadSize() const
+{
+    // Although declared as a "non-private section" in the MPEG sense, the
+    // SpliceInformationTable section can use up to 4096 bytes in SCTE 35.
+    return MAX_PRIVATE_SHORT_SECTION_PAYLOAD_SIZE;
+}
 
 bool ts::SpliceInformationTable::useTrailingCRC32() const
 {

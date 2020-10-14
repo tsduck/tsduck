@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of a Discontinuity Information Table (DIT)
-    //! @see ETSI 300 468, 7.1.1.
+    //! @see ETSI EN 300 468, 7.1.1
     //! @ingroup table
     //!
     class TSDUCKDLL DiscontinuityInformationTable : public AbstractTable

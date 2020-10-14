@@ -100,6 +100,17 @@ uint16_t ts::STT::tableIdExtension() const
 
 
 //----------------------------------------------------------------------------
+// Get the maximum size in bytes of the payload of sections of this table.
+//----------------------------------------------------------------------------
+
+size_t ts::STT::maxPayloadSize() const
+{
+    // Although a "private section" in the MPEG sense, the STT section is limited to 1024 bytes in ATSC A/65.
+    return MAX_PSI_LONG_SECTION_PAYLOAD_SIZE;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 

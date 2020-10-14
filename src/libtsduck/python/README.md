@@ -1,4 +1,4 @@
-## TSDuck Python Bindings
+## TSDuck Python bindings
 
 This directory contains Python bindings to some TSDuck features.
 

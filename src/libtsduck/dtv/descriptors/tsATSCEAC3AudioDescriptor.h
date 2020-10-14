@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of an ATSC E-AC-3_audio_descriptor.
-    //! @see A/52, G.3.5.
+    //! @see ATSC A/52, G.3.5.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL ATSCEAC3AudioDescriptor : public AbstractDescriptor

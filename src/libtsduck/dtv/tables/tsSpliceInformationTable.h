@@ -97,6 +97,7 @@ namespace ts {
 
     protected:
         // Inherited methods
+        virtual size_t maxPayloadSize() const override;
         virtual bool useTrailingCRC32() const override;
         virtual void clearContent() override;
         virtual void serializePayload(BinaryTable&, PSIBuffer&) const override;
