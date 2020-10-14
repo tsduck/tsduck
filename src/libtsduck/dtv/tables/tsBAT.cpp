@@ -78,6 +78,17 @@ ts::BAT& ts::BAT::operator=(const BAT& other)
 
 
 //----------------------------------------------------------------------------
+// Get the maximum size in bytes of the payload of sections of this table.
+//----------------------------------------------------------------------------
+
+size_t ts::BAT::maxPayloadSize() const
+{
+    // Although a "private section" in the MPEG sense, the BAT section is limited to 1024 bytes in ETSI EN 300 468.
+    return MAX_PSI_LONG_SECTION_PAYLOAD_SIZE;
+}
+
+
+//----------------------------------------------------------------------------
 // A static method to display a BAT section.
 //----------------------------------------------------------------------------
 

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2029
+VERSION 3.24-2030
 
 [NEW] New commands and plugins:
 
@@ -33,6 +33,10 @@ VERSION 3.24-2029
     PES header size.
   * Fixed issue #651: When fixing the PCR's in the "merge" plugin, there was a
     slow drift on merged PCR values after several hours.
+  * Fixed issue #653: When serializing NIT, SDT and BAT, the maximum size of
+    of a section was 4096 bytes as for all private sections (non-MPEG) but DVB
+    specifies that these three specific tables shall not exceed 1024 bytes per
+    section.
 
 -------------------------------------------------------------------------------
 
