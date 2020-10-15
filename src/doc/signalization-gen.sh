@@ -13,7 +13,7 @@ listsig()
     dir="$1"
     for header in $(grep -l "@see" "$dir"/*.h); do
         base=$(basename "$header" .h)
-        class=${base/ts/}
+        class=${base/ts/ts::}
         source="$dir/$base.cpp"
         xml=$(grep 2>/dev/null '#define  *MY_XML_NAME  *u"' "$source" | head -1 | sed -e 's/.* u"//' -e 's/".*//')
         if [[ -n "$xml" ]]; then
