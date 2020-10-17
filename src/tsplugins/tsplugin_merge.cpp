@@ -79,19 +79,20 @@ namespace ts {
         typedef std::map<PID,PIDContext> PIDContextMap;
 
         // Command line options.
-        UString        _command;           // Command which generates the main stream.
-        TSPacketFormat _format;            // Packet format on the pipe
-        size_t         _max_queue;         // Maximum number of queued packets.
-        size_t         _force_threshold;   // Queue threshold after which insertion is forced.
-        bool           _no_wait;           // Do not wait for command completion.
-        bool           _merge_psi;         // Merge PSI/SI information.
-        bool           _pcr_restamp;       // Restamp PCR from the merged stream.
-        bool           _incremental_pcr;   // Use incremental method to restamp PCR's.
-        bool           _merge_smoothing;   // Smoothen packet insertion.
-        bool           _ignore_conflicts;  // Ignore PID conflicts.
-        bool           _terminate;         // Terminate processing after last merged packet.
-        BitRate        _user_bitrate;      // User-specified bitrate of the merged stream.
-        PIDSet         _allowed_pids;      // List of PID's to merge (other PID's from the merged stream are dropped).
+        UString        _command;             // Command which generates the main stream.
+        TSPacketFormat _format;              // Packet format on the pipe
+        size_t         _max_queue;           // Maximum number of queued packets.
+        size_t         _force_threshold;     // Queue threshold after which insertion is forced.
+        bool           _no_wait;             // Do not wait for command completion.
+        bool           _merge_psi;           // Merge PSI/SI information.
+        bool           _pcr_restamp;         // Restamp PCR from the merged stream.
+        bool           _incremental_pcr;     // Use incremental method to restamp PCR's.
+        bool           _merge_smoothing;     // Smoothen packet insertion.
+        bool           _ignore_conflicts;    // Ignore PID conflicts.
+        bool           _pcr_reset_backwards; // Reset PCR restamping when DTS/PTD move backwards the PCR.
+        bool           _terminate;           // Terminate processing after last merged packet.
+        BitRate        _user_bitrate;        // User-specified bitrate of the merged stream.
+        PIDSet         _allowed_pids;        // List of PID's to merge (other PID's from the merged stream are dropped).
         TSPacketMetadata::LabelSet _setLabels;    // Labels to set on output packets.
         TSPacketMetadata::LabelSet _resetLabels;  // Labels to reset on output packets.
 
@@ -138,6 +139,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _incremental_pcr(false),
     _merge_smoothing(false),
     _ignore_conflicts(false),
+    _pcr_reset_backwards(false),
     _terminate(false),
     _user_bitrate(0),
     _allowed_pids(),
@@ -251,6 +253,15 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"passed. This can be modified using options --drop and --pass. Several "
          u"options --pass can be specified.");
 
+    option(u"pcr-reset-backwards");
+    help(u"pcr-reset-backwards",
+         u"When restamping PCR's, the PCR adjustment is usually small and stays behind the PTS and DTS. "
+         u"But, after hours of continuous restamping, some inaccuracy my appear and the recomputed PCR "
+         u"may move ahead of PCR and DTS. With this option, as soon as a recomputed PCR is ahead of "
+         u"the PTS or DTS in the same packet, PCR restamping is reset and restarts from the original "
+         u"PCR value in this packet. Note that this creates a small PCR leap in the stream. "
+         u"The option has, of course, no effect on scrambled streams.");
+
     option(u"terminate");
     help(u"terminate",
         u"Terminate packet processing when the merged stream is terminated. "
@@ -293,6 +304,7 @@ bool ts::MergePlugin::getOptions()
     _incremental_pcr = present(u"incremental-pcr-restamp");
     _merge_smoothing = !present(u"no-smoothing");
     _ignore_conflicts = transparent || present(u"ignore-conflicts");
+    _pcr_reset_backwards = present(u"pcr-reset-backwards");
     _terminate = present(u"terminate");
     _user_bitrate = intValue<BitRate>(u"bitrate", 0);
     tsp->useJointTermination(present(u"joint-termination"));
@@ -619,12 +631,29 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
             assert(base_pkt < current_pkt);
             ctx->second.last_pcr = base_pcr + ((current_pkt - base_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(main_bitrate);
             ctx->second.last_pcr_pkt = current_pkt;
-            // Update the PCR in the packet.
-            pkt.setPCR(ctx->second.last_pcr);
-            // In debug mode, report the displacement of the PCR.
-            // This may go back and forth around zero but should never diverge.
-            const SubSecond moved = ctx->second.last_pcr - pcr;
-            tsp->debug(u"adjusted PCR by %'d (%'d ms) in PID 0x%X (%d)", {moved, (moved * MilliSecPerSec) / SYSTEM_CLOCK_FREQ, pid, pid});
+            // When --pcr-reset-backwards is specified, check if DTS or PTS have moved backwards PCR.
+            // This may occur after slow drift in PCR restamping.
+            bool update_pcr = true;
+            if (_pcr_reset_backwards) {
+                const uint64_t pts = pkt.getPTS();
+                const uint64_t dts = pkt.getDTS();
+                const uint64_t ppcr = ctx->second.last_pcr / SYSTEM_CLOCK_SUBFACTOR; // restamped PCR value in PTS/DTS units
+                if ((pts != INVALID_PTS && pts <= ppcr) || (dts != INVALID_DTS && dts <= ppcr)) {
+                    // PTS or DTS moved backwards PCR -> reset PCR restamping.
+                    update_pcr = false;
+                    ctx->second.first_pcr = ctx->second.last_pcr = pcr;
+                    ctx->second.first_pcr_pkt = ctx->second.last_pcr_pkt = current_pkt;
+                    tsp->verbose(u"resetting PCR restamping after DTS/PTS moved backwards restamped PCR");
+                }
+            }
+            if (update_pcr) {
+                // Update the PCR in the packet.
+                pkt.setPCR(ctx->second.last_pcr);
+                // In debug mode, report the displacement of the PCR.
+                // This may go back and forth around zero but should never diverge (--pcr-reset-backwards case).
+                const SubSecond moved = ctx->second.last_pcr - pcr;
+                tsp->debug(u"adjusted PCR by %'d (%'d ms) in PID 0x%X (%d)", {moved, (moved * MilliSecPerSec) / SYSTEM_CLOCK_FREQ, pid, pid});
+            }
         }
     }
 
