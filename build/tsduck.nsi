@@ -58,6 +58,7 @@ Caption "TSDuck Installer"
 ; Directories.
 !define RootDir ".."
 !define InstallerDir "${RootDir}\installers"
+!define PythonDir "${RootDir}\src\libtsduck\python"
 !define BinRoot "${BinDir}\.."
 
 VIProductVersion ${VersionInfo}
@@ -181,6 +182,21 @@ Section "Documentation" SectionDocumentation
 
 SectionEnd
 
+; Installation of Python bindings
+; -------------------------------
+Section /o "Python Bindings" SectionPython
+    ; Unselected by default (/o).
+
+    ; Work on "all users" context, not current user.
+    SetShellVarContext all
+
+    ; Documentation files.
+    CreateDirectory "$INSTDIR\python\ts"
+    SetOutPath "$INSTDIR\python\ts"
+    File "${PythonDir}\ts\*"
+
+SectionEnd
+
 ; Installation of development environment for third-party applications
 ; --------------------------------------------------------------------
 Section /o "Development" SectionDevelopment
@@ -297,6 +313,19 @@ Section "-Common" SectionCommon
         RMDir /r "$INSTDIR\doc"
         RMDir /r "$SMPROGRAMS\TSDuck"
     ${EndIf}
+    ${If} ${SectionIsSelected} ${SectionPython}
+        WriteRegStr HKLM "${ProductKey}" "InstallPython" "true"
+        ; Add Python folder to Python path
+        nsExec::Exec '"$INSTDIR\setup\setpath.exe" --prepend "$INSTDIR\python" --environment PYTHONPATH'
+        Pop $0
+    ${Else}
+        WriteRegStr HKLM "${ProductKey}" "InstallPython" "false"
+        ; Remove previous installation of Python bindings.
+        RMDir /r "$INSTDIR\python"
+        ; Remove Python folder from system path
+        nsExec::Exec '"$INSTDIR\setup\setpath.exe" --remove "$INSTDIR\python" --environment PYTHONPATH'
+        Pop $0
+    ${EndIf}
     ${If} ${SectionIsSelected} ${SectionDevelopment}
         WriteRegStr HKLM "${ProductKey}" "InstallDevelopment" "true"
     ${Else}
@@ -318,6 +347,8 @@ SectionEnd
         "TSDuck command-line tools and plugins."
     !insertmacro MUI_DESCRIPTION_TEXT ${SectionDocumentation} \
         "TSDuck user's guide."
+    !insertmacro MUI_DESCRIPTION_TEXT ${SectionPython} \
+        "TSDuck Python bindings."
     !insertmacro MUI_DESCRIPTION_TEXT ${SectionDevelopment} \
         "TSDuck development environment, for use from third-party applications manipulating MPEG transport streams."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
@@ -346,10 +377,13 @@ Section "Uninstall"
     ; Remove binaries folder from system path
     nsExec::Exec '"$0\setup\setpath.exe" --remove "$0\bin"'
     Pop $1
+    nsExec::Exec '"$0\setup\setpath.exe" --remove "$0\python" --environment PYTHONPATH'
+    Pop $1
 
     ; Delete product files.
     RMDir /r "$0\bin"
     RMDir /r "$0\doc"
+    RMDir /r "$0\python"
     RMDir /r "$0\include"
     RMDir /r "$0\lib"
     Delete "$0\tsduck.props"
