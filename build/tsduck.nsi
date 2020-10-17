@@ -190,10 +190,10 @@ Section /o "Python Bindings" SectionPython
     ; Work on "all users" context, not current user.
     SetShellVarContext all
 
-    ; Documentation files.
+    ; Python files.
     CreateDirectory "$INSTDIR\python\ts"
     SetOutPath "$INSTDIR\python\ts"
-    File "${PythonDir}\ts\*"
+    File "${PythonDir}\ts\*.py"
 
 SectionEnd
 

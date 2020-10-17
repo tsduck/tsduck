@@ -53,7 +53,7 @@ class TSProcessor:
         self.initial_input_packets = 0         # --initial-input-packets (zero means default)
         self.add_input_stuffing = [0, 0]       # --add-input-stuffing nullpkt/inpkt
         self.add_start_stuffing = 0            # --add-start-stuffing
-        self.add_stop_stuffing = 0             # --add-start-stuffing
+        self.add_stop_stuffing = 0             # --add-stop-stuffing
         self.bitrate = 0                       # --bitrate
         self.bitrate_adjust_interval = 5000    # --bitrate-adjust-interval (in milliseconds)
         self.receive_timeout = 0               # --receive-timeout

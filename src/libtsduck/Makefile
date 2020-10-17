@@ -133,9 +133,10 @@ $(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(OBJS))
 
 .PHONY: install install-devel
 install: $(SHARED_LIBTSDUCK)
-	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck $(SYSROOT)$(SYSPREFIX)/share/tsduck
+	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck $(SYSROOT)$(SYSPREFIX)/share/tsduck/python/ts
 	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	install -m 644 $(CONFIG_FILES) $(SYSROOT)$(SYSPREFIX)/share/tsduck
+	install -m 644 python/ts/*.py $(SYSROOT)$(SYSPREFIX)/share/tsduck/python/ts
 install-devel: $(STATIC_LIBTSDUCK) tsduck.h
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
