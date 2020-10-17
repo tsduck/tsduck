@@ -2,13 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2033
+VERSION 3.24-2034
 
 [NEW] New commands and plugins:
 
   * For developers who use the TSDuck library on Linux and macOS, the new
     command "tsconfig" generates the various build options for the applications
     depending on the current operating system.
+  * Python bindings have been added for high-level functions of the TSDuck
+    library. All "tsp" features are now available from Python.
 
 [IMP] Improvements on existing commands and plugins:
 
