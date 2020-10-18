@@ -306,7 +306,7 @@ bool ts::TSPacket::startPES() const
 
     const uint8_t* const pl = getPayload();
     return hasValidSync() && !getTEI() && getPUSI() && isClear() && hasPayload() &&
-        getPayloadSize() >= 3 && pl[0] == 0x00 && pl[1] == 0x00 && pl[2] == 0x01;
+           getPayloadSize() >= 3 && pl[0] == 0x00 && pl[1] == 0x00 && pl[2] == 0x01;
 }
 
 
@@ -1064,24 +1064,12 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
         return strm;
     }
 
-    // A PES header starts with the 3-byte prefix 0x000001. A packet has a PES
-    // header if the 'payload unit start' is set in the TS header and the
-    // payload starts with 0x000001.
-    //
-    // Note that there is no risk to misinterpret the prefix: When 'payload
-    // unit start' is set, the payload may also contains PSI/SI tables. In
-    // that case, 0x000001 is not a possible value for the beginning of the
-    // payload. With PSI/SI, a payload starting with 0x000001 would mean:
-    //  0x00 : pointer field -> a section starts at next byte
-    //  0x00 : table id -> a PAT
-    //  0x01 : section_syntax_indicator field is 0, impossible for a PAT
-
-    bool has_pes_header = hasValidSync() &&
-                          getPUSI() &&
-                          payload_size >= 3 &&
-                          b[header_size] == 0x00 &&
-                          b[header_size + 1] == 0x00 &&
-                          b[header_size + 2] == 0x01;
+    // Timestamps information (can be INVALID_xxx values).
+    const uint64_t pcr = getPCR();
+    const uint64_t opcr = getOPCR();
+    const uint64_t subpcr = pcr == INVALID_PCR ? INVALID_DTS : (pcr / SYSTEM_CLOCK_SUBFACTOR);
+    const uint64_t dts = getDTS();
+    const uint64_t pts = getPTS();
 
     // Display TS header
 
@@ -1100,16 +1088,16 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
         if (hasSpliceCountdown()) {
             strm << margin << "Splice countdown: " << int(getSpliceCountdown()) << std::endl;
         }
-        if (hasPCR() || hasOPCR()) {
+        if (pcr != INVALID_PCR || opcr != INVALID_PCR) {
             strm << margin;
-            if (hasPCR()) {
-                strm << UString::Format(u"PCR: 0x%011X", {getPCR()});
-                if (hasOPCR()) {
+            if (pcr != INVALID_PCR) {
+                strm << UString::Format(u"PCR: 0x%011X", {pcr});
+                if (opcr != INVALID_PCR) {
                     strm << ", ";
                 }
             }
-            if (hasOPCR()) {
-                strm << UString::Format(u"OPCR: 0x%011X", {getOPCR()});
+            if (opcr != INVALID_PCR) {
+                strm << UString::Format(u"OPCR: 0x%011X", {opcr});
             }
             strm << std::endl;
         }
@@ -1117,7 +1105,7 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
 
     // Display PES header
 
-    if (has_pes_header && (flags & DUMP_PES_HEADER)) {
+    if (startPES() && (flags & DUMP_PES_HEADER)) {
         uint8_t sid = b[header_size + 3];
         uint16_t length = GetUInt16(b + header_size + 4);
         strm << margin << "---- PES Header ----" << std::endl
@@ -1127,6 +1115,37 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
             strm << " (unbounded)";
         }
         strm << std::endl;
+        if (dts != INVALID_DTS || pts != INVALID_PTS) {
+            strm << margin;
+            if (dts != INVALID_DTS) {
+                strm << UString::Format(u"DTS: 0x%09X", {dts});
+                if (subpcr != INVALID_DTS) {
+                    strm << UString::Format(u" (PCR%+'d ms)", {((SubSecond(dts) - SubSecond(subpcr)) * MilliSecPerSec) / SYSTEM_CLOCK_SUBFREQ});
+                }
+                if (pts != INVALID_PTS) {
+                    strm << ", ";
+                }
+            }
+            if (pts != INVALID_PTS) {
+                strm << UString::Format(u"PTS: 0x%09X", {pts});
+                if (dts != INVALID_DTS || subpcr != INVALID_DTS) {
+                    strm << " (";
+                }
+                if (dts != INVALID_DTS) {
+                    strm << UString::Format(u"DTS%+'d ms", {((SubSecond(pts) - SubSecond(dts)) * MilliSecPerSec) / SYSTEM_CLOCK_SUBFREQ});
+                }
+                if (dts != INVALID_DTS && subpcr != INVALID_DTS) {
+                    strm << ", ";
+                }
+                if (subpcr != INVALID_DTS) {
+                    strm << UString::Format(u"PCR%+'d ms", {((SubSecond(pts) - SubSecond(subpcr)) * MilliSecPerSec) / SYSTEM_CLOCK_SUBFREQ});
+                }
+                if (dts != INVALID_DTS || subpcr != INVALID_DTS) {
+                    strm << ")";
+                }
+            }
+            strm << std::endl;
+        }
     }
 
     // Display full packet or payload in hexa

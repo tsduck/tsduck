@@ -33,10 +33,14 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
+#include "tsSignalizationHandlerInterface.h"
+#include "tsSignalizationDemux.h"
 #include "tsTSForkPipe.h"
 #include "tsTSPacketQueue.h"
 #include "tsPSIMerger.h"
+#include "tsSafePtr.h"
 #include "tsThread.h"
+#include "tsFatal.h"
 TSDUCK_SOURCE;
 
 #define DEFAULT_MAX_QUEUED_PACKETS  1000            // Default size in packet of the inter-thread queue.
@@ -48,7 +52,10 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class MergePlugin: public ProcessorPlugin, private Thread
+    class MergePlugin:
+        public ProcessorPlugin,
+        private SignalizationHandlerInterface,
+        private Thread
     {
         TS_NOBUILD_NOCOPY(MergePlugin);
     public:
@@ -64,19 +71,10 @@ namespace ts {
         // - Main stream: the TS which is processed by tsp, including this plugin.
         // - Merged stream: the additional TS which is read by this plugin through a pipe.
 
-        // Each PID with PCR's in the merged stream is described by a structure like this.
-        class PIDContext
-        {
-        public:
-            PIDContext(uint64_t pcr = INVALID_PCR, PacketCounter pkt = 0);  // Constructor.
-            uint64_t      first_pcr;      // First original PCR value in this PID.
-            PacketCounter first_pcr_pkt;  // Index in the main stream of the packet with the first PCR.
-            uint64_t      last_pcr;       // Last PCR value in this PID, after adjustment in main stream.
-            PacketCounter last_pcr_pkt;   // Index in the main stream of the packet with the last PCR.
-        };
-
-        // Map of PID contexts, indexed by PID.
-        typedef std::map<PID,PIDContext> PIDContextMap;
+        // Each PID in the merged stream is described by a structure like this. The map is indexed by PID.
+        class MergedPIDContext;
+        typedef SafePtr<MergedPIDContext> MergedPIDContextPtr;
+        typedef std::map<PID, MergedPIDContextPtr> MergedPIDContextMap;
 
         // Command line options.
         UString        _command;             // Command which generates the main stream.
@@ -104,8 +102,9 @@ namespace ts {
         TSPacketQueue _queue;              // TS packet queur from merge to main.
         PIDSet        _main_pids;          // Set of detected PID's in main stream.
         PIDSet        _merge_pids;         // Set of detected PID's in merged stream that we pass in main stream.
-        PIDContextMap _pcr_pids;           // Description of PID's with PCR's from the merged stream.
-        PSIMerger     _psi_merger;         // Used to merge PSI/SI from both streams.
+        MergedPIDContextMap _merged_ctx;   // Description of PID's from the merged stream.
+        SignalizationDemux  _merged_demux; // Analyze the signalization in the merged stream.
+        PSIMerger           _psi_merger;   // Used to merge PSI/SI from both streams.
 
         // Process a --drop or --pass option.
         bool processDropPassOption(const UChar* option, bool allowed);
@@ -114,8 +113,39 @@ namespace ts {
         // them to the main plugin thread. The following method is the thread main code.
         virtual void main() override;
 
+        // Receives all PMT's of all services in the merged stream.
+        virtual void handlePMT(const PMT& table, PID pid) override;
+
+        // Get the description of a PID inside the merged stream.
+        MergedPIDContextPtr getContext(PID pid);
+
         // Process one packet coming from the merged stream.
         Status processMergePacket(TSPacket&, TSPacketMetadata&);
+
+        // PID context in the merged stream.
+        class MergedPIDContext
+        {
+            TS_NOBUILD_NOCOPY(MergedPIDContext);
+        public:
+            PID           pid;            // The described PID.
+            PID           pcr_pid;        // Associated PCR PID (can be the PID itself).
+            uint64_t      first_pcr;      // First original PCR value in this PID.
+            PacketCounter first_pcr_pkt;  // Index in the main stream of the packet with the first PCR.
+            uint64_t      last_pcr;       // Last PCR value in this PID, after adjustment in main stream.
+            PacketCounter last_pcr_pkt;   // Index in the main stream of the packet with the last PCR.
+            uint64_t      last_pts;       // Last PTS value in this PID.
+            PacketCounter last_pts_pkt;   // Index in the main stream of the packet with the last PTS.
+            uint64_t      last_dts;       // Last DTS value in this PID.
+            PacketCounter last_dts_pkt;   // Index in the main stream of the packet with the last DTS.
+
+            // Constructor.
+            MergedPIDContext(PID);
+
+            // Get the DTR or PTS (whichever is defined and early).
+            // Adjust it according to a bitrate and current packet.
+            // Return INVALID_DTS if none defined.
+            uint64_t adjustedPDTS(PacketCounter, BitRate) const;
+        };
     };
 }
 
@@ -152,7 +182,8 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _queue(),
     _main_pids(),
     _merge_pids(),
-    _pcr_pids(),
+    _merged_ctx(),
+    _merged_demux(duck, this),
     _psi_merger(duck, PSIMerger::NONE, *tsp)
 {
     option(u"", 0, STRING, 1, 1);
@@ -393,10 +424,14 @@ bool ts::MergePlugin::start()
                           PSIMerger::NULL_UNMERGED);
     }
 
+    // Capture all PMT's from the merged stream.
+    _merged_demux.reset();
+    _merged_demux.addTableId(TID_PMT);
+
     // Other states.
     _main_pids.reset();
     _merge_pids.reset();
-    _pcr_pids.clear();
+    _merged_ctx.clear();
     _merge_bitrate = _user_bitrate; // zero if unspecified
     _merged_count = 0;
     _got_eof = false;
@@ -562,7 +597,10 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
     // is used in computation involving the bitrate of the complete merged stream.
     _merged_count++;
 
-    // Merge PSI/SI.
+    // Collect and merge PSI/SI when needed.
+    if (_pcr_restamp && _pcr_reset_backwards) {
+        _merged_demux.feedPacket(pkt);
+    }
     if (_merge_psi) {
         _psi_merger.feedMergedPacket(pkt);
     }
@@ -589,8 +627,8 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
         }
     }
 
-    // Adjust PCR's in packets from the merge streams.
-    if (_pcr_restamp && pkt.hasPCR()) {
+    // Collect and process time stamps.
+    if (_pcr_restamp) {
 
         // In each PID with PCR's in the merge stream, we keep the first PCR
         // value unchanged. Then, we need to adjust all subsequent PCR's.
@@ -606,53 +644,77 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
         // change them because they indicate at which time the frame shall be
         // _processed_, not _transmitted_.
 
+        const MergedPIDContextPtr ctx(getContext(pid));
         const uint64_t pcr = pkt.getPCR();
+        const uint64_t dts = pkt.getDTS();
+        const uint64_t pts = pkt.getPTS();
 
-        // Check if we know this PID.
-        PIDContextMap::iterator ctx(_pcr_pids.find(pid));
-        if (ctx == _pcr_pids.end()) {
-            // First time we see a PCR in this PID, create the context.
+        // The last DTS and PTS are stored for all PID's.
+        if (dts != INVALID_DTS) {
+            ctx->last_dts = dts;
+            ctx->last_dts_pkt = current_pkt;
+        }
+        if (pts != INVALID_PTS) {
+            ctx->last_pts = pts;
+            ctx->last_pts_pkt = current_pkt;
+        }
+
+        // PCR's are stored, modified or reset.
+        if (pcr == INVALID_PCR) {
+            // No PCR, do nothing.
+        }
+        else if (ctx->last_pcr == INVALID_PCR) {
+            // First time we see a PCR in this PID.
             // Save the initial PCR value but do not modify it.
-            _pcr_pids.insert(std::make_pair(pid, PIDContext(pcr, current_pkt)));
+            ctx->first_pcr = ctx->last_pcr = pcr;
+            ctx->first_pcr_pkt = ctx->last_pcr_pkt = current_pkt;
         }
         else if (main_bitrate > 0) {
-            // We have already seen some PCR's in this PID.
+            // This is not the first PCR in this PID.
             // Compute the transmission time since some previous PCR in PCR units.
             // We base the result on the main stream bitrate and the number of packets.
             // By default, compute PCR based on distance from first PCR.
             // On the long run, this is more precise on CBR but can be devastating on VBR.
-            uint64_t base_pcr = ctx->second.first_pcr;
-            PacketCounter base_pkt = ctx->second.first_pcr_pkt;
+            uint64_t base_pcr = ctx->first_pcr;
+            PacketCounter base_pkt = ctx->first_pcr_pkt;
             if (_incremental_pcr) {
                 // Compute PCR based in increment from the last one. Small errors may accumulate.
-                base_pcr = ctx->second.last_pcr;
-                base_pkt = ctx->second.last_pcr_pkt;
+                base_pcr = ctx->last_pcr;
+                base_pkt = ctx->last_pcr_pkt;
             }
             assert(base_pkt < current_pkt);
-            ctx->second.last_pcr = base_pcr + ((current_pkt - base_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(main_bitrate);
-            ctx->second.last_pcr_pkt = current_pkt;
+            ctx->last_pcr = base_pcr + ((current_pkt - base_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(main_bitrate);
+            ctx->last_pcr_pkt = current_pkt;
+
             // When --pcr-reset-backwards is specified, check if DTS or PTS have moved backwards PCR.
             // This may occur after slow drift in PCR restamping.
             bool update_pcr = true;
             if (_pcr_reset_backwards) {
-                const uint64_t pts = pkt.getPTS();
-                const uint64_t dts = pkt.getDTS();
-                const uint64_t ppcr = ctx->second.last_pcr / SYSTEM_CLOCK_SUBFACTOR; // restamped PCR value in PTS/DTS units
-                if ((pts != INVALID_PTS && pts <= ppcr) || (dts != INVALID_DTS && dts <= ppcr)) {
-                    // PTS or DTS moved backwards PCR -> reset PCR restamping.
-                    update_pcr = false;
-                    ctx->second.first_pcr = ctx->second.last_pcr = pcr;
-                    ctx->second.first_pcr_pkt = ctx->second.last_pcr_pkt = current_pkt;
-                    tsp->verbose(u"resetting PCR restamping after DTS/PTS moved backwards restamped PCR");
+                // Restamped PCR value in PTS/DTS units:
+                const uint64_t subpcr = ctx->last_pcr / SYSTEM_CLOCK_SUBFACTOR;
+                // Loop on all PID's which use current PID as PCR PID, searching for a reason not to update the PCR.
+                for (auto it = _merged_ctx.begin(); update_pcr && it != _merged_ctx.end(); ++it) {
+                    if (it->second->pcr_pid == pid) {
+                        // Extrapolated current PTS/DTS of this PID at current packet.
+                        const uint64_t pdts = it->second->adjustedPDTS(current_pkt, main_bitrate);
+                        if (pdts != INVALID_DTS && pdts <= subpcr) {
+                            // PTS or DTS moved backwards PCR -> reset PCR restamping.
+                            update_pcr = false;
+                            ctx->first_pcr = ctx->last_pcr = pcr;
+                            ctx->first_pcr_pkt = ctx->last_pcr_pkt = current_pkt;
+                            tsp->verbose(u"resetting PCR restamping in PID 0x%X (%<d) after DTS/PTS moved backwards restamped PCR", {pid});
+                        }
+                    }
                 }
             }
+
+            // Update the PCR in the packet if required.
             if (update_pcr) {
-                // Update the PCR in the packet.
-                pkt.setPCR(ctx->second.last_pcr);
+                pkt.setPCR(ctx->last_pcr);
                 // In debug mode, report the displacement of the PCR.
                 // This may go back and forth around zero but should never diverge (--pcr-reset-backwards case).
-                const SubSecond moved = ctx->second.last_pcr - pcr;
-                tsp->debug(u"adjusted PCR by %'d (%'d ms) in PID 0x%X (%d)", {moved, (moved * MilliSecPerSec) / SYSTEM_CLOCK_FREQ, pid, pid});
+                const SubSecond moved = SubSecond(ctx->last_pcr) - SubSecond(pcr);
+                tsp->debug(u"adjusted PCR by %+'d (%+'d ms) in PID 0x%X (%<d)", {moved, (moved * MilliSecPerSec) / SYSTEM_CLOCK_FREQ, pid});
             }
         }
     }
@@ -666,13 +728,84 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
 
 
 //----------------------------------------------------------------------------
+// Receives all PMT's of all services in the merged stream.
+//----------------------------------------------------------------------------
+
+void ts::MergePlugin::handlePMT(const PMT& pmt, PID pid)
+{
+    // Record the PCR PID for each component in the service.
+    if (pmt.pcr_pid != PID_NULL) {
+        for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
+            // it->first is the PID of the component
+            getContext(it->first)->pcr_pid = pmt.pcr_pid;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get the description of a PID inside the merged stream.
+//----------------------------------------------------------------------------
+
+ts::MergePlugin::MergedPIDContextPtr ts::MergePlugin::getContext(PID pid)
+{
+    const auto ctx = _merged_ctx.find(pid);
+    if (ctx != _merged_ctx.end()) {
+        return ctx->second;
+    }
+    else {
+        MergedPIDContextPtr ptr(new MergedPIDContext(pid));
+        CheckNonNull(ptr.pointer());
+        _merged_ctx[pid] = ptr;
+        return ptr;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Constructor of PID context in the merged stream.
 //----------------------------------------------------------------------------
 
-ts::MergePlugin::PIDContext::PIDContext(uint64_t pcr, PacketCounter pkt) :
-    first_pcr(pcr),
-    first_pcr_pkt(pkt),
-    last_pcr(pcr),
-    last_pcr_pkt(pkt)
+ts::MergePlugin::MergedPIDContext::MergedPIDContext(PID p) :
+    pid(p),
+    pcr_pid(p),  // each PID is its own PCR PID until proven otherwise in a PMT
+    first_pcr(INVALID_PCR),
+    first_pcr_pkt(0),
+    last_pcr(INVALID_PCR),
+    last_pcr_pkt(0),
+    last_pts(INVALID_PTS),
+    last_pts_pkt(0),
+    last_dts(INVALID_DTS),
+    last_dts_pkt(0)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Get the adjusted DTR or PTS according to a bitrate and current packet.
+//----------------------------------------------------------------------------
+
+uint64_t ts::MergePlugin::MergedPIDContext::adjustedPDTS(PacketCounter current_pkt, BitRate bitrate) const
+{
+    // Compute adjusted DTS and PTS.
+    uint64_t dts = last_dts;
+    uint64_t pts = last_pts;
+    if (bitrate != 0) {
+        if (dts != INVALID_DTS) {
+            dts += ((current_pkt - last_dts_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_SUBFREQ) / bitrate;
+        }
+        if (pts != INVALID_PTS) {
+            pts += ((current_pkt - last_pts_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_SUBFREQ) / bitrate;
+        }
+    }
+
+    if (dts == INVALID_DTS) {
+        return pts; // can be INVALID_PTS
+    }
+    else if (pts == INVALID_PTS) {
+        return dts; // only DTS is valid
+    }
+    else {
+        return std::min(pts, dts);
+    }
 }
