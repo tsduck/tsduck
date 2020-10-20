@@ -6,13 +6,13 @@
   </ImportGroup>
 
   <ItemGroup>
-    <ClCompile Include="..\..\src\tsplugins\tsplugin_pids.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_stats.cpp" />
   </ItemGroup>
 
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AD1B17E7-6268-4E46-8354-B191EEF71234}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>tsplugin_pids</RootNamespace>
+    <RootNamespace>tsplugin_stats</RootNamespace>
   </PropertyGroup>
 
   <ImportGroup Label="PropertySheets">
