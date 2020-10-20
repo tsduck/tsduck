@@ -127,7 +127,7 @@ namespace ts {
         {
             TS_NOBUILD_NOCOPY(MergedPIDContext);
         public:
-            PID           pid;            // The described PID.
+            const PID     pid;            // The described PID.
             PID           pcr_pid;        // Associated PCR PID (can be the PID itself).
             uint64_t      first_pcr;      // First original PCR value in this PID.
             PacketCounter first_pcr_pkt;  // Index in the main stream of the packet with the first PCR.
@@ -204,13 +204,13 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"passed. This can be modified using options --drop and --pass. Several "
          u"options --drop can be specified.");
 
-    option(u"force-threshold", 0, POSITIVE);
+    option(u"force-threshold", 0, UNSIGNED);
     help(u"force-threshold",
          u"When the insertion of the merged stream is smoothened, packets are inserted "
          u"in the main stream at some regular interval, leaving additional packets in "
          u"the queue until their natural insertion point. However, to avoid losing packets, "
          u"if the number of packets in the queue is above the specified threshold, "
-         u"the insertion is forced. "
+         u"the insertion is forced. When set to zero, insertion is never forced. "
          u"The default threshold is half the size of the packet queue.");
 
     option(u"format", 0, TSPacketFormatEnum);
@@ -568,14 +568,15 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
         _merge_bitrate > 0 &&
         main_bitrate > 0 &&
         main_bitrate * _merged_count > _merge_bitrate * current_pkt &&
-        _queue.currentSize() < _force_threshold)
+        (_force_threshold == 0 || _queue.currentSize() < _force_threshold))
     {
         // Don't insert now, would burst over target merged bitrate.
         return TSP_NULL;
     }
 
     // Replace current null packet in main stream with next packet from merged stream.
-    if (!_queue.getPacket(pkt, _merge_bitrate)) {
+    BitRate mbitrate = 0;
+    if (!_queue.getPacket(pkt, mbitrate)) {
         // No packet available, keep original null packet.
         if (!_got_eof && _queue.eof()) {
             // Report end of input stream once.
@@ -591,6 +592,12 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
             }
         }
         return TSP_OK;
+    }
+
+    // Report merged bitrate change.
+    if (mbitrate != _merge_bitrate) {
+        tsp->verbose(u"merged stream bitrate is now %'d b/s", {mbitrate});
+        _merge_bitrate = mbitrate;
     }
 
     // Count merged packets. Must be done here, before dropping unused PID's, because it

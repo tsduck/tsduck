@@ -2,10 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2034
+VERSION 3.24-2037
 
 [NEW] New commands and plugins:
 
+  * Added plugin "stats" (report various statistics on PID's and labels).
   * For developers who use the TSDuck library on Linux and macOS, the new
     command "tsconfig" generates the various build options for the applications
     depending on the current operating system.
@@ -20,6 +21,7 @@ VERSION 3.24-2034
   * In all commands and plugins which define the option --format (file format),
     the new value "RS204" designates TS files containing 204-byte packets with
     trailing Reed-Solomon code.
+  * In plugin "pcrextract", the default CSV separator is now "," instead of ";".
   * New options in exiting commands and plugins:
     - Option --subtitles-pid in plugin "zap".
     - Option --json in "tscmp" an "tsdektec".
