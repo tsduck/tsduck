@@ -567,6 +567,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tscharset", "tscharset.vcxp
 		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsplugin_stats", "tsplugin_stats.vcxproj", "{AD1B17E7-6268-4E46-8354-B191EEF71234}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -1375,6 +1377,14 @@ Global
 		{C68FB125-B7FC-435F-8D7A-0BDAC4966B54}.Release|Win32.Build.0 = Release|Win32
 		{C68FB125-B7FC-435F-8D7A-0BDAC4966B54}.Release|x64.ActiveCfg = Release|x64
 		{C68FB125-B7FC-435F-8D7A-0BDAC4966B54}.Release|x64.Build.0 = Release|x64
+		{AD1B17E7-6268-4E46-8354-B191EEF71234}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AD1B17E7-6268-4E46-8354-B191EEF71234}.Debug|Win32.Build.0 = Debug|Win32
+		{AD1B17E7-6268-4E46-8354-B191EEF71234}.Debug|x64.ActiveCfg = Debug|x64
+		{AD1B17E7-6268-4E46-8354-B191EEF71234}.Debug|x64.Build.0 = Debug|x64
+		{AD1B17E7-6268-4E46-8354-B191EEF71234}.Release|Win32.ActiveCfg = Release|Win32
+		{AD1B17E7-6268-4E46-8354-B191EEF71234}.Release|Win32.Build.0 = Release|Win32
+		{AD1B17E7-6268-4E46-8354-B191EEF71234}.Release|x64.ActiveCfg = Release|x64
+		{AD1B17E7-6268-4E46-8354-B191EEF71234}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
