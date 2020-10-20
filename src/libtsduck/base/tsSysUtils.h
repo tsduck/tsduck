@@ -80,6 +80,12 @@
 //!
 #define TS_PLUGINS_PATH u"TSPLUGINS_PATH"
 
+//!
+//! Default separator in CSV (comma-separated values) format.
+//! CSV files are suitable for analysis using tools such as Microsoft Excel.
+//!
+#define TS_DEFAULT_CSV_SEPARATOR u","
+
 namespace ts {
 
     //!

@@ -43,8 +43,6 @@
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
-#define DEFAULT_SEPARATOR u";"
-
 
 //----------------------------------------------------------------------------
 // Plugin definition
@@ -252,8 +250,8 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
          u"which are synchronized with the specified --pid options.");
 
     option(u"separator", 's', STRING);
-    help(u"separator", "string"
-         u"Field separator string in CSV output (default: '" DEFAULT_SEPARATOR u"').");
+    help(u"separator", u"string",
+         u"Field separator string in CSV output (default: '" TS_DEFAULT_CSV_SEPARATOR u"').");
 }
 
 
@@ -304,7 +302,7 @@ bool ts::PCRExtractPlugin::getOptions()
     // Get command line options.
     getIntValues(_pids, u"pid", true);
     _all_pids = !present(u"pid");
-    _separator = value(u"separator", DEFAULT_SEPARATOR);
+    _separator = value(u"separator", TS_DEFAULT_CSV_SEPARATOR);
     _noheader = present(u"noheader");
     _output_name = value(u"output-file");
     _scte35 = present(u"scte35");

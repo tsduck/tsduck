@@ -89,7 +89,7 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
     _multiple_output(false),
     _analyzer_options(),
     _output_stream(),
-    _output(),
+    _output(nullptr),
     _metrics(),
     _next_report(0),
     _analyzer(duck)
@@ -100,10 +100,10 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
     _analyzer_options.defineArgs(*this);
 
     option(u"interval", 'i', POSITIVE);
-    help(u"interval",
+    help(u"interval", u"seconds",
          u"Produce a new output file at regular intervals. "
          u"The interval value is in seconds. "
-         u"After outputing a file, the analysis context is reset, "
+         u"After outputting a file, the analysis context is reset, "
          u"ie. each output file contains a fully independent analysis.");
 
     option(u"multiple-files", 'm');
