@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2037
+VERSION 3.24-2038
 
 [NEW] New commands and plugins:
 
@@ -27,7 +27,7 @@ VERSION 3.24-2037
     - Option --json in "tscmp" an "tsdektec".
     - Options --json and --deterministic in "tsanalyze" and plugin "analyze".
     - Option --save-pes in plugin "pes".
-    - Options --bitrate, --force-threshold, --incremental-pcr-restamp,
+    - Options --bitrate, --acceleration-threshold, --incremental-pcr-restamp,
       --no-smoothing, --pcr-reset-backwards in plugin "merge".
 
 [BUG] Bug fixes:

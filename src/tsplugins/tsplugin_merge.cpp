@@ -37,6 +37,7 @@
 #include "tsSignalizationDemux.h"
 #include "tsTSForkPipe.h"
 #include "tsTSPacketQueue.h"
+#include "tsPacketInsertionController.h"
 #include "tsPSIMerger.h"
 #include "tsSafePtr.h"
 #include "tsThread.h"
@@ -80,7 +81,7 @@ namespace ts {
         UString        _command;             // Command which generates the main stream.
         TSPacketFormat _format;              // Packet format on the pipe
         size_t         _max_queue;           // Maximum number of queued packets.
-        size_t         _force_threshold;     // Queue threshold after which insertion is forced.
+        size_t         _accel_threshold;     // Queue threshold after which insertion is accelerated.
         bool           _no_wait;             // Do not wait for command completion.
         bool           _merge_psi;           // Merge PSI/SI information.
         bool           _pcr_restamp;         // Restamp PCR from the merged stream.
@@ -96,8 +97,9 @@ namespace ts {
 
         // Working data.
         bool          _got_eof;            // Got end of merged stream.
-        BitRate       _merge_bitrate;      // User-specified bitrate of the merged stream.
-        PacketCounter _merged_count;       // Insertion point of last merged packet.
+        PacketCounter _merged_count;       // Number of merged packets.
+        PacketCounter _hold_count;         // Number of times we didn't try to merge to perform smoothing insertion.
+        PacketCounter _empty_count;        // Number of times we could merge but there was no packet to merge.
         TSForkPipe    _pipe;               // Executed command.
         TSPacketQueue _queue;              // TS packet queur from merge to main.
         PIDSet        _main_pids;          // Set of detected PID's in main stream.
@@ -105,6 +107,7 @@ namespace ts {
         MergedPIDContextMap _merged_ctx;   // Description of PID's from the merged stream.
         SignalizationDemux  _merged_demux; // Analyze the signalization in the merged stream.
         PSIMerger           _psi_merger;   // Used to merge PSI/SI from both streams.
+        PacketInsertionController _insert_control;  // Used to control insertion points for the merge
 
         // Process a --drop or --pass option.
         bool processDropPassOption(const UChar* option, bool allowed);
@@ -162,7 +165,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _command(),
     _format(TSPacketFormat::AUTODETECT),
     _max_queue(DEFAULT_MAX_QUEUED_PACKETS),
-    _force_threshold(_max_queue / 2),
+    _accel_threshold(_max_queue / 2),
     _no_wait(false),
     _merge_psi(false),
     _pcr_restamp(false),
@@ -176,19 +179,33 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _setLabels(),
     _resetLabels(),
     _got_eof(false),
-    _merge_bitrate(0),
     _merged_count(0),
+    _hold_count(0),
+    _empty_count(0),
     _pipe(),
     _queue(),
     _main_pids(),
     _merge_pids(),
     _merged_ctx(),
     _merged_demux(duck, this),
-    _psi_merger(duck, PSIMerger::NONE, *tsp)
+    _psi_merger(duck, PSIMerger::NONE, *tsp),
+    _insert_control(*tsp)
 {
+    _insert_control.setMainStreamName(u"main stream");
+    _insert_control.setSubStreamName(u"merged stream");
+
     option(u"", 0, STRING, 1, 1);
     help(u"",
          u"Specifies the command line to execute in the created process.");
+
+    option(u"acceleration-threshold", 0, UNSIGNED);
+    help(u"acceleration-threshold",
+         u"When the insertion of the merged stream is smoothened, packets are inserted "
+         u"in the main stream at some regular interval, leaving additional packets in "
+         u"the queue until their natural insertion point. However, to avoid losing packets, "
+         u"if the number of packets in the queue is above the specified threshold, "
+         u"the insertion is accelerated. When set to zero, insertion is never accelerated. "
+         u"The default threshold is half the size of the packet queue.");
 
     option(u"bitrate", 'b', POSITIVE);
     help(u"bitrate",
@@ -203,15 +220,6 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"default, the PID's 0x00 to 0x1F are dropped and all other PID's are "
          u"passed. This can be modified using options --drop and --pass. Several "
          u"options --drop can be specified.");
-
-    option(u"force-threshold", 0, UNSIGNED);
-    help(u"force-threshold",
-         u"When the insertion of the merged stream is smoothened, packets are inserted "
-         u"in the main stream at some regular interval, leaving additional packets in "
-         u"the queue until their natural insertion point. However, to avoid losing packets, "
-         u"if the number of packets in the queue is above the specified threshold, "
-         u"the insertion is forced. When set to zero, insertion is never forced. "
-         u"The default threshold is half the size of the packet queue.");
 
     option(u"format", 0, TSPacketFormatEnum);
     help(u"format", u"name",
@@ -328,7 +336,7 @@ bool ts::MergePlugin::getOptions()
     _no_wait = present(u"no-wait");
     const bool transparent = present(u"transparent");
     _max_queue = intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS);
-    _force_threshold = intValue<size_t>(u"force-threshold", _max_queue / 2);
+    _accel_threshold = intValue<size_t>(u"acceleration-threshold", _max_queue / 2);
     _format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::AUTODETECT);
     _merge_psi = !transparent && !present(u"no-psi-merge");
     _pcr_restamp = !present(u"no-pcr-restamp");
@@ -428,12 +436,17 @@ bool ts::MergePlugin::start()
     _merged_demux.reset();
     _merged_demux.addTableId(TID_PMT);
 
+    // Configure insertion control when somothing insertion.
+    _insert_control.reset();
+    _insert_control.setMainBitRate(tsp->bitrate());
+    _insert_control.setSubBitRate(_user_bitrate); // zero if unspecified
+    _insert_control.setWaitPacketsAlertThreshold(_accel_threshold);
+
     // Other states.
     _main_pids.reset();
     _merge_pids.reset();
     _merged_ctx.clear();
-    _merge_bitrate = _user_bitrate; // zero if unspecified
-    _merged_count = 0;
+    _merged_count = _hold_count = _empty_count = 0;
     _got_eof = false;
 
     // Create pipe & process.
@@ -464,6 +477,10 @@ bool ts::MergePlugin::start()
 
 bool ts::MergePlugin::stop()
 {
+    // Debug smoothing counters.
+    tsp->debug(u"stopping, last merge bitrate: %'d, merged: %'d, hold: %'d, empty: %'d",
+               {_insert_control.currentSubBitRate(), _merged_count, _hold_count, _empty_count});
+
     // Send the stop condition to the internal packet queue.
     _queue.stop();
 
@@ -549,6 +566,9 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processPacket(TSPacket& pkt, TSPack
         }
     }
 
+    // Declare that one packet passed in the main stream.
+    _insert_control.declareMainPackets(1);
+
     // Stuffing packets are potential candidate for replacement from merged stream.
     return pid == PID_NULL ? processMergePacket(pkt, pkt_data): TSP_OK;
 }
@@ -562,22 +582,20 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
 {
     const PacketCounter current_pkt = tsp->pluginPackets();
     const BitRate main_bitrate = tsp->bitrate();
+    _insert_control.setMainBitRate(main_bitrate);
 
     // In case of packet insertion smoothing, check if we need to insert packets here.
-    if (_merge_smoothing &&
-        _merge_bitrate > 0 &&
-        main_bitrate > 0 &&
-        main_bitrate * _merged_count > _merge_bitrate * current_pkt &&
-        (_force_threshold == 0 || _queue.currentSize() < _force_threshold))
-    {
+    if (_merge_smoothing && !_insert_control.mustInsert(_queue.currentSize())) {
         // Don't insert now, would burst over target merged bitrate.
+        _hold_count++;
         return TSP_NULL;
     }
 
     // Replace current null packet in main stream with next packet from merged stream.
-    BitRate mbitrate = 0;
-    if (!_queue.getPacket(pkt, mbitrate)) {
+    BitRate merged_bitrate = 0;
+    if (!_queue.getPacket(pkt, merged_bitrate)) {
         // No packet available, keep original null packet.
+        _empty_count++;
         if (!_got_eof && _queue.eof()) {
             // Report end of input stream once.
             _got_eof = true;
@@ -595,13 +613,11 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
     }
 
     // Report merged bitrate change.
-    if (mbitrate != _merge_bitrate) {
-        tsp->verbose(u"merged stream bitrate is now %'d b/s", {mbitrate});
-        _merge_bitrate = mbitrate;
-    }
+    _insert_control.setSubBitRate(merged_bitrate);
 
-    // Count merged packets. Must be done here, before dropping unused PID's, because it
-    // is used in computation involving the bitrate of the complete merged stream.
+    // Declare that one packet was merged. Must be done here, before dropping unused PID's,
+    // because it is used in computation involving the bitrate of the complete merged stream.
+    _insert_control.declareSubPackets(1);
     _merged_count++;
 
     // Collect and merge PSI/SI when needed.
@@ -720,8 +736,9 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
                 pkt.setPCR(ctx->last_pcr);
                 // In debug mode, report the displacement of the PCR.
                 // This may go back and forth around zero but should never diverge (--pcr-reset-backwards case).
+                // Report it at debug level 2 only since it occurs on almost all merged packets with PCR.
                 const SubSecond moved = SubSecond(ctx->last_pcr) - SubSecond(pcr);
-                tsp->debug(u"adjusted PCR by %+'d (%+'d ms) in PID 0x%X (%<d)", {moved, (moved * MilliSecPerSec) / SYSTEM_CLOCK_FREQ, pid});
+                tsp->log(2, u"adjusted PCR by %+'d (%+'d ms) in PID 0x%X (%<d)", {moved, (moved * MilliSecPerSec) / SYSTEM_CLOCK_FREQ, pid});
             }
         }
     }

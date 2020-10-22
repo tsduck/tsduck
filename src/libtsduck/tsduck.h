@@ -401,6 +401,7 @@
 #include "tsOutputRedirector.h"
 #include "tsPacketDecapsulation.h"
 #include "tsPacketEncapsulation.h"
+#include "tsPacketInsertionController.h"
 #include "tsPacketizer.h"
 #include "tsPagerArgs.h"
 #include "tsParentalRatingDescriptor.h"
