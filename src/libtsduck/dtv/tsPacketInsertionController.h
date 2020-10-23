@@ -54,7 +54,7 @@ namespace ts {
     public:
         //!
         //! Constructor.
-        //! @param [in] Report Where to report verbose and debug messages.
+        //! @param [in] report Where to report verbose and debug messages.
         //!
         PacketInsertionController(Report& report = NULLREP);
 
