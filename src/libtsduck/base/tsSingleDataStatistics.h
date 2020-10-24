@@ -48,7 +48,6 @@ namespace ts {
     template <typename NUMBER, typename DEFAULT_FLOAT = double>
     class SingleDataStatistics
     {
-        TS_NOCOPY(SingleDataStatistics);
     public:
         //!
         //! The signed type for @a NUMBER.
