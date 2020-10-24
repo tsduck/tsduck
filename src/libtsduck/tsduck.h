@@ -501,6 +501,7 @@
 #include "tsSimpleApplicationBoundaryDescriptor.h"
 #include "tsSimpleApplicationLocationDescriptor.h"
 #include "tsSimulCryptDate.h"
+#include "tsSingleDataStatistics.h"
 #include "tsSingletonManager.h"
 #include "tsSIParameterDescriptor.h"
 #include "tsSIPrimeTSDescriptor.h"
