@@ -36,31 +36,24 @@
 #pragma once
 #include "tsPlatform.h"
 
-namespace ts
-{
+namespace ts {
+    //
+    // Implementation tools for underlying_type.
+    //
     //! @cond nodoxygen
-    // The meta-type "underlying_type_impl" is the basis for underlying_type.
-    // The default definition, when ISENUM is false is T and applies to integer types.
-    template<bool ISENUM, typename T>
-    struct underlying_type_impl {
-        typedef T type;
-    };
-
-    // The following specialized definition applies to enum types.
-    template<typename T>
-    struct underlying_type_impl<true,T> {
-        typedef typename std::underlying_type<T>::type type;
-    };
+    template<bool ISENUM, typename T> struct underlying_type_1 { typedef T type; };
+    template<typename T> struct underlying_type_1<true, T> { typedef typename std::underlying_type<T>::type type; };
     //! @endcond
 
     //!
     //! The meta-type ts::underlying_type is a generalization of std::underlying_type which works on integer types as well.
     //! The underlying type of an integer type is the type itself.
+    //! @tparam T An integral or enumeration type.
     //!
     template<typename T>
     struct underlying_type {
         //! The underlying integer type.
-        typedef typename underlying_type_impl<std::is_enum<T>::value, T>::type type;
+        typedef typename underlying_type_1<std::is_enum<T>::value, T>::type type;
     };
 
     //!

@@ -37,6 +37,30 @@
 #include "tsUString.h"
 
 namespace ts {
+    //
+    // Implementation tools for make_signed.
+    //
+    //! @cond nodoxygen
+    template<typename T, size_t SIZE, bool ISSIGNED> struct make_signed_impl { typedef T type; };
+    template<> struct make_signed_impl<bool, 1, false> { typedef int8_t type; };
+    template<typename T> struct make_signed_impl<T, 1, false> { typedef int16_t type; };
+    template<typename T> struct make_signed_impl<T, 2, false> { typedef int32_t type; };
+    template<typename T> struct make_signed_impl<T, 4, false> { typedef int64_t type; };
+    template<typename T> struct make_signed_impl<T, 8, false> { typedef int64_t type; };
+    //! @endcond
+
+    //!
+    //! The meta-type ts::make_signed is a generalization of std::make_signed which works on floating point-types as well.
+    //! The signed type of a floating-point type or a signed integer type is the type itself.
+    //! The signed type of an unsigned integer type is the signed type with the immediately larger size.
+    //! @tparam T An integral or floating-point type.
+    //!
+    template<typename T>
+    struct make_signed {
+        //! The equivalent signed type.
+        typedef typename make_signed_impl<T, sizeof(T), std::is_signed<T>::value>::type type;
+    };
+
     //!
     //! Perform a bounded addition without overflow.
     //! @tparam INT An integer type, any size, signed or unsigned.
@@ -49,8 +73,10 @@ namespace ts {
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
     INT BoundedAdd(INT a, INT b); // unsigned version
 
+    //! @cond nodoxygen
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
     INT BoundedAdd(INT a, INT b); // signed version
+    //! @endcond
 
     //!
     //! Perform a bounded subtraction without overflow.
@@ -64,8 +90,10 @@ namespace ts {
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
     INT BoundedSub(INT a, INT b); // unsigned version
 
+    //! @cond nodoxygen
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
     INT BoundedSub(INT a, INT b); // signed version
+    //! @endcond
 
     //!
     //! Round @a x down to previous multiple of a factor @a f.
@@ -77,8 +105,10 @@ namespace ts {
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
     INT RoundDown(INT x, INT f); // unsigned version
 
+    //! @cond nodoxygen
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
     INT RoundDown(INT x, INT f); // signed version
+    //! @endcond
 
     //!
     //! Round @a x up to next multiple of a factor @a f.
@@ -90,8 +120,10 @@ namespace ts {
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
     INT RoundUp(INT x, INT f); // unsigned version
 
+    //! @cond nodoxygen
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
     INT RoundUp(INT x, INT f); // signed version
+    //! @endcond
 
     //!
     //! Perform a sign extension on any subset of a signed integer.

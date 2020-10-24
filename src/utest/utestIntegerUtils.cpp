@@ -48,6 +48,7 @@ public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
+    void testMakeSigned();
     void testBoundedAdd();
     void testBoundedSub();
     void testRoundDown();
@@ -57,6 +58,7 @@ public:
     void testPower10();
 
     TSUNIT_TEST_BEGIN(IntegerUtilsTest);
+    TSUNIT_TEST(testMakeSigned);
     TSUNIT_TEST(testBoundedAdd);
     TSUNIT_TEST(testBoundedSub);
     TSUNIT_TEST(testRoundDown);
@@ -88,6 +90,39 @@ void IntegerUtilsTest::afterTest()
 //----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
+
+void IntegerUtilsTest::testMakeSigned()
+{
+    TSUNIT_ASSERT(std::is_unsigned<bool>::value);
+    TSUNIT_ASSERT(std::is_signed<ts::make_signed<bool>::type>::value);
+    TSUNIT_ASSERT(std::is_signed<ts::make_signed<char>::type>::value);
+    TSUNIT_ASSERT(std::is_signed<ts::make_signed<unsigned char>::type>::value);
+    TSUNIT_ASSERT(std::is_signed<ts::make_signed<int8_t>::type>::value);
+    TSUNIT_ASSERT(std::is_signed<ts::make_signed<uint8_t>::type>::value);
+    TSUNIT_ASSERT(std::is_signed<ts::make_signed<int16_t>::type>::value);
+    TSUNIT_ASSERT(std::is_signed<ts::make_signed<uint16_t>::type>::value);
+    TSUNIT_ASSERT(std::is_signed<ts::make_signed<int32_t>::type>::value);
+    TSUNIT_ASSERT(std::is_signed<ts::make_signed<uint32_t>::type>::value);
+    TSUNIT_ASSERT(std::is_signed<ts::make_signed<int64_t>::type>::value);
+    TSUNIT_ASSERT(std::is_signed<ts::make_signed<uint64_t>::type>::value);
+
+    TSUNIT_EQUAL(1, sizeof(ts::make_signed<bool>::type));
+    TSUNIT_EQUAL(1, sizeof(ts::make_signed<char>::type));
+    TSUNIT_EQUAL(2, sizeof(ts::make_signed<unsigned char>::type));
+    TSUNIT_EQUAL(1, sizeof(ts::make_signed<int8_t>::type));
+    TSUNIT_EQUAL(2, sizeof(ts::make_signed<uint8_t>::type));
+    TSUNIT_EQUAL(2, sizeof(ts::make_signed<int16_t>::type));
+    TSUNIT_EQUAL(4, sizeof(ts::make_signed<uint16_t>::type));
+    TSUNIT_EQUAL(4, sizeof(ts::make_signed<int32_t>::type));
+    TSUNIT_EQUAL(8, sizeof(ts::make_signed<uint32_t>::type));
+    TSUNIT_EQUAL(8, sizeof(ts::make_signed<int64_t>::type));
+    TSUNIT_EQUAL(8, sizeof(ts::make_signed<uint64_t>::type));
+
+    TSUNIT_ASSERT(std::is_floating_point<ts::make_signed<float>::type>::value);
+    TSUNIT_ASSERT(std::is_floating_point<ts::make_signed<double>::type>::value);
+    TSUNIT_EQUAL(sizeof(float), sizeof(ts::make_signed<float>::type));
+    TSUNIT_EQUAL(sizeof(double), sizeof(ts::make_signed<double>::type));
+}
 
 void IntegerUtilsTest::testBoundedAdd()
 {

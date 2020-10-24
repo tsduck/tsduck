@@ -30,13 +30,11 @@
 //  Transport stream processor shared library:
 //  Report various statistics on PID's and labels.
 //
-//  References:
-//  [1] https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-//
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
 #include "tsTSSpeedMetrics.h"
+#include "tsSingleDataStatistics.h"
 #include "tsSafePtr.h"
 #include "tsFatal.h"
 #include <cmath>
@@ -99,22 +97,13 @@ namespace ts {
         public:
             uint64_t total_pkt;      // Total number of packets in that category.
             uint64_t last_ts_index;  // Index in TS of last packet of the category.
-            uint64_t ipkt_min;       // Minimum inter-packet distance.
-            uint64_t ipkt_max;       // Maximum inter-packet distance.
-            int64_t  ipkt_var_k;     // Inter-packet distance variance: K constant (see [1])
-            int64_t  ipkt_var_ex;    // Inter-packet distance variance: Ex accumulation (see [1])
-            int64_t  ipkt_var_ex2;   // Inter-packet distance variance: Ex2 accumulation (see [1])
+            SingleDataStatistics<uint64_t> ipkt; // Inter-packet distance statistics.
 
             // Constructor.
             Context();
 
             // Add packet data to the context.
             void addPacketData(PacketCounter, const TSPacket&);
-
-            // Inter-packet distance data.
-            double interPacketMean() const;
-            double interPacketVariance() const;
-            double interPacketStandardDeviation() const;
         };
     };
 }
@@ -337,24 +326,22 @@ bool ts::StatsPlugin::produceReport()
         // PID context.
         const size_t index = it->first;
         const Context& ctx(*(it->second));
-        const double mean = ctx.interPacketMean();
-        const double deviation = ctx.interPacketStandardDeviation();
 
         if (_log) {
-            tsp->info(u"%s: 0x%X  Total: %8'd  IPD min: %3d  max: %5d  mean: %7.2f  std-dev: %7.2f",
-                      {name, index, ctx.total_pkt, ctx.ipkt_min, ctx.ipkt_max, mean, deviation});
+            tsp->info(u"%s: 0x%X  Total: %8'd  IPD min: %3d  max: %5d  mean: %s  std-dev: %s",
+                      {name, index, ctx.total_pkt, ctx.ipkt.minimum(), ctx.ipkt.maximum(), ctx.ipkt.meanString(7), ctx.ipkt.standardDeviationString(7)});
         }
         else if (_csv) {
             out << index << _csv_separator
                 << ctx.total_pkt << _csv_separator
-                << ctx.ipkt_min << _csv_separator
-                << ctx.ipkt_max << _csv_separator
-                << UString::Format(u"%.2f", {mean}) << _csv_separator
-                << UString::Format(u"%.2f", {deviation}) << std::endl;
+                << ctx.ipkt.minimum() << _csv_separator
+                << ctx.ipkt.maximum() << _csv_separator
+                << ctx.ipkt.meanString() << _csv_separator
+                << ctx.ipkt.standardDeviationString() << std::endl;
         }
         else {
             out << UString::Format(_track_pids ? u"0x%04X" : u"%-6d", {index})
-                << UString::Format(u"  %10'd  %6d  %6d  %8.2f  %8.2f", {ctx.total_pkt, ctx.ipkt_min, ctx.ipkt_max, mean, deviation})
+                << UString::Format(u"  %10'd  %6d  %6d  %s  %s", {ctx.total_pkt, ctx.ipkt.minimum(), ctx.ipkt.maximum(), ctx.ipkt.meanString(8), ctx.ipkt.standardDeviationString(8)})
                 << std::endl;
         }
     }
@@ -442,11 +429,7 @@ ts::StatsPlugin::ContextPtr ts::StatsPlugin::getContext(size_t index)
 ts::StatsPlugin::Context::Context() :
     total_pkt(0),
     last_ts_index(0),
-    ipkt_min(0),
-    ipkt_max(0),
-    ipkt_var_k(0),
-    ipkt_var_ex(0),
-    ipkt_var_ex2(0)
+    ipkt()
 {
 }
 
@@ -459,46 +442,10 @@ void ts::StatsPlugin::Context::addPacketData(PacketCounter ts_index, const TSPac
 {
     // Accumulate inter-packet statistics, starting at the second packet.
     if (total_pkt > 0) {
-        assert(last_ts_index < ts_index);
-        const uint64_t ipkt = ts_index - last_ts_index;
-        if (total_pkt == 1) {
-            // First inter-packet distance.
-            ipkt_min = ipkt_max = ipkt;
-            ipkt_var_k = int64_t(ipkt);
-            ipkt_var_ex = ipkt_var_ex2 = 0;
-        }
-        else {
-            ipkt_min = std::min(ipkt, ipkt_min);
-            ipkt_max = std::max(ipkt, ipkt_max);
-        }
-        const int64_t diff = int64_t(ipkt) - ipkt_var_k;
-        ipkt_var_ex += diff;
-        ipkt_var_ex2 += diff * diff;
+        ipkt.feed(ts_index - last_ts_index);
     }
 
     // Global packet statistics.
     total_pkt++;
     last_ts_index = ts_index;
-}
-
-
-//----------------------------------------------------------------------------
-// Inter-packet distance data.
-// Important: the number of inter-packet distances is total_pkt-1.
-//----------------------------------------------------------------------------
-
-double ts::StatsPlugin::Context::interPacketMean() const
-{
-    return total_pkt < 2 ? 0.0 : double(ipkt_var_k) + double(ipkt_var_ex) / double(total_pkt - 1);
-}
-
-double ts::StatsPlugin::Context::interPacketVariance() const
-{
-    // See reference [1] in file header.
-    return total_pkt < 3 ? 0.0 : (double(ipkt_var_ex2) - double(ipkt_var_ex * ipkt_var_ex) / double(total_pkt - 1)) / double(total_pkt - 2);
-}
-
-double ts::StatsPlugin::Context::interPacketStandardDeviation() const
-{
-    return std::sqrt(interPacketVariance());
 }
