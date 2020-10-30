@@ -154,12 +154,20 @@ elif [[ -f /etc/fedora-release ]]; then
 elif [[ -f /etc/redhat-release ]]; then
 
     # Red Hat or CentOS
+    EL=$(grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\.[0-9]*\).*$/\1/')
+    EL=$(( ${EL/.*/} * 100 + ${EL/*./} ))
     pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz pcsc-lite pcsc-lite-devel libcurl libcurl-devel rpmdevtools python3"
     if $STATIC; then
         pkglist="$pkglist glibc-static libstdc++-static"
     fi
     if $M32; then
         pkglist="$pkglist glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 libcurl-devel.i686"
+    fi
+    if [[ $EL -ge 802 ]]; then
+        pkglist="$pkglist srt-devel"
+        if $M32; then
+            pkglist="$pkglist srt-devel.i686"
+        fi
     fi
     sudo yum -y install $pkglist
 
