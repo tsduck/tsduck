@@ -28,44 +28,42 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Description of a media playlist inside an HLS master playlist.
+//!  Description of a media "element" inside an HLS playlist.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tshlsMediaElement.h"
-#include "tsMPEG.h"
+#include "tshls.h"
+#include "tsURL.h"
+#include "tsStringifyInterface.h"
 
 namespace ts {
     namespace hls {
         //!
-        //! Description of a media playlist inside an HLS master playlist.
+        //! Description of a media "element" (sub-playlist or segment) inside an HLS playlist.
         //! @ingroup hls
         //!
-        class TSDUCKDLL MediaPlayList: public MediaElement
+        class TSDUCKDLL MediaElement: public StringifyInterface
         {
         public:
             //!
             //! Constructor.
             //!
-            MediaPlayList();
+            MediaElement();
+
+            //!
+            //! Get the URL string to use.
+            //! @return The URL string to use.
+            //!
+            UString urlString() const;
 
             // Implementation of StringifyInterface
             virtual UString toString() const override;
 
             // Public fields.
-            BitRate     bandwidth;        //!< Peak bandwidth.
-            BitRate     averageBandwidth; //!< Average bandwidth.
-            size_t      width;            //!< Resolution width in pixels.
-            size_t      height;           //!< Resolution height in pixels.
-            size_t      frameRate;        //!< Frame rate in milli-fps.
-            UString     codecs;           //!< List of codecs.
-            UString     hdcp;             //!< HDCP level.
-            UString     videoRange;       //!< Video range description.
-            UString     video;            //!< Video description.
-            UString     audio;            //!< Audio description.
-            UString     subtitles;        //!< Subtitles description.
-            UString     closedCaptions;   //!< Closed-captions description.
+            UString relativeURI;  //!< Relative URI, verbatime from playlist.
+            UString filePath;     //!< Full file path.
+            URL     url;          //!< Full URL, invalid if accessed by file path only.
         };
     }
 }

@@ -297,7 +297,7 @@ bool ts::hls::InputPlugin::start()
             }
             assert(index < master.playListCount());
             tsp->verbose(u"selected playlist: %s", {master.playList(index)});
-            const UString nextURL(master.buildURL(master.playList(index).uri));
+            const UString nextURL(master.playList(index).urlString());
 
             // Download selected media playlist.
             _playlist.clear();
@@ -353,7 +353,7 @@ bool ts::hls::InputPlugin::start()
     // If the start point is not the first segment, then drop unused initial segments.
     while (_playlist.segmentCount() > segCount) {
         _playlist.popFirstSegment();
-        tsp->debug(u"dropping initial segment");
+        tsp->debug(u"dropped initial segment, %d remaining segments", {_playlist.segmentCount()});
     }
 
     // Invoke superclass.
@@ -398,15 +398,14 @@ void ts::hls::InputPlugin::processInput()
 
         // Create a Web request to download the content.
         WebRequest request(*tsp);
-        const UString url(_playlist.buildURL(seg.uri));
-        request.setURL(url);
+        request.setURL(seg.urlString());
         request.setAutoRedirect(true);
         request.setArgs(_webArgs);
         request.enableCookies(_webArgs.cookiesFile);
 
         // Perform the download of the current segment.
         // Ignore errors, continue to play next segments.
-        tsp->debug(u"downloading segment %s", {url});
+        tsp->debug(u"downloading segment %s", {seg.urlString()});
         request.downloadToApplication(this);
 
         // If there is only one or zero remaining segment, try to reload the playlist.

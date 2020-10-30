@@ -36,7 +36,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::hls::MediaPlayList::MediaPlayList() :
-    uri(),
+    MediaElement(),
     bandwidth(0),
     averageBandwidth(0),
     width(0),
@@ -59,11 +59,8 @@ ts::hls::MediaPlayList::MediaPlayList() :
 
 ts::UString ts::hls::MediaPlayList::toString() const
 {
-    UString str(uri);
+    UString str(MediaElement::toString());
 
-    if (str.empty()) {
-        str.assign(u"unknown URI");
-    }
     if (width > 0 || height > 0) {
         str += UString::Format(u", %dx%d", {width, height});
     }

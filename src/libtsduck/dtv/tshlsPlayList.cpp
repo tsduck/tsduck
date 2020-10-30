@@ -107,19 +107,23 @@ void ts::hls::PlayList::reset(ts::hls::PlayListType type, const ts::UString &fil
 // Build an URL for a media segment or sub playlist.
 //----------------------------------------------------------------------------
 
-ts::UString ts::hls::PlayList::buildURL(const ts::UString& uri) const
+void ts::hls::PlayList::buildURL(MediaElement& media, const UString& uri) const
 {
+    media.relativeURI = uri;
+    media.url.clear();
+
     if (_isURL) {
         // Build a full URL, based on original URL.
-        return URL(uri, _url).toString();
+        media.url.setURL(uri, _url);
+        media.filePath = media.url.getPath();
     }
     else if (uri.startWith(u"/")) {
         // The original URI was a file and the segment is an absolute file name.
-        return uri;
+        media.filePath = uri;
     }
     else {
         // The original URI was a file and the segment is a relative file name.
-        return _fileBase + uri;
+        media.filePath = _fileBase + uri;
     }
 }
 
@@ -222,7 +226,7 @@ void ts::hls::PlayList::deletePlayList(size_t index)
 
 bool ts::hls::PlayList::addSegment(const ts::hls::MediaSegment& seg, ts::Report& report)
 {
-    if (seg.uri.empty()) {
+    if (seg.relativeURI.empty()) {
         report.error(u"empty media segment URI");
         return false;
     }
@@ -232,7 +236,7 @@ bool ts::hls::PlayList::addSegment(const ts::hls::MediaSegment& seg, ts::Report&
         // Build a relative URI.
         if (!_isURL && !_original.empty()) {
             // The playlist's URI is a file name, update the segment's URI.
-            _segments.back().uri = RelativeFilePath(seg.uri, _fileBase, FileSystemCaseSensitivity, true);
+            _segments.back().relativeURI = RelativeFilePath(seg.relativeURI, _fileBase, FileSystemCaseSensitivity, true);
         }
         return true;
     }
@@ -244,7 +248,7 @@ bool ts::hls::PlayList::addSegment(const ts::hls::MediaSegment& seg, ts::Report&
 
 bool ts::hls::PlayList::addPlayList(const ts::hls::MediaPlayList& pl, ts::Report& report)
 {
-    if (pl.uri.empty()) {
+    if (pl.relativeURI.empty()) {
         report.error(u"empty media playlist URI");
         return false;
     }
@@ -254,7 +258,7 @@ bool ts::hls::PlayList::addPlayList(const ts::hls::MediaPlayList& pl, ts::Report
         // Build a relative URI.
         if (!_isURL && !_original.empty()) {
             // The master playlist's URI is a file name, update the media playlist's URI.
-            _playlists.back().uri = RelativeFilePath(pl.uri, _fileBase, FileSystemCaseSensitivity, true);
+            _playlists.back().relativeURI = RelativeFilePath(pl.relativeURI, _fileBase, FileSystemCaseSensitivity, true);
         }
         return true;
     }
@@ -585,16 +589,22 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
             switch (_type) {
                 case MASTER_PLAYLIST:
                     // Enqueue a new playlist description.
-                    plNext.uri = line;
+                    buildURL(plNext, line);
                     _playlists.push_back(plNext);
+                    if (!plNext.filePath.endWith(u".m3u8", CASE_INSENSITIVE)) {
+                        report.debug(u"unexpected playlist file extension in reference URI: %s", {line});
+                    }
                     // Reset description of next playlist.
                     plNext = plGlobal;
                     break;
                 case MEDIA_PLAYLIST:
                     // Enqueue a new media segment.
-                    segNext.uri = line;
+                    buildURL(segNext, line);
                     _utcTermination += segNext.duration;
                     _segments.push_back(segNext);
+                    if (!segNext.filePath.endWith(u".ts", CASE_INSENSITIVE)) {
+                        report.debug(u"unexpected segment file extension in reference URI: %s", {line});
+                    }
                     // Reset description of next segment.
                     segNext = segGlobal;
                     break;
@@ -800,9 +810,6 @@ bool ts::hls::PlayList::isURI(const UString& line, bool strict, Report& report)
         // Reference to a TS file, this is a media playlist.
         setType(MEDIA_PLAYLIST, report);
     }
-    else {
-        report.debug(u"unexpected file extension in reference URI: %s", {line});
-    }
 
     return true;
 }
@@ -946,7 +953,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
         case MASTER_PLAYLIST: {
             // Loop on all media playlists.
             for (auto it = _playlists.begin(); it != _playlists.end(); ++it) {
-                if (!it->uri.empty()) {
+                if (!it->relativeURI.empty()) {
                     // The #EXT-X-STREAM-INF line must exactly preceed the URI line.
                     // Take care about string parameters: some are documented as quoted-string and
                     // some as enumerated-string. The former shall be quoted, the latter shall not.
@@ -991,7 +998,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
                     // Close the #EXT-X-STREAM-INF line.
                     text.append(u'\n');
                     // The URI line must come right after #EXT-X-STREAM-INF.
-                    text.append(UString::Format(u"%s\n", {it->uri}));
+                    text.append(UString::Format(u"%s\n", {it->relativeURI}));
                 }
             }
             break;
@@ -1006,7 +1013,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
 
             // Loop on all media segments.
             for (auto it = _segments.begin(); it != _segments.end(); ++it) {
-                if (!it->uri.empty()) {
+                if (!it->relativeURI.empty()) {
                     text.append(UString::Format(u"#%s:%d.%03d,%s\n", {TagNames.name(EXTINF), it->duration / MilliSecPerSec, it->duration % MilliSecPerSec, it->title}));
                     if (it->bitrate > 1024) {
                         text.append(UString::Format(u"#%s:%d\n", {TagNames.name(BITRATE), it->bitrate / 1024}));
@@ -1014,7 +1021,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
                     if (it->gap) {
                         text.append(UString::Format(u"#%s\n", {TagNames.name(GAP)}));
                     }
-                    text.append(UString::Format(u"%s\n", {it->uri}));
+                    text.append(UString::Format(u"%s\n", {it->relativeURI}));
                 }
             }
 

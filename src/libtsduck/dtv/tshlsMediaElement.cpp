@@ -26,46 +26,38 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Description of a media playlist inside an HLS master playlist.
-//!
+
+#include "tshlsMediaElement.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tshlsMediaElement.h"
-#include "tsMPEG.h"
+ts::hls::MediaElement::MediaElement() :
+    relativeURI(),
+    filePath(),
+    url()
+{
+}
 
-namespace ts {
-    namespace hls {
-        //!
-        //! Description of a media playlist inside an HLS master playlist.
-        //! @ingroup hls
-        //!
-        class TSDUCKDLL MediaPlayList: public MediaElement
-        {
-        public:
-            //!
-            //! Constructor.
-            //!
-            MediaPlayList();
 
-            // Implementation of StringifyInterface
-            virtual UString toString() const override;
+//----------------------------------------------------------------------------
+// Implementation of StringifyInterface
+//----------------------------------------------------------------------------
 
-            // Public fields.
-            BitRate     bandwidth;        //!< Peak bandwidth.
-            BitRate     averageBandwidth; //!< Average bandwidth.
-            size_t      width;            //!< Resolution width in pixels.
-            size_t      height;           //!< Resolution height in pixels.
-            size_t      frameRate;        //!< Frame rate in milli-fps.
-            UString     codecs;           //!< List of codecs.
-            UString     hdcp;             //!< HDCP level.
-            UString     videoRange;       //!< Video range description.
-            UString     video;            //!< Video description.
-            UString     audio;            //!< Audio description.
-            UString     subtitles;        //!< Subtitles description.
-            UString     closedCaptions;   //!< Closed-captions description.
-        };
-    }
+ts::UString ts::hls::MediaElement::toString() const
+{
+    return relativeURI.empty() ? u"unknown URI" : relativeURI;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the URL string to use.
+//----------------------------------------------------------------------------
+
+ts::UString ts::hls::MediaElement::urlString() const
+{
+    return url.isValid() ? url.toString() : filePath;
 }

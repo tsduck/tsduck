@@ -168,11 +168,11 @@ namespace ts {
             UString url() const { return _original; }
 
             //!
-            //! Build an URL for a media segment or sub playlist.
+            //! Build an URL for a media segment or sub-playlist.
+            //! @param [out] media A media element with all fields filled in.
             //! @param [in] uri An URI, typically extracted from the playlist.
-            //! @return The complete URL.
             //!
-            UString buildURL(const UString& uri) const;
+            void buildURL(MediaElement& media, const UString& uri) const;
 
             //!
             //! Get the playlist type.

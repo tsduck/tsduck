@@ -305,7 +305,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
 
         // Declare a new segment.
         hls::MediaSegment seg;
-        seg.uri = segName;
+        _playlist.buildURL(seg, segName);
 
         // Estimate duration and bitrate of the segment. We use PCR's from the
         // segment to compute the average bitrate. Then we compute the duration

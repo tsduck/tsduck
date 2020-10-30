@@ -294,6 +294,7 @@
 #include "tsHierarchyDescriptor.h"
 #include "tshls.h"
 #include "tshlsInputPlugin.h"
+#include "tshlsMediaElement.h"
 #include "tshlsMediaPlayList.h"
 #include "tshlsMediaSegment.h"
 #include "tshlsOutputPlugin.h"
