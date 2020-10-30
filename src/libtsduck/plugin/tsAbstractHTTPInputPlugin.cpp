@@ -29,6 +29,7 @@
 
 #include "tsAbstractHTTPInputPlugin.h"
 #include "tsWebRequest.h"
+#include "tsURL.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -77,9 +78,9 @@ bool ts::AbstractHTTPInputPlugin::handleWebStart(const WebRequest& request, size
     }
 
     // Create the auto-save file when necessary.
-    const UString url(request.finalURL());
-    if (!_autoSaveDir.empty() && !url.empty()) {
-        const UString name(_autoSaveDir + PathSeparator + BaseName(url));
+    UString name(BaseName(URL(request.finalURL()).getPath()));
+    if (!_autoSaveDir.empty() && !name.empty()) {
+        name = _autoSaveDir + PathSeparator + name;
         tsp->verbose(u"saving input TS to %s", {name});
         // Display errors but do not fail, this is just auto save.
         _outSave.open(name, TSFile::WRITE | TSFile::SHARED, *tsp);

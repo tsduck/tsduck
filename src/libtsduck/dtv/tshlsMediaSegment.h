@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tshls.h"
+#include "tshlsMediaElement.h"
 #include "tsMPEG.h"
 
 namespace ts {
@@ -42,7 +42,7 @@ namespace ts {
         //! Description of a media segment in an HLS playlist.
         //! @ingroup hls
         //!
-        class TSDUCKDLL MediaSegment
+        class TSDUCKDLL MediaSegment : public MediaElement
         {
         public:
             //!
@@ -50,8 +50,12 @@ namespace ts {
             //!
             MediaSegment();
 
+            //!
+            //! Destructor.
+            //!
+            ~MediaSegment();
+
             // Public fields.
-            UString     uri;       //!< Relative URI of segment.
             UString     title;     //!< Optional segment title.
             MilliSecond duration;  //!< Segment duration in milliseconds.
             BitRate     bitrate;   //!< Indicative bitrate.

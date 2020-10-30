@@ -109,7 +109,12 @@ void HLSTest::testMasterPlaylist()
     TSUNIT_EQUAL(ts::hls::MASTER_PLAYLIST, pl.type());
     TSUNIT_EQUAL(6, pl.version());
     TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/master.m3u8", pl.url());
-    TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/foo.bar", pl.buildURL(u"foo.bar"));
+    ts::hls::MediaElement media;
+    pl.buildURL(media, u"foo.bar");
+    TSUNIT_EQUAL(u"foo.bar", media.relativeURI);
+    TSUNIT_EQUAL(u"/download/test/hls/img_bipbop_adv_example_ts/foo.bar", media.filePath);
+    TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/foo.bar", media.url.toString());
+    TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/foo.bar", media.urlString());
     TSUNIT_EQUAL(0, pl.segmentCount());
     TSUNIT_EQUAL(24, pl.playListCount());
     TSUNIT_EQUAL(0, pl.targetDuration());
@@ -117,7 +122,7 @@ void HLSTest::testMasterPlaylist()
     TSUNIT_ASSERT(!pl.endList());
     TSUNIT_EQUAL(u"", pl.playlistType());
 
-    TSUNIT_EQUAL(u"v5/prog_index.m3u8", pl.playList(0).uri);
+    TSUNIT_EQUAL(u"v5/prog_index.m3u8", pl.playList(0).relativeURI);
     TSUNIT_EQUAL(2227464, pl.playList(0).bandwidth);
     TSUNIT_EQUAL(2218327, pl.playList(0).averageBandwidth);
     TSUNIT_EQUAL(960, pl.playList(0).width);
@@ -132,7 +137,7 @@ void HLSTest::testMasterPlaylist()
     TSUNIT_EQUAL(u"cc1", pl.playList(0).closedCaptions);
     TSUNIT_EQUAL(u"v5/prog_index.m3u8, 960x540, 2,227,464 b/s, @60 fps", pl.playList(0).toString());
 
-    TSUNIT_EQUAL(u"v2/prog_index.m3u8", pl.playList(23).uri);
+    TSUNIT_EQUAL(u"v2/prog_index.m3u8", pl.playList(23).relativeURI);
     TSUNIT_EQUAL(ts::BitRate(582387), pl.playList(23).bandwidth);
     TSUNIT_EQUAL(ts::BitRate(570616), pl.playList(23).averageBandwidth);
     TSUNIT_EQUAL(480, pl.playList(23).width);
@@ -167,7 +172,9 @@ void HLSTest::testMediaPlaylist()
     TSUNIT_EQUAL(ts::hls::MEDIA_PLAYLIST, pl.type());
     TSUNIT_EQUAL(3, pl.version());
     TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/v5/prog_index.m3u8", pl.url());
-    TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/v5/foo.bar", pl.buildURL(u"foo.bar"));
+    ts::hls::MediaElement media;
+    pl.buildURL(media, u"foo.bar");
+    TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/v5/foo.bar", media.urlString());
     TSUNIT_EQUAL(100, pl.segmentCount());
     TSUNIT_EQUAL(0, pl.playListCount());
     TSUNIT_EQUAL(6, pl.targetDuration());
@@ -175,13 +182,13 @@ void HLSTest::testMediaPlaylist()
     TSUNIT_ASSERT(pl.endList());
     TSUNIT_EQUAL(u"VOD", pl.playlistType());
 
-    TSUNIT_EQUAL(u"fileSequence0.ts", pl.segment(0).uri);
+    TSUNIT_EQUAL(u"fileSequence0.ts", pl.segment(0).relativeURI);
     TSUNIT_EQUAL(u"", pl.segment(0).title);
     TSUNIT_EQUAL(2060 * 1024, pl.segment(0).bitrate);
     TSUNIT_EQUAL(6000, pl.segment(0).duration);
     TSUNIT_ASSERT(!pl.segment(0).gap);
 
-    TSUNIT_EQUAL(u"fileSequence99.ts", pl.segment(99).uri);
+    TSUNIT_EQUAL(u"fileSequence99.ts", pl.segment(99).relativeURI);
     TSUNIT_EQUAL(u"", pl.segment(99).title);
     TSUNIT_EQUAL(2055 * 1024, pl.segment(99).bitrate);
     TSUNIT_EQUAL(6000, pl.segment(99).duration);
@@ -191,7 +198,7 @@ void HLSTest::testMediaPlaylist()
     TSUNIT_ASSERT(pl.popFirstSegment(seg));
     TSUNIT_EQUAL(99, pl.segmentCount());
 
-    TSUNIT_EQUAL(u"fileSequence0.ts", seg.uri);
+    TSUNIT_EQUAL(u"fileSequence0.ts", seg.relativeURI);
     TSUNIT_EQUAL(u"", seg.title);
     TSUNIT_EQUAL(2060 * 1024, seg.bitrate);
     TSUNIT_EQUAL(6000, seg.duration);
@@ -208,7 +215,7 @@ void HLSTest::testBuildMasterPlaylist()
     TSUNIT_EQUAL(3, pl.version());
 
     ts::hls::MediaPlayList mpl1;
-    mpl1.uri = u"/c/test/path/playlists/pl1.m3u8";
+    mpl1.relativeURI = u"/c/test/path/playlists/pl1.m3u8";
     mpl1.bandwidth = 1234567;
     mpl1.averageBandwidth = 1200000;
     mpl1.width = 720;
@@ -225,7 +232,7 @@ void HLSTest::testBuildMasterPlaylist()
     TSUNIT_ASSERT(pl.addPlayList(mpl1));
 
     ts::hls::MediaPlayList mpl2;
-    mpl2.uri = u"/c/test/path/playlists/pl2.m3u8";
+    mpl2.relativeURI = u"/c/test/path/playlists/pl2.m3u8";
     mpl2.bandwidth = 3456789;
     mpl2.averageBandwidth = 3400000;
     mpl2.width = 1920;
@@ -268,14 +275,14 @@ void HLSTest::testBuildMediaPlaylist()
     TSUNIT_ASSERT(pl.setPlaylistType(u"VOD"));
 
     ts::hls::MediaSegment seg1;
-    seg1.uri = u"/c/test/path/segments/seg-0001.ts";
+    seg1.relativeURI = u"/c/test/path/segments/seg-0001.ts";
     seg1.title = u"Segment1";
     seg1.duration = 4920;
     seg1.bitrate = 1234567;
     TSUNIT_ASSERT(pl.addSegment(seg1));
 
     ts::hls::MediaSegment seg2;
-    seg2.uri = u"/c/test/path/segments/seg-0002.ts";
+    seg2.relativeURI = u"/c/test/path/segments/seg-0002.ts";
     seg2.duration = 4971;
     seg2.bitrate = 1654321;
     TSUNIT_ASSERT(pl.addSegment(seg2));
@@ -300,7 +307,7 @@ void HLSTest::testBuildMediaPlaylist()
     TSUNIT_EQUAL(refContent1, pl.textContent());
 
     ts::hls::MediaSegment seg3;
-    seg3.uri = u"/c/test/path/segments/seg-0003.ts";
+    seg3.relativeURI = u"/c/test/path/segments/seg-0003.ts";
     seg3.duration = 4984;
     seg3.bitrate = 1654321;
     TSUNIT_ASSERT(pl.addSegment(seg3));
