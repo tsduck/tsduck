@@ -169,7 +169,12 @@ elif [[ -f /etc/redhat-release ]]; then
             pkglist="$pkglist srt-devel.i686"
         fi
     fi
-    sudo yum -y install $pkglist
+    if [[ $EL -lt 800 ]]; then
+        sudo yum -y install $pkglist
+    else
+        sudo dnf -y config-manager --set-enabled PowerTools
+        sudo dnf -y install $pkglist
+    fi
 
 elif [[ -f /etc/arch-release ]]; then
 

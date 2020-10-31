@@ -93,6 +93,9 @@ tarball:
 	rm -rf $(TMPROOT)
 	mkdir -p $(TMPROOT)/$(TARNAME)
 	tar -C $(ROOTDIR) $(patsubst %,--exclude '%',$(NOSOURCE)) -cpf - . | tar -C $(TMPROOT)/$(TARNAME) -xpf -
+ifdef NOTELETEXT
+	$(SED) -e '/tsTeletextCharset.h/d' -e '/tsTeletextDemux.h/d' -i $(TMPROOT)/$(TARNAME)/src/libtsduck/tsduck.h
+endif
 	$(MAKE) -C $(TMPROOT)/$(TARNAME) distclean
 	tar -C $(TMPROOT) -czf $(TARFILE) -p --owner=0 --group=0 $(TARNAME)
 	rm -rf $(TMPROOT)
