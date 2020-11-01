@@ -49,6 +49,7 @@ namespace ts {
         UString         app_name;         //!< Application name, for help messages.
         bool            monitor;          //!< Run a resource monitoring thread.
         bool            ignore_jt;        //!< Ignore "joint termination" options in plugins.
+        bool            log_plugin_index; //!< Log plugin index with plugin name.
         size_t          ts_buffer_size;   //!< Size in bytes of the global TS packet buffer.
         size_t          max_flush_pkt;    //!< Max processed packets before flush.
         size_t          max_input_pkt;    //!< Max packets per input operation.

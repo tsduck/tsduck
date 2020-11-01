@@ -45,6 +45,10 @@ ts::tsp::OutputExecutor::OutputExecutor(const TSProcessorArgs& options,
     PluginExecutor(options, handlers, PluginType::OUTPUT, pl_options, attributes, global_mutex, report),
     _output(dynamic_cast<OutputPlugin*>(PluginThread::plugin()))
 {
+    if (options.log_plugin_index) {
+        // Make sure that plugins display their index. Output plugin is always last.
+        setLogName(UString::Format(u"%s[%d]", {pluginName(), options.plugins.size() + 1}));
+    }
 }
 
 ts::tsp::OutputExecutor::~OutputExecutor()

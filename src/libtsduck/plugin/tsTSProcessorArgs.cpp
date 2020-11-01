@@ -54,6 +54,7 @@ ts::TSProcessorArgs::TSProcessorArgs() :
     app_name(),
     monitor(false),
     ignore_jt(false),
+    log_plugin_index(false),
     ts_buffer_size(DEFAULT_BUFFER_SIZE),
     max_flush_pkt(0),
     max_input_pkt(0),
@@ -174,6 +175,12 @@ void ts::TSProcessorArgs::defineArgs(Args& args) const
               u"a valid bitrate value from the beginning. "
               u"The default initial load is half the size of the global buffer.");
 
+    args.option(u"log-plugin-index");
+    args.help(u"log-plugin-index",
+              u"In log messages, add the plugin index to the plugin name. "
+              u"This can be useful if the same plugin is used several times "
+              u"and all instances log many messages.");
+
     args.option(u"receive-timeout", 0, Args::POSITIVE);
     args.help(u"receive-timeout", u"milliseconds",
               u"Specify a timeout in milliseconds for all input operations. "
@@ -221,6 +228,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
 {
     app_name = args.appName();
     monitor = args.present(u"monitor");
+    log_plugin_index = args.present(u"log-plugin-index");
     ts_buffer_size = args.intValue<size_t>(u"buffer-size-mb", DEFAULT_BUFFER_SIZE);
     fixed_bitrate = args.intValue<BitRate>(u"bitrate", 0);
     bitrate_adj = MilliSecPerSec * args.intValue(u"bitrate-adjust-interval", DEF_BITRATE_INTERVAL);

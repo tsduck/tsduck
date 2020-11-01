@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2038
+VERSION 3.24-2049
 
 [NEW] New commands and plugins:
 
@@ -23,8 +23,9 @@ VERSION 3.24-2038
     trailing Reed-Solomon code.
   * In plugin "pcrextract", the default CSV separator is now "," instead of ";".
   * New options in exiting commands and plugins:
+    - Option --log-plugin-index in "tsp".
     - Option --subtitles-pid in plugin "zap".
-    - Option --json in "tscmp" an "tsdektec".
+    - Option --json in "tscmp" and "tsdektec".
     - Options --json and --deterministic in "tsanalyze" and plugin "analyze".
     - Option --save-pes in plugin "pes".
     - Options --bitrate, --acceleration-threshold, --incremental-pcr-restamp,
