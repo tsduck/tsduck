@@ -1,7 +1,7 @@
 # Python bindings  {#pythonbindings}
 [TOC]
 
-## Overview
+## Overview  {#pyoverview}
 
 Starting with version 3.24, TSDuck includes Python bindings to some
 high-level features.
@@ -14,13 +14,13 @@ It is currently in experimental stage only and subject to radical change
 in the near future. The current code is probably far from the "pythonic way"
 but is willing to evolve toward it.
 
-### Python prerequisites
+### Python prerequisites  {#pyprereq}
 
 The code was initially tested with Python 3.7 and higher.
 Python 2.x is not supported.
 Intermediate versions may work but without guarantee.
 
-### Implementation notes
+### Implementation notes  {#pyimplem}
 
 There are usually two ways to call C/C++ from Python:
 
@@ -41,7 +41,7 @@ using `ctypes`, regardless of the version of Python. Note, however, that
 these C++ are hidden inside the Python bindings and invisible to the
 application developer.
 
-## Using TSDuck Python bindings
+## Using TSDuck Python bindings  {#pyusing}
 
 All TSDuck bindings are defined in a module named `ts`.
 All Python programs using TSDuck shall consequently start with:
@@ -49,7 +49,7 @@ All Python programs using TSDuck shall consequently start with:
 import ts
 ~~~
 
-### Linux
+### Linux  {#pylinux}
 
 The Python bindings are installed with TSDuck in `/usr/share/tsduck/python`.
 Simply add this directory in the environment variable `PYTHONPATH` to use
@@ -59,7 +59,7 @@ TSDuck from any Python application:
 export PYTHONPATH="/usr/share/tsduck/python:$PYTHONPATH"
 ~~~
 
-### macOS
+### macOS  {#pymac}
 
 This is similar to Linux, except that `/usr/local/share` is used instead of `/usr/share`.
 
@@ -67,7 +67,7 @@ This is similar to Linux, except that `/usr/local/share` is used instead of `/us
 export PYTHONPATH="/usr/local/share/tsduck/python:$PYTHONPATH"
 ~~~
 
-### Windows
+### Windows  {#pywin}
 
 On Windows, Python bindings are optional components of the TSDuck installer.
 When they are selected for installation, they are installed in the TSDuck
@@ -75,12 +75,12 @@ area and the environment variable `PYTHONPATH` is modified at system level
 to include the root directory of the TSDuck Python bindings. Thus, any
 Python program can use TSDuck directly.
 
-## TSDuck Python bindings reference
+## TSDuck Python bindings reference  {#pyref}
 
 All TSDuck bindings are defined in a module named `ts`, the same name as
 the C++ namespace for the TSDuck library.
 
-### Informational functions
+### Informational functions  {#pyinfofunc}
 
 The function `ts.version()` returns the TSDuck version as a string.
 
@@ -99,7 +99,7 @@ $ python3
 >>> 
 ~~~
 
-### Reporting classes
+### Reporting classes  {#pyreport}
 
 All TSDuck developers know that message reporting is performed throughout the
 TSDuck library using `ts::Report` objects. The C++ abstract class `ts::Report`
@@ -165,7 +165,7 @@ Example usage:
 >>> 
 ~~~
 
-### Transport stream processor
+### Transport stream processor  {#pytsp}
 
 The Python class `ts.TSProcessor` is equivalent to the C++ class `ts::TSProcessor`.
 It provides a way to start and stop a transport stream processing pipeline with the

@@ -1,7 +1,7 @@
 # Testing TSDuck   {#testing}
 [TOC]
 
-# Testing overview {#testoverview}
+## Testing overview {#testoverview}
 
 TSDuck is highly flexible, allowing an unlimited number of configurations.
 Testing it is consequently challenging. Moreover, some use cases are difficult
@@ -19,7 +19,7 @@ Thus, although it is impossible to guarantee that a given release of TSDuck
 is bug-free, we may be relatively confident that no major regression has
 been introduced.
 
-# Organization of the tests {#testorg}
+## Organization of the tests {#testorg}
 
 The code of TSDuck is divided in two parts, a large C++ library (`tsduck.dll` or `libtsduck.so`)
 and a collection of small command line tools and plugins.
@@ -36,7 +36,7 @@ Similarly, the tests for TSDuck are divided in two parts.
 
 The two test suites are fully automated.
 
-# The TSDuck library test suite {#testlib}
+## The TSDuck library test suite {#testlib}
 
 In the main TSDuck repository, the directory `src/utest` contains the source file for
 one single program named `utest`. This program is divided in many source files (or test suites).
@@ -136,7 +136,7 @@ test suite for the TSDuck library or as a debug environment for a given feature
 under development (in all good "test-driven development" approaches, the code
 is written at the same time as its unitary test).
 
-# The TSDuck tools and plugins test suite {#testtools}
+## The TSDuck tools and plugins test suite {#testtools}
 
 The Git repository [tsduck-test](https://github.com/tsduck/tsduck-test)
 contains some tests for the TSDuck tools and plugins. This test suite is
@@ -162,7 +162,7 @@ a given version of the test suite formally applies to one version of TSDuck
 only. Git tags are aligned in both repositories (or should be...) to indicate
 the target version.
 
-## Structure of the test suite {#teststruct}
+### Structure of the test suite {#teststruct}
 
 In short, execute the script `run-all-tests.sh` to run the complete test suite.
 
@@ -182,7 +182,7 @@ The repository contains the following subdirectories:
   These files are temporary by definition. The subdirectory `tmp` is present on
   test machines only and is excluded from the Git repository.
 
-## Adding new tests {#testadd}
+### Adding new tests {#testadd}
 
 To add a new test:
 
@@ -212,7 +212,7 @@ case, re-run the command `tests/test-NNN.sh --init` to update the reference
 output files. Do not forget to manually validate them since they will act as
 the new reference.
 
-## Testing a development version {#testdev}
+### Testing a development version {#testdev}
 
 By default, the test suite uses the TSDuck command from the system path.
 Typically, it will use the installed version.
@@ -225,7 +225,7 @@ Then, when the option `--dev` is specified to a test script or to `run-all-tests
 the test suite automatically uses the TSDuck executables from the development
 repository.
 
-## Large files {#testlargefiles}
+### Large files {#testlargefiles}
 
 The `tsduck-test` repository contains large files, typically transport stream files.
 
