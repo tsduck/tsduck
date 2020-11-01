@@ -71,6 +71,7 @@ TSDUCKPY struct tspyTSProcessorArgs
     long bitrate;                  //!< Fixed input bitrate (user-specified).
     long bitrate_adjust_interval;  //!< Bitrate adjust interval in (milliseconds).
     long receive_timeout;          //!< Timeout on input operations (in milliseconds).
+    long log_plugin_index;         //!< Log plugin index with plugin name (bool).
 };
 
 //!

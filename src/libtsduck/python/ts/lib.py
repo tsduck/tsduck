@@ -150,6 +150,7 @@ class tspyTSProcessorArgs(ctypes.Structure):
         ("bitrate", ctypes.c_long),                   # Fixed input bitrate (user-specified).
         ("bitrate_adjust_interval", ctypes.c_long),   # Bitrate adjust interval (in milliseconds).
         ("receive_timeout", ctypes.c_long),           # Timeout on input operations (in milliseconds).
+        ("log_plugin_index", ctypes.c_long),          # Log plugin index with plugin name (bool).
     ]
 
 # void tspyAbortTSProcessor(void* tsp);

@@ -47,6 +47,7 @@ class TSProcessor:
         # Publicly customizable tsp options:
         self.monitor = False                   # --monitor
         self.ignore_joint_termination = False  # --ignore-joint-termination
+        self.log_plugin_index = False          # --log-plugin-index
         self.buffer_size = 16 * 1024 * 1024    # --buffer-size-mb (in bytes here)
         self.max_flushed_packets = 0           # --max-flushed-packets (zero means default)
         self.max_input_packets = 0             # --max-input-packets (zero means default)
