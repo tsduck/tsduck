@@ -91,6 +91,7 @@ bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, const uint
     tsargs.fixed_bitrate = ts::BitRate(args->bitrate);
     tsargs.bitrate_adj = ts::MilliSecond(args->bitrate_adjust_interval);
     tsargs.receive_timeout = ts::MilliSecond(args->receive_timeout);
+    tsargs.log_plugin_index = bool(args->log_plugin_index);
 
     // Split plugins strings.
     const ts::UStringList fields(tspy::ToStringList(plugins, plugins_size));

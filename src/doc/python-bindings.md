@@ -194,6 +194,7 @@ Attributes must be set before calling `start()`.
 | --------- | ---- | ------- | -----------------------
 | `monitor`                  | `bool` | `False` | `--monitor`
 | `ignore_joint_termination` | `bool` | `False` | `--ignore-joint-termination`
+| `log_plugin_index`         | `bool` | `False` | `--log-plugin-index`
 | `buffer_size`              | `int`  | 16 MB | `--buffer-size-mb` (the value of the attributes is in bytes)
 | `max_flushed_packets`      | `int`  | `tsp` default | `--max-flushed-packets`
 | `max_input_packets`        | `int`  | `tsp` default | `--max-input-packets`
