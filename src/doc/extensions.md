@@ -30,7 +30,7 @@ of a TSDuck extension is provided in the TSDuck source tree. This example also p
 scripts to build standard installers (`.exe` on Windows, `.rpm` and `.deb` on Linux).
 The generated packages install the extension on top of a matching version of TSDuck.
 
-## Files in an extension
+# Files in an extension  {#extfiles}
 
 A TSDuck extension typically contains the following types of files:
 
@@ -55,13 +55,13 @@ A TSDuck extension typically contains the following types of files:
   There is no mandatory naming template for those files but `tslibext_XXX.names` is recommended.
   These files must be registered by the extension dynamic library (details below).
 
-## The extension dynamic library
+# The extension dynamic library  {#extdll}
 
 All shareable libraries named `tslibext_XXX.exe` or `.so` are automatically loaded by any
 TSDuck command or plugin. The initialization of the library is responsible for registering
 various hooks which implement the additional features.
 
-### Identification of the extension
+## Identification of the extension  {#extid}
 
 This is an optional but recommended step. One C++ module inside the `tslibext_XXX`
 library shall invoke macro @link TS_REGISTER_EXTENSION @endlink as illustrated below:
@@ -77,7 +77,7 @@ Using this declaration, the extension is identified and listed using the command
 
 Without the declaration, the extension is loaded and functional but it is not identified.
 
-### Providing an XML model file for additional tables and descriptors
+## Providing an XML model file for additional tables and descriptors  {#extxml}
 
 To analyze input XML files containing tables, TSDuck uses an XML model to validate
 the syntax of the input XML file. There is a predefined large XML file which
@@ -95,7 +95,7 @@ library which invokes the macro @link TS_REGISTER_XML_FILE @endlink as illustrat
 TS_REGISTER_XML_FILE(u"tslibext_foo.xml");
 ~~~
 
-### Providing a names files for additional identifiers
+## Providing a names files for additional identifiers  {#extnames}
 
 The usage rules and conventions are identical to the XML file above.
 The declaration macro for each names file is @link TS_REGISTER_NAMES_FILE @endlink
@@ -118,7 +118,7 @@ for a table, a descriptor and a range of _CA_system_id_.
 0xF001-0xF008 = FooCAS
 ~~~
 
-### Providing support for additional tables
+## Providing support for additional tables  {#exttables}
 
 If your environment defines a third-party table which is unsupported or unknown in TSDuck,
 you can implement it in your extension library.
@@ -175,7 +175,7 @@ for (i=0;i<N;i++){
 CRC_32
 ~~~
 
-### Providing support for additional descriptors
+## Providing support for additional descriptors  {#extdescs}
 
 Similarly, it is possible to implement a third-party descriptor as follow:
 ~~~
@@ -212,7 +212,7 @@ for(i=0;i<N;i++) {
 }
 ~~~
 
-### Implementing advanced section filtering capabilities
+## Implementing advanced section filtering capabilities  {#extfilter}
 
 The command `tstables` (and its plugin counterpart `tables`) can process
 vast amounts of tables. To extract specific tables or sections, the command
@@ -235,7 +235,7 @@ In the implementation of the class, we register it as a section filter for `tsta
 TS_REGISTER_SECTION_FILTER(FooFilter);
 ~~~
 
-### Providing support for additional Conditional Access Systems
+## Providing support for additional Conditional Access Systems  {#extcas}
 
 If you work with a specific Conditional Access System, you probably manipulate
 confidential information that cannot be published in an open-source tool such
@@ -290,7 +290,7 @@ TS_REGISTER_SECTION(ts::Range<ts::TID>(ts::TID_EMM_FIRST, ts::TID_EMM_LAST),
 TS_REGISTER_CA_DESCRIPTOR(DisplayFooCASCADescriptor, CASID_FOO_MIN, CASID_FOO_MAX);
 ~~~
 
-## Building cross-platform binary installers for an extension.
+# Building cross-platform binary installers for an extension  {#extinstaller}
 
 See the [sample "foo" extension](https://github.com/tsduck/tsduck/tree/master/sample/sample-extension)
 in the TSDuck source tree.

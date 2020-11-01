@@ -16,7 +16,7 @@ More details can be found on
 Several articles also describe the GitHub standard fork & pull request workflow.
 We specifically [recommend this one](https://gist.github.com/Chaser324/ce0505fbed06b947d962).
 
-## Transparency of contributions   {#transparency}
+# Transparency of contributions   {#transparency}
 
 All commits in a Git pull request shall have a clear and transparent identification
 of the author. The author name shall be the true first and last names of the contributor.
@@ -35,7 +35,7 @@ is the way it is perceived by the industry. So, to maintain the trust in TSDuck,
 let's keep anonymity away from it. We hope that all contributors understand this
 position.
 
-## Contributor workflow   {#contributor}
+# Contributor workflow   {#contributor}
 
 The first requirement is to create a GitHub account, if you do not already have one.
 
@@ -74,7 +74,7 @@ something like `https://github.com/USERNAME/tsduck`, and select the branch
 "New pull request". Select the branch for the pull request and click on
 "Create pull request".
 
-## Integrator workflow   {#integrator}
+# Integrator workflow   {#integrator}
 
 On your local development system, configure your TSDuck development git
 repository to track all pull requests. In the file `.git/config`, add the

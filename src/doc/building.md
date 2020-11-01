@@ -6,9 +6,9 @@ TSDuck can be built on Windows, Linux and macOS.
 Support for Dektec devices, DVB tuners and HiDes modulators is implemented only
 on Windows and Linux. macOS can only support files and IP for TS input and output.
 
-## Pre-requisites: build tools {#buildreq}
+# Pre-requisites: build tools {#buildreq}
 
-### Windows {#reqwindows}
+## Windows {#reqwindows}
 
 First, install Visual Studio Community Edition.
 This is the free version of Visual Studio.
@@ -27,7 +27,7 @@ If you prefer to collect the various installers yourself, follow the links to
 [Doxygen downloads](http://www.doxygen.org/download.html) and
 [Graphviz downloads](https://graphviz.gitlab.io/_pages/Download/Download_windows.html).
 
-### Linux and macOS {#reqfedora}
+## Linux and macOS {#reqfedora}
 
 Execute the shell-script `build/install-prerequisites.sh`.
 It downloads and installs the requested packages which are necessary
@@ -55,15 +55,15 @@ Raspberry Pi) cannot use Dektec devices. Similarly, Intel-based distros using
 a non-standard libc (for instance Alpine Linux which uses musl libc) cannot use Dektec
 devices either.
 
-## Building the TSDuck binaries {#buildbin}
+# Building the TSDuck binaries {#buildbin}
 
-### Windows {#buildwindows}
+## Windows {#buildwindows}
 
 Execute the PowerShell script `build\build.ps1`. The TSDuck binaries, executables and
 DLL's, are built in directories `bin\Release-Win32` and `bin\Release-x64`
 for 32-bit and 64-bit platforms respectively.
 
-### Linux and macOS {#buildlinux}
+## Linux and macOS {#buildlinux}
 
 Execute the command `make` at top level. The TSDuck binaries, executables and shared
 objects (`.so`), are built in directories `bin/release-i386-<hostname>`,
@@ -74,7 +74,7 @@ To build a 32-bit version of TSDuck on a 64-bit system, execute the command `mak
 Of course, this works only if your 64-bit system has all required 32-bit development
 tools and libraries.
 
-#### Building without specialized dependencies
+### Building without specialized dependencies
 
 In specific configurations, you may want to disable some external libraries
 such as `libcurl` or `pcsc-lite`. Of course, the corresponding features in
@@ -98,7 +98,7 @@ to `pcsc-lite`, `libcurl` and Dektec `DTAPI`:
 make NOPCSC=1 NOCURL=1 NODTAPI=1
 ~~~
 
-## Building the TSDuck installers {#buildinst}
+# Building the TSDuck installers {#buildinst}
 
 There is no need to build the TSDuck binaries before building the installers.
 Building the binaries, when necessary, is part of the installer build.
@@ -107,23 +107,23 @@ All installation packages are dropped into the subdirectory `installers`.
 The packages are not deleted by the cleanup procedures. They are not pushed
 into the git repository either.
 
-### Windows {#instwindows}
+## Windows {#instwindows}
 
 Execute the PowerShell script `build\build-installer.ps1`.
 Two installers are built, for 32-bit and 64-bit systems respectively.
 
-### Fedora, CentOS, Red Hat Entreprise Linux {#instrhel}
+## Fedora, CentOS, Red Hat Entreprise Linux {#instrhel}
 
 Execute the command `make rpm` at top level to build a `.rpm` package for the same
 architecture as the build system. On 64-bit systems, execute the command `make rpm32`
 to build a 32-bit package.
 
-### Ubuntu, Debian, Raspbian {#instubuntu}
+## Ubuntu, Debian, Raspbian {#instubuntu}
 
 Execute the command `make deb` at top level to build a `.deb` package for the same
 architecture as the build system.
 
-### Installer files {#instfiles}
+## Installer files {#instfiles}
 
 The following table summarizes the packages which are built and dropped
 into the `installers` directory, through a few examples, assuming that the
@@ -162,7 +162,7 @@ On Windows systems, there is only one binary installer which contains the tools,
 plugins, documentation and development environment. The user can select which
 components shall be installed. The development environment is unselected by default.
 
-## Installing in non-standard locations {#nonstdinst}
+# Installing in non-standard locations {#nonstdinst}
 
 On systems where you have no administration privilege and consequently no right
 to use the standard installers, you may want to manually install TSDuck is some
@@ -183,13 +183,13 @@ subdirectory and can be executed from here without any additional setup.
 It is probably a good idea to add this `bin` directory in your `PATH`
 environment variable.
 
-## Running from the build location {#runbuild}
+# Running from the build location {#runbuild}
 
 It is sometimes useful to run a TSDuck binary, `tsp` or any other, directly
 from the build directory, right after compilation. This can be required for
 testing or debugging.
 
-### Windows {#runwindows}
+## Windows {#runwindows}
 
 On Windows, the binaries and all plugins are built in a subdirectory named
 `bin\<target>-<platform>`. The commands can be run using their
@@ -210,7 +210,7 @@ bin\Debug-x64\tsp.exe
 bin\Debug-Win32\tsp.exe
 ~~~~
 
-### Linux and macOS {#rununix}
+## Linux and macOS {#rununix}
 
 On all Unix systems, the binaries and all plugins are built in a subdirectory
 named `bin\<target>-<platform>-<hostname>`. The commands can be run using their
@@ -242,7 +242,7 @@ $ build/setenv.sh --display
 /Users/devel/tsduck/bin/release-x86_64-mymac
 ~~~~
 
-## Cleaning up {#buildcleanup}
+# Cleaning up {#buildcleanup}
 
 On Windows, to cleanup a repository tree and return to a pristine source state,
 execute the following PowerShell script:

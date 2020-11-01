@@ -7,7 +7,7 @@ documented in the TSDuck user's guide, appendix C "PSI/SI XML Reference Model".
 The tables below summarize all available structures and the reference of
 the standard which specifies them.
 
-## Tables   {#sigxtables}
+# Tables   {#sigxtables}
 
 | XML name | C++ class | Defining document
 | -------- | --------- | -----------------
@@ -49,7 +49,7 @@ the standard which specifies them.
 | TVCT | ts::TVCT | ATSC A/65, 6.3.1
 | UNT | ts::UNT | ETSI TS 102 006, 9.4.1
 
-## Descriptors   {#sigxdescs}
+# Descriptors   {#sigxdescs}
 
 | XML name | C++ class | Defining document
 | -------- | --------- | -----------------

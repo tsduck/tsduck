@@ -36,7 +36,7 @@ documented in the TSDuck user's guide, appendix C "PSI/SI XML Reference Model".
 The tables below summarize all available structures and the reference of
 the standard which specifies them.
 
-## Tables   {#sigxtables}
+# Tables   {#sigxtables}
 
 | XML name | C++ class | Defining document
 | -------- | --------- | -----------------
@@ -44,7 +44,7 @@ EOF
 listsig "$DTVDIR/tables" >>$OUTFILE
 cat >>$OUTFILE <<EOF
 
-## Descriptors   {#sigxdescs}
+# Descriptors   {#sigxdescs}
 
 | XML name | C++ class | Defining document
 | -------- | --------- | -----------------
