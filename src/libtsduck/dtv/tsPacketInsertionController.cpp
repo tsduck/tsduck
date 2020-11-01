@@ -89,24 +89,40 @@ ts::PacketInsertionController::BitRateControl::BitRateControl(Report& report, co
 
 size_t ts::PacketInsertionController::BitRateControl::diffPercent(BitRate rate) const
 {
-    return size_t(std::abs(((int32_t(rate) - int32_t(_average)) * 100) / int32_t(_average)));
+    return size_t(std::abs(((int64_t(rate) - int64_t(_average)) * 100) / int64_t(_average)));
 }
 
 bool ts::PacketInsertionController::BitRateControl::setBitRate(BitRate rate)
 {
-    if (_count == 0 || _average == 0 || rate == 0 || diffPercent(rate) > _reset_percent) {
+    if (rate == 0) {
+        // Unknown bitrate.
+        if (_average != 0) {
+            _report.verbose(u"%s bitrate now unknown (was %'d b/s)", {_name, _average});
+        }
+        _count = 0;
+        _value_0 = 0;
+        _diffs = 0;
+        _average = 0;
+        return false; // reset
+    }
+    else if (_count == 0 || _average == 0 || diffPercent(rate) > _reset_percent) {
         // First value or reset computation.
-        _report.verbose(u"%s bitrate reset to %'d b/s (was %'d b/s)", {_name, rate, _average});
+        if (rate != _average) {
+            _report.verbose(u"%s bitrate reset to %'d b/s (was %'d b/s)", {_name, rate, _average});
+        }
         _count = 1;
-        _value_0 = int32_t(rate);
+        _value_0 = int64_t(rate);
         _diffs = 0;
         _average = rate;
         return false; // reset
     }
     else {
         _count++;
-        _diffs += int32_t(rate) - _value_0;
-        _average = BitRate(_value_0 + _diffs / _count);
+        _diffs += int64_t(rate) - _value_0;
+        const int64_t new_average = _value_0 + _diffs / _count;
+        if (new_average > 0) {
+            _average = BitRate(new_average);
+        }
         // Report bitrate adjustment over 1% only.
         if (diffPercent(rate) > 1) {
             _report.verbose(u"%s bitrate set to %'d b/s, adjusted to %'d b/s", {_name, rate, _average});
@@ -149,7 +165,11 @@ void ts::PacketInsertionController::setSubBitRate(BitRate rate)
 
 bool ts::PacketInsertionController::mustInsert(size_t waiting_packets)
 {
-    if (_main_packets * _sub_bitrate.getBitRate() >= _sub_packets * _main_bitrate.getBitRate()) {
+    if (_main_bitrate.getBitRate() == 0 || _sub_bitrate.getBitRate() == 0) {
+        // Unknow bitrate, always insert.
+        return true;
+    }
+    else if (_main_packets * _sub_bitrate.getBitRate() >= _sub_packets * _main_bitrate.getBitRate()) {
         // It is time to insert in all cases.
         return true;
     }
@@ -178,5 +198,5 @@ bool ts::PacketInsertionController::mustInsert(size_t waiting_packets)
     }
 
     // Use the same insertion criteria with the accelerated sub-bitrate over the current accelerated phase.
-    return _accel_main_packets * _accel_factor * _sub_bitrate.getBitRate() >= _accel_sub_packets * _main_bitrate.getBitRate();
+    return (_main_packets - _accel_main_packets) * _accel_factor * _sub_bitrate.getBitRate() >= (_sub_packets - _accel_sub_packets) * _main_bitrate.getBitRate();
 }

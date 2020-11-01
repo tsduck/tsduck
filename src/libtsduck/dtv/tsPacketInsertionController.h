@@ -187,9 +187,9 @@ namespace ts {
         private:
             Report&        _report;
             const UString& _name;
-            size_t         _count;
-            int32_t        _value_0;
-            int32_t        _diffs;
+            int64_t        _count;
+            int64_t        _value_0;
+            int64_t        _diffs;
             BitRate        _average;
             size_t         _reset_percent;
         };
