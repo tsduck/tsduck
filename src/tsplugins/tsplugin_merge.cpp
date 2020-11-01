@@ -525,7 +525,7 @@ void ts::MergePlugin::main()
 
         // Read TS packets from the pipe, up to buffer size (but maybe less).
         // We request to read only multiples of 188 bytes (the packet size).
-        if (!_pipe.readStreamComplete(buffer, PKT_SIZE * buffer_size, read_size, *tsp)) {
+        if (!_pipe.readStreamChunks(buffer, PKT_SIZE * buffer_size, PKT_SIZE, read_size, *tsp)) {
             // Read error or end of file, cannot continue in all cases.
             // Signal end-of-file to plugin thread.
             _queue.setEOF();
