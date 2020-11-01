@@ -6,7 +6,7 @@ Architecture: {{ARCH}}
 Section: free/video
 Priority: optional
 Depends: libc6,
- libsrt1,
+ libsrt1 | libsrt1-openssl,
  libpcsclite1,
  libcurl3 | libcurl4,
  libstdc++6,

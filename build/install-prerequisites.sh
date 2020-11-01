@@ -76,11 +76,13 @@ done
 
 #-----------------------------------------------------------------------------
 
+SYSTEM=$(uname -s)
 DISTRO=$(lsb_release -i 2>/dev/null | sed -e 's/.*:[\t ]*//')
 MAJOR=$(lsb_release -r 2>/dev/null | sed -e 's/.*:[\t ]*//' -e 's/\..*//')
 MINOR=$(lsb_release -r 2>/dev/null | sed -e '/\./!d' -e 's/.*:[\t ]*//' -e 's/.*\.//')
+VERSION=$(( ${MAJOR:-0} * 100 + ${MINOR:-0} ))
 
-if [[ $(uname -s) == Darwin ]]; then
+if [[ "$SYSTEM" == "Darwin" ]]; then
 
     # macOS
     pkglist="gnu-sed grep dos2unix coreutils pcsc-lite srt python3"
@@ -111,7 +113,9 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     if $M32; then
         pkglist="$pkglist gcc-multilib"
     fi
-    if [[ "$MAJOR" -ge 19 ]]; then
+    if [[ "$VERSION" -ge 2010 ]]; then
+        pkglist="$pkglist libsrt-openssl-dev"
+    elif [[ "$VERSION" -ge 1904 ]]; then
         pkglist="$pkglist libsrt-dev"
     fi
     sudo apt update
