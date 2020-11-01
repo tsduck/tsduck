@@ -46,6 +46,10 @@ ts::tsp::ProcessorExecutor::ProcessorExecutor(const TSProcessorArgs& options,
     _processor(dynamic_cast<ProcessorPlugin*>(PluginThread::plugin())),
     _plugin_index(1 + plugin_index) // include first input plugin in the count
 {
+    if (options.log_plugin_index) {
+        // Make sure that plugins display their index.
+        setLogName(UString::Format(u"%s[%d]", {pluginName(), _plugin_index}));
+    }
 }
 
 ts::tsp::ProcessorExecutor::~ProcessorExecutor()

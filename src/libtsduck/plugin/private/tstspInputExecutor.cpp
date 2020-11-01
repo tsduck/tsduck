@@ -62,6 +62,11 @@ ts::tsp::InputExecutor::InputExecutor(const TSProcessorArgs& options,
     _use_watchdog(false),
     _start_time(true) // initialized with current system time
 {
+    if (options.log_plugin_index) {
+        // Make sure that plugins display their index. Input plugin is always at index 0.
+        setLogName(UString::Format(u"%s[0]", {pluginName()}));
+    }
+
     // Configure PTS/DTS analyze
     _dts_analyzer.resetAndUseDTS(MIN_ANALYZE_PID, MIN_ANALYZE_DTS);
 
