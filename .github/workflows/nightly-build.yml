@@ -225,6 +225,24 @@ jobs:
     - name: Build documentation
       if: env.REBUILD == 'true'
       run: |
+        # The generated documentation will be published on the TSDuck web site.
+        # We need a clean set of documentation, without issues from buggy doxygen versions.
+        DOXY_VERSION=$(doxygen --version)
+        DOXY_VERSION=${DOXY_VERSION/ */}
+        DOXY_AVERSION=(${DOXY_VERSION//./ })
+        DOXY_IVERSION=$(( ${DOXY_AVERSION[0]} * 10000 + ${DOXY_AVERSION[1]} * 100 + ${DOXY_AVERSION[2]} ))
+        if [[ "$DOXY_IVERSION" -lt 10818 ]]; then
+            echo "Obsolete Doxygen version $DOXY_VERSION, rebuilding a more recent one"
+            sudo apt install -y cmake flex bison
+            mkdir -p bin/doxygen/build
+            curl -sL https://github.com/doxygen/doxygen/archive/Release_1_8_20.tar.gz | tar xzf - -C bin/doxygen
+            pushd bin/doxygen/build
+            cmake -G "Unix Makefiles" ../doxygen-Release_1_8_20
+            make
+            export PATH=$(cd bin; pwd):$PATH
+            popd
+            echo "Now using Doxygen" $(doxygen --version)
+        fi
         make doxygen
         echo "${{ env.VERSION }}" >bin/doxy/docversion.txt
         (cd bin; zip -qr9 ../doxy.zip doxy)

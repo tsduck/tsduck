@@ -184,7 +184,8 @@
 //! @hideinitializer
 //! Local declaration of a static object regardless of modules initialization order.
 //!
-//! # The static initialization order nightmare
+//! The static initialization order nightmare
+//! -----------------------------------------
 //!
 //! In C++, each module needs to be initialized. For each module, the compiler
 //! potentially generates an initialization routine. This initialization routine
@@ -246,7 +247,8 @@
 //! and @link TS_STATIC_INSTANCE_DEFINITION @endlink with the associated "shortcut"
 //! macro @link TS_STATIC_INSTANCE @endlink.
 //!
-//! # Using the TS_STATIC_INSTANCE macros
+//! Using the TS_STATIC_INSTANCE macros
+//! -----------------------------------
 //!
 //! You need a static object. The type for this object is the parameter @a ObjectClass
 //! in the various TS_STATIC_INSTANCE macros.
