@@ -78,7 +78,8 @@ namespace ts {
     //! while names ending in <code>.xml</code> are considered as XML files.
     //! To manipulate other file formats, the application must specify the file type.
     //!
-    //! ### Binary section file format
+    //! Binary section file format
+    //! --------------------------
     //!
     //! A binary section file is simply the concatenation of complete sections,
     //! header and payload, without any encapsulation. Sections must be read from
@@ -89,7 +90,8 @@ namespace ts {
     //! To get a valid table with long sections, all sections forming this table
     //! must be stored contiguously in the order of their section number.
     //!
-    //! ### XML section file format
+    //! XML section file format
+    //! -----------------------
     //!
     //! The format of XML section files is documented in the TSDuck user's guide.
     //! An informal template is given in file <code>tsduck.tables.model.xml</code>. This file
