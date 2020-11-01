@@ -1,7 +1,7 @@
 # Using the TSDuck library   {#usinglibrary}
 [TOC]
 
-# Pre-requisites {#libreq}
+## Pre-requisites {#libreq}
 
 To be able to build applications or `tsp` plugins with the TSDuck library,
 you must install the TSDuck development environment first.
@@ -12,7 +12,7 @@ you must install the TSDuck development environment first.
 - On Ubuntu systems, you must install the package `tsduck-dev`.
 - On macOS systems, the development environment is always installed with TSDuck using Homebrew.
 
-# Building applications on Linux and macOS  {#liblinux}
+## Building applications on Linux and macOS  {#liblinux}
 
 The command `tsconfig` generates the appropriate build options for the
 current operating system. See the TSDuck user's guide for more details.
@@ -32,7 +32,7 @@ Just run "make" to build the application.
 $ make
 ~~~~
 
-# Building applications on Windows  {#libwindows}
+## Building applications on Windows  {#libwindows}
 
 The "Development" option of the TSDuck installer provides the build
 environment for Visual Studio 2019, in debug and release mode, for
