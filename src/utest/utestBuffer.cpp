@@ -85,6 +85,7 @@ public:
     void testGetBitsSigned();
     void testPutBCD();
     void testGetBCD();
+    void testTryGetASCII();
     void testGetUTF8();
     void testGetUTF8WithLength();
     void testGetUTF16();
@@ -140,6 +141,7 @@ public:
     TSUNIT_TEST(testGetBitsSigned);
     TSUNIT_TEST(testPutBCD);
     TSUNIT_TEST(testGetBCD);
+    TSUNIT_TEST(testTryGetASCII);
     TSUNIT_TEST(testGetUTF8);
     TSUNIT_TEST(testGetUTF8WithLength);
     TSUNIT_TEST(testGetUTF16);
@@ -1208,6 +1210,49 @@ void BufferTest::testGetBCD()
     TSUNIT_ASSERT(b.readError());
     TSUNIT_EQUAL(6, b.currentReadByteOffset());
     TSUNIT_EQUAL(48, b.currentReadBitOffset());
+}
+
+void BufferTest::testTryGetASCII()
+{
+    static const char mem[] = "abcdefgh\x00\x00\x00zyxw\x01\x02mnop";
+    ts::Buffer b(mem, sizeof(mem) - 1); // exclude trailing zero => - 1
+    TSUNIT_ASSERT(b.readOnly());
+
+    TSUNIT_EQUAL(u"abcd", b.tryGetASCII(4));
+    TSUNIT_ASSERT(!b.readError());
+    TSUNIT_EQUAL(4, b.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"", b.tryGetASCII(8));
+    TSUNIT_ASSERT(!b.readError());
+    TSUNIT_EQUAL(4, b.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"efgh", b.tryGetASCII(6));
+    TSUNIT_ASSERT(!b.readError());
+    TSUNIT_EQUAL(10, b.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"", b.tryGetASCII(4));
+    TSUNIT_ASSERT(!b.readError());
+    TSUNIT_EQUAL(10, b.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"", b.tryGetASCII(1));
+    TSUNIT_ASSERT(!b.readError());
+    TSUNIT_EQUAL(11, b.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"", b.tryGetASCII(5));
+    TSUNIT_ASSERT(!b.readError());
+    TSUNIT_EQUAL(11, b.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"zyxw", b.tryGetASCII(4));
+    TSUNIT_ASSERT(!b.readError());
+    TSUNIT_EQUAL(15, b.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"", b.tryGetASCII(6));
+    TSUNIT_ASSERT(!b.readError());
+    TSUNIT_EQUAL(15, b.currentReadByteOffset());
+
+    TSUNIT_EQUAL(u"", b.tryGetASCII(7));
+    TSUNIT_ASSERT(b.readError());
+    TSUNIT_EQUAL(15, b.currentReadByteOffset());
 }
 
 void BufferTest::testGetUTF8()

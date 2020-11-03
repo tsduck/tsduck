@@ -1014,6 +1014,38 @@ namespace ts {
         bool putBCD(INT value, size_t bcd_count);
 
         //!
+        //! Try to get an ASCII string.
+        //! The read-pointer must be byte-aligned.
+        //! If all bytes are valid ASCII characters (optionally zero-padded), the corresponding string is
+        //! returned and the read pointer is moved. If the corresponding area is not a valid ASCII string
+        //! (optionally zero-padded), do not move the read pointer and return an empty string.
+        //! @param [out] result Returned ASCII string. If the binary area is zero-padded, the trailing
+        //! zeroes are not included in the string. This means that @a result can be shorter than @a bytes.
+        //! @param [in] bytes Size in bytes of the string. If specified as @a NPOS (the default), read up to
+        //! the end of the buffer. If different from @a NPOS, the exact number of bytes must be available or a read
+        //! error is generated.
+        //! @return True on success, false on error. Also return false when the binary area is not a valid
+        //! ASCII string (optionally zero-padded), but do not generate a read error (it was just a try).
+        //!
+        bool tryGetASCII(UString& result, size_t bytes = NPOS);
+
+        //!
+        //! Try to get an ASCII string.
+        //! The read-pointer must be byte-aligned.
+        //! If all bytes are valid ASCII characters (optionally zero-padded), the corresponding string is
+        //! returned and the read pointer is moved. If the corresponding area is not a valid ASCII string
+        //! (optionally zero-padded), do not move the read pointer and return an empty string.
+        //! @param [in] bytes Size in bytes of the string. If specified as @a NPOS (the default), read up to
+        //! the end of the buffer. If different from @a NPOS, the exact number of bytes must be available or a read
+        //! error is generated.
+        //! @return The ASCII string. If the binary area is zero-padded, the trailing
+        //! zeroes are not included in the string. This means that @a result can be shorter than @a bytes.
+        //! Return an empty string when the entire binary area is not a valid ASCII string (optionally zero-padded),
+        //! but do not generate a read error (it was just a try).
+        //!
+        UString tryGetASCII(size_t bytes = NPOS);
+
+        //!
         //! Get a UTF-8 string.
         //! The read-pointer must be byte-aligned.
         //! @param [out] result Returned decoded string.

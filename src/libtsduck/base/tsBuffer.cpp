@@ -1183,6 +1183,61 @@ const uint8_t* ts::Buffer::rdb(size_t bytes)
 
 
 //----------------------------------------------------------------------------
+// Try to get an ASCII string.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Buffer::tryGetASCII(size_t bytes)
+{
+    UString str;
+    tryGetASCII(str, bytes);
+    return str;
+}
+
+bool ts::Buffer::tryGetASCII(UString& result, size_t bytes)
+{
+    // If size is unspecified, use the rest of the buffer.
+    if (bytes == NPOS) {
+        bytes = remainingReadBytes();
+    }
+
+    // Parameter validation.
+    if (_read_error || _state.rbit != 0 || bytes > remainingReadBytes()) {
+        _read_error = true;
+        result.clear();
+        return false;
+    }
+
+    // Validate each character in the are.
+    bool valid = true;
+    for (size_t i = 0; valid && i < bytes; ++i) {
+        const uint8_t c = _buffer[_state.rbyte + i];
+        if (c >= 0x20 && c <= 0x7E) {
+            // This is an ASCII character.
+            if (i == result.size()) {
+                result.push_back(UChar(c));
+            }
+            else {
+                // But come after trailing zero.
+                valid = false;
+            }
+        }
+        else if (c != 0) {
+            // Not ASCII, not trailing zero, unusable string.
+            valid = false;
+        }
+    }
+
+    if (valid) {
+        _state.rbyte += bytes;
+    }
+    else {
+        result.clear();
+    }
+    return valid;
+}
+
+
+//----------------------------------------------------------------------------
 // Transform an output string parameter into a returned value.
 //----------------------------------------------------------------------------
 
