@@ -51,7 +51,8 @@ RECURSIVE        = YES
 IMAGE_PATH       = ../images
 OUTPUT_DIRECTORY = ../bin/doxy
 EXCLUDE          = ../src/libtsduck/dtv/private \
-                   ../src/libtsduck/plugin/private
+                   ../src/libtsduck/plugin/private \
+                   ../src/libtsduck/python
 INCLUDE_PATH     = ../src/libtsduck \
                    ../src/libtsduck/base \
                    ../src/libtsduck/base/json \

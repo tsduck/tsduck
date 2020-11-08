@@ -60,7 +60,7 @@
 //     suspend the application when the buffer is full, waiting for space
 //     in the buffer. When the buffer is full, the write operation fails with
 //     an error, forcing the application to do some polling. This is exactly
-//     what a drvier should NOT do! Polling is the enemy of performance and
+//     what a driver should NOT do! Polling is the enemy of performance and
 //     accuracy.
 //
 //  Implementation notes:
@@ -75,7 +75,7 @@
 //
 //  The patched driver suspends the process when the buffer is full and waits
 //  for space in the buffer. This version of the driver contains a trailing
-//  "w" (for "wait") in its version string.
+//  "w" (for "wait") in its version string or "w.number" for updates.
 //
 //----------------------------------------------------------------------------
 
@@ -321,7 +321,15 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
         TS_ZCOPY(hw_info, SupportHWInfo);
 
         // The patched driver, implementing waiting wait, has a patched version number ending with "w".
-        waiting_write = info.driver_version.endWith(u"w", CASE_INSENSITIVE);
+        // Updates of this driver kit may add 'w.number" (these are not updates of the driver itself).
+        size_t end = info.driver_version.size();
+        while (end > 0 && IsDigit(info.driver_version[end-1])) {
+            end--;
+        }
+        while (end > 0 && info.driver_version[end-1] == u'.') {
+            end--;
+        }
+        waiting_write = end > 0 && info.driver_version[end-1] == u'w';
     }
 
     // In case of error, close file descriptor.
