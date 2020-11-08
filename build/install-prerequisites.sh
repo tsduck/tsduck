@@ -183,8 +183,8 @@ elif [[ -f /etc/redhat-release ]]; then
 elif [[ -f /etc/arch-release ]]; then
 
     # Arch Linux
-    pkglist="gcc dos2unix curl tar zip doxygen graphviz pcsclite srt python"
-    sudo pacman -Sy $pkglist
+    pkglist="make gcc dos2unix core/which inetutils net-tools curl tar zip doxygen graphviz pcsclite srt python"
+    sudo pacman -Sy --noconfirm $pkglist
 
 elif [[ -f /etc/alpine-release ]]; then
 
