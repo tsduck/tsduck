@@ -33,8 +33,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsTS.h"
+#include "tsT2MI.h"
 #include "tsByteBlock.h"
-#include "tsMPEG.h"
 
 namespace ts {
 
@@ -267,9 +268,9 @@ namespace ts {
         //! Get the T2-MI packet type.
         //! @return The T2-MI packet type or T2MI_INVALID_TYPE if the packet is invalid.
         //!
-        uint8_t packetType() const
+        T2MIPacketType packetType() const
         {
-            return _is_valid ? (*_data)[0] : uint8_t(T2MI_INVALID_TYPE);
+            return _is_valid ? T2MIPacketType((*_data)[0]) : T2MIPacketType::INVALID_TYPE;
         }
 
         //!
@@ -306,7 +307,7 @@ namespace ts {
         //!
         bool plpValid() const
         {
-            return packetType() == T2MI_BASEBAND_FRAME && payloadSize() >= 2;
+            return packetType() == T2MIPacketType::BASEBAND_FRAME && payloadSize() >= 2;
         }
 
         //!
@@ -326,7 +327,7 @@ namespace ts {
         //!
         bool interleavingFrameStart() const
         {
-            return packetType() == T2MI_BASEBAND_FRAME && payloadSize() >= 3 && ((*_data)[T2MI_HEADER_SIZE + 2] & 0x80) != 0;
+            return packetType() == T2MIPacketType::BASEBAND_FRAME && payloadSize() >= 3 && ((*_data)[T2MI_HEADER_SIZE + 2] & 0x80) != 0;
         }
 
         //!
@@ -336,7 +337,7 @@ namespace ts {
         //!
         const uint8_t* basebandFrame() const
         {
-            return packetType() == T2MI_BASEBAND_FRAME && payloadSize() >= 3 ? _data->data() + T2MI_HEADER_SIZE + 3 : nullptr;
+            return packetType() == T2MIPacketType::BASEBAND_FRAME && payloadSize() >= 3 ? _data->data() + T2MI_HEADER_SIZE + 3 : nullptr;
         }
 
         //!
@@ -346,7 +347,7 @@ namespace ts {
         //!
         size_t basebandFrameSize() const
         {
-            return packetType() == T2MI_BASEBAND_FRAME && payloadSize() >= 3 ? payloadSize() - 3 : 0;
+            return packetType() == T2MIPacketType::BASEBAND_FRAME && payloadSize() >= 3 ? payloadSize() - 3 : 0;
         }
 
     private:

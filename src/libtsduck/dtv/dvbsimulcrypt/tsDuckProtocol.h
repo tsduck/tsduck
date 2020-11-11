@@ -39,7 +39,7 @@
 #include "tsTablesPtr.h"
 #include "tsVariable.h"
 #include "tsSimulCryptDate.h"
-#include "tsMPEG.h"
+#include "tsTS.h"
 
 namespace ts {
     //!

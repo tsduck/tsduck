@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsObject.h"
-#include "tsMPEG.h"
+#include "tsTS.h"
 
 namespace ts {
 

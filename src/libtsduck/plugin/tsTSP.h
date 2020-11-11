@@ -35,7 +35,7 @@
 #pragma once
 #include "tsReport.h"
 #include "tsAbortInterface.h"
-#include "tsMPEG.h"
+#include "tsTS.h"
 
 namespace ts {
 

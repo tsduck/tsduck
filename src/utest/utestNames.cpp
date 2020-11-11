@@ -32,9 +32,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsNames.h"
-#include "tsMPEG.h"
 #include "tsSysUtils.h"
 #include "tsDuckContext.h"
+#include "tsPES.h"
+#include "tsVideo.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
 

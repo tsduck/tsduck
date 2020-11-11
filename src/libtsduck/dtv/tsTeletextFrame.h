@@ -33,8 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMPEG.h"
 #include "tsUString.h"
+#include "tsTS.h"
 
 namespace ts {
     //!

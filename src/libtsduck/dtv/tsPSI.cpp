@@ -27,17 +27,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsMPEG.h"
+#include "tsPSI.h"
 TSDUCK_SOURCE;
-
-
-//----------------------------------------------------------------------------
-// These PID sets respectively contains no PID and all PID's.
-// The default constructor for PIDSet (std::bitset) sets all bits to 0.
-//----------------------------------------------------------------------------
-
-const ts::PIDSet ts::NoPID;
-const ts::PIDSet ts::AllPIDs (~NoPID);
 
 
 //----------------------------------------------------------------------------
@@ -62,7 +53,7 @@ const ts::Enumeration ts::PrivateDataSpecifierEnum({
 // Check if an ST value indicates a PES stream
 //----------------------------------------------------------------------------
 
-bool ts::IsPES (uint8_t st)
+bool ts::IsPES(uint8_t st)
 {
     return
         st == ST_MPEG1_VIDEO      ||
@@ -104,7 +95,7 @@ bool ts::IsPES (uint8_t st)
 // Check if an ST value indicates a video stream
 //----------------------------------------------------------------------------
 
-bool ts::IsVideoST (uint8_t st)
+bool ts::IsVideoST(uint8_t st)
 {
     return
         st == ST_MPEG1_VIDEO      ||
@@ -131,7 +122,7 @@ bool ts::IsVideoST (uint8_t st)
 // Check if an ST value indicates an audio stream
 //----------------------------------------------------------------------------
 
-bool ts::IsAudioST (uint8_t st)
+bool ts::IsAudioST(uint8_t st)
 {
     return
         st == ST_MPEG1_AUDIO     ||
@@ -150,7 +141,7 @@ bool ts::IsAudioST (uint8_t st)
 // Check if an ST value indicates a stream carrying sections
 //----------------------------------------------------------------------------
 
-bool ts::IsSectionST (uint8_t st)
+bool ts::IsSectionST(uint8_t st)
 {
     return
         st == ST_PRIV_SECT     ||
@@ -161,66 +152,4 @@ bool ts::IsSectionST (uint8_t st)
         st == ST_SCTE35_SPLICE ||
         st == ST_GREEN         ||
         st == ST_QUALITY;
-}
-
-
-//----------------------------------------------------------------------------
-// Check if a SID value indicates a PES packet with long header
-//----------------------------------------------------------------------------
-
-bool ts::IsLongHeaderSID (uint8_t sid)
-{
-    return
-        sid != SID_PSMAP &&    // Program stream map
-        sid != SID_PAD &&      // Padding stream
-        sid != SID_PRIV2 &&    // Private stream 2
-        sid != SID_ECM &&      // ECM stream
-        sid != SID_EMM &&      // EMM stream
-        sid != SID_PSDIR &&    // Program stream directory
-        sid != SID_DSMCC &&    // DSM-CC data
-        sid != SID_H222_1_E;   // H.222.1 type E
-}
-
-
-//----------------------------------------------------------------------------
-// Compute the PCR of a packet, based on the PCR of a previous packet.
-//----------------------------------------------------------------------------
-
-uint64_t ts::NextPCR(uint64_t last_pcr, PacketCounter distance, BitRate bitrate)
-{
-    if (last_pcr == INVALID_PCR || bitrate == 0) {
-        return INVALID_PCR;
-    }
-
-    uint64_t next_pcr = last_pcr + (distance * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(bitrate);
-    if (next_pcr >= PCR_SCALE) {
-        next_pcr -= PCR_SCALE;
-    }
-
-    return next_pcr;
-}
-
-
-//----------------------------------------------------------------------------
-// Compute the difference between PCR2 and PCR1.
-//----------------------------------------------------------------------------
-
-uint64_t ts::DiffPCR(uint64_t pcr1, uint64_t pcr2)
-{
-    if (pcr1 > MAX_PCR || pcr2 > MAX_PCR) {
-        return INVALID_PCR;
-    }
-    else {
-        return pcr2 >= pcr1 ? pcr2 - pcr1 : PCR_SCALE + pcr2 - pcr1;
-    }
-}
-
-uint64_t ts::DiffPTS(uint64_t pts1, uint64_t pts2)
-{
-    if (pts1 > MAX_PTS_DTS || pts2 > MAX_PTS_DTS) {
-        return INVALID_PTS;
-    }
-    else {
-        return pts2 >= pts1 ? pts2 - pts1 : PTS_DTS_SCALE + pts2 - pts1;
-    }
 }

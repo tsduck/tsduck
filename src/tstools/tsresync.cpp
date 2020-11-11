@@ -36,7 +36,7 @@
 #include "tsOutputRedirector.h"
 #include "tsByteBlock.h"
 #include "tsFatal.h"
-#include "tsMPEG.h"
+#include "tsTS.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 

@@ -38,6 +38,7 @@
 #include "tsSafePtr.h"
 #include "tsMutex.h"
 #include "tsNullReport.h"
+#include "tsTS.h"
 
 namespace ts {
 

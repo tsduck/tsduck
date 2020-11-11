@@ -28,6 +28,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsPESPacket.h"
+#include "tsPES.h"
+#include "tsPSI.h"
 TSDUCK_SOURCE;
 
 
@@ -230,14 +232,29 @@ size_t ts::PESPacket::size() const
 
 
 //----------------------------------------------------------------------------
-// Set the stream id of the PES packet.
+// Stream id of the PES packet.
 //----------------------------------------------------------------------------
+
+uint8_t ts::PESPacket::getStreamId() const
+{
+    return _is_valid ? (*_data)[3] : 0;
+}
 
 void ts::PESPacket::setStreamId(uint8_t sid)
 {
     if (_is_valid) {
         (*_data)[3] = sid;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the packet has a long header.
+//----------------------------------------------------------------------------
+
+bool ts::PESPacket::hasLongHeader() const
+{
+    return _is_valid && IsLongHeaderSID((*_data)[3]);
 }
 
 

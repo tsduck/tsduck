@@ -37,8 +37,8 @@
 #include "tsArgsSupplierInterface.h"
 #include "tsVariable.h"
 #include "tsModulation.h"
-#include "tsMPEG.h"
 #include "tsLNB.h"
+#include "tsTS.h"
 
 namespace ts {
 

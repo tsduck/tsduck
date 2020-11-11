@@ -36,7 +36,7 @@
 #pragma once
 #include "tsAbstractAVCAccessUnit.h"
 #include "tsAVCVUIParameters.h"
-#include "tsMPEG.h"
+#include "tsVideo.h"
 
 namespace ts {
     //!

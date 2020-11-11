@@ -35,8 +35,8 @@
 #pragma once
 #include "tsBuffer.h"
 #include "tsTime.h"
-#include "tsMPEG.h"
 #include "tsCharset.h"
+#include "tsTS.h"
 
 namespace ts {
 

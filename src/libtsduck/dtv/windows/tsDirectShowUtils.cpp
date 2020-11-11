@@ -420,7 +420,7 @@ bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
         default: source = ::BDA_LNB_SOURCE_NOT_DEFINED; break;
     }
 
-    // 
+    //
     // Microsoft oddity, part 1...
     //
     // The locator interface for DVB-S is IDVBSLocator. However, this interface did

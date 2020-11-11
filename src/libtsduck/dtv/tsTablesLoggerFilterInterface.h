@@ -33,9 +33,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMPEG.h"
 #include "tsCASFamily.h"
 #include "tsSafePtr.h"
+#include "tsTS.h"
 
 namespace ts {
 

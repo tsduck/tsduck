@@ -29,7 +29,8 @@
 //!
 //!  @file
 //!  @ingroup mpeg
-//!  Common definition for MPEG level.
+//!  Common definitions for MPEG PSI (Program Specific Information) layer.
+//!  Also contains definitions for DVB SI (Service Information) and ATSC.
 //!
 //----------------------------------------------------------------------------
 
@@ -38,191 +39,72 @@
 #include "tsEnumeration.h"
 
 namespace ts {
-
+    //
     // Base types
-
-    typedef uint16_t PID;      //!< PID value.
-    typedef uint8_t  TID;      //!< Table identifier.
-    typedef uint8_t  DID;      //!< Descriptor identifier.
-    typedef uint32_t PDS;      //!< Private data specifier.
-    typedef uint32_t BitRate;  //!< Bitrate in bits/second.
+    //
+    typedef uint8_t  TID;  //!< Table identifier.
+    typedef uint8_t  DID;  //!< Descriptor identifier.
+    typedef uint32_t PDS;  //!< Private data specifier.
 
     //!
-    //! MPEG TS packet size in bytes.
+    //! Maximum size of a descriptor (255 + 2-byte header).
     //!
-    constexpr size_t PKT_SIZE = 188;
+    constexpr size_t MAX_DESCRIPTOR_SIZE = 257;
 
     //!
-    //! MPEG TS packet size in bits.
+    //! Header size of a short section.
     //!
-    constexpr size_t PKT_SIZE_BITS = 8 * PKT_SIZE;
+    constexpr size_t SHORT_SECTION_HEADER_SIZE = 3;
 
     //!
-    //! Size in bytes of a Reed-Solomon outer FEC.
+    //! Header size of a long section.
     //!
-    constexpr size_t RS_SIZE = 16;
+    constexpr size_t LONG_SECTION_HEADER_SIZE = 8;
 
     //!
-    //! Size in bytes of a TS packet with trailing Reed-Solomon outer FEC.
+    //! Size of the CRC32 field in a long section.
     //!
-    constexpr size_t PKT_RS_SIZE = PKT_SIZE + RS_SIZE;
+    constexpr size_t SECTION_CRC32_SIZE = 4;
 
     //!
-    //! Size in bytes of a timestamp preceeding a TS packet in M2TS files (Blu-ray disc).
+    //! Maximum size of a PSI section (MPEG-defined).
     //!
-    constexpr size_t M2TS_HEADER_SIZE = 4;
+    constexpr size_t MAX_PSI_SECTION_SIZE = 1024;
 
     //!
-    //! Size in bytes of an TS packet in M2TS files (Blu-ray disc).
-    //! There is a leading 4-byte timestamp before the TS packet.
+    //! Maximum size of a private section (including DVB-defined sections).
     //!
-    constexpr size_t PKT_M2TS_SIZE = M2TS_HEADER_SIZE + PKT_SIZE;
+    constexpr size_t MAX_PRIVATE_SECTION_SIZE = 4096;
 
     //!
-    //! Number of Transport Stream packets.
+    //! Minimum size of a short section.
     //!
-    //! TS packets are counted using 64-bit integers.
-    //! Thus, PacketCounter will never overflow: at 100 Mb/s, 2^64 188-byte
-    //! packets will take 8.7 million years to transmit. No process will
-    //! ever run that long. On the contrary, using 32-bit integer would
-    //! be insufficient: at 100 Mb/s, 2^32 188-byte packets will take
-    //! only 17 hours to transmit.
-    //!
-    typedef uint64_t PacketCounter;
+    constexpr size_t MIN_SHORT_SECTION_SIZE = SHORT_SECTION_HEADER_SIZE;
 
     //!
-    //! A impossible value for PacketCounter, meaning "undefined".
+    //! Minimum size of a long section.
     //!
-    constexpr PacketCounter INVALID_PACKET_COUNTER = std::numeric_limits<PacketCounter>::max();
+    constexpr size_t MIN_LONG_SECTION_SIZE = LONG_SECTION_HEADER_SIZE + SECTION_CRC32_SIZE;
 
     //!
-    //! Number of sections.
+    //! Maximum size of the payload of a short section.
     //!
-    typedef uint64_t SectionCounter;
+    constexpr size_t MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE = MAX_PSI_SECTION_SIZE - SHORT_SECTION_HEADER_SIZE;
 
     //!
-    //! Convert 188-byte packet bitrate into 204-byte packet bitrate.
-    //! @param [in] bitrate188 Bitrate using 188-byte packet as reference.
-    //! @return Corresponding bitrate using 204-byte packet as reference.
+    //! Maximum size of the payload of a PSI long section.
     //!
-    TSDUCKDLL inline BitRate ToBitrate204(BitRate bitrate188)
-    {
-        return BitRate((uint64_t (bitrate188) * 204L) / 188L);
-    }
+    constexpr size_t MAX_PSI_LONG_SECTION_PAYLOAD_SIZE = MAX_PSI_SECTION_SIZE - LONG_SECTION_HEADER_SIZE - SECTION_CRC32_SIZE;
 
     //!
-    //! Convert 204-byte packet bitrate into 188-byte packet bitrate.
-    //! @param [in] bitrate204 Bitrate using 204-byte packet as reference.
-    //! @return Corresponding bitrate using 188-byte packet as reference.
+    //! Maximum size of the payload of a private short section.
     //!
-    TSDUCKDLL inline BitRate ToBitrate188(BitRate bitrate204)
-    {
-        return BitRate((uint64_t (bitrate204) * 188L) / 204L);
-    }
+    constexpr size_t MAX_PRIVATE_SHORT_SECTION_PAYLOAD_SIZE = MAX_PRIVATE_SECTION_SIZE - SHORT_SECTION_HEADER_SIZE;
 
     //!
-    //! Compute the interval, in milliseconds, between two packets.
-    //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
-    //! @param [in] distance Distance between the two packets: 0 for the same
-    //! packet, 1 for the next packet (the default), etc.
-    //! @return Interval in milliseconds between the first byte of the first packet
-    //! and the first byte of the second packet.
+    //! Maximum size of the payload of a private long section.
     //!
-    TSDUCKDLL inline MilliSecond PacketInterval(BitRate bitrate, PacketCounter distance = 1)
-    {
-        return bitrate == 0 ? 0 : (distance * 8 * PKT_SIZE * MilliSecPerSec) / MilliSecond(bitrate);
-    }
-
-    //!
-    //! Compute the number of packets transmitted during a given duration in milliseconds.
-    //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
-    //! @param [in] duration Number of milliseconds.
-    //! @return Number of packets during @a duration milliseconds.
-    //!
-    TSDUCKDLL inline PacketCounter PacketDistance(BitRate bitrate, MilliSecond duration)
-    {
-        return (PacketCounter (bitrate) * (duration >= 0 ? duration : -duration)) / (MilliSecPerSec * 8 * PKT_SIZE);
-    }
-
-    //!
-    //! Compute the bitrate from a number of packets transmitted during a given duration in milliseconds.
-    //! @param [in] packets Number of packets during @a duration milliseconds.
-    //! @param [in] duration Number of milliseconds.
-    //! @return TS bitrate in bits/second, based on 188-byte packets.
-    //!
-    TSDUCKDLL inline BitRate PacketBitRate(PacketCounter packets, MilliSecond duration)
-    {
-        return duration == 0 ? 0 : BitRate((packets * 8 * PKT_SIZE * MilliSecPerSec) / duration);
-    }
-
-    //!
-    //! Compute the minimum number of TS packets required to transport a section.
-    //! @param [in] section_size Total section size in bytes.
-    //! @return Number of packets required for the section.
-    //!
-    TSDUCKDLL inline PacketCounter SectionPacketCount(size_t section_size)
-    {
-        // The required size for a section is section_size + 1 (1 for pointer_field
-        // in first packet). In each packet, the useable size is 184 bytes.
-        return PacketCounter((section_size + 184) / 184);
-    }
-
-    //!
-    //! Value of a sync byte (first byte in a TS packet).
-    //!
-    constexpr uint8_t SYNC_BYTE = 0x47;
-
-    //!
-    //! PES packet start code prefix (24 bits).
-    //!
-    constexpr uint32_t PES_START = 0x000001;
-
-    //!
-    //! Size (in bits) of a PID field.
-    //!
-    constexpr size_t PID_BITS = 13;
-
-    //!
-    //! Maximum number of PID's (8192).
-    //!
-    constexpr PID PID_MAX = 1 << PID_BITS;
-
-    //!
-    //! A bit mask for PID values.
-    //! Useful to implement PID filtering.
-    //!
-    typedef std::bitset <PID_MAX> PIDSet;
-
-    //!
-    //! PIDSet constant with no PID set.
-    //!
-    TSDUCKDLL extern const PIDSet NoPID;
-
-    //!
-    //! PIDSet constant with all PID's set.
-    //!
-    TSDUCKDLL extern const PIDSet AllPIDs;
-
-    //!
-    //! Size (in bits) of a Continuity Counter (CC) field.
-    //!
-    constexpr size_t CC_BITS = 4;
-
-    //!
-    //! Mask to wrap a Continuity Counter (CC) value.
-    //! CC values wrap at 16.
-    //!
-    constexpr uint8_t CC_MASK = 0x0F;
-
-    //!
-    //! Maximum value of a Continuity Counter (CC).
-    //!
-    constexpr uint8_t CC_MAX = 1 << CC_BITS;
-
-    //!
-    //! An invalid Continuity Counter (CC) value, typically meaning "undefined".
-    //!
-    constexpr uint8_t INVALID_CC = 0xFF;
+    constexpr size_t MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE = MAX_PRIVATE_SECTION_SIZE - LONG_SECTION_HEADER_SIZE - SECTION_CRC32_SIZE;
 
     //!
     //! Size (in bits) of a section version field.
@@ -241,559 +123,12 @@ namespace ts {
     constexpr uint8_t SVERSION_MAX = 1 << SVERSION_BITS;
 
     //!
-    //! Scrambling_control values (used in TS and PES packets headers)
-    //!
-    enum : uint8_t {
-        SC_CLEAR        = 0,  //!< Not scrambled (MPEG-defined).
-        SC_DVB_RESERVED = 1,  //!< Reserved for future use by DVB.
-        SC_EVEN_KEY     = 2,  //!< Scrambled with even key (DVB-defined).
-        SC_ODD_KEY      = 3   //!< Scrambled with odd key (DVB-defined).
-    };
-
-    //!
     //! Origin of Modified Julian Dates (MJD).
     //! The origin of MJD is 17 Nov 1858 00:00:00.
     //! The UNIX epoch (1 Jan 1970) is 40587 days from julian time origin.
     //!
     constexpr uint32_t MJD_EPOCH = 40587;
 
-    //!
-    //! Video macroblock width in pixels.
-    //! Valid for:
-    //! - ISO 11172-2 (MPEG-1 video)
-    //! - ISO 13818-2 (MPEG-2 video)
-    //! - ISO 14496-10 (MPEG-4 Advanced Video Coding, AVC, ITU H.264)
-    //!
-    constexpr size_t MACROBLOCK_WIDTH = 16;
-
-    //!
-    //! Video macroblock height in pixels.
-    //! @see MACROBLOCK_WIDTH
-    //!
-    constexpr size_t MACROBLOCK_HEIGHT = 16;
-
-    //---------------------------------------------------------------------
-    //! Predefined PID values
-    //---------------------------------------------------------------------
-
-    enum : PID {
-
-        // Valid in all MPEG contexts:
-
-        PID_PAT        = 0x0000, //!< PID for Program Association Table PAT
-        PID_CAT        = 0x0001, //!< PID for Conditional Access Table
-        PID_TSDT       = 0x0002, //!< PID for Transport Stream Description Table
-        PID_MPEG_LAST  = 0x000F, //!< Last reserved PID for MPEG
-
-        // Valid in DVB context:
-
-        PID_DVB_FIRST  = 0x0010, //!< First reserved PID for DVB
-        PID_NIT        = 0x0010, //!< PID for Network Information Table
-        PID_SDT        = 0x0011, //!< PID for Service Description Table
-        PID_BAT        = 0x0011, //!< PID for Bouquet Association Table
-        PID_EIT        = 0x0012, //!< PID for Event Information Table
-        PID_CIT        = 0x0012, //!< PID for Content Identifier Table (TV-Anytime)
-        PID_RST        = 0x0013, //!< PID for Running Status Table
-        PID_TDT        = 0x0014, //!< PID for Time & Date Table
-        PID_TOT        = 0x0014, //!< PID for Time Offset Table
-        PID_NETSYNC    = 0x0015, //!< PID for Network synchronization
-        PID_RNT        = 0x0016, //!< PID for Resolution Notification Table (TV-Anytime)
-        PID_INBSIGN    = 0x001C, //!< PID for Inband Signalling
-        PID_MEASURE    = 0x001D, //!< PID for Measurement
-        PID_DIT        = 0x001E, //!< PID for Discontinuity Information Table
-        PID_SIT        = 0x001F, //!< PID for Selection Information Table
-        PID_DVB_LAST   = 0x001F, //!< Last reserved PID for DVB
-
-        // Valid in ISDB context:
-
-        PID_DCT        = 0x0017, //!< PID for ISDB Download Control Table
-        PID_ISDB_FIRST = 0x0020, //!< First reserved PID for ISDB
-        PID_LIT        = 0x0020, //!< PID for ISDB Local Event Information Table
-        PID_ERT        = 0x0021, //!< PID for ISDB Event Relation Table
-        PID_PCAT       = 0x0022, //!< PID for ISDB Partial Content Announcement Table
-        PID_SDTT       = 0x0023, //!< PID for ISDB Software Download Trigger Table
-        PID_BIT        = 0x0024, //!< PID for ISDB Broadcaster Information Table
-        PID_NBIT       = 0x0025, //!< PID for ISDB Network Board Information Table
-        PID_LDT        = 0x0025, //!< PID for ISDB Linked Description Table
-        PID_ISDB_EIT_2 = 0x0026, //!< Additional PID for ISDB Event Information Table
-        PID_ISDB_EIT_3 = 0x0027, //!< Additional PID for ISDB Event Information Table
-        PID_SDTT_TER   = 0x0028, //!< PID for ISDB Software Download Trigger Table (terrestrial)
-        PID_CDT        = 0x0029, //!< PID for ISDB Common Data Table
-        PID_AMT        = 0x002E, //!< PID for ISDB Address Map Table
-        PID_ISDB_LAST  = 0x002F, //!< Last reserved PID for ISDB
-
-        // Valid in ATSC context:
-
-        PID_ATSC_FIRST = 0x1FF0, //!< First reserved PID for ATSC.
-        PID_ATSC_PAT_E = 0x1FF7, //!< PID for ATSC PAT-E
-        PID_PSIP_TS_E  = 0x1FF9, //!< PID for ATSC Program and System Information Protocol in TS-E
-        PID_PSIP       = 0x1FFB, //!< PID for ATSC Program and System Information Protocol (contains most ATSC tables)
-        PID_ATSC_LAST  = 0x1FFE, //!< Last reserved PID for ATSC.
-
-        // Valid in all MPEG contexts:
-
-        PID_NULL       = 0x1FFF, //!< PID for Null packets (stuffing)
-    };
-
-    //---------------------------------------------------------------------
-    // MPEG clock representation:
-    // - PCR (Program Clock Reference)
-    // - PTS (Presentation Time Stamp)
-    // - DTS (Decoding Time Stamp)
-    //---------------------------------------------------------------------
-
-    //!
-    //! MPEG-2 System Clock frequency in Hz, used by PCR (27 Mb/s).
-    //!
-    constexpr uint32_t SYSTEM_CLOCK_FREQ = 27000000;
-
-    //!
-    //! Subfactor of MPEG-2 System Clock subfrequency, used by PTS and DTS.
-    //!
-    constexpr uint32_t SYSTEM_CLOCK_SUBFACTOR = 300;
-
-    //!
-    //! MPEG-2 System Clock subfrequency in Hz, used by PTS and DTS (90 Kb/s).
-    //!
-    constexpr uint32_t SYSTEM_CLOCK_SUBFREQ = SYSTEM_CLOCK_FREQ / SYSTEM_CLOCK_SUBFACTOR;
-
-    //!
-    //! Size in bits of a PCR (Program Clock Reference).
-    //! Warning: A PCR value is not a linear value mod 2^42.
-    //! It is split into PCR_base and PCR_ext (see ISO 13818-1, 2.4.2.2).
-    //!
-    constexpr size_t PCR_BIT_SIZE = 42;
-
-    //!
-    //! Size in bits of a PTS (Presentation Time Stamp) or DTS (Decoding Time Stamp).
-    //! Unlike PCR, PTS and DTS are regular 33-bit binary values, wrapping up at 2^33.
-    //!
-    constexpr size_t PTS_DTS_BIT_SIZE = 33;
-
-    //!
-    //! Scale factor for PTS and DTS values (wrap up at 2^33).
-    //!
-    constexpr uint64_t PTS_DTS_SCALE = TS_UCONST64(1) << PTS_DTS_BIT_SIZE;
-
-    //!
-    //! Mask for PTS and DTS values (wrap up at 2^33).
-    //!
-    constexpr uint64_t PTS_DTS_MASK = PTS_DTS_SCALE - 1;
-
-    //!
-    //! The maximum value possible for a PTS/DTS value.
-    //!
-    constexpr uint64_t MAX_PTS_DTS = PTS_DTS_SCALE - 1;
-
-    //!
-    //! Scale factor for PCR values.
-    //! This is not a power of 2, it does not wrap up at a number of bits.
-    //! The PCR_base part is equivalent to a PTS/DTS and wraps up at 2**33.
-    //! The PCR_ext part is a mod 300 value. Note that, since this not a
-    //! power of 2, there is no possible PCR_MASK value.
-    //!
-    constexpr uint64_t PCR_SCALE = PTS_DTS_SCALE * SYSTEM_CLOCK_SUBFACTOR;
-
-    //!
-    //! The maximum value possible for a PCR (Program Clock Reference) value.
-    //!
-    constexpr uint64_t MAX_PCR = PCR_SCALE - 1;
-
-    //!
-    //! An invalid PCR (Program Clock Reference) value, can be used as a marker.
-    //!
-    constexpr uint64_t INVALID_PCR = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
-
-    //!
-    //! An invalid PTS value, can be used as a marker.
-    //!
-    constexpr uint64_t INVALID_PTS = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
-
-    //!
-    //! An invalid DTS value, can be used as a marker.
-    //!
-    constexpr uint64_t INVALID_DTS = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
-
-    //!
-    //! Check if PCR2 follows PCR1 after wrap up.
-    //! @param [in] pcr1 First PCR.
-    //! @param [in] pcr2 Second PCR.
-    //! @return True is @a pcr2 is probably following @a pcr1 after wrapping up.
-    //! The exact criteria is that @a pcr2 wraps up after @a pcr1 and their
-    //! distance is within 20% of a full PCR range.
-    //!
-    TSDUCKDLL inline bool WrapUpPCR(uint64_t pcr1, uint64_t pcr2)
-    {
-        return pcr2 < pcr1 && (pcr1 - pcr2) > ((4 * PCR_SCALE) / 5);
-    }
-
-    //!
-    //! Compute the PCR of a packet, based on the PCR of a previous packet.
-    //! @param [in] last_pcr PCR in a previous packet.
-    //! @param [in] distance Number of TS packets since the packet with @a last_pcr.
-    //! @param [in] bitrate Constant bitrate of the stream in bits per second.
-    //! @return The PCR of the packet which is at the specified @a distance from the packet with @a last_pcr
-    //! or INVALID_PCR if a parameter is incorrect.
-    //!
-    TSDUCKDLL uint64_t NextPCR(uint64_t last_pcr, PacketCounter distance, BitRate bitrate);
-
-    //!
-    //! Compute the difference between PCR2 and PCR1.
-    //! @param [in] pcr1 First PCR.
-    //! @param [in] pcr2 Second PCR.
-    //! @return The difference between the two values.
-    //! or INVALID_PCR if a parameter is incorrect.
-    //!
-    TSDUCKDLL uint64_t DiffPCR(uint64_t pcr1, uint64_t pcr2);
-
-    //!
-    //! Check if PTS2 follows PTS1 after wrap up.
-    //! @param [in] pts1 First PTS.
-    //! @param [in] pts2 Second PTS.
-    //! @return True is @a pts2 is probably following @a pts1 after wrapping up at 2^33.
-    //!
-    TSDUCKDLL inline bool WrapUpPTS(uint64_t pts1, uint64_t pts2)
-    {
-        return pts2 < pts1 && (pts1 - pts2) > TS_UCONST64(0x00000001F0000000);
-    }
-
-    //!
-    //! Check if two Presentation Time Stamps are in sequence.
-    //!
-    //! In MPEG video, B-frames are transported out-of-sequence.
-    //! Their PTS is typically lower than the previous D-frame or I-frame
-    //! in the transport. A "sequenced" PTS is one that is higher than
-    //! the previous sequenced PTS (with possible wrap up).
-    //! @param [in] pts1 First PTS.
-    //! @param [in] pts2 Second PTS.
-    //! @return True is @a pts2 is after @a pts1, possibly after wrapping up at 2**33.
-    //!
-    TSDUCKDLL inline bool SequencedPTS(uint64_t pts1, uint64_t pts2)
-    {
-        return pts1 <= pts2 || WrapUpPTS(pts1, pts2);
-    }
-
-    //!
-    //! Compute the difference between PTS2 and PTS1.
-    //! @param [in] pts1 First PTS.
-    //! @param [in] pts2 Second PTS.
-    //! @return The difference between the two values.
-    //! or INVALID_PTS if a parameter is incorrect.
-    //!
-    TSDUCKDLL uint64_t DiffPTS(uint64_t pts1, uint64_t pts2);
-
-    //---------------------------------------------------------------------
-    //! Stream id values, as used in PES header.
-    //---------------------------------------------------------------------
-
-    enum : uint8_t {
-        SID_PSMAP      = 0xBC, //!< Stream id for Program stream map
-        SID_PRIV1      = 0xBD, //!< Stream id for Private stream 1
-        SID_PAD        = 0xBE, //!< Stream id for Padding stream
-        SID_PRIV2      = 0xBF, //!< Stream id for Private stream 2
-        SID_AUDIO      = 0xC0, //!< Stream id for Audio stream, with number
-        SID_AUDIO_MASK = 0x1F, //!< Stream id for Mask to get audio stream number
-        SID_VIDEO      = 0xE0, //!< Stream id for Video stream, with number
-        SID_VIDEO_MASK = 0x0F, //!< Stream id for Mask to get video stream number
-        SID_ECM        = 0xF0, //!< Stream id for ECM stream
-        SID_EMM        = 0xF1, //!< Stream id for EMM stream
-        SID_DSMCC      = 0xF2, //!< Stream id for DSM-CC data
-        SID_ISO13522   = 0xF3, //!< Stream id for ISO 13522 (hypermedia)
-        SID_H222_1_A   = 0xF4, //!< Stream id for H.222.1 type A
-        SID_H222_1_B   = 0xF5, //!< Stream id for H.222.1 type B
-        SID_H222_1_C   = 0xF6, //!< Stream id for H.222.1 type C
-        SID_H222_1_D   = 0xF7, //!< Stream id for H.222.1 type D
-        SID_H222_1_E   = 0xF8, //!< Stream id for H.222.1 type E
-        SID_ANCILLARY  = 0xF9, //!< Stream id for Ancillary stream
-        SID_MP4_SLPACK = 0xFA, //!< Stream id for MPEG-4 SL-packetized stream
-        SID_MP4_FLEXM  = 0xFB, //!< Stream id for MPEG-4 FlexMux stream
-        SID_METADATA   = 0xFC, //!< Stream id for MPEG-7 metadata stream
-        SID_EXTENDED   = 0xFD, //!< Stream id for Extended stream id
-        SID_RESERVED   = 0xFE, //!< Stream id for Reserved value
-        SID_PSDIR      = 0xFF, //!< Stream id for Program stream directory
-    };
-
-    //!
-    //! Check if a stream id value indicates a video stream.
-    //! @param [in] sid Stream id as found in a PES header.
-    //! @return True if @a sid indicates a video stream.
-    //!
-    TSDUCKDLL inline bool IsVideoSID(uint8_t sid)
-    {
-        return (sid & ~SID_VIDEO_MASK) == SID_VIDEO;
-    }
-
-    //!
-    //! Check if a stream id value indicates an audio stream.
-    //! @param [in] sid Stream id as found in a PES header.
-    //! @return True if @a sid indicates an audio stream.
-    //!
-    TSDUCKDLL inline bool IsAudioSID (uint8_t sid)
-    {
-        return (sid & ~SID_AUDIO_MASK) == SID_AUDIO;
-    }
-
-    //!
-    //! Check if a stream id value indicates a PES packet with long header.
-    //! @param [in] sid Stream id as found in a PES header.
-    //! @return True if @a sid indicates a PES packet with long header.
-    //!
-    TSDUCKDLL bool IsLongHeaderSID(uint8_t sid);
-
-    //---------------------------------------------------------------------
-    //! PES start code values.
-    //---------------------------------------------------------------------
-
-    enum : uint8_t {
-        PST_PICTURE         = 0x00,  //!< Picture PES start code.
-        PST_SLICE_MIN       = 0x01,  //!< First slice PES start code.
-        PST_SLICE_MAX       = 0xAF,  //!< Last slice PES start code.
-        PST_RESERVED_B0     = 0xB0,  //!< Reserved PES start code.
-        PST_RESERVED_B1     = 0xB1,  //!< Reserved PES start code.
-        PST_USER_DATA       = 0xB2,  //!< User data PES start code.
-        PST_SEQUENCE_HEADER = 0xB3,  //!< Sequence header PES start code.
-        PST_SEQUENCE_ERROR  = 0xB4,  //!< Sequence error PES start code.
-        PST_EXTENSION       = 0xB5,  //!< Extension PES start code.
-        PST_RESERVED_B6     = 0xB6,  //!< Reserved PES start code.
-        PST_SEQUENCE_END    = 0xB7,  //!< End of sequence PES start code.
-        PST_GROUP           = 0xB8,  //!< Group PES start code.
-        PST_SYSTEM_MIN      = 0xB9,  //!< First stream id value (SID_*).
-        PST_SYSTEM_MAX      = 0xFF,  //!< Last stream id value (SID_*).
-    };
-
-    //---------------------------------------------------------------------
-    //! Frame rate values (in MPEG-1/2 video sequence).
-    //---------------------------------------------------------------------
-
-    enum {
-        FPS_23_976 = 0x01,  //!< 23.976 fps (24000/1001)
-        FPS_24     = 0x02,  //!< 24 fps
-        FPS_25     = 0x03,  //!< 25 fps
-        FPS_29_97  = 0x04,  //!< 29.97 fps (30000/1001)
-        FPS_30     = 0x05,  //!< 30 fps
-        FPS_50     = 0x06,  //!< 50 fps
-        FPS_59_94  = 0x07,  //!< 59.94 fps (60000/1001)
-        FPS_60     = 0x08,  //!< 60 fps
-    };
-
-    //---------------------------------------------------------------------
-    //! Aspect ratio values (in MPEG-1/2 video sequence header).
-    //---------------------------------------------------------------------
-
-    enum {
-        AR_SQUARE = 1,  //!< 1/1 MPEG video aspect ratio.
-        AR_4_3    = 2,  //!< 4/3 MPEG video aspect ratio.
-        AR_16_9   = 3,  //!< 16/9 MPEG video aspect ratio.
-        AR_221    = 4,  //!< 2.21/1 MPEG video aspect ratio.
-    };
-
-    //---------------------------------------------------------------------
-    //! Chroma format values (in MPEG-1/2 video sequence header).
-    //---------------------------------------------------------------------
-
-    enum {
-        CHROMA_MONO = 0,  //!< Monochrome MPEG video.
-        CHROMA_420  = 1,  //!< Chroma 4:2:0 MPEG video.
-        CHROMA_422  = 2,  //!< Chroma 4:2:2 MPEG video.
-        CHROMA_444  = 3,  //!< Chroma 4:4:4 MPEG video.
-    };
-
-    //---------------------------------------------------------------------
-    //! AVC access unit types
-    //---------------------------------------------------------------------
-
-    enum {
-        AVC_AUT_NON_IDR      =  1, //!< Coded slice of a non-IDR picture (NALunit type).
-        AVC_AUT_SLICE_A      =  2, //!< Coded slice data partition A (NALunit type).
-        AVC_AUT_SLICE_B      =  3, //!< Coded slice data partition B (NALunit type).
-        AVC_AUT_SLICE_C      =  4, //!< Coded slice data partition C (NALunit type).
-        AVC_AUT_IDR          =  5, //!< Coded slice of an IDR picture (NALunit type).
-        AVC_AUT_SEI          =  6, //!< Supplemental enhancement information (SEI) (NALunit type).
-        AVC_AUT_SEQPARAMS    =  7, //!< Sequence parameter set (NALunit type).
-        AVC_AUT_PICPARAMS    =  8, //!< Picture parameter set (NALunit type).
-        AVC_AUT_DELIMITER    =  9, //!< Access unit delimiter (NALunit type).
-        AVC_AUT_END_SEQUENCE = 10, //!< End of sequence (NALunit type).
-        AVC_AUT_END_STREAM   = 11, //!< End of stream (NALunit type).
-        AVC_AUT_FILLER       = 12, //!< Filler data (NALunit type).
-        AVC_AUT_SEQPARAMSEXT = 13, //!< Sequence parameter set extension (NALunit type).
-        AVC_AUT_PREFIX       = 14, //!< Prefix NAL unit in scalable extension (NALunit type).
-        AVC_AUT_SUBSETPARAMS = 15, //!< Subset sequence parameter set (NALunit type).
-        AVC_AUT_SLICE_NOPART = 19, //!< Coded slice without partitioning (NALunit type).
-        AVC_AUT_SLICE_SCALE  = 20, //!< Coded slice in scalable extension (NALunit type).
-    };
-
-    //---------------------------------------------------------------------
-    //! AVC SEI types
-    //---------------------------------------------------------------------
-
-    enum {
-        AVC_SEI_BUF_PERIOD = 0,                 //!< SEI type: buffering_period
-        AVC_SEI_PIC_TIMING = 1,                 //!< SEI type: pic_timing
-        AVC_SEI_PAN_SCAN_RECT = 2,              //!< SEI type: pan_scan_rect
-        AVC_SEI_FILLER_PAYLOAD = 3,             //!< SEI type: filler_payload
-        AVC_SEI_USER_DATA_REG = 4,              //!< SEI type: user_data_registered_itu_t_t35
-        AVC_SEI_USER_DATA_UNREG = 5,            //!< SEI type: user_data_unregistered
-        AVC_SEI_RECOVERY_POINT = 6,             //!< SEI type: recovery_point
-        AVC_SEI_DEC_REF_PIC_MAR_REP = 7,        //!< SEI type: dec_ref_pic_marking_repetition
-        AVC_SEI_SPARE_PIC = 8,                  //!< SEI type: spare_pic
-        AVC_SEI_SCENE_INFO = 9,                 //!< SEI type: scene_info
-        AVC_SEI_SUB_SEQ_INFO = 10,              //!< SEI type: sub_seq_info
-        AVC_SEI_SUB_SEQ_LAYER_CHARS = 11,       //!< SEI type: sub_seq_layer_characteristics
-        AVC_SEI_SUB_SEQ_CHARS = 12,             //!< SEI type: sub_seq_characteristics
-        AVC_SEI_FFRAME_FREEZE = 13,             //!< SEI type: full_frame_freeze
-        AVC_SEI_FFRAME_FREEZE_RELEASE = 14,     //!< SEI type: full_frame_freeze_release
-        AVC_SEI_FFRAME_SNAPSHOT = 15,           //!< SEI type: full_frame_snapshot
-        AVC_SEI_PROG_REF_SEG_START = 16,        //!< SEI type: progressive_refinement_segment_start
-        AVC_SEI_PROG_REF_SEG_END = 17,          //!< SEI type: progressive_refinement_segment_end
-        AVC_SEI_MOTION_CSLICE_GROUP_SET = 18,   //!< SEI type: motion_constrained_slice_group_set
-        AVC_SEI_FILM_GRAIN_CHARS = 19,          //!< SEI type: film_grain_characteristics
-        AVC_SEI_DEBLOCK_FILTER_DISP_PREF = 20,  //!< SEI type: deblocking_filter_display_preference
-        AVC_SEI_STEREO_VIDEO_INFO = 21,         //!< SEI type: stereo_video_info
-        AVC_SEI_POST_FILTER_HINT = 22,          //!< SEI type: post_filter_hint
-        AVC_SEI_TONE_MAPPING_INFO = 23,         //!< SEI type: tone_mapping_info
-        AVC_SEI_SCALABILITY_INFO = 24,          //!< SEI type: scalability_info
-        AVC_SEI_SUB_PIC_SCALABLE_LAYER = 25,    //!< SEI type: sub_pic_scalable_layer
-        AVC_SEI_NON_REQUIRED_LAYER_REP = 26,    //!< SEI type: non_required_layer_rep
-        AVC_SEI_PRIORITY_LAYER_INFO = 27,       //!< SEI type: priority_layer_info
-        AVC_SEI_LAYERS_NOT_PRESENT = 28,        //!< SEI type: layers_not_present
-        AVC_SEI_LAYER_DEP_CHANGE = 29,          //!< SEI type: layer_dependency_change
-        AVC_SEI_SCALABLE_NESTING = 30,          //!< SEI type: scalable_nesting
-        AVC_SEI_BASE_LAYER_TEMPORAL_HRD = 31,   //!< SEI type: base_layer_temporal_hrd
-        AVC_SEI_QUALITY_LAYER_INTEG_CHECK = 32, //!< SEI type: quality_layer_integrity_check
-        AVC_SEI_REDUNDANT_PIC_PROPERTY = 33,    //!< SEI type: redundant_pic_property
-        AVC_SEI_TL0_PICTURE_INDEX = 34,         //!< SEI type: tl0_picture_index
-        AVC_SEI_TL_SWITCHING_POINT = 35,        //!< SEI type: tl_switching_point
-    };
-
-    //! Size in bytes of a UUID in AVC SEI's.
-    constexpr size_t AVC_SEI_UUID_SIZE = 16;
-
-    //---------------------------------------------------------------------
-    //! Stream type values, as used in the PMT.
-    //---------------------------------------------------------------------
-
-    enum : uint8_t {
-        ST_NULL             = 0x00, //!< Invalid stream type value, used to indicate an absence of value
-        ST_MPEG1_VIDEO      = 0x01, //!< MPEG-1 Video
-        ST_MPEG2_VIDEO      = 0x02, //!< MPEG-2 Video
-        ST_MPEG1_AUDIO      = 0x03, //!< MPEG-1 Audio
-        ST_MPEG2_AUDIO      = 0x04, //!< MPEG-2 Audio
-        ST_PRIV_SECT        = 0x05, //!< MPEG-2 Private sections
-        ST_PES_PRIV         = 0x06, //!< MPEG-2 PES private data
-        ST_MHEG             = 0x07, //!< MHEG
-        ST_DSMCC            = 0x08, //!< DSM-CC
-        ST_MPEG2_ATM        = 0x09, //!< MPEG-2 over ATM
-        ST_DSMCC_MPE        = 0x0A, //!< DSM-CC Multi-Protocol Encapsulation
-        ST_DSMCC_UN         = 0x0B, //!< DSM-CC User-to-Network messages
-        ST_DSMCC_SD         = 0x0C, //!< DSM-CC Stream Descriptors
-        ST_DSMCC_SECT       = 0x0D, //!< DSM-CC Sections
-        ST_MPEG2_AUX        = 0x0E, //!< MPEG-2 Auxiliary
-        ST_AAC_AUDIO        = 0x0F, //!< Advanced Audio Coding (ISO 13818-7)
-        ST_MPEG4_VIDEO      = 0x10, //!< MPEG-4 Video
-        ST_MPEG4_AUDIO      = 0x11, //!< MPEG-4 Audio
-        ST_MPEG4_PES        = 0x12, //!< MPEG-4 SL or FlexMux in PES packets
-        ST_MPEG4_SECT       = 0x13, //!< MPEG-4 SL or FlexMux in sections
-        ST_DSMCC_DLOAD      = 0x14, //!< DSM-CC Synchronized Download Protocol
-        ST_MDATA_PES        = 0x15, //!< MPEG-7 MetaData in PES packets
-        ST_MDATA_SECT       = 0x16, //!< MPEG-7 MetaData in sections
-        ST_MDATA_DC         = 0x17, //!< MPEG-7 MetaData in DSM-CC Data Carousel
-        ST_MDATA_OC         = 0x18, //!< MPEG-7 MetaData in DSM-CC Object Carousel
-        ST_MDATA_DLOAD      = 0x19, //!< MPEG-7 MetaData in DSM-CC Sync Downl Proto
-        ST_MPEG2_IPMP       = 0x1A, //!< MPEG-2 IPMP stream
-        ST_AVC_VIDEO        = 0x1B, //!< AVC video
-        ST_MPEG4_AUDIO_RAW  = 0x1C, //!< ISO/IEC 14496-3 Audio, without using any additional transport syntax, such as DST, ALS and SLS.
-        ST_MPEG4_TEXT       = 0x1D, //!< ISO/IEC 14496-17 Text
-        ST_AUX_VIDEO        = 0x1E, //!< Auxiliary video stream as defined in ISO/IEC 23002-3
-        ST_AVC_SUBVIDEO_G   = 0x1F, //!< SVC video sub-bitstream of an AVC video stream, Annex G of ISO 14496-10
-        ST_AVC_SUBVIDEO_H   = 0x20, //!< MVC video sub-bitstream of an AVC video stream, Annex H of ISO 14496-10
-        ST_J2K_VIDEO        = 0x21, //!< JPEG 2000 video stream ISO/IEC 15444-1
-        ST_MPEG2_3D_VIEW    = 0x22, //!< Additional view ISO/IEC 13818-2 video stream for stereoscopic 3D services
-        ST_AVC_3D_VIEW      = 0x23, //!< Additional view ISO/IEC 14496-10 video stream for stereoscopic 3D services
-        ST_HEVC_VIDEO       = 0x24, //!< HEVC video
-        ST_HEVC_SUBVIDEO    = 0x25, //!< HEVC temporal video subset of an HEVC video stream
-        ST_AVC_SUBVIDEO_I   = 0x26, //!< MVCD video sub-bitstream of an AVC video stream, Annex I of ISO 14496-10
-        ST_EXT_MEDIA        = 0x27, //!< Timeline and External Media Information Stream
-        ST_HEVC_SUBVIDEO_G  = 0x28, //!< HEVC enhancement sub-partition, Annex G of ISO 23008-2
-        ST_HEVC_SUBVIDEO_TG = 0x29, //!< HEVC temporal enhancement sub-partition, Annex G of ISO 23008-2
-        ST_HEVC_SUBVIDEO_H  = 0x2A, //!< HEVC enhancement sub-partition, Annex H of ISO 23008-2
-        ST_HEVC_SUBVIDEO_TH = 0x2B, //!< HEVC temporal enhancement sub-partition, Annex H of ISO 23008 - 2
-        ST_GREEN            = 0x2C, //!< Green access units carried in MPEG-2 sections
-        ST_MPH3D_MAIN       = 0x2D, //!< ISO 23008-3 Audio with MHAS transport syntax – main stream
-        ST_MPH3D_AUX        = 0x2E, //!< ISO 23008-3 Audio with MHAS transport syntax – auxiliary stream
-        ST_QUALITY          = 0x2F, //!< Quality access units carried in sections
-        ST_IPMP             = 0x7F, //!< IPMP stream
-        ST_AC3_AUDIO        = 0x81, //!< AC-3 Audio (ATSC only)
-        ST_SCTE35_SPLICE    = 0x86, //!< SCTE 35 splice information tables
-        ST_EAC3_AUDIO       = 0x87, //!< Enhanced-AC-3 Audio (ATSC only)
-    };
-
-    //!
-    //! Check if an stream type value indicates a PES stream.
-    //! @param [in] st Stream type as used in the PMT.
-    //! @return True if @a st indicates a PES stream.
-    //!
-    TSDUCKDLL bool IsPES(uint8_t st);
-
-    //!
-    //! Check if an stream type value indicates a video stream.
-    //! @param [in] st Stream type as used in the PMT.
-    //! @return True if @a st indicates a video stream.
-    //!
-    TSDUCKDLL bool IsVideoST(uint8_t st);
-
-    //!
-    //! Check if an stream type value indicates an audio stream.
-    //! @param [in] st Stream type as used in the PMT.
-    //! @return True if @a st indicates an audio stream.
-    //!
-    TSDUCKDLL bool IsAudioST(uint8_t st);
-
-    //!
-    //! Check if an stream type value indicates a stream carrying sections.
-    //! @param [in] st Stream type as used in the PMT.
-    //! @return True if @a st indicates a stream carrying sections.
-    //!
-    TSDUCKDLL bool IsSectionST(uint8_t st);
-
-    //---------------------------------------------------------------------
-    // PSI, SI and data sections and tables
-    //---------------------------------------------------------------------
-
-    //! Maximum size of a descriptor (255 + 2-byte header).
-    constexpr size_t MAX_DESCRIPTOR_SIZE = 257;
-
-    //! Header size of a short section.
-    constexpr size_t SHORT_SECTION_HEADER_SIZE = 3;
-
-    //! Header size of a long section.
-    constexpr size_t LONG_SECTION_HEADER_SIZE = 8;
-
-    //! Size of the CRC32 field in a long section.
-    constexpr size_t SECTION_CRC32_SIZE = 4;
-
-    //! Maximum size of a PSI section (MPEG-defined).
-    constexpr size_t MAX_PSI_SECTION_SIZE = 1024;
-
-    //! Maximum size of a private section (including DVB-defined sections).
-    constexpr size_t MAX_PRIVATE_SECTION_SIZE = 4096;
-
-    //! Minimum size of a short section.
-    constexpr size_t MIN_SHORT_SECTION_SIZE = SHORT_SECTION_HEADER_SIZE;
-
-    //! Minimum size of a long section.
-    constexpr size_t MIN_LONG_SECTION_SIZE = LONG_SECTION_HEADER_SIZE + SECTION_CRC32_SIZE;
-
-    //! Maximum size of the payload of a short section.
-    constexpr size_t MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE = MAX_PSI_SECTION_SIZE - SHORT_SECTION_HEADER_SIZE;
-
-    //! Maximum size of the payload of a PSI long section.
-    constexpr size_t MAX_PSI_LONG_SECTION_PAYLOAD_SIZE = MAX_PSI_SECTION_SIZE - LONG_SECTION_HEADER_SIZE - SECTION_CRC32_SIZE;
-
-    //! Maximum size of the payload of a private short section.
-    constexpr size_t MAX_PRIVATE_SHORT_SECTION_PAYLOAD_SIZE = MAX_PRIVATE_SECTION_SIZE - SHORT_SECTION_HEADER_SIZE;
-
-    //! Maximum size of the payload of a private long section.
-    constexpr size_t MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE = MAX_PRIVATE_SECTION_SIZE - LONG_SECTION_HEADER_SIZE - SECTION_CRC32_SIZE;
 
     //---------------------------------------------------------------------
     //! Table identification (TID) values
@@ -953,6 +288,7 @@ namespace ts {
 
     constexpr size_t TID_MAX = 0x100; //!< Maximum number of TID values.
 
+
     //---------------------------------------------------------------------
     //! Private data specifier (PDS) values
     //---------------------------------------------------------------------
@@ -984,6 +320,7 @@ namespace ts {
     //! Typically used to implement PDS-related command line options.
     //!
     TSDUCKDLL extern const Enumeration PrivateDataSpecifierEnum;
+
 
     //---------------------------------------------------------------------
     //! Descriptor tag values (descriptor identification, DID)
@@ -1391,6 +728,7 @@ namespace ts {
         DID_ISDB_SYSTEM_MGMT    = 0xFE, //!< DID for ISDB System management descriptor
     };
 
+
     //---------------------------------------------------------------------
     //! MPEG extended descriptor tag values (in MPEG extension_descriptor)
     //---------------------------------------------------------------------
@@ -1413,6 +751,7 @@ namespace ts {
         MPEG_EDID_VIRT_SEGMENT  = 0x10, //!< Ext.DID for virtual_segmentation_descriptor
         MPEG_EDID_NULL          = 0xFF, //!< Invalid EDID value, can be used as placeholder.
     };
+
 
     //---------------------------------------------------------------------
     //! DVB extended descriptor tag values (in DVB extension_descriptor)
@@ -1448,6 +787,95 @@ namespace ts {
         EDID_NULL               = 0xFF, //!< Invalid EDID value, can be used as placeholder.
     };
 
+
+    //---------------------------------------------------------------------
+    //! Stream type values, as used in the PMT.
+    //---------------------------------------------------------------------
+
+    enum : uint8_t {
+        ST_NULL             = 0x00, //!< Invalid stream type value, used to indicate an absence of value
+        ST_MPEG1_VIDEO      = 0x01, //!< MPEG-1 Video
+        ST_MPEG2_VIDEO      = 0x02, //!< MPEG-2 Video
+        ST_MPEG1_AUDIO      = 0x03, //!< MPEG-1 Audio
+        ST_MPEG2_AUDIO      = 0x04, //!< MPEG-2 Audio
+        ST_PRIV_SECT        = 0x05, //!< MPEG-2 Private sections
+        ST_PES_PRIV         = 0x06, //!< MPEG-2 PES private data
+        ST_MHEG             = 0x07, //!< MHEG
+        ST_DSMCC            = 0x08, //!< DSM-CC
+        ST_MPEG2_ATM        = 0x09, //!< MPEG-2 over ATM
+        ST_DSMCC_MPE        = 0x0A, //!< DSM-CC Multi-Protocol Encapsulation
+        ST_DSMCC_UN         = 0x0B, //!< DSM-CC User-to-Network messages
+        ST_DSMCC_SD         = 0x0C, //!< DSM-CC Stream Descriptors
+        ST_DSMCC_SECT       = 0x0D, //!< DSM-CC Sections
+        ST_MPEG2_AUX        = 0x0E, //!< MPEG-2 Auxiliary
+        ST_AAC_AUDIO        = 0x0F, //!< Advanced Audio Coding (ISO 13818-7)
+        ST_MPEG4_VIDEO      = 0x10, //!< MPEG-4 Video
+        ST_MPEG4_AUDIO      = 0x11, //!< MPEG-4 Audio
+        ST_MPEG4_PES        = 0x12, //!< MPEG-4 SL or FlexMux in PES packets
+        ST_MPEG4_SECT       = 0x13, //!< MPEG-4 SL or FlexMux in sections
+        ST_DSMCC_DLOAD      = 0x14, //!< DSM-CC Synchronized Download Protocol
+        ST_MDATA_PES        = 0x15, //!< MPEG-7 MetaData in PES packets
+        ST_MDATA_SECT       = 0x16, //!< MPEG-7 MetaData in sections
+        ST_MDATA_DC         = 0x17, //!< MPEG-7 MetaData in DSM-CC Data Carousel
+        ST_MDATA_OC         = 0x18, //!< MPEG-7 MetaData in DSM-CC Object Carousel
+        ST_MDATA_DLOAD      = 0x19, //!< MPEG-7 MetaData in DSM-CC Sync Downl Proto
+        ST_MPEG2_IPMP       = 0x1A, //!< MPEG-2 IPMP stream
+        ST_AVC_VIDEO        = 0x1B, //!< AVC video
+        ST_MPEG4_AUDIO_RAW  = 0x1C, //!< ISO/IEC 14496-3 Audio, without using any additional transport syntax, such as DST, ALS and SLS.
+        ST_MPEG4_TEXT       = 0x1D, //!< ISO/IEC 14496-17 Text
+        ST_AUX_VIDEO        = 0x1E, //!< Auxiliary video stream as defined in ISO/IEC 23002-3
+        ST_AVC_SUBVIDEO_G   = 0x1F, //!< SVC video sub-bitstream of an AVC video stream, Annex G of ISO 14496-10
+        ST_AVC_SUBVIDEO_H   = 0x20, //!< MVC video sub-bitstream of an AVC video stream, Annex H of ISO 14496-10
+        ST_J2K_VIDEO        = 0x21, //!< JPEG 2000 video stream ISO/IEC 15444-1
+        ST_MPEG2_3D_VIEW    = 0x22, //!< Additional view ISO/IEC 13818-2 video stream for stereoscopic 3D services
+        ST_AVC_3D_VIEW      = 0x23, //!< Additional view ISO/IEC 14496-10 video stream for stereoscopic 3D services
+        ST_HEVC_VIDEO       = 0x24, //!< HEVC video
+        ST_HEVC_SUBVIDEO    = 0x25, //!< HEVC temporal video subset of an HEVC video stream
+        ST_AVC_SUBVIDEO_I   = 0x26, //!< MVCD video sub-bitstream of an AVC video stream, Annex I of ISO 14496-10
+        ST_EXT_MEDIA        = 0x27, //!< Timeline and External Media Information Stream
+        ST_HEVC_SUBVIDEO_G  = 0x28, //!< HEVC enhancement sub-partition, Annex G of ISO 23008-2
+        ST_HEVC_SUBVIDEO_TG = 0x29, //!< HEVC temporal enhancement sub-partition, Annex G of ISO 23008-2
+        ST_HEVC_SUBVIDEO_H  = 0x2A, //!< HEVC enhancement sub-partition, Annex H of ISO 23008-2
+        ST_HEVC_SUBVIDEO_TH = 0x2B, //!< HEVC temporal enhancement sub-partition, Annex H of ISO 23008 - 2
+        ST_GREEN            = 0x2C, //!< Green access units carried in MPEG-2 sections
+        ST_MPH3D_MAIN       = 0x2D, //!< ISO 23008-3 Audio with MHAS transport syntax – main stream
+        ST_MPH3D_AUX        = 0x2E, //!< ISO 23008-3 Audio with MHAS transport syntax – auxiliary stream
+        ST_QUALITY          = 0x2F, //!< Quality access units carried in sections
+        ST_IPMP             = 0x7F, //!< IPMP stream
+        ST_AC3_AUDIO        = 0x81, //!< AC-3 Audio (ATSC only)
+        ST_SCTE35_SPLICE    = 0x86, //!< SCTE 35 splice information tables
+        ST_EAC3_AUDIO       = 0x87, //!< Enhanced-AC-3 Audio (ATSC only)
+    };
+
+    //!
+    //! Check if an stream type value indicates a PES stream.
+    //! @param [in] st Stream type as used in the PMT.
+    //! @return True if @a st indicates a PES stream.
+    //!
+    TSDUCKDLL bool IsPES(uint8_t st);
+
+    //!
+    //! Check if an stream type value indicates a video stream.
+    //! @param [in] st Stream type as used in the PMT.
+    //! @return True if @a st indicates a video stream.
+    //!
+    TSDUCKDLL bool IsVideoST(uint8_t st);
+
+    //!
+    //! Check if an stream type value indicates an audio stream.
+    //! @param [in] st Stream type as used in the PMT.
+    //! @return True if @a st indicates an audio stream.
+    //!
+    TSDUCKDLL bool IsAudioST(uint8_t st);
+
+    //!
+    //! Check if an stream type value indicates a stream carrying sections.
+    //! @param [in] st Stream type as used in the PMT.
+    //! @return True if @a st indicates a stream carrying sections.
+    //!
+    TSDUCKDLL bool IsSectionST(uint8_t st);
+
+
     //---------------------------------------------------------------------
     //! Linkage type values (in linkage_descriptor)
     //---------------------------------------------------------------------
@@ -1470,6 +898,7 @@ namespace ts {
         LINKAGE_EXT_EVENT_MAX   = 0x1F, //!< Extented event linkage, last value
     };
 
+
     //---------------------------------------------------------------------
     //! Running status values (in RST, EIT, etc.)
     //---------------------------------------------------------------------
@@ -1482,6 +911,7 @@ namespace ts {
         RS_RUNNING     = 0x04, //!< Running
         RS_OFF_AIR     = 0x05, //!< Service off-air
     };
+
 
     //---------------------------------------------------------------------
     //! Scrambling mode values (in scrambling_descriptor)
@@ -1501,6 +931,7 @@ namespace ts {
         SCRAMBLING_USER_MAX      = 0xFE, //!< Last user-defined value.
         SCRAMBLING_RESERVED      = 0xFF, //!< Reserved value.
     };
+
 
     //---------------------------------------------------------------------
     //! Data broadcast id values (in data_broadcast[_id]_descriptor)
@@ -1564,6 +995,7 @@ namespace ts {
         DBID_BBG                  = 0xBBBB, //!< Bertelsmann Broadband Group
    };
 
+
     //---------------------------------------------------------------------
     //! DVB-assigned Bouquet Identifier values
     //---------------------------------------------------------------------
@@ -1573,6 +1005,7 @@ namespace ts {
         BID_TVNUMERIC_EUTELSAT = 0xC030,  //!< Bouquet id for TV Numeric on Eutelsat network
         BID_TVNUMERIC_ASTRA    = 0xC031,  //!< Bouquet id for TV Numeric on Astra network
     };
+
 
     //---------------------------------------------------------------------
     //! DVB-assigned CA System Identifier values
@@ -1601,6 +1034,7 @@ namespace ts {
         CASID_SAFEACCESS      = 0x4ADC,  //!< CAS Id value for SafeAccess.
     };
 
+
     //---------------------------------------------------------------------
     //! DVB-assigned Network Identifier values
     //---------------------------------------------------------------------
@@ -1610,15 +1044,6 @@ namespace ts {
         NID_DTT_UK     = 0x233A,  //!< Network id for the UK national terrestrial network.
     };
 
-    //---------------------------------------------------------------------
-    //! IEEE-assigned Organizationally Unique Identifier (OUI) values
-    //---------------------------------------------------------------------
-
-    enum {
-        OUI_DVB      = 0x00015A,  //!< OUI for Digital Video Broadcasting
-        OUI_SKARDIN  = 0x001222,  //!< OUI for Skardin (UK)
-        OUI_LOGIWAYS = 0x002660,  //!< OUI for Logiways
-    };
 
     //---------------------------------------------------------------------
     //! DVB-MHP transport protocol ids.
@@ -1630,67 +1055,6 @@ namespace ts {
         MHP_PROTO_HTTP     = 0x0003,  //!< HTTP over interaction channel
     };
 
-    //---------------------------------------------------------------------
-    // T2-MI (DVB-T2 Modulator Interface)
-    //---------------------------------------------------------------------
-
-    //!
-    //! Size in bytes of a T2-MI packet header.
-    //!
-    constexpr size_t T2MI_HEADER_SIZE = 6;
-
-    //!
-    //! T2-MI packet types.
-    //! @see ETSI EN 102 773, section 5.1.
-    //!
-    enum : uint8_t {
-        T2MI_BASEBAND_FRAME        = 0x00, //!< Baseband Frame.
-        T2MI_AUX_IQ_DATA           = 0x01, //!< Auxiliary stream I/Q data.
-        T2MI_ARBITRARY_CELL        = 0x02, //!< Arbitrary cell insertion.
-        T2MI_L1_CURRENT            = 0x10, //!< L1-current.
-        T2MI_L1_FUTURE             = 0x11, //!< L1-future.
-        T2MI_P2_BIAS_BALANCING     = 0x12, //!< P2 bias balancing cells.
-        T2MI_DVBT2_TIMESTAMP       = 0x20, //!< DVB-T2 timestamp.
-        T2MI_INDIVIDUAL_ADDRESSING = 0x21, //!< Individual addressing.
-        T2MI_FEF_NULL              = 0x30, //!< FEF part: Null.
-        T2MI_FEF_IQ_DATA           = 0x31, //!< FEF part: I/Q data.
-        T2MI_FEF_COMPOSITE         = 0x32, //!< FEF part: composite.
-        T2MI_FEF_SUBPART           = 0x33, //!< FEF sub-part.
-        T2MI_INVALID_TYPE          = 0xFF  //!< Invalid T2MI packet (non standard value).
-    };
-
-    //!
-    //! Size in bytes of a DVB-T2 Base Band Header.
-    //! See ETSI EN 302 765, section 5.1.7.
-    //!
-    constexpr size_t T2_BBHEADER_SIZE = 10;
-
-    //---------------------------------------------------------------------
-    // Teletext PES packets.
-    // See ETSI EN 300 472 V1.3.1, "DVB; Specification for conveying ITU-R
-    // System B Teletext in DVB bitstreams"
-    //---------------------------------------------------------------------
-
-    //!
-    //! Size in bytes of a Teletext packet.
-    //!
-    constexpr size_t TELETEXT_PACKET_SIZE = 44;
-
-    constexpr uint8_t TELETEXT_PES_FIRST_EBU_DATA_ID = 0x10;  //!< First EBU data_identifier value in PES packets conveying Teletext.
-    constexpr uint8_t TELETEXT_PES_LAST_EBU_DATA_ID  = 0x1F;  //!< Last EBU data_identifier value in PES packets conveying Teletext.
-
-    //!
-    //! Teletext data unit ids.
-    //! @see ETSI EN 300 472
-    //!
-    enum : uint8_t {
-        TELETEXT_DATA_UNIT_ID_NON_SUBTITLE    = 0x02,  //!< Data_unit_id for EBU Teletext non-subtitle data.
-        TELETEXT_DATA_UNIT_ID_SUBTITLE        = 0x03,  //!< Data_unit_id for EBU Teletext subtitle data.
-        TELETEXT_DATA_UNIT_ID_INVERTED        = 0x0C,  //!< Data_unit_id for EBU EBU Teletext Inverted (extension ?).
-        TELETEXT_DATA_UNIT_ID_VPS             = 0xC3,  //!< Data_unit_id for VPS (extension ?).
-        TELETEXT_DATA_UNIT_ID_CLOSED_CAPTIONS = 0xC5,  //!< Data_unit_id for Closed Caption (extension ?).
-        TELETEXT_DATA_UNIT_ID_STUFFING        = 0xFF,  //!< Data_unit_id for stuffing data.
-    };
 
     //---------------------------------------------------------------------
     //! Table type in ATSC Master Guide Table (MGT)
@@ -1712,6 +1076,7 @@ namespace ts {
         ATSC_TTYPE_DCCT_FIRST   = 0x1400,  //!< First DCCT (DCCT with dcc_id 0x00).
         ATSC_TTYPE_DCCT_LAST    = 0x14FF,  //!< Last DCCT (DCCT with dcc_id 0xFF).
     };
+
 
     //---------------------------------------------------------------------
     //! Service type in ATSC Virtual Channel Table (VCT)

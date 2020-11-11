@@ -33,7 +33,6 @@
 
 #include "tsEMMGMUX.h"
 #include "tstlvMessageFactory.h"
-#include "tsMPEG.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 

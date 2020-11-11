@@ -35,7 +35,7 @@
 
 #pragma once
 #include "tsSafePtr.h"
-#include "tsMPEG.h"
+#include "tsPSI.h"
 
 namespace ts {
 

@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMPEG.h"
 #include "tsReport.h"
 #include "tsTSPacket.h"
 #include "tsMonotonic.h"

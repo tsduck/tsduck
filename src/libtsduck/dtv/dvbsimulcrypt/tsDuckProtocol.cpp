@@ -30,7 +30,6 @@
 #include "tsDuckProtocol.h"
 #include "tstlvMessageFactory.h"
 #include "tsSection.h"
-#include "tsMPEG.h"
 TSDUCK_SOURCE;
 
 // Define protocol singleton instance

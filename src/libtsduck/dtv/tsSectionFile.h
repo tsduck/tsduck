@@ -35,7 +35,6 @@
 #pragma once
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
-#include "tsMPEG.h"
 #include "tsSection.h"
 #include "tsBinaryTable.h"
 #include "tsUString.h"

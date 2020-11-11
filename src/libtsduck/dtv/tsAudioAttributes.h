@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsAbstractAudioVideoAttributes.h"
-#include "tsMPEG.h"
+#include "tsTS.h"
 
 namespace ts {
     //!

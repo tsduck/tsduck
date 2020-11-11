@@ -33,10 +33,10 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMPEG.h"
 #include "tsUString.h"
 #include "tsVariable.h"
 #include "tsStringifyInterface.h"
+#include "tsTS.h"
 
 namespace ts {
     //!

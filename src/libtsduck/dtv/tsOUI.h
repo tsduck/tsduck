@@ -26,37 +26,23 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-
-#include "tsPCR.h"
-#include "tsTS.h"
-#include "tsMemory.h"
-TSDUCK_SOURCE;
-
-
-//----------------------------------------------------------------------------
-// This routine extracts a PCR from a stream.
-// Use 6 bytes at address b. Return a 42-bit value.
+//!
+//!  @file
+//!  @ingroup mpeg
+//!  Common definitions for IEEE Organizationally Unique Identifier (OUI).
+//!
 //----------------------------------------------------------------------------
 
-uint64_t ts::GetPCR(const uint8_t* b)
-{
-    const uint32_t v32 = GetUInt32(b);
-    const uint16_t v16 = GetUInt16(b + 4);
-    const uint64_t pcr_base = (uint64_t(v32) << 1) | uint64_t(v16 >> 15);
-    const uint64_t pcr_ext = uint64_t(v16 & 0x01FF);
-    return pcr_base * SYSTEM_CLOCK_SUBFACTOR + pcr_ext;
-}
+#pragma once
+#include "tsPlatform.h"
 
-
-//----------------------------------------------------------------------------
-// This routine inserts a PCR in a stream.
-// Writes 6 bytes at address b.
-//----------------------------------------------------------------------------
-
-void ts::PutPCR(uint8_t* b, const uint64_t& pcr)
-{
-    const uint64_t pcr_base = pcr / SYSTEM_CLOCK_SUBFACTOR;
-    const uint64_t pcr_ext = pcr % SYSTEM_CLOCK_SUBFACTOR;
-    PutUInt32(b, uint32_t(pcr_base >> 1));
-    PutUInt16(b + 4, uint16_t(uint32_t((pcr_base << 15) | 0x7E00 | pcr_ext)));
+namespace ts {
+    //!
+    //! Some IEEE-assigned Organizationally Unique Identifier (OUI) values.
+    //!
+    enum class OUI {
+        DVB      = 0x00015A,  //!< OUI for Digital Video Broadcasting
+        SKARDIN  = 0x001222,  //!< OUI for Skardin (UK)
+        LOGIWAYS = 0x002660,  //!< OUI for Logiways
+    };
 }

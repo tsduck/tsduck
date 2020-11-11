@@ -160,7 +160,7 @@ void ts::ContinuityAnalyzer::getLastPacket(PID pid, TSPacket& packet) const
     auto it = _pid_states.find(pid);
     packet = it == _pid_states.end() ? NullPacket : it->second.last_pkt_in;
 }
-    
+
 ts::TSPacket ts::ContinuityAnalyzer::lastPacket(PID pid) const
 {
     TSPacket pkt;

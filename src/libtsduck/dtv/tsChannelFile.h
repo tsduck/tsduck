@@ -41,7 +41,6 @@
 #include "tsSafePtr.h"
 #include "tsMutex.h"
 #include "tsVariable.h"
-#include "tsMPEG.h"
 
 namespace ts {
     //!

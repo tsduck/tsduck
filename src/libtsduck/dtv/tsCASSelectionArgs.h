@@ -37,7 +37,6 @@
 #include "tsCASFamily.h"
 #include "tsDescriptorList.h"
 #include "tsNullReport.h"
-#include "tsMPEG.h"
 #include "tsCAT.h"
 #include "tsPMT.h"
 

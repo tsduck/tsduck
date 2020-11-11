@@ -37,13 +37,13 @@
 #include "tsArgsSupplierInterface.h"
 #include "tsCerrReport.h"
 #include "tsTSPacket.h"
+#include "tsPSI.h"
 #include "tsDVBCSA2.h"
 #include "tsDVBCISSA.h"
 #include "tsAES.h"
 #include "tsCBC.h"
 #include "tsCTR.h"
 #include "tsIDSA.h"
-#include "tsMPEG.h"
 
 namespace ts {
     //!

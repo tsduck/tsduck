@@ -26,37 +26,45 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-
-#include "tsPCR.h"
-#include "tsTS.h"
-#include "tsMemory.h"
-TSDUCK_SOURCE;
-
-
-//----------------------------------------------------------------------------
-// This routine extracts a PCR from a stream.
-// Use 6 bytes at address b. Return a 42-bit value.
+//!
+//!  @file
+//!  @ingroup mpeg
+//!  Common definitions for T2-MI (DVB-T2 Modulator Interface).
+//!
 //----------------------------------------------------------------------------
 
-uint64_t ts::GetPCR(const uint8_t* b)
-{
-    const uint32_t v32 = GetUInt32(b);
-    const uint16_t v16 = GetUInt16(b + 4);
-    const uint64_t pcr_base = (uint64_t(v32) << 1) | uint64_t(v16 >> 15);
-    const uint64_t pcr_ext = uint64_t(v16 & 0x01FF);
-    return pcr_base * SYSTEM_CLOCK_SUBFACTOR + pcr_ext;
-}
+#pragma once
+#include "tsPlatform.h"
 
+namespace ts {
+    //!
+    //! Size in bytes of a T2-MI packet header.
+    //!
+    constexpr size_t T2MI_HEADER_SIZE = 6;
 
-//----------------------------------------------------------------------------
-// This routine inserts a PCR in a stream.
-// Writes 6 bytes at address b.
-//----------------------------------------------------------------------------
+    //!
+    //! T2-MI packet types.
+    //! @see ETSI EN 102 773, section 5.1.
+    //!
+    enum class T2MIPacketType : uint8_t {
+        BASEBAND_FRAME        = 0x00, //!< Baseband Frame.
+        AUX_IQ_DATA           = 0x01, //!< Auxiliary stream I/Q data.
+        ARBITRARY_CELL        = 0x02, //!< Arbitrary cell insertion.
+        L1_CURRENT            = 0x10, //!< L1-current.
+        L1_FUTURE             = 0x11, //!< L1-future.
+        P2_BIAS_BALANCING     = 0x12, //!< P2 bias balancing cells.
+        DVBT2_TIMESTAMP       = 0x20, //!< DVB-T2 timestamp.
+        INDIVIDUAL_ADDRESSING = 0x21, //!< Individual addressing.
+        FEF_NULL              = 0x30, //!< FEF part: Null.
+        FEF_IQ_DATA           = 0x31, //!< FEF part: I/Q data.
+        FEF_COMPOSITE         = 0x32, //!< FEF part: composite.
+        FEF_SUBPART           = 0x33, //!< FEF sub-part.
+        INVALID_TYPE          = 0xFF  //!< Invalid T2MI packet (non standard value).
+    };
 
-void ts::PutPCR(uint8_t* b, const uint64_t& pcr)
-{
-    const uint64_t pcr_base = pcr / SYSTEM_CLOCK_SUBFACTOR;
-    const uint64_t pcr_ext = pcr % SYSTEM_CLOCK_SUBFACTOR;
-    PutUInt32(b, uint32_t(pcr_base >> 1));
-    PutUInt16(b + 4, uint16_t(uint32_t((pcr_base << 15) | 0x7E00 | pcr_ext)));
+    //!
+    //! Size in bytes of a DVB-T2 Base Band Header.
+    //! See ETSI EN 302 765, section 5.1.7.
+    //!
+    constexpr size_t T2_BBHEADER_SIZE = 10;
 }

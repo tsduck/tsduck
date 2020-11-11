@@ -37,6 +37,7 @@
 #include "tsAVCSequenceParameterSet.h"
 #include "tsNames.h"
 #include "tsMemory.h"
+#include "tsPES.h"
 TSDUCK_SOURCE;
 
 

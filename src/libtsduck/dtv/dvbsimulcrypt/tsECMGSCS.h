@@ -37,7 +37,6 @@
 #include "tstlvProtocol.h"
 #include "tstlvStreamMessage.h"
 #include "tsSingletonManager.h"
-#include "tsMPEG.h"
 #include "tsDVBCSA2.h"
 
 namespace ts {

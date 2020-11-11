@@ -11,7 +11,7 @@ linux|mac {
 
 linux {
     QMAKE_CXXFLAGS += -isystem $$PROJROOT/dektec/LinuxSDK/DTAPI/Include
-    LIBS += $$system("$$PROJROOT/dektec/dtapi-config.sh --object")
+    OBJECTS += $$system("$$PROJROOT/dektec/dtapi-config.sh --object")
 }
 
 mac {

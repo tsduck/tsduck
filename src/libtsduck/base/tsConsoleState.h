@@ -73,7 +73,7 @@ namespace ts {
         //! @param [in,out] report Where to report error messages. Use the standard error by default.
         //!
         ConsoleState(Report& report = CERR);
-        
+
         //!
         //! Destructor.
         //! On Windows, it restores the original console code page.

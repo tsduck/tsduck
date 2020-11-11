@@ -33,6 +33,9 @@
 #include "tsMemory.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
+#include "tsPSI.h"
+#include "tsPES.h"
+#include "tsVideo.h"
 TSDUCK_SOURCE;
 
 

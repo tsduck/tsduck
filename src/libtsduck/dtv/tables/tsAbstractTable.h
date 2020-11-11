@@ -36,7 +36,6 @@
 #include "tsAbstractSignalization.h"
 #include "tsTablesPtr.h"
 #include "tsDescriptorList.h"
-#include "tsMPEG.h"
 
 namespace ts {
     //!

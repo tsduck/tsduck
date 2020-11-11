@@ -34,10 +34,10 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsPSI.h"
 #include "tsUString.h"
 #include "tsEnumUtils.h"
 #include "tsCASFamily.h"
-#include "tsMPEG.h"
 #include "tsReport.h"
 #include "tsSingletonManager.h"
 

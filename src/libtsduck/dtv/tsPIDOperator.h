@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsTS.h"
 #include "tsDescriptorList.h"
 
 namespace ts {

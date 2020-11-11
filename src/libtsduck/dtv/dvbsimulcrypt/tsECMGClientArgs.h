@@ -35,7 +35,6 @@
 #pragma once
 #include "tsArgsSupplierInterface.h"
 #include "tsByteBlock.h"
-#include "tsMPEG.h"
 #include "tsSocketAddress.h"
 #include "tstlv.h"
 
