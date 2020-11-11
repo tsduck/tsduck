@@ -34,10 +34,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMPEG.h"
+#include "tsPlatform.h"
 
 namespace ts {
-
     //!
     //! Size in bytes of a Program Clock Reference (PCR).
     //!

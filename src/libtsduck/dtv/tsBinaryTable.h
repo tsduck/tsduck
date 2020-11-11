@@ -36,6 +36,7 @@
 #include "tsAbstractDefinedByStandards.h"
 #include "tsTablesPtr.h"
 #include "tsTLVSyntax.h"
+#include "tsTS.h"
 #include "tsxml.h"
 
 namespace ts {

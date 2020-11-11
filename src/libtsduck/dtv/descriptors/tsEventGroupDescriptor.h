@@ -61,10 +61,10 @@ namespace ts {
         struct TSDUCKDLL OtherEvent
         {
             OtherEvent();                  //!< Constructor.
-            uint16_t original_network_id;  //!< Original network id.     
-            uint16_t transport_stream_id;  //!< Transport stream id. 
-            uint16_t service_id;           //!< Service id.  
-            uint16_t event_id;             //!< Event id.    
+            uint16_t original_network_id;  //!< Original network id.
+            uint16_t transport_stream_id;  //!< Transport stream id.
+            uint16_t service_id;           //!< Service id.
+            uint16_t event_id;             //!< Event id.
         };
 
         typedef std::list<ActualEvent> ActualEventList;  //!< List of actual events.

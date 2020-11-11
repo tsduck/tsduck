@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSPacketStream.h"
-#include "tsMPEG.h"
 TSDUCK_SOURCE;
 
 

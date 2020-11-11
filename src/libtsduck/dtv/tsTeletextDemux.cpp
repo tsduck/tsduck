@@ -248,7 +248,7 @@ void ts::TeletextDemux::handlePESPacket(const PESPacket& packet)
     while (plSize >= 2) {
 
         // Data unit header (2 bytes).
-        const uint8_t unitId = pl[0];
+        const TeletextDataUnitId unitId = TeletextDataUnitId(pl[0]);
         const uint8_t unitSize = pl[1];
         plSize -= 2;
         pl += 2;
@@ -256,7 +256,7 @@ void ts::TeletextDemux::handlePESPacket(const PESPacket& packet)
         // Filter Teletext packets.
         if (unitSize <= plSize &&
             unitSize == TELETEXT_PACKET_SIZE &&
-            (unitId == TELETEXT_DATA_UNIT_ID_NON_SUBTITLE || unitId == TELETEXT_DATA_UNIT_ID_SUBTITLE))
+            (unitId == TeletextDataUnitId::NON_SUBTITLE || unitId == TeletextDataUnitId::SUBTITLE))
         {
             // Reverse bitwise endianess of each data byte via lookup table, ETS 300 706, chapter 7.1.
             uint8_t pkt[TELETEXT_PACKET_SIZE];
@@ -277,7 +277,7 @@ void ts::TeletextDemux::handlePESPacket(const PESPacket& packet)
 // Process one Teletext packet.
 //-----------------------------------------------------------------------------
 
-void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t dataUnitId, const uint8_t* pkt)
+void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, TeletextDataUnitId dataUnitId, const uint8_t* pkt)
 {
     // Structure of a Teletext packet. See ETSI 300 706, section 7.1.
     // - Clock run-in: 1 byte
@@ -317,7 +317,7 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t d
         pc.transMode = TransMode(unham_8_4(data[7]) & 0x01);
 
         // FIXME: Well, this is not ETS 300 706 kosher, however we are interested in TELETEXT_SUBTITLE only
-        if (pc.transMode == TRANSMODE_PARALLEL && dataUnitId != TELETEXT_DATA_UNIT_ID_SUBTITLE) {
+        if (pc.transMode == TRANSMODE_PARALLEL && dataUnitId != TeletextDataUnitId::SUBTITLE) {
             return;
         }
 

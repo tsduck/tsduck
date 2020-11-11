@@ -140,6 +140,7 @@ install: $(SHARED_LIBTSDUCK)
 install-devel: $(STATIC_LIBTSDUCK) tsduck.h
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
+	rm -f $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsMPEG.h
 	install -m 644 tsduck.mk \
 	    $(filter-out $(if $(NOTELETEXT),%/tsTeletextCharset.h %/tsTeletextDemux.h,),$(shell find . -name 'ts*.h' ! -path '*/private/*' ! -path '*/windows/*' ! -path '*/$(SKIPDIR)/*')) \
 	    $(SYSROOT)$(SYSPREFIX)/include/tsduck

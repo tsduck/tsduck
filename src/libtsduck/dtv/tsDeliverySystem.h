@@ -166,7 +166,7 @@ namespace ts {
     // This is harmless here since the subclass does not allocate own resources.
     TS_PUSH_WARNING()
     TS_GCC_NOWARNING(non-virtual-dtor)
-    
+
     //!
     //! A set of delivery system values (ts::DeliverySystem).
     //! Typically used to indicate the list of standards which are supported by a tuner.

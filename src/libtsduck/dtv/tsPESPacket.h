@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsByteBlock.h"
-#include "tsMPEG.h"
+#include "tsTS.h"
 
 namespace ts {
 
@@ -282,10 +282,7 @@ namespace ts {
         //! Stream id of the PES packet.
         //! @return The stream id of the PES packet.
         //!
-        uint8_t getStreamId() const
-        {
-            return _is_valid ? (*_data)[3] : 0;
-        }
+        uint8_t getStreamId() const;
 
         //!
         //! Set the stream id of the PES packet.
@@ -297,10 +294,7 @@ namespace ts {
         //! Check if the packet has a long header.
         //! @return True if the packet has a long header.
         //!
-        bool hasLongHeader() const
-        {
-            return _is_valid && IsLongHeaderSID((*_data)[3]);
-        }
+        bool hasLongHeader() const;
 
         //!
         //! Access to the full binary content of the packet.

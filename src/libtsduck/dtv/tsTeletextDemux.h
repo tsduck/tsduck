@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsPESDemux.h"
+#include "tsTeletext.h"
 #include "tsTeletextCharset.h"
 #include "tsTeletextHandlerInterface.h"
 #if !defined(TS_NOTELETEXT)
@@ -179,7 +180,7 @@ namespace ts {
         //! @param [in] dataUnitId Teletext packet data unit id.
         //! @param [in] pkt Address of Teletext packet (44 bytes, TELETEXT_PACKET_SIZE).
         //!
-        void processTeletextPacket(PID pid, PIDContext& pc, uint8_t dataUnitId, const uint8_t* pkt);
+        void processTeletextPacket(PID pid, PIDContext& pc, TeletextDataUnitId dataUnitId, const uint8_t* pkt);
 
         //!
         //! Process one Teletext page.

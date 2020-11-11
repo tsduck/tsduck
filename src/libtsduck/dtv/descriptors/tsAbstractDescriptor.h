@@ -36,7 +36,6 @@
 #include "tsAbstractSignalization.h"
 #include "tsTablesPtr.h"
 #include "tsByteBlock.h"
-#include "tsMPEG.h"
 
 namespace ts {
     //!

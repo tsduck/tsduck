@@ -36,7 +36,6 @@
 #include "tsDirectShowUtils.h"
 #include "tsMemory.h"
 #include "tsNullReport.h"
-#include "tsMPEG.h"
 #include <winioctl.h>
 #include <ksproxy.h>
 TSDUCK_SOURCE;

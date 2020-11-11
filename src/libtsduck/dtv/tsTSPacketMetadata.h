@@ -33,17 +33,19 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMPEG.h"
+#include "tsTS.h"
 #include "tsByteBlock.h"
 #include "tsTimeSource.h"
 #include "tsResidentBuffer.h"
 
 namespace ts {
+    //
     // The TSPacketMetadata class is used in large arrays.
     // We want to make sure we don't loose space:
     // - No vtable (ie. no virtual method).
     // - The order of private fields is carefully set to avoid padding.
     // - Pragma pack to 1-byte alignment.
+    //
     #pragma pack(push, 1)
 
     //!

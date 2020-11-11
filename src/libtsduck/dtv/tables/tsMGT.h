@@ -37,6 +37,7 @@
 #include "tsDescriptorList.h"
 #include "tsSingletonManager.h"
 #include "tsEnumeration.h"
+#include "tsTS.h"
 
 namespace ts {
     //!

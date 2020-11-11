@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMPEG.h"
+#include "tsTS.h"
 #include "tsMemory.h"
 #include "tsCerrReport.h"
 #include "tsException.h"

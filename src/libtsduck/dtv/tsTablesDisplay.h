@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsArgsSupplierInterface.h"
-#include "tsMPEG.h"
 #include "tsCASFamily.h"
 #include "tsDuckContext.h"
 #include "tsTLVSyntax.h"

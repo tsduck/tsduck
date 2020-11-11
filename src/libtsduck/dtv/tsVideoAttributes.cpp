@@ -29,6 +29,7 @@
 
 #include "tsVideoAttributes.h"
 #include "tsMemory.h"
+#include "tsPES.h"
 TSDUCK_SOURCE;
 
 

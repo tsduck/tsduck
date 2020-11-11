@@ -31,7 +31,6 @@
 #include "tsDirectShowUtils.h"
 #include "tsMediaTypeUtils.h"
 #include "tsWinUtils.h"
-#include "tsMPEG.h"
 #include "tsTime.h"
 #include "tsGuard.h"
 #include "tsGuardCondition.h"

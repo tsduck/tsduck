@@ -27,36 +27,58 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPCR.h"
 #include "tsTS.h"
-#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// This routine extracts a PCR from a stream.
-// Use 6 bytes at address b. Return a 42-bit value.
+// These PID sets respectively contains no PID and all PID's.
+// The default constructor for PIDSet (std::bitset) sets all bits to 0.
 //----------------------------------------------------------------------------
 
-uint64_t ts::GetPCR(const uint8_t* b)
+const ts::PIDSet ts::NoPID;
+const ts::PIDSet ts::AllPIDs (~NoPID);
+
+
+//----------------------------------------------------------------------------
+// Compute the PCR of a packet, based on the PCR of a previous packet.
+//----------------------------------------------------------------------------
+
+uint64_t ts::NextPCR(uint64_t last_pcr, PacketCounter distance, BitRate bitrate)
 {
-    const uint32_t v32 = GetUInt32(b);
-    const uint16_t v16 = GetUInt16(b + 4);
-    const uint64_t pcr_base = (uint64_t(v32) << 1) | uint64_t(v16 >> 15);
-    const uint64_t pcr_ext = uint64_t(v16 & 0x01FF);
-    return pcr_base * SYSTEM_CLOCK_SUBFACTOR + pcr_ext;
+    if (last_pcr == INVALID_PCR || bitrate == 0) {
+        return INVALID_PCR;
+    }
+
+    uint64_t next_pcr = last_pcr + (distance * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(bitrate);
+    if (next_pcr >= PCR_SCALE) {
+        next_pcr -= PCR_SCALE;
+    }
+
+    return next_pcr;
 }
 
 
 //----------------------------------------------------------------------------
-// This routine inserts a PCR in a stream.
-// Writes 6 bytes at address b.
+// Compute the difference between PCR2 and PCR1.
 //----------------------------------------------------------------------------
 
-void ts::PutPCR(uint8_t* b, const uint64_t& pcr)
+uint64_t ts::DiffPCR(uint64_t pcr1, uint64_t pcr2)
 {
-    const uint64_t pcr_base = pcr / SYSTEM_CLOCK_SUBFACTOR;
-    const uint64_t pcr_ext = pcr % SYSTEM_CLOCK_SUBFACTOR;
-    PutUInt32(b, uint32_t(pcr_base >> 1));
-    PutUInt16(b + 4, uint16_t(uint32_t((pcr_base << 15) | 0x7E00 | pcr_ext)));
+    if (pcr1 > MAX_PCR || pcr2 > MAX_PCR) {
+        return INVALID_PCR;
+    }
+    else {
+        return pcr2 >= pcr1 ? pcr2 - pcr1 : PCR_SCALE + pcr2 - pcr1;
+    }
+}
+
+uint64_t ts::DiffPTS(uint64_t pts1, uint64_t pts2)
+{
+    if (pts1 > MAX_PTS_DTS || pts2 > MAX_PTS_DTS) {
+        return INVALID_PTS;
+    }
+    else {
+        return pts2 >= pts1 ? pts2 - pts1 : PTS_DTS_SCALE + pts2 - pts1;
+    }
 }

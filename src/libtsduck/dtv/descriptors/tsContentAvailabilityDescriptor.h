@@ -49,7 +49,7 @@ namespace ts {
         bool      image_constraint_token;  //!< Image constraint.
         bool      retention_mode;          //!< Rentention mode.
         uint8_t   retention_state;         //!< 3 bits.
-        bool      encryption_mode;         //!< Encryption mode. 
+        bool      encryption_mode;         //!< Encryption mode.
         ByteBlock reserved_future_use;     //!< Additional info.
 
         //!

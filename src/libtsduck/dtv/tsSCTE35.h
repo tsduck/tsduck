@@ -34,7 +34,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMPEG.h"
 #include "tsVariable.h"
 #include "tsByteBlock.h"
 

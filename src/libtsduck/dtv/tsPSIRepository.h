@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMPEG.h"
 #include "tsEDID.h"
 #include "tsSection.h"
 #include "tsTablesPtr.h"
@@ -248,7 +247,7 @@ namespace ts {
                           Standards standards,
                           const UString& xmlName,
                           DisplaySectionFunction displayFunction = nullptr,
-                          LogSectionFunction logFunction = nullptr, 
+                          LogSectionFunction logFunction = nullptr,
                           const std::initializer_list<PID>& pids = std::initializer_list<PID>(),
                           uint16_t minCAS = CASID_NULL,
                           uint16_t maxCAS = CASID_NULL);
@@ -267,7 +266,7 @@ namespace ts {
             RegisterTable(const std::vector<TID>& tids,
                           Standards standards,
                           DisplaySectionFunction displayFunction = nullptr,
-                          LogSectionFunction logFunction = nullptr, 
+                          LogSectionFunction logFunction = nullptr,
                           const std::initializer_list<PID>& pids = std::initializer_list<PID>(),
                           uint16_t minCAS = CASID_NULL,
                           uint16_t maxCAS = CASID_NULL);

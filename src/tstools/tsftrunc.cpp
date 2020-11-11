@@ -32,8 +32,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
-#include "tsMPEG.h"
 #include "tsSysUtils.h"
+#include "tsTS.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 

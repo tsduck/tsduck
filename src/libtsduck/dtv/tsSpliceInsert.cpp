@@ -32,6 +32,7 @@
 #include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
+#include "tsTS.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"splice_insert"

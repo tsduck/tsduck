@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsAVCSequenceParameterSet.h"
-#include "tsMPEG.h"
 TSDUCK_SOURCE;
 
 

@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCASFamily.h"
-#include "tsMPEG.h"
+#include "tsPSI.h"
 TSDUCK_SOURCE;
 
 

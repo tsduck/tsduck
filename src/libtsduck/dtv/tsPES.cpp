@@ -27,36 +27,23 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPCR.h"
-#include "tsTS.h"
-#include "tsMemory.h"
+#include "tsPES.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// This routine extracts a PCR from a stream.
-// Use 6 bytes at address b. Return a 42-bit value.
+// Check if a SID value indicates a PES packet with long header
 //----------------------------------------------------------------------------
 
-uint64_t ts::GetPCR(const uint8_t* b)
+bool ts::IsLongHeaderSID(uint8_t sid)
 {
-    const uint32_t v32 = GetUInt32(b);
-    const uint16_t v16 = GetUInt16(b + 4);
-    const uint64_t pcr_base = (uint64_t(v32) << 1) | uint64_t(v16 >> 15);
-    const uint64_t pcr_ext = uint64_t(v16 & 0x01FF);
-    return pcr_base * SYSTEM_CLOCK_SUBFACTOR + pcr_ext;
-}
-
-
-//----------------------------------------------------------------------------
-// This routine inserts a PCR in a stream.
-// Writes 6 bytes at address b.
-//----------------------------------------------------------------------------
-
-void ts::PutPCR(uint8_t* b, const uint64_t& pcr)
-{
-    const uint64_t pcr_base = pcr / SYSTEM_CLOCK_SUBFACTOR;
-    const uint64_t pcr_ext = pcr % SYSTEM_CLOCK_SUBFACTOR;
-    PutUInt32(b, uint32_t(pcr_base >> 1));
-    PutUInt16(b + 4, uint16_t(uint32_t((pcr_base << 15) | 0x7E00 | pcr_ext)));
+    return
+        sid != SID_PSMAP &&    // Program stream map
+        sid != SID_PAD &&      // Padding stream
+        sid != SID_PRIV2 &&    // Private stream 2
+        sid != SID_ECM &&      // ECM stream
+        sid != SID_EMM &&      // EMM stream
+        sid != SID_PSDIR &&    // Program stream directory
+        sid != SID_DSMCC &&    // DSM-CC data
+        sid != SID_H222_1_E;   // H.222.1 type E
 }

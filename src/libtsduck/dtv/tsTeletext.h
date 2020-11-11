@@ -26,37 +26,45 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-
-#include "tsPCR.h"
-#include "tsTS.h"
-#include "tsMemory.h"
-TSDUCK_SOURCE;
-
-
-//----------------------------------------------------------------------------
-// This routine extracts a PCR from a stream.
-// Use 6 bytes at address b. Return a 42-bit value.
+//!
+//!  @file
+//!  @ingroup mpeg
+//!  Common definitions for Teletext PES packets.
+//!  Reference: ETSI EN 300 472 V1.3.1, "DVB; Specification for conveying
+//!  ITU-R System B Teletext in DVB bitstreams"
+//!  @see ETSI EN 300 472
+//!
 //----------------------------------------------------------------------------
 
-uint64_t ts::GetPCR(const uint8_t* b)
-{
-    const uint32_t v32 = GetUInt32(b);
-    const uint16_t v16 = GetUInt16(b + 4);
-    const uint64_t pcr_base = (uint64_t(v32) << 1) | uint64_t(v16 >> 15);
-    const uint64_t pcr_ext = uint64_t(v16 & 0x01FF);
-    return pcr_base * SYSTEM_CLOCK_SUBFACTOR + pcr_ext;
-}
+#pragma once
+#include "tsPlatform.h"
 
+namespace ts {
+    //!
+    //! Size in bytes of a Teletext packet.
+    //!
+    constexpr size_t TELETEXT_PACKET_SIZE = 44;
 
-//----------------------------------------------------------------------------
-// This routine inserts a PCR in a stream.
-// Writes 6 bytes at address b.
-//----------------------------------------------------------------------------
+    //!
+    //! First EBU data_identifier value in PES packets conveying Teletext.
+    //!
+    constexpr uint8_t TELETEXT_PES_FIRST_EBU_DATA_ID = 0x10;
 
-void ts::PutPCR(uint8_t* b, const uint64_t& pcr)
-{
-    const uint64_t pcr_base = pcr / SYSTEM_CLOCK_SUBFACTOR;
-    const uint64_t pcr_ext = pcr % SYSTEM_CLOCK_SUBFACTOR;
-    PutUInt32(b, uint32_t(pcr_base >> 1));
-    PutUInt16(b + 4, uint16_t(uint32_t((pcr_base << 15) | 0x7E00 | pcr_ext)));
+    //!
+    //! Last EBU data_identifier value in PES packets conveying Teletext.
+    //!
+    constexpr uint8_t TELETEXT_PES_LAST_EBU_DATA_ID  = 0x1F;
+
+    //!
+    //! Teletext data unit ids.
+    //! @see ETSI EN 300 472
+    //!
+    enum class TeletextDataUnitId : uint8_t {
+        NON_SUBTITLE    = 0x02,  //!< Data_unit_id for EBU Teletext non-subtitle data.
+        SUBTITLE        = 0x03,  //!< Data_unit_id for EBU Teletext subtitle data.
+        INVERTED        = 0x0C,  //!< Data_unit_id for EBU EBU Teletext Inverted (extension ?).
+        VPS             = 0xC3,  //!< Data_unit_id for VPS (extension ?).
+        CLOSED_CAPTIONS = 0xC5,  //!< Data_unit_id for Closed Caption (extension ?).
+        STUFFING        = 0xFF,  //!< Data_unit_id for stuffing data.
+    };
 }
