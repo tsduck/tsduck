@@ -11,7 +11,10 @@ TSDuck is [open for contributions](https://tsduck.io/doxy/contributing.html).
 The [issues](https://github.com/tsduck/tsduck/issues) area on GitHub can be
 freely used for questions or discussions about TSDuck or digital television
 topics where TSDuck can be used. Specifically, unlike many projects which are
-hosted on GutHub, the issue area is not limited to reporting problems.
+hosted on GitHub, the issue area is not limited to reporting problems.
+
+As usual in any civilized discussion forum, be polite and benevolent.
+Aggressivity and insults are not tolerated.
 
 ## Ban on Pay-TV piracy
 
@@ -26,4 +29,5 @@ years and will never support piracy in any form.
 __Important:__ Discussions on television piracy, hacking systems or any
 support to systems the purpose of which is to deprive legitimate content
 rights owners of their revenue is strictly forbidden. Authors of such
-topics will be banned from the discussion forum.
+topics will be banned from the discussion forum and their messages will
+be deleted.
