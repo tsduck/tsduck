@@ -181,7 +181,7 @@ void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 bool ts::PMT::Stream::isVideo(const DuckContext& duck) const
 {
-    return IsVideoST(stream_type) ||
+    return StreamTypeIsVideo(stream_type) ||
         descs.search(DID_AVC_VIDEO) < descs.count() ||
         descs.search(DID_HEVC_VIDEO) < descs.count() ||
         descs.search(DID_MPEG4_VIDEO) < descs.count() ||
@@ -196,7 +196,7 @@ bool ts::PMT::Stream::isVideo(const DuckContext& duck) const
 bool ts::PMT::Stream::isAudio(const DuckContext& duck) const
 {
     // Check obvious audio stream types.
-    if (IsAudioST(stream_type)) {
+    if (StreamTypeIsAudio(stream_type)) {
         return true;
     }
 

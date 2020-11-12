@@ -676,10 +676,10 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
         const PMT::Stream& stream(it->second);
         ps = getPID(es_pid);
         ps->addService(pmt.service_id);
-        ps->carry_audio = ps->carry_audio || IsAudioST(stream.stream_type);
-        ps->carry_video = ps->carry_video || IsVideoST(stream.stream_type);
-        ps->carry_pes = ps->carry_pes || IsPES(stream.stream_type);
-        if (!ps->carry_section && !ps->carry_t2mi && IsSectionST(stream.stream_type)) {
+        ps->carry_audio = ps->carry_audio || StreamTypeIsAudio(stream.stream_type);
+        ps->carry_video = ps->carry_video || StreamTypeIsVideo(stream.stream_type);
+        ps->carry_pes = ps->carry_pes || StreamTypeIsPES(stream.stream_type);
+        if (!ps->carry_section && !ps->carry_t2mi && StreamTypeIsSection(stream.stream_type)) {
             ps->carry_section = true;
             _demux.addPID(es_pid);
         }

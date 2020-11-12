@@ -91,30 +91,30 @@ bool ts::AVCHRDParameters::parse(AVCParser& parser)
     clear();
 
     valid =
-        parser.ue (cpb_cnt_minus1) &&
-        parser.u (bit_rate_scale, 4) &&
-        parser.u (cpb_size_scale, 4);
+        parser.ue(cpb_cnt_minus1) &&
+        parser.u(bit_rate_scale, 4) &&
+        parser.u(cpb_size_scale, 4);
 
     for (uint32_t i = 0; valid && i <= cpb_cnt_minus1; i++) {
         uint32_t x_bit_rate_value_minus1;
         uint32_t x_cpb_size_value_minus1;
         uint8_t  x_cbr_flag;
         valid = valid &&
-            parser.ue (x_bit_rate_value_minus1) &&
-            parser.ue (x_cpb_size_value_minus1) &&
-            parser.u (x_cbr_flag, 1);
+            parser.ue(x_bit_rate_value_minus1) &&
+            parser.ue(x_cpb_size_value_minus1) &&
+            parser.u(x_cbr_flag, 1);
         if (valid) {
-            bit_rate_value_minus1.push_back (x_bit_rate_value_minus1);
-            cpb_size_value_minus1.push_back (x_cpb_size_value_minus1);
-            cbr_flag.push_back (x_cbr_flag);
+            bit_rate_value_minus1.push_back(x_bit_rate_value_minus1);
+            cpb_size_value_minus1.push_back(x_cpb_size_value_minus1);
+            cbr_flag.push_back(x_cbr_flag);
         }
     }
 
     valid = valid &&
-        parser.u (initial_cpb_removal_delay_length_minus1, 5) &&
-        parser.u (cpb_removal_delay_length_minus1, 5) &&
-        parser.u (dpb_output_delay_length_minus1, 5) &&
-        parser.u (time_offset_length, 5);
+        parser.u(initial_cpb_removal_delay_length_minus1, 5) &&
+        parser.u(cpb_removal_delay_length_minus1, 5) &&
+        parser.u(dpb_output_delay_length_minus1, 5) &&
+        parser.u(time_offset_length, 5);
 
     return valid;
 }

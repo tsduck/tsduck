@@ -98,6 +98,7 @@ namespace ts {
     //---------------------------------------------------------------------
 
     enum {
+        AVC_AUT_UNSPECIFIED  =  0, //!< Unspecified NALunit type.
         AVC_AUT_NON_IDR      =  1, //!< Coded slice of a non-IDR picture (NALunit type).
         AVC_AUT_SLICE_A      =  2, //!< Coded slice data partition A (NALunit type).
         AVC_AUT_SLICE_B      =  3, //!< Coded slice data partition B (NALunit type).
@@ -113,8 +114,10 @@ namespace ts {
         AVC_AUT_SEQPARAMSEXT = 13, //!< Sequence parameter set extension (NALunit type).
         AVC_AUT_PREFIX       = 14, //!< Prefix NAL unit in scalable extension (NALunit type).
         AVC_AUT_SUBSETPARAMS = 15, //!< Subset sequence parameter set (NALunit type).
+        AVC_AUT_DEPTHPARAMS  = 16, //!< Depth parameter set (NALunit type).
         AVC_AUT_SLICE_NOPART = 19, //!< Coded slice without partitioning (NALunit type).
         AVC_AUT_SLICE_SCALE  = 20, //!< Coded slice in scalable extension (NALunit type).
+        AVC_AUT_SLICE_EXTEND = 21, //!< Coded slice extension or 3D-AVC texture view (NALunit type).
     };
 
 

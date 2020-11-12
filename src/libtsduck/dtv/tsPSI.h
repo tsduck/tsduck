@@ -852,28 +852,42 @@ namespace ts {
     //! @param [in] st Stream type as used in the PMT.
     //! @return True if @a st indicates a PES stream.
     //!
-    TSDUCKDLL bool IsPES(uint8_t st);
+    TSDUCKDLL bool StreamTypeIsPES(uint8_t st);
 
     //!
     //! Check if an stream type value indicates a video stream.
     //! @param [in] st Stream type as used in the PMT.
     //! @return True if @a st indicates a video stream.
     //!
-    TSDUCKDLL bool IsVideoST(uint8_t st);
+    TSDUCKDLL bool StreamTypeIsVideo(uint8_t st);
+
+    //!
+    //! Check if an stream type value indicates a video stream using AVC encoding.
+    //! @param [in] st Stream type as used in the PMT.
+    //! @return True if @a st indicates an AVC video stream.
+    //!
+    TSDUCKDLL bool StreamTypeIsAVC(uint8_t st);
+
+    //!
+    //! Check if an stream type value indicates a video stream using HEVC encoding.
+    //! @param [in] st Stream type as used in the PMT.
+    //! @return True if @a st indicates an HEVC video stream.
+    //!
+    TSDUCKDLL bool StreamTypeIsHEVC(uint8_t st);
 
     //!
     //! Check if an stream type value indicates an audio stream.
     //! @param [in] st Stream type as used in the PMT.
     //! @return True if @a st indicates an audio stream.
     //!
-    TSDUCKDLL bool IsAudioST(uint8_t st);
+    TSDUCKDLL bool StreamTypeIsAudio(uint8_t st);
 
     //!
     //! Check if an stream type value indicates a stream carrying sections.
     //! @param [in] st Stream type as used in the PMT.
     //! @return True if @a st indicates a stream carrying sections.
     //!
-    TSDUCKDLL bool IsSectionST(uint8_t st);
+    TSDUCKDLL bool StreamTypeIsSection(uint8_t st);
 
 
     //---------------------------------------------------------------------
