@@ -632,7 +632,7 @@ void ts::ZapPlugin::handlePMT(const PMT& pmt_in, PID pid)
         }
 
         // We keep this component, record component PID
-        _pid_state[cpid] = uint8_t(IsPES(stream.stream_type) ? TSPID_PES : TSPID_DATA);
+        _pid_state[cpid] = uint8_t(StreamTypeIsPES(stream.stream_type) ? TSPID_PES : TSPID_DATA);
 
         // Record or remove ECMs PIDs from the descriptor loop
         if (_no_ecm) {

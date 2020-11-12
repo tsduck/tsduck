@@ -413,8 +413,8 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
             // The beginning of the payload is already a start code prefix.
             for (size_t offset = 0; offset < psize; ) {
                 // Look for next start code
-                const void* pnext = LocatePattern(pdata + offset + 1, psize - offset - 1, StartCodePrefix, sizeof(StartCodePrefix));
-                size_t next = pnext == nullptr ? psize : reinterpret_cast<const uint8_t*>(pnext) - pdata;
+                const uint8_t* pnext = LocatePattern(pdata + offset + 1, psize - offset - 1, StartCodePrefix, sizeof(StartCodePrefix));
+                size_t next = pnext == nullptr ? psize : pnext - pdata;
                 // Invoke handler
                 if (_pes_handler != nullptr) {
                     _pes_handler->handleVideoStartCode(*this, pp, pdata[offset + 3], offset, next - offset);
@@ -433,18 +433,15 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
         else if (pp.isAVC()) {
             for (size_t offset = 0; offset < psize; ) {
                 // Locate next access unit: starts with 00 00 01 (this start code is not part of the NALunit)
-                const uint8_t* p1 = reinterpret_cast<const uint8_t*>(
-                            LocatePattern(pdata + offset, psize - offset, StartCodePrefix, sizeof(StartCodePrefix)));
+                const uint8_t* p1 = LocatePattern(pdata + offset, psize - offset, StartCodePrefix, sizeof(StartCodePrefix));
                 if (p1 == nullptr) {
                     break;
                 }
                 offset = p1 - pdata + sizeof(StartCodePrefix);
 
                 // Locate end of access unit: ends with 00 00 00, 00 00 01 or end of data.
-                const uint8_t* p2 = reinterpret_cast<const uint8_t*>(
-                            LocatePattern(pdata + offset, psize - offset, StartCodePrefix, sizeof(StartCodePrefix)));
-                const uint8_t* p3 = reinterpret_cast<const uint8_t*>(
-                            LocatePattern(pdata + offset, psize - offset, Zero3, sizeof(Zero3)));
+                const uint8_t* p2 = LocatePattern(pdata + offset, psize - offset, StartCodePrefix, sizeof(StartCodePrefix));
+                const uint8_t* p3 = LocatePattern(pdata + offset, psize - offset, Zero3, sizeof(Zero3));
                 size_t nalunit_size = 0;
                 if (p2 == nullptr && p3 == nullptr) {
                     // No 00 00 01, no 00 00 00, the NALunit extends up to the end of data.

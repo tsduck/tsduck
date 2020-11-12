@@ -68,6 +68,7 @@ namespace ts {
         bool     _dump_avc_sei;
         bool     _video_attributes;
         bool     _audio_attributes;
+        bool     _intra_images;
         uint32_t _hexa_flags;
         size_t   _hexa_bpl;
         size_t   _max_dump_size;
@@ -88,18 +89,24 @@ namespace ts {
         std::ostream* _pes_stream;
         PESDemux      _demux;
 
+        // A string containing the PID and optional TS packet indexes.
+        UString prefix(const PESPacket&) const;
+
         // Process dump count. Return true when terminated. Also process error on output.
         bool lastDump(std::ostream&);
 
-        // Hooks
-        virtual void handlePESPacket (PESDemux&, const PESPacket&) override;
-        virtual void handleVideoStartCode (PESDemux&, const PESPacket&, uint8_t, size_t, size_t) override;
-        virtual void handleNewVideoAttributes (PESDemux&, const PESPacket&, const VideoAttributes&) override;
-        virtual void handleAVCAccessUnit (PESDemux&, const PESPacket&, uint8_t, size_t, size_t) override;
+        // Report the presence of an intra-image. Return true when terminated.
+        bool reportIntra(std::ostream&, const PESPacket&, size_t offset);
+
+        // Implementation of PESHandlerInterface.
+        virtual void handlePESPacket(PESDemux&, const PESPacket&) override;
+        virtual void handleVideoStartCode(PESDemux&, const PESPacket&, uint8_t, size_t, size_t) override;
+        virtual void handleNewVideoAttributes(PESDemux&, const PESPacket&, const VideoAttributes&) override;
+        virtual void handleAVCAccessUnit(PESDemux&, const PESPacket&, uint8_t, size_t, size_t) override;
         virtual void handleSEI(PESDemux& demux, const PESPacket& packet, uint32_t sei_type, size_t offset, size_t size) override;
-        virtual void handleNewAVCAttributes (PESDemux&, const PESPacket&, const AVCAttributes&) override;
-        virtual void handleNewAudioAttributes (PESDemux&, const PESPacket&, const AudioAttributes&) override;
-        virtual void handleNewAC3Attributes (PESDemux&, const PESPacket&, const AC3Attributes&) override;
+        virtual void handleNewAVCAttributes(PESDemux&, const PESPacket&, const AVCAttributes&) override;
+        virtual void handleNewAudioAttributes(PESDemux&, const PESPacket&, const AudioAttributes&) override;
+        virtual void handleNewAC3Attributes(PESDemux&, const PESPacket&, const AC3Attributes&) override;
     };
 }
 
@@ -121,6 +128,7 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     _dump_avc_sei(false),
     _video_attributes(false),
     _audio_attributes(false),
+    _intra_images(false),
     _hexa_flags(0),
     _hexa_bpl(0),
     _max_dump_size(0),
@@ -150,6 +158,9 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
 
     option(u"header", 'h');
     help(u"header", u"Dump PES packet header.");
+
+    option(u"intra-image", 'i');
+    help(u"intra-image", u"Report intra images.");
 
     option(u"max-dump-count", 'x', UNSIGNED);
     help(u"max-dump-count",
@@ -255,6 +266,7 @@ bool ts::PESPlugin::getOptions()
     _dump_avc_sei = present(u"sei-avc");
     _video_attributes = present(u"video-attributes");
     _audio_attributes = present(u"audio-attributes");
+    _intra_images = present(u"intra-image");
     _max_dump_size = intValue<size_t>(u"max-dump-size", 0);
     _max_dump_count = intValue<size_t>(u"max-dump-count", 0);
     _min_payload = intValue<int>(u"min-payload-size", -1);
@@ -413,6 +425,21 @@ bool ts::PESPlugin::lastDump(std::ostream& out)
 
 
 //----------------------------------------------------------------------------
+// A string containing the PID and optional TS packet indexes.
+//----------------------------------------------------------------------------
+
+ts::UString ts::PESPlugin::prefix(const PESPacket& pkt) const
+{
+    UString line;
+    line.format(u"PID 0x%X", {pkt.getSourcePID()});
+    if (_trace_packet_index) {
+        line.format(u", TS packets %'d-%'d", {pkt.getFirstTSPacketIndex(), pkt.getLastTSPacketIndex()});
+    }
+    return line;
+}
+
+
+//----------------------------------------------------------------------------
 // Invoked by the demux when a complete PES packet is available.
 //----------------------------------------------------------------------------
 
@@ -427,58 +454,52 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
 
     // Report packet description
     if (_trace_packets) {
-        UString line(UString::Format(u"PID 0x%X, stream_id %s, size: %d bytes (header: %d, payload: %d)",
-                                     {pkt.getSourcePID(),
-                                      names::StreamId(pkt.getStreamId(), names::FIRST),
-                                      pkt.size(), pkt.headerSize(), pkt.payloadSize()}));
+        out << "* " << prefix(pkt)
+            << ", stream_id " << names::StreamId(pkt.getStreamId(), names::FIRST)
+            << UString::Format(u", size: %d bytes (header: %d, payload: %d)", {pkt.size(), pkt.headerSize(), pkt.payloadSize()});
         const size_t spurious = pkt.spuriousDataSize();
         if (spurious > 0) {
-            line.append(UString::Format(u", %d spurious trailing bytes", {spurious}));
+            out << UString::Format(u", %d spurious trailing bytes", {spurious});
         }
-        out << "* " << line << std::endl;
+        out << std::endl;
         if (lastDump(out)) {
             return;
         }
-    }
 
-    // Report TS packet index
-    if (_trace_packet_index) {
-        out << UString::Format(u"  First TS packet: %'d, last: %'d", {pkt.getFirstTSPacketIndex(), pkt.getLastTSPacketIndex()}) << std::endl;
-    }
-
-    // Report PES header
-    if (_dump_pes_header) {
-        size_t size = pkt.headerSize();
-        out << "  PES header";
-        if (_max_dump_size > 0 && size > _max_dump_size) {
-            size = _max_dump_size;
-            out << " (truncated)";
+        // Report PES header
+        if (_dump_pes_header) {
+            size_t size = pkt.headerSize();
+            out << "  PES header";
+            if (_max_dump_size > 0 && size > _max_dump_size) {
+                size = _max_dump_size;
+                out << " (truncated)";
+            }
+            out << ":" << std::endl << UString::Dump(pkt.header(), size, _hexa_flags, 4, _hexa_bpl);
+            if (lastDump (out)) {
+                return;
+            }
         }
-        out << ":" << std::endl << UString::Dump(pkt.header(), size, _hexa_flags, 4, _hexa_bpl);
-        if (lastDump (out)) {
-            return;
-        }
-    }
 
-    // Check that video packets start with either 00 00 01 (ISO 11172-2, MPEG-1, or ISO 13818-2, MPEG-2)
-    // or 00 00 00 .. 01 (ISO 14496-10, MPEG-4 AVC). Don't know how ISO 14496-2 (MPEG-4 video) should start.
-    if (IsVideoSID(pkt.getStreamId()) && !pkt.isMPEG2Video() && !pkt.isAVC() && !pkt.isHEVC()) {
-        out << UString::Format(u"WARNING: PID 0x%X, invalid start of video PES payload: ", {pkt.getSourcePID()})
-            << UString::Dump(pkt.payload(), std::min<size_t> (8, pkt.payloadSize()), UString::SINGLE_LINE)
-            << std::endl;
-    }
-
-    // Report PES payload
-    if (_dump_pes_payload) {
-        size_t size = pkt.payloadSize();
-        out << "  PES payload";
-        if (_max_dump_size > 0 && size > _max_dump_size) {
-            size = _max_dump_size;
-            out << " (truncated)";
+        // Check that video packets start with either 00 00 01 (ISO 11172-2, MPEG-1, or ISO 13818-2, MPEG-2)
+        // or 00 00 00 .. 01 (ISO 14496-10, MPEG-4 AVC). Don't know how ISO 14496-2 (MPEG-4 video) should start.
+        if (IsVideoSID(pkt.getStreamId()) && !pkt.isMPEG2Video() && !pkt.isAVC() && !pkt.isHEVC()) {
+            out << UString::Format(u"WARNING: PID 0x%X, invalid start of video PES payload: ", {pkt.getSourcePID()})
+                << UString::Dump(pkt.payload(), std::min<size_t> (8, pkt.payloadSize()), UString::SINGLE_LINE)
+                << std::endl;
         }
-        out << ":" << std::endl << UString::Dump(pkt.payload(), size, _hexa_flags | UString::ASCII, 4, _hexa_bpl);
-        if (lastDump(out)) {
-            return;
+
+        // Report PES payload
+        if (_dump_pes_payload) {
+            size_t size = pkt.payloadSize();
+            out << "  PES payload";
+            if (_max_dump_size > 0 && size > _max_dump_size) {
+                size = _max_dump_size;
+                out << " (truncated)";
+            }
+            out << ":" << std::endl << UString::Dump(pkt.payload(), size, _hexa_flags | UString::ASCII, 4, _hexa_bpl);
+            if (lastDump(out)) {
+                return;
+            }
         }
     }
 
@@ -494,29 +515,45 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
 
 
 //----------------------------------------------------------------------------
+// Report the presence of an intra-image.
+//----------------------------------------------------------------------------
+
+bool ts::PESPlugin::reportIntra(std::ostream& out, const PESPacket& pkt, size_t offset)
+{
+    out << "* " << prefix(pkt) << UString::Format(u", intra-image offset in PES payload: %d/%d", {offset, pkt.payloadSize()}) << std::endl;
+    return lastDump(out);
+}
+
+
+//----------------------------------------------------------------------------
 // This hook is invoked when a PES start code is encountered.
 //----------------------------------------------------------------------------
 
 void ts::PESPlugin::handleVideoStartCode(PESDemux&, const PESPacket& pkt, uint8_t start_code, size_t offset, size_t size)
 {
-    if (!_dump_start_code) {
+    std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
+
+    // Detect start of MPEG-2 Group of Pictures (GOP).
+    if (_intra_images && start_code == PST_GROUP && reportIntra(out, pkt, offset)) {
         return;
     }
 
-    std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
+    // Dump video start code.
+    if (_dump_start_code) {
+        out << "* " << prefix(pkt)
+            << ", start code " << names::PESStartCode(start_code, names::FIRST)
+            << UString::Format(u", offset in PES payload: %d, size: %d bytes", {offset, size})
+            << std::endl;
 
-    out << UString::Format(u"* PID 0x%X, start code %s, offset in PES payload: %d, size: %d bytes", {pkt.getSourcePID(), names::PESStartCode(start_code, names::FIRST), offset, size})
-        << std::endl;
-
-    size_t dsize = size;
-    out << "  MPEG-1/2 video unit";
-    if (_max_dump_size > 0 && dsize > _max_dump_size) {
-        dsize = _max_dump_size;
-        out << " (truncated)";
+        size_t dsize = size;
+        out << "  MPEG-1/2 video unit";
+        if (_max_dump_size > 0 && dsize > _max_dump_size) {
+            dsize = _max_dump_size;
+            out << " (truncated)";
+        }
+        out << ":" << std::endl << UString::Dump(pkt.payload() + offset, dsize, _hexa_flags, 4, _hexa_bpl);
+        lastDump(out);
     }
-    out << ":" << std::endl << UString::Dump(pkt.payload() + offset, dsize, _hexa_flags, 4, _hexa_bpl);
-
-    lastDump(out);
 }
 
 
@@ -528,39 +565,53 @@ void ts::PESPlugin::handleAVCAccessUnit(PESDemux&, const PESPacket& pkt, uint8_t
 {
     assert(nal_unit_type < 32);
 
-    if (!_dump_nal_units || !_nal_unit_filter.test(nal_unit_type)) {
+    std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
+
+    // Detect start of intra frames.
+    if (_intra_images && nal_unit_type == AVC_AUT_IDR && reportIntra(out, pkt, offset)) {
         return;
     }
 
-    std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
+    // Dump the NALunit.
+    if (_dump_nal_units && _nal_unit_filter.test(nal_unit_type)) {
 
-    // Hexadecimal dump
-    out << UString::Format(u"* PID 0x%X, AVC access unit type %s", {pkt.getSourcePID(), names::AVCUnitType(nal_unit_type, names::FIRST)})
-        << std::endl
-        << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", {offset, size})
-        << std::endl;
-    size_t dsize = size;
-    out << "  AVC access unit";
-    if (_max_dump_size > 0 && dsize > _max_dump_size) {
-        dsize = _max_dump_size;
-        out << " (truncated)";
-    }
-    out << ":" << std::endl << UString::Dump(pkt.payload() + offset, dsize, _hexa_flags, 4, _hexa_bpl);
+        // Hexadecimal dump
+        out << "* " << prefix(pkt) << ", AVC access unit type " << names::AVCUnitType(nal_unit_type, names::FIRST) << std::endl;
+        out << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", {offset, size}) << std::endl;
 
-    // Structured formatting if possible
-    switch (nal_unit_type) {
-        case AVC_AUT_SEQPARAMS:
-        {
-            AVCSequenceParameterSet params(pkt.payload() + offset, size);
-            params.display(out, u"  ");
-            break;
+        size_t dsize = size;
+        out << "  AVC access unit";
+        if (_max_dump_size > 0 && dsize > _max_dump_size) {
+            dsize = _max_dump_size;
+            out << " (truncated)";
         }
-        default: {
-            break;
-        }
-    }
+        out << ":" << std::endl << UString::Dump(pkt.payload() + offset, dsize, _hexa_flags, 4, _hexa_bpl);
 
-    lastDump(out);
+        // Structured formatting if possible
+        switch (nal_unit_type) {
+            case AVC_AUT_SEQPARAMS: {
+                AVCSequenceParameterSet params(pkt.payload() + offset, size);
+                params.display(out, u"  ");
+                break;
+            }
+            case AVC_AUT_DELIMITER: {
+                if (size > 0) {
+                    // Parse AVC access unit. Skip first byte (NALunit type).
+                    // The RBSP (Raw Byte Sequence Payload) starts at second byte.
+                    AVCParser parser(pkt.payload() + offset + 1, size - 1);
+                    uint8_t primary_pic_type = 0;
+                    if (parser.u(primary_pic_type, 3)) {
+                        out << UString::Format(u"  Primary picture type: %d", {primary_pic_type}) << std::endl;
+                    }
+                }
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+        lastDump(out);
+    }
 }
 
 

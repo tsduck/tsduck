@@ -229,31 +229,31 @@ bool ts::AVCSequenceParameterSet::parseBody (AVCParser& parser)
 {
     valid =
         nal_unit_type == AVC_AUT_SEQPARAMS &&
-        parser.u (profile_idc, 8) &&
-        parser.u (constraint_set0_flag, 1) &&
-        parser.u (constraint_set1_flag, 1) &&
-        parser.u (constraint_set2_flag, 1) &&
-        parser.u (constraint_set3_flag, 1) &&
-        parser.u (reserved_zero_4bits, 4) &&
-        parser.u (level_idc, 8) &&
-        parser.ue (seq_parameter_set_id);
+        parser.u(profile_idc, 8) &&
+        parser.u(constraint_set0_flag, 1) &&
+        parser.u(constraint_set1_flag, 1) &&
+        parser.u(constraint_set2_flag, 1) &&
+        parser.u(constraint_set3_flag, 1) &&
+        parser.u(reserved_zero_4bits, 4) &&
+        parser.u(level_idc, 8) &&
+        parser.ue(seq_parameter_set_id);
 
     if (extension1()) {
-        valid = parser.ue (chroma_format_idc);
+        valid = parser.ue(chroma_format_idc);
         if (valid && chroma_format_idc == 3) {
-            valid = parser.u (separate_colour_plane_flag, 1);
+            valid = parser.u(separate_colour_plane_flag, 1);
         }
         valid = valid &&
-            parser.ue (bit_depth_luma_minus8) &&
-            parser.ue (bit_depth_chroma_minus8) &&
-            parser.u (qpprime_y_zero_transform_bypass_flag, 1) &&
-            parser.u (seq_scaling_matrix_present_flag, 1);
+            parser.ue(bit_depth_luma_minus8) &&
+            parser.ue(bit_depth_chroma_minus8) &&
+            parser.u(qpprime_y_zero_transform_bypass_flag, 1) &&
+            parser.u(seq_scaling_matrix_present_flag, 1);
         if (valid && seq_scaling_matrix_present_flag) {
             // Parse scaling lists but do not store them in this object
             int maxi = chroma_format_idc != 3 ? 8 : 12;
             for (int i = 0; valid && i < maxi; i++) {
                 uint8_t seq_scaling_list_present_flag;
-                valid = parser.u (seq_scaling_list_present_flag, 1);
+                valid = parser.u(seq_scaling_list_present_flag, 1);
                 if (valid && seq_scaling_list_present_flag) {
                     int size_of_scaling_list = i < 6 ? 16 : 64;
                     int last_scale = 8;
@@ -261,7 +261,7 @@ bool ts::AVCSequenceParameterSet::parseBody (AVCParser& parser)
                     int delta_scale;
                     for (int j = 0; valid && j < size_of_scaling_list; j++) {
                         if (next_scale != 0) {
-                            valid = parser.se (delta_scale);
+                            valid = parser.se(delta_scale);
                             next_scale = (last_scale + delta_scale + 256) % 256;
                         }
                         last_scale = next_scale == 0 ? last_scale : next_scale;
@@ -272,11 +272,11 @@ bool ts::AVCSequenceParameterSet::parseBody (AVCParser& parser)
     }
 
     valid = valid &&
-        parser.ue (log2_max_frame_num_minus4) &&
-        parser.ue (pic_order_cnt_type);
+        parser.ue(log2_max_frame_num_minus4) &&
+        parser.ue(pic_order_cnt_type);
 
     if (valid && pic_order_cnt_type == 0) {
-        valid = parser.ue (log2_max_pic_order_cnt_lsb_minus4);
+        valid = parser.ue(log2_max_pic_order_cnt_lsb_minus4);
     }
     else if (valid && pic_order_cnt_type == 1) {
         valid =
@@ -305,21 +305,21 @@ bool ts::AVCSequenceParameterSet::parseBody (AVCParser& parser)
     }
 
     valid = valid &&
-        parser.u (direct_8x8_inference_flag, 1) &&
-        parser.u (frame_cropping_flag, 1);
+        parser.u(direct_8x8_inference_flag, 1) &&
+        parser.u(frame_cropping_flag, 1);
 
     if (valid && frame_cropping_flag == 1) {
         valid = valid &&
-            parser.ue (frame_crop_left_offset) &&
-            parser.ue (frame_crop_right_offset) &&
-            parser.ue (frame_crop_top_offset) &&
-            parser.ue (frame_crop_bottom_offset);
+            parser.ue(frame_crop_left_offset) &&
+            parser.ue(frame_crop_right_offset) &&
+            parser.ue(frame_crop_top_offset) &&
+            parser.ue(frame_crop_bottom_offset);
     }
 
-    valid = valid && parser.u (vui_parameters_present_flag, 1);
+    valid = valid && parser.u(vui_parameters_present_flag, 1);
 
     if (valid && vui_parameters_present_flag == 1) {
-        valid = vui.parse (parser);
+        valid = vui.parse(parser);
     }
 
     if (valid) {

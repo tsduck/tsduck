@@ -76,7 +76,7 @@ namespace ts {
     //! @param [in] pattern_size Size in bytes of the pattern.
     //! @return Address of the first occurence of @a pattern in @a area or zero if not found.
     //!
-    TSDUCKDLL const void* LocatePattern(const void* area, size_t area_size, const void* pattern, size_t pattern_size);
+    TSDUCKDLL const uint8_t* LocatePattern(const void* area, size_t area_size, const void* pattern, size_t pattern_size);
 
     //!
     //! Check if a memory area contains all identical byte values.

@@ -90,7 +90,7 @@ ts::UString ts::AVCAttributes::levelName() const
 bool ts::AVCAttributes::moreBinaryData (const void* data, size_t size)
 {
     // Parse AVC access unit. We are interested in "sequence parameter set" only.
-    AVCSequenceParameterSet params (data, size);
+    AVCSequenceParameterSet params(data, size);
 
     if (!params.valid) {
         return false;
@@ -103,15 +103,15 @@ bool ts::AVCAttributes::moreBinaryData (const void* data, size_t size)
 
     // Check modification
     bool changed = !_is_valid || _hsize != hsize || _vsize != vsize || _chroma != chroma ||
-        _profile != int (params.profile_idc) || _level != int (params.level_idc);
+        _profile != int(params.profile_idc) || _level != int(params.level_idc);
 
     // Commit final values
     if (changed) {
         _hsize = hsize;
         _vsize = vsize;
         _chroma = chroma;
-        _profile = int (params.profile_idc);
-        _level = int (params.level_idc);
+        _profile = int(params.profile_idc);
+        _level = int(params.level_idc);
         _is_valid = true;
     }
 

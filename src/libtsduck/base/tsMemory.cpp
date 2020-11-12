@@ -54,7 +54,7 @@ bool ts::StartsWith(const void* area, size_t area_size, const void* prefix, size
 // Locate a pattern into a memory area. Return 0 if not found
 //----------------------------------------------------------------------------
 
-const void* ts::LocatePattern(const void* area, size_t area_size, const void* pattern, size_t pattern_size)
+const uint8_t* ts::LocatePattern(const void* area, size_t area_size, const void* pattern, size_t pattern_size)
 {
     if (pattern_size > 0) {
         const uint8_t* a = reinterpret_cast<const uint8_t*>(area);

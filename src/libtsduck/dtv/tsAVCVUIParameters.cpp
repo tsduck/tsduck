@@ -141,81 +141,81 @@ bool ts::AVCVUIParameters::parse(AVCParser& parser)
     valid = parser.u(aspect_ratio_info_present_flag, 1);
 
     if (valid && aspect_ratio_info_present_flag == 1) {
-        valid = parser.u (aspect_ratio_idc, 8);
+        valid = parser.u(aspect_ratio_idc, 8);
         if (valid && aspect_ratio_idc == 255) {  // Extended_SAR
             valid = valid &&
-                parser.u (sar_width, 16) &&
-                parser.u (sar_height, 16);
+                parser.u(sar_width, 16) &&
+                parser.u(sar_height, 16);
         }
     }
 
     valid = valid && parser.u (overscan_info_present_flag, 1);
 
     if (valid && overscan_info_present_flag == 1) {
-        valid = parser.u (overscan_appropriate_flag, 1);
+        valid = parser.u(overscan_appropriate_flag, 1);
     }
 
     valid = valid && parser.u (video_signal_type_present_flag, 1);
 
     if (valid && video_signal_type_present_flag == 1) {
         valid =
-            parser.u (video_format, 3) &&
-            parser.u (video_full_range_flag, 1) &&
-            parser.u (colour_description_present_flag, 1);
+            parser.u(video_format, 3) &&
+            parser.u(video_full_range_flag, 1) &&
+            parser.u(colour_description_present_flag, 1);
         if (valid && colour_description_present_flag == 1) {
             valid =
-                parser.u (colour_primaries, 8) &&
-                parser.u (transfer_characteristics, 8) &&
-                parser.u (matrix_coefficients, 8);
+                parser.u(colour_primaries, 8) &&
+                parser.u(transfer_characteristics, 8) &&
+                parser.u(matrix_coefficients, 8);
         }
     }
 
-    valid = valid && parser.u (chroma_loc_info_present_flag, 1);
+    valid = valid && parser.u(chroma_loc_info_present_flag, 1);
 
     if (valid && chroma_loc_info_present_flag == 1) {
         valid =
-            parser.ue (chroma_sample_loc_type_top_field) &&
-            parser.ue (chroma_sample_loc_type_bottom_field);
+            parser.ue(chroma_sample_loc_type_top_field) &&
+            parser.ue(chroma_sample_loc_type_bottom_field);
     }
 
-    valid = valid && parser.u (timing_info_present_flag, 1);
+    valid = valid && parser.u(timing_info_present_flag, 1);
 
     if (valid && timing_info_present_flag == 1) {
         valid =
-            parser.u (num_units_in_tick, 32) &&
-            parser.u (time_scale, 32) &&
-            parser.u (fixed_frame_rate_flag, 1);
+            parser.u(num_units_in_tick, 32) &&
+            parser.u(time_scale, 32) &&
+            parser.u(fixed_frame_rate_flag, 1);
     }
 
-    valid = valid && parser.u (nal_hrd_parameters_present_flag, 1);
+    valid = valid && parser.u(nal_hrd_parameters_present_flag, 1);
 
     if (valid && nal_hrd_parameters_present_flag == 1) {
-        valid = nal_hrd.parse (parser);
+        valid = nal_hrd.parse(parser);
     }
 
-    valid = valid && parser.u (vcl_hrd_parameters_present_flag, 1);
+    valid = valid && parser.u(vcl_hrd_parameters_present_flag, 1);
 
     if (valid && vcl_hrd_parameters_present_flag == 1) {
-        valid = vcl_hrd.parse (parser);
+        valid = vcl_hrd.parse(parser);
     }
 
     if (valid && (nal_hrd_parameters_present_flag == 1 || vcl_hrd_parameters_present_flag == 1)) {
-        valid = parser.u (low_delay_hrd_flag, 1);
+        valid = parser.u(low_delay_hrd_flag, 1);
     }
 
     valid = valid &&
-        parser.u (pic_struct_present_flag, 1) &&
-        parser.u (bitstream_restriction_flag, 1);
+        parser.u(pic_struct_present_flag, 1) &&
+        parser.u(bitstream_restriction_flag, 1);
 
     if (valid && bitstream_restriction_flag == 1) {
         valid =
-            parser.u (motion_vectors_over_pic_boundaries_flag, 1) &&
-            parser.ue (max_bytes_per_pic_denom) &&
-            parser.ue (max_bits_per_mb_denom) &&
-            parser.ue (log2_max_mv_length_horizontal) &&
-            parser.ue (log2_max_mv_length_vertical) &&
-            parser.ue (num_reorder_frames) &&
-            parser.ue (max_dec_frame_buffering);
+            parser.u(motion_vectors_over_pic_boundaries_flag, 1) &&
+            parser.ue(max_bytes_per_pic_denom) &&
+            parser.ue(max_bits_per_mb_denom) &&
+            parser.ue(log2_max_mv_length_horizontal) &&
+            parser.ue(log2_max_mv_length_vertical) &&
+            parser.ue(num_reorder_frames) &&
+            parser.ue(max_dec_frame_buffering);
     }
 
     return valid;
