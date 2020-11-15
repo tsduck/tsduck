@@ -26,13 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an AVC sequence parameter set access unit
-//  (AVC, Advanced Video Coding, ISO 14496-10, ITU H.264)
-//
-//----------------------------------------------------------------------------
 
 #include "tsAVCSequenceParameterSet.h"
+#include "tsAVC.h"
+#include "tsMPEG2.h"
 TSDUCK_SOURCE;
 
 
@@ -83,6 +80,26 @@ ts::AVCSequenceParameterSet::AVCSequenceParameterSet(const void* data, size_t si
     rbsp_trailing_bits_count(0)
 {
     parse(data, size);
+}
+
+
+//----------------------------------------------------------------------------
+// The various chroma information.
+//----------------------------------------------------------------------------
+
+uint8_t ts::AVCSequenceParameterSet::chroma() const
+{
+    return extension1() ? chroma_format_idc : uint8_t(CHROMA_420);
+}
+
+uint8_t ts::AVCSequenceParameterSet::separateColourPlaneFlag() const
+{
+    return extension1() && chroma_format_idc == 3 ? separate_colour_plane_flag : 0;
+}
+
+uint8_t ts::AVCSequenceParameterSet::chromaArrayType() const
+{
+    return separateColourPlaneFlag() == 0 ? chroma() : 0;
 }
 
 
@@ -225,7 +242,7 @@ void ts::AVCSequenceParameterSet::clear()
 // Parse the body of the binary access unit. Return the "valid" flag.
 //----------------------------------------------------------------------------
 
-bool ts::AVCSequenceParameterSet::parseBody (AVCParser& parser)
+bool ts::AVCSequenceParameterSet::parseBody(AVCParser& parser)
 {
     valid =
         nal_unit_type == AVC_AUT_SEQPARAMS &&

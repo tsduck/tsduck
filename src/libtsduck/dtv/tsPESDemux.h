@@ -174,6 +174,9 @@ namespace ts {
         // Process a complete PES packet
         void processPESPacket(PID, PIDContext&);
 
+        // Process all video/audio analysis on the PES packet.
+        void handlePESContent(PIDContext&, const PESPacket&);
+
         // Implementation of TableHandlerInterface.
         virtual void handleTable(SectionDemux& demux, const BinaryTable& table) override;
 

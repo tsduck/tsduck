@@ -26,8 +26,14 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//
+//  Representation of an AVC sequence parameter set access unit
+//  (AVC, Advanced Video Coding, ISO 14496-10, ITU H.264)
+//
+//----------------------------------------------------------------------------
 
-#include "tsAbstractAVCAccessUnit.h"
+#include "tsAVCAccessUnitDelimiter.h"
+#include "tsAVC.h"
 TSDUCK_SOURCE;
 
 
@@ -35,12 +41,13 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::AbstractAVCAccessUnit::AbstractAVCAccessUnit() :
-    AbstractAVCData(),
-    forbidden_zero_bit(0),
-    nal_ref_idc(0),
-    nal_unit_type(0)
+ts::AVCAccessUnitDelimiter::AVCAccessUnitDelimiter(const void* data, size_t size) :
+    AbstractAVCAccessUnit(),
+    primary_pic_type(0),
+    rbsp_trailing_bits_valid(false),
+    rbsp_trailing_bits_count(0)
 {
+    parse(data, size);
 }
 
 
@@ -48,36 +55,49 @@ ts::AbstractAVCAccessUnit::AbstractAVCAccessUnit() :
 // Clear all values
 //----------------------------------------------------------------------------
 
-void ts::AbstractAVCAccessUnit::clear()
+void ts::AVCAccessUnitDelimiter::clear()
 {
     SuperClass::clear();
-    forbidden_zero_bit = 0;
-    nal_ref_idc = 0;
-    nal_unit_type = 0;
+    primary_pic_type = 0;
+    rbsp_trailing_bits_valid = false;
+    rbsp_trailing_bits_count = 0;
 }
 
 
 //----------------------------------------------------------------------------
-// Parse the binary access unit. Return the "valid" flag.
+// Parse the body of the binary access unit. Return the "valid" flag.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractAVCAccessUnit::parse(const void* nalunit, size_t nalunit_size)
+bool ts::AVCAccessUnitDelimiter::parseBody(AVCParser& parser)
 {
-    if (nalunit == nullptr || nalunit_size < 1) {
-        clear();
-        return false;
-    }
-    else {
-        // Parse AVC access unit. Skip first byte (NALunit type).
-        // The RBSP (Raw Byte Sequence Payload) starts at second byte.
-        const uint8_t* data = reinterpret_cast <const uint8_t*> (nalunit);
+    valid = nal_unit_type == AVC_AUT_DELIMITER && parser.u(primary_pic_type, 3);
 
-        valid = true;
-        forbidden_zero_bit = (data[0] >> 7) & 0x01;
-        nal_ref_idc = (data[0] >> 5) & 0x03;
-        nal_unit_type = data[0] & 0x1F;
-
-        AVCParser parser(data + 1, nalunit_size - 1);
-        return parseBody(parser);
+    if (valid) {
+        rbsp_trailing_bits_valid = parser.rbspTrailingBits();
+        rbsp_trailing_bits_count = parser.remainingBits();
     }
+
+    return valid;
+}
+
+
+//----------------------------------------------------------------------------
+// Display structure content
+//----------------------------------------------------------------------------
+
+std::ostream& ts::AVCAccessUnitDelimiter::display(std::ostream& out, const UString& margin) const
+{
+#define DISP(n) disp(out, margin, u ## #n, n)
+
+    if (valid) {
+        DISP(forbidden_zero_bit);
+        DISP(nal_ref_idc);
+        DISP(nal_unit_type);
+        DISP(primary_pic_type);
+        DISP(rbsp_trailing_bits_valid);
+        DISP(rbsp_trailing_bits_count);
+    }
+    return out;
+
+#undef DISP
 }

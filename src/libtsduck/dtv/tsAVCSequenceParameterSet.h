@@ -36,7 +36,6 @@
 #pragma once
 #include "tsAbstractAVCAccessUnit.h"
 #include "tsAVCVUIParameters.h"
-#include "tsVideo.h"
 
 namespace ts {
     //!
@@ -68,19 +67,19 @@ namespace ts {
         //! Get chroma_format_idc, applying default value (see H.264 7.4.2.1.1).
         //! @return The chroma_format_idc, applying default value.
         //!
-        uint8_t chroma() const {return extension1() ? chroma_format_idc : uint8_t(CHROMA_420);}
+        uint8_t chroma() const;
 
         //!
         //! Get separate_colour_plane_flag, applying default value (see H.264 7.4.2.1.1).
         //! @return The separate_colour_plane_flag, applying default value.
         //!
-        uint8_t separateColourPlaneFlag() const {return extension1() && chroma_format_idc == 3 ? separate_colour_plane_flag : 0;}
+        uint8_t separateColourPlaneFlag() const;
 
         //!
         //! The ChromaArrayType variable (see H.264 7.4.2.1.1).
         //! @return The ChromaArrayType variable.
         //!
-        uint8_t chromaArrayType() const {return separateColourPlaneFlag() == 0 ? chroma() : 0;}
+        uint8_t chromaArrayType() const;
 
         //!
         //! The SubWidthC variable (see H.264 6.2).
@@ -184,11 +183,7 @@ namespace ts {
         size_t rbsp_trailing_bits_count;                    //!< rbsp_trailing_bits_count
 
     protected:
-        //!
-        //! Parse the body of the binary access unit.
-        //! @param [in,out] parser The AVC parser.
-        //! @return The "valid" flag.
-        //!
+        // Inherited methods
         virtual bool parseBody(AVCParser& parser) override;
     };
 }

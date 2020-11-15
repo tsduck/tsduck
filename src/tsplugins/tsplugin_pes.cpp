@@ -34,10 +34,12 @@
 
 #include "tsPluginRepository.h"
 #include "tsPESDemux.h"
+#include "tsAVCAccessUnitDelimiter.h"
 #include "tsAVCSequenceParameterSet.h"
 #include "tsNames.h"
 #include "tsMemory.h"
 #include "tsPES.h"
+#include "tsAVC.h"
 TSDUCK_SOURCE;
 
 
@@ -95,11 +97,9 @@ namespace ts {
         // Process dump count. Return true when terminated. Also process error on output.
         bool lastDump(std::ostream&);
 
-        // Report the presence of an intra-image. Return true when terminated.
-        bool reportIntra(std::ostream&, const PESPacket&, size_t offset);
-
         // Implementation of PESHandlerInterface.
         virtual void handlePESPacket(PESDemux&, const PESPacket&) override;
+        virtual void handleIntraImage(PESDemux&, const PESPacket&, size_t) override;
         virtual void handleVideoStartCode(PESDemux&, const PESPacket&, uint8_t, size_t, size_t) override;
         virtual void handleNewVideoAttributes(PESDemux&, const PESPacket&, const VideoAttributes&) override;
         virtual void handleAVCAccessUnit(PESDemux&, const PESPacket&, uint8_t, size_t, size_t) override;
@@ -515,13 +515,16 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
 
 
 //----------------------------------------------------------------------------
-// Report the presence of an intra-image.
+// This hook is invoked when an intra-code image is found.
 //----------------------------------------------------------------------------
 
-bool ts::PESPlugin::reportIntra(std::ostream& out, const PESPacket& pkt, size_t offset)
+void ts::PESPlugin::handleIntraImage(PESDemux& demux, const PESPacket& pkt, size_t offset)
 {
-    out << "* " << prefix(pkt) << UString::Format(u", intra-image offset in PES payload: %d/%d", {offset, pkt.payloadSize()}) << std::endl;
-    return lastDump(out);
+    if (_intra_images) {
+        std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
+        out << "* " << prefix(pkt) << UString::Format(u", intra-image offset in PES payload: %d/%d", {offset, pkt.payloadSize()}) << std::endl;
+        lastDump(out);
+    }
 }
 
 
@@ -532,11 +535,6 @@ bool ts::PESPlugin::reportIntra(std::ostream& out, const PESPacket& pkt, size_t 
 void ts::PESPlugin::handleVideoStartCode(PESDemux&, const PESPacket& pkt, uint8_t start_code, size_t offset, size_t size)
 {
     std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
-
-    // Detect start of MPEG-2 Group of Pictures (GOP).
-    if (_intra_images && start_code == PST_GROUP && reportIntra(out, pkt, offset)) {
-        return;
-    }
 
     // Dump video start code.
     if (_dump_start_code) {
@@ -567,11 +565,6 @@ void ts::PESPlugin::handleAVCAccessUnit(PESDemux&, const PESPacket& pkt, uint8_t
 
     std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
 
-    // Detect start of intra frames.
-    if (_intra_images && nal_unit_type == AVC_AUT_IDR && reportIntra(out, pkt, offset)) {
-        return;
-    }
-
     // Dump the NALunit.
     if (_dump_nal_units && _nal_unit_filter.test(nal_unit_type)) {
 
@@ -590,20 +583,13 @@ void ts::PESPlugin::handleAVCAccessUnit(PESDemux&, const PESPacket& pkt, uint8_t
         // Structured formatting if possible
         switch (nal_unit_type) {
             case AVC_AUT_SEQPARAMS: {
-                AVCSequenceParameterSet params(pkt.payload() + offset, size);
+                const AVCSequenceParameterSet params(pkt.payload() + offset, size);
                 params.display(out, u"  ");
                 break;
             }
             case AVC_AUT_DELIMITER: {
-                if (size > 0) {
-                    // Parse AVC access unit. Skip first byte (NALunit type).
-                    // The RBSP (Raw Byte Sequence Payload) starts at second byte.
-                    AVCParser parser(pkt.payload() + offset + 1, size - 1);
-                    uint8_t primary_pic_type = 0;
-                    if (parser.u(primary_pic_type, 3)) {
-                        out << UString::Format(u"  Primary picture type: %d", {primary_pic_type}) << std::endl;
-                    }
-                }
+                const AVCAccessUnitDelimiter aud(pkt.payload() + offset, size);
+                aud.display(out, u"  ");
                 break;
             }
             default: {

@@ -105,6 +105,15 @@ namespace ts {
         virtual void handleNewAVCAttributes(PESDemux& demux, const PESPacket& packet, const AVCAttributes& attr);
 
         //!
+        //! This hook is invoked when an intra-code image is found.
+        //! @param [in,out] demux A reference to the PES demux.
+        //! @param [in] packet The demultiplexed PES packet.
+        //! @param [in] offset Offset in the PES packet payload where the image is found.
+        //! This is informational only, the exact semantics depends on the video codec.
+        //!
+        virtual void handleIntraImage(PESDemux& demux, const PESPacket& packet, size_t offset);
+
+        //!
         //! This hook is invoked when new audio attributes are found in an audio PID
         //! @param [in,out] demux A reference to the PES demux.
         //! @param [in] packet The demultiplexed PES packet.

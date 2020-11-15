@@ -34,8 +34,9 @@
 #include "tsNames.h"
 #include "tsSysUtils.h"
 #include "tsDuckContext.h"
+#include "tsMPEG2.h"
+#include "tsAVC.h"
 #include "tsPES.h"
-#include "tsVideo.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
 
