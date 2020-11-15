@@ -35,6 +35,7 @@
 #pragma once
 #include "tsByteBlock.h"
 #include "tsTS.h"
+#include "tsPSI.h"
 
 namespace ts {
 
@@ -392,6 +393,63 @@ namespace ts {
         //!
         bool isAC3() const;
 
+        //!
+        //! Check if the PES packet contains an intra-coded image.
+        //! @return If the PES packet contains the start of an intra-coded image, return the
+        //! offset inside the PES packet where the intra-image starts. This value is informational only,
+        //! the exact semantics depends on the video codec. Return NPOS if no intra-image was found.
+        //!
+        size_t findIntraImage() const;
+
+        //!
+        //! Check if a truncated PES packet may contain MPEG-2 or MPEG-1 video.
+        //! @param [in] data Address of data to check, typically the start of a PES packet.
+        //! @param [in] size Data size in bytes.
+        //! @param [in] stream_type Optional stream type, as found in the PMT. Used as a hint.
+        //! @return True if the PES data may contain MPEG-2 or MPEG-1 video.
+        //!
+        static bool IsMPEG2Video(const uint8_t* data, size_t size, uint8_t stream_type = ST_NULL);
+
+        //!
+        //! Check if a truncated PES packet may contain AVC / H.264 video.
+        //! @param [in] data Address of data to check, typically the start of a PES packet.
+        //! @param [in] size Data size in bytes.
+        //! @param [in] stream_type Optional stream type, as found in the PMT. Used as a hint.
+        //! @return True if the PES data may contain AVC / H.264 video.
+        //!
+        static bool IsAVC(const uint8_t* data, size_t size, uint8_t stream_type = ST_NULL);
+
+        //!
+        //! Check if a truncated PES packet may contain HEVC / H.265 video.
+        //! @param [in] data Address of data to check, typically the start of a PES packet.
+        //! @param [in] size Data size in bytes.
+        //! @param [in] stream_type Optional stream type, as found in the PMT. Used as a hint.
+        //! @return True if the PES data may contain HEVC / H.265 video.
+        //!
+        static bool IsHEVC(const uint8_t* data, size_t size, uint8_t stream_type = ST_NULL);
+
+        //!
+        //! Check if a truncated PES packet may contain AC-3 or Enhanced-AC-3 audio.
+        //! @param [in] data Address of data to check, typically the start of a PES packet.
+        //! @param [in] size Data size in bytes.
+        //! @param [in] stream_type Optional stream type, as found in the PMT. Used as a hint.
+        //! @return True if the PES data may contain AC-3 or Enhanced-AC-3 audio.
+        //!
+        static bool IsAC3(const uint8_t* data, size_t size, uint8_t stream_type = ST_NULL);
+
+        //!
+        //! Check if a truncated PES packet may contain the start of an intra-coded image.
+        //! @param [in] data Address of data to check, typically the start of a PES packet.
+        //! @param [in] size Data size in bytes.
+        //! @param [in] stream_type Optional stream type, as found in the PMT. Used as a hint.
+        //! @return If the PES data may contain the start of an intra-coded image, return the
+        //! offset inside @a data where the intra-image starts. This value is informational only,
+        //! the exact semantics depends on the video codec. Return NPOS if no intra-image was found.
+        //! If the data is not sufficient to determine the presence of an intra-image,
+        //! return NPOS, even though a larger piece of information may contain one.
+        //!
+        static size_t FindIntraImage(const uint8_t* data, size_t size, uint8_t stream_type = ST_NULL);
+
     private:
         // Private fields
         bool          _is_valid;     // Content of *_data is a valid packet
@@ -405,6 +463,9 @@ namespace ts {
 
         // Initialize from a binary content.
         void initialize(const ByteBlockPtr&);
+
+        // Get the header size of the start of a PES packet. Return 0 on error.
+        static size_t HeaderSize(const uint8_t* data, size_t size);
 
         // Inaccessible operations
         PESPacket(const PESPacket&) = delete;

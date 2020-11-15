@@ -28,20 +28,50 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an AVC access unit delimiter (AUD).
+//!  AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2067
+#include "tsAbstractAVCAccessUnit.h"
+
+namespace ts {
+    //!
+    //! Representation of an AVC access unit delimiter (AUD).
+    //! @ingroup mpeg
+    //!
+    //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
+    //!
+    class TSDUCKDLL AVCAccessUnitDelimiter: public AbstractAVCAccessUnit
+    {
+    public:
+        //!
+        //! Reference to the superclass.
+        //!
+        typedef AbstractAVCAccessUnit SuperClass;
+
+        //!
+        //! Constructor from a binary area.
+        //! @param [in] data Address of binary data to analyze.
+        //! @param [in] size Size in bytes of binary data to analyze.
+        //!
+        AVCAccessUnitDelimiter(const void* data = nullptr, size_t size = 0);
+
+        // Inherited methods
+        virtual void clear() override;
+        virtual std::ostream& display(std::ostream& strm = std::cout, const UString& margin = UString()) const override;
+
+        // Access unit delimiter fields.
+        // See ISO/IEC 14496-10 sections 7.3.2.4 and 7.4.2.4.
+        uint8_t primary_pic_type ;        //!< Primary picture type
+
+        // Validity of RBSP trailing bits
+        bool   rbsp_trailing_bits_valid;  //!< rbsp_trailing_bits_valid
+        size_t rbsp_trailing_bits_count;  //!< rbsp_trailing_bits_count
+
+    protected:
+        // Inherited methods
+        virtual bool parseBody(AVCParser& parser) override;
+    };
+}

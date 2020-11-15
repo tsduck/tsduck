@@ -30,36 +30,16 @@
 #include "tsPESHandlerInterface.h"
 TSDUCK_SOURCE;
 
-// Default implementation.
+// Default implementations are all empty.
 
-void ts::PESHandlerInterface::handlePESPacket(PESDemux& demux, const PESPacket& packet)
-{
-}
+#define IMPL(profile) void ts::PESHandlerInterface::profile {}
 
-void ts::PESHandlerInterface::handleVideoStartCode(PESDemux& demux, const PESPacket& packet, uint8_t start_code, size_t offset, size_t size)
-{
-}
-
-void ts::PESHandlerInterface::handleNewVideoAttributes(PESDemux& demux, const PESPacket& packet, const VideoAttributes& attr)
-{
-}
-
-void ts::PESHandlerInterface::handleAVCAccessUnit(PESDemux& demux, const PESPacket& packet, uint8_t nal_unit_type, size_t offset, size_t size)
-{
-}
-
-void ts::PESHandlerInterface::handleSEI(PESDemux& demux, const PESPacket& packet, uint32_t sei_type, size_t offset, size_t size)
-{
-}
-
-void ts::PESHandlerInterface::handleNewAVCAttributes(PESDemux& demux, const PESPacket& packet, const AVCAttributes& attr)
-{
-}
-
-void ts::PESHandlerInterface::handleNewAudioAttributes(PESDemux& demux, const PESPacket& packet, const AudioAttributes& attr)
-{
-}
-
-void ts::PESHandlerInterface::handleNewAC3Attributes(PESDemux& demux, const PESPacket& packet, const AC3Attributes& attr)
-{
-}
+IMPL(handlePESPacket(PESDemux&, const PESPacket&))
+IMPL(handleVideoStartCode(PESDemux&, const PESPacket&, uint8_t, size_t, size_t))
+IMPL(handleNewVideoAttributes(PESDemux&, const PESPacket&, const VideoAttributes& attr))
+IMPL(handleAVCAccessUnit(PESDemux&, const PESPacket&, uint8_t, size_t, size_t))
+IMPL(handleSEI(PESDemux&, const PESPacket&, uint32_t, size_t , size_t size))
+IMPL(handleNewAVCAttributes(PESDemux&, const PESPacket&, const AVCAttributes&))
+IMPL(handleIntraImage(PESDemux&, const PESPacket&, size_t))
+IMPL(handleNewAudioAttributes(PESDemux&, const PESPacket&, const AudioAttributes&))
+IMPL(handleNewAC3Attributes(PESDemux&, const PESPacket&, const AC3Attributes&))

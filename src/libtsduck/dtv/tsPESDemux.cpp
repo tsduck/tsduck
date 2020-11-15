@@ -35,7 +35,7 @@
 #include "tsPMT.h"
 #include "tsPSI.h"
 #include "tsPES.h"
-#include "tsVideo.h"
+#include "tsAVC.h"
 TSDUCK_SOURCE;
 
 
@@ -357,18 +357,6 @@ void ts::PESDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
 }
 
 
-//-----------------------------------------------------------------------------
-// This hook is invoked when a complete PES packet is available.
-//-----------------------------------------------------------------------------
-
-void ts::PESDemux::handlePESPacket(const PESPacket& packet)
-{
-    if (_pes_handler != nullptr) {
-        _pes_handler->handlePESPacket(*this, packet);
-    }
-}
-
-
 //----------------------------------------------------------------------------
 // Process a complete PES packet
 //----------------------------------------------------------------------------
@@ -376,8 +364,8 @@ void ts::PESDemux::handlePESPacket(const PESPacket& packet)
 void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
 {
     // Build a PES packet object around the TS buffer
-    PESPacket pp(pc.ts, pid);
-    if (!pp.isValid()) {
+    PESPacket pes(pc.ts, pid);
+    if (!pes.isValid()) {
         return;
     }
 
@@ -385,155 +373,186 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
     pc.pes_count++;
 
     // Location of the PES packet inside the demultiplexed stream
-    pp.setFirstTSPacketIndex(pc.first_pkt);
-    pp.setLastTSPacketIndex(pc.last_pkt);
-    pp.setPCR(pc.pcr);
+    pes.setFirstTSPacketIndex(pc.first_pkt);
+    pes.setLastTSPacketIndex(pc.last_pkt);
+    pes.setPCR(pc.pcr);
 
     // Set stream type if known.
     const StreamTypeMap::const_iterator it = _stream_types.find(pid);
     if (it != _stream_types.end()) {
-        pp.setStreamType(it->second);
+        pes.setStreamType(it->second);
     }
 
     // Mark that we are in the context of handlers.
-    // This is used to prevent the destruction of PID contexts during
-    // the execution of a handler.
+    // This is used to prevent the destruction of PID contexts during the execution of a handler.
     beforeCallingHandler(pid);
     try {
-        // Handle complete packet
-        handlePESPacket(pp);
+        // Handle complete packet (virtual method). This must be executed even if _pes_handler is null
+        // because handlePESPacket() is virtual and can be overridden in a subclass (cf. TeletextDemux).
+        handlePESPacket(pes);
 
-        // Packet payload content (constants)
-        const uint8_t* const pdata = pp.payload();
-        const size_t psize = pp.payloadSize();
-
-        // Process MPEG-1 (ISO 11172-2) and MPEG-2 (ISO 13818-2) video start codes
-        if (pp.isMPEG2Video()) {
-            // Locate all start codes and invoke handler.
-            // The beginning of the payload is already a start code prefix.
-            for (size_t offset = 0; offset < psize; ) {
-                // Look for next start code
-                const uint8_t* pnext = LocatePattern(pdata + offset + 1, psize - offset - 1, StartCodePrefix, sizeof(StartCodePrefix));
-                size_t next = pnext == nullptr ? psize : pnext - pdata;
-                // Invoke handler
-                if (_pes_handler != nullptr) {
-                    _pes_handler->handleVideoStartCode(*this, pp, pdata[offset + 3], offset, next - offset);
-                }
-                // Accumulate info from video units to extract video attributes.
-                // If new attributes were found, invoke handler.
-                if (pc.video.moreBinaryData(pdata + offset, next - offset) && _pes_handler != nullptr) {
-                    _pes_handler->handleNewVideoAttributes(*this, pp, pc.video);
-                }
-                // Move to next start code
-                offset = next;
-            }
-        }
-
-        // Process AVC (ISO 14496-10, ITU H.264) access units (aka "NALunits")
-        else if (pp.isAVC()) {
-            for (size_t offset = 0; offset < psize; ) {
-                // Locate next access unit: starts with 00 00 01 (this start code is not part of the NALunit)
-                const uint8_t* p1 = LocatePattern(pdata + offset, psize - offset, StartCodePrefix, sizeof(StartCodePrefix));
-                if (p1 == nullptr) {
-                    break;
-                }
-                offset = p1 - pdata + sizeof(StartCodePrefix);
-
-                // Locate end of access unit: ends with 00 00 00, 00 00 01 or end of data.
-                const uint8_t* p2 = LocatePattern(pdata + offset, psize - offset, StartCodePrefix, sizeof(StartCodePrefix));
-                const uint8_t* p3 = LocatePattern(pdata + offset, psize - offset, Zero3, sizeof(Zero3));
-                size_t nalunit_size = 0;
-                if (p2 == nullptr && p3 == nullptr) {
-                    // No 00 00 01, no 00 00 00, the NALunit extends up to the end of data.
-                    nalunit_size = psize - offset;
-                }
-                else if (p2 == nullptr || (p3 != nullptr && p3 < p2)) {
-                    // NALunit ends at 00 00 00.
-                    assert(p3 != nullptr);
-                    nalunit_size = p3 - pdata - offset;
-                }
-                else {
-                    // NALunit ends at 00 00 01.
-                    assert(p2 != nullptr);
-                    nalunit_size = p2 - pdata - offset;
-                }
-
-                // Compute NALunit type.
-                const uint8_t nalunit_type = nalunit_size == 0 ? 0 : (pdata[offset] & 0x1F);
-                const uint8_t* nalunit_end = pdata + offset + nalunit_size;
-
-                // Invoke handler for the complete NALunit.
-                if (_pes_handler != nullptr) {
-                    _pes_handler->handleAVCAccessUnit(*this, pp, nalunit_type, offset, nalunit_size);
-                }
-
-                // If the NALunit is an SEI, locate it.
-                if (nalunit_type == AVC_AUT_SEI) {
-                    // See H.264 section 7.3.2.3.1, "Supplemental enhancement information message syntax".
-                    // Point after nalunit type:
-                    const uint8_t* p = pdata + offset + 1;
-
-                    // Loop on all SEI messages in the NALunit.
-                    while (p < nalunit_end) {
-                       // Compute SEI payload type.
-                       uint32_t sei_type = 0;
-                       while (p < nalunit_end && *p == 0xFF) {
-                          sei_type += *p++;
-                       }
-                       if (p < nalunit_end) {
-                          sei_type += *p++;
-                       }
-                       // Compute SEI payload size.
-                       size_t sei_size = 0;
-                       while (p < nalunit_end && *p == 0xFF) {
-                          sei_size += *p++;
-                       }
-                       if (p < nalunit_end) {
-                          sei_size += *p++;
-                       }
-                       sei_size = std::min<size_t>(sei_size, nalunit_end - p);
-                       // Invoke handler for the SEI.
-                       if (_pes_handler != nullptr && sei_size > 0) {
-                          _pes_handler->handleSEI(*this, pp, sei_type, p - pdata, sei_size);
-                       }
-                       p += sei_size;
-                    }
-                }
-
-                // Accumulate info from access units to extract video attributes.
-                // If new attributes were found, invoke handler.
-                if (pc.avc.moreBinaryData(pdata + offset, nalunit_size) && _pes_handler != nullptr) {
-                    _pes_handler->handleNewAVCAttributes(*this, pp, pc.avc);
-                }
-
-                // Move to next start code
-                offset += nalunit_size;
-            }
-        }
-
-        // Process AC-3 audio frames
-        else if (pp.isAC3()) {
-            // Count PES packets with potential AC-3 packet.
-            pc.ac3_count++;
-            // Accumulate info from audio frames to extract audio attributes.
-            // If new attributes were found, invoke handler.
-            if (pc.ac3.moreBinaryData(pdata, psize) && _pes_handler != nullptr) {
-                _pes_handler->handleNewAC3Attributes(*this, pp, pc.ac3);
-            }
-        }
-
-        // Process other audio frames
-        else if (IsAudioSID(pp.getStreamId())) {
-            // Accumulate info from audio frames to extract audio attributes.
-            // If new attributes were found, invoke handler.
-            if (pc.audio.moreBinaryData(pdata, psize) && _pes_handler != nullptr) {
-                _pes_handler->handleNewAudioAttributes(*this, pp, pc.audio);
-            }
-        }
+        // Analyze audio/video content of the packet and notify all corresponding events.
+        handlePESContent(pc, pes);
     }
     catch (...) {
         afterCallingHandler(false);
         throw;
     }
     afterCallingHandler(true);
+}
+
+
+//-----------------------------------------------------------------------------
+// This hook is invoked when a complete PES packet is available.
+// This is a protected virtual method.
+//-----------------------------------------------------------------------------
+
+void ts::PESDemux::handlePESPacket(const PESPacket& pes)
+{
+    if (_pes_handler != nullptr) {
+        _pes_handler->handlePESPacket(*this, pes);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process all video/audio analysis on the PES packet.
+//----------------------------------------------------------------------------
+
+void ts::PESDemux::handlePESContent(PIDContext& pc, const PESPacket& pes)
+{
+    // Nothing to do without a handler.
+    if (_pes_handler == nullptr) {
+        return;
+    }
+
+    // Packet payload content (constants)
+    const uint8_t* const pdata = pes.payload();
+    const size_t psize = pes.payloadSize();
+
+    // Process intra-coded images.
+    const size_t intra_offset = pes.findIntraImage();
+    if (intra_offset != NPOS) {
+        _pes_handler->handleIntraImage(*this, pes, intra_offset);
+    }
+
+    // Process MPEG-1 (ISO 11172-2) and MPEG-2 (ISO 13818-2) video start codes
+    if (pes.isMPEG2Video()) {
+        // Locate all start codes and invoke handler.
+        // The beginning of the payload is already a start code prefix.
+        for (size_t offset = 0; offset < psize; ) {
+            // Look for next start code
+            const uint8_t* pnext = LocatePattern(pdata + offset + 1, psize - offset - 1, StartCodePrefix, sizeof(StartCodePrefix));
+            size_t next = pnext == nullptr ? psize : pnext - pdata;
+            // Invoke handler
+            _pes_handler->handleVideoStartCode(*this, pes, pdata[offset + 3], offset, next - offset);
+            // Accumulate info from video units to extract video attributes.
+            // If new attributes were found, invoke handler.
+            if (pc.video.moreBinaryData(pdata + offset, next - offset)) {
+                _pes_handler->handleNewVideoAttributes(*this, pes, pc.video);
+            }
+            // Move to next start code
+            offset = next;
+        }
+    }
+
+    // Process AVC (ISO 14496-10, ITU H.264) access units (aka "NALunits")
+    else if (pes.isAVC()) {
+        for (size_t offset = 0; offset < psize; ) {
+            // Locate next access unit: starts with 00 00 01 (this start code is not part of the NALunit)
+            const uint8_t* p1 = LocatePattern(pdata + offset, psize - offset, StartCodePrefix, sizeof(StartCodePrefix));
+            if (p1 == nullptr) {
+                break;
+            }
+            offset = p1 - pdata + sizeof(StartCodePrefix);
+
+            // Locate end of access unit: ends with 00 00 00, 00 00 01 or end of data.
+            const uint8_t* p2 = LocatePattern(pdata + offset, psize - offset, StartCodePrefix, sizeof(StartCodePrefix));
+            const uint8_t* p3 = LocatePattern(pdata + offset, psize - offset, Zero3, sizeof(Zero3));
+            size_t nalunit_size = 0;
+            if (p2 == nullptr && p3 == nullptr) {
+                // No 00 00 01, no 00 00 00, the NALunit extends up to the end of data.
+                nalunit_size = psize - offset;
+            }
+            else if (p2 == nullptr || (p3 != nullptr && p3 < p2)) {
+                // NALunit ends at 00 00 00.
+                assert(p3 != nullptr);
+                nalunit_size = p3 - pdata - offset;
+            }
+            else {
+                // NALunit ends at 00 00 01.
+                assert(p2 != nullptr);
+                nalunit_size = p2 - pdata - offset;
+            }
+
+            // Compute NALunit type.
+            const uint8_t nalunit_type = nalunit_size == 0 ? 0 : (pdata[offset] & 0x1F);
+            const uint8_t* nalunit_end = pdata + offset + nalunit_size;
+
+            // Invoke handler for the complete NALunit.
+            _pes_handler->handleAVCAccessUnit(*this, pes, nalunit_type, offset, nalunit_size);
+
+            // If the NALunit is an SEI, locate it.
+            if (nalunit_type == AVC_AUT_SEI) {
+                // See H.264 section 7.3.2.3.1, "Supplemental enhancement information message syntax".
+                // Point after nalunit type:
+                const uint8_t* p = pdata + offset + 1;
+
+                // Loop on all SEI messages in the NALunit.
+                while (p < nalunit_end) {
+                   // Compute SEI payload type.
+                   uint32_t sei_type = 0;
+                   while (p < nalunit_end && *p == 0xFF) {
+                      sei_type += *p++;
+                   }
+                   if (p < nalunit_end) {
+                      sei_type += *p++;
+                   }
+                   // Compute SEI payload size.
+                   size_t sei_size = 0;
+                   while (p < nalunit_end && *p == 0xFF) {
+                      sei_size += *p++;
+                   }
+                   if (p < nalunit_end) {
+                      sei_size += *p++;
+                   }
+                   sei_size = std::min<size_t>(sei_size, nalunit_end - p);
+                   // Invoke handler for the SEI.
+                   if (sei_size > 0) {
+                      _pes_handler->handleSEI(*this, pes, sei_type, p - pdata, sei_size);
+                   }
+                   p += sei_size;
+                }
+            }
+
+            // Accumulate info from access units to extract video attributes.
+            // If new attributes were found, invoke handler.
+            if (pc.avc.moreBinaryData(pdata + offset, nalunit_size)) {
+                _pes_handler->handleNewAVCAttributes(*this, pes, pc.avc);
+            }
+
+            // Move to next start code
+            offset += nalunit_size;
+        }
+    }
+
+    // Process AC-3 audio frames
+    else if (pes.isAC3()) {
+        // Count PES packets with potential AC-3 packet.
+        pc.ac3_count++;
+        // Accumulate info from audio frames to extract audio attributes.
+        // If new attributes were found, invoke handler.
+        if (pc.ac3.moreBinaryData(pdata, psize)) {
+            _pes_handler->handleNewAC3Attributes(*this, pes, pc.ac3);
+        }
+    }
+
+    // Process other audio frames
+    else if (IsAudioSID(pes.getStreamId())) {
+        // Accumulate info from audio frames to extract audio attributes.
+        // If new attributes were found, invoke handler.
+        if (pc.audio.moreBinaryData(pdata, psize)) {
+            _pes_handler->handleNewAudioAttributes(*this, pes, pc.audio);
+        }
+    }
 }

@@ -28,20 +28,62 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  @ingroup mpeg
+//!  Basic definitions for MPEG-2 video coding standard.
+//!  @see ISO/IEC 113818-2, H.262
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2067
+#include "tsPlatform.h"
+
+namespace ts {
+    //!
+    //! Video macroblock width in pixels.
+    //! Valid for:
+    //! - ISO 11172-2 (MPEG-1 video)
+    //! - ISO 13818-2 (MPEG-2 video)
+    //! - ISO 14496-10 (MPEG-4 Advanced Video Coding, AVC, ITU H.264)
+    //!
+    constexpr size_t MACROBLOCK_WIDTH = 16;
+
+    //!
+    //! Video macroblock height in pixels.
+    //! @see MACROBLOCK_WIDTH
+    //!
+    constexpr size_t MACROBLOCK_HEIGHT = 16;
+
+    //!
+    //! Frame rate values (in MPEG-1/2 video sequence).
+    //!
+    enum {
+        FPS_23_976 = 0x01,  //!< 23.976 fps (24000/1001)
+        FPS_24     = 0x02,  //!< 24 fps
+        FPS_25     = 0x03,  //!< 25 fps
+        FPS_29_97  = 0x04,  //!< 29.97 fps (30000/1001)
+        FPS_30     = 0x05,  //!< 30 fps
+        FPS_50     = 0x06,  //!< 50 fps
+        FPS_59_94  = 0x07,  //!< 59.94 fps (60000/1001)
+        FPS_60     = 0x08,  //!< 60 fps
+    };
+
+    //!
+    //! Aspect ratio values (in MPEG-1/2 video sequence header).
+    //!
+    enum {
+        AR_SQUARE = 1,  //!< 1/1 MPEG video aspect ratio.
+        AR_4_3    = 2,  //!< 4/3 MPEG video aspect ratio.
+        AR_16_9   = 3,  //!< 16/9 MPEG video aspect ratio.
+        AR_221    = 4,  //!< 2.21/1 MPEG video aspect ratio.
+    };
+
+    //!
+    //! Chroma format values (in MPEG-1/2 video sequence header).
+    //!
+    enum {
+        CHROMA_MONO = 0,  //!< Monochrome MPEG video.
+        CHROMA_420  = 1,  //!< Chroma 4:2:0 MPEG video.
+        CHROMA_422  = 2,  //!< Chroma 4:2:2 MPEG video.
+        CHROMA_444  = 3,  //!< Chroma 4:4:4 MPEG video.
+    };
+}
