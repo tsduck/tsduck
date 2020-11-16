@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSwitchableReport.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 

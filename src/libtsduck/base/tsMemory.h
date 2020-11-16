@@ -35,6 +35,7 @@
 
 #pragma once
 #include "tsPlatform.h"
+#include "tsByteSwap.h"
 
 //!
 //! Zeroing an plain memory variable.
@@ -44,7 +45,6 @@
 #define TS_ZERO(var) ts::Zero(&(var), sizeof(var))
 
 namespace ts {
-
     //!
     //! Zeroing a memory area.
     //! @param [out] addr Address of a memory area to fill with zeroes.
@@ -85,6 +85,78 @@ namespace ts {
     //! @return True if @a area_size is greater than 1 and all bytes in @a area are identical.
     //!
     TSDUCKDLL bool IdenticalBytes(const void* area, size_t area_size);
+
+
+    //----------------------------------------------------------------------------
+    // Cross-platforms portable definitions for memory barrier.
+    //----------------------------------------------------------------------------
+
+    #if defined(TS_MSC)
+        #pragma intrinsic(_ReadWriteBarrier)
+    #endif
+
+    #if defined(DOXYGEN) /* documentation only */
+        //!
+        //! To be defined to implement memory barrier as a no-operation.
+        //!
+        //! This symbol shall be defined by the developer on the command line
+        //! to ensure that no specific memory barrier instruction is generated.
+        //!
+        //! This can be useful in some environments (for instance using valgrind
+        //! on the ARM architecture) when the memory barrier causes some trouble.
+        //!
+        //! Note that not using memory barrier instructions can cause some extremely
+        //! rare race conditions.
+        //!
+        #define TS_NO_MEMORY_BARRIER
+    #endif
+
+    //!
+    //! Inlined C function performing a CPU/compiler-dependent memory barrier.
+    //!
+    TSDUCKDLL inline void MemoryBarrier()
+    {
+        #if defined(TS_NO_MEMORY_BARRIER)
+
+            // Nothing to do
+
+        #elif defined(TS_GCC) && (defined(TS_I386) || defined(TS_X86_64))
+
+            // "mfence" is SSE2, not supported on all x86 cpus but supported on all x86_64 cpus.
+            __asm__ __volatile__ ("mfence" : : : "memory");
+
+        #elif defined(TS_GCC) && defined(__ARM_ARCH_5TEJ__)
+
+            // Some flavours of the ARM architecture do not support accessing r15 in user mode.
+            // Simply prevent the compiler from rescheduling instructions (not a true "memory barrier" however).
+            __asm__ __volatile__ ("" : : :  "memory");
+
+        #elif defined(TS_GCC) && defined(TS_ARM)
+
+            // For later reference, not sure this is valid.
+            unsigned dest = 0;
+            __asm__ __volatile__ ("@MemoryBarrier\n mcr p15,0,%0,c7,c10,5\n" : "=&r"(dest) : :  "memory");
+
+        #elif defined(TS_GCC) && defined(TS_ARM64)
+
+            __asm__ __volatile__ ("dmb sy" : : : "memory");
+
+        #elif defined(TS_GCC) && defined(TS_MIPS)
+
+            __asm__ __volatile__ ("sync" : : :"memory");
+
+        #elif defined(TS_MSC)
+
+            // Prevent the compiler from reordering memory access
+            _ReadWriteBarrier();
+            // CPU memory barrier
+            ::MemoryBarrier();
+
+        #else
+            #error "MemoryBarrier is not implemented on this platform"
+        #endif
+    }
+
 
     //------------------------------------------------------------------------
     // Serialization of integer data.

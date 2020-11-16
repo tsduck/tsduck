@@ -34,7 +34,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsMemory.h"
 
 //!
 //! @hideinitializer

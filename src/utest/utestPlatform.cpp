@@ -33,6 +33,7 @@
 
 #include "tsPlatform.h"
 #include "tsMemory.h"
+#include "tsRotate.h"
 #include "tsVersion.h"
 #include "tsVersionInfo.h"
 #include "tsunit.h"

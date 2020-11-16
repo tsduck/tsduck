@@ -61,11 +61,7 @@ namespace ts {
             //! @param [in] table Parent PMT.
             //! @param [in] type Stream type.
             //!
-            explicit Stream(const AbstractTable* table, uint8_t type = 0) :
-                EntryWithDescriptors(table),
-                stream_type(type)
-            {
-            }
+            explicit Stream(const AbstractTable* table, uint8_t type = 0);
 
             //!
             //! Check if an elementary stream carries audio.

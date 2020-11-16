@@ -75,6 +75,15 @@ ts::RST::RST(DuckContext& duck, const BinaryTable& table) :
     deserialize(duck, table);
 }
 
+ts::RST::Event::Event() :
+    transport_stream_id(0),
+    original_network_id(0),
+    service_id(0),
+    event_id(0),
+    running_status(0)
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Get the maximum size in bytes of the payload of sections of this table.
