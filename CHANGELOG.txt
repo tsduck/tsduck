@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2065
+VERSION 3.24-2070
 
 [NEW] New commands and plugins:
 
@@ -28,6 +28,7 @@ VERSION 3.24-2065
     - Option --json in "tscmp" and "tsdektec".
     - Options --json and --deterministic in "tsanalyze" and plugin "analyze".
     - Options --save-pes and --intra-image in plugin "pes".
+    - Options --intra-close and --max-extra-duration to output plugin "hls".
     - Options --bitrate, --acceleration-threshold, --incremental-pcr-restamp,
       --no-smoothing, --pcr-reset-backwards in plugin "merge".
 
@@ -42,6 +43,8 @@ VERSION 3.24-2065
     of a section was 4096 bytes as for all private sections (non-MPEG) but DVB
     specifies that these three specific tables shall not exceed 1024 bytes per
     section.
+  * Fixed issue #664: Due to a probably long-standing regression, the command
+    "tsterinfo" was no longer able to guess modulation parameters from bitrates.
 
 -------------------------------------------------------------------------------
 
