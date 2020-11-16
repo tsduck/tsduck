@@ -41,6 +41,8 @@ ts::BitrateDifferenceDVBT::BitrateDifferenceDVBT() :
     tune(),
     bitrate_diff(0)
 {
+    // All operations on this class are implicitly on DVB-T.
+    tune.delivery_system = DS_DVB_T;
 }
 
 
