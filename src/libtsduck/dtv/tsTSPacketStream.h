@@ -40,11 +40,6 @@
 #include "tsTSPacket.h"
 #include "tsEnumeration.h"
 
-// Unfortunate macro in Mach Kernel message.h (macOS 11.x)
-#if defined(MAX_TRAILER_SIZE)
-#undef MAX_TRAILER_SIZE
-#endif
-
 namespace ts {
 
     class TSPacketMetadata;

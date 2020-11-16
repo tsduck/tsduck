@@ -73,6 +73,12 @@ ts::PMT::PMT(DuckContext& duck, const BinaryTable& table) :
     deserialize(duck, table);
 }
 
+ts::PMT::Stream::Stream(const AbstractTable* table, uint8_t type) :
+    EntryWithDescriptors(table),
+    stream_type(type)
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Inherited public methods

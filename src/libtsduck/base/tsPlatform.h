@@ -927,7 +927,6 @@ TS_POP_WARNING()
 #endif
 
 // Required link libraries under Windows.
-
 #if defined(TS_WINDOWS) && defined(TS_MSC)
 #pragma comment(lib, "userenv.lib")   // GetUserProfileDirectory
 #pragma comment(lib, "psapi.lib")     // GetProcessMemoryInfo
@@ -945,83 +944,69 @@ TS_POP_WARNING()
 // Some standard Windows headers have the very-very bad idea to define common
 // words as macros. Also, common function names, used by TSDuck, are defined
 // as macros, breaking C++ visibility rules.
-
 #if defined(min)
     #undef min
 #endif
-
 #if defined(max)
     #undef max
 #endif
-
 #if defined(TRUE)
     #undef TRUE
 #endif
-
 #if defined(FALSE)
     #undef FALSE
 #endif
-
 #if defined(MAYBE)
     #undef MAYBE
 #endif
-
 #if defined(IGNORE)
     #undef IGNORE
 #endif
-
 #if defined(CHECK)
     #undef CHECK
 #endif
-
 #if defined(COMPUTE)
     #undef COMPUTE
 #endif
-
 #if defined(INFO)
     #undef INFO
 #endif
-
 #if defined(ERROR)
     #undef ERROR
 #endif
-
 #if defined(SHORT)
     #undef SHORT
 #endif
-
 #if defined(LONG)
     #undef LONG
 #endif
-
 #if defined(INTEGER)
     #undef INTEGER
 #endif
-
 #if defined(Yield)
     #undef Yield
 #endif
-
 #if defined(CreateDirectory)
     #undef CreateDirectory
 #endif
-
 #if defined(DeleteFile)
     #undef DeleteFile
 #endif
-
 #if defined(ALTERNATE)
     #undef ALTERNATE
 #endif
 
-// For platforms not supporting large files:
+// Similar common-words macros in Mach kernel (macOS).
+#if defined(MAX_TRAILER_SIZE)
+    #undef MAX_TRAILER_SIZE
+#endif
 
+// For platforms not supporting large files:
 #if !defined(TS_WINDOWS) && !defined(O_LARGEFILE) && !defined(DOXYGEN)
     #define O_LARGEFILE 0
 #endif
 
 // Identify Linux DVB API version in one value
-
 #if defined(TS_LINUX) || defined(DOXYGEN)
     //!
     //! @hideinitializer
@@ -1032,7 +1017,6 @@ TS_POP_WARNING()
 #endif
 
 // On macOS, sigaction(2) uses the flag named SA_RESETHAND instead of SA_ONESHOT.
-
 #if defined(TS_MAC) && !defined(SA_ONESHOT) && !defined(DOXYGEN)
     #define SA_ONESHOT SA_RESETHAND
 #endif
@@ -1316,780 +1300,6 @@ namespace ts {
     typedef const uint16_t* const_uint16_ptr;  //!< Pointer to @c const uint16_t
     typedef const uint32_t* const_uint32_ptr;  //!< Pointer to @c const uint32_t
     typedef const uint64_t* const_uint64_ptr;  //!< Pointer to @c const uint64_t
-}
-
-
-//----------------------------------------------------------------------------
-// Byte swapping in integer values.
-//----------------------------------------------------------------------------
-
-namespace ts {
-    //!
-    //! Perform a sign extension on 24 bit integers.
-    //!
-    //! @param [in] x A 32-bit integer containing a signed 24-bit value to extend.
-    //! @return A 32-bit signed integer containing the signed 24-bit value with proper sign extension on 32-bits.
-    //!
-    TSDUCKDLL inline int32_t SignExtend24(int32_t x)
-    {
-        return (x & 0x00800000) == 0 ? (x & 0x00FFFFFF) : int32_t(uint32_t(x) | 0xFF000000);
-    }
-
-    //!
-    //! Perform a sign extension on 40 bit integers.
-    //!
-    //! @param [in] x A 64-bit integer containing a signed 40-bit value to extend.
-    //! @return A 64-bit signed integer containing the signed 40-bit value with proper sign extension on 64-bits.
-    //!
-    TSDUCKDLL inline int64_t SignExtend40(int64_t x)
-    {
-        return (x & TS_UCONST64(0x0000008000000000)) == 0 ? (x & TS_UCONST64(0x000000FFFFFFFFFF)) : int64_t(uint64_t(x) | TS_UCONST64(0xFFFFFF0000000000));
-    }
-
-    //!
-    //! Perform a sign extension on 48 bit integers.
-    //!
-    //! @param [in] x A 64-bit integer containing a signed 48-bit value to extend.
-    //! @return A 64-bit signed integer containing the signed 48-bit value with proper sign extension on 64-bits.
-    //!
-    TSDUCKDLL inline int64_t SignExtend48(int64_t x)
-    {
-        return (x & TS_UCONST64(0x0000800000000000)) == 0 ? (x & TS_UCONST64(0x0000FFFFFFFFFFFF)) : int64_t(uint64_t(x) | TS_UCONST64(0xFFFF000000000000));
-    }
-
-    //!
-    //! Inlined function performing byte swap on 16-bit integer data.
-    //!
-    //! This function unconditionally swaps bytes within an unsigned integer,
-    //! regardless of the native endianness.
-    //!
-    //! @param [in] x A 16-bit unsigned integer to swap.
-    //! @return The value of @a x where bytes were swapped.
-    //!
-    TSDUCKDLL inline uint16_t ByteSwap16(uint16_t x)
-    {
-    #if defined(TS_LINUX)
-        return bswap_16(x);
-    #elif defined(TS_MSC)
-        return _byteswap_ushort(x);
-    #else
-        return uint16_t((x << 8) | (x >> 8));
-    #endif
-    }
-
-    //!
-    //! Inlined function performing byte swap on 24-bit integer data.
-    //!
-    //! This function unconditionally swaps bytes within an unsigned integer,
-    //! regardless of the native endianness.
-    //!
-    //! @param [in] x A 32-bit unsigned integer containing a 24-bit value to swap.
-    //! @return The value of @a x where the three least significant bytes were swapped.
-    //!
-    TSDUCKDLL inline uint32_t ByteSwap24(uint32_t x)
-    {
-        return ((x << 16) & 0x00FF0000) | (x & 0x0000FF00) | ((x >> 16) & 0x000000FF);
-    }
-
-    //!
-    //! Inlined function performing byte swap on 32-bit integer data.
-    //!
-    //! This function unconditionally swaps bytes within an unsigned integer,
-    //! regardless of the native endianness.
-    //!
-    //! @param [in] x A 32-bit unsigned integer to swap.
-    //! @return The value of @a x where bytes were swapped.
-    //!
-    TSDUCKDLL inline uint32_t ByteSwap32(uint32_t x)
-    {
-    #if defined(TS_LINUX)
-        return bswap_32(x);
-    #elif defined(TS_MSC)
-        return _byteswap_ulong(x);
-    #else
-        return (x << 24) | ((x << 8) & 0x00FF0000) | ((x >> 8) & 0x0000FF00) | (x >> 24);
-    #endif
-    }
-
-    //!
-    //! Inlined function performing byte swap on 64-bit integer data.
-    //!
-    //! This function unconditionally swaps bytes within an unsigned integer,
-    //! regardless of the native endianness.
-    //!
-    //! @param [in] x A 64-bit unsigned integer to swap.
-    //! @return The value of @a x where bytes were swapped.
-    //!
-    TSDUCKDLL inline uint64_t ByteSwap64(uint64_t x)
-    {
-    #if defined(TS_LINUX)
-        return bswap_64(x);
-    #elif defined(TS_MSC)
-        return _byteswap_uint64(x);
-    #else
-        return
-            ((x << 56)) |
-            ((x << 40) & TS_UCONST64(0x00FF000000000000)) |
-            ((x << 24) & TS_UCONST64(0x0000FF0000000000)) |
-            ((x <<  8) & TS_UCONST64(0x000000FF00000000)) |
-            ((x >>  8) & TS_UCONST64(0x00000000FF000000)) |
-            ((x >> 24) & TS_UCONST64(0x0000000000FF0000)) |
-            ((x >> 40) & TS_UCONST64(0x000000000000FF00)) |
-            ((x >> 56));
-    #endif
-    }
-
-    //!
-    //! Inlined function performing conditional byte swap on 16-bit integer data
-    //! to obtain the data in big endian representation.
-    //!
-    //! @param [in] x A 16-bit unsigned integer to conditionally swap.
-    //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
-    //! On big-endian platforms, return the value of @a x unmodified.
-    //!
-    TSDUCKDLL inline uint16_t CondByteSwap16BE(uint16_t x)
-    {
-    #if defined(TS_LITTLE_ENDIAN)
-        return ByteSwap16(x);
-    #else
-        return x;
-    #endif
-    }
-
-    //!
-    //! Inlined function performing conditional byte swap on 16-bit integer data
-    //! to obtain the data in big endian representation.
-    //!
-    //! @param [in] x A 16-bit unsigned integer to conditionally swap.
-    //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
-    //! On big-endian platforms, return the value of @a x unmodified.
-    //!
-    TSDUCKDLL inline uint16_t CondByteSwap16(uint16_t x)
-    {
-        return CondByteSwap16BE(x);
-    }
-
-    //!
-    //! Inlined function performing conditional byte swap on 24-bit integer data
-    //! to obtain the data in big endian representation.
-    //!
-    //! @param [in] x A 32-bit unsigned integer containing a 24-bit value to conditionally swap.
-    //! @return On little-endian platforms, return the value of @a x where the three least
-    //! significant bytes were swapped. On big-endian platforms, return the value of @a x unmodified.
-    //!
-    TSDUCKDLL inline uint32_t CondByteSwap24BE(uint32_t x)
-    {
-    #if defined(TS_LITTLE_ENDIAN)
-        return ByteSwap24(x);
-    #else
-        return x & 0x00FFFFFF;
-    #endif
-    }
-
-    //!
-    //! Inlined function performing conditional byte swap on 24-bit integer data
-    //! to obtain the data in big endian representation.
-    //!
-    //! @param [in] x A 32-bit unsigned integer containing a 24-bit value to conditionally swap.
-    //! @return On little-endian platforms, return the value of @a x where the three least
-    //! significant bytes were swapped. On big-endian platforms, return the value of @a x unmodified.
-    //!
-    TSDUCKDLL inline uint32_t CondByteSwap24(uint32_t x)
-    {
-        return CondByteSwap24BE(x);
-    }
-
-    //!
-    //! Inlined function performing conditional byte swap on 32-bit integer data
-    //! to obtain the data in big endian representation.
-    //!
-    //! @param [in] x A 32-bit unsigned integer to conditionally swap.
-    //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
-    //! On big-endian platforms, return the value of @a x unmodified.
-    //!
-    TSDUCKDLL inline uint32_t CondByteSwap32BE(uint32_t x)
-    {
-    #if defined(TS_LITTLE_ENDIAN)
-        return ByteSwap32(x);
-    #else
-        return x;
-    #endif
-    }
-
-    //!
-    //! Inlined function performing conditional byte swap on 32-bit integer data
-    //! to obtain the data in big endian representation.
-    //!
-    //! @param [in] x A 32-bit unsigned integer to conditionally swap.
-    //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
-    //! On big-endian platforms, return the value of @a x unmodified.
-    //!
-    TSDUCKDLL inline uint32_t CondByteSwap32(uint32_t x)
-    {
-        return CondByteSwap32BE(x);
-    }
-
-    //!
-    //! Inlined function performing conditional byte swap on 64-bit integer data
-    //! to obtain the data in big endian representation.
-    //!
-    //! @param [in] x A 64-bit unsigned integer to conditionally swap.
-    //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
-    //! On big-endian platforms, return the value of @a x unmodified.
-    //!
-    TSDUCKDLL inline uint64_t CondByteSwap64BE(uint64_t x)
-    {
-    #if defined(TS_LITTLE_ENDIAN)
-        return ByteSwap64(x);
-    #else
-        return x;
-    #endif
-    }
-
-    //!
-    //! Inlined function performing conditional byte swap on 64-bit integer data
-    //! to obtain the data in big endian representation.
-    //!
-    //! @param [in] x A 64-bit unsigned integer to conditionally swap.
-    //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
-    //! On big-endian platforms, return the value of @a x unmodified.
-    //!
-    TSDUCKDLL inline uint64_t CondByteSwap64(uint64_t x)
-    {
-        return CondByteSwap64BE(x);
-    }
-
-    //!
-    //! Inlined function performing conditional byte swap on 16-bit integer data
-    //! to obtain the data in little endian representation.
-    //!
-    //! @param [in] x A 16-bit unsigned integer to conditionally swap.
-    //! @return On big-endian platforms, return the value of @a x where bytes were swapped.
-    //! On little-endian platforms, return the value of @a x unmodified.
-    //!
-    TSDUCKDLL inline uint16_t CondByteSwap16LE(uint16_t x)
-    {
-    #if defined(TS_LITTLE_ENDIAN)
-        return x;
-    #else
-        return ByteSwap16(x);
-    #endif
-    }
-
-    //!
-    //! Inlined function performing conditional byte swap on 24-bit integer data
-    //! to obtain the data in little endian representation.
-    //!
-    //! @param [in] x A 32-bit unsigned integer containing a 24-bit value to conditionally swap.
-    //! @return On big-endian platforms, return the value of @a x where the three least
-    //! significant bytes were swapped. On little-endian platforms, return the value of @a x unmodified.
-    //!
-    TSDUCKDLL inline uint32_t CondByteSwap24LE(uint32_t x)
-    {
-    #if defined(TS_LITTLE_ENDIAN)
-        return x & 0x00FFFFFF;
-    #else
-        return ByteSwap24(x);
-    #endif
-    }
-
-    //!
-    //! Inlined function performing conditional byte swap on 32-bit integer data
-    //! to obtain the data in little endian representation.
-    //!
-    //! @param [in] x A 32-bit unsigned integer to conditionally swap.
-    //! @return On big-endian platforms, return the value of @a x where bytes were swapped.
-    //! On little-endian platforms, return the value of @a x unmodified.
-    //!
-    TSDUCKDLL inline uint32_t CondByteSwap32LE(uint32_t x)
-    {
-    #if defined(TS_LITTLE_ENDIAN)
-        return x;
-    #else
-        return ByteSwap32(x);
-    #endif
-    }
-
-    //!
-    //! Inlined function performing conditional byte swap on 64-bit integer data
-    //! to obtain the data in little endian representation.
-    //!
-    //! @param [in] x A 64-bit unsigned integer to conditionally swap.
-    //! @return On big-endian platforms, return the value of @a x where bytes were swapped.
-    //! On little-endian platforms, return the value of @a x unmodified.
-    //!
-    TSDUCKDLL inline uint64_t CondByteSwap64LE(uint64_t x)
-    {
-    #if defined(TS_LITTLE_ENDIAN)
-        return x;
-    #else
-        return ByteSwap64(x);
-    #endif
-    }
-
-    //!
-    //! Template function performing conditional byte swap on integer data
-    //! to obtain the data in big endian representation.
-    //!
-    //! @tparam INT Some integer type.
-    //! @param [in] x An INT to conditionally swap.
-    //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
-    //! On big-endian platforms, return the value of @a x unmodified.
-    //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-    TSDUCKDLL inline INT CondByteSwapBE(INT x)
-    {
-#if defined(TS_BIG_ENDIAN)
-        return x;
-#else
-        switch (sizeof(INT)) {
-            case 1: return x;
-            case 2: return static_cast<INT>(CondByteSwap16BE(static_cast<uint16_t>(x)));
-            case 4: return static_cast<INT>(CondByteSwap32BE(static_cast<uint32_t>(x)));
-            case 8: return static_cast<INT>(CondByteSwap64BE(static_cast<uint64_t>(x)));
-            default: return 0;
-        }
-#endif
-    }
-
-    //!
-    //! Template function performing conditional byte swap on integer data
-    //! to obtain the data in little endian representation.
-    //!
-    //! @tparam INT Some integer type.
-    //! @param [in] x An INT to conditionally swap.
-    //! @return On big-endian platforms, return the value of @a x where bytes were swapped.
-    //! On little-endian platforms, return the value of @a x unmodified.
-    //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-    TSDUCKDLL inline INT CondByteSwapLE(INT x)
-    {
-#if defined(TS_BIG_ENDIAN)
-        switch (sizeof(INT)) {
-            case 1: return x;
-            case 2: return static_cast<INT>(CondByteSwap16BE(static_cast<uint16_t>(x)));
-            case 4: return static_cast<INT>(CondByteSwap32BE(static_cast<uint32_t>(x)));
-            case 8: return static_cast<INT>(CondByteSwap64BE(static_cast<uint64_t>(x)));
-            default: return 0;
-        }
-#else
-        return x;
-#endif
-    }
-
-    //!
-    //! Template function performing conditional byte swap on integer data
-    //! to obtain the data in big endian representation.
-    //!
-    //! @tparam INT Some integer type.
-    //! @param [in] x An INT to conditionally swap.
-    //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
-    //! On big-endian platforms, return the value of @a x unmodified.
-    //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-    TSDUCKDLL inline INT CondByteSwap(INT x)
-    {
-        return CondByteSwapBE<INT>(x);
-    }
-
-    // Some specializations, for performance
-
-#if !defined(DOXYGEN)
-    template<> TSDUCKDLL inline uint8_t CondByteSwap   (uint8_t x) {return x;}
-    template<> TSDUCKDLL inline int8_t  CondByteSwap   (int8_t  x) {return x;}
-    template<> TSDUCKDLL inline uint8_t CondByteSwapBE (uint8_t x) {return x;}
-    template<> TSDUCKDLL inline int8_t  CondByteSwapBE (int8_t  x) {return x;}
-    template<> TSDUCKDLL inline uint8_t CondByteSwapLE (uint8_t x) {return x;}
-    template<> TSDUCKDLL inline int8_t  CondByteSwapLE (int8_t  x) {return x;}
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Rotate functions.
-// ROL = rotate left, ROR = rotate right
-// ROLc/RORc = rotate with constant value for index (optimized when asm).
-// Note that, in debug mode, ROLc/RORc revert to ROL/ROR since the routines
-// are not inlined and, thus, constant constraint cannot be checked.
-//----------------------------------------------------------------------------
-
-namespace ts {
-
-#if defined(DOXYGEN)
-    //!
-    //! Inlined function performing 32-bit left-rotate.
-    //!
-    //! @param [in] word A 32-bit word to rotate.
-    //! @param [in] i The number of bits by which to rotate @a word.
-    //! Can be positive (left-rotate) or negative (right-rotate).
-    //! @return The value of @a word left-rotated by @a i bits.
-    //!
-    TSDUCKDLL inline uint32_t ROL(uint32_t word, int i) {return XX;}
-
-    //!
-    //! Inlined function performing 32-bit left-rotate with a constant value in the range 0..31 for index.
-    //!
-    //! Using @c ROLc instead of @c ROL when the number of bits to rotate is a compile-time constant
-    //! brings some performance gain on platforms where the function in written as inlined assembly
-    //! code. Although the performance gain is small, it can bring some improvement on cryptographic
-    //! algorithms for instance.
-    //!
-    //! Note: In debug mode, @c ROLc reverts to @c ROL since the routine is not inlined and
-    //! the constant constraint cannot be checked by the compiler.
-    //!
-    //! @param [in] word A 32-bit word to rotate.
-    //! @param [in] i The number of bits by which to rotate @a word.
-    //! Must be a constant value in the range 0..31.
-    //! @return The value of @a word left-rotated by @a i bits.
-    //!
-    TSDUCKDLL inline uint32_t ROLc(uint32_t word, const int i) {return XX;}
-
-    //!
-    //! Inlined function performing 32-bit right-rotate.
-    //!
-    //! @param [in] word A 32-bit word to rotate.
-    //! @param [in] i The number of bits by which to rotate @a word.
-    //! Can be positive (right-rotate) or negative (left-rotate).
-    //! @return The value of @a word right-rotated by @a i bits.
-    //!
-    TSDUCKDLL inline uint32_t ROR(uint32_t word, int i) {return XX;}
-
-    //!
-    //! Inlined function performing 32-bit right-rotate with a constant value in the range 0..31 for index.
-    //!
-    //! Using @c RORc instead of @c ROR when the number of bits to rotate is a compile-time constant
-    //! brings some performance gain on platforms where the function in written as inlined assembly
-    //! code. Although the performance gain is small, it can bring some improvement on cryptographic
-    //! algorithms for instance.
-    //!
-    //! Note 1: In debug mode, @c RORc reverts to @c ROR since the routine is not inlined and
-    //! the constant constraint cannot be checked by the compiler.
-    //!
-    //! Note 2: With the LLVM compiler, @c RORc reverts to @c ROR since the compiled generates
-    //! an error and does not recognize the operand as a constant.
-    //!
-    //! @param [in] word A 32-bit word to rotate.
-    //! @param [in] i The number of bits by which to rotate @a word.
-    //! Must be a constant value in the range 0..31.
-    //! @return The value of @a word right-rotated by @a i bits.
-    //!
-    TSDUCKDLL inline uint32_t RORc(uint32_t word, const int i) {return XX;}
-
-#elif defined(TS_MSC)
-#pragma intrinsic(_lrotr,_lrotl)
-
-    TSDUCKDLL inline uint32_t ROL(uint32_t word, int i) {return _lrotl(word, i);}
-    TSDUCKDLL inline uint32_t ROR(uint32_t word, int i) {return _lrotr(word, i);}
-
-    TSDUCKDLL inline uint32_t ROLc(uint32_t word, const int i) {return _lrotl(word, i);}
-    TSDUCKDLL inline uint32_t RORc(uint32_t word, const int i) {return _lrotr(word, i);}
-
-#elif defined(TS_GCC) && (defined(TS_I386) || defined(TS_X86_64))
-
-    TSDUCKDLL inline uint32_t ROL(uint32_t word, int i)
-    {
-        asm ("roll %%cl,%0"
-             :"=r" (word)
-             :"0" (word),"c" (i));
-        return word;
-    }
-
-    TSDUCKDLL inline uint32_t ROR(uint32_t word, int i)
-    {
-        asm ("rorl %%cl,%0"
-             :"=r" (word)
-             :"0" (word),"c" (i));
-        return word;
-    }
-
-    TSDUCKDLL inline uint32_t ROLc(uint32_t word, const int i)
-    {
-#if defined(DEBUG) || defined(TS_LLVM)
-        return ROL (word, i);
-#else
-        asm ("roll %2,%0"
-             :"=r" (word)
-             :"0" (word),"I" (i));
-        return word;
-#endif
-    }
-
-    TSDUCKDLL inline uint32_t RORc(uint32_t word, const int i)
-    {
-#if defined(DEBUG) || defined(TS_LLVM)
-        return ROR (word, i);
-#else
-        asm ("rorl %2,%0"
-             :"=r" (word)
-             :"0" (word),"I" (i));
-        return word;
-#endif
-    }
-
-#elif defined(TS_POWERPC)
-
-    TSDUCKDLL inline uint32_t ROL(uint32_t word, int i)
-    {
-        asm ("rotlw %0,%0,%2"
-             :"=r" (word)
-             :"0" (word),"r" (i));
-        return word;
-    }
-
-    TSDUCKDLL inline uint32_t ROR(uint32_t word, int i)
-    {
-        asm ("rotlw %0,%0,%2"
-             :"=r" (word)
-             :"0" (word),"r" (32-i));
-        return word;
-    }
-
-    TSDUCKDLL inline uint32_t ROLc(uint32_t word, const int i)
-    {
-#if defined(DEBUG)
-        return ROL (word, i);
-#else
-        asm ("rotlwi %0,%0,%2"
-             :"=r" (word)
-             :"0" (word),"I" (i));
-        return word;
-#endif
-    }
-
-    TSDUCKDLL inline uint32_t RORc(uint32_t word, const int i)
-    {
-#if defined(DEBUG)
-        return ROR (word, i);
-#else
-        asm ("rotrwi %0,%0,%2"
-             :"=r" (word)
-             :"0" (word),"I" (i));
-        return word;
-#endif
-    }
-
-#else
-
-    // Rotates the hard way
-
-    TSDUCKDLL inline uint32_t ROL(uint32_t word, int i)
-    {
-        return ((word << (i&31)) | ((word&0xFFFFFFFFUL) >>(32-(i&31)))) & 0xFFFFFFFFUL;
-    }
-
-    TSDUCKDLL inline uint32_t ROR(uint32_t word, int i)
-    {
-        return (((word&0xFFFFFFFFUL) >>(i&31)) | (word << (32-(i&31)))) & 0xFFFFFFFFUL;
-    }
-
-    TSDUCKDLL inline uint32_t ROLc(uint32_t word, const int i)
-    {
-        return ((word << (i&31)) | ((word&0xFFFFFFFFUL) >>(32-(i&31)))) & 0xFFFFFFFFUL;
-    }
-
-    TSDUCKDLL inline uint32_t RORc(uint32_t word, const int i)
-    {
-        return (((word&0xFFFFFFFFUL) >>(i&31)) | (word << (32-(i&31)))) & 0xFFFFFFFFUL;
-    }
-
-#endif
-
-#if defined(DOXYGEN)
-    //!
-    //! Inlined function performing 64-bit left-rotate.
-    //!
-    //! @param [in] word A 64-bit word to rotate.
-    //! @param [in] i The number of bits by which to rotate @a word.
-    //! Can be positive (left-rotate) or negative (right-rotate).
-    //! @return The value of @a word left-rotated by @a i bits.
-    //!
-    TSDUCKDLL inline uint64_t ROL64(uint64_t word, int i) {return XX;}
-
-    //!
-    //! Inlined function performing 64-bit left-rotate with a constant value in the range 0..63 for index.
-    //!
-    //! Using @c ROL64c instead of @c ROL64 when the number of bits to rotate is a compile-time constant
-    //! brings some performance gain on platforms where the function in written as inlined assembly
-    //! code. Although the performance gain is small, it can bring some improvement on cryptographic
-    //! algorithms for instance.
-    //!
-    //! Note: In debug mode, @c ROL64c reverts to @c ROL64 since the routine is not inlined and
-    //! the constant constraint cannot be checked by the compiler.
-    //!
-    //! @param [in] word A 64-bit word to rotate.
-    //! @param [in] i The number of bits by which to rotate @a word.
-    //! Must be a constant value in the range 0..63.
-    //! @return The value of @a word left-rotated by @a i bits.
-    //!
-    TSDUCKDLL inline uint64_t ROL64c(uint64_t word, const int i) {return XX;}
-
-    //!
-    //! Inlined function performing 64-bit right-rotate.
-    //!
-    //! @param [in] word A 64-bit word to rotate.
-    //! @param [in] i The number of bits by which to rotate @a word.
-    //! Can be positive (right-rotate) or negative (left-rotate).
-    //! @return The value of @a word right-rotated by @a i bits.
-    //!
-    TSDUCKDLL inline uint64_t ROR64(uint64_t word, int i) {return XX;}
-
-    //!
-    //! Inlined function performing 64-bit right-rotate with a constant value in the range 0..63 for index.
-    //!
-    //! Using @c ROR64c instead of @c ROR64 when the number of bits to rotate is a compile-time constant
-    //! brings some performance gain on platforms where the function in written as inlined assembly
-    //! code. Although the performance gain is small, it can bring some improvement on cryptographic
-    //! algorithms for instance.
-    //!
-    //! Note: In debug mode, @c ROR64c reverts to @c ROR64 since the routine is not inlined and
-    //! the constant constraint cannot be checked by the compiler.
-    //!
-    //! @param [in] word A 64-bit word to rotate.
-    //! @param [in] i The number of bits by which to rotate @a word.
-    //! Must be a constant value in the range 0..63.
-    //! @return The value of @a word right-rotated by @a i bits.
-    //!
-    TSDUCKDLL inline uint64_t ROR64c(uint64_t word, const int i) {return XX;}
-
-#elif defined(TS_GCC) && defined(TS_X86_64)
-
-    TSDUCKDLL inline uint64_t ROL64(uint64_t word, int i)
-    {
-        asm ("rolq %%cl,%0"
-             :"=r" (word)
-             :"0" (word),"c" (i));
-        return word;
-    }
-
-    TSDUCKDLL inline uint64_t ROR64(uint64_t word, int i)
-    {
-        asm ("rorq %%cl,%0"
-             :"=r" (word)
-             :"0" (word),"c" (i));
-        return word;
-    }
-
-    TSDUCKDLL inline uint64_t ROL64c(uint64_t word, const int i)
-    {
-#if defined(DEBUG) || defined(TS_LLVM)
-        return ROL64(word, i);
-#else
-        asm ("rolq %2,%0"
-             :"=r" (word)
-             :"0" (word),"J" (i));
-        return word;
-#endif
-    }
-
-    TSDUCKDLL inline uint64_t ROR64c(uint64_t word, const int i)
-    {
-#if defined(DEBUG) || defined(TS_LLVM)
-        return ROR64(word, i);
-#else
-        asm ("rorq %2,%0"
-             :"=r" (word)
-             :"0" (word),"J" (i));
-        return word;
-#endif
-    }
-
-#else
-
-    TSDUCKDLL inline uint64_t ROL64(uint64_t word, int i)
-    {
-        return (word << (i&63)) | ((word & TS_UCONST64(0xFFFFFFFFFFFFFFFF)) >>(64-(i&63)));
-    }
-
-    TSDUCKDLL inline uint64_t ROR64(uint64_t word, int i)
-    {
-        return ((word & TS_UCONST64(0xFFFFFFFFFFFFFFFF)) >>(i&63)) | (word << (64-(i&63)));
-    }
-
-    TSDUCKDLL inline uint64_t ROL64c(uint64_t word, const int i)
-    {
-        return (word << (i&63)) | ((word & TS_UCONST64(0xFFFFFFFFFFFFFFFF)) >>(64-(i&63)));
-    }
-
-    TSDUCKDLL inline uint64_t ROR64c(uint64_t word, const int i)
-    {
-        return ((word & TS_UCONST64(0xFFFFFFFFFFFFFFFF)) >>(i&63)) | (word << (64-(i&63)));
-    }
-
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Cross-platforms portable definitions for memory barrier.
-//----------------------------------------------------------------------------
-
-#if defined(TS_MSC)
-    #pragma intrinsic(_ReadWriteBarrier)
-#endif
-
-#if defined(DOXYGEN) /* documentation only */
-    //!
-    //! To be defined to implement memory barrier as a no-operation.
-    //!
-    //! This symbol shall be defined by the developer on the command line
-    //! to ensure that no specific memory barrier instruction is generated.
-    //!
-    //! This can be useful in some environments (for instance using valgrind
-    //! on the ARM architecture) when the memory barrier causes some trouble.
-    //!
-    //! Note that not using memory barrier instructions can cause some extremely
-    //! rare race conditions.
-    //!
-    #define TS_NO_MEMORY_BARRIER
-#endif
-
-namespace ts {
-
-    //!
-    //! Inlined C function performing a CPU/compiler dependent memory barrier.
-    //!
-    TSDUCKDLL inline void MemoryBarrier(void)
-    {
-#if defined(TS_NO_MEMORY_BARRIER)
-
-        // Nothing to do
-
-#elif defined(TS_GCC) && (defined(TS_I386) || defined(TS_X86_64))
-
-        // "mfence" is SSE2, not supported on all x86 cpus but supported on all x86_64 cpus.
-        __asm__ __volatile__ ("mfence" : : : "memory");
-
-#elif defined(TS_GCC) && defined(__ARM_ARCH_5TEJ__)
-
-        // Some flavours of the ARM architecture do not support accessing r15 in user mode.
-        // Simply prevent the compiler from rescheduling instructions (not a true "memory barrier" however).
-        __asm__ __volatile__ ("" : : :  "memory");
-
-#elif defined(TS_GCC) && defined(TS_ARM)
-
-        // For later reference, not sure this is valid.
-        unsigned dest = 0;
-        __asm__ __volatile__ ("@MemoryBarrier\n mcr p15,0,%0,c7,c10,5\n" : "=&r"(dest) : :  "memory");
-
-#elif defined(TS_GCC) && defined(TS_ARM64)
-
-        __asm__ __volatile__ ("dmb sy" : : : "memory");
-
-#elif defined(TS_GCC) && defined(TS_MIPS)
-
-       __asm__ __volatile__ ("sync" : : :"memory");
-
-#elif defined(TS_MSC)
-
-        // Prevent the compiler from reordering memory access
-        _ReadWriteBarrier();
-        // CPU memory barrier
-        ::MemoryBarrier();
-
-#else
-    #error "MemoryBarrier is not implemented on this platform"
-#endif
-    }
 }
 
 
@@ -2532,7 +1742,7 @@ namespace ts {
 
 
 //----------------------------------------------------------------------------
-//  General purpose enumeration types
+// General purpose enumeration types
 //----------------------------------------------------------------------------
 
 namespace ts {
@@ -2546,7 +1756,7 @@ namespace ts {
 
 
 //----------------------------------------------------------------------------
-//  Tristate boolean.
+// Tristate boolean.
 //----------------------------------------------------------------------------
 
 namespace ts {
