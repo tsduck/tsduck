@@ -30,6 +30,7 @@
 #include "tshlsOutputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsOneShotPacketizer.h"
+#include "tsPESPacket.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsSysUtils.h"
@@ -42,6 +43,7 @@ const int ts::hls::OutputPlugin::REFERENCE = 0;
 
 #define DEFAULT_OUT_DURATION      10  // Default segment target duration for output streams.
 #define DEFAULT_OUT_LIVE_DURATION  5  // Default segment target duration for output live streams.
+#define DEFAULT_EXTRA_DURATION     2  // Default segment extra duration when intra image is not found.
 #define DEFAULT_OUT_NUM_WIDTH      6  // Default size of number field in output segment files.
 
 
@@ -52,28 +54,31 @@ const int ts::hls::OutputPlugin::REFERENCE = 0;
 ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     ts::OutputPlugin(tsp_, u"Generate HTTP Live Streaming (HLS) media", u"[options] filename"),
     _segmentTemplate(),
+    _playlistFile(),
+    _intraClose(false),
+    _liveDepth(0),
+    _targetDuration(0),
+    _maxExtraDuration(0),
+    _fixedSegmentSize(0),
+    _initialMediaSeq(0),
+    _closeLabels(),
     _segmentTemplateHead(),
     _segmentTemplateTail(),
     _segmentNumWidth(DEFAULT_OUT_NUM_WIDTH),
     _segmentNextFile(0),
-    _playlistFile(),
-    _fixedSegmentSize(0),
-    _targetDuration(0),
-    _liveDepth(0),
-    _initialMediaSeq(0),
     _demux(duck, this),
     _patPackets(),
     _pmtPackets(),
-    _videoPID(PID_NULL),
     _pmtPID(PID_NULL),
+    _videoPID(PID_NULL),
+    _videoStreamType(ST_NULL),
     _segClosePending(false),
     _segmentFile(),
     _liveSegmentFiles(),
     _playlist(),
     _pcrAnalyzer(1, 4),  // Minimum required: 1 PID, 4 PCR
     _previousBitrate(0),
-    _ccFixer(NoPID, tsp),
-    _close_labels()
+    _ccFixer(NoPID, tsp)
 {
     option(u"", 0, STRING, 1, 1);
     help(u"",
@@ -99,6 +104,14 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"When --fixed-segment-size is specified, the --duration parameter is only "
          u"used as a hint in the playlist file.");
 
+    option(u"intra-close", 'i');
+    help(u"intra-close",
+         u"Start new segments on the start of an intra-coded image (I-Frame) of the reference video PID. "
+         u"By default, a new segment starts on a PES packet boundary on this video PID. "
+         u"Note that it is not always possible to guarantee this condition if the video coding format is not "
+         u"fully supported, if the start of an intra-image cannot be found in the start of the PES packet "
+         u"which is contained in a TS packet or if the TS packet is encrypted.");
+
     option(u"label-close", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
     help(u"label-close", u"label1[-label2]",
          u"Close the current segment as soon as possible after a packet with any of the specified labels. "
@@ -106,8 +119,7 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"Several --label-close options may be specified.\n\n"
          u"In practice, the current segment is closed and renewed at the start of the next PES packet "
          u"on the video PID. This option is compatible with --duration. "
-         u"The current segment is closed on a labelled packed or segment duration, "
-         u"whichever comes first.");
+         u"The current segment is closed on a labelled packed or segment duration, whichever comes first.");
 
     option(u"live", 'l', POSITIVE);
     help(u"live",
@@ -115,6 +127,13 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"number of simultaneously available media segments. Obsolete media segment files "
          u"are automatically deleted. By default, the output stream is considered as VoD "
          u"and all created media segments are preserved.");
+
+    option(u"max-extra-duration", 'm', POSITIVE);
+    help(u"max-extra-duration",
+         u"With --intra-close, specify the maximum additional duration in seconds after which "
+         u"the segment is closed on the next video PES packet, even if no intra-coded image is found. "
+         u"The default is to wait a maximum of " TS_STRINGIFY(DEFAULT_EXTRA_DURATION) u" additional seconds "
+         u"for an intra-coded image.");
 
     option(u"playlist", 'p', STRING);
     help(u"playlist", u"filename",
@@ -149,13 +168,15 @@ bool ts::hls::OutputPlugin::getOptions()
 {
     getValue(_segmentTemplate, u"");
     getValue(_playlistFile, u"playlist");
+    _intraClose = present(u"intra-close");
     _liveDepth = intValue<size_t>(u"live");
     _targetDuration = intValue<Second>(u"duration", _liveDepth == 0 ? DEFAULT_OUT_DURATION : DEFAULT_OUT_LIVE_DURATION);
+    _maxExtraDuration = intValue<Second>(u"max-extra-duration", DEFAULT_EXTRA_DURATION);
     _fixedSegmentSize = intValue<PacketCounter>(u"fixed-segment-size") / PKT_SIZE;
     _initialMediaSeq = intValue<size_t>(u"start-media-sequence", 0);
-    getIntValues(_close_labels, u"label-close");
+    getIntValues(_closeLabels, u"label-close");
 
-    if (_fixedSegmentSize > 0 && _close_labels.any()) {
+    if (_fixedSegmentSize > 0 && _closeLabels.any()) {
         tsp->error(u"options --fixed-segment-size and --label-close are incompatible");
         return false;
     }
@@ -199,6 +220,7 @@ bool ts::hls::OutputPlugin::start()
     _pmtPackets.clear();
     _pmtPID = PID_NULL;
     _videoPID = PID_NULL;
+    _videoStreamType = ST_NULL;
     _pcrAnalyzer.reset();
     _previousBitrate = 0;
 
@@ -408,6 +430,7 @@ void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& 
                     tsp->warning(u"no video PID found in service 0x%X (%d)", {pmt.service_id, pmt.service_id});
                 }
                 else {
+                    _videoStreamType = pmt.streams[_videoPID].stream_type;
                     tsp->verbose(u"using video PID 0x%X (%d) as reference", {_videoPID, _videoPID});
                 }
             }
@@ -469,42 +492,71 @@ bool ts::hls::OutputPlugin::writePackets(const TSPacket* pkt, size_t packetCount
 // Output method
 //----------------------------------------------------------------------------
 
-bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pkt_data, size_t packetCount)
+bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pktData, size_t packetCount)
 {
+    const TSPacket* const lastPkt = pkt + packetCount;
     bool ok = true;
 
     // Process packets one by one.
-    for (size_t i = 0; ok && i < packetCount; ++i) {
+    while (ok && pkt < lastPkt) {
 
         // Pass all packets into the demux.
-        _demux.feedPacket(pkt[i]);
+        _demux.feedPacket(*pkt);
 
         // Analyze PCR's from all packets.
-        _pcrAnalyzer.feedPacket(pkt[i]);
+        _pcrAnalyzer.feedPacket(*pkt);
 
         // Check if we should close the current segment and create a new one.
-        bool renew = false;
+        bool renewNow = false;
+        bool renewOnPUSI = false;
         if (_fixedSegmentSize > 0) {
             // Each segment shall have a fixed size.
-            renew = _segmentFile.writePacketsCount() >= _fixedSegmentSize;
+            renewNow = _segmentFile.writePacketsCount() >= _fixedSegmentSize;
         }
         else if (!_segClosePending) {
-            if (pkt_data[i].hasAnyLabel(_close_labels)) {
+            if (pktData->hasAnyLabel(_closeLabels)) {
                 // This packet is a trigger to close the segment as soon as possible.
                 _segClosePending = true;
             }
             else if (_pcrAnalyzer.bitrateIsValid()) {
                 // The segment file shall be closed when the estimated duration exceeds the target duration.
-                _segClosePending = PacketInterval(_pcrAnalyzer.bitrate188(), _segmentFile.writePacketsCount()) >= _targetDuration * MilliSecPerSec;
+                const MilliSecond segDuration = PacketInterval(_pcrAnalyzer.bitrate188(), _segmentFile.writePacketsCount());
+                _segClosePending = segDuration >= _targetDuration * MilliSecPerSec;
+                // With --intra-close, force renew on next PES packet if extra duration is exceeded.
+                renewOnPUSI = segDuration >= (_targetDuration + _maxExtraDuration) * MilliSecPerSec;
             }
         }
 
-        // We do close only when we start a new PES packet on the video PID.
-        renew = renew || (_segClosePending && (_videoPID == PID_NULL || (pkt[i].getPID() == _videoPID && pkt[i].getPUSI())));
+        // We close only when we start a new PES packet or new intra-image on the video PID.
+        if (_segClosePending) {
+            if (_videoPID == PID_NULL) {
+                tsp->debug(u"closing segment, no video PID was identified for synchronization");
+                renewNow = true;
+            }
+            else if (pkt->getPID() == _videoPID && pkt->getPUSI()) {
+                // On a new video PES packet.
+                if (!_intraClose) {
+                    tsp->debug(u"starting new segment on new PES packet");
+                    renewNow = true;
+                }
+                else if (renewOnPUSI) {
+                    tsp->debug(u"no I-frame found in last %d seconds, starting new segment on new PES packet", {_maxExtraDuration});
+                    renewNow = true;
+                }
+                else if (pkt->isClear() && PESPacket::FindIntraImage(pkt->getPayload(), pkt->getPayloadSize(), _videoStreamType) != NPOS) {
+                    tsp->debug(u"starting new segment on new I-frame");
+                    renewNow = true;
+                }
+            }
+        }
 
         // Close current segment and recreate a new one when necessary.
         // Finally write the packet.
-        ok = (!renew || createNextSegment()) && writePackets(pkt + i, 1);
+        ok = (!renewNow || createNextSegment()) && writePackets(pkt, 1);
+
+        // Process next packet.
+        ++pkt;
+        ++pktData;
     }
     return ok;
 }

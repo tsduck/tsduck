@@ -74,21 +74,28 @@ namespace ts {
             //! @endcond
 
         private:
+            // Command line options.
             UString            _segmentTemplate;       // Command line segment file names template.
+            UString            _playlistFile;          // Playlist file name.
+            bool               _intraClose;            // Try to start segments on intra images.
+            size_t             _liveDepth;             // Number of simultaneous segments in live streams.
+            Second             _targetDuration;        // Segment target duration in seconds.
+            Second             _maxExtraDuration;      // Segment target max extra duration in seconds when intra image is not found.
+            PacketCounter      _fixedSegmentSize;      // Optional fixed segment size in packets.
+            size_t             _initialMediaSeq;       // Initial media sequence value.
+            TSPacketMetadata::LabelSet _closeLabels;   // Close segment on packets with any of these labels.
+
+            // Working data.
             UString            _segmentTemplateHead;   // Head of segment file names.
             UString            _segmentTemplateTail;   // Tail of segment file names.
             size_t             _segmentNumWidth;       // Width of number field in segment file names.
             size_t             _segmentNextFile;       // Counter in next segment file name.
-            UString            _playlistFile;          // Playlist file name.
-            PacketCounter      _fixedSegmentSize;      // Optional fixed segment size in packets.
-            Second             _targetDuration;        // Segment target duration in seconds.
-            size_t             _liveDepth;             // Number of simultaneous segments in live streams.
-            size_t             _initialMediaSeq;       // Initial media sequence value.
             SectionDemux       _demux;                 // Demux to extract PAT and PMT.
             TSPacketVector     _patPackets;            // TS packets for the PAT at start of each segment file.
             TSPacketVector     _pmtPackets;            // TS packets for the PMT at start of each segment file, after the PAT.
-            PID                _videoPID;              // Video PID on which the segmentation is evaluated.
             PID                _pmtPID;                // PID of the PMT of the reference service.
+            PID                _videoPID;              // Video PID on which the segmentation is evaluated.
+            uint8_t            _videoStreamType;       // Stream type for video PID in PMT.
             bool               _segClosePending;       // Close the current segment when possible.
             TSFile             _segmentFile;           // Output segment file.
             UStringList        _liveSegmentFiles;      // List of current segments in a live stream.
@@ -96,7 +103,6 @@ namespace ts {
             PCRAnalyzer        _pcrAnalyzer;           // PCR analyzer to compute bitrates.
             BitRate            _previousBitrate;       // Bitrate of previous segment.
             ContinuityAnalyzer _ccFixer;               // To fix continuity counters in PAT and PMT PID's.
-            TSPacketMetadata::LabelSet _close_labels;  // Close segment on packets with any of these labels.
 
             // Create the next segment file (also close the previous one if necessary).
             bool createNextSegment();
