@@ -101,11 +101,11 @@ namespace ts {
         virtual void handlePESPacket(PESDemux&, const PESPacket&) override;
         virtual void handleIntraImage(PESDemux&, const PESPacket&, size_t) override;
         virtual void handleVideoStartCode(PESDemux&, const PESPacket&, uint8_t, size_t, size_t) override;
-        virtual void handleNewVideoAttributes(PESDemux&, const PESPacket&, const VideoAttributes&) override;
+        virtual void handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket&, const MPEG2VideoAttributes&) override;
         virtual void handleAVCAccessUnit(PESDemux&, const PESPacket&, uint8_t, size_t, size_t) override;
         virtual void handleSEI(PESDemux& demux, const PESPacket& packet, uint32_t sei_type, size_t offset, size_t size) override;
         virtual void handleNewAVCAttributes(PESDemux&, const PESPacket&, const AVCAttributes&) override;
-        virtual void handleNewAudioAttributes(PESDemux&, const PESPacket&, const AudioAttributes&) override;
+        virtual void handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket&, const MPEG2AudioAttributes&) override;
         virtual void handleNewAC3Attributes(PESDemux&, const PESPacket&, const AC3Attributes&) override;
     };
 }
@@ -650,7 +650,7 @@ void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t se
 // This hook is invoked when new audio attributes are found in an audio PID
 //----------------------------------------------------------------------------
 
-void ts::PESPlugin::handleNewAudioAttributes(PESDemux&, const PESPacket& pkt, const AudioAttributes& aa)
+void ts::PESPlugin::handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket& pkt, const MPEG2AudioAttributes& aa)
 {
     if (!_audio_attributes) {
         return;
@@ -690,7 +690,7 @@ void ts::PESPlugin::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, cons
 // This hook is invoked when new video attributes are found in a video PID
 //----------------------------------------------------------------------------
 
-void ts::PESPlugin::handleNewVideoAttributes(PESDemux&, const PESPacket& pkt, const VideoAttributes& va)
+void ts::PESPlugin::handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket& pkt, const MPEG2VideoAttributes& va)
 {
     if (!_video_attributes) {
         return;

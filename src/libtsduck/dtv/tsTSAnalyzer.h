@@ -510,8 +510,8 @@ namespace ts {
         virtual void handleSection(SectionDemux&, const Section&) override;
 
         // Implementation of PESHandlerInterface
-        virtual void handleNewAudioAttributes(PESDemux&, const PESPacket&, const AudioAttributes&) override;
-        virtual void handleNewVideoAttributes(PESDemux&, const PESPacket&, const VideoAttributes&) override;
+        virtual void handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket&, const MPEG2AudioAttributes&) override;
+        virtual void handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket&, const MPEG2VideoAttributes&) override;
         virtual void handleNewAVCAttributes(PESDemux&, const PESPacket&, const AVCAttributes&) override;
         virtual void handleNewAC3Attributes(PESDemux&, const PESPacket&, const AC3Attributes&) override;
 

@@ -1251,7 +1251,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
 // (Implementation of PESHandlerInterface).
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::handleNewAudioAttributes(PESDemux&, const PESPacket& pkt, const AudioAttributes& attr)
+void ts::TSAnalyzer::handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket& pkt, const MPEG2AudioAttributes& attr)
 {
     AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toString());
 }
@@ -1273,7 +1273,7 @@ void ts::TSAnalyzer::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, con
 // (Implementation of PESHandlerInterface).
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::handleNewVideoAttributes(PESDemux&, const PESPacket& pkt, const VideoAttributes& attr)
+void ts::TSAnalyzer::handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket& pkt, const MPEG2VideoAttributes& attr)
 {
     AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toString());
 }

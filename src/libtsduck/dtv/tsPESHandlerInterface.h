@@ -34,8 +34,8 @@
 
 #pragma once
 #include "tsPESPacket.h"
-#include "tsAudioAttributes.h"
-#include "tsVideoAttributes.h"
+#include "tsMPEG2AudioAttributes.h"
+#include "tsMPEG2VideoAttributes.h"
 #include "tsAVCAttributes.h"
 #include "tsAC3Attributes.h"
 
@@ -74,7 +74,7 @@ namespace ts {
         //! @param [in] packet The demultiplexed PES packet.
         //! @param [in] attr Video attributes.
         //!
-        virtual void handleNewVideoAttributes(PESDemux& demux, const PESPacket& packet, const VideoAttributes& attr);
+        virtual void handleNewMPEG2VideoAttributes(PESDemux& demux, const PESPacket& packet, const MPEG2VideoAttributes& attr);
 
         //!
         //! This hook is invoked when an AVC (ISO 14496-10, ITU H.264) access unit (aka "NALunit") is found.
@@ -119,7 +119,7 @@ namespace ts {
         //! @param [in] packet The demultiplexed PES packet.
         //! @param [in] attr Audio attributes.
         //!
-        virtual void handleNewAudioAttributes(PESDemux& demux, const PESPacket& packet, const AudioAttributes& attr);
+        virtual void handleNewMPEG2AudioAttributes(PESDemux& demux, const PESPacket& packet, const MPEG2AudioAttributes& attr);
 
         //!
         //! This hook is invoked when new AC-3 attributes are found in an audio PID
