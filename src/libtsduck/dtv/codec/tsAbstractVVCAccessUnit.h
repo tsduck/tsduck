@@ -28,20 +28,44 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Base class for VVC (H.266) access units, aka NALunits.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2071
+#include "tsAbstractVideoAccessUnit.h"
+#include "tsAVCParser.h"
+
+namespace ts {
+    //!
+    //! Base class for VVC (H.266) access units, aka NALunits.
+    //! @see ITU-T Rec. H.266, section 7.3.1
+    //! @ingroup mpeg
+    //!
+    class TSDUCKDLL AbstractVVCAccessUnit: public AbstractVideoAccessUnit
+    {
+    public:
+        //!
+        //! Unified name for superclass.
+        //!
+        typedef AbstractVideoAccessUnit SuperClass;
+
+        //!
+        //! Constructor.
+        //!
+        AbstractVVCAccessUnit();
+
+        // Inherited.
+        virtual void clear() override;
+
+        uint8_t forbidden_zero_bit;     //!< 1 bit
+        uint8_t nuh_reserved_zero_bit;  //!< 1 bit
+        uint8_t nuh_layer_id;           //!< 6 bits
+        uint8_t nal_unit_type;          //!< 5 bits
+        uint8_t nuh_temporal_id_plus1;  //!< 3 bits
+
+    protected:
+        // Inherited.
+        virtual bool parseHeader(const uint8_t*&, size_t&) override;
+    };
+}

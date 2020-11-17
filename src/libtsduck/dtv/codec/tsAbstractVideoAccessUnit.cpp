@@ -26,22 +26,52 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsAbstractVideoAccessUnit.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2071
+ts::AbstractVideoAccessUnit::AbstractVideoAccessUnit() :
+    SuperClass(),
+    rbsp_trailing_bits_valid(false),
+    rbsp_trailing_bits_count(0)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Clear all values
+//----------------------------------------------------------------------------
+
+void ts::AbstractVideoAccessUnit::clear()
+{
+    SuperClass::clear();
+    rbsp_trailing_bits_valid = false;
+    rbsp_trailing_bits_count = 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Parse the binary access unit. Return the "valid" flag.
+//----------------------------------------------------------------------------
+
+bool ts::AbstractVideoAccessUnit::parse(const uint8_t* data, size_t size)
+{
+    clear();
+    if (data == nullptr || !parseHeader(data, size)) {
+        return false;
+    }
+    else {
+        AVCParser parser(data, size);
+        valid = parseBody(parser);
+        if (valid) {
+            rbsp_trailing_bits_valid = parser.rbspTrailingBits();
+            rbsp_trailing_bits_count = parser.remainingBits();
+        }
+        return valid;
+    }
+}

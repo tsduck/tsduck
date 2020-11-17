@@ -28,20 +28,43 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an HEVC access unit delimiter (AUD).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2071
+#include "tsAbstractHEVCAccessUnit.h"
+
+namespace ts {
+    //!
+    //! Representation of an HEVC access unit delimiter (AUD).
+    //! @ingroup mpeg
+    //! @see ITU-T Rec. H.265, section 7.3.2.5 and 7.4.3.5
+    //!
+    class TSDUCKDLL HEVCAccessUnitDelimiter: public AbstractHEVCAccessUnit
+    {
+    public:
+        //!
+        //! Reference to the superclass.
+        //!
+        typedef AbstractHEVCAccessUnit SuperClass;
+
+        //!
+        //! Constructor from a binary area.
+        //! @param [in] data Address of binary data to analyze.
+        //! @param [in] size Size in bytes of binary data to analyze.
+        //!
+        HEVCAccessUnitDelimiter(const uint8_t* data = nullptr, size_t size = 0);
+
+        // Inherited methods
+        virtual void clear() override;
+        virtual std::ostream& display(std::ostream& strm = std::cout, const UString& margin = UString()) const override;
+
+        // Access unit delimiter fields.
+        uint8_t pic_type;  //!< Picture type, 3 bits
+
+    protected:
+        // Inherited methods
+        virtual bool parseBody(AVCParser& parser) override;
+    };
+}

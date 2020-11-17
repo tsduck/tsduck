@@ -28,20 +28,44 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a VVC access unit delimiter (AUD).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2071
+#include "tsAbstractVVCAccessUnit.h"
+
+namespace ts {
+    //!
+    //! Representation of a VVC access unit delimiter (AUD).
+    //! @ingroup mpeg
+    //! @see ITU-T Rec. H.266, section 7.3.2.10 and 7.4.3.10
+    //!
+    class TSDUCKDLL VVCAccessUnitDelimiter: public AbstractVVCAccessUnit
+    {
+    public:
+        //!
+        //! Reference to the superclass.
+        //!
+        typedef AbstractVVCAccessUnit SuperClass;
+
+        //!
+        //! Constructor from a binary area.
+        //! @param [in] data Address of binary data to analyze.
+        //! @param [in] size Size in bytes of binary data to analyze.
+        //!
+        VVCAccessUnitDelimiter(const uint8_t* data = nullptr, size_t size = 0);
+
+        // Inherited methods
+        virtual void clear() override;
+        virtual std::ostream& display(std::ostream& strm = std::cout, const UString& margin = UString()) const override;
+
+        // Access unit delimiter fields.
+        uint8_t aud_irap_or_gdr_flag;  //!< IRAP or GDR, 1 bit
+        uint8_t aud_pic_type;          //!< Picture type, 3 bits
+
+    protected:
+        // Inherited methods
+        virtual bool parseBody(AVCParser& parser) override;
+    };
+}

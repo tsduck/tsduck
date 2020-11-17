@@ -28,20 +28,42 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Base class for video sub-structures inside access units.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2071
+#include "tsAbstractVideoData.h"
+#include "tsAVCParser.h"
+
+namespace ts {
+    //!
+    //! Base class for sub-structures inside video access units.
+    //! @ingroup mpeg
+    //!
+    class TSDUCKDLL AbstractVideoStructure: public AbstractVideoData
+    {
+    public:
+        //!
+        //! Unified name for superclass.
+        //!
+        typedef AbstractVideoData SuperClass;
+
+        //!
+        //! Constructor.
+        //!
+        AbstractVideoStructure() = default;
+
+        // Inherited
+        virtual bool parse(const uint8_t*, size_t) override;
+
+        //!
+        //! Parse the structure.
+        //! Must be reimplemented by subclasses.
+        //! The data are marked as valid or invalid.
+        //! @param [in,out] parser The parser of an AVC stream.
+        //! @return The @link valid @endlink flag.
+        //!
+        virtual bool parse(AVCParser& parser) = 0;
+    };
+}

@@ -28,20 +28,43 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Base class for AVC access units, aka NALunits.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2071
+#include "tsAbstractVideoAccessUnit.h"
+#include "tsAVCParser.h"
+
+namespace ts {
+    //!
+    //! Base class for AVC access units, aka NALunits.
+    //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
+    //! @see ISO/IEC 14496-10 section 7.3.1
+    //! @ingroup mpeg
+    //!
+    class TSDUCKDLL AbstractAVCAccessUnit: public AbstractVideoAccessUnit
+    {
+    public:
+        //!
+        //! Unified name for superclass.
+        //!
+        typedef AbstractVideoAccessUnit SuperClass;
+
+        //!
+        //! Constructor.
+        //!
+        AbstractAVCAccessUnit();
+
+        // Inherited.
+        virtual void clear() override;
+
+        uint8_t forbidden_zero_bit;  //!< See ISO/IEC 14496-10 section 7.3.1
+        uint8_t nal_ref_idc;         //!< See ISO/IEC 14496-10 section 7.3.1
+        uint8_t nal_unit_type;       //!< See ISO/IEC 14496-10 section 7.3.1
+
+    protected:
+        // Inherited.
+        virtual bool parseHeader(const uint8_t*&, size_t&) override;
+    };
+}

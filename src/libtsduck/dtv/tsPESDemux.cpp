@@ -127,7 +127,7 @@ void ts::PESDemux::immediateResetPID(PID pid)
 // Check isValid() on returned object.
 //----------------------------------------------------------------------------
 
-void ts::PESDemux::getAudioAttributes(PID pid, AudioAttributes& va) const
+void ts::PESDemux::getAudioAttributes(PID pid, MPEG2AudioAttributes& va) const
 {
     PIDContextMap::const_iterator pci = _pids.find(pid);
     if (pci == _pids.end() || !pci->second.audio.isValid()) {
@@ -138,7 +138,7 @@ void ts::PESDemux::getAudioAttributes(PID pid, AudioAttributes& va) const
     }
 }
 
-void ts::PESDemux::getVideoAttributes(PID pid, VideoAttributes& va) const
+void ts::PESDemux::getVideoAttributes(PID pid, MPEG2VideoAttributes& va) const
 {
     PIDContextMap::const_iterator pci = _pids.find(pid);
     if (pci == _pids.end() || !pci->second.video.isValid()) {
@@ -449,7 +449,7 @@ void ts::PESDemux::handlePESContent(PIDContext& pc, const PESPacket& pes)
             // Accumulate info from video units to extract video attributes.
             // If new attributes were found, invoke handler.
             if (pc.video.moreBinaryData(pdata + offset, next - offset)) {
-                _pes_handler->handleNewVideoAttributes(*this, pes, pc.video);
+                _pes_handler->handleNewMPEG2VideoAttributes(*this, pes, pc.video);
             }
             // Move to next start code
             offset = next;
@@ -552,7 +552,7 @@ void ts::PESDemux::handlePESContent(PIDContext& pc, const PESPacket& pes)
         // Accumulate info from audio frames to extract audio attributes.
         // If new attributes were found, invoke handler.
         if (pc.audio.moreBinaryData(pdata, psize)) {
-            _pes_handler->handleNewAudioAttributes(*this, pes, pc.audio);
+            _pes_handler->handleNewMPEG2AudioAttributes(*this, pes, pc.audio);
         }
     }
 }

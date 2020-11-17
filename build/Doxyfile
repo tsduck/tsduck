@@ -65,6 +65,7 @@ INCLUDE_PATH     = ../src/libtsduck \
                    ../src/libtsduck/crypto \
                    ../src/libtsduck/dtv \
                    ../src/libtsduck/dtv/charset \
+                   ../src/libtsduck/dtv/codec \
                    ../src/libtsduck/dtv/descriptors \
                    ../src/libtsduck/dtv/dvbsimulcrypt \
                    ../src/libtsduck/dtv/linux \

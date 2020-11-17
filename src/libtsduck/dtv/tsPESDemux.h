@@ -36,8 +36,8 @@
 #include "tsTimeTrackerDemux.h"
 #include "tsPESPacket.h"
 #include "tsPESHandlerInterface.h"
-#include "tsAudioAttributes.h"
-#include "tsVideoAttributes.h"
+#include "tsMPEG2AudioAttributes.h"
+#include "tsMPEG2VideoAttributes.h"
 #include "tsAVCAttributes.h"
 #include "tsAC3Attributes.h"
 #include "tsSectionDemux.h"
@@ -87,7 +87,7 @@ namespace ts {
         //! @param [out] attr The returned attributes.
         //! Invoke its isValid() method to verify its validity.
         //!
-        void getAudioAttributes(PID pid, AudioAttributes& attr) const;
+        void getAudioAttributes(PID pid, MPEG2AudioAttributes& attr) const;
 
         //!
         //! Get the current MPEG-2 video attributes on the specified PID.
@@ -95,7 +95,7 @@ namespace ts {
         //! @param [out] attr The returned attributes.
         //! Invoke its isValid() method to verify its validity.
         //!
-        void getVideoAttributes(PID pid, VideoAttributes& attr) const;
+        void getVideoAttributes(PID pid, MPEG2VideoAttributes& attr) const;
 
         //!
         //! Get the current AVC video attributes on the specified PID.
@@ -140,18 +140,18 @@ namespace ts {
         // This internal structure contains the analysis context for one PID.
         struct PIDContext
         {
-            PacketCounter   pes_count;   // Number of detected valid PES packets on this PID
-            uint8_t         continuity;  // Last continuity counter
-            bool            sync;        // We are synchronous in this PID
-            PacketCounter   first_pkt;   // Index of first TS packet for current PES packet
-            PacketCounter   last_pkt;    // Index of last TS packet for current PES packet
-            uint64_t        pcr;         // First PCR for current PES packet
-            ByteBlockPtr    ts;          // TS payload buffer
-            AudioAttributes audio;       // Current audio attributes
-            VideoAttributes video;       // Current video attributes (MPEG-1, MPEG-2)
-            AVCAttributes   avc;         // Current AVC attributes
-            AC3Attributes   ac3;         // Current AC-3 attributes
-            PacketCounter   ac3_count;   // Number of PES packets with contents which looks like AC-3
+            PacketCounter        pes_count;   // Number of detected valid PES packets on this PID
+            uint8_t              continuity;  // Last continuity counter
+            bool                 sync;        // We are synchronous in this PID
+            PacketCounter        first_pkt;   // Index of first TS packet for current PES packet
+            PacketCounter        last_pkt;    // Index of last TS packet for current PES packet
+            uint64_t             pcr;         // First PCR for current PES packet
+            ByteBlockPtr         ts;          // TS payload buffer
+            MPEG2AudioAttributes audio;       // Current audio attributes
+            MPEG2VideoAttributes video;       // Current video attributes (MPEG-1, MPEG-2)
+            AVCAttributes        avc;         // Current AVC attributes
+            AC3Attributes        ac3;         // Current AC-3 attributes
+            PacketCounter        ac3_count;   // Number of PES packets with contents which looks like AC-3
 
             // Default constructor:
             PIDContext();
