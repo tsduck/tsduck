@@ -178,10 +178,6 @@ namespace ts {
             AVCVUIParameters vui;                           //!< vui
         // }
 
-        // Validity of RBSP trailing bits
-        bool   rbsp_trailing_bits_valid;                    //!< rbsp_trailing_bits_valid
-        size_t rbsp_trailing_bits_count;                    //!< rbsp_trailing_bits_count
-
     protected:
         // Inherited methods
         virtual bool parseBody(AVCParser& parser) override;

@@ -74,9 +74,7 @@ ts::AVCSequenceParameterSet::AVCSequenceParameterSet(const uint8_t* data, size_t
     frame_crop_top_offset(0),
     frame_crop_bottom_offset(0),
     vui_parameters_present_flag(0),
-    vui(),
-    rbsp_trailing_bits_valid(false),
-    rbsp_trailing_bits_count(0)
+    vui()
 {
     parse(data, size);
 }
@@ -336,11 +334,6 @@ bool ts::AVCSequenceParameterSet::parseBody(AVCParser& parser)
 
     if (valid && vui_parameters_present_flag == 1) {
         valid = vui.parse(parser);
-    }
-
-    if (valid) {
-        rbsp_trailing_bits_valid = parser.rbspTrailingBits();
-        rbsp_trailing_bits_count = parser.remainingBits();
     }
 
     return valid;
