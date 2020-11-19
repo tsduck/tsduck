@@ -102,7 +102,7 @@ Options::Options(int argc, char *argv[]) :
         test_type = ts::DirectShowTest::ENUMERATE_DEVICES;
     }
     else {
-        test_type = enumValue(u"test", ts::DirectShowTest::NONE);
+        getIntValue(test_type, u"test", ts::DirectShowTest::NONE);
     }
 #endif
 
