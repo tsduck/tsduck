@@ -59,7 +59,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~AbstractVideoData();
+        virtual ~AbstractVideoData() override;
 
         //!
         //! Clear all values.

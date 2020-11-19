@@ -61,6 +61,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~TVCT();
+        virtual ~TVCT() override;
     };
 }

@@ -63,9 +63,6 @@ namespace ts {
         //! Only one predefined character set for ARIB STD-B24.
         static const ARIBCharset B24;
 
-        //! Destructor
-        virtual ~ARIBCharset() = default;
-
         // Inherited methods.
         virtual bool decode(UString& str, const uint8_t* data, size_t size) const override;
         virtual bool canEncode(const UString& str, size_t start = 0, size_t count = NPOS) const override;

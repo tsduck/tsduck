@@ -36,51 +36,34 @@
 #include "tsPSI.h"
 #include "tsPES.h"
 #include "tsAVC.h"
+#include "tsHEVC.h"
+#include "tsVVC.h"
+#include "tsAccessUnitIterator.h"
+#include "tsAVCAccessUnitDelimiter.h"
+#include "tsHEVCAccessUnitDelimiter.h"
+#include "tsVVCAccessUnitDelimiter.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Delimiters
-//----------------------------------------------------------------------------
-
-namespace {
-
-    // Start code prefix for ISO 11172-2 (MPEG-1 video) and ISO 13818-2 (MPEG-2 video)
-    const uint8_t StartCodePrefix[] = {0x00, 0x00, 0x01};
-
-    // End of AVC NALunit delimiter
-    const uint8_t Zero3[] = {0x00, 0x00, 0x00};
-}
-
-
-//----------------------------------------------------------------------------
-// Constructor
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::PESDemux::PESDemux(DuckContext& duck, PESHandlerInterface* pes_handler, const PIDSet& pid_filter) :
     SuperClass(duck, pid_filter),
     _pes_handler(pes_handler),
+    _default_codec(CodecType::UNDEFINED),
     _pids(),
-    _stream_types(),
+    _pid_types(),
     _section_demux(_duck, this)
 {
     // Analyze the PAT, to get the PMT's, to get the stream types.
     _section_demux.addPID(PID_PAT);
 }
 
-
-//----------------------------------------------------------------------------
-// Destructor.
-//----------------------------------------------------------------------------
-
 ts::PESDemux::~PESDemux()
 {
 }
-
-
-//----------------------------------------------------------------------------
-// PIDContext constructor
-//----------------------------------------------------------------------------
 
 ts::PESDemux::PIDContext::PIDContext() :
     pes_count(0),
@@ -98,6 +81,12 @@ ts::PESDemux::PIDContext::PIDContext() :
 {
 }
 
+ts::PESDemux::PIDType::PIDType() :
+    stream_type(ST_NULL),
+    default_codec(CodecType::UNDEFINED)
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Reset the analysis context (partially built PES packets).
@@ -107,7 +96,7 @@ void ts::PESDemux::immediateReset()
 {
     SuperClass::immediateReset();
     _pids.clear();
-    _stream_types.clear();
+    _pid_types.clear();
 
     // Reset the section demux back to initial state (intercepting the PAT).
     _section_demux.reset();
@@ -118,7 +107,23 @@ void ts::PESDemux::immediateResetPID(PID pid)
 {
     SuperClass::immediateResetPID(pid);
     _pids.erase(pid);
-    _stream_types.erase(pid);
+    _pid_types.erase(pid);
+}
+
+
+//----------------------------------------------------------------------------
+// Set/get the default audio or video codec for one specific PES PID's.
+//----------------------------------------------------------------------------
+
+void ts::PESDemux::setDefaultCodec(PID pid, CodecType codec)
+{
+    _pid_types[pid].default_codec = codec;
+}
+
+ts::CodecType ts::PESDemux::getDefaultCodec(PID pid) const
+{
+    const auto it = _pid_types.find(pid);
+    return it == _pid_types.end() || it->second.default_codec == CodecType::UNDEFINED ? _default_codec : it->second.default_codec;
 }
 
 
@@ -344,7 +349,8 @@ void ts::PESDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
             const PMT pmt(_duck, table);
             if (pmt.isValid()) {
                 for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-                    _stream_types[it->first] = it->second.stream_type;
+                    _pid_types[it->first].stream_type = it->second.stream_type;
+                    _pid_types[it->first].default_codec = it->second.getCodec(_duck);
                 }
             }
             break;
@@ -377,11 +383,15 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
     pes.setLastTSPacketIndex(pc.last_pkt);
     pes.setPCR(pc.pcr);
 
-    // Set stream type if known.
-    const StreamTypeMap::const_iterator it = _stream_types.find(pid);
-    if (it != _stream_types.end()) {
-        pes.setStreamType(it->second);
+    // Set stream type and codec if known.
+    const auto it_type = _pid_types.find(pid);
+    if (it_type != _pid_types.end()) {
+        pes.setStreamType(it_type->second.stream_type);
+        pes.setCodec(it_type->second.default_codec);
     }
+
+    // Set a default codec if none was set from the PMT and the data look compatible.
+    pes.setDefaultCodec(getDefaultCodec(pid));
 
     // Mark that we are in the context of handlers.
     // This is used to prevent the destruction of PID contexts during the execution of a handler.
@@ -426,9 +436,9 @@ void ts::PESDemux::handlePESContent(PIDContext& pc, const PESPacket& pes)
         return;
     }
 
-    // Packet payload content (constants)
-    const uint8_t* const pdata = pes.payload();
-    const size_t psize = pes.payloadSize();
+    // Packet payload content (constants).
+    const uint8_t* const pl_data = pes.payload();
+    const size_t pl_size = pes.payloadSize();
 
     // Process intra-coded images.
     const size_t intra_offset = pes.findIntraImage();
@@ -436,103 +446,80 @@ void ts::PESDemux::handlePESContent(PIDContext& pc, const PESPacket& pes)
         _pes_handler->handleIntraImage(*this, pes, intra_offset);
     }
 
-    // Process MPEG-1 (ISO 11172-2) and MPEG-2 (ISO 13818-2) video start codes
-    if (pes.isMPEG2Video()) {
-        // Locate all start codes and invoke handler.
-        // The beginning of the payload is already a start code prefix.
-        for (size_t offset = 0; offset < psize; ) {
-            // Look for next start code
-            const uint8_t* pnext = LocatePattern(pdata + offset + 1, psize - offset - 1, StartCodePrefix, sizeof(StartCodePrefix));
-            size_t next = pnext == nullptr ? psize : pnext - pdata;
-            // Invoke handler
-            _pes_handler->handleVideoStartCode(*this, pes, pdata[offset + 3], offset, next - offset);
-            // Accumulate info from video units to extract video attributes.
-            // If new attributes were found, invoke handler.
-            if (pc.video.moreBinaryData(pdata + offset, next - offset)) {
-                _pes_handler->handleNewMPEG2VideoAttributes(*this, pes, pc.video);
-            }
-            // Move to next start code
-            offset = next;
-        }
-    }
+    // Iterator on AVC/HEVC/VVC access units.
+    AccessUnitIterator au_iter(pl_data, pl_size, pes.getStreamType(), pes.getCodec());
 
-    // Process AVC (ISO 14496-10, ITU H.264) access units (aka "NALunits")
-    else if (pes.isAVC()) {
-        for (size_t offset = 0; offset < psize; ) {
-            // Locate next access unit: starts with 00 00 01 (this start code is not part of the NALunit)
-            const uint8_t* p1 = LocatePattern(pdata + offset, psize - offset, StartCodePrefix, sizeof(StartCodePrefix));
-            if (p1 == nullptr) {
-                break;
-            }
-            offset = p1 - pdata + sizeof(StartCodePrefix);
-
-            // Locate end of access unit: ends with 00 00 00, 00 00 01 or end of data.
-            const uint8_t* p2 = LocatePattern(pdata + offset, psize - offset, StartCodePrefix, sizeof(StartCodePrefix));
-            const uint8_t* p3 = LocatePattern(pdata + offset, psize - offset, Zero3, sizeof(Zero3));
-            size_t nalunit_size = 0;
-            if (p2 == nullptr && p3 == nullptr) {
-                // No 00 00 01, no 00 00 00, the NALunit extends up to the end of data.
-                nalunit_size = psize - offset;
-            }
-            else if (p2 == nullptr || (p3 != nullptr && p3 < p2)) {
-                // NALunit ends at 00 00 00.
-                assert(p3 != nullptr);
-                nalunit_size = p3 - pdata - offset;
-            }
-            else {
-                // NALunit ends at 00 00 01.
-                assert(p2 != nullptr);
-                nalunit_size = p2 - pdata - offset;
-            }
-
-            // Compute NALunit type.
-            const uint8_t nalunit_type = nalunit_size == 0 ? 0 : (pdata[offset] & 0x1F);
-            const uint8_t* nalunit_end = pdata + offset + nalunit_size;
+    // Process AVC/HEVC/VVC access units (aka "NALunits")
+    if (au_iter.isValid()) {
+        const CodecType codec = au_iter.videoFormat();
+        // Loop on all access units.
+        for (; !au_iter.atEnd(); au_iter.next()) {
+            const uint8_t au_type = au_iter.currentAccessUnitType();
+            const size_t au_offset = au_iter.currentAccessUnitOffset(); // offset in PES payload
+            const size_t au_size = au_iter.currentAccessUnitSize();
+            const uint8_t* const au_end = pl_data + au_offset + au_size;
+            assert(au_end <= pl_data + pl_size);
 
             // Invoke handler for the complete NALunit.
-            _pes_handler->handleAVCAccessUnit(*this, pes, nalunit_type, offset, nalunit_size);
+            _pes_handler->handleAccessUnit(*this, pes, au_type, au_offset, au_size);
 
-            // If the NALunit is an SEI, locate it.
-            if (nalunit_type == AVC_AUT_SEI) {
-                // See H.264 section 7.3.2.3.1, "Supplemental enhancement information message syntax".
-                // Point after nalunit type:
-                const uint8_t* p = pdata + offset + 1;
-
+            // If the NALunit is an SEI, process all SEI messages.
+            if (au_iter.currentAccessUnitIsSEI()) {
+                // See H.264 (7.3.2.3.1), H.265 (7.3.5), H.266 (7.3.6).
+                const uint8_t* p = pl_data + au_offset + au_iter.currentAccessUnitHeaderSize();
                 // Loop on all SEI messages in the NALunit.
-                while (p < nalunit_end) {
-                   // Compute SEI payload type.
-                   uint32_t sei_type = 0;
-                   while (p < nalunit_end && *p == 0xFF) {
-                      sei_type += *p++;
-                   }
-                   if (p < nalunit_end) {
-                      sei_type += *p++;
-                   }
-                   // Compute SEI payload size.
-                   size_t sei_size = 0;
-                   while (p < nalunit_end && *p == 0xFF) {
-                      sei_size += *p++;
-                   }
-                   if (p < nalunit_end) {
-                      sei_size += *p++;
-                   }
-                   sei_size = std::min<size_t>(sei_size, nalunit_end - p);
-                   // Invoke handler for the SEI.
-                   if (sei_size > 0) {
-                      _pes_handler->handleSEI(*this, pes, sei_type, p - pdata, sei_size);
-                   }
-                   p += sei_size;
+                while (p < au_end) {
+                    // Compute SEI payload type.
+                    uint32_t sei_type = 0;
+                    while (p < au_end && *p == 0xFF) {
+                        sei_type += *p++;
+                    }
+                    if (p < au_end) {
+                        sei_type += *p++;
+                    }
+                    // Compute SEI payload size.
+                    size_t sei_size = 0;
+                    while (p < au_end && *p == 0xFF) {
+                        sei_size += *p++;
+                    }
+                    if (p < au_end) {
+                        sei_size += *p++;
+                    }
+                    sei_size = std::min<size_t>(sei_size, au_end - p);
+                    // Invoke handler for the SEI.
+                    if (sei_size > 0) {
+                        _pes_handler->handleSEI(*this, pes, sei_type, p - pl_data, sei_size);
+                    }
+                    p += sei_size;
                 }
             }
 
             // Accumulate info from access units to extract video attributes.
             // If new attributes were found, invoke handler.
-            if (pc.avc.moreBinaryData(pdata + offset, nalunit_size)) {
+            if (codec == CodecType::AVC && pc.avc.moreBinaryData(pl_data + au_offset, au_size)) {
                 _pes_handler->handleNewAVCAttributes(*this, pes, pc.avc);
             }
+        }
+    }
 
+    // Process MPEG-1 (ISO 11172-2) and MPEG-2 (ISO 13818-2) video start codes
+    else if (pes.isMPEG2Video()) {
+        // Locate all start codes and invoke handler.
+        // The beginning of the payload is already a start code prefix.
+        for (size_t offset = 0; offset < pl_size; ) {
+            // Look for next start code
+            static const uint8_t StartCodePrefix[] = {0x00, 0x00, 0x01};
+            const uint8_t* pnext = LocatePattern(pl_data + offset + 1, pl_size - offset - 1, StartCodePrefix, sizeof(StartCodePrefix));
+            size_t next = pnext == nullptr ? pl_size : pnext - pl_data;
+            // Invoke handler
+            _pes_handler->handleVideoStartCode(*this, pes, pl_data[offset + 3], offset, next - offset);
+            // Accumulate info from video units to extract video attributes.
+            // If new attributes were found, invoke handler.
+            if (pc.video.moreBinaryData(pl_data + offset, next - offset)) {
+                _pes_handler->handleNewMPEG2VideoAttributes(*this, pes, pc.video);
+            }
             // Move to next start code
-            offset += nalunit_size;
+            offset = next;
         }
     }
 
@@ -542,7 +529,7 @@ void ts::PESDemux::handlePESContent(PIDContext& pc, const PESPacket& pes)
         pc.ac3_count++;
         // Accumulate info from audio frames to extract audio attributes.
         // If new attributes were found, invoke handler.
-        if (pc.ac3.moreBinaryData(pdata, psize)) {
+        if (pc.ac3.moreBinaryData(pl_data, pl_size)) {
             _pes_handler->handleNewAC3Attributes(*this, pes, pc.ac3);
         }
     }
@@ -551,7 +538,7 @@ void ts::PESDemux::handlePESContent(PIDContext& pc, const PESPacket& pes)
     else if (IsAudioSID(pes.getStreamId())) {
         // Accumulate info from audio frames to extract audio attributes.
         // If new attributes were found, invoke handler.
-        if (pc.audio.moreBinaryData(pdata, psize)) {
+        if (pc.audio.moreBinaryData(pl_data, pl_size)) {
             _pes_handler->handleNewMPEG2AudioAttributes(*this, pes, pc.audio);
         }
     }

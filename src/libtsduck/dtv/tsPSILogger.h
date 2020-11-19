@@ -58,7 +58,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~PSILogger();
+        virtual ~PSILogger() override;
 
         // Implementation of ArgsSupplierInterface.
         virtual void defineArgs(Args& args) const override;

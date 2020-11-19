@@ -67,7 +67,7 @@ namespace ts {
             //!
             //! Virtual destructor.
             //!
-            virtual ~InputExecutor();
+            virtual ~InputExecutor() override;
 
             //!
             //! Tell the input executor thread to start an input session.

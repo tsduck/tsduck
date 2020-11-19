@@ -67,7 +67,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~PESDemux();
+        virtual ~PESDemux() override;
 
         // Inherited methods
         virtual void feedPacket(const TSPacket& pkt) override;
@@ -76,10 +76,37 @@ namespace ts {
         //! Replace the PES packet handler.
         //! @param [in] h The object to invoke when PES packets are analyzed.
         //!
-        void setPESHandler(PESHandlerInterface* h)
-        {
-            _pes_handler = h;
-        }
+        void setPESHandler(PESHandlerInterface* h) { _pes_handler = h; }
+
+        //!
+        //! Set the default audio or video codec for all analyzed PES PID's.
+        //! The analysis of the content of a PES packet sometimes depends on the PES data format.
+        //! The PES demux uses several ways to determine the data format inside a PES packet.
+        //! First, when the packet is identified in a PMT, the stream type may uniquely identify the format.
+        //! Second, the content itself can be identified as a specific format. Finally, in the absence of
+        //! other indications, the specified @a codec is used.
+        //! @param [in] codec The default codec to use.
+        //!
+        void setDefaultCodec(CodecType codec) { _default_codec = codec; }
+
+        //!
+        //! Set the default audio or video codec for one specific PES PID's.
+        //! This is the same as setDefaultCodec(CodecType) for one specific PID.
+        //! The codec of a PID is automatically determined from the characteristics
+        //! of this PID in the PMT, if the PMT packets are passed to this demux.
+        //! @param [in] pid The PID to identify.
+        //! @param [in] codec The default codec to use.
+        //! @see setDefaultCodec(CodecType)
+        //!
+        void setDefaultCodec(PID pid, CodecType codec);
+
+        //!
+        //! Get the default codec type on a given PID.
+        //! @param [in] pid The PID to check.
+        //! @return The default codec to use on @a pid.
+        //! @see setDefaultCodec()
+        //!
+        CodecType getDefaultCodec(PID pid) const;
 
         //!
         //! Get the current audio attributes on the specified PID.
@@ -115,6 +142,7 @@ namespace ts {
 
         //!
         //! Check if all PES packets on the specified PID contain AC-3 audio.
+        //! @param [in] pid The PID to check.
         //! @return True if all PES packets on the specified PID contain AC-3 audio.
         //! Due to the way AC-3 is detected, it is possible that some PES packets
         //! are erroneously detected as AC-3. Thus, getAC3Attributes() returns
@@ -122,7 +150,7 @@ namespace ts {
         //! streams, it is safe to assume that the PID really contains AC-3 only if
         //! all PES packets contain AC-3.
         //!
-        bool allAC3(PID) const;
+        bool allAC3(PID pid) const;
 
     protected:
         //!
@@ -164,9 +192,19 @@ namespace ts {
         // One context is created per demuxed PES PID.
         typedef std::map<PID,PIDContext> PIDContextMap;
 
-        // Map of stream types (from PMT), indexed by PID.
+        // This internal structure describes the content of one PID.
+        struct PIDType
+        {
+            uint8_t   stream_type;    // Stream type from PMT.
+            CodecType default_codec;  // Default codec if not otherwise sepcified.
+
+            // Default constructor:
+            PIDType();
+        };
+
+        // Map of PID types, indexed by PID.
         // All known PID's are referenced here, not only demuxed PES PID's.
-        typedef std::map<PID,uint8_t> StreamTypeMap;
+        typedef std::map<PID,PIDType> PIDTypeMap;
 
         // Feed the demux with a TS packet (PID already filtered).
         void processPacket(const TSPacket&);
@@ -182,8 +220,9 @@ namespace ts {
 
         // Private members:
         PESHandlerInterface* _pes_handler;
+        CodecType            _default_codec;
         PIDContextMap        _pids;
-        StreamTypeMap        _stream_types;
+        PIDTypeMap           _pid_types;
         SectionDemux         _section_demux;
     };
 }

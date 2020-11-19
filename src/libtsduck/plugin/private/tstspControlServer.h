@@ -66,7 +66,7 @@ namespace ts {
             //!
             //! Destructor.
             //!
-            virtual ~ControlServer();
+            virtual ~ControlServer() override;
 
             //!
             //! Open and start the command listener.

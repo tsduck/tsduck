@@ -74,7 +74,7 @@ namespace ts {
             //!
             //! Virtual destructor.
             //!
-            virtual ~PluginExecutor();
+            virtual ~PluginExecutor() override;
 
             //!
             //! Set the initial state of the buffer for this plugin.

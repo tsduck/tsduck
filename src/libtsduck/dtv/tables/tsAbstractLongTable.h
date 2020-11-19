@@ -60,6 +60,11 @@ namespace ts {
         // Inherited methods
         virtual void clear() override final;
 
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~AbstractLongTable() override;
+
     protected:
         //!
         //! Constructor for subclasses.
@@ -70,11 +75,6 @@ namespace ts {
         //! @param [in] is_current_ True if table is current, false if table is next.
         //!
         AbstractLongTable(TID tid, const UChar* xml_name, Standards standards, uint8_t version_, bool is_current_);
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~AbstractLongTable();
 
         // Inherited methods.
         virtual size_t maxPayloadSize() const override;

@@ -203,7 +203,7 @@ namespace ts {
         //!
         //! Virtual desctructor.
         //!
-        virtual ~TSP();
+        virtual ~TSP() override;
 
     protected:
         bool          _use_realtime;  //!< The plugin should use realtime defaults.

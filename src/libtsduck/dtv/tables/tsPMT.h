@@ -35,6 +35,7 @@
 #pragma once
 #include "tsAbstractLongTable.h"
 #include "tsDescriptorList.h"
+#include "tsCodecType.h"
 #include "tsTS.h"
 
 namespace ts {
@@ -89,6 +90,14 @@ namespace ts {
             //! @return True if the elementary stream carries subtitles.
             //!
             bool isSubtitles(const DuckContext& duck) const;
+
+            //!
+            //! Try to determine the codec which is used in the stream.
+            //! Look at the stream type and the descriptor list.
+            //! @param [in] duck TSDuck execution context.
+            //! @return The codec type (CodecType::UNDEFINED if unknown).
+            //!
+            CodecType getCodec(const DuckContext& duck) const;
 
             //!
             //! Look for a component tag in a stream_identifier_descriptor.

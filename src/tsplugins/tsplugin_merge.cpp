@@ -335,9 +335,9 @@ bool ts::MergePlugin::getOptions()
     getValue(_command);
     _no_wait = present(u"no-wait");
     const bool transparent = present(u"transparent");
-    _max_queue = intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS);
-    _accel_threshold = intValue<size_t>(u"acceleration-threshold", _max_queue / 2);
-    _format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::AUTODETECT);
+    getIntValue(_max_queue, u"max-queue", DEFAULT_MAX_QUEUED_PACKETS);
+    getIntValue(_accel_threshold, u"acceleration-threshold", _max_queue / 2);
+    getIntValue(_format, u"format", TSPacketFormat::AUTODETECT);
     _merge_psi = !transparent && !present(u"no-psi-merge");
     _pcr_restamp = !present(u"no-pcr-restamp");
     _incremental_pcr = present(u"incremental-pcr-restamp");
@@ -345,7 +345,7 @@ bool ts::MergePlugin::getOptions()
     _ignore_conflicts = transparent || present(u"ignore-conflicts");
     _pcr_reset_backwards = present(u"pcr-reset-backwards");
     _terminate = present(u"terminate");
-    _user_bitrate = intValue<BitRate>(u"bitrate", 0);
+    getIntValue(_user_bitrate, u"bitrate", 0);
     tsp->useJointTermination(present(u"joint-termination"));
     getIntValues(_setLabels, u"set-label");
     getIntValues(_resetLabels, u"reset-label");

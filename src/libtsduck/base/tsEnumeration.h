@@ -193,6 +193,25 @@ namespace ts {
         UString name(int value, bool hexa = false, size_t hexDigitCount = 0) const;
 
         //!
+        //! Get the name from an enumeration value.
+        //!
+        //! @tparam ENUM An enumeration type.
+        //! @param [in] value An enumeration value to search.
+        //! @param [in] hexa If true and no name exists for @a value, return the value
+        //! as an hexadecimal string with "0x" prefix instead of decimal.
+        //! @param [in] hexDigitCount When an hexadecimal value is returned, specify the
+        //! minimum number of digits.
+        //! @return The corresponding string or a numeric representation of @a value if not found.
+        //! If several names were registered with the same value, one of them is returned but which
+        //! one is returned is unspecified.
+        //!
+        template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr>
+        UString name(ENUM value, bool hexa = false, size_t hexDigitCount = 0) const
+        {
+            return name(int(value), hexa, hexDigitCount);
+        }
+
+        //!
         //! Get the names from a bit-mask value.
         //! The method is useful only when the integer values in the enumeration are bit-masks.
         //!

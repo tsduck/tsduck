@@ -67,7 +67,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~TablesLogger();
+        virtual ~TablesLogger() override;
 
         //!
         //! Default table log size.

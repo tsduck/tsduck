@@ -60,7 +60,7 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~SystemRandomGenerator();
+        virtual ~SystemRandomGenerator() override;
 
     private:
 #if defined(TS_WINDOWS)

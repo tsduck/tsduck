@@ -67,7 +67,11 @@ namespace ts {
         //!
         //! Destructor, auto-deactivate.
         //!
+#if defined(TS_UNIX)
+        virtual ~UserInterrupt() override;
+#else
         ~UserInterrupt();
+#endif
 
         //!
         //! Check if this interrupt handler is active.

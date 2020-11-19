@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2070
+VERSION 3.24-2073
 
 [NEW] New commands and plugins:
 
@@ -27,7 +27,7 @@ VERSION 3.24-2070
     - Option --subtitles-pid in plugin "zap".
     - Option --json in "tscmp" and "tsdektec".
     - Options --json and --deterministic in "tsanalyze" and plugin "analyze".
-    - Options --save-pes and --intra-image in plugin "pes".
+    - Options --save-pes, --intra-image, --h26x-default-format in plugin "pes".
     - Options --intra-close and --max-extra-duration to output plugin "hls".
     - Options --bitrate, --acceleration-threshold, --incremental-pcr-restamp,
       --no-smoothing, --pcr-reset-backwards in plugin "merge".

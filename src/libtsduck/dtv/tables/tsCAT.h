@@ -74,7 +74,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~CAT();
+        virtual ~CAT() override;
 
         // Inherited methods
         virtual bool isPrivate() const override;

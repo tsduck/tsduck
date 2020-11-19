@@ -38,6 +38,7 @@
 #include "tsUString.h"
 #include "tsEnumUtils.h"
 #include "tsCASFamily.h"
+#include "tsCodecType.h"
 #include "tsReport.h"
 #include "tsSingletonManager.h"
 
@@ -157,12 +158,13 @@ namespace ts {
         TSDUCKDLL UString ChromaFormat(uint8_t c, Flags flags = NAME);
 
         //!
-        //! Name of AVC (ISO 14496-10, ITU H.264) access unit (aka "NALunit") type.
-        //! @param [in] ut AVC access unit type.
+        //! Name of AVC/HEVC/VVC access unit (aka "NALunit") type.
+        //! @param [in] codec One of AVC, HEVC, VVC.
+        //! @param [in] ut Access unit type.
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString AVCUnitType(uint8_t ut, Flags flags = NAME);
+        TSDUCKDLL UString AccessUnitType(CodecType codec, uint8_t ut, Flags flags = NAME);
 
         //!
         //! Name of AVC (ISO 14496-10, ITU H.264) profile.
@@ -509,7 +511,8 @@ namespace ts {
     {
         TS_DECLARE_SINGLETON(NamesMain);
     public:
-        virtual ~NamesMain();  //!< Destructor
+        //! Destructor
+        virtual ~NamesMain() override;
     };
 
     //!
@@ -520,7 +523,8 @@ namespace ts {
     {
         TS_DECLARE_SINGLETON(NamesOUI);
     public:
-        virtual ~NamesOUI();  //!< Destructor
+        //! Destructor
+        virtual ~NamesOUI() override;
     };
 
     //!

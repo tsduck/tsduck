@@ -63,6 +63,6 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~EacemPreferredNameIdentifierDescriptor();
+        virtual ~EacemPreferredNameIdentifierDescriptor() override;
     };
 }

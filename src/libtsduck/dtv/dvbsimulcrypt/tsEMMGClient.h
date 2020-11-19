@@ -70,7 +70,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~EMMGClient();
+        virtual ~EMMGClient() override;
 
         //!
         //! Connect to a remote MUX.

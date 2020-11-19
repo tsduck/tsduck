@@ -62,6 +62,6 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~DTGLogicalChannelDescriptor();
+        virtual ~DTGLogicalChannelDescriptor() override;
     };
 }

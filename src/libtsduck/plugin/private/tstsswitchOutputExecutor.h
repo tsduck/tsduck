@@ -62,7 +62,7 @@ namespace ts {
             //!
             //! Virtual destructor.
             //!
-            virtual ~OutputExecutor();
+            virtual ~OutputExecutor() override;
 
             //!
             //! Request the termination of the thread.

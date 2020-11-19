@@ -97,8 +97,8 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"bitrate", 'b', POSITIVE, 1, 1);
     help(u"bitrate",
-         u"Target constant bitrate of the output file. This is mandatory parameter, "
-         u"there is no default.");
+         u"Target constant bitrate of the output file. "
+         u"This is mandatory parameter, there is no default.");
 
     option(u"buffer-size", 0, INTEGER, 0, 1, MIN_TS_BUFFER_SIZE, MAX_TS_BUFFER_SIZE);
     help(u"buffer-size",
@@ -169,21 +169,21 @@ Options::Options(int argc, char *argv[]) :
     getValue(input_file, u"");
     getValue(output_file, u"output-file");
 
-    target_bitrate = intValue<ts::BitRate>(u"bitrate", 0);
+    getIntValue(target_bitrate, u"bitrate", 0);
     assert (target_bitrate != 0);
 
-    buffer_size = intValue<size_t>(u"buffer-size", DEFAULT_TS_BUFFER_SIZE);
+    getIntValue(buffer_size, u"buffer-size", DEFAULT_TS_BUFFER_SIZE);
     dts_based = present(u"dts-based");
-    reference_pid = intValue<ts::PID>(u"reference-pid", ts::PID_NULL);
-    final_inter_packet = intValue<uint64_t>(u"final-inter-packet", 0);
-    initial_inter_packet = intValue<uint64_t>(u"initial-inter-packet", 0);
-    leading_packets = intValue<uint64_t>(u"leading-packets", 0);
-    trailing_packets = intValue<uint64_t>(u"trailing-packets", 0);
-    min_interval_ms = intValue<uint64_t>(u"min-interval", DEFAULT_MIN_INTERVAL);
+    getIntValue(reference_pid, u"reference-pid", ts::PID_NULL);
+    getIntValue(final_inter_packet, u"final-inter-packet", 0);
+    getIntValue(initial_inter_packet, u"initial-inter-packet", 0);
+    getIntValue(leading_packets, u"leading-packets", 0);
+    getIntValue(trailing_packets, u"trailing-packets", 0);
+    getIntValue(min_interval_ms, u"min-interval", DEFAULT_MIN_INTERVAL);
     dyn_final_inter_packet = !present(u"final-inter-packet");
     dyn_initial_inter_packet = !present(u"initial-inter-packet");
-    input_format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::AUTODETECT);
-    output_format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::TS);
+    getIntValue(input_format, u"input-format", ts::TSPacketFormat::AUTODETECT);
+    getIntValue(output_format, u"output-format", ts::TSPacketFormat::TS);
 
     exitOnError();
 }

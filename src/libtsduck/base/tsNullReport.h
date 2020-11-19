@@ -44,13 +44,6 @@ namespace ts {
     class TSDUCKDLL NullReport : public Report
     {
         TS_DECLARE_SINGLETON(NullReport);
-
-    public:
-        //!
-        //! Destructor
-        //!
-        virtual ~NullReport() = default;
-
     protected:
         // String interface implementation
         virtual void writeLog(int severity, const UString& msg) override;

@@ -73,7 +73,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~T2MIDemux();
+        virtual ~T2MIDemux() override;
 
         // Inherited methods from AbstractDemux.
         virtual void feedPacket(const TSPacket& pkt) override;

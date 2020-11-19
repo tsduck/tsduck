@@ -67,7 +67,7 @@ namespace ts {
         public:
             // Constructor, destructor.
             ServiceDesc();
-            virtual ~ServiceDesc();
+            virtual ~ServiceDesc() override;
 
             // Public fields
             SectionCounter eitpf_count;

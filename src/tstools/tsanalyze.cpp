@@ -100,9 +100,9 @@ Options::Options(int argc, char *argv[]) :
     pager.loadArgs(duck, *this);
     analysis.loadArgs(duck, *this);
 
-    infile = value(u"");
-    bitrate = intValue<ts::BitRate>(u"bitrate");
-    format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::AUTODETECT);
+    getValue(infile, u"");
+    getIntValue(bitrate, u"bitrate");
+    getIntValue(format, u"format", ts::TSPacketFormat::AUTODETECT);
 
     exitOnError();
 }

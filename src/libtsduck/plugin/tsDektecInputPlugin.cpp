@@ -432,11 +432,11 @@ size_t ts::DektecInputPlugin::receive(TSPacket*, TSPacketMetadata*, size_t)
 
 bool ts::DektecInputPlugin::getOptions()
 {
-    _guts->dev_index = intValue<int>(u"device", -1);
-    _guts->chan_index = intValue<int>(u"channel", -1);
-    _guts->timeout_ms = intValue<int>(u"receive-timeout", _guts->timeout_ms); // preserve previous value
-    _guts->sat_number = intValue<int>(u"satellite-number", 0);
-    _guts->polarity = enumValue<Polarization>(u"polarity", POL_VERTICAL);
+    getIntValue(_guts->dev_index, u"device", -1);
+    getIntValue(_guts->chan_index, u"channel", -1);
+    getIntValue(_guts->timeout_ms, u"receive-timeout", _guts->timeout_ms); // preserve previous value
+    getIntValue(_guts->sat_number, u"satellite-number", 0);
+    getIntValue(_guts->polarity, u"polarity", POL_VERTICAL);
     _guts->high_band = false;
     _guts->lnb_setup = false;
 

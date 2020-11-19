@@ -121,16 +121,16 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    infile = value(u"");
+    getValue(infile, u"");
     full = present(u"full");
     all = full || present(u"all");
     value_only = present(u"value-only");
-    min_pcr = intValue<uint32_t>(u"min-pcr", 64);
-    min_pid = intValue<uint16_t>(u"min-pid", 1);
+    getIntValue(min_pcr, u"min-pcr", 64);
+    getIntValue(min_pid, u"min-pid", 1);
     use_dts = present(u"dts");
     pcr_name = use_dts ? u"DTS" : u"PCR";
     ignore_errors = present(u"ignore-errors");
-    format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::AUTODETECT);
+    getIntValue(format, u"format", ts::TSPacketFormat::AUTODETECT);
 
     exitOnError();
 }

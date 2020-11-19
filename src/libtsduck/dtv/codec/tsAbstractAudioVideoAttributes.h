@@ -54,7 +54,7 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~AbstractAudioVideoAttributes();
+        virtual ~AbstractAudioVideoAttributes() override;
 
         //!
         //! Check if the values in the object are valid.

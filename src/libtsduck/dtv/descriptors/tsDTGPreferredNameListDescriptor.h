@@ -62,6 +62,6 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~DTGPreferredNameListDescriptor();
+        virtual ~DTGPreferredNameListDescriptor() override;
     };
 }

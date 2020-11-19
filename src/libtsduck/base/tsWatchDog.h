@@ -73,7 +73,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~WatchDog();
+        virtual ~WatchDog() override;
 
         //!
         //! Set a new timeout value.

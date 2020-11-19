@@ -54,7 +54,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~SectionFileArgs();
+        virtual ~SectionFileArgs() override;
 
         // Public fields, by options.
         bool pack_and_flush;   //!< Pack and flush incomplete tables before exiting.

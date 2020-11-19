@@ -69,7 +69,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~ECMGClient();
+        virtual ~ECMGClient() override;
 
         //!
         //! Connect to a remote ECMG.

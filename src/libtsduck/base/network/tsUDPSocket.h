@@ -59,7 +59,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~UDPSocket();
+        virtual ~UDPSocket() override;
 
         //!
         //! Bind to a local address and port.

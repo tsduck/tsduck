@@ -62,7 +62,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~PagerArgs();
+        virtual ~PagerArgs() override;
 
         // Implementation of ArgsSupplierInterface.
         virtual void defineArgs(Args& args) const override;

@@ -61,7 +61,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~TSAnalyzerReport();
+        virtual ~TSAnalyzerReport() override;
 
         //!
         //! Set the analysis options.

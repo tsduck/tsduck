@@ -333,7 +333,7 @@ namespace tsunit {
     {
     public:
         TestCase(const std::string& name);
-        virtual ~TestCase();
+        virtual ~TestCase() override;
         virtual void run() = 0;
     private:
         TestCase() = delete;
@@ -391,7 +391,7 @@ namespace tsunit {
     {
     public:
         TestSuite(const std::string& name, Test* test);
-        virtual ~TestSuite();
+        virtual ~TestSuite() override;
         void addTestCase(TestCase* test);
         TestCase* getTestCase(const std::string& name) const;
         void getAllTestNames(std::list<std::string>&) const;

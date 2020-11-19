@@ -59,6 +59,6 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~MultilingualBouquetNameDescriptor();
+        virtual ~MultilingualBouquetNameDescriptor() override;
     };
 }

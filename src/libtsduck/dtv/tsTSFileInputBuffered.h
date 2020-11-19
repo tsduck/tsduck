@@ -57,7 +57,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~TSFileInputBuffered();
+        virtual ~TSFileInputBuffered() override;
 
         //!
         //! Minimum buffer size.

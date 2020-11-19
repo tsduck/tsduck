@@ -72,7 +72,7 @@ namespace ts {
 
         // Constructors and destructor.
         CharsetOptions(int argc, char *argv[]);
-        virtual ~CharsetOptions();
+        virtual ~CharsetOptions() override;
 
     private:
         // Build flags for UString::Dump().

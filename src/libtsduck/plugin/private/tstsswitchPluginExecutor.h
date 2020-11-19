@@ -71,7 +71,7 @@ namespace ts {
             //!
             //! Destructor.
             //!
-            virtual ~PluginExecutor();
+            virtual ~PluginExecutor() override;
 
             // Implementation of TSP. We do not use "joint termination" in tsswitch.
             virtual void useJointTermination(bool) override;

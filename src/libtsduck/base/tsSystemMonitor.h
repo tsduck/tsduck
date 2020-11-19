@@ -72,7 +72,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~SystemMonitor();
+        virtual ~SystemMonitor() override;
 
     private:
         // Private members

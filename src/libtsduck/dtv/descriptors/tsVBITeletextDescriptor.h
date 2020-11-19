@@ -60,6 +60,6 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~VBITeletextDescriptor();
+        virtual ~VBITeletextDescriptor() override;
     };
 }

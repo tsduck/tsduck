@@ -177,17 +177,17 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
     duck.loadArgs(*this);
 
-    frequency      = intValue<uint64_t>(u"frequency", 0);
-    uhf_channel    = intValue<uint32_t>(u"uhf-channel", 0);
-    vhf_channel    = intValue<uint32_t>(u"vhf-channel", 0);
-    hf_offset      = intValue<int32_t>(u"offset-count", 0);
-    bitrate        = intValue<ts::BitRate>(u"bitrate", 0);
-    max_guess      = intValue<ts::BitRate>(u"max-guess", 1);
-    constellation  = enumValue(u"constellation", ts::QAM_64);
-    fec_hp         = enumValue(u"high-priority-fec", ts::FEC_AUTO);
-    guard_interval = enumValue(u"guard-interval", ts::GUARD_AUTO);
-    bandwidth      = enumValue(u"bandwidth", ts::BW_8_MHZ);
-    simple         = present(u"simple");
+    getIntValue(frequency, u"frequency", 0);
+    getIntValue(uhf_channel, u"uhf-channel", 0);
+    getIntValue(vhf_channel, u"vhf-channel", 0);
+    getIntValue(hf_offset, u"offset-count", 0);
+    getIntValue(bitrate, u"bitrate", 0);
+    getIntValue(max_guess, u"max-guess", 1);
+    getIntValue(constellation, u"constellation", ts::QAM_64);
+    getIntValue(fec_hp, u"high-priority-fec", ts::FEC_AUTO);
+    getIntValue(guard_interval, u"guard-interval", ts::GUARD_AUTO);
+    getIntValue(bandwidth, u"bandwidth", ts::BW_8_MHZ);
+    simple = present(u"simple");
     default_region = present(u"default-region");
 
     if ((fec_hp == ts::FEC_AUTO && guard_interval != ts::GUARD_AUTO) ||

@@ -69,7 +69,7 @@ namespace ts {
             //!
             //! Virtual destructor.
             //!
-            virtual ~InputExecutor();
+            virtual ~InputExecutor() override;
 
             //!
             //! Initializes the packet buffer for all plugin executors, starting at this input executor.

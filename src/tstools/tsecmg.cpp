@@ -306,7 +306,7 @@ public:
     ECMGClientHandler(const ECMGOptions& opt, const ECMGConnectionPtr& conn, ECMGSharedData* shared, bool deleteWhenTerminated);
 
     // Destructor.
-    virtual ~ECMGClientHandler();
+    virtual ~ECMGClientHandler() override;
 
     // Main code of the thread.
     virtual void main() override;

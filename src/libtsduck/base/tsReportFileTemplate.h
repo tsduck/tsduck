@@ -71,7 +71,7 @@ ts::ReportFile<MUTEX>::ReportFile(std::ostream& stream, bool append, int max_sev
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-ts::ReportFile<MUTEX>::~ReportFile()
+ts::ReportFile<MUTEX>::~ReportFile<MUTEX>()
 {
     Guard lock(_mutex);
 

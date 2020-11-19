@@ -58,7 +58,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~OneShotPacketizer();
+        virtual ~OneShotPacketizer() override;
 
         //!
         //! Set the stuffing policy.

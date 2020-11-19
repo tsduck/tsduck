@@ -49,13 +49,6 @@ namespace ts {
     class TSDUCKDLL CerrReport : public Report
     {
         TS_DECLARE_SINGLETON(CerrReport);
-
-    public:
-        //!
-        //! Destructor
-        //!
-        virtual ~CerrReport() = default;
-
     protected:
         // Report implementation
         virtual void writeLog(int severity, const UString& msg) override;

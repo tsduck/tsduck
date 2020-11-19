@@ -64,6 +64,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~ApplicationNameDescriptor();
+        virtual ~ApplicationNameDescriptor() override;
     };
 }

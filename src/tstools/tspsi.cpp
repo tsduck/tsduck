@@ -100,8 +100,8 @@ Options::Options(int argc, char *argv[]) :
     logger.loadArgs(duck, *this);
     display.loadArgs(duck, *this);
 
-    infile = value(u"");
-    format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::AUTODETECT);
+    getValue(infile, u"");
+    getIntValue(format, u"format", ts::TSPacketFormat::AUTODETECT);
 
     exitOnError();
 }

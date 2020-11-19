@@ -133,7 +133,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~DVBCharTable();
+        virtual ~DVBCharTable() override;
 
         // Inherited methods.
         virtual void unregister() const override;

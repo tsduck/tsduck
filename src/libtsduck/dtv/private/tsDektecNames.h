@@ -54,6 +54,6 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~DektecNames();
+        virtual ~DektecNames() override;
     };
 }

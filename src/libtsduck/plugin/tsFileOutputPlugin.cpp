@@ -104,9 +104,9 @@ bool ts::FileOutputPlugin::getOptions()
         _flags |= TSFile::KEEP;
     }
     _reopen = present(u"reopen-on-error");
-    _retry_max = intValue<size_t>(u"max-retry", 0);
-    _retry_interval = intValue<MilliSecond>(u"retry-interval", DEF_RETRY_INTERVAL);
-    _file_format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::TS);
+    getIntValue(_retry_max, u"max-retry", 0);
+    getIntValue(_retry_interval, u"retry-interval", DEF_RETRY_INTERVAL);
+    getIntValue(_file_format, u"format", TSPacketFormat::TS);
     return true;
 }
 

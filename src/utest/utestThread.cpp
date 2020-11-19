@@ -124,7 +124,7 @@ namespace {
             utest::TSUnitThread(attributes)
         {
         }
-        virtual ~ThreadConstructor()
+        virtual ~ThreadConstructor() override
         {
             waitForTermination();
         }
@@ -167,7 +167,7 @@ namespace {
             _msPrecision(msPrecision)
         {
         }
-        virtual ~ThreadTermination()
+        virtual ~ThreadTermination() override
         {
             waitForTermination();
         }
@@ -218,7 +218,7 @@ namespace {
             _msPrecision(msPrecision)
         {
         }
-        virtual ~ThreadDeleteWhenTerminated()
+        virtual ~ThreadDeleteWhenTerminated() override
         {
             waitForTermination();
             tsunit::Test::debug() << "ThreadTest: ThreadDeleteWhenTerminated deleted" << std::endl;
@@ -292,7 +292,7 @@ namespace {
             _condSig(condSig)
         {
         }
-        virtual ~TestThreadMutexTimeout()
+        virtual ~TestThreadMutexTimeout() override
         {
             waitForTermination();
         }
@@ -364,7 +364,7 @@ namespace {
             _data(data)
         {
         }
-        virtual ~TestThreadCondition()
+        virtual ~TestThreadCondition() override
         {
             waitForTermination();
         }

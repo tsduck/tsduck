@@ -62,7 +62,7 @@ namespace ts {
         //!
         //! Destructor
         //!
-        virtual ~PESPacketizer();
+        virtual ~PESPacketizer() override;
 
         //!
         //! Set the object which provides PES packets when the packetizer needs more data.

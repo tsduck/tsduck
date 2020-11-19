@@ -85,10 +85,10 @@ ts::ForkPacketPlugin::ForkPacketPlugin(TSP* tsp_) :
 bool ts::ForkPacketPlugin::getOptions()
 {
     // Get command line arguments
-    _command = value(u"");
+    getValue(_command, u"");
+    getIntValue(_format, u"format", TSPacketFormat::TS);
+    getIntValue(_buffer_size, u"buffered-packets", tsp->realtime() ? 500 : 1000);
     _nowait = present(u"nowait");
-    _format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::TS);
-    _buffer_size = intValue<size_t>(u"buffered-packets", tsp->realtime() ? 500 : 1000);
     _pipe.setIgnoreAbort(present(u"ignore-abort"));
 
     // If packet buffering is requested, allocate the buffer

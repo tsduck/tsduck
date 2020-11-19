@@ -61,7 +61,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~ForkPipe();
+        virtual ~ForkPipe() override;
 
         //!
         //! How to wait for the created process when close() is invoked.

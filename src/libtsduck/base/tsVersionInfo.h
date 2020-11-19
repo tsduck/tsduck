@@ -58,7 +58,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~VersionInfo();
+        virtual ~VersionInfo() override;
 
         //!
         //! Start a thread which checks the availability of a new TSDuck version.
