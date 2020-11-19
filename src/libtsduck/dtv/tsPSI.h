@@ -841,6 +841,7 @@ namespace ts {
         ST_MPH3D_MAIN       = 0x2D, //!< ISO 23008-3 Audio with MHAS transport syntax – main stream
         ST_MPH3D_AUX        = 0x2E, //!< ISO 23008-3 Audio with MHAS transport syntax – auxiliary stream
         ST_QUALITY          = 0x2F, //!< Quality access units carried in sections
+        ST_VVC_VIDEO        = 0x32, //!< Possibly VVC/H.266 video (value to be confirmed, other possible values to be determined)
         ST_IPMP             = 0x7F, //!< IPMP stream
         ST_AC3_AUDIO        = 0x81, //!< AC-3 Audio (ATSC only)
         ST_SCTE35_SPLICE    = 0x86, //!< SCTE 35 splice information tables
@@ -848,42 +849,49 @@ namespace ts {
     };
 
     //!
-    //! Check if an stream type value indicates a PES stream.
+    //! Check if a stream type value indicates a PES stream.
     //! @param [in] st Stream type as used in the PMT.
     //! @return True if @a st indicates a PES stream.
     //!
     TSDUCKDLL bool StreamTypeIsPES(uint8_t st);
 
     //!
-    //! Check if an stream type value indicates a video stream.
+    //! Check if a stream type value indicates a video stream.
     //! @param [in] st Stream type as used in the PMT.
     //! @return True if @a st indicates a video stream.
     //!
     TSDUCKDLL bool StreamTypeIsVideo(uint8_t st);
 
     //!
-    //! Check if an stream type value indicates a video stream using AVC encoding.
+    //! Check if a stream type value indicates a video stream using AVC / H.264 encoding.
     //! @param [in] st Stream type as used in the PMT.
-    //! @return True if @a st indicates an AVC video stream.
+    //! @return True if @a st indicates an AVC / H.264 video stream.
     //!
     TSDUCKDLL bool StreamTypeIsAVC(uint8_t st);
 
     //!
-    //! Check if an stream type value indicates a video stream using HEVC encoding.
+    //! Check if a stream type value indicates a video stream using HEVC / H.265 encoding.
     //! @param [in] st Stream type as used in the PMT.
-    //! @return True if @a st indicates an HEVC video stream.
+    //! @return True if @a st indicates an HEVC / H.265 video stream.
     //!
     TSDUCKDLL bool StreamTypeIsHEVC(uint8_t st);
 
     //!
-    //! Check if an stream type value indicates an audio stream.
+    //! Check if a stream type value indicates a video stream using VVC / H.266 encoding.
+    //! @param [in] st Stream type as used in the PMT.
+    //! @return True if @a st indicates a VVC / H.266 video stream.
+    //!
+    TSDUCKDLL bool StreamTypeIsVVC(uint8_t st);
+
+    //!
+    //! Check if a stream type value indicates an audio stream.
     //! @param [in] st Stream type as used in the PMT.
     //! @return True if @a st indicates an audio stream.
     //!
     TSDUCKDLL bool StreamTypeIsAudio(uint8_t st);
 
     //!
-    //! Check if an stream type value indicates a stream carrying sections.
+    //! Check if a stream type value indicates a stream carrying sections.
     //! @param [in] st Stream type as used in the PMT.
     //! @return True if @a st indicates a stream carrying sections.
     //!

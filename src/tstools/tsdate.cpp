@@ -102,7 +102,7 @@ Options::Options(int argc, char *argv[]) :
     all = present(u"all");
     no_tdt = present(u"notdt");
     no_tot = present(u"notot");
-    format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::AUTODETECT);
+    getIntValue(format, u"format", ts::TSPacketFormat::AUTODETECT);
 
     exitOnError();
 }

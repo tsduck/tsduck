@@ -53,7 +53,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~DektecOutputPlugin();
+        virtual ~DektecOutputPlugin() override;
 
         // Implementation of plugin API
         virtual bool start() override;

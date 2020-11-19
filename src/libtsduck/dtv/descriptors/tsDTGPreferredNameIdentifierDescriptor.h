@@ -63,6 +63,6 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~DTGPreferredNameIdentifierDescriptor();
+        virtual ~DTGPreferredNameIdentifierDescriptor() override;
     };
 }

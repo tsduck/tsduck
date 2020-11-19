@@ -144,7 +144,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~CipherChainingTemplate();
+        virtual ~CipherChainingTemplate() override;
     };
 }
 

@@ -57,7 +57,7 @@ namespace utest {
         //!
         //! Destructor.
         //!
-        ~TSUnitThread();
+        virtual ~TSUnitThread() override;
 
         //!
         //! Constructor from specified attributes.

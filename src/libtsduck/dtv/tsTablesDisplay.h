@@ -66,7 +66,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~TablesDisplay();
+        virtual ~TablesDisplay() override;
 
         // Implementation of ArgsSupplierInterface.
         virtual void defineArgs(Args& args) const override;

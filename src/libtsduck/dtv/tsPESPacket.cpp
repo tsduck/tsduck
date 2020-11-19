@@ -30,7 +30,13 @@
 #include "tsPESPacket.h"
 #include "tsPES.h"
 #include "tsAVC.h"
+#include "tsHEVC.h"
+#include "tsVVC.h"
+#include "tsAccessUnitIterator.h"
 #include "tsAVCAccessUnitDelimiter.h"
+#include "tsHEVCAccessUnitDelimiter.h"
+#include "tsVVCAccessUnitDelimiter.h"
+#include "tsStaticInstance.h"
 TSDUCK_SOURCE;
 
 
@@ -43,6 +49,7 @@ ts::PESPacket::PESPacket(PID source_pid) :
     _header_size(0),
     _source_pid(source_pid),
     _stream_type(ST_NULL),
+    _codec(CodecType::UNDEFINED),
     _pcr(INVALID_PCR),
     _first_pkt(0),
     _last_pkt(0),
@@ -55,6 +62,7 @@ ts::PESPacket::PESPacket(const PESPacket& pp, ShareMode mode) :
     _header_size(pp._header_size),
     _source_pid(pp._source_pid),
     _stream_type(pp._stream_type),
+    _codec(pp._codec),
     _pcr(pp._pcr),
     _first_pkt(pp._first_pkt),
     _last_pkt(pp._last_pkt),
@@ -78,6 +86,7 @@ ts::PESPacket::PESPacket(PESPacket&& pp) noexcept :
     _header_size(pp._header_size),
     _source_pid(pp._source_pid),
     _stream_type(pp._stream_type),
+    _codec(pp._codec),
     _pcr(pp._pcr),
     _first_pkt(pp._first_pkt),
     _last_pkt(pp._last_pkt),
@@ -184,6 +193,7 @@ void ts::PESPacket::clear()
     _header_size = 0;
     _source_pid = PID_NULL;
     _stream_type = ST_NULL;
+    _codec = CodecType::UNDEFINED;
     _pcr = INVALID_PCR;
     _first_pkt = 0;
     _last_pkt = 0;
@@ -281,6 +291,7 @@ ts::PESPacket& ts::PESPacket::operator=(const PESPacket& pp)
     _header_size = pp._header_size;
     _source_pid = pp._source_pid;
     _stream_type = pp._stream_type;
+    _codec = pp._codec;
     _pcr = pp._pcr;
     _first_pkt = pp._first_pkt;
     _last_pkt = pp._last_pkt;
@@ -294,6 +305,7 @@ ts::PESPacket& ts::PESPacket::operator=(PESPacket&& pp) noexcept
     _header_size = pp._header_size;
     _source_pid = pp._source_pid;
     _stream_type = pp._stream_type;
+    _codec = pp._codec;
     _pcr = pp._pcr;
     _first_pkt = pp._first_pkt;
     _last_pkt = pp._last_pkt;
@@ -313,6 +325,7 @@ ts::PESPacket& ts::PESPacket::copy(const PESPacket& pp)
     _header_size = pp._header_size;
     _source_pid = pp._source_pid;
     _stream_type = pp._stream_type;
+    _codec = pp._codec;
     _pcr = pp._pcr;
     _first_pkt = pp._first_pkt;
     _last_pkt = pp._last_pkt;
@@ -334,12 +347,48 @@ bool ts::PESPacket::operator==(const PESPacket& pp) const
 
 
 //----------------------------------------------------------------------------
+// List of functions to check the compatibility of PES content and codec.
+//----------------------------------------------------------------------------
+
+namespace {
+    typedef bool (*ContentCheckFunction)(const uint8_t* data, size_t size, uint8_t stream_type);
+    typedef std::map<ts::CodecType, ContentCheckFunction> CodecCheckMap;
+    TS_STATIC_INSTANCE(CodecCheckMap, ({
+        std::make_pair(ts::CodecType::MPEG1_VIDEO, ts::PESPacket::IsMPEG2Video),
+        std::make_pair(ts::CodecType::MPEG2_VIDEO, ts::PESPacket::IsMPEG2Video),
+        std::make_pair(ts::CodecType::AC3, ts::PESPacket::IsAC3),
+        std::make_pair(ts::CodecType::EAC3, ts::PESPacket::IsAC3),
+        std::make_pair(ts::CodecType::AVC, ts::PESPacket::IsAVC),
+        std::make_pair(ts::CodecType::HEVC, ts::PESPacket::IsHEVC),
+        std::make_pair(ts::CodecType::VVC, ts::PESPacket::IsVVC),
+    }), StaticCodecCheckMap)
+}
+
+
+//----------------------------------------------------------------------------
+// Set a default codec type.
+//----------------------------------------------------------------------------
+
+void ts::PESPacket::setDefaultCodec(CodecType default_codec)
+{
+    // If the codec if already set or the new one is undefined, nothing to do.
+    if (_is_valid && _codec == CodecType::UNDEFINED && default_codec != CodecType::UNDEFINED) {
+        // Check if the specified default codec has a PES content checking function.
+        const auto it = StaticCodecCheckMap::Instance().find(default_codec);
+        if (it == StaticCodecCheckMap::Instance().end() || it->second(content(), size(), _stream_type)) {
+            _codec = default_codec;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Check if the PES packet contains MPEG-2 video (also applies to MPEG-1 video)
 //----------------------------------------------------------------------------
 
 bool ts::PESPacket::isMPEG2Video() const
 {
-    return _is_valid && IsMPEG2Video(content(), size(), _stream_type);
+    return _is_valid && (_codec == CodecType::MPEG1_VIDEO || _codec == CodecType::MPEG2_VIDEO || IsMPEG2Video(content(), size(), _stream_type));
 }
 
 bool ts::PESPacket::IsMPEG2Video(const uint8_t* data, size_t size, uint8_t stream_type)
@@ -362,55 +411,65 @@ bool ts::PESPacket::IsMPEG2Video(const uint8_t* data, size_t size, uint8_t strea
 
 
 //----------------------------------------------------------------------------
-// Check if the PES packet contains AVC.
+// Check if the specified area starts with 00 00 00 [00...] 01,
+// common header for AVC, HEVC and VVC.
 //----------------------------------------------------------------------------
 
-bool ts::PESPacket::isAVC() const
+bool ts::PESPacket::HasCommonVideoHeader(const uint8_t* data, size_t size)
 {
-    return _is_valid && IsAVC(content(), size(), _stream_type);
-}
-
-bool ts::PESPacket::IsAVC(const uint8_t* data, size_t size, uint8_t stream_type)
-{
-    // Must have a video stream_id and payload must start with 00 00 00 [00...] 01
-    const size_t header_size = HeaderSize(data, size);
-    if (header_size == 0 || size < header_size + 4) {
+    if (data == nullptr) {
         return false;
     }
-    else if (StreamTypeIsAVC(stream_type)) {
+    else {
+        const uint8_t* pl = data;
+        while (size > 0 && *pl == 0x00) {
+            ++pl;
+            --size;
+        }
+        return size > 0 && *pl == 0x01 && pl > data + 2;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a truncated PES packet may contain AVC, HEVC or VVC.
+//----------------------------------------------------------------------------
+
+bool ts::PESPacket::IsXVC(bool (*StreamTypeCheck)(uint8_t), const uint8_t* data, size_t size, uint8_t stream_type)
+{
+    const size_t header_size = HeaderSize(data, size);
+    if (header_size == 0) {
+        return false;
+    }
+    else if (StreamTypeCheck(stream_type)) {
         return true;
     }
     else if (stream_type != ST_NULL || !IsVideoSID(data[3])) {
         return false;
     }
     else {
-        // Check that the payload starts with 00 00 00 [00...] 01
-        const uint8_t* pl = data + header_size;
-        size_t pl_size = size - header_size;
-        while (pl_size > 0 && *pl == 0x00) {
-            ++pl;
-            --pl_size;
-        }
-        return pl_size > 0 && *pl == 0x01 && pl > data + header_size + 2;
+        return HasCommonVideoHeader(data + header_size, size - header_size);
     }
 }
 
 
 //----------------------------------------------------------------------------
-// Check if the PES packet contains HEVC.
+// Check if a truncated PES packet may contain AVC, HEVC or VVC.
 //----------------------------------------------------------------------------
+
+bool ts::PESPacket::isAVC() const
+{
+    return _is_valid && (_codec == CodecType::AVC || IsAVC(content(), size(), _stream_type));
+}
 
 bool ts::PESPacket::isHEVC() const
 {
-    return _is_valid && IsHEVC(content(), size(), _stream_type);
+    return _is_valid && (_codec == CodecType::HEVC || IsHEVC(content(), size(), _stream_type));
 }
 
-bool ts::PESPacket::IsHEVC(const uint8_t* data, size_t size, uint8_t stream_type)
+bool ts::PESPacket::isVVC() const
 {
-    // Currently, only test the stream type from the PMT.
-    // Can we use additional non-ambiguous test on the PES payload?
-    const size_t header_size = HeaderSize(data, size);
-    return header_size > 0 && StreamTypeIsHEVC(stream_type);
+    return _is_valid && (_codec == CodecType::VVC || IsVVC(content(), size(), _stream_type));
 }
 
 
@@ -420,7 +479,7 @@ bool ts::PESPacket::IsHEVC(const uint8_t* data, size_t size, uint8_t stream_type
 
 bool ts::PESPacket::isAC3() const
 {
-    return _is_valid && IsAC3(content(), size(), _stream_type);
+    return _is_valid && (_codec == CodecType::AC3 || _codec == CodecType::EAC3 || IsAC3(content(), size(), _stream_type));
 }
 
 bool ts::PESPacket::IsAC3(const uint8_t* data, size_t size, uint8_t stream_type)
@@ -451,10 +510,10 @@ bool ts::PESPacket::IsAC3(const uint8_t* data, size_t size, uint8_t stream_type)
 
 size_t ts::PESPacket::findIntraImage() const
 {
-    return _is_valid ? FindIntraImage(content(), size(), _stream_type) : NPOS;
+    return _is_valid ? FindIntraImage(content(), size(), _stream_type, _codec) : NPOS;
 }
 
-size_t ts::PESPacket::FindIntraImage(const uint8_t* data, size_t size, uint8_t stream_type)
+size_t ts::PESPacket::FindIntraImage(const uint8_t* data, size_t size, uint8_t stream_type, CodecType default_format)
 {
     // Check PES structure, we need as least a valid PES header.
     const size_t header_size = HeaderSize(data, size);
@@ -463,94 +522,88 @@ size_t ts::PESPacket::FindIntraImage(const uint8_t* data, size_t size, uint8_t s
     }
 
     // Packet payload content, possibly truncated.
-    const uint8_t* pdata = data + header_size;
-    size_t psize = size - header_size;
+    const uint8_t* pl_data = data + header_size;
+    size_t pl_size = size - header_size;
 
-    // Start code prefix for ISO 11172-2 (MPEG-1 video) and ISO 13818-2 (MPEG-2 video)
-    static const uint8_t StartCodePrefix[] = {0x00, 0x00, 0x01};
+    // Iterator on AVC/HEVC/VVC access units.
+    AccessUnitIterator au_iter(pl_data, pl_size, stream_type, default_format);
+    const CodecType codec = au_iter.videoFormat();
 
-    // End of AVC NALunit delimiter
-    static const uint8_t Zero3[] = {0x00, 0x00, 0x00};
-
-    // Process MPEG-1 (ISO 11172-2) and MPEG-2 (ISO 13818-2) video start codes
-    if (IsMPEG2Video(data, size, stream_type)) {
-        // Locate all start codes and detect start of Group of Pictures (GOP).
-        // The beginning of the PES payload is already a start code prefix in MPEG-1/2.
-        while (psize > 0) {
-            // Look for next start code
-            const uint8_t* pnext = LocatePattern(pdata + 1, psize - 1, StartCodePrefix, sizeof(StartCodePrefix));
-            if (pnext == nullptr) {
-                // No next start code, current one extends up to the end of the payload.
-                pnext = pdata + psize;
+    // Process AVC/HEVC/VVC access units (aka "NALunits")
+    if (au_iter.isValid()) {
+        // Loop on all access units.
+        for (; !au_iter.atEnd(); au_iter.next()) {
+            const uint8_t au_type = au_iter.currentAccessUnitType();
+            if (codec == CodecType::AVC) {
+                if (au_type == AVC_AUT_IDR) {
+                    // Found an explicit IDR picture.
+                    // IDR = Instantaneous Decoding Refresh.
+                    return au_iter.currentAccessUnitOffset();
+                }
+                else if (au_type == AVC_AUT_DELIMITER) {
+                    // Found an access unit delimiter, analyze it.
+                    const AVCAccessUnitDelimiter aud(au_iter.currentAccessUnit(), au_iter.currentAccessUnitSize());
+                    if (aud.valid && (aud.primary_pic_type == AVC_PIC_TYPE_I || aud.primary_pic_type == AVC_PIC_TYPE_SI || aud.primary_pic_type == AVC_PIC_TYPE_I_SI)) {
+                        // Found an access unit delimiter which contains intra slices only.
+                        return au_iter.currentAccessUnitOffset();
+                    }
+                }
             }
-            // The start code is after the start code prefix: 00 00 01 xx
-            if (pdata + 3 < pnext && pdata[3] == PST_GROUP) {
-                // Found a start of GOP. This must be an intra-image in MPEG-1/2.
-                return pdata - data;
+            else if (codec == CodecType::HEVC) {
+                if (au_type == HEVC_AUT_CRA_NUT || au_type == HEVC_AUT_IDR_N_LP || au_type == HEVC_AUT_IDR_W_RADL || au_type == HEVC_AUT_RADL_N || au_type == HEVC_AUT_RADL_R) {
+                    // Found an explicit intra picture.
+                    // CRA = Clear Random Access.
+                    // RADL = Random Access Decodable Leading.
+                    return au_iter.currentAccessUnitOffset();
+                }
+                else if (au_type == HEVC_AUT_AUD_NUT) {
+                    // Found an access unit delimiter, analyze it.
+                    const HEVCAccessUnitDelimiter aud(au_iter.currentAccessUnit(), au_iter.currentAccessUnitSize());
+                    if (aud.valid && aud.pic_type == HEVC_PIC_TYPE_I) {
+                        // Found an access unit delimiter which contains intra slices only.
+                        return au_iter.currentAccessUnitOffset();
+                    }
+                }
             }
-            // Move to next start code
-            psize -= pnext - pdata;
-            pdata = pnext;
+            else if (codec == CodecType::VVC) {
+                if (au_type == VVC_AUT_CRA_NUT || au_type == VVC_AUT_RADL_NUT || au_type == VVC_AUT_IDR_N_LP || au_type == VVC_AUT_IDR_W_RADL) {
+                    // Found an explicit intra picture.
+                    // CRA = Clear Random Access.
+                    // RADL = Random Access Decodable Leading.
+                    return au_iter.currentAccessUnitOffset();
+                }
+                else if (au_type == VVC_AUT_AUD_NUT) {
+                    // Found an access unit delimiter, analyze it.
+                    const VVCAccessUnitDelimiter aud(au_iter.currentAccessUnit(), au_iter.currentAccessUnitSize());
+                    if (aud.valid && aud.aud_pic_type == VVC_PIC_TYPE_I) {
+                        // Found an access unit delimiter which contains intra slices only.
+                        return au_iter.currentAccessUnitOffset();
+                    }
+                }
+            }
         }
     }
 
-    // Process AVC (ISO 14496-10, ITU H.264) access units (aka "NALunits")
-    else if (IsAVC(data, size, stream_type)) {
-        // With AVC, we use two types of intra-frame detection:
-        // 1) Start of a NALunit of type 5 (AVC_AUT_IDR).
-        // 2) Access unit delimiter (AUD) with primary_pic_type 0, 3 or 5 (AVC_PIC_TYPE_I, AVC_PIC_TYPE_SI, AVC_PIC_TYPE_I_SI).
-        // The beginning of the PES payload is not a start code prefix in AVC (at least three 00 before 01).
-        while (psize > 0) {
-            // Locate next access unit: starts with 00 00 01.
-            // The start code prefix 00 00 01 is not part of the NALunit.
-            // The NALunit starts at the NALunit type byte (see H.264, 7.3.1).
-            const uint8_t* p1 = LocatePattern(pdata, psize, StartCodePrefix, sizeof(StartCodePrefix));
-            if (p1 == nullptr) {
-                // No next access unit.
-                break;
+    // Process MPEG-1 (ISO 11172-2) and MPEG-2 (ISO 13818-2) video start codes
+    else if (IsMPEG2Video(data, size, stream_type)) {
+        // Locate all start codes and detect start of Group of Pictures (GOP).
+        // The beginning of the PES payload is already a start code prefix in MPEG-1/2.
+        while (pl_size > 0) {
+            // Look for next start code
+            static const uint8_t StartCodePrefix[] = {0x00, 0x00, 0x01};
+            const uint8_t* pl_next = LocatePattern(pl_data + 1, pl_size - 1, StartCodePrefix, sizeof(StartCodePrefix));
+            if (pl_next == nullptr) {
+                // No next start code, current one extends up to the end of the payload.
+                pl_next = pl_data + pl_size;
             }
-
-            // Jump to first byte of NALunit.
-            psize -= p1 + sizeof(StartCodePrefix) - pdata;
-            pdata = p1 + sizeof(StartCodePrefix);
-
-            // Locate end of access unit: ends with 00 00 00, 00 00 01 or end of data.
-            const uint8_t* p2 = LocatePattern(pdata, psize, StartCodePrefix, sizeof(StartCodePrefix));
-            const uint8_t* p3 = LocatePattern(pdata, psize, Zero3, sizeof(Zero3));
-            size_t nalunit_size = 0;
-            if (p2 == nullptr && p3 == nullptr) {
-                // No 00 00 01, no 00 00 00, the NALunit extends up to the end of data.
-                nalunit_size = psize;
+            // The start code is after the start code prefix: 00 00 01 xx
+            if (pl_data + 3 < pl_next && pl_data[3] == PST_GROUP) {
+                // Found a start of GOP. This must be an intra-image in MPEG-1/2.
+                return pl_data - data;
             }
-            else if (p2 == nullptr || (p3 != nullptr && p3 < p2)) {
-                // NALunit ends at 00 00 00.
-                assert(p3 != nullptr);
-                nalunit_size = p3 - pdata;
-            }
-            else {
-                // NALunit ends at 00 00 01.
-                assert(p2 != nullptr);
-                nalunit_size = p2 - pdata;
-            }
-
-            // Compute and process NALunit type.
-            const uint8_t nalunit_type = nalunit_size == 0 ? 0 : (pdata[0] & 0x1F);
-            if (nalunit_type == AVC_AUT_IDR) {
-                // Found an explicit IDR picture.
-                return pdata - data;
-            }
-            else if (nalunit_type == AVC_AUT_DELIMITER) {
-                // Found an access unit delimiter, analyze it.
-                const AVCAccessUnitDelimiter aud(pdata, nalunit_size);
-                if (aud.valid && (aud.primary_pic_type == AVC_PIC_TYPE_I || aud.primary_pic_type == AVC_PIC_TYPE_SI || aud.primary_pic_type == AVC_PIC_TYPE_I_SI)) {
-                    // Found an access unit delimiter which contains intra slices only.
-                    return pdata - data;
-                }
-            }
-
-            // Move to next start code prefix.
-            pdata += nalunit_size;
-            psize -= nalunit_size;
+            // Move to next start code
+            pl_size -= pl_next - pl_data;
+            pl_data = pl_next;
         }
     }
 

@@ -172,10 +172,10 @@ Options::Options(int argc, char *argv[]) :
     getValue(filename1, u"", u"", 0);
     getValue(filename2, u"", u"", 1);
 
-    format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::AUTODETECT);
-    buffered_packets = intValue<size_t>(u"buffered-packets", DEFAULT_BUFFERED_PACKETS);
+    getIntValue(format, u"format", ts::TSPacketFormat::AUTODETECT);
+    getIntValue(buffered_packets, u"buffered-packets", DEFAULT_BUFFERED_PACKETS);
     byte_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * ts::PKT_SIZE);
-    threshold_diff = intValue<size_t>(u"threshold-diff", 0);
+    getIntValue(threshold_diff, u"threshold-diff", 0);
     subset = present(u"subset");
     payload_only = present(u"payload-only");
     pcr_ignore = present(u"pcr-ignore");

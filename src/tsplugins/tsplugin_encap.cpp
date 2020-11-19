@@ -154,12 +154,12 @@ bool ts::EncapPlugin::getOptions()
 {
     _ignoreErrors = present(u"ignore-errors");
     _pack = present(u"pack");
-    _packLimit = intValue<size_t>(u"pack", 0);
-    _maxBuffered = intValue<size_t>(u"max-buffered-packets", PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS);
-    _pidOutput = intValue<PID>(u"output-pid", PID_NULL);
-    _pidPCR = intValue<PID>(u"pcr-pid", PID_NULL);
-    _pesMode = enumValue<PacketEncapsulation::PESMode>(u"pes-mode", PacketEncapsulation::DISABLED);
-    _pesOffset = intValue<size_t>(u"pes-offset", 0);
+    getIntValue(_packLimit, u"pack", 0);
+    getIntValue(_maxBuffered, u"max-buffered-packets", PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS);
+    getIntValue(_pidOutput, u"output-pid", PID_NULL);
+    getIntValue(_pidPCR, u"pcr-pid", PID_NULL);
+    getIntValue(_pesMode, u"pes-mode", PacketEncapsulation::DISABLED);
+    getIntValue(_pesOffset, u"pes-offset", 0);
     getIntValues(_pidsInput, u"pid");
 
     if (_pesOffset != 0 && _pesMode == PacketEncapsulation::DISABLED) {

@@ -63,7 +63,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~OutputPager();
+        virtual ~OutputPager() override;
 
         //!
         //! Check if we can run a pager.

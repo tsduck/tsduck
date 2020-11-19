@@ -56,7 +56,7 @@ namespace ts {
         //!
         //! Destructor
         //!
-        virtual ~PESOneShotPacketizer();
+        virtual ~PESOneShotPacketizer() override;
 
         //!
         //! Get all enqueued PES packets as one list of TS packets.

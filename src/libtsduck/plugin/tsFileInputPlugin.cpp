@@ -128,10 +128,10 @@ bool ts::FileInputPlugin::getOptions()
     _repeat_count = present(u"infinite") ? 0 : intValue<size_t>(u"repeat", 1);
     _start_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE);
     _interleave = present(u"interleave");
-    _interleave_chunk = intValue<size_t>(u"interleave", 1);
     _first_terminate = present(u"first-terminate");
-    _base_label = intValue<size_t>(u"label-base", TSPacketMetadata::LABEL_MAX + 1);
-    _file_format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::AUTODETECT);
+    getIntValue(_interleave_chunk, u"interleave", 1);
+    getIntValue(_base_label, u"label-base", TSPacketMetadata::LABEL_MAX + 1);
+    getIntValue(_file_format, u"format", TSPacketFormat::AUTODETECT);
 
     // If there is no file, then this is the standard input, an empty file name.
     if (_filenames.empty()) {

@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 IMPL(handlePESPacket(PESDemux&, const PESPacket&))
 IMPL(handleVideoStartCode(PESDemux&, const PESPacket&, uint8_t, size_t, size_t))
 IMPL(handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket&, const MPEG2VideoAttributes&))
-IMPL(handleAVCAccessUnit(PESDemux&, const PESPacket&, uint8_t, size_t, size_t))
+IMPL(handleAccessUnit(PESDemux&, const PESPacket&, uint8_t, size_t, size_t))
 IMPL(handleSEI(PESDemux&, const PESPacket&, uint32_t, size_t , size_t size))
 IMPL(handleNewAVCAttributes(PESDemux&, const PESPacket&, const AVCAttributes&))
 IMPL(handleIntraImage(PESDemux&, const PESPacket&, size_t))

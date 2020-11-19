@@ -74,7 +74,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~AsyncReport();
+        virtual ~AsyncReport() override;
 
         //!
         //! Set a new ReportHandler.

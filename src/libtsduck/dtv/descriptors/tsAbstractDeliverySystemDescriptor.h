@@ -55,7 +55,7 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~AbstractDeliverySystemDescriptor();
+        virtual ~AbstractDeliverySystemDescriptor() override;
 
     protected:
         //!

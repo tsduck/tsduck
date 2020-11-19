@@ -56,6 +56,12 @@ namespace ts {
     class TSDUCKDLL PushInputPlugin : public InputPlugin
     {
         TS_NOBUILD_NOCOPY(PushInputPlugin);
+    public:
+        //!
+        //! Destructor.
+        //!
+        virtual ~PushInputPlugin() override;
+
     protected:
         //!
         //! Packet reception interface.
@@ -111,11 +117,6 @@ namespace ts {
         //!
         PushInputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
 
-        //!
-        //! Destructor.
-        //!
-        ~PushInputPlugin();
-
         // Implementation of plugin API
         virtual bool abortInput() override;
 
@@ -134,7 +135,7 @@ namespace ts {
         public:
             // Constructor & destructor.
             Receiver(PushInputPlugin* plugin);
-            virtual ~Receiver();
+            virtual ~Receiver() override;
             virtual void main() override;
         private:
             PushInputPlugin* _plugin;

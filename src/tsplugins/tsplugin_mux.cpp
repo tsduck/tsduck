@@ -231,14 +231,14 @@ bool ts::MuxPlugin::start()
     _update_cc = !present(u"no-continuity-update");
     _check_pid_conflict = !present(u"no-pid-conflict-check");
     _force_pid = present(u"pid");
-    _force_pid_value = intValue<PID>(u"pid");
-    _bitrate = intValue<BitRate>(u"bitrate", 0);
-    _inter_pkt = intValue<PacketCounter>(u"inter-packet", 0);
-    _inter_time = intValue<uint64_t>(u"inter-time", 0);
-    _min_pts = intValue<uint64_t>(u"min-pts", 0);
-    _max_pts = intValue<uint64_t>(u"max-pts", 0);
-    _pts_pid = intValue<PID>(u"pts-pid", 0);
-    _max_insert_count = intValue<uint64_t>(u"max-insert-count", 0);
+    getIntValue(_force_pid_value, u"pid");
+    getIntValue(_bitrate, u"bitrate", 0);
+    getIntValue(_inter_pkt, u"inter-packet", 0);
+    getIntValue(_inter_time, u"inter-time", 0);
+    getIntValue(_min_pts, u"min-pts", 0);
+    getIntValue(_max_pts, u"max-pts", 0);
+    getIntValue(_pts_pid, u"pts-pid", 0);
+    getIntValue(_max_insert_count, u"max-insert-count", 0);
     _packet_count = 0;
     _pid_next_pkt = 0;
     _ts_pids.reset();
@@ -246,7 +246,7 @@ bool ts::MuxPlugin::start()
     _pts_last_inserted = 0;
     _inserted_packet_count = 0;
     _pts_range_ok = true;  // by default, enable packet insertion
-    _file_format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::AUTODETECT);
+    getIntValue(_file_format, u"format", TSPacketFormat::AUTODETECT);
     getIntValues(_setLabels, u"set-label");
     getIntValues(_resetLabels, u"reset-label");
 

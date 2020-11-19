@@ -46,7 +46,7 @@ ts::MessageQueue<MSG, MUTEX>::MessageQueue(size_t maxMessages) :
 }
 
 template <typename MSG, class MUTEX>
-ts::MessageQueue<MSG, MUTEX>::~MessageQueue()
+ts::MessageQueue<MSG, MUTEX>::~MessageQueue<MSG, MUTEX>()
 {
 }
 

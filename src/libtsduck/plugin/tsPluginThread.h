@@ -62,7 +62,7 @@ namespace ts {
         //!
         //! Destructor
         //!
-        virtual ~PluginThread();
+        virtual ~PluginThread() override;
 
         //!
         //! Change the report object.

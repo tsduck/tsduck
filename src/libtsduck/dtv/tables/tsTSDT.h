@@ -74,7 +74,7 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~TSDT();
+        virtual ~TSDT() override;
 
         // Inherited methods
         virtual bool isPrivate() const override;

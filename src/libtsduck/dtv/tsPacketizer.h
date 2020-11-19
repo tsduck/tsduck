@@ -59,7 +59,7 @@ namespace ts {
         //!
         //! Destructor
         //!
-        virtual ~Packetizer();
+        virtual ~Packetizer() override;
 
         //!
         //! Set the object which provides MPEG sections when the packetizer needs a new section.

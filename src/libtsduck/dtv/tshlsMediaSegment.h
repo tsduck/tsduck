@@ -54,7 +54,7 @@ namespace ts {
             //!
             //! Destructor.
             //!
-            ~MediaSegment();
+            virtual ~MediaSegment() override;
 
             // Public fields.
             UString     title;     //!< Optional segment title.

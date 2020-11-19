@@ -712,6 +712,19 @@ namespace ts {
         UString value(const UChar* name = nullptr, const UChar* def_value = u"", size_t index = 0) const;
 
         //!
+        //! Get the value of an option in the last analyzed command line, only if present.
+        //!
+        //! @param [in,out] value A variable string receiving the value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //! @param [in] clear_if_absent When the option is not present, the Variable object
+        //! is cleared (set to uninitialized) when @a clear_if_absent it true. Otherwise, it
+        //! is left unmodified.
+        //!
+        void getOptionalValue(Variable<UString>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
+
+        //!
         //! Get all occurences of an option in a container of strings.
         //!
         //! @param [out] values A container of strings receiving all values of the option or parameter.
@@ -728,7 +741,7 @@ namespace ts {
         //! the validity of the supplied option value has been checked by the analyze() method.
         //! If analyze() did not fail, the option value is guaranteed to be in the declared range.
         //!
-        //! @tparam INT An integer type for the result.
+        //! @tparam INT An integer or enumeration type for the result.
         //! @param [out] value A variable receiving the integer value of the option or parameter.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
@@ -739,16 +752,16 @@ namespace ts {
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT, typename INT2 = INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
         void getIntValue(INT& value,
                          const UChar* name = nullptr,
-                         const INT def_value = static_cast<INT>(0),
+                         const INT2 def_value = static_cast<INT2>(0),
                          size_t index = 0) const;
 
         //!
         //! Get the value of an integer option in the last analyzed command line.
         //!
-        //! @tparam INT An integer type for the result.
+        //! @tparam INT An integer or enumeration type for the result.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
@@ -759,10 +772,25 @@ namespace ts {
         //! first occurence.
         //! @return The integer value of the option or parameter.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
         INT intValue(const UChar* name = nullptr,
                      const INT def_value = static_cast<INT>(0),
                      size_t index = 0) const;
+
+        //!
+        //! Get the value of an integer option in the last analyzed command line, only if present.
+        //!
+        //! @tparam INT An integer or enumeration type for the result.
+        //! @param [in,out] value A variable integer receiving the value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //! @param [in] clear_if_absent When the option is not present, the Variable object
+        //! is cleared (set to uninitialized) when @a clear_if_absent it true. Otherwise, it
+        //! is left unmodified.
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        void getOptionalIntValue(Variable<INT>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
 
         //!
         //! Get all occurences of an integer option in a vector of integers.
@@ -840,47 +868,6 @@ namespace ts {
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         void getBitMaskValue(INT& value, const UChar* name = nullptr, const INT& def_value = static_cast<INT>(0)) const;
-
-        //!
-        //! Get the value of an enum option in the last analyzed command line.
-        //! Typically used when the option was declared using an Enumeration object.
-        //!
-        //! @tparam ENUM An enumeration type for the result.
-        //! @param [out] value A variable receiving the enum value of the option or parameter.
-        //! @param [in] name The full name of the option. If the parameter is a null pointer or
-        //! an empty string, this specifies a parameter, not an option. If the specified option
-        //! was not declared in the syntax of the command or declared as a non-string type,
-        //! a fatal error is reported.
-        //! @param [in] def_value The value to return in @a value if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
-        //!
-        template <typename ENUM>
-        void getEnumValue(ENUM& value,
-                          const UChar* name = nullptr,
-                          ENUM def_value = static_cast<ENUM>(0),
-                          size_t index = 0) const;
-
-        //!
-        //! Get the value of an enum option in the last analyzed command line.
-        //! Typically used when the option was declared using an Enumeration object.
-        //!
-        //! @tparam ENUM An enumeration type for the result.
-        //! @param [in] name The full name of the option. If the parameter is a null pointer or
-        //! an empty string, this specifies a parameter, not an option. If the specified option
-        //! was not declared in the syntax of the command or declared as a non-string type,
-        //! a fatal error is reported.
-        //! @param [in] def_value The value to return if the option or parameter
-        //! is not present in the command line or with fewer occurences than @a index.
-        //! @param [in] index The occurence of the option to return. Zero designates the
-        //! first occurence.
-        //! @return The enum value of the option or parameter.
-        //!
-        template <typename ENUM>
-        ENUM enumValue(const UChar* name = nullptr,
-                       ENUM def_value = static_cast<ENUM>(0),
-                       size_t index = 0) const;
 
         //!
         //! Get the value of tristate option in the last analyzed command line.

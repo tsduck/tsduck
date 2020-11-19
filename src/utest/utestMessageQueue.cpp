@@ -128,7 +128,7 @@ namespace {
         {
         }
 
-        ~MessageQueueTestThread()
+        virtual ~MessageQueueTestThread() override
         {
             waitForTermination();
         }

@@ -51,18 +51,18 @@ bool ts::Args::IOption::inRange(INT value) const
 // Get the integer value of an option.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
-void ts::Args::getIntValue(INT& value, const UChar* name, const INT def_value, size_t index) const
+template <typename INT, typename INT2, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+void ts::Args::getIntValue(INT& value, const UChar* name, const INT2 def_value, size_t index) const
 {
     const IOption& opt(getIOption(name));
     if (opt.type != INTEGER || index >= opt.value_count) {
         // Invalid index.
-        value = def_value;
+        value = static_cast<INT>(def_value);
     }
     else if (opt.value_count == opt.values.size()) {
         // No range, one integer per option, direct lookup.
         assert(index < opt.values.size());
-        value = opt.values[index].int_count == 0 ? def_value : static_cast<INT>(opt.values[index].int_base);
+        value = opt.values[index].int_count == 0 ? static_cast<INT>(def_value) : static_cast<INT>(opt.values[index].int_base);
     }
     else {
         // There is at least one range, iterate.
@@ -74,14 +74,14 @@ void ts::Args::getIntValue(INT& value, const UChar* name, const INT def_value, s
             }
             else {
                 found = true;
-                value = opt.values[i].int_count == 0 ? def_value : static_cast<INT>(opt.values[i].int_base + index);
+                value = opt.values[i].int_count == 0 ? static_cast<INT>(def_value) : static_cast<INT>(opt.values[i].int_base + index);
             }
         }
         assert(found);
     }
 }
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
 INT ts::Args::intValue(const UChar* name, const INT def_value, size_t index) const
 {
     INT value = def_value;
@@ -89,21 +89,16 @@ INT ts::Args::intValue(const UChar* name, const INT def_value, size_t index) con
     return value;
 }
 
-
-//----------------------------------------------------------------------------
-// Get the enumeration value of an option.
-//----------------------------------------------------------------------------
-
-template <typename ENUM>
-void ts::Args::getEnumValue(ENUM& value, const UChar* name, ENUM def_value, size_t index) const
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+void ts::Args::getOptionalIntValue(Variable<INT>& value, const UChar* name, bool clear_if_absent) const
 {
-    value = static_cast<ENUM>(intValue<int64_t>(name, static_cast<int64_t>(def_value), index));
-}
-
-template <typename ENUM>
-ENUM ts::Args::enumValue(const UChar* name, ENUM def_value, size_t index) const
-{
-    return static_cast<ENUM>(intValue<int64_t>(name, static_cast<int64_t>(def_value), index));
+    const IOption& opt(getIOption(name));
+    if (opt.type == INTEGER && !opt.values.empty()) {
+        value = static_cast<INT>(opt.values[0].int_base);
+    }
+    else if (clear_if_absent) {
+        value.clear();
+    }
 }
 
 

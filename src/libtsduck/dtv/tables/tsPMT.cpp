@@ -274,6 +274,128 @@ bool ts::PMT::Stream::isSubtitles(const DuckContext& duck) const
 
 
 //----------------------------------------------------------------------------
+// Try to determine the codec which is used in the stream.
+//----------------------------------------------------------------------------
+
+ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
+{
+    const bool atsc = (duck.standards() & Standards::ATSC) != Standards::NONE;
+
+    // Try classes of stream types.
+    if (StreamTypeIsAVC(stream_type)) {
+        return CodecType::AVC;
+    }
+    else if (StreamTypeIsHEVC(stream_type)) {
+        return CodecType::HEVC;
+    }
+    else if (StreamTypeIsVVC(stream_type)) {
+        return CodecType::VVC;
+    }
+
+    // Try specific values of stream type.
+    switch (stream_type) {
+        case ST_MPEG1_AUDIO:
+            return CodecType::MPEG1_AUDIO;
+        case ST_MPEG1_VIDEO:
+            return CodecType::MPEG1_VIDEO;
+        case ST_MPEG2_AUDIO:
+            return CodecType::MPEG2_AUDIO;
+        case ST_MPEG2_VIDEO:
+        case ST_MPEG2_3D_VIEW:
+            return CodecType::MPEG2_VIDEO;
+        case ST_MPEG4_AUDIO:
+        case ST_MPEG4_AUDIO_RAW:
+            return CodecType::HEAAC; // ISO 14496-3
+        case ST_MPEG4_VIDEO:
+            return CodecType::MPEG4_VIDEO;
+        case ST_AAC_AUDIO:
+            return CodecType::AAC;
+        case ST_J2K_VIDEO:
+            return CodecType::J2K;
+        case ST_AC3_AUDIO:
+            if (atsc) {
+                return CodecType::AC3;
+            }
+            break;
+        case ST_EAC3_AUDIO:
+            if (atsc) {
+                return CodecType::EAC3;
+            }
+            break;
+        default:
+            break;
+    }
+
+    // Look up descriptors until one indicates something useful.
+    for (size_t index = 0; index < descs.count(); ++index) {
+        const DescriptorPtr& dsc(descs[index]);
+        if (!dsc.isNull() && dsc->isValid()) {
+            switch (dsc->tag()) {
+                case DID_AVC_VIDEO:
+                    return CodecType::AVC;
+                case DID_HEVC_VIDEO:
+                    return CodecType::HEVC;
+                case DID_MPEG4_VIDEO:
+                    return CodecType::MPEG4_VIDEO;
+                case DID_J2K_VIDEO:
+                    return CodecType::J2K;
+                case DID_DTS:
+                    return CodecType::DTS;
+                case DID_AC3:
+                    return CodecType::AC3;
+                case DID_ENHANCED_AC3:
+                    return CodecType::EAC3;
+                case DID_AAC:
+                case DID_MPEG2_AAC_AUDIO:
+                    return CodecType::AAC;
+                case DID_MPEG4_AUDIO:
+                case DID_MPEG4_AUDIO_EXT:
+                    return CodecType::HEAAC; // ISO 14496-3
+                case DID_SUBTITLING:
+                    return CodecType::DVB_SUBTITLES;
+                case DID_TELETEXT:
+                case DID_VBI_TELETEXT:
+                    return CodecType::TELETEXT;
+                case DID_MPEG_EXTENSION: {
+                    // Lookup extended tag.
+                    if (dsc->payloadSize() >= 1) {
+                        switch (dsc->payload()[0]) {
+                            case MPEG_EDID_HEVC_TIM_HRD:
+                            case MPEG_EDID_HEVC_OP_POINT:
+                            case MPEG_EDID_HEVC_HIER_EXT:
+                                return CodecType::HEVC;
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+                }
+                case DID_DVB_EXTENSION: {
+                    // Lookup extended tag.
+                    if (dsc->payloadSize() >= 1) {
+                        switch (dsc->payload()[0]) {
+                            case EDID_DTS_HD_AUDIO:
+                                return CodecType::DTSHD;
+                            case EDID_AC4:
+                                return CodecType::AC4;
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+    }
+
+    // Finally unknown.
+    return CodecType::UNDEFINED;
+}
+
+
+//----------------------------------------------------------------------------
 // Look for a component tag in a stream_identifier_descriptor.
 //----------------------------------------------------------------------------
 

@@ -39,7 +39,6 @@
 namespace ts {
     //!
     //! Base class for video access units, aka NALunits.
-    //! @see ISO/IEC 14496-10, ITU-T Rec. H.264, section 7.3.1
     //! @ingroup mpeg
     //!
     class TSDUCKDLL AbstractVideoAccessUnit: public AbstractVideoData
@@ -55,7 +54,7 @@ namespace ts {
         //!
         AbstractVideoAccessUnit();
 
-        // Implementation of AbstractAVCData interface.
+        // Implementation of AbstractVideoData interface.
         virtual void clear() override;
         virtual bool parse(const uint8_t*, size_t) override;
 

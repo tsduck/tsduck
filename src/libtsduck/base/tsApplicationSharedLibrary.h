@@ -69,7 +69,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~ApplicationSharedLibrary();
+        virtual ~ApplicationSharedLibrary() override;
 
         //!
         //! The module name is derived from the file name without the prefix.

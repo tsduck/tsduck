@@ -221,9 +221,24 @@ ts::UString ts::names::ChromaFormat(uint8_t cf, Flags flags)
     return NamesMain::Instance()->nameFromSection(u"ChromaFormat", Names::Value(cf), flags, 8);
 }
 
-ts::UString ts::names::AVCUnitType(uint8_t type, Flags flags)
+ts::UString ts::names::AccessUnitType(CodecType codec, uint8_t type, Flags flags)
 {
-    return NamesMain::Instance()->nameFromSection(u"AVCUnitType", Names::Value(type), flags, 8);
+    const UChar* table = nullptr;
+    if (codec == CodecType::AVC) {
+        table = u"AVCUnitType";
+    }
+    else if (codec == CodecType::HEVC) {
+        table = u"HEVCUnitType";
+    }
+    else if (codec == CodecType::VVC) {
+        table = u"VVCUnitType";
+    }
+    if (table != nullptr) {
+        return NamesMain::Instance()->nameFromSection(table, Names::Value(type), flags, 8);
+    }
+    else {
+        return Names::Formatted(Names::Value(type), u"unknown", flags, 8);
+    }
 }
 
 ts::UString ts::names::AVCProfile(int profile, Flags flags)

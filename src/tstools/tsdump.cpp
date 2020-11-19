@@ -143,9 +143,9 @@ Options::Options(int argc, char *argv[]) :
     getValues(infiles);
     raw_file = present(u"raw-file");
     log = present(u"log");
-    max_packets = intValue<ts::PacketCounter>(u"max-packets", std::numeric_limits<ts::PacketCounter>::max());
-    log_size = intValue<size_t>(u"log-size", ts::PKT_SIZE);
-    format = enumValue<ts::TSPacketFormat>(u"format", ts::TSPacketFormat::AUTODETECT);
+    getIntValue(max_packets, u"max-packets", std::numeric_limits<ts::PacketCounter>::max());
+    getIntValue(log_size, u"log-size", ts::PKT_SIZE);
+    getIntValue(format, u"format", ts::TSPacketFormat::AUTODETECT);
     getIntValues(pids, u"pid", true);
 
     dump_flags =

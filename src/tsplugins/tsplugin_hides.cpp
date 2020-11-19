@@ -170,13 +170,13 @@ bool ts::HiDesOutput::start()
     int dc_q = 0;
 
     ModulationArgs params;
-    params.bandwidth = enumValue<BandWidth>(u"bandwidth", BW_8_MHZ);
-    params.modulation = enumValue<Modulation>(u"constellation", QAM_64);
+    params.bandwidth = intValue<BandWidth>(u"bandwidth", BW_8_MHZ);
+    params.modulation = intValue<Modulation>(u"constellation", QAM_64);
     params.frequency = intValue<uint64_t>(u"frequency", 0);
-    params.guard_interval = enumValue<GuardInterval>(u"guard-interval", GUARD_1_32);
-    params.fec_hp = enumValue<InnerFEC>(u"high-priority-fec", FEC_2_3);
-    params.inversion = enumValue<SpectralInversion>(u"spectral-inversion", SPINV_AUTO);
-    params.transmission_mode = enumValue<TransmissionMode>(u"transmission-mode", TM_8K);
+    params.guard_interval = intValue<GuardInterval>(u"guard-interval", GUARD_1_32);
+    params.fec_hp = intValue<InnerFEC>(u"high-priority-fec", FEC_2_3);
+    params.inversion = intValue<SpectralInversion>(u"spectral-inversion", SPINV_AUTO);
+    params.transmission_mode = intValue<TransmissionMode>(u"transmission-mode", TM_8K);
 
     // Check option consistency.
     if (_dev_number < 0 && _dev_name.empty()) {

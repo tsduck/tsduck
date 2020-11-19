@@ -81,7 +81,7 @@ namespace ts {
         //!
         //! Destructor
         //!
-        virtual ~ReportFile();
+        virtual ~ReportFile() override;
 
     protected:
         virtual void writeLog(int severity, const UString& message) override;

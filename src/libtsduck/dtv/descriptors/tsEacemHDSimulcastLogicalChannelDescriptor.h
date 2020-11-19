@@ -61,6 +61,6 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~EacemHDSimulcastLogicalChannelDescriptor();
+        virtual ~EacemHDSimulcastLogicalChannelDescriptor() override;
     };
 }

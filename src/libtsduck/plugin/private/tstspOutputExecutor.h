@@ -66,7 +66,7 @@ namespace ts {
             //!
             //! Virtual destructor.
             //!
-            virtual ~OutputExecutor();
+            virtual ~OutputExecutor() override;
 
             // Overridden methods.
             virtual size_t pluginIndex() const override;

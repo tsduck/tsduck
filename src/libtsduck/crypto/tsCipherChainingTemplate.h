@@ -41,7 +41,7 @@ ts::CipherChainingTemplate<CIPHER>::CipherChainingTemplate(size_t iv_min_blocks,
 }
 
 template <class CIPHER>
-ts::CipherChainingTemplate<CIPHER>::~CipherChainingTemplate()
+ts::CipherChainingTemplate<CIPHER>::~CipherChainingTemplate<CIPHER>()
 {
     if (algo != nullptr) {
         delete algo;

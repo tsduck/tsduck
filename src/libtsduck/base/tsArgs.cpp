@@ -764,6 +764,20 @@ void ts::Args::getValue(UString& value_, const UChar* name, const UChar* defValu
     value_ = value(name, defValue, index);
 }
 
+void ts::Args::getOptionalValue(Variable<UString>& value, const UChar* name, bool clear_if_absent) const
+{
+    const IOption& opt(getIOption(name));
+    if (opt.type == INTEGER) {
+        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is integer, cannot be accessed as string");
+    }
+    else if (!opt.values.empty() && opt.values[0].string.set()) {
+        value = opt.values[0].string;
+    }
+    else if (clear_if_absent) {
+        value.clear();
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Return all occurences of this option in a vector
@@ -1197,7 +1211,7 @@ ts::UString ts::Args::getHelpText(HelpFormat format, size_t line_width) const
 void ts::Args::processHelp()
 {
     // Build the help text. Use full text by default.
-    const HelpFormat format = enumValue(u"help", HELP_FULL);
+    const HelpFormat format = intValue(u"help", HELP_FULL);
     const UString text(getHelpText(format));
 
     // Create a pager process if we intend to exit immediately after a full help text.
@@ -1228,7 +1242,7 @@ void ts::Args::processHelp()
 void ts::Args::processVersion()
 {
     // The meaning of the option value is managed inside GetVersion.
-    info(VersionInfo::GetVersion(enumValue(u"version", VersionInfo::Format::LONG), _app_name));
+    info(VersionInfo::GetVersion(intValue(u"version", VersionInfo::Format::LONG), _app_name));
 
     // Exit application, unless specified otherwise.
     if ((_flags & NO_EXIT_ON_VERSION) == 0) {

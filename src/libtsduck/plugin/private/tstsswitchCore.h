@@ -64,7 +64,7 @@ namespace ts {
             //!
             //! Destructor.
             //!
-            ~Core();
+            virtual ~Core() override;
 
             //!
             //! Start the @c tsswitch processing.

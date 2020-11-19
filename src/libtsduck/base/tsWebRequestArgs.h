@@ -52,7 +52,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~WebRequestArgs();
+        virtual ~WebRequestArgs() override;
 
         // Public fields, by options.
         MilliSecond   connectionTimeout;    //!< -\-connection-timeout

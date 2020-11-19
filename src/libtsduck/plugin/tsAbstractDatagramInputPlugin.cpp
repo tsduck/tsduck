@@ -119,7 +119,7 @@ bool ts::AbstractDatagramInputPlugin::getOptions()
     // Get command line arguments
     _eval_time = MilliSecPerSec * intValue<MilliSecond>(u"evaluation-interval", 0);
     _display_time = MilliSecPerSec * intValue<MilliSecond>(u"display-interval", 0);
-    _time_priority = enumValue<TimePriority>(u"timestamp-priority", _default_time_priority);
+    getIntValue(_time_priority, u"timestamp-priority", _default_time_priority);
     return true;
 }
 

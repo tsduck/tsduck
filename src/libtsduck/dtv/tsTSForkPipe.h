@@ -53,7 +53,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~TSForkPipe();
+        virtual ~TSForkPipe() override;
 
         //!
         //! Create the process, open the optional pipe.

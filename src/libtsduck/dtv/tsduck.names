@@ -1104,12 +1104,27 @@ Bits = 8
 0x19 = MetaData in DSM-CC Sync. Download Protocol
 0x1A = MPEG-2 IPMP
 0x1B = AVC video
+0x1C = MPEG-4 Audio, without additional transport syntax, such as DST, ALS and SLS
+0x1D = ISO/IEC 14496-17 Text
+0x1E = Auxiliary video stream as defined in ISO/IEC 23002-3
+0x1F = SVC video sub-bitstream of an AVC video stream, Annex G of ISO 14496-10
+0x20 = MVC video sub-bitstream of an AVC video stream, Annex H of ISO 14496-10
+0x21 = JPEG 2000 video stream ISO/IEC 15444-1
+0x22 = Additional view ISO/IEC 13818-2 video stream for stereoscopic 3D services
+0x23 = Additional view ISO/IEC 14496-10 video stream for stereoscopic 3D services
 0x24 = HEVC video
 0x25 = HEVC temporal video subset of an HEVC video stream
+0x26 = MVCD video sub-bitstream of an AVC video stream, Annex I of ISO 14496-10
+0x27 = Timeline and External Media Information Stream
 0x28 = HEVC enhancement sub-partition, TemporalId 0 of HEVC Annex G
 0x29 = HEVC temporal enhancement sub-partition of HEVC stream Annex G
 0x2A = HEVC enhancement sub-partition, TemporalId 0 of HEVC Annex H
 0x2B = HEVC temporal enhancement sub-partition of HEVC stream Annex H
+0x2C = Green access units carried in MPEG-2 sections
+0x2D = ISO 23008-3 Audio with MHAS transport syntax – main stream
+0x2E = ISO 23008-3 Audio with MHAS transport syntax – auxiliary stream
+0x2F = Quality access units carried in sections
+0x32 = VVC/H.266 video (to be confirmed)
 0x7F = IPMP
 # ATSC values
 0x81 = ATSC AC-3 Audio
@@ -1487,7 +1502,8 @@ Bits = 8
 
 [AVCUnitType]
 # Access unit, aka "NALunit"
-Bits = 8
+Bits = 5
+0  = Unspecified
 1  = Coded slice of a non-IDR picture
 2  = Coded slice data partition A
 3  = Coded slice data partition B
@@ -1503,8 +1519,73 @@ Bits = 8
 13 = Sequence parameter set extension
 14 = Prefix NAL unit in scalable extension
 15 = Subset sequence parameter set
+16 = Depth parameter set
 19 = Coded slice without partitioning
 20 = Coded slice in scalable extension
+21 = Coded slice extension or 3D-AVC texture view
+
+[HEVCUnitType]
+# Access unit, aka "NALunit" for HEVC
+Bits = 6
+0  = Coded slice segment of a non-TSA, non-STSA trailing picture (N)
+1  = Coded slice segment of a non-TSA, non-STSA trailing picture (R)
+2  = Coded slice segment of a TSA picture (N)
+3  = Coded slice segment of a TSA picture (R)
+4  = Coded slice segment of an STSA picture (N)
+5  = Coded slice segment of an STSA picture (R)
+6  = Coded slice segment of a RADL picture (N)
+7  = Coded slice segment of a RADL picture (R)
+8  = Coded slice segment of a RASL picture (N)
+9  = Coded slice segment of a RASL picture (R)
+10 = Reserved non-IRAP SLNR VCL NAL unit types (N-10)
+11 = Reserved non-IRAP sub-layer reference VCL NAL unit types (R-11)
+12 = Reserved non-IRAP SLNR VCL NAL unit types (N-12)
+13 = Reserved non-IRAP sub-layer reference VCL NAL unit types (R-13)
+14 = Reserved non-IRAP SLNR VCL NAL unit types (N-14)
+15 = Reserved non-IRAP sub-layer reference VCL NAL unit types (R-15)
+16 = Coded slice segment of a BLA picture (W-LP)
+17 = Coded slice segment of a BLA picture (W-RADL)
+18 = Coded slice segment of a BLA picture (N-LP)
+19 = Coded slice segment of an IDR picture (W-RADL)
+20 = Coded slice segment of an IDR picture (N-LP)
+21 = Coded slice segment of a CRA picture
+22 = Reserved IRAP VCL NAL unit types (22)
+23 = Reserved IRAP VCL NAL unit types (22)
+32 = Video parameter set
+33 = Sequence parameter set
+34 = Picture parameter set
+35 = Access unit delimiter
+36 = End of sequence
+37 = End of bitstream
+38 = Filler data
+39 = Supplemental enhancement information (prefix)
+40 = Supplemental enhancement information (suffix)
+
+[VVCUnitType]
+# Access unit, aka "NALunit" for VVC
+Bits = 6
+0  = Coded slice of a trailing picture or subpicture
+1  = Coded slice of an STSA picture or subpicture
+2  = Coded slice of a RADL picture or subpicture
+3  = Coded slice of a RASL picture or subpicture
+7  = Coded slice of an IDR picture or subpicture (W-RADL)
+8  = Coded slice of an IDR picture or subpicture (N-LP)
+9  = Coded slice of a CRA picture or subpicture
+10 = Coded slice of a GDR picture or subpicture
+12 = Operating point information
+13 = Decoding capability information
+14 = Video parameter set
+15 = Sequence parameter set
+16 = Picture parameter set
+17 = Adaptation parameter set (prefix)
+18 = Adaptation parameter set (suffix)
+19 = Picture header
+20 = Access Unit delimiter
+21 = End of sequence
+22 = End of bitstream
+23 = Supplemental enhancement information (prefix)
+24 = Supplemental enhancement information (suffix)
+25 = Filler data
 
 [AVCProfile]
 Bits = 8

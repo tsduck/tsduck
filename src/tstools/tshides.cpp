@@ -100,11 +100,11 @@ HiDesOptions::HiDesOptions(int argc, char *argv[]) :
 
     count = present(u"count");
     gain_range = present(u"gain-range");
-    dev_number = intValue<int>(u"adapter", -1);
-    dev_name = value(u"device");
-    bandwidth = enumValue<ts::BandWidth>(u"bandwidth", ts::BW_8_MHZ);
+    getIntValue(dev_number, u"adapter", -1);
+    getValue(dev_name, u"device");
+    getIntValue(bandwidth, u"bandwidth", ts::BW_8_MHZ);
     if (present(u"frequency")) {
-        frequency = intValue<uint64_t>(u"frequency");
+        getIntValue(frequency, u"frequency");
     }
     else {
         // Get UHF band description in the default region.

@@ -271,7 +271,7 @@ namespace ts {
             //!
             //! Virtual destructor.
             //!
-            virtual ~Node();
+            virtual ~Node() override;
 
         protected:
             //!

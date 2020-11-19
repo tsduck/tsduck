@@ -476,7 +476,7 @@ namespace {
         }
 
         // Destructor
-        ~TCPClient()
+        virtual ~TCPClient() override
         {
             waitForTermination();
             CERR.debug(u"TCPSocketTest: client thread: destroyed");
@@ -602,7 +602,7 @@ namespace {
         }
 
         // Destructor
-        ~UDPClient()
+        virtual ~UDPClient() override
         {
             waitForTermination();
             CERR.debug(u"UDPSocketTest: client thread destroyed");

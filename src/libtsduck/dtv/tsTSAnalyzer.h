@@ -77,7 +77,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~TSAnalyzer();
+        virtual ~TSAnalyzer() override;
 
         //!
         //! The following method feeds the analyzer with a TS packet.

@@ -137,7 +137,7 @@ namespace ts {
             //!
             //! Virtual destructor
             //!
-            virtual ~Writer();
+            virtual ~Writer() override;
         };
 
         //!
@@ -157,7 +157,7 @@ namespace ts {
             //!
             //! Virtual destructor
             //!
-            virtual ~Reader();
+            virtual ~Reader() override;
         };
 
     private:

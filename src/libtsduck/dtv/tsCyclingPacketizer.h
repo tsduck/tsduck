@@ -101,7 +101,7 @@ namespace ts {
         //!
         //! Destructor
         //!
-        virtual ~CyclingPacketizer();
+        virtual ~CyclingPacketizer() override;
 
         //!
         //! Set the TS packet stuffing policy at end of packet.

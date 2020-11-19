@@ -55,7 +55,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~TSAnalyzerOptions();
+        virtual ~TSAnalyzerOptions() override;
 
         // Full analysis options:
         bool ts_analysis;            //!< Option -\-ts-analysis

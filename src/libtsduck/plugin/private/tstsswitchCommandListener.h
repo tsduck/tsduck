@@ -62,7 +62,7 @@ namespace ts {
             //!
             //! Destructor.
             //!
-            virtual ~CommandListener();
+            virtual ~CommandListener() override;
 
             //!
             //! Open and start the command listener.

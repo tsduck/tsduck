@@ -59,7 +59,7 @@ namespace ts {
         //!
         //! Destructor
         //!
-        virtual ~PESStreamPacketizer();
+        virtual ~PESStreamPacketizer() override;
 
         //!
         //! Set a limit to the number of internally queued PES packets.

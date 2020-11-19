@@ -71,7 +71,7 @@ ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
 bool ts::FilePacketPlugin::getOptions()
 {
     getValue(_name);
-    _file_format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::TS);
+    getIntValue(_file_format, u"format", TSPacketFormat::TS);
     _flags = TSFile::WRITE | TSFile::SHARED;
     if (present(u"append")) {
         _flags |= TSFile::APPEND;

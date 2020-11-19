@@ -64,7 +64,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~TeletextDemux();
+        virtual ~TeletextDemux() override;
 
         //!
         //! Activate or deactivate the font color tags in the output text.

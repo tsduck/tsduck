@@ -50,7 +50,7 @@ const ts::Enumeration ts::PrivateDataSpecifierEnum({
 
 
 //----------------------------------------------------------------------------
-// Check if an ST value indicates a PES stream
+// Check if a stream type value indicates a PES stream
 //----------------------------------------------------------------------------
 
 bool ts::StreamTypeIsPES(uint8_t st)
@@ -67,7 +67,7 @@ bool ts::StreamTypeIsPES(uint8_t st)
 
 
 //----------------------------------------------------------------------------
-// Check if an ST value indicates a video stream
+// Check if a stream type value indicates a video stream
 //----------------------------------------------------------------------------
 
 bool ts::StreamTypeIsVideo(uint8_t st)
@@ -84,7 +84,7 @@ bool ts::StreamTypeIsVideo(uint8_t st)
 
 
 //----------------------------------------------------------------------------
-// Check if an stream type value indicates a video stream using AVC encoding.
+// Check if a stream type value indicates a video stream using AVC encoding.
 //----------------------------------------------------------------------------
 
 bool ts::StreamTypeIsAVC(uint8_t st)
@@ -98,7 +98,7 @@ bool ts::StreamTypeIsAVC(uint8_t st)
 
 
 //----------------------------------------------------------------------------
-// Check if an stream type value indicates a video stream using HEVC encoding.
+// Check if a stream type value indicates a video stream using HEVC encoding.
 //----------------------------------------------------------------------------
 
 bool ts::StreamTypeIsHEVC(uint8_t st)
@@ -109,6 +109,18 @@ bool ts::StreamTypeIsHEVC(uint8_t st)
            st == ST_HEVC_SUBVIDEO_TG ||
            st == ST_HEVC_SUBVIDEO_H  ||
            st == ST_HEVC_SUBVIDEO_TH;
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a stream type value indicates a video stream using VVC encoding.
+//----------------------------------------------------------------------------
+
+bool ts::StreamTypeIsVVC(uint8_t st)
+{
+    // Warning: at this time, the stream types for VVC / H.266 are still unclear.
+    // Be sure to verity this on further versions of the ISO 13818-1 standard.
+    return st == ST_VVC_VIDEO;
 }
 
 

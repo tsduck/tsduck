@@ -57,9 +57,6 @@ namespace ts {
         //! Only one predefined "dump character set".
         static const DumpCharset DUMP;
 
-        //! Destructor
-        virtual ~DumpCharset() = default;
-
         // Inherited methods.
         virtual bool decode(UString& str, const uint8_t* data, size_t size) const override;
         virtual bool canEncode(const UString& str, size_t start = 0, size_t count = NPOS) const override;

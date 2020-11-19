@@ -1366,9 +1366,7 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
     bool status = true;
 
     // If delivery system is unspecified, will use the default one for the tuner.
-    if (args.present(u"delivery-system")) {
-        delivery_system = args.enumValue<DeliverySystem>(u"delivery-system");
-    }
+    args.getOptionalIntValue(delivery_system, u"delivery-system");
 
     // Carrier frequency
     if (args.present(u"frequency") + args.present(u"uhf-channel") + args.present(u"vhf-channel") > 1) {
@@ -1376,7 +1374,7 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
         status = false;
     }
     else if (args.present(u"frequency")) {
-        frequency = args.intValue<uint64_t>(u"frequency");
+        args.getOptionalIntValue(frequency, u"frequency");
     }
     else if (args.present(u"uhf-channel")) {
         frequency = duck.uhfBand()->frequency(args.intValue<uint32_t>(u"uhf-channel"), args.intValue<int32_t>(u"offset-count", 0));
@@ -1386,119 +1384,51 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
     }
 
     // Other individual tuning options
-    if (args.present(u"symbol-rate")) {
-        symbol_rate = args.intValue<uint32_t>(u"symbol-rate");
-    }
-    if (args.present(u"polarity")) {
-        polarity = args.enumValue<Polarization>(u"polarity");
-    }
-    if (args.present(u"spectral-inversion")) {
-        inversion = args.enumValue<SpectralInversion>(u"spectral-inversion");
-    }
-    if (args.present(u"fec-inner")) {
-        inner_fec = args.enumValue<InnerFEC>(u"fec-inner");
-    }
-    if (args.present(u"modulation")) {
-        modulation = args.enumValue<Modulation>(u"modulation");
-    }
-    if (args.present(u"bandwidth")) {
-        bandwidth = args.enumValue<BandWidth>(u"bandwidth");
-    }
-    if (args.present(u"high-priority-fec")) {
-        fec_hp = args.enumValue<InnerFEC>(u"high-priority-fec");
-    }
-    if (args.present(u"low-priority-fec")) {
-        fec_lp = args.enumValue<InnerFEC>(u"low-priority-fec");
-    }
-    if (args.present(u"transmission-mode")) {
-        transmission_mode = args.enumValue<TransmissionMode>(u"transmission-mode");
-    }
-    if (args.present(u"guard-interval")) {
-        guard_interval = args.enumValue<GuardInterval>(u"guard-interval");
-    }
-    if (args.present(u"hierarchy")) {
-        hierarchy = args.enumValue<Hierarchy>(u"hierarchy");
-    }
-    if (args.present(u"pilots")) {
-        pilots = args.enumValue<Pilot>(u"pilots");
-    }
-    if (args.present(u"roll-off")) {
-        roll_off = args.enumValue<RollOff>(u"roll-off");
-    }
-    if (args.present(u"plp")) {
-        plp = args.intValue<uint32_t>(u"plp");
-    }
-    if (args.present(u"isi")) {
-        isi = args.intValue<uint32_t>(u"isi");
-    }
-    if (args.present(u"pls-code")) {
-        pls_code = args.intValue<uint32_t>(u"pls-code");
-    }
-    if (args.present(u"pls-mode")) {
-        pls_mode = args.enumValue<PLSMode>(u"pls-mode");
-    }
+    args.getOptionalIntValue(symbol_rate, u"symbol-rate");
+    args.getOptionalIntValue(polarity, u"polarity");
+    args.getOptionalIntValue(inversion, u"spectral-inversion");
+    args.getOptionalIntValue(inner_fec, u"fec-inner");
+    args.getOptionalIntValue(modulation, u"modulation");
+    args.getOptionalIntValue(bandwidth, u"bandwidth");
+    args.getOptionalIntValue(fec_hp, u"high-priority-fec");
+    args.getOptionalIntValue(fec_lp, u"low-priority-fec");
+    args.getOptionalIntValue(transmission_mode, u"transmission-mode");
+    args.getOptionalIntValue(guard_interval, u"guard-interval");
+    args.getOptionalIntValue(hierarchy, u"hierarchy");
+    args.getOptionalIntValue(pilots, u"pilots");
+    args.getOptionalIntValue(roll_off, u"roll-off");
+    args.getOptionalIntValue(plp, u"plp");
+    args.getOptionalIntValue(isi, u"isi");
+    args.getOptionalIntValue(pls_code, u"pls-code");
+    args.getOptionalIntValue(pls_mode, u"pls-mode");
     if (args.present(u"sound-broadcasting")) {
         sound_broadcasting = true;
-    }
-    if (args.present(u"sb-subchannel-id")) {
-        sb_subchannel_id = args.intValue<int>(u"sb-subchannel-id");
-    }
-    if (args.present(u"sb-segment-count")) {
-        sb_segment_count = args.intValue<int>(u"sb-segment-count");
-    }
-    if (args.present(u"sb-segment-index")) {
-        sb_segment_index = args.intValue<int>(u"sb-segment-index");
     }
     if (args.present(u"isdbt-partial-reception")) {
         isdbt_partial_reception = true;
     }
-    if (args.present(u"isdbt-layers")) {
-        isdbt_layers = args.value(u"isdbt-layers");
-    }
-    if (args.present(u"isdbt-layer-a-fec")) {
-        layer_a_fec = args.enumValue<InnerFEC>(u"isdbt-layer-a-fec");
-    }
-    if (args.present(u"isdbt-layer-a-modulation")) {
-        layer_a_modulation = args.enumValue<Modulation>(u"isdbt-layer-a-modulation");
-    }
-    if (args.present(u"isdbt-layer-a-segment-count")) {
-        layer_a_segment_count = args.intValue<int>(u"isdbt-layer-a-segment-count");
-    }
-    if (args.present(u"isdbt-layer-a-time-interleaving")) {
-        layer_a_time_interleaving = args.intValue<int>(u"isdbt-layer-a-time-interleaving");
-    }
-    if (args.present(u"isdbt-layer-b-fec")) {
-        layer_b_fec = args.enumValue<InnerFEC>(u"isdbt-layer-b-fec");
-    }
-    if (args.present(u"isdbt-layer-b-modulation")) {
-        layer_b_modulation = args.enumValue<Modulation>(u"isdbt-layer-b-modulation");
-    }
-    if (args.present(u"isdbt-layer-b-segment-count")) {
-        layer_b_segment_count = args.intValue<int>(u"isdbt-layer-b-segment-count");
-    }
-    if (args.present(u"isdbt-layer-b-time-interleaving")) {
-        layer_b_time_interleaving = args.intValue<int>(u"isdbt-layer-b-time-interleaving");
-    }
-    if (args.present(u"isdbt-layer-c-fec")) {
-        layer_c_fec = args.enumValue<InnerFEC>(u"isdbt-layer-c-fec");
-    }
-    if (args.present(u"isdbt-layer-c-modulation")) {
-        layer_c_modulation = args.enumValue<Modulation>(u"isdbt-layer-c-modulation");
-    }
-    if (args.present(u"isdbt-layer-c-segment-count")) {
-        layer_c_segment_count = args.intValue<int>(u"isdbt-layer-c-segment-count");
-    }
-    if (args.present(u"isdbt-layer-c-time-interleaving")) {
-        layer_c_time_interleaving = args.intValue<int>(u"isdbt-layer-c-time-interleaving");
-    }
-    if (args.present(u"stream-id")) {
-        stream_id = args.intValue<uint32_t>(u"stream-id");
-    }
+    args.getOptionalIntValue(sb_subchannel_id, u"sb-subchannel-id");
+    args.getOptionalIntValue(sb_segment_count, u"sb-segment-count");
+    args.getOptionalIntValue(sb_segment_index, u"sb-segment-index");
+    args.getOptionalValue(isdbt_layers, u"isdbt-layers");
+    args.getOptionalIntValue(layer_a_fec, u"isdbt-layer-a-fec");
+    args.getOptionalIntValue(layer_a_modulation, u"isdbt-layer-a-modulation");
+    args.getOptionalIntValue(layer_a_segment_count, u"isdbt-layer-a-segment-count");
+    args.getOptionalIntValue(layer_a_time_interleaving, u"isdbt-layer-a-time-interleaving");
+    args.getOptionalIntValue(layer_b_fec, u"isdbt-layer-b-fec");
+    args.getOptionalIntValue(layer_b_modulation, u"isdbt-layer-b-modulation");
+    args.getOptionalIntValue(layer_b_segment_count, u"isdbt-layer-b-segment-count");
+    args.getOptionalIntValue(layer_b_time_interleaving, u"isdbt-layer-b-time-interleaving");
+    args.getOptionalIntValue(layer_c_fec, u"isdbt-layer-c-fec");
+    args.getOptionalIntValue(layer_c_modulation, u"isdbt-layer-c-modulation");
+    args.getOptionalIntValue(layer_c_segment_count, u"isdbt-layer-c-segment-count");
+    args.getOptionalIntValue(layer_c_time_interleaving, u"isdbt-layer-c-time-interleaving");
+    args.getOptionalIntValue(stream_id, u"stream-id");
 
     // Local options (not related to transponder)
     if (args.present(u"lnb")) {
-        UString s(args.value(u"lnb"));
-        LNB l(s, duck.report());
+        const UString s(args.value(u"lnb"));
+        const LNB l(s, duck.report());
         if (!l.isValid()) {
             status = false;
         }
@@ -1506,9 +1436,7 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
             lnb = l;
         }
     }
-    if (args.present(u"satellite-number")) {
-        satellite_number = args.intValue<size_t>(u"satellite-number");
-    }
+    args.getOptionalIntValue(satellite_number, u"satellite-number");
 
     // Mark arguments as invalid is some errors were found.
     if (!status) {

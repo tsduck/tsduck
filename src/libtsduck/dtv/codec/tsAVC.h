@@ -43,26 +43,27 @@ namespace ts {
     //! @see ISO/IEC 14496-10, H.264, 7.4.1
     //!
     enum {
-        AVC_AUT_UNSPECIFIED  =  0, //!< Unspecified NALunit type.
-        AVC_AUT_NON_IDR      =  1, //!< Coded slice of a non-IDR picture (NALunit type).
-        AVC_AUT_SLICE_A      =  2, //!< Coded slice data partition A (NALunit type).
-        AVC_AUT_SLICE_B      =  3, //!< Coded slice data partition B (NALunit type).
-        AVC_AUT_SLICE_C      =  4, //!< Coded slice data partition C (NALunit type).
-        AVC_AUT_IDR          =  5, //!< Coded slice of an IDR picture (NALunit type).
-        AVC_AUT_SEI          =  6, //!< Supplemental enhancement information (SEI) (NALunit type).
-        AVC_AUT_SEQPARAMS    =  7, //!< Sequence parameter set (NALunit type).
-        AVC_AUT_PICPARAMS    =  8, //!< Picture parameter set (NALunit type).
-        AVC_AUT_DELIMITER    =  9, //!< Access unit delimiter (NALunit type).
-        AVC_AUT_END_SEQUENCE = 10, //!< End of sequence (NALunit type).
-        AVC_AUT_END_STREAM   = 11, //!< End of stream (NALunit type).
-        AVC_AUT_FILLER       = 12, //!< Filler data (NALunit type).
-        AVC_AUT_SEQPARAMSEXT = 13, //!< Sequence parameter set extension (NALunit type).
-        AVC_AUT_PREFIX       = 14, //!< Prefix NAL unit in scalable extension (NALunit type).
-        AVC_AUT_SUBSETPARAMS = 15, //!< Subset sequence parameter set (NALunit type).
-        AVC_AUT_DEPTHPARAMS  = 16, //!< Depth parameter set (NALunit type).
-        AVC_AUT_SLICE_NOPART = 19, //!< Coded slice without partitioning (NALunit type).
-        AVC_AUT_SLICE_SCALE  = 20, //!< Coded slice in scalable extension (NALunit type).
-        AVC_AUT_SLICE_EXTEND = 21, //!< Coded slice extension or 3D-AVC texture view (NALunit type).
+        AVC_AUT_UNSPECIFIED  =  0,   //!< Unspecified NALunit type.
+        AVC_AUT_NON_IDR      =  1,   //!< Coded slice of a non-IDR picture (NALunit type).
+        AVC_AUT_SLICE_A      =  2,   //!< Coded slice data partition A (NALunit type).
+        AVC_AUT_SLICE_B      =  3,   //!< Coded slice data partition B (NALunit type).
+        AVC_AUT_SLICE_C      =  4,   //!< Coded slice data partition C (NALunit type).
+        AVC_AUT_IDR          =  5,   //!< Coded slice of an IDR picture (NALunit type).
+        AVC_AUT_SEI          =  6,   //!< Supplemental enhancement information (SEI) (NALunit type).
+        AVC_AUT_SEQPARAMS    =  7,   //!< Sequence parameter set (NALunit type).
+        AVC_AUT_PICPARAMS    =  8,   //!< Picture parameter set (NALunit type).
+        AVC_AUT_DELIMITER    =  9,   //!< Access unit delimiter (NALunit type).
+        AVC_AUT_END_SEQUENCE = 10,   //!< End of sequence (NALunit type).
+        AVC_AUT_END_STREAM   = 11,   //!< End of stream (NALunit type).
+        AVC_AUT_FILLER       = 12,   //!< Filler data (NALunit type).
+        AVC_AUT_SEQPARAMSEXT = 13,   //!< Sequence parameter set extension (NALunit type).
+        AVC_AUT_PREFIX       = 14,   //!< Prefix NAL unit in scalable extension (NALunit type).
+        AVC_AUT_SUBSETPARAMS = 15,   //!< Subset sequence parameter set (NALunit type).
+        AVC_AUT_DEPTHPARAMS  = 16,   //!< Depth parameter set (NALunit type).
+        AVC_AUT_SLICE_NOPART = 19,   //!< Coded slice without partitioning (NALunit type).
+        AVC_AUT_SLICE_SCALE  = 20,   //!< Coded slice in scalable extension (NALunit type).
+        AVC_AUT_SLICE_EXTEND = 21,   //!< Coded slice extension or 3D-AVC texture view (NALunit type).
+        AVC_AUT_INVALID      = 0xFF, //!< Invalid value, can be used as error indicator.
     };
 
     //!

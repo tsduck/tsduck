@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsByteBlock.h"
+#include "tsCodecType.h"
 #include "tsTS.h"
 #include "tsPSI.h"
 
@@ -242,6 +243,32 @@ namespace ts {
         }
 
         //!
+        //! Get the codec type, as specified by the user (optional).
+        //! @return The codec type.
+        //!
+        CodecType getCodec() const
+        {
+            return _codec;
+        }
+
+        //!
+        //! Set the codec type (informational only).
+        //! @param [in] codec The codec type.
+        //!
+        void setCodec(CodecType codec)
+        {
+            _codec = codec;
+        }
+
+        //!
+        //! Set a default codec type.
+        //! If the codec is not already known and if the data in the PES packet
+        //! looks compatible with @a codec, then this codec type is set.
+        //! @param [in] default_codec The default codec type.
+        //!
+        void setDefaultCodec(CodecType default_codec);
+
+        //!
         //! Index of first TS packet of the PES packet in the demultiplexed stream.
         //! Usually valid only if the PES packet was extracted by a PES demux.
         //! @return The first TS packet of the PES packet in the demultiplexed stream.
@@ -379,6 +406,12 @@ namespace ts {
         bool isHEVC() const;
 
         //!
+        //! Check if the PES packet contains VVC / H.266 video.
+        //! @return True if the PES packet contains VVC / H.266 video.
+        //!
+        bool isVVC() const;
+
+        //!
         //! Check if the PES packet contains AC-3 or Enhanced-AC-3 audio.
         //!
         //! Warning: As specified in ETSI TS 102 366, an AC-3 audio frame always
@@ -395,6 +428,7 @@ namespace ts {
 
         //!
         //! Check if the PES packet contains an intra-coded image.
+        //! The stream type and/or codec type must have been set.
         //! @return If the PES packet contains the start of an intra-coded image, return the
         //! offset inside the PES packet where the intra-image starts. This value is informational only,
         //! the exact semantics depends on the video codec. Return NPOS if no intra-image was found.
@@ -417,7 +451,10 @@ namespace ts {
         //! @param [in] stream_type Optional stream type, as found in the PMT. Used as a hint.
         //! @return True if the PES data may contain AVC / H.264 video.
         //!
-        static bool IsAVC(const uint8_t* data, size_t size, uint8_t stream_type = ST_NULL);
+        static bool IsAVC(const uint8_t* data, size_t size, uint8_t stream_type = ST_NULL)
+        {
+            return IsXVC(StreamTypeIsAVC, data, size, stream_type);
+        }
 
         //!
         //! Check if a truncated PES packet may contain HEVC / H.265 video.
@@ -426,7 +463,22 @@ namespace ts {
         //! @param [in] stream_type Optional stream type, as found in the PMT. Used as a hint.
         //! @return True if the PES data may contain HEVC / H.265 video.
         //!
-        static bool IsHEVC(const uint8_t* data, size_t size, uint8_t stream_type = ST_NULL);
+        static bool IsHEVC(const uint8_t* data, size_t size, uint8_t stream_type = ST_NULL)
+        {
+            return IsXVC(StreamTypeIsHEVC, data, size, stream_type);
+        }
+
+        //!
+        //! Check if a truncated PES packet may contain VVC / H.266 video.
+        //! @param [in] data Address of data to check, typically the start of a PES packet.
+        //! @param [in] size Data size in bytes.
+        //! @param [in] stream_type Optional stream type, as found in the PMT. Used as a hint.
+        //! @return True if the PES data may contain VVC / H.266 video.
+        //!
+        static bool IsVVC(const uint8_t* data, size_t size, uint8_t stream_type = ST_NULL)
+        {
+            return IsXVC(StreamTypeIsVVC, data, size, stream_type);
+        }
 
         //!
         //! Check if a truncated PES packet may contain AC-3 or Enhanced-AC-3 audio.
@@ -438,17 +490,27 @@ namespace ts {
         static bool IsAC3(const uint8_t* data, size_t size, uint8_t stream_type = ST_NULL);
 
         //!
+        //! Check if a truncated PES packet starts with 00 00 00 [00...] 01, common header for AVC, HEVC and VVC.
+        //! @param [in] data Address of data to check, typically the start of a PES packet.
+        //! @param [in] size Data size in bytes.
+        //! @return True if the PES data starts with a common header.
+        //!
+        static bool HasCommonVideoHeader(const uint8_t* data, size_t size);
+
+        //!
         //! Check if a truncated PES packet may contain the start of an intra-coded image.
         //! @param [in] data Address of data to check, typically the start of a PES packet.
         //! @param [in] size Data size in bytes.
         //! @param [in] stream_type Optional stream type, as found in the PMT. Used as a hint.
+        //! @param [in] default_format Default encoding format if it cannot be determined from @a stream_type.
+        //! If @a stream_type and @a default_format are both unspecified, intra-image cannot be detected.
         //! @return If the PES data may contain the start of an intra-coded image, return the
         //! offset inside @a data where the intra-image starts. This value is informational only,
         //! the exact semantics depends on the video codec. Return NPOS if no intra-image was found.
         //! If the data is not sufficient to determine the presence of an intra-image,
         //! return NPOS, even though a larger piece of information may contain one.
         //!
-        static size_t FindIntraImage(const uint8_t* data, size_t size, uint8_t stream_type = ST_NULL);
+        static size_t FindIntraImage(const uint8_t* data, size_t size, uint8_t stream_type = ST_NULL, CodecType default_format = CodecType::UNDEFINED);
 
     private:
         // Private fields
@@ -456,6 +518,7 @@ namespace ts {
         size_t        _header_size;  // PES header size in bytes
         PID           _source_pid;   // Source PID (informational)
         uint8_t       _stream_type;  // Stream type from PMT (informational)
+        CodecType     _codec;        // Data format (informational)
         uint64_t      _pcr;          // PCR value from TS packets (informational)
         PacketCounter _first_pkt;    // Index of first packet in stream
         PacketCounter _last_pkt;     // Index of last packet in stream
@@ -466,6 +529,9 @@ namespace ts {
 
         // Get the header size of the start of a PES packet. Return 0 on error.
         static size_t HeaderSize(const uint8_t* data, size_t size);
+
+        //! Check if a truncated PES packet may contain AVC, HEVC or VVC.
+        static bool IsXVC(bool (*StreamTypeCheck)(uint8_t), const uint8_t* data, size_t size, uint8_t stream_type);
 
         // Inaccessible operations
         PESPacket(const PESPacket&) = delete;

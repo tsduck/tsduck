@@ -69,7 +69,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~DektecControl();
+        virtual ~DektecControl() override;
 
         //!
         //! Execute the command.

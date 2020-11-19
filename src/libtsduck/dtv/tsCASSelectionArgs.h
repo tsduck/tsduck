@@ -56,7 +56,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~CASSelectionArgs();
+        virtual ~CASSelectionArgs() override;
 
         // Public fields, by options.
         bool      pass_ecm;    //!< Pass PIDs containing ECM.

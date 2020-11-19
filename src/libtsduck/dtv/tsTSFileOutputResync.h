@@ -57,7 +57,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~TSFileOutputResync();
+        virtual ~TSFileOutputResync() override;
 
         // Overrides TSFile methods
         virtual bool open(const UString& filename, OpenFlags flags, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT) override;

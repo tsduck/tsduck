@@ -69,7 +69,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~TCPSocket();
+        virtual ~TCPSocket() override;
 
         //!
         //! Set the Time To Live (TTL) option.

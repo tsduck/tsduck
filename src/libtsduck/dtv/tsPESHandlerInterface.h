@@ -77,17 +77,17 @@ namespace ts {
         virtual void handleNewMPEG2VideoAttributes(PESDemux& demux, const PESPacket& packet, const MPEG2VideoAttributes& attr);
 
         //!
-        //! This hook is invoked when an AVC (ISO 14496-10, ITU H.264) access unit (aka "NALunit") is found.
+        //! This hook is invoked when an AVC, HEVC or VVC access unit (aka "NALunit") is found.
         //! @param [in,out] demux A reference to the PES demux.
         //! @param [in] packet The demultiplexed PES packet.
         //! @param [in] nal_unit_type NALunit type.
         //! @param [in] offset Offset of the start code (00 00 01 xx) in the PES packet payload.
         //! @param [in] size Size of the video payload (up to next start code).
         //!
-        virtual void handleAVCAccessUnit(PESDemux& demux, const PESPacket& packet, uint8_t nal_unit_type, size_t offset, size_t size);
+        virtual void handleAccessUnit(PESDemux& demux, const PESPacket& packet, uint8_t nal_unit_type, size_t offset, size_t size);
 
         //!
-        //! This hook is invoked when an AVC SEI (Supplemental Enhancement Information) is found.
+        //! This hook is invoked when an AVC, HEVC or VVC SEI (Supplemental Enhancement Information) is found.
         //! @param [in,out] demux A reference to the PES demux.
         //! @param [in] packet The demultiplexed PES packet.
         //! @param [in] sei_type SEI type.

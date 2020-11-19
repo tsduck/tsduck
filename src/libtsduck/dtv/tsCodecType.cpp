@@ -26,22 +26,33 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
-//----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2073
+#include "tsCodecType.h"
+TSDUCK_SOURCE;
+
+const ts::Enumeration ts::CodecTypeEnum({
+    {u"undefined",     int(ts::CodecType::UNDEFINED)},
+    {u"MPEG-1 Video",  int(ts::CodecType::MPEG1_VIDEO)},
+    {u"MPEG-1 Audio",  int(ts::CodecType::MPEG1_AUDIO)},
+    {u"MPEG-2 Video",  int(ts::CodecType::MPEG2_VIDEO)},
+    {u"MPEG-2 Audio",  int(ts::CodecType::MPEG2_AUDIO)},
+    {u"MP3",           int(ts::CodecType::MP3)},
+    {u"AAC",           int(ts::CodecType::AAC)},
+    {u"AC3",           int(ts::CodecType::AC3)},
+    {u"E-AC3",         int(ts::CodecType::EAC3)},
+    {u"AC4",           int(ts::CodecType::AC4)},
+    {u"MPEG-4 Video",  int(ts::CodecType::MPEG4_VIDEO)},
+    {u"HE-AAC",        int(ts::CodecType::HEAAC)},
+    {u"JPEG-2000",     int(ts::CodecType::J2K)},
+    {u"AVC H.264",     int(ts::CodecType::AVC)},
+    {u"HEVC H.265",    int(ts::CodecType::HEVC)},
+    {u"VVC H.266",     int(ts::CodecType::VVC)},
+    {u"EVC",           int(ts::CodecType::EVC)},
+    {u"LC-EVC",        int(ts::CodecType::LCEVC)},
+    {u"VP9",           int(ts::CodecType::VP9)},
+    {u"AV1",           int(ts::CodecType::AV1)},
+    {u"DTS",           int(ts::CodecType::DTS)},
+    {u"DTS-HD",        int(ts::CodecType::DTSHD)},
+    {u"Teletext",      int(ts::CodecType::TELETEXT)},
+    {u"DVB Subtitles", int(ts::CodecType::DVB_SUBTITLES)},
+});

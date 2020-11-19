@@ -60,7 +60,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~TSFile();
+        virtual ~TSFile() override;
 
         //!
         //! Copy constructor.

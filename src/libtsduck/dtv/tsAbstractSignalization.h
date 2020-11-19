@@ -111,7 +111,7 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~AbstractSignalization();
+        virtual ~AbstractSignalization() override;
 
         //!
         //! XML tag name for generic descriptors.

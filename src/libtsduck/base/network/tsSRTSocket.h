@@ -70,7 +70,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~SRTSocket();
+        ~SRTSocket() override;
 
         //!
         //! Open the socket.

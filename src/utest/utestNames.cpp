@@ -311,7 +311,7 @@ void NamesTest::testChromaFormat()
 
 void NamesTest::testAVCUnitType()
 {
-    TSUNIT_EQUAL(u"Picture parameter set", ts::names::AVCUnitType(ts::AVC_AUT_PICPARAMS));
+    TSUNIT_EQUAL(u"Picture parameter set", ts::names::AccessUnitType(ts::CodecType::AVC, ts::AVC_AUT_PICPARAMS));
 }
 
 void NamesTest::testAVCProfile()

@@ -63,6 +63,6 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~EacemLogicalChannelNumberDescriptor();
+        virtual ~EacemLogicalChannelNumberDescriptor() override;
     };
 }

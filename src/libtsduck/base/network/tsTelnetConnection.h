@@ -72,7 +72,7 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~TelnetConnection();
+        virtual ~TelnetConnection() override;
 
         //!
         //! Send a string to the server.

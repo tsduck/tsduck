@@ -68,7 +68,7 @@ namespace ts {
             //!
             //! Virtual destructor
             //!
-            virtual ~StreamMessage();
+            virtual ~StreamMessage() override;
         };
     }
 }

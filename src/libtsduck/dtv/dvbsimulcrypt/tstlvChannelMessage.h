@@ -64,7 +64,7 @@ namespace ts {
             //!
             //! Virtual destructor
             //!
-            virtual ~ChannelMessage();
+            virtual ~ChannelMessage() override;
         };
     }
 }

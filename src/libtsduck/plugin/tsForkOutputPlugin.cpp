@@ -71,10 +71,10 @@ ts::ForkOutputPlugin::ForkOutputPlugin(TSP* tsp_) :
 bool ts::ForkOutputPlugin::getOptions()
 {
     // Get command line arguments.
-    _command = value(u"");
+    getValue(_command, u"");
+    getIntValue(_format, u"format", TSPacketFormat::TS);
+    getIntValue(_buffer_size, u"buffered-packets", 0);
     _nowait = present(u"nowait");
-    _format = enumValue<TSPacketFormat>(u"format", TSPacketFormat::TS);
-    _buffer_size = intValue<size_t>(u"buffered-packets", 0);
     return true;
 }
 

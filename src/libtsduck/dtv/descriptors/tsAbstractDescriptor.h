@@ -118,7 +118,7 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~AbstractDescriptor();
+        virtual ~AbstractDescriptor() override;
 
     protected:
         //!
