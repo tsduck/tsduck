@@ -251,6 +251,9 @@ void PlatformTest::testIntegerTypes()
         << ", sizeof(long) = " << sizeof(long)
         << ", sizeof(long long) = " << sizeof(long long)
         << ", sizeof(void*) = " << sizeof(void*) << std::endl
+        << "PlatformTest: sizeof(char) = " << sizeof(char)
+        << ", sizeof(unsigned char) = " << sizeof(unsigned char)
+        << ", is_signed(char) = " << std::is_signed<char>::value << std::endl
         << "PlatformTest: TS_WCHAR_SIZE = " << TS_WCHAR_SIZE << std::endl;
 
     TSUNIT_EQUAL(1, sizeof(int8_t));

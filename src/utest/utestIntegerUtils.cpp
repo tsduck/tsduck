@@ -95,7 +95,7 @@ void IntegerUtilsTest::testMakeSigned()
 {
     TSUNIT_ASSERT(std::is_unsigned<bool>::value);
     TSUNIT_ASSERT(std::is_signed<ts::make_signed<bool>::type>::value);
-    TSUNIT_ASSERT(std::is_signed<ts::make_signed<char>::type>::value);
+    TSUNIT_ASSERT(std::is_signed<ts::make_signed<signed char>::type>::value);
     TSUNIT_ASSERT(std::is_signed<ts::make_signed<unsigned char>::type>::value);
     TSUNIT_ASSERT(std::is_signed<ts::make_signed<int8_t>::type>::value);
     TSUNIT_ASSERT(std::is_signed<ts::make_signed<uint8_t>::type>::value);
@@ -107,7 +107,7 @@ void IntegerUtilsTest::testMakeSigned()
     TSUNIT_ASSERT(std::is_signed<ts::make_signed<uint64_t>::type>::value);
 
     TSUNIT_EQUAL(1, sizeof(ts::make_signed<bool>::type));
-    TSUNIT_EQUAL(1, sizeof(ts::make_signed<char>::type));
+    TSUNIT_EQUAL(1, sizeof(ts::make_signed<signed char>::type));
     TSUNIT_EQUAL(2, sizeof(ts::make_signed<unsigned char>::type));
     TSUNIT_EQUAL(1, sizeof(ts::make_signed<int8_t>::type));
     TSUNIT_EQUAL(2, sizeof(ts::make_signed<uint8_t>::type));
