@@ -318,7 +318,7 @@ ts::Time ts::Time::localToUTC() const
 
 #else
 
-    time_t seconds = _value / (1000 * TICKS_PER_MS);
+    time_t seconds = time_t(_value / (1000 * TICKS_PER_MS));
     ::tm stime;
     TS_ZERO(stime);
     if (::localtime_r(&seconds, &stime) == nullptr) {
@@ -360,7 +360,7 @@ ts::Time ts::Time::UTCToLocal() const
 
 #else
 
-    time_t seconds = _value / (1000 * TICKS_PER_MS);
+    time_t seconds = time_t(_value / (1000 * TICKS_PER_MS));
     ::tm stime;
     TS_ZERO(stime);
     if (::localtime_r(&seconds, &stime) == nullptr) {
@@ -613,7 +613,7 @@ ts::Time::operator Fields() const
 
 #else
 
-    time_t seconds(_value / (1000 * TICKS_PER_MS));
+    time_t seconds = time_t(_value / (1000 * TICKS_PER_MS));
     ::tm st;
     if (::gmtime_r(&seconds, &st) == nullptr) {
         throw TimeError(u"gmtime_r error");
