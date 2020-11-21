@@ -35,6 +35,9 @@
 #pragma once
 #include "tsUString.h"
 
+TS_PUSH_WARNING()
+TS_GCC_NOWARNING(shadow) // workaround for a bug in GCC 7.5
+
 namespace ts {
     //!
     //! Enumeration of int/string pairs.
@@ -135,45 +138,45 @@ namespace ts {
         //!
         //! Get the value from a name, abbreviation allowed.
         //!
-        //! @param [in] fromName The string to search. This string may also
+        //! @param [in] name The string to search. This string may also
         //! contain an integer value in decimal or hexadecimal representation
         //! in which case this integer value is returned.
         //! @param [in] caseSensitive If false, the search is not case
-        //! sensitive and @a fromName may match an equivalent string with
+        //! sensitive and @a name may match an equivalent string with
         //! distinct letter case. If true (the default), an exact match is required.
-        //! @return The integer value corresponding to @a fromName or @c UNKNOWN
-        //! if not found or ambiguous, unless @a fromName can be interpreted as
+        //! @return The integer value corresponding to @a name or @c UNKNOWN
+        //! if not found or ambiguous, unless @a name can be interpreted as
         //! an integer value. If multiple integer values were registered
         //! with the same name, one of them is returned but which one is
         //! returned is unspecified.
         //!
-        int value(const UString& fromName, bool caseSensitive = true) const;
+        int value(const UString& name, bool caseSensitive = true) const;
 
         //!
         //! Get the enumeration value from a name, abbreviation allowed.
         //!
-        //! @tparam INT An integer or enumeration type.
-        //! @param [out] toValue The value. Unmodified if @a name is not valid.
+        //! @tparam ENUM An enumeration type.
+        //! @param [out] e The enumeration value. Unmodified if @a name is not valid.
         //! If multiple integer values were registered with the same name, one of them
         //! is returned but which one is returned is unspecified.
-        //! @param [in] fromName The string to search. This string may also
+        //! @param [in] name The string to search. This string may also
         //! contain an integer value in decimal or hexadecimal representation
         //! in which case this integer value is returned.
         //! @param [in] caseSensitive If false, the search is not case
-        //! sensitive and @a fromName may match an equivalent string with
+        //! sensitive and @a name may match an equivalent string with
         //! distinct letter case. If true (the default), an exact match is required.
-        //! @return True on success, false if @a fromName is not found or ambiguous, unless
-        //! @a fromName can be interpreted as an integer value.
+        //! @return True on success, false if @a name is not found or ambiguous, unless
+        //! @a name can be interpreted as an integer value.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
-        bool getValue(INT& toValue, const UString& fromName, bool caseSensitive = true) const
+        template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr>
+        bool getValue(ENUM& e, const UString& name, bool caseSensitive = true) const
         {
-            const int i = value(fromName, caseSensitive);
+            const int i = value(name, caseSensitive);
             if (i == UNKNOWN) {
                 return false;
             }
             else {
-                toValue = static_cast<INT>(i);
+                e = static_cast<ENUM>(i);
                 return true;
             }
         }
@@ -311,3 +314,5 @@ namespace ts {
         UString intToName(int value, bool hexa = false, size_t hexDigitCount = 0) const;
     };
 }
+
+TS_POP_WARNING()
