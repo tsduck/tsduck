@@ -71,18 +71,18 @@ bool ts::Enumeration::operator!=(const Enumeration& other) const
 // Get the value from a name, abbreviation allowed.
 //----------------------------------------------------------------------------
 
-int ts::Enumeration::value(const UString& fromName, bool caseSensitive) const
+int ts::Enumeration::value(const UString& name, bool caseSensitive) const
 {
-    const UString lcName(fromName.toLower());
+    const UString lcName(name.toLower());
     size_t previousCount = 0;
     int previous = UNKNOWN;
 
     for (auto it = _map.begin(); it != _map.end(); ++it) {
-        if ((caseSensitive && it->second == fromName) || (!caseSensitive && it->second.toLower() == lcName)) {
+        if ((caseSensitive && it->second == name) || (!caseSensitive && it->second.toLower() == lcName)) {
             // Found an exact match
             return it->first;
         }
-        else if (it->second.startWith(fromName, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+        else if (it->second.startWith(name, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
             // Found an abbreviated version
             if (++previousCount == 1) {
                 // First abbreviation, remember it and continue searching
@@ -99,7 +99,7 @@ int ts::Enumeration::value(const UString& fromName, bool caseSensitive) const
         // Only one solution for abbreviation
         return previous;
     }
-    else if (fromName.toInteger(previous, u",")) {
+    else if (name.toInteger(previous, u",")) {
         // Name evaluates to an integer
         return previous;
     }
