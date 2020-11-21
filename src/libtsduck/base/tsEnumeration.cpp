@@ -71,6 +71,9 @@ bool ts::Enumeration::operator!=(const Enumeration& other) const
 // Get the value from a name, abbreviation allowed.
 //----------------------------------------------------------------------------
 
+TS_PUSH_WARNING()
+TS_GCC_NOWARNING(shadow) // workaround for a bug in GCC 7.5
+
 int ts::Enumeration::value(const UString& name, bool caseSensitive) const
 {
     const UString lcName(name.toLower());
@@ -108,6 +111,8 @@ int ts::Enumeration::value(const UString& name, bool caseSensitive) const
         return UNKNOWN;
     }
 }
+
+TS_POP_WARNING()
 
 
 //----------------------------------------------------------------------------
