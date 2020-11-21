@@ -179,23 +179,9 @@ namespace ts {
         }
 
         //!
-        //! Get the name from a value.
-        //!
-        //! @param [in] value An integer value to search.
-        //! @param [in] hexa If true and no name exists for @a value, return the value
-        //! as an hexadecimal string with "0x" prefix instead of decimal.
-        //! @param [in] hexDigitCount When an hexadecimal value is returned, specify the
-        //! minimum number of digits.
-        //! @return The corresponding string or a numeric representation of @a value if not found.
-        //! If several names were registered with the same value, one of them is returned but which
-        //! one is returned is unspecified.
-        //!
-        UString name(int value, bool hexa = false, size_t hexDigitCount = 0) const;
-
-        //!
         //! Get the name from an enumeration value.
         //!
-        //! @tparam ENUM An enumeration type.
+        //! @tparam INT An integer or enumeration type.
         //! @param [in] value An enumeration value to search.
         //! @param [in] hexa If true and no name exists for @a value, return the value
         //! as an hexadecimal string with "0x" prefix instead of decimal.
@@ -205,10 +191,10 @@ namespace ts {
         //! If several names were registered with the same value, one of them is returned but which
         //! one is returned is unspecified.
         //!
-        template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr>
-        UString name(ENUM value, bool hexa = false, size_t hexDigitCount = 0) const
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        UString name(INT value, bool hexa = false, size_t hexDigitCount = 0) const
         {
-            return name(int(value), hexa, hexDigitCount);
+            return intToName(static_cast<int>(value), hexa, hexDigitCount);
         }
 
         //!
@@ -317,7 +303,11 @@ namespace ts {
         }
 
     private:
+        // Map int to name. Multiple names are allowed for the same integer value.
         typedef std::multimap<int,UString> EnumMap;
         EnumMap _map;
+
+        // Get the name from a value.
+        UString intToName(int value, bool hexa = false, size_t hexDigitCount = 0) const;
     };
 }

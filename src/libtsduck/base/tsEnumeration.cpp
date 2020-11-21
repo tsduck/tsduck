@@ -114,7 +114,7 @@ int ts::Enumeration::value(const UString& name, bool caseSensitive) const
 // Get the name from a value.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Enumeration::name(int value, bool hexa, size_t hexDigitCount) const
+ts::UString ts::Enumeration::intToName(int value, bool hexa, size_t hexDigitCount) const
 {
     const EnumMap::const_iterator it = _map.find(value);
     if (it != _map.end()) {
