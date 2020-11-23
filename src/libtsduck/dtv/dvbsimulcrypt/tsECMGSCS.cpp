@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  DVB SimulCrypt ECMG <=> SCS protocol
-//
-//----------------------------------------------------------------------------
 
 #include "tsECMGSCS.h"
 #include "tstlvMessageFactory.h"

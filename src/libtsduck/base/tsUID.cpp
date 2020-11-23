@@ -27,10 +27,6 @@
 //
 //----------------------------------------------------------------------------
 //
-//  Generate 64-bit UID, unique integer
-//
-//----------------------------------------------------------------------------
-
 //  Implementation:
 //  To ensure a reasonable level of uniqueness, a UID is composed of:
 //    - 24 bits: LSB of process id
@@ -38,6 +34,8 @@
 //    - 16 bits: sequential index
 //  The UID is incremented each time a new value is requested.
 //  The index does not wrap, it overflows on time field.
+//
+//----------------------------------------------------------------------------
 
 #include "tsUID.h"
 #include "tsGuard.h"

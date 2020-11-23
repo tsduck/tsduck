@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor command-line options
-//
-//----------------------------------------------------------------------------
 
 #include "tsArgsWithPlugins.h"
 #include "tsDuckConfigFile.h"

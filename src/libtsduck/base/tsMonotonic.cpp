@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Basic monotonic clock & timer class
-//
-//----------------------------------------------------------------------------
 
 #include "tsMonotonic.h"
 #include "tsSysUtils.h"

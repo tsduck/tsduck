@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of MPEG PSI/SI sections
-//
-//----------------------------------------------------------------------------
 
 #include "tsMPEPacket.h"
 #include "tsIPUtils.h"

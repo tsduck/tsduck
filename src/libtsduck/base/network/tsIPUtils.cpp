@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Utilities for IP networking
-//
-//----------------------------------------------------------------------------
 
 #include "tsIPUtils.h"
 #include "tsIPAddress.h"

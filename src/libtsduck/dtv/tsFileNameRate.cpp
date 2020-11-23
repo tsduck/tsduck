@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Decode file names / repetition rates command line arguments
-//
-//----------------------------------------------------------------------------
 
 #include "tsFileNameRate.h"
 #include "tsSysUtils.h"

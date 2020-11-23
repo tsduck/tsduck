@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Association of a PID and an "operator" id (CAS-specific).
-//
-//----------------------------------------------------------------------------
 
 #include "tsPIDOperator.h"
 #include "tsCASFamily.h"

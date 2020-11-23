@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Monitoring thread for system resources used by the application.
-//
-//----------------------------------------------------------------------------
 
 #include "tsSystemMonitor.h"
 #include "tsGuardCondition.h"

@@ -26,11 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class is a singleton implementing Report which drops
-//  all messages.
-//
-//----------------------------------------------------------------------------
 
 #include "tsNullReport.h"
 TSDUCK_SOURCE;

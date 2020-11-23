@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Conditional Access Systems families
-//
-//----------------------------------------------------------------------------
 
 #include "tsCASFamily.h"
 #include "tsPSI.h"

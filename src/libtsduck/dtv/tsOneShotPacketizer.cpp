@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Packetization of MPEG sections into Transport Stream packets in one shot
-//
-//----------------------------------------------------------------------------
 
 #include "tsOneShotPacketizer.h"
 TSDUCK_SOURCE;

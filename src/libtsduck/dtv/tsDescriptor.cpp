@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of MPEG PSI/SI descriptors
-//
-//----------------------------------------------------------------------------
 
 #include "tsDescriptor.h"
 #include "tsMemory.h"
