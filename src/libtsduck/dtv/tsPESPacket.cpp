@@ -29,6 +29,7 @@
 
 #include "tsPESPacket.h"
 #include "tsPES.h"
+#include "tsMPEG2.h"
 #include "tsAVC.h"
 #include "tsHEVC.h"
 #include "tsVVC.h"
@@ -597,7 +598,7 @@ size_t ts::PESPacket::FindIntraImage(const uint8_t* data, size_t size, uint8_t s
                 pl_next = pl_data + pl_size;
             }
             // The start code is after the start code prefix: 00 00 01 xx
-            if (pl_data + 3 < pl_next && pl_data[3] == PST_GROUP) {
+            if (pl_data + 3 < pl_next && (pl_data[3] == PST_SEQUENCE_HEADER || pl_data[3] == PST_GROUP)) {
                 // Found a start of GOP. This must be an intra-image in MPEG-1/2.
                 return pl_data - data;
             }
