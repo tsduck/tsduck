@@ -119,7 +119,7 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
     ::INTERFACE_INFO info[32];  // max 32 local interface (arbitrary)
     ::DWORD retsize;
     if (::WSAIoctl(sock, SIO_GET_INTERFACE_LIST, 0, 0, info, ::DWORD(sizeof(info)), &retsize, 0, 0) != 0) {
-        report.error(u"error getting local addresses: %s", {SocketErrorCodeMessage()});
+        report.error(u"error getting local addresses: %s", {SysSocketErrorCodeMessage()});
         status = false;
     }
     else {

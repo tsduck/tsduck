@@ -182,9 +182,9 @@ bool ts::Socket::reusePort(bool active, Report& report)
         return false;
     }
 #if defined(TS_MAC)
-    // BSD (MacOS) also needs SO_REUSEPORT in addition to SO_REUSEADDR.
+    // BSD (macOS) also needs SO_REUSEPORT in addition to SO_REUSEADDR.
     if (::setsockopt(_sock, SOL_SOCKET, SO_REUSEPORT, SysSockOptPointer(&reuse), sizeof(reuse)) != 0) {
-        report.error(u"error setting socket reuse port: %s", {SocketErrorCodeMessage()});
+        report.error(u"error setting socket reuse port: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
 #endif
