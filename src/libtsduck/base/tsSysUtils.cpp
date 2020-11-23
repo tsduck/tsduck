@@ -510,7 +510,7 @@ bool ts::IsPrivilegedUser()
 // Create a directory
 //----------------------------------------------------------------------------
 
-ts::ErrorCode ts::CreateDirectory(const UString& path, bool intermediate)
+ts::SysErrorCode ts::CreateDirectory(const UString& path, bool intermediate)
 {
     // Create intermediate directories.
     if (intermediate) {
@@ -518,7 +518,7 @@ ts::ErrorCode ts::CreateDirectory(const UString& path, bool intermediate)
         // Create only if does not exist or is identical to path (meaning root).
         if (dir != path && !IsDirectory(dir)) {
             // Create recursively.
-            const ErrorCode err = CreateDirectory(dir, true);
+            const SysErrorCode err = CreateDirectory(dir, true);
             if (err != SYS_SUCCESS) {
                 return err;
             }
@@ -635,7 +635,7 @@ bool ts::IsDirectory(const UString& path)
 // Delete a file. Return an error code.
 //----------------------------------------------------------------------------
 
-ts::ErrorCode ts::DeleteFile(const UString& path)
+ts::SysErrorCode ts::DeleteFile(const UString& path)
 {
 #if defined(TS_WINDOWS)
     if (IsDirectory(path)) {
@@ -654,7 +654,7 @@ ts::ErrorCode ts::DeleteFile(const UString& path)
 // Truncate a file to the specified size. Return an error code.
 //----------------------------------------------------------------------------
 
-ts::ErrorCode ts::TruncateFile(const UString& path, uint64_t size)
+ts::SysErrorCode ts::TruncateFile(const UString& path, uint64_t size)
 {
 #if defined(TS_WINDOWS)
 
@@ -686,7 +686,7 @@ ts::ErrorCode ts::TruncateFile(const UString& path, uint64_t size)
 // Not guaranteed to work across volumes or file systems.
 //----------------------------------------------------------------------------
 
-ts::ErrorCode ts::RenameFile(const UString& old_path, const UString& new_path)
+ts::SysErrorCode ts::RenameFile(const UString& old_path, const UString& new_path)
 {
 #if defined(TS_WINDOWS)
     return ::MoveFileW(old_path.wc_str(), new_path.wc_str()) == 0 ? ::GetLastError() : ERROR_SUCCESS;
@@ -785,7 +785,7 @@ TS_POP_WARNING()
 #endif // not Windows
 
 // Portable public interface:
-ts::UString ts::ErrorCodeMessage(ts::ErrorCode code)
+ts::UString ts::SysErrorCodeMessage(ts::SysErrorCode code)
 {
 #if defined(TS_WINDOWS)
     return WinErrorMessage(code);

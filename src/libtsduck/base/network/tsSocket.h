@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsSocketAddress.h"
+#include "tsIPUtils.h"
 #include "tsReport.h"
 
 namespace ts {
@@ -73,7 +74,7 @@ namespace ts {
         //! Check if socket is open.
         //! @return True if socket is open.
         //!
-        bool isOpen() const {return _sock != TS_SOCKET_T_INVALID;}
+        bool isOpen() const {return _sock != SYS_SOCKET_INVALID;}
 
         //!
         //! Set the send buffer size.
@@ -124,9 +125,9 @@ namespace ts {
         //! not be used by normal applications.
         //!
         //! @return The underlying socket system device handle or file descriptor.
-        //! Return @link TS_SOCKET_T_INVALID @endlink if the socket is not open.
+        //! Return SYS_SOCKET_INVALID if the socket is not open.
         //!
-        TS_SOCKET_T getSocket() const { return _sock; }
+        SysSocketType getSocket() const { return _sock; }
 
     protected:
         //!
@@ -145,9 +146,9 @@ namespace ts {
         //! @param [in] sock New socket descriptor.
         //! @param [in,out] report Where to report error.
         //!
-        virtual void declareOpened(TS_SOCKET_T sock, Report& report);
+        virtual void declareOpened(SysSocketType sock, Report& report);
 
     private:
-        TS_SOCKET_T _sock;
+        SysSocketType _sock;
     };
 }

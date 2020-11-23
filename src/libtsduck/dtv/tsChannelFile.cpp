@@ -508,9 +508,9 @@ bool ts::ChannelFile::save(const UString& fileName, bool createDirectories, Repo
     if (createDirectories) {
         const UString dir(DirectoryName(fileName));
         if (!IsDirectory(dir)) {
-            const ErrorCode err = CreateDirectory(dir, true);
+            const SysErrorCode err = CreateDirectory(dir, true);
             if (err != SYS_SUCCESS) {
-                report.error(u"error creating directory %s: %s", {dir, ErrorCodeMessage(err)});
+                report.error(u"error creating directory %s: %s", {dir, SysErrorCodeMessage(err)});
             }
         }
     }

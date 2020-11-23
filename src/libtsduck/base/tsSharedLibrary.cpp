@@ -87,7 +87,7 @@ void ts::SharedLibrary::load(const UString& filename)
     _module = ::LoadLibraryExW(_filename.wc_str(), NULL, 0);
     _is_loaded = _module != 0;
     if (!_is_loaded) {
-        _error = ErrorCodeMessage();
+        _error = SysErrorCodeMessage();
     }
 #else
     _dl = ::dlopen(_filename.toUTF8().c_str(), RTLD_NOW | RTLD_GLOBAL);

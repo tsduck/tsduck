@@ -39,8 +39,8 @@ ts::Exception::Exception(const UString& w) :
     CERR.log(Severity::Debug, u"Exception: " + _what);
 }
 
-ts::Exception::Exception(const UString& w, ErrorCode error) :
-    Exception(UString::Format(u"%s, system error %d (0x%X), %s", {w, error, error, ErrorCodeMessage(error)}))
+ts::Exception::Exception(const UString& w, int error) :
+    Exception(UString::Format(u"%s, system error %d (0x%X), %s", {w, error, error, SysErrorCodeMessage(SysErrorCode(error))}))
 {
 }
 

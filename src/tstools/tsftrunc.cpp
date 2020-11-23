@@ -116,17 +116,17 @@ int MainCode(int argc, char *argv[])
 {
     Options opt (argc, argv);
     bool success = true;
-    ts::ErrorCode err;
+    ts::SysErrorCode err;
 
     for (ts::UStringVector::const_iterator file = opt.files.begin(); file != opt.files.end(); ++file) {
 
         // Get file size
 
-        const int64_t size = GetFileSize(*file);
+        const int64_t size = ts::GetFileSize(*file);
 
         if (size < 0) {
-            err = ts::LastErrorCode();
-            opt.error(u"%s: %s", {*file, ts::ErrorCodeMessage(err)});
+            err = ts::LastSysErrorCode();
+            opt.error(u"%s: %s", {*file, ts::SysErrorCodeMessage(err)});
             success = false;
             continue;
         }
@@ -166,8 +166,8 @@ int MainCode(int argc, char *argv[])
         // Do the truncation
 
         if (!opt.check_only && keep < file_size && (err = TruncateFile(*file, keep)) != ts::SYS_SUCCESS) {
-            err = ts::LastErrorCode();
-            opt.error(u"%s: %s", {*file, ts::ErrorCodeMessage(err)});
+            err = ts::LastSysErrorCode();
+            opt.error(u"%s: %s", {*file, ts::SysErrorCodeMessage(err)});
             success = false;
         }
     }

@@ -206,7 +206,7 @@ ts::UString ts::ComMessage(::HRESULT hr)
         return UString(buf, size);
     }
     else {
-        return ErrorCodeMessage(hr);
+        return SysErrorCodeMessage(hr);
     }
 }
 

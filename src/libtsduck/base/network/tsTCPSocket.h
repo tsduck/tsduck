@@ -163,7 +163,7 @@ namespace ts {
         virtual void handleClosed(Report& report);
 
         // Implementation of Socket interface.
-        virtual void declareOpened(TS_SOCKET_T sock, Report& report) override;
+        virtual void declareOpened(SysSocketType sock, Report& report) override;
     };
 
     //!

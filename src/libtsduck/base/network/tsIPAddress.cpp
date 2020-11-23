@@ -138,13 +138,13 @@ bool ts::IPAddress::resolve(const UString& name, Report& report)
 
     if (status != 0) {
 #if defined(TS_WINDOWS)
-        const SocketErrorCode code = LastSocketErrorCode();
-        report.error(name + u": " + SocketErrorCodeMessage(code));
+        const SysSocketErrorCode code = LastSysSocketErrorCode();
+        report.error(name + u": " + SysSocketErrorCodeMessage(code));
 #else
-        const ErrorCode code = LastErrorCode();
+        const SysErrorCode code = LastSysErrorCode();
         UString errmsg;
         if (status == EAI_SYSTEM) {
-            errmsg = ErrorCodeMessage(code);
+            errmsg = SysErrorCodeMessage(code);
         }
         else {
             errmsg = UString::FromUTF8(gai_strerror(status));

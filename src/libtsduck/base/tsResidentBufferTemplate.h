@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsIntegerUtils.h"
-#include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsFatal.h"
 
@@ -95,20 +94,20 @@ ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
     // If working set too low, try to extend working set.
     ::SIZE_T wsmin, wsmax;
     if (::GetProcessWorkingSetSize(::GetCurrentProcess(), &wsmin, &wsmax) == 0) {
-        _error_code = LastErrorCode();
+        _error_code = LastSysErrorCode();
     }
     else if (size_t(wsmin) < 2 * _locked_size) {
         wsmin = ::SIZE_T(2 * _locked_size);
         wsmax = std::max(wsmax, ::SIZE_T(4 * _locked_size));
         if (::SetProcessWorkingSetSize(::GetCurrentProcess(), wsmin, wsmax) == 0) {
-            _error_code = LastErrorCode();
+            _error_code = LastSysErrorCode();
         }
     }
 
     // Lock in virtual memory
     _is_locked = ::VirtualLock(_locked_base, _locked_size) != 0;
     if (!_is_locked && _error_code == SYS_SUCCESS) {
-        _error_code = LastErrorCode();
+        _error_code = LastSysErrorCode();
     }
 
 #else
@@ -116,7 +115,7 @@ ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
     // UNIX implementation
 
     _is_locked = ::mlock(_locked_base, _locked_size) == 0;
-    _error_code = _is_locked ? SYS_SUCCESS : LastErrorCode();
+    _error_code = _is_locked ? SYS_SUCCESS : LastSysErrorCode();
 
 #endif
 }

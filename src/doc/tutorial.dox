@@ -193,7 +193,7 @@ are used.
 
 All TSDuck exceptions inherit from the superclass ts::Exception. An instance
 of this exception is able to embed an error message and an optional system
-error code (type ts::ErrorCode).
+error code (type ts::SysErrorCode).
 
 Each specific exception should be a subclass of ts::Exception. Instead of
 rewriting the subclass code, applications should use the macro TS_DECLARE_EXCEPTION().

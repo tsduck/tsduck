@@ -57,7 +57,7 @@ namespace ts {
         //! @param [in] message Error message for the exception.
         //! @param [in] error System error code causing the exception.
         //!
-        Exception(const UString& message, ErrorCode error);
+        Exception(const UString& message, int error);
 
         //!
         //! Destructor.
@@ -81,33 +81,33 @@ namespace ts {
 // But exceptions are ... exceptions. There is no way to declare them easily in one macro in a
 // header file without weak virtual tables. So, with clang only, we disable this warning.
 //
-#define TS_DECLARE_EXCEPTION(name)                                \
-    TS_PUSH_WARNING()                                             \
-    TS_LLVM_NOWARNING(weak-vtables)                               \
-    class name: public ts::Exception                              \
-    {                                                             \
-    public:                                                       \
-        /** Constructor.                                   */     \
-        /** @param [in] w Error message for the exception. */     \
-        explicit name(const ts::UString& w) :                     \
-            ts::Exception(u ## #name u": " + w)                   \
-        {                                                         \
-        }                                                         \
-        /** Constructor.                                   */     \
-        /** @param [in] w Error message for the exception. */     \
-        /** @param [in] code System error code.            */     \
-        explicit name(const ts::UString& w, ts::ErrorCode code) : \
-            ts::Exception(u ## #name u": " + w, code)             \
-        {                                                         \
-        }                                                         \
-        /** Constructor.                                   */     \
-        /** @param [in] code System error code.            */     \
-        explicit name(ts::ErrorCode code) :                       \
-            ts::Exception(u ## #name, code)                       \
-        {                                                         \
-        }                                                         \
-    };                                                            \
-    TS_POP_WARNING()                                              \
+#define TS_DECLARE_EXCEPTION(name)                            \
+    TS_PUSH_WARNING()                                         \
+    TS_LLVM_NOWARNING(weak-vtables)                           \
+    class name: public ts::Exception                          \
+    {                                                         \
+    public:                                                   \
+        /** Constructor.                                   */ \
+        /** @param [in] w Error message for the exception. */ \
+        explicit name(const ts::UString& w) :                 \
+            ts::Exception(u ## #name u": " + w)               \
+        {                                                     \
+        }                                                     \
+        /** Constructor.                                   */ \
+        /** @param [in] w Error message for the exception. */ \
+        /** @param [in] code System error code.            */ \
+        explicit name(const ts::UString& w, int code) :       \
+            ts::Exception(u ## #name u": " + w, code)         \
+        {                                                     \
+        }                                                     \
+        /** Constructor.                                   */ \
+        /** @param [in] code System error code.            */ \
+        explicit name(int code) :                             \
+            ts::Exception(u ## #name, code)                   \
+        {                                                     \
+        }                                                     \
+    };                                                        \
+    TS_POP_WARNING()                                          \
     typedef int TS_UNIQUE_NAME(for_trailing_semicolon)
 
 //!

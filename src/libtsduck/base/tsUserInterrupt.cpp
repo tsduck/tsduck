@@ -205,8 +205,8 @@ void ts::UserInterrupt::activate()
     // Install the console interrupt handler
     if (::SetConsoleCtrlHandler(sysHandler, true) == 0) {
         // Failure
-        const ErrorCode err = LastErrorCode();
-        std::cerr << "* Error establishing console interrupt handler: " << ErrorCodeMessage(err) << std::endl;
+        const SysErrorCode err = LastSysErrorCode();
+        std::cerr << "* Error establishing console interrupt handler: " << SysErrorCodeMessage(err) << std::endl;
         return;
     }
 

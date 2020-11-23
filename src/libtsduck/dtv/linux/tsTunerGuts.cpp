@@ -357,13 +357,13 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
     // All configuration and setup operations are non-blocking anyway.
     // Reading events, however, is a blocking operation.
     if ((_guts->frontend_fd = ::open(_guts->frontend_name.toUTF8().c_str(), (info_only ? O_RDONLY : O_RDWR) | O_NONBLOCK)) < 0) {
-        report.error(u"error opening %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
+        report.error(u"error opening %s: %s", {_guts->frontend_name, SysErrorCodeMessage()});
         return false;
     }
 
     // Get characteristics of the frontend
     if (::ioctl(_guts->frontend_fd, ioctl_request_t(FE_GET_INFO), &_guts->fe_info) < 0) {
-        report.error(u"error getting info on %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
+        report.error(u"error getting info on %s: %s", {_guts->frontend_name, SysErrorCodeMessage()});
         return close(report) || false;
     }
     _guts->fe_info.name[sizeof(_guts->fe_info.name) - 1] = 0;
@@ -396,7 +396,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 #endif
     else {
         // DTV_ENUM_DELSYS failed, convert tuner type from FE_GET_INFO.
-        const ErrorCode err = LastErrorCode();
+        const SysErrorCode err = LastSysErrorCode();
         const bool can2g = (_guts->fe_info.caps & FE_CAN_2G_MODULATION) != 0;
         switch (_guts->fe_info.type) {
             case FE_QPSK:
@@ -425,7 +425,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
                 close(report);
                 return false;
         }
-        report.verbose(u"error getting delivery systems of %s (%s), using %s", {_guts->frontend_name, ErrorCodeMessage(err), _delivery_systems.toString()});
+        report.verbose(u"error getting delivery systems of %s (%s), using %s", {_guts->frontend_name, SysErrorCodeMessage(err), _delivery_systems.toString()});
     }
 
     // Open DVB adapter DVR (tap for TS packets) and adapter demux
@@ -434,12 +434,12 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
     }
     else {
         if ((_guts->dvr_fd = ::open(_guts->dvr_name.toUTF8().c_str(), O_RDONLY)) < 0) {
-            report.error(u"error opening %s: %s", {_guts->dvr_name, ErrorCodeMessage()});
+            report.error(u"error opening %s: %s", {_guts->dvr_name, SysErrorCodeMessage()});
             close(report);
             return false;
         }
         if ((_guts->demux_fd = ::open(_guts->demux_name.toUTF8().c_str(), O_RDWR)) < 0) {
-            report.error(u"error opening %s: %s", {_guts->demux_name, ErrorCodeMessage()});
+            report.error(u"error opening %s: %s", {_guts->demux_name, SysErrorCodeMessage()});
             close(report);
             return false;
         }
@@ -457,7 +457,7 @@ bool ts::Tuner::close(Report& report)
 {
     // Stop the demux
     if (_guts->demux_fd >= 0 && ::ioctl(_guts->demux_fd, ioctl_request_t(DMX_STOP)) < 0) {
-        report.error(u"error stopping demux on %s: %s", {_guts->demux_name, ErrorCodeMessage()});
+        report.error(u"error stopping demux on %s: %s", {_guts->demux_name, SysErrorCodeMessage()});
     }
 
     // Close DVB adapter devices
@@ -494,12 +494,12 @@ bool ts::Tuner::Guts::getFrontendStatus(::fe_status_t& status, Report& report)
     status = FE_ZERO;
     errno = 0;
     const bool ok = ::ioctl(frontend_fd, ioctl_request_t(FE_READ_STATUS), &status) == 0;
-    const ErrorCode err = LastErrorCode();
+    const SysErrorCode err = LastSysErrorCode();
     if (ok || (!ok && err == EBUSY && status != FE_ZERO)) {
         return true;
     }
     else {
-        report.error(u"error reading status on %s: %s", {frontend_name, ErrorCodeMessage(err)});
+        report.error(u"error reading status on %s: %s", {frontend_name, SysErrorCodeMessage(err)});
         return false;
     }
 }
@@ -537,10 +537,10 @@ int ts::Tuner::signalStrength(Report& report)
 
     uint16_t strength = 0;
     if (::ioctl(_guts->frontend_fd, ioctl_request_t(FE_READ_SIGNAL_STRENGTH), &strength) < 0) {
-        const ErrorCode err = LastErrorCode();
+        const SysErrorCode err = LastSysErrorCode();
         // Silently ignore deprecated feature, see comment at beginning of file.
         if (err != DVB_ENOTSUPP) {
-            report.error(u"error reading signal strength on %s: %s", {_guts->frontend_name, ErrorCodeMessage(err)});
+            report.error(u"error reading signal strength on %s: %s", {_guts->frontend_name, SysErrorCodeMessage(err)});
         }
         return -1;
     }
@@ -574,8 +574,8 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
     DTVProperties props;
     props.add(DTV_DELIVERY_SYSTEM);
     if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-        const ErrorCode err = LastErrorCode();
-        report.error(u"error getting current delivery system from tuner: %s", {ErrorCodeMessage(err)});
+        const SysErrorCode err = LastSysErrorCode();
+        report.error(u"error getting current delivery system from tuner: %s", {SysErrorCodeMessage(err)});
         return false;
     }
 
@@ -609,8 +609,8 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 #endif
 
             if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-                const ErrorCode err = LastErrorCode();
-                report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
+                const SysErrorCode err = LastSysErrorCode();
+                report.error(u"error getting tuning parameters : %s", {SysErrorCodeMessage(err)});
                 return false;
             }
 
@@ -649,8 +649,8 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 #endif
 
             if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-                const ErrorCode err = LastErrorCode();
-                report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
+                const SysErrorCode err = LastSysErrorCode();
+                report.error(u"error getting tuning parameters : %s", {SysErrorCodeMessage(err)});
                 return false;
             }
 
@@ -682,8 +682,8 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_MODULATION);
 
             if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-                const ErrorCode err = LastErrorCode();
-                report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
+                const SysErrorCode err = LastSysErrorCode();
+                report.error(u"error getting tuning parameters : %s", {SysErrorCodeMessage(err)});
                 return false;
             }
 
@@ -701,8 +701,8 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_MODULATION);
 
             if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-                const ErrorCode err = LastErrorCode();
-                report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
+                const SysErrorCode err = LastSysErrorCode();
+                report.error(u"error getting tuning parameters : %s", {SysErrorCodeMessage(err)});
                 return false;
             }
 
@@ -727,8 +727,8 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_STREAM_ID);
 
             if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-                const ErrorCode err = LastErrorCode();
-                report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
+                const SysErrorCode err = LastSysErrorCode();
+                report.error(u"error getting tuning parameters : %s", {SysErrorCodeMessage(err)});
                 return false;
             }
 
@@ -771,8 +771,8 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_ISDBT_LAYERC_TIME_INTERLEAVING);
 
             if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-                const ErrorCode err = LastErrorCode();
-                report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
+                const SysErrorCode err = LastSysErrorCode();
+                report.error(u"error getting tuning parameters : %s", {SysErrorCodeMessage(err)});
                 return false;
             }
 
@@ -921,8 +921,8 @@ bool ts::Tuner::Guts::tune(DTVProperties& props, Report& report)
     report.debug(u"tuning on %s", {frontend_name});
     props.report(report, Severity::Debug);
     if (::ioctl(frontend_fd, ioctl_request_t(FE_SET_PROPERTY), props.getIoctlParam()) < 0) {
-        const ErrorCode err = LastErrorCode();
-        report.error(u"tuning error on %s: %s", {frontend_name, ErrorCodeMessage(err)});
+        const SysErrorCode err = LastSysErrorCode();
+        report.error(u"tuning error on %s: %s", {frontend_name, SysErrorCodeMessage(err)});
         return false;
     }
     return true;
@@ -974,13 +974,13 @@ bool ts::Tuner::Guts::dishControl(const ModulationArgs& params, const LNB::Trans
 
     // Stop 22 kHz continuous tone (was on if previously tuned on high band)
     if (ioctl_fe_set_tone(frontend_fd, SEC_TONE_OFF) < 0) {
-        report.error(u"DVB frontend FE_SET_TONE error: %s", {ErrorCodeMessage()});
+        report.error(u"DVB frontend FE_SET_TONE error: %s", {SysErrorCodeMessage()});
         return false;
     }
 
     // Setup polarisation voltage: 13V for vertical polarisation, 18V for horizontal
     if (ioctl_fe_set_voltage(frontend_fd, params.polarity == POL_VERTICAL ? SEC_VOLTAGE_13 : SEC_VOLTAGE_18) < 0) {
-        report.error(u"DVB frontend FE_SET_VOLTAGE error: %s", {ErrorCodeMessage()});
+        report.error(u"DVB frontend FE_SET_VOLTAGE error: %s", {SysErrorCodeMessage()});
         return false;
     }
 
@@ -1000,7 +1000,7 @@ bool ts::Tuner::Guts::dishControl(const ModulationArgs& params, const LNB::Trans
     //      In reply to this report, the answer was "thanks, committed" but it does
     //      not appear to be committed. Here, we use the "probably correct" code.
     if (ioctl_fe_diseqc_send_burst(frontend_fd, params.satellite_number == 0 ? SEC_MINI_A : SEC_MINI_B) < 0) {
-        report.error(u"DVB frontend FE_DISEQC_SEND_BURST error: %s", {ErrorCodeMessage()});
+        report.error(u"DVB frontend FE_DISEQC_SEND_BURST error: %s", {SysErrorCodeMessage()});
         return false;
     }
 
@@ -1022,7 +1022,7 @@ bool ts::Tuner::Guts::dishControl(const ModulationArgs& params, const LNB::Trans
     cmd.msg[5] = 0x00;  // Unused
 
     if (::ioctl(frontend_fd, ioctl_request_t(FE_DISEQC_SEND_MASTER_CMD), &cmd) < 0) {
-        report.error(u"DVB frontend FE_DISEQC_SEND_MASTER_CMD error: %s", {ErrorCodeMessage()});
+        report.error(u"DVB frontend FE_DISEQC_SEND_MASTER_CMD error: %s", {SysErrorCodeMessage()});
         return false;
     }
 
@@ -1031,7 +1031,7 @@ bool ts::Tuner::Guts::dishControl(const ModulationArgs& params, const LNB::Trans
 
     // Start the 22kHz continuous tone when tuning to a transponder in the high band
     if (::ioctl_fe_set_tone(frontend_fd, high_band ? SEC_TONE_ON : SEC_TONE_OFF) < 0) {
-        report.error(u"DVB frontend FE_SET_TONE error: %s", {ErrorCodeMessage()});
+        report.error(u"DVB frontend FE_SET_TONE error: %s", {SysErrorCodeMessage()});
         return false;
     }
     return true;
@@ -1224,7 +1224,7 @@ bool ts::Tuner::start(Report& report)
     // completely undersized for full TS capture.
 
     if (::ioctl(_guts->demux_fd, ioctl_request_t(DMX_SET_BUFFER_SIZE), _guts->demux_bufsize) < 0) {
-        report.error(u"error setting buffer size on %s: %s", {_guts->demux_name, ErrorCodeMessage()});
+        report.error(u"error setting buffer size on %s: %s", {_guts->demux_name, SysErrorCodeMessage()});
         return false;
     }
 
@@ -1248,7 +1248,7 @@ bool ts::Tuner::start(Report& report)
     filter.flags = DMX_IMMEDIATE_START; // Start capture immediately
 
     if (::ioctl(_guts->demux_fd, ioctl_request_t(DMX_SET_PES_FILTER), &filter) < 0) {
-        report.error(u"error setting filter on %s: %s", {_guts->demux_name, ErrorCodeMessage()});
+        report.error(u"error setting filter on %s: %s", {_guts->demux_name, SysErrorCodeMessage()});
         return false;
     }
 
@@ -1297,7 +1297,7 @@ bool ts::Tuner::stop(Report& report)
 
     // Stop the demux
     if (::ioctl(_guts->demux_fd, ioctl_request_t(DMX_STOP)) < 0) {
-        report.error(u"error stopping demux on %s: %s", {_guts->demux_name, ErrorCodeMessage()});
+        report.error(u"error stopping demux on %s: %s", {_guts->demux_name, SysErrorCodeMessage()});
         return false;
     }
 
@@ -1342,7 +1342,7 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
             sac.sa_handler = empty_signal_handler;
             TS_POP_WARNING()
             if (::sigaction(_guts->rt_signal, &sac, nullptr) < 0) {
-                report.error(u"error setting tuner receive timer signal: %s", {ErrorCodeMessage()});
+                report.error(u"error setting tuner receive timer signal: %s", {SysErrorCodeMessage()});
                 SignalAllocator::Instance()->release(_guts->rt_signal);
                 _guts->rt_signal = -1;
                 return false;
@@ -1356,7 +1356,7 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
             sev.sigev_notify = SIGEV_SIGNAL;
             sev.sigev_signo = _guts->rt_signal;
             if (::timer_create(CLOCK_REALTIME, &sev, &_guts->rt_timer) < 0) {
-                report.error(u"error creating tuner receive timer: %s", {ErrorCodeMessage()});
+                report.error(u"error creating tuner receive timer: %s", {SysErrorCodeMessage()});
                 return false;
             }
             _guts->rt_timer_valid = true;
@@ -1382,7 +1382,7 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
             sac.sa_handler = SIG_IGN;
             TS_POP_WARNING()
             if (::sigaction(_guts->rt_signal, &sac, nullptr) < 0) {
-                report.error(u"error ignoring tuner receive timer signal: %s", {ErrorCodeMessage()});
+                report.error(u"error ignoring tuner receive timer signal: %s", {SysErrorCodeMessage()});
                 ok = false;
             }
             // Release signal
@@ -1394,7 +1394,7 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
         if (_guts->rt_timer_valid) {
             _guts->rt_timer_valid = false;
             if (::timer_delete(_guts->rt_timer) < 0) {
-                report.error(u"error deleting tuner receive timer: %s", {ErrorCodeMessage()});
+                report.error(u"error deleting tuner receive timer: %s", {SysErrorCodeMessage()});
                 ok = false;
             }
         }
@@ -1434,7 +1434,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         timeout.it_interval.tv_sec = 0;
         timeout.it_interval.tv_nsec = 0;
         if (::timer_settime(_guts->rt_timer, 0, &timeout, nullptr) < 0) {
-            report.error(u"error arming tuner receive timer: %s", {ErrorCodeMessage()});
+            report.error(u"error arming tuner receive timer: %s", {SysErrorCodeMessage()});
             return 0;
         }
         // Deadline time
@@ -1468,7 +1468,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
             got_overflow = true;
         }
         else {
-            report.error(u"receive error on %s: %s", {_guts->dvr_name, ErrorCodeMessage()});
+            report.error(u"receive error on %s: %s", {_guts->dvr_name, SysErrorCodeMessage()});
             break;
         }
 
@@ -1504,7 +1504,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         timeout.it_interval.tv_sec = 0;
         timeout.it_interval.tv_nsec = 0;
         if (::timer_settime(_guts->rt_timer, 0, &timeout, nullptr) < 0) {
-            report.error(u"error disarming tuner receive timer: %s", {ErrorCodeMessage()});
+            report.error(u"error disarming tuner receive timer: %s", {SysErrorCodeMessage()});
         }
     }
 

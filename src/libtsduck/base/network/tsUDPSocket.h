@@ -393,7 +393,7 @@ namespace ts {
         SSMReqSet     _ssmcast;  // Current set of source-specific multicast memberships
 
         // Perform one receive operation. Hide the system mud.
-        SocketErrorCode receiveOne(void* data, size_t max_size, size_t& ret_size, SocketAddress& sender, SocketAddress& destination, Report& report, MicroSecond* timestamp);
+        SysSocketErrorCode receiveOne(void* data, size_t max_size, size_t& ret_size, SocketAddress& sender, SocketAddress& destination, Report& report, MicroSecond* timestamp);
 
         // Furiously idiotic Windows feature, see comment in receiveOne()
 #if defined(TS_WINDOWS)

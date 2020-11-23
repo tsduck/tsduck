@@ -55,7 +55,7 @@ bool ts::ExpandWildcardAndAppend(CONTAINER& container, const UString& pattern)
     ::HANDLE handle = ::FindFirstFileW(pattern.wc_str(), &fdata);
     if (handle == INVALID_HANDLE_VALUE) {
         // No file matching the pattern is not an error
-        const ErrorCode status = ::GetLastError();
+        const SysErrorCode status = ::GetLastError();
         return status == SYS_SUCCESS || status == ERROR_FILE_NOT_FOUND;
     }
 
@@ -70,7 +70,7 @@ bool ts::ExpandWildcardAndAppend(CONTAINER& container, const UString& pattern)
             container.push_back(dir + file);
         }
     } while (::FindNextFileW(handle, &fdata) != 0);
-    const ErrorCode status = ::GetLastError(); // FindNextFile status
+    const SysErrorCode status = ::GetLastError(); // FindNextFile status
 
     // Cleanup the search context
     ::FindClose(handle);

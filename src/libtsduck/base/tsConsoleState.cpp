@@ -47,10 +47,10 @@ ts::ConsoleState::ConsoleState(Report& report)
 
     // Set Windows console input and output to UTF-8.
     if (::SetConsoleCP(CP_UTF8) == 0) {
-        report.error(u"SetConsoleCP error: %s", {ErrorCodeMessage()});
+        report.error(u"SetConsoleCP error: %s", {SysErrorCodeMessage()});
     }
     if (::SetConsoleOutputCP(CP_UTF8) == 0) {
-        report.error(u"SetConsoleOutputCP error: %s", {ErrorCodeMessage()});
+        report.error(u"SetConsoleOutputCP error: %s", {SysErrorCodeMessage()});
     }
 
     report.debug(u"new code pages: input: %d, output: %d", {::GetConsoleCP(), ::GetConsoleOutputCP()});

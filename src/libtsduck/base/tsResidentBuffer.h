@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsSysUtils.h"
 
 namespace ts {
     //!
@@ -72,7 +72,7 @@ namespace ts {
         //! Get error code when not locked
         //! @return The system error code when locking failed.
         //!
-        ErrorCode lockErrorCode() const
+        SysErrorCode lockErrorCode() const
         {
             return _error_code;
         }
@@ -103,7 +103,7 @@ namespace ts {
         size_t    _locked_size;      // Locked size (mlock, multiple of page size)
         size_t    _elem_count;       // Element count in locked region
         bool      _is_locked;        // False if mlock failed.
-        ErrorCode _error_code;       // Lock error code
+        SysErrorCode _error_code;       // Lock error code
     };
 
 }

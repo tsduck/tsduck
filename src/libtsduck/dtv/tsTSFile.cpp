@@ -289,14 +289,14 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
         // Non-empty file name, open it.
         _handle = ::CreateFile(_filename.toUTF8().c_str(), access, shared, NULL, winflags, attrib, NULL);
         if (_handle == INVALID_HANDLE_VALUE) {
-            const ErrorCode err = LastErrorCode();
-            report.log(_severity, u"cannot open %s: %s", {getDisplayFileName(), ErrorCodeMessage(err)});
+            const SysErrorCode err = LastSysErrorCode();
+            report.log(_severity, u"cannot open %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
             return false;
         }
         // Move to end of file if --append
         if (append_access && ::SetFilePointer(_handle, 0, NULL, FILE_END) == INVALID_SET_FILE_POINTER) {
-            const ErrorCode err = LastErrorCode();
-            report.log(_severity, u"cannot append to %s: %s", {getDisplayFileName(), ErrorCodeMessage(err)});
+            const SysErrorCode err = LastSysErrorCode();
+            report.log(_severity, u"cannot append to %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
             ::CloseHandle(_handle);
             return false;
         }
@@ -328,8 +328,8 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
         // In Win32, LARGE_INTEGER is a 64-bit structure, not an integer type
         ::LARGE_INTEGER offset(*(::LARGE_INTEGER*)(&_start_offset));
         if (::SetFilePointerEx(_handle, offset, NULL, FILE_BEGIN) == 0) {
-            const ErrorCode err = LastErrorCode();
-            report.log(_severity, u"error seeking file %s: %s", {_filename, ErrorCodeMessage(err)});
+            const SysErrorCode err = LastSysErrorCode();
+            report.log(_severity, u"error seeking file %s: %s", {_filename, SysErrorCodeMessage(err)});
             if (!_filename.empty()) {
                 ::CloseHandle(_handle);
             }
@@ -372,14 +372,14 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     else {
         // Open a named file.
         if ((_fd = ::open(_filename.toUTF8().c_str(), uflags, mode)) < 0) {
-            const ErrorCode err = LastErrorCode();
-            report.log(_severity, u"cannot open file %s: %s", {getDisplayFileName(), ErrorCodeMessage(err)});
+            const SysErrorCode err = LastSysErrorCode();
+            report.log(_severity, u"cannot open file %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
             return false;
         }
         // Move to end of file if --append.
         if (append_access && ::lseek(_fd, 0, SEEK_END) == off_t(-1)) {
-            const ErrorCode err = LastErrorCode();
-            report.log (_severity, u"error seeking at end of file %s: %s", {getDisplayFileName(), ErrorCodeMessage(err)});
+            const SysErrorCode err = LastSysErrorCode();
+            report.log (_severity, u"error seeking at end of file %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
             ::close(_fd);
             return false;
         }
@@ -393,8 +393,8 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     // Check if this is a regular file.
     struct stat st;
     if (::fstat(_fd, &st) < 0) {
-        const ErrorCode err = LastErrorCode();
-        report.log(_severity, u"cannot stat input file %s: %s", {getDisplayFileName(), ErrorCodeMessage(err)});
+        const SysErrorCode err = LastSysErrorCode();
+        report.log(_severity, u"cannot stat input file %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
         if (!_filename.empty()) {
             ::close(_fd);
         }
@@ -412,8 +412,8 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
 
     // If an initial offset is specified, move here
     if (_start_offset != 0 && ::lseek(_fd, off_t(_start_offset), SEEK_SET) == off_t(-1)) {
-        const ErrorCode err = LastErrorCode();
-        report.log (_severity, u"error seeking input file %s: %s", {getDisplayFileName(), ErrorCodeMessage(err)});
+        const SysErrorCode err = LastSysErrorCode();
+        report.log (_severity, u"error seeking input file %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
         if (!_filename.empty()) {
             ::close(_fd);
         }
@@ -479,8 +479,8 @@ bool ts::TSFile::seekInternal(uint64_t index, Report& report)
 #else
     if (::lseek(_fd, off_t(_start_offset + index), SEEK_SET) == off_t(-1)) {
 #endif
-        const ErrorCode err = LastErrorCode();
-        report.log(_severity, u"error seeking file %s: %s", {getDisplayFileName(), ErrorCodeMessage(err)});
+        const SysErrorCode err = LastSysErrorCode();
+        report.log(_severity, u"error seeking file %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
         return false;
     }
     else {
@@ -577,11 +577,11 @@ bool ts::TSFile::readStreamPartial(void* buffer, size_t request_size, size_t& re
     }
     else {
         // Error case.
-        const ErrorCode error_code = LastErrorCode();
+        const SysErrorCode error_code = LastSysErrorCode();
         _at_eof = _at_eof || error_code == ERROR_HANDLE_EOF || error_code == ERROR_BROKEN_PIPE;
         if (!_at_eof) {
             // Actual error, not an EOF.
-            report.error(u"error reading from %s: %s", {getDisplayFileName(), ErrorCodeMessage(error_code)});
+            report.error(u"error reading from %s: %s", {getDisplayFileName(), SysErrorCodeMessage(error_code)});
         }
         return false;
     }
@@ -603,10 +603,10 @@ bool ts::TSFile::readStreamPartial(void* buffer, size_t request_size, size_t& re
             return true;
         }
         else {
-            const ErrorCode error_code = LastErrorCode();
+            const SysErrorCode error_code = LastSysErrorCode();
             if (error_code != EINTR) {
                 // Actual error (not an interrupt)
-                report.error(u"error reading from %s: %s", {getDisplayFileName(), ErrorCodeMessage(error_code)});
+                report.error(u"error reading from %s: %s", {getDisplayFileName(), SysErrorCodeMessage(error_code)});
                 return false;
             }
         }
@@ -663,7 +663,7 @@ size_t ts::TSFile::readPackets(TSPacket* buffer, TSPacketMetadata* metadata, siz
 bool ts::TSFile::writeStream(const void* buffer, size_t data_size, size_t& written_size, Report& report)
 {
     written_size = 0;
-    ErrorCode error_code = SYS_SUCCESS;
+    SysErrorCode error_code = SYS_SUCCESS;
 
 #if defined(TS_WINDOWS)
 
@@ -681,7 +681,7 @@ bool ts::TSFile::writeStream(const void* buffer, size_t data_size, size_t& writt
             remain -= outsize;
             written_size += size_t(outsize);
         }
-        else if ((error_code = LastErrorCode()) == ERROR_BROKEN_PIPE || error_code == ERROR_NO_DATA) {
+        else if ((error_code = LastSysErrorCode()) == ERROR_BROKEN_PIPE || error_code == ERROR_NO_DATA) {
             // Broken pipe: error state but don't report error.
             // Note that ERROR_NO_DATA (= 232) means "the pipe is being closed"
             // and this is the actual error code which is returned when the pipe
@@ -690,7 +690,7 @@ bool ts::TSFile::writeStream(const void* buffer, size_t data_size, size_t& writt
         }
         else {
             // Write error
-            report.log(_severity, u"error writing %s: %s (%d)", {getDisplayFileName(), ErrorCodeMessage(error_code), error_code});
+            report.log(_severity, u"error writing %s: %s (%d)", {getDisplayFileName(), SysErrorCodeMessage(error_code), error_code});
             return false;
         }
     }
@@ -713,11 +713,11 @@ bool ts::TSFile::writeStream(const void* buffer, size_t data_size, size_t& writt
             remain -= outsize;
             written_size += size_t(outsize);
         }
-        else if ((error_code = LastErrorCode()) != EINTR) {
+        else if ((error_code = LastSysErrorCode()) != EINTR) {
             // Actual error (not an interrupt)
             // Don't report error on broken pipe.
             if (error_code != EPIPE) {
-                report.log(_severity, u"error writing %s: %s (%d)", {getDisplayFileName(), ErrorCodeMessage(error_code), error_code});
+                report.log(_severity, u"error writing %s: %s (%d)", {getDisplayFileName(), SysErrorCodeMessage(error_code), error_code});
             }
             return false;
         }
