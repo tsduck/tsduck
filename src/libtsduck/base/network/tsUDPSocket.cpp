@@ -416,7 +416,7 @@ bool ts::UDPSocket::send(const void* data, size_t size, const SocketAddress& des
     ::sockaddr addr;
     dest.copy(addr);
 
-    if (::sendto(getSocket(), SysSendBufferPointer(data), size, 0, &addr, sizeof(addr)) < 0) {
+    if (::sendto(getSocket(), SysSendBufferPointer(data), SysSendSizeType(size), 0, &addr, sizeof(addr)) < 0) {
         report.error(u"error sending UDP message: " + SysSocketErrorCodeMessage());
         return false;
     }

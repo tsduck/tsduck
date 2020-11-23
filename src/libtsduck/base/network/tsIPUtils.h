@@ -299,7 +299,7 @@ namespace ts {
     //! The "standard" parameter type is @c void* but some systems use other exotic values.
     //! Example:
     //! @code
-    //! SysSocketSignedSizeType gone = send(sock, SysSendBufferPointer(&data), size, 0);
+    //! SysSocketSignedSizeType gone = send(sock, SysSendBufferPointer(&data), SysSendSizeType(size), 0);
     //! @endcode
     //!
 #if defined(DOXYGEN)
@@ -308,6 +308,17 @@ namespace ts {
     typedef const char* SysSendBufferPointer;
 #elif defined(TS_UNIX)
     typedef void* SysSendBufferPointer;
+#endif
+
+    //!
+    //! Integer type for the size of the data buffer for a send() system call.
+    //!
+#if defined(DOXYGEN)
+    typedef platform_specific SysSendSizeType;
+#elif defined(TS_WINDOWS)
+    typedef int SysSendSizeType;
+#elif defined(TS_UNIX)
+    typedef size_t SysSendSizeType;
 #endif
 
     //!
