@@ -100,26 +100,4 @@ namespace ts {
     //! @return True if @a sid indicates a PES packet with long header.
     //!
     TSDUCKDLL bool IsLongHeaderSID(uint8_t sid);
-
-
-    //---------------------------------------------------------------------
-    //! PES start code values.
-    //---------------------------------------------------------------------
-
-    enum : uint8_t {
-        PST_PICTURE         = 0x00,  //!< Picture PES start code.
-        PST_SLICE_MIN       = 0x01,  //!< First slice PES start code.
-        PST_SLICE_MAX       = 0xAF,  //!< Last slice PES start code.
-        PST_RESERVED_B0     = 0xB0,  //!< Reserved PES start code.
-        PST_RESERVED_B1     = 0xB1,  //!< Reserved PES start code.
-        PST_USER_DATA       = 0xB2,  //!< User data PES start code.
-        PST_SEQUENCE_HEADER = 0xB3,  //!< Sequence header PES start code.
-        PST_SEQUENCE_ERROR  = 0xB4,  //!< Sequence error PES start code.
-        PST_EXTENSION       = 0xB5,  //!< Extension PES start code.
-        PST_RESERVED_B6     = 0xB6,  //!< Reserved PES start code.
-        PST_SEQUENCE_END    = 0xB7,  //!< End of sequence PES start code.
-        PST_GROUP           = 0xB8,  //!< Group PES start code.
-        PST_SYSTEM_MIN      = 0xB9,  //!< First stream id value (SID_*).
-        PST_SYSTEM_MAX      = 0xFF,  //!< Last stream id value (SID_*).
-    };
 }

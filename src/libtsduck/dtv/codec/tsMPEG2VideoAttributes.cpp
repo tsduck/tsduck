@@ -29,7 +29,7 @@
 
 #include "tsMPEG2VideoAttributes.h"
 #include "tsMemory.h"
-#include "tsPES.h"
+#include "tsMPEG2.h"
 TSDUCK_SOURCE;
 
 
@@ -133,7 +133,7 @@ ts::UString ts::MPEG2VideoAttributes::refreshModeName() const
 // Extract frame rate fields from frame rate code
 //----------------------------------------------------------------------------
 
-size_t ts::MPEG2VideoAttributes::FRNum (uint8_t code)
+size_t ts::MPEG2VideoAttributes::FRNum(uint8_t code)
 {
     switch (code) {
         case 1:  return 24000;
@@ -148,7 +148,7 @@ size_t ts::MPEG2VideoAttributes::FRNum (uint8_t code)
     }
 }
 
-size_t ts::MPEG2VideoAttributes::FRDiv (uint8_t code)
+size_t ts::MPEG2VideoAttributes::FRDiv(uint8_t code)
 {
     switch (code) {
         case 1:  return 1001;
@@ -181,8 +181,8 @@ bool ts::MPEG2VideoAttributes::moreBinaryData(const uint8_t* udata, size_t size)
     }
     else if (data[3] == PST_SEQUENCE_HEADER && size >= 12) {
         // First set of value
-        _sh_hsize = (GetUInt16 (data + 4) >> 4) & 0x0FFF;
-        _sh_vsize = GetUInt16 (data + 5) & 0x0FFF;
+        _sh_hsize = (GetUInt16(data + 4) >> 4) & 0x0FFF;
+        _sh_vsize = GetUInt16(data + 5) & 0x0FFF;
         _sh_ar_code = (data[7] >> 4) & 0x0F;
         _sh_fr_code = data[7] & 0x0F;
         uint32_t fields = GetUInt32 (data + 8);
@@ -203,9 +203,9 @@ bool ts::MPEG2VideoAttributes::moreBinaryData(const uint8_t* udata, size_t size)
         bool progressive = (data[5] & 0x08) != 0;
         bool interlaced = !progressive;
         uint8_t cf_code = (data[5] >> 1) & 0x03;
-        size_t hsize_ext = (GetUInt16 (data + 5) >> 7) & 0x0003;
+        size_t hsize_ext = (GetUInt16(data + 5) >> 7) & 0x0003;
         size_t vsize_ext = (data[6] >> 5) & 0x03;
-        BitRate bitrate_ext = (GetUInt16 (data + 6) >> 1) & 0x0FFF;
+        BitRate bitrate_ext = (GetUInt16(data + 6) >> 1) & 0x0FFF;
         size_t vbv_ext = data[8];
         size_t fr_ext_n = (data[9] >> 5) & 0x03;
         size_t fr_ext_d = data[9] & 0x1F;
@@ -213,11 +213,11 @@ bool ts::MPEG2VideoAttributes::moreBinaryData(const uint8_t* udata, size_t size)
         // Compute final values:
         size_t hsize = _sh_hsize | (hsize_ext << 12);
         size_t vsize = _sh_vsize | (vsize_ext << 12);
-        size_t fr_num = FRNum (_sh_ar_code);
-        size_t fr_div = FRDiv (_sh_ar_code);
+        size_t fr_num = FRNum(_sh_ar_code);
+        size_t fr_div = FRDiv(_sh_ar_code);
         if (fr_num == 0) {
             // Not a valid aspect ratio code
-            fr_num = size_t (_sh_ar_code) * (fr_ext_n + 1);
+            fr_num = size_t(_sh_ar_code) * (fr_ext_n + 1);
             fr_div = fr_ext_d + 1;
         }
         BitRate bitrate = _sh_bitrate | (bitrate_ext << 18);
@@ -248,8 +248,8 @@ bool ts::MPEG2VideoAttributes::moreBinaryData(const uint8_t* udata, size_t size)
     }
     else {
         // No extension data after sequence header => MPEG-1
-        size_t fr_num = FRNum (_sh_ar_code);
-        size_t fr_div = FRDiv (_sh_ar_code);
+        size_t fr_num = FRNum(_sh_ar_code);
+        size_t fr_div = FRDiv(_sh_ar_code);
         bool changed = !_is_valid || _hsize != _sh_hsize || _vsize != _sh_vsize ||
             _ar_code != _sh_ar_code || _progressive || _interlaced || _cf_code != 0 ||
             _fr_num != fr_num || _fr_div != fr_div || _bitrate != _sh_bitrate ||
