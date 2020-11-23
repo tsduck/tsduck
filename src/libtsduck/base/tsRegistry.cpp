@@ -181,7 +181,7 @@ bool ts::Registry::OpenKey(Handle root, const UString& key, ::REGSAM sam, Handle
         return true;
     }
     else {
-        report.error(u"error opening key %s: %s", {key, ErrorCodeMessage(hr)});
+        report.error(u"error opening key %s: %s", {key, SysErrorCodeMessage(hr)});
         return false;
     }
 }
@@ -206,7 +206,7 @@ ts::UString ts::Registry::GetValue(const UString& key, const UString& value_name
     ::DWORD size = 0;
     ::LONG hr = ::RegQueryValueExW(hkey, value_name.wc_str(), NULL, &type, NULL, &size);
     if ((hr != ERROR_SUCCESS && hr != ERROR_MORE_DATA) || size <= 0) {
-        report.error(u"error querying %s\\%s: %s", {key, value_name, ErrorCodeMessage(hr)});
+        report.error(u"error querying %s\\%s: %s", {key, value_name, SysErrorCodeMessage(hr)});
         ::RegCloseKey(hkey);
         return UString();
     }
@@ -271,7 +271,7 @@ bool ts::Registry::SetValue(const UString& key, const UString& value_name, const
 
     const bool success = hr == ERROR_SUCCESS;
     if (!success) {
-        report.error(u"error setting %s\\%s: %s", {key, value_name, ErrorCodeMessage(hr)});
+        report.error(u"error setting %s\\%s: %s", {key, value_name, SysErrorCodeMessage(hr)});
     }
     ::RegCloseKey(hkey);
     return success;
@@ -301,7 +301,7 @@ bool ts::Registry::SetValue(const UString& key, const UString& value_name, uint3
 
     const bool success = hr == ERROR_SUCCESS;
     if (!success) {
-        report.error(u"error setting %s\\%s: %s", {key, value_name, ErrorCodeMessage(hr)});
+        report.error(u"error setting %s\\%s: %s", {key, value_name, SysErrorCodeMessage(hr)});
     }
     ::RegCloseKey(hkey);
     return success;
@@ -325,7 +325,7 @@ bool ts::Registry::DeleteValue(const UString& key, const UString& value_name, Re
     const ::LONG hr = ::RegDeleteValueW(hkey, value_name.wc_str());
     const bool success = hr == ERROR_SUCCESS;
     if (!success) {
-        report.error(u"error deleting %s\\%s: %s", {key, value_name, ErrorCodeMessage(hr)});
+        report.error(u"error deleting %s\\%s: %s", {key, value_name, SysErrorCodeMessage(hr)});
     }
     ::RegCloseKey(hkey);
     return success;
@@ -362,7 +362,7 @@ bool ts::Registry::CreateKey(const UString& key, bool is_volatile, Report& repor
         ::RegCloseKey(hnewkey);
     }
     else {
-        report.error(u"error creating %s: %s", {key, ErrorCodeMessage(hr)});
+        report.error(u"error creating %s: %s", {key, SysErrorCodeMessage(hr)});
     }
     ::RegCloseKey(hkey);
     return success;
@@ -386,7 +386,7 @@ bool ts::Registry::DeleteKey(const UString& key, Report& report)
     const ::LONG hr = ::RegDeleteKeyW(hkey, newkey.wc_str());
     const bool success = hr == ERROR_SUCCESS;
     if (!success) {
-        report.error(u"error deleting %s: %s", {key, ErrorCodeMessage(hr)});
+        report.error(u"error deleting %s: %s", {key, SysErrorCodeMessage(hr)});
     }
     ::RegCloseKey(hkey);
     return success;
@@ -401,7 +401,7 @@ bool ts::Registry::NotifySettingChangeParam(const void* param, uint32_t timeout_
 {
     const bool ok = 0 != ::SendMessageTimeoutW(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(param), SMTO_ABORTIFHUNG, ::UINT(timeout_ms), 0);
     if (!ok) {
-        report.error(u"notification error: %s", {ErrorCodeMessage()});
+        report.error(u"notification error: %s", {SysErrorCodeMessage()});
     }
     return ok;
 }

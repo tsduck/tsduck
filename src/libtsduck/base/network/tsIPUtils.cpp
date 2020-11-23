@@ -86,7 +86,7 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
     // Get the list of local addresses. The memory is allocated by getifaddrs().
     ::ifaddrs* start = nullptr;
     if (::getifaddrs(&start) != 0) {
-        report.error(u"error getting local addresses: %s", {ErrorCodeMessage()});
+        report.error(u"error getting local addresses: %s", {SysErrorCodeMessage()});
         return false;
     }
 
@@ -106,9 +106,9 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
 #elif defined(TS_WINDOWS) || defined(TS_UNIX)
 
     // Create a socket to query the system on
-    TS_SOCKET_T sock = ::socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (sock == TS_SOCKET_T_INVALID) {
-        report.error(u"error creating socket: %s", {SocketErrorCodeMessage()});
+    SysSocketType sock = ::socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (sock == SYS_SOCKET_INVALID) {
+        report.error(u"error creating socket: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
 
@@ -144,7 +144,7 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
     ifc.ifc_len = sizeof(info);
 
     if (::ioctl(sock, SIOCGIFCONF, &ifc) != 0) {
-        report.error(u"error getting local addresses: %s", {SocketErrorCodeMessage()});
+        report.error(u"error getting local addresses: %s", {SysSocketErrorCodeMessage()});
         status = false;
     }
     else {
@@ -158,8 +158,8 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
                 ::ifreq req;
                 req = info[i];
                 if (::ioctl(sock, SIOCGIFNETMASK, &req) != 0) {
-                    const SocketErrorCode err = LastSocketErrorCode();
-                    report.error(u"error getting network mask for %s: %s", {addr, SocketErrorCodeMessage(err)});
+                    const SysSocketErrorCode err = LastSysSocketErrorCode();
+                    report.error(u"error getting network mask for %s: %s", {addr, SysSocketErrorCodeMessage(err)});
                 }
                 else {
                     mask = IPAddress(req.ifr_netmask);
@@ -172,7 +172,7 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
 #endif
 
     // Close socket
-    TS_SOCKET_CLOSE(sock);
+    SysCloseSocket(sock);
 
 #else
 

@@ -85,7 +85,7 @@ bool ts::TCPSocket::open(Report& report)
 // This method is used by a server to declare that the socket has just become opened.
 //----------------------------------------------------------------------------
 
-void ts::TCPSocket::declareOpened(TS_SOCKET_T sock, Report& report)
+void ts::TCPSocket::declareOpened(SysSocketType sock, Report& report)
 {
     {
         Guard lock(_mutex);
@@ -118,10 +118,10 @@ bool ts::TCPSocket::close(Report& report)
 
 bool ts::TCPSocket::setTTL(int ttl, Report& report)
 {
-    TS_SOCKET_TTL_T uttl = TS_SOCKET_TTL_T(ttl);
+    SysSocketTTLType uttl = SysSocketTTLType(ttl);
     report.debug(u"setting socket TTL to %'d", {uttl});
-    if (::setsockopt(getSocket(), IPPROTO_IP, IP_TTL, TS_SOCKOPT_T(&uttl), sizeof(uttl)) != 0) {
-        report.error(u"socket option TTL: %s", {SocketErrorCodeMessage()});
+    if (::setsockopt(getSocket(), IPPROTO_IP, IP_TTL, SysSockOptPointer(&uttl), sizeof(uttl)) != 0) {
+        report.error(u"socket option TTL: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
     return true;
@@ -134,8 +134,8 @@ bool ts::TCPSocket::setNoLinger(Report& report)
     lin.l_onoff = 0;
     lin.l_linger = 0;
     report.debug(u"setting socket linger off");
-    if (::setsockopt(getSocket(), SOL_SOCKET, SO_LINGER, TS_SOCKOPT_T(&lin), sizeof(lin)) != 0) {
-        report.error(u"socket option no linger: %s", {SocketErrorCodeMessage()});
+    if (::setsockopt(getSocket(), SOL_SOCKET, SO_LINGER, SysSockOptPointer(&lin), sizeof(lin)) != 0) {
+        report.error(u"socket option no linger: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
     return true;
@@ -146,10 +146,10 @@ bool ts::TCPSocket::setLingerTime(int seconds, Report& report)
 {
     ::linger lin;
     lin.l_onoff = 1;
-    lin.l_linger = u_short(seconds);
+    lin.l_linger = SysSocketLingerType(seconds);
     report.debug(u"setting socket linger time to %'d seconds", {seconds});
-    if (::setsockopt(getSocket(), SOL_SOCKET, SO_LINGER, TS_SOCKOPT_T(&lin), sizeof(lin)) != 0) {
-        report.error(u"socket option linger: %s", {SocketErrorCodeMessage()});
+    if (::setsockopt(getSocket(), SOL_SOCKET, SO_LINGER, SysSockOptPointer(&lin), sizeof(lin)) != 0) {
+        report.error(u"socket option linger: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
     return true;
@@ -160,8 +160,8 @@ bool ts::TCPSocket::setKeepAlive(bool active, Report& report)
 {
     int keepalive = int(active); // Actual socket option is an int.
     report.debug(u"setting socket keep-alive to %'d", {keepalive});
-    if (::setsockopt(getSocket(), SOL_SOCKET, SO_KEEPALIVE, TS_SOCKOPT_T(&keepalive), sizeof(keepalive)) != 0) {
-        report.error(u"error setting socket keep alive: %s", {SocketErrorCodeMessage()});
+    if (::setsockopt(getSocket(), SOL_SOCKET, SO_KEEPALIVE, SysSockOptPointer(&keepalive), sizeof(keepalive)) != 0) {
+        report.error(u"error setting socket keep alive: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
     return true;
@@ -172,8 +172,8 @@ bool ts::TCPSocket::setNoDelay(bool active, Report& report)
 {
     int nodelay = int(active); // Actual socket option is an int.
     report.debug(u"setting socket no-delay to %'d", {nodelay});
-    if (::setsockopt(getSocket(), IPPROTO_TCP, TCP_NODELAY, TS_SOCKOPT_T(&nodelay), sizeof(nodelay)) != 0) {
-        report.error(u"error setting socket TCP-no-delay: %s", {SocketErrorCodeMessage()});
+    if (::setsockopt(getSocket(), IPPROTO_TCP, TCP_NODELAY, SysSockOptPointer(&nodelay), sizeof(nodelay)) != 0) {
+        report.error(u"error setting socket TCP-no-delay: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
     return true;
@@ -191,7 +191,7 @@ bool ts::TCPSocket::bind(const SocketAddress& addr, Report& report)
 
     report.debug(u"binding socket to %s", {addr});
     if (::bind(getSocket(), &sock_addr, sizeof(sock_addr)) != 0) {
-        report.error(u"error binding socket to local address: %s", {SocketErrorCodeMessage()});
+        report.error(u"error binding socket to local address: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
     return true;

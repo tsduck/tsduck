@@ -198,7 +198,7 @@ bool ts::WebRequest::deleteCookiesFile(Report& report) const
     }
     else {
         report.debug(u"deleting cookies file %s", {_cookiesFileName});
-        const ErrorCode status = DeleteFile(_cookiesFileName);
+        const SysErrorCode status = DeleteFile(_cookiesFileName);
         if (status != SYS_SUCCESS) {
             report.error(u"error deleting cookies file %s", {_cookiesFileName});
             return false;

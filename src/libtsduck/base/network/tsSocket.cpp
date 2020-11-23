@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::Socket::Socket() :
-    _sock(TS_SOCKET_T_INVALID)
+    _sock(SYS_SOCKET_INVALID)
 {
 }
 
@@ -62,14 +62,14 @@ ts::Socket::~Socket()
 
 bool ts::Socket::createSocket(int domain, int type, int protocol, Report& report)
 {
-    if (_sock != TS_SOCKET_T_INVALID) {
+    if (_sock != SYS_SOCKET_INVALID) {
         report.error(u"socket already open");
         return false;
     }
 
     // Create a datagram socket.
-    if ((_sock = ::socket(domain, type, protocol)) == TS_SOCKET_T_INVALID) {
-        report.error(u"error creating socket: %s", {SocketErrorCodeMessage()});
+    if ((_sock = ::socket(domain, type, protocol)) == SYS_SOCKET_INVALID) {
+        report.error(u"error creating socket: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
 
@@ -81,7 +81,7 @@ bool ts::Socket::createSocket(int domain, int type, int protocol, Report& report
 // Set an open socket descriptor from a subclass.
 //----------------------------------------------------------------------------
 
-void ts::Socket::declareOpened(TS_SOCKET_T sock, Report& report)
+void ts::Socket::declareOpened(SysSocketType sock, Report& report)
 {
     if (isOpen()) {
         report.fatal(u"implementation error: socket already open");
@@ -97,16 +97,16 @@ void ts::Socket::declareOpened(TS_SOCKET_T sock, Report& report)
 
 bool ts::Socket::close(Report& report)
 {
-    if (_sock != TS_SOCKET_T_INVALID) {
+    if (_sock != SYS_SOCKET_INVALID) {
         // Shutdown should not be necessary here. However, on Linux, no using
         // shutdown makes a blocking receive hangs forever when close() is
         // invoked by another thread. By using shutdown() before close(),
         // the blocking call is released. This is especially true on UDP sockets
         // where shutdown() is normally meaningless.
-        ::shutdown(_sock, TS_SOCKET_SHUT_RDWR);
+        ::shutdown(_sock, SYS_SOCKET_SHUT_RDWR);
         // Actually close the socket.
-        TS_SOCKET_CLOSE(_sock);
-        _sock = TS_SOCKET_T_INVALID;
+        SysCloseSocket(_sock);
+        _sock = SYS_SOCKET_INVALID;
     }
     return true;
 }
@@ -120,8 +120,8 @@ bool ts::Socket::setSendBufferSize(size_t bytes, Report& report)
 {
     int size = int(bytes); // Actual socket option is an int.
     report.debug(u"setting socket send buffer size to %'d", {bytes});
-    if (::setsockopt(_sock, SOL_SOCKET, SO_SNDBUF, TS_SOCKOPT_T(&size), sizeof(size)) != 0) {
-        report.error(u"error setting socket send buffer size: %s", {SocketErrorCodeMessage()});
+    if (::setsockopt(_sock, SOL_SOCKET, SO_SNDBUF, SysSockOptPointer(&size), sizeof(size)) != 0) {
+        report.error(u"error setting socket send buffer size: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
     return true;
@@ -136,8 +136,8 @@ bool ts::Socket::setReceiveBufferSize(size_t bytes, Report& report)
 {
     int size = int(bytes); // Actual socket option is an int.
     report.debug(u"setting socket receive buffer size to %'d", {bytes});
-    if (::setsockopt(_sock, SOL_SOCKET, SO_RCVBUF, TS_SOCKOPT_T(&size), sizeof(size)) != 0) {
-        report.error(u"error setting socket receive buffer size: %s", {SocketErrorCodeMessage()});
+    if (::setsockopt(_sock, SOL_SOCKET, SO_RCVBUF, SysSockOptPointer(&size), sizeof(size)) != 0) {
+        report.error(u"error setting socket receive buffer size: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
     return true;
@@ -160,8 +160,8 @@ bool ts::Socket::setReceiveTimeout(ts::MilliSecond timeout, ts::Report& report)
     param.tv_usec = suseconds_t(timeout % MilliSecPerSec);
 #endif
 
-    if (::setsockopt(_sock, SOL_SOCKET, SO_RCVTIMEO, TS_SOCKOPT_T(&param), sizeof(param)) != 0) {
-        report.error(u"error setting socket receive timeout: %s", {SocketErrorCodeMessage()});
+    if (::setsockopt(_sock, SOL_SOCKET, SO_RCVTIMEO, SysSockOptPointer(&param), sizeof(param)) != 0) {
+        report.error(u"error setting socket receive timeout: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
 
@@ -177,13 +177,13 @@ bool ts::Socket::reusePort(bool active, Report& report)
 {
     int reuse = int(active); // Actual socket option is an int.
     report.debug(u"setting socket reuse address to %'d", {reuse});
-    if (::setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, TS_SOCKOPT_T(&reuse), sizeof(reuse)) != 0) {
-        report.error(u"error setting socket reuse address: %s", {SocketErrorCodeMessage()});
+    if (::setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, SysSockOptPointer(&reuse), sizeof(reuse)) != 0) {
+        report.error(u"error setting socket reuse address: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
 #if defined(TS_MAC)
     // BSD (MacOS) also needs SO_REUSEPORT in addition to SO_REUSEADDR.
-    if (::setsockopt(_sock, SOL_SOCKET, SO_REUSEPORT, TS_SOCKOPT_T(&reuse), sizeof(reuse)) != 0) {
+    if (::setsockopt(_sock, SOL_SOCKET, SO_REUSEPORT, SysSockOptPointer(&reuse), sizeof(reuse)) != 0) {
         report.error(u"error setting socket reuse port: %s", {SocketErrorCodeMessage()});
         return false;
     }
@@ -199,10 +199,10 @@ bool ts::Socket::reusePort(bool active, Report& report)
 bool ts::Socket::getLocalAddress(SocketAddress& addr, Report& report)
 {
     ::sockaddr sock_addr;
-    TS_SOCKET_SOCKLEN_T len = sizeof(sock_addr);
+    SysSocketLengthType len = sizeof(sock_addr);
     TS_ZERO(sock_addr);
     if (::getsockname(_sock, &sock_addr, &len) != 0) {
-        report.error(u"error getting socket name: %s", {SocketErrorCodeMessage()});
+        report.error(u"error getting socket name: %s", {SysSocketErrorCodeMessage()});
         addr.clear();
         return false;
     }

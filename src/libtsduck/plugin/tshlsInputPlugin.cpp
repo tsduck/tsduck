@@ -373,7 +373,7 @@ bool ts::hls::InputPlugin::stop()
     // Delete all cookies from this session.
     if (FileExists(_webArgs.cookiesFile)) {
         tsp->debug(u"deleting cookies file %s", {_webArgs.cookiesFile});
-        const ErrorCode status = DeleteFile(_webArgs.cookiesFile);
+        const SysErrorCode status = DeleteFile(_webArgs.cookiesFile);
         if (status != SYS_SUCCESS) {
             tsp->error(u"error deleting cookies file %s", {_webArgs.cookiesFile});
         }

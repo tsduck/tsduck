@@ -185,7 +185,7 @@ ts::UString ts::HiDesDevice::Guts::HiDesErrorMessage(ssize_t driver_status, int 
         if (!msg.empty()) {
             msg.append(u", ");
         }
-        msg.append(ErrorCodeMessage(errno_status));
+        msg.append(SysErrorCodeMessage(errno_status));
     }
 
     return msg;
@@ -258,8 +258,8 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
     // Open the device.
     fd = ::open(name.toUTF8().c_str(), O_RDWR);
     if (fd < 0) {
-        const int err = LastErrorCode();
-        report.error(u"error opening %s: %s", {name, ErrorCodeMessage(err)});
+        const int err = LastSysErrorCode();
+        report.error(u"error opening %s: %s", {name, SysErrorCodeMessage(err)});
         return false;
     }
 

@@ -1304,77 +1304,6 @@ namespace ts {
 
 
 //----------------------------------------------------------------------------
-// System error codes
-//----------------------------------------------------------------------------
-
-namespace ts {
-
-    //!
-    //! Integer type for operating system error codes.
-    //!
-#if defined(DOXYGEN)
-    typedef platform_specific ErrorCode;
-#elif defined(TS_WINDOWS)
-    typedef ::DWORD ErrorCode;
-#else
-    typedef int ErrorCode;
-#endif
-
-    //!
-    //! An @link ErrorCode @endlink value indicating success.
-    //!
-    //! It is not guaranteed that this value is the @e only success value.
-    //! Operating system calls which complete successfully may also return
-    //! other values.
-    //!
-#if defined(DOXYGEN)
-    const ErrorCode SYS_SUCCESS = platform_specific;
-#elif defined(TS_WINDOWS)
-    const ErrorCode SYS_SUCCESS = ERROR_SUCCESS;
-#elif defined(TS_UNIX)
-    const ErrorCode SYS_SUCCESS = 0;
-#else
-    #error "Unsupported operating system"
-#endif
-
-    //!
-    //! An @link ErrorCode @endlink value indicating a generic data error.
-    //!
-    //! This value can be used to initialize an error code to some generic
-    //! error code indicating that a data is not yet available or an
-    //! operation is not yet performed.
-    //!
-#if defined(DOXYGEN)
-    const ErrorCode SYS_DATA_ERROR = platform_specific;
-#elif defined(TS_WINDOWS)
-    const ErrorCode SYS_DATA_ERROR = ERROR_INVALID_DATA;
-#elif defined(TS_UNIX)
-    const ErrorCode SYS_DATA_ERROR = EINVAL;
-#else
-    #error "Unsupported operating system"
-#endif
-
-    //!
-    //! Get the error code of the last operating system call.
-    //!
-    //! The validity of the returned value may depends on specific conditions.
-    //!
-    //! @return The error code of the last operating system call.
-    //!
-    TSDUCKDLL inline ErrorCode LastErrorCode()
-    {
-#if defined(TS_WINDOWS)
-        return ::GetLastError();
-#elif defined(TS_UNIX)
-        return errno;
-#else
-        #error "Unsupported operating system"
-#endif
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Request type for ioctl.
 //----------------------------------------------------------------------------
 
@@ -1398,245 +1327,6 @@ namespace ts {
 
 
 //----------------------------------------------------------------------------
-// Socket programming portability macros.
-// Most socket types and functions have identical API in UNIX and Windows.
-// However, there are some slight incompatibilities which are solved by
-// using the following macros.
-//----------------------------------------------------------------------------
-
-#if defined(DOXYGEN)
-
-//!
-//! Data type for socket descriptors as returned by the socket() system call.
-//!
-typedef platform_specific TS_SOCKET_T;
-
-//!
-//! Value of type TS_SOCKET_T which is returned by the socket() system call in case of failure.
-//! Example:
-//! @code
-//! TS_SOCKET_T sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-//! if (sock == TS_SOCKET_T_INVALID) {
-//!     ... error processing ...
-//! }
-//! @endcode
-//!
-#define TS_SOCKET_T_INVALID platform_specific
-
-//!
-//! Integer data type which receives the length of a struct sockaddr.
-//! Example:
-//! @code
-//! struct sockaddr sock_addr;
-//! TS_SOCKET_SOCKLEN_T len = sizeof(sock_addr);
-//! if (getsockname(sock, &sock_addr, &len) != 0) {
-//!     ... error processing ...
-//! }
-//! @endcode
-//!
-typedef platform_specific TS_SOCKET_SOCKLEN_T;
-
-//!
-//! Integer data type for a "signed size" returned from send() or recv() system calls.
-//! Example:
-//! @code
-//! TS_SOCKET_SSIZE_T got = recv(sock, TS_RECVBUF_T(&data), max_size, 0);
-//! @endcode
-//!
-typedef platform_specific TS_SOCKET_SSIZE_T;
-
-//!
-//! Integer data type for the Time To Live (TTL) socket option.
-//! Example:
-//! @code
-//! TS_SOCKET_TTL_T ttl = 10;
-//! if (setsockopt(sock, IPPROTO_IP, IP_TTL, TS_SOCKOPT_T(&ttl), sizeof(ttl)) != 0) {
-//!     ... error processing ...
-//! }
-//! @endcode
-//!
-typedef platform_specific TS_SOCKET_TTL_T;
-
-//!
-//! Integer data type for the TOS socket option.
-//!
-typedef platform_specific TS_SOCKET_TOS_T;
-
-//!
-//! Integer data type for the multicast Time To Live (TTL) socket option.
-//! Example:
-//! @code
-//! TS_SOCKET_MC_TTL_T mttl = 1;
-//! if (setsockopt(sock, IPPROTO_IP, IP_MULTICAST_TTL, TS_SOCKOPT_T(&mttl), sizeof(mttl)) != 0) {
-//!     ... error processing ...
-//! }
-//! @endcode
-//!
-typedef platform_specific TS_SOCKET_MC_TTL_T;
-
-//!
-//! Type conversion macro for the field l_linger in the struct linger socket option.
-//! All systems do not use the same type size and this may generate some warnings.
-//! Example:
-//! @code
-//! struct linger lin;
-//! lin.l_linger = TS_SOCKET_L_LINGER_T(seconds);
-//! @endcode
-//!
-#define TS_SOCKET_L_LINGER_T(x) platform_specific
-
-//!
-//! Integer data type for the IP_PKTINFO socket option.
-//! Example:
-//! @code
-//! TS_SOCKET_PKTINFO_T state = 1;
-//! if (setsockopt(sock, IPPROTO_IP, IP_PKTINFO, TS_SOCKOPT_T(&state), sizeof(state)) != 0) {
-//!     ... error processing ...
-//! }
-//! @endcode
-//!
-typedef platform_specific TS_SOCKET_PKTINFO_T;
-
-//!
-//! Type conversion macro for the address of a socket option value.
-//! The "standard" parameter type is @c void* but some systems use other exotic values.
-//! Example:
-//! @code
-//! TS_SOCKET_TTL_T ttl = 10;
-//! if (setsockopt(sock, IPPROTO_IP, IP_TTL, TS_SOCKOPT_T(&ttl), sizeof(ttl)) != 0) {
-//!     ... error processing ...
-//! }
-//! @endcode
-//!
-#define TS_SOCKOPT_T(x) platform_specific
-
-//!
-//! Type conversion macro for the address of the data buffer for a recv() system call.
-//! The "standard" parameter type is @c void* but some systems use other exotic values.
-//! Example:
-//! @code
-//! TS_SOCKET_SSIZE_T got = recv(sock, TS_RECVBUF_T(&data), max_size, 0);
-//! @endcode
-//!
-#define TS_RECVBUF_T(x) platform_specific
-
-//!
-//! Type conversion macro for the address of the data buffer for a send() system call.
-//! The "standard" parameter type is @c void* but some systems use other exotic values.
-//! Example:
-//! @code
-//! TS_SOCKET_SSIZE_T gone = send(sock, TS_SENDBUF_T(&data), size, 0);
-//! @endcode
-//!
-#define TS_SENDBUF_T(x) platform_specific
-
-//!
-//! Name of the ioctl() system call which applies to socket devices.
-//! The "standard" name is @c ioctl but some systems use other exotic names.
-//! Note that the ioctl() system call is rarely used on sockets.
-//! Most options are accessed through getsockopt() and setsockopt().
-//!
-#define TS_SOCKET_IOCTL platform_specific
-
-//!
-//! Name of the close() system call which applies to socket devices.
-//! The "standard" name is @c close but some systems use other exotic names.
-//! Example:
-//! @code
-//! TS_SOCKET_CLOSE(sock);
-//! @endcode
-//!
-#define TS_SOCKET_CLOSE platform_specific
-
-//!
-//! Name of the option for the shutdown() system call which means "close on both directions".
-//! Example:
-//! @code
-//! shutdown(sock, TS_SOCKET_SHUT_RDWR);
-//! @endcode
-//!
-#define TS_SOCKET_SHUT_RDWR platform_specific
-
-//!
-//! Name of the option for the shutdown() system call which means "close on receive side".
-//! Example:
-//! @code
-//! shutdown(sock, TS_SOCKET_SHUT_RD);
-//! @endcode
-//!
-#define TS_SOCKET_SHUT_RD platform_specific
-
-//!
-//! Name of the option for the shutdown() system call which means "close on send side".
-//! Example:
-//! @code
-//! shutdown(sock, TS_SOCKET_SHUT_WR);
-//! @endcode
-//!
-#define TS_SOCKET_SHUT_WR platform_specific
-
-//!
-//! System error code value meaning "connection reset by peer".
-//!
-#define TS_SOCKET_ERR_RESET platform_specific
-
-//!
-//! System error code value meaning "peer socket not connected".
-//!
-#define TS_SOCKET_ERR_NOTCONN platform_specific
-
-#elif defined(TS_WINDOWS)
-
-#define TS_SOCKET_L_LINGER_T(x) (static_cast<u_short>(x))
-#define TS_SOCKOPT_T(x)         (reinterpret_cast<const char*>(x))
-#define TS_RECVBUF_T(x)         (reinterpret_cast<char*>(x))
-#define TS_SENDBUF_T(x)         (reinterpret_cast<const char*>(x))
-#define TS_SOCKET_IOCTL         ::ioctlsocket
-#define TS_SOCKET_CLOSE         ::closesocket
-#define TS_SOCKET_T_INVALID     INVALID_SOCKET
-#define TS_SOCKET_SHUT_RDWR     SD_BOTH
-#define TS_SOCKET_SHUT_RD       SD_RECEIVE
-#define TS_SOCKET_SHUT_WR       SD_SEND
-#define TS_SOCKET_ERR_RESET     WSAECONNRESET
-#define TS_SOCKET_ERR_NOTCONN   WSAENOTCONN
-
-typedef ::SOCKET TS_SOCKET_T;
-typedef int TS_SOCKET_SOCKLEN_T;
-typedef int TS_SOCKET_SSIZE_T;
-typedef ::DWORD TS_SOCKET_TOS_T;
-typedef ::DWORD TS_SOCKET_TTL_T;
-typedef ::DWORD TS_SOCKET_MC_TTL_T;
-typedef ::DWORD TS_SOCKET_PKTINFO_T;
-
-#elif defined(TS_UNIX)
-
-#define TS_SOCKET_L_LINGER_T(x) (static_cast<int>(x))
-#define TS_SOCKOPT_T(x)         (x)
-#define TS_RECVBUF_T(x)         (x)
-#define TS_SENDBUF_T(x)         (x)
-#define TS_SOCKET_IOCTL         ::ioctl
-#define TS_SOCKET_CLOSE         ::close
-#define TS_SOCKET_T_INVALID     (-1)
-#define TS_SOCKET_SHUT_RDWR     SHUT_RDWR
-#define TS_SOCKET_SHUT_RD       SHUT_RD
-#define TS_SOCKET_SHUT_WR       SHUT_WR
-#define TS_SOCKET_ERR_RESET     EPIPE
-#define TS_SOCKET_ERR_NOTCONN   ENOTCONN
-
-typedef int TS_SOCKET_T;
-typedef ::socklen_t TS_SOCKET_SOCKLEN_T;
-typedef ::ssize_t TS_SOCKET_SSIZE_T;
-typedef int TS_SOCKET_TOS_T;
-typedef int TS_SOCKET_TTL_T;
-typedef unsigned char TS_SOCKET_MC_TTL_T;
-typedef int TS_SOCKET_PKTINFO_T;
-
-#else
-#error "check socket compatibility macros on this platform"
-#endif
-
-
-//----------------------------------------------------------------------------
 // Some integer constants.
 //----------------------------------------------------------------------------
 
@@ -1646,11 +1336,10 @@ namespace ts {
     //! An alternative value for the standard @c std::string::npos value.
     //! Required on Windows to avoid linking issue.
     //!
-    const size_t NPOS =
 #if defined(TS_WINDOWS)
-        size_t(-1);
+    const size_t NPOS = size_t(-1);
 #else
-        std::string::npos;
+    const size_t NPOS = std::string::npos;
 #endif
 
 }
@@ -1661,7 +1350,6 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 namespace ts {
-
     //!
     //! This integer type is used to represent any sub-quantity of seconds.
     //!
@@ -1748,6 +1436,7 @@ namespace ts {
 namespace ts {
     //!
     //! Enumeration type used to indicate if the data referenced by a pointer shall be copied or shared.
+    //!
     enum class ShareMode {
         COPY,  //!< Data shall be copied.
         SHARE  //!< Data shall be shared.

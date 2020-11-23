@@ -357,7 +357,7 @@ public:
 ts::SRTSocket::Guts::Guts() :
     default_address(),
     mode(SRTSocketMode::LISTENER),
-    sock(-1),  // do not use TS_SOCKET_T_INVALID, an SRT socket is not a socket, it is always an int
+    sock(-1),  // do not use SYS_SOCKET_INVALID, an SRT socket is not a socket, it is always an int
     transtype(SRTT_INVALID),
     packet_filter(),
     passphrase(),

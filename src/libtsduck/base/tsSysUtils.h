@@ -87,7 +87,6 @@
 #define TS_DEFAULT_CSV_SEPARATOR u","
 
 namespace ts {
-
     //!
     //! Directory separator character in file paths.
     //!
@@ -126,6 +125,74 @@ namespace ts {
 #else
 #error "Unimplemented operating system"
 #endif
+
+    //!
+    //! Integer type for operating system error codes.
+    //!
+#if defined(DOXYGEN)
+    typedef platform_specific SysErrorCode;
+#elif defined(TS_WINDOWS)
+    typedef ::DWORD SysErrorCode;
+#else
+    typedef int SysErrorCode;
+#endif
+
+    //!
+    //! A SysErrorCode value indicating success.
+    //! It is not guaranteed that this value is the @e only success value.
+    //! Operating system calls which complete successfully may also return
+    //! other values.
+    //!
+#if defined(DOXYGEN)
+    const SysErrorCode SYS_SUCCESS = platform_specific;
+#elif defined(TS_WINDOWS)
+    const SysErrorCode SYS_SUCCESS = ERROR_SUCCESS;
+#elif defined(TS_UNIX)
+    const SysErrorCode SYS_SUCCESS = 0;
+#else
+    #error "Unsupported operating system"
+#endif
+
+    //!
+    //! A SysErrorCode value indicating a generic data error.
+    //! This value can be used to initialize an error code to some generic
+    //! error code indicating that a data is not yet available or an
+    //! operation is not yet performed.
+    //!
+#if defined(DOXYGEN)
+    const SysErrorCode SYS_DATA_ERROR = platform_specific;
+#elif defined(TS_WINDOWS)
+    const SysErrorCode SYS_DATA_ERROR = ERROR_INVALID_DATA;
+#elif defined(TS_UNIX)
+    const SysErrorCode SYS_DATA_ERROR = EINVAL;
+#else
+    #error "Unsupported operating system"
+#endif
+
+    //!
+    //! Get the error code of the last operating system call.
+    //! The validity of the returned value may depends on specific conditions.
+    //! @return The error code of the last operating system call.
+    //!
+    TSDUCKDLL inline SysErrorCode LastSysErrorCode()
+    {
+#if defined(TS_WINDOWS)
+        return ::GetLastError();
+#elif defined(TS_UNIX)
+        return errno;
+#else
+        #error "Unsupported operating system"
+#endif
+    }
+
+    //!
+    //! Format an error code into a string.
+    //!
+    //! @param [in] code An error code from the operating system.
+    //! Typically a result from LastSysErrorCode().
+    //! @return A string describing the error.
+    //!
+    TSDUCKDLL UString SysErrorCodeMessage(SysErrorCode code = LastSysErrorCode());
 
     //!
     //! Return a "vernacular" version of a file path.
@@ -310,7 +377,7 @@ namespace ts {
     //! @param [in] intermediate When true, also create intermediate directories.
     //! @return A system-specific error code (SYS_SUCCESS on success).
     //!
-    TSDUCKDLL ErrorCode CreateDirectory(const UString& path, bool intermediate = false);
+    TSDUCKDLL SysErrorCode CreateDirectory(const UString& path, bool intermediate = false);
 
     //!
     //! Return the name of a directory for temporary files.
@@ -371,7 +438,7 @@ namespace ts {
     //! @param [in] path A file or directory path.
     //! @return A system-specific error code (SYS_SUCCESS on success).
     //!
-    TSDUCKDLL ErrorCode DeleteFile(const UString& path);
+    TSDUCKDLL SysErrorCode DeleteFile(const UString& path);
 
     //!
     //! Truncate a file to the specified size.
@@ -380,7 +447,7 @@ namespace ts {
     //! @param [in] size Size in bytes after which the file shall be truncated.
     //! @return A system-specific error code (SYS_SUCCESS on success).
     //!
-    TSDUCKDLL ErrorCode TruncateFile(const UString& path, uint64_t size);
+    TSDUCKDLL SysErrorCode TruncateFile(const UString& path, uint64_t size);
 
     //!
     //! Rename / move a file or directory.
@@ -395,7 +462,7 @@ namespace ts {
     //! @param [in] new_path The new name for the file or directory.
     //! @return A system-specific error code (SYS_SUCCESS on success).
     //!
-    TSDUCKDLL ErrorCode RenameFile(const UString& old_path, const UString& new_path);
+    TSDUCKDLL SysErrorCode RenameFile(const UString& old_path, const UString& new_path);
 
     //!
     //! Get all files matching a specified wildcard pattern and append them into a container.
@@ -617,15 +684,6 @@ namespace ts {
     //! @return True on success, false on error.
     //!
     TSDUCKDLL bool LoadEnvironment(Environment& env, const UString& fileName);
-
-    //!
-    //! Format an error code into a string.
-    //!
-    //! @param [in] code An error code from the operating system.
-    //! Typically a result from LastErrorCode().
-    //! @return A string describing the error.
-    //!
-    TSDUCKDLL UString ErrorCodeMessage(ErrorCode code = LastErrorCode());
 
     //!
     //! This structure contains metrics about a process

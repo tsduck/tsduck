@@ -42,7 +42,7 @@ bool ts::TCPServer::listen(int backlog, Report& report)
 {
     report.debug(u"server listen, backlog is %d", {backlog});
     if (::listen(getSocket(), backlog) != 0) {
-        report.error(u"error starting TCP server: %s", {SocketErrorCodeMessage()});
+        report.error(u"error starting TCP server: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
     return true;
@@ -67,14 +67,14 @@ bool ts::TCPServer::accept (TCPConnection& client, SocketAddress& client_address
 
     report.debug(u"server accepting clients");
     ::sockaddr sock_addr;
-    TS_SOCKET_SOCKLEN_T len = sizeof(sock_addr);
+    SysSocketLengthType len = sizeof(sock_addr);
     TS_ZERO(sock_addr);
-    TS_SOCKET_T client_sock = ::accept(getSocket(), &sock_addr, &len);
+    SysSocketType client_sock = ::accept(getSocket(), &sock_addr, &len);
 
-    if (client_sock == TS_SOCKET_T_INVALID) {
+    if (client_sock == SYS_SOCKET_INVALID) {
         Guard lock(_mutex);
         if (isOpen()) {
-            report.error(u"error accepting TCP client: %s", {SocketErrorCodeMessage()});
+            report.error(u"error accepting TCP client: %s", {SysSocketErrorCodeMessage()});
         }
         return false;
     }
@@ -96,10 +96,10 @@ bool ts::TCPServer::close(Report& report)
 {
     // Shutdown server socket.
     // Do not report "not connected" errors since they are normal when the client disconnects first.
-    if (::shutdown(getSocket(), TS_SOCKET_SHUT_RDWR) != 0) {
-        const SocketErrorCode err_code = LastSocketErrorCode();
-        if (err_code != TS_SOCKET_ERR_NOTCONN) {
-            report.error(u"error shutdowning server socket: %s", {SocketErrorCodeMessage()});
+    if (::shutdown(getSocket(), SYS_SOCKET_SHUT_RDWR) != 0) {
+        const SysSocketErrorCode err_code = LastSysSocketErrorCode();
+        if (err_code != SYS_SOCKET_ERR_NOTCONN) {
+            report.error(u"error shutdowning server socket: %s", {SysSocketErrorCodeMessage()});
         }
     }
 
