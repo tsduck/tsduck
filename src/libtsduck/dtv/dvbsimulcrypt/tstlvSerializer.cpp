@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Serialization of TLV messages.
-//
-//----------------------------------------------------------------------------
 
 #include "tstlvSerializer.h"
 TSDUCK_SOURCE;

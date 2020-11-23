@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Definitions of a generic block of bytes.
-//
-//----------------------------------------------------------------------------
 
 #include "tsByteBlock.h"
 #include "tsUString.h"

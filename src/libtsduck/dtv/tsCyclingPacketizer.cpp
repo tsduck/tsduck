@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Cyclic packetization of MPEG sections into Transport Stream packets.
-//
-//----------------------------------------------------------------------------
 
 #include "tsCyclingPacketizer.h"
 #include "tsNames.h"

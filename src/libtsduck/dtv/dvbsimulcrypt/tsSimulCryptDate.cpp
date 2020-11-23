@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a date in DVB SimulCrypt protocols (ETSI TS 103 197).
-//
-//----------------------------------------------------------------------------
 
 #include "tsSimulCryptDate.h"
 TSDUCK_SOURCE;

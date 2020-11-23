@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  DVB SimulCrypt EMMG/PDG <=> MUX protocol
-//
-//----------------------------------------------------------------------------
 
 #include "tsEMMGMUX.h"
 #include "tstlvMessageFactory.h"

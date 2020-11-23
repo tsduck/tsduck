@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  PCR statistics analysis
-//
-//----------------------------------------------------------------------------
 
 #include "tsPCRAnalyzer.h"
 #include "tsMemory.h"

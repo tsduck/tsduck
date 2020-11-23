@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Output file redirector.
-//
-//----------------------------------------------------------------------------
 
 #include "tsOutputRedirector.h"
 #include "tsSysUtils.h"

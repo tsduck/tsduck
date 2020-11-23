@@ -26,11 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  AVC VUI (Video Usability Information) parameters
-//  (AVC, Advanced Video Coding, ISO 14496-10, ITU H.264)
-//
-//----------------------------------------------------------------------------
 
 #include "tsAVCVUIParameters.h"
 TSDUCK_SOURCE;

@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Utility routines for memory operations.
-//
-//----------------------------------------------------------------------------
 
 #include "tsMemory.h"
 TSDUCK_SOURCE;

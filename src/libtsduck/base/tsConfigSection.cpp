@@ -26,12 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class holds a "configuration section".
-//  A configuration section contains a list of "entries". Each entry has one
-//  or more values. A value can be interpreted as a string, integer or boolean.
-//
-//----------------------------------------------------------------------------
 
 #include "tsConfigSection.h"
 TSDUCK_SOURCE;

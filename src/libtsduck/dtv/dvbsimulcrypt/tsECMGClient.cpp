@@ -26,11 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  ECM generator client. Use ECMG <=> SCS protocol to request EMC's.
-//  An ECMGClient object acts as an SCS.
-//
-//----------------------------------------------------------------------------
 
 #include "tsECMGClient.h"
 #include "tsGuardCondition.h"

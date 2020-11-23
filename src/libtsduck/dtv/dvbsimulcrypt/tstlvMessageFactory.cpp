@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Factory class for TLV messages
-//
-//----------------------------------------------------------------------------
 
 #include "tstlvMessageFactory.h"
 #include "tstlvAnalyzer.h"

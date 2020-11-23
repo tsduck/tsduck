@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Input file redirector.
-//
-//----------------------------------------------------------------------------
 
 #include "tsInputRedirector.h"
 #include "tsSysUtils.h"

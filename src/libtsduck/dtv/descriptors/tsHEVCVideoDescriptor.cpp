@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an HEVC_video_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsHEVCVideoDescriptor.h"
 #include "tsDescriptor.h"

@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Shared library handling (.so on UNIX, DLL on Windows)
-//
-//----------------------------------------------------------------------------
 
 #include "tsSharedLibrary.h"
 #include "tsSysUtils.h"

@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Automatic guard for mutex / condition pair
-//
-//----------------------------------------------------------------------------
 
 #include "tsGuardCondition.h"
 TSDUCK_SOURCE;
