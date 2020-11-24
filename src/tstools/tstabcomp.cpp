@@ -89,6 +89,7 @@ Options::Options(int argc, char *argv[]) :
     xmlTweaks()
 {
     duck.defineArgsForStandards(*this);
+    duck.defineArgsForTimeReference(*this);
     duck.defineArgsForCharset(*this);
     sectionOptions.defineArgs(*this);
     xmlTweaks.defineArgs(*this);

@@ -310,6 +310,12 @@ namespace ts {
         Time UTCToJST() const;
 
         //!
+        //! Offset of a JST (Japan Standard Time) value from UTC in seconds.
+        //! JST is defined as UTC+9.
+        //!
+        static constexpr MilliSecond JSTOffset = +9 * MilliSecPerHour;
+
+        //!
         //! Flags indicating the list of time fields to display.
         //!
         enum FieldMask {

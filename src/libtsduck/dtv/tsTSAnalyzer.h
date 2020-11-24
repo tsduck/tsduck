@@ -250,15 +250,15 @@ namespace ts {
             TS_NOBUILD_NOCOPY(ETIDContext);
         public:
             // Public members - Synthetic data (do not modify outside ETIDContext methods)
-            const ETID etid;                      //!< ETID value.
-            uint64_t   table_count;               //!< Number of occurences of this table (section# 0).
-            uint64_t   section_count;             //!< Number of occurences of sections in this table.
-            uint64_t   repetition_ts;             //!< Average number of TS packets between occurences of this table (section# 0).
-            uint64_t   min_repetition_ts;         //!< Minimum number of TS packets between occurences of this table (section# 0).
-            uint64_t   max_repetition_ts;         //!< Maximum number of TS packets between occurences of this table (section# 0).
-            uint8_t    first_version;             //!< First version encountered.
-            uint8_t    last_version;              //!< First version encountered.
-            std::bitset <SVERSION_MAX> versions;  //!< Set of versions.
+            const ETID etid;                     //!< ETID value.
+            uint64_t   table_count;              //!< Number of occurences of this table (section# 0).
+            uint64_t   section_count;            //!< Number of occurences of sections in this table.
+            uint64_t   repetition_ts;            //!< Average number of TS packets between occurences of this table (section# 0).
+            uint64_t   min_repetition_ts;        //!< Minimum number of TS packets between occurences of this table (section# 0).
+            uint64_t   max_repetition_ts;        //!< Maximum number of TS packets between occurences of this table (section# 0).
+            uint8_t    first_version;            //!< First version encountered.
+            uint8_t    last_version;             //!< First version encountered.
+            std::bitset<SVERSION_MAX> versions;  //!< Set of versions.
 
             // Public members - Analysis data: Repetition interval evaluation:
             uint64_t   first_pkt;                 //!< Last packet index of first section# 0.
@@ -399,14 +399,14 @@ namespace ts {
         //!
         //! Map of PIDContext, indexed by PID.
         //!
-        typedef std::map <PID, PIDContextPtr> PIDContextMap;
+        typedef std::map<PID, PIDContextPtr> PIDContextMap;
 
         //!
         //! Check if a PID context exists.
         //! @param [in] pid PID to search.
         //! @return True if the PID exists, false otherwise.
         //!
-        bool pidExists(PID pid) const {return _pids.find(pid) != _pids.end();}
+        bool pidExists(PID pid) const { return _pids.find(pid) != _pids.end(); }
 
         //!
         //! Get a PID context.

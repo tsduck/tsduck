@@ -97,6 +97,7 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
     // Define all standard analysis options.
     duck.defineArgsForStandards(*this);
     duck.defineArgsForCharset(*this);
+    duck.defineArgsForTimeReference(*this);
     _analyzer_options.defineArgs(*this);
 
     option(u"interval", 'i', POSITIVE);

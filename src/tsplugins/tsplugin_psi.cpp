@@ -74,6 +74,7 @@ ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
     duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);
     duck.defineArgsForStandards(*this);
+    duck.defineArgsForTimeReference(*this);
     duck.defineArgsForCharset(*this);
     _logger.defineArgs(*this);
     _display.defineArgs(*this);

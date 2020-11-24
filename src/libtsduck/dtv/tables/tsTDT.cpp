@@ -78,13 +78,8 @@ void ts::TDT::clearContent()
 
 void ts::TDT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
-    // Get UTC time.
-    utc_time = buf.getFullMJD();
-
-    // In Japan, the time field is in fact a JST time, convert it to UTC.
-    if ((buf.duck().standards() & Standards::JAPAN) == Standards::JAPAN) {
-        utc_time = utc_time.JSTToUTC();
-    }
+    // Get UTC time. The time reference is UTC as defined by DVB, but can be non-standard.
+    utc_time = buf.getFullMJD() - buf.duck().timeReferenceOffset();
 }
 
 
@@ -94,14 +89,8 @@ void ts::TDT::deserializePayload(PSIBuffer& buf, const Section& section)
 
 void ts::TDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    // Encode the data in MJD in the payload.
-    // In Japan, the time field is in fact a JST time, convert UTC to JST before serialization.
-    if ((buf.duck().standards() & Standards::JAPAN) == Standards::JAPAN) {
-        buf.putFullMJD(utc_time.UTCToJST());
-    }
-    else {
-        buf.putFullMJD(utc_time);
-    }
+    // Encode the data in MJD in the payload. Defined as UTC by DVB, but can be non-standard.
+    buf.putFullMJD(utc_time + buf.duck().timeReferenceOffset());
 }
 
 
@@ -112,7 +101,16 @@ void ts::TDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 void ts::TDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
     if (buf.canReadBytes(5)) {
-        disp << margin << "UTC time: " << buf.getFullMJD().format(Time::DATETIME) << std::endl;
+        // The time reference is UTC as defined by DVB, but can be non-standard.
+        const UString zone(disp.duck().timeReferenceName());
+        const MilliSecond offset = disp.duck().timeReferenceOffset();
+        const Time time(buf.getFullMJD());
+
+        disp << margin << zone << " time: " << time.format(Time::DATETIME);
+        if (offset != 0) {
+            disp << " (UTC: " << (time - offset).format(Time::DATETIME) << ")";
+        }
+        disp << std::endl;
     }
 }
 
