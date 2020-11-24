@@ -105,7 +105,6 @@ namespace ts {
         bool      _is_locked;        // False if mlock failed.
         SysErrorCode _error_code;       // Lock error code
     };
-
 }
 
 #include "tsResidentBufferTemplate.h"

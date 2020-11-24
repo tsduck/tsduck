@@ -90,6 +90,12 @@ namespace ts {
         static UString DefaultFileName(FileStyle style = LOCAL_SYSTEM, const UString& name = UString());
 
         //!
+        //! Get the latest loaded file.
+        //! @return The name of the latest loaded file.
+        //!
+        UString fileName() const { return _filename; }
+
+        //!
         //! Reload the configuration from a file.
         //! @param [in] filename A file name to read.
         //! @param [in,out] report Where to report errors.
@@ -138,10 +144,7 @@ namespace ts {
         //! Get the number of sections in the file.
         //! @return The number of sections in the file.
         //!
-        size_t sectionCount() const
-        {
-            return _sections.size();
-        }
+        size_t sectionCount() const { return _sections.size(); }
 
         //!
         //! Get the names of all sections.
@@ -155,10 +158,7 @@ namespace ts {
         //! @param [in] name The section name.
         //! @return A reference to the section.
         //!
-        ConfigSection& section(const UString& name)
-        {
-            return _sections[name];
-        }
+        ConfigSection& section(const UString& name) { return _sections[name]; }
 
         //!
         //! Index operator: get a reference to a section inside the configuration file instance.
@@ -166,10 +166,7 @@ namespace ts {
         //! @param [in] name The section name.
         //! @return A reference to the section.
         //!
-        ConfigSection& operator[](const UString& name)
-        {
-            return _sections[name];
-        }
+        ConfigSection& operator[](const UString& name) { return _sections[name]; }
 
         //!
         //! Get a reference to a section inside the configuration file instance.
@@ -185,19 +182,13 @@ namespace ts {
         //! @param [in] name The section name.
         //! @return A read-only reference to the section.
         //!
-        const ConfigSection& operator[](const UString& name) const
-        {
-            return section(name);
-        }
+        const ConfigSection& operator[](const UString& name) const { return section(name); }
 
         //!
         //! Delete a section.
         //! @param [in] name The section name to delete.
         //!
-        void deleteSection(const UString& name)
-        {
-            _sections.erase(name);
-        }
+        void deleteSection(const UString& name) { _sections.erase(name); }
 
     private:
         // Content of a file.

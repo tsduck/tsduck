@@ -444,8 +444,8 @@ void ts::EIT::Fix(BinaryTable& table, FixMode mode)
 
 void ts::EIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    // The time reference is UTC as defined by DVB, but JST in Japan.
-    const char* const zone = (disp.duck().standards() & Standards::JAPAN) == Standards::JAPAN ? "JST" : "UTC";
+    // The time reference is UTC as defined by DVB, but can be non-standard.
+    const UString zone(disp.duck().timeReferenceName());
 
     disp << margin << UString::Format(u"Service Id: %d (0x%<X)", {section.tableIdExtension()}) << std::endl;
 

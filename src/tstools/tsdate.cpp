@@ -76,6 +76,9 @@ Options::Options(int argc, char *argv[]) :
     infile(),
     format(ts::TSPacketFormat::AUTODETECT)
 {
+    duck.defineArgsForStandards(*this);
+    duck.defineArgsForTimeReference(*this);
+
     option(u"", 0, STRING, 0, 1);
     help(u"", u"MPEG capture file (standard input if omitted).");
 
@@ -97,6 +100,8 @@ Options::Options(int argc, char *argv[]) :
     help(u"notot", u"Ignore Time Offset Table (TOT).");
 
     analyze(argc, argv);
+
+    duck.loadArgs(*this);
 
     infile = value(u"");
     all = present(u"all");

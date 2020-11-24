@@ -392,7 +392,7 @@ ts::Time ts::Time::JSTToUTC() const
         return *this;
     }
     else {
-        return Time(_value - 9 * MilliSecPerHour * TICKS_PER_MS);
+        return Time(_value - JSTOffset * TICKS_PER_MS);
     }
 }
 
@@ -402,7 +402,7 @@ ts::Time ts::Time::UTCToJST() const
         return *this;
     }
     else {
-        return Time(_value + 9 * MilliSecPerHour * TICKS_PER_MS);
+        return Time(_value + JSTOffset * TICKS_PER_MS);
     }
 }
 

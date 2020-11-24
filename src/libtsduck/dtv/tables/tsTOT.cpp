@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTOT.h"
+#include "tsTDT.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
@@ -150,13 +151,8 @@ void ts::TOT::deserializePayload(PSIBuffer& buf, const Section& section)
     // A TOT section is a short section with a CRC32. But it has already been checked
     // and removed from the buffer since TOT::useTrailingCRC32() returns true.
 
-    // Get UTC time.
-    utc_time = buf.getFullMJD();
-
-    // In Japan, the time field is in fact a JST time, convert it to UTC.
-    if ((buf.duck().standards() & Standards::JAPAN) == Standards::JAPAN) {
-        utc_time = utc_time.JSTToUTC();
-    }
+    // Get UTC time. The time reference is UTC as defined by DVB, but can be non-standard.
+    utc_time = buf.getFullMJD() - buf.duck().timeReferenceOffset();
 
     // Get descriptor list.
     DescriptorList dlist(nullptr);
@@ -173,14 +169,8 @@ void ts::TOT::deserializePayload(PSIBuffer& buf, const Section& section)
 
 void ts::TOT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    // Encode the data in MJD in the payload.
-    // In Japan, the time field is in fact a JST time, convert UTC to JST before serialization.
-    if ((buf.duck().standards() & Standards::JAPAN) == Standards::JAPAN) {
-        buf.putFullMJD(utc_time.UTCToJST());
-    }
-    else {
-        buf.putFullMJD(utc_time);
-    }
+    // Encode the data in MJD in the payload. Defined as UTC by DVB, but can be non-standard.
+    buf.putFullMJD(utc_time + buf.duck().timeReferenceOffset());
 
     // Build a descriptor list.
     DescriptorList dlist(nullptr);
@@ -216,7 +206,8 @@ void ts::TOT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 void ts::TOT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
     if (buf.canReadBytes(5)) {
-        disp << margin << "UTC time: " << buf.getFullMJD().format(Time::DATETIME) << std::endl;
+        // Use TDT display routine for the beginning of the section (adjusted UTC time).
+        TDT::DisplaySection(disp, section, buf, margin);
         disp.displayDescriptorListWithLength(section, buf, margin);
         disp.displayCRC32(section, buf, margin);
     }

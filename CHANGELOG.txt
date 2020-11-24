@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2073
+VERSION 3.24-2084
 
 [NEW] New commands and plugins:
 
@@ -22,6 +22,7 @@ VERSION 3.24-2073
     the new value "RS204" designates TS files containing 204-byte packets with
     trailing Reed-Solomon code.
   * In plugin "pcrextract", the default CSV separator is now "," instead of ";".
+  * Added "default.time" to configuration file (see --time-reference).
   * New options in exiting commands and plugins:
     - Option --log-plugin-index in "tsp".
     - Option --subtitles-pid in plugin "zap".
@@ -31,6 +32,10 @@ VERSION 3.24-2073
     - Options --intra-close and --max-extra-duration to output plugin "hls".
     - Options --bitrate, --acceleration-threshold, --incremental-pcr-restamp,
       --no-smoothing, --pcr-reset-backwards in plugin "merge".
+    - Options --atsc, --isdb, --japan to "tsdate".
+    - Options --brasil and --time-reference in "tsanalyze", "tsdate", "tsp",
+      "tspsi", "tstabcomp", "tstabdump", "tstables" and plugins "analyze",
+      "psi", "tables".
 
 [BUG] Bug fixes:
 

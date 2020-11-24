@@ -32,6 +32,7 @@
 #include "tsDVBCharTableSingleByte.h"
 #include "tsARIBCharset.h"
 #include "tsHFBand.h"
+#include "tsTime.h"
 #include "tsCerrReport.h"
 #include "tsArgs.h"
 TSDUCK_SOURCE;
@@ -53,6 +54,8 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
     _cmdStandards(Standards::NONE),
     _accStandards(Standards::NONE),
     _hfDefaultRegion(),
+    _timeReference(0),
+    _timeRefConfig(DuckConfigFile::Instance()->value(u"default.time")),
     _definedCmdOptions(0),
     _predefined_cas{{CASID_CONAX_MIN,      u"conax"},
                     {CASID_IRDETO_MIN,     u"irdeto"},
@@ -63,6 +66,10 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
                     {CASID_VIACCESS_MIN,   u"viaccess"},
                     {CASID_WIDEVINE_MIN,   u"widevine"}}
 {
+    // Initialize time reference from configuration file. Ignore errors.
+    if (!_timeRefConfig.empty() && !setTimeReference(_timeRefConfig)) {
+        CERR.verbose(u"invalid default.time '%s' in %s", {_timeRefConfig, DuckConfigFile::Instance()->fileName()});
+    }
 }
 
 
@@ -82,6 +89,7 @@ void ts::DuckContext::reset()
     _defaultPDS = 0;
     _cmdStandards = _accStandards = Standards::NONE;
     _hfDefaultRegion.clear();
+    _timeReference = 0;
 }
 
 
@@ -215,6 +223,75 @@ const ts::HFBand* ts::DuckContext::vhfBand() const
 const ts::HFBand* ts::DuckContext::uhfBand() const
 {
     return HFBand::GetBand(defaultHFRegion(), u"UHF", *_report);
+}
+
+
+//----------------------------------------------------------------------------
+// Set a non-standard time reference offset using a name.
+//----------------------------------------------------------------------------
+
+bool ts::DuckContext::setTimeReference(const UString& name)
+{
+    // Convert to uppercase without space.
+    UString str(name);
+    str.convertToUpper();
+    str.remove(SPACE);
+
+    if (str == u"UTC") {
+        _timeReference = 0;
+        return true;
+    }
+    else if (str == u"JST") {
+        _timeReference = Time::JSTOffset;
+        return true;
+    }
+
+    size_t count = 0;
+    size_t last = 0;
+    UChar sign = CHAR_NULL;
+    SubSecond hours = 0;
+    SubSecond minutes = 0;
+
+    str.scan(count, last, u"UTC%c%d:%d", {&sign, &hours, &minutes});
+    if ((count == 2 || count == 3) &&
+        last == str.size() &&
+        (sign == u'+' || sign == u'-') &&
+        hours >= 0 && hours <= 12 &&
+        minutes >= 0 && minutes <= 59)
+    {
+        _timeReference = (sign == u'+' ? +1 : -1) * (hours * MilliSecPerHour + minutes * MilliSecPerMin);
+        return true;
+    }
+    else {
+        // Incorrect name.
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get the non-standard time reference offset as a string.
+//----------------------------------------------------------------------------
+
+ts::UString ts::DuckContext::timeReferenceName() const
+{
+    if (_timeReference == 0) {
+        return u"UTC";  // no offset
+    }
+    else if (_timeReference == Time::JSTOffset) {
+        return u"JST";
+    }
+    else {
+        const UChar sign = _timeReference < 0 ? u'-' : u'+';
+        const SubSecond hours = std::abs(_timeReference) / MilliSecPerHour;
+        const SubSecond minutes = (std::abs(_timeReference) / MilliSecPerMin) % 60;
+        if (minutes == 0) {
+            return UString::Format(u"UTC%c%d", {sign, hours});
+        }
+        else {
+            return UString::Format(u"UTC%c%d:%02d", {sign, hours, minutes});
+        }
+    }
 }
 
 
@@ -372,8 +449,19 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         }
     }
 
+    // Options relating to non-standard time reference.
+    if (cmdOptionsMask & CMD_TIMEREF) {
+
+        args.option(u"time-reference", 0, Args::STRING);
+        args.help(u"time-reference", u"name",
+                  u"Use a non-standard (non-UTC) time reference in TDT, TOT or EIT. "
+                  u"This is typically used in ARIB ISDB and ABNT ISDB-Tb standards. "
+                  u"The specified name can be either 'UTC', 'JST' (Japan Standard Time) or 'UTC+|-hh[:mm]'. "
+                  u"Examples: 'UTC+9' (same as 'JST' for ARIB ISDB), 'UTC-3' (for ABNT ISDB-Tb in Brasil).");
+    }
+
     // Option --japan triggers different options in different sets of options.
-    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION)) {
+    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) {
 
         // Build help text for --japan option. It depends on which set of options is requested.
         // Use _definedCmdOptions instead of cmdOptionsMask to include previous options.
@@ -387,14 +475,32 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         if (_definedCmdOptions & CMD_HF_REGION) {
             options.push_back(u"--hf-band-region japan");
         }
-        UString japan(u"A synonym for '" + UString::Join(options, u" ") + u"'. ");
-        if (_definedCmdOptions & CMD_STANDARDS) {
-            japan.append(u"This option also activates some specificities for Japan such as the use of JST time instead of UTC. ");
+        if (_definedCmdOptions & CMD_TIMEREF) {
+            options.push_back(u"--time-reference JST");
         }
-        japan.append(u"This is a handy shortcut when working on Japanese transport streams.");
 
         args.option(u"japan", 0);
-        args.help(u"japan", japan);
+        args.help(u"japan",
+                  u"A synonym for '" + UString::Join(options, u" ") + u"'. "
+                  u"This is a handy shortcut when working on Japanese transport streams.");
+    }
+
+    // Option --brasil triggers different options in different sets of options.
+    if (cmdOptionsMask & (CMD_STANDARDS | CMD_TIMEREF)) {
+
+        // Build help text. Same principla as --japan.
+        UStringList options;
+        if (_definedCmdOptions & CMD_STANDARDS) {
+            options.push_back(u"--isdb");
+        }
+        if (_definedCmdOptions & CMD_TIMEREF) {
+            options.push_back(u"--time-reference UTC-3");
+        }
+
+        args.option(u"brasil", 0);
+        args.help(u"brasil",
+                  u"A synonym for '" + UString::Join(options, u" ") + u"'. "
+                  u"This is a handy shortcut when working on South American ISDB-Tb transport streams.");
     }
 }
 
@@ -451,11 +557,11 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (args.present(u"atsc")) {
             _cmdStandards |= Standards::ATSC;
         }
-        if (args.present(u"isdb") || args.present(u"japan")) {
+        if (args.present(u"isdb") || args.present(u"japan") || args.present(u"brasil")) {
             _cmdStandards |= Standards::ISDB;
         }
     }
-    if ((_definedCmdOptions & (CMD_STANDARDS | CMD_CHARSET)) && args.present(u"japan")) {
+    if ((_definedCmdOptions & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) && args.present(u"japan")) {
         _cmdStandards |= Standards::JAPAN;
     }
 
@@ -478,6 +584,22 @@ bool ts::DuckContext::loadArgs(Args& args)
         }
     }
 
+    // Options relating to non-standard time reference.
+    if (_definedCmdOptions & CMD_TIMEREF) {
+        if (args.present(u"japan")) {
+            _timeReference = Time::JSTOffset;
+        }
+        else if (args.present(u"brasil")) {
+            _timeReference = -3 * MilliSecPerHour; // UTC-3
+        }
+        else if (args.present(u"time-reference")) {
+            const UString name(args.value(u"time-reference"));
+            if (!setTimeReference(name)) {
+                args.error(u"invalid time reference '%s'", {name});
+            }
+        }
+    }
+
     // Preset forced standards from the command line.
     _accStandards |= _cmdStandards;
 
@@ -496,7 +618,8 @@ ts::DuckContext::SavedArgs::SavedArgs() :
     _charsetOutName(),
     _casId(CASID_NULL),
     _defaultPDS(0),
-    _hfDefaultRegion()
+    _hfDefaultRegion(),
+    _timeReference(0)
 {
 }
 
@@ -509,6 +632,7 @@ void ts::DuckContext::saveArgs(SavedArgs& args) const
     args._casId = _casId;
     args._defaultPDS = _defaultPDS;
     args._hfDefaultRegion = _hfDefaultRegion;
+    args._timeReference = _timeReference;
 }
 
 void ts::DuckContext::restoreArgs(const SavedArgs& args)
@@ -532,5 +656,8 @@ void ts::DuckContext::restoreArgs(const SavedArgs& args)
     }
     if (_definedCmdOptions & CMD_HF_REGION) {
         _hfDefaultRegion = args._hfDefaultRegion;
+    }
+    if (_definedCmdOptions & CMD_TIMEREF) {
+        _timeReference = args._timeReference;
     }
 }

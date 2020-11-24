@@ -353,6 +353,37 @@ namespace ts {
         const HFBand* uhfBand() const;
 
         //!
+        //! Set a non-standard time reference offset.
+        //! In DVB SI, reference times are UTC. These SI can be reused in non-standard ways
+        //! where the stored times use another reference. This is the case with ARIB and ABNT
+        //! variants of ISDB which reuse TOT, TDT and EIT but with another local time reference.
+        //! @param [in] offset Offset from UTC in milli-seconds. Can be positive or negative.
+        //! The default offset is zero, meaning plain UTC time.
+        //!
+        void setTimeReferenceOffset(MilliSecond offset) { _timeReference = offset; }
+
+        //!
+        //! Set a non-standard time reference offset using a name.
+        //! @param [in] name Time reference name. The non-standard time reference offset is computed
+        //! from this name which can be "JST" or "UTC[[+|-]hh[:mm]]".
+        //! @return True on success, false if @a name is invalid.
+        //! @see setTimeReferenceOffset()
+        //!
+        bool setTimeReference(const UString& name);
+
+        //!
+        //! Get the non-standard time reference offset.
+        //! @return The offset from UTC in milli-seconds. Can be positive or negative.
+        //!
+        MilliSecond timeReferenceOffset() const { return _timeReference; }
+
+        //!
+        //! Get the non-standard time reference offset as a string.
+        //! @return The offset from UTC as a string.
+        //!
+        UString timeReferenceName() const;
+
+        //!
         //! Define character set command line options in an Args.
         //! Defined options: @c -\-default-charset, @c -\-europe.
         //! The context keeps track of defined options so that loadOptions() can parse the appropriate options.
@@ -393,6 +424,14 @@ namespace ts {
         void defineArgsForHFBand(Args& args) { defineOptions(args, CMD_HF_REGION); }
 
         //!
+        //! Define time reference command line options in an Args.
+        //! Defined options: @c -\-time-reference.
+        //! The context keeps track of defined options so that loadOptions() can parse the appropriate options.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineArgsForTimeReference(Args& args) { defineOptions(args, CMD_TIMEREF); }
+
+        //!
         //! Load the values of all previously defined arguments from command line.
         //! Args error indicator is set in case of incorrect arguments.
         //! @param [in,out] args Command line arguments.
@@ -410,13 +449,14 @@ namespace ts {
             SavedArgs();
         private:
             friend class DuckContext;
-            int       _definedCmdOptions; // Defined command line options, indicate which fields are valid.
-            Standards _cmdStandards;      // Forced standards from the command line.
-            UString   _charsetInName;     // Character set to interpret strings without prefix code.
-            UString   _charsetOutName;    // Preferred character set to generate strings.
-            uint16_t  _casId;             // Preferred CAS id.
-            PDS       _defaultPDS;        // Default PDS value if undefined.
-            UString   _hfDefaultRegion;   // Default region for UHF/VHF band.
+            int         _definedCmdOptions; // Defined command line options, indicate which fields are valid.
+            Standards   _cmdStandards;      // Forced standards from the command line.
+            UString     _charsetInName;     // Character set to interpret strings without prefix code.
+            UString     _charsetOutName;    // Preferred character set to generate strings.
+            uint16_t    _casId;             // Preferred CAS id.
+            PDS         _defaultPDS;        // Default PDS value if undefined.
+            UString     _hfDefaultRegion;   // Default region for UHF/VHF band.
+            MilliSecond _timeReference;     // Time reference in milli-seconds from UTC (used in ISDB variants).
         };
 
         //!
@@ -443,6 +483,8 @@ namespace ts {
         Standards      _cmdStandards;      // Forced standards from the command line.
         Standards      _accStandards;      // Accumulated list of standards in the context.
         UString        _hfDefaultRegion;   // Default region for UHF/VHF band.
+        MilliSecond    _timeReference;     // Time reference in milli-seconds from UTC (used in ISDB variants).
+        UString        _timeRefConfig;     // Time reference name from TSDuck configuration file.
         int            _definedCmdOptions; // Defined command line options.
         const std::map<uint16_t, const UChar*> _predefined_cas;  // Predefined CAS names, index by CAS id (first in range).
 
@@ -453,6 +495,7 @@ namespace ts {
             CMD_STANDARDS = 0x0004,
             CMD_PDS       = 0x0008,
             CMD_CAS       = 0x0010,
+            CMD_TIMEREF   = 0x0020,
         };
 
         // Define several classes of command line options in an Args.
