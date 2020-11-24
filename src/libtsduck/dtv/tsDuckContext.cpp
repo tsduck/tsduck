@@ -454,10 +454,10 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
 
         args.option(u"time-reference", 0, Args::STRING);
         args.help(u"time-reference", u"name",
-                  u"Use a non-standard (non-UTC) time reference in TDT, TOT or EIT. "
+                  u"Use a non-standard (non-UTC) time reference in TDT/TOT. "
                   u"This is typically used in ARIB ISDB and ABNT ISDB-Tb standards. "
                   u"The specified name can be either 'UTC', 'JST' (Japan Standard Time) or 'UTC+|-hh[:mm]'. "
-                  u"Examples: 'UTC+9' (same as 'JST' for ARIB ISDB), 'UTC-3' (for ABNT ISDB-Tb in Brasil).");
+                  u"Examples: 'UTC+9' (same as 'JST' for ARIB ISDB), 'UTC-3' (for ABNT ISDB-Tb in Brazil).");
     }
 
     // Option --japan triggers different options in different sets of options.
@@ -485,7 +485,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"This is a handy shortcut when working on Japanese transport streams.");
     }
 
-    // Option --brasil triggers different options in different sets of options.
+    // Option --brazil triggers different options in different sets of options.
     if (cmdOptionsMask & (CMD_STANDARDS | CMD_TIMEREF)) {
 
         // Build help text. Same principla as --japan.
@@ -497,8 +497,8 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
             options.push_back(u"--time-reference UTC-3");
         }
 
-        args.option(u"brasil", 0);
-        args.help(u"brasil",
+        args.option(u"brazil", 0);
+        args.help(u"brazil",
                   u"A synonym for '" + UString::Join(options, u" ") + u"'. "
                   u"This is a handy shortcut when working on South American ISDB-Tb transport streams.");
     }
@@ -557,7 +557,7 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (args.present(u"atsc")) {
             _cmdStandards |= Standards::ATSC;
         }
-        if (args.present(u"isdb") || args.present(u"japan") || args.present(u"brasil")) {
+        if (args.present(u"isdb") || args.present(u"japan") || args.present(u"brazil")) {
             _cmdStandards |= Standards::ISDB;
         }
     }
@@ -589,7 +589,7 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (args.present(u"japan")) {
             _timeReference = Time::JSTOffset;
         }
-        else if (args.present(u"brasil")) {
+        else if (args.present(u"brazil")) {
             _timeReference = -3 * MilliSecPerHour; // UTC-3
         }
         else if (args.present(u"time-reference")) {
