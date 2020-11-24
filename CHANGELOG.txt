@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2084
+VERSION 3.24-2086
 
 [NEW] New commands and plugins:
 
@@ -36,6 +36,7 @@ VERSION 3.24-2084
     - Options --brasil and --time-reference in "tsanalyze", "tsdate", "tsp",
       "tspsi", "tstabcomp", "tstabdump", "tstables" and plugins "analyze",
       "psi", "tables".
+    - Option --reverse-etid in plugin "sections".
 
 [BUG] Bug fixes:
 

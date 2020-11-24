@@ -58,6 +58,7 @@ namespace ts {
     private:
         bool                  _section_stuffing;
         bool                  _use_null_pid;
+        bool                  _reverse_eitd;
         size_t                _max_buffered_sections;
         PIDSet                _input_pids;
         PID                   _output_pid;
@@ -87,6 +88,7 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Remove or merge sections from various PID's", u"[options]"),
     _section_stuffing(false),
     _use_null_pid(false),
+    _reverse_eitd(false),
     _max_buffered_sections(1024), // hard-coded for now
     _input_pids(),
     _output_pid(PID_NULL),
@@ -102,7 +104,8 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
          u"The value is a combination of the table id and the table id extension. "
          u"For example, the option -e 0x4A1234 removes all BAT sections (table id 0x4A) "
          u"for bouquet id 0x1234 (table id extension). "
-         u"Several options --etid-remove can be specified.");
+         u"Several options --etid-remove can be specified. "
+         u"See also option --reverse-etid.");
 
     option(u"null-pid-reuse", 'n');
     help(u"null-pid-reuse",
@@ -125,6 +128,17 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
          u"Specify input PID's. More than one input PID can be specified. "
          u"All sections from all input PID's are merged into the output PID. "
          u"At least one input PID must be specified. ");
+
+    option(u"reverse-etid", 'r');
+    help(u"reverse-etid",
+         u"With option --etid-remove, reverse the table id and the table id extension parts "
+         u"in the \"extended table id\" values. With this option, the values in --etid-remove "
+         u"are 0xEEEETT instead of 0xTTEEEE where 'TT' is the table id part and 'EEEE' the table "
+         u"id extension part. This option can be useful when specifying ranges of values. "
+         u"For instance, the option '--etid-remove 0x4A1234-0x4A1250' removes BAT sections "
+         u"(table id 0x4A) for all service ids in the range 0x1234 to 0x1250. On the other hand, "
+         u"the options '--etid-remove 0x12344E-0x12346F --reverse-etid' remove all EIT "
+         u"sections (table ids 0x4E to 0x6F) for the service id 0x1234.");
 
     option(u"stuffing", 's');
     help(u"stuffing",
@@ -149,6 +163,7 @@ bool ts::SectionsPlugin::start()
     // Get option values
     _section_stuffing = present(u"stuffing");
     _use_null_pid = present(u"null-pid-reuse");
+    _reverse_eitd = present(u"reverse-etid");
     _output_pid = intValue(u"output-pid", intValue<PID>(u"pid", PID_NULL, 0));
     getIntValues(_input_pids, u"pid");
     getIntValues(_removed_tids, u"tid-remove");
@@ -204,7 +219,9 @@ void ts::SectionsPlugin::handleSection(SectionDemux& demux, const Section& secti
 {
     // Section characteristics.
     const TID tid = section.tableId();
-    const uint32_t etid = (uint32_t(tid) << 16) | section.tableIdExtension();
+    const uint32_t etid = _reverse_eitd ?
+        ((uint32_t(section.tableIdExtension()) << 8) | tid) :
+        ((uint32_t(tid) << 16) | section.tableIdExtension());
 
     // Filter out sections to be removed.
     if (_removed_tids.find(tid) != _removed_tids.end() || (section.isLongSection() && _removed_etids.find(etid) != _removed_etids.end())) {
