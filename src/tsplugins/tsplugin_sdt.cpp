@@ -36,6 +36,7 @@
 #include "tsPluginRepository.h"
 #include "tsServiceDescriptor.h"
 #include "tsService.h"
+#include "tsAlgorithm.h"
 #include "tsSDT.h"
 TSDUCK_SOURCE;
 
@@ -248,7 +249,7 @@ void ts::SDTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     if (_service.hasId()) {
 
         // Create new service is not existing
-        if (sdt.services.find(_service.getId()) == sdt.services.end()) {
+        if (!Contains(sdt.services, _service.getId())) {
             // Service did not exist, create a new one with all defaults
             SDT::Service& sv(sdt.services[_service.getId()]);
             sv.EITs_present = false;

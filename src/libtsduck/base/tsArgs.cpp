@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsArgs.h"
+#include "tsAlgorithm.h"
 #include "tsSysUtils.h"
 #include "tsVersionInfo.h"
 #include "tsOutputPager.h"
@@ -374,7 +375,7 @@ void ts::Args::adjustPredefinedOptions()
     if ((_flags & NO_HELP) != 0) {
         _iopts.erase(u"help");
     }
-    else if (_iopts.find(u"help") == _iopts.end()) {
+    else if (!Contains(_iopts, u"help")) {
         addOption(IOption(u"help", 0, HelpFormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
         help(u"help", u"Display this help text.");
     }
@@ -383,7 +384,7 @@ void ts::Args::adjustPredefinedOptions()
     if ((_flags & NO_VERSION) != 0) {
         _iopts.erase(u"version");
     }
-    else if (_iopts.find(u"version") == _iopts.end()) {
+    else if (!Contains(_iopts, u"version")) {
         addOption(IOption(u"version", 0,  VersionInfo::FormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
         help(u"version", u"Display the TSDuck version number.");
     }
@@ -392,7 +393,7 @@ void ts::Args::adjustPredefinedOptions()
     if ((_flags & NO_VERBOSE) != 0) {
         _iopts.erase(u"verbose");
     }
-    else if (_iopts.find(u"verbose") == _iopts.end()) {
+    else if (!Contains(_iopts, u"verbose")) {
         addOption(IOption(u"verbose", 'v', NONE, 0, 1, 0, 0, 0, IOPT_PREDEFINED));
         help(u"verbose", u"Produce verbose output.");
     }
@@ -401,7 +402,7 @@ void ts::Args::adjustPredefinedOptions()
     if ((_flags & NO_DEBUG) != 0) {
         _iopts.erase(u"debug");
     }
-    else if (_iopts.find(u"debug") == _iopts.end()) {
+    else if (!Contains(_iopts, u"debug")) {
         addOption(IOption(u"debug", 'd', POSITIVE, 0, 1, 0, 0, 0, IOPT_PREDEFINED | IOPT_OPTVALUE));
         help(u"debug", u"level", u"Produce debug traces. The default level is 1. Higher levels produce more messages.");
     }
@@ -557,8 +558,8 @@ ts::UString ts::Args::optionNames(const ts::UChar* name, const ts::UString& sepa
 
 ts::Args& ts::Args::copyOptions(const Args& other, const bool replace)
 {
-    for (IOptionMap::const_iterator it = other._iopts.begin(); it != other._iopts.end(); ++it) {
-        if ((it->second.flags & IOPT_PREDEFINED) == 0 && (replace || _iopts.find(it->second.name) == _iopts.end())) {
+    for (auto it = other._iopts.begin(); it != other._iopts.end(); ++it) {
+        if ((it->second.flags & IOPT_PREDEFINED) == 0 && (replace || !Contains(_iopts, it->second.name))) {
             addOption(it->second);
         }
     }

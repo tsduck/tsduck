@@ -32,6 +32,7 @@
 #include "tsGuard.h"
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 
@@ -504,7 +505,7 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
                 const HFBandIndex index(hf->_band_name, *it);
                 // Build a set of unique entries for region names.
                 regionSet.insert(*it);
-                if (_objects.find(index) != _objects.end()) {
+                if (Contains(_objects, index)) {
                     report.error(u"duplicate definition for %s, line %d", {index, node->lineNumber()});
                     success = false;
                 }

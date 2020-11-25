@@ -45,6 +45,7 @@
 #include "tsDVBAC3Descriptor.h"
 #include "tsDVBEnhancedAC3Descriptor.h"
 #include "tsCueIdentifierDescriptor.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 
@@ -662,9 +663,9 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 
     // ---- Finally, do PID remapping
 
-    for (std::map<PID, PID>::const_iterator it = _moved_pid.begin(); it != _moved_pid.end(); ++it) {
+    for (auto it = _moved_pid.begin(); it != _moved_pid.end(); ++it) {
         // Check if component exists
-        if (it->first != it->second && pmt.streams.find(it->first) != pmt.streams.end()) {
+        if (it->first != it->second && Contains(pmt.streams, it->first)) {
             pmt.streams[it->second] = pmt.streams[it->first];
             pmt.streams.erase(it->first);
         }

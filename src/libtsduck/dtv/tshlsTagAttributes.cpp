@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tshlsTagAttributes.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 
@@ -110,7 +111,7 @@ void ts::hls::TagAttributes::reload(const UString& params)
 
 bool ts::hls::TagAttributes::present(const ts::UString& name) const
 {
-    return _map.find(name) != _map.end();
+    return Contains(_map, name);
 }
 
 ts::UString ts::hls::TagAttributes::value(const UString& name, const UString& defValue) const

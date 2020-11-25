@@ -35,6 +35,8 @@
 #include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
 #include "tsPacketizer.h"
+#include "tsAlgorithm.h"
+#include "tsBoolPredicate.h"
 TSDUCK_SOURCE;
 
 
@@ -52,21 +54,36 @@ namespace ts {
     public:
         // Implementation of plugin API
         SectionsPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
+        // Command line options.
         bool                  _section_stuffing;
         bool                  _use_null_pid;
         bool                  _reverse_eitd;
+        bool                  _remove;           // there are sections to remove
+        MultiBoolPredicate    _predicate;        // global "and" / "or" on all criteria, see option --and
+        MonoBoolPredicate     _valid_predicate;  // see method condition()
+        BoolPredicate         _cond_predicate;   // see method condition()
         size_t                _max_buffered_sections;
         PIDSet                _input_pids;
         PID                   _output_pid;
-        std::list<SectionPtr> _sections;
         std::set<TID>         _removed_tids;
-        std::set<uint32_t>    _removed_etids;
+        std::set<uint32_t>    _removed_exts;
+        std::set<uint16_t>    _removed_etids;
+        std::set<uint8_t>     _removed_versions;
+
+        // Working data.
+        std::list<SectionPtr> _sections;
         SectionDemux          _demux;
         Packetizer            _packetizer;
+
+        // Compute a condition in the chain of _predicate.
+        // - valid: the condition needs to be checked (eg. there are some tids to remove).
+        // - cond: the condition itself (eg. this section has a tid to remove).
+        bool condition(bool valid, bool cond) const { return _cond_predicate(_valid_predicate(valid), cond); }
 
         // Implementation of SectionHandlerInterface.
         virtual void handleSection(SectionDemux& demux, const Section& section) override;
@@ -89,16 +106,27 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
     _section_stuffing(false),
     _use_null_pid(false),
     _reverse_eitd(false),
+    _remove(false),
+    _predicate(nullptr),
+    _valid_predicate(nullptr),
+    _cond_predicate(nullptr),
     _max_buffered_sections(1024), // hard-coded for now
     _input_pids(),
     _output_pid(PID_NULL),
-    _sections(),
     _removed_tids(),
+    _removed_exts(),
     _removed_etids(),
+    _removed_versions(),
+    _sections(),
     _demux(duck, nullptr, this),
     _packetizer(duck, PID_NULL, this)
 {
-    option(u"etid-remove", 'e', UINT32, 0, UNLIMITED_COUNT, 0, 0x00FFFFFF);
+    option(u"and", 'a');
+    help(u"and",
+         u"Remove a section when all remove conditions are true. "
+         u"By default, a section is removed as soon as one remove condition is true.");
+
+    option(u"etid-remove", 0, UINT32, 0, UNLIMITED_COUNT, 0, 0x00FFFFFF);
     help(u"etid-remove", u"id1[-id2]",
          u"Remove all sections with the corresponding \"extended table id\" values. "
          u"The value is a combination of the table id and the table id extension. "
@@ -151,6 +179,52 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
     help(u"tid-remove", u"id1[-id2]",
          u"Remove all sections with the corresponding table id. "
          u"Several options --tid-remove can be specified.");
+
+    option(u"tid-ext-remove", 'e', UINT16, 0, UNLIMITED_COUNT);
+    help(u"tid-ext-remove", u"id1[-id2]",
+         u"Remove all sections with the corresponding table id extension. "
+         u"Several options --tid-ext-remove can be specified.");
+
+    option(u"version-remove", 'v', INTEGER, 0, UNLIMITED_COUNT, 0, 31);
+    help(u"version-remove", u"v1[-v2]",
+         u"Remove all sections with the corresponding versions. "
+         u"Several options --version-remove can be specified.");
+}
+
+
+//----------------------------------------------------------------------------
+// Get command line options.
+//----------------------------------------------------------------------------
+
+bool ts::SectionsPlugin::getOptions()
+{
+    _section_stuffing = present(u"stuffing");
+    _use_null_pid = present(u"null-pid-reuse");
+    _reverse_eitd = present(u"reverse-etid");
+    _output_pid = intValue(u"output-pid", intValue<PID>(u"pid", PID_NULL, 0));
+    getIntValues(_input_pids, u"pid");
+    getIntValues(_removed_tids, u"tid-remove");
+    getIntValues(_removed_exts, u"tid-ext-remove");
+    getIntValues(_removed_etids, u"etid-remove");
+    getIntValues(_removed_versions, u"version-remove");
+
+    // If there any section to remove?
+    _remove = !_removed_tids.empty() || !_removed_exts.empty() || !_removed_etids.empty() || !_removed_versions.empty();
+
+    if (present(u"and")) {
+        // Global "AND" on all (!valid || condition)
+        _predicate = MultiAnd;
+        _valid_predicate = Not;
+        _cond_predicate = Or;
+    }
+    else {
+        // Global "OR" on all (valid && condition)
+        _predicate = MultiOr;
+        _valid_predicate = Identity;
+        _cond_predicate = And;
+    }
+
+    return true;
 }
 
 
@@ -160,22 +234,11 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
 
 bool ts::SectionsPlugin::start()
 {
-    // Get option values
-    _section_stuffing = present(u"stuffing");
-    _use_null_pid = present(u"null-pid-reuse");
-    _reverse_eitd = present(u"reverse-etid");
-    _output_pid = intValue(u"output-pid", intValue<PID>(u"pid", PID_NULL, 0));
-    getIntValues(_input_pids, u"pid");
-    getIntValues(_removed_tids, u"tid-remove");
-    getIntValues(_removed_etids, u"etid-remove");
-
-    // Reset plugin state.
     _demux.reset();
     _demux.setPIDFilter(_input_pids);
     _packetizer.reset();
     _packetizer.setPID(_output_pid);
     _sections.clear();
-
     return true;
 }
 
@@ -219,22 +282,27 @@ void ts::SectionsPlugin::handleSection(SectionDemux& demux, const Section& secti
 {
     // Section characteristics.
     const TID tid = section.tableId();
-    const uint32_t etid = _reverse_eitd ?
-        ((uint32_t(section.tableIdExtension()) << 8) | tid) :
-        ((uint32_t(tid) << 16) | section.tableIdExtension());
+    const bool is_long = section.isLongSection();
+    const uint16_t ext = section.tableIdExtension();
+    const uint32_t etid = _reverse_eitd ? ((uint32_t(ext) << 8) | tid) : ((uint32_t(tid) << 16) | ext);
 
-    // Filter out sections to be removed.
-    if (_removed_tids.find(tid) != _removed_tids.end() || (section.isLongSection() && _removed_etids.find(etid) != _removed_etids.end())) {
-        return;
+    // Filter out sections to be removed. This can be an "and" or an "or" on the conditions.
+    const bool remove = _remove && _predicate({
+        condition(!_removed_tids.empty(), Contains(_removed_tids, tid)),
+        condition(is_long && !_removed_exts.empty(), Contains(_removed_exts, ext)),
+        condition(is_long && !_removed_etids.empty(), Contains(_removed_etids, etid)),
+        condition(is_long && !_removed_versions.empty(), Contains(_removed_versions, section.version()))
+    });
+
+    if (!remove) {
+        // At this point, we need to keep the section.
+        // Build a copy of it for insertion in the queue.
+        const SectionPtr sp(new Section(section, ShareMode::SHARE));
+        CheckNonNull(sp.pointer());
+
+        // Now insert the section in the queue for the packetizer.
+        _sections.push_back(sp);
     }
-
-    // At this point, we need to keep the section.
-    // Build a copy of it for insertion in the queue.
-    const SectionPtr sp(new Section(section, ShareMode::SHARE));
-    CheckNonNull(sp.pointer());
-
-    // Now insert the section in the queue for the packetizer.
-    _sections.push_back(sp);
 }
 
 

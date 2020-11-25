@@ -30,6 +30,7 @@
 #include "tstsswitchCore.h"
 #include "tsGuard.h"
 #include "tsGuardCondition.h"
+#include "tsAlgorithm.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
@@ -348,7 +349,7 @@ void ts::tsswitch::Core::execute(const Action& event)
 {
     // Set current event. Ignore flag in event.
     const Action eventNoFlag(event, false);
-    if (event.type != NONE && _events.find(eventNoFlag) == _events.end()) {
+    if (event.type != NONE && !Contains(_events, eventNoFlag)) {
         // The event was not present.
         _events.insert(eventNoFlag);
         _log.debug(u"setting event: %s", {event});

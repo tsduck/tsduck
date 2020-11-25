@@ -30,6 +30,7 @@
 #include "tsTablesLoggerFilter.h"
 #include "tsTablesLoggerFilterRepository.h"
 #include "tsDuckContext.h"
+#include "tsAlgorithm.h"
 #include "tsSection.h"
 #include "tsArgs.h"
 #include "tsPAT.h"
@@ -198,8 +199,8 @@ bool ts::TablesLoggerFilter::filterSection(DuckContext& duck, const Section& sec
     }
 
     // Is this a selected TID or TID-ext?
-    const bool tid_set = _tids.find(section.tableId()) != _tids.end();
-    const bool tidext_set = _tidexts.find(section.tableIdExtension()) != _tidexts.end();
+    const bool tid_set = Contains(_tids, section.tableId());
+    const bool tidext_set = Contains(_tidexts, section.tableIdExtension());
 
     // Return final verdict. For each criteria (--pid, --tid, etc), either the criteria is
     // not specified or the corresponding value matches.

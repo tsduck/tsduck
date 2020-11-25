@@ -35,6 +35,7 @@
 #pragma once
 #include "tsSignalizationHandlerInterface.h"
 #include "tsSectionDemux.h"
+#include "tsAlgorithm.h"
 
 namespace ts {
     //!
@@ -99,7 +100,7 @@ namespace ts {
         //! @param [in] tid The table id to check.
         //! @return True if @a tid is filtered, false otherwise.
         //!
-        bool hasTableId(TID tid) const { return _tids.find(tid) != _tids.end(); }
+        bool hasTableId(TID tid) const { return Contains(_tids, tid); }
 
         //!
         //! Add a service id to filter its PMT.
@@ -123,7 +124,7 @@ namespace ts {
         //! @param [in] sid The service id to check.
         //! @return True if @a sid is filtered, false otherwise.
         //!
-        bool hasServiceId(uint16_t sid) const { return _service_ids.find(sid) != _service_ids.end(); }
+        bool hasServiceId(uint16_t sid) const { return Contains(_service_ids, sid); }
 
         //!
         //! Check if a PAT has been received.

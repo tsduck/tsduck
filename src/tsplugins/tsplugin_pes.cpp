@@ -38,6 +38,7 @@
 #include "tsHEVCAccessUnitDelimiter.h"
 #include "tsVVCAccessUnitDelimiter.h"
 #include "tsAVCSequenceParameterSet.h"
+#include "tsAlgorithm.h"
 #include "tsNames.h"
 #include "tsMemory.h"
 #include "tsPES.h"
@@ -585,7 +586,7 @@ bool ts::PESPlugin::useAccesUnitType(uint8_t type) const
         return true;
     }
     else {
-        const bool found = _nal_unit_filter.find(type) != _nal_unit_filter.end();
+        const bool found = Contains(_nal_unit_filter, type);
         return (!_negate_nal_unit_filter && found) || (_negate_nal_unit_filter && !found);
     }
 }
@@ -644,7 +645,7 @@ void ts::PESPlugin::handleAccessUnit(PESDemux&, const PESPacket& pes, uint8_t au
 
 void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t sei_type, size_t offset, size_t size)
 {
-    if (!_dump_avc_sei || (!_sei_type_filter.empty() && _sei_type_filter.find(sei_type) == _sei_type_filter.end())) {
+    if (!_dump_avc_sei || (!_sei_type_filter.empty() && !Contains(_sei_type_filter, sei_type))) {
         return;
     }
 

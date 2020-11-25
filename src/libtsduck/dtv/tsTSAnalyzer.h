@@ -406,7 +406,7 @@ namespace ts {
         //! @param [in] pid PID to search.
         //! @return True if the PID exists, false otherwise.
         //!
-        bool pidExists(PID pid) const { return _pids.find(pid) != _pids.end(); }
+        bool pidExists(PID pid) const;
 
         //!
         //! Get a PID context.

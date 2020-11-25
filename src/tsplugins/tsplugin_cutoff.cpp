@@ -37,6 +37,7 @@
 #include "tsUDPReceiver.h"
 #include "tsMessageQueue.h"
 #include "tsThread.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 #define DEFAULT_MAX_QUEUED_COMMANDS  128
@@ -243,7 +244,7 @@ void ts::CutoffPlugin::main()
     while (_sock.receive(inbuf, sizeof(inbuf), insize, sender, destination, tsp, error)) {
 
         // Filter out unauthorized remote systems.
-        if (!_allowedRemote.empty() && _allowedRemote.find(sender) == _allowedRemote.end()) {
+        if (!_allowedRemote.empty() && !Contains(_allowedRemote, sender)) {
             tsp->warning(u"rejected remote command from unauthorized host %s", {sender});
             continue;
         }
