@@ -35,6 +35,10 @@
 #include "tsunit.h"
 TSDUCK_SOURCE;
 
+// Here, we intentionally use integers as bool.
+TS_MSC_NOWARNING(4800) // Implicit conversion from 'int' to bool. Possible information loss
+TS_MSC_NOWARNING(4305) // 'argument': truncation from 'int' to 'bool'
+
 
 //----------------------------------------------------------------------------
 // The test fixture
