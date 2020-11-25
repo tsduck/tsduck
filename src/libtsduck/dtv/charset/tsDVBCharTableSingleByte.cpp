@@ -30,6 +30,7 @@
 #include "tsDVBCharTableSingleByte.h"
 #include "tsByteBlock.h"
 #include "tsUString.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 // Static instances of corresponding DVB charsets.
@@ -154,7 +155,7 @@ bool ts::DVBCharTableSingleByte::canEncode(const UString& str, size_t start, siz
 {
     for (size_t i = 0; i < str.length(); ++i) {
         const UChar cp = str[i];
-        if (_bytesMap.find(cp) == _bytesMap.end() && cp != CARRIAGE_RETURN) {
+        if (!Contains(_bytesMap, cp) && cp != CARRIAGE_RETURN) {
             // Untranslatable character.
             return false;
         }

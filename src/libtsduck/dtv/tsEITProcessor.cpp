@@ -33,6 +33,7 @@
 #include "tsTime.h"
 #include "tsMJD.h"
 #include "tsFatal.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -325,7 +326,7 @@ void ts::EITProcessor::handleSection(SectionDemux& demux, const Section& section
     const size_t pl_size = section.payloadSize();
 
     // Eliminate sections by table id.
-    if (_removed_tids.find(tid) != _removed_tids.end()) {
+    if (Contains(_removed_tids, tid)) {
         // This table id is part of tables to be removed.
         return;
     }

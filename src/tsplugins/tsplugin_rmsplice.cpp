@@ -37,6 +37,7 @@
 #include "tsSectionDemux.h"
 #include "tsSpliceInformationTable.h"
 #include "tsContinuityAnalyzer.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 
@@ -290,7 +291,7 @@ void ts::RMSplicePlugin::handlePMT(const PMT& pmt, PID)
         }
         else {
             // Other component, possibly a PID to splice.
-            if (_states.find(pid) == _states.end()) {
+            if (!Contains(_states, pid)) {
                 // Enforce the creation of the state for this PID if non-existent.
                 PIDState& pidState(_states[pid]);
                 pidState.isAudio = stream.isAudio(duck);
@@ -333,7 +334,7 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
     }
 
     // Filter events by ids if --event-id was specified.
-    if (!_eventIDs.empty() && _eventIDs.find(cmd.event_id) == _eventIDs.end()) {
+    if (!_eventIDs.empty() && !Contains(_eventIDs, cmd.event_id)) {
         return;
     }
 

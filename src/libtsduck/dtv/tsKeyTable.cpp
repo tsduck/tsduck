@@ -29,6 +29,7 @@
 
 #include "tsKeyTable.h"
 #include "tsxmlElement.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 
@@ -48,7 +49,7 @@ ts::KeyTable::KeyTable() :
 
 bool ts::KeyTable::hasKey(const ByteBlock& id) const
 {
-    return _keys.find(id) != _keys.end();
+    return Contains(_keys, id);
 }
 
 bool ts::KeyTable::hasKey(const UString& id) const

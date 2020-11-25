@@ -29,6 +29,7 @@
 
 #include "tsUChar.h"
 #include "tsUString.h"
+#include "tsAlgorithm.h"
 #include "tsSingletonManager.h"
 TSDUCK_SOURCE;
 
@@ -1949,8 +1950,7 @@ bool ts::IsLower(UChar c)
     }
     else {
         // Check if it is a known lowercase for us.
-        const LowerUpper* lu = LowerUpper::Instance();
-        return lu->find(c) != lu->end();
+        return Contains(*LowerUpper::Instance(), c);
     }
 }
 
@@ -1962,8 +1962,7 @@ bool ts::IsUpper(UChar c)
     }
     else {
         // Check if it is a known uppercase for us.
-        const UpperLower* ul = UpperLower::Instance();
-        return ul->find(c) != ul->end();
+        return Contains(*UpperLower::Instance(), c);
     }
 }
 

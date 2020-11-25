@@ -35,6 +35,7 @@
 #pragma once
 #include "tsSectionDemux.h"
 #include "tsCADescriptor.h"
+#include "tsAlgorithm.h"
 
 namespace ts {
     //!
@@ -85,7 +86,7 @@ namespace ts {
         //!
         bool knownPID(PID pid) const
         {
-            return _pids.find(pid) != _pids.end();
+            return Contains(_pids, pid);
         }
 
         //!

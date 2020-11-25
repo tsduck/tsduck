@@ -36,6 +36,7 @@
 #include "tsService.h"
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
+#include "tsAlgorithm.h"
 #include "tsNames.h"
 #include "tsEITProcessor.h"
 #include "tsCADescriptor.h"
@@ -343,7 +344,7 @@ void ts::SVRemovePlugin::processSDT(SDT& sdt)
     // Look for the service by name or by id
     if (_service.hasId()) {
         // Search service by id
-        found = sdt.services.find(_service.getId()) != sdt.services.end();
+        found = Contains(sdt.services, _service.getId());
         if (!found) {
             // Informational only, SDT entry is not mandatory.
             tsp->info(u"service %d (0x%X) not found in SDT, ignoring it", {_service.getId(), _service.getId()});

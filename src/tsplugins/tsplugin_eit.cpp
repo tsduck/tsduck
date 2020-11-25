@@ -36,6 +36,7 @@
 #include "tsBinaryTable.h"
 #include "tsSectionDemux.h"
 #include "tsService.h"
+#include "tsAlgorithm.h"
 #include "tsTime.h"
 #include "tsPAT.h"
 #include "tsTDT.h"
@@ -155,7 +156,7 @@ ts::EITPlugin::ServiceDesc& ts::EITPlugin::getServiceDesc(uint16_t ts_id, uint16
 {
     uint32_t index = MakeIndex(ts_id, service_id);
 
-    if (_services.find(index) == _services.end()) {
+    if (!Contains(_services, index)) {
         tsp->verbose(u"new service %d (0x%X), TS id %d (0x%X)", {service_id, service_id, ts_id, ts_id});
         ServiceDesc& serv(_services[index]);
         serv.setId(service_id);

@@ -36,6 +36,7 @@
 #include "tsNullReport.h"
 #include "tsBCD.h"
 #include "tsDektec.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 const ts::UString ts::ModulationArgs::DEFAULT_ISDBT_LAYERS(u"ABC"); // all layers
@@ -334,7 +335,7 @@ void ts::ModulationArgs::setDefaultValues()
 bool ts::ModulationArgs::resolveDeliverySystem(const DeliverySystemSet& systems, Report& report)
 {
     if (delivery_system.set()) {
-        if (systems.find(delivery_system.value()) == systems.end()) {
+        if (!Contains(systems, delivery_system.value())) {
             report.error(u"delivery system %s is not supported by this tuner", {DeliverySystemEnum.name(delivery_system.value())});
             return false;
         }

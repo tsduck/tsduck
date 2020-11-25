@@ -34,6 +34,7 @@
 
 #include "tsPluginRepository.h"
 #include "tsMemory.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 
@@ -447,7 +448,7 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
     // the payload of a TS packet containing the start of a PES packet.
     if (!_stream_ids.empty() && pkt.startPES() && pkt.getPayloadSize() >= 4) {
         const uint8_t id = pkt.getPayload()[3];
-        const bool selected = _stream_ids.find(id) != _stream_ids.end();
+        const bool selected = Contains(_stream_ids, id);
         _stream_id_pid.set(pid, selected);
     }
 

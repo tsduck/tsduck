@@ -26,22 +26,26 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
-//----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2087
+#include "tsBoolPredicate.h"
+TSDUCK_SOURCE;
+
+bool ts::MultiAnd(std::initializer_list<bool> args)
+{
+    for (auto it = args.begin(); it != args.end(); ++it) {
+        if (!*it) {
+            return false;
+        }
+    }
+    return args.size() > 0;
+}
+
+bool ts::MultiOr(std::initializer_list<bool> args)
+{
+    for (auto it = args.begin(); it != args.end(); ++it) {
+        if (*it) {
+            return true;
+        }
+    }
+    return false;
+}

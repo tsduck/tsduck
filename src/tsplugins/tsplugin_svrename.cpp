@@ -37,6 +37,7 @@
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
 #include "tsNames.h"
+#include "tsAlgorithm.h"
 #include "tsEITProcessor.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
@@ -351,7 +352,7 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
     // Look for the service by name or by service
     if (_old_service.hasId()) {
         // Search service by id. If the service is not present, this is not an error.
-        found = sdt.services.find(_old_service.getId()) != sdt.services.end();
+        found = Contains(sdt.services, _old_service.getId());
         if (!found) {
             // Informational only
             tsp->verbose(u"service 0x%X (%d) not found in SDT", {_old_service.getId(), _old_service.getId()});

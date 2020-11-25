@@ -31,6 +31,7 @@
 #include "tstsswitchCore.h"
 #include "tsNullMutex.h"
 #include "tsReportBuffer.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 
@@ -96,7 +97,7 @@ void ts::tsswitch::CommandListener::main()
     while (_sock.receive(inbuf, sizeof(inbuf), insize, sender, destination, nullptr, error)) {
 
         // Filter out unauthorized remote systems.
-        if (!_opt.allowedRemote.empty() && _opt.allowedRemote.find(sender) == _opt.allowedRemote.end()) {
+        if (!_opt.allowedRemote.empty() && !Contains(_opt.allowedRemote, sender)) {
             _log.warning(u"rejected remote command from unauthorized host %s", {sender});
             continue;
         }

@@ -30,6 +30,7 @@
 #include "tsPSIMerger.h"
 #include "tsCADescriptor.h"
 #include "tsTSPacket.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 
@@ -505,7 +506,7 @@ void ts::PSIMerger::handleMainTable(const BinaryTable& table)
         case TID_BAT: {
             const BAT bat(_duck, table);
             if (bat.isValid() && table.sourcePID() == PID_BAT) {
-                if (_main_bats.find(bat.bouquet_id) == _main_bats.end()) {
+                if (!Contains(_main_bats, bat.bouquet_id)) {
                     // No previous BAT for this bouquet.
                     _main_bats[bat.bouquet_id] = bat;
                 }
@@ -599,7 +600,7 @@ void ts::PSIMerger::mergePAT()
     // Add all services from merged stream into main PAT.
     for (auto merge = _merge_pat.pmts.begin(); merge != _merge_pat.pmts.end(); ++merge) {
         // Check if the service already exists in the main PAT.
-        if (pat.pmts.find(merge->first) != pat.pmts.end()) {
+        if (Contains(pat.pmts, merge->first)) {
             _report.error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge->first, merge->first});
         }
         else {
@@ -676,7 +677,7 @@ void ts::PSIMerger::mergeSDT()
     // Add all services from merged stream into main SDT.
     for (auto merge = _merge_sdt.services.begin(); merge != _merge_sdt.services.end(); ++merge) {
         // Check if the service already exists in the main SDT.
-        if (sdt.services.find(merge->first) != sdt.services.end()) {
+        if (Contains(sdt.services, merge->first)) {
             _report.error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge->first, merge->first});
         }
         else {

@@ -32,6 +32,7 @@
 #include "tsjsonObject.h"
 #include "tsjsonString.h"
 #include "tsjsonNumber.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 
@@ -411,9 +412,9 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
 
         // Display all PID's of this service
         reportServiceHeader(grid, names::ServiceType(sv.service_type), sv.scrambled_pid_cnt > 0, sv.bitrate, _ts_bitrate, wide);
-        for (PIDContextMap::const_iterator pid_it = _pids.begin(); pid_it != _pids.end(); ++pid_it) {
+        for (auto pid_it = _pids.begin(); pid_it != _pids.end(); ++pid_it) {
             const PIDContext& pc(*pid_it->second);
-            if (pc.services.find(sv.service_id) != pc.services.end()) {
+            if (Contains(pc.services, sv.service_id)) {
                 reportServicePID(grid, pc);
             }
         }

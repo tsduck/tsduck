@@ -29,6 +29,7 @@
 
 #include "tsFileInputPlugin.h"
 #include "tsPluginRepository.h"
+#include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
 TS_REGISTER_INPUT_PLUGIN(u"file", ts::FileInputPlugin);
@@ -277,7 +278,7 @@ size_t ts::FileInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data
         }
 
         // Check if current file was already at end of file.
-        const bool already_eof = _eof.find(_current_filename) != _eof.end();
+        const bool already_eof = Contains(_eof, _current_filename);
 
         // Read some packets from current file.
         if (_interleave && already_eof) {

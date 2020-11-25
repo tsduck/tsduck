@@ -340,7 +340,7 @@ bool ts::LNB::LNBRepository::getNameAttribute(const xml::Element* node, UString&
 
     // Check if the name is already known.
     const UString iname(ToIndex(name));
-    if (_lnbs.find(iname) != _lnbs.end()) {
+    if (Contains(_lnbs, iname)) {
         node->report().error(u"duplicate LNB name '%s' in <%s> line %d", {name, node->name(), node->lineNumber()});
         return false;
     }

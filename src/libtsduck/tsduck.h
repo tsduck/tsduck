@@ -116,6 +116,7 @@
 #include "tsBlockCipher.h"
 #include "tsBlockCipherAlertInterface.h"
 #include "tsBoardInformationDescriptor.h"
+#include "tsBoolPredicate.h"
 #include "tsBouquetNameDescriptor.h"
 #include "tsBroadcasterNameDescriptor.h"
 #include "tsBuffer.h"
