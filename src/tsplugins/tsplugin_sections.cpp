@@ -71,8 +71,8 @@ namespace ts {
         PIDSet                _input_pids;
         PID                   _output_pid;
         std::set<TID>         _removed_tids;
-        std::set<uint32_t>    _removed_exts;
-        std::set<uint16_t>    _removed_etids;
+        std::set<uint16_t>    _removed_exts;
+        std::set<uint32_t>    _removed_etids;
         std::set<uint8_t>     _removed_versions;
 
         // Working data.
