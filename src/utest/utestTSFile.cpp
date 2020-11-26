@@ -55,11 +55,15 @@ public:
     void testTS();
     void testM2TS();
     void testDuck();
+    void testStuffingRead();
+    void testStuffingWrite();
 
     TSUNIT_TEST_BEGIN(TSFileTest);
     TSUNIT_TEST(testTS);
     TSUNIT_TEST(testM2TS);
     TSUNIT_TEST(testDuck);
+    TSUNIT_TEST(testStuffingRead);
+    TSUNIT_TEST(testStuffingWrite);
     TSUNIT_TEST_END();
 
 private:
@@ -271,4 +275,123 @@ void TSFileTest::testDuck()
     TSUNIT_EQUAL(4, file.readPacketsCount());
     TSUNIT_EQUAL(0, file.readPackets(&packet, &mdata, 1, CERR));
     TSUNIT_ASSERT(file.close(CERR));
+}
+
+void TSFileTest::testStuffingRead()
+{
+    ts::TSFile file;
+    ts::TSPacket pkt;
+    ts::TSPacketVector packets(20);
+
+    TSUNIT_ASSERT(!ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(!file.isOpen());
+
+    // Create a file with one packet.
+    TSUNIT_ASSERT(file.open(_tempFileName, ts::TSFile::WRITE, CERR));
+    TSUNIT_ASSERT(file.isOpen());
+    pkt.init(100, 0, 0xAB);
+    TSUNIT_ASSERT(file.writePackets(&pkt, nullptr, 1, CERR));
+    TSUNIT_ASSERT(file.close(CERR));
+    TSUNIT_EQUAL(1, file.writePacketsCount());
+    TSUNIT_EQUAL(0, file.readPacketsCount());
+    TSUNIT_ASSERT(!file.isOpen());
+
+    TSUNIT_ASSERT(ts::FileExists(_tempFileName));
+    TSUNIT_EQUAL(188, ts::GetFileSize(_tempFileName));
+
+    // Read it with artificial stuffing.
+    file.setStuffing(2, 3);
+    TSUNIT_ASSERT(file.open(_tempFileName, ts::TSFile::READ, CERR));
+    TSUNIT_ASSERT(file.isOpen());
+    TSUNIT_EQUAL(6, file.readPackets(&packets[0], nullptr, packets.size(), CERR));
+    TSUNIT_ASSERT(file.close(CERR));
+    TSUNIT_EQUAL(0, file.writePacketsCount());
+    TSUNIT_EQUAL(6, file.readPacketsCount());
+    TSUNIT_ASSERT(!file.isOpen());
+
+    TSUNIT_EQUAL(ts::PID_NULL, packets[0].getPID());
+    TSUNIT_EQUAL(184, packets[0].getPayloadSize());
+    TSUNIT_EQUAL(0xFF, packets[0].getPayload()[0]);
+
+    TSUNIT_EQUAL(ts::PID_NULL, packets[1].getPID());
+    TSUNIT_EQUAL(184, packets[1].getPayloadSize());
+    TSUNIT_EQUAL(0xFF, packets[1].getPayload()[0]);
+
+    TSUNIT_EQUAL(100, packets[2].getPID());
+    TSUNIT_EQUAL(184, packets[2].getPayloadSize());
+    TSUNIT_EQUAL(0xAB, packets[2].getPayload()[0]);
+
+    TSUNIT_EQUAL(ts::PID_NULL, packets[3].getPID());
+    TSUNIT_EQUAL(184, packets[3].getPayloadSize());
+    TSUNIT_EQUAL(0xFF, packets[3].getPayload()[0]);
+
+    TSUNIT_EQUAL(ts::PID_NULL, packets[4].getPID());
+    TSUNIT_EQUAL(184, packets[4].getPayloadSize());
+    TSUNIT_EQUAL(0xFF, packets[4].getPayload()[0]);
+
+    TSUNIT_EQUAL(ts::PID_NULL, packets[5].getPID());
+    TSUNIT_EQUAL(184, packets[5].getPayloadSize());
+    TSUNIT_EQUAL(0xFF, packets[5].getPayload()[0]);
+}
+
+void TSFileTest::testStuffingWrite()
+{
+    ts::TSFile file;
+    ts::TSPacket pkt;
+    ts::TSPacketVector packets(20);
+
+    TSUNIT_ASSERT(!ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(!file.isOpen());
+
+    // Create a file with one packet plus stuffing.
+    file.setStuffing(3, 2);
+    TSUNIT_ASSERT(file.open(_tempFileName, ts::TSFile::WRITE, CERR));
+    TSUNIT_ASSERT(file.isOpen());
+    TSUNIT_EQUAL(3, file.writePacketsCount());
+    TSUNIT_EQUAL(0, file.readPacketsCount());
+    pkt.init(200, 0, 0xCD);
+    TSUNIT_ASSERT(file.writePackets(&pkt, nullptr, 1, CERR));
+    TSUNIT_EQUAL(4, file.writePacketsCount());
+    TSUNIT_EQUAL(0, file.readPacketsCount());
+    TSUNIT_ASSERT(file.close(CERR));
+    TSUNIT_EQUAL(6, file.writePacketsCount());
+    TSUNIT_EQUAL(0, file.readPacketsCount());
+    TSUNIT_ASSERT(!file.isOpen());
+
+    TSUNIT_ASSERT(ts::FileExists(_tempFileName));
+    TSUNIT_EQUAL(6 * 188, ts::GetFileSize(_tempFileName));
+
+    // Read it without artificial stuffing.
+    ts::TSFile file2;
+    TSUNIT_ASSERT(file2.open(_tempFileName, ts::TSFile::READ, CERR));
+    TSUNIT_ASSERT(file2.isOpen());
+    TSUNIT_EQUAL(6, file2.readPackets(&packets[0], nullptr, packets.size(), CERR));
+    TSUNIT_ASSERT(file2.close(CERR));
+    TSUNIT_EQUAL(0, file2.writePacketsCount());
+    TSUNIT_EQUAL(6, file2.readPacketsCount());
+    TSUNIT_ASSERT(!file2.isOpen());
+
+    TSUNIT_EQUAL(ts::PID_NULL, packets[0].getPID());
+    TSUNIT_EQUAL(184, packets[0].getPayloadSize());
+    TSUNIT_EQUAL(0xFF, packets[0].getPayload()[0]);
+
+    TSUNIT_EQUAL(ts::PID_NULL, packets[1].getPID());
+    TSUNIT_EQUAL(184, packets[1].getPayloadSize());
+    TSUNIT_EQUAL(0xFF, packets[1].getPayload()[0]);
+
+    TSUNIT_EQUAL(ts::PID_NULL, packets[2].getPID());
+    TSUNIT_EQUAL(184, packets[2].getPayloadSize());
+    TSUNIT_EQUAL(0xFF, packets[2].getPayload()[0]);
+
+    TSUNIT_EQUAL(200, packets[3].getPID());
+    TSUNIT_EQUAL(184, packets[3].getPayloadSize());
+    TSUNIT_EQUAL(0xCD, packets[3].getPayload()[0]);
+
+    TSUNIT_EQUAL(ts::PID_NULL, packets[4].getPID());
+    TSUNIT_EQUAL(184, packets[4].getPayloadSize());
+    TSUNIT_EQUAL(0xFF, packets[4].getPayload()[0]);
+
+    TSUNIT_EQUAL(ts::PID_NULL, packets[5].getPID());
+    TSUNIT_EQUAL(184, packets[5].getPayloadSize());
+    TSUNIT_EQUAL(0xFF, packets[5].getPayload()[0]);
 }

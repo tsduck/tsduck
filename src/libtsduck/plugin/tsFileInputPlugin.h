@@ -76,6 +76,8 @@ namespace ts {
         size_t         _base_label;
         TSPacketFormat _file_format;
         UStringVector  _filenames;
+        std::vector<size_t>  _start_stuffing;
+        std::vector<size_t>  _stop_stuffing;
         std::set<size_t>     _eof;          // Set of file indexes having reached end of file.
         std::vector<TSFile>  _files;        // Array of open files, only one without interleave.
 

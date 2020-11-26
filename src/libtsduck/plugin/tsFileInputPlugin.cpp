@@ -56,6 +56,8 @@ ts::FileInputPlugin::FileInputPlugin(TSP* tsp_) :
     _base_label(0),
     _file_format(TSPacketFormat::AUTODETECT),
     _filenames(),
+    _start_stuffing(),
+    _stop_stuffing(),
     _eof(),
     _files()
 {
@@ -64,6 +66,20 @@ ts::FileInputPlugin::FileInputPlugin(TSP* tsp_) :
          u"Names of the input files. If no file is specified, the standard input is used. "
          u"When several files are specified, use '-' as file name to specify the standard input. "
          u"The files are read in sequence, unless --interleave is specified.");
+
+    option(u"add-start-stuffing", 0, UNSIGNED, 0, UNLIMITED_COUNT);
+    help(u"add-start-stuffing", u"count",
+         u"Specify that <count> null TS packets must be automatically inserted "
+         u"at the start of the input file, before the first actual packet in the file. "
+         u"If several input files are specified, several options --add-start-stuffing are allowed. "
+         u"If there are less options than input files, the last value is used for subsequent files.");
+
+    option(u"add-stop-stuffing", 0, UNSIGNED, 0, UNLIMITED_COUNT);
+    help(u"add-stop-stuffing", u"count",
+         u"Specify that <count> null TS packets must be automatically appended "
+         u"at the end of the input file, after the last actual packet in the file. "
+         u"If several input files are specified, several options --add-stop-stuffing are allowed. "
+         u"If there are less options than input files, the last value is used for subsequent files.");
 
     option(u"byte-offset", 'b', UNSIGNED);
     help(u"byte-offset",
@@ -133,6 +149,8 @@ bool ts::FileInputPlugin::getOptions()
     getIntValue(_interleave_chunk, u"interleave", 1);
     getIntValue(_base_label, u"label-base", TSPacketMetadata::LABEL_MAX + 1);
     getIntValue(_file_format, u"format", TSPacketFormat::AUTODETECT);
+    getIntValues(_start_stuffing, u"add-start-stuffing");
+    getIntValues(_stop_stuffing, u"add-stop-stuffing");
 
     // If there is no file, then this is the standard input, an empty file name.
     if (_filenames.empty()) {
@@ -151,6 +169,11 @@ bool ts::FileInputPlugin::getOptions()
         tsp->error(u"specifying --infinite is meaningless with more than one file");
         return false;
     }
+
+    // Make sure start and stop stuffing vectors have the same size as the file vector.
+    // If the vectors must be enlarged, repeat the last value in the array.
+    _start_stuffing.resize(_filenames.size(), _start_stuffing.empty() ? 0 : _start_stuffing.back());
+    _stop_stuffing.resize(_filenames.size(), _stop_stuffing.empty() ? 0 : _stop_stuffing.back());
 
     return true;
 }
@@ -171,6 +194,9 @@ bool ts::FileInputPlugin::openFile(size_t name_index, size_t file_index)
     if (!_interleave && _filenames.size() > 1) {
         tsp->verbose(u"reading file %s", {name.empty() ? u"'stdin'" : name});
     }
+
+    // Preset artificial stuffing.
+    _files[file_index].setStuffing(_start_stuffing[name_index], _stop_stuffing[name_index]);
 
     // Actually open the file.
     return _files[file_index].openRead(name, _repeat_count, _start_offset, *tsp, _file_format);

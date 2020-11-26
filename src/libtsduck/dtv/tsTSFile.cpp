@@ -44,6 +44,10 @@ ts::TSFile::TSFile() :
     _repeat(0),
     _counter(0),
     _start_offset(0),
+    _open_null(0),
+    _close_null(0),
+    _open_null_read(0),
+    _close_null_read(0),
     _is_open(false),
     _flags(NONE),
     _severity(Severity::Error),
@@ -70,6 +74,10 @@ ts::TSFile::TSFile(const TSFile& other) :
     _repeat(other._repeat),
     _counter(0),
     _start_offset(other._start_offset),
+    _open_null(other._open_null),
+    _close_null(other._close_null),
+    _open_null_read(0),
+    _close_null_read(0),
     _is_open(false),
     _flags(NONE),
     _severity(other._severity),
@@ -96,6 +104,10 @@ ts::TSFile::TSFile(TSFile&& other) noexcept :
     _repeat(other._repeat),
     _counter(other._counter),
     _start_offset(other._start_offset),
+    _open_null(other._open_null),
+    _close_null(other._close_null),
+    _open_null_read(other._open_null_read),
+    _close_null_read(other._close_null_read),
     _is_open(other._is_open),
     _flags(other._flags),
     _severity(other._severity),
@@ -149,6 +161,17 @@ ts::UString ts::TSFile::getDisplayFileName() const
     else {
         return u"closed";
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Set initial and final artificial stuffing.
+//----------------------------------------------------------------------------
+
+void ts::TSFile::setStuffing(size_t initial, size_t final)
+{
+    _open_null = initial;
+    _close_null = final;
 }
 
 
@@ -256,6 +279,12 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
         else {
             report.debug(u"closing and reopening %s", {_filename});
         }
+    }
+
+    // In read mode, preset the number of null packets to read.
+    if (read_access && !reopen) {
+        _open_null_read = _open_null;
+        _close_null_read = _close_null;
     }
 
 #if defined(TS_WINDOWS)
@@ -427,8 +456,16 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
         _total_read = _total_write = 0;
     }
 
+    // Clean initial state.
     _at_eof = _aborted = false;
     _is_open = true;
+
+    // In write mode, write initial null packets.
+    if (write_access && !reopen && _open_null > 0 && !writeStuffing(_open_null, report)) {
+        close(report);
+        return false;
+    }
+
     return true;
 }
 
@@ -521,6 +558,11 @@ bool ts::TSFile::close(Report& report)
         return false;
     }
 
+    // In write mode, write final null packets.
+    if ((_flags & WRITE) != 0 && _close_null > 0) {
+        writeStuffing(_close_null, report);
+    }
+
     if (!_filename.empty()) {
 #if defined(TS_WINDOWS)
         ::CloseHandle(_handle);
@@ -530,7 +572,6 @@ bool ts::TSFile::close(Report& report)
     }
 
     _is_open = _at_eof = _aborted = false;
-    _total_read = _total_write = 0;
     _flags = NONE;
     _filename.clear();
 
@@ -625,6 +666,17 @@ size_t ts::TSFile::readPackets(TSPacket* buffer, TSPacketMetadata* metadata, siz
 {
     size_t ret_count = 0;
 
+    // Initial artificial stuffing.
+    if (_open_null_read > 0 && max_packets > 0) {
+        const size_t count = std::min(max_packets, _open_null_read);
+        report.debug(u"reading %d starting null packets", {count});
+        readStuffing(buffer, metadata, count, report);
+        _total_read += count;
+        ret_count += count;
+        max_packets -= count;
+        _open_null_read -= count;
+    }
+
     // Repeat reading packets until the buffer is full or error.
     // Rewind on end of file if repeating is set.
     while (max_packets > 0 && !_at_eof) {
@@ -650,6 +702,16 @@ size_t ts::TSFile::readPackets(TSPacket* buffer, TSPacketMetadata* metadata, siz
         if (_at_eof && (_repeat == 0 || ++_counter < _repeat) && !seekInternal(0, report)) {
             break; // rewind error
         }
+    }
+
+    // Final artificial stuffing.
+    if (_at_eof && _close_null_read > 0 && max_packets > 0) {
+        const size_t count = std::min(max_packets, _close_null_read);
+        report.debug(u"reading %d stopping null packets", {count});
+        readStuffing(buffer, metadata, count, report);
+        _total_read += count;
+        ret_count += count;
+        _close_null_read -= count;
     }
 
     return ret_count;
@@ -725,6 +787,33 @@ bool ts::TSFile::writeStream(const void* buffer, size_t data_size, size_t& writt
     return true;
 
 #endif
+}
+
+
+//----------------------------------------------------------------------------
+// Read/write artificial stuffing.
+//----------------------------------------------------------------------------
+
+void ts::TSFile::readStuffing(TSPacket*& buffer, TSPacketMetadata*& metadata, size_t count, Report& report)
+{
+    while (count-- > 0) {
+        *buffer++ = NullPacket;
+        if (metadata != nullptr) {
+            (metadata++)->setInputStuffing(true);
+        }
+    }
+}
+
+bool ts::TSFile::writeStuffing(size_t count, Report& report)
+{
+    TSPacketMetadata mdata;
+    mdata.setInputStuffing(true);
+    for (size_t i = 0; i < count; ++i) {
+        if (!writePackets(&NullPacket, &mdata, 1, report)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 
