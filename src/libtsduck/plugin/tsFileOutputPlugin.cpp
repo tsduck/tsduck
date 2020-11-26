@@ -53,10 +53,22 @@ ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
     _reopen(false),
     _retry_interval(DEF_RETRY_INTERVAL),
     _retry_max(0),
+    _start_stuffing(0),
+    _stop_stuffing(0),
     _file()
 {
     option(u"", 0, STRING, 0, 1);
     help(u"", u"Name of the created output file. Use standard output by default.");
+
+    option(u"add-start-stuffing", 0, UNSIGNED);
+    help(u"add-start-stuffing", u"count",
+         u"Specify that <count> null TS packets must be automatically inserted "
+         u"at the start of the output file, before what comes from the previous plugins.");
+
+    option(u"add-stop-stuffing", 0, UNSIGNED);
+    help(u"add-stop-stuffing", u"count",
+         u"Specify that <count> null TS packets must be automatically appended "
+         u"at the end of the output file, after what comes from the previous plugins.");
 
     option(u"append", 'a');
     help(u"append", u"If the file already exists, append to the end of the file. By default, existing files are overwritten.");
@@ -107,11 +119,14 @@ bool ts::FileOutputPlugin::getOptions()
     getIntValue(_retry_max, u"max-retry", 0);
     getIntValue(_retry_interval, u"retry-interval", DEF_RETRY_INTERVAL);
     getIntValue(_file_format, u"format", TSPacketFormat::TS);
+    getIntValue(_start_stuffing, u"add-start-stuffing", 0);
+    getIntValue(_stop_stuffing, u"add-stop-stuffing", 0);
     return true;
 }
 
 bool ts::FileOutputPlugin::start()
 {
+    _file.setStuffing(_start_stuffing, _stop_stuffing);
     size_t retry_allowed = _retry_max == 0 ? std::numeric_limits<size_t>::max() : _retry_max;
     return openAndRetry(false, retry_allowed);
 }

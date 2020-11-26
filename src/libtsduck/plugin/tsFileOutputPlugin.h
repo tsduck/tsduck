@@ -69,6 +69,8 @@ namespace ts {
         bool              _reopen;
         MilliSecond       _retry_interval;
         size_t            _retry_max;
+        size_t            _start_stuffing;
+        size_t            _stop_stuffing;
         TSFile            _file;
 
         // Open the file, retry on error if necessary.

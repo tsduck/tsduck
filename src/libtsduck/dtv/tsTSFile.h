@@ -48,8 +48,8 @@ namespace ts {
     //!
     class TSDUCKDLL TSFile :
         public TSPacketStream,
-        protected AbstractReadStreamInterface,
-        protected AbstractWriteStreamInterface
+        private AbstractReadStreamInterface,
+        private AbstractWriteStreamInterface
     {
     public:
         //!
@@ -161,6 +161,24 @@ namespace ts {
         bool close(Report& report);
 
         //!
+        //! Set initial and final artificial stuffing.
+        //! This method shall be called before opening the file.
+        //! It specifies a number of artificial null packets which are read or written
+        //! before and after the actual content of the file.
+        //! @param [in] initial Number of artificial initial null packets.
+        //! On read, the first @a initial read packets are null packets. The actual content
+        //! of the physical file will be read afterward. On write, opening the file will
+        //! immediately write  @a initial null packets, before the application has a chance
+        //! to explicitly write packets.
+        //! @param [in] final Number of artificial final null packets.
+        //! On read, when the file is completed, after all specified repetitions, reading
+        //! will successfully continue for the next @a final packets and returns null packets.
+        //! On write, closing the file with automatically write @a final null packets before
+        //! closing the physical file.
+        //!
+        void setStuffing(size_t initial, size_t final);
+
+        //!
         //! Abort any currenly read/write operation in progress.
         //! The file is left in a broken state and can be only closed.
         //!
@@ -189,7 +207,28 @@ namespace ts {
         // Override TSPacketStream implementation
         virtual size_t readPackets(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets, Report& report) override;
 
-    protected:
+    private:
+        UString       _filename;         //!< Input file name.
+        size_t        _repeat;           //!< Repeat count (0 means infinite)
+        size_t        _counter;          //!< Current repeat count
+        uint64_t      _start_offset;     //!< Initial byte offset in file
+        size_t        _open_null;        //!< Number of artificial null packets to insert after open().
+        size_t        _close_null;       //!< Number of artificial null packets to insert before close().
+        size_t        _open_null_read;   //!< Remaining null packets to read after open().
+        size_t        _close_null_read;  //!< Remaining null packets to read before close().
+        volatile bool _is_open;          //!< Check if file is actually open
+        OpenFlags     _flags;            //!< Flags which were specified at open
+        int           _severity;         //!< Severity level for error reporting
+        volatile bool _at_eof;           //!< End of file has been reached
+        volatile bool _aborted;          //!< Operation has been aborted, no operation available
+        bool          _rewindable;       //!< Opened in rewindable mode
+        bool          _regular;          //!< Is a regular file (ie. not a pipe or special device)
+#if defined(TS_WINDOWS)
+        ::HANDLE      _handle;         //!< File handle
+#else
+        int           _fd;             //!< File descriptor
+#endif
+
         // Implementation of AbstractReadStreamInterface
         virtual bool endOfStream() override;
         virtual bool readStreamPartial(void* addr, size_t max_size, size_t& ret_size, Report& report) override;
@@ -197,23 +236,9 @@ namespace ts {
         // Implementation of AbstractWriteStreamInterface
         virtual bool writeStream(const void* addr, size_t size, size_t& written_size, Report& report) override;
 
-    private:
-        UString       _filename;       //!< Input file name.
-        size_t        _repeat;         //!< Repeat count (0 means infinite)
-        size_t        _counter;        //!< Current repeat count
-        uint64_t      _start_offset;   //!< Initial byte offset in file
-        volatile bool _is_open;        //!< Check if file is actually open
-        OpenFlags     _flags;          //!< Flags which were specified at open
-        int           _severity;       //!< Severity level for error reporting
-        volatile bool _at_eof;         //!< End of file has been reached
-        volatile bool _aborted;        //!< Operation has been aborted, no operation available
-        bool          _rewindable;     //!< Opened in rewindable mode
-        bool          _regular;        //!< Is a regular file (ie. not a pipe or special device)
-#if defined(TS_WINDOWS)
-        ::HANDLE      _handle;         //!< File handle
-#else
-        int           _fd;             //!< File descriptor
-#endif
+        // Read/write artificial stuffing.
+        void readStuffing(TSPacket*& buffer, TSPacketMetadata*& metadata, size_t count, Report& report);
+        bool writeStuffing(size_t count, Report& report);
 
         // Internal methods
         bool openInternal(bool reopen, Report& report);

@@ -46,10 +46,22 @@ ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
     _name(),
     _flags(TSFile::NONE),
     _file_format(TSPacketFormat::TS),
+    _start_stuffing(0),
+    _stop_stuffing(0),
     _file()
 {
     option(u"", 0, STRING, 1, 1);
     help(u"", u"Name of the created output file.");
+
+    option(u"add-start-stuffing", 0, UNSIGNED);
+    help(u"add-start-stuffing", u"count",
+         u"Specify that <count> null TS packets must be automatically inserted "
+         u"at the start of the output file, before what comes from the previous plugins.");
+
+    option(u"add-stop-stuffing", 0, UNSIGNED);
+    help(u"add-stop-stuffing", u"count",
+         u"Specify that <count> null TS packets must be automatically appended "
+         u"at the end of the output file, after what comes from the previous plugins.");
 
     option(u"append", 'a');
     help(u"append", u"If the file already exists, append to the end of the file. By default, existing files are overwritten.");
@@ -72,6 +84,8 @@ bool ts::FilePacketPlugin::getOptions()
 {
     getValue(_name);
     getIntValue(_file_format, u"format", TSPacketFormat::TS);
+    getIntValue(_start_stuffing, u"add-start-stuffing", 0);
+    getIntValue(_stop_stuffing, u"add-stop-stuffing", 0);
     _flags = TSFile::WRITE | TSFile::SHARED;
     if (present(u"append")) {
         _flags |= TSFile::APPEND;
@@ -84,6 +98,7 @@ bool ts::FilePacketPlugin::getOptions()
 
 bool ts::FilePacketPlugin::start()
 {
+    _file.setStuffing(_start_stuffing, _stop_stuffing);
     return _file.open(_name, _flags, *tsp, _file_format);
 }
 

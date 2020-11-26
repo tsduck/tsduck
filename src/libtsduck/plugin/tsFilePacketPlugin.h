@@ -66,6 +66,8 @@ namespace ts {
         UString           _name;
         TSFile::OpenFlags _flags;
         TSPacketFormat    _file_format;
+        size_t            _start_stuffing;
+        size_t            _stop_stuffing;
         TSFile            _file;
     };
 }

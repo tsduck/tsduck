@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2087
+VERSION 3.24-2090
 
 [NEW] New commands and plugins:
 
@@ -38,6 +38,7 @@ VERSION 3.24-2087
       "psi", "tables".
     - Options --and, --tid-ext-remove, --version-remove, --reverse-etid in
       plugin "sections".
+    - Options --add-start-stuffing and --add-stop-stuffing in plugin "file".
 
 [BUG] Bug fixes:
 
