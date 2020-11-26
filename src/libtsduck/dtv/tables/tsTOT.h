@@ -111,5 +111,8 @@ namespace ts {
     private:
         // Add descriptors, filling regions from local_time_offset_descriptor's.
         void addDescriptors(DuckContext& duck, const DescriptorList& dlist);
+
+        // Last encountered offset from UTC in the context, typically for ISDB.
+        mutable MilliSecond _time_reference_offset;
     };
 }
