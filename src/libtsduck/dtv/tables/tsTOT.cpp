@@ -54,7 +54,8 @@ ts::TOT::TOT(const Time& utc_time_) :
     AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
     utc_time(utc_time_),
     regions(),
-    descs(this)
+    descs(this),
+    _time_reference_offset(0)
 {
 }
 
@@ -68,7 +69,8 @@ ts::TOT::TOT(const TOT& other) :
     AbstractTable(other),
     utc_time(other.utc_time),
     regions(other.regions),
-    descs(this, other.descs)
+    descs(this, other.descs),
+    _time_reference_offset(other._time_reference_offset)
 {
 }
 
@@ -102,8 +104,10 @@ void ts::TOT::clearContent()
 
 ts::Time ts::TOT::localTime(const Region& reg) const
 {
-    // Add local time offset in milliseconds
-    return utc_time + MilliSecond(reg.time_offset) * 60 * MilliSecPerSec;
+    // Add local time offset in milliseconds.
+    // In case of non-standard time reference, the offset in the descriptor
+    // is an offset from the non-standard time reference, not from UTC.
+    return utc_time + _time_reference_offset + MilliSecond(reg.time_offset) * 60 * MilliSecPerSec;
 }
 
 
@@ -152,7 +156,8 @@ void ts::TOT::deserializePayload(PSIBuffer& buf, const Section& section)
     // and removed from the buffer since TOT::useTrailingCRC32() returns true.
 
     // Get UTC time. The time reference is UTC as defined by DVB, but can be non-standard.
-    utc_time = buf.getFullMJD() - buf.duck().timeReferenceOffset();
+    _time_reference_offset = buf.duck().timeReferenceOffset();
+    utc_time = buf.getFullMJD() - _time_reference_offset;
 
     // Get descriptor list.
     DescriptorList dlist(nullptr);
@@ -170,7 +175,8 @@ void ts::TOT::deserializePayload(PSIBuffer& buf, const Section& section)
 void ts::TOT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // Encode the data in MJD in the payload. Defined as UTC by DVB, but can be non-standard.
-    buf.putFullMJD(utc_time + buf.duck().timeReferenceOffset());
+    _time_reference_offset = buf.duck().timeReferenceOffset();
+    buf.putFullMJD(utc_time + _time_reference_offset);
 
     // Build a descriptor list.
     DescriptorList dlist(nullptr);
@@ -220,6 +226,9 @@ void ts::TOT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::TOT::buildXML(DuckContext& duck, xml::Element* root) const
 {
+    // Always cache this value.
+    _time_reference_offset = duck.timeReferenceOffset();
+
     root->setDateTimeAttribute(u"UTC_time", utc_time);
 
     // Add one local_time_offset_descriptor per set of regions.
@@ -249,6 +258,9 @@ void ts::TOT::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::TOT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
+    // Always cache this value.
+    _time_reference_offset = duck.timeReferenceOffset();
+
     DescriptorList orig(this);
 
     // Get all descriptors in a separated list.
