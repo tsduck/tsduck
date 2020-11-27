@@ -630,7 +630,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             params.isi = id & 0x000000FF;
             params.pls_code = (id >> 8) & 0x0003FFFF;
             params.pls_mode = PLSMode(id >> 26);
-            return true;
+            break;
         }
         case DS_DVB_T:
         case DS_DVB_T2: {
@@ -668,7 +668,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 #else
             params.plp = PLP_DISABLE;
 #endif
-            return true;
+            break;
         }
         case DS_DVB_C_ANNEX_A:
         case DS_DVB_C_ANNEX_B:
@@ -692,7 +692,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             params.symbol_rate = props.getByCommand(DTV_SYMBOL_RATE);
             params.inner_fec = InnerFEC(props.getByCommand(DTV_INNER_FEC));
             params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
-            return true;
+            break;
         }
         case DS_ATSC: {
             props.clear();
@@ -709,7 +709,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             params.frequency = props.getByCommand(DTV_FREQUENCY);
             params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
             params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
-            return true;
+            break;
         }
         case DS_ISDB_S: {
             // Note: same remark about the frequency as DVB-S tuner.
@@ -742,7 +742,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                 // We should update it when possible with the actual transport stream id from the inner stream.
                 params.stream_id = val;
             }
-            return true;
+            break;
         }
         case DS_ISDB_T: {
             props.clear();
@@ -863,7 +863,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             if ((val = props.getByCommand(DTV_ISDBT_LAYERC_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN) {
                 params.layer_c_time_interleaving = int(val);
             }
-            return true;
+            break;
         }
         case DS_ISDB_C:
         case DS_DVB_H:
@@ -878,6 +878,14 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             return false;
         }
     }
+
+    // Some drivers sometimes return weird values for spectral inversion.
+    // Reset it in case of invalid value.
+    if (params.inversion.set() && params.inversion.value() != SPINV_AUTO && params.inversion.value() != SPINV_ON && params.inversion.value() != SPINV_OFF) {
+        params.inversion.clear();
+    }
+
+    return true;
 }
 
 
