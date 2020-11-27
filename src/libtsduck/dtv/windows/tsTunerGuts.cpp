@@ -416,6 +416,12 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
         }
     }
 
+    // Some drivers sometimes return weird values for spectral inversion.
+    // Reset it in case of invalid value.
+    if (params.inversion.set() && params.inversion.value() != SPINV_AUTO && params.inversion.value() != SPINV_ON && params.inversion.value() != SPINV_OFF) {
+        params.inversion.clear();
+    }
+
     return true;
 }
 
