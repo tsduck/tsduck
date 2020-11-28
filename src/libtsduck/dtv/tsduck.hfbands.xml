@@ -68,6 +68,11 @@
     <channels first_channel="7" last_channel="13" base_frequency="177,000,000" channel_width="6,000,000"/>
   </hfband>
 
+  <hfband type="UHF">
+    <region name="philippines"/>
+    <channels first_channel="14" last_channel="44" base_frequency="473,000,000" channel_width="6,000,000"/>
+  </hfband>
+
   <hfband type="VHF">
     <region name="japan"/>
     <channels first_channel="1" last_channel="3" base_frequency="93,000,000" channel_width="6,000,000"/>
