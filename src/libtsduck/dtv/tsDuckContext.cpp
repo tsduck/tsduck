@@ -30,6 +30,7 @@
 #include "tsDuckContext.h"
 #include "tsDuckConfigFile.h"
 #include "tsDVBCharTableSingleByte.h"
+#include "tsDVBCharTableUTF8.h"
 #include "tsARIBCharset.h"
 #include "tsHFBand.h"
 #include "tsTime.h"
@@ -478,25 +479,49 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         if (_definedCmdOptions & CMD_TIMEREF) {
             options.push_back(u"--time-reference JST");
         }
-
         args.option(u"japan", 0);
         args.help(u"japan",
                   u"A synonym for '" + UString::Join(options, u" ") + u"'. "
                   u"This is a handy shortcut when working on Japanese transport streams.");
     }
 
-    // Option --brazil triggers different options in different sets of options.
-    if (cmdOptionsMask & (CMD_STANDARDS | CMD_TIMEREF)) {
+    // Option --philippines triggers different options in different sets of options.
+    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) {
 
         // Build help text. Same principla as --japan.
         UStringList options;
         if (_definedCmdOptions & CMD_STANDARDS) {
             options.push_back(u"--isdb");
         }
+        if (_definedCmdOptions & CMD_CHARSET) {
+            options.push_back(u"--default-charset RAW-UTF-8");
+        }
+        if (_definedCmdOptions & CMD_HF_REGION) {
+            options.push_back(u"--hf-band-region philippines");
+        }
+        if (_definedCmdOptions & CMD_TIMEREF) {
+            options.push_back(u"--time-reference UTC+8");
+        }
+        args.option(u"philippines", 0);
+        args.help(u"philippines",
+                  u"A synonym for '" + UString::Join(options, u" ") + u"'. "
+                  u"This is a handy shortcut when working on Philippines transport streams.");
+    }
+
+    // Option --brazil triggers different options in different sets of options.
+    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS | CMD_TIMEREF)) {
+
+        // Build help text. Same principla as --japan.
+        UStringList options;
+        if (_definedCmdOptions & CMD_STANDARDS) {
+            options.push_back(u"--isdb");
+        }
+        if (_definedCmdOptions & CMD_CHARSET) {
+            options.push_back(u"--default-charset RAW-ISO-8859-15");
+        }
         if (_definedCmdOptions & CMD_TIMEREF) {
             options.push_back(u"--time-reference UTC-3");
         }
-
         args.option(u"brazil", 0);
         args.help(u"brazil",
                   u"A synonym for '" + UString::Join(options, u" ") + u"'. "
@@ -525,6 +550,12 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (args.present(u"europe")) {
             _charsetIn = _charsetOut = &DVBCharTableSingleByte::DVB_ISO_8859_15;
         }
+        else if (args.present(u"brazil")) {
+            _charsetIn = _charsetOut = &DVBCharTableSingleByte::RAW_ISO_8859_15;
+        }
+        else if (args.present(u"philippines")) {
+            _charsetIn = _charsetOut = &DVBCharTableUTF8::RAW_UTF_8;
+        }
         else if (args.present(u"japan")) {
             _charsetIn = _charsetOut = &ARIBCharset::B24;
         }
@@ -547,6 +578,9 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (args.present(u"japan")) {
             _hfDefaultRegion = u"japan";
         }
+        else if (args.present(u"philippines")) {
+            _hfDefaultRegion = u"philippines";
+        }
         else if (args.present(u"hf-band-region")) {
             args.getValue(_hfDefaultRegion, u"hf-band-region");
         }
@@ -557,7 +591,7 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (args.present(u"atsc")) {
             _cmdStandards |= Standards::ATSC;
         }
-        if (args.present(u"isdb") || args.present(u"japan") || args.present(u"brazil")) {
+        if (args.present(u"isdb") || args.present(u"japan") || args.present(u"brazil") || args.present(u"philippines")) {
             _cmdStandards |= Standards::ISDB;
         }
     }
@@ -591,6 +625,9 @@ bool ts::DuckContext::loadArgs(Args& args)
         }
         else if (args.present(u"brazil")) {
             _timeReference = -3 * MilliSecPerHour; // UTC-3
+        }
+        else if (args.present(u"philippines")) {
+            _timeReference = 8 * MilliSecPerHour; // UTC+8
         }
         else if (args.present(u"time-reference")) {
             const UString name(args.value(u"time-reference"));
