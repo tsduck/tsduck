@@ -26,22 +26,26 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsxmlPatchDocument.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 24
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2096
+ts::xml::PatchDocument::PatchDocument(Report& report) :
+    Document(report)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Patch an XML document.
+//----------------------------------------------------------------------------
+
+void ts::xml::PatchDocument::patch(Document& doc) const
+{
+    //@@@@@@@@@@@
+}

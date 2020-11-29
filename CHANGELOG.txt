@@ -2,11 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2094
+VERSION 3.24-2095
 
 [NEW] New commands and plugins:
 
   * Added plugin "stats" (report various statistics on PID's and labels).
+  * Added command "tsxml" to test the validation and patches of XML files.
   * For developers who use the TSDuck library on Linux and macOS, the new
     command "tsconfig" generates the various build options for the applications
     depending on the current operating system.

@@ -29,6 +29,7 @@
 
 #include "tsChannelFile.h"
 #include "tsModulation.h"
+#include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
@@ -407,14 +408,14 @@ bool ts::ChannelFile::parse(const UString& text, Report& report)
 bool ts::ChannelFile::parseDocument(const xml::Document& doc)
 {
     // Load the XML model for TSDuck files. Search it in TSDuck directory.
-    xml::Document model(doc.report());
+    xml::ModelDocument model(doc.report());
     if (!model.load(u"tsduck.channels.model.xml", true)) {
         doc.report().error(u"Model for TSDuck channels XML files not found");
         return false;
     }
 
     // Validate the input document according to the model.
-    if (!doc.validate(model)) {
+    if (!model.validate(doc)) {
         return false;
     }
 

@@ -30,7 +30,7 @@
 #include "tsLNB.h"
 #include "tsGuard.h"
 #include "tsAlgorithm.h"
-#include "tsxmlDocument.h"
+#include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsDuckConfigFile.h"
 TSDUCK_SOURCE;
@@ -372,14 +372,14 @@ bool ts::LNB::LNBRepository::load(Report& report)
     }
 
     // Load the XML model. Search it in TSDuck directory.
-    xml::Document model(report);
+    xml::ModelDocument model(report);
     if (!model.load(u"tsduck.lnbs.model.xml", true)) {
         report.error(u"Model for TSDuck LNB XML files not found");
         return false;
     }
 
     // Validate the input document according to the model.
-    if (!doc.validate(model)) {
+    if (!model.validate(doc)) {
         return false;
     }
 
