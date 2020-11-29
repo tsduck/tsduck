@@ -90,20 +90,6 @@ namespace ts {
             bool load(std::istream& strm);
 
             //!
-            //! Validate the XML document.
-            //!
-            //! This is a minimal mechanism, much less powerful than XML-Schema.
-            //! But since we do not support schema, this is a cheap alternative.
-            //!
-            //! @param [in] model The model document. This document contains the structure
-            //! of a valid document, with all possible elements and attributes. There is
-            //! no type checking, no cardinality check. Comments and texts are ignored.
-            //! The values of attributes are ignored.
-            //! @return True if this document matches @a model, false if it does not.
-            //!
-            bool validate(const Document& model) const;
-
-            //!
             //! Save an XML file.
             //! @param [in] fileName Name of the XML file to save.
             //! @param [in] indent Indentation width of each level.
@@ -158,23 +144,6 @@ namespace ts {
             virtual bool parseNode(TextParser& parser, const Node* parent) override;
 
         private:
-            //!
-            //! Validate an XML tree of elements, used by validate().
-            //! @param [in] model The model element.
-            //! @param [in] doc The element to validate.
-            //! @return True if @a doc matches @a model, false if it does not.
-            //!
-            bool validateElement(const Element* model, const Element* doc) const;
-
-            //!
-            //! Find a child element by name in an XML model element.
-            //! @param [in] elem An XML element in a model document.
-            //! @param [in] name Name of the child element to search.
-            //! @return Address of the child model or zero if not found.
-            //!
-            const Element* findModelElement(const Element* elem, const UString& name) const;
-
-            // Private members.
             Tweaks _tweaks;  // Global XML tweaks for the document.
         };
     }

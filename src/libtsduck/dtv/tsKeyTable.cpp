@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsKeyTable.h"
+#include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsAlgorithm.h"
 TSDUCK_SOURCE;
@@ -154,14 +155,14 @@ bool ts::KeyTable::loadFile(Report& report, const UString& filename, bool replac
 bool ts::KeyTable::parseXML(xml::Document& doc, bool replace, size_t id_size, size_t value_size)
 {
     // Load the XML model. Search it in TSDuck directory.
-    xml::Document model(doc.report());
+    xml::ModelDocument model(doc.report());
     if (!model.load(u"tsduck.keytable.model.xml", true)) {
         doc.report().error(u"Model for TSDuck key table XML files not found");
         return false;
     }
 
     // Validate the input document according to the model.
-    if (!doc.validate(model)) {
+    if (!model.validate(doc)) {
         return false;
     }
 

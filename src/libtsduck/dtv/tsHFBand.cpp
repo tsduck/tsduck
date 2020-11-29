@@ -30,7 +30,7 @@
 #include "tsHFBand.h"
 #include "tsDuckConfigFile.h"
 #include "tsGuard.h"
-#include "tsxmlDocument.h"
+#include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsAlgorithm.h"
 TSDUCK_SOURCE;
@@ -503,14 +503,14 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
     }
 
     // Load the XML model. Search it in TSDuck directory.
-    xml::Document model(report);
+    xml::ModelDocument model(report);
     if (!model.load(u"tsduck.hfbands.model.xml", true)) {
         report.error(u"Model for TSDuck HF Band XML files not found");
         return false;
     }
 
     // Validate the input document according to the model.
-    if (!doc.validate(model)) {
+    if (!model.validate(doc)) {
         return false;
     }
 

@@ -28,56 +28,39 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup xml
-//!  Forward declaration of XML classes.
+//!  Representation of an XML document which is used to patch another one.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsxmlDocument.h"
 
 namespace ts {
-    //!
-    //! Namespace for XML classes.
-    //!
-    //! The XML features of TSDuck are freely inspired from TinyXML-2, a simple
-    //! and lightweight XML library originally developed by Lee Thomason.
-    //!
-    //! TSDuck used to embed TinyXML-2 in the past but no longer does to allow
-    //! more specialized operations. This set of classes is probably less fast
-    //! than TinyXML-2 but TSDuck does not manipulate huge XML files. So, this
-    //! should be OK.
-    //!
-    //! Among the differences between TinyXML-2 and this set of classes:
-    //! - Uses Unicode strings from the beginning.
-    //! - Error reporting using ts::Report.
-    //! - Case-insensitive search of names and attributes.
-    //! - Getting values and attributes with cardinality and value bounds checks.
-    //! - Print / format any subset of a document.
-    //! - XML document validation using a template.
-    //!
     namespace xml {
+        //!
+        //! Representation of an XML document which is used to patch another XML document.
+        //! @ingroup xml
+        //!
+        //! A patch is an XML document which is used to add, delete or modify parts of
+        //! another XML document. This is a minimal mechanism, much less powerful than XSLT.
+        //! But since we do not support XSLT, this is a cheap alternative.
+        //!
+        class TSDUCKDLL PatchDocument: public Document
+        {
+            TS_NOCOPY(PatchDocument);
+        public:
+            //!
+            //! Constructor.
+            //! @param [in,out] report Where to report errors.
+            //!
+            explicit PatchDocument(Report& report = NULLREP);
 
-        // Forward declaration of XML classes.
-        class Attribute;
-        class Comment;
-        class Declaration;
-        class Element;
-        class Node;
-        class Text;
-        class Unknown;
-        class Document;
-        class ModelDocument;
-        class PatchDocument;
-
-        //!
-        //! Vector of constant elements.
-        //!
-        typedef std::vector<const Element*> ElementVector;
-
-        //!
-        //! Specify an unlimited number of elements.
-        //!
-        static const size_t UNLIMITED = std::numeric_limits<size_t>::max();
+            //!
+            //! Patch an XML document.
+            //!
+            //! @param [in,out] doc The document to patch.
+            //!
+            void patch(Document& doc) const;
+        };
     }
 }

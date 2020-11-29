@@ -31,7 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsxmlDocument.h"
+#include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsSectionFile.h"
 #include "tsTextFormatter.h"
@@ -248,7 +248,7 @@ void XMLTest::testFileBOM()
 
 void XMLTest::testValidation()
 {
-    ts::xml::Document model(report());
+    ts::xml::ModelDocument model(report());
     TSUNIT_ASSERT(model.load(TS_XML_TABLES_MODEL));
 
     const ts::UString xmlContent(
@@ -273,7 +273,7 @@ void XMLTest::testValidation()
 
     ts::xml::Document doc(report());
     TSUNIT_ASSERT(doc.parse(xmlContent));
-    TSUNIT_ASSERT(doc.validate(model));
+    TSUNIT_ASSERT(model.validate(doc));
 }
 
 void XMLTest::testCreation()

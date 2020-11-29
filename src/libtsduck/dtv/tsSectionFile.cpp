@@ -34,6 +34,7 @@
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
+#include "tsxmlModelDocument.h"
 #include "tsSysUtils.h"
 #include "tsEIT.h"
 TSDUCK_SOURCE;
@@ -488,13 +489,13 @@ bool ts::SectionFile::parseXML(const UString& xml_content, Report& report)
 bool ts::SectionFile::parseDocument(const xml::Document& doc)
 {
     // Load the XML model for TSDuck files. Search it in TSDuck directory.
-    xml::Document model(doc.report());
+    xml::ModelDocument model(doc.report());
     if (!LoadModel(model)) {
         return false;
     }
 
     // Validate the input document according to the model.
-    if (!doc.validate(model)) {
+    if (!model.validate(doc)) {
         return false;
     }
 
