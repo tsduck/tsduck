@@ -33,6 +33,7 @@
 -->
 <tsduck>
 
+  <!-- Europe -->
   <hfband type="UHF">
     <region name="europe"/>
     <region name="uk"/>
@@ -49,39 +50,36 @@
               first_offset="-1" last_offset="3" offset_width="166,666"/>
   </hfband>
 
+  <!-- North America and other ATSC countries -->
   <hfband type="UHF">
+    <region name="north-america"/>
     <region name="usa"/>
     <region name="us"/>
     <channels first_channel="14" last_channel="69" base_frequency="473,000,000" channel_width="6,000,000"/>
   </hfband>
 
   <hfband type="VHF">
-    <region name="americas"/>
+    <region name="north-america"/>
     <region name="usa"/>
     <region name="us"/>
     <region name="korea"/>
     <region name="taiwan"/>
-    <region name="philippines"/>
     <channels first_channel="1" last_channel="1" base_frequency="47,000,000" channel_width="6,000,000"/>
     <channels first_channel="2" last_channel="4" base_frequency="57,000,000" channel_width="6,000,000"/>
     <channels first_channel="5" last_channel="6" base_frequency="79,000,000" channel_width="6,000,000"/>
     <channels first_channel="7" last_channel="13" base_frequency="177,000,000" channel_width="6,000,000"/>
   </hfband>
 
+  <!-- Japan frequency mappings, terrestrial and satellite -->
   <hfband type="UHF">
-    <region name="philippines"/>
-    <channels first_channel="14" last_channel="44" base_frequency="473,000,000" channel_width="6,000,000"/>
+    <region name="japan"/>
+    <channels first_channel="13" last_channel="62" base_frequency="473,142,857" channel_width="6,000,000"/>
   </hfband>
 
   <hfband type="VHF">
     <region name="japan"/>
     <channels first_channel="1" last_channel="3" base_frequency="93,000,000" channel_width="6,000,000"/>
     <channels first_channel="4" last_channel="12" base_frequency="173,000,000" channel_width="6,000,000"/>
-  </hfband>
-
-  <hfband type="UHF">
-    <region name="japan"/>
-    <channels first_channel="13" last_channel="62" base_frequency="473,142,857" channel_width="6,000,000"/>
   </hfband>
 
   <hfband type="BS">
@@ -94,6 +92,56 @@
     <region name="japan"/>
     <channels first_channel="1" last_channel="24" base_frequency="12,271,000,000" channel_width="20,000,000"
               even_polarity="right" odd_polarity="left"/>
+  </hfband>
+
+  <!-- South America: Generic frequency mappings for ABNT-defined ISDB -->
+  <!-- Country-specific subsets are defined for UHF to speed up scanning -->
+  <hfband type="UHF">
+    <region name="south-america"/>
+    <region name="abnt"/>
+    <region name="brazil"/>
+    <channels first_channel="14" last_channel="36" base_frequency="473,142,857" channel_width="6,000,000"/>
+    <!-- Channel 37 is reserved for radio astronomy -->
+    <channels first_channel="38" last_channel="69" base_frequency="617,142,857" channel_width="6,000,000"/>
+  </hfband>
+
+  <hfband type="VHF">
+    <region name="south-america"/>
+    <region name="abnt"/>
+    <region name="brazil"/>
+    <region name="paraguay"/>
+    <channels first_channel="7" last_channel="13" base_frequency="177,142,857" channel_width="6,000,000"/>
+  </hfband>
+
+  <hfband type="UHF">
+    <region name="argentina"/>
+    <region name="paraguay"/>
+    <channels first_channel="14" last_channel="36" base_frequency="473,142,857" channel_width="6,000,000"/>
+    <channels first_channel="38" last_channel="51" base_frequency="617,142,857" channel_width="6,000,000"/>
+  </hfband>
+
+  <hfband type="UHF">
+    <region name="chile"/>
+    <channels first_channel="21" last_channel="36" base_frequency="515,142,857" channel_width="6,000,000"/>
+    <channels first_channel="38" last_channel="51" base_frequency="617,142,857" channel_width="6,000,000"/>
+  </hfband>
+
+  <hfband type="UHF">
+    <region name="ecuador"/>
+    <channels first_channel="14" last_channel="15" base_frequency="473,142,857" channel_width="6,000,000"/>
+    <channels first_channel="21" last_channel="36" base_frequency="515,142,857" channel_width="6,000,000"/>
+    <channels first_channel="38" last_channel="42" base_frequency="617,142,857" channel_width="6,000,000"/>
+  </hfband>
+
+  <!-- Other ISDB countries -->
+  <hfband type="UHF">
+    <region name="philippines"/>
+    <channels first_channel="14" last_channel="44" base_frequency="473,142,857" channel_width="6,000,000"/>
+  </hfband>
+
+  <hfband type="UHF">
+    <region name="botswana"/>
+    <channels first_channel="21" last_channel="48" base_frequency="474,000,000" channel_width="8,000,000"/>
   </hfband>
 
 </tsduck>

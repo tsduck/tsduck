@@ -509,7 +509,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     }
 
     // Option --brazil triggers different options in different sets of options.
-    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS | CMD_TIMEREF)) {
+    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) {
 
         // Build help text. Same principla as --japan.
         UStringList options;
@@ -518,6 +518,9 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         }
         if (_definedCmdOptions & CMD_CHARSET) {
             options.push_back(u"--default-charset RAW-ISO-8859-15");
+        }
+        if (_definedCmdOptions & CMD_HF_REGION) {
+            options.push_back(u"--hf-band-region brazil");
         }
         if (_definedCmdOptions & CMD_TIMEREF) {
             options.push_back(u"--time-reference UTC-3");
@@ -577,6 +580,9 @@ bool ts::DuckContext::loadArgs(Args& args)
     if (_definedCmdOptions & CMD_HF_REGION) {
         if (args.present(u"japan")) {
             _hfDefaultRegion = u"japan";
+        }
+        else if (args.present(u"brazil")) {
+            _hfDefaultRegion = u"brazil";
         }
         else if (args.present(u"philippines")) {
             _hfDefaultRegion = u"philippines";
