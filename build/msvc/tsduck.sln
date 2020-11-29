@@ -572,6 +572,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsplugin_stats", "tsplugin_
 		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsxml", "tsxml.vcxproj", "{59553F6E-567A-4C24-8711-9F7F47472988}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -1388,6 +1393,14 @@ Global
 		{AD1B17E7-6268-4E46-8354-B191EEF71234}.Release|Win32.Build.0 = Release|Win32
 		{AD1B17E7-6268-4E46-8354-B191EEF71234}.Release|x64.ActiveCfg = Release|x64
 		{AD1B17E7-6268-4E46-8354-B191EEF71234}.Release|x64.Build.0 = Release|x64
+		{59553F6E-567A-4C24-8711-9F7F47472988}.Debug|Win32.ActiveCfg = Debug|Win32
+		{59553F6E-567A-4C24-8711-9F7F47472988}.Debug|Win32.Build.0 = Debug|Win32
+		{59553F6E-567A-4C24-8711-9F7F47472988}.Debug|x64.ActiveCfg = Debug|x64
+		{59553F6E-567A-4C24-8711-9F7F47472988}.Debug|x64.Build.0 = Debug|x64
+		{59553F6E-567A-4C24-8711-9F7F47472988}.Release|Win32.ActiveCfg = Release|Win32
+		{59553F6E-567A-4C24-8711-9F7F47472988}.Release|Win32.Build.0 = Release|Win32
+		{59553F6E-567A-4C24-8711-9F7F47472988}.Release|x64.ActiveCfg = Release|x64
+		{59553F6E-567A-4C24-8711-9F7F47472988}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
