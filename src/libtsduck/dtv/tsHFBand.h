@@ -139,6 +139,19 @@ namespace ts {
         uint32_t channelCount() const { return _channel_count; }
 
         //!
+        //! Get the list of channels in the HF band as a string.
+        //! @return The list of channels in the HF band as a string.
+        //!
+        UString channelList() const;
+
+        //!
+        //! Check if a channel is valid in the HF band.
+        //! @param [in] channel Channel number.
+        //! @return True if @a channel is valid, false otherwise.
+        //!
+        bool isValidChannel(uint32_t channel) const;
+
+        //!
         //! Get the next channel in the HF band.
         //! @param [in] channel Channel number.
         //! @return The channel number after @a channel. Can be different from @a channel + 1

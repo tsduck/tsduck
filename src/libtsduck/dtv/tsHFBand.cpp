@@ -108,7 +108,7 @@ ts::UStringList ts::HFBand::GetAllBands(const UString& region, Report& report)
 
 ts::HFBand::ChannelsRangeList::const_iterator ts::HFBand::getRange(uint32_t channel) const
 {
-    for (ChannelsRangeList::const_iterator it = _channels.begin(); it != _channels.end(); ++it) {
+    for (auto it = _channels.begin(); it != _channels.end(); ++it) {
         if (channel < it->first_channel) {
             return _channels.end();
         }
@@ -121,12 +121,39 @@ ts::HFBand::ChannelsRangeList::const_iterator ts::HFBand::getRange(uint32_t chan
 
 
 //----------------------------------------------------------------------------
+// Get the list of channels in the HF band as a string.
+//----------------------------------------------------------------------------
+
+ts::UString ts::HFBand::channelList() const
+{
+    UString list;
+    for (auto it = _channels.begin(); it != _channels.end(); ++it) {
+        if (!list.empty()) {
+            list.append(u", ");
+        }
+        list.format(u"%d-%d", {it->first_channel, it->last_channel});
+    }
+    return list;
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a channel is valid in the HF band.
+//----------------------------------------------------------------------------
+
+bool ts::HFBand::isValidChannel(uint32_t channel) const
+{
+    return getRange(channel) != _channels.end();
+}
+
+
+//----------------------------------------------------------------------------
 // Get channel attributes.
 //----------------------------------------------------------------------------
 
 uint32_t ts::HFBand::nextChannel(uint32_t channel) const
 {
-    auto it(getRange(channel));
+    auto it = getRange(channel);
     if (it == _channels.end()) {
         // Not in any range.
         return 0;
@@ -147,7 +174,7 @@ uint32_t ts::HFBand::nextChannel(uint32_t channel) const
 
 uint32_t ts::HFBand::previousChannel(uint32_t channel) const
 {
-    auto it(getRange(channel));
+    auto it = getRange(channel);
     if (it == _channels.end()) {
         // Not in any range.
         return 0;
@@ -168,37 +195,37 @@ uint32_t ts::HFBand::previousChannel(uint32_t channel) const
 
 uint64_t ts::HFBand::frequency(uint32_t channel, int32_t offset) const
 {
-    auto it(getRange(channel));
+    const auto it = getRange(channel);
     return it == _channels.end() ? 0 : it->frequency(channel, offset);
 }
 
 uint64_t ts::HFBand::bandWidth(uint32_t channel) const
 {
-    auto it(getRange(channel));
+    const auto it = getRange(channel);
     return it == _channels.end() ? 0 : it->channel_width;
 }
 
 uint64_t ts::HFBand::offsetWidth(uint32_t channel) const
 {
-    auto it(getRange(channel));
+    const auto it = getRange(channel);
     return it == _channels.end() ? 0 : it->offset_width;
 }
 
 int32_t ts::HFBand::firstOffset(uint32_t channel) const
 {
-    auto it(getRange(channel));
+    const auto it = getRange(channel);
     return it == _channels.end() ? 0 : it->first_offset;
 }
 
 int32_t ts::HFBand::lastOffset(uint32_t channel) const
 {
-    auto it(getRange(channel));
+    const auto it = getRange(channel);
     return it == _channels.end() ? 0 : it->last_offset;
 }
 
 ts::Polarization ts::HFBand::polarization(uint32_t channel) const
 {
-    auto it(getRange(channel));
+    const auto it = getRange(channel);
     return it == _channels.end() ? ts::POL_NONE : (channel % 2 == 0 ? it->even_polarity : it->odd_polarity);
 }
 

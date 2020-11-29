@@ -36,7 +36,6 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
     //!
     //! Representation of an ISDB emergency_information_descriptor.
     //! @see ARIB STD-B10, Part 2, 6.2.24

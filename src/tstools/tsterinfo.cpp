@@ -234,37 +234,27 @@ int MainCode(int argc, char *argv[])
 
     // Convert UHF channel to frequency
     if (opt.uhf_channel > 0) {
-        if (opt.uhf_channel < uhf->firstChannel() || opt.uhf_channel > uhf->lastChannel()) {
-            std::cerr << ts::UString::Decimal(opt.uhf_channel)
-                      << " is not a valid UHF channel, valid range is "
-                      << ts::UString::Decimal(uhf->firstChannel()) << " - "
-                      << ts::UString::Decimal(uhf->lastChannel()) << std::endl;
+        if (!uhf->isValidChannel(opt.uhf_channel)) {
+            std::cerr << ts::UString::Format(u"%d is not a valid UHF channel, valid range is %s", {opt.uhf_channel, uhf->channelList()}) << std::endl;
         }
         else if (opt.simple) {
             std::cout << uhf->frequency(opt.uhf_channel, opt.hf_offset) << std::endl;
         }
         else {
-            std::cout << "Carrier Frequency: "
-                      << ts::UString::Decimal(uhf->frequency(opt.uhf_channel, opt.hf_offset))
-                      << " Hz" << std::endl;
+            std::cout << ts::UString::Format(u"Carrier Frequency: %'d Hz", {uhf->frequency(opt.uhf_channel, opt.hf_offset)}) << std::endl;
         }
     }
 
     // Convert VHF channel to frequency
     if (opt.vhf_channel > 0) {
-        if (opt.vhf_channel < vhf->firstChannel() || opt.vhf_channel > vhf->lastChannel()) {
-            std::cerr << ts::UString::Decimal(opt.vhf_channel)
-                      << " is not a valid VHF channel, valid range is "
-                      << ts::UString::Decimal(vhf->firstChannel()) << " - "
-                      << ts::UString::Decimal(vhf->lastChannel()) << std::endl;
+        if (!vhf->isValidChannel(opt.vhf_channel)) {
+            std::cerr << ts::UString::Format(u"%d is not a valid VHF channel, valid range is %s", {opt.vhf_channel, vhf->channelList()}) << std::endl;
         }
         else if (opt.simple) {
             std::cout << vhf->frequency(opt.vhf_channel, opt.hf_offset) << std::endl;
         }
         else {
-            std::cout << "Carrier Frequency: "
-                      << ts::UString::Decimal(vhf->frequency(opt.vhf_channel, opt.hf_offset))
-                      << " Hz" << std::endl;
+            std::cout << ts::UString::Format(u"Carrier Frequency: %'d Hz", {vhf->frequency(opt.vhf_channel, opt.hf_offset)}) << std::endl;
         }
     }
 
