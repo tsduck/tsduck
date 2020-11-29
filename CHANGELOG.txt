@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.24-2090
+VERSION 3.24-2094
 
 [NEW] New commands and plugins:
 
@@ -22,7 +22,9 @@ VERSION 3.24-2090
     the new value "RS204" designates TS files containing 204-byte packets with
     trailing Reed-Solomon code.
   * In plugin "pcrextract", the default CSV separator is now "," instead of ";".
-  * Added "default.time" to configuration file (see --time-reference).
+  * Added "default.time" to configuration file (see option --time-reference).
+  * General improvement of ISDB support for Brazil and the Philippines:
+    - Default character set, time reference and HF bands.
   * New options in exiting commands and plugins:
     - Option --log-plugin-index in "tsp".
     - Option --subtitles-pid in plugin "zap".
@@ -33,9 +35,9 @@ VERSION 3.24-2090
     - Options --bitrate, --acceleration-threshold, --incremental-pcr-restamp,
       --no-smoothing, --pcr-reset-backwards in plugin "merge".
     - Options --atsc, --isdb, --japan to "tsdate".
-    - Options --brasil and --time-reference in "tsanalyze", "tsdate", "tsp",
-      "tspsi", "tstabcomp", "tstabdump", "tstables" and plugins "analyze",
-      "psi", "tables".
+    - Options --brazil, --philippines and --time-reference in "tsanalyze",
+      "tsdate", "tsp", "tspsi", "tstabcomp", "tstabdump", "tstables" and
+      plugins "analyze", "psi", "tables".
     - Options --and, --tid-ext-remove, --version-remove, --reverse-etid in
       plugin "sections".
     - Options --add-start-stuffing and --add-stop-stuffing in plugin "file".
