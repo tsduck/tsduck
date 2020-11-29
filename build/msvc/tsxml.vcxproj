@@ -7,7 +7,7 @@
     <ClCompile Include="..\..\src\tstools\tsxml.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{DAA77608-8755-4E65-8FAE-6667C4317385}</ProjectGuid>
+    <ProjectGuid>{59553F6E-567A-4C24-8711-9F7F47472988}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tsxml</RootNamespace>
   </PropertyGroup>
