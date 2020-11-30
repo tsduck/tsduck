@@ -42,13 +42,18 @@ namespace {
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::xml::ModelDocument::ModelDocument(Report& report) :
     Document(report)
 {
 }
+
+ts::xml::ModelDocument::~ModelDocument()
+{
+}
+
 
 
 //----------------------------------------------------------------------------
