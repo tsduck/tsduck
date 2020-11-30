@@ -61,7 +61,6 @@ namespace ts {
         //!
         class TSDUCKDLL Element: public Node
         {
-            TS_NOCOPY(Element);
         private:
             // Attributes are stored indexed by case-(in)sensitive name.
             typedef std::map<UString, Attribute> AttributeMap;
@@ -84,18 +83,24 @@ namespace ts {
             Element(Node* parent, const UString& name, CaseSensitivity attributeCase = CASE_INSENSITIVE);
 
             //!
+            //! Copy constructor.
+            //! @param [in] other Other instance to copy.
+            //!
+            Element(const Element& other);
+
+            //!
             //! Get the element name.
             //! This is the same as the node value.
             //! @return A constant reference to the element name.
             //!
-            const UString& name() const { return _value; }
+            const UString& name() const { return value(); }
 
             //!
             //! Check if two XML elements have the same name, case-insensitive.
             //! @param [in] other Another XML element.
             //! @return True is this object and @a other have identical names.
             //!
-            bool haveSameName(const Element* other) const { return other != nullptr && _value.similar(other->_value); }
+            bool haveSameName(const Element* other) const { return other != nullptr && value().similar(other->value()); }
 
             //!
             //! Find the first child element by name, case-insensitive.
@@ -249,6 +254,17 @@ namespace ts {
             bool hasAttribute(const UString& attributeName) const;
 
             //!
+            //! Check if an attribute exists in the element and has the specified value.
+            //! @param [in] attributeName Attribute name.
+            //! @param [in] value Expected value.
+            //! @param [in] similar If true, the comparison between the actual and expected
+            //! values is performed case-insensitive and ignoring blanks. If false, a strict
+            //! comparison is performed.
+            //! @return True if the attribute exists and has the expected value.
+            //!
+            bool hasAttribute(const UString& attributeName, const UString& value, bool similar = false) const;
+
+            //!
             //! Get an attribute.
             //! @param [in] attributeName Attribute name.
             //! @param [in] silent If true, do not report error.
@@ -257,6 +273,12 @@ namespace ts {
             //! The reference is valid as long as the Element object is not modified.
             //!
             const Attribute& attribute(const UString& attributeName, bool silent = false) const;
+
+            //!
+            //! Delete an attribute.
+            //! @param [in] name Attribute name to delete.
+            //!
+            void deleteAttribute(const UString& name);
 
             //!
             //! Set an attribute.
@@ -712,6 +734,12 @@ namespace ts {
             void getAttributesNames(UStringList& names) const;
 
             //!
+            //! Get the list of all attributes.
+            //! @param [out] attr Returned map of all attribute names (index in the map) and corresponding values.
+            //!
+            void getAttributes(std::map<UString,UString>& attr) const;
+
+            //!
             //! Get the list of all attribute names, sorted by modification order.
             //! The method is slower than getAttributesNames().
             //! @param [out] names Returned list of all attribute names.
@@ -719,6 +747,7 @@ namespace ts {
             void getAttributesNamesInModificationOrder(UStringList& names) const;
 
             // Inherited from xml::Node.
+            virtual Node* clone() const override;
             virtual void clear() override;
             virtual UString typeName() const override;
             virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;

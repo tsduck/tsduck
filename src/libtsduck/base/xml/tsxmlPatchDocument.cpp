@@ -28,7 +28,14 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlPatchDocument.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
+
+#define X_ATTR          u"x-" // prefix of special attribute names
+#define X_NODE_ATTR     X_ATTR u"node"
+#define X_ADD_PREFIX    X_ATTR u"add-"
+#define X_DELETE_PREFIX X_ATTR u"delete-"
+#define X_UPDATE_PREFIX X_ATTR u"update-"
 
 
 //----------------------------------------------------------------------------
@@ -47,5 +54,127 @@ ts::xml::PatchDocument::PatchDocument(Report& report) :
 
 void ts::xml::PatchDocument::patch(Document& doc) const
 {
-    //@@@@@@@@@@@
+    patchElement(rootElement(), doc.rootElement());
+}
+
+
+//----------------------------------------------------------------------------
+// Patch an XML tree of elements.
+//----------------------------------------------------------------------------
+
+bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc) const
+{
+    // If the node name do not match, no need to go further.
+    if (doc == nullptr || !doc->haveSameName(patch)) {
+        return true;
+    }
+
+    // Get all attributes in the patch element.
+    std::map<UString, UString> attr;
+    patch->getAttributes(attr);
+
+    // Check if all attributes in doc element match the specific attributes in the patch element.
+    for (auto it = attr.begin(); it != attr.end(); ++it) {
+        // Ignore attributes starting with the special prefix.
+        if (!it->first.startWith(X_ATTR, CASE_INSENSITIVE) && !doc->hasAttribute(it->first, it->second)) {
+            // No, the doc node does not meet the patch requirements.
+            return true;
+        }
+    }
+
+    // Now process all attribute modifications on the node attributes.
+    for (auto it = attr.begin(); it != attr.end(); ++it) {
+        if (it->first.startWith(X_ADD_PREFIX, CASE_INSENSITIVE)) {
+            // Add or replace an attribute.
+            UString name(it->first);
+            name.removePrefix(X_ADD_PREFIX, CASE_INSENSITIVE);
+            if (!name.empty()) {
+                doc->setAttribute(name, it->second);
+            }
+        }
+        else if (it->first.startWith(X_DELETE_PREFIX, CASE_INSENSITIVE)) {
+            // Delete an attribute.
+            UString name(it->first);
+            name.removePrefix(X_DELETE_PREFIX, CASE_INSENSITIVE);
+            if (!name.empty()) {
+                doc->deleteAttribute(name);
+            }
+        }
+        else if (it->first.startWith(X_UPDATE_PREFIX, CASE_INSENSITIVE)) {
+            // Update an exiting attribute.
+            UString name(it->first);
+            name.removePrefix(X_UPDATE_PREFIX, CASE_INSENSITIVE);
+            if (!name.empty() && doc->hasAttribute(name)) {
+                doc->setAttribute(name, it->second);
+            }
+        }
+        else if (it->first.similar(X_NODE_ATTR) && it->second.similar(u"delete")) {
+            // Remove this node from parent.
+            // Deallocating the element call its destructor which removes it from parent.
+            delete doc;
+            return false;
+        }
+        else if (it->first.startWith(X_ATTR, CASE_INSENSITIVE)) {
+            report().error(u"invalid special attribute '%s' in <%s>, line %d", {it->first, patch->name(), patch->lineNumber()});
+        }
+    }
+
+    // Now recurse on all children elements in the document to patch.
+    // We need to get the list of elements first and then process them because each processing may add or remove children.
+    std::vector<Element*> docChildren;
+    for (Element* child = doc->firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
+        docChildren.push_back(child);
+    }
+
+    // Get the children of the patch node.
+    std::vector<const Element*> patchChildren;
+    for (const Element* child = patch->firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
+        if (child->hasAttribute(X_NODE_ATTR, u"add")) {
+            // This is a node to add directly. Create a clone.
+            Element* e = new Element(*child);
+            // Remove all "x-" attributes (especially the "x-node" one).
+            cleanupAttributes(e);
+            // Add the new child in the document.
+            e->reparent(doc);
+        }
+        else {
+            // This is a patch to apply.
+            patchChildren.push_back(child);
+        }
+    }
+
+    // Now apply all patches on all doc children.
+    for (size_t di = 0; di < docChildren.size(); ++di) {
+        for (size_t pi = 0; pi < patchChildren.size(); ++pi) {
+            if (!patchElement(patchChildren[pi], docChildren[di])) {
+                // Stop processing this doc child (probably deleted).
+                break;
+            }
+        }
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Cleanup a cloned XML tree from all "x-" attributes.
+//----------------------------------------------------------------------------
+
+void ts::xml::PatchDocument::cleanupAttributes(Element* e) const
+{
+    // Get all attribute names.
+    UStringList attrNames;
+    e->getAttributesNames(attrNames);
+
+    // Remove all attributes starting with the special prefix.
+    for (auto it = attrNames.begin(); it != attrNames.end(); ++it) {
+        if (it->startWith(X_ATTR, CASE_INSENSITIVE)) {
+            e->deleteAttribute(*it);
+        }
+    }
+
+    // Recurse on all children.
+    for (Element* child = e->firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
+        cleanupAttributes(child);
+    }
 }

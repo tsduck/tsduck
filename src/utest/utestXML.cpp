@@ -176,8 +176,12 @@ void XMLTest::testDocument()
     TSUNIT_ASSERT(!elem->hasChildren());
     TSUNIT_EQUAL(u"node3", elem->name());
     TSUNIT_ASSERT(elem->hasAttribute(u"foo"));
+    TSUNIT_ASSERT(elem->hasAttribute(u"foo", u"bar"));
+    TSUNIT_ASSERT(!elem->hasAttribute(u"foo", u"spam"));
     TSUNIT_EQUAL(u"bar", elem->attribute(u"foo").value());
     TSUNIT_ASSERT(elem->text().empty());
+    elem->deleteAttribute(u"foo");
+    TSUNIT_ASSERT(!elem->hasAttribute(u"foo"));
 
     elem = elem->nextSiblingElement();
     TSUNIT_ASSERT(elem != nullptr);

@@ -51,6 +51,18 @@ ts::xml::Element::Element(Node* parent, const UString& name, CaseSensitivity att
 {
 }
 
+ts::xml::Element::Element(const Element& other) :
+    Node(other),
+    _attributeCase(other._attributeCase),
+    _attributes(other._attributes)
+{
+}
+
+ts::xml::Node* ts::xml::Element::clone() const
+{
+    return new Element(*this);
+}
+
 ts::UString ts::xml::Element::typeName() const
 {
     return u"Element";
@@ -83,7 +95,7 @@ ts::xml::Element* ts::xml::Element::findFirstChild(const UString& name, bool sil
 
     // Child node not found.
     if (!silent) {
-        _report.error(u"Child node <%s> not found in <%s>, line %d", {name, _value, lineNumber()});
+        report().error(u"Child node <%s> not found in <%s>, line %d", {name, value(), lineNumber()});
     }
     return nullptr;
 }
@@ -114,11 +126,11 @@ bool ts::xml::Element::getChildren(ElementVector& children, const UString& searc
         return true;
     }
     else if (maxCount == UNLIMITED) {
-        _report.error(u"<%s>, line %d, contains %d <%s>, at least %d required", {name(), lineNumber(), children.size(), searchName, minCount});
+        report().error(u"<%s>, line %d, contains %d <%s>, at least %d required", {name(), lineNumber(), children.size(), searchName, minCount});
         return false;
     }
     else {
-        _report.error(u"<%s>, line %d, contains %d <%s>, allowed %d to %d", {name(), lineNumber(), children.size(), searchName, minCount, maxCount});
+        report().error(u"<%s>, line %d, contains %d <%s>, allowed %d to %d", {name(), lineNumber(), children.size(), searchName, minCount, maxCount});
         return false;
     }
 }
@@ -186,11 +198,11 @@ bool ts::xml::Element::getText(UString& data, const bool trim, size_t minSize, s
         return true;
     }
     else if (maxSize == UNLIMITED) {
-        _report.error(u"Incorrect text in <%s>, line %d, contains %d characters, at least %d required", {name(), lineNumber(), len, minSize});
+        report().error(u"Incorrect text in <%s>, line %d, contains %d characters, at least %d required", {name(), lineNumber(), len, minSize});
         return false;
     }
     else {
-        _report.error(u"Incorrect text in <%s>, line %d, contains %d characters, allowed %d to %d", {name(), lineNumber(), len, minSize, maxSize});
+        report().error(u"Incorrect text in <%s>, line %d, contains %d characters, allowed %d to %d", {name(), lineNumber(), len, minSize, maxSize});
         return false;
     }
 }
@@ -231,7 +243,7 @@ bool ts::xml::Element::getHexaText(ByteBlock& data, size_t minSize, size_t maxSi
     // Get text children. Ignore errors if no text found, simply empty.
     // Interpret hexa data.
     if (!text().hexaDecode(data)) {
-        _report.error(u"Invalid hexadecimal content in <%s>, line %d", {name(), lineNumber()});
+        report().error(u"Invalid hexadecimal content in <%s>, line %d", {name(), lineNumber()});
         return false;
     }
 
@@ -241,11 +253,11 @@ bool ts::xml::Element::getHexaText(ByteBlock& data, size_t minSize, size_t maxSi
         return true;
     }
     else if (maxSize == UNLIMITED) {
-        _report.error(u"Incorrect hexa content in <%s>, line %d, contains %d bytes, at least %d required", {name(), lineNumber(), len, minSize});
+        report().error(u"Incorrect hexa content in <%s>, line %d, contains %d bytes, at least %d required", {name(), lineNumber(), len, minSize});
         return false;
     }
     else {
-        _report.error(u"Incorrect hexa content in <%s>, line %d, contains %d bytes, allowed %d to %d", {name(), lineNumber(), len, minSize, maxSize});
+        report().error(u"Incorrect hexa content in <%s>, line %d, contains %d bytes, allowed %d to %d", {name(), lineNumber(), len, minSize, maxSize});
         return false;
     }
 }
@@ -345,6 +357,14 @@ void ts::xml::Element::setAttribute(const UString& name, const UString& value, b
     }
 }
 
+void ts::xml::Element::deleteAttribute(const UString& name)
+{
+    const auto it = _attributes.find(attributeKey(name));
+    if (it != _attributes.end()) {
+        _attributes.erase(it);
+    }
+}
+
 bool ts::xml::Element::hasAttribute(const UString& name) const
 {
     return findAttribute(name) != _attributes.end();
@@ -352,7 +372,7 @@ bool ts::xml::Element::hasAttribute(const UString& name) const
 
 ts::xml::Attribute& ts::xml::Element::refAttribute(const UString& name)
 {
-    const AttributeMap::iterator it(_attributes.find(attributeKey(name)));
+    const auto it = _attributes.find(attributeKey(name));
     return it == _attributes.end() ? (_attributes[attributeKey(name)] = Attribute(name, u"")) : it->second;
 }
 
@@ -363,16 +383,36 @@ ts::xml::Attribute& ts::xml::Element::refAttribute(const UString& name)
 
 const ts::xml::Attribute& ts::xml::Element::attribute(const UString& attributeName, bool silent) const
 {
-    const AttributeMap::const_iterator it(findAttribute(attributeName));
+    const auto it = findAttribute(attributeName);
     if (it != _attributes.end()) {
         // Found the real attribute.
         return it->second;
     }
     if (!silent) {
-        _report.error(u"attribute '%s' not found in <%s>, line %d", {attributeName, name(), lineNumber()});
+        report().error(u"attribute '%s' not found in <%s>, line %d", {attributeName, name(), lineNumber()});
     }
     // Return a reference to a static invalid attribute.
     return Attribute::INVALID;
+}
+
+
+//----------------------------------------------------------------------------
+// Check if an attribute exists in the element and has the specified value.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::hasAttribute(const UString& name, const UString& value, bool similar) const
+{
+    const Attribute& attr(attribute(name, true));
+    if (!attr.isValid()) {
+        // Attribute not present.
+        return false;
+    }
+    else if (similar) {
+        return value.similar(attr.value());
+    }
+    else {
+        return value == attr.value();
+    }
 }
 
 
@@ -402,12 +442,12 @@ bool ts::xml::Element::getAttribute(UString& value,
 
         // Incorrect value size.
         if (maxSize == UNLIMITED) {
-            _report.error(u"Incorrect value for attribute '%s' in <%s>, line %d, contains %d characters, at least %d required",
+            report().error(u"Incorrect value for attribute '%s' in <%s>, line %d, contains %d characters, at least %d required",
                           {name, this->name(), attr.lineNumber(), value.length(), minSize});
             return false;
         }
         else {
-            _report.error(u"Incorrect value for attribute '%s' in <%s>, line %d, contains %d characters, allowed %d to %d",
+            report().error(u"Incorrect value for attribute '%s' in <%s>, line %d, contains %d characters, allowed %d to %d",
                           {name, this->name(), attr.lineNumber(), value.length(), minSize, maxSize});
             return false;
         }
@@ -461,7 +501,7 @@ bool ts::xml::Element::getBoolAttribute(bool& value, const UString& name, bool r
         return true;
     }
     else {
-        _report.error(u"'%s' is not a valid boolean value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid boolean value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
         return false;
     }
 }
@@ -507,7 +547,7 @@ bool ts::xml::Element::getEnumAttribute(int& value, const Enumeration& definitio
         const UString str(attr.value());
         const int val = definition.value(str, false);
         if (val == Enumeration::UNKNOWN) {
-            _report.error(u"'%s' is not a valid value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+            report().error(u"'%s' is not a valid value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
             return false;
         }
         else {
@@ -536,7 +576,7 @@ bool ts::xml::Element::getDateTimeAttribute(Time& value, const UString& name, bo
     // Analyze the time string.
     const bool ok = Attribute::DateTimeFromString(value, str);
     if (!ok) {
-        _report.error(u"'%s' is not a valid date/time for attribute '%s' in <%s>, line %d, use \"YYYY-MM-DD hh:mm:ss\"", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid date/time for attribute '%s' in <%s>, line %d, use \"YYYY-MM-DD hh:mm:ss\"", {str, name, this->name(), lineNumber()});
     }
     return ok;
 }
@@ -560,7 +600,7 @@ bool ts::xml::Element::getDateAttribute(Time& value, const UString& name, bool r
     // Analyze the time string.
     const bool ok = Attribute::DateFromString(value, str);
     if (!ok) {
-        _report.error(u"'%s' is not a valid date for attribute '%s' in <%s>, line %d, use \"YYYY-MM-DD\"", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid date for attribute '%s' in <%s>, line %d, use \"YYYY-MM-DD\"", {str, name, this->name(), lineNumber()});
     }
     return ok;
 }
@@ -584,7 +624,7 @@ bool ts::xml::Element::getTimeAttribute(Second& value, const UString& name, bool
     // Analyze the time string.
     const bool ok = Attribute::TimeFromString(value, str);
     if (!ok) {
-        _report.error(u"'%s' is not a valid time for attribute '%s' in <%s>, line %d, use \"hh:mm:ss\"", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid time for attribute '%s' in <%s>, line %d, use \"hh:mm:ss\"", {str, name, this->name(), lineNumber()});
     }
     return ok;
 }
@@ -605,9 +645,9 @@ bool ts::xml::Element::getIPAttribute(IPAddress& value, const UString& name, boo
         return true;
     }
 
-    const bool ok = value.resolve(str, _report);
+    const bool ok = value.resolve(str, report());
     if (!ok) {
-        _report.error(u"'%s' is not a valid IPv4 address for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid IPv4 address for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
     }
     return ok;
 }
@@ -623,9 +663,9 @@ bool ts::xml::Element::getIPv6Attribute(IPv6Address& value, const UString& name,
         return true;
     }
 
-    const bool ok = value.resolve(str, _report);
+    const bool ok = value.resolve(str, report());
     if (!ok) {
-        _report.error(u"'%s' is not a valid IPv6 address for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid IPv6 address for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
     }
     return ok;
 }
@@ -641,9 +681,9 @@ bool ts::xml::Element::getMACAttribute(MACAddress& value, const UString& name, b
         return true;
     }
 
-    const bool ok = value.resolve(str, _report);
+    const bool ok = value.resolve(str, report());
     if (!ok) {
-        _report.error(u"'%s' is not a valid MAC address for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid MAC address for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
     }
     return ok;
 }
@@ -656,8 +696,21 @@ bool ts::xml::Element::getMACAttribute(MACAddress& value, const UString& name, b
 void ts::xml::Element::getAttributesNames(UStringList& names) const
 {
     names.clear();
-    for (AttributeMap::const_iterator it = _attributes.begin(); it != _attributes.end(); ++it) {
+    for (auto it = _attributes.begin(); it != _attributes.end(); ++it) {
         names.push_back(it->second.name());
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get the list of all attributes.
+//----------------------------------------------------------------------------
+
+void ts::xml::Element::getAttributes(std::map<UString,UString>& attr) const
+{
+    attr.clear();
+    for (auto it = _attributes.begin(); it != _attributes.end(); ++it) {
+        attr[it->first] = it->second.value();
     }
 }
 
@@ -673,13 +726,13 @@ void ts::xml::Element::getAttributesNamesInModificationOrder(UStringList& names)
     NameMap nameMap;
 
     // Read all names and build a map indexed by sequence number.
-    for (AttributeMap::const_iterator it = _attributes.begin(); it != _attributes.end(); ++it) {
+    for (auto it = _attributes.begin(); it != _attributes.end(); ++it) {
         nameMap.insert(std::make_pair(it->second.sequence(), it->second.name()));
     }
 
     // Then build the name list, ordered by sequence number.
     names.clear();
-    for (NameMap::const_iterator it = nameMap.begin(); it != nameMap.end(); ++it) {
+    for (auto it = nameMap.begin(); it != nameMap.end(); ++it) {
         names.push_back(it->second);
     }
 }
@@ -759,17 +812,21 @@ void ts::xml::Element::printClose(TextFormatter& output, size_t levels) const
 bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
 {
     // We just read the "<". Skip spaces and read the tag name.
+    UString nodeName;
     parser.skipWhiteSpace();
-    if (!parser.parseXMLName(_value)) {
-        _report.error(u"line %d: parsing error, tag name expected", {parser.lineNumber()});
+    if (!parser.parseXMLName(nodeName)) {
+        report().error(u"line %d: parsing error, tag name expected", {parser.lineNumber()});
         return false;
     }
+
+    // The "value" of an element is its tag name.
+    setValue(nodeName);
 
     // Read the list of attributes.
     bool ok = true;
     while (ok) {
-        UString name;
-        UString value;
+        UString attrName;
+        UString attrValue;
         const UChar* quote = nullptr;
 
         parser.skipWhiteSpace();
@@ -782,7 +839,7 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
             // Found end of standalone tag, without children.
             return true;
         }
-        else if (parser.parseXMLName(name)) {
+        else if (parser.parseXMLName(attrName)) {
             // Found a name, probably an attribute.
             const size_t line = parser.lineNumber();
 
@@ -805,22 +862,22 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
             }
 
             // Read attribute value.
-            ok = ok && parser.parseText(value, quote, true, true);
+            ok = ok && parser.parseText(attrValue, quote, true, true);
 
             // Store the attribute.
             if (!ok) {
-                _report.error(u"line %d: error parsing attribute '%s' in tag <%s>", {line, name, _value});
+                report().error(u"line %d: error parsing attribute '%s' in tag <%s>", {line, attrName, value()});
             }
-            else if (hasAttribute(name)) {
-                _report.error(u"line %d: duplicate attribute '%s' in tag <%s>", {line, name, _value});
+            else if (hasAttribute(attrName)) {
+                report().error(u"line %d: duplicate attribute '%s' in tag <%s>", {line, attrName, value()});
                 ok = false;
             }
             else {
-                _attributes[attributeKey(name)] = Attribute(name, value, line);
+                _attributes[attributeKey(attrName)] = Attribute(attrName, attrValue, line);
             }
         }
         else {
-            _report.error(u"line %d: parsing error, tag <%s>", {lineNumber(), _value});
+            report().error(u"line %d: parsing error, tag <%s>", {lineNumber(), value()});
             ok = false;
         }
     }
@@ -842,12 +899,12 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
     ok = parser.match(u"</", true);
     if (ok) {
         UString endTag;
-        ok = parser.skipWhiteSpace() && parser.parseXMLName(endTag) && parser.skipWhiteSpace() && endTag.similar(_value);
+        ok = parser.skipWhiteSpace() && parser.parseXMLName(endTag) && parser.skipWhiteSpace() && endTag.similar(value());
         ok = parser.match(u">", true) && ok;
     }
 
     if (!ok) {
-        _report.error(u"line %d: parsing error, expected </%s> to match <%s> at line %d", {parser.lineNumber(), _value, _value, lineNumber()});
+        report().error(u"line %d: parsing error, expected </%s> to match <%s> at line %d", {parser.lineNumber(), value(), value(), lineNumber()});
     }
 
     return ok;

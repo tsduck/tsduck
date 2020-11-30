@@ -50,6 +50,16 @@ ts::xml::Declaration::Declaration(Document* parent, const UString& value) :
 {
 }
 
+ts::xml::Declaration::Declaration(const Declaration& other) :
+    Node(other)
+{
+}
+
+ts::xml::Node* ts::xml::Declaration::clone() const
+{
+    return new Declaration(*this);
+}
+
 ts::UString ts::xml::Declaration::typeName() const
 {
     return u"Declaration";
@@ -62,7 +72,7 @@ ts::UString ts::xml::Declaration::typeName() const
 
 void ts::xml::Declaration::print(TextFormatter& output, bool keepNodeOpen) const
 {
-    output << "<?" << _value << "?>";
+    output << "<?" << value() << "?>";
 }
 
 
@@ -75,13 +85,17 @@ bool ts::xml::Declaration::parseNode(TextParser& parser, const Node* parent)
     // The current point of parsing is right after "<?".
     // The content of the declaration is up (but not including) the "?>".
 
-    bool ok = parser.parseText(_value, u"?>", true, false);
-    if (!ok) {
-        _report.error(u"line %d: error parsing XML declaration, not properly terminated", {lineNumber()});
+    UString text;
+    bool ok = parser.parseText(text, u"?>", true, false);
+    if (ok) {
+        setValue(text);
+        if (dynamic_cast<const Document*>(parent) == nullptr) {
+            report().error(u"line %d: misplaced declaration, not directly inside a document", {lineNumber()});
+            ok = false;
+        }
     }
-    else if (dynamic_cast<const Document*>(parent) == nullptr) {
-        _report.error(u"line %d: misplaced declaration, not directly inside a document", {lineNumber()});
-        ok = false;
+    else {
+        report().error(u"line %d: error parsing XML declaration, not properly terminated", {lineNumber()});
     }
     return ok;
 }

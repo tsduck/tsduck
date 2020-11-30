@@ -60,6 +60,20 @@ ts::xml::Node::Node(Node* parent, const UString& value, bool last) :
     reparent(parent, last);
 }
 
+ts::xml::Node::Node(const Node& other) :
+    RingNode(),
+    _report(other._report),
+    _value(other._value),
+    _parent(nullptr),
+    _firstChild(nullptr),
+    _inputLineNum(other._inputLineNum)
+{
+    // Duplicate all children from other.
+    for (const Node* node = other._firstChild; node != nullptr; node = node->nextSibling()) {
+        node->clone()->reparent(this);
+    }
+}
+
 ts::xml::Node::~Node()
 {
     clear();

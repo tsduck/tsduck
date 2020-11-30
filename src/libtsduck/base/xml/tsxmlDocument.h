@@ -46,13 +46,18 @@ namespace ts {
         //!
         class TSDUCKDLL Document: public Node, public StringifyInterface
         {
-            TS_NOCOPY(Document);
         public:
             //!
             //! Constructor.
             //! @param [in,out] report Where to report errors.
             //!
             explicit Document(Report& report = NULLREP);
+
+            //!
+            //! Copy constructor.
+            //! @param [in] other Other instance to copy.
+            //!
+            Document(const Document& other);
 
             //!
             //! Parse an XML document.
@@ -135,6 +140,7 @@ namespace ts {
             virtual UString toString() const override;
 
             // Inherited from xml::Node.
+            virtual Node* clone() const override;
             virtual UString typeName() const override;
             virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
             virtual void printClose(TextFormatter& output, size_t levels = std::numeric_limits<size_t>::max()) const override;

@@ -49,6 +49,17 @@ ts::xml::Text::Text(Element* parent, const UString& text, bool cdata) :
 {
 }
 
+ts::xml::Text::Text(const Text& other) :
+    Node(other),
+    _isCData(other._isCData)
+{
+}
+
+ts::xml::Node* ts::xml::Text::clone() const
+{
+    return new Text(*this);
+}
+
 ts::UString ts::xml::Text::typeName() const
 {
     return u"Text";
@@ -67,14 +78,13 @@ bool ts::xml::Text::stickyOutput() const
 void ts::xml::Text::print(TextFormatter& output, bool keepNodeOpen) const
 {
     if (_isCData) {
-        output << "<![CDATA[" << _value << "]]>";
+        output << "<![CDATA[" << value() << "]]>";
     }
     else {
         // In text nodes, without strictly conformant XML, we escape 3 out of 5 XML characters: < > &
         // This is the required minimum to make the syntax correct.
         // The quotes (' ") are not escaped since this makes most XML text unreadable.
-        const Tweaks& tw(tweaks());
-        output << _value.toHTML(tw.strictTextNodeFormatting ? u"<>&'\"" : u"<>&");
+        output << value().toHTML(tweaks().strictTextNodeFormatting ? u"<>&'\"" : u"<>&");
     }
 }
 
@@ -86,21 +96,28 @@ void ts::xml::Text::print(TextFormatter& output, bool keepNodeOpen) const
 bool ts::xml::Text::parseNode(TextParser& parser, const Node* parent)
 {
     bool ok;
+    UString content;
 
     // The current point of parsing is the first character of the text.
     if (_isCData) {
         // In the case of CDATA, we are right after the "<![CDATA[". Parse up to "]]>".
-        ok = parser.parseText(_value, u"]]>", true, false);
-        if (!ok) {
-            _report.error(u"line %d: no ]]> found to close the <![CDATA[", {lineNumber()});
+        ok = parser.parseText(content, u"]]>", true, false);
+        if (ok) {
+            setValue(content);
+        }
+        else {
+            report().error(u"line %d: no ]]> found to close the <![CDATA[", {lineNumber()});
         }
     }
     else {
         // Outside CDATA, the text ends at the next "<" (start of tag).
         // HTML entities shall be translated.
-        ok = parser.parseText(_value, u"<", false, true);
-        if (!ok) {
-            _report.error(u"line %d: error parsing text element, not properly terminated", {lineNumber()});
+        ok = parser.parseText(content, u"<", false, true);
+        if (ok) {
+            setValue(content);
+        }
+        else {
+            report().error(u"line %d: error parsing text element, not properly terminated", {lineNumber()});
         }
     }
 

@@ -43,7 +43,6 @@ namespace ts {
         //!
         class TSDUCKDLL Declaration: public Node
         {
-            TS_NOCOPY(Declaration);
         public:
             //!
             //! Default XML declaration.
@@ -64,7 +63,14 @@ namespace ts {
             //!
             explicit Declaration(Document* parent, const UString& value = UString());
 
+            //!
+            //! Copy constructor.
+            //! @param [in] other Other instance to copy.
+            //!
+            Declaration(const Declaration& other);
+
             // Inherited from xml::Node.
+            virtual Node* clone() const override;
             virtual UString typeName() const override;
             virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
 

@@ -43,7 +43,6 @@ namespace ts {
         //!
         class TSDUCKDLL Comment: public Node
         {
-            TS_NOCOPY(Comment);
         public:
             //!
             //! Constructor.
@@ -61,7 +60,14 @@ namespace ts {
             //!
             Comment(Node* parent, const UString& text, bool last = true);
 
+            //!
+            //! Copy constructor.
+            //! @param [in] other Other instance to copy.
+            //!
+            Comment(const Comment& other);
+
             // Inherited from xml::Node.
+            virtual Node* clone() const override;
             virtual UString typeName() const override;
             virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
 

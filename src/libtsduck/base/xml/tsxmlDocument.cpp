@@ -47,6 +47,17 @@ ts::xml::Document::Document(Report& report) :
 {
 }
 
+ts::xml::Document::Document(const Document& other) :
+    Node(other),
+    _tweaks(other._tweaks)
+{
+}
+
+ts::xml::Node* ts::xml::Document::clone() const
+{
+    return new Document(*this);
+}
+
 ts::UString ts::xml::Document::typeName() const
 {
     return u"Document";
@@ -64,19 +75,19 @@ const ts::xml::Tweaks& ts::xml::Document::tweaks() const
 
 bool ts::xml::Document::parse(const UStringList& lines)
 {
-    TextParser parser(lines, _report);
+    TextParser parser(lines, report());
     return parseNode(parser, nullptr);
 }
 
 bool ts::xml::Document::parse(const UString& text)
 {
-    TextParser parser(text, _report);
+    TextParser parser(text, report());
     return parseNode(parser, nullptr);
 }
 
 bool ts::xml::Document::load(std::istream& strm)
 {
-    TextParser parser(_report);
+    TextParser parser(report());
     return parser.loadStream(strm) && parseNode(parser, nullptr);
 }
 
@@ -87,13 +98,13 @@ bool ts::xml::Document::load(const UString& fileName, bool search)
 
     // Eliminate non-existent files.
     if (actualFileName.empty()) {
-        _report.error(u"file not found: %s", {fileName});
+        report().error(u"file not found: %s", {fileName});
         return false;
     }
 
     // Parse the document from the file.
-    TextParser parser(_report);
-    _report.debug(u"loading XML file %s", {actualFileName});
+    TextParser parser(report());
+    report().debug(u"loading XML file %s", {actualFileName});
     return parser.loadFile(actualFileName) && parseNode(parser, nullptr);
 }
 
@@ -139,7 +150,7 @@ bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
 
     // We must have reached the end of document.
     if (!parser.eof()) {
-        _report.error(u"line %d: trailing character sequence, invalid XML document", {parser.lineNumber()});
+        report().error(u"line %d: trailing character sequence, invalid XML document", {parser.lineNumber()});
         return false;
     }
 
@@ -154,7 +165,7 @@ bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
 
     // Check presence of root element.
     if (dynamic_cast<Element*>(child) == nullptr) {
-        _report.error(u"invalid XML document, no root element found");
+        report().error(u"invalid XML document, no root element found");
         return false;
     }
 
@@ -168,7 +179,7 @@ bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
 
     // Verify that there is no additional children.
     if (child != nullptr) {
-        _report.error(u"line %d: trailing %s, invalid XML document, need one single root element", {child->lineNumber(), child->typeName()});
+        report().error(u"line %d: trailing %s, invalid XML document, need one single root element", {child->lineNumber(), child->typeName()});
         return false;
     }
 
@@ -183,7 +194,7 @@ bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
 
 bool ts::xml::Document::save(const UString& fileName, size_t indent)
 {
-    TextFormatter out(_report);
+    TextFormatter out(report());
     out.setIndentSize(indent);
     if (!out.setFile(fileName)) {
         return false;
@@ -202,7 +213,7 @@ bool ts::xml::Document::save(const UString& fileName, size_t indent)
 
 ts::UString ts::xml::Document::toString() const
 {
-    TextFormatter out(_report);
+    TextFormatter out(report());
     out.setIndentSize(2);
     out.setString();
     print(out);
