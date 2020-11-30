@@ -56,6 +56,11 @@ namespace ts {
             explicit PatchDocument(Report& report = NULLREP);
 
             //!
+            //! Destructor.
+            //!
+            virtual ~PatchDocument() override;
+
+            //!
             //! Patch an XML document.
             //!
             //! @param [in,out] doc The document to patch.

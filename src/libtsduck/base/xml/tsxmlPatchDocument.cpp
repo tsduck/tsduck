@@ -39,11 +39,15 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::xml::PatchDocument::PatchDocument(Report& report) :
     Document(report)
+{
+}
+
+ts::xml::PatchDocument::~PatchDocument()
 {
 }
 

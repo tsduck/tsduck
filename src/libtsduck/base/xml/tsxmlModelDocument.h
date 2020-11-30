@@ -60,6 +60,11 @@ namespace ts {
             explicit ModelDocument(Report& report = NULLREP);
 
             //!
+            //! Destructor.
+            //!
+            virtual ~ModelDocument() override;
+
+            //!
             //! Validate an XML document.
             //!
             //! @param [in] doc The document to validate according to the model.
