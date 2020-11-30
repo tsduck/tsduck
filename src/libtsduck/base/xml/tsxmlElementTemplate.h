@@ -48,11 +48,11 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
     UString str(attr.value());
     INT val = INT(0);
     if (!str.toInteger(val, u",")) {
-        _report.error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
         return false;
     }
     else if (val < INT(minValue) || val > INT(maxValue)) {
-        _report.error(u"'%s' must be in range %'d to %'d for attribute '%s' in <%s>, line %d", {str, minValue, maxValue, name, this->name(), lineNumber()});
+        report().error(u"'%s' must be in range %'d to %'d for attribute '%s' in <%s>, line %d", {str, minValue, maxValue, name, this->name(), lineNumber()});
         return false;
     }
     else {

@@ -43,7 +43,6 @@ namespace ts {
         //!
         class TSDUCKDLL Text: public Node
         {
-            TS_NOCOPY(Text);
         public:
             //!
             //! Constructor.
@@ -62,12 +61,19 @@ namespace ts {
             Text(Element* parent, const UString& text, bool cdata = false);
 
             //!
+            //! Copy constructor.
+            //! @param [in] other Other instance to copy.
+            //!
+            Text(const Text& other);
+
+            //!
             //! Check if the text is a CDATA node.
             //! @return True if the text is a CDATA node.
             //!
             bool isCData() const { return _isCData; }
 
             // Inherited from xml::Node.
+            virtual Node* clone() const override;
             virtual UString typeName() const override;
             virtual bool stickyOutput() const override;
             virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;

@@ -83,22 +83,37 @@ Options::Options(int argc, char *argv[]) :
     option(u"", 0, STRING, 0, UNLIMITED_COUNT);
     help(u"", u"Specify the list of input files. If any is specified as '-', the standard input is used.");
 
+    option(u"channel", 'c');
+    help(u"channel",
+         u"A shortcut for '--model tsduck.channels.model.xml'. "
+         u"It verifies that the input files are valid channel configuration files.");
+
+    option(u"hf-band", 'h');
+    help(u"hf-band",
+         u"A shortcut for '--model tsduck.hfbands.model.xml'. "
+         u"It verifies that the input files are valid HF bands definition files.");
+
     option(u"indent", 'i', UNSIGNED);
     help(u"indent",
          u"Specify the indentation size of output files. "
          u"The default is " TS_USTRINGIFY(DEFAULT_INDENT) u".");
 
+    option(u"lnb", 'l');
+    help(u"lnb",
+         u"A shortcut for '--model tsduck.lnbs.model.xml'. "
+         u"It verifies that the input files are valid satellite LNB definition files.");
+
     option(u"model", 'm', STRING);
-    help(u"model",
+    help(u"model", u"filename",
          u"Specify an XML model file which is used to validate all input files.");
 
     option(u"output", 'o', STRING);
-    help(u"output",
+    help(u"output", u"filename",
          u"Specify the name of the output file (standard output by default). "
          u"An output file is produced only if --patch or --reformat are specified.");
 
     option(u"patch", 'p', STRING, 0, UNLIMITED_COUNT);
-    help(u"patch",
+    help(u"patch", u"filename",
          u"Specify an XML patch file. All operations which are specified in this file are applied on each input file. "
          u"Several --patch options can be specified. Patch files are sequentially applied on each input file.");
 
@@ -107,6 +122,11 @@ Options::Options(int argc, char *argv[]) :
          u"Reformat the input XML files according to the default XML layout for TSDuck XML files. "
          u"This option is useful to generate an expected output file format. "
          u"If more than one input file is specified, they are all reformatted in the same output file.");
+
+    option(u"tables", 't');
+    help(u"tables",
+         u"A shortcut for '--model tsduck.tables.model.xml'. "
+         u"It verifies that the input files are valid PSI/SI tables files.");
 
     analyze(argc, argv);
 
@@ -118,6 +138,20 @@ Options::Options(int argc, char *argv[]) :
     getValue(model, u"model");
     getIntValue(indent, u"indent", 2);
     reformat = present(u"reformat") || !patches.empty();
+
+    // Predefined models.
+    if (present(u"channel")) {
+        model = u"tsduck.channels.model.xml";
+    }
+    else if (present(u"hf-band")) {
+        model = u"tsduck.hfbands.model.xml";
+    }
+    else if (present(u"lnb")) {
+        model = u"tsduck.lnbs.model.xml";
+    }
+    else if (present(u"tables")) {
+        model = u"tsduck.tables.model.xml";
+    }
 
     // An input file named "" or "-" means standard input.
     for (auto it = infiles.begin(); it != infiles.end(); ++it) {

@@ -53,7 +53,6 @@ namespace ts {
         //!
         class TSDUCKDLL Node : public RingNode
         {
-            TS_NOBUILD_NOCOPY(Node);
         public:
             //!
             //! Get the line number in input document.
@@ -66,6 +65,12 @@ namespace ts {
             //! The node becomes empty but remains attached to its parent.
             //!
             virtual void clear();
+
+            //!
+            //! Clone the content of the node in a dynamically allocated object.
+            //! This virtual method must be implemented by subclasses to allocate a object of the right class.
+            //!
+            virtual Node* clone() const = 0;
 
             //!
             //! Attach the node to a new parent.
@@ -221,12 +226,6 @@ namespace ts {
             void setValue(const UString& value) { _value = value; }
 
             //!
-            //! Set the prefix to display on report lines.
-            //! @param [in] prefix The prefix to prepend to all messages.
-            //!
-            void setReportPrefix(const UString& prefix) { _report.setPrefix(prefix); }
-
-            //!
             //! Return a node type name, mainly for debug purpose.
             //! @return Node type name.
             //!
@@ -282,6 +281,12 @@ namespace ts {
             explicit Node(Report& report, size_t line = 0);
 
             //!
+            //! Copy constructor.
+            //! @param [in] other Other instance to copy.
+            //!
+            Node(const Node& other);
+
+            //!
             //! Constructor.
             //! @param [in,out] parent The parent document into which the declaration is added.
             //! @param [in] value Value of the node.
@@ -318,15 +323,19 @@ namespace ts {
             //!
             virtual bool parseChildren(TextParser& parser);
 
-            mutable ReportWithPrefix _report;       //!< Where to report errors.
-            UString                  _value;        //!< Value of the node, depend on the node type.
-
         private:
-            Node*   _parent;        //!< Parent node, null for a document.
-            Node*   _firstChild;    //!< First child, can be null, other children are linked through the RingNode.
-            size_t  _inputLineNum;  //!< Line number in input document, zero if build programmatically.
+            Report& _report;        // Where to report errors.
+            UString _value;         // Value of the node, depend on the node type.
+            Node*   _parent;        // Parent node, null for a document.
+            Node*   _firstChild;    // First child, can be null, other children are linked through the RingNode.
+            size_t  _inputLineNum;  // Line number in input document, zero if build programmatically.
 
-            static const Tweaks defaultTweaks;  //!< Default XML tweaks for orphan nodes.
+            // Default XML tweaks for orphan nodes.
+            static const Tweaks defaultTweaks;
+
+            // No default constuctor or assignment.
+            Node() = delete;
+            Node& operator=(Node&) = delete;
         };
     }
 }
