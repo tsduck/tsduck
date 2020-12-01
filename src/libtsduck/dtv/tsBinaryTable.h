@@ -35,6 +35,7 @@
 #pragma once
 #include "tsAbstractDefinedByStandards.h"
 #include "tsTablesPtr.h"
+#include "tsSection.h"
 #include "tsTLVSyntax.h"
 #include "tsTS.h"
 #include "tsxml.h"
@@ -42,7 +43,6 @@
 namespace ts {
 
     class DuckContext;
-    class Section;
 
     //!
     //! Representation of MPEG PSI/SI tables in binary form (ie. list of sections).

@@ -39,6 +39,7 @@
 #include "tsUString.h"
 #include "tsReport.h"
 #include "tsSafePtr.h"
+#include "tsxmlPatchDocument.h"
 #include "tsxmlTweaks.h"
 
 namespace ts {
