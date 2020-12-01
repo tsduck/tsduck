@@ -1,0 +1,15 @@
+REGEDIT4
+
+; This customization shall be applied on Windows systems without Internet Explorer.
+; When IE is not installed (as in most modern systems), running the script
+; get-tuning-parameters-from-lyngsat.ps1 reports the following error message:
+;
+;    Invoke-WebRequest : The response content cannot be parsed because the
+;    Internet Explorer engine is not available, or Internet Explorer's first-launch
+;    configuration is not complete. Specify the UseBasicParsing parameter and try again.
+;
+; To avoid this message, use the registry editor to insert the following definition
+; (double-click on this .reg file).
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Main]
+"DisableFirstRunCustomize"=dword:00000001
