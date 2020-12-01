@@ -107,6 +107,7 @@ function ParseLyngSat([string] $url, [string] $outFile)
 
     # Fetch the Web page.
     Write-Output "Fetching $url"
+    $ProgressPreference = 'SilentlyContinue'
     $page = Invoke-WebRequest $url
     Write-Output "Status: $($page.StatusCode), $($page.StatusDescription), size: $($page.RawContentLength)"
 
