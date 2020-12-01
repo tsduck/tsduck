@@ -69,6 +69,7 @@ namespace ts {
             //!
             //! Clone the content of the node in a dynamically allocated object.
             //! This virtual method must be implemented by subclasses to allocate a object of the right class.
+            //! @return The address of a new XML node of the same class as this object, same content, same structure.
             //!
             virtual Node* clone() const = 0;
 

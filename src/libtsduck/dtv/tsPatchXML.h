@@ -95,6 +95,7 @@ namespace ts {
         //!
         //! Load (or reload) the XML patch files.
         //! @param [in] tweaks XML tweaks to load in the documents.
+        //! @return True on success, false some error occurred in the input files.
         //!
         bool loadPatchFiles(const xml::Tweaks& tweaks = xml::Tweaks());
 
