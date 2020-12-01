@@ -1,0 +1,122 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2020, Thierry Lelegard
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+//    this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+// THE POSSIBILITY OF SUCH DAMAGE.
+//
+//----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Implementation of on-the-fly table patching using XML.
+//!
+//----------------------------------------------------------------------------
+
+#pragma once
+#include "tsArgsSupplierInterface.h"
+#include "tsDuckContext.h"
+#include "tsBinaryTable.h"
+#include "tsUString.h"
+#include "tsReport.h"
+#include "tsSafePtr.h"
+#include "tsxmlTweaks.h"
+
+namespace ts {
+    //!
+    //! Implementation of on-the-fly table patching using XML.
+    //! This class is typically used to handle -\-patch-xml command line options.
+    //! @ingroup mpeg
+    //!
+    class TSDUCKDLL PatchXML : public ArgsSupplierInterface
+    {
+        TS_NOBUILD_NOCOPY(PatchXML);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in,out] duck TSDuck execution context.
+        //!
+        PatchXML(DuckContext& duck);
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~PatchXML() override;
+
+        // Implementation of ArgsSupplierInterface.
+        virtual void defineArgs(Args& args) const override;
+        virtual bool loadArgs(DuckContext& duck, Args& args) override;
+
+        //!
+        //! Clear all previously loaded patch files, clear list of patch files.
+        //!
+        void clear();
+
+        //!
+        //! Add a file name in the list of patch files.
+        //! The file is not yet loaded.
+        //! @param [in] filename Name of an XML patch file.
+        //!
+        void addPatchFileName(const UString& filename);
+
+        //!
+        //! Add file names in the list of patch files.
+        //! The files are not yet loaded.
+        //! @param [in] filenames Names of XML patch files.
+        //!
+        void addPatchFileNames(const UStringVector& filenames);
+
+        //!
+        //! Add file names in the list of patch files.
+        //! The files are not yet loaded.
+        //! @param [in] filenames Names of XML patch files.
+        //!
+        void addPatchFileNames(const UStringList& filenames);
+
+        //!
+        //! Load (or reload) the XML patch files.
+        //! @param [in] tweaks XML tweaks to load in the documents.
+        //!
+        bool loadPatchFiles(const xml::Tweaks& tweaks = xml::Tweaks());
+
+        //!
+        //! Apply the XML patch files to an XML document.
+        //! @param [in,out] doc The XML document to patch.
+        //!
+        void applyPatches(xml::Document& doc) const;
+
+        //!
+        //! Apply the XML patch files to a binary table.
+        //! @param [in,out] table The binary table to patch.
+        //! @return True on success, false if the binary table or the patched XML is invalid.
+        //!
+        bool applyPatches(BinaryTable& table) const;
+
+    private:
+        typedef ts::SafePtr<ts::xml::PatchDocument> PatchDocumentPtr;
+        typedef std::vector<PatchDocumentPtr> PatchDocumentVector;
+
+        DuckContext&        _duck;        // TSDuck execution context.
+        UStringVector       _patchFiles;  // XML patch file names.
+        PatchDocumentVector _patches;     // XML patch files as loaded documents
+    };
+}

@@ -58,8 +58,11 @@ ts::AbstractTablePlugin::AbstractTablePlugin(TSP* tsp_,
     _set_version(false),
     _new_version(0),
     _demux(duck, this),
-    _pzer(duck, pid)
+    _pzer(duck, pid),
+    _patch_xml(duck)
 {
+    _patch_xml.defineArgs(*this);
+
     option(u"bitrate", 'b', POSITIVE);
     help(u"bitrate",
          u"Specifies the bitrate in bits / second of the " + _table_name + " PID if a new one is "
@@ -102,17 +105,18 @@ bool ts::AbstractTablePlugin::getOptions()
 {
     _incr_version = present(u"increment-version");
     _create_after_ms = present(u"create") ? 1000 : intValue<MilliSecond>(u"create-after", 0);
-    _bitrate = intValue<BitRate>(u"bitrate", _default_bitrate);
-    _inter_pkt = intValue<PacketCounter>(u"inter-packet", 0);
     _set_version = present(u"new-version");
-    _new_version = intValue<uint8_t>(u"new-version", 0);
+    getIntValue(_bitrate, u"bitrate", _default_bitrate);
+    getIntValue(_inter_pkt, u"inter-packet", 0);
+    getIntValue(_new_version, u"new-version", 0);
+    bool ok = _patch_xml.loadArgs(duck, *this);
 
     if (present(u"create") && present(u"create-after")) {
         tsp->error(u"options --create and --create-after are mutually exclusive");
-        return false;
+        ok = false;
     }
 
-    return true;
+    return ok;
 }
 
 
@@ -150,7 +154,8 @@ bool ts::AbstractTablePlugin::start()
     _found_pid = _found_table = false;
     _pkt_create = _pkt_insert = tsp->pluginPackets();
 
-    return true;
+    // Load XML patch files.
+    return _patch_xml.loadPatchFiles();
 }
 
 
@@ -167,6 +172,11 @@ void ts::AbstractTablePlugin::handleTable(SectionDemux& demux, const BinaryTable
 
     // Build a modifiable version of the table.
     BinaryTable table(intable, ShareMode::SHARE);
+
+    // Process XML patching.
+    if (!_patch_xml.applyPatches(table)) {
+        return; // error displayed in applyPatches()
+    }
 
     // Call subclass to process the table.
     bool is_target = true;
