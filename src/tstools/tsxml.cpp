@@ -33,7 +33,7 @@
 
 #include "tsMain.h"
 #include "tsDuckContext.h"
-#include "tsxmlTweaks.h"
+#include "tsPatchXML.h"
 #include "tsxmlModelDocument.h"
 #include "tsxmlPatchDocument.h"
 #include "tsOutputRedirector.h"
@@ -182,15 +182,9 @@ int MainCode(int argc, char *argv[])
     }
 
     // Load patch files.
-    std::vector<ts::SafePtr<ts::xml::PatchDocument>> patches(opt.patches.size());
-    for (size_t i = 0; i < patches.size(); ++i) {
-        patches[i] = new ts::xml::PatchDocument(opt);
-        ts::CheckNonNull(patches[i].pointer());
-        patches[i]->setTweaks(opt.xml_tweaks);
-        if (!patches[i]->load(opt.patches[i], false)) {
-            opt.error(u"error loading patch file %s", {opt.patches[i]});
-        }
-    }
+    ts::PatchXML patch(opt.duck);
+    patch.addPatchFileNames(opt.patches);
+    patch.loadPatchFiles(opt.xml_tweaks);
     opt.exitOnError();
 
     // Redirect standard output only if required.
@@ -217,11 +211,7 @@ int MainCode(int argc, char *argv[])
         }
 
         // Apply all patches one by one.
-        if (ok) {
-            for (size_t pi = 0; pi < patches.size(); ++pi) {
-                patches[pi]->patch(doc);
-            }
-        }
+        patch.applyPatches(doc);
 
         // Output the modified / reformatted document.
         if (ok && opt.reformat) {

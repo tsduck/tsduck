@@ -66,7 +66,6 @@ namespace ts {
 
             //!
             //! Validate an XML document.
-            //!
             //! @param [in] doc The document to validate according to the model.
             //! @return True if @a doc matches the model in this object, false if it does not.
             //!

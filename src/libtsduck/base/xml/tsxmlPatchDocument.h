@@ -62,7 +62,6 @@ namespace ts {
 
             //!
             //! Patch an XML document.
-            //!
             //! @param [in,out] doc The document to patch.
             //!
             void patch(Document& doc) const;
