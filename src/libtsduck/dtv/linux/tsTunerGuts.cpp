@@ -477,6 +477,8 @@ bool ts::Tuner::close(Report& report)
     _is_open = false;
     _device_name.clear();
     _device_info.clear();
+    _device_path.clear();
+    _delivery_systems.clear();
     _guts->frontend_name.clear();
     _guts->demux_name.clear();
     _guts->dvr_name.clear();

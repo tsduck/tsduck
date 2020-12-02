@@ -573,9 +573,9 @@ bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& val
 template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value>::type*>
 bool ts::UString::toIntegers(CONTAINER& container, const UString& thousandSeparators, const UString& listSeparators, size_type decimals, const UString& decimalSeparators) const
 {
-    // Let's name INT the integer type.
+    // Let's name int_type the integer type.
     // In all STL standard containers, value_type is a typedef for the element type.
-    typedef typename CONTAINER::value_type INT;
+    typedef typename CONTAINER::value_type int_type;
 
     // Reset the content of the container
     container.clear();
@@ -600,8 +600,8 @@ bool ts::UString::toIntegers(CONTAINER& container, const UString& thousandSepara
             break;
         }
         // Decode segment
-        INT value = static_cast<INT>(0);
-        if (!substr(start, end - start).toInteger<INT>(value, thousandSeparators, decimals, decimalSeparators)) {
+        int_type value = static_cast<INT>(0);
+        if (!substr(start, end - start).toInteger<int_type>(value, thousandSeparators, decimals, decimalSeparators)) {
             return false;
         }
         container.push_back(value);
