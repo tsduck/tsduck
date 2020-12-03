@@ -58,6 +58,7 @@ namespace ts {
         virtual BitRate getBitrate() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool setReceiveTimeout(MilliSecond timeout) override;
+        virtual bool abortInput() override;
 
         // Larger stack size than default
         virtual size_t stackUsage() const override {return 512 * 1024;} // 512 kB
@@ -110,6 +111,17 @@ bool ts::DVBInputPlugin::setReceiveTimeout(MilliSecond timeout)
     if (timeout > 0) {
         _tuner_args.receive_timeout = timeout;
     }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Abort input method
+//----------------------------------------------------------------------------
+
+bool ts::DVBInputPlugin::abortInput()
+{
+    _tuner.abort();
     return true;
 }
 

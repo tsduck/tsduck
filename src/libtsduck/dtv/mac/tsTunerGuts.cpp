@@ -92,6 +92,9 @@ bool ts::Tuner::stop(Report& report)
 {
     ERROR(false);
 }
+void ts::Tuner::abort()
+{
+}
 bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
 {
     ERROR(false);

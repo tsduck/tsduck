@@ -175,9 +175,7 @@ void ts::tsp::InputExecutor::setAbort()
 
     // Abort current input operation if still blocked.
     if (_input != nullptr) {
-        debug(u"aborting input plugin...");
         _input->abortInput();
-        debug(u"input plugin aborted");
     }
 }
 

@@ -55,8 +55,9 @@ class ts::Tuner::Guts
 {
     TS_NOCOPY(Guts);
 public:
-    size_t     sink_queue_size;   // Media sample queue size
-    TunerGraph graph;             // The filter graph
+    volatile bool aborted;           // Reception was aborted
+    size_t        sink_queue_size;   // Media sample queue size
+    TunerGraph    graph;             // The filter graph
 
     // Constructor and destructor.
     Guts();
@@ -80,6 +81,7 @@ public:
 //-----------------------------------------------------------------------------
 
 ts::Tuner::Guts::Guts() :
+    aborted(false),
     sink_queue_size(DEFAULT_SINK_QUEUE_SIZE),
     graph()
 {
@@ -449,7 +451,12 @@ bool ts::Tuner::start(Report& report)
 
     if (!_is_open || sink == nullptr) {
         report.error(u"tuner not open");
-        return 0;
+        return false;
+    }
+
+    // Cannot restart if aborted.
+    if (_guts->aborted) {
+        return false;
     }
 
     // Set media samples queue size.
@@ -457,6 +464,11 @@ bool ts::Tuner::start(Report& report)
 
     // Run the graph.
     if (!_guts->graph.run(report)) {
+        return false;
+    }
+
+    // Check if aborted while starting.
+    if (_guts->aborted) {
         return false;
     }
 
@@ -507,6 +519,20 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report&)
 
 
 //-----------------------------------------------------------------------------
+// Abort any pending or blocked reception.
+//-----------------------------------------------------------------------------
+
+void ts::Tuner::abort()
+{
+    SinkFilter* const sink = _guts->graph.sinkFilter();
+    if (_is_open && sink != nullptr) {
+        _guts->aborted = true;
+        sink->Abort();
+    }
+}
+
+
+//-----------------------------------------------------------------------------
 // Read complete 188-byte TS packets in the buffer and return the
 // number of actually received packets (in the range 1 to max_packets).
 // Returning zero means error or end of input.
@@ -518,6 +544,9 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
 
     if (!_is_open || sink == nullptr) {
         report.error(u"tuner not open");
+        return 0;
+    }
+    if (_guts->aborted) {
         return 0;
     }
 
@@ -638,7 +667,7 @@ bool ts::Tuner::Guts::FindTuners(DuckContext& duck, Tuner* tuner, TunerPtrVector
 
         // If we search one specific tuner (tuner != nullptr), use this one.
         // If we are building a list of all tuners (tuner_list != nullptr), allocate a new tuner.
-        TunerPtr tptr(tuner == nullptr ? new Tuner(duck) : 0);
+        TunerPtr tptr(tuner == nullptr ? new Tuner(duck) : nullptr);
         Tuner& tref(tuner == nullptr ? *tptr : *tuner);
 
         // Try to build a graph from this network provider and tuner
@@ -655,6 +684,7 @@ bool ts::Tuner::Guts::FindTuners(DuckContext& duck, Tuner* tuner, TunerPtrVector
                 // Either no adapter index was specified or this is the right one.
                 // Use that tuner.
                 tref._is_open = true;
+                tref._guts->aborted = false;
                 tref._info_only = true;
                 tref._device_name = tuner_name;
                 tref._device_path = device_path;

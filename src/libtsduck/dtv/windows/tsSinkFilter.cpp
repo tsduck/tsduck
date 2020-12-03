@@ -352,6 +352,17 @@ size_t ts::SinkFilter::Read(void* buffer, size_t buffer_size, MilliSecond timeou
     return buffer_size - remain;
 }
 
+// Abort a blocked Read() operation.
+
+void ts::SinkFilter::Abort()
+{
+    TRACE(2, u"SinkFilter::Abort");
+    // Enqueue a NULL pointer. This will unblock any Read() operation and signal an end of stream.
+    GuardCondition lock(_mutex, _not_empty);
+    _queue.push_back(NULL);
+    lock.signal();
+}
+
 // Fill buffer/buffer_size with data from media samples in _sample_buffer.
 
 void ts::SinkFilter::FillBuffer(char*& buffer, size_t& buffer_size)
