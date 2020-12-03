@@ -600,7 +600,7 @@ bool ts::UString::toIntegers(CONTAINER& container, const UString& thousandSepara
             break;
         }
         // Decode segment
-        int_type value = static_cast<INT>(0);
+        int_type value = static_cast<int_type>(0);
         if (!substr(start, end - start).toInteger<int_type>(value, thousandSeparators, decimals, decimalSeparators)) {
             return false;
         }
