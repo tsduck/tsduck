@@ -30,6 +30,11 @@
 #include "tsUserInterrupt.h"
 #include "tsSingletonManager.h"
 #include "tsSysUtils.h"
+
+#if defined(TS_WINDOWS)
+    #include <conio.h>
+#endif
+
 TSDUCK_SOURCE;
 
 ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = nullptr;
@@ -104,6 +109,100 @@ void ts::UserInterrupt::main()
 }
 #endif
 
+//----------------------------------------------------------------------------
+// Key input handler thread on Windows platforms
+// currently used for graceful app termination.
+//----------------------------------------------------------------------------
+
+#if defined(TS_WINDOWS)
+
+static int read_key(void)
+{
+    unsigned char ch;
+#if 0
+    // Linux equivalent. Requires termios.h
+    int n = 1;
+    struct timeval tv;
+    fd_set rfds;
+
+    FD_ZERO(&rfds);
+    FD_SET(0, &rfds);
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+    n = select(1, &rfds, NULL, NULL, &tv);
+
+    if (n > 0) {
+        n = read(0, &ch, 1);
+        if (n == 1) {
+            return ch;
+        }
+
+        return n;
+    }
+
+#elif defined(TS_WINDOWS)
+    static bool is_pipe;
+    static HANDLE input_handle;
+    DWORD dw, nchars;
+
+    if(!input_handle){
+        input_handle = GetStdHandle(STD_INPUT_HANDLE);
+        is_pipe = GetConsoleMode(input_handle, &dw) == 0;
+    }
+
+    if (is_pipe) {
+
+        /* When running under a GUI, you will end here. */
+        if (!PeekNamedPipe(input_handle, nullptr, 0, nullptr, &nchars, nullptr)) {
+            // input pipe may have been closed by the parent process
+            return -1;
+        }
+
+        //Read it
+        if(nchars != 0) {
+            read(0, &ch, 1);
+            return ch;
+        }
+
+        return -1;
+    }
+
+    if(kbhit()) {
+        return(getch());
+    }
+
+#endif
+    return -1;
+}
+
+void ts::UserInterrupt::main()
+{
+    while (!_terminate) {
+
+        // Read key input
+        const int key = read_key();
+
+        if (key == 'q' || key == 'Q') {
+
+            std::cerr << "Received Quit key command" << std::endl;
+            std::cerr.flush();
+
+            // Set interrupted state
+            _interrupted = true;
+            _terminate = true;
+
+            // Notify the application handler
+            if (_handler != nullptr) {
+                _handler->handleInterrupt();
+            }
+
+            break;
+        }
+
+        SleepThread(50);
+    }
+}
+#endif
 
 //----------------------------------------------------------------------------
 // Handler on Windows platforms. Invoked in the context of a system thread.
@@ -112,22 +211,43 @@ void ts::UserInterrupt::main()
 #if defined(TS_WINDOWS)
 ::BOOL WINAPI ts::UserInterrupt::sysHandler(__in ::DWORD dwCtrlType)
 {
-    // Only handle Ctrl+C events
-    if (dwCtrlType != CTRL_C_EVENT) {
-        return false;
-    }
+    std::cerr << "* Control handler called. CtrlType: " << dwCtrlType << std::endl;
+    std::cerr.flush();
 
     // There should be one active instance but just check...
     UserInterrupt* ui = _active_instance;
-    if (ui == 0) {
+    if (ui == nullptr) {
         return true;
+    }
+
+    switch (dwCtrlType)
+    {
+        case CTRL_C_EVENT:
+        case CTRL_BREAK_EVENT:
+
+            break;
+
+        case CTRL_CLOSE_EVENT:
+        case CTRL_LOGOFF_EVENT:
+        case CTRL_SHUTDOWN_EVENT:
+
+            /* Basically, with these 3 events, when we return from this method the
+               process is hard terminated, so stall as long as we need to
+               to try and let the main thread(s) clean up and gracefully terminate
+               (we have at most 5 seconds, but should be done far before that). */
+            break;
+
+        default:
+            // Received unknown windows signal
+            return false;
     }
 
     // Set interrupted state
     ui->_interrupted = true;
+    ui->_terminate = true;
 
     // Notify the application handler
-    if (ui->_handler != 0) {
+    if (ui->_handler != nullptr) {
         ui->_handler->handleInterrupt();
     }
 
@@ -151,7 +271,6 @@ ts::UserInterrupt::UserInterrupt(InterruptHandler* handler, bool one_shot, bool 
 #if defined(TS_UNIX)
     // stack size: 16 kB, maximum priority
     Thread(ThreadAttributes().setStackSize(16 * 1024).setPriority(ThreadAttributes::GetMaximumPriority())),
-    _terminate(false),
     _got_sigint(0),
 #if defined(TS_MAC)
     _sem_name(UString::Format(u"tsduck-%d-%d", {getpid(), ptrdiff_t(this)}).toUTF8()),
@@ -159,6 +278,10 @@ ts::UserInterrupt::UserInterrupt(InterruptHandler* handler, bool one_shot, bool 
 #else
     _sem_instance(),
 #endif
+    _terminate(false),
+#elif defined(TS_WINDOWS)
+    Thread(ThreadAttributes().setStackSize(16 * 1024).setPriority(ThreadAttributes::GetNormalPriority())),
+    _terminate(false),
 #endif
     _handler(handler),
     _one_shot(one_shot),
@@ -209,6 +332,11 @@ void ts::UserInterrupt::activate()
         std::cerr << "* Error establishing console interrupt handler: " << SysErrorCodeMessage(err) << std::endl;
         return;
     }
+
+    _terminate = false;
+
+    // Start the input monitor thread
+    start();
 
 #elif defined(TS_UNIX)
 
@@ -282,7 +410,12 @@ void ts::UserInterrupt::deactivate()
     ::SetConsoleCtrlHandler(sysHandler, false);
 
     // Restore normal processing of Ctrl-C
-    ::SetConsoleCtrlHandler(NULL, false);
+    ::SetConsoleCtrlHandler(nullptr, false);
+
+    _terminate = true;
+
+    // Wait for the input monitor thread to terminate
+    waitForTermination();
 
 #elif defined(TS_UNIX)
 

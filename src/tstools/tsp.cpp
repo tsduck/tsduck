@@ -191,7 +191,7 @@ int MainCode(int argc, char *argv[])
 
     // Use a Ctrl+C interrupt handler
     TSPInterruptHandler interrupt_handler(&report, &tsproc);
-    ts::UserInterrupt interrupt_manager(&interrupt_handler, true, true);
+    ts::UserInterrupt interrupt_manager(&interrupt_handler, false, true);
 
     // Start the TS processing.
     if (!tsproc.start(opt.tsp_args)) {

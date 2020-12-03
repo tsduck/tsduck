@@ -49,9 +49,7 @@ namespace ts {
     //! - Interrupt polling through isInterrupted()/resetInterrupted().
     //!
     class TSDUCKDLL UserInterrupt
-#if defined(TS_UNIX)
         : private Thread
-#endif
     {
         TS_NOBUILD_NOCOPY(UserInterrupt);
     public:
@@ -107,13 +105,13 @@ namespace ts {
 #if defined(TS_WINDOWS)
 
         static ::BOOL WINAPI sysHandler(__in ::DWORD dwCtrlType);
+        void main() override;  // ts::Thread implementation
 
 #elif defined(TS_UNIX)
 
         static void sysHandler(int sig);
         virtual void main() override;  // ts::Thread implementation
 
-        volatile bool           _terminate;
         volatile ::sig_atomic_t _got_sigint;
 #if defined(TS_MAC)
         std::string             _sem_name;
@@ -124,6 +122,7 @@ namespace ts {
 
 #endif
 
+        volatile bool           _terminate;
         InterruptHandler* _handler;
         bool              _one_shot;
         bool              _active;
