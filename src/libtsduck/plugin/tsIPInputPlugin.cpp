@@ -92,6 +92,7 @@ bool ts::IPInputPlugin::stop()
 
 bool ts::IPInputPlugin::abortInput()
 {
+    tsp->debug(u"aborting IP input");
     _sock.close(*tsp);
     return true;
 }
