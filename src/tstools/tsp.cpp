@@ -115,9 +115,9 @@ TSPOptions::TSPOptions(int argc, char *argv[]) :
 
 class TSPInterruptHandler: public ts::InterruptHandler
 {
-    TS_NOCOPY(TSPInterruptHandler);
+    TS_NOBUILD_NOCOPY(TSPInterruptHandler);
 public:
-    TSPInterruptHandler(ts::AsyncReport* report = nullptr, ts::TSProcessor* tsproc = nullptr);
+    TSPInterruptHandler(ts::AsyncReport* report, ts::TSProcessor* tsproc);
     virtual void handleInterrupt() override;
 private:
     ts::AsyncReport* _report;

@@ -112,31 +112,37 @@ void ts::UserInterrupt::main()
 #if defined(TS_WINDOWS)
 ::BOOL WINAPI ts::UserInterrupt::sysHandler(__in ::DWORD dwCtrlType)
 {
-    // Only handle Ctrl+C events
-    if (dwCtrlType != CTRL_C_EVENT) {
-        return false;
+    switch (dwCtrlType) {
+        case CTRL_C_EVENT:
+        case CTRL_BREAK_EVENT:
+        case CTRL_CLOSE_EVENT:
+        case CTRL_LOGOFF_EVENT:
+        case CTRL_SHUTDOWN_EVENT: {
+            // All these event somehow indicate a user's will to terminate.
+            // There should be one active instance but just check...
+            UserInterrupt* const ui = _active_instance;
+            if (ui != nullptr) {
+                // Set interrupted state
+                ui->_interrupted = true;
+
+                // Notify the application handler
+                if (ui->_handler != 0) {
+                    ui->_handler->handleInterrupt();
+                }
+
+                // Process one-shot interrupt.
+                if (ui->_one_shot) {
+                    ui->deactivate();
+                }
+            }
+            // Signal fully handled, stop now.
+            return true;
+        }
+        default: {
+            // This event is not handled, let next handler work on it.
+            return false;
+        }
     }
-
-    // There should be one active instance but just check...
-    UserInterrupt* ui = _active_instance;
-    if (ui == 0) {
-        return true;
-    }
-
-    // Set interrupted state
-    ui->_interrupted = true;
-
-    // Notify the application handler
-    if (ui->_handler != 0) {
-        ui->_handler->handleInterrupt();
-    }
-
-    // Deactivate on one-shot
-    if (ui->_one_shot) {
-        ui->deactivate();
-    }
-
-    return true;
 }
 #endif
 
@@ -280,9 +286,6 @@ void ts::UserInterrupt::deactivate()
 
     // Remove the console interrupt handler
     ::SetConsoleCtrlHandler(sysHandler, false);
-
-    // Restore normal processing of Ctrl-C
-    ::SetConsoleCtrlHandler(NULL, false);
 
 #elif defined(TS_UNIX)
 

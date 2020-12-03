@@ -49,7 +49,7 @@ ts::TSProcessor::TSProcessor(Report& report) :
     _args(),
     _input(nullptr),
     _output(nullptr),
-    _monitor(nullptr),
+    _monitor(&_report),
     _control(nullptr),
     _packet_buffer(nullptr),
     _metadata_buffer(nullptr)
@@ -98,12 +98,6 @@ void ts::TSProcessor::cleanupInternal()
     if (_metadata_buffer != nullptr) {
         delete _metadata_buffer;
         _metadata_buffer = nullptr;
-    }
-
-    if (_monitor != nullptr) {
-        // Deleting the object terminates the monitor thread.
-        delete _monitor;
-        _monitor = nullptr;
     }
 
     if (_control != nullptr) {
@@ -205,37 +199,35 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         _metadata_buffer = new PacketMetadataBuffer(_packet_buffer->count());
         CheckNonNull(_metadata_buffer);
 
-        // Start all processors, except output, in reverse order (input last).
-        // Exit application in case of error.
-        for (proc = _output->ringPrevious<tsp::PluginExecutor>(); proc != _output; proc = proc->ringPrevious<tsp::PluginExecutor>()) {
-            if (!proc->plugin()->start()) {
-                cleanupInternal();
-                return false;
-            }
-        }
-
-        // Initialize packet buffer in the ring of executors.
-        // Exit application in case of error.
-        if (!_input->initAllBuffers(_packet_buffer, _metadata_buffer)) {
-            cleanupInternal();
-            return false;
-        }
-
-        // Start the output device (we now have an idea of the bitrate).
-        // Exit application in case of error.
-        if (!_output->plugin()->start()) {
-            cleanupInternal();
-            return false;
-        }
-
-        // Create a monitoring thread if required.
-        _monitor = new SystemMonitor(&_report);
-        CheckNonNull(_monitor);
-        if (_args.monitor) {
-            _monitor->start();
-        }
-
         // End of locked section.
+    }
+
+    // Start the monitoring thread if required.
+    if (_args.monitor) {
+        _monitor.start();
+    }
+
+    // Start all processors, except output, in reverse order (input last).
+    // Exit application in case of error.
+    for (tsp::PluginExecutor* proc = _output->ringPrevious<tsp::PluginExecutor>(); proc != _output; proc = proc->ringPrevious<tsp::PluginExecutor>()) {
+        if (!proc->plugin()->start()) {
+            cleanupInternal();
+            return false;
+        }
+    }
+
+    // Initialize packet buffer in the ring of executors.
+    // Exit application in case of error.
+    if (!_input->initAllBuffers(_packet_buffer, _metadata_buffer)) {
+        cleanupInternal();
+        return false;
+    }
+
+    // Start the output device (we now have an idea of the bitrate).
+    // Exit application in case of error.
+    if (!_output->plugin()->start()) {
+        cleanupInternal();
+        return false;
     }
 
     // Start all plugin executors threads.
@@ -270,6 +262,8 @@ bool ts::TSProcessor::isStarted()
 
 void ts::TSProcessor::abort()
 {
+    _report.debug(u"aborting all plugins...");
+
     Guard lock(_mutex);
 
     if (_input != nullptr) {
@@ -277,6 +271,7 @@ void ts::TSProcessor::abort()
         // successor as aborted. Notify all threads that something happened.
         tsp::PluginExecutor* proc = _input;
         do {
+            _report.debug(u"aborting plugin %s", {proc->pluginName()});
             proc->setAbort();
         } while ((proc = proc->ringNext<tsp::PluginExecutor>()) != _input);
     }
