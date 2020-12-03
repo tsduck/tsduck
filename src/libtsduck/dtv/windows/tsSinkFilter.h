@@ -130,6 +130,12 @@ namespace ts {
         //!
         size_t Read(void* buffer, size_t buffer_size, MilliSecond timeout = Infinite);
 
+        //!
+        //! Abort a blocked Read() operation.
+        //! Can be called from any thread.
+        //!
+        void Abort();
+
         // Implementations of COM interfaces. Not documented in Doxygen.
         //! @cond nodoxygen
 

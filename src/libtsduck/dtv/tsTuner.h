@@ -217,6 +217,13 @@ namespace ts {
         bool stop(Report& report);
 
         //!
+        //! Abort any pending or blocked reception.
+        //! This unblocks a blocked reader but leaves the tuner in an undefined state.
+        //! The only safe option after this is a close().
+        //!
+        void abort();
+
+        //!
         //! Receive packets.
         //! @param [out] buffer Address of TS packet receive buffer.
         //! Read only complete 188-byte TS packets.
