@@ -73,6 +73,8 @@ class ts::Tuner::Guts
 private:
     Tuner*              _tuner;           // Parent tuner.
 public:
+    volatile bool       reading_dvr;      // Read operation in progree on dvr.
+    volatile bool       aborted;          // Tuner operation was aborted
     UString             frontend_name;    // Frontend device name
     UString             demux_name;       // Demux device name
     UString             dvr_name;         // DVR device name
@@ -105,6 +107,9 @@ public:
     // Perform a tune operation.
     bool tune(DTVProperties&, Report&);
 
+    // Hard close of the tuner, report can be null.
+    void hardClose(Report*);
+
     // Setup the dish for satellite tuners.
     bool dishControl(const ModulationArgs&, const LNB::Transposition&, Report&);
 };
@@ -116,6 +121,8 @@ public:
 
 ts::Tuner::Guts::Guts(Tuner* tuner) :
     _tuner(tuner),
+    reading_dvr(false),
+    aborted(false),
     frontend_name(),
     demux_name(),
     dvr_name(),
@@ -450,35 +457,49 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 
 
 //-----------------------------------------------------------------------------
+// Hard close of the tuner, report can be null.
+//-----------------------------------------------------------------------------
+
+void ts::Tuner::Guts::hardClose(Report* report)
+{
+    // Stop the demux
+    if (demux_fd >= 0 && ::ioctl(demux_fd, ioctl_request_t(DMX_STOP)) < 0 && report != nullptr) {
+        report->error(u"error stopping demux on %s: %s", {demux_name, SysErrorCodeMessage()});
+    }
+
+    // Close DVB adapter devices
+    if (dvr_fd >= 0) {
+        ::close(dvr_fd);
+        dvr_fd = -1;
+    }
+    if (demux_fd >= 0) {
+        ::close(demux_fd);
+        demux_fd = -1;
+    }
+    if (frontend_fd >= 0) {
+        ::close(frontend_fd);
+        frontend_fd = -1;
+    }
+}
+
+
+//-----------------------------------------------------------------------------
 // Close tuner.
 //-----------------------------------------------------------------------------
 
 bool ts::Tuner::close(Report& report)
 {
-    // Stop the demux
-    if (_guts->demux_fd >= 0 && ::ioctl(_guts->demux_fd, ioctl_request_t(DMX_STOP)) < 0) {
-        report.error(u"error stopping demux on %s: %s", {_guts->demux_name, SysErrorCodeMessage()});
-    }
+    // Close all file descriptors.
+    _guts->hardClose(&report);
 
-    // Close DVB adapter devices
-    if (_guts->dvr_fd >= 0) {
-        ::close(_guts->dvr_fd);
-        _guts->dvr_fd = -1;
-    }
-    if (_guts->demux_fd >= 0) {
-        ::close(_guts->demux_fd);
-        _guts->demux_fd = -1;
-    }
-    if (_guts->frontend_fd >= 0) {
-        ::close(_guts->frontend_fd);
-        _guts->frontend_fd = -1;
-    }
-
+    // Cleanup state.
     _is_open = false;
     _device_name.clear();
     _device_info.clear();
     _device_path.clear();
     _delivery_systems.clear();
+    _guts->reading_dvr = false;
+    _guts->aborted = false;
     _guts->frontend_name.clear();
     _guts->demux_name.clear();
     _guts->dvr_name.clear();
@@ -493,7 +514,15 @@ bool ts::Tuner::close(Report& report)
 
 void ts::Tuner::abort()
 {
-    //@@@@@@@@@@@@
+    // Hord close of all file descriptors, hoping that pending I/O's will be canceled.
+    // In the case of a current read operation on the dvr, it has been noticed that
+    // closing the file descriptor make the read operation hang forever. We try to
+    // mitigate this risk with a volatile boolean which is set around read() but
+    // there is still a small risk of race condition (in which case we hang).
+    _guts->aborted = true;
+    if (!_guts->reading_dvr) {
+        _guts->hardClose(nullptr);
+    }
 }
 
 
@@ -504,6 +533,12 @@ void ts::Tuner::abort()
 bool ts::Tuner::Guts::getFrontendStatus(::fe_status_t& status, Report& report)
 {
     status = FE_ZERO;
+
+    // Filter previous abort.
+    if (aborted) {
+        return false;
+    }
+
     errno = 0;
     const bool ok = ::ioctl(frontend_fd, ioctl_request_t(FE_READ_STATUS), &status) == 0;
     const SysErrorCode err = LastSysErrorCode();
@@ -547,6 +582,11 @@ int ts::Tuner::signalStrength(Report& report)
         return false;
     }
 
+    // Filter previous abort.
+    if (_guts->aborted) {
+        return -1;
+    }
+
     uint16_t strength = 0;
     if (::ioctl(_guts->frontend_fd, ioctl_request_t(FE_READ_SIGNAL_STRENGTH), &strength) < 0) {
         const SysErrorCode err = LastSysErrorCode();
@@ -582,6 +622,11 @@ int ts::Tuner::signalQuality(Report& report)
 
 bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report)
 {
+    // Filter previous abort.
+    if (aborted) {
+        return false;
+    }
+
     // Get the current delivery system
     DTVProperties props;
     props.add(DTV_DELIVERY_SYSTEM);
@@ -923,12 +968,14 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
 
 void ts::Tuner::Guts::discardFrontendEvents(Report& report)
 {
-    ::dvb_frontend_event event;
-    report.debug(u"starting discarding frontend events");
-    while (::ioctl(frontend_fd, ioctl_request_t(FE_GET_EVENT), &event) >= 0) {
-        report.debug(u"one frontend event discarded");
+    if (!aborted) {
+        ::dvb_frontend_event event;
+        report.debug(u"starting discarding frontend events");
+        while (::ioctl(frontend_fd, ioctl_request_t(FE_GET_EVENT), &event) >= 0) {
+            report.debug(u"one frontend event discarded");
+        }
+        report.debug(u"finished discarding frontend events");
     }
-    report.debug(u"finished discarding frontend events");
 }
 
 
@@ -938,6 +985,11 @@ void ts::Tuner::Guts::discardFrontendEvents(Report& report)
 
 bool ts::Tuner::Guts::tune(DTVProperties& props, Report& report)
 {
+    // Filter previous abort.
+    if (aborted) {
+        return false;
+    }
+
     report.debug(u"tuning on %s", {frontend_name});
     props.report(report, Severity::Debug);
     if (::ioctl(frontend_fd, ioctl_request_t(FE_SET_PROPERTY), props.getIoctlParam()) < 0) {
@@ -1064,6 +1116,11 @@ bool ts::Tuner::Guts::dishControl(const ModulationArgs& params, const LNB::Trans
 
 bool ts::Tuner::tune(ModulationArgs& params, Report& report)
 {
+    // Filter previous abort.
+    if (_guts->aborted) {
+        return false;
+    }
+
     // Initial parameter checks.
     if (!checkTuneParameters(params, report)) {
         return false;
@@ -1240,6 +1297,11 @@ bool ts::Tuner::start(Report& report)
         return false;
     }
 
+    // Filter previous abort.
+    if (_guts->aborted) {
+        return false;
+    }
+
     // Set demux buffer size (default value is 2 kB, fine for sections,
     // completely undersized for full TS capture.
 
@@ -1283,7 +1345,7 @@ bool ts::Tuner::start(Report& report)
 
         // If the input signal is locked, cool...
         signal_ok = (status & FE_HAS_LOCK) != 0;
-        if (signal_ok) {
+        if (signal_ok || _guts->aborted) {
             break;
         }
 
@@ -1293,13 +1355,16 @@ bool ts::Tuner::start(Report& report)
 
     // If the timeout has expired, error
 
-    if (!signal_ok) {
-        report.log(_signal_timeout_silent ? Severity::Debug : Severity::Error,
-                   u"no input signal lock after %d milliseconds", {_signal_timeout});
+    if (_guts->aborted) {
         return false;
     }
-
-    return true;
+    else if (!signal_ok) {
+        report.log(_signal_timeout_silent ? Severity::Debug : Severity::Error, u"no input signal lock after %d milliseconds", {_signal_timeout});
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 
 
@@ -1316,7 +1381,7 @@ bool ts::Tuner::stop(Report& report)
     }
 
     // Stop the demux
-    if (::ioctl(_guts->demux_fd, ioctl_request_t(DMX_STOP)) < 0) {
+    if (!_guts->aborted && ::ioctl(_guts->demux_fd, ioctl_request_t(DMX_STOP)) < 0) {
         report.error(u"error stopping demux on %s: %s", {_guts->demux_name, SysErrorCodeMessage()});
         return false;
     }
@@ -1437,6 +1502,11 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         return 0;
     }
 
+    // Filter previous abort.
+    if (_guts->aborted) {
+        return 0;
+    }
+
     char* const data = reinterpret_cast<char*>(buffer);
     size_t req_size = max_packets * PKT_SIZE;
     size_t got_size = 0;
@@ -1462,11 +1532,13 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
     }
 
     // Loop on read until we get enough
-    while (got_size < req_size) {
+    while (got_size < req_size && !_guts->aborted) {
 
         // Read some data
         bool got_overflow = false;
-        ssize_t insize = ::read(_guts->dvr_fd, data + got_size, req_size - got_size);
+        _guts->reading_dvr = true;
+        const ssize_t insize = ::read(_guts->dvr_fd, data + got_size, req_size - got_size);
+        _guts->reading_dvr = false;
 
         if (insize > 0) {
             // Normal case: some data were read
@@ -1480,7 +1552,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         else if (errno == EINTR) {
             // Input was interrupted by a signal.
             // If the application should be interrupted, stop now.
-            if (abort != nullptr && abort->aborting()) {
+            if (_guts->aborted || (abort != nullptr && abort->aborting())) {
                 break;
             }
         }
