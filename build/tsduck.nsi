@@ -444,6 +444,13 @@ function .onInit
         ${If} $0 == "false"
             !insertmacro UnSelectSection ${SectionDocumentation}
         ${EndIf}
+        ReadRegStr $0 HKLM "${ProductKey}" "InstallPython"
+        ${If} $0 == "true"
+            !insertmacro SelectSection ${SectionPython}
+        ${EndIf}
+        ${If} $0 == "false"
+            !insertmacro UnSelectSection ${SectionPython}
+        ${EndIf}
         ReadRegStr $0 HKLM "${ProductKey}" "InstallDevelopment"
         ${If} $0 == "true"
             !insertmacro SelectSection ${SectionDevelopment}
