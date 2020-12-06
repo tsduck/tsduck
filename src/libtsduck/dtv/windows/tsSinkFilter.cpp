@@ -36,6 +36,7 @@
 #include "tsGuardCondition.h"
 #include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
+#define TS_COM_INSTRUMENTATION //@@@@
 
 // Trace every low-level operation when COM instrumentation is enabled.
 #if defined(TS_COM_INSTRUMENTATION)
@@ -762,43 +763,63 @@ STDMETHODIMP ts::SinkPin::ReceiveCanBlock()
     return S_FALSE; // we never block
 }
 
+STDMETHODIMP ts::SinkPin::Receive(::IMediaSample* pSample)
+{
+    TRACE(2, u"SinkPin::Receive");
+    long processed = 0;
+    return ReceiveMultiple(&pSample, 1, &processed);
+}
+
 STDMETHODIMP ts::SinkPin::ReceiveMultiple(::IMediaSample** pSamples, long nSamples, long* nSamplesProcessed)
 {
     TRACE(2, u"SinkPin::ReceiveMultiple: samples count: %d", {nSamples});
-    for (*nSamplesProcessed = 0; *nSamplesProcessed < nSamples; (*nSamplesProcessed)++) {
-        ::HRESULT hr = Receive(pSamples[*nSamplesProcessed]);
-        if (FAILED(hr)) {
-            return hr;
-        }
-    }
-    return S_OK;
-}
 
-STDMETHODIMP ts::SinkPin::Receive(::IMediaSample* pSample)
-{
-    IF_TRACE(const long length = pSample->GetActualDataLength();)
-    TRACE(2, u"SinkPin::Receive: actual data length: %d bytes, %d packets + %d bytes", {length, length / PKT_SIZE, length % PKT_SIZE});
-    // Reject samples during a flush
+    *nSamplesProcessed = 0;
+    bool report_overflow = false;
+
     if (_flushing) {
+        // Reject samples during a flush
         return S_FALSE;
     }
-    // Enqueue media sample pointer
-    GuardCondition lock(_filter->_mutex, _filter->_not_empty, 1000); // timeout = 1000 ms
-    if (!lock.isLocked()) {
-        _report.error(u"cannot enqueue media sample, lock timeout");
+    else if (nSamples <= 0) {
+        // Avoid locking if no data is specified.
+        return S_OK;
     }
-    else if (_filter->_max_messages != 0 && _filter->_queue.size() >= _filter->_max_messages) {
-        // Cannot enqueue. Don't report consecutive overflow
-        if (!_input_overflow) {
-            _report.verbose(u"transport stream input overflow");
-            _input_overflow = true;
+
+    // Enqueue all media samples using one single lock section.
+    {
+        GuardCondition lock(_filter->_mutex, _filter->_not_empty, 1000); // timeout = 1000 ms
+        if (!lock.isLocked()) {
+            _report.error(u"cannot enqueue media sample, lock timeout");
+            return S_FALSE;
         }
-    }
-    else {
-        pSample->AddRef();
-        _filter->_queue.push_back(pSample);
+
+        // Loop on all media samples.
+        while (*nSamplesProcessed < nSamples) {
+            ::IMediaSample* pSample = pSamples[*nSamplesProcessed];
+            IF_TRACE(const long length = pSample->GetActualDataLength();)
+            TRACE(2, u"SinkPin::ReceiveMultiple: actual data length: %d bytes, %d packets + %d bytes", {length, length / PKT_SIZE, length % PKT_SIZE});
+            if (_filter->_max_messages != 0 && _filter->_queue.size() >= _filter->_max_messages) {
+                // Cannot enqueue. Don't report consecutive overflow
+                report_overflow = report_overflow || !_input_overflow;
+                _input_overflow = true;
+                break;
+            }
+            else {
+                pSample->AddRef();
+                _filter->_queue.push_back(pSample);
+                _input_overflow = false;
+            }
+            (*nSamplesProcessed)++;
+        }
+
+        // Notify client application when all samples are enqueued.
         lock.signal();
-        _input_overflow = false;
+    }
+
+    // Does reporting outside locked section.
+    if (report_overflow) {
+        _report.verbose(u"transport stream input overflow");
     }
     return S_OK;
 }
