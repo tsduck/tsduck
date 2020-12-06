@@ -287,6 +287,9 @@ void ts::UserInterrupt::deactivate()
     // Remove the console interrupt handler
     ::SetConsoleCtrlHandler(sysHandler, false);
 
+    // Restore normal Ctrl-C processing
+    ::SetConsoleCtrlHandler(nullptr, false);
+
 #elif defined(TS_UNIX)
 
     // Restore the signal handler to default behaviour
