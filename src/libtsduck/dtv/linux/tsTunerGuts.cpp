@@ -1764,7 +1764,10 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
 
     // Read current status, ignore errors.
     ::fe_status_t status = FE_ZERO;
-    _guts->getFrontendStatus(status, report);
+    if (_guts->getFrontendStatus(status, report)) {
+        DisplayFlags(strm, margin, u"Status", uint32_t(status), enum_fe_status);
+        strm << std::endl;
+    }
 
     // Read current tuning parameters. Ignore errors (some fields may be unset).
     ModulationArgs params;
