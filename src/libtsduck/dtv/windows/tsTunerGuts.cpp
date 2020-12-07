@@ -472,22 +472,33 @@ bool ts::Tuner::start(Report& report)
         return false;
     }
 
-    // If the tuner was previously started/stopped on a frequency with signal on it,
-    // it has been observed that remaining packets from the previous run were still
-    // there. Wait a little bit and reflush after Run() to avoid that.
-    // Yes, this is a horrible hack, but if you have a better fix...
-    SleepThread(50); // milliseconds
-    sink->Flush();
+    // Wait for input signal locking if a non-zero timeout is specified.
+    MilliSecond pollInterval = 100; // maybe use DEFAULT_SIGNAL_POLL and a common option for Linux and Windows
 
-    // If a signal timeout was specified, read a packet with timeout
-    if (_signal_timeout > 0) {
-        TSPacket pack;
-        if (sink->Read(&pack, sizeof(pack), _signal_timeout) == 0) {
-            if (!_signal_timeout_silent) {
-                report.error(u"no input DVB signal after %'d milliseconds", {_signal_timeout});
-            }
+    bool signal_ok = false;
+    for (MilliSecond remain_ms = _signal_timeout; remain_ms > 0; remain_ms -= pollInterval) {
+
+        if (!_is_open && !_guts->aborted)
+        {
+            report.log(Severity::Error, u"Tuner start failed.");
             return false;
         }
+
+        // If the input signal is locked, cool...
+        signal_ok = signalLocked(report);
+        if (signal_ok) {
+            break;
+        }
+
+        // Wait the polling time
+        SleepThread(pollInterval < remain_ms ? pollInterval : remain_ms);
+    }
+
+    // If the timeout has expired, error
+    if (!signal_ok) {
+        report.log(_signal_timeout_silent ? Severity::Debug : Severity::Error,
+            u"no input signal lock after %d milliseconds", { _signal_timeout });
+        return false;
     }
 
     return true;
