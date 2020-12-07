@@ -36,7 +36,6 @@
 #include "tsGuardCondition.h"
 #include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
-#define TS_COM_INSTRUMENTATION //@@@@
 
 // Trace every low-level operation when COM instrumentation is enabled.
 #if defined(TS_COM_INSTRUMENTATION)
