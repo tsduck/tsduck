@@ -73,7 +73,7 @@ ts::TunerDeviceInfo::TunerDeviceInfo(const UString& devname, Report& report) :
     // The referenced directory contains text files for the various info.
 
     // Directory where all info files are found.
-    const UString infodir(devname + u"/device");
+    UString infodir(devname + u"/device");
 
     // Adapter and frontend numbers are extracted from the basename.
     BaseName(devname).scan(u"dvb%d.frontend%d", {&adapter_number, &frontend_number});
@@ -81,6 +81,11 @@ ts::TunerDeviceInfo::TunerDeviceInfo(const UString& devname, Report& report) :
     // Vendor and product id are hexadecimal strings.
     UString str_vendor;
     UString str_product;
+
+    if (!LoadText(str_vendor, infodir, u"idVendor", report)) {
+        infodir = infodir + u"/..";
+    }
+        
     LoadText(str_vendor, infodir, u"idVendor", report) && str_vendor.scan(u"%x", {&vendor_id});
     LoadText(str_product, infodir, u"idProduct", report) && str_product.scan(u"%x", {&product_id});
 
@@ -198,10 +203,7 @@ void ts::TunerDeviceInfo::SearchFiles(UStringList& files, const UString& root, c
                     name != u"msr" &&
                     name != u"power" &&
                     name != u"software" &&
-                    name != u"platform" &&
-                    name != u"system" &&
                     name != u"uprobe" &&
-                    name != u"virtual" &&
                     !name.startWith(u"LNXSYS"))
                 {
                     // We can recurse.
