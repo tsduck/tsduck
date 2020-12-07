@@ -103,7 +103,7 @@ namespace ts {
         PESDemux      _demux;
 
         // Open output file.
-        bool openOutput(const UString&, std::ofstream&, std::ostream*&, bool binary);
+        bool openOutput(const UString&, std::ofstream*, std::ostream**, bool binary);
 
         // A string containing the PID and optional TS packet indexes.
         UString prefix(const PESPacket&) const;
@@ -387,9 +387,9 @@ bool ts::PESPlugin::start()
 
     // Create output files.
     const bool ok =
-        openOutput(_out_filename, _out_file, _out, false) &&
-        openOutput(_pes_filename, _pes_file, _pes_stream, true) &&
-        openOutput(_es_filename, _es_file, _es_stream, true);
+        openOutput(_out_filename, &_out_file, &_out, false) &&
+        openOutput(_pes_filename, &_pes_file, &_pes_stream, true) &&
+        openOutput(_es_filename, &_es_file, &_es_stream, true);
     if (!ok) {
         // Close files which were open before failure
         stop();
@@ -404,28 +404,28 @@ bool ts::PESPlugin::start()
 // Open output binary file (--save-pes or --save-es).
 //----------------------------------------------------------------------------
 
-bool ts::PESPlugin::openOutput(const UString& filename, std::ofstream& file, std::ostream*& stream, bool binary)
+bool ts::PESPlugin::openOutput(const UString& filename, std::ofstream* file, std::ostream** stream, bool binary)
 {
     if (filename == u"-") {
         // Save binary data on standard output, in binary mode.
-        stream = &std::cout;
+        *stream = &std::cout;
         if (binary) {
             SetBinaryModeStdout(*tsp);
         }
     }
     else if (filename.empty()) {
-        // Don't save binary data.
-        stream = nullptr;
+        // Don't save binary data, log text data.
+        *stream = binary ? nullptr : &std::cout;
     }
     else {
         // Save binary data in a regular binary file.
         tsp->verbose(u"creating %s", {filename});
-        file.open(filename.toUTF8().c_str(), binary ? (std::ios::out | std::ios::binary) : std::ios::out);
-        if (!file) {
+        file->open(filename.toUTF8().c_str(), binary ? (std::ios::out | std::ios::binary) : std::ios::out);
+        if (!(*file)) {
             error(u"cannot create %s", {filename});
             return false;
         }
-        stream = &file;
+        *stream = file;
     }
     return true;
 }
@@ -447,7 +447,7 @@ bool ts::PESPlugin::stop()
     if (_es_file.is_open()) {
         _es_file.close();
     }
-    _out = nullptr;
+    _out = &std::cout;
     _pes_stream = nullptr;
     _es_stream = nullptr;
     return true;
