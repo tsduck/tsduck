@@ -85,6 +85,7 @@ namespace ts {
         int       _max_payload;    // Maximum payload size (<0: no filter)
         UString   _out_filename;
         UString   _pes_filename;
+        UString   _es_filename;
         PIDSet    _pids;
         CodecType _default_h26x;
         std::set<uint8_t>    _nal_unit_filter;
@@ -94,9 +95,15 @@ namespace ts {
         // Working data.
         bool          _abort;
         std::ofstream _out_file;
+        std::ostream* _out;
         std::ofstream _pes_file;
         std::ostream* _pes_stream;
+        std::ofstream _es_file;
+        std::ostream* _es_stream;
         PESDemux      _demux;
+
+        // Open output file.
+        bool openOutput(const UString&, std::ofstream&, std::ostream*&, bool binary);
 
         // A string containing the PID and optional TS packet indexes.
         UString prefix(const PESPacket&) const;
@@ -148,6 +155,7 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     _max_payload(0),
     _out_filename(),
     _pes_filename(),
+    _es_filename(),
     _pids(),
     _default_h26x(CodecType::UNDEFINED),
     _nal_unit_filter(),
@@ -155,8 +163,11 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     _sei_uuid_filter(),
     _abort(false),
     _out_file(),
+    _out(nullptr),
     _pes_file(),
     _pes_stream(nullptr),
+    _es_file(),
+    _es_stream(nullptr),
     _demux(duck, this)
 {
     option(u"audio-attributes", 'a');
@@ -248,11 +259,18 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
          u"PID filter: select packets with these PID values (default: all PID's "
          u"containing PES packets). Several -p or --pid options may be specified.");
 
+    option(u"save-es", 0, STRING);
+    help(u"save-es", u"filename",
+         u"Save the elementary stream in the specified file. "
+         u"The payloads of all PES packets are saved in a raw binary form without encapsulation. "
+         u"The PES headers are dropped. "
+         u"When the specified file is '-', the standard output is used.");
+
     option(u"save-pes", 0, STRING);
     help(u"save-pes", u"filename",
-         u"Save all PES packets in the specified file. "
-         u"All PES packets are saved in a raw binary form without encapsulation. "
-         u"When the specified file is '-', the standard output is used.");
+        u"Save all PES packets, header and payload, in the specified file. "
+        u"All PES packets are saved in a raw binary form without encapsulation. "
+        u"When the specified file is '-', the standard output is used.");
 
     option(u"sei-avc");
     help(u"sei-avc",
@@ -307,6 +325,7 @@ bool ts::PESPlugin::getOptions()
     getIntValue(_default_h26x, u"h26x-default-format", CodecType::AVC);
     getValue(_out_filename, u"output-file");
     getValue(_pes_filename, u"save-pes");
+    getValue(_es_filename, u"save-es");
     _negate_nal_unit_filter = present(u"negate-nal-unit-type");
     getIntValues(_nal_unit_filter, u"nal-unit-type");
     getIntValues(_sei_type_filter, u"sei-type");
@@ -361,41 +380,53 @@ bool ts::PESPlugin::getOptions()
 
 bool ts::PESPlugin::start()
 {
-    // Create output files.
-    if (!_out_filename.empty()) {
-        tsp->verbose(u"creating %s", {_out_filename});
-        _out_file.open(_out_filename.toUTF8().c_str(), std::ios::out);
-        if (!_out_file) {
-            error(u"cannot create %s", {_out_filename});
-            return false;
-        }
-    }
-    if (_pes_filename == u"-") {
-        // Save PES packets on standard output, in binary mode.
-        _pes_stream = &std::cout;
-        SetBinaryModeStdout(*tsp);
-    }
-    else if (_pes_filename.empty()) {
-        // Don't save PES packets.
-        _pes_stream = nullptr;
-    }
-    else {
-        // Save PES packets in a regular binary file.
-        tsp->verbose(u"creating %s", {_pes_filename});
-        _pes_file.open(_pes_filename.toUTF8().c_str(), std::ios::out | std::ios::binary);
-        if (!_pes_file) {
-            error(u"cannot create %s", {_pes_filename});
-            return false;
-        }
-        _pes_stream = &_pes_file;
-    }
-
-    // Reset state.
+    // Reset PES demux.
     _demux.reset();
     _demux.setPIDFilter(_pids);
     _demux.setDefaultCodec(_default_h26x);
 
+    // Create output files.
+    const bool ok =
+        openOutput(_out_filename, _out_file, _out, false) &&
+        openOutput(_pes_filename, _pes_file, _pes_stream, true) &&
+        openOutput(_es_filename, _es_file, _es_stream, true);
+    if (!ok) {
+        // Close files which were open before failure
+        stop();
+    }
+
     _abort = false;
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Open output binary file (--save-pes or --save-es).
+//----------------------------------------------------------------------------
+
+bool ts::PESPlugin::openOutput(const UString& filename, std::ofstream& file, std::ostream*& stream, bool binary)
+{
+    if (filename == u"-") {
+        // Save binary data on standard output, in binary mode.
+        stream = &std::cout;
+        if (binary) {
+            SetBinaryModeStdout(*tsp);
+        }
+    }
+    else if (filename.empty()) {
+        // Don't save binary data.
+        stream = nullptr;
+    }
+    else {
+        // Save binary data in a regular binary file.
+        tsp->verbose(u"creating %s", {filename});
+        file.open(filename.toUTF8().c_str(), binary ? (std::ios::out | std::ios::binary) : std::ios::out);
+        if (!file) {
+            error(u"cannot create %s", {filename});
+            return false;
+        }
+        stream = &file;
+    }
     return true;
 }
 
@@ -413,7 +444,12 @@ bool ts::PESPlugin::stop()
     if (_pes_file.is_open()) {
         _pes_file.close();
     }
+    if (_es_file.is_open()) {
+        _es_file.close();
+    }
+    _out = nullptr;
     _pes_stream = nullptr;
+    _es_stream = nullptr;
     return true;
 }
 
@@ -465,8 +501,6 @@ ts::UString ts::PESPlugin::prefix(const PESPacket& pkt) const
 
 void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
 {
-    std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
-
     // Skip PES packets without appropriate payload size
     if (int(pkt.payloadSize()) < _min_payload || (_max_payload >= 0 && int(pkt.payloadSize()) > _max_payload)) {
         return;
@@ -474,28 +508,28 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
 
     // Report packet description
     if (_trace_packets) {
-        out << "* " << prefix(pkt)
-            << ", stream_id " << names::StreamId(pkt.getStreamId(), names::FIRST)
-            << UString::Format(u", size: %d bytes (header: %d, payload: %d)", {pkt.size(), pkt.headerSize(), pkt.payloadSize()});
+        *_out << "* " << prefix(pkt)
+              << ", stream_id " << names::StreamId(pkt.getStreamId(), names::FIRST)
+              << UString::Format(u", size: %d bytes (header: %d, payload: %d)", {pkt.size(), pkt.headerSize(), pkt.payloadSize()});
         const size_t spurious = pkt.spuriousDataSize();
         if (spurious > 0) {
-            out << UString::Format(u", %d spurious trailing bytes", {spurious});
+            *_out << UString::Format(u", %d spurious trailing bytes", {spurious});
         }
-        out << std::endl;
-        if (lastDump(out)) {
+        *_out << std::endl;
+        if (lastDump(*_out)) {
             return;
         }
 
         // Report PES header
         if (_dump_pes_header) {
             size_t size = pkt.headerSize();
-            out << "  PES header";
+            *_out << "  PES header";
             if (_max_dump_size > 0 && size > _max_dump_size) {
                 size = _max_dump_size;
-                out << " (truncated)";
+                *_out << " (truncated)";
             }
-            out << ":" << std::endl << UString::Dump(pkt.header(), size, _hexa_flags, 4, _hexa_bpl);
-            if (lastDump (out)) {
+            *_out << ":" << std::endl << UString::Dump(pkt.header(), size, _hexa_flags, 4, _hexa_bpl);
+            if (lastDump (*_out)) {
                 return;
             }
         }
@@ -503,31 +537,38 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
         // Check that video packets start with either 00 00 01 (ISO 11172-2, MPEG-1, or ISO 13818-2, MPEG-2)
         // or 00 00 00 .. 01 (ISO 14496-10, MPEG-4 AVC). Don't know how ISO 14496-2 (MPEG-4 video) should start.
         if (IsVideoSID(pkt.getStreamId()) && !pkt.isMPEG2Video() && !pkt.isAVC() && !pkt.isHEVC()) {
-            out << UString::Format(u"WARNING: PID 0x%X, invalid start of video PES payload: ", {pkt.getSourcePID()})
-                << UString::Dump(pkt.payload(), std::min<size_t> (8, pkt.payloadSize()), UString::SINGLE_LINE)
-                << std::endl;
+            *_out << UString::Format(u"WARNING: PID 0x%X, invalid start of video PES payload: ", {pkt.getSourcePID()})
+                  << UString::Dump(pkt.payload(), std::min<size_t> (8, pkt.payloadSize()), UString::SINGLE_LINE)
+                  << std::endl;
         }
 
         // Report PES payload
         if (_dump_pes_payload) {
             size_t size = pkt.payloadSize();
-            out << "  PES payload";
+            *_out << "  PES payload";
             if (_max_dump_size > 0 && size > _max_dump_size) {
                 size = _max_dump_size;
-                out << " (truncated)";
+                *_out << " (truncated)";
             }
-            out << ":" << std::endl << UString::Dump(pkt.payload(), size, _hexa_flags | UString::ASCII, 4, _hexa_bpl);
-            if (lastDump(out)) {
+            *_out << ":" << std::endl << UString::Dump(pkt.payload(), size, _hexa_flags | UString::ASCII, 4, _hexa_bpl);
+            if (lastDump(*_out)) {
                 return;
             }
         }
     }
 
-    // Save binary PES packet.
+    // Save binary PES packet and payload.
     if (_pes_stream != nullptr) {
         _pes_stream->write(reinterpret_cast<const char*>(pkt.content()), pkt.size());
         if (!(*_pes_stream)) {
             tsp->error(u"error writing PES packet to %s", {_pes_filename == u"-" ? u"standard output" : _pes_filename});
+            _abort = true;
+        }
+    }
+    if (_es_stream != nullptr) {
+        _es_stream->write(reinterpret_cast<const char*>(pkt.payload()), pkt.payloadSize());
+        if (!(*_es_stream)) {
+            tsp->error(u"error writing ES data to %s", {_es_filename == u"-" ? u"standard output" : _es_filename});
             _abort = true;
         }
     }
@@ -541,9 +582,8 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
 void ts::PESPlugin::handleIntraImage(PESDemux& demux, const PESPacket& pkt, size_t offset)
 {
     if (_intra_images) {
-        std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
-        out << "* " << prefix(pkt) << UString::Format(u", intra-image offset in PES payload: %d/%d", {offset, pkt.payloadSize()}) << std::endl;
-        lastDump(out);
+        *_out << "* " << prefix(pkt) << UString::Format(u", intra-image offset in PES payload: %d/%d", { offset, pkt.payloadSize() }) << std::endl;
+        lastDump(*_out);
     }
 }
 
@@ -554,23 +594,21 @@ void ts::PESPlugin::handleIntraImage(PESDemux& demux, const PESPacket& pkt, size
 
 void ts::PESPlugin::handleVideoStartCode(PESDemux&, const PESPacket& pkt, uint8_t start_code, size_t offset, size_t size)
 {
-    std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
-
     // Dump video start code.
     if (_dump_start_code) {
-        out << "* " << prefix(pkt)
-            << ", start code " << names::PESStartCode(start_code, names::FIRST)
-            << UString::Format(u", offset in PES payload: %d, size: %d bytes", {offset, size})
-            << std::endl;
+        *_out << "* " << prefix(pkt)
+              << ", start code " << names::PESStartCode(start_code, names::FIRST)
+              << UString::Format(u", offset in PES payload: %d, size: %d bytes", {offset, size})
+              << std::endl;
 
         size_t dsize = size;
-        out << "  MPEG-1/2 video unit";
+        *_out << "  MPEG-1/2 video unit";
         if (_max_dump_size > 0 && dsize > _max_dump_size) {
             dsize = _max_dump_size;
-            out << " (truncated)";
+            *_out << " (truncated)";
         }
-        out << ":" << std::endl << UString::Dump(pkt.payload() + offset, dsize, _hexa_flags, 4, _hexa_bpl);
-        lastDump(out);
+        *_out << ":" << std::endl << UString::Dump(pkt.payload() + offset, dsize, _hexa_flags, 4, _hexa_bpl);
+        lastDump(*_out);
     }
 }
 
@@ -598,43 +636,41 @@ bool ts::PESPlugin::useAccesUnitType(uint8_t type) const
 
 void ts::PESPlugin::handleAccessUnit(PESDemux&, const PESPacket& pes, uint8_t au_type, size_t offset, size_t size)
 {
-    std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
-
     // Dump the NALunit.
     if (_dump_nal_units && useAccesUnitType(au_type)) {
 
         const CodecType codec = pes.getCodec();
 
         // Hexadecimal dump
-        out << "* " << prefix(pes) << ", " << CodecTypeEnum.name(codec) << " access unit type " << names::AccessUnitType(codec, au_type, names::FIRST) << std::endl;
-        out << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", {offset, size}) << std::endl;
+        *_out << "* " << prefix(pes) << ", " << CodecTypeEnum.name(codec) << " access unit type " << names::AccessUnitType(codec, au_type, names::FIRST) << std::endl;
+        *_out << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", {offset, size}) << std::endl;
 
         size_t dsize = size;
-        out << "  AVC access unit";
+        *_out << "  AVC access unit";
         if (_max_dump_size > 0 && dsize > _max_dump_size) {
             dsize = _max_dump_size;
-            out << " (truncated)";
+            *_out << " (truncated)";
         }
-        out << ":" << std::endl << UString::Dump(pes.payload() + offset, dsize, _hexa_flags, 4, _hexa_bpl);
+        *_out << ":" << std::endl << UString::Dump(pes.payload() + offset, dsize, _hexa_flags, 4, _hexa_bpl);
 
         // Structured formatting if possible
         if (codec == CodecType::AVC && au_type == AVC_AUT_SEQPARAMS) {
             const AVCSequenceParameterSet params(pes.payload() + offset, size);
-            params.display(out, u"  ");
+            params.display(*_out, u"  ");
         }
         else if (codec == CodecType::AVC && au_type == AVC_AUT_DELIMITER) {
             const AVCAccessUnitDelimiter aud(pes.payload() + offset, size);
-            aud.display(out, u"  ");
+            aud.display(*_out, u"  ");
         }
         else if (codec == CodecType::HEVC && au_type == HEVC_AUT_AUD_NUT) {
             const HEVCAccessUnitDelimiter aud(pes.payload() + offset, size);
-            aud.display(out, u"  ");
+            aud.display(*_out, u"  ");
         }
         else if (codec == CodecType::VVC && au_type == VVC_AUT_AUD_NUT) {
             const VVCAccessUnitDelimiter aud(pes.payload() + offset, size);
-            aud.display(out, u"  ");
+            aud.display(*_out, u"  ");
         }
-        lastDump(out);
+        lastDump(*_out);
     }
 }
 
@@ -668,17 +704,16 @@ void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t se
     }
 
     // Now display the SEI.
-    std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
-    out << "* " << prefix(pkt) << ", SEI type " << NameFromSection(u"AVCSEIType", sei_type, names::FIRST) << std::endl;
-    out << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", {offset, size}) << std::endl;
+    *_out << "* " << prefix(pkt) << ", SEI type " << NameFromSection(u"AVCSEIType", sei_type, names::FIRST) << std::endl;
+    *_out << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", {offset, size}) << std::endl;
 
     size_t dsize = size;
-    out << "  AVC SEI";
+    *_out << "  AVC SEI";
     if (_max_dump_size > 0 && dsize > _max_dump_size) {
         dsize = _max_dump_size;
-        out << " (truncated)";
+        *_out << " (truncated)";
     }
-    out << ":" << std::endl << UString::Dump(pkt.payload() + offset, dsize, _hexa_flags | UString::ASCII, 4, _hexa_bpl);
+    *_out << ":" << std::endl << UString::Dump(pkt.payload() + offset, dsize, _hexa_flags | UString::ASCII, 4, _hexa_bpl);
 }
 
 
@@ -689,10 +724,9 @@ void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t se
 void ts::PESPlugin::handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket& pkt, const MPEG2AudioAttributes& aa)
 {
     if (_audio_attributes) {
-        std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
-        out << "* " << prefix(pkt) << ", stream_id " << names::StreamId(pkt.getStreamId(), names::FIRST) << ", audio attributes:" << std::endl;
-        out << "  " << aa << std::endl;
-        lastDump(out);
+        *_out << "* " << prefix(pkt) << ", stream_id " << names::StreamId(pkt.getStreamId(), names::FIRST) << ", audio attributes:" << std::endl;
+        *_out << "  " << aa << std::endl;
+        lastDump(*_out);
     }
 }
 
@@ -704,10 +738,9 @@ void ts::PESPlugin::handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket& pk
 void ts::PESPlugin::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, const AC3Attributes& aa)
 {
     if (_audio_attributes) {
-        std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
-        out << "* " << prefix(pkt) << ", stream_id " << names::StreamId(pkt.getStreamId(), names::FIRST) << ", AC-3 audio attributes:" << std::endl;
-        out << "  " << aa << std::endl;
-        lastDump(out);
+        *_out << "* " << prefix(pkt) << ", stream_id " << names::StreamId(pkt.getStreamId(), names::FIRST) << ", AC-3 audio attributes:" << std::endl;
+        *_out << "  " << aa << std::endl;
+        lastDump(*_out);
     }
 }
 
@@ -719,11 +752,10 @@ void ts::PESPlugin::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, cons
 void ts::PESPlugin::handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket& pkt, const MPEG2VideoAttributes& va)
 {
     if (_video_attributes) {
-        std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
-        out << "* " << prefix(pkt) << ", stream_id " << names::StreamId(pkt.getStreamId(), names::FIRST) << ", video attributes:" << std::endl;
-        out << "  " << va << std::endl;
-        out << UString::Format(u"  Maximum bitrate: %'d b/s, VBV buffer size: %'d bits", {va.maximumBitRate(), va.vbvSize()}) << std::endl;
-        lastDump(out);
+        *_out << "* " << prefix(pkt) << ", stream_id " << names::StreamId(pkt.getStreamId(), names::FIRST) << ", video attributes:" << std::endl;
+        *_out << "  " << va << std::endl;
+        *_out << UString::Format(u"  Maximum bitrate: %'d b/s, VBV buffer size: %'d bits", {va.maximumBitRate(), va.vbvSize()}) << std::endl;
+        lastDump(*_out);
     }
 }
 
@@ -735,9 +767,8 @@ void ts::PESPlugin::handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket& pk
 void ts::PESPlugin::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, const AVCAttributes& va)
 {
     if (_video_attributes) {
-        std::ostream& out(_out_file.is_open() ? _out_file : std::cout);
-        out << "* " << prefix(pkt) << ", stream_id " << names::StreamId(pkt.getStreamId(), names::FIRST) << ", AVC video attributes:" << std::endl;
-        out << "  " << va << std::endl;
-        lastDump(out);
+        *_out << "* " << prefix(pkt) << ", stream_id " << names::StreamId(pkt.getStreamId(), names::FIRST) << ", AVC video attributes:" << std::endl;
+        *_out << "  " << va << std::endl;
+        lastDump(*_out);
     }
 }

@@ -2,11 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.25-2112
+VERSION 3.25-2114
 
 [IMP] Improvements on existing commands and plugins:
 
   * New options in exiting commands and plugins:
+    - Option --save-es in plugin "pes".
     - Option --extended-info in "tslsdvb" (--verbose no longer displays the
       extremely verbose graph, use --extended-info for this).
 
