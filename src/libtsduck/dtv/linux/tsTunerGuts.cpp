@@ -1770,6 +1770,12 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     ModulationArgs params;
     getCurrentTuning(params, false, report);
 
+    // Display current information
+    DisplayFlags(strm, margin, u"Status", uint32_t(status), enum_fe_status);
+    strm << std::endl;
+    strm << margin << "Device Path:      " << _device_path << std::endl;
+    //strm << margin << "Device Serial:    " << _device_serial << std::endl;
+    
     // Display delivery system.
     DeliverySystem delsys = params.delivery_system.value(DS_UNDEFINED);
     if (delsys == DS_UNDEFINED) {
