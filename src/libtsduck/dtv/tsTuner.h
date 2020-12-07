@@ -341,9 +341,10 @@ namespace ts {
         //! @param [in,out] strm Output text stream.
         //! @param [in] margin Left margin to display.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] extended Display "extended" information. Can be very verbose.
         //! @return A reference to @a strm.
         //!
-        std::ostream& displayStatus(std::ostream& strm, const UString& margin, Report& report);
+        std::ostream& displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended = false);
 
     private:
         // System-specific parts are stored in a private structure.
