@@ -621,12 +621,37 @@ bool ts::Tuner::Guts::FindTuners(DuckContext& duck, Tuner* tuner, TunerPtrVector
         }
     }
 
+    std::vector<ComPtr<::IMoniker>> tuner_monikers;
+
+    // Check if tuner device name is a device path
+    if (tuner != nullptr && !tuner->_device_name.empty() && tuner->_device_name.startWith(u"@")) {
+        report.debug(u"looking for DVB device path \"%s\"", { tuner->_device_name });
+
+        IBindCtx* lpBC = nullptr;
+        IMoniker* pmTuner = nullptr;
+
+        HRESULT hr = CreateBindCtx(0, &lpBC);
+        if (SUCCEEDED(hr))
+        {
+            DWORD dwEaten;
+            hr = MkParseDisplayName(lpBC, tuner->deviceName().wc_str(), &dwEaten, &pmTuner);
+
+            if (hr == S_OK)
+            {
+                tuner_monikers.emplace_back(pmTuner);
+            }
+
+            lpBC->Release();
+        }
+    }
+
+    if (tuner_monikers.empty()) {
     // Enumerate all filters with category KSCATEGORY_BDA_NETWORK_TUNER.
     // These filters are usually installed by vendors of hardware tuners
     // when they provide BDA-compatible drivers.
-    std::vector<ComPtr<::IMoniker>> tuner_monikers;
     if (!EnumerateDevicesByClass(KSCATEGORY_BDA_NETWORK_TUNER, tuner_monikers, report)) {
         return false;
+        }
     }
 
     // Loop on all enumerated tuners.
