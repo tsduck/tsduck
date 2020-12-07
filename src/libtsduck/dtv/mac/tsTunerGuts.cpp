@@ -103,7 +103,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
 {
     ERROR(false);
 }
-std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin, Report& report)
+std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended)
 {
     ERROR(strm);
 }

@@ -60,6 +60,7 @@ namespace {
 #endif
         ts::DuckContext duck;
         ts::TunerArgs   tuner_args;  // Name of device to list (unspecified means all).
+        bool            extended;
     };
 }
 
@@ -69,14 +70,18 @@ Options::Options(int argc, char *argv[]) :
     test_type(ts::DirectShowTest::NONE),
 #endif
     duck(this),
-    tuner_args(true, true)
+    tuner_args(true, true),
+    extended(false)
 {
     // Common tuner options.
     tuner_args.defineArgs(*this);
 
+    option(u"extended-info", 'e');
+    help(u"extended-info", u"Display extended information.");
+
 #if defined(TS_WINDOWS)
 
-    option(u"enumerate-devices", 'e');
+    option(u"enumerate-devices");
     help(u"enumerate-devices", u"Legacy option, equivalent to --test enumerate-devices.");
 
     option(u"list-devices", 'l');
@@ -92,6 +97,7 @@ Options::Options(int argc, char *argv[]) :
     // Analyze command line options.
     analyze(argc, argv);
     tuner_args.loadArgs(duck, *this);
+    extended = present(u"extended-info");
 
 #if defined(TS_WINDOWS)
     // Test options on Windows. The legacy option "--enumerate-devices" means "--test enumerate-devices".
@@ -144,7 +150,7 @@ namespace {
         std::cout << tuner.deliverySystems().toString() << ")" << std::endl;
 
         // Display verbose information
-        if (opt.verbose()) {
+        if (opt.verbose() || opt.extended) {
 
             // Display device path.
             const ts::UString path(tuner.devicePath());
@@ -154,7 +160,7 @@ namespace {
 
             // Display system-specific status (very verbose).
             std::cout << std::endl;
-            tuner.displayStatus(std::cout, u"  ", opt);
+            tuner.displayStatus(std::cout, u"  ", opt, opt.extended);
             std::cout << std::endl;
         }
     }

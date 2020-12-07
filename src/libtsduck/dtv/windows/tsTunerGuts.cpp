@@ -571,7 +571,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
 // Display the characteristics and status of the tuner.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin, Report& report)
+std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended)
 {
     if (!_is_open) {
         report.error(u"tuner not open");
@@ -587,8 +587,12 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin
     if (_guts->getSignalStrength_mdB(strength)) {
         strm << margin << "Signal strength:  " << UString::Decimal(strength) << " milli dB" << std::endl;
     }
-    strm << std::endl << margin << "DirectShow graph:" << std::endl;
-    _guts->graph.display(strm, report, margin + u"  ", true);
+
+    // The DirectSho graph can be very verbose.
+    if (extended) {
+        strm << std::endl << margin << "DirectShow graph:" << std::endl;
+        _guts->graph.display(strm, report, margin + u"  ", true);
+    }
 
     return strm;
 }
@@ -621,37 +625,29 @@ bool ts::Tuner::Guts::FindTuners(DuckContext& duck, Tuner* tuner, TunerPtrVector
         }
     }
 
+    // Get all tuner filters.
     std::vector<ComPtr<::IMoniker>> tuner_monikers;
 
-    // Check if tuner device name is a device path
-    if (tuner != nullptr && !tuner->_device_name.empty() && tuner->_device_name.startWith(u"@")) {
-        report.debug(u"looking for DVB device path \"%s\"", { tuner->_device_name });
-
+    // First, check if tuner device name is a device path in order to get a direct moniker.
+    if (tuner != nullptr && tuner->_device_name.startWith(u"@")) {
+        report.debug(u"looking for DVB device path \"%s\"", {tuner->_device_name});
         IBindCtx* lpBC = nullptr;
         IMoniker* pmTuner = nullptr;
-
-        HRESULT hr = CreateBindCtx(0, &lpBC);
-        if (SUCCEEDED(hr))
-        {
-            DWORD dwEaten;
-            hr = MkParseDisplayName(lpBC, tuner->deviceName().wc_str(), &dwEaten, &pmTuner);
-
-            if (hr == S_OK)
-            {
+        HRESULT hr = ::CreateBindCtx(0, &lpBC);
+        if (SUCCEEDED(hr)) {
+            DWORD dwEaten = 0;
+            hr = ::MkParseDisplayName(lpBC, tuner->deviceName().wc_str(), &dwEaten, &pmTuner);
+            if (hr == S_OK) {
                 tuner_monikers.emplace_back(pmTuner);
             }
-
             lpBC->Release();
         }
     }
 
-    if (tuner_monikers.empty()) {
-    // Enumerate all filters with category KSCATEGORY_BDA_NETWORK_TUNER.
-    // These filters are usually installed by vendors of hardware tuners
-    // when they provide BDA-compatible drivers.
-    if (!EnumerateDevicesByClass(KSCATEGORY_BDA_NETWORK_TUNER, tuner_monikers, report)) {
+    // If not directly found, enumerate all filters with category KSCATEGORY_BDA_NETWORK_TUNER.
+    // These filters are usually installed by vendors of hardware tuners when they provide BDA-compatible drivers.
+    if (tuner_monikers.empty() && !EnumerateDevicesByClass(KSCATEGORY_BDA_NETWORK_TUNER, tuner_monikers, report)) {
         return false;
-        }
     }
 
     // Loop on all enumerated tuners.

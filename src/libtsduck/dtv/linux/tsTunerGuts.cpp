@@ -1706,7 +1706,7 @@ namespace {
 // Display the characteristics and status of the tuner.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& margin, Report& report)
+std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& margin, Report& report, bool extended)
 {
     if (!_is_open) {
         report.error(u"DVB tuner not open");
