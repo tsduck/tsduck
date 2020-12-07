@@ -181,28 +181,6 @@ bool ts::DirectShowNetworkType::initialize(const::GUID& network_type, Report& re
         return true;
     }
 
-    // ATSC cable network.
-    if (_network_type == DIGITAL_CABLE_NETWORK_TYPE) {
-
-        _system_type = ::DVBSystemType::DVB_Cable; // not really DVB
-        _input_type = ::TunerInputType::TunerInputCable;
-        _tuner_type = TT_ATSC;
-        _delivery_systems.insert(DS_ATSC);
-
-        ComPtr<::IDigitalCableLocator> loc(CLSID_DigitalCableLocator, ::IID_IDigitalCableLocator, report);
-        if (!initDigitalCableLocator(loc.pointer(), report)) {
-            return false;
-        }
-
-        ComPtr<::IDigitalCableTuningSpace> tspace(CLSID_DigitalCableTuningSpace, ::IID_IDigitalCableTuningSpace, report);
-        if (!initDigitalCableTuningSpace(tspace.pointer(), L"TSDuck DigitalCable Tuning Space", loc.pointer(), report)) {
-            return false;
-        }
-
-        _tuning_space.assign(tspace);
-        return true;
-    }
-
     // ISDB-S network.
     // There are two GUID with similar names but distinct values.
     // The differences are unknown, so treat them equally.
