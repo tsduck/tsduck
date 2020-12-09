@@ -30,7 +30,7 @@
 #include "tsAbstractVideoStructure.h"
 TSDUCK_SOURCE;
 
-bool ts::AbstractVideoStructure::parse(const uint8_t* data, size_t size)
+bool ts::AbstractVideoStructure::parse(const uint8_t* data, size_t size, std::initializer_list<uint32_t> params)
 {
     clear();
     if (data == nullptr) {
@@ -38,7 +38,7 @@ bool ts::AbstractVideoStructure::parse(const uint8_t* data, size_t size)
     }
     else {
         AVCParser parser(data, size);
-        valid = parse(parser);
+        valid = parse(parser, params);
     }
     return valid;
 }

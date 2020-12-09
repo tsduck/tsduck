@@ -147,7 +147,6 @@ namespace ts {
             return readBits(val, n);
         }
 
-
         //!
         //! Read the next signed integer using @a n bits and advance the bitstream pointer.
         //! @tparam INT An integer type for the returned data.

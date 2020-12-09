@@ -124,12 +124,12 @@ void ts::AVCVUIParameters::clear()
 // Parse a memory area. Return the "valid" flag.
 //----------------------------------------------------------------------------
 
-bool ts::AVCVUIParameters::parse(const uint8_t* data, size_t size)
+bool ts::AVCVUIParameters::parse(const uint8_t* data, size_t size, std::initializer_list<uint32_t> params)
 {
-    return SuperClass::parse(data, size);
+    return SuperClass::parse(data, size, params);
 }
 
-bool ts::AVCVUIParameters::parse(AVCParser& parser)
+bool ts::AVCVUIParameters::parse(AVCParser& parser, std::initializer_list<uint32_t>)
 {
     clear();
 
@@ -144,13 +144,13 @@ bool ts::AVCVUIParameters::parse(AVCParser& parser)
         }
     }
 
-    valid = valid && parser.u (overscan_info_present_flag, 1);
+    valid = valid && parser.u(overscan_info_present_flag, 1);
 
     if (valid && overscan_info_present_flag == 1) {
         valid = parser.u(overscan_appropriate_flag, 1);
     }
 
-    valid = valid && parser.u (video_signal_type_present_flag, 1);
+    valid = valid && parser.u(video_signal_type_present_flag, 1);
 
     if (valid && video_signal_type_present_flag == 1) {
         valid =

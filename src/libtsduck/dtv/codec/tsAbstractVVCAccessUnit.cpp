@@ -66,7 +66,7 @@ void ts::AbstractVVCAccessUnit::clear()
 // Parse the VVC access unit header.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractVVCAccessUnit::parseHeader(const uint8_t*& data, size_t& size)
+bool ts::AbstractVVCAccessUnit::parseHeader(const uint8_t*& data, size_t& size, std::initializer_list<uint32_t>)
 {
     if (data == nullptr || size < 2) {
         return false;

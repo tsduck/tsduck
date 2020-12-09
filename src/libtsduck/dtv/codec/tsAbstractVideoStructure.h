@@ -55,15 +55,16 @@ namespace ts {
         AbstractVideoStructure() = default;
 
         // Inherited
-        virtual bool parse(const uint8_t*, size_t) override;
+        virtual bool parse(const uint8_t*, size_t, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
 
         //!
         //! Parse the structure.
         //! Must be reimplemented by subclasses.
         //! The data are marked as valid or invalid.
         //! @param [in,out] parser The parser of an AVC stream.
+        //! @param [in] params Additional parameters. May be needed by some structures.
         //! @return The @link valid @endlink flag.
         //!
-        virtual bool parse(AVCParser& parser) = 0;
+        virtual bool parse(AVCParser& parser, std::initializer_list<uint32_t> params = std::initializer_list<uint32_t>()) = 0;
     };
 }

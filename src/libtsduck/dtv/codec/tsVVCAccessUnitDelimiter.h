@@ -66,6 +66,6 @@ namespace ts {
 
     protected:
         // Inherited methods
-        virtual bool parseBody(AVCParser& parser) override;
+        virtual bool parseBody(AVCParser& parser, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
     };
 }

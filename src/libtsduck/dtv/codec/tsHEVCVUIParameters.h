@@ -1,3 +1,4 @@
+
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
@@ -28,23 +29,21 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  AVC VUI (Video Usability Information) parameters.
-//!  AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
+//!  HEVC VUI (Video Usability Information) parameters.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractVideoStructure.h"
-#include "tsAVCHRDParameters.h"
+#include "tsHEVCHRDParameters.h"
 
 namespace ts {
     //!
-    //! AVC VUI (Video Usability Information) parameters.
+    //! HEVC VUI (Video Usability Information) parameters.
     //! @ingroup mpeg
+    //! @see ITU-T Rec. H.265, E.2.1
     //!
-    //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
-    //!
-    class TSDUCKDLL AVCVUIParameters: public AbstractVideoStructure
+    class TSDUCKDLL HEVCVUIParameters: public AbstractVideoStructure
     {
     public:
         //!
@@ -54,24 +53,26 @@ namespace ts {
 
         //!
         //! Constructor from a binary area.
+        //! Note: the parameter @a sps_max_sub_layers_minus1 must be passed in the initializer list of the parse() methods.
         //! @param [in] data Address of binary data to analyze.
         //! @param [in] size Size in bytes of binary data to analyze.
+        //! @param [in] sps_max_sub_layers_minus1 Number of sub-layers minus 1 (depends on parent structure).
         //!
-        AVCVUIParameters(const uint8_t* data = nullptr, size_t size = 0);
+        HEVCVUIParameters(const uint8_t* data = nullptr, size_t size = 0, size_t sps_max_sub_layers_minus1 = 0);
 
         // Inherited methods
         virtual void clear() override;
-        virtual bool parse(const uint8_t* data, size_t size, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
-        virtual bool parse(AVCParser& parser, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
-        virtual std::ostream& display(std::ostream& strm = std::cout, const UString& margin = UString()) const override;
+        virtual bool parse(const uint8_t*, size_t, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
+        virtual bool parse(AVCParser&, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
+        virtual std::ostream& display(std::ostream& = std::cout, const UString& margin = UString()) const override;
 
         // VUI parameters fields.
-        // See ISO/IEC 14496-10 sections E.1.1 and E.2.1.
+        // See ITU-T Rec. H.265 section E.2.1.
 
         uint8_t aspect_ratio_info_present_flag;                //!< aspect_ratio_info_present_flag
         // if (aspect_ratio_info_present_flag) {
             uint8_t aspect_ratio_idc;                          //!< aspect_ratio_idc
-            // if (aspect_ratio_idc == 255) {                  // Extended_SAR
+            // if (aspect_ratio_idc == EXTENDED_SAR) {         // EXTENDED_SAR = 255
                 uint16_t sar_width;                            //!< sar_width
                 uint16_t sar_height;                           //!< sar_height
             // }
@@ -96,33 +97,39 @@ namespace ts {
             uint32_t chroma_sample_loc_type_top_field;         //!< chroma_sample_loc_type_top_field
             uint32_t chroma_sample_loc_type_bottom_field;      //!< chroma_sample_loc_type_bottom_field
         // }
-        uint8_t timing_info_present_flag;                      //!< timing_info_present_flag
-        // if (timing_info_present_flag) {
-            uint32_t num_units_in_tick;                        //!< num_units_in_tick
-            uint32_t time_scale;                               //!< time_scale
-            uint8_t  fixed_frame_rate_flag;                    //!< fixed_frame_rate_flag
+        uint8_t neutral_chroma_indication_flag;                //!< neutral_chroma_indication_flag
+        uint8_t field_seq_flag;                                //!< field_seq_flag
+        uint8_t frame_field_info_present_flag;                 //!< frame_field_info_present_flag
+        uint8_t default_display_window_flag;                   //!< default_display_window_flag
+        // if (default_display_window_flag) {
+            uint32_t def_disp_win_left_offset;                 //!< def_disp_win_left_offset
+            uint32_t def_disp_win_right_offset;                //!< def_disp_win_right_offset
+            uint32_t def_disp_win_top_offset;                  //!< def_disp_win_top_offset
+            uint32_t def_disp_win_bottom_offset;               //!< def_disp_win_bottom_offset
         // }
-        uint8_t nal_hrd_parameters_present_flag;               //!< nal_hrd_parameters_present_flag
-        // if (nal_hrd_parameters_present_flag) {
-            AVCHRDParameters nal_hrd;                          //!< nal_hrd
+        uint8_t vui_timing_info_present_flag;                  //!< vui_timing_info_present_flag
+        // if (vui_timing_info_present_flag) {
+            uint32_t vui_num_units_in_tick;                    //!< vui_num_units_in_tick
+            uint32_t vui_time_scale;                           //!< vui_time_scale
+            uint8_t  vui_poc_proportional_to_timing_flag;      //!< vui_poc_proportional_to_timing_flag
+            // if (vui_poc_proportional_to_timing_flag) {
+                uint32_t vui_num_ticks_poc_diff_one_minus1;    //!< vui_num_ticks_poc_diff_one_minus1
+            // }
+            uint8_t vui_hrd_parameters_present_flag;           //!< vui_hrd_parameters_present_flag
+            // if (vui_hrd_parameters_present_flag) {
+                HEVCHRDParameters hrd_parameters;              //!< hrd_parameters
+            // }
         // }
-        uint8_t vcl_hrd_parameters_present_flag;               //!< vcl_hrd_parameters_present_flag
-        // if (vcl_hrd_parameters_present_flag) {
-            AVCHRDParameters vcl_hrd;                          //!< vcl_hrd
-        // }
-        // if (nal_hrd_parameters_present_flag || vcl_hrd_parameters_present_flag) {
-            uint8_t low_delay_hrd_flag;                        //!< low_delay_hrd_flag
-        // }
-        uint8_t pic_struct_present_flag;                       //!< pic_struct_present_flag
         uint8_t bitstream_restriction_flag;                    //!< bitstream_restriction_flag
-        // if (bitstream_restriction_flag) {
-            uint8_t  motion_vectors_over_pic_boundaries_flag;  //!< motion_vectors_over_pic_boundaries_flag
-            uint32_t max_bytes_per_pic_denom;                  //!< max_bytes_per_pic_denom
-            uint32_t max_bits_per_mb_denom;                    //!< max_bits_per_mb_denom
-            uint32_t log2_max_mv_length_horizontal;            //!< log2_max_mv_length_horizontal
-            uint32_t log2_max_mv_length_vertical;              //!< log2_max_mv_length_vertical
-            uint32_t num_reorder_frames;                       //!< num_reorder_frames
-            uint32_t max_dec_frame_buffering;                  //!< max_dec_frame_buffering
+        // if (bitstream_restriction_flag ) {
+            uint8_t  tiles_fixed_structure_flag;               //!<
+            uint8_t  motion_vectors_over_pic_boundaries_flag;  //!<
+            uint8_t  restricted_ref_pic_lists_flag;            //!<
+            uint32_t min_spatial_segmentation_idc;             //!<
+            uint32_t max_bytes_per_pic_denom;                  //!<
+            uint32_t max_bits_per_min_cu_denom;                //!<
+            uint32_t log2_max_mv_length_horizontal;            //!<
+            uint32_t log2_max_mv_length_vertical;              //!<
         // }
     };
 }

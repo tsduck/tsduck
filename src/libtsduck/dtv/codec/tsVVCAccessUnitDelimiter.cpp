@@ -61,7 +61,7 @@ void ts::VVCAccessUnitDelimiter::clear()
 // Parse the body of the binary access unit. Return the "valid" flag.
 //----------------------------------------------------------------------------
 
-bool ts::VVCAccessUnitDelimiter::parseBody(AVCParser& parser)
+bool ts::VVCAccessUnitDelimiter::parseBody(AVCParser& parser, std::initializer_list<uint32_t>)
 {
     return nal_unit_type == VVC_AUT_AUD_NUT &&
            parser.u(aud_irap_or_gdr_flag, 1) &&

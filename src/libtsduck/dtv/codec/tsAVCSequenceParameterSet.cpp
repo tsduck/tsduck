@@ -239,7 +239,7 @@ void ts::AVCSequenceParameterSet::clear()
 // Parse the body of the binary access unit. Return the "valid" flag.
 //----------------------------------------------------------------------------
 
-bool ts::AVCSequenceParameterSet::parseBody(AVCParser& parser)
+bool ts::AVCSequenceParameterSet::parseBody(AVCParser& parser, std::initializer_list<uint32_t>)
 {
     valid =
         nal_unit_type == AVC_AUT_SEQPARAMS &&
