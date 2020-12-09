@@ -83,6 +83,7 @@ namespace ts {
         //! Add file names in the list of patch files.
         //! The files are not yet loaded.
         //! @param [in] filenames Names of XML patch files.
+        //! If a file name starts with "<?xml", this is considered as "inline XML content".
         //!
         void addPatchFileNames(const UStringVector& filenames);
 
@@ -90,6 +91,7 @@ namespace ts {
         //! Add file names in the list of patch files.
         //! The files are not yet loaded.
         //! @param [in] filenames Names of XML patch files.
+        //! If a file name starts with "<?xml", this is considered as "inline XML content".
         //!
         void addPatchFileNames(const UStringList& filenames);
 

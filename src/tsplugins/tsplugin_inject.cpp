@@ -135,13 +135,14 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     _sections_opt.defineArgs(*this);
 
     option(u"", 0, STRING, 1, UNLIMITED_COUNT);
-    help(u"",
+    help(u"", u"filename[=rate]",
          u"Binary or XML files containing one or more sections or tables. By default, "
          u"files ending in .xml are XML and files ending in .bin are binary. For other "
          u"file names, explicitly specify --binary or --xml.\n\n"
          u"If different repetition rates are required for different files, "
          u"a parameter can be \"filename=value\" where value is the "
-         u"repetition rate in milliseconds for all sections in that file.");
+         u"repetition rate in milliseconds for all sections in that file.\n\n"
+         u"If a name starts with \"<?xml\", it is considered as \"inline XML content\".");
 
     option(u"binary");
     help(u"binary", u"Specify that all input files are binary, regardless of their file name.");

@@ -613,6 +613,9 @@ ts::UString ts::SectionFile::BuildFileName(const UString& file_name, FileType ty
 
 bool ts::SectionFile::load(const UString& file_name, Report& report, FileType type)
 {
+    if (xml::Document::IsInlineXML(file_name)) {
+        return loadXML(file_name, report);
+    }
     switch (GetFileType(file_name, type)) {
         case BINARY:
             return loadBinary(file_name, report);

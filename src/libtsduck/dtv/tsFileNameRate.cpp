@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsFileNameRate.h"
+#include "tsxmlDocument.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -38,6 +39,8 @@ TSDUCK_SOURCE;
 
 ts::FileNameRate::FileNameRate(const UString& name, MilliSecond rep) :
     file_name(name),
+    display_name(xml::Document::DisplayFileName(file_name)),
+    inline_xml(xml::Document::IsInlineXML(file_name)),
     file_date(),
     repetition(rep) ,
     retry_count(1)
@@ -66,7 +69,7 @@ bool ts::FileNameRate::operator<(const FileNameRate& other) const
 
 bool ts::FileNameRate::scanFile(size_t retry, Report& report)
 {
-    if (file_name.empty()) {
+    if (file_name.empty() || inline_xml) {
         // No file, no change...
         return false;
     }
@@ -92,7 +95,7 @@ bool ts::FileNameRate::scanFile(size_t retry, Report& report)
 size_t ts::FileNameRateList::scanFiles(size_t retry, Report& report)
 {
     size_t count = 0;
-    for (iterator it = begin(); it != end(); ++it) {
+    for (auto it = begin(); it != end(); ++it) {
         if (it->scanFile(retry, report)) {
             ++count;
         }
@@ -119,19 +122,21 @@ bool ts::FileNameRateList::getArgs(Args& args, const UChar* option_name, MilliSe
     for (size_t i = 0; i < strings.size(); ++i) {
         const UString::size_type eq = strings[i].find('=');
         FileNameRate file;
-        if (eq == UString::npos) {
-            // No '=' found
+        file.repetition = default_rate;
+        file.inline_xml = xml::Document::IsInlineXML(strings[i]);
+        if (file.inline_xml || eq == UString::npos) {
+            // No '=' found, no repetition rate specified.
             file.file_name = strings[i];
-            file.repetition = default_rate;
         }
         else {
+            // A repetition rate is specified after '='.
             file.file_name = strings[i].substr(0, eq);
             if (!strings[i].substr(eq + 1).toInteger(file.repetition) || file.repetition <= 0) {
                 args.error(u"invalid repetition rate for file " + file.file_name);
-                file.repetition = default_rate;
                 success = false;
             }
         }
+        file.display_name = xml::Document::DisplayFileName(file.file_name);
         push_back(file);
     }
 
