@@ -122,14 +122,14 @@ namespace ts {
         // }
         uint8_t bitstream_restriction_flag;                    //!< bitstream_restriction_flag
         // if (bitstream_restriction_flag ) {
-            uint8_t  tiles_fixed_structure_flag;               //!<
-            uint8_t  motion_vectors_over_pic_boundaries_flag;  //!<
-            uint8_t  restricted_ref_pic_lists_flag;            //!<
-            uint32_t min_spatial_segmentation_idc;             //!<
-            uint32_t max_bytes_per_pic_denom;                  //!<
-            uint32_t max_bits_per_min_cu_denom;                //!<
-            uint32_t log2_max_mv_length_horizontal;            //!<
-            uint32_t log2_max_mv_length_vertical;              //!<
+            uint8_t  tiles_fixed_structure_flag;               //!< tiles_fixed_structure_flag
+            uint8_t  motion_vectors_over_pic_boundaries_flag;  //!< motion_vectors_over_pic_boundaries_flag
+            uint8_t  restricted_ref_pic_lists_flag;            //!< restricted_ref_pic_lists_flag
+            uint32_t min_spatial_segmentation_idc;             //!< min_spatial_segmentation_idc
+            uint32_t max_bytes_per_pic_denom;                  //!< max_bytes_per_pic_denom
+            uint32_t max_bits_per_min_cu_denom;                //!< max_bits_per_min_cu_denom
+            uint32_t log2_max_mv_length_horizontal;            //!< log2_max_mv_length_horizontal
+            uint32_t log2_max_mv_length_vertical;              //!< log2_max_mv_length_vertical
         // }
     };
 }
