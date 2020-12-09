@@ -530,6 +530,23 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"A synonym for '" + UString::Join(options, u" ") + u"'. "
                   u"This is a handy shortcut when working on South American ISDB-Tb transport streams.");
     }
+
+    // Option --usa triggers different options in different sets of options.
+    if (cmdOptionsMask & (CMD_STANDARDS | CMD_HF_REGION)) {
+
+        // Build help text. Same principla as --japan.
+        UStringList options;
+        if (_definedCmdOptions & CMD_STANDARDS) {
+            options.push_back(u"--atsc");
+        }
+        if (_definedCmdOptions & CMD_HF_REGION) {
+            options.push_back(u"--hf-band-region usa");
+        }
+        args.option(u"usa", 0);
+        args.help(u"usa",
+                  u"A synonym for '" + UString::Join(options, u" ") + u"'. "
+                  u"This is a handy shortcut when working on North American transport streams.");
+    }
 }
 
 

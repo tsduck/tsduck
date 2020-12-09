@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.25-2114
+VERSION 3.25-2119
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -13,6 +13,9 @@ VERSION 3.25-2114
     - Option --save-es in plugin "pes".
     - Option --extended-info in "tslsdvb" (--verbose no longer displays the
       extremely verbose graph, use --extended-info for this).
+    - Option --usa in "tsanalyze", "tsdate", "tsp", "tspsi", "tsscan",
+      "tstabcomp", "tstabdump", "tstables", "tsterinfo" and plugins "dvb",
+      "analyze", "psi", "tables".
 
 -------------------------------------------------------------------------------
 
