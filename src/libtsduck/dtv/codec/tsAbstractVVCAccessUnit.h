@@ -66,6 +66,6 @@ namespace ts {
 
     protected:
         // Inherited.
-        virtual bool parseHeader(const uint8_t*&, size_t&) override;
+        virtual bool parseHeader(const uint8_t*&, size_t&, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
     };
 }

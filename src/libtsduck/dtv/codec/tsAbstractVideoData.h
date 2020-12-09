@@ -74,9 +74,10 @@ namespace ts {
         //! The data are marked as valid or invalid.
         //! @param [in] addr Address of the binary data to parse.
         //! @param [in] size Size in bytes of the binary data to parse.
+        //! @param [in] params Additional parameters. May be needed by some structures.
         //! @return The @link valid @endlink flag.
         //!
-        virtual bool parse(const uint8_t* addr, size_t size) = 0;
+        virtual bool parse(const uint8_t* addr, size_t size, std::initializer_list<uint32_t> params = std::initializer_list<uint32_t>()) = 0;
 
         //!
         //! Valid flag.
@@ -85,9 +86,6 @@ namespace ts {
         bool valid;
 
     protected:
-        TS_PUSH_WARNING()
-        TS_MSC_NOWARNING(4127) // conditional expression is constant
-
         //!
         //! Display helper for subclasses.
         //! Display an integer value.
@@ -100,14 +98,7 @@ namespace ts {
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         void disp(std::ostream& out, const UString& margin, const UChar* name, INT n) const
         {
-            out << margin << name << " = ";
-            if (sizeof(INT) < 2) {
-                out << int (n);
-            }
-            else {
-                out << n;
-            }
-            out << std::endl;
+            out << margin << name << " = " << int64_t(n) << std::endl;
         }
 
         //!
@@ -123,17 +114,8 @@ namespace ts {
         void disp(std::ostream& out, const UString& margin, const UChar* name, std::vector<INT> n) const
         {
             for (size_t i = 0; i < n.size(); ++i) {
-                out << margin << name << "[" << i << "] = ";
-                if (sizeof(INT) < 2) {
-                    out << int(n[i]);
-                }
-                else {
-                    out << n[i];
-                }
-                out << std::endl;
+                out << margin << name << "[" << i << "] = " << int64_t(n[i]) << std::endl;
             }
         }
-
-        TS_POP_WARNING()
     };
 }

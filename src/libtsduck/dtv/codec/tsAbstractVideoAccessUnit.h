@@ -56,7 +56,7 @@ namespace ts {
 
         // Implementation of AbstractVideoData interface.
         virtual void clear() override;
-        virtual bool parse(const uint8_t*, size_t) override;
+        virtual bool parse(const uint8_t*, size_t, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
 
         // Validity of RBSP trailing bits
         bool   rbsp_trailing_bits_valid;  //!< rbsp_trailing_bits_valid
@@ -69,17 +69,19 @@ namespace ts {
         //! The data are marked as valid or invalid.
         //! @param [in,out] addr Address of the binary data to parse. Adjusted after header.
         //! @param [in,out] size Size in bytes of the binary data to parse. Adjusted as remaining size after header.
+        //! @param [in] params Additional parameters. May be needed by some structures.
         //! @return The @link valid @endlink flag.
         //!
-        virtual bool parseHeader(const uint8_t*& addr, size_t& size) = 0;
+        virtual bool parseHeader(const uint8_t*& addr, size_t& size, std::initializer_list<uint32_t> params = std::initializer_list<uint32_t>()) = 0;
 
         //!
         //! Parse the body of the access unit up to but not including the rbsp_trailing_bits.
         //! Must be reimplemented by subclasses.
         //! The data are marked as valid or invalid.
         //! @param [in,out] parser The parser of an AVC-like video stream.
+        //! @param [in] params Additional parameters. May be needed by some structures.
         //! @return The @link valid @endlink flag.
         //!
-        virtual bool parseBody(AVCParser& parser) = 0;
+        virtual bool parseBody(AVCParser& parser, std::initializer_list<uint32_t> params = std::initializer_list<uint32_t>()) = 0;
     };
 }

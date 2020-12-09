@@ -76,12 +76,12 @@ void ts::AVCHRDParameters::clear()
 // Parse a memory area.
 //----------------------------------------------------------------------------
 
-bool ts::AVCHRDParameters::parse(const uint8_t* data, size_t size)
+bool ts::AVCHRDParameters::parse(const uint8_t* data, size_t size, std::initializer_list<uint32_t> params)
 {
-    return SuperClass::parse(data, size);
+    return SuperClass::parse(data, size, params);
 }
 
-bool ts::AVCHRDParameters::parse(AVCParser& parser)
+bool ts::AVCHRDParameters::parse(AVCParser& parser, std::initializer_list<uint32_t>)
 {
     clear();
 

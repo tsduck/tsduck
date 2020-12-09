@@ -61,8 +61,8 @@ namespace ts {
 
         // Inherited methods
         virtual void clear() override;
-        virtual bool parse(const uint8_t* data, size_t size) override;
-        virtual bool parse(AVCParser&) override;
+        virtual bool parse(const uint8_t* data, size_t siz, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
+        virtual bool parse(AVCParser&, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
         virtual std::ostream& display(std::ostream& = std::cout, const UString& margin = UString()) const override;
 
         // HRD parameters fields.

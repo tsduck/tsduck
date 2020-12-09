@@ -59,7 +59,7 @@ void ts::AVCAccessUnitDelimiter::clear()
 // Parse the body of the binary access unit. Return the "valid" flag.
 //----------------------------------------------------------------------------
 
-bool ts::AVCAccessUnitDelimiter::parseBody(AVCParser& parser)
+bool ts::AVCAccessUnitDelimiter::parseBody(AVCParser& parser, std::initializer_list<uint32_t>)
 {
     return nal_unit_type == AVC_AUT_DELIMITER && parser.u(primary_pic_type, 3);
 }

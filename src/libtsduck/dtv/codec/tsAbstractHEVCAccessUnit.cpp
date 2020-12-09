@@ -64,7 +64,7 @@ void ts::AbstractHEVCAccessUnit::clear()
 // Parse the HEVC access unit header.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractHEVCAccessUnit::parseHeader(const uint8_t*& data, size_t& size)
+bool ts::AbstractHEVCAccessUnit::parseHeader(const uint8_t*& data, size_t& size, std::initializer_list<uint32_t>)
 {
     if (data == nullptr || size < 2) {
         return false;

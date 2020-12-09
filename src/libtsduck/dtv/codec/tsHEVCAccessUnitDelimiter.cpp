@@ -59,7 +59,7 @@ void ts::HEVCAccessUnitDelimiter::clear()
 // Parse the body of the binary access unit. Return the "valid" flag.
 //----------------------------------------------------------------------------
 
-bool ts::HEVCAccessUnitDelimiter::parseBody(AVCParser& parser)
+bool ts::HEVCAccessUnitDelimiter::parseBody(AVCParser& parser, std::initializer_list<uint32_t>)
 {
     return nal_unit_type == HEVC_AUT_AUD_NUT && parser.u(pic_type, 3);
 }
