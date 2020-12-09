@@ -168,6 +168,7 @@ namespace ts {
         //!
         //! Load a binary or XML file.
         //! @param [in] file_name XML file name.
+        //! If the file name starts with "<?xml", this is considered as "inline XML content".
         //! @param [in,out] report Where to report errors.
         //! @param [in] type File type. If UNSPECIFIED, the file type is based on the file name.
         //! @return True on success, false on error.
@@ -186,6 +187,7 @@ namespace ts {
         //!
         //! Load an XML file.
         //! @param [in] file_name XML file name.
+        //! If the file name starts with "<?xml", this is considered as "inline XML content".
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!

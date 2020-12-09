@@ -80,6 +80,8 @@ Options::Options(int argc, char *argv[]) :
 {
     xml_tweaks.defineArgs(*this);
 
+    setIntro(u"Any input XML file name can be replaced with \"inline XML content\", starting with \"<?xml\".");
+
     option(u"", 0, STRING, 0, UNLIMITED_COUNT);
     help(u"", u"Specify the list of input files. If any is specified as '-', the standard input is used.");
 
@@ -158,7 +160,6 @@ Options::Options(int argc, char *argv[]) :
         if (*it == u"-") {
             it->clear();
         }
-
     }
 
     exitOnError();
@@ -194,19 +195,19 @@ int MainCode(int argc, char *argv[])
     for (size_t i = 0; i < opt.infiles.size(); ++i) {
 
         const ts::UString& file_name(opt.infiles[i]);
-        const ts::UString display_name(file_name.empty() ? u"standard input" : file_name);
+        const ts::UString display_name(ts::xml::Document::DisplayFileName(file_name, true));
 
         // Load the input file.
         ts::xml::Document doc(opt);
         doc.setTweaks(opt.xml_tweaks);
-        bool ok = file_name.empty() ? doc.load(std::cin) : doc.load(file_name, false);
+        bool ok = doc.load(file_name, false, true);
         if (!ok) {
             opt.error(u"error loading %s", {display_name});
         }
 
         // Validate the file according to the model.
         if (ok && !opt.model.empty() && !model.validate(doc)) {
-            opt.error(u"file %s is not conformant with the model", {display_name});
+            opt.error(u"%s is not conformant with the XML model", {display_name});
             ok = false;
         }
 
@@ -215,10 +216,7 @@ int MainCode(int argc, char *argv[])
 
         // Output the modified / reformatted document.
         if (ok && opt.reformat) {
-            ts::TextFormatter printer(opt);
-            printer.setIndentSize(opt.indent);
-            printer.setStream(std::cout);
-            doc.print(printer);
+            doc.save(u"", opt.indent, true);
         }
     }
     return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;

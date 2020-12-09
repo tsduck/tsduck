@@ -42,12 +42,15 @@ namespace ts {
     //! Representation of a file name and an associated repetition rate.
     //! @ingroup cmd
     //!
-    struct TSDUCKDLL FileNameRate
+    class TSDUCKDLL FileNameRate
     {
-        UString     file_name;    //!< File name.
-        ts::Time    file_date;    //!< Last modification date of file.
-        MilliSecond repetition;   //!< Repetition rate in milliseconds.
-        size_t      retry_count;  //!< Number of allowed retry in case of error when using the file.
+    public:
+        UString     file_name;     //!< File name.
+        UString     display_name;  //!< File name in display form.
+        bool        inline_xml;    //!< File name contains inline XML text (not a real file name).
+        Time        file_date;     //!< Last modification date of file.
+        MilliSecond repetition;    //!< Repetition rate in milliseconds.
+        size_t      retry_count;   //!< Number of allowed retry in case of error when using the file.
 
         //!
         //! Default constructor.

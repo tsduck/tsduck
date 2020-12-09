@@ -70,6 +70,7 @@ void ts::PatchXML::defineArgs(Args& args) const
     args.option(u"patch-xml", 0, Args::STRING, 0, Args::UNLIMITED_COUNT);
     args.help(u"patch-xml", u"filename",
               u"Specify an XML patch file which is applied to all tables on the fly. "
+              u"If the name starts with \"<?xml\", it is considered as \"inline XML content\". "
               u"Several --patch-xml options can be specified. "
               u"Patch files are sequentially applied on each table.");
 }
@@ -121,7 +122,7 @@ bool ts::PatchXML::loadPatchFiles(const xml::Tweaks& tweaks)
         }
         else {
             ok = false;
-            _duck.report().error(u"error loading patch file %s", {_patchFiles[i]});
+            _duck.report().error(u"error loading patch file %s", {xml::Document::DisplayFileName(_patchFiles[i])});
         }
     }
     return ok;

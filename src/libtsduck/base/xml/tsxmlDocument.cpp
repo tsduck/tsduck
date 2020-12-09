@@ -70,6 +70,34 @@ const ts::xml::Tweaks& ts::xml::Document::tweaks() const
 
 
 //----------------------------------------------------------------------------
+// Check if a file name is in fact inline XML content instead of a file name.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Document::IsInlineXML(const UString& name)
+{
+    return name.startWith(u"<?xml", CASE_INSENSITIVE);
+}
+
+
+//----------------------------------------------------------------------------
+// Get a suitable display name for an XML file name or inline content.
+//----------------------------------------------------------------------------
+
+ts::UString ts::xml::Document::DisplayFileName(const UString& name, bool stdInputIfEmpty)
+{
+    if (name.empty() && stdInputIfEmpty) {
+        return u"standard input";
+    }
+    else if (IsInlineXML(name)) {
+        return u"inline XML content";
+    }
+    else {
+        return name;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Parse an XML document.
 //----------------------------------------------------------------------------
 
@@ -91,8 +119,19 @@ bool ts::xml::Document::load(std::istream& strm)
     return parser.loadStream(strm) && parseNode(parser, nullptr);
 }
 
-bool ts::xml::Document::load(const UString& fileName, bool search)
+bool ts::xml::Document::load(const UString& fileName, bool search, bool stdInputIfEmpty)
 {
+    // Specific case of inline XML content, when the string is not the name
+    // of a file but directly an XML content.
+    if (IsInlineXML(fileName)) {
+        return parse(fileName);
+    }
+
+    // Specific case of the standard input.
+    if (stdInputIfEmpty && fileName.empty()) {
+        return load(std::cin);
+    }
+
     // Actual file name to load after optional search in directories.
     const UString actualFileName(search ? SearchConfigurationFile(fileName) : fileName);
 
@@ -192,18 +231,21 @@ bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
 // Save an XML file.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Document::save(const UString& fileName, size_t indent)
+bool ts::xml::Document::save(const UString& fileName, size_t indent, bool stdOutputIfEmpty)
 {
     TextFormatter out(report());
     out.setIndentSize(indent);
-    if (!out.setFile(fileName)) {
+
+    if (stdOutputIfEmpty && fileName.empty()) {
+        out.setStream(std::cout);
+    }
+    else if (!out.setFile(fileName)) {
         return false;
     }
-    else {
-        print(out);
-        out.close();
-        return true;
-    }
+
+    print(out);
+    out.close();
+    return true;
 }
 
 

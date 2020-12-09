@@ -98,7 +98,8 @@ Options::Options(int argc, char *argv[]) :
     help(u"",
          u"XML source files to compile or binary table files to decompile. By default, "
          u"files ending in .xml are compiled and files ending in .bin are decompiled. "
-         u"For other files, explicitly specify --compile or --decompile.");
+         u"For other files, explicitly specify --compile or --decompile.\n\n"
+         u"If an input file name starts with \"<?xml\", it is considered as \"inline XML content\".");
 
     option(u"compile", 'c');
     help(u"compile",

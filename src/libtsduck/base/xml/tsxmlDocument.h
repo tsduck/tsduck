@@ -76,6 +76,8 @@ namespace ts {
             //!
             //! Load and parse an XML file.
             //! @param [in] fileName Name of the XML file to load.
+            //! If @a fileName starts with "<?xml", this is considered as "inline XML content".
+            //! The document is loaded from this string instead of reading a file.
             //! @param [in] search If true, use a search algorithm for the XML file:
             //! If @a fileName is not found and does not contain any directory part, search this file
             //! in the following places:
@@ -83,9 +85,10 @@ namespace ts {
             //! - All directories in @c TSPLUGINS_PATH environment variable.
             //! - All directories in @c LD_LIBRARY_PATH environment variable (UNIX only).
             //! - All directories in @c PATH (UNIX) or @c Path (Windows) environment variable.
+            //! @param [in] stdInputIfEmpty If true and if @a fileName is empty, reads the standard input.
             //! @return True on success, false on error.
             //!
-            bool load(const UString& fileName, bool search = true);
+            bool load(const UString& fileName, bool search = true, bool stdInputIfEmpty = false);
 
             //!
             //! Load and parse an XML file.
@@ -98,9 +101,25 @@ namespace ts {
             //! Save an XML file.
             //! @param [in] fileName Name of the XML file to save.
             //! @param [in] indent Indentation width of each level.
+            //! @param [in] stdOutputIfEmpty If true and if @a fileName is empty, writes to the standard output.
             //! @return True on success, false on error.
             //!
-            bool save(const UString& fileName, size_t indent = 2);
+            bool save(const UString& fileName, size_t indent = 2, bool stdOutputIfEmpty = false);
+
+            //!
+            //! Check if a "file name" is in fact inline XML content instead of a file name.
+            //! @param [in] name A file name string.
+            //! @return True if @a name contains inline XML content, false otherwise.
+            //!
+            static bool IsInlineXML(const UString& name);
+
+            //!
+            //! Get a suitable display name for an XML file name or inline content.
+            //! @param [in] name A file name string.
+            //! @param [in] stdInputIfEmpty If true and if @a fileName is empty, reads the standard input.
+            //! @return A suitable string to display.
+            //!
+            static UString DisplayFileName(const UString& name, bool stdInputIfEmpty = false);
 
             //!
             //! Get the root element of the document.
