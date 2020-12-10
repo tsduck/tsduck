@@ -35,9 +35,10 @@
 #include "tsPluginRepository.h"
 #include "tsPESDemux.h"
 #include "tsAVCAccessUnitDelimiter.h"
-#include "tsHEVCAccessUnitDelimiter.h"
-#include "tsVVCAccessUnitDelimiter.h"
 #include "tsAVCSequenceParameterSet.h"
+#include "tsHEVCAccessUnitDelimiter.h"
+#include "tsHEVCSequenceParameterSet.h"
+#include "tsVVCAccessUnitDelimiter.h"
 #include "tsAlgorithm.h"
 #include "tsNames.h"
 #include "tsMemory.h"
@@ -224,7 +225,7 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
          u"Display PES packets with a payload the size (in bytes) of which is equal "
          u"to or greater than the specified value.");
 
-    option(u"nal-unit-type", 0, INTEGER, 0, UNLIMITED_COUNT, 0, 31);
+    option(u"nal-unit-type", 0, UINT8, 0, UNLIMITED_COUNT);
     help(u"nal-unit-type",
          u"AVC (H.264), HEVC (H.265) or VVC (H.266) NALunit filter: "
          u"with --avc-access-unit, select access units with this type "
@@ -646,7 +647,7 @@ void ts::PESPlugin::handleAccessUnit(PESDemux&, const PESPacket& pes, uint8_t au
         *_out << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", {offset, size}) << std::endl;
 
         size_t dsize = size;
-        *_out << "  AVC access unit";
+        *_out << "  " << CodecTypeEnum.name(codec) << " access unit";
         if (_max_dump_size > 0 && dsize > _max_dump_size) {
             dsize = _max_dump_size;
             *_out << " (truncated)";
@@ -665,6 +666,10 @@ void ts::PESPlugin::handleAccessUnit(PESDemux&, const PESPacket& pes, uint8_t au
         else if (codec == CodecType::HEVC && au_type == HEVC_AUT_AUD_NUT) {
             const HEVCAccessUnitDelimiter aud(pes.payload() + offset, size);
             aud.display(*_out, u"  ");
+        }
+        else if (codec == CodecType::HEVC && au_type == HEVC_AUT_SPS_NUT) {
+            const HEVCSequenceParameterSet sps(pes.payload() + offset, size);
+            sps.display(*_out, u"  ");
         }
         else if (codec == CodecType::VVC && au_type == VVC_AUT_AUD_NUT) {
             const VVCAccessUnitDelimiter aud(pes.payload() + offset, size);
