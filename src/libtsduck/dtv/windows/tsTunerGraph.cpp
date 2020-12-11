@@ -337,7 +337,7 @@ bool ts::TunerGraph::buildGraphAtTee(const ComPtr<::IBaseFilter>& base_filter, R
     // Not successful, cleanup everything.
     // Cleanup the graph downstream the tuner filter.
     // This will also remove any optional receiver filter between the tuner and the tee.
-    cleanupDownstream(_tuner_filter.pointer(), debug_report);
+    cleanupDownstream(base_filter.pointer(), debug_report);
 
     // Remove all created filters from the graph. Ignore errors.
     // This is necessary if a filter was created and added to the graph but
