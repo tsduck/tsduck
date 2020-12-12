@@ -74,7 +74,7 @@ bool ts::HEVCScalingListData::parse(AVCParser& parser, std::initializer_list<uin
                 valid = valid && parser.ue(sc.scaling_list_pred_matrix_id_delta);
             }
             else {
-                const size_t coefNum = std::min<size_t>(64, (1 << (4 + (sizeId << 1))));
+                const size_t coefNum = std::min<size_t>(64, (size_t(1) << (4 + size_t(sizeId << 1))));
                 if (sizeId > 1) {
                     valid = valid && parser.se(sc.scaling_list_dc_coef_minus8);
                 }
