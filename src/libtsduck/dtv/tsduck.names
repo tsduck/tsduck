@@ -1600,6 +1600,13 @@ Bits = 8
 122 = high 4:2:2 profile
 244 = high 4:4:4 predictive profile
 
+[HEVCProfile]
+Bits = 5
+0 = no profile
+1 = main profile
+2 = main 10 profile
+3 = main still profile
+
 [AVCSEIType]
 # AVC SEI type (see H.264 section D.1)
 Bits = 8

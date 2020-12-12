@@ -61,6 +61,12 @@ namespace ts {
         //!
         HEVCProfileTierLevel(const uint8_t* data = nullptr, size_t size = 0, bool profilePresentFlag = false, size_t maxNumSubLayersMinus1 = 0);
 
+        //!
+        //! Get the profile value.
+        //! @return The profile value.
+        //!
+        uint8_t profile() const;
+
         // Inherited methods
         virtual void clear() override;
         virtual bool parse(const uint8_t*, size_t, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;

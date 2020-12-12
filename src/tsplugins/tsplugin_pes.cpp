@@ -123,6 +123,7 @@ namespace ts {
         virtual void handleAccessUnit(PESDemux&, const PESPacket&, uint8_t, size_t, size_t) override;
         virtual void handleSEI(PESDemux& demux, const PESPacket& packet, uint32_t sei_type, size_t offset, size_t size) override;
         virtual void handleNewAVCAttributes(PESDemux&, const PESPacket&, const AVCAttributes&) override;
+        virtual void handleNewHEVCAttributes(PESDemux&, const PESPacket&, const HEVCAttributes&) override;
         virtual void handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket&, const MPEG2AudioAttributes&) override;
         virtual void handleNewAC3Attributes(PESDemux&, const PESPacket&, const AC3Attributes&) override;
     };
@@ -773,6 +774,20 @@ void ts::PESPlugin::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, cons
 {
     if (_video_attributes) {
         *_out << "* " << prefix(pkt) << ", stream_id " << names::StreamId(pkt.getStreamId(), names::FIRST) << ", AVC video attributes:" << std::endl;
+        *_out << "  " << va << std::endl;
+        lastDump(*_out);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// This hook is invoked when new HEVC attributes are found in a video PID
+//----------------------------------------------------------------------------
+
+void ts::PESPlugin::handleNewHEVCAttributes(PESDemux&, const PESPacket& pkt, const HEVCAttributes& va)
+{
+    if (_video_attributes) {
+        *_out << "* " << prefix(pkt) << ", stream_id " << names::StreamId(pkt.getStreamId(), names::FIRST) << ", HEVC video attributes:" << std::endl;
         *_out << "  " << va << std::endl;
         lastDump(*_out);
     }
