@@ -27,8 +27,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsAVCAttributes.h"
-#include "tsAVCSequenceParameterSet.h"
+#include "tsHEVCAttributes.h"
+#include "tsHEVCSequenceParameterSet.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 // Default constructor.
 //----------------------------------------------------------------------------
 
-ts::AVCAttributes::AVCAttributes() :
+ts::HEVCAttributes::HEVCAttributes() :
     _hsize(0),
     _vsize(0),
     _profile(0),
@@ -51,7 +51,7 @@ ts::AVCAttributes::AVCAttributes() :
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-ts::UString ts::AVCAttributes::toString() const
+ts::UString ts::HEVCAttributes::toString() const
 {
     if (!_is_valid) {
         return UString();
@@ -70,34 +70,34 @@ ts::UString ts::AVCAttributes::toString() const
 
 
 //----------------------------------------------------------------------------
-// Get AVC names.
+// Get HEVC names.
 //----------------------------------------------------------------------------
 
-ts::UString ts::AVCAttributes::levelName() const
+ts::UString ts::HEVCAttributes::levelName() const
 {
-    return _is_valid ? UString::Format(u"%d.%d", {_level / 10, _level % 10}) : UString();
+    return _is_valid ? UString::Format(u"%d.%d", {_level / 30, (_level / 3) % 10}) : UString();
 }
 
-ts::UString ts::AVCAttributes::profileName() const
+ts::UString ts::HEVCAttributes::profileName() const
 {
-    return _is_valid ? names::AVCProfile(_profile) : UString();
+    return _is_valid? NameFromSection(u"HEVCProfile", _profile) : UString();
 }
 
-ts::UString ts::AVCAttributes::chromaFormatName() const
+ts::UString ts::HEVCAttributes::chromaFormatName() const
 {
     return _is_valid ? names::ChromaFormat(_chroma) : UString();
 }
 
 
 //----------------------------------------------------------------------------
-// Provides an AVC access unit. Return true if the AVCAttributes object
+// Provides an HEVC access unit. Return true if the HEVCAttributes object
 // becomes valid or has new values.
 //----------------------------------------------------------------------------
 
-bool ts::AVCAttributes::moreBinaryData(const uint8_t* data, size_t size)
+bool ts::HEVCAttributes::moreBinaryData(const uint8_t* data, size_t size)
 {
-    // Parse AVC access unit. We are interested in "sequence parameter set" only.
-    AVCSequenceParameterSet params(data, size);
+    // Parse HEVC access unit. We are interested in "sequence parameter set" only.
+    HEVCSequenceParameterSet params(data, size);
 
     if (!params.valid) {
         return false;
@@ -106,19 +106,20 @@ bool ts::AVCAttributes::moreBinaryData(const uint8_t* data, size_t size)
     // Compute final values.
     const size_t hsize = params.frameWidth();
     const size_t vsize = params.frameHeight();
+    const int profile = int(params.profile_tier_level.profile());
     const uint8_t chroma = params.chroma();
 
     // Check modification
-    bool changed = !_is_valid || _hsize != hsize || _vsize != vsize || _chroma != chroma ||
-        _profile != int(params.profile_idc) || _level != int(params.level_idc);
+    const bool changed = !_is_valid || _hsize != hsize || _vsize != vsize || _chroma != chroma || _profile != profile ||
+        _level != int(params.profile_tier_level.general_level_idc);
 
     // Commit final values
     if (changed) {
         _hsize = hsize;
         _vsize = vsize;
         _chroma = chroma;
-        _profile = int(params.profile_idc);
-        _level = int(params.level_idc);
+        _profile = profile;
+        _level = int(params.profile_tier_level.general_level_idc);
         _is_valid = true;
     }
 

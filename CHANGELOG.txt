@@ -2,13 +2,14 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.25-2119
+VERSION 3.25-2122
 
 [IMP] Improvements on existing commands and plugins:
 
   * Everywhere an input XML file name is expected, it is possible to specify
     an "inline XML content" directly. The string is recognized as an inline
     XML content and not a file name when it starts with "<?xml".
+  * HEVC video attributes are now extracted and reported.
   * New options in exiting commands and plugins:
     - Option --save-es in plugin "pes".
     - Option --extended-info in "tslsdvb" (--verbose no longer displays the

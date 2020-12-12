@@ -294,6 +294,7 @@
 #include "tsHash.h"
 #include "tsHEVC.h"
 #include "tsHEVCAccessUnitDelimiter.h"
+#include "tsHEVCAttributes.h"
 #include "tsHEVCHierarchyExtensionDescriptor.h"
 #include "tsHEVCHRDParameters.h"
 #include "tsHEVCProfileTierLevel.h"

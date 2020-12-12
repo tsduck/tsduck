@@ -37,6 +37,7 @@
 #include "tsMPEG2AudioAttributes.h"
 #include "tsMPEG2VideoAttributes.h"
 #include "tsAVCAttributes.h"
+#include "tsHEVCAttributes.h"
 #include "tsAC3Attributes.h"
 
 namespace ts {
@@ -103,6 +104,14 @@ namespace ts {
         //! @param [in] attr Video attributes.
         //!
         virtual void handleNewAVCAttributes(PESDemux& demux, const PESPacket& packet, const AVCAttributes& attr);
+
+        //!
+        //! This hook is invoked when new HEVC attributes are found in a video PID
+        //! @param [in,out] demux A reference to the PES demux.
+        //! @param [in] packet The demultiplexed PES packet.
+        //! @param [in] attr Video attributes.
+        //!
+        virtual void handleNewHEVCAttributes(PESDemux& demux, const PESPacket& packet, const HEVCAttributes& attr);
 
         //!
         //! This hook is invoked when an intra-code image is found.

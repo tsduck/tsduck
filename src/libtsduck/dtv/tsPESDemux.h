@@ -133,6 +133,14 @@ namespace ts {
         void getAVCAttributes(PID pid, AVCAttributes& attr) const;
 
         //!
+        //! Get the current HEVC video attributes on the specified PID.
+        //! @param [in] pid The PID to check.
+        //! @param [out] attr The returned attributes.
+        //! Invoke its isValid() method to verify its validity.
+        //!
+        void getHEVCAttributes(PID pid, HEVCAttributes& attr) const;
+
+        //!
         //! Get the current AC-3 audio attributes on the specified PID.
         //! @param [in] pid The PID to check.
         //! @param [out] attr The returned attributes.
@@ -178,6 +186,7 @@ namespace ts {
             MPEG2AudioAttributes audio;       // Current audio attributes
             MPEG2VideoAttributes video;       // Current video attributes (MPEG-1, MPEG-2)
             AVCAttributes        avc;         // Current AVC attributes
+            HEVCAttributes       hevc;        // Current HEVC attributes
             AC3Attributes        ac3;         // Current AC-3 attributes
             PacketCounter        ac3_count;   // Number of PES packets with contents which looks like AC-3
 

@@ -40,6 +40,7 @@ IMPL(handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket&, const MPEG2Video
 IMPL(handleAccessUnit(PESDemux&, const PESPacket&, uint8_t, size_t, size_t))
 IMPL(handleSEI(PESDemux&, const PESPacket&, uint32_t, size_t , size_t size))
 IMPL(handleNewAVCAttributes(PESDemux&, const PESPacket&, const AVCAttributes&))
+IMPL(handleNewHEVCAttributes(PESDemux&, const PESPacket&, const HEVCAttributes&))
 IMPL(handleIntraImage(PESDemux&, const PESPacket&, size_t))
 IMPL(handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket&, const MPEG2AudioAttributes&))
 IMPL(handleNewAC3Attributes(PESDemux&, const PESPacket&, const AC3Attributes&))

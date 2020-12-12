@@ -1301,6 +1301,17 @@ void ts::TSAnalyzer::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, con
 
 
 //----------------------------------------------------------------------------
+// This hook is invoked when new HEVC attributes are found in a video PID
+// (Implementation of PESHandlerInterface).
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::handleNewHEVCAttributes(PESDemux&, const PESPacket& pkt, const HEVCAttributes& attr)
+{
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toString());
+}
+
+
+//----------------------------------------------------------------------------
 // This hook is invoked when a new PID carrying T2-MI is available.
 // (Implementation of T2MIHandlerInterface).
 //----------------------------------------------------------------------------

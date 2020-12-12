@@ -97,7 +97,7 @@ bool ts::HEVCScalingListData::parse(AVCParser& parser, std::initializer_list<uin
 
 std::ostream& ts::HEVCScalingListData::display(std::ostream& out, const UString& margin) const
 {
-#define DISP(n) out << margin << "[" << sizeId << "][" << matrixId << "]." #n " = " << int64_t(sc.n) << std::endl
+#define DISP(n) out << margin << #n "[" << sizeId << "][" << matrixId << "] = " << int64_t(sc.n) << std::endl
 
     if (valid) {
         for (size_t sizeId = 0; sizeId < 4; sizeId++) {
@@ -112,7 +112,7 @@ std::ostream& ts::HEVCScalingListData::display(std::ostream& out, const UString&
                         DISP(scaling_list_dc_coef_minus8);
                     }
                     for (size_t i = 0; valid && i < sc.scaling_list_delta_coef.size(); i++) {
-                        out << margin << "[" << sizeId << "][" << matrixId << "].scaling_list_delta_coef = " << sc.scaling_list_delta_coef[i] << std::endl;
+                        out << margin << "scaling_list_delta_coef[" << sizeId << "][" << matrixId << "][" << i << "] = " << sc.scaling_list_delta_coef[i] << std::endl;
                     }
                 }
             }

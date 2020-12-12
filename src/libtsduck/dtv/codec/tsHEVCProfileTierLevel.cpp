@@ -123,6 +123,30 @@ void ts::HEVCProfileTierLevel::clear()
 
 
 //----------------------------------------------------------------------------
+// Get the profile value.
+//----------------------------------------------------------------------------
+
+uint8_t ts::HEVCProfileTierLevel::profile() const
+{
+    if (profile_present_flag) {
+        // Use general profile as base.
+        uint8_t prof = general_profile_idc;
+        // Look for higher compatibility.
+        for (uint8_t comp = prof + 1; comp < general_profile_compatibility_flag.size(); ++comp) {
+            if (general_profile_compatibility_flag.test(comp)) {
+                prof = comp;
+            }
+        }
+        return prof;
+    }
+    else {
+        // Unknown.
+        return 0;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Parse a memory area.
 //----------------------------------------------------------------------------
 
@@ -135,13 +159,14 @@ bool ts::HEVCProfileTierLevel::parse(AVCParser& parser, std::initializer_list<ui
 {
     clear();
     uint32_t dummy = 0;
+    uint32_t maxNumSubLayersMinus1 = 0;
 
     // The two parameters profilePresentFlag and maxNumSubLayersMinus1 must be passed in the initializer list of the parse() methods.
     valid = params.size() >= 2;
     if (valid) {
         auto iparams = params.begin();
         profile_present_flag = bool(*iparams++);
-        sub_layers.resize(size_t(*iparams) + 1);
+        maxNumSubLayersMinus1 = *iparams;
     }
 
     if (valid && profile_present_flag) {
@@ -173,16 +198,19 @@ bool ts::HEVCProfileTierLevel::parse(AVCParser& parser, std::initializer_list<ui
 
     valid = valid && parser.u(general_level_idc, 8);
 
-    for (size_t i = 0; valid && i < sub_layers.size(); ++i) {
+    sub_layers.resize(maxNumSubLayersMinus1);
+    for (size_t i = 0; valid && i < maxNumSubLayersMinus1; ++i) {
         valid = parser.u(sub_layers[i].sub_layer_profile_present_flag, 1) &&
                 parser.u(sub_layers[i].sub_layer_level_present_flag, 1);
     }
 
-    if (valid && sub_layers.size() > 1 && sub_layers.size() < 9) {
-        valid = parser.u(dummy, 2 * (9 - sub_layers.size()));
+    if (valid && maxNumSubLayersMinus1 > 0) {
+        for (uint32_t i = maxNumSubLayersMinus1; i < 8; i++) {
+            valid = parser.u(dummy, 2);
+        }
     }
 
-    for (size_t i = 0; valid && i < sub_layers.size(); ++i) {
+    for (size_t i = 0; valid && i < maxNumSubLayersMinus1; ++i) {
         SubLayerParams& sl(sub_layers[i]);
         if (sl.sub_layer_profile_present_flag) {
             valid = parser.u(sl.sub_layer_profile_space, 2) &&

@@ -109,27 +109,23 @@ ts::HEVCSequenceParameterSet::LongTermRef::LongTermRef() :
 
 
 //----------------------------------------------------------------------------
-// The various chroma information.
+// The various picture information.
 //----------------------------------------------------------------------------
 
 uint8_t ts::HEVCSequenceParameterSet::chroma() const
 {
-    return 0;  //@@@@@@@
+    // Direct value, see H.265, section 6.2.
+    return valid ? uint8_t(chroma_format_idc) : 0;
 }
-
-
-//----------------------------------------------------------------------------
-// Frame size in pixels
-//----------------------------------------------------------------------------
 
 uint32_t ts::HEVCSequenceParameterSet::frameWidth() const
 {
-    return 0;  //@@@@@@@
+    return valid ? pic_width_in_luma_samples : 0;
 }
 
 uint32_t ts::HEVCSequenceParameterSet::frameHeight() const
 {
-    return 0;  //@@@@@@@
+    return valid ? pic_height_in_luma_samples : 0;
 }
 
 
@@ -414,7 +410,7 @@ std::ostream& ts::HEVCSequenceParameterSet::display(std::ostream& out, const USt
             DISP(sps_extension_4bits);
         }
 
-        disp(out, margin, u"Chroma", chroma());
+        disp(out, margin, u"chroma", chroma());
         disp(out, margin, u"frame width", frameWidth());
         disp(out, margin, u"frame height", frameHeight());
 

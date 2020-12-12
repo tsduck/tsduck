@@ -117,16 +117,23 @@ namespace ts {
         class TSDUCKDLL ShortTermReferencePictureSet
         {
         public:
-            ShortTermReferencePictureSet();       //!< Constructor.
-            void clear();                         //!< Clear structure content.
-            struct TSDUCKDLL CurrDelta {          //!< Current / delta structure.
+            //! Constructor.
+            ShortTermReferencePictureSet();
+
+            //! Clear structure content.
+            void clear();
+
+            //! Current / delta structure.
+            struct TSDUCKDLL CurrDelta {
                 CurrDelta();                      //!< Constructor.
                 uint8_t used_by_curr_pic_flag;    //!< used_by_curr_pic_flag
                 // if (!used_by_curr_pic_flag) {
                     uint8_t use_delta_flag;       //!< use_delta_flag
                 // }
             };
-            struct TSDUCKDLL DeltaPicture {       //!< Delta picture structure.
+
+            //! Delta picture structure.
+            struct TSDUCKDLL DeltaPicture {
                 DeltaPicture();                   //!< Constructor.
                 uint32_t delta_poc_minus1;        //!< delta_poc_minus1
                 uint8_t  used_by_curr_pic_flag;   //!< used_by_curr_pic_flag
@@ -143,7 +150,7 @@ namespace ts {
                 uint8_t delta_rps_sign;                     //!< delta_rps_sign
                 uint32_t abs_delta_rps_minus1;              //!< abs_delta_rps_minus1
                 // for (j = 0; j <= NumDeltaPocs[RefRpsIdx]; j++)
-                std::vector<CurrDelta> use_cur_delta;
+                std::vector<CurrDelta> use_cur_delta;       //!< use_cur_delta
             // } else {
                 uint32_t num_negative_pics;                 //!< num_negative_pics
                 uint32_t num_positive_pics;                 //!< num_positive_pics

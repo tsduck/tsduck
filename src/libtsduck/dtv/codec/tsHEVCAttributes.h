@@ -28,8 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Video attributes for Advanced Video Coding.
-//!  AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
+//!  Video attributes for HEVC / H.265.
 //!
 //----------------------------------------------------------------------------
 
@@ -38,26 +37,24 @@
 
 namespace ts {
     //!
-    //! Video attributes for Advanced Video Coding.
+    //! Video attributes for HEVC / H.265.
     //! @ingroup mpeg
     //!
-    //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
-    //!
-    //! An AVCAttributes object is built by transmitting AVC access units
+    //! An HEVCAttributes object is built by transmitting HEVC access units
     //! (aka "NALunits"). The state of the object may change after adding a
-    //! "sequence parameter set" NALunit. Initially, an AVCAttributes object
+    //! "sequence parameter set" NALunit. Initially, an HEVCAttributes object
     //! is invalid.
     //!
-    class TSDUCKDLL AVCAttributes: public AbstractAudioVideoAttributes
+    class TSDUCKDLL HEVCAttributes: public AbstractAudioVideoAttributes
     {
     public:
         //!
         //! Default constructor.
         //!
-        AVCAttributes();
+        HEVCAttributes();
 
         // Implementation of abstract methods.
-        // The "binary data" is an AVC access unit.
+        // The "binary data" is an HEVC access unit.
         virtual bool moreBinaryData(const uint8_t*, size_t) override;
         virtual UString toString() const override;
 
@@ -74,26 +71,26 @@ namespace ts {
         size_t verticalSize() const {return _is_valid ? _vsize : 0;}
 
         //!
-        //! Get AVC profile.
-        //! @return AVC profile, 0 if unknown.
+        //! Get HEVC profile.
+        //! @return HEVC profile, 0 if unknown.
         //!
         int profile() const {return _is_valid ? _profile : 0;}
 
         //!
-        //! Get AVC profile name.
-        //! @return AVC profile as a string.
+        //! Get HEVC profile name.
+        //! @return HEVC profile as a string.
         //!
         UString profileName() const;
 
         //!
-        //! Get AVC level.
-        //! @return AVC level, 0 if unknown.
+        //! Get HEVC level.
+        //! @return HEVC level, 0 if unknown.
         //!
         int level() const {return _is_valid ? _level : 0;}
 
         //!
-        //! Get AVC level name.
-        //! @return AVC level as a string.
+        //! Get HEVC level name.
+        //! @return HEVC level as a string.
         //!
         UString levelName() const;
 
@@ -112,8 +109,8 @@ namespace ts {
     private:
         size_t  _hsize;    // Horizontal size in pixel
         size_t  _vsize;    // Vertical size in pixel
-        int     _profile;  // AVC profile
-        int     _level;    // AVC level
+        int     _profile;  // HEVC profile
+        int     _level;    // HEVC level
         uint8_t _chroma;   // Chroma format code (CHROMA_* from tsMPEG.h)
     };
 }

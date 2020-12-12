@@ -76,6 +76,7 @@ ts::PESDemux::PIDContext::PIDContext() :
     audio(),
     video(),
     avc(),
+    hevc(),
     ac3(),
     ac3_count(0)
 {
@@ -134,7 +135,7 @@ ts::CodecType ts::PESDemux::getDefaultCodec(PID pid) const
 
 void ts::PESDemux::getAudioAttributes(PID pid, MPEG2AudioAttributes& va) const
 {
-    PIDContextMap::const_iterator pci = _pids.find(pid);
+    const auto pci = _pids.find(pid);
     if (pci == _pids.end() || !pci->second.audio.isValid()) {
         va.invalidate();
     }
@@ -145,7 +146,7 @@ void ts::PESDemux::getAudioAttributes(PID pid, MPEG2AudioAttributes& va) const
 
 void ts::PESDemux::getVideoAttributes(PID pid, MPEG2VideoAttributes& va) const
 {
-    PIDContextMap::const_iterator pci = _pids.find(pid);
+    const auto pci = _pids.find(pid);
     if (pci == _pids.end() || !pci->second.video.isValid()) {
         va.invalidate();
     }
@@ -156,7 +157,7 @@ void ts::PESDemux::getVideoAttributes(PID pid, MPEG2VideoAttributes& va) const
 
 void ts::PESDemux::getAVCAttributes(PID pid, AVCAttributes& va) const
 {
-    PIDContextMap::const_iterator pci = _pids.find(pid);
+    const auto pci = _pids.find(pid);
     if (pci == _pids.end() || !pci->second.avc.isValid()) {
         va.invalidate();
     }
@@ -165,9 +166,20 @@ void ts::PESDemux::getAVCAttributes(PID pid, AVCAttributes& va) const
     }
 }
 
+void ts::PESDemux::getHEVCAttributes(PID pid, HEVCAttributes& va) const
+{
+    const auto pci = _pids.find(pid);
+    if (pci == _pids.end() || !pci->second.hevc.isValid()) {
+        va.invalidate();
+    }
+    else {
+        va = pci->second.hevc;
+    }
+}
+
 void ts::PESDemux::getAC3Attributes(PID pid, AC3Attributes& va) const
 {
-    PIDContextMap::const_iterator pci = _pids.find (pid);
+    const auto pci = _pids.find (pid);
     if (pci == _pids.end() || !pci->second.ac3.isValid()) {
         va.invalidate();
     }
@@ -178,7 +190,7 @@ void ts::PESDemux::getAC3Attributes(PID pid, AC3Attributes& va) const
 
 bool ts::PESDemux::allAC3(PID pid) const
 {
-    PIDContextMap::const_iterator pci = _pids.find(pid);
+    const auto pci = _pids.find(pid);
     return pci != _pids.end() && pci->second.pes_count > 0 && pci->second.ac3_count == pci->second.pes_count;
 }
 
@@ -210,7 +222,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
 
     // Get PID and check if context exists
     PID pid = pkt.getPID();
-    PIDContextMap::iterator pci = _pids.find(pid);
+    auto pci = _pids.find(pid);
     bool pc_exists = pci != _pids.end();
 
     // If no context established and not at a unit start, ignore packet
@@ -498,6 +510,9 @@ void ts::PESDemux::handlePESContent(PIDContext& pc, const PESPacket& pes)
             // If new attributes were found, invoke handler.
             if (codec == CodecType::AVC && pc.avc.moreBinaryData(pl_data + au_offset, au_size)) {
                 _pes_handler->handleNewAVCAttributes(*this, pes, pc.avc);
+            }
+            else if (codec == CodecType::HEVC && pc.hevc.moreBinaryData(pl_data + au_offset, au_size)) {
+                _pes_handler->handleNewHEVCAttributes(*this, pes, pc.hevc);
             }
         }
     }
