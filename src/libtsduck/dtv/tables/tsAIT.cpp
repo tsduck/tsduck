@@ -59,7 +59,7 @@ ts::AIT::AIT(uint8_t version_, bool is_current_, uint16_t application_type_, boo
 }
 
 ts::AIT::AIT(DuckContext& duck, const BinaryTable& table) :
-    AIT()
+    AIT(0, true, 0, false)
 {
     deserialize(duck, table);
 }
