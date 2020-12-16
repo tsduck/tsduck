@@ -51,8 +51,8 @@ $(BINDIR)/utest_static: $(subst $(OBJDIR)/utestPluginRepository.o,,$(OBJS)) $(ST
 
 .PHONY: test
 test: execs
-	$(BINDIR)/utest $(UTESTFLAGS)
-	$(BINDIR)/utest_static $(UTESTFLAGS)
+	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) $(BINDIR)/utest $(UTESTFLAGS)
+	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) $(BINDIR)/utest_static $(UTESTFLAGS)
 
 .PHONY: install install-devel
 install install-devel:

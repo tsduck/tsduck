@@ -34,16 +34,25 @@
 #
 #     --display : only display the binary directory, don't set PATH
 #     --debug : use debug build
+#     --bin dirname : use that directory as binary
 #
 #-----------------------------------------------------------------------------
+
+SCRIPT=$(basename "${BASH_SOURCE[0]}")
+usage() { echo >&2 "syntax: $SCRIPT [--bin dir] [--debug] [--display]"; exit 1; }
 
 # Default options.
 TARGET=release
 SHOW_PATH=false
+BINDIR=
 
 # Decode command line options.
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --bin)
+            [[ $# -gt 1 ]] || usage; shift
+            BINDIR=$(cd "$1" && pwd)
+            ;;
         --debug)
             TARGET=debug
             ;;
@@ -56,10 +65,12 @@ done
 
 # Build binary directory.
 ROOTDIR=$(cd $(dirname "${BASH_SOURCE[0]}")/..; pwd)
-ARCH=$(uname -m | sed -e 's/i.86/i386/' -e 's/^arm.*$/arm/')
-HOST=$(hostname | sed -e 's/\..*//')
-BINDIR="$ROOTDIR/bin/$TARGET-$ARCH-$HOST"
 TSPYDIR="$ROOTDIR/src/libtsduck/python"
+if [[ -z "$BINDIR" ]]; then
+    ARCH=$(uname -m | sed -e 's/i.86/i386/' -e 's/^arm.*$/arm/')
+    HOST=$(hostname | sed -e 's/\..*//')
+    BINDIR="$ROOTDIR/bin/$TARGET-$ARCH-$HOST"
+fi
 
 # Display or set path.
 if $SHOW_PATH; then
