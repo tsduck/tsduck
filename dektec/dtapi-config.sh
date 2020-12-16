@@ -121,12 +121,15 @@ get-object()
     # Check that DTAPI binaries are present.
     [[ -d "$(get-dtapi)/Lib" ]] || return 0
 
+    # Get gcc executable from external $GCC or default.
+    GCC=${GCC:-$(which gcc 2>/dev/null)}
+    [[ -z "$GCC" ]] && return
+
+    # Get gcc version from external $GCC_VERSION or $GCCVERSION.
+    GCCVERSION=${GCCVERSION:-$GCC_VERSION}
+    GCCVERSION=${GCCVERSION:-$("$GCC" -dumpversion 2>/dev/null)}
+
     # Get GCC version as an integer.
-    if [[ -z "$GCCVERSION" ]]; then
-        local GCC=$(which gcc 2>/dev/null)
-        [[ -z "$GCC" ]] && return
-        GCCVERSION=$("$GCC" -dumpversion)
-    fi
     local GCCVERS=$(int-version $GCCVERSION)
     local DIRVERS=
 
