@@ -175,8 +175,11 @@ elif [[ -f /etc/redhat-release ]]; then
     fi
     if [[ $EL -lt 800 ]]; then
         sudo yum -y install $pkglist
-    else
+    elif [[ $EL -lt 803 ]]; then
         sudo dnf -y config-manager --set-enabled PowerTools
+        sudo dnf -y install $pkglist
+    else
+        sudo dnf -y config-manager --set-enabled powertools
         sudo dnf -y install $pkglist
     fi
 
