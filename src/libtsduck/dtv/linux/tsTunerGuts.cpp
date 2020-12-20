@@ -781,24 +781,27 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_INVERSION);
             props.add(DTV_SYMBOL_RATE);
             props.add(DTV_INNER_FEC);
+#if defined(DTV_STREAM_ID)
             props.add(DTV_STREAM_ID);
-
+#endif
             if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const SysErrorCode err = LastSysErrorCode();
                 report.error(u"error getting tuning parameters : %s", {SysErrorCodeMessage(err)});
                 return false;
             }
 
-            uint32_t val = 0;
             params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
             params.symbol_rate = props.getByCommand(DTV_SYMBOL_RATE);
             params.inner_fec = InnerFEC(props.getByCommand(DTV_INNER_FEC));
             params.stream_id.clear();
-            if ((val = props.getByCommand(DTV_STREAM_ID)) != DTVProperties::UNKNOWN) {
+#if defined(DTV_STREAM_ID)
+            const uint32_t val = props.getByCommand(DTV_STREAM_ID);
+            if (val != DTVProperties::UNKNOWN) {
                 // Warning: stream id may be incorrect when returned from the driver.
                 // We should update it when possible with the actual transport stream id from the inner stream.
                 params.stream_id = val;
             }
+#endif
             break;
         }
         case DS_ISDB_T: {
@@ -1175,17 +1178,17 @@ bool ts::Tuner::tune(ModulationArgs& params, Report& report)
             props.addVar(DTV_INVERSION, params.inversion);
             props.addVar(DTV_ROLLOFF, params.roll_off);
             props.addVar(DTV_PILOT, params.pilots);
+#if defined(DTV_STREAM_ID)
             if (params.isi.set() && params.isi.value() != ISI_DISABLE) {
                 // With the Linux DVB API, all multistream selection info are passed in the "stream id".
                 const uint32_t id =
                     (uint32_t(params.pls_mode.value(ModulationArgs::DEFAULT_PLS_MODE)) << 26) |
                     ((params.pls_code.value(ModulationArgs::DEFAULT_PLS_CODE) & 0x0003FFFF) << 8) |
                     (params.isi.value() & 0x000000FF);
-                report.debug(u"using DVB-S2 multi-stream id 0x%X (%d)", {id, id});
-#if defined(DTV_STREAM_ID)
+                report.debug(u"using DVB-S2 multi-stream id 0x%X (%<d)", {id});
                 props.add(DTV_STREAM_ID, id);
-#endif
             }
+#endif
             break;
         }
         case DS_DVB_T:
@@ -1224,7 +1227,9 @@ bool ts::Tuner::tune(ModulationArgs& params, Report& report)
             props.addVar(DTV_SYMBOL_RATE, params.symbol_rate);
             props.addVar(DTV_INNER_FEC, params.inner_fec);
             props.addVar(DTV_INVERSION, params.inversion);
+#if defined(DTV_STREAM_ID)
             props.addVar(DTV_STREAM_ID, params.stream_id);
+#endif
             break;
         }
         case DS_ISDB_T: {
