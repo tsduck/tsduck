@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.25-2129
+VERSION 3.25-2130
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -12,7 +12,7 @@ VERSION 3.25-2129
   * HEVC video attributes are now extracted and reported.
   * DVB-T/T2 and ISDB-T are no longer enumeration values ("6-MHz", "8-MHz",
     etc). They are arbitrary values in Hz. The previous values in command
-    line are still accpeted for compatibility.
+    line are still accepted for compatibility.
   * New options in exiting commands and plugins:
     - Option --save-es in plugin "pes".
     - Option --extended-info in "tslsdvb" (--verbose no longer displays the
