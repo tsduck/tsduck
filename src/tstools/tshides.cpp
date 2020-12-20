@@ -34,6 +34,7 @@
 #include "tsMain.h"
 #include "tsHFBand.h"
 #include "tsHiDesDevice.h"
+#include "tsLegacyBandWidth.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
@@ -65,18 +66,12 @@ HiDesOptions::HiDesOptions(int argc, char *argv[]) :
     dev_number(-1),
     dev_name(),
     frequency(0),
-    bandwidth(ts::BW_8_MHZ)
+    bandwidth(0)
 {
     option(u"adapter", 'a', UNSIGNED);
     help(u"adapter", u"Specify the HiDes adapter number to list. By default, list all HiDes devices.");
 
-    option(u"bandwidth", 'b', ts::Enumeration({
-        {u"5", ts::BW_5_MHZ},
-        {u"6", ts::BW_5_MHZ},
-        {u"7", ts::BW_7_MHZ},
-        {u"8", ts::BW_8_MHZ},
-    }));
-    help(u"bandwidth", u"Bandwidth in MHz with --gain-range. The default is 8 MHz.");
+    DefineLegacyBandWidthArg(*this, u"bandwidth", 'b', 8000000);
 
     option(u"count", 'c');
     help(u"count", u"Only display the number of devices.");
@@ -98,11 +93,11 @@ HiDesOptions::HiDesOptions(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
+    LoadLegacyBandWidthArg(bandwidth, *this, u"bandwidth", 8000000);
     count = present(u"count");
     gain_range = present(u"gain-range");
     getIntValue(dev_number, u"adapter", -1);
     getValue(dev_name, u"device");
-    getIntValue(bandwidth, u"bandwidth", ts::BW_8_MHZ);
     if (present(u"frequency")) {
         getIntValue(frequency, u"frequency");
     }
@@ -160,7 +155,7 @@ int MainCode(int argc, char *argv[])
         if (dev.getInfo(info, opt) && dev.getGainRange(min, max, opt.frequency, opt.bandwidth, opt)) {
             std::cout << ts::UString::Format(u"Device: %s", {info.toString()}) << std::endl
                 << ts::UString::Format(u"Frequency: %'d Hz", {opt.frequency}) << std::endl
-                << ts::UString::Format(u"Bandwidth: %s", {ts::BandWidthEnum.name(opt.bandwidth)}) << std::endl
+                << ts::UString::Format(u"Bandwidth: %'d Hz", {opt.bandwidth}) << std::endl
                 << ts::UString::Format(u"Min. gain: %d dB", {min}) << std::endl
                 << ts::UString::Format(u"Max. gain: %d dB", {max}) << std::endl;
         }

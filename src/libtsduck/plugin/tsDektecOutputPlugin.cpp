@@ -1313,10 +1313,10 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
                 ModulationArgs::ToDektecCodeRate(fec, input->fec_hp.value(FEC_NONE));
                 if (input->bandwidth.set()) {
                     switch (input->bandwidth.value()) {
-                        case BW_8_MHZ: bw = DTAPI_MOD_DVBT_8MHZ; break;
-                        case BW_7_MHZ: bw = DTAPI_MOD_DVBT_7MHZ; break;
-                        case BW_6_MHZ: bw = DTAPI_MOD_DVBT_6MHZ; break;
-                        case BW_5_MHZ: bw = DTAPI_MOD_DVBT_5MHZ; break;
+                        case 8000000: bw = DTAPI_MOD_DVBT_8MHZ; break;
+                        case 7000000: bw = DTAPI_MOD_DVBT_7MHZ; break;
+                        case 6000000: bw = DTAPI_MOD_DVBT_6MHZ; break;
+                        case 5000000: bw = DTAPI_MOD_DVBT_5MHZ; break;
                         default: break;
                     }
                 }

@@ -343,7 +343,6 @@ bool ts::CreateLocatorDVBT(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
 
     if (loc.isNull() ||
         !CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModVar(params.bandwidth, u"bandwidth", BandWidthEnum, report) ||
         !CheckModVar(params.fec_hp, u"FEC", InnerFECEnum, report) ||
         !CheckModVar(params.fec_lp, u"FEC", InnerFECEnum, report) ||
         !CheckModVar(params.modulation, u"constellation", ModulationEnum, report) ||
@@ -352,7 +351,7 @@ bool ts::CreateLocatorDVBT(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
         !CheckModVar(params.hierarchy, u"hierarchy", HierarchyEnum, report) ||
         !PUT(loc, CarrierFrequency, long(params.frequency.value() / 1000)) ||  // frequency in kHz
         !PUT(loc, Modulation, ::ModulationType(params.modulation.value())) ||
-        !PUT(loc, Bandwidth, long(params.bandwidth.value())) ||
+        !PUT(loc, Bandwidth, long(params.bandwidth.value() / 1000000)) || // bandwidth in MHz
         !PUT(loc, Guard, ::GuardInterval(params.guard_interval.value())) ||
         !PUT(loc, LPInnerFEC, ::BDA_FEC_VITERBI) ||
         !PUT(loc, LPInnerFECRate, ::BinaryConvolutionCodeRate(params.fec_lp.value())) ||

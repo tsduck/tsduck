@@ -35,6 +35,7 @@
 #include "tsPluginRepository.h"
 #include "tsHiDesDevice.h"
 #include "tsModulationArgs.h"
+#include "tsLegacyBandWidth.h"
 TSDUCK_SOURCE;
 
 
@@ -84,13 +85,7 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
          u"Specify the HiDes adapter number to use. By default, the first HiDes "
          u"device is selected. Use the command tshides to list all HiDes devices.");
 
-    option(u"bandwidth", 'b', Enumeration({
-        {u"5", BW_5_MHZ},
-        {u"6", BW_6_MHZ},
-        {u"7", BW_7_MHZ},
-        {u"8", BW_8_MHZ},
-    }));
-    help(u"bandwidth", u"Bandwidth in MHz. The default is 8 MHz.");
+    DefineLegacyBandWidthArg(*this, u"bandwidth", 'b', 8000000);
 
     option(u"constellation", 'c', Enumeration({
         {u"QPSK",   QPSK},
@@ -170,7 +165,7 @@ bool ts::HiDesOutput::start()
     int dc_q = 0;
 
     ModulationArgs params;
-    params.bandwidth = intValue<BandWidth>(u"bandwidth", BW_8_MHZ);
+    LoadLegacyBandWidthArg(params.bandwidth, *this, u"bandwidth");
     params.modulation = intValue<Modulation>(u"constellation", QAM_64);
     params.frequency = intValue<uint64_t>(u"frequency", 0);
     params.guard_interval = intValue<GuardInterval>(u"guard-interval", GUARD_1_32);

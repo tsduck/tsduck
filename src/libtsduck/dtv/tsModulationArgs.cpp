@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsModulationArgs.h"
+#include "tsLegacyBandWidth.h"
 #include "tsDuckContext.h"
 #include "tsDescriptor.h"
 #include "tsHFBand.h"
@@ -429,7 +430,7 @@ ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
             const uint64_t fec_div = FECDivider(fec_hp.value(DEFAULT_FEC_HP));
             const uint64_t guard_mul = GuardIntervalMultiplier(guard_interval.value(DEFAULT_GUARD_INTERVAL_DVBT));
             const uint64_t guard_div = GuardIntervalDivider(guard_interval.value(DEFAULT_GUARD_INTERVAL_DVBT));
-            const uint64_t bw = BandWidthValueHz(bandwidth.value(DEFAULT_BANDWIDTH_DVBT));
+            const uint64_t bw = bandwidth.value(DEFAULT_BANDWIDTH_DVBT);
 
             if (hierarchy.value(DEFAULT_HIERARCHY) != HIERARCHY_NONE || fec_div == 0 || guard_div == 0) {
                 return 0; // unknown bitrate
@@ -810,11 +811,11 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
                 delivery_system = DS_DVB_T;
                 frequency = freq == 0xFFFFFFFF ? 0 : freq * 10;
                 switch (bwidth) {
-                    case 0:  bandwidth = BW_8_MHZ; break;
-                    case 1:  bandwidth = BW_7_MHZ; break;
-                    case 2:  bandwidth = BW_6_MHZ; break;
-                    case 3:  bandwidth = BW_5_MHZ; break;
-                    default: bandwidth = BW_AUTO; break;
+                    case 0:  bandwidth = 8000000; break;
+                    case 1:  bandwidth = 7000000; break;
+                    case 2:  bandwidth = 6000000; break;
+                    case 3:  bandwidth = 5000000; break;
+                    default: bandwidth = 0; break;
                 }
                 switch (rate_hp) {
                     case 0:  fec_hp = FEC_1_2; break;
@@ -1049,8 +1050,8 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             if (guard_interval.set() && guard_interval != GUARD_AUTO) {
                 strm << margin << "Guard interval: " << GuardIntervalEnum.name(guard_interval.value()) << std::endl;
             }
-            if (bandwidth.set() && bandwidth != BW_AUTO) {
-                strm << margin << "Bandwidth: " << BandWidthEnum.name(bandwidth.value()) << std::endl;
+            if (bandwidth.set() && bandwidth != 0) {
+                strm << margin << "Bandwidth: " << UString::Decimal(bandwidth.value()) << std::endl;
             }
             if (transmission_mode.set() && transmission_mode != TM_AUTO) {
                 strm << margin << "Transmission mode: " << TransmissionModeEnum.name(transmission_mode.value()) << std::endl;
@@ -1120,8 +1121,8 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             if (guard_interval.set() && guard_interval != GUARD_AUTO) {
                 strm << margin << "Guard interval: " << GuardIntervalEnum.name(guard_interval.value()) << std::endl;
             }
-            if (bandwidth.set() && bandwidth != BW_AUTO) {
-                strm << margin << "Bandwidth: " << BandWidthEnum.name(bandwidth.value()) << std::endl;
+            if (bandwidth.set() && bandwidth != 0) {
+                strm << margin << "Bandwidth: " << UString::Decimal(bandwidth.value()) << std::endl;
             }
             if (transmission_mode.set() && transmission_mode != TM_AUTO) {
                 strm << margin << "Transmission mode: " << TransmissionModeEnum.name(transmission_mode.value()) << std::endl;
@@ -1223,14 +1224,14 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             opt += UString::Format(u" --modulation %s"
                                    u" --high-priority-fec %s"
                                    u" --low-priority-fec %s"
-                                   u" --bandwidth %s"
+                                   u" --bandwidth %'d"
                                    u" --transmission-mode %s"
                                    u" --guard-interval %s"
                                    u" --hierarchy %s", {
                                    ModulationEnum.name(modulation.value(DEFAULT_MODULATION_DVBT)),
                                    InnerFECEnum.name(fec_hp.value(DEFAULT_FEC_HP)),
                                    InnerFECEnum.name(fec_lp.value(DEFAULT_FEC_LP)),
-                                   BandWidthEnum.name(bandwidth.value(DEFAULT_BANDWIDTH_DVBT)),
+                                   bandwidth.value(DEFAULT_BANDWIDTH_DVBT),
                                    TransmissionModeEnum.name(transmission_mode.value(DEFAULT_TRANSMISSION_MODE_DVBT)),
                                    GuardIntervalEnum.name(guard_interval.value(DEFAULT_GUARD_INTERVAL_DVBT)),
                                    HierarchyEnum.name(hierarchy.value(DEFAULT_HIERARCHY))});
@@ -1287,8 +1288,8 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             break;
         }
         case TT_ISDB_T: {
-            opt += UString::Format(u" --bandwidth %s --transmission-mode %s --guard-interval %s", {
-                                   BandWidthEnum.name(bandwidth.value(DEFAULT_BANDWIDTH_DVBT)),
+            opt += UString::Format(u" --bandwidth %'d --transmission-mode %s --guard-interval %s", {
+                                   bandwidth.value(DEFAULT_BANDWIDTH_ISDBT),
                                    TransmissionModeEnum.name(transmission_mode.value(DEFAULT_TRANSMISSION_MODE_DVBT)),
                                    GuardIntervalEnum.name(guard_interval.value(DEFAULT_GUARD_INTERVAL_DVBT))});
             if (sound_broadcasting == true) {
@@ -1390,7 +1391,6 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
     args.getOptionalIntValue(inversion, u"spectral-inversion");
     args.getOptionalIntValue(inner_fec, u"fec-inner");
     args.getOptionalIntValue(modulation, u"modulation");
-    args.getOptionalIntValue(bandwidth, u"bandwidth");
     args.getOptionalIntValue(fec_hp, u"high-priority-fec");
     args.getOptionalIntValue(fec_lp, u"low-priority-fec");
     args.getOptionalIntValue(transmission_mode, u"transmission-mode");
@@ -1425,6 +1425,7 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
     args.getOptionalIntValue(layer_c_segment_count, u"isdbt-layer-c-segment-count");
     args.getOptionalIntValue(layer_c_time_interleaving, u"isdbt-layer-c-time-interleaving");
     args.getOptionalIntValue(stream_id, u"stream-id");
+    LoadLegacyBandWidthArg(bandwidth, args, u"bandwidth");
 
     // Local options (not related to transponder)
     if (args.present(u"lnb")) {
@@ -1513,11 +1514,7 @@ void ts::ModulationArgs::defineArgs(Args& args) const
               u"Used for DVB-T/T2 tuners only. Error correction for low priority streams. "
               u"The default is \"auto\".");
 
-    args.option(u"bandwidth", 0, BandWidthEnum);
-    args.help(u"bandwidth",
-              u"Used for terrestrial tuners only. Bandwidth. The default is \"" +
-              BandWidthEnum.name(DEFAULT_BANDWIDTH_DVBT) + u"\" for DVB-T/T2, \"" +
-              BandWidthEnum.name(DEFAULT_BANDWIDTH_ISDBT) + u"\" for ISDB-T.");
+    DefineLegacyBandWidthArg(args, u"bandwidth", 0, DEFAULT_BANDWIDTH_DVBT, DEFAULT_BANDWIDTH_ISDBT);
 
     args.option(u"transmission-mode", 0, TransmissionModeEnum);
     args.help(u"transmission-mode",

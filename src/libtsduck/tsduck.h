@@ -356,6 +356,7 @@
 #include "tsjsonValue.h"
 #include "tsKeyTable.h"
 #include "tsLDT.h"
+#include "tsLegacyBandWidth.h"
 #include "tsLinkageDescriptor.h"
 #include "tsLIT.h"
 #include "tsLNB.h"

@@ -343,52 +343,13 @@ namespace ts {
     //!
     //! Bandwidth (OFDM, DVB-T/T2)
     //!
-    enum BandWidth {
-#if defined(TS_LINUX) && !defined(DOXYGEN)
-        BW_AUTO      =        0,  // values in Hz, not enum
-        BW_1_712_MHZ =  1712000,
-        BW_5_MHZ     =  5000000,
-        BW_6_MHZ     =  6000000,
-        BW_7_MHZ     =  7000000,
-        BW_8_MHZ     =  8000000,
-        BW_10_MHZ    = 10000000,
-#elif defined(TS_WINDOWS) && !defined(DOXYGEN)
-        BW_AUTO      = ::BDA_CHAN_BANDWITH_NOT_DEFINED,
-        BW_1_712_MHZ = -11,
-        BW_5_MHZ     =   5,  // values in MHz, not enum
-        BW_6_MHZ     =   6,
-        BW_7_MHZ     =   7,
-        BW_8_MHZ     =   8,
-        BW_10_MHZ    =  10,
-#else
-        BW_AUTO,      //!< Bandwidth automatically set.
-        BW_1_712_MHZ, //!< 1.712 MHz bandwidth (DVB-T2 only).
-        BW_5_MHZ,     //!< 5 MHz bandwidth (DVB-T2 only).
-        BW_6_MHZ,     //!< 6 MHz bandwidth.
-        BW_7_MHZ,     //!< 7 MHz bandwidth.
-        BW_8_MHZ,     //!< 8 MHz bandwidth.
-        BW_10_MHZ,    //!< 10 MHz bandwidth (DVB-T2 only).
-#endif
-    };
-
+    //! Legacy issue: The bandwith type for DVB-T/T2 and ISDB-T used to be an enum type
+    //! with a few values (BW_AUTO, BW_8_MHZ, etc.). This was a legacy from the Linux
+    //! DVB API version 3. The bandwidth is now a 32-bit unsigned integer containing
+    //! a value in Hz. The former enum values are redefined as constants in header
+    //! file tsLegacyBandWidth.h.
     //!
-    //! Enumeration description of ts::BandWidth.
-    //!
-    TSDUCKDLL extern const Enumeration BandWidthEnum;
-
-    //!
-    //! Get the bandwidth value in Hz.
-    //! @param [in] bw Bandwidth enumeration value.
-    //! @return Bandwidth in Hz or zero if unknown.
-    //!
-    TSDUCKDLL uint32_t BandWidthValueHz(BandWidth bw);
-
-    //!
-    //! Get the bandwidth code from a value in Hz.
-    //! @param [in] hz Bandwidth in Hz.
-    //! @return Bandwidth enumeration value or BW_AUTO if undefined.
-    //!
-    TSDUCKDLL BandWidth BandWidthCodeFromHz(uint32_t hz);
+    typedef uint32_t BandWidth;
 
     //!
     //! Transmission mode (OFDM)

@@ -150,18 +150,18 @@ namespace ts {
         //!
         static constexpr Modulation DEFAULT_MODULATION_ATSC = VSB_8;
         //!
-        //! Bandwidth.
+        //! Bandwidth in Hz.
         //! Applies to: DVB-T/T2, ISDB-T.
         //!
         Variable<BandWidth> bandwidth;
         //!
         //! Default value for bandwidth on DVB-T.
         //!
-        static constexpr BandWidth DEFAULT_BANDWIDTH_DVBT = BW_8_MHZ;
+        static constexpr BandWidth DEFAULT_BANDWIDTH_DVBT = 8000000;
         //!
         //! Default value for bandwidth on ISDB-T.
         //!
-        static constexpr BandWidth DEFAULT_BANDWIDTH_ISDBT = BW_6_MHZ;
+        static constexpr BandWidth DEFAULT_BANDWIDTH_ISDBT = 6000000;
         //!
         //! High priority stream code rate.
         //! Applies to: DVB-T/T2.
