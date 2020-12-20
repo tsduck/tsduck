@@ -203,6 +203,6 @@ elif [[ -f /etc/gentoo-release ]]; then
     # Gentoo Linux
     # List to be completed when the installation of this bloody distro completes, maybe next year...
     pkglist="sys-devel/gcc app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip app-doc/doxygen media-gfx/graphviz sys-apps/pcsc-lite net-libs/srt dev-lang/python"
-    sudo emerge $pkglist
+    sudo emerge -n $pkglist
     
 fi
