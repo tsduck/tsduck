@@ -47,6 +47,7 @@
 #  - CentOS
 #  - Arch Linux
 #  - Alpine Linux
+#  - Gentoo
 #
 #-----------------------------------------------------------------------------
 
@@ -96,9 +97,11 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
     fi
     brew update
     for pkg in $pkglist; do
-        # Install or upgrade package (cannot be done in command)
+        # Install or upgrade package (cannot be done in command).
+        # Sometimes, brew exits with an error status even though the installation completes.
+        # Mute this and enforce a good status to avoid GitHub Actions CI failure.
         brew ls --versions $pkg >/dev/null && cmd=upgrade || cmd=install
-        HOMEBREW_NO_AUTO_UPDATE=1 brew $cmd $pkg
+        HOMEBREW_NO_AUTO_UPDATE=1 brew $cmd $pkg || true
     done
 
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
@@ -194,5 +197,10 @@ elif [[ -f /etc/alpine-release ]]; then
     # Alpine Linux
     pkglist="bash coreutils diffutils procps util-linux linux-headers git make g++ dos2unix curl tar zip doxygen graphviz pcsc-lite-dev curl-dev python3"
     sudo apk add $pkglist
+
+elif [[ -f /etc/gentoo-release ]]; then
+
+    # Gentoo Linux
+    # to be completed when the installation of this bloody distro completes, maybe next year...
 
 fi
