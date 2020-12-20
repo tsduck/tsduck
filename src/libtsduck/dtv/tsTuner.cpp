@@ -135,7 +135,6 @@ bool ts::Tuner::checkTuneParameters(ModulationArgs& params, Report& report) cons
         CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, report) &&
         CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, report) &&
         CheckModVar(params.modulation, u"modulation", ModulationEnum, report) &&
-        CheckModVar(params.bandwidth, u"bandwidth", BandWidthEnum, report) &&
         CheckModVar(params.fec_hp, u"FEC", InnerFECEnum, report) &&
         CheckModVar(params.fec_lp, u"FEC", InnerFECEnum, report) &&
         CheckModVar(params.transmission_mode, u"transmission mode", TransmissionModeEnum, report) &&

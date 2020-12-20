@@ -713,7 +713,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 
             params.frequency = props.getByCommand(DTV_FREQUENCY);
             params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
-            params.bandwidth = BandWidthCodeFromHz(props.getByCommand(DTV_BANDWIDTH_HZ));
+            params.bandwidth = props.getByCommand(DTV_BANDWIDTH_HZ);
             params.fec_hp = InnerFEC(props.getByCommand(DTV_CODE_RATE_HP));
             params.fec_lp = InnerFEC(props.getByCommand(DTV_CODE_RATE_LP));
             params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
@@ -839,7 +839,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             uint32_t val = 0;
             params.frequency = props.getByCommand(DTV_FREQUENCY);
             params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
-            params.bandwidth = BandWidthCodeFromHz(props.getByCommand(DTV_BANDWIDTH_HZ));
+            params.bandwidth = props.getByCommand(DTV_BANDWIDTH_HZ);
             params.transmission_mode = TransmissionMode(props.getByCommand(DTV_TRANSMISSION_MODE));
             params.guard_interval = GuardInterval(props.getByCommand(DTV_GUARD_INTERVAL));
             params.sound_broadcasting.clear();
@@ -1159,7 +1159,7 @@ bool ts::Tuner::tune(ModulationArgs& params, Report& report)
     }
 
     // The bandwidth, when set, is in Hz.
-    const uint32_t bwhz = params.bandwidth.set() ? BandWidthValueHz(params.bandwidth.value()) : 0;
+    const uint32_t bwhz = params.bandwidth.value(0);
 
     // Now build a list of tuning parameters.
     // The delivery system and frequency are required everywhere.
@@ -1826,31 +1826,31 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
         Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params.inversion.value()), u"");
     }
     if (params.inner_fec.set()) {
-        Display(strm, margin, u"FEC(inner)", InnerFECEnum.name(params.inner_fec.value()) , u"");
+        Display(strm, margin, u"FEC(inner)", InnerFECEnum.name(params.inner_fec.value()), u"");
     }
     if (params.modulation.set()) {
-        Display(strm, margin, u"Modulation", ModulationEnum.name(params.modulation.value()) , u"");
+        Display(strm, margin, u"Modulation", ModulationEnum.name(params.modulation.value()), u"");
     }
     if (params.bandwidth.set()) {
-        Display(strm, margin, u"Bandwidth", BandWidthEnum.name(params.bandwidth.value()) , u"");
+        Display(strm, margin, u"Bandwidth", UString::Decimal(params.bandwidth.value()), u"Hz");
     }
     if (params.fec_hp.set()) {
-        Display(strm, margin, u"FEC(high priority)", InnerFECEnum.name(params.fec_hp.value()) , u"");
+        Display(strm, margin, u"FEC(high priority)", InnerFECEnum.name(params.fec_hp.value()), u"");
     }
     if (params.fec_lp.set()) {
-        Display(strm, margin, u"FEC(low priority)", InnerFECEnum.name(params.fec_lp.value()) , u"");
+        Display(strm, margin, u"FEC(low priority)", InnerFECEnum.name(params.fec_lp.value()), u"");
     }
     if (params.transmission_mode.set()) {
-        Display(strm, margin, u"Transmission mode", TransmissionModeEnum.name(params.transmission_mode.value()) , u"");
+        Display(strm, margin, u"Transmission mode", TransmissionModeEnum.name(params.transmission_mode.value()), u"");
     }
     if (params.guard_interval.set()) {
-        Display(strm, margin, u"Guard interval", GuardIntervalEnum.name(params.guard_interval.value()) , u"");
+        Display(strm, margin, u"Guard interval", GuardIntervalEnum.name(params.guard_interval.value()), u"");
     }
     if (params.hierarchy.set()) {
-        Display(strm, margin, u"Hierarchy", HierarchyEnum.name(params.hierarchy.value()) , u"");
+        Display(strm, margin, u"Hierarchy", HierarchyEnum.name(params.hierarchy.value()), u"");
     }
     if (params.plp.set() && params.plp != PLP_DISABLE) {
-        Display(strm, margin, u"PLP", UString::Decimal(params.plp.value()) , u"");
+        Display(strm, margin, u"PLP", UString::Decimal(params.plp.value()), u"");
     }
 
     // Display general capabilities

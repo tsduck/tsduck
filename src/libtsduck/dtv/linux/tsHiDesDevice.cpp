@@ -502,7 +502,7 @@ bool ts::HiDesDevice::getGainRange(int& minGain, int& maxGain, uint64_t frequenc
     ite::TxGetGainRangeRequest request;
     TS_ZERO(request);
     request.frequency = uint32_t(frequency / 1000);
-    request.bandwidth = ite::Word(BandWidthValueHz(bandwidth) / 1000);
+    request.bandwidth = ite::Word(bandwidth / 1000);
     errno = 0;
 
     if (request.bandwidth == 0) {
@@ -575,7 +575,7 @@ bool ts::HiDesDevice::tune(const ModulationArgs& in_params, Report& report)
     acqRequest.frequency = uint32_t(params.frequency.value() / 1000);
 
     // Bandwidth is in kHz
-    acqRequest.bandwidth = ite::Word(BandWidthValueHz(params.bandwidth.value()) / 1000);
+    acqRequest.bandwidth = ite::Word(params.bandwidth.value() / 1000);
     if (acqRequest.bandwidth == 0) {
         report.error(u"unsupported bandwidth");
         return false;

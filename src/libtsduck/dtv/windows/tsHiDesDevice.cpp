@@ -660,7 +660,7 @@ bool ts::HiDesDevice::getGainRange(int& minGain, int& maxGain, uint64_t frequenc
     // Frequency and bandwidth are in kHz
     ite::IoctlGainRange ioc(ite::IOCTL_IT95X_GET_GAIN_RANGE);
     ioc.frequency = uint32_t(frequency / 1000);
-    ioc.bandwidth = BandWidthValueHz(bandwidth) / 1000;
+    ioc.bandwidth = bandwidth / 1000;
 
     if (ioc.bandwidth == 0) {
         report.error(u"unsupported bandwidth");
@@ -730,7 +730,7 @@ bool ts::HiDesDevice::tune(const ModulationArgs& in_params, Report& report)
     // Frequency and bandwidth are in kHz
     ite::IoctlGeneric freqRequest(ite::IOCTL_IT95X_SET_CHANNEL);
     freqRequest.param1 = uint32_t(params.frequency.value() / 1000);
-    freqRequest.param2 = BandWidthValueHz(params.bandwidth.value()) / 1000;
+    freqRequest.param2 = params.bandwidth.value() / 1000;
 
     if (freqRequest.param2 == 0) {
         report.error(u"unsupported bandwidth");

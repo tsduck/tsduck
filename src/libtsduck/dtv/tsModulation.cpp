@@ -117,16 +117,6 @@ const ts::Enumeration ts::RollOffEnum({
     {u"0.20",       ts::ROLLOFF_20},
 });
 
-const ts::Enumeration ts::BandWidthEnum({
-    {u"auto",      ts::BW_AUTO},
-    {u"1.712-MHz", ts::BW_1_712_MHZ},
-    {u"5-MHz",     ts::BW_5_MHZ},
-    {u"6-MHz",     ts::BW_6_MHZ},
-    {u"7-MHz",     ts::BW_7_MHZ},
-    {u"8-MHz",     ts::BW_8_MHZ},
-    {u"10-MHz",    ts::BW_10_MHZ},
-});
-
 const ts::Enumeration ts::TransmissionModeEnum({
     {u"auto",           ts::TM_AUTO},
     {u"2K",             ts::TM_2K},
@@ -257,7 +247,6 @@ uint32_t ts::FECDivider(InnerFEC fec)
 
 //----------------------------------------------------------------------------
 // Compute the multiplier and divider of a guard interval value.
-// Return zero if unknown
 //----------------------------------------------------------------------------
 
 uint32_t ts::GuardIntervalMultiplier(GuardInterval guard)
@@ -294,52 +283,5 @@ uint32_t ts::GuardIntervalDivider(GuardInterval guard)
         case GUARD_PN945:  return 0; // unknown
         case GUARD_AUTO:   return 0; // unknown
         default:           return 0; // unknown
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Get the bandwidth value in Hz.
-// Return zero if unknown.
-//----------------------------------------------------------------------------
-
-uint32_t ts::BandWidthValueHz(BandWidth bandwidth)
-{
-#if defined(TS_LINUX)
-    // values in Hz, not enum
-    return int(bandwidth) < 0 ? 0 : uint32_t(bandwidth);
-#elif defined(TS_WINDOWS)
-    // values in MHz, not enum
-    return int(bandwidth) < 0 ? 0 : 1000000 * uint32_t(bandwidth);
-#else
-    switch (bandwidth) {
-        case BW_1_712_MHZ: return 1712000;
-        case BW_5_MHZ:     return 5000000;
-        case BW_6_MHZ:     return 6000000;
-        case BW_7_MHZ:     return 7000000;
-        case BW_8_MHZ:     return 8000000;
-        case BW_10_MHZ:    return 10000000;
-        case BW_AUTO:      return 0; // unknown
-        default:           return 0; // unknown
-    }
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Get the bandwidth code from a value in Hz.
-// Return BW_AUTO if undefined.
-//----------------------------------------------------------------------------
-
-ts::BandWidth ts::BandWidthCodeFromHz(uint32_t hz)
-{
-    switch (hz) {
-        case  1712000: return BW_1_712_MHZ;
-        case  5000000: return BW_5_MHZ;
-        case  6000000: return BW_6_MHZ;
-        case  7000000: return BW_7_MHZ;
-        case  8000000: return BW_8_MHZ;
-        case 10000000: return BW_10_MHZ;
-        default:       return BW_AUTO;
     }
 }

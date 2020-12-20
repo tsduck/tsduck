@@ -53,7 +53,7 @@ ts::BitrateDifferenceDVBT::BitrateDifferenceDVBT() :
 
 namespace {
 
-    const ts::BandWidth pref_bw[] = {ts::BW_8_MHZ, ts::BW_7_MHZ, ts::BW_6_MHZ, ts::BW_5_MHZ};
+    const ts::BandWidth pref_bw[] = {8000000, 7000000, 6000000, 5000000};
     const ts::Modulation pref_mod[] = {ts::QAM_64, ts::QAM_16, ts::QPSK};
     const ts::InnerFEC pref_fec[] = {ts::FEC_2_3, ts::FEC_3_4, ts::FEC_5_6, ts::FEC_7_8, ts::FEC_1_2};
     const ts::GuardInterval pref_guard[] = {ts::GUARD_1_32, ts::GUARD_1_8, ts::GUARD_1_16, ts::GUARD_1_4};

@@ -108,7 +108,7 @@ void ChannelsTest::testText()
         u"  </network>\n"
         u"  <network id=\"0x5934\" type=\"DVB-T\">\n"
         u"    <ts id=\"0x7843\" onid=\"0x2596\">\n"
-        u"      <dvbt frequency=\"548,123\" modulation=\"16-QAM\" HPFEC=\"7/8\" LPFEC=\"3/4\" bandwidth=\"8-MHz\" transmission=\"8K\" guard=\"1/16\" hierarchy=\"2\" PLP=\"7\"/>\n"
+        u"      <dvbt frequency=\"548,123\" modulation=\"16-QAM\" HPFEC=\"7/8\" LPFEC=\"3/4\" bandwidth=\"8,000,000\" transmission=\"8K\" guard=\"1/16\" hierarchy=\"2\" PLP=\"7\"/>\n"
         u"      <service id=\"0x0458\"/>\n"
         u"    </ts>\n"
         u"  </network>\n"

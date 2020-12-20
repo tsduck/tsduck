@@ -35,6 +35,7 @@
 #include "tsDuckContext.h"
 #include "tsHFBand.h"
 #include "tsBitrateDifferenceDVBT.h"
+#include "tsLegacyBandWidth.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
@@ -58,13 +59,6 @@ namespace {
         {u"3/4",  ts::FEC_3_4},
         {u"5/6",  ts::FEC_5_6},
         {u"7/8",  ts::FEC_7_8},
-    });
-
-    const ts::Enumeration DVBTBandWidthEnum({
-        {u"8-MHz", ts::BW_8_MHZ},
-        {u"7-MHz", ts::BW_7_MHZ},
-        {u"6-MHz", ts::BW_6_MHZ},
-        {u"5-MHz", ts::BW_5_MHZ},
     });
 
     const ts::Enumeration DVBTGuardIntervalEnum({
@@ -115,14 +109,13 @@ Options::Options(int argc, char *argv[]) :
     constellation(ts::QAM_AUTO),
     fec_hp(ts::FEC_NONE),
     guard_interval(ts::GUARD_AUTO),
-    bandwidth(ts::BW_AUTO),
+    bandwidth(0),
     simple(false),
     default_region(false)
 {
     duck.defineArgsForHFBand(*this);
 
-    option(u"bandwidth", 'w', DVBTBandWidthEnum);
-    help(u"bandwidth", u"Specify the OFMD bandwith, used to compute the resulting bitrate.");
+    DefineLegacyBandWidthArg(*this, u"bandwidth", 'w', 8000000);
 
     option(u"bitrate", 'b', UINT32);
     help(u"bitrate",
@@ -186,13 +179,11 @@ Options::Options(int argc, char *argv[]) :
     getIntValue(constellation, u"constellation", ts::QAM_64);
     getIntValue(fec_hp, u"high-priority-fec", ts::FEC_AUTO);
     getIntValue(guard_interval, u"guard-interval", ts::GUARD_AUTO);
-    getIntValue(bandwidth, u"bandwidth", ts::BW_8_MHZ);
     simple = present(u"simple");
     default_region = present(u"default-region");
+    LoadLegacyBandWidthArg(bandwidth, *this, u"bandwidth", 8000000);
 
-    if ((fec_hp == ts::FEC_AUTO && guard_interval != ts::GUARD_AUTO) ||
-        (fec_hp != ts::FEC_AUTO && guard_interval == ts::GUARD_AUTO))
-    {
+    if ((fec_hp == ts::FEC_AUTO && guard_interval != ts::GUARD_AUTO) || (fec_hp != ts::FEC_AUTO && guard_interval == ts::GUARD_AUTO)) {
         error(u"specify either both --guard-interval and --high-priority-fec value or none");
     }
 
@@ -344,7 +335,7 @@ int MainCode(int argc, char *argv[])
             last_diff = it->bitrate_diff;
             if (opt.simple) {
                 std::cout << it->tune.theoreticalBitrate() << std::endl
-                          << ts::BandWidthEnum.name(it->tune.bandwidth.value()) << std::endl
+                          << ts::UString::Decimal(it->tune.bandwidth.value()) << std::endl
                           << ts::InnerFECEnum.name(it->tune.fec_hp.value()) << std::endl
                           << ts::ModulationEnum.name(it->tune.modulation.value()) << std::endl
                           << ts::GuardIntervalEnum.name(it->tune.guard_interval.value()) << std::endl;
@@ -355,7 +346,7 @@ int MainCode(int argc, char *argv[])
                 }
                 Display(u"Nominal bitrate", ts::UString::Decimal(it->tune.theoreticalBitrate()), u"b/s");
                 Display(u"Bitrate difference", ts::UString::Decimal(it->bitrate_diff), u"b/s");
-                Display(u"Bandwidth", ts::BandWidthEnum.name(it->tune.bandwidth.value()), u"");
+                Display(u"Bandwidth", ts::UString::Decimal(it->tune.bandwidth.value()), u"Hz");
                 Display(u"FEC (high priority)", ts::InnerFECEnum.name(it->tune.fec_hp.value()), u"");
                 Display(u"Constellation", ts::ModulationEnum.name(it->tune.modulation.value()), u"");
                 Display(u"Guard interval", ts::GuardIntervalEnum.name(it->tune.guard_interval.value()), u"");
