@@ -72,15 +72,15 @@ namespace ts {
 
     //!
     //! Convert a string containing a bandwidth value into an integer value in Hz.
-    //! @param [out] bw The bandwidth value. Unmodified in case of error.
+    //! @param [out] bandwidth The bandwidth value. Unmodified in case of error.
     //! @param [in] str The string value containing either a integer value in Hz or a legacy enum value.
     //! @return True on success, false on invalid value.
     //!
-    TSDUCKDLL bool LegacyBandWidthToHz(BandWidth& bw, const UString& str);
+    TSDUCKDLL bool LegacyBandWidthToHz(BandWidth& bandwidth, const UString& str);
 
     //!
     //! Get optional bandwidth parameter from an XML element, accepting legacy values.
-    //! @param [out] value Returned value of the attribute in Hz. If the attribute is not present, the variable is reset.
+    //! @param [out] bandwidth Returned value of the attribute in Hz. If the attribute is not present, the variable is reset.
     //! @param [in] element XML element containing the optional bandwidth.
     //! @param [in] attribute Name of the attribute.
     //! @return True on success, false on error.
