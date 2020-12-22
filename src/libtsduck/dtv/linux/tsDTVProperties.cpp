@@ -61,7 +61,7 @@ ts::DTVProperties::~DTVProperties()
 
 size_t ts::DTVProperties::add(uint32_t cmd, uint32_t data)
 {
-    assert (_prop_head.num < DTV_IOCTL_MAX_MSGS);
+    assert(_prop_head.num < DTV_IOCTL_MAX_MSGS);
     _prop_buffer[_prop_head.num].cmd = cmd;
     _prop_buffer[_prop_head.num].u.data = data;
     return size_t(_prop_head.num++);
@@ -127,66 +127,109 @@ void ts::DTVProperties::report(Report& report, int severity) const
 // Return the name of a command or zero if unknown
 //-----------------------------------------------------------------------------
 
-const char* ts::DTVProperties::CommandName(uint32_t cmd)
+TS_DEFINE_SINGLETON(ts::DTVProperties::DTVNames);
+
+// Public method to get the name of a value
+const char* ts::DTVProperties::DTVNames::name(uint32_t cmd)
 {
-    switch (cmd) {
-        case DTV_UNDEFINED: return "DTV_UNDEFINED";
-        case DTV_TUNE: return "DTV_TUNE";
-        case DTV_CLEAR: return "DTV_CLEAR";
-        case DTV_FREQUENCY: return "DTV_FREQUENCY";
-        case DTV_MODULATION: return "DTV_MODULATION";
-        case DTV_BANDWIDTH_HZ: return "DTV_BANDWIDTH_HZ";
-        case DTV_INVERSION: return "DTV_INVERSION";
-        case DTV_DISEQC_MASTER: return "DTV_DISEQC_MASTER";
-        case DTV_SYMBOL_RATE: return "DTV_SYMBOL_RATE";
-        case DTV_INNER_FEC: return "DTV_INNER_FEC";
-        case DTV_VOLTAGE: return "DTV_VOLTAGE";
-        case DTV_TONE: return "DTV_TONE";
-        case DTV_PILOT: return "DTV_PILOT";
-        case DTV_ROLLOFF: return "DTV_ROLLOFF";
-        case DTV_DISEQC_SLAVE_REPLY: return "DTV_DISEQC_SLAVE_REPLY";
-        case DTV_FE_CAPABILITY_COUNT: return "DTV_FE_CAPABILITY_COUNT";
-        case DTV_FE_CAPABILITY: return "DTV_FE_CAPABILITY";
-        case DTV_DELIVERY_SYSTEM: return "DTV_DELIVERY_SYSTEM";
-#if TS_DVB_API_VERSION >= 501
-        case DTV_ISDBT_PARTIAL_RECEPTION: return "DTV_ISDBT_PARTIAL_RECEPTION";
-        case DTV_ISDBT_SOUND_BROADCASTING: return "DTV_ISDBT_SOUND_BROADCASTING";
-        case DTV_ISDBT_SB_SUBCHANNEL_ID: return "DTV_ISDBT_SB_SUBCHANNEL_ID";
-        case DTV_ISDBT_SB_SEGMENT_IDX: return "DTV_ISDBT_SB_SEGMENT_IDX";
-        case DTV_ISDBT_SB_SEGMENT_COUNT: return "DTV_ISDBT_SB_SEGMENT_COUNT";
-        case DTV_ISDBT_LAYERA_FEC: return "DTV_ISDBT_LAYERA_FEC";
-        case DTV_ISDBT_LAYERA_MODULATION: return "DTV_ISDBT_LAYERA_MODULATION";
-        case DTV_ISDBT_LAYERA_SEGMENT_COUNT: return "DTV_ISDBT_LAYERA_SEGMENT_COUNT";
-        case DTV_ISDBT_LAYERA_TIME_INTERLEAVING: return "DTV_ISDBT_LAYERA_TIME_INTERLEAVING";
-        case DTV_ISDBT_LAYERB_FEC: return "DTV_ISDBT_LAYERB_FEC";
-        case DTV_ISDBT_LAYERB_MODULATION: return "DTV_ISDBT_LAYERB_MODULATION";
-        case DTV_ISDBT_LAYERB_SEGMENT_COUNT: return "DTV_ISDBT_LAYERB_SEGMENT_COUNT";
-        case DTV_ISDBT_LAYERB_TIME_INTERLEAVING: return "DTV_ISDBT_LAYERB_TIME_INTERLEAVING";
-        case DTV_ISDBT_LAYERC_FEC: return "DTV_ISDBT_LAYERC_FEC";
-        case DTV_ISDBT_LAYERC_MODULATION: return "DTV_ISDBT_LAYERC_MODULATION";
-        case DTV_ISDBT_LAYERC_SEGMENT_COUNT: return "DTV_ISDBT_LAYERC_SEGMENT_COUNT";
-        case DTV_ISDBT_LAYERC_TIME_INTERLEAVING: return "DTV_ISDBT_LAYERC_TIME_INTERLEAVING";
-        case DTV_API_VERSION: return "DTV_API_VERSION";
-#endif
-        case DTV_CODE_RATE_HP: return "DTV_CODE_RATE_HP";
-        case DTV_CODE_RATE_LP: return "DTV_CODE_RATE_LP";
-        case DTV_GUARD_INTERVAL: return "DTV_GUARD_INTERVAL";
-        case DTV_TRANSMISSION_MODE: return "DTV_TRANSMISSION_MODE";
-        case DTV_HIERARCHY: return "DTV_HIERARCHY";
-#if defined(DTV_ISDBT_LAYER_ENABLED)
-        case DTV_ISDBT_LAYER_ENABLED: return "DTV_ISDBT_LAYER_ENABLED";
-#endif
-#if defined(DTV_ISDBS_TS_ID)
-        case DTV_ISDBS_TS_ID: return "DTV_ISDBS_TS_ID";
-#elif defined(DTV_STREAM_ID)
-        case DTV_STREAM_ID: return "DTV_STREAM_ID";
-#endif
-#if defined(DTV_DVBT2_PLP_ID_LEGACY)
-        case DTV_DVBT2_PLP_ID_LEGACY: return "DTV_DVBT2_PLP_ID_LEGACY";
-#endif
-#if defined(DTV_ENUM_DELSYS)
-        case DTV_ENUM_DELSYS: return "DTV_ENUM_DELSYS";
-#endif
-        default: return nullptr;
+    const auto it = _names.find(cmd);
+    return it == _names.end() ? nullptr : it->second;
+}
+
+// Private method to register a name. The value is a stringification of the name macro.
+// If the value is an integer, then this is valid name. Otherwise, the stringification
+// of a non existent macro is the name of the macro itself.
+void ts::DTVProperties::DTVNames::reg(const char* name, const char* value)
+{
+    // The value zero is always excluded and is always an atoi() error.
+    const int val = ::atoi(value);
+    if (val != 0) {
+        _names.insert(std::make_pair(val, name));
     }
+}
+
+// The constructor builds the map once.
+ts::DTVProperties::DTVNames::DTVNames() :
+    _names()
+{
+    // Explicit zero.
+    assert(DTV_UNDEFINED == 0);
+    _names.insert(std::make_pair(0, "DTV_UNDEFINED"));
+
+    // Other values are added dynamically. We always add recent values from
+    // recent kernels. When compiled on older kernels, the name won't be
+    // stringified as an integer and ignored.
+    #define REG(dtv) reg(#dtv, TS_STRINGIFY(dtv))
+    REG(DTV_TUNE);
+    REG(DTV_CLEAR);
+    REG(DTV_FREQUENCY);
+    REG(DTV_MODULATION);
+    REG(DTV_BANDWIDTH_HZ);
+    REG(DTV_INVERSION);
+    REG(DTV_DISEQC_MASTER);
+    REG(DTV_SYMBOL_RATE);
+    REG(DTV_INNER_FEC);
+    REG(DTV_VOLTAGE);
+    REG(DTV_TONE);
+    REG(DTV_PILOT);
+    REG(DTV_ROLLOFF);
+    REG(DTV_DISEQC_SLAVE_REPLY);
+    REG(DTV_FE_CAPABILITY_COUNT);
+    REG(DTV_FE_CAPABILITY);
+    REG(DTV_DELIVERY_SYSTEM);
+    REG(DTV_ISDBT_PARTIAL_RECEPTION);
+    REG(DTV_ISDBT_SOUND_BROADCASTING);
+    REG(DTV_ISDBT_SB_SUBCHANNEL_ID);
+    REG(DTV_ISDBT_SB_SEGMENT_IDX);
+    REG(DTV_ISDBT_SB_SEGMENT_COUNT);
+    REG(DTV_ISDBT_LAYERA_FEC);
+    REG(DTV_ISDBT_LAYERA_MODULATION);
+    REG(DTV_ISDBT_LAYERA_SEGMENT_COUNT);
+    REG(DTV_ISDBT_LAYERA_TIME_INTERLEAVING);
+    REG(DTV_ISDBT_LAYERB_FEC);
+    REG(DTV_ISDBT_LAYERB_MODULATION);
+    REG(DTV_ISDBT_LAYERB_SEGMENT_COUNT);
+    REG(DTV_ISDBT_LAYERB_TIME_INTERLEAVING);
+    REG(DTV_ISDBT_LAYERC_FEC);
+    REG(DTV_ISDBT_LAYERC_MODULATION);
+    REG(DTV_ISDBT_LAYERC_SEGMENT_COUNT);
+    REG(DTV_ISDBT_LAYERC_TIME_INTERLEAVING);
+    REG(DTV_API_VERSION);
+    REG(DTV_CODE_RATE_HP);
+    REG(DTV_CODE_RATE_LP);
+    REG(DTV_GUARD_INTERVAL);
+    REG(DTV_TRANSMISSION_MODE);
+    REG(DTV_HIERARCHY);
+    REG(DTV_ISDBT_LAYER_ENABLED);
+    REG(DTV_STREAM_ID);
+    REG(DTV_DVBT2_PLP_ID_LEGACY);
+    REG(DTV_ENUM_DELSYS);
+    REG(DTV_ATSCMH_FIC_VER);
+    REG(DTV_ATSCMH_PARADE_ID);
+    REG(DTV_ATSCMH_NOG);
+    REG(DTV_ATSCMH_TNOG);
+    REG(DTV_ATSCMH_SGN);
+    REG(DTV_ATSCMH_PRC);
+    REG(DTV_ATSCMH_RS_FRAME_MODE);
+    REG(DTV_ATSCMH_RS_FRAME_ENSEMBLE);
+    REG(DTV_ATSCMH_RS_CODE_MODE_PRI);
+    REG(DTV_ATSCMH_RS_CODE_MODE_SEC);
+    REG(DTV_ATSCMH_SCCC_BLOCK_MODE);
+    REG(DTV_ATSCMH_SCCC_CODE_MODE_A);
+    REG(DTV_ATSCMH_SCCC_CODE_MODE_B);
+    REG(DTV_ATSCMH_SCCC_CODE_MODE_C);
+    REG(DTV_ATSCMH_SCCC_CODE_MODE_D);
+    REG(DTV_INTERLEAVING);
+    REG(DTV_LNA);
+    REG(DTV_STAT_SIGNAL_STRENGTH);
+    REG(DTV_STAT_CNR);
+    REG(DTV_STAT_PRE_ERROR_BIT_COUNT);
+    REG(DTV_STAT_PRE_TOTAL_BIT_COUNT);
+    REG(DTV_STAT_POST_ERROR_BIT_COUNT);
+    REG(DTV_STAT_POST_TOTAL_BIT_COUNT);
+    REG(DTV_STAT_ERROR_BLOCK_COUNT);
+    REG(DTV_STAT_TOTAL_BLOCK_COUNT);
+    REG(DTV_SCRAMBLING_SEQUENCE_INDEX);
+    REG(DTV_FOOBAR); // non-existent, for sanity check
+    #undef REG
 }

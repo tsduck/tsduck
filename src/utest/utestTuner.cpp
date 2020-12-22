@@ -43,6 +43,9 @@
 #include "tsSysUtils.h"
 #include "tsCOM.h"
 #include "tsunit.h"
+#if defined(TS_LINUX)
+#include "tsDTVProperties.h"
+#endif
 TSDUCK_SOURCE;
 
 // Tuners are not supported in macOS and errors are always returned.
@@ -62,10 +65,16 @@ public:
 
     void testListTuners();
     void testScanDVBT();
+#if defined(TS_LINUX)
+    void testDTVProperties();
+#endif
 
     TSUNIT_TEST_BEGIN(TunerTest);
     TSUNIT_TEST(testListTuners);
     TSUNIT_TEST(testScanDVBT);
+#if defined(TS_LINUX)
+    TSUNIT_TEST(testDTVProperties);
+#endif
     TSUNIT_TEST_END();
 
 private:
@@ -170,5 +179,16 @@ void TunerTest::testScanDVBT()
         }
     }
 }
+
+#if defined(TS_LINUX)
+void TunerTest::testDTVProperties()
+{
+    debug() << "TunerTest::testDTVProperties:" << std::endl;
+    for (uint32_t cmd = 0; cmd <= DTV_MAX_COMMAND + 2; cmd++) {
+        const char* name = ts::DTVProperties::CommandName(cmd);
+        debug() << "  " << cmd << ": " << (name == nullptr ? "(null)" : name) << std::endl;
+    }
+}
+#endif // TS_LINUX
 
 #endif // not TS_MAC

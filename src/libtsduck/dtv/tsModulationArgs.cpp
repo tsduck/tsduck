@@ -1051,7 +1051,7 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
                 strm << margin << "Guard interval: " << GuardIntervalEnum.name(guard_interval.value()) << std::endl;
             }
             if (bandwidth.set() && bandwidth != 0) {
-                strm << margin << "Bandwidth: " << UString::Decimal(bandwidth.value()) << std::endl;
+                strm << margin << "Bandwidth: " << UString::Decimal(bandwidth.value()) << " Hz" << std::endl;
             }
             if (transmission_mode.set() && transmission_mode != TM_AUTO) {
                 strm << margin << "Transmission mode: " << TransmissionModeEnum.name(transmission_mode.value()) << std::endl;
@@ -1122,7 +1122,7 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
                 strm << margin << "Guard interval: " << GuardIntervalEnum.name(guard_interval.value()) << std::endl;
             }
             if (bandwidth.set() && bandwidth != 0) {
-                strm << margin << "Bandwidth: " << UString::Decimal(bandwidth.value()) << std::endl;
+                strm << margin << "Bandwidth: " << UString::Decimal(bandwidth.value()) << " Hz" << std::endl;
             }
             if (transmission_mode.set() && transmission_mode != TM_AUTO) {
                 strm << margin << "Transmission mode: " << TransmissionModeEnum.name(transmission_mode.value()) << std::endl;

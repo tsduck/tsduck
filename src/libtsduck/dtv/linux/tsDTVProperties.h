@@ -35,6 +35,7 @@
 #pragma once
 #include "tsReport.h"
 #include "tsVariable.h"
+#include "tsSingletonManager.h"
 
 namespace ts {
     //!
@@ -154,14 +155,25 @@ namespace ts {
         //!
         //! Return the name of a command.
         //! @param [in] cmd Command code.
-        //! @return A name for @a cmd or zero if unknown.
+        //! @return A name for @a cmd or a null pointer if unknown.
         //!
-        static const char* CommandName(uint32_t cmd);
+        static const char* CommandName(uint32_t cmd) { return DTVNames::Instance()->name(cmd); }
 
     private:
         // Private members:
         ::dtv_property   _prop_buffer[DTV_IOCTL_MAX_MSGS];
         ::dtv_properties _prop_head;
+
+        // A singleton holding all DTV_ names.
+        class DTVNames
+        {
+            TS_DECLARE_SINGLETON(DTVNames);
+        public:
+            const char* name(uint32_t cmd);
+        private:
+            std::map<uint32_t,const char*> _names;
+            void reg(const char* name, const char* value);
+        };
     };
 }
 
