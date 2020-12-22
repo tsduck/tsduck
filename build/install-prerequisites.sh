@@ -33,8 +33,9 @@
 #
 #  Supported options:
 #
-#  -m, --m32 : install libraries for 32-bit cross-compilation (when supported)
-#  -s, --static : install static libraries for static build (when supported)
+#  --m32 : install libraries for 32-bit cross-compilation (when supported)
+#  --static : install static libraries for static build (when supported)
+#  Additional options are passed to the package manager (dnf, apt, brew, etc.)
 #
 #  Supported operating systems:
 #
@@ -58,22 +59,25 @@ error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 # Default options.
 STATIC=false
 M32=false
+PKGOPTS=
 
 # Decode command line options.
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        -m|--m32)
+        --m32)
             M32=true
             ;;
-        -s|--static)
+        --static)
             STATIC=true
             ;;
         *)
-            error "unsupported option $1"
+            PKGOPTS="$PKGOPTS $1"
             ;;
     esac
     shift
 done
+
+[[ -n "$PKGOPTS" ]] && echo "====> using packager options: $PKGOPTS"
 
 #-----------------------------------------------------------------------------
 
@@ -101,7 +105,7 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
         # Sometimes, brew exits with an error status even though the installation completes.
         # Mute this and enforce a good status to avoid GitHub Actions CI failure.
         brew ls --versions $pkg >/dev/null && cmd=upgrade || cmd=install
-        HOMEBREW_NO_AUTO_UPDATE=1 brew $cmd $pkg || true
+        HOMEBREW_NO_AUTO_UPDATE=1 brew $PKGOPTS $cmd $pkg || true
     done
 
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
@@ -122,7 +126,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
         pkglist="$pkglist libsrt-dev"
     fi
     sudo apt update
-    sudo apt install -y $pkglist
+    sudo apt install -y $PKGOPTS $pkglist
 
 elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
 
@@ -137,7 +141,7 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
         pkglist="$pkglist libcurl4 libcurl4-openssl-dev"
     fi
     sudo apt update
-    sudo apt install -y $pkglist
+    sudo apt install -y $PKGOPTS $pkglist
 
 elif [[ -f /etc/fedora-release ]]; then
 
@@ -156,7 +160,7 @@ elif [[ -f /etc/fedora-release ]]; then
             pkglist="$pkglist srt-devel.i686"
         fi
     fi
-    sudo dnf -y install $pkglist
+    sudo dnf -y install $PKGOPTS $pkglist
 
 elif [[ -f /etc/redhat-release ]]; then
 
@@ -177,32 +181,31 @@ elif [[ -f /etc/redhat-release ]]; then
         fi
     fi
     if [[ $EL -lt 800 ]]; then
-        sudo yum -y install $pkglist
+        sudo yum -y install $PKGOPTS $pkglist
     elif [[ $EL -lt 803 ]]; then
         sudo dnf -y config-manager --set-enabled PowerTools
-        sudo dnf -y install $pkglist
+        sudo dnf -y install $PKGOPTS $pkglist
     else
         sudo dnf -y config-manager --set-enabled powertools
-        sudo dnf -y install $pkglist
+        sudo dnf -y install $PKGOPTS $pkglist
     fi
 
 elif [[ -f /etc/arch-release ]]; then
 
     # Arch Linux
     pkglist="make gcc dos2unix core/which inetutils net-tools curl tar zip doxygen graphviz pcsclite srt python"
-    sudo pacman -Sy --noconfirm $pkglist
+    sudo pacman -Sy --noconfirm $PKGOPTS $pkglist
 
 elif [[ -f /etc/alpine-release ]]; then
 
     # Alpine Linux
     pkglist="bash coreutils diffutils procps util-linux linux-headers git make g++ dos2unix curl tar zip doxygen graphviz pcsc-lite-dev curl-dev python3"
-    sudo apk add $pkglist
+    sudo apk add $PKGOPTS $pkglist
 
 elif [[ -f /etc/gentoo-release ]]; then
 
     # Gentoo Linux
-    # List to be completed when the installation of this bloody distro completes, maybe next year...
     pkglist="sys-devel/gcc app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip app-doc/doxygen media-gfx/graphviz sys-apps/pcsc-lite net-libs/srt dev-lang/python"
-    sudo emerge -n $pkglist
+    sudo emerge -n $PKGOPTS $pkglist
     
 fi
