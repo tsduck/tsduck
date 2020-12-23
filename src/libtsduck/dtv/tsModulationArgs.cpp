@@ -1030,6 +1030,10 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
         strm << margin << "Modulation: " << ModulationEnum.name(modulation.value()) << std::endl;
     }
 
+    if (!delivery_system.set()) {
+        return;
+    }
+
     switch (TunerTypeOf(delivery_system.value())) {
         case TT_DVB_C: {
             if (symbol_rate.set() && symbol_rate != 0) {
