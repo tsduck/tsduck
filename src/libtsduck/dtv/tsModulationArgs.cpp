@@ -1151,10 +1151,10 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             if (layer_a_modulation.set() && layer_a_modulation != QAM_AUTO) {
                 strm << margin << "Layers A modulation: " << InnerFECEnum.name(layer_a_modulation.value()) << std::endl;
             }
-            if (layer_a_segment_count.set()) {
+            if (layer_a_segment_count.set() && layer_a_segment_count.value() <= 13) {
                 strm << margin << "Layers A segment count: " << layer_a_segment_count.value() << std::endl;
             }
-            if (layer_a_time_interleaving.set()) {
+            if (layer_a_time_interleaving.set() && layer_a_time_interleaving != 255) {
                 strm << margin << "Layers A time interleaving: " << layer_a_time_interleaving.value() << std::endl;
             }
             if (layer_b_fec.set() && layer_b_fec != FEC_AUTO) {
@@ -1163,10 +1163,10 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             if (layer_b_modulation.set() && layer_b_modulation != QAM_AUTO) {
                 strm << margin << "Layers B modulation: " << InnerFECEnum.name(layer_b_modulation.value()) << std::endl;
             }
-            if (layer_b_segment_count.set()) {
+            if (layer_b_segment_count.set() && layer_b_segment_count.value() <= 13) {
                 strm << margin << "Layers B segment count: " << layer_b_segment_count.value() << std::endl;
             }
-            if (layer_b_time_interleaving.set()) {
+            if (layer_b_time_interleaving.set() && layer_b_time_interleaving != 255) {
                 strm << margin << "Layers B time interleaving: " << layer_b_time_interleaving.value() << std::endl;
             }
             if (layer_c_fec.set() && layer_c_fec != FEC_AUTO) {
@@ -1175,10 +1175,10 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             if (layer_c_modulation.set() && layer_c_modulation != QAM_AUTO) {
                 strm << margin << "Layers C modulation: " << InnerFECEnum.name(layer_c_modulation.value()) << std::endl;
             }
-            if (layer_c_segment_count.set()) {
+            if (layer_c_segment_count.set() && layer_c_segment_count.value() <= 13) {
                 strm << margin << "Layers C segment count: " << layer_c_segment_count.value() << std::endl;
             }
-            if (layer_c_time_interleaving.set()) {
+            if (layer_c_time_interleaving.set() && layer_c_time_interleaving != 255) {
                 strm << margin << "Layers C time interleaving: " << layer_c_time_interleaving.value() << std::endl;
             }
             break;
