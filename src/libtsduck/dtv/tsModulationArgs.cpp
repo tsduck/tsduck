@@ -1149,7 +1149,7 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
                 strm << margin << "Layer A FEC: " << InnerFECEnum.name(layer_a_fec.value()) << std::endl;
             }
             if (layer_a_modulation.set() && layer_a_modulation != QAM_AUTO) {
-                strm << margin << "Layer A modulation: " << InnerFECEnum.name(layer_a_modulation.value()) << std::endl;
+                strm << margin << "Layer A modulation: " << ModulationEnum.name(layer_a_modulation.value()) << std::endl;
             }
             if (layer_a_segment_count.set() && layer_a_segment_count.value() <= 13) {
                 strm << margin << "Layer A segment count: " << layer_a_segment_count.value() << std::endl;
@@ -1161,7 +1161,7 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
                 strm << margin << "Layer B FEC: " << InnerFECEnum.name(layer_b_fec.value()) << std::endl;
             }
             if (layer_b_modulation.set() && layer_b_modulation != QAM_AUTO) {
-                strm << margin << "Layer B modulation: " << InnerFECEnum.name(layer_b_modulation.value()) << std::endl;
+                strm << margin << "Layer B modulation: " << ModulationEnum.name(layer_b_modulation.value()) << std::endl;
             }
             if (layer_b_segment_count.set() && layer_b_segment_count.value() <= 13) {
                 strm << margin << "Layer B segment count: " << layer_b_segment_count.value() << std::endl;
@@ -1173,7 +1173,7 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
                 strm << margin << "Layer C FEC: " << InnerFECEnum.name(layer_c_fec.value()) << std::endl;
             }
             if (layer_c_modulation.set() && layer_c_modulation != QAM_AUTO) {
-                strm << margin << "Layer C modulation: " << InnerFECEnum.name(layer_c_modulation.value()) << std::endl;
+                strm << margin << "Layer C modulation: " << ModulationEnum.name(layer_c_modulation.value()) << std::endl;
             }
             if (layer_c_segment_count.set() && layer_c_segment_count.value() <= 13) {
                 strm << margin << "Layer C segment count: " << layer_c_segment_count.value() << std::endl;
