@@ -68,11 +68,6 @@ ts::TSScanner::TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout, b
         return;
     }
 
-    // Get current tuning parameters.
-    if (!tuner.getCurrentTuning(_tparams, true, _report)) {
-        _tparams.reset();
-    }
-
     // Deadline for table collection
     const Time deadline(timeout == Infinite ? Time::Apocalypse : Time::CurrentUTC() + timeout);
 
@@ -89,6 +84,12 @@ ts::TSScanner::TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout, b
         for (size_t n = 0; !_completed && n < pcount; ++n) {
             _demux.feedPacket(buffer[n]);
         }
+    }
+
+    // Get current tuning parameters before finishing.
+    // Some tuners may take a while to update their internal status.
+    if (!tuner.getCurrentTuning(_tparams, true, _report)) {
+        _tparams.reset();
     }
 
     // Stop packet acquisition
