@@ -548,9 +548,8 @@ void ScanContext::scanTS(std::ostream& strm, const ts::UString& margin, ts::Modu
     // Use "PAT only" when we do not need the services or channels file.
     ts::TSScanner info(_opt.duck, _tuner, _opt.psi_timeout, !get_services && _opt.channel_file.empty());
 
-    if (!tparams.hasModulationArgs()) {
-        info.getTunerParameters(tparams);
-    }
+    // Get tuning parameters again, as TSScanner waits for a lock.
+    info.getTunerParameters(tparams);
 
     ts::SafePtr<ts::PAT> pat;
     ts::SafePtr<ts::SDT> sdt;
