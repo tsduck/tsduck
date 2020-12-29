@@ -72,6 +72,7 @@ constexpr ts::PLSMode           ts::ModulationArgs::DEFAULT_PLS_MODE;
 constexpr int                   ts::ModulationArgs::DEFAULT_SB_SUBCHANNEL_ID;
 constexpr int                   ts::ModulationArgs::DEFAULT_SB_SEGMENT_COUNT;
 constexpr int                   ts::ModulationArgs::DEFAULT_SB_SEGMENT_INDEX;
+constexpr int                   ts::ModulationArgs::MAX_ISDBT_SEGMENT_COUNT;
 constexpr uint32_t              ts::ModulationArgs::DEFAULT_STREAM_ID;
 #endif
 
@@ -222,6 +223,16 @@ bool ts::ModulationArgs::hasModulationArgs() const
         layer_c_segment_count.set() ||
         layer_c_time_interleaving.set() ||
         stream_id.set();
+}
+
+
+//----------------------------------------------------------------------------
+// Check if an ISDB-T time interleaving value is valid.
+//----------------------------------------------------------------------------
+
+bool ts::ModulationArgs::IsValidISDBTTimeInterleaving(int ti)
+{
+    return ti == -1 || ti == 0 || ti == 1 || ti == 2 || ti == 4;
 }
 
 
@@ -1030,11 +1041,7 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
         strm << margin << "Modulation: " << ModulationEnum.name(modulation.value()) << std::endl;
     }
 
-    if (!delivery_system.set()) {
-        return;
-    }
-
-    switch (TunerTypeOf(delivery_system.value())) {
+    switch (TunerTypeOf(delivery_system.value(DS_UNDEFINED))) {
         case TT_DVB_C: {
             if (symbol_rate.set() && symbol_rate != 0) {
                 strm << margin << "Symbol rate: " << UString::Decimal(symbol_rate.value()) << " symb/s" << std::endl;
@@ -1155,10 +1162,10 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             if (layer_a_modulation.set() && layer_a_modulation != QAM_AUTO) {
                 strm << margin << "Layer A modulation: " << ModulationEnum.name(layer_a_modulation.value()) << std::endl;
             }
-            if (layer_a_segment_count.set() && layer_a_segment_count.value() <= 13) {
+            if (layer_a_segment_count.set() && layer_a_segment_count.value() <= MAX_ISDBT_SEGMENT_COUNT) {
                 strm << margin << "Layer A segment count: " << layer_a_segment_count.value() << std::endl;
             }
-            if (layer_a_time_interleaving.set() && layer_a_time_interleaving != 255) {
+            if (layer_a_time_interleaving.set() && IsValidISDBTTimeInterleaving(layer_a_time_interleaving.value())) {
                 strm << margin << "Layer A time interleaving: " << layer_a_time_interleaving.value() << std::endl;
             }
             if (layer_b_fec.set() && layer_b_fec != FEC_AUTO) {
@@ -1167,10 +1174,10 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             if (layer_b_modulation.set() && layer_b_modulation != QAM_AUTO) {
                 strm << margin << "Layer B modulation: " << ModulationEnum.name(layer_b_modulation.value()) << std::endl;
             }
-            if (layer_b_segment_count.set() && layer_b_segment_count.value() <= 13) {
+            if (layer_b_segment_count.set() && layer_b_segment_count.value() <= MAX_ISDBT_SEGMENT_COUNT) {
                 strm << margin << "Layer B segment count: " << layer_b_segment_count.value() << std::endl;
             }
-            if (layer_b_time_interleaving.set() && layer_b_time_interleaving != 255) {
+            if (layer_b_time_interleaving.set() && IsValidISDBTTimeInterleaving(layer_b_time_interleaving.value())) {
                 strm << margin << "Layer B time interleaving: " << layer_b_time_interleaving.value() << std::endl;
             }
             if (layer_c_fec.set() && layer_c_fec != FEC_AUTO) {
@@ -1179,10 +1186,10 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             if (layer_c_modulation.set() && layer_c_modulation != QAM_AUTO) {
                 strm << margin << "Layer C modulation: " << ModulationEnum.name(layer_c_modulation.value()) << std::endl;
             }
-            if (layer_c_segment_count.set() && layer_c_segment_count.value() <= 13) {
+            if (layer_c_segment_count.set() && layer_c_segment_count.value() <= MAX_ISDBT_SEGMENT_COUNT) {
                 strm << margin << "Layer C segment count: " << layer_c_segment_count.value() << std::endl;
             }
-            if (layer_c_time_interleaving.set() && layer_c_time_interleaving != 255) {
+            if (layer_c_time_interleaving.set() && IsValidISDBTTimeInterleaving(layer_c_time_interleaving.value())) {
                 strm << margin << "Layer C time interleaving: " << layer_c_time_interleaving.value() << std::endl;
             }
             break;

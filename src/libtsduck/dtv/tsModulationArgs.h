@@ -327,11 +327,21 @@ namespace ts {
         //!
         static const UString DEFAULT_ISDBT_LAYERS;
         //!
+        //! Check if an ISDB-T time interleaving value is valid.
+        //! @param [in] ti Time interleaving value. Valid values: 0, 1, 2, 4 or -1 (auto).
+        //! @return True if @a ti is valid, false otherwise.
+        //!
+        static bool IsValidISDBTTimeInterleaving(int ti);
+        //!
         //! ISDB-T partial reception.
         //! When specified to true, the reception of the ISDB-T channel is in partial reception mode.
         //! Applies to: ISDB-T.
         //!
         Variable<bool> isdbt_partial_reception;
+        //!
+        //! Maximum value for ISDB-T segment count.
+        //!
+        static constexpr int MAX_ISDBT_SEGMENT_COUNT = 13;
         //!
         //! Layer A code rate.
         //! Must be one of FEC_AUTO, FEC_1_2, FEC_2_3, FEC_3_4, FEC_5_6, FEC_7_8. The default is automatically detected.
@@ -352,7 +362,7 @@ namespace ts {
         Variable<int> layer_a_segment_count;
         //!
         //! Layer A time interleaving.
-        //! Possible values: 0 to 3 or -1 (auto). The default is automatically detected.
+        //! Possible values: 0, 1, 2, 4 or -1 (auto). The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
         Variable<int> layer_a_time_interleaving;
@@ -376,7 +386,7 @@ namespace ts {
         Variable<int> layer_b_segment_count;
         //!
         //! Layer B time interleaving.
-        //! Possible values: 0 to 3 or -1 (auto). The default is automatically detected.
+        //! Possible values: 0, 1, 2, 4 or -1 (auto). The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
         Variable<int> layer_b_time_interleaving;
@@ -400,7 +410,7 @@ namespace ts {
         Variable<int> layer_c_segment_count;
         //!
         //! Layer C time interleaving.
-        //! Possible values: 0 to 3 or -1 (auto). The default is automatically detected.
+        //! Possible values: 0, 1, 2, 4 or -1 (auto). The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
         Variable<int> layer_c_time_interleaving;

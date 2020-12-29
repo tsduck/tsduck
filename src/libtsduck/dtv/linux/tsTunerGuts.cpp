@@ -884,11 +884,11 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                 params.layer_a_modulation = Modulation(val);
             }
             params.layer_a_segment_count.clear();
-            if ((val = props.getByCommand(DTV_ISDBT_LAYERA_SEGMENT_COUNT)) != DTVProperties::UNKNOWN) {
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERA_SEGMENT_COUNT)) != DTVProperties::UNKNOWN && val <= uint32_t(ModulationArgs::MAX_ISDBT_SEGMENT_COUNT)) {
                 params.layer_a_segment_count = int(val);
             }
             params.layer_a_time_interleaving.clear();
-            if ((val = props.getByCommand(DTV_ISDBT_LAYERA_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN) {
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERA_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN && ModulationArgs::IsValidISDBTTimeInterleaving(int(val))) {
                 params.layer_a_time_interleaving = int(val);
             }
             params.layer_b_fec.clear();
@@ -900,11 +900,11 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                 params.layer_b_modulation = Modulation(val);
             }
             params.layer_b_segment_count.clear();
-            if ((val = props.getByCommand(DTV_ISDBT_LAYERB_SEGMENT_COUNT)) != DTVProperties::UNKNOWN) {
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERB_SEGMENT_COUNT)) != DTVProperties::UNKNOWN && val <= uint32_t(ModulationArgs::MAX_ISDBT_SEGMENT_COUNT)) {
                 params.layer_b_segment_count = int(val);
             }
             params.layer_b_time_interleaving.clear();
-            if ((val = props.getByCommand(DTV_ISDBT_LAYERB_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN) {
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERB_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN && ModulationArgs::IsValidISDBTTimeInterleaving(int(val))) {
                 params.layer_b_time_interleaving = int(val);
             }
             params.layer_c_fec.clear();
@@ -916,11 +916,11 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                 params.layer_c_modulation = Modulation(val);
             }
             params.layer_c_segment_count.clear();
-            if ((val = props.getByCommand(DTV_ISDBT_LAYERC_SEGMENT_COUNT)) != DTVProperties::UNKNOWN) {
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERC_SEGMENT_COUNT)) != DTVProperties::UNKNOWN && val <= uint32_t(ModulationArgs::MAX_ISDBT_SEGMENT_COUNT)) {
                 params.layer_c_segment_count = int(val);
             }
             params.layer_c_time_interleaving.clear();
-            if ((val = props.getByCommand(DTV_ISDBT_LAYERC_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN) {
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERC_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN && ModulationArgs::IsValidISDBTTimeInterleaving(int(val))) {
                 params.layer_c_time_interleaving = int(val);
             }
             break;
