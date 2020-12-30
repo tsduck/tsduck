@@ -74,6 +74,7 @@ namespace ts {
         RangeStatus _last_bitrate_status;  // Status of the last bitrate, regarding allowed range.
         UString     _alarm_command;        // Alarm command name.
         UString     _alarm_prefix;         // Prefix for alarm messages.
+        UString     _alarm_target;         // "target" parameter to the alarm command.
         time_t      _last_second;          // Last second number.
         size_t      _window_size;          // Size (in seconds) of the time window, used to compute bitrate.
         bool        _startup;              // Measurement in progress.
@@ -120,6 +121,7 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
     _last_bitrate_status(LOWER),
     _alarm_command(),
     _alarm_prefix(),
+    _alarm_target(),
     _last_second(0),
     _window_size(0),
     _startup(false),
@@ -144,7 +146,13 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
     option(u"alarm-command", 'a', STRING);
     help(u"alarm-command", u"'command'",
          u"Command to run when the bitrate goes either out of range or back to normal. "
-         u"The command receives an additional string parameter containing an informational message.");
+         u"The command receives six additional parameters:\n\n"
+         u"1. A human-readable alarm message.\n"
+         u"2. Either \"ts\" or the decimal integer value of the PID to monitor.\n"
+         u"3. Bitrate alarm state, one of \"lower\", \"greater\", \"normal\".\n"
+         u"4. Current bitrate in b/s (decimal integer).\n"
+         u"5. Minimum bitrate in b/s (decimal integer).\n"
+         u"6. Maximum bitrate in b/s (decimal integer).");
 
     option(u"time-interval", 't', UINT16);
     help(u"time-interval",
@@ -248,14 +256,17 @@ bool ts::BitrateMonitorPlugin::getOptions()
 
     // Prefix for alarm messages.
     _alarm_prefix = _tag;
+    _alarm_target.clear();
     if (!_alarm_prefix.empty()) {
-        _alarm_prefix += u": ";
+        _alarm_prefix.append(u": ");
     }
     if (_full_ts) {
-        _alarm_prefix += u"TS";
+        _alarm_prefix.append(u"TS");
+        _alarm_target = u"ts";
     }
     else {
-        _alarm_prefix += UString::Format(u"PID 0x%X (%d)", {_pid, _pid});
+        _alarm_prefix.format(u"PID 0x%X (%<d)", {_pid});
+        _alarm_target.format(u"%d", {_pid});
     }
 
     return ok;
@@ -313,30 +324,35 @@ void ts::BitrateMonitorPlugin::computeBitrate()
 
     // Check the bitrate value, regarding the allowed range.
     RangeStatus new_bitrate_status;
+    const UChar* alarm_status = nullptr;
     if (bitrate < _min_bitrate) {
         new_bitrate_status = LOWER;
+        alarm_status = u"lower";
     }
     else if (bitrate > _max_bitrate) {
         new_bitrate_status = GREATER;
+        alarm_status = u"greater";
     }
     else {
         new_bitrate_status = IN_RANGE;
+        alarm_status = u"normal";
     }
 
     // Report an error, if the bitrate status has changed.
     if (new_bitrate_status != _last_bitrate_status) {
-        ts::UString alarmMessage(UString::Format(u"%s bitrate (%'d bits/s) ", {_alarm_prefix, bitrate}));
+        ts::UString alarm_message;
+        alarm_message.format(u"%s bitrate (%'d bits/s) ", {_alarm_prefix, bitrate});
         switch (new_bitrate_status) {
             case LOWER:
-                alarmMessage += UString::Format(u"is lower than allowed minimum (%'d bits/s)", {_min_bitrate});
+                alarm_message += UString::Format(u"is lower than allowed minimum (%'d bits/s)", {_min_bitrate});
                 _labels_next |= _labels_go_below;
                 break;
             case IN_RANGE:
-                alarmMessage += UString::Format(u"is back in allowed range (%'d-%'d bits/s)", {_min_bitrate, _max_bitrate});
+                alarm_message += UString::Format(u"is back in allowed range (%'d-%'d bits/s)", {_min_bitrate, _max_bitrate});
                 _labels_next |= _labels_go_normal;
                 break;
             case GREATER:
-                alarmMessage += UString::Format(u"is greater than allowed maximum (%'d bits/s)", {_max_bitrate});
+                alarm_message += UString::Format(u"is greater than allowed maximum (%'d bits/s)", {_max_bitrate});
                 _labels_next |= _labels_go_above;
                 break;
             default:
@@ -344,12 +360,14 @@ void ts::BitrateMonitorPlugin::computeBitrate()
         }
 
         // Report alarm message as a tsp warning.
-        tsp->warning(alarmMessage);
+        tsp->warning(alarm_message);
 
-        // Call alarm script if defined, and pass the alarm message as parameter.
+        // Call alarm script if defined.
         // The command is run asynchronously, do not wait for completion.
         if (!_alarm_command.empty()) {
-            ForkPipe::Launch(_alarm_command + u" \"" + alarmMessage + u'"', *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
+            UString command;
+            command.format(u"%s \"%s\" %s %s %d %d %d", {_alarm_command, alarm_message, _alarm_target, alarm_status, bitrate, _min_bitrate, _max_bitrate});
+            ForkPipe::Launch(command, *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
         }
 
         // Update status

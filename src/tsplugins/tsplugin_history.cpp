@@ -43,6 +43,7 @@
 #include "tsPMT.h"
 #include "tsTOT.h"
 #include "tsTDT.h"
+#include "tsEIT.h"
 TSDUCK_SOURCE;
 
 
@@ -51,12 +52,16 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class HistoryPlugin: public ProcessorPlugin, private TableHandlerInterface
+    class HistoryPlugin:
+        public ProcessorPlugin,
+        private TableHandlerInterface,
+        private SectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(HistoryPlugin);
     public:
         // Implementation of plugin API
         HistoryPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
@@ -75,23 +80,26 @@ namespace ts {
             Variable<uint8_t> pes_strid;    // PES stream id
         };
 
-        // Private members
-        std::ofstream _outfile;           // User-specified output file
-        PacketCounter _current_pkt;       // Current TS packet number
+        // Command line options
         bool          _report_eit;        // Report EIT
         bool          _report_cas;        // Report CAS events
         bool          _time_all;          // Report all TDT/TOT
         bool          _ignore_stream_id;  // Ignore stream_id modifications
-        bool          _use_milliseconds;  // Report playback time instead of packet number.
+        bool          _use_milliseconds;  // Report playback time instead of packet number
         PacketCounter _suspend_after;     // Number of missing packets after which a PID is considered as suspended
+        UString       _outfile_name;      // Output file name
+
+        // Workign data
+        std::ofstream _outfile;           // User-specified output file
         TDT           _last_tdt;          // Last received TDT
         PacketCounter _last_tdt_pkt;      // Packet# of last TDT
         bool          _last_tdt_reported; // Last TDT already reported
         SectionDemux  _demux;             // Section filter
-        PIDContext    _cpids[PID_MAX];    // Description of each PID
+        std::map<PID,PIDContext> _cpids;  // Description of each PID
 
-        // Invoked by the demux when a complete table is available.
+        // Invoked by the demux.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+        virtual void handleSection(SectionDemux&, const Section&) override;
 
         // Analyze a list of descriptors, looking for ECM PID's
         void analyzeCADescriptors(const DescriptorList& dlist, uint16_t service_id);
@@ -111,18 +119,18 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"history", ts::HistoryPlugin);
 
 ts::HistoryPlugin::HistoryPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Report a history of major events on the transport stream", u"[options]"),
-    _outfile(),
-    _current_pkt(0),
     _report_eit(false),
     _report_cas(false),
     _time_all(false),
     _ignore_stream_id(false),
     _use_milliseconds(false),
     _suspend_after(0),
+    _outfile_name(),
+    _outfile(),
     _last_tdt(Time::Epoch),
     _last_tdt_pkt(0),
     _last_tdt_reported(false),
-    _demux(duck, this),
+    _demux(duck, this, this),
     _cpids()
 {
     option(u"cas", 'c');
@@ -183,54 +191,56 @@ ts::HistoryPlugin::PIDContext::PIDContext() :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get command line options
 //----------------------------------------------------------------------------
 
-bool ts::HistoryPlugin::start()
+bool ts::HistoryPlugin::getOptions()
 {
-    // Get command line arguments
     _report_cas = present(u"cas");
     _report_eit = present(u"eit");
     _time_all = present(u"time-all");
     _ignore_stream_id = present(u"ignore-stream-id-change");
     _use_milliseconds = present(u"milli-seconds");
-    _suspend_after = intValue<PacketCounter>(u"suspend-packet-threshold");
+    getIntValue(_suspend_after, u"suspend-packet-threshold");
+    getValue(_outfile_name, u"output-file");
+    return true;
+}
 
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::HistoryPlugin::start()
+{
     // Create output file
-    if (present(u"output-file")) {
-        const UString name(value(u"output-file"));
-        tsp->verbose(u"creating %s", {name});
-        _outfile.open(name.toUTF8().c_str(), std::ios::out);
+    if (!_outfile_name.empty()) {
+        tsp->verbose(u"creating %s", {_outfile_name});
+        _outfile.open(_outfile_name.toUTF8().c_str(), std::ios::out);
         if (!_outfile) {
-            tsp->error(u"cannot create %s", {name});
+            tsp->error(u"cannot create %s", {_outfile_name});
             return false;
         }
     }
 
     // Reinitialize state
-    _current_pkt = 0;
     _last_tdt_pkt = 0;
     _last_tdt_reported = false;
     _last_tdt.invalidate();
-    for (PIDContext* p = _cpids; p < _cpids + PID_MAX; ++p) {
-        p->pkt_count = p->first_pkt = p->last_pkt = 0;
-        p->service_id = 0;
-        p->scrambling = 0;
-        p->last_tid = TID_NULL;
-    }
+    _cpids.clear();
 
     // Reinitialize the demux
     _demux.reset();
-    _demux.addPID (PID_PAT);
-    _demux.addPID (PID_CAT);
-    _demux.addPID (PID_TSDT);
-    _demux.addPID (PID_NIT);
-    _demux.addPID (PID_SDT);
-    _demux.addPID (PID_BAT);
-    _demux.addPID (PID_TDT);
-    _demux.addPID (PID_TOT);
+    _demux.addPID(PID_PAT);
+    _demux.addPID(PID_CAT);
+    _demux.addPID(PID_TSDT);
+    _demux.addPID(PID_NIT);
+    _demux.addPID(PID_SDT);
+    _demux.addPID(PID_BAT);
+    _demux.addPID(PID_TDT);
+    _demux.addPID(PID_TOT);
     if (_report_eit) {
-        _demux.addPID (PID_EIT);
+        _demux.addPID(PID_EIT);
     }
 
     return true;
@@ -244,9 +254,9 @@ bool ts::HistoryPlugin::start()
 bool ts::HistoryPlugin::stop()
 {
     // Report last packet of each PID
-    for (PIDContext* p = _cpids; p < _cpids + PID_MAX; ++p) {
-        if (p->pkt_count > 0) {
-            report(p->last_pkt, u"PID %d (0x%04X) last packet, %s", {p - _cpids, p - _cpids, p->scrambling ? u"scrambled" : u"clear"});
+    for (auto it = _cpids.begin(); it != _cpids.end(); ++it) {
+        if (it->second.pkt_count > 0) {
+            report(it->second.last_pkt, u"PID %d (0x%<X) last packet, %s", {it->first, it->second.scrambling ? u"scrambled" : u"clear"});
         }
     }
 
@@ -260,13 +270,24 @@ bool ts::HistoryPlugin::stop()
 
 
 //----------------------------------------------------------------------------
+// Invoked by the demux when a complete section is available.
+//----------------------------------------------------------------------------
+
+void ts::HistoryPlugin::handleSection(SectionDemux& demux, const Section& section)
+{
+    if (_report_eit && EIT::IsEIT(section.tableId())) {
+        report(u"%s v%d, service 0x%X", {names::TID(duck, section.tableId()), section.version(), section.tableIdExtension()});
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Invoked by the demux when a complete table is available.
 //----------------------------------------------------------------------------
 
 void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     const PID pid = table.sourcePID();
-    assert(pid < PID_MAX);
 
     switch (table.tableId()) {
 
@@ -276,8 +297,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
                 PAT pat(duck, table);
                 if (pat.isValid()) {
                     // Filter all PMT PIDs
-                    for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                        assert(it->second < PID_MAX);
+                    for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
                         _demux.addPID(it->second);
                         _cpids[it->second].service_id = it->first;
                     }
@@ -290,7 +310,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
             if (table.sourcePID() == PID_TDT) {
                 // Save last TDT in context
                 _last_tdt.deserialize(duck, table);
-                _last_tdt_pkt = _current_pkt;
+                _last_tdt_pkt = tsp->pluginPackets();
                 _last_tdt_reported = false;
                 // Report TDT only if --time-all
                 if (_time_all && _last_tdt.isValid()) {
@@ -323,8 +343,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
             if (pmt.isValid()) {
                 // Get components of the service, including ECM PID's
                 analyzeCADescriptors(pmt.descs, pmt.service_id);
-                for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-                    assert(it->first < PID_MAX);
+                for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
                     _cpids[it->first].service_id = pmt.service_id;
                     analyzeCADescriptors(it->second.descs, pmt.service_id);
                 }
@@ -373,15 +392,14 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         }
 
         default: {
-            const UString name(names::TID(duck, table.tableId()));
-            if (table.tableId() >= TID_EIT_MIN && table.tableId() <= TID_EIT_MAX) {
-                report(u"%s v%d, service 0x%X", {name, table.version(), table.tableIdExtension()});
-            }
-            else if (table.sectionCount() > 0 && table.sectionAt(0)->isLongSection()) {
-                report(u"%s v%d, TIDext 0x%X", {name, table.version(), table.tableIdExtension()});
-            }
-            else {
-                report(u"%s", {name});
+            if (!EIT::IsEIT(table.tableId())) {
+                const UString name(names::TID(duck, table.tableId()));
+                if (table.sectionCount() > 0 && table.sectionAt(0)->isLongSection()) {
+                    report(u"%s v%d, TIDext 0x%X", {name, table.version(), table.tableIdExtension()});
+                }
+                else {
+                    report(u"%s", {name});
+                }
             }
             break;
         }
@@ -457,7 +475,7 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
 
     // Record information about current PID
     const PID pid = pkt.getPID();
-    PIDContext* const cpid = _cpids + pid;
+    PIDContext& cpid(_cpids[pid]);
     const uint8_t scrambling = pkt.getScrambling();
     const bool has_pes_start = pkt.getPUSI() && pkt.getPayloadSize() >= 4 && (GetUInt32(pkt.getPayload()) >> 8) == PES_START;
     const uint8_t pes_stream_id = has_pes_start ? pkt.b[pkt.getHeaderSize() + 3] : 0;
@@ -468,53 +486,51 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
     // immediately followed by clear-to-scrambled transistions.
     const bool ignore_scrambling = !pkt.hasPayload() || pkt.getPayloadSize() < 8;
 
-    if (cpid->pkt_count == 0) {
+    if (cpid.pkt_count == 0) {
         // First packet in a PID
-        cpid->first_pkt = _current_pkt;
-        report(u"PID %d (0x%X) first packet, %s", {pid, pid, scrambling ? u"scrambled" : u"clear"});
+        cpid.first_pkt = tsp->pluginPackets();
+        report(u"PID %d (0x%<X) first packet, %s", {pid, scrambling ? u"scrambled" : u"clear"});
     }
-    else if (cpid->last_pkt + _suspend_after < _current_pkt) {
+    else if (cpid.last_pkt + _suspend_after < tsp->pluginPackets()) {
         // Last packet in the PID is so old that we consider the PID as suspended, and now restarted
-        report(cpid->last_pkt, u"PID %d (0x%X) suspended, %s, service 0x%X", {pid, pid, cpid->scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id});
-        report(u"PID %d (0x%X) restarted, %s, service 0x%04X", {pid, pid, scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id});
+        report(cpid.last_pkt, u"PID %d (0x%<X) suspended, %s, service 0x%X", {pid, cpid.scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id});
+        report(u"PID %d (0x%<X) restarted, %s, service 0x%04X", {pid, scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id});
     }
-    else if (!ignore_scrambling && cpid->scrambling == 0 && scrambling != 0) {
+    else if (!ignore_scrambling && cpid.scrambling == 0 && scrambling != 0) {
         // Clear to scrambled transition
-        report(u"PID %d (0x%X), clear to scrambled transition, %s key, service 0x%X", {pid, pid, names::ScramblingControl(scrambling), _cpids[pid].service_id});
+        report(u"PID %d (0x%<X), clear to scrambled transition, %s key, service 0x%X", {pid, names::ScramblingControl(scrambling), _cpids[pid].service_id});
     }
-    else if (!ignore_scrambling && cpid->scrambling != 0 && scrambling == 0) {
+    else if (!ignore_scrambling && cpid.scrambling != 0 && scrambling == 0) {
         // Scrambled to clear transition
-        report(u"PID %d (0x%X), scrambled to clear transition, service 0x%X", {pid, pid, _cpids[pid].service_id});
+        report(u"PID %d (0x%<X), scrambled to clear transition, service 0x%X", {pid, _cpids[pid].service_id});
     }
-    else if (!ignore_scrambling && _report_cas && cpid->scrambling != scrambling) {
+    else if (!ignore_scrambling && _report_cas && cpid.scrambling != scrambling) {
         // New crypto-period
-        report(u"PID %d (0x%X), new crypto-period, %s key, service 0x%X", {pid, pid, names::ScramblingControl(scrambling), _cpids[pid].service_id});
+        report(u"PID %d (0x%<X), new crypto-period, %s key, service 0x%X", {pid, names::ScramblingControl(scrambling), _cpids[pid].service_id});
     }
 
     if (has_pes_start) {
-        if (!cpid->pes_strid.set()) {
+        if (!cpid.pes_strid.set()) {
             // Found first PES stream id in the PID.
-            report(u"PID %d (0x%X), PES stream_id is %s", {pid, pid, names::StreamId(pes_stream_id, names::FIRST)});
+            report(u"PID %d (0x%<X), PES stream_id is %s", {pid, names::StreamId(pes_stream_id, names::FIRST)});
         }
-        else if (cpid->pes_strid != pes_stream_id && !_ignore_stream_id) {
+        else if (cpid.pes_strid != pes_stream_id && !_ignore_stream_id) {
             // PES stream id has changed in the PID.
-            report(u"PID %d (0x%X), PES stream_id modified from 0x%X to %s", {pid, pid, cpid->pes_strid.value(), names::StreamId(pes_stream_id, names::FIRST)});
+            report(u"PID %d (0x%<X), PES stream_id modified from 0x%X to %s", {pid, cpid.pes_strid.value(), names::StreamId(pes_stream_id, names::FIRST)});
         }
-        cpid->pes_strid = pes_stream_id;
+        cpid.pes_strid = pes_stream_id;
     }
 
     if (!ignore_scrambling) {
-        cpid->scrambling = scrambling;
+        cpid.scrambling = scrambling;
     }
 
-    cpid->last_pkt = _current_pkt;
-    cpid->pkt_count++;
+    cpid.last_pkt = tsp->pluginPackets();
+    cpid.pkt_count++;
 
     // Filter interesting sections
     _demux.feedPacket(pkt);
 
-    // Count TS packets
-    _current_pkt++;
     return TSP_OK;
 }
 
@@ -525,7 +541,7 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
 
 void ts::HistoryPlugin::report(const UChar* fmt, const std::initializer_list<ArgMixIn> args)
 {
-    report(_current_pkt, fmt, args);
+    report(tsp->pluginPackets(), fmt, args);
 }
 
 void ts::HistoryPlugin::report(PacketCounter pkt, const UChar* fmt, const std::initializer_list<ArgMixIn> args)

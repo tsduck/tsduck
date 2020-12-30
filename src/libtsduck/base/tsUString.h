@@ -1638,6 +1638,8 @@ namespace ts {
         //!
         //! Format a string using a template and arguments.
         //!
+        //! The formatted string is appended to this string object.
+        //!
         //! This method is similar in principle to @c printf(). The @a fmt paramter is used as a
         //! @e format or @e template where sequences starting with '\%' are place-holders for
         //! arguments. The main different with @c printf() is that the argument list is typed,
@@ -1718,6 +1720,7 @@ namespace ts {
 
         //!
         //! Format a string using a template and arguments.
+        //! The formatted string is appended to this string object.
         //! @param [in] fmt Format string with embedded '\%' sequences.
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see format()

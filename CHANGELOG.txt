@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.25-2130
+VERSION 3.25-2144
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -13,6 +13,7 @@ VERSION 3.25-2130
   * DVB-T/T2 and ISDB-T are no longer enumeration values ("6-MHz", "8-MHz",
     etc). They are arbitrary values in Hz. The previous values in command
     line are still accepted for compatibility.
+  * In plugin "bitrate_monitor", the alarm command receives more parameters.
   * New options in exiting commands and plugins:
     - Option --save-es in plugin "pes".
     - Option --extended-info in "tslsdvb" (--verbose no longer displays the
