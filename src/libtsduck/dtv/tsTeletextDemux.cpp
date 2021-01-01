@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2020, Thierry Lelegard
+// Copyright (c) 2005-2021, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
 // Parts of this module are inspired from Telxcc, a free open-source Teletext
 // extractor from Petr Kutalek (https://github.com/petrkutalek/telxcc).
 // Copyright: (c) 2011-2014 Forers, s. r. o.: telxcc
-// If you do not want this third-party code included, define TS_NOTELETEXT.
+// If you do not want this code included, define TS_NOTELETEXT.
 //
 //----------------------------------------------------------------------------
 //

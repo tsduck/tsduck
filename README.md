@@ -74,5 +74,5 @@ using [![Donate](https://tsduck.io/images/donate-paypal.svg)](https://tsduck.io/
 TSDuck is distributed under the terms of the Simplified BSD License.
 See the file `LICENSE.txt` for details.
 
-*Copyright (c) 2005-2020, Thierry Lelegard*<br/>
+*Copyright (c) 2005-2021, Thierry Lelegard*<br/>
 *All rights reserved*

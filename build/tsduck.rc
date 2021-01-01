@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2020, Thierry Lelegard
+// Copyright (c) 2005-2021, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,7 @@ BEGIN
     BEGIN
       VALUE "ProductName",      "TSDuck\0"
       VALUE "ProductVersion",   VERSION_STRING "\0"
-      VALUE "LegalCopyright",   "Copyright (c) 2005-2020, Thierry Lelegard\0"
+      VALUE "LegalCopyright",   "Copyright (c) 2005-2021, Thierry Lelegard\0"
       VALUE "FileDescription",  "TSDuck - The MPEG Transport Stream Toolkit\0"
       VALUE "FileVersion",      VERSION_STRING "\0"
       VALUE "OriginalFilename", STRINGIZE(TS_WINVER_FILENAME) "\0"
