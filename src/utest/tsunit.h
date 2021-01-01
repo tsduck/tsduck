@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSUnit - A simple C++ unitary test framework.
-// Copyright (c) 2019-2020, Thierry Lelegard
+// Copyright (c) 2019-2021, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without

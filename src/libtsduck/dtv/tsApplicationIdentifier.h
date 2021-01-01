@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2018, Tristan Claverie
+// Copyright (c) 2018-2021, Tristan Claverie
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
