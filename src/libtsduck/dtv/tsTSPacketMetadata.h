@@ -350,4 +350,3 @@ namespace ts {
     //!
     typedef ResidentBuffer<TSPacketMetadata> PacketMetadataBuffer;
 }
-

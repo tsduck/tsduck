@@ -660,6 +660,7 @@
 #include "tsTSPacketMetadata.h"
 #include "tsTSPacketQueue.h"
 #include "tsTSPacketStream.h"
+#include "tsTSPacketWindow.h"
 #include "tsTSPControlCommand.h"
 #include "tsTSProcessor.h"
 #include "tsTSProcessorArgs.h"
