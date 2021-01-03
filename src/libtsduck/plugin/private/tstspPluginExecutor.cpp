@@ -73,30 +73,6 @@ ts::tsp::PluginExecutor::~PluginExecutor()
 
 
 //----------------------------------------------------------------------------
-// Set the initial state of the buffer.
-// Executed in synchronous environment, before starting all executor threads.
-//----------------------------------------------------------------------------
-
-void ts::tsp::PluginExecutor::initBuffer(PacketBuffer* buffer,
-                                         PacketMetadataBuffer* metadata,
-                                         size_t        pkt_first,
-                                         size_t        pkt_cnt,
-                                         bool          input_end,
-                                         bool          aborted,
-                                         BitRate       bitrate)
-{
-    _buffer = buffer;
-    _metadata = metadata;
-    _pkt_first = pkt_first;
-    _pkt_cnt = pkt_cnt;
-    _input_end = input_end;
-    _tsp_aborting = aborted;
-    _bitrate = bitrate;
-    _tsp_bitrate = bitrate;
-}
-
-
-//----------------------------------------------------------------------------
 // Number of plugins in the chain. Inherited from TSP.
 //----------------------------------------------------------------------------
 
@@ -115,54 +91,6 @@ void ts::tsp::PluginExecutor::signalPluginEvent(uint32_t event_code, Object* plu
 {
     const PluginEventContext ctx(event_code, pluginName(), pluginIndex(), pluginCount(), plugin(), plugin_data, bitrate(), pluginPackets(), totalPacketsInThread());
     _handlers.callEventHandlers(ctx);
-}
-
-
-//----------------------------------------------------------------------------
-// Signal that the specified number of packets have been processed.
-//----------------------------------------------------------------------------
-
-bool ts::tsp::PluginExecutor::passPackets(size_t count, BitRate bitrate, bool input_end, bool aborted)
-{
-    assert(count <= _pkt_cnt);
-    assert(_pkt_first + count <= _buffer->count());
-
-    log(10, u"passPackets(count = %'d, bitrate = %'d, input_end = %s, aborted = %s)", {count, bitrate, input_end, aborted});
-
-    // We access data under the protection of the global mutex.
-    Guard lock(_global_mutex);
-
-    // Update our buffer
-    _pkt_first = (_pkt_first + count) % _buffer->count();
-    _pkt_cnt -= count;
-
-    // Update next processor's buffer.
-    PluginExecutor* next = ringNext<PluginExecutor>();
-    next->_pkt_cnt += count;
-    next->_input_end = next->_input_end || input_end;
-    next->_bitrate = bitrate;
-
-    // Wake the next processor when there is some data
-    if (count > 0 || input_end) {
-        next->_to_do.signal();
-    }
-
-    // Force to abort our processor when the next one is aborting.
-    // Already done in waitWork() but force immediately.
-    // Don't do that if current is output and next is input because
-    // there is no propagation of packets from output back to input.
-    if (plugin()->type() != PluginType::OUTPUT) {
-        aborted = aborted || next->_tsp_aborting;
-    }
-
-    // Wake the previous processor when we abort
-    if (aborted) {
-        _tsp_aborting = true; // volatile bool in TSP superclass
-        ringPrevious<PluginExecutor>()->_to_do.signal();
-    }
-
-    // Return false when the current processor shall stop.
-    return !input_end && !aborted;
 }
 
 
@@ -189,12 +117,91 @@ bool ts::tsp::PluginExecutor::isRealTime() const
 
 
 //----------------------------------------------------------------------------
+// Set the initial state of the buffer.
+// Executed in synchronous environment, before starting all executor threads.
+//----------------------------------------------------------------------------
+
+void ts::tsp::PluginExecutor::initBuffer(PacketBuffer* buffer,
+                                         PacketMetadataBuffer* metadata,
+                                         size_t        pkt_first,
+                                         size_t        pkt_cnt,
+                                         bool          input_end,
+                                         bool          aborted,
+                                         BitRate       bitrate)
+{
+    log(10, u"initBuffer(..., pkt_first = %'d, pkt_cnt = %'d, input_end = %s, aborted = %s, bitrate = %'d)", {pkt_first, pkt_cnt, input_end, aborted, bitrate});
+
+    _buffer = buffer;
+    _metadata = metadata;
+    _pkt_first = pkt_first;
+    _pkt_cnt = pkt_cnt;
+    _input_end = input_end;
+    _tsp_aborting = aborted;
+    _bitrate = bitrate;
+    _tsp_bitrate = bitrate;
+}
+
+
+//----------------------------------------------------------------------------
+// Signal that the specified number of packets have been processed.
+//----------------------------------------------------------------------------
+
+bool ts::tsp::PluginExecutor::passPackets(size_t count, BitRate bitrate, bool input_end, bool aborted)
+{
+    assert(count <= _pkt_cnt);
+
+    log(10, u"passPackets(count = %'d, bitrate = %'d, input_end = %s, aborted = %s)", {count, bitrate, input_end, aborted});
+
+    // We access data under the protection of the global mutex.
+    Guard lock(_global_mutex);
+
+    // Update our buffer: we remove the first 'count' packets from the beginning of our slice of the buffer.
+    _pkt_first = (_pkt_first + count) % _buffer->count();
+    _pkt_cnt -= count;
+
+    // Update next processor's buffer: add 'count' packets at the end of its slice of the buffer.
+    PluginExecutor* next = ringNext<PluginExecutor>();
+    next->_pkt_cnt += count;
+
+    // Propagate bitrate and end of input flag to next processor.
+    next->_bitrate = bitrate;
+    next->_input_end = next->_input_end || input_end;
+
+    // Wake the next processor when there is some new input data or end of input.
+    if (count > 0 || input_end) {
+        next->_to_do.signal();
+    }
+
+    // Force to abort our processor when the next one is aborting. Already done in waitWork() but force immediately.
+    // Don't do that if current is output and next is input because there is no propagation of packets from output back to input.
+    if (plugin()->type() != PluginType::OUTPUT) {
+        aborted = aborted || next->_tsp_aborting;
+    }
+
+    // Wake the previous processor when we abort (propagate abort conditions backward).
+    if (aborted) {
+        _tsp_aborting = true; // volatile bool in TSP superclass
+        ringPrevious<PluginExecutor>()->_to_do.signal();
+    }
+
+    // Return false when the current processor shall stop.
+    return !input_end && !aborted;
+}
+
+
+//----------------------------------------------------------------------------
 // Wait for packets to process or some error condition.
 //----------------------------------------------------------------------------
 
-void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRate& bitrate, bool& input_end, bool& aborted, bool &timeout)
+void ts::tsp::PluginExecutor::waitWork(size_t min_pkt_cnt, size_t& pkt_first, size_t& pkt_cnt, BitRate& bitrate, bool& input_end, bool& aborted, bool &timeout)
 {
-    log(10, u"waitWork(...)");
+    log(10, u"waitWork(min_pkt_cnt = %'d, ...)", {min_pkt_cnt});
+
+    // Cannot allocate more than the buffer size.
+    if (min_pkt_cnt > _buffer->count()) {
+        debug(u"requests too many packets at a time: %'d, larger than buffer size: %'d", {min_pkt_cnt, _buffer->count()});
+        min_pkt_cnt = _buffer->count();
+    }
 
     // We access data under the protection of the global mutex.
     GuardCondition lock(_global_mutex, _to_do);
@@ -202,7 +209,8 @@ void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRa
     PluginExecutor* next = ringNext<PluginExecutor>();
     timeout = false;
 
-    while (_pkt_cnt == 0 && !_input_end && !timeout && !next->_tsp_aborting) {
+    // Loop until enough packets are available (or some error condition).
+    while (_pkt_cnt < min_pkt_cnt && !_input_end && !timeout && !next->_tsp_aborting) {
         // If packet area for this processor is empty, wait for some packet.
         // The mutex is implicitely released, we wait for the condition
         // '_to_do' and, once we get it, implicitely relock the mutex.
@@ -211,8 +219,22 @@ void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRa
         timeout = !lock.waitCondition(_tsp_timeout) && !plugin()->handlePacketTimeout();
     }
 
+    // The number of returned packets is limited up to the wrap-up point of the circular buffer,
+    // if allowed by the requested minimum number of packets.
+    if (timeout) {
+        // Nothing returned.
+        pkt_cnt = 0;
+    }
+    else if (_pkt_first + min_pkt_cnt <= _buffer->count()) {
+        // Return up to the wrap-up point. This will satisfy the requested minimum.
+        pkt_cnt = std::min(_pkt_cnt, _buffer->count() - _pkt_first);
+    }
+    else {
+        // The requested minimum does not fit into a contiguous area.
+        pkt_cnt = _pkt_cnt;
+    }
+
     pkt_first = _pkt_first;
-    pkt_cnt = timeout ? 0 : std::min(_pkt_cnt, _buffer->count() - _pkt_first);
     bitrate = _bitrate;
     input_end = _input_end && pkt_cnt == _pkt_cnt;
 
@@ -221,8 +243,8 @@ void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRa
     // there is no propagation of packets from output back to input.
     aborted = plugin()->type() != PluginType::OUTPUT && next->_tsp_aborting;
 
-    log(10, u"waitWork(pkt_first = %'d, pkt_cnt = %'d, bitrate = %'d, input_end = %s, aborted = %s, timeout = %s)",
-        {pkt_first, pkt_cnt, bitrate, input_end, aborted, timeout});
+    log(10, u"waitWork(min_pkt_cnt = %'d, pkt_first = %'d, pkt_cnt = %'d, bitrate = %'d, input_end = %s, aborted = %s, timeout = %s)",
+        {min_pkt_cnt, pkt_first, pkt_cnt, bitrate, input_end, aborted, timeout});
 }
 
 
@@ -288,10 +310,21 @@ void ts::tsp::PluginExecutor::restart(const RestartDataPtr& rd)
 
 
 //----------------------------------------------------------------------------
+// Check if there is a pending restart operation (but do not execute it).
+//----------------------------------------------------------------------------
+
+bool ts::tsp::PluginExecutor::pendingRestart()
+{
+    Guard lock(_global_mutex);
+    return _restart && !_restart_data.isNull();
+}
+
+
+//----------------------------------------------------------------------------
 // Process a pending restart operation if there is one.
 //----------------------------------------------------------------------------
 
-bool ts::tsp::PluginExecutor::processPendingRestart()
+bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
 {
     // Run under the protection of the global mutex.
     // To avoid deadlocks, always acquire the global mutex first, then a RestartData mutex.
@@ -299,8 +332,12 @@ bool ts::tsp::PluginExecutor::processPendingRestart()
 
     // If there is no pending restart, immediate success.
     if (!_restart || _restart_data.isNull()) {
+        restarted = false;
         return true;
     }
+
+    // There will be a restart attempt.
+    restarted = true;
 
     // Now lock the content of the restart data.
     GuardCondition lock2(_restart_data->mutex, _restart_data->condition);

@@ -232,5 +232,8 @@ namespace ts {
     private:
         PacketCounter _total_packets;   // Total processed packets in the plugin thread.
         PacketCounter _plugin_packets;  // Total processed packets in the plugin object.
+
+        // A dirty hack for the default implementation of ts::ProcessorPlugin::processPacketWindow().
+        friend class ProcessorPlugin;
     };
 }

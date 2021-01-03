@@ -86,7 +86,7 @@ namespace ts {
 
         //!
         //! Get the address of a packet inside the window.
-        //! @param [in] index Index of the packet inside the windows, from 0 to size()-1.
+        //! @param [in] index Index of the packet inside the window, from 0 to size()-1.
         //! @return The address of the corresponding packet. Return a null pointer if the
         //! @a index is out of range or if the packet was previously dropped.
         //!
@@ -94,7 +94,7 @@ namespace ts {
 
         //!
         //! Get the address of the metadata of a packet inside the window.
-        //! @param [in] index Index of the packet inside the windows, from 0 to size()-1.
+        //! @param [in] index Index of the packet inside the window, from 0 to size()-1.
         //! @return The address of the corresponding packet metadata. Return a null pointer if the
         //! @a index is out of range or if the packet was previously dropped.
         //!
@@ -102,13 +102,22 @@ namespace ts {
 
         //!
         //! Get the address of a packet and its metadata inside the window.
-        //! @param [in] index Index of the packet inside the windows, from 0 to size()-1.
+        //! @param [in] index Index of the packet inside the window, from 0 to size()-1.
         //! @param [out] packet The address of the corresponding packet.
         //! @param [out] metadata The address of the corresponding packet metadata.
         //! @return True on success, false if the @a index is out of range or if the packet was previously dropped.
         //! In the latter case, @a packet and @a metadata are both null pointers.
         //!
         bool get(size_t index, TSPacket*& packet, TSPacketMetadata*& metadata) const;
+
+        //!
+        //! Get the physical index of a packet inside a buffer.
+        //! @param [in] index Index of the packet inside the window, from 0 to size()-1.
+        //! @param [in] buffer Base address of a packet buffer. The packet window must be a view over that buffer.
+        //! @param [in] buffer_size Number of TS packets in the buffer.
+        //! @return The index of the packet in the buffer or NPOS if out of range.
+        //!
+        size_t packetIndexInBuffer(size_t index, const TSPacket* buffer, size_t buffer_size) const;
 
         //!
         //! Nullify the packet at the corresponding index.
@@ -144,6 +153,9 @@ namespace ts {
         public:
             size_t first;
         };
+
+        // Same as public get() but returns non-null addresses for dropped packets.
+        bool getInternal(size_t index, TSPacket*& packet, TSPacketMetadata*& metadata) const;
 
         size_t _size;
         size_t _nullify_count;
