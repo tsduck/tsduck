@@ -77,6 +77,10 @@ namespace ts {
 
             // Inherited from Thread
             virtual void main() override;
+
+            // Process packets one by one or using packet windows.
+            void processIndividualPackets();
+            void processPacketWindows(size_t window_size);
         };
     }
 }

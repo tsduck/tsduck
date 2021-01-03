@@ -155,17 +155,15 @@ namespace ts {
             //!
             //! Pass processed packets to the next packet processor.
             //!
-            //! This method is invoked by a subclass to indicate that some packets
-            //! have been processed by this packet process and shall be passed to
-            //! the next processor.
+            //! This method is invoked by a subclass to indicate that some packets have been
+            //! processed by this plugin executor and shall be passed to the next plugin executor.
             //!
-            //! Note that, if the caller thread is the output processor, the semantic of
-            //! the operation is "these buffers are no longer used and can be reused by
-            //! the input thread".
+            //! If the caller thread is the output processor, the semantic of the operation is
+            //! "these buffers are no longer used and can be reused by the input thread".
             //!
             //! @param [in] count Number of packets to pass to next processor.
-            //! @param [in] bitrate Bitrate, as computed by this processor or passed
-            //! from the previous processor. To be passed to next processor.
+            //! @param [in] bitrate Bitrate, as computed by this processor or passed from the previous processor.
+            //! To be passed to next processor.
             //! @param [in] input_end If true, this processor will no longer produce packets.
             //! @param [in] aborted if true, this processor has encountered an error and will cease to accept packets.
             //! @return True when the processor shall continue, false when it shall stop.
@@ -175,15 +173,20 @@ namespace ts {
             //!
             //! Wait for something to do.
             //!
-            //! This method is invoked by a subclass when it has nothing to do.
-            //! This method makes the calling processor thread waiting for packets
-            //! to process or some error condition.
+            //! This method is invoked by a subclass when it has nothing to do or needs more packets.
+            //! This method makes the calling processor thread waiting for packets to process or some error condition.
             //!
-            //! Always return a contiguous array of packets. If the circular buffer
-            //! wrap-over occurs in the middle of the caller's area, only return the
-            //! first part, up the buffer's highest address. The next call to waitWork()
-            //! will return the second part.
+            //! If @a min_pkt_cnt is 1, it always return a contiguous array of packets. If the circular buffer
+            //! wrap-over occurs in the middle of the caller's area, it only returns the first part, up the
+            //! buffer's highest address. The next call to waitWork() will return the second part.
             //!
+            //! In other words, when there is no real need for a minimum number of packets, always specify
+            //! @a min_pkt_cnt as 1 and you will always get a contiiguous buffer. On the other hand, if you
+            //! do need a specific minimum number of packets, you must be prepared to handle the wrap-up in
+            //! the middle of the returned area.
+            //!
+            //! @param [in] min_pkt_cnt Minimum number of packets to return. Wait until at least this number
+            //! of packets can be returned in @a pkt_cnt (unless it is too large or some error occurs).
             //! @param [out] pkt_first Index of first packet to process in the buffer.
             //! @param [out] pkt_cnt Number of packets to process in the buffer.
             //! @param [out] bitrate Current bitrate, as computed from previous processors.
@@ -192,14 +195,21 @@ namespace ts {
             //! @param [out] timeout No packet could be returned within the timeout specified by the plugin and
             //! the plugin requested an abort.
             //!
-            void waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRate& bitrate, bool& input_end, bool& aborted, bool &timeout);
+            void waitWork(size_t min_pkt_cnt, size_t& pkt_first, size_t& pkt_cnt, BitRate& bitrate, bool& input_end, bool& aborted, bool &timeout);
+
+            //!
+            //! Check if there is a pending restart operation (but do not execute it).
+            //! @return True if there is a pending restart operation.
+            //!
+            bool pendingRestart();
 
             //!
             //! Process a pending restart operation if there is one.
+            //! @param [out] restarted Set to true if the plugin was restarted.
             //! @return True in case of success (no pending restart or successfully restarted)
             //! or false on fatal error (cannot even restart with the original parameters).
             //!
-            bool processPendingRestart();
+            bool processPendingRestart(bool& restarted);
 
         private:
             // Registry of plugin event handlers.
@@ -210,13 +220,14 @@ namespace ts {
             typedef SafePtr<RestartData,Mutex> RestartDataPtr;
 
             // The following private data must be accessed exclusively under the protection of the global mutex.
-            // Implementation details: see the file src/docs/developing-plugins.dox
+            // Implementation details: see the file src/docs/developing-plugins.dox.
+            // [*] After initialization, these fields are read/written only in passPackets() and waitWork().
             Condition      _to_do;         // Notify processor to do something.
-            size_t         _pkt_first;     // Starting index of packets area
-            size_t         _pkt_cnt;       // Size of packets area
-            bool           _input_end;     // No more packet after current ones
-            BitRate        _bitrate;       // Input bitrate (set by previous plugin)
-            bool           _restart;       // Restart the plugni asap using _restart_data
+            size_t         _pkt_first;     // Starting index of packets area [*]
+            size_t         _pkt_cnt;       // Size of packets area [*]
+            bool           _input_end;     // No more packet after current ones [*]
+            BitRate        _bitrate;       // Input bitrate (set by previous plugin) [*]
+            bool           _restart;       // Restart the plugin asap using _restart_data
             RestartDataPtr _restart_data;  // How to restart the plugin
 
             // Description of a restart operation.

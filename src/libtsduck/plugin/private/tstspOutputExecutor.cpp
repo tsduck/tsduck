@@ -78,6 +78,7 @@ void ts::tsp::OutputExecutor::main()
 
     PacketCounter output_packets = 0;
     bool aborted = false;
+    bool restarted = false;
 
     do {
         // Wait for packets to output
@@ -85,7 +86,7 @@ void ts::tsp::OutputExecutor::main()
         size_t pkt_cnt = 0;
         bool input_end = false;
         bool timeout = false;
-        waitWork(pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted, timeout);
+        waitWork(1, pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted, timeout);
 
         // We ignore the returned "aborted" which comes from the "next"
         // processor in the chain, here the input thread. For the
@@ -93,8 +94,8 @@ void ts::tsp::OutputExecutor::main()
         aborted = _tsp_aborting;
 
         // Process restart requests.
-        if (!processPendingRestart()) {
-            timeout = true;
+        if (!processPendingRestart(restarted)) {
+            timeout = true; // restart error
         }
 
         // In case of abort on timeout, notify previous and next plugin, then exit.

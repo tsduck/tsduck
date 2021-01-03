@@ -160,4 +160,10 @@ void TSPacketWindowTest::testAll()
     TSUNIT_EQUAL(0, packets[1].b[0]);
     TSUNIT_EQUAL(0, packets[9].b[0]);
     TSUNIT_EQUAL(3, win.dropCount());
+
+    TSUNIT_EQUAL(0, win.packetIndexInBuffer(0, packets, 10));
+    TSUNIT_EQUAL(ts::NPOS, win.packetIndexInBuffer(0, packets + 1, 9));
+    TSUNIT_EQUAL(9, win.packetIndexInBuffer(9, packets, 10));
+    TSUNIT_EQUAL(7, win.packetIndexInBuffer(7, packets, 10));
+    TSUNIT_EQUAL(ts::NPOS, win.packetIndexInBuffer(11, packets, 9));
 }

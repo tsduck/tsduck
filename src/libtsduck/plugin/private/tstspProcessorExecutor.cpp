@@ -76,7 +76,38 @@ void ts::tsp::ProcessorExecutor::main()
 {
     debug(u"packet processing thread started");
 
-    const TSPacketMetadata::LabelSet only_labels(_processor->getOnlyLabelOption());
+    // Debug feature: if the environment variable TSP_FORCED_WINDOW_SIZE is
+    // defined to some non-zero integer value, force all plugins to use the
+    // packet window processing method. This can be used to check that using
+    // this method does not break a plugin or tsp itself.
+    size_t window_size = 0;
+    if (!GetEnvironment(u"TSP_FORCED_WINDOW_SIZE").toInteger(window_size)) {
+        window_size = 0; // invalid value, reset
+    }
+
+    // Get and apply the processing method.
+    if (window_size == 0) {
+        window_size = _processor->getPacketWindowSize();
+    }
+    if (window_size == 0) {
+        processIndividualPackets();
+    }
+    else {
+        processPacketWindows(window_size);
+    }
+
+    // Close the packet processor
+    _processor->stop();
+}
+
+
+//----------------------------------------------------------------------------
+// Process packets one by one.
+//----------------------------------------------------------------------------
+
+void ts::tsp::ProcessorExecutor::processIndividualPackets()
+{
+    TSPacketMetadata::LabelSet only_labels(_processor->getOnlyLabelOption());
     PacketCounter passed_packets = 0;
     PacketCounter dropped_packets = 0;
     PacketCounter nullified_packets = 0;
@@ -84,30 +115,33 @@ void ts::tsp::ProcessorExecutor::main()
     bool bitrate_never_modified = true;
     bool input_end = false;
     bool aborted = false;
+    bool restarted = false;
 
     do {
         // Wait for packets to process
         size_t pkt_first = 0;
         size_t pkt_cnt = 0;
         bool timeout = false;
-        waitWork(pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted, timeout);
+        waitWork(1, pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted, timeout);
 
-        // If bit rate was never modified by the plugin, always copy the
-        // input bitrate as output bitrate. Otherwise, keep previous
-        // output bitrate, as modified by the plugin.
+        // If bitrate was never modified by the plugin, always copy the input bitrate as output bitrate.
+        // Otherwise, keep previous output bitrate, as modified by the plugin.
         if (bitrate_never_modified) {
             output_bitrate = _tsp_bitrate;
         }
 
         // Process restart requests.
-        if (!processPendingRestart()) {
-            timeout = true;
+        if (!processPendingRestart(restarted)) {
+            timeout = true; // restart error
+        }
+        else if (restarted) {
+            // Plugin was restarted, need to recheck --only-label
+            only_labels = _processor->getOnlyLabelOption();
         }
 
         // In case of abort on timeout, notify previous and next plugin, then exit.
         if (timeout) {
             passPackets(0, output_bitrate, true, true);
-            aborted = true;
             break;
         }
 
@@ -174,8 +208,8 @@ void ts::tsp::ProcessorExecutor::main()
                         dropped_packets++;
                         break;
                     case ProcessorPlugin::TSP_END:
-                        // Signal end of input to successors and abort
-                        // to predecessors
+                        // Signal end of input to successors and abort to predecessors
+                        debug(u"plugin requests termination");
                         input_end = aborted = true;
                         pkt_done--;
                         pkt_flush--;
@@ -215,8 +249,197 @@ void ts::tsp::ProcessorExecutor::main()
 
     } while (!input_end && !aborted);
 
-    // Close the packet processor
-    _processor->stop();
+    debug(u"packet processing thread %s after %'d packets, %'d passed, %'d dropped, %'d nullified",
+          {input_end ? u"terminated" : u"aborted", pluginPackets(), passed_packets, dropped_packets, nullified_packets});
+}
+
+
+//----------------------------------------------------------------------------
+// Process packets using packet windows.
+//----------------------------------------------------------------------------
+
+void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
+{
+    debug(u"packet processing window size: %'d packets", {window_size});
+
+    TSPacketMetadata::LabelSet only_labels(_processor->getOnlyLabelOption());
+    PacketCounter passed_packets = 0;
+    PacketCounter dropped_packets = 0;
+    PacketCounter nullified_packets = 0;
+    BitRate output_bitrate = _tsp_bitrate;
+    bool bitrate_never_modified = true;
+    bool input_end = false;
+    bool aborted = false;
+    bool timeout = false;
+    bool restarted = false;
+
+    // Loop on packet processing.
+    do {
+        // Wait for a part of the buffer which is large enough for the packet window.
+        // Initially, we request the window size. But maybe not all packets can be used
+        // in the returned area: maybe there are dropped packets or excluded packets
+        // when --only-label is used. Compute haw many packets are missing and restart
+        // the request with that many more packets. But again, some of the the additional
+        // packets may be excluded. So, restart again and again until we get 'window_size'
+        // usable packets.
+        TSPacketWindow::PacketRangeVector packet_ranges;
+        size_t request_packets = window_size;  // number of packets to request in the buffer.
+        size_t first_packet_index = 0;         // index of first allocated packet in the global buffer.
+        size_t allocated_packets = 0;          // number of allocated packet from the global buffer.
+        size_t packets_in_window = 0;          // accumulated packets in packet window.
+
+        // Loop on building a large enough packet window.
+        while (!aborted && !input_end && !timeout) {
+
+            // Restart building a packet window.
+            packet_ranges.clear();
+            packets_in_window = 0;
+
+            // Wait for packets to process.
+            waitWork(request_packets, first_packet_index, allocated_packets, _tsp_bitrate, input_end, aborted, timeout);
+
+            // If bitrate was never modified by the plugin, always copy the input bitrate as output bitrate.
+            // Otherwise, keep previous output bitrate, as modified by the plugin.
+            if (bitrate_never_modified) {
+                output_bitrate = _tsp_bitrate;
+            }
+
+            // Process restart requests.
+            if (!processPendingRestart(restarted)) {
+                timeout = true; // restart error
+            }
+            else if (restarted) {
+                // Plugin was restarted, need to recheck --only-label and window size.
+                // Don't let window size be zero, we are in packet window mode.
+                only_labels = _processor->getOnlyLabelOption();
+                window_size = std::max<size_t>(1, _processor->getPacketWindowSize());
+            }
+
+            // If the plugin is suspended, simply pass the packets to the next plugin.
+            if (_suspended) {
+                // Drop all packets which are owned by this plugin.
+                addNonPluginPackets(allocated_packets);
+                passPackets(allocated_packets, output_bitrate, input_end, aborted);
+                // Continue building a packet window (the plugin maybe resumed in the meantime).
+                continue;
+            }
+
+            // Inspect the packets we got from the buffer (pkt_first / pkt_count) and insert usable packets in the packet window.
+            // Take care that waitWork() may have returned a slice of the buffer which wraps up.
+            TSPacket* pkt = _buffer->base() + first_packet_index;
+            TSPacketMetadata* pkt_data = _metadata->base() + first_packet_index;
+            size_t range_first = first_packet_index;
+            size_t range_cnt = 0;
+            for (size_t i = 0; i < allocated_packets; ++i) {
+                if (pkt->b[0] == 0 || (only_labels.any() && !pkt_data->hasAnyLabel(only_labels))) {
+                    // Packet was previously dropped or its label is not in --only-label.
+                    // Close previous range.
+                    if (range_cnt > 0) {
+                        packet_ranges.push_back({_buffer->base() + range_first, _metadata->base() + range_first, range_cnt});
+                        packets_in_window += range_cnt;
+                    }
+                    // Next range will start at next packet.
+                    range_first = (first_packet_index + i + 1) % _buffer->count();
+                    range_cnt = 0;
+                }
+                else {
+                    // Packet shall be included in current range.
+                    range_cnt++;
+                    pkt_data->setBitrateChanged(false);
+                }
+                // Point to next packet.
+                if (i + 1 < allocated_packets && first_packet_index + i + 1 < _buffer->count()) {
+                    // Not the end of the returned area, not the end of the buffer, simply move to next packet.
+                    pkt++;
+                    pkt_data++;
+                }
+                else {
+                    // Wrap up at beginning of buffer.
+                    pkt = _buffer->base();
+                    pkt_data = _metadata->base();
+                    // If current range is not yet included, do it now.
+                    if (range_cnt > 0) {
+                        packet_ranges.push_back({_buffer->base() + range_first, _metadata->base() + range_first, range_cnt});
+                        packets_in_window += range_cnt;
+                    }
+                    // Next range will restart at beginning of buffer.
+                    range_first = 0;
+                    range_cnt = 0;
+                }
+            }
+
+            // Stop when we have enough packets in the window.
+            if (packets_in_window >= window_size || allocated_packets < request_packets) {
+                // Either we have enough packets or waitWork() returned less than the requested minimum (meaning more is impossible).
+                break;
+            }
+
+            // Add the number of missing packets.
+            request_packets += window_size - packets_in_window;
+        }
+
+        // A packet window is ready to be processed. Build the packet window.
+        TSPacketWindow win(packet_ranges);
+        assert(win.size() == packets_in_window);
+
+        // Let the plugin process the packet window.
+        const size_t processed_packets = _processor->processPacketWindow(win);
+
+        // If not all packets from the window were processed, the plugin want to terminate the stream processing.
+        if (processed_packets < win.size()) {
+            input_end = aborted = true;
+            // We shall not pass packets after the last processed one to next plugin.
+            // The number of processed packets is an index after the last "logical" packet in the window.
+            // This is not an index from 'first_packet_index'. We compute in 'allocated_packets' the
+            // number of allocated packets up to the last processed one (inclusive).
+            if (processed_packets == 0) {
+                allocated_packets = 0;
+            }
+            else {
+                // Physical index in buffer of last processed packet:
+                const size_t index = win.packetIndexInBuffer(processed_packets - 1, _buffer->base(), _buffer->count());
+                assert(index < _buffer->count());
+                if (index >= first_packet_index) {
+                    // Contiguous range.
+                    allocated_packets = (index - first_packet_index) + 1;
+                }
+                else {
+                    // Two parts, wrap-up at end of buffer.
+                    allocated_packets = (_buffer->count() - first_packet_index) + index + 1;
+                }
+            }
+        }
+
+        // Count packets which were processed in the plugin.
+        passed_packets += processed_packets - win.dropCount();
+        dropped_packets += win.dropCount();
+        nullified_packets += win.nullifyCount();
+        addPluginPackets(processed_packets);
+        addNonPluginPackets(allocated_packets - processed_packets);
+
+        // Check if the plugin reported a new bitrate.
+        for (size_t i = 0; i < std::min(processed_packets, win.size()); ++i) {
+            TSPacketMetadata* mdata = win.metadata(i);
+            if (mdata != nullptr && mdata->getBitrateChanged()) {
+                const BitRate new_bitrate = _processor->getBitrate();
+                if (new_bitrate != 0) {
+                    bitrate_never_modified = false;
+                    output_bitrate = new_bitrate;
+                }
+                break;
+            }
+        }
+
+        // In case of timeout on waiting for packets, abort this plugin.
+        if (timeout) {
+            aborted = true;
+        }
+
+        // Pass all allocated packets to the next plugin.
+        // Can be less than actually allocated in case of termination.
+        passPackets(allocated_packets, output_bitrate, input_end, aborted);
+
+    } while (!input_end && !aborted);
 
     debug(u"packet processing thread %s after %'d packets, %'d passed, %'d dropped, %'d nullified",
           {input_end ? u"terminated" : u"aborted", pluginPackets(), passed_packets, dropped_packets, nullified_packets});

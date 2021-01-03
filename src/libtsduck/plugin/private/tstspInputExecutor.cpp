@@ -395,6 +395,7 @@ void ts::tsp::InputExecutor::main()
     bool plugin_completed = false;
     bool input_end = false;
     bool aborted = false;
+    bool restarted = false;
 
     do {
         size_t pkt_first = 0;
@@ -404,11 +405,11 @@ void ts::tsp::InputExecutor::main()
 
         // Wait for space in the input buffer.
         // Ignore input_end and bitrate from previous, we are the input processor.
-        waitWork(pkt_first, pkt_max, bitrate, input_end, aborted, timeout);
+        waitWork(1, pkt_first, pkt_max, bitrate, input_end, aborted, timeout);
 
         // Process restart requests.
-        if (!processPendingRestart()) {
-            timeout = true;
+        if (!processPendingRestart(restarted)) {
+            timeout = true; // restart error
         }
 
         // If the next thread has given up, give up too since our packets are now useless.

@@ -62,8 +62,7 @@ ts::TSPacket* ts::TSPacketWindow::packet(size_t index) const
 {
     TSPacket* pkt = nullptr;
     TSPacketMetadata* mdata = nullptr;
-    get(index, pkt, mdata);
-    return pkt;
+    return getInternal(index, pkt, mdata) ? pkt : nullptr;
 }
 
 
@@ -71,14 +70,54 @@ ts::TSPacketMetadata* ts::TSPacketWindow::metadata(size_t index) const
 {
     TSPacket* pkt = nullptr;
     TSPacketMetadata* mdata = nullptr;
-    get(index, pkt, mdata);
-    return mdata;
+    return getInternal(index, pkt, mdata) ? mdata : nullptr;
 }
 
 bool ts::TSPacketWindow::get(size_t index, TSPacket*& pkt, TSPacketMetadata*& mdata) const
 {
-    pkt = nullptr;
-    mdata = nullptr;
+    if (getInternal(index, pkt, mdata)) {
+        return true;
+    }
+    else {
+        pkt = nullptr;
+        mdata = nullptr;
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get the physical index of a packet inside a buffer.
+//----------------------------------------------------------------------------
+
+size_t ts::TSPacketWindow::packetIndexInBuffer(size_t index, const TSPacket* buffer, size_t buffer_size) const
+{
+    TSPacket* pkt_addr = nullptr;
+    TSPacketMetadata* mdata = nullptr;
+    getInternal(index, pkt_addr, mdata);
+
+    const size_t pkt = size_t(pkt_addr);
+    const size_t base = size_t(buffer);
+    if (base == 0 || pkt < base) {
+        // Before buffer base (including pkt_addr == nullptr).
+        return NPOS;
+    }
+    const size_t offset = pkt - base;
+    if (offset % PKT_SIZE != 0) {
+        // Misaligned packet, not really part of the buffer.
+        return NPOS;
+    }
+    const size_t buf_index = offset / PKT_SIZE;
+    return buf_index < buffer_size ? buf_index : NPOS;
+}
+
+
+//----------------------------------------------------------------------------
+// Same as public get() but returns non-null addresses for dropped packets.
+//----------------------------------------------------------------------------
+
+bool ts::TSPacketWindow::getInternal(size_t index, TSPacket*& pkt, TSPacketMetadata*& mdata) const
+{
     if (index < _size) {
         // Try to reuse last range index for faster sequential index (either ascending or descending).
         // Special case for restart of sequential access.
@@ -98,15 +137,16 @@ bool ts::TSPacketWindow::get(size_t index, TSPacket*& pkt, TSPacketMetadata*& md
         // Found the right range.
         _last_range_index = ri;
         const InternalPacketRange& ipr(_ranges[ri]);
-        TSPacket* p = ipr.packets + (index - ipr.first);
+        pkt = ipr.packets + (index - ipr.first);
+        mdata = ipr.metadata + (index - ipr.first);
         // Check that the packet was not "dropped".
-        if (p->b[0] == SYNC_BYTE) {
-            pkt = p;
-            mdata = ipr.metadata + (index - ipr.first);
-            return true;
-        }
+        return pkt->b[0] == SYNC_BYTE;
     }
-    return false; // not found
+
+    // Not found
+    pkt = nullptr;
+    mdata = nullptr;
+    return false;
 }
 
 

@@ -68,3 +68,67 @@ ts::PluginType ts::ProcessorPlugin::type() const
 {
     return PluginType::PROCESSOR;
 }
+
+size_t ts::ProcessorPlugin::getPacketWindowSize()
+{
+    return 0;
+}
+
+ts::ProcessorPlugin::Status ts::ProcessorPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+{
+    return TSP_OK;
+}
+
+
+//----------------------------------------------------------------------------
+// Default implementations of packet window processing interface.
+//----------------------------------------------------------------------------
+
+size_t ts::ProcessorPlugin::processPacketWindow(TSPacketWindow& win)
+{
+    // The default implementation calls processPacket() for each packet.
+    // Thus, if a plugin accidentally returns a non-zero window size without
+    // overriding processPacketWindow(), the packet processing still applies
+    // with the default method.
+
+    // Warning: dirty hack :(
+    // The values for tsp->pluginPackets() and tsp->totalPacketsInThread()
+    // are updated by the plugin executor, after returning from processPacketWindow().
+    // But if we emulate processPacketWindow() using processPacket(), we need the
+    // packet counters to be incremented after each packet. We emulate this by
+    // directly hacking into the TSP object. Naughty, naughty, naughty...
+    // So, we need to save and restore the packet counters.
+    const PacketCounter saved_total_packets = tsp->_total_packets;
+    const PacketCounter saved_plugin_packets = tsp->_plugin_packets;
+
+    TSPacket* pkt = nullptr;
+    TSPacketMetadata* mdata = nullptr;
+    size_t processed_packets = 0;
+
+    while (processed_packets < win.size()) {
+        if (win.get(processed_packets, pkt, mdata)) {
+            const Status status = processPacket(*pkt, *mdata);
+            if (status == TSP_NULL) {
+                win.nullify(processed_packets);
+            }
+            else if (status == TSP_DROP) {
+                win.drop(processed_packets);
+            }
+            else if (status == TSP_END) {
+                break;
+            }
+            if (mdata->getBitrateChanged()) {
+                tsp->_tsp_bitrate = getBitrate();
+            }
+            tsp->_plugin_packets++;
+        }
+        tsp->_total_packets++;
+        processed_packets++;
+    }
+
+    // Restore hacked values.
+    tsp->_total_packets = saved_total_packets;
+    tsp->_plugin_packets = saved_plugin_packets;
+
+    return processed_packets;
+}
