@@ -51,32 +51,25 @@ namespace ts {
     //!
     class TSDUCKDLL TSPacketWindow
     {
-        TS_NOBUILD_NOCOPY(TSPacketWindow);
+        TS_NOCOPY(TSPacketWindow);
     public:
         //!
-        //! This class describes a physically contiguous range of TS packets.
-        //! A TSPacketWindow is built from a vector of these ranges.
-        //!
-        class PacketRange
-        {
-        public:
-            TSPacket*         packets;   //!< Address of first TS packet in this range.
-            TSPacketMetadata* metadata;  //!< Address of first TS packet metadata in this range.
-            size_t            count;     //!< Number of TS packets in this range.
-        };
-
-        //!
-        //! A vector of PacketRange.
-        //!
-        typedef std::vector<PacketRange> PacketRangeVector;
-
-        //!
         //! Constructor.
-        //! @param [in] ranges The list of physically contiguous ranges of TS packets.
-        //! The logical packet window is made of all those packets from all ranges.
-        //! All addresses must be valid, null pointers are not allowed.
         //!
-        TSPacketWindow(const PacketRangeVector& ranges);
+        TSPacketWindow();
+
+        //!
+        //! Clear the content of the packet window.
+        //!
+        void clear();
+
+        //!
+        //! Add the address of a range of packets and their metadata inside the window.
+        //! @param [in] packet The address of the first packet.
+        //! @param [in] metadata The address of the first corresponding packet metadata.
+        //! @param [in] count Number of contiguous packets and metadata.
+        //!
+        void addPacketsReference(TSPacket* packet, TSPacketMetadata* metadata, size_t count);
 
         //!
         //! Get the number of packets in this window.
@@ -146,21 +139,30 @@ namespace ts {
         //!
         size_t dropCount() const { return _drop_count; }
 
+        //!
+        //! Get the number of contiguous segments of packets (informational only).
+        //! @return The number of contiguous segments of packets.
+        //!
+        size_t segmentCount() const { return _ranges.size(); }
+
     private:
-        // Extension of packet range with first index of the range.
-        class InternalPacketRange: public PacketRange
+        // This class describes a physically contiguous range of TS packets.
+        class PacketRange
         {
         public:
-            size_t first;
+            TSPacket*         packets;   // Address of first TS packet in this range.
+            TSPacketMetadata* metadata;  // Address of first TS packet metadata in this range.
+            size_t            first;     // Index of first TS packet in this range.
+            size_t            count;     // Number of TS packets in this range.
         };
 
         // Same as public get() but returns non-null addresses for dropped packets.
         bool getInternal(size_t index, TSPacket*& packet, TSPacketMetadata*& metadata) const;
 
-        size_t _size;
-        size_t _nullify_count;
-        size_t _drop_count;
-        mutable volatile size_t _last_range_index;
-        std::vector<InternalPacketRange> _ranges;
+        size_t                   _size;              // Number of packets in the window.
+        size_t                   _nullify_count;     // Number of nullified packets.
+        size_t                   _drop_count;        // Number of dropped packets.
+        mutable volatile size_t  _last_range_index;  // Last accessed range (to optimiza sequential access).
+        std::vector<PacketRange> _ranges;            // Ranges of contiguous packets.
     };
 }

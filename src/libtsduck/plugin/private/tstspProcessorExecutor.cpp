@@ -85,10 +85,12 @@ void ts::tsp::ProcessorExecutor::main()
         window_size = 0; // invalid value, reset
     }
 
-    // Get and apply the processing method.
+    // Check if the plugin works in packet-window mode (if not already forced).
     if (window_size == 0) {
         window_size = _processor->getPacketWindowSize();
     }
+
+    // Perform the complete packet processing in individual-packet or packet-window mode.
     if (window_size == 0) {
         processIndividualPackets();
     }
@@ -167,6 +169,7 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
 
             TSPacket* const pkt = _buffer->base() + pkt_first + pkt_done;
             TSPacketMetadata* const pkt_data = _metadata->base() + pkt_first + pkt_done;
+            bool got_new_bitrate = false;
 
             pkt_done++;
             pkt_flush++;
@@ -232,16 +235,16 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
                     const BitRate new_bitrate = _processor->getBitrate();
                     if (new_bitrate != 0) {
                         bitrate_never_modified = false;
+                        got_new_bitrate = new_bitrate != output_bitrate;
                         output_bitrate = new_bitrate;
                     }
                 }
             }
 
-            // Do not wait to process pkt_cnt packets before notifying
-            // the next processor. Perform periodic flush to avoid waiting
-            // too long before two output operations.
-
-            if (pkt_data->getFlush() || pkt_done == pkt_cnt || (_options.max_flush_pkt > 0 && pkt_flush % _options.max_flush_pkt == 0)) {
+            // Do not wait to process pkt_cnt packets before notifying the next processor.
+            // Perform periodic flush to avoid waiting too long before two output operations.
+            // Also propagate new bitrate values immediately.
+            if (pkt_data->getFlush() || got_new_bitrate || pkt_done == pkt_cnt || (_options.max_flush_pkt > 0 && pkt_flush >= _options.max_flush_pkt)) {
                 aborted = !passPackets(pkt_flush, output_bitrate, pkt_done == pkt_cnt && input_end, aborted);
                 pkt_flush = 0;
             }
@@ -276,24 +279,26 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
     // Loop on packet processing.
     do {
         // Wait for a part of the buffer which is large enough for the packet window.
-        // Initially, we request the window size. But maybe not all packets can be used
-        // in the returned area: maybe there are dropped packets or excluded packets
-        // when --only-label is used. Compute haw many packets are missing and restart
-        // the request with that many more packets. But again, some of the the additional
-        // packets may be excluded. So, restart again and again until we get 'window_size'
-        // usable packets.
-        TSPacketWindow::PacketRangeVector packet_ranges;
+        // - Use enough packets: Initially, we request the window size. But maybe not
+        //   all packets can be used in the returned area. Maybe there are dropped packets
+        //   or excluded packets when --only-label is used. Compute haw many packets are
+        //   missing and restart the request with that many more packets. But again, some
+        //   of the the additional packets may be excluded. So, restart again and again
+        //   until we get 'window_size' usable packets.
+        // - Don't use too many packets: We limit the number of buffer packets per window
+        //   to _options.max_flush_pkt (option --max-flushed-packets). Unless of course
+        //   we need more to get 'window_size' usable packets.
+
+        TSPacketWindow win;
         size_t request_packets = window_size;  // number of packets to request in the buffer.
         size_t first_packet_index = 0;         // index of first allocated packet in the global buffer.
         size_t allocated_packets = 0;          // number of allocated packet from the global buffer.
-        size_t packets_in_window = 0;          // accumulated packets in packet window.
 
         // Loop on building a large enough packet window.
         while (!aborted && !input_end && !timeout) {
 
             // Restart building a packet window.
-            packet_ranges.clear();
-            packets_in_window = 0;
+            win.clear();
 
             // Wait for packets to process.
             waitWork(request_packets, first_packet_index, allocated_packets, _tsp_bitrate, input_end, aborted, timeout);
@@ -325,62 +330,39 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
             }
 
             // Inspect the packets we got from the buffer (pkt_first / pkt_count) and insert usable packets in the packet window.
-            // Take care that waitWork() may have returned a slice of the buffer which wraps up.
-            TSPacket* pkt = _buffer->base() + first_packet_index;
-            TSPacketMetadata* pkt_data = _metadata->base() + first_packet_index;
-            size_t range_first = first_packet_index;
-            size_t range_cnt = 0;
-            for (size_t i = 0; i < allocated_packets; ++i) {
-                if (pkt->b[0] == 0 || (only_labels.any() && !pkt_data->hasAnyLabel(only_labels))) {
-                    // Packet was previously dropped or its label is not in --only-label.
-                    // Close previous range.
-                    if (range_cnt > 0) {
-                        packet_ranges.push_back({_buffer->base() + range_first, _metadata->base() + range_first, range_cnt});
-                        packets_in_window += range_cnt;
-                    }
-                    // Next range will start at next packet.
-                    range_first = (first_packet_index + i + 1) % _buffer->count();
-                    range_cnt = 0;
+            for (size_t pkt_offset = 0; pkt_offset < allocated_packets; ++pkt_offset) {
+
+                // Take care that waitWork() may have returned a slice of the buffer which wraps up.
+                const size_t buf_index = (first_packet_index + pkt_offset) % _buffer->count();
+                TSPacket* const pkt = _buffer->base() + buf_index;
+                TSPacketMetadata* const pkt_data = _metadata->base() + buf_index;
+
+                // Packet was not dropped and its label is in --only-label (if used), add it in window.
+                if (pkt->b[0] != 0 && (only_labels.none() || pkt_data->hasAnyLabel(only_labels))) {
+                    win.addPacketsReference(pkt, pkt_data, 1);
                 }
-                else {
-                    // Packet shall be included in current range.
-                    range_cnt++;
-                    pkt_data->setBitrateChanged(false);
-                }
-                // Point to next packet.
-                if (i + 1 < allocated_packets && first_packet_index + i + 1 < _buffer->count()) {
-                    // Not the end of the returned area, not the end of the buffer, simply move to next packet.
-                    pkt++;
-                    pkt_data++;
-                }
-                else {
-                    // Wrap up at beginning of buffer.
-                    pkt = _buffer->base();
-                    pkt_data = _metadata->base();
-                    // If current range is not yet included, do it now.
-                    if (range_cnt > 0) {
-                        packet_ranges.push_back({_buffer->base() + range_first, _metadata->base() + range_first, range_cnt});
-                        packets_in_window += range_cnt;
-                    }
-                    // Next range will restart at beginning of buffer.
-                    range_first = 0;
-                    range_cnt = 0;
+
+                // If --max-flushed-packets is set and we have enough packets for both the window size
+                // and --max-flushed-packets, stop building the window now.
+                if (_options.max_flush_pkt > 0 && pkt_offset + 1 >= _options.max_flush_pkt && win.size() >= window_size && pkt_offset + 1 < allocated_packets) {
+                    // Will use only the first part of the allocated packets.
+                    // When we call passPackets() later, we pass only this part.
+                    // The remaining part (unused for now) will be returned again by waitWork().
+                    allocated_packets = pkt_offset + 1;
+                    // If waitWork() returned ed of input, mute it now since there are more packets to process.
+                    input_end = false;
                 }
             }
 
             // Stop when we have enough packets in the window.
-            if (packets_in_window >= window_size || allocated_packets < request_packets) {
+            if (win.size() >= window_size || allocated_packets < request_packets) {
                 // Either we have enough packets or waitWork() returned less than the requested minimum (meaning more is impossible).
                 break;
             }
 
             // Add the number of missing packets.
-            request_packets += window_size - packets_in_window;
+            request_packets += window_size - win.size();
         }
-
-        // A packet window is ready to be processed. Build the packet window.
-        TSPacketWindow win(packet_ranges);
-        assert(win.size() == packets_in_window);
 
         // Let the plugin process the packet window.
         const size_t processed_packets = _processor->processPacketWindow(win);

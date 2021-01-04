@@ -32,25 +32,55 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors.
 //----------------------------------------------------------------------------
 
-ts::TSPacketWindow::TSPacketWindow(const ts::TSPacketWindow::PacketRangeVector& ranges) :
+ts::TSPacketWindow::TSPacketWindow() :
     _size(0),
     _nullify_count(0),
     _drop_count(0),
     _last_range_index(0),
-    _ranges(ranges.size())
+    _ranges()
 {
-    for (size_t i = 0; i < _ranges.size(); ++i) {
-        assert(ranges[i].packets != nullptr);
-        assert(ranges[i].metadata != nullptr);
-        _ranges[i].packets = ranges[i].packets;
-        _ranges[i].metadata = ranges[i].metadata;
-        _ranges[i].count = ranges[i].count;
-        _ranges[i].first = _size;
-        _size += _ranges[i].count;
+}
+
+
+//----------------------------------------------------------------------------
+// Clear the content of the packet window.
+//----------------------------------------------------------------------------
+
+void ts::TSPacketWindow::clear()
+{
+    _size = 0;
+    _nullify_count = 0;
+    _drop_count = 0;
+    _last_range_index = 0;
+    _ranges.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// Add the address of a range of packets and their metadata inside the window.
+//----------------------------------------------------------------------------
+
+void ts::TSPacketWindow::addPacketsReference(TSPacket* pkt, TSPacketMetadata* mdata, size_t count)
+{
+    assert(pkt != nullptr);
+    assert(mdata != nullptr);
+
+    // Enlarge the last range if the next packets are contiguous.
+    if (!_ranges.empty()) {
+        PacketRange& last(_ranges.back());
+        if (pkt == last.packets + last.count && mdata == last.metadata + last.count) {
+            last.count += count;
+            _size += count;
+            return;
+        }
     }
+
+    // Add a new range.
+    _ranges.push_back({pkt, mdata, _size, count});
+    _size += count;
 }
 
 
@@ -136,7 +166,7 @@ bool ts::TSPacketWindow::getInternal(size_t index, TSPacket*& pkt, TSPacketMetad
         }
         // Found the right range.
         _last_range_index = ri;
-        const InternalPacketRange& ipr(_ranges[ri]);
+        const PacketRange& ipr(_ranges[ri]);
         pkt = ipr.packets + (index - ipr.first);
         mdata = ipr.metadata + (index - ipr.first);
         // Check that the packet was not "dropped".
@@ -156,9 +186,8 @@ bool ts::TSPacketWindow::getInternal(size_t index, TSPacket*& pkt, TSPacketMetad
 
 void ts::TSPacketWindow::nullify(size_t index)
 {
-    TSPacket* pkt = nullptr;
-    TSPacketMetadata* mdata = nullptr;
-    if (get(index, pkt, mdata) && pkt->getPID() != PID_NULL) {
+    TSPacket* const pkt = packet(index);
+    if (pkt != nullptr && pkt->getPID() != PID_NULL) {
         // Count nullified packets once only.
         _nullify_count++;
         *pkt = NullPacket;
@@ -172,10 +201,8 @@ void ts::TSPacketWindow::nullify(size_t index)
 
 void ts::TSPacketWindow::drop(size_t index)
 {
-    TSPacket* pkt = nullptr;
-    TSPacketMetadata* mdata = nullptr;
-    if (get(index, pkt, mdata) && pkt->b[0] != 0) {
-        // Count dropped packets once only.
+    TSPacket* const pkt = packet(index);
+    if (pkt != nullptr) {
         _drop_count++;
         pkt->b[0] = 0;
     }
