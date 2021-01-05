@@ -90,7 +90,7 @@ VERSION=$(( ${MAJOR:-0} * 100 + ${MINOR:-0} ))
 if [[ "$SYSTEM" == "Darwin" ]]; then
 
     # macOS
-    pkglist="gnu-sed grep dos2unix coreutils pcsc-lite srt python3"
+    pkglist="gnu-sed grep dos2unix coreutils pcsc-lite srt python3 openjdk"
     if [[ -z $(which clang 2>/dev/null) ]]; then
         # Build tools not installed
         xcode-select --install
@@ -107,11 +107,15 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
         brew ls --versions $pkg >/dev/null && cmd=upgrade || cmd=install
         HOMEBREW_NO_AUTO_UPDATE=1 brew $PKGOPTS $cmd $pkg || true
     done
+    # Register the openjdk jvm.
+    [[ -e /Library/Java/JavaVirtualMachines/openjdk.jdk ]] || \
+        sudo ln -sfn /usr/local/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
+    # Update command: brew update; brew upgrade
 
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
     # Ubuntu
-    pkglist="g++ dos2unix curl tar zip doxygen graphviz pcscd libpcsclite-dev dpkg-dev python3"
+    pkglist="g++ dos2unix curl tar zip doxygen graphviz pcscd libpcsclite-dev dpkg-dev python3 default-jdk"
     if [[ "$MAJOR" -le 17 ]]; then
         pkglist="$pkglist libcurl3 libcurl3-dev"
     else
@@ -127,11 +131,12 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     fi
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
+    # Update command: sudo apt update; sudo apt upgrade
 
 elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
 
     # Debian or Raspbian (Raspberry Pi)
-    pkglist="g++ dos2unix curl tar zip doxygen graphviz pcscd libpcsclite-dev dpkg-dev python3"
+    pkglist="g++ dos2unix curl tar zip doxygen graphviz pcscd libpcsclite-dev dpkg-dev python3 default-jdk"
     if $M32; then
         pkglist="$pkglist gcc-multilib"
     fi
@@ -142,12 +147,13 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
     fi
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
+    # Update command: sudo apt update; sudo apt upgrade
 
 elif [[ -f /etc/fedora-release ]]; then
 
     # Fedora
     FC=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9\.]*\) .*$/\1/')
-    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz pcsc-tools pcsc-lite-devel libcurl libcurl-devel rpmdevtools python3"
+    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz pcsc-tools pcsc-lite-devel libcurl libcurl-devel rpmdevtools python3 java-latest-openjdk-devel"
     if $STATIC; then
         pkglist="$pkglist glibc-static libstdc++-static"
     fi
@@ -161,13 +167,14 @@ elif [[ -f /etc/fedora-release ]]; then
         fi
     fi
     sudo dnf -y install $PKGOPTS $pkglist
+    # Update command: sudo dnf update
 
 elif [[ -f /etc/redhat-release ]]; then
 
     # Red Hat or CentOS
     EL=$(grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\.[0-9]*\).*$/\1/')
     EL=$(( ${EL/.*/} * 100 + ${EL/*./} ))
-    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz pcsc-lite pcsc-lite-devel libcurl libcurl-devel rpmdevtools python3"
+    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz pcsc-lite pcsc-lite-devel libcurl libcurl-devel rpmdevtools python3 java-latest-openjdk-devel"
     if $STATIC; then
         pkglist="$pkglist glibc-static libstdc++-static"
     fi
@@ -189,23 +196,27 @@ elif [[ -f /etc/redhat-release ]]; then
         sudo dnf -y config-manager --set-enabled powertools
         sudo dnf -y install $PKGOPTS $pkglist
     fi
+    # Update command: sudo dnf update
 
 elif [[ -f /etc/arch-release ]]; then
 
     # Arch Linux
-    pkglist="make gcc dos2unix core/which inetutils net-tools curl tar zip doxygen graphviz pcsclite srt python"
-    sudo pacman -Sy --noconfirm $PKGOPTS $pkglist
+    pkglist="make gcc dos2unix core/which inetutils net-tools curl tar zip doxygen graphviz pcsclite srt python jdk11-openjdk"
+    sudo pacman -Syu --noconfirm $PKGOPTS $pkglist
+    # Update command: sudo pacman -Syu
 
 elif [[ -f /etc/alpine-release ]]; then
 
     # Alpine Linux
-    pkglist="bash coreutils diffutils procps util-linux linux-headers git make g++ dos2unix curl tar zip doxygen graphviz pcsc-lite-dev curl-dev python3"
+    pkglist="bash coreutils diffutils procps util-linux linux-headers git make g++ dos2unix curl tar zip doxygen graphviz pcsc-lite-dev curl-dev python3 openjdk11"
     sudo apk add $PKGOPTS $pkglist
+    # Update command: sudo apk update; sudo apk upgrade
 
 elif [[ -f /etc/gentoo-release ]]; then
 
     # Gentoo Linux
-    pkglist="sys-devel/gcc app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip app-doc/doxygen media-gfx/graphviz sys-apps/pcsc-lite net-libs/srt dev-lang/python"
+    pkglist="sys-devel/gcc app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip app-doc/doxygen media-gfx/graphviz sys-apps/pcsc-lite net-libs/srt dev-lang/python dev-java/openjdk"
     sudo emerge -n $PKGOPTS $pkglist
-    
+    # Update command: sudo emerge --update --deep --changed-use @world
+
 fi
