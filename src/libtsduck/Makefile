@@ -56,6 +56,10 @@ else
     CXXFLAGS_INCLUDES += -isystem $(dir $(DTAPI_HEADER))
 endif
 
+# JNI headers (or disable JNI)
+JNI_CFLAGS := $(shell ../../build/java-config.sh --cflags)
+CXXFLAGS_INCLUDES += $(JNI_CFLAGS)
+
 # With static link, we compile in a specific directory.
 BINDIR_SUFFIX = $(if $(STATIC),-static,)
 OBJSUBDIR = objs-libtsduck

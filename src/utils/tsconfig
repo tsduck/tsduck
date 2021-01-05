@@ -60,6 +60,7 @@ Syntax: $SCRIPT [options]
   --vernum      output the version information as a number
 
 EOF
+    exit
 }
 
 # Process individual commands
