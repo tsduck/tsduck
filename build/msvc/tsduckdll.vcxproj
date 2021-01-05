@@ -26,6 +26,7 @@
     <Import Project="msvc-target-dll.props"/>
     <Import Project="msvc-use-dtapi.props"/>
     <Import Project="msvc-use-libsrt.props"/>
+    <Import Project="msvc-use-java.props"/>
   </ImportGroup>
 
   <PropertyGroup>
