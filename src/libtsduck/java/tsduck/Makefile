@@ -44,26 +44,27 @@ JAVAC := $(shell $(ROOTDIR)/build/java-config.sh --javac)
 # Just skip Java build if no compiler is present.
 ifeq ($(JAVAC),)
 
-.PHONY: default
 default:
 	@true
 
 else
 
-JAVAC_FLAGS = -Werror -d bin
+JAVAC_FLAGS = -Werror
 
-JARFILE = bin/tsduck.jar
+CLASSDIR  = $(OBJDIR)/java
+JARFILE   = $(OBJDIR)/tsduck.jar
 JSOURCES := $(shell find src -name '*.java')
-JCLASSES := $(patsubst src/%.java,bin/%.class,$(JSOURCES))
+JCLASSES := $(patsubst src/%.java,$(CLASSDIR)/%.class,$(JSOURCES))
 
-bin/%.class: src/%.java
+$(CLASSDIR)/%.class: src/%.java
 	@echo '  [JAVAC] $<'; \
-	$(JAVAC) $(JAVAC_FLAGS) $<
+	cd src; $(JAVAC) $(JAVAC_FLAGS) -d $(CLASSDIR) $(patsubst src/%,%,$<)
 
-.PHONY: default
 default: $(JARFILE)
+	@true
+
 $(JARFILE): $(JCLASSES)
 	@echo '  [JAR] $@'; \
-	$(shell $(ROOTDIR)/build/java-config.sh --bin)/jar -c -f $@ $(patsubst bin/%,-C bin %,$(JCLASSES))
+	$(shell $(ROOTDIR)/build/java-config.sh --jar) -c -f $@ $(patsubst $(CLASSDIR)/%,-C $(CLASSDIR) %,$(JCLASSES))
 
 endif

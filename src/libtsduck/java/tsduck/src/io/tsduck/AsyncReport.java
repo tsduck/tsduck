@@ -26,34 +26,32 @@
 //  THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  @ingroup java
-//!  Base definitions for the TSDuck Java bindings (JNI C++ implementation).
-//!  JNI utilitities for other JNI modules.
-//!
-//----------------------------------------------------------------------------
 
-#pragma once
-#include "tsUString.h"
+package io.tsduck;
 
-#if !defined(TS_NO_JAVA)
-#include <jni.h>
+/**
+ * A wrapper class for C++ AsyncReport.
+ */
+public final class AsyncReport extends Report implements NativeObject {
 
-namespace ts {
-    //!
-    //! Namespace for TSDuck JNI support functions
-    //!
-    namespace jni {
-        //!
-        //! Get the address of the first character in a string as a Java character.
-        //! This is based on the fact that ts::UString and java.lang.String use the same
-        //! representation for characters.
-        //! @param [in] str A C++ unicode string.
-        //! @return A constant pointer to the first character in the string.
-        //!
-        inline const jchar* ToJChar(const std::u16string& str) { return reinterpret_cast<const jchar*>(str.c_str()); }
+    // Set the address of the C++ object.
+    private native void initNativeObject();
+	
+    /**
+     * Constructor
+     */
+    public AsyncReport() {
+        initNativeObject();
     }
+    
+    /**
+     * Synchronously terminates the async log thread.
+     */
+    public native void terminate();
+    
+    /**
+     * Delete the encapsulated C++ object.
+     */
+    @Override
+    public native void delete();
 }
-
-#endif // TS_NO_JAVA

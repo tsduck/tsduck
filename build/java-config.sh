@@ -46,6 +46,7 @@ Syntax: $SCRIPT [options]
   --cflags  C++ pre-processor and compiler flags for JNI code
   --help    Display this help and exit
   --home    Jave home directory (typically for \$JAVA_HOME)
+  --jar     JAR file manipulation command
   --java    Java execution command
   --javac   Java compiler command
 
@@ -83,6 +84,11 @@ cmd_bin() {
     [[ -n "$home" && -d "$home/bin" ]] && echo "$home/bin"
 }
 
+cmd_jar() {
+    home=$(cmd_home)
+    [[ -n "$home" && -x "$home/bin/jar" ]] && echo "$home/bin/jar"
+}
+
 cmd_java() {
     home=$(cmd_home)
     [[ -n "$home" && -x "$home/bin/java" ]] && echo "$home/bin/java"
@@ -110,6 +116,7 @@ if [ $# -eq 0 ]; then
     echo "bin: $(cmd_bin)"
     echo "java: $(cmd_java)"
     echo "javac: $(cmd_javac)"
+    echo "jar: $(cmd_jar)"
     echo "cflags: $(cmd_cflags)"
 else
     # Display options one by one.
@@ -119,6 +126,7 @@ else
             --cflags) cmd_cflags ;;
             --help) cmd_help ;;
             --home) cmd_home ;;
+            --jar) cmd_jar ;;
             --java) cmd_java ;;
             --javac) cmd_javac ;;
             *) usage "$arg" ;;

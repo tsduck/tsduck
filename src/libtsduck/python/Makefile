@@ -6,6 +6,5 @@ include ../../../Makefile.tsduck
 NORECURSE_SUBDIRS += ts
 EXTRA_DISTCLEAN += ts/__pycache__ ts/*/__pycache__ ts/*/*/__pycache__
 
-.PHONY: default
 default:
 	@true

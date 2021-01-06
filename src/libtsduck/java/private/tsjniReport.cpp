@@ -26,34 +26,41 @@
 //  THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  @ingroup java
-//!  Base definitions for the TSDuck Java bindings (JNI C++ implementation).
-//!  JNI utilitities for other JNI modules.
-//!
+//
+//  Native implementation of the Java class io.tsduck.Report.
+//
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsUString.h"
+#include "tsReport.h"
+#include "tsjni.h"
+TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
-#include <jni.h>
 
-namespace ts {
-    //!
-    //! Namespace for TSDuck JNI support functions
-    //!
-    namespace jni {
-        //!
-        //! Get the address of the first character in a string as a Java character.
-        //! This is based on the fact that ts::UString and java.lang.String use the same
-        //! representation for characters.
-        //! @param [in] str A C++ unicode string.
-        //! @return A constant pointer to the first character in the string.
-        //!
-        inline const jchar* ToJChar(const std::u16string& str) { return reinterpret_cast<const jchar*>(str.c_str()); }
-    }
+//----------------------------------------------------------------------------
+// Interface of native methods.
+//----------------------------------------------------------------------------
+
+// Method: io.tsduck.Report.setMaxSeverity
+// Signature: (I)V
+JNIEXPORT void JNICALL Java_io_tsduck_Report_setMaxSeverity(JNIEnv*, jobject, jint);
+
+// Method: io.tsduck.Report.log
+// Signature: (ILjava/lang/String;)V
+JNIEXPORT void JNICALL Java_io_tsduck_Report_log(JNIEnv*, jobject, jint, jobject);
+
+//----------------------------------------------------------------------------
+// Implementation of native methods.
+//----------------------------------------------------------------------------
+
+JNIEXPORT void JNICALL Java_io_tsduck_Report_setMaxSeverity(JNIEnv* env, jobject obj, jint severity)
+{
+    //@@@@
+}
+
+JNIEXPORT void JNICALL Java_io_tsduck_Report_log(JNIEnv* env, jobject obj, jint severity, jobject message)
+{
+    //@@@@
 }
 
 #endif // TS_NO_JAVA

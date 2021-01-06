@@ -69,7 +69,7 @@ include ../../Makefile.tsduck
 
 # Building the TSDuck library.
 default: headers libs configs
-	@true
+	+@$(RECURSE)
 
 # The GEN_HEADERS headers are automatically generated from SRC_HEADERS using BUILD_PROJ_FILES.
 GEN_HEADERS = tsduck.h dtv/tsTables.h dtv/private/tsRefType.h
