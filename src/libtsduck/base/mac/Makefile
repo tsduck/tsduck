@@ -2,6 +2,5 @@
 
 DONT_BUILD_DEPS := TRUE
 include ../../../../Makefile.tsduck
-.PHONY: default
 default:
 	@true

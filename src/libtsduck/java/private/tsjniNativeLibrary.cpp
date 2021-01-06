@@ -26,34 +26,31 @@
 //  THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  @ingroup java
-//!  Base definitions for the TSDuck Java bindings (JNI C++ implementation).
-//!  JNI utilitities for other JNI modules.
-//!
+//
+//  Native implementation of the Java class io.tsduck.NativeLibrary.
+//
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsUString.h"
+#include "tsjni.h"
+TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
-#include <jni.h>
 
-namespace ts {
-    //!
-    //! Namespace for TSDuck JNI support functions
-    //!
-    namespace jni {
-        //!
-        //! Get the address of the first character in a string as a Java character.
-        //! This is based on the fact that ts::UString and java.lang.String use the same
-        //! representation for characters.
-        //! @param [in] str A C++ unicode string.
-        //! @return A constant pointer to the first character in the string.
-        //!
-        inline const jchar* ToJChar(const std::u16string& str) { return reinterpret_cast<const jchar*>(str.c_str()); }
-    }
+//----------------------------------------------------------------------------
+// Interface of native methods.
+//----------------------------------------------------------------------------
+
+// Method: io.tsduck.NativeLibrary.initialize
+// Signature: ()V
+JNIEXPORT void JNICALL Java_io_tsduck_NativeLibrary_initialize(JNIEnv*, jclass);
+
+//----------------------------------------------------------------------------
+// Implementation of native methods.
+//----------------------------------------------------------------------------
+
+JNIEXPORT void JNICALL Java_io_tsduck_NativeLibrary_initialize(JNIEnv *env, jclass clazz)
+{
+    // Currently, there is nothing to initialize.
 }
 
 #endif // TS_NO_JAVA

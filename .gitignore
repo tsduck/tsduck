@@ -5,6 +5,8 @@
 *.dll
 *.lib
 *.obj
+*.class
+*.jar
 *.user
 *.user.*
 [Rr]elease

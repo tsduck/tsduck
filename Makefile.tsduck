@@ -151,8 +151,8 @@ ifdef MACOS
     SOFLAGS = -install_name '@rpath/$(notdir $@)'
 else
     CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/linux
-    LDFLAGS_EXTRA += -Wl,-rpath,'$$ORIGIN'
-    SOFLAGS = -Wl,-soname=$(notdir $@)
+    LDFLAGS_EXTRA += -Wl,-rpath,'$$ORIGIN',-z,noexecstack
+    SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
 endif
 
 CFLAGS_INCLUDES += $(addprefix -I,$(shell find $(LIBTSDUCKDIR) -type d ! -name private ! -name windows ! -name $(if $(MACOS),linux,mac)))
@@ -162,7 +162,6 @@ ifneq ($(TS_NO_BUILD_VERSION),)
 endif
 
 # Make sure that full paths of source files never appear in binaries.
-
 ifneq ($(CC_FILE_PREFIX_MAP),)
     CXXFLAGS += -ffile-prefix-map=$(SRCROOT)/=
 endif

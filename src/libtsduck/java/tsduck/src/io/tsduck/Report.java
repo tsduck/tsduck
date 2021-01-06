@@ -30,9 +30,21 @@
 package io.tsduck;
 
 /**
- * TSDuck library general information.
+ * Base class for TSDuck report classes.
  */
-public class Info {
+public abstract class Report {
+
+    // Severity levels, same values as C++ counterparts.
+    static public final int FATAL   = -5;
+    static public final int SEVERE  = -4;
+    static public final int ERROR   = -3;
+    static public final int WARNING = -2;
+    static public final int INFO    = -1;
+    static public final int VERBOSE =  0;
+    static public final int DEBUG   =  1;
+
+    // The address of the underlying C++ object.
+    protected long nativeObject = 0;
 
     // Load native library on startup.
     static {
@@ -40,14 +52,55 @@ public class Info {
     }
     
     /**
-     * TSDuck version as an integer.
-     * @return TSDuck version as an integer.
+     * Set the maximum severity of the report.
+     * @param severity Severity level.
      */
-    public static native int intVersion();
+    public native void setMaxSeverity(int severity);
 
     /**
-     * TSDuck version as a string.
-     * @return TSDuck version as a string.
+     * Log a message to the report.
+     * @param severity Severity level of the message.
+     * @param message Message to report.
      */
-    public static native String version();
+    public native void log(int severity, String message);
+
+    /**
+     * Log a messages at error level.
+     * @param message Message to report.
+     */
+    public void error(String message) {
+    	log(ERROR, message);
+    }
+
+    /**
+     * Log a messages at warning level.
+     * @param message Message to report.
+     */
+    public void warning(String message) {
+    	log(WARNING, message);
+    }
+
+    /**
+     * Log a messages at info level.
+     * @param message Message to report.
+     */
+    public void info(String message) {
+    	log(INFO, message);
+    }
+
+    /**
+     * Log a messages at verbose level.
+     * @param message Message to report.
+     */
+    public void verbose(String message) {
+    	log(VERBOSE, message);
+    }
+
+    /**
+     * Log a messages at debug level.
+     * @param message Message to report.
+     */
+    public void debug(String message) {
+    	log(DEBUG, message);
+    }
 }

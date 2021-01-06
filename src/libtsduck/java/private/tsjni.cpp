@@ -32,12 +32,5 @@ TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
 
-//-----------------------------------------------------------------------------
-// io.tsduck.NativeLibrary.initialize()
-//-----------------------------------------------------------------------------
 
-JNIEXPORT void JNICALL Java_io_tsduck_NativeLibrary_initialize(JNIEnv *env, jclass clazz)
-{
-}
-
-#endif
+#endif // TS_NO_JAVA

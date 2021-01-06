@@ -26,34 +26,43 @@
 //  THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  @ingroup java
-//!  Base definitions for the TSDuck Java bindings (JNI C++ implementation).
-//!  JNI utilitities for other JNI modules.
-//!
+//
+//  Native implementation of the Java class io.tsduck.Info.
+//
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsUString.h"
+#include "tsVersionInfo.h"
+#include "tsVersionString.h"
+#include "tsjni.h"
+TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
-#include <jni.h>
 
-namespace ts {
-    //!
-    //! Namespace for TSDuck JNI support functions
-    //!
-    namespace jni {
-        //!
-        //! Get the address of the first character in a string as a Java character.
-        //! This is based on the fact that ts::UString and java.lang.String use the same
-        //! representation for characters.
-        //! @param [in] str A C++ unicode string.
-        //! @return A constant pointer to the first character in the string.
-        //!
-        inline const jchar* ToJChar(const std::u16string& str) { return reinterpret_cast<const jchar*>(str.c_str()); }
-    }
+//----------------------------------------------------------------------------
+// Interface of native methods.
+//----------------------------------------------------------------------------
+
+// Method: io.tsduck.Info.intVersion
+// Signature: ()I
+JNIEXPORT jint JNICALL Java_io_tsduck_Info_intVersion(JNIEnv*, jclass);
+
+// Method: io.tsduck.Info.version
+// Signature: ()Ljava/lang/String;
+JNIEXPORT jstring JNICALL Java_io_tsduck_Info_version(JNIEnv*, jclass);
+
+//----------------------------------------------------------------------------
+// Implementation of native methods.
+//----------------------------------------------------------------------------
+
+JNIEXPORT jint JNICALL Java_io_tsduck_Info_intVersion(JNIEnv* env, jclass clazz)
+{
+    return TS_VERSION_INTEGER;
+}
+
+JNIEXPORT jstring JNICALL Java_io_tsduck_Info_version(JNIEnv* env, jclass clazz)
+{
+    const ts::UString version(ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT));
+    return env->NewString(ts::jni::ToJChar(version), version.size());
 }
 
 #endif // TS_NO_JAVA

@@ -1071,17 +1071,14 @@ endif
 clean:
 	@echo '  [CLEAN] $(CURDIR)'; \
 	rm -rf $(EXTRA_CLEAN) *~ \
-	    *.o *.ko *.a *.gcov *.dep tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
-	    $(OBJDIR)/*.o $(OBJDIR)/*.ko $(OBJDIR)/*.a $(OBJDIR)/*.dep $(OBJDIR)/*.tmp $(OBJDIR)/*.out \
-	    $(OBJDIR)/*.log $(OBJDIR)/*.tlog $(OBJDIR)/core $(OBJDIR)/core.* $(OBJDIR)/vgcore.*
+	    *.o *.ko *.a *.gcov *.dep tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump
 	+@$(RECURSE)
 distclean: clean
 	@echo '  [DISTCLEAN] $(CURDIR)'; \
 	rm -rf $(EXTRA_DISTCLEAN) [Dd]ebug* [Rr]elease* ipch *.exe *.so .kdbgrc.* *.t2d \
 	    .vs *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user \
 	    *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
-	    *.VC.db *.VC.opendb cov-int cov-int.* \
-	    *.pro.user *.pro.user.* .tmp_versions
+	    *.VC.db *.VC.opendb cov-int cov-int.* *.pro.user *.pro.user.* .tmp_versions
 	+@$(RECURSE)
 
 # List of file and directory patterns for non-source files.
@@ -1092,7 +1089,7 @@ NOSOURCE = \
     .vs ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user *.user.* \
     *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
     .tmp_versions *.VC.db *.VC.dbopen *.VC.opendb *.deb *.rpm *.bz2 *.7z \
-    *~ *.bak *.autosave cov-int
+    *~ *.bak *.autosave cov-int bin
 
 # Doxygen version 1.8.17 has a bug which reports thousands of false errors.
 # Define a filter for doxygen errors.

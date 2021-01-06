@@ -26,34 +26,36 @@
 //  THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  @ingroup java
-//!  Base definitions for the TSDuck Java bindings (JNI C++ implementation).
-//!  JNI utilitities for other JNI modules.
-//!
-//----------------------------------------------------------------------------
 
-#pragma once
-#include "tsUString.h"
+package io.tsduck;
 
-#if !defined(TS_NO_JAVA)
-#include <jni.h>
+/**
+ * A wrapper class for C++ TSProcessor.
+ */
+public final class TSProcessor extends Report implements NativeObject {
 
-namespace ts {
-    //!
-    //! Namespace for TSDuck JNI support functions
-    //!
-    namespace jni {
-        //!
-        //! Get the address of the first character in a string as a Java character.
-        //! This is based on the fact that ts::UString and java.lang.String use the same
-        //! representation for characters.
-        //! @param [in] str A C++ unicode string.
-        //! @return A constant pointer to the first character in the string.
-        //!
-        inline const jchar* ToJChar(const std::u16string& str) { return reinterpret_cast<const jchar*>(str.c_str()); }
+    // The address of the underlying C++ object.
+    protected long nativeObject = 0;
+
+    // Set the address of the C++ object.
+    private native void initNativeObject(Report report);
+
+    // Load native library on startup.
+    static {
+        NativeLibrary.loadLibrary();
     }
-}
 
-#endif // TS_NO_JAVA
+    /**
+     * Constructor
+     * @param report The report object to use.
+     */
+    public TSProcessor(Report report) {
+        initNativeObject(report);
+    }
+
+    /**
+     * Delete the encapsulated C++ object.
+     */
+    @Override
+    public native void delete();
+}

@@ -18,6 +18,7 @@ mac {
     QMAKE_POST_LINK += install_name_tool -id $$OUT_PWD/libtsduck.so $$OUT_PWD/libtsduck.so $$escape_expand(\\n\\t)
 }
 
+QMAKE_CXXFLAGS += $$system("$$PROJROOT/build/java-config.sh --cflags")
 
 DISTFILES += $$TS_CONFIG_FILES
 HEADERS   += $$system("find $$SRCROOT/libtsduck -name \\*.h ! -path \\*/windows/\\* ! -path \\*/$$NOSYSDIR/\\* ! -path \\*/release\\* ! -path \\*/debug\\*")
