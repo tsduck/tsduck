@@ -83,19 +83,16 @@ public final class TSProcessor implements NativeObject {
 
     /**
      * Abort the processing.
-     * @return None.
      */
     public native void abort();
 
     /**
      * Suspend the calling thread until TS processing is completed.
-     * @return None.
      */
     public native void waitForTermination();
 
     /**
      * Delete the encapsulated C++ object.
-     * @return None.
      */
     @Override
     public native void delete();

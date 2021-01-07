@@ -36,6 +36,11 @@
 
   Force a download even if Java is already downloaded.
 
+ .PARAMETER GitHubActions
+
+  When used in a GitHub Action workflow, make sure that the JAVA_HOME
+  environment variable is propagated to subsequent jobs.
+
  .PARAMETER JRE
 
   Download and install the JRE. By default, the JDK is installed.
@@ -53,6 +58,7 @@
 [CmdletBinding(SupportsShouldProcess=$true)]
 param(
     [switch]$ForceDownload = $false,
+    [switch]$GitHubActions = $false,
     [switch]$JRE = $false,
     [switch]$NoInstall = $false,
     [switch]$NoPause = $false
@@ -132,6 +138,19 @@ if (-not $NoInstall) {
     # Note: /passive does not request any input from the user but still displays a progress window.
     # It is however required because msiexec /quiet fails to request UAC and immediately fails.
     Start-Process msiexec -ArgumentList @("/i", "$InstallerPath", "INSTALLLEVEL=3", "/quiet", "/passive") -Wait
+}
+
+# Propagate JAVA_HOME in next jobs for GitHub Actions.
+if ($GitHubActions) {
+    $jhome = [System.Environment]::GetEnvironmentVariable("JAVA_HOME","Machine")
+    if ((-not -not $env:GITHUB_ENV) -and (Test-Path $env:GITHUB_ENV)) {
+        # New version using environment file
+        Write-Output "JAVA_HOME=$jhome" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    }
+    else {
+        # Old version using command on stdout.
+        Write-Output "::set-env name=JAVA_HOME::$jhome"
+    }
 }
 
 Exit-Script

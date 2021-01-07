@@ -55,7 +55,6 @@ public abstract class Report {
     /**
      * Set the maximum severity of the report.
      * @param severity Severity level.
-     * @return None.
      */
     public native void setMaxSeverity(int severity);
 
@@ -63,7 +62,6 @@ public abstract class Report {
      * Log a message to the report.
      * @param severity Severity level of the message.
      * @param message Message to report.
-     * @return None.
      */
     public native void log(int severity, String message);
 
