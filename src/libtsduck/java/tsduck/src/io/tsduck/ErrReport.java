@@ -31,11 +31,17 @@ package io.tsduck;
 
 /**
  * A wrapper class for C++ ErrReport.
+ * @ingroup java
  * 
  * Since the corresponding C++ class is a singleton, there is no delete() method.
  */
 public final class ErrReport extends Report {
 
+    // Load native library on startup.
+    static {
+        NativeLibrary.loadLibrary();
+    }
+    
     // Set the address of the C++ object.
     private native void initNativeObject();
 
@@ -43,6 +49,6 @@ public final class ErrReport extends Report {
      * Constructor
      */
     public ErrReport() {
-       	initNativeObject();
+        initNativeObject();
     }
 }

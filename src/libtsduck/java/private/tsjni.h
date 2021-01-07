@@ -40,6 +40,31 @@
 #if !defined(TS_NO_JAVA)
 #include <jni.h>
 
+//
+// Java Class Names (JCN) in JNI notation.
+//
+#define JCN_CLASS  "java/lang/Class"
+#define JCN_OBJECT "java/lang/Object"
+#define JCN_STRING "java/lang/String"
+
+//
+// Java Class Signatures (JCS) in JNI notation.
+//
+#define JCS(name)      "L" name ";"
+#define JCS_ARRAY(jcs) "[" jcs
+#define JCS_BOOLEAN    "Z"
+#define JCS_BYTE       "B"
+#define JCS_CHAR       "C"
+#define JCS_SHORT      "S"
+#define JCS_INT        "I"
+#define JCS_LONG       "J"
+#define JCS_FLOAT      "F"
+#define JCS_DOUBLE     "D"
+#define JCS_VOID       "V"
+#define JCS_CLASS      JCS(JCN_CLASS)
+#define JCS_OBJECT     JCS(JCN_OBJECT)
+#define JCS_STRING     JCS(JCN_STRING)
+
 namespace ts {
     //!
     //! Namespace for TSDuck JNI support functions
@@ -53,6 +78,158 @@ namespace ts {
         //! @return A constant pointer to the first character in the string.
         //!
         inline const jchar* ToJChar(const std::u16string& str) { return reinterpret_cast<const jchar*>(str.c_str()); }
+
+        //!
+        //! Convert a Java string into a ts::UString.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in] str A Java string.
+        //! @return The converted string. Use env->ExceptionCheck() to check for
+        //! error. In case of error, the returned value is the empty string.
+        //!
+        ts::UString ToUString(JNIEnv* env, jstring str);
+
+        //!
+        //! Convert a ts::UString into a Java string.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in] str A Java string.
+        //! @return The converted string. Use env->ExceptionCheck() to check for
+        //! error. In case of error, the returned value is a null pointer.
+        //!
+        jstring ToJString(JNIEnv* env, const ts::UString& str);
+
+        //!
+        //! Get the value of a 'boolean' field in a Java object.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in] obj Java object from which to get a field.
+        //! @param [in] fieldName Name of the object field to get.
+        //! @return The value from the object field. Use env->ExceptionCheck() to
+        //! check for error. In case of error, the returned value is zero.
+        //!
+        jboolean GetBoolField(JNIEnv* env, jobject obj, const char* fieldName);
+
+        //!
+        //! Set the value of a 'boolean' field in a Java object.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in,out] obj Java object from which to set a field.
+        //! @param [in] fieldName Name of the object field to set.
+        //! @param [in] value Value to set in the field.
+        //! @return True on success, false on error.
+        //!
+        bool SetBoolField(JNIEnv* env, jobject obj, const char* fieldName, jboolean value);
+
+        //!
+        //! Get the value of an 'int' field in a Java object.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in] obj Java object from which to get a field.
+        //! @param [in] fieldName Name of the object field to get.
+        //! @return The value from the object field. Use env->ExceptionCheck() to
+        //! check for error. In case of error, the returned value is zero.
+        //!
+        jint GetIntField(JNIEnv* env, jobject obj, const char* fieldName);
+
+        //!
+        //! Set the value of an 'int' field in a Java object.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in,out] obj Java object from which to set a field.
+        //! @param [in] fieldName Name of the object field to set.
+        //! @param [in] value Value to set in the field.
+        //! @return True on success, false on error.
+        //!
+        bool SetIntField(JNIEnv* env, jobject obj, const char* fieldName, jint value);
+
+        //!
+        //! Get the value of a 'long' field in a Java object.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in] obj Java object from which to get a field.
+        //! @param [in] fieldName Name of the object field to get.
+        //! @return The value from the object field. Use env->ExceptionCheck() to
+        //! check for error. In case of error, the returned value is zero.
+        //!
+        jlong GetLongField(JNIEnv* env, jobject obj, const char* fieldName);
+
+        //!
+        //! Set the value of a 'long' field in a Java object.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in,out] obj Java object from which to set a field.
+        //! @param [in] fieldName Name of the object field to set.
+        //! @param [in] value Value to set in the field.
+        //! @return True on success, false on error.
+        //!
+        bool SetLongField(JNIEnv* env, jobject obj, const char* fieldName, jlong value);
+
+        //!
+        //! Get the value of a pointer field in a Java object.
+        //! The actual Java type of the field shall be 'long'.
+        //! @tparam T A class type.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in] obj Java object from which to get a field.
+        //! @param [in] fieldName Name of the object field to get.
+        //! @return The value from the object field. Use env->ExceptionCheck() to
+        //! check for error. In case of error, the returned value is a null pointer.
+        //!
+        template<class T>
+        inline T* GetPointerField(JNIEnv* env, jobject obj, const char* fieldName)
+        {
+            return reinterpret_cast<T*>(GetLongField(env, obj, fieldName));
+        }
+
+        //!
+        //! Set the value of a pointer field in a Java object.
+        //! The actual Java type of the field shall be 'long'.
+        //! @tparam T A class type.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in,out] obj Java object from which to set a field.
+        //! @param [in] fieldName Name of the object field to set.
+        //! @param [in] value Value to set in the field.
+        //! @return True on success, false on error.
+        //!
+        template<class T>
+        inline bool SetPointerField(JNIEnv* env, jobject obj, const char* fieldName, const T* value)
+        {
+            return SetLongField(env, obj, fieldName, reinterpret_cast<jlong>(value));
+        }
+
+        //!
+        //! Get the value of a field in a Java object.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in] obj Java object from which to get a field.
+        //! @param [in] fieldName Name of the object field to get.
+        //! @param [in] signature Type of the field in JNI notation.
+        //! @return The value from the object field. Use env->ExceptionCheck() to
+        //! check for error. In case of error, the returned value is a null pointer.
+        //!
+        jobject GetObjectField(JNIEnv* env, jobject obj, const char* fieldName, const char* signature);
+
+        //!
+        //! Set the value of a field in a Java object.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in,out] obj Java object from which to set a field.
+        //! @param [in] fieldName Name of the object field to set.
+        //! @param [in] signature Type of the field in JNI notation.
+        //! @param [in] value Value to set in the field.
+        //! @return True on success, false on error.
+        //!
+        bool SetObjectField(JNIEnv* env, jobject obj, const char* fieldName, const char* signature, jobject value);
+
+        //!
+        //! Get the value of a 'String' field in a Java object.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in] obj Java object from which to get a field.
+        //! @param [in] fieldName Name of the object field to get.
+        //! @return The value from the object field. Use env->ExceptionCheck() to
+        //! check for error. In case of error, the returned value is an empty string.
+        //!
+        ts::UString GetStringField(JNIEnv* env, jobject obj, const char* fieldName);
+
+        //!
+        //! Set the value of a 'String' field in a Java object.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in,out] obj Java object from which to set a field.
+        //! @param [in] fieldName Name of the object field to set.
+        //! @param [in] value Value to set in the field.
+        //! @return True on success, false on error.
+        //!
+        bool SetStringField(JNIEnv* env, jobject obj, const char* fieldName, const ts::UString& value);
     }
 }
 

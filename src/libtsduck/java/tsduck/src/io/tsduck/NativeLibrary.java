@@ -31,6 +31,7 @@ package io.tsduck;
 
 /**
  * An internal class to interface the TSDuck C++ shared library.
+ * @ingroup java
  */
 class NativeLibrary {
 

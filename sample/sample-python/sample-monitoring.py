@@ -11,7 +11,7 @@ import os
 import tempfile
 
 # Create an asynchronous report to log multi-threaded messages.
-rep = ts.AsyncReport(severity = ts.Report.VERBOSE)
+rep = ts.AsyncReport(severity = ts.Report.Verbose)
 
 # Build a temporary file name to download a real TS file.
 url = "https://tsduck.io/streams/france-dttv/tnt-uhf30-546MHz-2019-01-22.ts"

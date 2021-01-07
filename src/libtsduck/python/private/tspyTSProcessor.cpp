@@ -26,12 +26,83 @@
 //  THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//
+//  TSDuck Python bindings: encapsulates TSProcessor objects for Python.
+//
+//----------------------------------------------------------------------------
 
-#include "tspyTSProcessor.h"
+#include "tspy.h"
 #include "tsTSProcessor.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 
+//----------------------------------------------------------------------------
+// Interface of native methods.
+//----------------------------------------------------------------------------
+
+TS_PUSH_WARNING()
+TS_MSC_NOWARNING(4091) // '__declspec(dllexport)': ignored on left of 'struct type' when no variable is declared
+
+//!
+//! Create a new instance of TSProcessor.
+//! @param [in] report A previously allocated instance of Report.
+//! @return A new TSProcessor instance.
+//!
+TSDUCKPY void* tspyNewTSProcessor(void* report);
+
+//!
+//! Delete a previously allocated instance of TSProcessor.
+//! @param [in] tsp A previously allocated instance of TSProcessor.
+//!
+TSDUCKPY void tspyDeleteTSProcessor(void* tsp);
+
+//!
+//! Argument structure (plain C structure) for start parameters.
+//! Use same names as ts::TSProcessorArgs but only long's to avoid interface issues.
+//!
+TSDUCKPY struct tspyTSProcessorArgs
+{
+    long monitor;                  //!< Run a resource monitoring thread (bool).
+    long ignore_joint_termination; //!< Ignore "joint termination" options in plugins (bool).
+    long buffer_size;              //!< Size in bytes of the global TS packet buffer.
+    long max_flushed_packets;      //!< Max processed packets before flush.
+    long max_input_packets;        //!< Max packets per input operation.
+    long initial_input_packets;    //!< Initial number of input packets to read before starting the processing (zero means default).
+    long add_input_stuffing_0;     //!< Add input stuffing: add @a add_input_stuffing_0 null packets ...
+    long add_input_stuffing_1;     //!< ... every @a add_input_stuffing_1 input packets.
+    long add_start_stuffing;       //!< Add null packets before actual input.
+    long add_stop_stuffing;        //!< Add null packets after end of actual input.
+    long bitrate;                  //!< Fixed input bitrate (user-specified).
+    long bitrate_adjust_interval;  //!< Bitrate adjust interval in (milliseconds).
+    long receive_timeout;          //!< Timeout on input operations (in milliseconds).
+    long log_plugin_index;         //!< Log plugin index with plugin name (bool).
+};
+
+//!
+//! Start the TS processing.
+//! @param [in] tsp A previously allocated instance of TSProcessor.
+//! @param [in] args TS processing options.
+//! @param [in] plugins Address of a buffer containing a UTF-16 string with all plugins.
+//! Strings are separated with fake character 0xFFFF. First string is application name.
+//! Strings '-I', '-P' and '-O' identify plugin types.
+//! @param [in] plugins_size Size in bytes of the @a plugins buffer.
+//! @return True on success, false on failure to start.
+//!
+TSDUCKPY bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, const uint8_t* plugins, size_t plugins_size);
+
+//!
+//! Abort the processing.
+//! @param [in] tsp A previously allocated instance of TSProcessor.
+//!
+TSDUCKPY void tspyAbortTSProcessor(void* tsp);
+
+//!
+//! Suspend the calling thread until TS processing is completed.
+//! @param [in] tsp A previously allocated instance of TSProcessor.
+//!
+TSDUCKPY void tspyWaitTSProcessor(void* tsp);
+
+TS_POP_WARNING()
 
 //-----------------------------------------------------------------------------
 // Interface to TSProcessor.
@@ -64,7 +135,6 @@ void tspyWaitTSProcessor(void* tsp)
     }
 }
 
-
 //-----------------------------------------------------------------------------
 // Start the TS processing and decode arguments.
 //-----------------------------------------------------------------------------
@@ -92,6 +162,10 @@ bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, const uint
     tsargs.bitrate_adj = ts::MilliSecond(args->bitrate_adjust_interval);
     tsargs.receive_timeout = ts::MilliSecond(args->receive_timeout);
     tsargs.log_plugin_index = bool(args->log_plugin_index);
+
+    // Default input and output plugins.
+    tsargs.input.set(u"null");
+    tsargs.output.set(u"drop");
 
     // Split plugins strings.
     const ts::UStringList fields(tspy::ToStringList(plugins, plugins_size));

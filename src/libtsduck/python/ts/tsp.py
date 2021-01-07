@@ -35,42 +35,78 @@ from . import lib
 import ctypes
 import re
 
+##
+# A Python exception class which is thrown in case of start error in TSProcessor.
+# @ingroup python
+#
 class TSPStartError(Exception):
     pass
 
+##
+# A wrapper class for C++ TSProcessor.
+# @ingroup python
+#
 class TSProcessor:
-    # Constructor with the ts.Report object.
+
+    ##
+    # Constructor.
+    # @param report The ts.Report object to use.
+    #
     def __init__(self, report):
         self._report = report
         self._tsp_addr = ctypes.c_void_p(lib.tspyNewTSProcessor(self._report._report_addr))
 
         # Publicly customizable tsp options:
-        self.monitor = False                   # --monitor
-        self.ignore_joint_termination = False  # --ignore-joint-termination
-        self.log_plugin_index = False          # --log-plugin-index
-        self.buffer_size = 16 * 1024 * 1024    # --buffer-size-mb (in bytes here)
-        self.max_flushed_packets = 0           # --max-flushed-packets (zero means default)
-        self.max_input_packets = 0             # --max-input-packets (zero means default)
-        self.initial_input_packets = 0         # --initial-input-packets (zero means default)
-        self.add_input_stuffing = [0, 0]       # --add-input-stuffing nullpkt/inpkt
-        self.add_start_stuffing = 0            # --add-start-stuffing
-        self.add_stop_stuffing = 0             # --add-stop-stuffing
-        self.bitrate = 0                       # --bitrate
-        self.bitrate_adjust_interval = 5000    # --bitrate-adjust-interval (in milliseconds)
-        self.receive_timeout = 0               # --receive-timeout
-        self.app_name = ""                     # application name, for help messages.
-        self.input = []                        # input plugin name and arguments (list of strings)
-        self.plugins = []                      # packet processor plugins names and arguments (list of lists of strings)
-        self.output = []                       # output plugin name and arguments (list of strings)
+        ## Option -\-monitor.
+        self.monitor = False                   
+        ## Option -\-ignore-joint-termination.
+        self.ignore_joint_termination = False  
+        ## Option -\-log-plugin-index.
+        self.log_plugin_index = False          
+        ## Option -\-buffer-size-mb (in bytes here).
+        self.buffer_size = 16 * 1024 * 1024    
+        ## Option -\-max-flushed-packets (zero means default).
+        self.max_flushed_packets = 0           
+        ## Option -\-max-input-packets (zero means default).
+        self.max_input_packets = 0             
+        ## Option -\-initial-input-packets (zero means default).
+        self.initial_input_packets = 0         
+        ## Option -\-add-input-stuffing nullpkt/inpkt (two values).
+        self.add_input_stuffing = [0, 0]       
+        ## Option -\-add-start-stuffing.
+        self.add_start_stuffing = 0            
+        ## Option -\-add-stop-stuffing.
+        self.add_stop_stuffing = 0             
+        ## Option -\-bitrate.
+        self.bitrate = 0                       
+        ## Option -\-bitrate-adjust-interval (in milliseconds).
+        self.bitrate_adjust_interval = 5000    
+        ## Option -\-receive-timeout.
+        self.receive_timeout = 0               
+        ## Application name, for help messages.
+        self.app_name = ""                     
+        ## Input plugin name and arguments (list of strings).
+        self.input = []                        
+        ## Packet processor plugins names and arguments (list of lists of strings).
+        self.plugins = []                      
+        ## Output plugin name and arguments (list of strings).
+        self.output = []                       
 
+    ##
     # Finalizer.
+    # Deallocate the associated C++ object.
+    #
     def __del__(self):
         if self._tsp_addr.value != 0:
             lib.tspyDeleteReport(self._tsp_addr)
             self._tsp_addr = ctypes.c_void_p(0)
             self._report = None
 
-    # Starts the TSProcessor.
+    ##
+    # Start the TS processor.
+    # All properties shall have been set before calling this method.
+    # @return None.
+    #
     def start(self):
         # Build global options. Copy expected fields in C++ struct from this object.
         # When an expected field name is "prefix_int", fetch field "prefix[int]".
@@ -102,10 +138,16 @@ class TSProcessor:
         if not lib.tspyStartTSProcessor(self._tsp_addr, ctypes.byref(args), plugins.data_ptr(), plugins.size()):
             raise TSPStartError("Error starting TS processor")
 
-    # Aborts the TSProcessor.
+    ##
+    # Abort the TSProcessor.
+    # @return None.
+    #
     def abort(self):
         lib.tspyAbortTSProcessor(self._tsp_addr)
 
+    ##
     # Suspend the calling thread until TS processing is completed.
+    # @return None.
+    #
     def waitForTermination(self):
         lib.tspyWaitTSProcessor(self._tsp_addr)

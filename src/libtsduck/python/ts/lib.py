@@ -35,6 +35,8 @@ import os
 import ctypes.util
 from ctypes import *
 
+## @cond doxygen
+# Internal module, not documented.
 
 #-----------------------------------------------------------------------------
 # Load the TSDuck library
@@ -134,7 +136,7 @@ class OutByteBuffer:
 # Bindings to C++ functions from the TSDuck library
 #-----------------------------------------------------------------------------
 
-# struct tspyTSProcessorArgs {...};
+# struct tspyTSProcessorArgs {...}; (see file tspyTSProcessor.cpp)
 class tspyTSProcessorArgs(ctypes.Structure):
     _fields_ = [
         ("monitor", ctypes.c_long),                   # Run a resource monitoring thread (bool).
@@ -236,3 +238,5 @@ tspyVersionString.argtypes = [POINTER(c_uint8), POINTER(c_size_t)]
 tspyWaitTSProcessor = _lib.tspyWaitTSProcessor
 tspyWaitTSProcessor.restype = None
 tspyWaitTSProcessor.argtypes = [c_void_p]
+
+## @endcond

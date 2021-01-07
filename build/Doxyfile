@@ -44,7 +44,7 @@ PROJECT_LOGO   = ../images/tsduck-32.png
 
 # Input and output files:
 
-FILE_PATTERNS    = *.h *.dox *.md
+FILE_PATTERNS    = *.h *.dox *.md *.java *.py
 EXCLUDE_PATTERNS = *Template.h tsduck.h
 INPUT            = ../src/doc ../src/libtsduck ../src/tstools
 RECURSIVE        = YES
@@ -52,7 +52,8 @@ IMAGE_PATH       = ../images
 OUTPUT_DIRECTORY = ../bin/doxy
 EXCLUDE          = ../src/libtsduck/dtv/private \
                    ../src/libtsduck/plugin/private \
-                   ../src/libtsduck/python
+                   ../src/libtsduck/python/private \
+                   ../src/libtsduck/java/private
 INCLUDE_PATH     = ../src/libtsduck \
                    ../src/libtsduck/base \
                    ../src/libtsduck/base/json \

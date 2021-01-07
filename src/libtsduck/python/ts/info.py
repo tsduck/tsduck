@@ -33,11 +33,19 @@
 
 from . import lib
 
+##
 # TSDuck version as an integer.
+# @ingroup python
+# @return TSDuck version as an integer, suitable for comparison between versions.
+#
 def intVersion():
     return lib.tspyVersionInteger()
 
+##
 # TSDuck version as a string.
+# @ingroup python
+# @return TSDuck version as a string.
+#
 def version():
     buf = lib.OutByteBuffer(64)
     lib.tspyVersionString(buf.data_ptr(), buf.size_ptr())

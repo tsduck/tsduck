@@ -26,22 +26,41 @@
 //  THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//
+//  TSDuck Python bindings: information features.
+//
+//----------------------------------------------------------------------------
 
-#include "tspyInfo.h"
+#include "tspy.h"
 #include "tsVersionInfo.h"
 #include "tsVersionString.h"
 TSDUCK_SOURCE;
 
+//----------------------------------------------------------------------------
+// Interface of native methods.
+//----------------------------------------------------------------------------
+
+//!
+//! Get the TSDuck version as an integer, suitable for comparisons.
+//! @return the TSDuck version as Mmmccccc (Major, minor, commit).
+//!
+TSDUCKPY uint32_t tspyVersionInteger();
+
+//!
+//! Get the TSDuck version as a string.
+//! @param [out] buffer Address of a buffer where the version string is returned in UTF-16 format.
+//! @param [in,out] size Initial/maximum size in bytes of the buffer. Upon return, contains the written size in bytes.
+//!
+TSDUCKPY void tspyVersionString(uint8_t* buffer, size_t* size);
 
 //-----------------------------------------------------------------------------
-// Get the TSDuck version in various forms.
+// Implementation of native methods.
 //-----------------------------------------------------------------------------
 
 uint32_t tspyVersionInteger()
 {
     return TS_VERSION_INTEGER;
 }
-
 
 void tspyVersionString(uint8_t* buffer, size_t* size)
 {

@@ -40,9 +40,11 @@ TSDUCK_SOURCE;
 // Interface of native methods.
 //----------------------------------------------------------------------------
 
-// Method: io.tsduck.NativeLibrary.initialize
-// Signature: ()V
-JNIEXPORT void JNICALL Java_io_tsduck_NativeLibrary_initialize(JNIEnv*, jclass);
+extern "C" {
+    // Method: io.tsduck.NativeLibrary.initialize
+    // Signature: ()V
+    JNIEXPORT void JNICALL Java_io_tsduck_NativeLibrary_initialize(JNIEnv*, jclass);
+}
 
 //----------------------------------------------------------------------------
 // Implementation of native methods.

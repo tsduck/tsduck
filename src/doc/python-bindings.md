@@ -49,6 +49,9 @@ All Python programs using TSDuck shall consequently start with:
 import ts
 ~~~
 
+A few examples are provided in the directory `sample/sample-python` in the TSDuck
+source code package.
+
 ## Linux  {#pylinux}
 
 The Python bindings are installed with TSDuck in `/usr/share/tsduck/python`.
@@ -79,6 +82,9 @@ Python program can use TSDuck directly.
 
 All TSDuck bindings are defined in a module named `ts`, the same name as
 the C++ namespace for the TSDuck library.
+
+The Python classes are documented in the @ref python "Python bindings" reference section.
+They are also informally described below.
 
 ## Informational functions  {#pyinfofunc}
 

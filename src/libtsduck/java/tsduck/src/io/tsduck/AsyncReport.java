@@ -31,26 +31,49 @@ package io.tsduck;
 
 /**
  * A wrapper class for C++ AsyncReport.
+ * @ingroup java
  */
 public final class AsyncReport extends Report implements NativeObject {
 
+    // Load native library on startup.
+    static {
+        NativeLibrary.loadLibrary();
+    }
+    
     // Set the address of the C++ object.
-    private native void initNativeObject();
-	
+    private native void initNativeObject(int severity, boolean syncLog, boolean timedLog, int logMsgCount);
+
     /**
      * Constructor
+     * @param severity Initial severity.
+     * @param syncLog Synchronous log.
+     * @param timedLog Add time stamps in log messages.
+     * @param logMsgCount Maximum buffered log messages.
      */
     public AsyncReport() {
-        initNativeObject();
+        initNativeObject(Info, false, false, 512);
+    }
+    
+    /**
+     * Constructor
+     * @param severity Initial severity.
+     * @param syncLog Synchronous log.
+     * @param timedLog Add time stamps in log messages.
+     * @param logMsgCount Maximum buffered log messages.
+     */
+    public AsyncReport(int severity, boolean syncLog, boolean timedLog, int logMsgCount) {
+        initNativeObject(severity, syncLog, timedLog, logMsgCount);
     }
     
     /**
      * Synchronously terminates the async log thread.
+     * @return None.
      */
     public native void terminate();
     
     /**
      * Delete the encapsulated C++ object.
+     * @return None.
      */
     @Override
     public native void delete();
