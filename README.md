@@ -45,8 +45,8 @@ These classes manipulate, in a completely portable way, MPEG transport streams, 
 signalization and many other features. See the [programming guide](https://tsduck.io/doxy/)
 and its [tutorial](https://tsduck.io/doxy/libtutorial.html).
 
-Python bindings exist to allow running transport stream processing pipelines from
-Python applications.
+Python and Java bindings exist to allow running transport stream processing pipelines from
+Python or Java applications.
 
 ### Building
 

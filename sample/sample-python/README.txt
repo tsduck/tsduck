@@ -9,6 +9,9 @@ The first session downloads a TS file using HTTP and the second one plays the
 downloaded file. System monitoring messages are reported to check the stability
 of the application.
 
+These two samples programs are functionally identical to the Java samples in
+directory ../sample-java.
+
 After building TSDuck, it is possible to execute the Python programs directly
 on the freshly built TSDuck library after executing:
 

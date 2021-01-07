@@ -31,6 +31,7 @@ package io.tsduck;
 
 /**
  * This interface is implemented by all TSDuck classes which are backed by a C++ object.
+ * @ingroup java
  *
  * There is an inherent problem when garbage-collected languages such as Java are interfaced
  * with languages using explicit memory management. When a Java class encapsulates a native

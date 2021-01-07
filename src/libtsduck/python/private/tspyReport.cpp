@@ -26,13 +26,70 @@
 //  THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//
+//  TSDuck Python bindings: encapsulates Report objects for Python.
+//
+//----------------------------------------------------------------------------
 
-#include "tspyReport.h"
+#include "tspy.h"
 #include "tsAsyncReport.h"
 #include "tsCerrReport.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 
+//----------------------------------------------------------------------------
+// Interface of native methods.
+//----------------------------------------------------------------------------
+
+//!
+//! Get the TSDuck CERR report instance.
+//! @return CERR report instance.
+//!
+TSDUCKPY void* tspyStdErrReport();
+
+//!
+//! Get the TSDuck NULLREP instance.
+//! @return NULLREP instance.
+//!
+TSDUCKPY void* tspyNullReport();
+
+//!
+//! Create a new instance of AsyncReport.
+//! @param [in] severity Initial severity.
+//! @param [in] sync_log Synchronous log.
+//! @param [in] timed_log Add time stamps in log messages.
+//! @param [in] log_msg_count Maximum buffered log messages.
+//! @return A new AsyncReport instance.
+//!
+TSDUCKPY void* tspyNewAsyncReport(int severity, bool sync_log, bool timed_log, size_t log_msg_count);
+
+//!
+//! Synchronously terminate an AsyncReport.
+//! @param [in] report A previously allocated instance of Report.
+//!
+TSDUCKPY void tspyTerminateAsyncReport(void* report);
+
+//!
+//! Delete a previously allocated instance of Report.
+//! @param [in] report A previously allocated instance of Report.
+//!
+TSDUCKPY void tspyDeleteReport(void* report);
+
+//!
+//! Set the maximum severity of an instance of Report.
+//! @param [in] report Address of an instance of Report.
+//! @param [in] severity Message severity.
+//!
+TSDUCKPY void tspySetMaxSeverity(void* report, int severity);
+
+//!
+//! Log a message on an instance of Report.
+//! @param [in] report Address of an instance of Report.
+//! @param [in] severity Message severity.
+//! @param [in] buffer Address of a buffer containing a UTF-16 string.
+//! @param [in] size Size in bytes of the buffer.
+//!
+TSDUCKPY void tspyLogReport(void* report, int severity, const uint8_t* buffer, size_t size);
 
 //-----------------------------------------------------------------------------
 // Get static report instances.
@@ -47,7 +104,6 @@ void* tspyNullReport()
 {
     return ts::NullReport::Instance();
 }
-
 
 //-----------------------------------------------------------------------------
 // Interface to AsyncReport.
@@ -70,7 +126,6 @@ void tspyTerminateAsyncReport(void* report)
     }
 }
 
-
 //-----------------------------------------------------------------------------
 // Delete a previously allocated instance of Report.
 //-----------------------------------------------------------------------------
@@ -79,7 +134,6 @@ void tspyDeleteReport(void* report)
 {
     delete reinterpret_cast<ts::Report*>(report);
 }
-
 
 //-----------------------------------------------------------------------------
 // Set the maximum severity of an instance of Report.

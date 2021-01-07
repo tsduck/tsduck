@@ -38,33 +38,47 @@ include ../../../../Makefile.tsduck
 EXTRA_DISTCLEAN   += bin
 NORECURSE_SUBDIRS += bin src
 
+.PHONY: install
+
 # Check presence of the Java compiler.
 JAVAC := $(shell $(ROOTDIR)/build/java-config.sh --javac)
 
 # Just skip Java build if no compiler is present.
 ifeq ($(JAVAC),)
 
-default:
+default install:
 	@true
 
 else
 
 JAVAC_FLAGS = -Werror
 
+JAR      := $(shell $(ROOTDIR)/build/java-config.sh --jar)
 CLASSDIR  = $(OBJDIR)/java
 JARFILE   = $(OBJDIR)/tsduck.jar
+MANIFEST  = $(CLASSDIR)/Manifest.txt
 JSOURCES := $(shell find src -name '*.java')
 JCLASSES := $(patsubst src/%.java,$(CLASSDIR)/%.class,$(JSOURCES))
 
 $(CLASSDIR)/%.class: src/%.java
 	@echo '  [JAVAC] $<'; \
+	mkdir -p $(CLASSDIR); \
 	cd src; $(JAVAC) $(JAVAC_FLAGS) -d $(CLASSDIR) $(patsubst src/%,%,$<)
 
 default: $(JARFILE)
 	@true
 
-$(JARFILE): $(JCLASSES)
+$(JARFILE): $(JCLASSES) $(MANIFEST)
 	@echo '  [JAR] $@'; \
-	$(shell $(ROOTDIR)/build/java-config.sh --jar) -c -f $@ $(patsubst $(CLASSDIR)/%,-C $(CLASSDIR) %,$(JCLASSES))
+	$(JAR) -c -f $@ -m $(MANIFEST) $(patsubst $(CLASSDIR)/%,-C $(CLASSDIR) %,$(JCLASSES))
+
+$(MANIFEST): Manifest.txt ../../tsVersion.h
+	@echo '  [GEN] $@'; \
+	mkdir -p $(dir $@); \
+	$(SED) -e 's|{{VERSION}}|$(shell $(ROOTDIR)/build/get-version-from-sources.sh)|' Manifest.txt >$@
+
+install: $(JARFILE)
+	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck/java
+	install -m 644 $(JARFILE) $(SYSROOT)$(SYSPREFIX)/share/tsduck/java
 
 endif

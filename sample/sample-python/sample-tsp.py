@@ -9,14 +9,14 @@ import ts
 
 # Create an asynchronous report to log multi-threaded messages.
 # Initial level is verbose, using time-stamped messages.
-rep = ts.AsyncReport(severity = ts.Report.VERBOSE, timed_log = True)
+rep = ts.AsyncReport(severity = ts.Report.Verbose, timed_log = True)
 rep.info("TSDuck version: %s" % ts.__version__)
 
 # Create a TS processor using the report.
 tsp = ts.TSProcessor(rep)
 
 # Set some global TS processing options.
-tsp.add_input_stuffing = [1, 10]   # one null packet every 10 inputpackets
+tsp.add_input_stuffing = [1, 10]   # one null packet every 10 input packets
 tsp.bitrate = 1000000              # nominal bitrate is 1 Mb/s
 tsp.app_name = "demo"              # informational only, for log messages
 

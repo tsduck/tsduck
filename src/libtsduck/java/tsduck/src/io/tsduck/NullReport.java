@@ -31,14 +31,20 @@ package io.tsduck;
 
 /**
  * A wrapper class for C++ NullReport.
+ * @ingroup java
  * 
  * Since the corresponding C++ class is a singleton, there is no delete() method.
  */
 public final class NullReport extends Report {
 
+    // Load native library on startup.
+    static {
+        NativeLibrary.loadLibrary();
+    }
+    
     // Set the address of the C++ object.
     private native void initNativeObject();
-	
+
     /**
      * Constructor
      */

@@ -87,4 +87,15 @@ Application development.
   @ingroup appdev
   TSDuck plugin development.
 
+@defgroup otherlang Other languages
+Application development not using C++.
+
+  @defgroup java Java bindings
+  @ingroup otherlang
+  Using TSDuck from Java applications.
+
+  @defgroup python Python bindings
+  @ingroup otherlang
+  Using TSDuck from Python applications.
+
 */

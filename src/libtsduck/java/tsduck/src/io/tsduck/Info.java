@@ -31,6 +31,7 @@ package io.tsduck;
 
 /**
  * TSDuck library general information.
+ * @ingroup java
  */
 public class Info {
 
@@ -41,7 +42,7 @@ public class Info {
     
     /**
      * TSDuck version as an integer.
-     * @return TSDuck version as an integer.
+     * @return TSDuck version as an integer, suitable for comparison between versions.
      */
     public static native int intVersion();
 

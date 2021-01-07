@@ -80,6 +80,7 @@ else
     [[ ":$TSPLUGINS_PATH:" != *:$BINDIR:* ]] && export TSPLUGINS_PATH="$BINDIR:$TSPLUGINS_PATH"
     [[ ":$LD_LIBRARY_PATH:" != *:$BINDIR:* ]] && export LD_LIBRARY_PATH="$BINDIR:$LD_LIBRARY_PATH"
     [[ ":$PYTHONPATH:" != *:$TSPYDIR:* ]] && export PYTHONPATH="$TSPYDIR:$PYTHONPATH"
+    [[ ":$CLASSPATH:" != *:$BINDIR/tsduck.jar:* ]] && export CLASSPATH="$BINDIR/tsduck.jar:$CLASSPATH"
     # For macOS only: LD_LIBRARY_PATH is not passed to shell-scripts for security reasons.
     # Define a backup version which can be explicitly checked in scripts (typically Python bindings).
     export LD_LIBRARY_PATH2="$LD_LIBRARY_PATH"
