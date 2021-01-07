@@ -67,13 +67,11 @@ public final class AsyncReport extends Report implements NativeObject {
     
     /**
      * Synchronously terminates the async log thread.
-     * @return None.
      */
     public native void terminate();
     
     /**
      * Delete the encapsulated C++ object.
-     * @return None.
      */
     @Override
     public native void delete();
