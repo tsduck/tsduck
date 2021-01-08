@@ -29,6 +29,10 @@
 
 package io.tsduck;
 
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 /**
  * An internal class to interface the TSDuck C++ shared library.
  * @ingroup java
@@ -36,19 +40,51 @@ package io.tsduck;
 class NativeLibrary {
 
     /**
-     * Native library name. Actual file name becomes libtsduck.so (Unix) or tsduck.dll (Windows).
+     * Name of the native library.
      */
-    private static final String LIBNAME = "tsduck";
-    
+    private static final String libName = "tsduck";
+
     /**
      * Native method inside the TSDuck library which initializes what needs to be initialized.
      */
     private static native void initialize();
-    
+
     /**
      * Boolean to be set once the native library is loaded to avoid loading it twice.
      */
     private static boolean loaded = false;
+
+    /**
+     * Get the operating system name.
+     * @return The operating system name, lowercase, without space.
+     */
+    private static String osName() {
+        return System.getProperty("os.name").toLowerCase().replaceAll(" ", "");
+    }
+
+    /**
+     * Search a library in a search path.
+     * @param search Search path.
+     * @param lib Library name ("link name").
+     * @return Library file path or null if not found.
+     */
+    private static String searchLibraryInPath(String search, String lib) {
+        if (search != null) {
+            for (String dir : search.split(":")) {
+                if (!dir.isEmpty()) {
+                    Path path = FileSystems.getDefault().getPath(dir, "lib" + lib + ".so");
+                    if (Files.exists(path)) {
+                        return path.toString();
+                    }
+                    path = FileSystems.getDefault().getPath(dir, "lib" + lib + ".dylib");
+                    if (Files.exists(path)) {
+                        return path.toString();
+                    }
+                }
+            }
+        }
+        return null; // not found
+    }
 
     /**
      * This static method loads the native TSDuck library.
@@ -56,7 +92,23 @@ class NativeLibrary {
      */
     public static synchronized void loadLibrary() {
         if (!loaded) {
-            System.loadLibrary(LIBNAME);
+            String path = null;
+            if (osName().startsWith("mac")) {
+                // On macOS with "system integrity protection", LD_LIBRARY_PATH is not
+                // passed to Java processes and the java.libray.path does not contain
+                // the 'lib' directory. We must do the search explicitly.
+                path = searchLibraryInPath(System.getenv("TSPLUGINS_PATH"), libName);
+                if (path == null) {
+                    path = searchLibraryInPath("/usr/local/lib:/usr/lib", libName);
+                }
+            }
+            // Load the native library by explicit file name or using system search rules.
+            if (path != null) {
+                System.load(path.toString());
+            }
+            else {
+                System.loadLibrary(libName);
+            }
             initialize();
             loaded = true;
         }

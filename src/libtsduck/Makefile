@@ -114,6 +114,18 @@ $(BINDIR)/%: dtv/%
 	mkdir -p $(BINDIR); \
 	cp $< $@
 
+# On macOS, we create all shared libraries as .so files, which is counter-intuitive
+# since these files have .dylib as standard extension on macOS. To avoid link errors
+# in third-party applications, we create a symbolic link.
+
+ifdef MACOS
+DYLIB_LIBTSDUCK = $(basename $(SHARED_LIBTSDUCK)).dylib
+$(DYLIB_LIBTSDUCK): $(SHARED_LIBTSDUCK)
+	@echo '  [DYLIB] $@'; cd $(dir $@); ln -sf $(notdir $^) $(notdir $@)
+else
+DYLIB_LIBTSDUCK =
+endif
+
 # Library containing all modules.
 # - Both static and dynamic libraries are created but only use the dynamic one when building
 #   tools and plugins.
@@ -123,7 +135,7 @@ $(BINDIR)/%: dtv/%
 #   the dynamic library. In fact, it would only slow down application startup.
 
 .PHONY: libs
-libs: $(STATIC_LIBTSDUCK) $(SHARED_LIBTSDUCK)
+libs: $(STATIC_LIBTSDUCK) $(SHARED_LIBTSDUCK) $(DYLIB_LIBTSDUCK)
 
 $(STATIC_LIBTSDUCK): $(OBJS)
 	@echo '  [AR] $@'; $(AR) $(ARFLAGS) $@ $^
@@ -139,6 +151,9 @@ $(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(OBJS))
 install: $(SHARED_LIBTSDUCK)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck $(SYSROOT)$(SYSPREFIX)/share/tsduck/python/ts
 	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
+ifdef MACOS
+	cd $(SYSROOT)$(USRLIBDIR); ln -sf $(notdir $(SHARED_LIBTSDUCK)) $(notdir $(DYLIB_LIBTSDUCK))
+endif
 	install -m 644 $(CONFIG_FILES) $(SYSROOT)$(SYSPREFIX)/share/tsduck
 	$(MAKE) -C python install
 	$(MAKE) -C java/tsduck install
