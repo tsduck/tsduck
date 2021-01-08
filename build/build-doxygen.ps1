@@ -97,10 +97,10 @@ else {
 # A function to remove empty directories, recursively.
 function Remove-EmptyFolder($path)
 {
-	Get-ChildItem $path -Directory | ForEach-Object { Remove-EmptyFolder $_.FullName }
-	if (@(Get-ChildItem $path).Count -eq 0) {
-		Remove-Item $path -Force
-	}
+    Get-ChildItem $path -Directory | ForEach-Object { Remove-EmptyFolder $_.FullName }
+    if (@(Get-ChildItem $path).Count -eq 0) {
+        Remove-Item $path -Force
+    }
 }
 
 # Generate Doxygen documentation.

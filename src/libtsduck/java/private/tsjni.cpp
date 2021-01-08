@@ -42,7 +42,7 @@ jstring ts::jni::ToJString(JNIEnv* env, const ts::UString& str)
         return nullptr;
     }
     else {
-        return env->NewString(ToJChar(str), str.size());
+        return env->NewString(ToJChar(str), jsize(str.size()));
     }
 }
 

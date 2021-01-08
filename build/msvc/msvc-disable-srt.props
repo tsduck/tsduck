@@ -4,9 +4,9 @@
   <!-- Must be included in .vcxproj files to disable SRT code -->
 
   <ItemDefinitionGroup>
-	<ClCompile>
-	  <PreprocessorDefinitions>TS_NOSRT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-	</ClCompile>
+    <ClCompile>
+      <PreprocessorDefinitions>TS_NOSRT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
   </ItemDefinitionGroup>
 
 </Project>

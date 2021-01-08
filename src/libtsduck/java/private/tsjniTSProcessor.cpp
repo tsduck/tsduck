@@ -155,9 +155,9 @@ JNIEXPORT jboolean JNICALL Java_io_tsduck_TSProcessor_start(JNIEnv* env, jobject
     args.instuff_inpkt = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "addInputStuffingInput")));
     args.instuff_start = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "addStartStuffing")));
     args.instuff_stop = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "addStopStuffing")));
-    args.fixed_bitrate = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "bitrate")));
-    args.bitrate_adj = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "bitrateAdjustInterval")));
-    args.receive_timeout = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "receiveTimeout")));
+    args.fixed_bitrate = ts::BitRate(std::max<jint>(0, ts::jni::GetIntField(env, obj, "bitrate")));
+    args.bitrate_adj = ts::MilliSecond(std::max<jint>(0, ts::jni::GetIntField(env, obj, "bitrateAdjustInterval")));
+    args.receive_timeout = ts::MilliSecond(std::max<jint>(0, ts::jni::GetIntField(env, obj, "receiveTimeout")));
     args.app_name = ts::jni::GetStringField(env, obj, "appName");
 
     // Get plugins description.
