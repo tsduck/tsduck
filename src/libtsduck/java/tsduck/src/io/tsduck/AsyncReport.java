@@ -45,10 +45,6 @@ public final class AsyncReport extends Report implements NativeObject {
 
     /**
      * Constructor
-     * @param severity Initial severity.
-     * @param syncLog Synchronous log.
-     * @param timedLog Add time stamps in log messages.
-     * @param logMsgCount Maximum buffered log messages.
      */
     public AsyncReport() {
         initNativeObject(Info, false, false, 512);
