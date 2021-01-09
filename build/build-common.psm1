@@ -41,6 +41,7 @@
 #  - New-TempDirectory
 #  - New-ZipFile [-Path] <String> [[-Root] <String>] [-Input <Object>] [-Force
 #  - Find-MSBuild
+#  - Find-Jva
 #
 #-----------------------------------------------------------------------------
 
@@ -397,3 +398,23 @@ function Find-MSBuild
     return $Path
 }
 Export-ModuleMember -Function Find-MSBuild
+
+<#
+ .SYNOPSIS
+  Find the Java environment.
+
+ .OUTPUTS
+  Return the path of the directory containing java.exe, javac.exe and jar.exe.
+  Return the empty directory if not found.
+#>
+function Find-Java
+{
+    $jh = $env:JAVA_HOME
+    if (-not -not $jh -and (Test-Path $jh\bin\java.exe) -and (Test-Path $jh\bin\javac.exe) -and (Test-Path $jh\bin\jar.exe)) {
+        return "$jh\bin"
+    }
+    else {
+        return ""
+    }
+}
+Export-ModuleMember -Function Find-Java

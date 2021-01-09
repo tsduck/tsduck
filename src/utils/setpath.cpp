@@ -59,6 +59,8 @@ public:
     ts::UString   directory;
     ts::UString   environment;
     UpdateCommand command;
+    bool          initialSeparator;
+    bool          finalSeparator;
     bool          dryRun;
 };
 
@@ -67,8 +69,12 @@ Options::Options(int argc, char *argv[]) :
     directory(),
     environment(),
     command(APPEND),
+    initialSeparator(false),
+    finalSeparator(false),
     dryRun(false)
 {
+    const ts::UString sep(1, ts::SearchPathSeparator);
+
     option(u"", 0, Args::STRING, 1, 1);
     help(u"", u"A directory to add or remove to the system Path.");
 
@@ -81,6 +87,12 @@ Options::Options(int argc, char *argv[]) :
     option(u"environment", 'e', Args::STRING);
     help(u"environment", u"Name of the path environment variable. The default is \"Path\".");
 
+    option(u"final-separator", 'f');
+    help(u"final-separator", u"Force a final '" + sep + u"' at the end of the system path.");
+
+    option(u"initial-separator", 'i');
+    help(u"initial-separator", u"Force an initial '" + sep + u"' at the beginning of the system path.");
+
     option(u"prepend", 'p');
     help(u"prepend", u"Prepend the directory to the system path.");
 
@@ -90,6 +102,8 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     directory = value(u"");
+    initialSeparator = present(u"initial-separator");
+    finalSeparator = present(u"final-separator");
     dryRun = present(u"dry-run");
     getValue(environment, u"environment", u"Path");
 
@@ -165,6 +179,12 @@ int main(int argc, char* argv[])
 
     // Rebuild the new Path.
     path = ts::UString::Join(dirs, ts::UString(1, ts::SearchPathSeparator));
+    if (opt.initialSeparator) {
+        path.insert(path.begin(), ts::SearchPathSeparator);
+    }
+    if (opt.finalSeparator) {
+        path.append(ts::SearchPathSeparator);
+    }
     if (opt.dryRun) {
         opt.info(u"New %s value: %s", {opt.environment, path});
     }

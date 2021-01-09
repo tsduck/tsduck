@@ -65,6 +65,7 @@ $Target = ("Release", "Debug")[[bool]$Debug]
 $RootDir = (Split-Path -Parent $PSScriptRoot)
 $BinDir = "$RootDir\bin\$Target-$Arch"
 $PyDir = "$RootDir\src\libtsduck\python"
+$Jar = "$RootDir\bin\java\tsduck.jar"
 
 # A function to add a directory at the beginning of a search path.
 function Prepend([string]$value, [string]$path)
@@ -79,4 +80,5 @@ else {
     $env:Path=(Prepend $BinDir $env:Path)
     $env:TSPLUGINS_PATH=(Prepend $BinDir $env:TSPLUGINS_PATH)
     $env:PYTHONPATH=(Prepend $PyDir $env:PYTHONPATH)
+    $env:CLASSPATH=(Prepend $Jar $env:CLASSPATH) + ";"
 }

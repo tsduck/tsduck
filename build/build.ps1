@@ -40,6 +40,10 @@
 
   Generate everything which is needed for installer.
 
+ .PARAMETER NoJava
+
+  Do not build the Java bindings (done by default).
+
  .PARAMETER NoLowPriority
 
   Do not lower the process priority.
@@ -87,6 +91,7 @@ param(
     [int]$Parallel = 0,
     [switch]$GitPull = $false,
     [switch]$Installer = $false,
+    [switch]$NoJava = $false,
     [switch]$NoLowPriority = $false,
     [switch]$Debug = $false,
     [switch]$Release = $false,
@@ -211,6 +216,11 @@ else {
     if ($Debug -and $Win32) {
         Call-MSBuild Debug Win32 $targets
     }
+}
+
+# Build the Java bindings
+if (-not $NoJava) {
+    & (Join-Path $PSScriptRoot build-java.ps1) -NoPause
 }
 
 Exit-Script -NoPause:$NoPause

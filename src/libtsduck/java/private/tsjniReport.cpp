@@ -123,8 +123,8 @@ JNIEXPORT void JNICALL Java_io_tsduck_AsyncReport_initNativeObject(JNIEnv* env, 
     ts::AsyncReport* report = ts::jni::GetPointerField<ts::AsyncReport>(env, obj, "nativeObject");
     if (report == nullptr) {
         ts::AsyncReportArgs args;
-        args.sync_log = syncLog;
-        args.timed_log = timedLog;
+        args.sync_log = bool(syncLog);
+        args.timed_log = bool(timedLog);
         args.log_msg_count = size_t(std::max<jint>(1, logMsgCount));
         ts::jni::SetPointerField(env, obj, "nativeObject", new ts::AsyncReport(int(severity), args));
     }

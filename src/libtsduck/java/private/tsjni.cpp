@@ -65,7 +65,7 @@ ts::UString ts::jni::ToUString(JNIEnv* env, jstring str)
 // Get/set the value of 'boolean' fields in a Java object.
 //----------------------------------------------------------------------------
 
-jboolean ts::jni::GetBoolField(JNIEnv* env, jobject obj, const char* fieldName)
+bool ts::jni::GetBoolField(JNIEnv* env, jobject obj, const char* fieldName)
 {
     if (env == nullptr || obj == nullptr || fieldName == nullptr || env->ExceptionCheck()) {
         return 0;
@@ -74,10 +74,10 @@ jboolean ts::jni::GetBoolField(JNIEnv* env, jobject obj, const char* fieldName)
     if (fid == nullptr) {
         return 0;
     }
-    return env->GetBooleanField(obj, fid);
+    return bool(env->GetBooleanField(obj, fid));
 }
 
-bool ts::jni::SetBoolField(JNIEnv* env, jobject obj, const char* fieldName, jboolean value)
+bool ts::jni::SetBoolField(JNIEnv* env, jobject obj, const char* fieldName, bool value)
 {
     if (env == nullptr || obj == nullptr || fieldName == nullptr || env->ExceptionCheck()) {
         return false;
@@ -86,7 +86,7 @@ bool ts::jni::SetBoolField(JNIEnv* env, jobject obj, const char* fieldName, jboo
     if (fid == nullptr) {
         return false;
     }
-    env->SetBooleanField(obj, fid, value);
+    env->SetBooleanField(obj, fid, jboolean(value));
     return !env->ExceptionCheck();
 }
 

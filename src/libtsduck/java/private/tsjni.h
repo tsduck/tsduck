@@ -105,7 +105,7 @@ namespace ts {
         //! @return The value from the object field. Use env->ExceptionCheck() to
         //! check for error. In case of error, the returned value is zero.
         //!
-        jboolean GetBoolField(JNIEnv* env, jobject obj, const char* fieldName);
+        bool GetBoolField(JNIEnv* env, jobject obj, const char* fieldName);
 
         //!
         //! Set the value of a 'boolean' field in a Java object.
@@ -115,7 +115,7 @@ namespace ts {
         //! @param [in] value Value to set in the field.
         //! @return True on success, false on error.
         //!
-        bool SetBoolField(JNIEnv* env, jobject obj, const char* fieldName, jboolean value);
+        bool SetBoolField(JNIEnv* env, jobject obj, const char* fieldName, bool value);
 
         //!
         //! Get the value of an 'int' field in a Java object.
@@ -186,7 +186,10 @@ namespace ts {
         template<class T>
         inline bool SetPointerField(JNIEnv* env, jobject obj, const char* fieldName, const T* value)
         {
+            TS_PUSH_WARNING()
+            TS_MSC_NOWARNING(4826) // Conversion from 'const T *' to 'jlong' is sign-extended. This may cause unexpected runtime behavior.
             return SetLongField(env, obj, fieldName, reinterpret_cast<jlong>(value));
+            TS_POP_WARNING()
         }
 
         //!
