@@ -52,6 +52,10 @@ jobs:
       run: |
         build/install-prerequisites.sh
         gcc --version
+        build/java-config.sh
+        $(build/java-config.sh --java) --version
+        $(build/java-config.sh --javac) --version
+        $(build/java-config.sh --jar) --version
     - name: Build TSDuck
       run: make -j5
     - name: Check built version
@@ -84,6 +88,10 @@ jobs:
         build/install-prerequisites.sh
         sudo apt install -y clang
         clang --version
+        build/java-config.sh
+        $(build/java-config.sh --java) --version
+        $(build/java-config.sh --javac) --version
+        $(build/java-config.sh --jar) --version
     - name: Build TSDuck
       run: make -j5
     - name: Check built version
@@ -130,6 +138,10 @@ jobs:
       run: |
         build/install-prerequisites.sh
         clang --version
+        build/java-config.sh
+        $(build/java-config.sh --java) --version
+        $(build/java-config.sh --javac) --version
+        $(build/java-config.sh --jar) --version
     - name: Build TSDuck
       run: make -j5
     - name: Check built version
