@@ -70,7 +70,7 @@ default: $(JARFILE)
 
 $(JARFILE): $(JCLASSES) $(MANIFEST)
 	@echo '  [JAR] $@'; \
-	$(JAR) -c -f $@ -m $(MANIFEST) $(patsubst $(CLASSDIR)/%,-C $(CLASSDIR) %,$(JCLASSES))
+	$(JAR) cfm $@ $(MANIFEST) $(patsubst $(CLASSDIR)/%,-C $(CLASSDIR) %,$(JCLASSES))
 
 $(MANIFEST): Manifest.txt ../../tsVersion.h
 	@echo '  [GEN] $@'; \
