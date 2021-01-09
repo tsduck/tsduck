@@ -39,6 +39,7 @@
 ;  - VCRedist : Full path of the MSVC redistributable installer.
 ;  - VCRedistName : Base name of the MSVC redistributable installer.
 ;  - NoTeletext : Disable Teletext plugins.
+;  - JarFile : Optional name of the JAR file for Java bindings.
 ;
 ;-----------------------------------------------------------------------------
 
@@ -197,6 +198,23 @@ Section /o "Python Bindings" SectionPython
 
 SectionEnd
 
+; Installation of Java bindings
+; -----------------------------
+!ifdef JarFile
+Section /o "Java Bindings" SectionJava
+    ; Unselected by default (/o).
+
+    ; Work on "all users" context, not current user.
+    SetShellVarContext all
+
+    ; Java files.
+    CreateDirectory "$INSTDIR\java"
+    SetOutPath "$INSTDIR\java"
+    File "${JarFile}"
+
+SectionEnd
+!endif
+
 ; Installation of development environment for third-party applications
 ; --------------------------------------------------------------------
 Section /o "Development" SectionDevelopment
@@ -313,19 +331,23 @@ Section "-Common" SectionCommon
         RMDir /r "$INSTDIR\doc"
         RMDir /r "$SMPROGRAMS\TSDuck"
     ${EndIf}
-    ${If} ${SectionIsSelected} ${SectionPython}
-        WriteRegStr HKLM "${ProductKey}" "InstallPython" "true"
-        ; Add Python folder to Python path
-        nsExec::Exec '"$INSTDIR\setup\setpath.exe" --prepend "$INSTDIR\python" --environment PYTHONPATH'
+!ifdef JarFile
+    ${If} ${SectionIsSelected} ${SectionJava}
+        WriteRegStr HKLM "${ProductKey}" "InstallJava" "true"
+        ; Add JAR file to Java class path
+        nsExec::Exec '"$INSTDIR\setup\setpath.exe" --prepend "$INSTDIR\java\tsduck.jar" --environment CLASSPATH --final-separator'
         Pop $0
     ${Else}
-        WriteRegStr HKLM "${ProductKey}" "InstallPython" "false"
-        ; Remove previous installation of Python bindings.
-        RMDir /r "$INSTDIR\python"
-        ; Remove Python folder from system path
-        nsExec::Exec '"$INSTDIR\setup\setpath.exe" --remove "$INSTDIR\python" --environment PYTHONPATH'
+!endif
+        WriteRegStr HKLM "${ProductKey}" "InstallJava" "false"
+        ; Remove previous installation of Java bindings.
+        RMDir /r "$INSTDIR\java"
+        ; Remove JAR file to Java class path
+        nsExec::Exec '"$INSTDIR\setup\setpath.exe" --remove "$INSTDIR\java\tsduck.jar" --environment CLASSPATH --final-separator'
         Pop $0
+!ifdef JarFile
     ${EndIf}
+!endif
     ${If} ${SectionIsSelected} ${SectionDevelopment}
         WriteRegStr HKLM "${ProductKey}" "InstallDevelopment" "true"
     ${Else}
@@ -349,6 +371,10 @@ SectionEnd
         "TSDuck user's guide."
     !insertmacro MUI_DESCRIPTION_TEXT ${SectionPython} \
         "TSDuck Python bindings."
+!ifdef JarFile
+    !insertmacro MUI_DESCRIPTION_TEXT ${SectionJava} \
+        "TSDuck Java bindings."
+!endif
     !insertmacro MUI_DESCRIPTION_TEXT ${SectionDevelopment} \
         "TSDuck development environment, for use from third-party applications manipulating MPEG transport streams."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
@@ -379,11 +405,14 @@ Section "Uninstall"
     Pop $1
     nsExec::Exec '"$0\setup\setpath.exe" --remove "$0\python" --environment PYTHONPATH'
     Pop $1
+    nsExec::Exec '"$0\setup\setpath.exe" --remove "$0\java\tsduck.jar" --environment CLASSPATH --final-separator'
+    Pop $1
 
     ; Delete product files.
     RMDir /r "$0\bin"
     RMDir /r "$0\doc"
     RMDir /r "$0\python"
+    RMDir /r "$0\java"
     RMDir /r "$0\include"
     RMDir /r "$0\lib"
     Delete "$0\tsduck.props"
@@ -451,6 +480,15 @@ function .onInit
         ${If} $0 == "false"
             !insertmacro UnSelectSection ${SectionPython}
         ${EndIf}
+!ifdef JarFile
+        ReadRegStr $0 HKLM "${ProductKey}" "InstallJava"
+        ${If} $0 == "true"
+            !insertmacro SelectSection ${SectionJava}
+        ${EndIf}
+        ${If} $0 == "false"
+            !insertmacro UnSelectSection ${SectionJava}
+        ${EndIf}
+!endif
         ReadRegStr $0 HKLM "${ProductKey}" "InstallDevelopment"
         ${If} $0 == "true"
             !insertmacro SelectSection ${SectionDevelopment}

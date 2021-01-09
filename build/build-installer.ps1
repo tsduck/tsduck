@@ -111,6 +111,7 @@ $RootDir = (Split-Path -Parent $PSScriptRoot)
 $MsvcDir = (Join-Path $PSScriptRoot "msvc")
 $SrcDir = (Join-Path $RootDir "src")
 $BinRoot = (Join-Path $RootDir "bin")
+$JarFile = (Join-Path (Join-Path $BinRoot "java") "tsduck.jar")
 $InstallerDir = (Join-Path $RootDir "installers")
 
 # Apply defaults.
@@ -198,8 +199,18 @@ function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$VCRedist, [str
         $NsisOptTeletext = ""
     }
 
+    # Specify JAR file option if it exists.
+    if (Test-Path $JarFile) {
+        $NsisOptJar = "/DJarFile=$JarFile"
+    }
+    else {
+        $NsisOptJar = ""
+    }
+
     # Build the binary installer.
-    & $NSIS /V2 $NsisOptTeletext /D$Arch /DBinDir=$BinDir /DVCRedist=$VCRedist /DVCRedistName=$VCRedistName /DHeadersDir=$HeadersDir /DVersion=$Version /DVersionInfo=$VersionInfo $NsisScript
+    & $NSIS /V2 $NsisOptTeletext $NsisOptJar /D$Arch /DBinDir=$BinDir `
+        /DVCRedist=$VCRedist /DVCRedistName=$VCRedistName /DHeadersDir=$HeadersDir `
+        /DVersion=$Version /DVersionInfo=$VersionInfo $NsisScript
 }
 
 # Build binary installers.

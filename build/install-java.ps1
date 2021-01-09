@@ -137,7 +137,7 @@ if (-not $NoInstall) {
     Write-Output "Installing $InstallerName"
     # Note: /passive does not request any input from the user but still displays a progress window.
     # It is however required because msiexec /quiet fails to request UAC and immediately fails.
-    Start-Process msiexec -ArgumentList @("/i", "$InstallerPath", "INSTALLLEVEL=3", "/quiet", "/passive") -Wait
+    Start-Process -Verb runas -FilePath msiexec.exe -ArgumentList @("/i", $InstallerPath, "INSTALLLEVEL=3", "/quiet", "/qn", "/norestart") -Wait
 }
 
 # Propagate JAVA_HOME in next jobs for GitHub Actions.
