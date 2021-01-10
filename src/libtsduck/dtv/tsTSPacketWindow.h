@@ -94,6 +94,13 @@ namespace ts {
         TSPacketMetadata* metadata(size_t index) const;
 
         //!
+        //! Check if a packet inside the window is a null packet.
+        //! @param [in] index Index of the packet inside the window, from 0 to size()-1.
+        //! @return True if the corresponding packet is valid and a null packet, false otherwise.
+        //!
+        bool isNullPacket(size_t index) const;
+
+        //!
         //! Get the address of a packet and its metadata inside the window.
         //! @param [in] index Index of the packet inside the window, from 0 to size()-1.
         //! @param [out] packet The address of the corresponding packet.
