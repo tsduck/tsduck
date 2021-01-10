@@ -103,6 +103,13 @@ ts::TSPacketMetadata* ts::TSPacketWindow::metadata(size_t index) const
     return getInternal(index, pkt, mdata) ? mdata : nullptr;
 }
 
+bool ts::TSPacketWindow::isNullPacket(size_t index) const
+{
+    TSPacket* pkt = nullptr;
+    TSPacketMetadata* mdata = nullptr;
+    return getInternal(index, pkt, mdata) && pkt != nullptr && pkt->getPID() == PID_NULL;
+}
+
 bool ts::TSPacketWindow::get(size_t index, TSPacket*& pkt, TSPacketMetadata*& mdata) const
 {
     if (getInternal(index, pkt, mdata)) {
