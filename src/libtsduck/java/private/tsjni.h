@@ -71,6 +71,12 @@ namespace ts {
     //!
     namespace jni {
         //!
+        //! A global pointer to the Java virtual machine.
+        //! Null pointer if JNI is not properly initialized.
+        //!
+        extern JavaVM* javaVM;
+
+        //!
         //! Get the address of the first character in a string as a Java character.
         //! This is based on the fact that ts::UString and java.lang.String use the same
         //! representation for characters.

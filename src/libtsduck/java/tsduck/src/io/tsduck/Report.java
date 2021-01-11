@@ -45,7 +45,7 @@ public abstract class Report {
     
     // Severity levels, same values as C++ counterparts.
     static public final int Fatal   = -5;  //!< Fatal error, typically aborts the application.
-    static public final int Severe  = -4;  //!< Severe errror.
+    static public final int Severe  = -4;  //!< Severe error.
     static public final int Error   = -3;  //!< Regular error.
     static public final int Warning = -2;  //!< Warning message.
     static public final int Info    = -1;  //!< Information message.
@@ -104,4 +104,11 @@ public abstract class Report {
     public void debug(String message) {
         log(Debug, message);
     }
+    
+    /**
+     * Formatted line prefix header for a severity.
+     * @param severity Severity value.
+     * @return A string to prepend to messages. Empty for Info and Verbose levels.
+     */
+    public static native String header(int severity);
 }

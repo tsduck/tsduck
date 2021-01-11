@@ -32,6 +32,9 @@ TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
 
+// The global pointer to the Java virtual machine.
+JavaVM* ts::jni::javaVM = nullptr;
+
 //----------------------------------------------------------------------------
 // Convert between Java string and ts::UString.
 //----------------------------------------------------------------------------
