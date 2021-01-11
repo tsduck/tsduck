@@ -34,7 +34,7 @@
 #include "tsNullReport.h"
 #include "tsCerrReport.h"
 #include "tsAsyncReport.h"
-#include "tsjni.h"
+#include "tsjniAsyncReport.h"
 TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
@@ -44,6 +44,10 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 extern "C" {
+    // Method: io.tsduck.Report.header (static)
+    // Signature: (I)Ljava/lang/String;
+    JNIEXPORT jstring JNICALL Java_io_tsduck_Report_header(JNIEnv*, jclass, jint);
+
     // Method: io.tsduck.Report.setMaxSeverity
     // Signature: (I)V
     JNIEXPORT void JNICALL Java_io_tsduck_Report_setMaxSeverity(JNIEnv*, jobject, jint);
@@ -62,7 +66,7 @@ extern "C" {
 
     // Method: io.tsduck.AsyncReport.initNativeObject
     // Signature: (IBBI)V
-    JNIEXPORT void JNICALL Java_io_tsduck_AsyncReport_initNativeObject(JNIEnv*, jobject, jint severity, jboolean syncLog, jboolean timedLog, jint logMsgCount);
+    JNIEXPORT void JNICALL Java_io_tsduck_AsyncReport_initNativeObject(JNIEnv*, jobject, jint, jboolean, jboolean, jint);
 
     // Method: io.tsduck.AsyncReport.terminate
     // Signature: ()V
@@ -71,11 +75,28 @@ extern "C" {
     // Method: io.tsduck.AsyncReport.delete
     // Signature: ()V
     JNIEXPORT void JNICALL Java_io_tsduck_AsyncReport_delete(JNIEnv*, jobject);
+
+    // Method: io.tsduck.AbstractAsyncReport.initNativeObject
+    // Signature: (Ljava/lang/String;IBI)V
+    JNIEXPORT void JNICALL Java_io_tsduck_AbstractAsyncReport_initNativeObject(JNIEnv*, jobject, jstring, jint, jboolean, jint);
+
+    // Method: io.tsduck.AbstractAsyncReport.terminate
+    // Signature: ()V
+    JNIEXPORT void JNICALL Java_io_tsduck_AbstractAsyncReport_terminate(JNIEnv*, jobject);
+
+    // Method: io.tsduck.AbstractAsyncReport.delete
+    // Signature: ()V
+    JNIEXPORT void JNICALL Java_io_tsduck_AbstractAsyncReport_delete(JNIEnv*, jobject);
 }
 
 //----------------------------------------------------------------------------
 // Implementation of native methods of Java class io.tsduck.Report
 //----------------------------------------------------------------------------
+
+JNIEXPORT jstring JNICALL Java_io_tsduck_Report_header(JNIEnv* env, jclass clazz, jint severity)
+{
+    return ts::jni::ToJString(env, ts::Severity::Header(int(severity)));
+}
 
 JNIEXPORT void JNICALL Java_io_tsduck_Report_setMaxSeverity(JNIEnv* env, jobject obj, jint severity)
 {
@@ -141,6 +162,39 @@ JNIEXPORT void JNICALL Java_io_tsduck_AsyncReport_terminate(JNIEnv* env, jobject
 JNIEXPORT void JNICALL Java_io_tsduck_AsyncReport_delete(JNIEnv* env, jobject obj)
 {
     ts::AsyncReport* report = ts::jni::GetPointerField<ts::AsyncReport>(env, obj, "nativeObject");
+    if (report != nullptr) {
+        delete report;
+        ts::jni::SetLongField(env, obj, "nativeObject", 0);
+    }
+}
+
+//----------------------------------------------------------------------------
+// Implementation of native methods of Java class io.tsduck.AbstractAsyncReport
+//----------------------------------------------------------------------------
+
+JNIEXPORT void JNICALL Java_io_tsduck_AbstractAsyncReport_initNativeObject(JNIEnv* env, jobject obj, jstring method, jint severity, jboolean syncLog, jint logMsgCount)
+{
+    // Make sure we do not allocate twice (and lose previous instance).
+    ts::jni::AsyncReport* report = ts::jni::GetPointerField<ts::jni::AsyncReport>(env, obj, "nativeObject");
+    if (report == nullptr) {
+        ts::AsyncReportArgs args;
+        args.sync_log = bool(syncLog);
+        args.log_msg_count = size_t(std::max<jint>(1, logMsgCount));
+        ts::jni::SetPointerField(env, obj, "nativeObject", new ts::jni::AsyncReport(env, obj, method, int(severity), args));
+    }
+}
+
+JNIEXPORT void JNICALL Java_io_tsduck_AbstractAsyncReport_terminate(JNIEnv* env, jobject obj)
+{
+    ts::jni::AsyncReport* report = ts::jni::GetPointerField<ts::jni::AsyncReport>(env, obj, "nativeObject");
+    if (report != nullptr) {
+        report->terminate();
+    }
+}
+
+JNIEXPORT void JNICALL Java_io_tsduck_AbstractAsyncReport_delete(JNIEnv* env, jobject obj)
+{
+    ts::jni::AsyncReport* report = ts::jni::GetPointerField<ts::jni::AsyncReport>(env, obj, "nativeObject");
     if (report != nullptr) {
         delete report;
         ts::jni::SetLongField(env, obj, "nativeObject", 0);

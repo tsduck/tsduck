@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsReport.h"
-#include "tsReportHandler.h"
 #include "tsAsyncReportArgs.h"
 #include "tsMessageQueue.h"
 #include "tsNullMutex.h"
@@ -77,13 +76,6 @@ namespace ts {
         virtual ~AsyncReport() override;
 
         //!
-        //! Set a new ReportHandler.
-        //! @param [in] handler Address of a new report handler. When zero, revert to the default
-        //! handler (log to standard error).
-        //!
-        void setMessageHandler(ReportHandler* handler);
-
-        //!
         //! Activate or deactivate time stamps in log messages
         //! @param [in] on If true, time stamps are added to all messages.
         //!
@@ -115,10 +107,30 @@ namespace ts {
         void terminate();
 
     protected:
+        //!
+        //! This method is called in the context of the asynchronous logging thread when it starts.
+        //! The default implementation does nothing. Subclasses may override it to get notified.
+        //!
+        virtual void asyncThreadStarted();
+
+        //!
+        //! This method is called in the context of the asynchronous logging thread to log a message.
+        //! The default implementation prints the message on the standard error.
+        //! @param [in] severity Severity level of the message.
+        //! @param [in] message The message line to log.
+        //!
+        virtual void asyncThreadLog(int severity, const UString& message);
+
+        //!
+        //! This method is called in the context of the asynchronous logging thread when it completes.
+        //! The default implementation does nothing. Subclasses may override it to get notified.
+        //!
+        virtual void asyncThreadCompleted();
+
+    private:
         // Report implementation.
         virtual void writeLog(int severity, const UString& msg) override;
 
-    private:
         // This hook is invoked in the context of the logging thread.
         virtual void main() override;
 
@@ -134,23 +146,10 @@ namespace ts {
         typedef SafePtr <LogMessage, NullMutex> LogMessagePtr;
         typedef MessageQueue <LogMessage, NullMutex> LogMessageQueue;
 
-        // Default report handler:
-        class DefaultHandler : public ReportHandler
-        {
-            TS_NOBUILD_NOCOPY(DefaultHandler);
-        public:
-            DefaultHandler(const AsyncReport& report) : _report(report) {}
-            virtual void handleMessage(int, const UString&) override;
-        private:
-            const AsyncReport& _report;
-        };
-
         // Private members:
-        LogMessageQueue         _log_queue;
-        DefaultHandler          _default_handler;
-        ReportHandler* volatile _handler;
-        volatile bool           _time_stamp;
-        volatile bool           _synchronous;
-        volatile bool           _terminated;
+        LogMessageQueue _log_queue;
+        volatile bool   _time_stamp;
+        volatile bool   _synchronous;
+        volatile bool   _terminated;
     };
 }

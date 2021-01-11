@@ -478,7 +478,6 @@
 #include "tsReport.h"
 #include "tsReportBuffer.h"
 #include "tsReportFile.h"
-#include "tsReportHandler.h"
 #include "tsReportWithPrefix.h"
 #include "tsResidentBuffer.h"
 #include "tsRingNode.h"

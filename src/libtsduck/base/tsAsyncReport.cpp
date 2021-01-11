@@ -39,8 +39,6 @@ ts::AsyncReport::AsyncReport(int max_severity, const AsyncReportArgs& args) :
     Report(max_severity),
     Thread(ThreadAttributes().setPriority(ThreadAttributes::GetMinimumPriority())),
     _log_queue(args.log_msg_count),
-    _default_handler(*this),
-    _handler(&_default_handler),
     _time_stamp(args.timed_log),
     _synchronous(args.sync_log),
     _terminated(false)
@@ -109,10 +107,12 @@ void ts::AsyncReport::main()
 {
     LogMessagePtr msg;
 
+    // Notify subclasses (if any) of thread start.
+    asyncThreadStarted();
+
     while (_log_queue.dequeue(msg) && !msg->terminate) {
 
-        // Invoke the report handler
-        _handler->handleMessage(msg->severity, msg->message);
+        asyncThreadLog(msg->severity, msg->message);
 
         // Abort application on fatal error
         if (msg->severity == Severity::Fatal) {
@@ -121,30 +121,34 @@ void ts::AsyncReport::main()
     }
 
     if (_max_severity >= Severity::Debug) {
-        _handler->handleMessage(Severity::Debug, u"Report logging thread terminated");
+        asyncThreadLog(Severity::Debug, u"Report logging thread terminated");
     }
+
+    // Notify subclasses (if any) of thread completion.
+    asyncThreadCompleted();
 }
 
 
 //----------------------------------------------------------------------------
-// Set a new ReportHandler
+// Asynchronous logging thread interface.
 //----------------------------------------------------------------------------
 
-void ts::AsyncReport::setMessageHandler(ReportHandler* h)
+void ts::AsyncReport::asyncThreadStarted()
 {
-    _handler = h != nullptr ? h : &_default_handler;
+    // The default implementation does nothing.
 }
 
-
-//----------------------------------------------------------------------------
-// Default report handler
-//----------------------------------------------------------------------------
-
-void ts::AsyncReport::DefaultHandler::handleMessage(int severity, const UString& msg)
+void ts::AsyncReport::asyncThreadLog(int severity, const UString& message)
 {
+    // The default implementation logs on stderr.
     std::cerr << "* ";
-    if (_report._time_stamp) {
+    if (_time_stamp) {
         std::cerr << ts::Time::CurrentLocalTime().format(ts::Time::DATE | ts::Time::TIME) << " - ";
     }
-    std::cerr << Severity::Header(severity) << msg << std::endl;
+    std::cerr << Severity::Header(severity) << message << std::endl;
+}
+
+void ts::AsyncReport::asyncThreadCompleted()
+{
+    // The default implementation does nothing.
 }

@@ -26,52 +26,80 @@
 //  THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Native implementation of the Java class io.tsduck.NativeLibrary.
-//
-//----------------------------------------------------------------------------
 
-#include "tsjni.h"
+#include "tsjniAsyncReport.h"
 TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
 
 //----------------------------------------------------------------------------
-// Interface of native methods.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-extern "C" {
-    // Load/unload notification of the JNI library.
-    JNIEXPORT jint JNI_OnLoad(JavaVM*, void*);
-    JNIEXPORT void JNI_OnUnload(JavaVM*, void*);
-
-    // Method: io.tsduck.NativeLibrary.initialize
-    // Signature: ()V
-    JNIEXPORT void JNICALL Java_io_tsduck_NativeLibrary_initialize(JNIEnv*, jclass);
+ts::jni::AsyncReport::AsyncReport(JNIEnv* env, jobject obj, jstring log_method, int max_severity, const AsyncReportArgs& args) :
+    ts::AsyncReport(max_severity, args),
+    _env_constructor(env),
+    _env_thread(nullptr),
+    _obj_ref(env == nullptr || obj == nullptr ? nullptr : env->NewGlobalRef(obj)),
+    _obj_method(nullptr)
+{
+    if (_obj_ref != nullptr) {
+        const char* const log_str = env->GetStringUTFChars(log_method, nullptr);
+        if (log_str != nullptr) {
+            _obj_method = env->GetMethodID(env->GetObjectClass(_obj_ref), log_str, "(" JCS_INT JCS_STRING ")" JCS_VOID);
+            env->ReleaseStringUTFChars(log_method, log_str);
+        }
+    }
 }
 
-//----------------------------------------------------------------------------
-// Initialization of the JNI library.
-//----------------------------------------------------------------------------
-
-JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
+ts::jni::AsyncReport::~AsyncReport()
 {
-    ts::jni::javaVM = vm;
-    return JNI_VERSION_1_2;
+    if (_env_constructor != nullptr && _obj_ref != nullptr) {
+        _env_constructor->DeleteGlobalRef(_obj_ref);
+        _obj_ref = nullptr;
+    }
 }
 
-JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved)
+
+//----------------------------------------------------------------------------
+// Initialization/completion of the asynchronous logging thread.
+//----------------------------------------------------------------------------
+
+void ts::jni::AsyncReport::asyncThreadStarted()
 {
-    ts::jni::javaVM = nullptr;
+    // Attach the logging thread to the Java VM.
+    if (ts::jni::javaVM != nullptr) {
+        void* penv = nullptr;
+        const jint status = ts::jni::javaVM->AttachCurrentThread(&penv, nullptr);
+        if (status == JNI_OK && penv != nullptr) {
+            _env_thread = reinterpret_cast<JNIEnv*>(penv);
+        }
+    }
 }
 
+void ts::jni::AsyncReport::asyncThreadCompleted()
+{
+    // Detach the logging thread from the Java VM.
+    if (ts::jni::javaVM != nullptr) {
+        _env_thread = nullptr;
+        ts::jni::javaVM->DetachCurrentThread();
+    }
+}
+
+
 //----------------------------------------------------------------------------
-// Implementation of native methods.
+// Message logging method.
 //----------------------------------------------------------------------------
 
-JNIEXPORT void JNICALL Java_io_tsduck_NativeLibrary_initialize(JNIEnv *env, jclass clazz)
+void ts::jni::AsyncReport::asyncThreadLog(int severity, const UString& message)
 {
-    // Currently, there is nothing to initialize.
+    if (_env_thread != nullptr && _obj_ref != nullptr && _obj_method != nullptr) {
+        const jstring jmessage = ToJString(_env_thread, message);
+        if (jmessage != nullptr) {
+            _env_thread->CallVoidMethod(_obj_ref, _obj_method, jint(severity), jmessage);
+            _env_thread->DeleteLocalRef(jmessage);
+        }
+    }
 }
 
 #endif // TS_NO_JAVA
