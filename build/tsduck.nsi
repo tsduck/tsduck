@@ -331,6 +331,19 @@ Section "-Common" SectionCommon
         RMDir /r "$INSTDIR\doc"
         RMDir /r "$SMPROGRAMS\TSDuck"
     ${EndIf}
+    ${If} ${SectionIsSelected} ${SectionPython}
+        WriteRegStr HKLM "${ProductKey}" "InstallPython" "true"
+        ; Add Python folder to Python path.
+        nsExec::Exec '"$INSTDIR\setup\setpath.exe" --prepend "$INSTDIR\python" --environment PYTHONPATH'
+        Pop $0
+    ${Else}
+        WriteRegStr HKLM "${ProductKey}" "InstallPython" "false"
+        ; Remove previous installation of Python bindings.
+        RMDir /r "$INSTDIR\python"
+        ; Remove Python folder from Python path.
+        nsExec::Exec '"$INSTDIR\setup\setpath.exe" --remove "$INSTDIR\python" --environment PYTHONPATH'
+        Pop $0
+    ${EndIf}
 !ifdef JarFile
     ${If} ${SectionIsSelected} ${SectionJava}
         WriteRegStr HKLM "${ProductKey}" "InstallJava" "true"

@@ -42,8 +42,8 @@ TSDUCK_SOURCE;
 
 extern "C" {
     // Load/unload notification of the JNI library.
-    JNIEXPORT jint JNI_OnLoad(JavaVM*, void*);
-    JNIEXPORT void JNI_OnUnload(JavaVM*, void*);
+    JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM*, void*);
+    JNIEXPORT void JNICALL JNI_OnUnload(JavaVM*, void*);
 
     // Method: io.tsduck.NativeLibrary.initialize
     // Signature: ()V
@@ -54,13 +54,13 @@ extern "C" {
 // Initialization of the JNI library.
 //----------------------------------------------------------------------------
 
-JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
 {
     ts::jni::javaVM = vm;
     return JNI_VERSION_1_2;
 }
 
-JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved)
+JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved)
 {
     ts::jni::javaVM = nullptr;
 }
