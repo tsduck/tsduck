@@ -61,7 +61,7 @@ namespace ts {
 
     private:
         // Last error code (to avoid reporting the same error again and again).
-        enum class Error {NONE, OVERFLOW, NO_BITRATE, USE_PREVIOUS, LOW_BITRATE};
+        enum class Error {NONE, PKT_OVERFLOW, NO_BITRATE, USE_PREVIOUS, LOW_BITRATE};
 
         // Command line parameters:
         BitRate       _target_bitrate;   // Target bitrate to read, zero if fixed proportion is used.
@@ -379,13 +379,13 @@ size_t ts::ReducePlugin::processPacketWindow(TSPacketWindow& win)
 
     // Report overflow if not enough null packets were found in the window.
     if (_bits_to_remove >= PKT_SIZE * 8) {
-        if (_error != Error::OVERFLOW) {
-            _error = Error::OVERFLOW;
+        if (_error != Error::PKT_OVERFLOW) {
+            _error = Error::PKT_OVERFLOW;
             tsp->error(u"overflow, later by %'d packets", {_bits_to_remove / (PKT_SIZE * 8)});
         }
     }
     else {
-        if (_error == Error::OVERFLOW) {
+        if (_error == Error::PKT_OVERFLOW) {
             _error = Error::NONE;
         }
     }
