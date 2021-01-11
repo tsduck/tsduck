@@ -344,7 +344,7 @@ size_t ts::ReducePlugin::processPacketWindow(TSPacketWindow& win)
     size_t pass_count = 0;
     while (_bits_to_remove >= PKT_SIZE * 8 && null_count > 0) {
         // Number of null packets we would like to remove in this pass.
-        size_t pkt_count = std::min<size_t>(win.size(), _bits_to_remove / (PKT_SIZE * 8));
+        size_t pkt_count = std::min(win.size(), size_t(_bits_to_remove / (PKT_SIZE * 8)));
         // Size of a slice, where one packet should be removed.
         const size_t slice_size = win.size() / pkt_count;
         // Number of remaining null packets after this pass.
