@@ -443,6 +443,39 @@ ts::UString ts::ExecutableFile()
 
 
 //----------------------------------------------------------------------------
+//! Get the name of the executable or shared library containing the caller.
+//----------------------------------------------------------------------------
+
+ts::UString ts::CallerLibraryFile()
+{
+#if defined(TS_MSC)
+
+    // Window implementation.
+    // @@@@@@@ _ReturnAddress();
+    return UString();
+
+#elif defined(TS_GCC) || defined(TS_LLVM)
+
+    // GCC and LLVM/clang implementation.
+    // Get return address of current function (in caller code).
+    void* const ret = __builtin_return_address(0);
+    // Get the shared library into which this address can be found.
+    ::Dl_info info;
+    TS_ZERO(info);
+    if (ret != nullptr && ::dladdr(ret, &info) != 0 && info.dli_fname != nullptr) {
+        return UString::FromUTF8(info.dli_fname);
+    }
+    else {
+        return UString();
+    }
+
+#else
+#error "ts::CallerLibraryFile not implemented on this system"
+#endif
+}
+
+
+//----------------------------------------------------------------------------
 // Suspend the current thread for the specified period
 //----------------------------------------------------------------------------
 

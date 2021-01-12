@@ -111,6 +111,21 @@ namespace ts {
         //!
         static int CompareVersions(const UString& v1, const UString& v2);
 
+        //!
+        //! Check that the TSDuck library is compatible with some external binary (application or shared library).
+        //!
+        //! This static method is typically invoked during the initialization of an external
+        //! binary which registers some plugin or extension. The @e version parameter is
+        //! provided by the external binary and is the version of the TSDuck library when
+        //! this external binary was compiled.
+        //!
+        //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation
+        //! of some external application or shared library.
+        //! @return True when @a version is identical to the value of TS_LIBRARY_VERSION
+        //! during the compilation of the TSDuck library. Return false otherwise.
+        //!
+        static bool CheckLibraryVersion(int libversion);
+
     private:
         Report& _report;
         Report& _debug;
@@ -134,4 +149,6 @@ extern "C" {
     TSDUCKDLL extern const int tsduckLibraryVersionMinor;
     //! Commit version of the TSDuck library.
     TSDUCKDLL extern const int tsduckLibraryVersionCommit;
+    //! Interface version of the TSDuck library.
+    TSDUCKDLL extern const int tsduckLibraryVersionInterface;
 }

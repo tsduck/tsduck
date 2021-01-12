@@ -23,7 +23,6 @@ public:
 };
 
 
-
 //----------------------------------------------------------------------------
 // A sample custom packet processing plugin.
 // The plugin takes one optional PID parameter and counts packets in that PID.
@@ -42,10 +41,6 @@ public:
     virtual bool stop() override;
     virtual Status processPacket(ts::TSPacket&, ts::TSPacketMetadata&) override;
 
-    // A factory static method which creates an instance of that class.
-    // This method is used to register the plugin in the repository.
-    static ts::ProcessorPlugin* CreateInstance(ts::TSP*);
-
 private:
     // Command line options:
     ts::PID _pid;   // a PID to count
@@ -54,11 +49,8 @@ private:
     ts::PacketCounter _count;  // number of packets of the PID
 };
 
-// A factory static method which creates an instance of that class.
-ts::ProcessorPlugin* FooBarPlugin::CreateInstance(ts::TSP* t)
-{
-    return new FooBarPlugin(t);
-}
+// Register our custom plugin with the name "foobar".
+TS_REGISTER_PROCESSOR_PLUGIN(u"foobar", FooBarPlugin);
 
 // Custom plugin constructor.
 FooBarPlugin::FooBarPlugin(ts::TSP* t) :
@@ -142,9 +134,6 @@ void FooBarHandler::handlePluginEvent(const ts::PluginEventContext& ctx)
 
 int main(int argc, char* argv[])
 {
-    // Register our custom plugin with the name "foobar".
-    ts::PluginRepository::Instance()->registerProcessor(u"foobar", FooBarPlugin::CreateInstance);
-
     // Use an asynchronous logger to report errors, logs, debug, etc.
     // Make it display all messages up to debug level (default is info level).
     ts::AsyncReport report(ts::Severity::Debug);

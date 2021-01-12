@@ -243,7 +243,7 @@ void TestEventHandler::handlePluginEvent(const ts::PluginEventContext& ctx)
 void TSProcessorTest::testProcessing()
 {
     // Register our custom plugin with the name "test1".
-    ts::PluginRepository::Instance()->registerProcessor(u"test1", TestPlugin::CreateInstance);
+    ts::PluginRepository::Instance()->registerProcessor(TS_LIBRARY_VERSION, u"test1", TestPlugin::CreateInstance);
 
     // List of preregistered plugins.
     debug() << "TSProcessorTest: pre-registered plugins: " << std::endl

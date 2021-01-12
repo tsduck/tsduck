@@ -29,6 +29,7 @@
 
 #include "tsVersionInfo.h"
 #include "tsVersionString.h"
+#include "tsLibraryVersion.h"
 #include "tsGitHubRelease.h"
 #include "tsNullReport.h"
 #include "tsCerrReport.h"
@@ -42,6 +43,7 @@ TSDUCK_SOURCE;
 const int tsduckLibraryVersionMajor = TS_VERSION_MAJOR;
 const int tsduckLibraryVersionMinor = TS_VERSION_MINOR;
 const int tsduckLibraryVersionCommit = TS_COMMIT;
+const int tsduckLibraryVersionInterface = TS_LIBRARY_VERSION;
 
 // Enumeration description of ts::VersionFormat.
 const ts::Enumeration ts::VersionInfo::FormatEnum({
@@ -334,4 +336,21 @@ int ts::VersionInfo::CompareVersions(const UString& v1, const UString& v2)
         // i1 == i2
         return 0;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Check that the TSDuck library is compatible with some external binary.
+//----------------------------------------------------------------------------
+
+bool ts::VersionInfo::CheckLibraryVersion(int libversion)
+{
+    const bool match = libversion == TS_LIBRARY_VERSION;
+    if (!match) {
+        // Always report a message on standard error in case of mismatch.
+        CERR.error(u"incompatible TSDuck library versions (this library is %d, external binary was compiled for %d), "
+                   u"define environment variable TS_CERR_DEBUG_LEVEL to 1 for more details",
+                   {TS_LIBRARY_VERSION, libversion});
+    }
+    return match;
 }

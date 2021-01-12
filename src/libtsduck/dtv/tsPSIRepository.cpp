@@ -29,6 +29,7 @@
 
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
+#include "tsVersionInfo.h"
 #include "tsAlgorithm.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
@@ -185,14 +186,20 @@ FUNCTION ts::PSIRepository::getDescriptorFunction(const EDID& edid, TID tid, FUN
 // Constructors to register extension files.
 //----------------------------------------------------------------------------
 
-ts::PSIRepository::RegisterXML::RegisterXML(const UString& filename)
+ts::PSIRepository::RegisterXML::RegisterXML(int libversion, const UString& filename)
 {
-    PSIRepository::Instance()->_xmlModelFiles.push_back(filename);
+    CERR.debug(u"registering XML file %s", {filename});
+    if (VersionInfo::CheckLibraryVersion(libversion)) {
+        PSIRepository::Instance()->_xmlModelFiles.push_back(filename);
+    }
 }
 
-ts::PSIRepository::RegisterNames::RegisterNames(const UString& filename)
+ts::PSIRepository::RegisterNames::RegisterNames(int libversion, const UString& filename)
 {
-    PSIRepository::Instance()->_namesFiles.push_back(filename);
+    CERR.debug(u"registering names file %s", {filename});
+    if (VersionInfo::CheckLibraryVersion(libversion)) {
+        PSIRepository::Instance()->_namesFiles.push_back(filename);
+    }
 }
 
 
@@ -200,7 +207,8 @@ ts::PSIRepository::RegisterNames::RegisterNames(const UString& filename)
 // Constructors to register a fully or partially implemented table.
 //----------------------------------------------------------------------------
 
-ts::PSIRepository::RegisterTable::RegisterTable(TableFactory factory,
+ts::PSIRepository::RegisterTable::RegisterTable(int libversion,
+                                                TableFactory factory,
                                                 const std::vector<TID>& tids,
                                                 Standards standards,
                                                 const UString& xmlName,
@@ -210,31 +218,37 @@ ts::PSIRepository::RegisterTable::RegisterTable(TableFactory factory,
                                                 uint16_t minCAS,
                                                 uint16_t maxCAS)
 {
-    PSIRepository* const repo = PSIRepository::Instance();
+    CERR.log(2, u"registering table <%s>", {xmlName});
 
-    // XML names are recorded independently.
-    if (!xmlName.empty()) {
-        repo->_tableNames.insert(std::make_pair(xmlName, factory));
-    }
+    if (VersionInfo::CheckLibraryVersion(libversion)) {
 
-    // Build a table description for this table.
-    TableDescription desc;
-    desc.standards = standards;
-    desc.minCAS = minCAS;
-    desc.maxCAS = maxCAS;
-    desc.factory = factory;
-    desc.display = displayFunction;
-    desc.log = logFunction;
-    desc.addPIDs(pids);
+        PSIRepository* const repo = PSIRepository::Instance();
 
-    // Store a copy of the table description for each table id.
-    // This is a multimap, distinct definitions for the same table id accumulate.
-    for (auto it = tids.begin(); it != tids.end(); ++it) {
-        PSIRepository::Instance()->_tables.insert(std::make_pair(*it, desc));
+        // XML names are recorded independently.
+        if (!xmlName.empty()) {
+            repo->_tableNames.insert(std::make_pair(xmlName, factory));
+        }
+
+        // Build a table description for this table.
+        TableDescription desc;
+        desc.standards = standards;
+        desc.minCAS = minCAS;
+        desc.maxCAS = maxCAS;
+        desc.factory = factory;
+        desc.display = displayFunction;
+        desc.log = logFunction;
+        desc.addPIDs(pids);
+
+        // Store a copy of the table description for each table id.
+        // This is a multimap, distinct definitions for the same table id accumulate.
+        for (auto it = tids.begin(); it != tids.end(); ++it) {
+            PSIRepository::Instance()->_tables.insert(std::make_pair(*it, desc));
+        }
     }
 }
 
-ts::PSIRepository::RegisterTable::RegisterTable(const std::vector<TID>& tids,
+ts::PSIRepository::RegisterTable::RegisterTable(int libversion,
+                                                const std::vector<TID>& tids,
                                                 Standards standards,
                                                 DisplaySectionFunction displayFunction,
                                                 LogSectionFunction logFunction,
@@ -243,7 +257,7 @@ ts::PSIRepository::RegisterTable::RegisterTable(const std::vector<TID>& tids,
                                                 uint16_t maxCAS)
 {
     // Use the complete constructor for actual registration.
-    RegisterTable reg(nullptr, tids, standards, UString(), displayFunction, logFunction, pids, minCAS, maxCAS);
+    RegisterTable reg(libversion, nullptr, tids, standards, UString(), displayFunction, logFunction, pids, minCAS, maxCAS);
 }
 
 
@@ -251,14 +265,17 @@ ts::PSIRepository::RegisterTable::RegisterTable(const std::vector<TID>& tids,
 // Constructors to register a fully or partially implemented descriptor.
 //----------------------------------------------------------------------------
 
-ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DescriptorFactory factory,
+ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(int libversion,
+                                                          DescriptorFactory factory,
                                                           const EDID& edid,
                                                           const UString& xmlName,
                                                           DisplayDescriptorFunction displayFunction,
                                                           const UString& xmlNameLegacy)
 {
-    registerXML(factory, edid, xmlName, xmlNameLegacy);
-    PSIRepository::Instance()->_descriptors.insert(std::make_pair(edid, DescriptorDescription(factory, displayFunction)));
+    if (VersionInfo::CheckLibraryVersion(libversion)) {
+        registerXML(factory, edid, xmlName, xmlNameLegacy);
+        PSIRepository::Instance()->_descriptors.insert(std::make_pair(edid, DescriptorDescription(factory, displayFunction)));
+    }
 }
 
 void ts::PSIRepository::RegisterDescriptor::registerXML(DescriptorFactory factory, const EDID& edid, const UString& xmlName, const UString& xmlNameLegacy)
@@ -279,9 +296,9 @@ void ts::PSIRepository::RegisterDescriptor::registerXML(DescriptorFactory factor
     }
 }
 
-ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DisplayCADescriptorFunction displayFunction, uint16_t minCAS, uint16_t maxCAS)
+ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(int libversion, DisplayCADescriptorFunction displayFunction, uint16_t minCAS, uint16_t maxCAS)
 {
-    if (displayFunction != nullptr) {
+    if (displayFunction != nullptr && VersionInfo::CheckLibraryVersion(libversion)) {
         PSIRepository* const repo = PSIRepository::Instance();
         do {
             repo->_casIdDescriptorDisplays.insert(std::make_pair(minCAS, displayFunction));
