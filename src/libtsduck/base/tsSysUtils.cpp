@@ -38,6 +38,7 @@
 TSDUCK_SOURCE;
 
 #if defined(TS_WINDOWS)
+#include <intrin.h>
 #include "tsWinUtils.h"
 #endif
 
@@ -451,8 +452,18 @@ ts::UString ts::CallerLibraryFile()
 #if defined(TS_MSC)
 
     // Window implementation.
-    // @@@@@@@ _ReturnAddress();
-    return UString();
+    // Get return address of current function (in caller code).
+    void* const ret = _ReturnAddress();
+    // Get the module (DLL) into which this address can be found.
+    ::HMODULE handle = nullptr;
+    if (::GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, ::LPCWSTR(ret), &handle) == 0) {
+        return UString();
+    }
+    else {
+        std::array<::WCHAR, 2048> name;
+        ::DWORD length = ::GetModuleFileNameW(handle, name.data(), ::DWORD(name.size()));
+        return UString(name, length);
+    }
 
 #elif defined(TS_GCC) || defined(TS_LLVM)
 
