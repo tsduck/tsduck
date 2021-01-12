@@ -51,7 +51,8 @@ default install:
 
 else
 
-JAVAC_FLAGS = -Werror
+# Generate classes to make sure they are compatible with Java 8.
+JAVAC_FLAGS = -source 1.8 -target 1.8
 
 JAR      := $(shell $(ROOTDIR)/build/java-config.sh --jar)
 CLASSDIR  = $(OBJDIR)/java

@@ -71,11 +71,12 @@ Get-Content "$SrcRoot\Manifest.txt" |
     Out-File "$BinDir\Manifest.txt" -Encoding ascii
 
 # Compile all Java source files.
+# Generate classes to make sure they are compatible with Java 8.
 Push-Location $SrcRoot\src
 Get-ChildItem -Recurse . -Name *.java |
     ForEach-Object {
         Write-Output "Compiling $_ ..."
-        . $JavaBin\javac.exe -Werror -d $BinDir $_
+        . $JavaBin\javac.exe -source 1.8 -target 1.8 -d $BinDir $_
     }
 Pop-Location
 
