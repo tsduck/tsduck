@@ -108,6 +108,8 @@ namespace ts {
         };
 
     private:
+        TS_PUSH_WARNING()
+        TS_MSC_NOWARNING(5027) // move assignment operator was implicitly defined as deleted
         // Description of one extension.
         class Extension
         {
@@ -118,6 +120,7 @@ namespace ts {
             const UStringVector plugins;      // List of tsp plugin names which are provided by this extension.
             const UStringVector tools;        // List of tools (executables) which are provided by this extension.
         };
+        TS_POP_WARNING()
 
         // List of loaded extensions.
         std::list<Extension> _extensions;
