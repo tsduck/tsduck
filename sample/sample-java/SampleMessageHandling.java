@@ -9,7 +9,6 @@ import io.tsduck.AbstractAsyncReport;
 import io.tsduck.Report;
 import io.tsduck.TSProcessor;
 
-
 public class SampleMessageHandling {
 
     /**
@@ -40,7 +39,7 @@ public class SampleMessageHandling {
 
         /*
          * Create a report to log multi-threaded messages.
-         * In this example, this is a user-defined Java class which collects messages/
+         * In this example, this is a user-defined Java class which collects messages.
          */
         Logger rep = new Logger();
 

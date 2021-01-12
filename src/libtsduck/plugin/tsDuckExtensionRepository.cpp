@@ -29,21 +29,15 @@
 
 #include "tsDuckExtensionRepository.h"
 #include "tsApplicationSharedLibrary.h"
+#include "tsVersionInfo.h"
 #include "tsCerrReport.h"
-#include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
 // Define the singleton.
 TS_DEFINE_SINGLETON(ts::DuckExtensionRepository);
 
-// Force the creation of the singleton when the TSDuck library is loaded.
-// This is the point where the extensions are loaded.
-// Make it a exportable symbol to make sure that no compiler will optimize it away.
-TS_PUSH_WARNING()
-TS_LLVM_NOWARNING(missing-variable-declarations)
-const ts::DuckExtensionRepository* TSDuckExtensionRepository = ts::DuckExtensionRepository::Instance();
-TS_POP_WARNING()
-
+// The internal singleton which loads all extensions.
+const ts::DuckExtensionRepository::Loader ts::DuckExtensionRepository::LoaderInstance;
 
 
 //----------------------------------------------------------------------------
@@ -52,6 +46,10 @@ TS_POP_WARNING()
 
 ts::DuckExtensionRepository::DuckExtensionRepository() :
     _extensions()
+{
+}
+
+ts::DuckExtensionRepository::Loader::Loader()
 {
     // Give up now when TSLIBEXT_NONE is defined.
     if (!GetEnvironment(u"TSLIBEXT_NONE").empty()) {
@@ -69,7 +67,7 @@ ts::DuckExtensionRepository::DuckExtensionRepository() :
     ApplicationSharedLibrary::GetPluginList(files, u"tslibext_", TS_PLUGINS_PATH);
     CERR.debug(u"found %d possible extensions", {files.size()});
 
-    // Load all plugins and register allocator functions (when not zero).
+    // Load all plugins shared library.
     for (size_t i = 0; i < files.size(); ++i) {
 
         // Constant reference to the file name.
@@ -89,27 +87,27 @@ ts::DuckExtensionRepository::DuckExtensionRepository() :
             if (!shlib.isLoaded()) {
                 CERR.debug(u"failed to load extension \"%s\": %s", {filename, shlib.errorMessage()});
             }
-            else {
-                // Finding TSDuckExtensionId symbol in the shared library.
-                void* sym = shlib.getSymbol("TSDuckExtensionId");
-                if (sym == nullptr) {
-                    CERR.debug(u"no symbol TSDuckExtensionId found in \"%s\"", {filename});
-                }
-                else {
-                    // The returned address is the address of a pointer to ts::DuckExtension.
-                    // See macro TS_REGISTER_EXTENSION.
-                    ts::DuckExtension::ConstPointer ext = *reinterpret_cast<ts::DuckExtension::ConstPointer*>(sym);
-                    if (ext != nullptr) {
-                        // Now the extension is fully identified.
-                        _extensions.push_back(std::make_pair(ext, filename));
-                        CERR.debug(u"extension \"%s\" loaded from \"%s\"", {ext->name(), filename});
-                    }
-                }
-            }
         }
     }
 
-    CERR.debug(u"loaded %d extensions", {_extensions.size()});
+    CERR.debug(u"loaded %d extensions", {DuckExtensionRepository::Instance()->_extensions.size()});
+}
+
+//----------------------------------------------------------------------------
+// This constructor registers an extension.
+//----------------------------------------------------------------------------
+
+ts::DuckExtensionRepository::Register::Register(int libversion,
+                                                const UString& name,
+                                                const UString& file_name,
+                                                const UString& description,
+                                                const UStringVector& plugins,
+                                                const UStringVector& tools)
+{
+    CERR.debug(u"registering extension \"%s\"", {name});
+    if (VersionInfo::CheckLibraryVersion(libversion)) {
+        DuckExtensionRepository::Instance()->_extensions.push_back({name, file_name, description, plugins, tools});
+    }
 }
 
 
@@ -139,8 +137,8 @@ ts::UString ts::DuckExtensionRepository::listExtensions(ts::Report& report)
 {
     // Compute max name width of all extensions.
     size_t width = 0;
-    for (size_t i = 0; i < _extensions.size(); ++i) {
-        width = std::max(width, _extensions[i].first->name().width());
+    for (auto ext = _extensions.begin(); ext != _extensions.end(); ++ext) {
+        width = std::max(width, ext->name.width());
     }
     width++; // spacing after name
 
@@ -154,34 +152,28 @@ ts::UString ts::DuckExtensionRepository::listExtensions(ts::Report& report)
 
     // Build the output text as a string.
     UString out;
-    for (size_t iext = 0; iext < _extensions.size(); ++iext) {
-
-        // Description of the plugin.
-        const DuckExtension::ConstPointer ext = _extensions[iext].first;
-        const UString& filename(_extensions[iext].second);
-        const UStringVector& plugins(ext->plugins());
-        const UStringVector& tools(ext->tools());
+    for (auto ext = _extensions.begin(); ext != _extensions.end(); ++ext) {
 
         // First line: name and description.
-        out += UString::Format(u"%s %s\n", {ext->name().toJustifiedLeft(width, u'.', false, 1), ext->description()});
+        out += UString::Format(u"%s %s\n", {ext->name.toJustifiedLeft(width, u'.', false, 1), ext->description});
 
         if (report.verbose()) {
             // Display full file names.
-            out += UString::Format(u"%*s Library: %s\n", {width, u"", filename});
-            for (size_t i = 0; i < plugins.size(); ++i) {
-                out += UString::Format(u"%*s Plugin %s: %s\n", {width, u"", plugins[i], SearchFile(plugins_dirs, u"tsplugin_", plugins[i], TS_SHARED_LIB_SUFFIX)});
+            out += UString::Format(u"%*s Library: %s\n", {width, u"", ext->file_name});
+            for (size_t i = 0; i < ext->plugins.size(); ++i) {
+                out += UString::Format(u"%*s Plugin %s: %s\n", {width, u"", ext->plugins[i], SearchFile(plugins_dirs, u"tsplugin_", ext->plugins[i], TS_SHARED_LIB_SUFFIX)});
             }
-            for (size_t i = 0; i < tools.size(); ++i) {
-                out += UString::Format(u"%*s Command %s: %s\n", {width, u"", tools[i], SearchFile(tools_dirs, u"", tools[i], TS_EXECUTABLE_SUFFIX)});
+            for (size_t i = 0; i < ext->tools.size(); ++i) {
+                out += UString::Format(u"%*s Command %s: %s\n", {width, u"", ext->tools[i], SearchFile(tools_dirs, u"", ext->tools[i], TS_EXECUTABLE_SUFFIX)});
             }
         }
         else {
             // Only display plugins and tools names.
-            if (!plugins.empty()) {
-                out += UString::Format(u"%*s Plugins: %s\n", {width, u"", UString::Join(plugins)});
+            if (!ext->plugins.empty()) {
+                out += UString::Format(u"%*s Plugins: %s\n", {width, u"", UString::Join(ext->plugins)});
             }
-            if (!tools.empty()) {
-                out += UString::Format(u"%*s Commands: %s\n", {width, u"", UString::Join(tools)});
+            if (!ext->tools.empty()) {
+                out += UString::Format(u"%*s Commands: %s\n", {width, u"", UString::Join(ext->tools)});
             }
         }
     }

@@ -38,8 +38,8 @@ Consequently, the less flexible `ctypes` approach was chosen. The TSDuck
 binary library contains C++ wrapper functions to some features of TSDuck and
 these carefully crafted functions are directly called from Python code
 using `ctypes`, regardless of the version of Python. Note, however, that
-these C++ are hidden inside the Python bindings and invisible to the
-application developer.
+these C++ functions are hidden inside the Python bindings and invisible to the
+C++ application developer.
 
 # Using TSDuck Python bindings  {#pyusing}
 

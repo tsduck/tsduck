@@ -38,6 +38,7 @@
 #include "tsOutputPlugin.h"
 #include "tsReport.h"
 #include "tsSingletonManager.h"
+#include "tsLibraryVersion.h"
 
 namespace ts {
     //!
@@ -82,24 +83,27 @@ namespace ts {
 
         //!
         //! Register an input plugin.
+        //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation of the caller.
         //! @param [in] name Plugin name.
         //! @param [in] allocator New input plugin allocator function. Ignored when zero.
         //!
-        void registerInput(const UString& name, InputPluginFactory allocator);
+        void registerInput(int libversion, const UString& name, InputPluginFactory allocator);
 
         //!
         //! Register a packet processor plugin.
+        //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation of the caller.
         //! @param [in] name Plugin name.
         //! @param [in] allocator New packet processor plugin allocator function. Ignored when zero.
         //!
-        void registerProcessor(const UString& name, ProcessorPluginFactory allocator);
+        void registerProcessor(int libversion, const UString& name, ProcessorPluginFactory allocator);
 
         //!
         //! Register an output plugin.
+        //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation of the caller.
         //! @param [in] name Plugin name.
         //! @param [in] allocator New output plugin allocator function. Ignored when zero.
         //!
-        void registerOutput(const UString& name, OutputPluginFactory allocator);
+        void registerOutput(int libversion, const UString& name, OutputPluginFactory allocator);
 
         //!
         //! Get an input plugin by name.
@@ -210,24 +214,27 @@ namespace ts {
         public:
             //!
             //! The constructor registers an input plugin.
+            //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation of the caller.
             //! @param [in] name Plugin name.
             //! @param [in] allocator New input plugin allocator function.
             //!
-            Register(const UString& name, InputPluginFactory allocator);
+            Register(int libversion, const UString& name, InputPluginFactory allocator);
 
             //!
             //! The constructor registers a packet processor plugin.
+            //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation of the caller.
             //! @param [in] name Plugin name.
             //! @param [in] allocator New packet processor plugin allocator function.
             //!
-            Register(const UString& name, ProcessorPluginFactory allocator);
+            Register(int libversion, const UString& name, ProcessorPluginFactory allocator);
 
             //!
             //! The constructor registers an output plugin.
+            //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation of the caller.
             //! @param [in] name Plugin name.
             //! @param [in] allocator New output plugin allocator function.
             //!
-            Register(const UString& name, OutputPluginFactory allocator);
+            Register(int libversion, const UString& name, OutputPluginFactory allocator);
         };
 
     private:
@@ -255,7 +262,7 @@ namespace ts {
 //
 //! @cond nodoxygen
 #define _TS_PLUGIN_FACTORY(funcname,classname,suffix) namespace { ts::suffix##Plugin* funcname(ts::TSP* tsp) {return new classname(tsp);} }
-#define _TS_REGISTER_PLUGIN(name,classname,suffix) _TS_PLUGIN_FACTORY(TS_UNIQUE_NAME(_F),classname,suffix) static ts::PluginRepository::Register TS_UNIQUE_NAME(_R)(name,&TS_UNIQUE_NAME(_F))
+#define _TS_REGISTER_PLUGIN(name,classname,suffix) _TS_PLUGIN_FACTORY(TS_UNIQUE_NAME(_F),classname,suffix) static ts::PluginRepository::Register TS_UNIQUE_NAME(_R)(TS_LIBRARY_VERSION,name,&TS_UNIQUE_NAME(_F))
 //! @endcond
 
 //!

@@ -309,6 +309,12 @@ namespace ts {
     TSDUCKDLL UString ExecutableFile();
 
     //!
+    //! Get the name of the executable or shared library file containing the caller code.
+    //! @return The full path of the file or empty in case of error or if not supported.
+    //!
+    TSDUCKDLL UString CallerLibraryFile();
+
+    //!
     //! Check if a file path is a symbolic link.
     //! @param [in] path A file path.
     //! @return True if @a path is a symbolic link.
