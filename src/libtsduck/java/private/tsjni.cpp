@@ -39,7 +39,7 @@ JavaVM* ts::jni::javaVM = nullptr;
 // Convert between Java string and ts::UString.
 //----------------------------------------------------------------------------
 
-jstring ts::jni::ToJString(JNIEnv* env, const ts::UString& str)
+jstring ts::jni::ToJString(JNIEnv* env, const UString& str)
 {
     if (env == nullptr || env->ExceptionCheck()) {
         return nullptr;

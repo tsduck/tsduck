@@ -168,7 +168,7 @@ bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, const uint
     tsargs.output.set(u"drop");
 
     // Split plugins strings.
-    const ts::UStringList fields(tspy::ToStringList(plugins, plugins_size));
+    const ts::UStringList fields(ts::py::ToStringList(plugins, plugins_size));
 
     // Analyze list of strings.
     auto it = fields.begin();

@@ -35,12 +35,12 @@ TSDUCK_SOURCE;
 // Convert a UTF-16 buffer in a UString.
 //-----------------------------------------------------------------------------
 
-ts::UString tspy::ToString(const uint8_t* buffer, size_t size)
+ts::UString ts::py::ToString(const uint8_t* buffer, size_t size)
 {
-    ts::UString str;
+    UString str;
     if (buffer != nullptr) {
-        str.assign(reinterpret_cast<const ts::UChar*>(buffer), size / 2);
-        str.remove(ts::BYTE_ORDER_MARK);
+        str.assign(reinterpret_cast<const UChar*>(buffer), size / 2);
+        str.remove(BYTE_ORDER_MARK);
     }
     return str;
 }
@@ -50,18 +50,18 @@ ts::UString tspy::ToString(const uint8_t* buffer, size_t size)
 // Convert a UTF-16 buffer in a list of UString.
 //-----------------------------------------------------------------------------
 
-ts::UStringList tspy::ToStringList(const uint8_t* buffer, size_t size)
+ts::UStringList ts::py::ToStringList(const uint8_t* buffer, size_t size)
 {
-    ts::UStringList list;
+    UStringList list;
     if (buffer != nullptr) {
-        const ts::UChar* start = reinterpret_cast<const ts::UChar*>(buffer);
-        const ts::UChar* end = start + size / 2; // number of UChar
+        const UChar* start = reinterpret_cast<const UChar*>(buffer);
+        const UChar* end = start + size / 2; // number of UChar
         for (;;) {
-            const ts::UChar* cur = start;
-            while (cur < end && *cur != ts::UChar(0xFFFF)) {
+            const UChar* cur = start;
+            while (cur < end && *cur != UChar(0xFFFF)) {
                 ++cur;
             }
-            ts::UString str(start, cur - start);
+            UString str(start, cur - start);
             str.remove(ts::BYTE_ORDER_MARK);
             list.push_back(str);
             if (cur >= end) {
@@ -78,7 +78,7 @@ ts::UStringList tspy::ToStringList(const uint8_t* buffer, size_t size)
 // Convert a string into a UTF-16 buffer.
 //-----------------------------------------------------------------------------
 
-void tspy::FromString(const ts::UString& str, uint8_t* buffer, size_t* size)
+void ts::py::FromString(const UString& str, uint8_t* buffer, size_t* size)
 {
     if (size != nullptr) {
         if (buffer == nullptr) {

@@ -92,7 +92,7 @@ namespace ts {
         //! @return The converted string. Use env->ExceptionCheck() to check for
         //! error. In case of error, the returned value is the empty string.
         //!
-        ts::UString ToUString(JNIEnv* env, jstring str);
+        UString ToUString(JNIEnv* env, jstring str);
 
         //!
         //! Convert a ts::UString into a Java string.
@@ -101,7 +101,7 @@ namespace ts {
         //! @return The converted string. Use env->ExceptionCheck() to check for
         //! error. In case of error, the returned value is a null pointer.
         //!
-        jstring ToJString(JNIEnv* env, const ts::UString& str);
+        jstring ToJString(JNIEnv* env, const UString& str);
 
         //!
         //! Get the value of a 'boolean' field in a Java object.

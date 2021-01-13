@@ -25,22 +25,24 @@ tsp.input = ['http', url]
 tsp.output = ['file', tsfile]
 tsp.start()
 tsp.waitForTermination()
+tsp.delete()
 
-# Second phase: Play the file at regulated speed a large number of times.
+# Second phase: Play the file at regulated speed several times.
 # Must use another instance of ts.TSProcessor.
 print("Playing %s ..." % (tsfile))
 
 tsp = ts.TSProcessor(rep)
 tsp.monitor = True
-tsp.input = ['file', tsfile, '--repeat', '100']
+tsp.input = ['file', tsfile, '--repeat', '2']
 tsp.plugins = [ ['regulate'] ]
 tsp.output = ['drop']
 tsp.start()
 tsp.waitForTermination()
+tsp.delete()
 
-# Terminate asynchronous log.
-tsp = None
+# Terminate the asynchronous report.
 rep.terminate()
+rep.delete()
 
 # Delete temporary TS file.
 os.remove(tsfile)

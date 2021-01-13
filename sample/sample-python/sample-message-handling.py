@@ -1,15 +1,29 @@
 #!/usr/bin/env python3
 #----------------------------------------------------------------------------
 #
-# TSDuck sample Python application running a chain of plugins.
+# TSDuck sample Python application running a chain of plugins
+# and handling the TSDuck log messages in a Python class.
 #
 #----------------------------------------------------------------------------
 
 import ts
 
+# A pure Python class which handles TSDuck log messages.
+class Logger(ts.AbstractAsyncReport):
+
+    # Constructor.
+    def __init__(self, severity = ts.Report.Info, sync_log = False, log_msg_count = 0):
+        super().__init__(severity, sync_log, log_msg_count)
+
+    # Log a message to the report.
+    # This method is invoked each time a message is logged by TSDuck.
+    def log(self, severity, message):
+        print("Severity: %d, message: %s%s" % (severity, ts.Report.header(severity), message))
+
+
 # Create an asynchronous report to log multi-threaded messages.
-# Initial level is verbose, using time-stamped messages.
-rep = ts.AsyncReport(severity = ts.Report.Verbose, timed_log = True)
+# In this example, this is a user-defined Java class which collects messages.
+rep = Logger(severity = ts.Report.Verbose)
 rep.info("TSDuck version: %s" % ts.__version__)
 
 # Create a TS processor using the report.

@@ -185,6 +185,13 @@ tspyNewAsyncReport = _lib.tspyNewAsyncReport
 tspyNewAsyncReport.restype = c_void_p
 tspyNewAsyncReport.argtypes = [c_int, c_bool, c_bool, c_size_t]
 
+# void* tspyNewPyAsyncReport(ts::py::AsyncReport::LogCallback log, int severity, bool sync_log, size_t log_msg_count);
+
+tspyNewPyAsyncReport = _lib.tspyNewPyAsyncReport
+tspyNewPyAsyncReport.restype = c_void_p
+# Don't know which type to use for ctypes.CFUNCTYPE() as first parameter.
+# tspyNewPyAsyncReport.argtypes = [???, c_int, c_bool, c_size_t]
+
 # void* tspyNewTSProcessor(void* report);
 
 tspyNewTSProcessor = _lib.tspyNewTSProcessor
@@ -196,6 +203,12 @@ tspyNewTSProcessor.argtypes = [c_void_p]
 tspyNullReport = _lib.tspyNullReport
 tspyNullReport.restype = c_void_p
 tspyNullReport.argtypes = []
+
+# void tspyReportHeader(int severity, uint8_t* buffer, size_t* buffer_size);
+
+tspyReportHeader = _lib.tspyReportHeader
+tspyReportHeader.restype = None
+tspyReportHeader.argtypes = [c_int, POINTER(c_uint8), POINTER(c_size_t)]
 
 # void tspySetMaxSeverity(void* report, int severity);
 

@@ -28,49 +28,47 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup python
-//!  Base definitions for the TSDuck Python bindings (C++ implementation).
+//!  Asynchronous message report with notification to a Python class.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
-#include "tsUString.h"
-
-//!
-//! @hideinitializer
-//! Attribute to export a function to Python
-//!
-#define TSDUCKPY extern "C" TSDUCKDLL
+#include "tsAsyncReport.h"
+#include "tspy.h"
 
 namespace ts {
-    //!
-    //! Namespace for internal utilities to support Python bindings.
-    //!
     namespace py {
         //!
-        //! Convert a UTF-16 buffer in a UString.
-        //! @param [in] buffer Address of a buffer with UTF-16 content.
-        //! @param [in] size Size in bytes of the buffer.
-        //! @return The converted string.
+        //! Asynchronous message report with notification to a Python class.
+        //! @ingroup python
         //!
-        UString ToString(const uint8_t* buffer, size_t size);
+        class TSDUCKDLL AsyncReport : public ts::AsyncReport
+        {
+            TS_NOBUILD_NOCOPY(AsyncReport);
+        public:
+            //!
+            //! Profile of a Python callback which receives log messages.
+            //!
+            typedef void* (*LogCallback)(int severity, const UChar* message, size_t message_bytes);
 
-        //!
-        //! Convert a UTF-16 buffer in a list of UString.
-        //! The various strings in the buffer are separated with 0xFFFF code points (invalid UTF-16 value)
-        //! @param [in] buffer Address of a buffer with UTF-16 content.
-        //! @param [in] size Size in bytes of the buffer.
-        //! @return The converted strings.
-        //!
-        UStringList ToStringList(const uint8_t* buffer, size_t size);
+            //!
+            //! Constructor.
+            //! @param [in] log_callback Python callback to receive log messages.
+            //! @param [in] max_severity Set initial level report to that level.
+            //! @param [in] args Initial parameters.
+            //!
+            AsyncReport(LogCallback log_callback, int max_severity, const AsyncReportArgs& args = AsyncReportArgs());
 
-        //!
-        //! Convert a string into a UTF-16 buffer.
-        //! @param [in] str The initial string.
-        //! @param [out] buffer Address of a buffer where the string is returned in UTF-16 format.
-        //! @param [in,out] size Initial/maximum size in bytes of the buffer. Upon return, contains the written size in bytes.
-        //!
-        void FromString(const UString& str, uint8_t* buffer, size_t* size);
+            //!
+            //! Destructor.
+            //!
+            virtual ~AsyncReport() override;
+
+        private:
+            // Inherited from ts::AsyncReport:
+            virtual void asyncThreadLog(int severity, const UString& message) override;
+
+            LogCallback _log_callback;
+        };
     }
 }
