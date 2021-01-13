@@ -32,7 +32,8 @@
 #-----------------------------------------------------------------------------
 
 from .info import version, intVersion
-from .report import Report, NullReport, StdErrReport, AsyncReport
+from .native import NativeObject
+from .report import Report, NullReport, StdErrReport, AsyncReport, AbstractAsyncReport
 from .tsp import TSProcessor
 
 __all__ = []

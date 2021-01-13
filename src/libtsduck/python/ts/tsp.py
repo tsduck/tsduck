@@ -32,6 +32,7 @@
 #-----------------------------------------------------------------------------
 
 from . import lib
+from .native import NativeObject
 import ctypes
 import re
 
@@ -46,15 +47,16 @@ class TSPStartError(Exception):
 # A wrapper class for C++ TSProcessor.
 # @ingroup python
 #
-class TSProcessor:
+class TSProcessor(NativeObject):
 
     ##
     # Constructor.
     # @param report The ts.Report object to use.
     #
     def __init__(self, report):
+        super().__init__()
         self._report = report
-        self._tsp_addr = ctypes.c_void_p(lib.tspyNewTSProcessor(self._report._report_addr))
+        self._native_object = lib.tspyNewTSProcessor(self._report._native_object)
 
         # Publicly customizable tsp options:
         ## Option -\-monitor.
@@ -92,15 +94,10 @@ class TSProcessor:
         ## Output plugin name and arguments (list of strings).
         self.output = []                       
 
-    ##
-    # Finalizer.
-    # Deallocate the associated C++ object.
-    #
-    def __del__(self):
-        if self._tsp_addr.value != 0:
-            lib.tspyDeleteReport(self._tsp_addr)
-            self._tsp_addr = ctypes.c_void_p(0)
-            self._report = None
+    # Explicitly free the underlying C++ object (inherited).
+    def delete(self):
+        lib.tspyDeleteTSProcessor(self._native_object)
+        super().delete()
 
     ##
     # Start the TS processor.
@@ -135,7 +132,7 @@ class TSProcessor:
             plugins.extend(self.output)
 
         # Start the processing.
-        if not lib.tspyStartTSProcessor(self._tsp_addr, ctypes.byref(args), plugins.data_ptr(), plugins.size()):
+        if not lib.tspyStartTSProcessor(self._native_object, ctypes.byref(args), plugins.data_ptr(), plugins.size()):
             raise TSPStartError("Error starting TS processor")
 
     ##
@@ -143,11 +140,11 @@ class TSProcessor:
     # @return None.
     #
     def abort(self):
-        lib.tspyAbortTSProcessor(self._tsp_addr)
+        lib.tspyAbortTSProcessor(self._native_object)
 
     ##
     # Suspend the calling thread until TS processing is completed.
     # @return None.
     #
     def waitForTermination(self):
-        lib.tspyWaitTSProcessor(self._tsp_addr)
+        lib.tspyWaitTSProcessor(self._native_object)

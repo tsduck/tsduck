@@ -44,14 +44,14 @@ public class SampleMonitoring {
         tsp.delete();
 
         /*
-         * Second phase: Play the file at regulated speed a large number of times.
+         * Second phase: Play the file at regulated speed several times.
          * Must use another instance of ts.TSProcessor.
          */
         System.out.printf("Playing %s ...\n", tsfile.getPath());
         
         tsp = new TSProcessor(rep);
         tsp.monitor = true;
-        tsp.input = new String[] {"file", tsfile.getPath(), "--repeat", "100"};
+        tsp.input = new String[] {"file", tsfile.getPath(), "--repeat", "2"};
         tsp.plugins = new String[][] { {"regulate"} };
         tsp.output = new String[] {"drop"};
         tsp.start();

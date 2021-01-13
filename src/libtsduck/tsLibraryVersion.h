@@ -71,4 +71,8 @@
 //!   Report, Args, Plugin, InputPlugin, OutputPlugin, ProcessorPlugin
 //!   and their subclasses.
 //!
+//! - Incompatible modifications in the table or descriptor interface.
+//!
+//! - Incompatible modifications in the TSDuck extension interface.
+//!
 #define TS_LIBRARY_VERSION 1

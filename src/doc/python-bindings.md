@@ -237,7 +237,11 @@ tsp.output = ['drop']
 # Run the TS processing and wait until completion.
 tsp.start()
 tsp.waitForTermination()
+tsp.delete()
+
+# Terminate the asynchronous report.
 rep.terminate()
+rep.delete()
 ~~~
 
 Output for this example:

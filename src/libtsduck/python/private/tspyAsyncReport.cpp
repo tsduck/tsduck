@@ -26,43 +26,31 @@
 //  THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  TSDuck Python bindings: information features.
-//
-//----------------------------------------------------------------------------
 
-#include "tspy.h"
-#include "tsVersionInfo.h"
-#include "tsVersionString.h"
+#include "tspyAsyncReport.h"
 TSDUCK_SOURCE;
 
 //----------------------------------------------------------------------------
-// Interface of native methods.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-//!
-//! Get the TSDuck version as an integer, suitable for comparisons.
-//! @return the TSDuck version as Mmmccccc (Major, minor, commit).
-//!
-TSDUCKPY uint32_t tspyVersionInteger();
-
-//!
-//! Get the TSDuck version as a string.
-//! @param [out] buffer Address of a buffer where the version string is returned in UTF-16 format.
-//! @param [in,out] size Initial/maximum size in bytes of the buffer. Upon return, contains the written size in bytes.
-//!
-TSDUCKPY void tspyVersionString(uint8_t* buffer, size_t* size);
-
-//-----------------------------------------------------------------------------
-// Implementation of native methods.
-//-----------------------------------------------------------------------------
-
-uint32_t tspyVersionInteger()
+ts::py::AsyncReport::AsyncReport(LogCallback log_callback, int max_severity, const AsyncReportArgs& args) :
+    ts::AsyncReport(max_severity, args),
+    _log_callback(log_callback)
 {
-    return TS_VERSION_INTEGER;
 }
 
-void tspyVersionString(uint8_t* buffer, size_t* size)
+ts::py::AsyncReport::~AsyncReport()
 {
-    ts::py::FromString(ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT), buffer, size);
+}
+
+//----------------------------------------------------------------------------
+// Message logging method.
+//----------------------------------------------------------------------------
+
+void ts::py::AsyncReport::asyncThreadLog(int severity, const UString& message)
+{
+    if (_log_callback != nullptr) {
+        _log_callback(severity, message.data(), message.size() * sizeof(UChar));
+    }
 }

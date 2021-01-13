@@ -32,13 +32,14 @@
 #-----------------------------------------------------------------------------
 
 from . import lib
+from .native import NativeObject
 import ctypes
 
 ##
 # Base class for TSDuck report classes.
 # @ingroup python
 #
-class Report:
+class Report(NativeObject):
     # Severity levels, same values as C++ counterparts.
     ## Fatal error, typically aborts the application.
     Fatal   = -5;
@@ -56,24 +57,21 @@ class Report:
     Debug   =  1;
 
     ##
-    # Constructor with the address of a C++ Report object.
-    # Used only by subclasses, do not not instantiate the base class from applictions.
-    # @param report Address of the C++ Report object.
-    # @param to_be_deleted A boolean, when true the C++ object is deallocated on finalization.
+    # Formatted line prefix header for a severity.
+    # @param severity Severity value.
+    # @return A string to prepend to messages. Empty for Info and Verbose levels.
     #
-    def __init__(self, report, to_be_deleted):
-        self._report_addr = ctypes.c_void_p(report)
-        self._to_be_deleted = to_be_deleted
+    @staticmethod
+    def header(severity):
+        buf = lib.OutByteBuffer(64)
+        lib.tspyReportHeader(severity, buf.data_ptr(), buf.size_ptr())
+        return buf.to_string()
 
     ##
-    # Finalizer.
-    # Deallocate the associated C++ object.
+    # Constructor for subclasses.
     #
-    def __del__(self):
-        if self._to_be_deleted:
-            lib.tspyDeleteReport(self._report_addr)
-            self._report_addr = ctypes.c_void_p(0)
-            self._to_be_deleted = False
+    def __init__(self):
+        super().__init__()
 
     ##
     # Set the maximum severity of the report.
@@ -81,7 +79,7 @@ class Report:
     # @return None.
     #
     def setMaxSeverity(self, severity):
-        lib.tspySetMaxSeverity(self._report_addr, severity)
+        lib.tspySetMaxSeverity(self._native_object, severity)
 
     ##
     # Log a message to the report.
@@ -91,7 +89,7 @@ class Report:
     #
     def log(self, severity, message):
         buf = lib.InByteBuffer(message)
-        lib.tspyLogReport(self._report_addr, severity, buf.data_ptr(), buf.size())
+        lib.tspyLogReport(self._native_object, severity, buf.data_ptr(), buf.size())
 
     ##
     # Log a messages at error level.
@@ -143,7 +141,9 @@ class NullReport(Report):
     # Constructor.
     #
     def __init__(self):
-        super().__init__(lib.tspyNullReport(), False)
+        super().__init__()
+        # Not to be deleted, this is a singleton.
+        self._native_object = lib.tspyNullReport()
 
 ##
 # A wrapper class for C++ CerrReport.
@@ -155,7 +155,9 @@ class StdErrReport(Report):
     # Constructor.
     #
     def __init__(self):
-        super().__init__(lib.tspyStdErrReport(), False)
+        super().__init__()
+        # Not to be deleted, this is a singleton.
+        self._native_object = lib.tspyStdErrReport()
 
 ##
 # A wrapper class for C++ AsyncReport.
@@ -171,18 +173,43 @@ class AsyncReport(Report):
     # @param log_msg_count Maximum buffered log messages.
     #
     def __init__(self, severity = Report.Info, sync_log = False, timed_log = False, log_msg_count = 0):
-        super().__init__(lib.tspyNewAsyncReport(severity, sync_log, timed_log, log_msg_count), True)
+        super().__init__()
+        self._native_object = lib.tspyNewAsyncReport(severity, sync_log, timed_log, log_msg_count)
+
+    # Explicitly free the underlying C++ object (inherited).
+    def delete(self):
+        lib.tspyDeleteReport(self._native_object)
+        super().delete()
 
     ##
     # Synchronously terminates the async log thread.
     # @return None.
     #
     def terminate(self):
-        lib.tspyTerminateAsyncReport(self._report_addr)
+        lib.tspyTerminateAsyncReport(self._native_object)
+
+##
+# An abstract Report class which can be derived by applications to get log messages.
+# @ingroup python
+#
+class AbstractAsyncReport(AsyncReport):
 
     ##
-    # Finalizer.
-    # Deallocate the associated C++ object.
+    # Constructor, starts the async log thread.
+    # @param severity Initial severity.
+    # @param sync_log Synchronous log.
+    # @param log_msg_count Maximum buffered log messages.
     #
-    def __del__(self):
-        super().__del__()
+    def __init__(self, severity = Report.Info, sync_log = False, log_msg_count = 0):
+        super().__init__()
+
+        # An internal callback, called from the C++ class.
+        def log_callback(sev, buf, len):
+            self.log(sev, ctypes.string_at(buf, len).decode('utf-16'))
+
+        # Keep a reference on teh callback in the object instance.
+        callback = ctypes.CFUNCTYPE(None, ctypes.c_int, ctypes.c_void_p, ctypes.c_size_t)
+        self._cb = callback(log_callback)
+
+        # Finally create the native object.
+        self._native_object = lib.tspyNewPyAsyncReport(self._cb, severity, sync_log, log_msg_count)

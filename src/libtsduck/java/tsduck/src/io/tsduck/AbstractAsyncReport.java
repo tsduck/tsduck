@@ -30,7 +30,7 @@
 package io.tsduck;
 
 /**
- * An abstract class which can be derived by applications to get log messages.
+ * An abstract Report class which can be derived by applications to get log messages.
  * @ingroup java
  * 
  * This class is functionally similar to {@link AsyncReport} except that the
