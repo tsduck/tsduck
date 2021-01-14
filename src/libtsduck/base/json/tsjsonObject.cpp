@@ -144,12 +144,12 @@ void ts::json::Object::print(TextFormatter& output) const
         if (it != _fields.begin()) {
             output << ",";
         }
-        output << std::endl << ts::margin << '"' << it->first.toJSON() << "\": ";
+        output << ts::endl << ts::margin << '"' << it->first.toJSON() << "\": ";
         it->second->print(output);
     }
 
     // Unindent and closing sequence.
-    output << std::endl << ts::unindent << ts::margin << "}";
+    output << ts::endl << ts::unindent << ts::margin << "}";
 }
 
 

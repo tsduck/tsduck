@@ -136,7 +136,7 @@ int MainCode(int argc, char *argv[])
     file.close(opt);
 
     // Display analysis results.
-    analyzer.report(opt.pager.output(opt), opt.analysis);
+    analyzer.report(opt.pager.output(opt), opt.analysis, opt);
 
     return EXIT_SUCCESS;
 }

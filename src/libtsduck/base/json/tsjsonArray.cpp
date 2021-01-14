@@ -136,12 +136,12 @@ void ts::json::Array::print(TextFormatter& output) const
         if (it != _value.begin()) {
             output << ",";
         }
-        output << std::endl << ts::margin;
+        output << ts::endl << ts::margin;
         (*it)->print(output);
     }
 
     // Unindent and closing sequence.
-    output << std::endl << ts::unindent << ts::margin << "]";
+    output << ts::endl << ts::unindent << ts::margin << "]";
 }
 
 

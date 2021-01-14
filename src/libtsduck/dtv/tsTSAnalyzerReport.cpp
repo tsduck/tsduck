@@ -181,7 +181,7 @@ void ts::TSAnalyzerReport::report(std::ostream& stm, const TSAnalyzerOptions& op
     }
 
     // JSON report.
-    if (opt.json) {
+    if (opt.json.json) {
         reportJSON(opt, stm, opt.title, rep);
     }
 }
@@ -1278,10 +1278,7 @@ void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream
     }
 
     // An output text formatter for JSON output.
-    TextFormatter text(rep);
-    text.setStream(stm);
-    root.print(text);
-    text << std::endl;
+    opt.json.report(root, stm, rep);
 }
 
 

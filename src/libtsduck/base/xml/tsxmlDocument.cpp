@@ -161,7 +161,7 @@ void ts::xml::Document::print(TextFormatter& output, bool keepNodeOpen) const
         const bool keep = keepNodeOpen && node == last;
         node->print(output, keep);
         if (!keep) {
-            output << std::endl;
+            output << ts::endl;
         }
     }
 }

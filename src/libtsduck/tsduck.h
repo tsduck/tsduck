@@ -345,6 +345,7 @@
 #include "tsITT.h"
 #include "tsJ2KVideoDescriptor.h"
 #include "tsjson.h"
+#include "tsJSONArgs.h"
 #include "tsjsonArray.h"
 #include "tsjsonFalse.h"
 #include "tsjsonNull.h"

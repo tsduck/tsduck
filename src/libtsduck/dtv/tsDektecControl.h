@@ -34,6 +34,8 @@
 
 #pragma once
 #include "tsArgs.h"
+#include "tsDuckContext.h"
+#include "tsJSONArgs.h"
 #include "tsjson.h"
 
 #if !defined(DOXYGEN)
@@ -55,7 +57,7 @@ namespace ts {
     //! depend on DTAPI. The binary DTAPI is privately isolated inside tsduck.dll/.so.
     //! @ingroup hardware
     //!
-    class TSDUCKDLL DektecControl: public Args
+    class TSDUCKDLL DektecControl: private Args
     {
         TS_NOBUILD_NOCOPY(DektecControl);
     public:
@@ -78,18 +80,20 @@ namespace ts {
         int execute();
 
     private:
-        // Command line parameters.
-        bool   _list_all;      //!< List all Dektec devices
-        bool   _normalized;    //!< List in "normalized" format
-        bool   _json;          //!< List in JSON format
-        int    _wait_sec;      //!< Wait time before exit
-        size_t _devindex;      //!< Dektec device
-        bool   _reset;         //!< Reset the device
-        bool   _set_led;       //!< Change LED state
-        int    _led_state;     //!< State of the LED (one of DTAPI_LED_*)
-        int    _set_input;     //!< Port number to set as input, for directional ports
-        int    _set_output;    //!< Port number to set as output, for directional ports
-        int    _power_mode;    //!< Power mode to set on DTU-315
+        DuckContext _duck;
+
+        // Command line parameters;
+        bool     _list_all;      // List all Dektec devices
+        bool     _normalized;    // List in "normalized" format
+        JSONArgs _json;          // List in JSON format
+        int      _wait_sec;      // Wait time before exit
+        size_t   _devindex;      // Dektec device
+        bool     _reset;         // Reset the device
+        bool     _set_led;       // Change LED state
+        int      _led_state;     // State of the LED (one of DTAPI_LED_*)
+        int      _set_input;     // Port number to set as input, for directional ports
+        int      _set_output;    // Port number to set as output, for directional ports
+        int      _power_mode;    // Power mode to set on DTU-315
 
         // Apply commands to one device. Return command status.
         int oneDevice(const DektecDevice& device);

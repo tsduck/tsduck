@@ -44,9 +44,10 @@ TSDUCK_SOURCE;
 
 ts::DektecControl::DektecControl(int argc, char *argv[]) :
     Args(u"Control Dektec devices", u"[options] [device]"),
+    _duck(this),
     _list_all(false),
     _normalized(false),
-    _json(false),
+    _json(true),
     _wait_sec(0),
     _devindex(0),
     _reset(false),
@@ -84,8 +85,8 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
          u"option --wait (the led state is automatically returned to "
          u"\"hardware\" after exit).");
 
-    option(u"json", 'j');
-    help(u"json", u"With --all, list the Dektec devices in JSON format (useful for automatic analysis).");
+    _json.setHelp(u"With --all, list the Dektec devices in JSON format (useful for automatic analysis).");
+    _json.defineArgs(*this);
 
     option(u"normalized", 'n');
     help(u"normalized", u"With --all, list the Dektec devices in a normalized output format (useful for automatic analysis).");
@@ -111,7 +112,6 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     _devindex   = intValue(u"", 0);
     _list_all   = present(u"all");
     _normalized = present(u"normalized");
-    _json       = present(u"json");
     _reset      = present(u"reset");
     _set_led    = present(u"led");
     _led_state  = intValue(u"led", DTAPI_LED_OFF);
@@ -119,8 +119,9 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     _set_output = intValue(u"output", -1);
     _wait_sec   = intValue(u"wait", _set_led ? 5 : 0);
     _power_mode = intValue(u"power-mode", -1);
+    _json.loadArgs(_duck, *this);
 
-    if (_json && _normalized) {
+    if (_json.json && _normalized) {
         error(u"options --json and --normalized are mutually exclusive");
     }
 
@@ -504,7 +505,7 @@ int ts::DektecControl::listDevicesJSON(const DektecDeviceVector& devices)
 {
 #if !defined(TS_NO_DTAPI)
 
-    ts::json::Object root;
+    json::Object root;
 
     // Display DTAPI and device drivers versions
     std::map<UString,UString> versions;
@@ -579,11 +580,8 @@ int ts::DektecControl::listDevicesJSON(const DektecDeviceVector& devices)
         }
     }
 
-    // JSON output if required.
-    ts::TextFormatter text(*this);
-    text.setStream(std::cout);
-    root.print(text);
-    text << std::endl;
+    // JSON output.
+    _json.report(root, std::cout, *this);
 
 #endif // TS_NO_DTAPI
 
@@ -718,7 +716,7 @@ int ts::DektecControl::execute()
 
     if (_list_all) {
         // List all devices
-        if (_json) {
+        if (_json.json) {
             return listDevicesJSON(devices);
         }
         else if(_normalized) {

@@ -27,8 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPagerArgs.h"
-#include "tsNullReport.h"
+#include "tsJSONArgs.h"
 #include "tsArgs.h"
 TSDUCK_SOURCE;
 
@@ -37,18 +36,13 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::PagerArgs::PagerArgs(bool pageByDefault, bool stdoutOnly) :
-    page_by_default(pageByDefault),
-    use_pager(pageByDefault),
-    _pager(ts::OutputPager::DEFAULT_PAGER, stdoutOnly)
+ts::JSONArgs::JSONArgs(bool use_short_opt, const UString& help) :
+    json(false),
+    json_line(false),
+    json_prefix(),
+    _use_short_opt(use_short_opt),
+    _json_help(help.empty() ? u"Report in JSON output format (useful for automatic analysis)." : help)
 {
-}
-
-ts::PagerArgs::~PagerArgs()
-{
-    if (_pager.isOpen()) {
-        _pager.close(NULLREP);
-    }
 }
 
 
@@ -56,19 +50,17 @@ ts::PagerArgs::~PagerArgs()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::PagerArgs::defineArgs(Args& args) const
+void ts::JSONArgs::defineArgs(Args& args) const
 {
-    if (page_by_default) {
-        args.option(u"no-pager");
-        args.help(u"no-pager",
-                  u"Do not send output through a pager process. "
-                  u"By default, if the output device is a terminal, the output is paged.");
-    }
-    else {
-        args.option(u"pager");
-        args.help(u"pager",
-                  u"Send output through a pager process if the output device is a terminal.");
-    }
+    args.option(u"json", _use_short_opt ? 'j' : 0);
+    args.help(u"json", _json_help);
+
+    args.option(u"json-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
+    args.help(u"json-line", u"'prefix'",
+              u"Same as --json but report the JSON text as one single line "
+              u"in the message logger instead of the output file. "
+              u"The optional string parameter specifies a prefix to prepend on the log "
+              u"line before the JSON text to locate the appropriate line in the logs.");
 }
 
 
@@ -77,30 +69,39 @@ void ts::PagerArgs::defineArgs(Args& args) const
 // Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-bool ts::PagerArgs::loadArgs(DuckContext& duck, Args& args)
+bool ts::JSONArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    if (page_by_default) {
-        use_pager = !args.present(u"no-pager");
-    }
-    else {
-        use_pager = args.present(u"pager");
-    }
+    json_line = args.present(u"json-line");
+    json = json_line || args.present(u"json");
+    args.getValue(json_prefix, u"json-line");
     return true;
 }
 
 
 //----------------------------------------------------------------------------
-// Return the output device for display.
+// Issue a JSON report according to options.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::PagerArgs::output(Report& report)
+void ts::JSONArgs::report(const json::Object& root, std::ostream& stm, Report& rep) const
 {
-    if (use_pager && _pager.canPage() && (_pager.isOpen() || _pager.open(true, 0, report))) {
-        // Paging is in use.
-        return _pager;
+    // An output text formatter for JSON output.
+    TextFormatter text(rep);
+
+    if (json_line) {
+        // Generate one line.
+        text.setString();
+        text.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
+        root.print(text);
+        UString prefix(json_prefix);
+        if (!prefix.empty()) {
+            prefix.append(SPACE);
+        }
+        rep.info(prefix + text.toString());
     }
-    else {
-        // Cannot page, use standard output.
-        return std::cout;
+    else if (json) {
+        // Output to stream.
+        text.setStream(stm);
+        root.print(text);
+        text << ts::endl;
     }
 }

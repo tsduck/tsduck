@@ -219,7 +219,7 @@ bool ts::AnalyzePlugin::produceReport()
         _analyzer.setBitrateHint(tsp->bitrate());
 
         // Produce the report
-        _analyzer.report(*_output, _analyzer_options);
+        _analyzer.report(*_output, _analyzer_options, *tsp);
         closeOutput();
         return true;
     }

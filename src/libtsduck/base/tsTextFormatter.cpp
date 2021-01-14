@@ -43,6 +43,8 @@ ts::TextFormatter::TextFormatter(Report& report) :
     _out(&_outFile), // _out is never null, points by default to a closed file (discard output)
     _margin(0),
     _indent(2),
+    _eolMode(EndOfLineMode::NATIVE),
+    _formatting(true),
     _curMargin(_margin),
     _tabSize(8),
     _column(0),
@@ -194,9 +196,10 @@ bool ts::TextFormatter::writeStreamBuffer(const void* addr, size_t size)
     for (const char* p = static_cast<const char*>(addr); p < last; ++p) {
         if (*p == '\t') {
             // Tabulations are expanded as spaces.
-            while (++_column % _tabSize != 0) {
+            // Without formatting, a tabulation is just one space.
+            do {
                 *_out << ' ';
-            }
+            } while (++_column % _tabSize != 0 && _formatting);
         }
         else if (*p == '\r' || *p == '\n') {
             // CR and LF indifferently move back to begining of current/next line.
@@ -215,25 +218,88 @@ bool ts::TextFormatter::writeStreamBuffer(const void* addr, size_t size)
 
 
 //----------------------------------------------------------------------------
+// Set the end-of-line mode.
+//----------------------------------------------------------------------------
+
+ts::TextFormatter& ts::TextFormatter::setEndOfLineMode(EndOfLineMode mode)
+{
+    if (mode != _eolMode) {
+        // Flush to apply previous format to pending output.
+        flush();
+        // Then switch format.
+        _eolMode = mode;
+        _formatting = _eolMode != EndOfLineMode::SPACING && _eolMode != EndOfLineMode::NONE;
+    }
+    return *this;
+}
+
+
+//----------------------------------------------------------------------------
+// Insert an end-of-line, according to the current end-of-line mode.
+//----------------------------------------------------------------------------
+
+ts::TextFormatter& ts::TextFormatter::endl()
+{
+    // Flush pending data to _out.
+    flush();
+
+    // Different types of end-of-line.
+    switch (_eolMode) {
+        case EndOfLineMode::NATIVE:
+            *_out << std::endl;
+            _column = 0;
+            _afterSpace = false;
+            break;
+        case EndOfLineMode::CR:
+            *_out << CARRIAGE_RETURN;
+            _column = 0;
+            _afterSpace = false;
+            break;
+        case EndOfLineMode::LF:
+            *_out << LINE_FEED;
+            _column = 0;
+            _afterSpace = false;
+            break;
+        case EndOfLineMode::CRLF:
+            *_out << CARRIAGE_RETURN << LINE_FEED;
+            _column = 0;
+            _afterSpace = false;
+            break;
+        case EndOfLineMode::SPACING:
+            *_out << SPACE;
+            _column++;
+            _afterSpace = false;
+            break;
+        case EndOfLineMode::NONE:
+        default:
+            break;
+    }
+
+    return *this;
+}
+
+//----------------------------------------------------------------------------
 // Insert all necessary new-lines and spaces to move to the current margin.
 //----------------------------------------------------------------------------
 
 ts::TextFormatter& ts::TextFormatter::margin()
 {
-    // Flush pending output.
-    flush();
+    // Do nothing if no line breaks are produced (there is no margin).
+    if (_formatting) {
 
-    // New line if we are farther than the margin.
-    // Also new line when we are no longer in the margin ("after space")
-    // even if we do not exceed the margin size.
-    if (_column > _curMargin || _afterSpace) {
-        *_out << std::endl;
-        _column = 0;
+        // Flush pending data to _out.
+        flush();
+
+        // New line if we are farther than the margin. Also new line when we are no longer
+        // in the margin ("after space") even if we do not exceed the margin size.
+        if (_column > _curMargin || _afterSpace) {
+            endl();
+        }
+
+        // Move to the margin.
+        *_out << std::string(_curMargin - _column, ' ');
+        _column = _curMargin;
     }
-
-    *_out << std::string(_curMargin - _column, ' ');
-    _column = _curMargin;
-    _afterSpace = false;
     return *this;
 }
 
@@ -244,18 +310,21 @@ ts::TextFormatter& ts::TextFormatter::margin()
 
 ts::TextFormatter& ts::TextFormatter::column(size_t col)
 {
-    // Flush pending output.
-    flush();
+    // Do nothing if no line breaks are produced (there is no column).
+    if (_formatting) {
 
-    // New line if we are farther than the target col.
-    if (_column > col) {
-        *_out << std::endl;
-        _column = 0;
-        _afterSpace = false;
+        // Flush pending output to get valid _column and _afterSpace.
+        flush();
+
+        // New line if we are farther than the target col.
+        if (_column > col) {
+            endl();
+        }
+
+        // Move to the specified column.
+        *_out << std::string(col - _column, ' ');
+        _column = col;
     }
-
-    *_out << std::string(col - _column, ' ');
-    _column = col;
     return *this;
 }
 
@@ -266,14 +335,12 @@ ts::TextFormatter& ts::TextFormatter::column(size_t col)
 
 ts::TextFormatter& ts::TextFormatter::spaces(size_t count)
 {
-    // Flush pending output.
     flush();
-
-    // Space after the buffer content.
     *_out << std::string(count, ' ');
     _column += count;
     return *this;
 }
+
 
 //----------------------------------------------------------------------------
 // I/O manipulators.
