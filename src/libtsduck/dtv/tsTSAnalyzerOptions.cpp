@@ -45,8 +45,8 @@ ts::TSAnalyzerOptions::TSAnalyzerOptions() :
     table_analysis(false),
     error_analysis(false),
     normalized(false),
-    json(false),
     deterministic(false),
+    json(),
     service_list(false),
     pid_list(false),
     global_pid_list(false),
@@ -98,10 +98,8 @@ void ts::TSAnalyzerOptions::defineArgs(Args &args) const
     args.option(u"error-analysis");
     args.help(u"error-analysis", u"Report analysis about detected errors.");
 
-    args.option(u"json");
-    args.help(u"json",
-              u"Complete report about the transport stream, the services and the "
-              u"PID's in JSON format (useful for automatic analysis).");
+    json.setHelp(u"Complete report about the transport stream, the services and the PID's in JSON format (useful for automatic analysis).");
+    json.defineArgs(args);
 
     args.option(u"normalized");
     args.help(u"normalized",
@@ -193,7 +191,6 @@ bool ts::TSAnalyzerOptions::loadArgs(DuckContext &duck, Args &args)
     table_analysis = args.present(u"table-analysis");
     error_analysis = args.present(u"error-analysis");
     normalized = args.present(u"normalized");
-    json = args.present(u"json");
     deterministic = args.present(u"deterministic");
     service_list = args.present(u"service-list");
     pid_list = args.present(u"pid-list");
@@ -201,11 +198,13 @@ bool ts::TSAnalyzerOptions::loadArgs(DuckContext &duck, Args &args)
     unreferenced_pid_list = args.present(u"unreferenced-pid-list");
     pes_pid_list = args.present(u"pes-pid-list");
     service_pid_list = args.present(u"service-pid-list");
-    service_id = args.intValue<uint16_t>(u"service-pid-list");
-    prefix = args.value(u"prefix");
-    title = args.value(u"title");
-    suspect_min_error_count = args.intValue<uint64_t>(u"suspect-min-error-count", 1);
-    suspect_max_consecutive = args.intValue<uint64_t>(u"suspect-max-consecutive", 1);
+    args.getIntValue(service_id, u"service-pid-list");
+    args.getValue(prefix, u"prefix");
+    args.getValue(title, u"title");
+    args.getIntValue(suspect_min_error_count, u"suspect-min-error-count", 1);
+    args.getIntValue(suspect_max_consecutive, u"suspect-max-consecutive", 1);
+
+    bool ok = json.loadArgs(duck, args);
 
     // Default: --ts-analysis --service-analysis --pid-analysis
     if (!ts_analysis &&
@@ -214,7 +213,7 @@ bool ts::TSAnalyzerOptions::loadArgs(DuckContext &duck, Args &args)
         !table_analysis &&
         !error_analysis &&
         !normalized &&
-        !json &&
+        !json.json &&
         !service_list &&
         !pid_list &&
         !global_pid_list &&
@@ -225,5 +224,5 @@ bool ts::TSAnalyzerOptions::loadArgs(DuckContext &duck, Args &args)
         ts_analysis = service_analysis = pid_analysis = table_analysis = true;
     }
 
-    return true;
+    return ok;
 }

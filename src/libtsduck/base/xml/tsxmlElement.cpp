@@ -774,14 +774,14 @@ void ts::xml::Element::print(TextFormatter& output, bool keepNodeOpen) const
         const bool previousSticky = sticky;
         sticky = node->stickyOutput();
         if (!previousSticky && !sticky) {
-            output << std::endl << ts::margin;
+            output << ts::endl << ts::margin;
         }
         node->print(output, false);
     }
 
     // Close the element if required.
     if (!sticky || keepNodeOpen) {
-        output << std::endl;
+        output << ts::endl;
     }
     if (!keepNodeOpen) {
         output << ts::unindent;
@@ -800,7 +800,7 @@ void ts::xml::Element::print(TextFormatter& output, bool keepNodeOpen) const
 void ts::xml::Element::printClose(TextFormatter& output, size_t levels) const
 {
     for (const Element* elem = this; levels-- > 0 && elem != nullptr; elem = dynamic_cast<const Element*>(elem->parent())) {
-        output << ts::unindent << ts::margin << "</" << elem->name() << ">" << std::endl;
+        output << ts::unindent << ts::margin << "</" << elem->name() << ">" << ts::endl;
     }
 }
 

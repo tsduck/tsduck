@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsArgsSupplierInterface.h"
+#include "tsJSONArgs.h"
 #include "tsDVBCharTable.h"
 
 namespace ts {
@@ -67,8 +68,8 @@ namespace ts {
 
         // Normalized output:
         bool normalized;             //!< Option -\-normalized
-        bool json;                   //!< Option -\-json
         bool deterministic;          //!< Option -\-deterministic
+        JSONArgs json;               //!< Options -\-json and -\-json-line
 
         // One-line report options:
         bool service_list;           //!< Option -\-service-list

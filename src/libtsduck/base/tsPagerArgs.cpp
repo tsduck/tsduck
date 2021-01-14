@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::PagerArgs::PagerArgs(bool pageByDefault, bool stdoutOnly ) :
+ts::PagerArgs::PagerArgs(bool pageByDefault, bool stdoutOnly) :
     page_by_default(pageByDefault),
     use_pager(pageByDefault),
     _pager(ts::OutputPager::DEFAULT_PAGER, stdoutOnly)

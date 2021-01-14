@@ -32,12 +32,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsMemory.h"
+#include "tsJSONArgs.h"
 #include "tsTSFileInputBuffered.h"
-#include "tsBinaryTable.h"
-#include "tsSection.h"
-#include "tsPMT.h"
-#include "tsStreamIdentifierDescriptor.h"
 #include "tsTextFormatter.h"
 #include "tsjsonObject.h"
 #include "tsjsonString.h"
@@ -59,6 +57,7 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
+        ts::DuckContext    duck;
         ts::TSPacketFormat format;
         ts::UString        filename1;
         ts::UString        filename2;
@@ -69,18 +68,19 @@ namespace {
         bool               dump;
         uint32_t           dump_flags;
         bool               normalized;
-        bool               json;
         bool               quiet;
         bool               payload_only;
         bool               pcr_ignore;
         bool               pid_ignore;
         bool               cc_ignore;
         bool               continue_all;
+        ts::JSONArgs       json;
     };
 }
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Compare two transport stream files", u"[options] filename-1 filename-2"),
+    duck(this),
     format(ts::TSPacketFormat::AUTODETECT),
     filename1(),
     filename2(),
@@ -91,13 +91,13 @@ Options::Options(int argc, char *argv[]) :
     dump(false),
     dump_flags(0),
     normalized(false),
-    json(false),
     quiet(false),
     payload_only(false),
     pcr_ignore(false),
     pid_ignore(false),
     cc_ignore(false),
-    continue_all(false)
+    continue_all(false),
+    json(true)
 {
     option(u"", 0, STRING, 2, 2);
     help(u"", u"MPEG capture files to be compared.");
@@ -127,9 +127,6 @@ Options::Options(int argc, char *argv[]) :
          u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
          u"Using this option forces a specific format. "
          u"If a specific format is specified, the two input files must have the same format.");
-
-    option(u"json", 'j');
-    help(u"json", u"Report in JSON output format (useful for automatic analysis).");
 
     option(u"normalized", 'n');
     help(u"normalized", u"Report in a normalized output format (useful for automatic analysis).");
@@ -167,6 +164,8 @@ Options::Options(int argc, char *argv[]) :
          u"different and the first file is read ahead. The default is zero, which "
          u"means that two packets must be strictly identical to declare them equal.");
 
+    json.defineArgs(*this);
+
     analyze(argc, argv);
 
     getValue(filename1, u"", u"", 0);
@@ -184,13 +183,14 @@ Options::Options(int argc, char *argv[]) :
     continue_all = present(u"continue");
     quiet = present(u"quiet");
     normalized = !quiet && present(u"normalized");
-    json = !quiet && present(u"json");
     dump = !quiet && present(u"dump");
 
-    if (json && normalized) {
+    if (!quiet) {
+        json.loadArgs(duck, *this);
+    }
+    if (json.json && normalized) {
         error(u"options --json and --normalized are mutually exclusive");
     }
-
     if (quiet) {
         setMaxSeverity(ts::Severity::Info);
     }
@@ -338,7 +338,7 @@ int MainCode(int argc, char *argv[])
     ts::json::Object root;
 
     // Display headers
-    if (opt.json) {
+    if (opt.json.json) {
         ts::json::Value& jfiles(root.query(u"files", true, ts::json::TypeArray));
         jfiles.set(ts::AbsoluteFilePath(file1.getFileName()));
         jfiles.set(ts::AbsoluteFilePath(file2.getFileName()));
@@ -392,7 +392,7 @@ int MainCode(int argc, char *argv[])
             }
             if (read1 != 0) {
                 // File 2 is truncated
-                if (opt.json) {
+                if (opt.json.json) {
                     ts::json::Value& jv(root.query(u"events[]", true));
                     jv.add(u"type", u"truncated");
                     jv.add(u"packet", file2.readPacketsCount());
@@ -409,7 +409,7 @@ int MainCode(int argc, char *argv[])
             }
             if (read2 != 0) {
                 // File 1 is truncated
-                if (opt.json) {
+                if (opt.json.json) {
                     ts::json::Value& jv(root.query(u"events[]", true));
                     jv.add(u"type", u"truncated");
                     jv.add(u"packet", file1.readPacketsCount());
@@ -438,7 +438,7 @@ int MainCode(int argc, char *argv[])
 
         // Report resynchronization after missing packets
         if (subset_skipped > 0) {
-            if (opt.json) {
+            if (opt.json.json) {
                 ts::json::Value& jv(root.query(u"events[]", true));
                 jv.add(u"type", u"skipped");
                 jv.add(u"packet", file1.readPacketsCount() - 1 - subset_skipped);
@@ -462,7 +462,7 @@ int MainCode(int argc, char *argv[])
         // Report a difference
         if (!comp.equal) {
             diff_count++;
-            if (opt.json) {
+            if (opt.json.json) {
                 ts::json::Value& jv(root.query(u"events[]", true));
                 jv.add(u"type", u"difference");
                 jv.add(u"packet", file1.readPacketsCount() - 1);
@@ -531,7 +531,7 @@ int MainCode(int argc, char *argv[])
     }
 
     // Final report
-    if (opt.json) {
+    if (opt.json.json) {
         ts::json::Value& jv(root.query(u"summary", true));
         jv.add(u"packets", file1.readPacketsCount());
         jv.add(u"differences", diff_count);
@@ -556,11 +556,8 @@ int MainCode(int argc, char *argv[])
     }
 
     // JSON output if required.
-    if (opt.json) {
-        ts::TextFormatter text(opt);
-        text.setStream(std::cout);
-        root.print(text);
-        text << std::endl;
+    if (opt.json.json) {
+        opt.json.report(root, std::cout, opt);
     }
 
     // End of processing, close file

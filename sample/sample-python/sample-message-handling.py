@@ -22,7 +22,7 @@ class Logger(ts.AbstractAsyncReport):
 
 
 # Create an asynchronous report to log multi-threaded messages.
-# In this example, this is a user-defined Java class which collects messages.
+# In this example, this is a user-defined Python class which collects messages.
 rep = Logger(severity = ts.Report.Verbose)
 rep.info("TSDuck version: %s" % ts.__version__)
 

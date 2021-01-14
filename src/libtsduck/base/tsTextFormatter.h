@@ -89,6 +89,33 @@ namespace ts {
         TextFormatter& setIndentSize(size_t indent) { _indent = indent; return *this; }
 
         //!
+        //! End-of-line mode.
+        //! @see setEndOfLineMode()
+        //! @see I/O manipulator ts::endl()
+        //!
+        enum class EndOfLineMode {
+            NATIVE,   //!< Native end of line (std::endl). This is the default.
+            CR,       //!< One carriage-return character.
+            LF,       //!< One line-feed character.
+            CRLF,     //!< One carriage-return and one line-feed character.
+            SPACING,  //!< One space character.
+            NONE,     //!< Nothing as end of line.
+        };
+
+        //!
+        //! Get the end-of-line mode.
+        //! @return The current end-of-line mode.
+        //!
+        EndOfLineMode endOfLineMode() const { return _eolMode; }
+
+        //!
+        //! Set the end-of-line mode.
+        //! @param [in] mode The new end-of-line mode.
+        //! @return A reference to this object.
+        //!
+        TextFormatter& setEndOfLineMode(EndOfLineMode mode);
+
+        //!
         //! Set output to an open text stream.
         //! @param [in,out] strm The output text stream.
         //! The referenced stream object must remain valid as long as this object.
@@ -158,6 +185,13 @@ namespace ts {
         TextFormatter& column(size_t col);
 
         //!
+        //! Insert an end-of-line, according to the current end-of-line mode.
+        //! @return A reference to this object.
+        //! @see I/O manipulator ts::endl()
+        //!
+        TextFormatter& endl();
+
+        //!
         //! Output spaces on the stream.
         //! @param [in] count Number of spaces to print.
         //! @return A reference to this object.
@@ -198,11 +232,24 @@ namespace ts {
         std::ostream*      _out;         // Address of current output stream.
         size_t             _margin;      // Margin size for outer-most element.
         size_t             _indent;      // Indent size for inner elements.
+        EndOfLineMode      _eolMode;     // Current end-of-line mode.
+        bool               _formatting;  // Apply margin and column formatting.
         size_t             _curMargin;   // Current margin size.
         size_t             _tabSize;     // Tabulation size in characters.
         size_t             _column;      // Current column in line, starting at 0.
         bool               _afterSpace;  // After initial spaces in line.
     };
+
+    //!
+    //! I/O manipulator for TextFormatter: insert an end-of-line, according to the current end-of-line mode.
+    //! @param [in,out] os Output stream.
+    //! @return A reference to @a os.
+    //! @see TextFormatter::margin()
+    //!
+    TSDUCKDLL inline std::ostream& endl(std::ostream& os)
+    {
+        return IOManipulator(os, &TextFormatter::endl);
+    }
 
     //!
     //! I/O manipulator for TextFormatter: move to the current margin.

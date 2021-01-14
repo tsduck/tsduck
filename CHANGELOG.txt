@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.25-2164
+VERSION 3.25-2173
 
 [NEW] New commands and plugins:
 
@@ -29,6 +29,8 @@ VERSION 3.25-2164
       "analyze", "psi", "tables".
     - Options --fixed-proportion, --input-bitrate, --packet-window, --pcr-based,
       --reference-pcr-pid, --target-bitrate, --time-window in plugin "reduce".
+    - Option --json-line in "tsanalyze", "tscmp", "tsdektec" and plugin
+      "analyze".
 
 -------------------------------------------------------------------------------
 
