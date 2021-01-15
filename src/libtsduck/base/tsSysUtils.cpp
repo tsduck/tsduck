@@ -786,6 +786,20 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
     // Finally try all directories from $PATH.
     GetEnvironmentPathAppend(dirList, TS_COMMAND_PATH);
 
+    // Add default system locations of the configuration files. This is useful when the
+    // application is not a TSDuck one but a third-party application which uses the
+    // TSDuck library. In that case, relative paths from the executables are useless.
+#if defined(TS_WINDOWS)
+    const UString tsroot(GetEnvironment(u"TSDUCK"));
+    if (!tsroot.empty()) {
+        dirList.push_back(tsroot + u"\\bin");
+    }
+#elif defined(TS_MAC)
+    dirList.push_back(u"/usr/local/share/tsduck");
+#elif defined(TS_UNIX)
+    dirList.push_back(u"/usr/share/tsduck");
+#endif
+
     // Search the file.
     for (UStringList::const_iterator it = dirList.begin(); it != dirList.end(); ++it) {
         const UString path(*it + PathSeparator + fileName);
