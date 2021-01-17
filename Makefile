@@ -71,9 +71,9 @@ test: default
 .PHONY: test-suite
 test-suite: default
 	@if [[ -d ../tsduck-test/.git ]]; then \
-	   cd ../tsduck-test; git pull; PATH="$(BINDIR):$$PATH" ./run-all-tests.sh; \
+	   cd ../tsduck-test; git pull; ./run-all-tests.sh --bin "$(BINDIR)"; \
 	 elif [[ -x ../tsduck-test/run-all-tests.sh ]]; then \
-	   PATH="$(BINDIR):$$PATH" ../tsduck-test/run-all-tests.sh; \
+	   ../tsduck-test/run-all-tests.sh --bin "$(BINDIR)"; \
 	 else \
 	   echo >&2 "No test repository in ../tsduck-test"; \
 	 fi
