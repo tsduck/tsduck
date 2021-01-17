@@ -116,6 +116,13 @@ namespace ts {
         TextFormatter& setEndOfLineMode(EndOfLineMode mode);
 
         //!
+        //! Check if formatting (margin, indentation) is in effect.
+        //! When end-of-line mode is SPACING or NONE, formatting is disabled, margin and indentation are ignored.
+        //! @return True if formatting is in effect.
+        //!
+        bool formatting() const { return _formatting; }
+
+        //!
         //! Set output to an open text stream.
         //! @param [in,out] strm The output text stream.
         //! The referenced stream object must remain valid as long as this object.

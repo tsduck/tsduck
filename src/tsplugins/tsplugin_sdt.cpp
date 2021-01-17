@@ -52,14 +52,15 @@ namespace ts {
     public:
         // Implementation of plugin API
         SDTPlugin(TSP*);
-        virtual bool start() override;
+        virtual bool getOptions() override;
 
     private:
-        bool                  _use_other;         // Modify an SDT Other, not the SDT Actual.
-        uint16_t              _other_ts_id;       // TS id of the SDT Other to modify.
-        Service               _service;           // New or modified service
-        std::vector<uint16_t> _remove_serv;       // Set of services to remove
-        bool                  _cleanup_priv_desc; // Remove private desc without preceding PDS desc
+        // Command line options:
+        bool                  _use_other;          // Modify an SDT Other, not the SDT Actual.
+        uint16_t              _other_ts_id;        // TS id of the SDT Other to modify.
+        Service               _service;            // New or modified service properties.
+        std::vector<uint16_t> _remove_serv;        // Set of services to remove
+        bool                  _cleanup_priv_desc;  // Remove private desc without preceding PDS desc
 
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
@@ -149,51 +150,66 @@ ts::SDTPlugin::SDTPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get command line options.
 //----------------------------------------------------------------------------
 
-bool ts::SDTPlugin::start()
+bool ts::SDTPlugin::getOptions()
 {
-    // Get option values
+    _service.clear();
+
+    // Global properties.
     duck.loadArgs(*this);
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
     _use_other = present(u"other");
-    _other_ts_id = intValue<uint16_t>(u"other");
+    getIntValue(_other_ts_id, u"other");
     getIntValues(_remove_serv, u"remove-service");
-    _service.clear();
-    if (present(u"eit-pf")) {
-        _service.setEITpfPresent(intValue<int>(u"eit-pf") != 0);
-    }
-    if (present(u"eit-schedule")) {
-        _service.setEITsPresent(intValue<int>(u"eit-schedule") != 0);
-    }
-    if (present(u"free-ca-mode")) {
-        _service.setCAControlled(intValue<int>(u"free-ca-mode") != 0);
-    }
-    if (present(u"name")) {
-        _service.setName(value(u"name"));
-    }
-    if (present(u"original-network-id")) {
-        _service.setONId(intValue<uint16_t>(u"original-network-id"));
-    }
-    if (present(u"provider")) {
-        _service.setProvider(value(u"provider"));
-    }
-    if (present(u"running-status")) {
-        _service.setRunningStatus (intValue<uint8_t>(u"running-status"));
-    }
     if (present(u"service-id")) {
         _service.setId(intValue<uint16_t>(u"service-id"));
     }
     if (present(u"ts-id")) {
         _service.setTSId(intValue<uint16_t>(u"ts-id"));
     }
-    if (present(u"type")) {
-        _service.setTypeDVB(intValue<uint8_t>(u"type"));
+    if (present(u"original-network-id")) {
+        _service.setONId(intValue<uint16_t>(u"original-network-id"));
     }
 
-    // Start superclass.
-    return AbstractTablePlugin::start();
+    // Properties of the service to add or modify.
+    bool use_service_properties = false;
+    if (present(u"eit-pf")) {
+        _service.setEITpfPresent(intValue<int>(u"eit-pf") != 0);
+        use_service_properties = true;
+    }
+    if (present(u"eit-schedule")) {
+        _service.setEITsPresent(intValue<int>(u"eit-schedule") != 0);
+        use_service_properties = true;
+    }
+    if (present(u"free-ca-mode")) {
+        _service.setCAControlled(intValue<int>(u"free-ca-mode") != 0);
+        use_service_properties = true;
+    }
+    if (present(u"name")) {
+        _service.setName(value(u"name"));
+        use_service_properties = true;
+    }
+    if (present(u"provider")) {
+        _service.setProvider(value(u"provider"));
+        use_service_properties = true;
+    }
+    if (present(u"running-status")) {
+        _service.setRunningStatus (intValue<uint8_t>(u"running-status"));
+        use_service_properties = true;
+    }
+    if (present(u"type")) {
+        _service.setTypeDVB(intValue<uint8_t>(u"type"));
+        use_service_properties = true;
+    }
+    if (use_service_properties && !_service.hasId()) {
+        tsp->error(u"specify --service-id when changing service properties");
+        return false;
+    }
+
+    // Get options for superclass.
+    return AbstractTablePlugin::getOptions();
 }
 
 
@@ -222,9 +238,8 @@ void ts::SDTPlugin::createNewTable(BinaryTable& table)
 void ts::SDTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert)
 {
     // If not an SDT (typically a BAT) or not the SDT we are looking for, reinsert without modification.
-    is_target =
-        (!_use_other && table.tableId() == TID_SDT_ACT) ||
-        (_use_other && table.tableId() == TID_SDT_OTH && table.tableIdExtension() == _other_ts_id);
+    is_target = (!_use_other && table.tableId() == TID_SDT_ACT) ||
+                (_use_other && table.tableId() == TID_SDT_OTH && table.tableIdExtension() == _other_ts_id);
     if (!is_target) {
         return;
     }

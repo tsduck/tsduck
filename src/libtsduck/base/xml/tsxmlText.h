@@ -49,16 +49,20 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @param [in] line Line number in input document.
             //! @param [in] cdata The text is a CDATA node.
+            //! @param [in] trimmable The text can be trimmed (space reduction)
+            //! when serialized on a non-formatting output (e.g. one-liner XML).
             //!
-            explicit Text(Report& report = NULLREP, size_t line = 0, bool cdata = false);
+            explicit Text(Report& report = NULLREP, size_t line = 0, bool cdata = false, bool trimmable = false);
 
             //!
             //! Constructor.
             //! @param [in,out] parent The parent into which the element is added.
             //! @param [in] text Content of the text.
             //! @param [in] cdata The text is a CDATA node.
+            //! @param [in] trimmable The text can be trimmed (space reduction)
+            //! when serialized on a non-formatting output (e.g. one-liner XML).
             //!
-            Text(Element* parent, const UString& text, bool cdata = false);
+            Text(Element* parent, const UString& text, bool cdata = false, bool trimmable = false);
 
             //!
             //! Copy constructor.
@@ -72,6 +76,19 @@ namespace ts {
             //!
             bool isCData() const { return _isCData; }
 
+            //!
+            //! Check if the text is trimmable (space reduction).
+            //! @return True if the text is trimmable.
+            //!
+            bool isTrimmable() const { return _trimmable; }
+
+            //!
+            //! Specify if the text is trimmable (space reduction).
+            //! @param [in] trimmable The text can be trimmed (space reduction)
+            //! when serialized on a non-formatting output (e.g. one-liner XML).
+            //!
+            void setTrimmable(bool trimmable)  { _trimmable = trimmable; }
+
             // Inherited from xml::Node.
             virtual Node* clone() const override;
             virtual UString typeName() const override;
@@ -84,6 +101,7 @@ namespace ts {
 
         private:
             bool _isCData;
+            bool _trimmable;
         };
     }
 }

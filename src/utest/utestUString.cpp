@@ -440,6 +440,11 @@ void UStringTest::testTrim()
     TSUNIT_EQUAL(u"abc", s.toTrimmed(true, false));
     TSUNIT_EQUAL(u"abc", s.toTrimmed(false, true));
     TSUNIT_EQUAL(u"abc", s.toTrimmed(false, false));
+
+    s = {ts::SPACE, u'a', ts::CARRIAGE_RETURN, u' ', ts::LINE_FEED, ts::HORIZONTAL_TABULATION, u'b', ts::VERTICAL_TABULATION, u' '};
+    const ts::UString s1 = {u'a', ts::CARRIAGE_RETURN, u' ', ts::LINE_FEED, ts::HORIZONTAL_TABULATION, u'b'};
+    TSUNIT_EQUAL(s1, s.toTrimmed());
+    TSUNIT_EQUAL(u"a b", s.toTrimmed(true, true, true));
 }
 
 void UStringTest::testLetterCase()

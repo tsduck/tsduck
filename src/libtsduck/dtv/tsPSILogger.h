@@ -36,6 +36,8 @@
 #include "tsArgsSupplierInterface.h"
 #include "tsTablesDisplay.h"
 #include "tsSectionDemux.h"
+#include "tsTextFormatter.h"
+#include "tsxmlDocument.h"
 
 namespace ts {
     //!
@@ -107,17 +109,27 @@ namespace ts {
 
     private:
         // Command line options:
-        bool    _all_versions;  // Display all versions of PSI tables.
-        bool    _clear;         // Clear stream, do not wait for a CAT.
-        bool    _cat_only;      // Only CAT, ignore other PSI.
-        bool    _dump;          // Dump all sections.
-        UString _output;        // Destination name file.
-        bool    _use_current;   // Use PSI tables with "current" flag.
-        bool    _use_next;      // Use PSI tables with "next" flag.
+        bool        _all_versions;      // Display all versions of PSI tables.
+        bool        _clear;             // Clear stream, do not wait for a CAT.
+        bool        _cat_only;          // Only CAT, ignore other PSI.
+        bool        _dump;              // Dump all sections.
+        bool        _use_text;          // Produce formatted human-readable tables.
+        bool        _use_xml;           // Produce XML tables.
+        bool        _log_xml_line;      // Log tables as one XML line in the system message log.
+        bool        _use_current;       // Use PSI tables with "current" flag.
+        bool        _use_next;          // Use PSI tables with "next" flag.
+        UString     _text_destination;  // Text output file name.
+        UString     _xml_destination;   // XML output file name.
+        UString     _log_xml_prefix;    // Prefix before XML log line.
+        xml::Tweaks _xml_tweaks;        // XML tweak options.
 
         // Working data:
         TablesDisplay&   _display;
         DuckContext&     _duck;
+        Report&          _report;
+        TextFormatter    _xml_out;       // XML output formatter.
+        xml::Document    _xml_doc;       // XML root document.
+        bool             _xml_open;      // The XML root element is open.
         bool             _abort;
         bool             _pat_ok;        // Got a PAT
         bool             _cat_ok;        // Got a CAT or not interested in CAT
@@ -129,6 +141,9 @@ namespace ts {
         PacketCounter    _scrambled_packets_cnt;
         SectionDemux     _demux;         // Demux reporting PSI tables.
         Standards        _standards;     // List of current standards in the PSI logger.
+
+        // Displays a binary table.
+        void displayTable(const BinaryTable& table);
 
         // Implementations of TableHandlerInterface and SectionHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;

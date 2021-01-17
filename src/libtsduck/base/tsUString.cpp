@@ -600,7 +600,7 @@ ts::UString ts::UString::toReversed() const
 // Trim leading & trailing spaces in the string
 //----------------------------------------------------------------------------
 
-void ts::UString::trim(bool leading, bool trailing)
+void ts::UString::trim(bool leading, bool trailing, bool sequences)
 {
     if (trailing) {
         size_type index = length();
@@ -617,12 +617,34 @@ void ts::UString::trim(bool leading, bool trailing)
         }
         erase(0, index);
     }
+    if (sequences) {
+        bool in_space = false;
+        size_type increment = 0;
+        for (size_type index = 0; index < length(); index += increment) {
+            if (!IsSpace((*this)[index])) {
+                // Out of space sequence
+                in_space = false;
+                increment = 1;
+            }
+            else if (in_space) {
+                // Middle of space sequence, erase.
+                erase(index, 1);
+                increment = 0;
+            }
+            else {
+                // Start of space sequence, replace with a plain space.
+                (*this)[index] = SPACE;
+                in_space = true;
+                increment = 1;
+            }
+        }
+    }
 }
 
-ts::UString ts::UString::toTrimmed(bool leading, bool trailing) const
+ts::UString ts::UString::toTrimmed(bool leading, bool trailing, bool sequences) const
 {
     UString result(*this);
-    result.trim(leading, trailing);
+    result.trim(leading, trailing, sequences);
     return result;
 }
 
