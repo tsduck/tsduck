@@ -39,28 +39,20 @@ import java.nio.file.Path;
  */
 class NativeLibrary {
 
-    /**
-     * Name of the native library.
-     */
+    // Operating system features.
+    private static final String pathSeparator = System.getProperty("path.separator");
+    private static final String osName = System.getProperty("os.name").toLowerCase().replaceAll(" ", "");
+    private static final boolean isWindows = osName.startsWith("win") || osName.startsWith("nt");
+    private static final boolean isMac = osName.startsWith("mac");
+
+    // TSDuck native library.
     private static final String libName = "tsduck";
+    private static boolean loaded = false;
 
     /**
      * Native method inside the TSDuck library which initializes what needs to be initialized.
      */
     private static native void initialize();
-
-    /**
-     * Boolean to be set once the native library is loaded to avoid loading it twice.
-     */
-    private static boolean loaded = false;
-
-    /**
-     * Get the operating system name.
-     * @return The operating system name, lowercase, without space.
-     */
-    private static String osName() {
-        return System.getProperty("os.name").toLowerCase().replaceAll(" ", "");
-    }
 
     /**
      * Search a library in a search path.
@@ -70,15 +62,28 @@ class NativeLibrary {
      */
     private static String searchLibraryInPath(String search, String lib) {
         if (search != null) {
-            for (String dir : search.split(":")) {
+            for (String dir : search.split(pathSeparator)) {
                 if (!dir.isEmpty()) {
-                    Path path = FileSystems.getDefault().getPath(dir, "lib" + lib + ".so");
-                    if (Files.exists(path)) {
-                        return path.toString();
+                    if (isWindows) {
+                        // DLL naming on Windows.
+                        Path path = FileSystems.getDefault().getPath(dir, lib + ".dll");
+                        if (Files.exists(path)) {
+                            return path.toString();
+                        }
                     }
-                    path = FileSystems.getDefault().getPath(dir, "lib" + lib + ".dylib");
-                    if (Files.exists(path)) {
-                        return path.toString();
+                    else {
+                        // Try shared object naming on all Unix.
+                        Path path = FileSystems.getDefault().getPath(dir, "lib" + lib + ".so");
+                        if (Files.exists(path)) {
+                            return path.toString();
+                        }
+                        if (isMac) {
+                            // Dynamic library naming on macOS.
+                            path = FileSystems.getDefault().getPath(dir, "lib" + lib + ".dylib");
+                            if (Files.exists(path)) {
+                                return path.toString();
+                            }
+                        }
                     }
                 }
             }
@@ -93,14 +98,11 @@ class NativeLibrary {
     public static synchronized void loadLibrary() {
         if (!loaded) {
             String path = null;
-            if (osName().startsWith("mac")) {
-                // On macOS with "system integrity protection", LD_LIBRARY_PATH is not
-                // passed to Java processes and the java.libray.path does not contain
-                // the 'lib' directory. We must do the search explicitly.
-                path = searchLibraryInPath(System.getenv("TSPLUGINS_PATH"), libName);
-                if (path == null) {
-                    path = searchLibraryInPath("/usr/local/lib:/usr/lib", libName);
-                }
+            // Try in same directory as plugins (typically in a development environment).
+            path = searchLibraryInPath(System.getenv("TSPLUGINS_PATH"), libName);
+            // Try various typical Unix directories
+            if (path == null && !isWindows) {
+                path = searchLibraryInPath("/usr/local/lib:/usr/lib:/usr/lib64", libName);
             }
             // Load the native library by explicit file name or using system search rules.
             if (path != null) {

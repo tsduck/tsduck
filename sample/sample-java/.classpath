@@ -7,5 +7,6 @@
     </attributes>
   </classpathentry>
   <classpathentry kind="lib" path="/tsduck/bin" sourcepath="/tsduck/src"/>
+  <classpathentry kind="lib" path="/sample-java/org.json.jar"/>
   <classpathentry kind="output" path=""/>
 </classpath>
