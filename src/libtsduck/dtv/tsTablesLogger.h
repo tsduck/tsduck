@@ -156,6 +156,8 @@ namespace ts {
         bool                     _flush;             // Flush output file.
         bool                     _rewrite_xml;       // Rewrite a new XML file for each table.
         bool                     _rewrite_binary;    // Rewrite a new binary file for each table.
+        bool                     _log_xml_line;      // Log tables as one XML line in the system message log.
+        UString                  _log_xml_prefix;    // Prefix before XML log line.
         UString                  _udp_local;         // Name of outgoing local address (empty if unspecified).
         int                      _udp_ttl;           // Time-to-live socket option.
         bool                     _udp_raw;           // UDP messages contain raw sections, not structured messages.
@@ -205,6 +207,12 @@ namespace ts {
         bool createXML(const UString& name);
         void saveXML(const BinaryTable& table);
         void closeXML();
+
+        // Add a binary table into an XML document.
+        xml::Element* buildXML(xml::Document& doc, const BinaryTable& table);
+
+        // Log XML one-liners.
+        void logXML(const BinaryTable& table);
 
         // Send UDP table and section.
         void sendUDP(const BinaryTable& table);

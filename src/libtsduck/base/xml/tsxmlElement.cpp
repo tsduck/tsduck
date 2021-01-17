@@ -314,7 +314,12 @@ ts::xml::Text* ts::xml::Element::addHexaText(const void* data, size_t size, bool
     const UString hex(UString::Dump(data, size, UString::HEXA | UString::BPL, 2 * dep, 16));
 
     // Add the text node. Try to indent it in a nice way.
-    return addText(u"\n" + hex + UString(dep == 0 ? 0 : 2 * (dep - 1), u' '));
+    xml::Text* text = addText(u"\n" + hex + UString(dep == 0 ? 0 : 2 * (dep - 1), u' '));
+
+    // Despite the nice indentation, hexa text can be trimmed when necessary.
+    text->setTrimmable(true);
+
+    return text;
 }
 
 

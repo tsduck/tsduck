@@ -37,21 +37,24 @@ TSDUCK_SOURCE;
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::xml::Text::Text(Report& report, size_t line, bool cdata) :
+ts::xml::Text::Text(Report& report, size_t line, bool cdata, bool trimmable) :
     Node(report, line),
-    _isCData(cdata)
+    _isCData(cdata),
+    _trimmable(trimmable)
 {
 }
 
-ts::xml::Text::Text(Element* parent, const UString& text, bool cdata) :
+ts::xml::Text::Text(Element* parent, const UString& text, bool cdata, bool trimmable) :
     Node(parent, text),
-    _isCData(cdata)
+    _isCData(cdata),
+    _trimmable(trimmable)
 {
 }
 
 ts::xml::Text::Text(const Text& other) :
     Node(other),
-    _isCData(other._isCData)
+    _isCData(other._isCData),
+    _trimmable(other._trimmable)
 {
 }
 
@@ -81,10 +84,16 @@ void ts::xml::Text::print(TextFormatter& output, bool keepNodeOpen) const
         output << "<![CDATA[" << value() << "]]>";
     }
     else {
+        UString text(value());
+        // On non-formatting output (e.g. one-liner XML text), trim all spaces when allowed.
+        if (_trimmable && !output.formatting()) {
+            text.trim(true, true, true);
+        }
         // In text nodes, without strictly conformant XML, we escape 3 out of 5 XML characters: < > &
         // This is the required minimum to make the syntax correct.
         // The quotes (' ") are not escaped since this makes most XML text unreadable.
-        output << value().toHTML(tweaks().strictTextNodeFormatting ? u"<>&'\"" : u"<>&");
+        text.convertToHTML(tweaks().strictTextNodeFormatting ? u"<>&'\"" : u"<>&");
+        output << text;
     }
 }
 

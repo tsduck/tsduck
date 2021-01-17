@@ -648,16 +648,20 @@ namespace ts {
         //! Trim leading and / or trailing space characters.
         //! @param [in] leading If true (the default), remove all space characters at the beginning of the string.
         //! @param [in] trailing If true (the default), remove all space characters at the end of the string.
+        //! @param [in] sequences If true (disabled by default), replace all space characters sequences in the
+        //! middle of the string by one single space character.
         //!
-        void trim(bool leading = true, bool trailing = true);
+        void trim(bool leading = true, bool trailing = true, bool sequences = false);
 
         //!
         //! Return a copy of the string where leading and / or trailing spaces are trimmed.
         //! @param [in] leading If true (the default), remove all space characters at the beginning of the string.
         //! @param [in] trailing If true (the default), remove all space characters at the end of the string.
+        //! @param [in] sequences If true (disabled by default), replace all space characters sequences in the
+        //! middle of the string by one single space character.
         //! @return A copy of this object after trimming.
         //!
-        UString toTrimmed(bool leading = true, bool trailing = true) const;
+        UString toTrimmed(bool leading = true, bool trailing = true, bool sequences = false) const;
 
         //!
         //! Convert the string to lower-case.

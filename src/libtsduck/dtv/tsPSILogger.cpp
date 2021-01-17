@@ -30,6 +30,8 @@
 #include "tsPSILogger.h"
 #include "tsDuckContext.h"
 #include "tsBinaryTable.h"
+#include "tsxmlComment.h"
+#include "tsxmlElement.h"
 #include "tsTSPacket.h"
 #include "tsNames.h"
 #include "tsPAT.h"
@@ -50,11 +52,21 @@ ts::PSILogger::PSILogger(TablesDisplay& display) :
     _clear(false),
     _cat_only(false),
     _dump(false),
-    _output(),
+    _use_text(false),
+    _use_xml(false),
+    _log_xml_line(false),
     _use_current(true),
     _use_next(false),
+    _text_destination(),
+    _xml_destination(),
+    _log_xml_prefix(),
+    _xml_tweaks(),
     _display(display),
     _duck(_display.duck()),
+    _report(_duck.report()),
+    _xml_out(_report),
+    _xml_doc(_report),
+    _xml_open(false),
     _abort(false),
     _pat_ok(_cat_only),
     _cat_ok(_clear),
@@ -81,6 +93,9 @@ ts::PSILogger::~PSILogger()
 
 void ts::PSILogger::defineArgs(Args& args) const
 {
+    // Define XML options.
+    _xml_tweaks.defineArgs(args);
+
     args.option(u"all-versions", 'a');
     args.help(u"all-versions",
               u"Display all versions of PSI tables (need to read the complete "
@@ -108,8 +123,27 @@ void ts::PSILogger::defineArgs(Args& args) const
     args.help(u"include-next",
               u"Include PSI tables with \"next\" indicator. By default, they are excluded.");
 
+    args.option(u"log-xml-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
+    args.help(u"log-xml-line", u"'prefix'",
+              u"Log each table as one single XML line in the message logger instead of an output file. "
+              u"The optional string parameter specifies a prefix to prepend on the log "
+              u"line before the XML text to locate the appropriate line in the logs.");
+
     args.option(u"output-file", 'o', Args::STRING);
-    args.help(u"output-file", u"File name for text output.");
+    args.help(u"output-file", u"filename",
+              u"Save the tables in human-readable text format in the specified file. "
+              u"By default, when no output option is specified, text is produced on the standard output. "
+              u"If you need text formatting on the standard output in addition to other output such as XML, "
+              u"explicitly specify this option with \"-\" as output file name.");
+
+    args.option(u"text-output", 0, Args::STRING);
+    args.help(u"text-output", u"filename", u"A synonym for --output-file.");
+
+    args.option(u"xml-output", 'x',  Args::STRING);
+    args.help(u"xml-output", u"filename",
+              u"Save the tables in XML format in the specified file. To output the XML "
+              u"text on the standard output, explicitly specify this option with \"-\" "
+              u"as output file name.");
 }
 
 
@@ -119,14 +153,39 @@ void ts::PSILogger::defineArgs(Args& args) const
 
 bool ts::PSILogger::loadArgs(DuckContext& duck, Args& args)
 {
+    // Type of output, text is the default.
+    _use_xml = args.present(u"xml-output");
+    _log_xml_line = args.present(u"log-xml-line");
+    _use_text = args.present(u"output-file") || args.present(u"text-output") || (!_use_xml && !_log_xml_line);
+
+    // --output-file and --text-output are synonyms.
+    if (args.present(u"output-file") && args.present(u"text-output")) {
+        args.error(u"--output-file and --text-output are synonyms, do not use both");
+    }
+
+    // Output destinations.
+    args.getValue(_xml_destination, u"xml-output");
+    args.getValue(_text_destination, u"output-file", args.value(u"text-output").c_str());
+    args.getValue(_log_xml_prefix, u"log-xml-line");
+
+    // Accept "-" as a specification for standard output (common convention in UNIX world).
+    if (_text_destination == u"-") {
+        _text_destination.clear();
+    }
+    if (_xml_destination == u"-") {
+        _xml_destination.clear();
+    }
+
+    // Other options.
     _all_versions = args.present(u"all-versions");
     _cat_only = args.present(u"cat-only");
     _clear = args.present(u"clear");
     _dump = args.present(u"dump");
-    _output = args.value(u"output-file");
     _use_current = !args.present(u"exclude-current");
     _use_next = args.present(u"include-next");
-    return true;
+
+    // Load XML options.
+    return _xml_tweaks.loadArgs(duck, args);
 }
 
 
@@ -137,9 +196,33 @@ bool ts::PSILogger::loadArgs(DuckContext& duck, Args& args)
 bool ts::PSILogger::open()
 {
     // Open/create the destination
-    if (!_duck.setOutput(_output)) {
-        _abort = true;
-        return false;
+    if (_use_text) {
+        if (!_duck.setOutput(_text_destination)) {
+            _abort = true;
+            return false;
+        }
+        // Initial blank line
+        _duck.out() << std::endl;
+    }
+
+    // Set XML options in document.
+    _xml_doc.setTweaks(_xml_tweaks);
+
+    // Open/create the XML output.
+    if (_use_xml) {
+        _xml_out.close();
+        _xml_doc.clear();
+        if (_xml_destination.empty()) {
+            // Use standard output.
+            _xml_out.setStream(std::cout);
+        }
+        else if (!_xml_out.setFile(_xml_destination)) {
+            _abort = true;
+            return false;
+        }
+        // Initialize the XML document.
+        _xml_doc.initialize(u"tsduck");
+        _xml_open = false; // document header not set
     }
 
     // Specify the PID filters
@@ -160,13 +243,16 @@ bool ts::PSILogger::open()
     // Type of sections to get.
     _demux.setCurrentNext(_use_current, _use_next);
 
-    // Initial blank line
-    _duck.out() << std::endl;
     return true;
 }
 
 void ts::PSILogger::close()
 {
+    // Complete XML output.
+    if (_xml_open) {
+        _xml_doc.printClose(_xml_out);
+        _xml_open = false;
+    }
 }
 
 
@@ -195,7 +281,7 @@ void ts::PSILogger::feedPacket(const TSPacket& pkt)
     // Check if the list of standards has changed.
     const Standards new_standards = _duck.standards();
     if (new_standards != _standards) {
-        _duck.report().debug(u"standards are now %s", {StandardsNames(new_standards)});
+        _report.debug(u"standards are now %s", {StandardsNames(new_standards)});
         _standards = new_standards;
     }
 }
@@ -209,7 +295,6 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
 {
     assert(table.sectionCount() > 0);
 
-    std::ostream& strm(_duck.out());
     const TID tid = table.tableId();
     const PID pid = table.sourcePID();
 
@@ -219,7 +304,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             PAT pat(_duck, table);
             if (pid != PID_PAT) {
                 // A PAT is only expected on PID 0
-                strm << UString::Format(u"* Got unexpected PAT on PID %d (0x%X)", {pid, pid}) << std::endl;
+                _report.warning(u"got unexpected PAT on PID %d (0x%<X)", {pid});
             }
             else if (pat.isValid()) {
                 // Got the PAT.
@@ -237,16 +322,14 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 _demux.addPID(pat.nit_pid != PID_NULL ? pat.nit_pid : PID(PID_NIT));
                 _expected_pmt++;
             }
-            // Display the content of the PAT
-            _display.displayTable(table);
-            strm << std::endl;
+            displayTable(table);
             break;
         }
 
         case TID_CAT: {
             if (pid != PID_CAT) {
                 // A CAT is only expected on PID 1
-                strm << UString::Format(u"* Got unexpected CAT on PID %d (0x%X)", {pid, pid}) << std::endl;
+                _report.warning(u"got unexpected CAT on PID %d (0x%<X)", {pid});
             }
             else {
                 // Got the CAT.
@@ -256,9 +339,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                     _demux.removePID(pid);
                 }
             }
-            // Display the table
-            _display.displayTable(table);
-            strm << std::endl;
+            displayTable(table);
             break;
         }
 
@@ -269,16 +350,14 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 _demux.removePID(pid);
                 _received_pmt++;
             }
-            _display.displayTable(table);
-            strm << std::endl;
+            displayTable(table);
             break;
         }
 
         case TID_NIT_OTH: {
             // Ignore NIT for other networks if only one version required
             if (_all_versions) {
-                _display.displayTable(table);
-                strm << std::endl;
+                displayTable(table);
             }
             break;
         }
@@ -286,28 +365,25 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_TSDT: {
             if (pid != PID_TSDT) {
                 // A TSDT is only expected on PID 0x0002
-                strm << UString::Format(u"* Got unexpected TSDT on PID %d (0x%X)", {pid, pid}) << std::endl;
+                _report.warning(u"got unexpected TSDT on PID %d (0x%<X)", {pid});
             }
             else if (!_all_versions) {
                 _demux.removePID(pid);
             }
-            _display.displayTable(table);
-            strm << std::endl;
+            displayTable(table);
             break;
         }
 
         case TID_SDT_ACT: {
             if (pid != PID_SDT) {
                 // An SDT is only expected on PID 0x0011
-                strm << UString::Format(u"* Got unexpected SDT on PID %d (0x%X)", {pid, pid}) << std::endl;
-                _display.displayTable(table);
-                strm << std::endl;
+                _report.warning(u"got unexpected SDT on PID %d (0x%<X)", {pid});
+                displayTable(table);
             }
             else if (_all_versions || !_sdt_ok) {
                 _sdt_ok = true;
                 // We cannot stop filtering this PID if we don't need all versions since a BAT can also be found here.
-                _display.displayTable(table);
-                strm << std::endl;
+                displayTable(table);
             }
             break;
         }
@@ -315,8 +391,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_SDT_OTH: {
             // Ignore SDT for other networks if only one version required
             if (_all_versions) {
-                _display.displayTable(table);
-                strm << std::endl;
+                displayTable(table);
             }
             break;
         }
@@ -324,16 +399,14 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_BAT: {
             if (pid != PID_BAT) {
                 // An SDT is only expected on PID 0x0011
-                strm << UString::Format(u"* Got unexpected BAT on PID %d (0x%X)", {pid, pid}) << std::endl;
-                _display.displayTable(table);
-                strm << std::endl;
+                _report.warning(u"got unexpected BAT on PID %d (0x%<X)", {pid});
+                displayTable(table);
             }
             else if (_all_versions || !_bat_ok) {
                 // Got the BAT.
                 _bat_ok = true;
                 // We cannot stop filtering this PID if we don't need all versions since the SDT can also be found here.
-                _display.displayTable(table);
-                strm << std::endl;
+                displayTable(table);
             }
             break;
         }
@@ -341,38 +414,35 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_PCAT: {
             if (pid != PID_PCAT) {
                 // An ISDB PCAT is only expected on PID 0x0022
-                strm << UString::Format(u"* Got unexpected ISDB PCAT on PID %d (0x%X)", {pid, pid}) << std::endl;
+                _report.warning(u"got unexpected ISDB PCAT on PID %d (0x%<X)", {pid});
             }
             else if (!_all_versions) {
                 _demux.removePID(pid);
             }
-            _display.displayTable(table);
-            strm << std::endl;
+            displayTable(table);
             break;
         }
 
         case TID_BIT: {
             if (pid != PID_BIT) {
                 // An ISDB BIT is only expected on PID 0x0024
-                strm << UString::Format(u"* Got unexpected ISDB BIT on PID %d (0x%X)", {pid, pid}) << std::endl;
+                _report.warning(u"got unexpected ISDB BIT on PID %d (0x%<X)", {pid});
             }
             else if (!_all_versions) {
                 _demux.removePID(pid);
             }
-            _display.displayTable(table);
-            strm << std::endl;
+            displayTable(table);
             break;
         }
 
         case TID_NBIT_REF:
         case TID_NBIT_BODY: {
             if (pid != PID_NBIT) {
-                // An ISDB BIT is only expected on PID 0x0025
-                strm << UString::Format(u"* Got unexpected ISDB NBIT on PID %d (0x%X)", {pid, pid}) << std::endl;
+                // An ISDB NBIT is only expected on PID 0x0025
+                _report.warning(u"got unexpected ISDB NBIT on PID %d (0x%<X)", {pid});
             }
             // We cannot stop filtering this PID if we don't need all versions since the LDT can also be found here.
-            _display.displayTable(table);
-            strm << std::endl;
+            displayTable(table);
             break;
         }
 
@@ -382,26 +452,24 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             if (pid != PID_PSIP && pid != PID_LDT) {
                 // An ATSC MGT is only expected on PID 0x1FFB.
                 // An ISDB LDT is only expected on PID 0x0025.
-                strm << UString::Format(u"* Got unexpected ATSC MGT / ISDB LDT on PID %d (0x%X)", {pid, pid}) << std::endl;
+                _report.warning(u"got unexpected ATSC MGT / ISDB LDT on PID %d (0x%<X)", {pid});
             }
             // We cannot stop filtering this PID if we don't need all versions
             // since the TVCT or CVCT (ATSC) and NBIT (ISDB) can also be found here.
-            _display.displayTable(table);
-            strm << std::endl;
+            displayTable(table);
             break;
         }
 
         case TID_TVCT:
         case TID_CVCT: {
             // ATSC tables with channel description.
-            _display.displayTable(table);
-            strm << std::endl;
+            displayTable(table);
             break;
         }
 
         default: {
             if (_duck.report().verbose()) {
-                strm << UString::Format(u"* Got unexpected TID %d (0x%X) on PID %d (0x%X)", {tid, tid, pid, pid}) << std::endl << std::endl;
+                _report.warning(u"got unexpected TID %d (0x%<X) on PID %d (0x%<X)", {tid, pid});
             }
         }
     }
@@ -410,12 +478,79 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
 
 //----------------------------------------------------------------------------
 // This hook is invoked when a complete section is available.
-// Only used with option --all-sections
+// Only used with option --dump.
 //----------------------------------------------------------------------------
 
 void ts::PSILogger::handleSection(SectionDemux&, const Section& sect)
 {
     sect.dump(_duck.out()) << std::endl;
+}
+
+
+//----------------------------------------------------------------------------
+// Displays a binary table.
+//----------------------------------------------------------------------------
+
+void ts::PSILogger::displayTable(const BinaryTable& table)
+{
+    // Text output.
+    if (_use_text) {
+        _display.displayTable(table);
+        _duck.out() << std::endl;
+    }
+
+    // XML output.
+    if (_use_xml) {
+
+        // Convert the table into an XML structure.
+        xml::Element* elem = table.toXML(_duck, _xml_doc.rootElement(), false);
+        if (elem != nullptr) {
+            // Add an XML comment as first child of the table.
+            new xml::Comment(elem, UString::Format(u" PID 0x%X (%<d) ", {table.sourcePID()}), false);
+
+            // Print the new table.
+            if (_xml_open) {
+                _xml_out << ts::margin;
+                elem->print(_xml_out, false);
+                _xml_out << std::endl;
+            }
+            else {
+                // If this is the first table, print the document header with it.
+                _xml_open = true;
+                _xml_doc.print(_xml_out, true);
+            }
+
+            // Now remove the table from the document. Keeping them would eat up memory for no use.
+            // Deallocating the element forces the removal from the document through the destructor.
+            delete elem;
+        }
+    }
+
+    // XML one-liner in the log.
+    if (_log_xml_line) {
+
+        // Build an XML document.
+        xml::Document doc;
+        doc.initialize(u"tsduck");
+
+        // Convert the table into an XML structure.
+        xml::Element* elem = table.toXML(_duck, doc.rootElement(), false);
+        if (elem != nullptr) {
+            // Add an XML comment as first child of the table.
+            new xml::Comment(elem, UString::Format(u" PID 0x%X (%<d) ", {table.sourcePID()}), false);
+
+            // Initialize a text formatter for one-liner.
+            TextFormatter text(_report);
+            text.setString();
+            text.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
+
+            // Serialize the XML object inside the text formatter.
+            doc.print(text);
+
+            // Log the XML line.
+            _report.info(_log_xml_prefix + text.toString());
+        }
+    }
 }
 
 

@@ -92,11 +92,7 @@ void ts::JSONArgs::report(const json::Object& root, std::ostream& stm, Report& r
         text.setString();
         text.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
         root.print(text);
-        UString prefix(json_prefix);
-        if (!prefix.empty()) {
-            prefix.append(SPACE);
-        }
-        rep.info(prefix + text.toString());
+        rep.info(json_prefix + text.toString());
     }
     else if (json) {
         // Output to stream.

@@ -65,6 +65,8 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _flush(false),
     _rewrite_xml(false),
     _rewrite_binary(false),
+    _log_xml_line(false),
+    _log_xml_prefix(),
     _udp_local(),
     _udp_ttl(0),
     _udp_raw(false),
@@ -189,19 +191,23 @@ void ts::TablesLogger::defineArgs(Args& args) const
               u"beginning of the table payload (the header is not displayed). "
               u"The default is 8 bytes.");
 
+    args.option(u"log-xml-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
+    args.help(u"log-xml-line", u"'prefix'",
+              u"Log each table as one single XML line in the message logger instead of an output file. "
+              u"The optional string parameter specifies a prefix to prepend on the log "
+              u"line before the XML text to locate the appropriate line in the logs.");
+
     args.option(u"max-tables", 'x', Args::POSITIVE);
     args.help(u"max-tables", u"Maximum number of tables to dump. Stop logging tables when this limit is reached.");
 
     args.option(u"multiple-files", 'm');
     args.help(u"multiple-files",
-              u"Create multiple binary output files, one per section. A binary "
-              u"output file name must be specified (option -b or --binary-output). "
+              u"Create multiple binary output files, one per section. "
+              u"A binary output file name must be specified (option -b or --binary-output). "
               u"Assuming that the specified file name has the form 'base.ext', "
-              u"each file is created with the name 'base_pXXXX_tXX.ext' for "
-              u"short sections and 'base_pXXXX_tXX_eXXXX_vXX_sXX.ext' for long "
-              u"sections, where the XX specify the hexadecimal values of the "
-              u"PID, TID (table id), TIDext (table id extension), version and "
-              u"section index.");
+              u"each file is created with the name 'base_pXXXX_tXX.ext' for short sections and "
+              u"'base_pXXXX_tXX_eXXXX_vXX_sXX.ext' for long sections, where the XX specify the hexadecimal "
+              u"values of the PID, TID (table id), TIDext (table id extension), version and section index.");
 
     args.option(u"no-duplicate");
     args.help(u"no-duplicate",
@@ -216,7 +222,7 @@ void ts::TablesLogger::defineArgs(Args& args) const
               u"By default, the tables are formatted into TLV messages.");
 
     args.option(u"output-file", 'o', Args::STRING);
-    args.help(u"output-file", u"",
+    args.help(u"output-file", u"filename",
               u"Save the tables or sections in human-readable text format in the specified "
               u"file. By default, when no output option is specified, text is produced on "
               u"the standard output. If you need text formatting on the standard output in "
@@ -257,7 +263,7 @@ void ts::TablesLogger::defineArgs(Args& args) const
               u"The specified file always contains one single table, the latest one.");
 
     args.option(u"text-output", 0, Args::STRING);
-    args.help(u"text-output", u"A synonym for --output-file.");
+    args.help(u"text-output", u"filename", u"A synonym for --output-file.");
 
     args.option(u"time-stamp");
     args.help(u"time-stamp", u"Display a time stamp (current local time) with each table.");
@@ -287,7 +293,8 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _use_xml = args.present(u"xml-output");
     _use_binary = args.present(u"binary-output");
     _use_udp = args.present(u"ip-udp");
-    _use_text = args.present(u"output-file") || args.present(u"text-output") || ( !_use_xml && !_use_binary && !_use_udp);
+    _log_xml_line = args.present(u"log-xml-line");
+    _use_text = args.present(u"output-file") || args.present(u"text-output") || (!_use_xml && !_use_binary && !_use_udp && !_log_xml_line);
 
     // --output-file and --text-output are synonyms.
     if (args.present(u"output-file") && args.present(u"text-output")) {
@@ -295,10 +302,10 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     }
 
     // Output destinations.
-    _xml_destination = args.value(u"xml-output");
-    _bin_destination = args.value(u"binary-output");
-    _udp_destination = args.value(u"ip-udp");
-    _text_destination = args.value(u"output-file", args.value(u"text-output").c_str());
+    args.getValue(_xml_destination, u"xml-output");
+    args.getValue(_bin_destination, u"binary-output");
+    args.getValue(_udp_destination, u"ip-udp");
+    args.getValue(_text_destination, u"output-file", args.value(u"text-output").c_str());
 
     // Accept "-" as a specification for standard output (common convention in UNIX world).
     if (_text_destination == u"-") {
@@ -311,19 +318,20 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _multi_files = args.present(u"multiple-files");
     _rewrite_binary = args.present(u"rewrite-binary");
     _rewrite_xml = args.present(u"rewrite-xml");
+    args.getValue(_log_xml_prefix, u"log-xml-line");
     _flush = args.present(u"flush");
     _udp_local = args.value(u"local-udp");
-    _udp_ttl = args.intValue(u"ttl", 0);
+    args.getIntValue(_udp_ttl, u"ttl", 0);
     _pack_all_sections = args.present(u"pack-all-sections");
     _pack_and_flush = args.present(u"pack-and-flush");
     _fill_eit = args.present(u"fill-eit");
     _all_once = args.present(u"all-once");
     _all_sections = _all_once || _pack_all_sections || args.present(u"all-sections");
-    _max_tables = args.intValue<uint32_t>(u"max-tables", 0);
+    args.getIntValue(_max_tables, u"max-tables", 0);
     _time_stamp = args.present(u"time-stamp");
     _packet_index = args.present(u"packet-index");
     _logger = args.present(u"log");
-    _log_size = args.intValue<size_t>(u"log-size", DEFAULT_LOG_SIZE);
+    args.getIntValue(_log_size, u"log-size", DEFAULT_LOG_SIZE);
     _no_duplicate = args.present(u"no-duplicate");
     _udp_raw = args.present(u"no-encapsulation");
     _use_current = !args.present(u"exclude-current");
@@ -530,12 +538,11 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
 
     if (_use_xml) {
         // In case of rewrite for each table, create a new file.
-        if (_rewrite_xml && !createXML(_xml_destination)) {
-            return;
-        }
-        saveXML(table);
-        if (_rewrite_xml) {
-            closeXML();
+        if (!_rewrite_xml || createXML(_xml_destination)) {
+            saveXML(table);
+            if (_rewrite_xml) {
+                closeXML();
+            }
         }
     }
 
@@ -551,6 +558,10 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
         if (_rewrite_binary) {
             _binfile.close();
         }
+    }
+
+    if (_log_xml_line) {
+        logXML(table);
     }
 
     if (_use_udp) {
@@ -664,6 +675,34 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     if (_max_tables > 0 && _table_count >= _max_tables) {
         _abort = true;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Log XML one-liners.
+//----------------------------------------------------------------------------
+
+void ts::TablesLogger::logXML(const BinaryTable& table)
+{
+    // Build an XML document.
+    xml::Document doc;
+    doc.initialize(u"tsduck");
+    xml::Element* elem = buildXML(doc, table);
+    if (elem == nullptr) {
+        // Error serializing the table, error message already printed.
+        return;
+    }
+
+    // Initialize a text formatter for one-liner.
+    TextFormatter text(_report);
+    text.setString();
+    text.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
+
+    // Serialize the XML object inside the text formatter.
+    doc.print(text);
+
+    // Log the XML line.
+    _report.info(_log_xml_prefix + text.toString());
 }
 
 
@@ -835,7 +874,7 @@ bool ts::TablesLogger::createBinaryFile(const ts::UString& name)
 
 
 //----------------------------------------------------------------------------
-//  Save a section in a binary file
+// Save a section in a binary file
 //----------------------------------------------------------------------------
 
 void ts::TablesLogger::saveBinarySection(const Section& sect)
@@ -890,21 +929,10 @@ bool ts::TablesLogger::createXML(const ts::UString& name)
 void ts::TablesLogger::saveXML(const ts::BinaryTable& table)
 {
     // Convert the table into an XML structure.
-    xml::Element* elem = table.toXML(_duck, _xmlDoc.rootElement(), false);
+    xml::Element* elem = buildXML(_xmlDoc, table);
     if (elem == nullptr) {
-        // XML conversion error, message already displayed.
         return;
     }
-
-    // Add an XML comment as first child of the table.
-    UString comment(UString::Format(u" PID 0x%X (%d)", {table.sourcePID(), table.sourcePID()}));
-    if (_time_stamp) {
-        comment += u", at " + UString(Time::CurrentLocalTime());
-    }
-    if (_packet_index) {
-        comment += UString::Format(u", first TS packet: %'d, last: %'d", {table.getFirstTSPacketIndex(), table.getLastTSPacketIndex()});
-    }
-    new xml::Comment(elem, comment + u" ", false); // first position
 
     // Print the new table.
     if (_xmlOpen) {
@@ -933,7 +961,31 @@ void ts::TablesLogger::closeXML()
 
 
 //----------------------------------------------------------------------------
-//  Log a table (option --log)
+// Add a binary table into an XML document.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::TablesLogger::buildXML(xml::Document& doc, const BinaryTable& table)
+{
+    // Convert the table into an XML structure.
+    xml::Element* elem = table.toXML(_duck, doc.rootElement(), false);
+    if (elem != nullptr) {
+        // Add an XML comment as first child of the table.
+        UString comment;
+        comment.format(u" PID 0x%X (%<d)", {table.sourcePID()});
+        if (_time_stamp) {
+            comment += u", at " + UString(Time::CurrentLocalTime());
+        }
+        if (_packet_index) {
+            comment.format(u", first TS packet: %'d, last: %'d", {table.getFirstTSPacketIndex(), table.getLastTSPacketIndex()});
+        }
+        new xml::Comment(elem, comment + u" ", false); // first position
+    }
+    return elem;
+}
+
+
+//----------------------------------------------------------------------------
+// Log a table (option --log)
 //----------------------------------------------------------------------------
 
 void ts::TablesLogger::logSection(const Section& sect)
@@ -964,7 +1016,7 @@ void ts::TablesLogger::logSection(const Section& sect)
 
 
 //----------------------------------------------------------------------------
-//  Check if a specific section must be filtered
+// Check if a specific section must be filtered
 //----------------------------------------------------------------------------
 
 bool ts::TablesLogger::isFiltered(const Section& sect, uint16_t cas)
@@ -986,7 +1038,7 @@ bool ts::TablesLogger::isFiltered(const Section& sect, uint16_t cas)
 
 
 //----------------------------------------------------------------------------
-//  Display header information, before a table
+// Display header information, before a table
 //----------------------------------------------------------------------------
 
 void ts::TablesLogger::preDisplay(PacketCounter first, PacketCounter last)
