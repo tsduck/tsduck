@@ -33,7 +33,7 @@ be included in the class path.
 - Bash (Linux, macOS):
   source ../../build/setenv.sh
   ./get-org-json.sh
-  export $CLASSPATH="org.json.jar:$CLASSPATH"
+  export CLASSPATH="org.json.jar:$CLASSPATH"
   javac SampleAnalyzeTS.java
   java SampleAnalyzeTS some-ts-file-to-analyze.ts
 
