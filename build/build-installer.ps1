@@ -276,8 +276,8 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
         $TempBin = (New-Directory @($TempRoot, "bin"))
         Copy-Item (Join-Path $BinDir "ts*.exe") -Exclude "*_static.exe" -Destination $TempBin
         Copy-Item (Join-Path $BinDir "ts*.dll") -Destination $TempBin
-        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "dtv", "tsduck*.xml")) -Destination $TempBin
-        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "dtv", "tsduck*.names")) -Destination $TempBin
+        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "config", "tsduck*.xml")) -Destination $TempBin
+        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "config", "tsduck*.names")) -Destination $TempBin
 
         $TempDoc = (New-Directory @($TempRoot, "doc"))
         Copy-Item (Join-Multipath @($RootDir, "doc", "tsduck.pdf")) -Destination $TempDoc

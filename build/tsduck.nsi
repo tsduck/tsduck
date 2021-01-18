@@ -158,8 +158,8 @@ Section "Tools & Plugins" SectionTools
     !else
         File "${BinDir}\ts*.dll"
     !endif
-    File "${RootDir}\src\libtsduck\dtv\tsduck*.xml"
-    File "${RootDir}\src\libtsduck\dtv\tsduck*.names"
+    File "${RootDir}\src\libtsduck\config\tsduck*.xml"
+    File "${RootDir}\src\libtsduck\config\tsduck*.names"
 
 SectionEnd
 

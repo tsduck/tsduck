@@ -106,10 +106,10 @@ OBJS += $(DTAPI_OBJECT)
 
 # TSDuck configuration files.
 
-CONFIG_FILES = $(wildcard dtv/tsduck*.xml dtv/tsduck*.names)
+CONFIG_FILES = $(wildcard config/tsduck*.xml config/tsduck*.names)
 .PHONY: configs
 configs: $(addprefix $(BINDIR)/,$(notdir $(CONFIG_FILES)))
-$(BINDIR)/%: dtv/%
+$(BINDIR)/%: config/%
 	@echo '  [COPY] $<'; \
 	mkdir -p $(BINDIR); \
 	cp $< $@
