@@ -614,8 +614,11 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (args.present(u"atsc")) {
             _cmdStandards |= Standards::ATSC;
         }
-        if (args.present(u"isdb") || args.present(u"japan") || args.present(u"brazil") || args.present(u"philippines")) {
+        if (args.present(u"isdb") || args.present(u"japan") || args.present(u"philippines")) {
             _cmdStandards |= Standards::ISDB;
+        }
+        if (args.present(u"brazil")) {
+            _cmdStandards |= Standards::ISDB | Standards::ABNT;
         }
     }
     if ((_definedCmdOptions & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) && args.present(u"japan")) {
