@@ -31,6 +31,7 @@ public class SampleAnalyzeTS {
     /**
      * This method processes the parsed JSON data from the TS analysis.
      * Here, we just display the list of services.
+     * @param jsonText TS analysis in a JSON string.
      */
     private static void jsonHandler(String jsonText) {
         final JSONObject root = new JSONObject(jsonText);
