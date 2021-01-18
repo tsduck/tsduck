@@ -406,6 +406,13 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     // Options relating to default standards.
     if (cmdOptionsMask & CMD_STANDARDS) {
 
+        args.option(u"abnt", 0);
+        args.help(u"abnt",
+                  u"Assume that the transport stream is an ISDB one with ABNT-defined variants. "
+                  u"ISDB streams are normally automatically detected from their signalization but "
+                  u"there is no way to determine if this is an original ARIB-defined ISDB or "
+                  u"an ABNT-defined variant.");
+
         args.option(u"atsc", 0);
         args.help(u"atsc",
                   u"Assume that the transport stream is an ATSC one. ATSC streams are normally "
@@ -492,6 +499,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         UStringList options;
         if (_definedCmdOptions & CMD_STANDARDS) {
             options.push_back(u"--isdb");
+            options.push_back(u"--abnt");
         }
         if (_definedCmdOptions & CMD_CHARSET) {
             options.push_back(u"--default-charset RAW-UTF-8");
@@ -515,6 +523,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         UStringList options;
         if (_definedCmdOptions & CMD_STANDARDS) {
             options.push_back(u"--isdb");
+            options.push_back(u"--abnt");
         }
         if (_definedCmdOptions & CMD_CHARSET) {
             options.push_back(u"--default-charset RAW-ISO-8859-15");
@@ -614,10 +623,10 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (args.present(u"atsc")) {
             _cmdStandards |= Standards::ATSC;
         }
-        if (args.present(u"isdb") || args.present(u"japan") || args.present(u"philippines")) {
+        if (args.present(u"isdb") || args.present(u"japan")) {
             _cmdStandards |= Standards::ISDB;
         }
-        if (args.present(u"brazil")) {
+        if (args.present(u"abnt") || args.present(u"brazil") || args.present(u"philippines")) {
             _cmdStandards |= Standards::ISDB | Standards::ABNT;
         }
     }
