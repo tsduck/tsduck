@@ -48,6 +48,7 @@ namespace ts {
         ATSC  = 0x08,  //!< Defined by ATSC.
         ISDB  = 0x10,  //!< Defined by ISDB.
         JAPAN = 0x20,  //!< Defined in Japan only (typically in addition to ISDB).
+        ABNT  = 0x40,  //!< Defined by ABNT (Brazil, typically in addition to ISDB).
     };
 
     //!

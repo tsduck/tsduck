@@ -150,11 +150,6 @@ ts::UString ts::names::StreamType(uint8_t type, Flags flags)
     return NamesMain::Instance()->nameFromSection(u"StreamType", Names::Value(type), flags, 8);
 }
 
-ts::UString ts::names::Content(uint8_t x, Flags flags)
-{
-    return NamesMain::Instance()->nameFromSection(u"ContentId", Names::Value(x), flags, 8);
-}
-
 ts::UString ts::names::PrivateDataSpecifier(uint32_t pds, Flags flags)
 {
     return NamesMain::Instance()->nameFromSection(u"PrivateDataSpecifier", Names::Value(pds), flags, 32);
@@ -350,6 +345,27 @@ ts::UString ts::names::ComponentType(const DuckContext& duck, uint16_t type, Fla
     }
     else {
         return NamesMain::Instance()->nameFromSection(u"ComponentType", Names::Value(nType), flags | names::ALTERNATE, 16, dType);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Content ids with variants.
+//----------------------------------------------------------------------------
+
+ts::UString ts::names::Content(const DuckContext& duck, uint8_t x, Flags flags)
+{
+    if ((duck.standards() & Standards::JAPAN) == Standards::JAPAN) {
+        // Japan / ISDB uses a completely different mapping.
+        return NamesMain::Instance()->nameFromSection(u"ContentIdJapan", Names::Value(x), flags, 8);
+    }
+    else if ((duck.standards() & Standards::ABNT) == Standards::ABNT) {
+        // ABNT (Brazil) / ISDB uses a completely different mapping.
+        return NamesMain::Instance()->nameFromSection(u"ContentIdABNT", Names::Value(x), flags, 8);
+    }
+    else {
+        // Standard DVB mapping.
+        return NamesMain::Instance()->nameFromSection(u"ContentId", Names::Value(x), flags, 8);
     }
 }
 

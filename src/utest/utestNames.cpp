@@ -260,7 +260,13 @@ void NamesTest::testNetworkId()
 
 void NamesTest::testContent()
 {
-    TSUNIT_EQUAL(u"game show/quiz/contest", ts::names::Content(0x31));
+    ts::DuckContext duck1;
+    TSUNIT_EQUAL(u"game show/quiz/contest", ts::names::Content(duck1, 0x31));
+    duck1.addStandards(ts::Standards::JAPAN);
+    TSUNIT_EQUAL(u"overseas drama", ts::names::Content(duck1, 0x31));
+    ts::DuckContext duck2;
+    duck2.addStandards(ts::Standards::ABNT);
+    TSUNIT_EQUAL(u"soap opera", ts::names::Content(duck2, 0x31));
 }
 
 void NamesTest::testDID()

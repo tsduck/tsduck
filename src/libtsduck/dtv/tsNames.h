@@ -290,11 +290,12 @@ namespace ts {
 
         //!
         //! Name of content name (in Content Descriptor).
+        //! @param [in] duck TSDuck execution context (used to select from other standards).
         //! @param [in] c Content name.
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString Content(uint8_t c, Flags flags = NAME);
+        TSDUCKDLL UString Content(const DuckContext& duck, uint8_t c, Flags flags = NAME);
 
         //!
         //! Name of scrambling control value in TS header
