@@ -83,7 +83,7 @@ $(DTAPI_H): $(if $(wildcard $(DTAPI_FILE)),$(DTAPI_FILE),sdkfile)
 	$(MAKE) expand
 
 # There is an auto-generated file with names definitions.
-DTNAMES = ../src/libtsduck/dtv/tsduck.dektec.names
+DTNAMES = ../src/libtsduck/config/tsduck.dektec.names
 dtnames: $(DTNAMES)
 $(DTNAMES): $(DTAPI_H) generate-names.sh
 	./generate-names.sh >$@

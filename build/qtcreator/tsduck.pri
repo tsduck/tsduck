@@ -60,7 +60,7 @@ linux: NOSYSDIR = mac
 mac:   NOSYSDIR = linux
 
 # TSDuck configuration files
-TS_CONFIG_FILES += $$system("find $$SRCROOT/libtsduck \\( -name \\*.names -o -name \\*.xml \\) ! -path \\*/release\\* ! -path \\*/debug\\*")
+TS_CONFIG_FILES += $$system("ls $$SRCROOT/libtsduck/config/\\*.names $$SRCROOT/libtsduck/config/\\*..xml")
 
 # Other configuration.
 linux|mac|mingw {

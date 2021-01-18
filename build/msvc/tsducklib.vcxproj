@@ -8,8 +8,8 @@
   <ItemGroup>
     <LibHeaders     Include="$(TSDuckRootDir)src\libtsduck\**\*.h"   Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;$(TSDuckRootDir)src\libtsduck\**\linux\**;$(TSDuckRootDir)src\libtsduck\**\mac\**"/>
     <LibSources     Include="$(TSDuckRootDir)src\libtsduck\**\*.cpp" Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;$(TSDuckRootDir)src\libtsduck\**\linux\**;$(TSDuckRootDir)src\libtsduck\**\mac\**"/>
-    <LibConfigXML   Include="$(TSDuckRootDir)src\libtsduck\**\*.xml"/>
-    <LibConfigNames Include="$(TSDuckRootDir)src\libtsduck\**\*.names"/>
+    <LibConfigXML   Include="$(TSDuckRootDir)src\libtsduck\config\*.xml"/>
+    <LibConfigNames Include="$(TSDuckRootDir)src\libtsduck\config\*.names"/>
     <Xml            Include="@(LibConfigXML)"/>
     <None           Include="@(LibConfigNames)"/>
     <ClInclude      Include="@(LibHeaders)"/>
