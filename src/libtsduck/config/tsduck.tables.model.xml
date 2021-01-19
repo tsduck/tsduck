@@ -49,6 +49,14 @@
   <!-- A valid file is composed of a suite of any number of table structures -->
   <_any in="_tables"/>
 
+  <!-- Tables metadata can be found in any table, they are not part of the table itself -->
+  <_metadata>
+    <metadata PID="uint13, optional"
+              time="YYYY-MM-DD hh:mm:ss, optional"
+              first_ts_packet="uint64, optional"
+              last_ts_packet="uint64, optional"/>
+  </_metadata>
+
   <!-- Definitions of tables -->
   <_tables>
 
@@ -57,6 +65,7 @@
          current="bool, default=true"
          transport_stream_id="uint16, required"
          network_PID="uint13, optional">
+      <_any in="_metadata"/>
       <!-- One per service -->
       <service service_id="uint16, required" program_map_PID="uint13, required"/>
     </PAT>
@@ -64,6 +73,7 @@
     <!-- Conditional Access Table -->
     <CAT version="uint5, default=0"
          current="bool, default=true">
+      <_any in="_metadata"/>
       <_any in="_descriptors"/>
     </CAT>
 
@@ -72,6 +82,7 @@
          current="bool, default=true"
          service_id="uint16, required"
          PCR_PID="uint13, default=0x1FFF">
+      <_any in="_metadata"/>
       <!-- Program-level descriptors -->
       <_any in="_descriptors"/>
       <!-- One per elementary stream -->
@@ -83,6 +94,7 @@
     <!-- Transport Stream Description Table -->
     <TSDT version="uint5, default=0"
           current="bool, default=true">
+      <_any in="_metadata"/>
       <_any in="_descriptors"/>
     </TSDT>
 
@@ -91,6 +103,7 @@
          current="bool, default=true"
          network_id="uint16, required"
          actual="bool, default=true">
+      <_any in="_metadata"/>
       <!-- Network-level descriptors -->
       <_any in="_descriptors"/>
       <!-- One per transport stream -->
@@ -105,6 +118,7 @@
     <BAT version="uint5, default=0"
          current="bool, default=true"
          bouquet_id="uint16, required">
+      <_any in="_metadata"/>
       <!-- Bouquet-level descriptors -->
       <_any in="_descriptors"/>
       <!-- One per transport stream -->
@@ -117,6 +131,7 @@
 
     <!-- Running Status Table -->
     <RST>
+      <_any in="_metadata"/>
       <!-- One per event -->
       <event transport_stream_id="uint16, required"
              original_network_id="uint16, required"
@@ -131,6 +146,7 @@
          transport_stream_id="uint16, required"
          original_network_id="uint16, required"
          actual="bool, default=true">
+      <_any in="_metadata"/>
       <!-- One per service -->
       <service service_id="uint16, required"
                EIT_schedule="bool, default=false"
@@ -153,6 +169,7 @@
          original_network_id="uint16, required"
          segment_last_section_number="uint8, ignored (legacy)"
          last_table_id="uint8, default=same as table id">
+      <_any in="_metadata"/>
       <!-- One per event -->
       <event event_id="uint16, required"
              start_time="YYYY-MM-DD hh:mm:ss, required"
@@ -165,10 +182,13 @@
     </EIT>
 
     <!-- Time and Date Table -->
-    <TDT UTC_time="YYYY-MM-DD hh:mm:ss, required"/>
+    <TDT UTC_time="YYYY-MM-DD hh:mm:ss, required">
+      <_any in="_metadata"/>
+    </TDT>
 
     <!-- Time Offset Table -->
     <TOT UTC_time="YYYY-MM-DD hh:mm:ss, required">
+      <_any in="_metadata"/>
       <_any in="_descriptors"/>
     </TOT>
 
@@ -177,6 +197,7 @@
         version="uint5, default=0"
         current="bool, default=true"
         table_id_extension="uint16, default=0xFFFF">
+      <_any in="_metadata"/>
       <_any in="_descriptors"/>
     </DSMCC_stream_descriptors_table>
 
@@ -186,6 +207,7 @@
          action_type="uint8, default=0x01"
          processing_order="uint8, default=0x00"
          platform_id="uint24, required">
+      <_any in="_metadata"/>
       <!-- Plaform-level descriptors -->
       <_any in="_descriptors"/>
       <!-- One per device -->
@@ -205,6 +227,7 @@
          action_type="uint8, default=0x01"
          OUI="uint24, required"
          processing_order="uint8, default=0x00">
+      <_any in="_metadata"/>
       <!-- Common descriptors, apply to all SSU -->
       <_any in="_descriptors"/>
       <!-- One per set of devices -->
@@ -238,6 +261,7 @@
          current="bool, default=true"
          test_application_flag="bool, default=true"
          application_type="uint15, required">
+      <_any in="_metadata"/>
       <!-- Common descriptors loop -->
       <_any in="_descriptors"/>
       <!-- One per application -->
@@ -253,6 +277,7 @@
          service_id="uint16, required"
          transport_stream_id="uint16, required"
          original_network_id="uint16, required">
+      <_any in="_metadata"/>
       <!-- One per prepend string -->
       <prepend_string value="string, required"/>
       <!-- One per CRID (Content Reference Identifier) -->
@@ -266,6 +291,7 @@
          current="bool, default=true"
          context_id="uint16, required"
          context_id_type="uint8, required">
+      <_any in="_metadata"/>
       <_any in="_descriptors"/>
       <!-- One per resolution provider -->
       <resolution_provider name="string, required">
@@ -278,10 +304,13 @@
     </RNT>
 
     <!-- Discontinuity Information Table -->
-    <discontinuity_information_table transition="bool, required"/>
+    <discontinuity_information_table transition="bool, required">
+      <_any in="_metadata"/>
+    </discontinuity_information_table>
 
     <!-- Selection Information Table -->
     <selection_information_table version="uint5, default=0" current="bool, default=true">
+      <_any in="_metadata"/>
       <!-- Common descriptors loop, for transmission parameters -->
       <_any in="_descriptors"/>
       <!-- One per service -->
@@ -296,6 +325,7 @@
         protocol_version="uint8, default=0"
         pts_adjustment="uint33, default=0"
         tier="uint12, default=0xFFF">
+      <_any in="_metadata"/>
       <!-- Splice commands, only one of them is allowed -->
       <splice_null/>
       <splice_schedule>
@@ -352,6 +382,7 @@
         details_major_channel_number="uint10, optional"
         details_minor_channel_number="uint10, optional"
         audio_OOB_source_ID="uint16, optional">
+      <_any in="_metadata"/>
       <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
       <nature_of_activation_text>
         <string language="char3, required" text="string, required"/>
@@ -376,11 +407,12 @@
 
     <!-- ATSC Master Guide Table -->
     <MGT version="uint5, default=0" protocol_version="uint8, default=0">
+      <_any in="_metadata"/>
       <!-- Common descriptors loop -->
       <_any in="_descriptors"/>
       <!-- One per table type -->
       <table type="TVCT-current|TVCT-next|CVCT-current|CVCT-next|ETT|DCCSCT|EIT-0..EIT-127|ETT-0..ETT-127|RRT-1..RRT-255|DCCT-0DCCT-255|uint16, required"
-             PID="uint31, required"
+             PID="uint13, required"
              version_number="uint5, required"
              number_bytes="uint32, required">
         <_any in="_descriptors"/>
@@ -392,6 +424,7 @@
           current="bool, default=true"
           protocol_version="uint8, default=0"
           transport_stream_id="uint16, required">
+      <_any in="_metadata"/>
       <!-- Common descriptors loop -->
       <_any in="_descriptors"/>
       <!-- One per channel -->
@@ -417,6 +450,7 @@
           current="bool, default=true"
           protocol_version="uint8, default=0"
           transport_stream_id="uint16, required">
+      <_any in="_metadata"/>
       <!-- Common descriptors loop -->
       <_any in="_descriptors"/>
       <!-- One per channel -->
@@ -446,6 +480,7 @@
          DS_status="bool, required"
          DS_day_of_month="uint5, default=0"
          DS_hour="uint8, default=0">
+      <_any in="_metadata"/>
       <!-- Common descriptors loop -->
       <_any in="_descriptors"/>
     </STT>
@@ -455,6 +490,7 @@
          protocol_version="uint8, default=0"
          ETT_table_id_extension="uint16, required"
          ETM_id="uint32, required">
+      <_any in="_metadata"/>
       <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
       <extended_text_message>
         <string language="char3, required" text="string, required"/>
@@ -465,6 +501,7 @@
     <RRT version="uint5, default=0"
          protocol_version="uint8, default=0"
          rating_region="uint8, required">
+      <_any in="_metadata"/>
       <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
       <rating_region_name>
         <string language="char3, required" text="string, required"/>
@@ -494,6 +531,7 @@
     <ATSC_EIT version="uint5, default=0"
               source_id="uint16, required"
               protocol_version="uint8, default=0">
+      <_any in="_metadata"/>
       <!-- One per event -->
       <event event_id="uint16, required"
              start_time="YYYY-MM-DD hh:mm:ss, required"
@@ -512,6 +550,7 @@
           protocol_version="uint8, default=0"
           dcc_subtype="uint8, default=0"
           dcc_id="uint8, required">
+      <_any in="_metadata"/>
       <!-- Common descriptors loop -->
       <_any in="_descriptors"/>
       <!-- One per channel change test -->
@@ -537,6 +576,7 @@
     <DCCSCT version="uint5, default=0"
             protocol_version="uint8, default=0"
             dccsct_type="uint16, default=0">
+      <_any in="_metadata"/>
       <!-- Common descriptors loop -->
       <_any in="_descriptors"/>
       <!-- One per update -->
@@ -567,6 +607,7 @@
          current="bool, default=true"
          original_network_id="uint16, required"
          broadcast_view_propriety="bool, required">
+      <_any in="_metadata"/>
       <!-- Common descriptors loop -->
       <_any in="_descriptors"/>
       <!-- One per broadcaster -->
@@ -581,6 +622,7 @@
          original_service_id="uint16, required"
          transport_stream_id="uint16, required"
          original_network_id="uint16, required">
+      <_any in="_metadata"/>
       <!-- One per description -->
       <description description_id="uint16, required">
         <_any in="_descriptors"/>
@@ -592,6 +634,7 @@
           current="bool, default=true"
           original_network_id="uint16, required"
           body="bool, default=true">
+      <_any in="_metadata"/>
       <!-- One per information set -->
       <information
           information_id="uint16, required"
@@ -611,6 +654,7 @@
           transport_stream_id="uint16, required"
           original_network_id="uint16, required"
           content_id="uint32, required">
+      <_any in="_metadata"/>
       <!-- One per content version -->
       <version content_version="uint16, required"
                content_minor_version="uint16, required"
@@ -629,6 +673,7 @@
          service_id="uint16, required"
          transport_stream_id="uint16, required"
          original_network_id="uint16, required">
+      <_any in="_metadata"/>
       <!-- One per local event -->
       <event local_event_id="uint16, required">
         <_any in="_descriptors"/>
@@ -641,6 +686,7 @@
          event_relation_id="uint16, required"
          information_provider_id="uint16, required"
          relation_type="uint4, required">
+      <_any in="_metadata"/>
       <!-- One per event relation -->
       <relation
           node_id="uint16, required"
@@ -655,6 +701,7 @@
     <ITT version="uint5, default=0"
          current="bool, default=true"
          event_id="uint16, required">
+      <_any in="_metadata"/>
       <_any in="_descriptors"/>
     </ITT>
 
@@ -662,6 +709,8 @@
     <generic_short_table
         table_id="uint8, required"
         private="bool, default=true">
+
+      Hexadecimal content.
 
       Generic table with binary payload of one short section,
       to be used when a specific table is not yet implemented.
@@ -671,6 +720,7 @@
       The private indicator shall be false on MPEG-defined sections
       and preferably true on DVB-defined and user-defined sections.
 
+      <_any in="_metadata"/>
     </generic_short_table>
 
     <!-- Generic long table -->
@@ -680,18 +730,21 @@
         version="uint5, default=0"
         current="bool, default=true"
         private="bool, default=true">
-
-      Generic table with binary payload of long sections,
-      to be used when a specific table is not yet implemented.
-
-      The private indicator shall be false on MPEG-defined sections
-      and preferably true on DVB-defined and user-defined sections.
-
+     <_any in="_metadata"/>
       <!-- One per section -->
       <section>
+
+        Hexadecimal content.
+
+        Generic table with binary payload of long sections,
+        to be used when a specific table is not yet implemented.
         The body of the section elements shall contain an even number of
         hexadecimal digits, the payload of the long section. The CRC32
         field is not part of this payload, it will be recomputed.
+
+        The private indicator shall be false on MPEG-defined sections
+        and preferably true on DVB-defined and user-defined sections.
+
       </section>
     </generic_long_table>
 
@@ -701,9 +754,13 @@
   <_descriptors>
 
     <generic_descriptor tag="uint8, required">
+
+      Hexadecimal content.
+
       Generic descriptor with binary payload, to be used when a specific
       descriptor is not yet implemented. The body of this element shall
       contain an even number of hexadecimal digits.
+
     </generic_descriptor>
 
     <AAC_descriptor

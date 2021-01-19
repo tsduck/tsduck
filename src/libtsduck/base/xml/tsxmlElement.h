@@ -79,8 +79,10 @@ namespace ts {
             //! @param [in,out] parent The parent into which the element is added.
             //! @param [in] name Name of the element.
             //! @param [in] attributeCase State if attribute names are stored wit case sensitivity.
+            //! @param [in] last If true, the child is added at the end of the list of children.
+            //! If false, it is added at the beginning.
             //!
-            Element(Node* parent, const UString& name, CaseSensitivity attributeCase = CASE_INSENSITIVE);
+            Element(Node* parent, const UString& name, CaseSensitivity attributeCase = CASE_INSENSITIVE, bool last = true);
 
             //!
             //! Copy constructor.
