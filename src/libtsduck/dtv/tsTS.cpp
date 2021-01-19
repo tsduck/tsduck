@@ -82,3 +82,52 @@ uint64_t ts::DiffPTS(uint64_t pts1, uint64_t pts2)
         return pts2 >= pts1 ? pts2 - pts1 : PTS_DTS_SCALE + pts2 - pts1;
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Convert PCR, PTS, DTS values to string.
+//----------------------------------------------------------------------------
+
+namespace {
+    ts::UString TimeStampToString(uint64_t value, bool hexa, bool decimal, bool ms, uint64_t frequency, size_t hex_digits)
+    {
+        int count = 0;
+        ts::UString str;
+        if (hexa) {
+            str.format(u"0x%0*X", {hex_digits, value});
+            count++;
+        }
+        if (decimal && (value != 0 || count == 0)) {
+            if (count == 1) {
+                str.append(u" (");
+            }
+            str.format(u"%'d", {value});
+            count++;
+        }
+        if (ms && (value != 0 || count == 0)) {
+            if (count == 1) {
+                str.append(u" (");
+            }
+            else if (count > 1) {
+                str.append(u", ");
+            }
+            str.format(u"%'d ms", {value / (frequency / 1000)});
+            count++;
+        }
+        if (count > 1) {
+            str.append(u')');
+        }
+        return str;
+    }
+}
+
+ts::UString ts::PCRToString(uint64_t pcr, bool hexa, bool decimal, bool ms)
+{
+    return TimeStampToString(pcr, hexa, decimal, ms, SYSTEM_CLOCK_FREQ, 11);
+}
+
+ts::UString ts::PTSToString(uint64_t pts, bool hexa, bool decimal, bool ms)
+{
+    return TimeStampToString(pts, hexa, decimal, ms, SYSTEM_CLOCK_SUBFREQ, 9);
+}
+

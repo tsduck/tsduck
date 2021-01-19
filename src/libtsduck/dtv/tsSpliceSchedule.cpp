@@ -30,6 +30,7 @@
 #include "tsSpliceSchedule.h"
 #include "tsTablesDisplay.h"
 #include "tsDuckContext.h"
+#include "tsTS.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -82,7 +83,7 @@ void ts::SpliceSchedule::clearContent()
 void ts::SpliceSchedule::display(TablesDisplay& disp, const UString& margin) const
 {
     for (EventList::const_iterator ev = events.begin(); ev != events.end(); ++ev) {
-        disp << margin << UString::Format(u"- Splice event id: 0x%X, cancel: %d", {ev->event_id, ev->canceled}) << std::endl;
+        disp << margin << UString::Format(u"- Splice event id: 0x%X (%<d), cancel: %d", {ev->event_id, ev->canceled}) << std::endl;
 
         if (!ev->canceled) {
             disp << margin
@@ -100,19 +101,15 @@ void ts::SpliceSchedule::display(TablesDisplay& disp, const UString& margin) con
                 disp << margin << "  Number of components: " << ev->components_utc.size() << std::endl;
                 for (UTCByComponent::const_iterator it = ev->components_utc.begin(); it != ev->components_utc.end(); ++it) {
                     disp << margin
-                         << UString::Format(u"    Component tag: 0x%X (%d)", {it->first, it->first})
+                         << UString::Format(u"    Component tag: 0x%X (%<d)", {it->first})
                          << UString::Format(u", UTC: %s", {Time::UnixTimeToUTC(it->second).format(Time::DATE | Time::TIME)})
                          << std::endl;
                 }
             }
             if (ev->use_duration) {
-                disp << margin
-                     << UString::Format(u"  Duration PTS: 0x%09X (%d), auto return: %s", {ev->duration_pts, ev->duration_pts, UString::YesNo(ev->auto_return)})
-                     << std::endl;
+                disp << margin << "  Duration PTS: " << PTSToString(ev->duration_pts) << ", auto return: " << UString::YesNo(ev->auto_return) << std::endl;
             }
-            disp << margin
-                 << UString::Format(u"  Unique program id: 0x%X (%d), avail: 0x%X (%d), avails expected: %d", {ev->program_id, ev->program_id, ev->avail_num, ev->avail_num, ev->avails_expected})
-                 << std::endl;
+            disp << margin << UString::Format(u"  Unique program id: 0x%X (%<d), avail: 0x%X (%<d), avails expected: %d", {ev->program_id, ev->avail_num, ev->avails_expected}) << std::endl;
         }
     }
 }

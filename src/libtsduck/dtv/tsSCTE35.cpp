@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSCTE35.h"
+#include "tsTS.h"
 TSDUCK_SOURCE;
 
 
@@ -43,7 +44,7 @@ ts::SpliceTime::~SpliceTime()
 // Convert the SpliceTime structure to string.
 ts::UString ts::SpliceTime::toString() const
 {
-    return set() ? UString::Format(u"0x%09X", {value()}) : u"unset";
+    return set() ? PTSToString(value()) : u"unset";
 }
 
 // Deserialize a SpliceTime structure from binary data.

@@ -163,7 +163,7 @@ uint64_t ts::SpliceInsert::lowestPTS() const
 
 void ts::SpliceInsert::display(TablesDisplay& disp, const UString& margin) const
 {
-    disp << margin << UString::Format(u"Splice event id: 0x%X, cancel: %d", {event_id, canceled}) << std::endl;
+    disp << margin << UString::Format(u"Splice event id: 0x%X (%<d), cancel: %d", {event_id, canceled}) << std::endl;
 
     if (!canceled) {
         disp << margin
@@ -181,7 +181,7 @@ void ts::SpliceInsert::display(TablesDisplay& disp, const UString& margin) const
             // Program components switch individually.
             disp << margin << "Number of components: " << components_pts.size() << std::endl;
             for (SpliceByComponent::const_iterator it = components_pts.begin(); it != components_pts.end(); ++it) {
-                disp << margin << UString::Format(u"  Component tag: 0x%X (%d)", {it->first, it->first});
+                disp << margin << UString::Format(u"  Component tag: 0x%X (%<d)", {it->first});
                 if (!immediate) {
                     disp << ", time PTS: " << it->second.toString();
                 }
@@ -189,9 +189,9 @@ void ts::SpliceInsert::display(TablesDisplay& disp, const UString& margin) const
             }
         }
         if (use_duration) {
-            disp << margin << UString::Format(u"Duration PTS: 0x%09X (%d), auto return: %s", {duration_pts, duration_pts, UString::YesNo(auto_return)}) << std::endl;
+            disp << margin << "Duration PTS: " << PTSToString(duration_pts) << ", auto return: " << UString::YesNo(auto_return) << std::endl;
         }
-        disp << margin << UString::Format(u"Unique program id: 0x%X (%d), avail: 0x%X (%d), avails expected: %d", {program_id, program_id, avail_num, avail_num, avails_expected}) << std::endl;
+        disp << margin << UString::Format(u"Unique program id: 0x%X (%<d), avail: 0x%X (%<d), avails expected: %d", {program_id, avail_num, avails_expected}) << std::endl;
     }
 }
 

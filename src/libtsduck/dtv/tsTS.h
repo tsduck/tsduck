@@ -34,7 +34,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUString.h"
 
 namespace ts {
 
@@ -435,4 +435,24 @@ namespace ts {
     //! or INVALID_PTS if a parameter is incorrect.
     //!
     TSDUCKDLL uint64_t DiffPTS(uint64_t pts1, uint64_t pts2);
+
+    //!
+    //! Convert a PCR value to a string.
+    //! @param [in] pcr The PCR value.
+    //! @param [in] hexa If true (the defaul), include hexadecimal value.
+    //! @param [in] decimal If true (the defaul), include decimal value.
+    //! @param [in] ms If true (the defaul), include the equivalent duration in milliseconds.
+    //! @return The formatted string.
+    //!
+    TSDUCKDLL UString PCRToString(uint64_t pcr, bool hexa = true, bool decimal = true, bool ms = true);
+
+    //!
+    //! Convert a PTS or DTS value to a string.
+    //! @param [in] pts The PTS or DTS value.
+    //! @param [in] hexa If true (the defaul), include hexadecimal value.
+    //! @param [in] decimal If true (the defaul), include decimal value.
+    //! @param [in] ms If true (the defaul), include the equivalent duration in milliseconds.
+    //! @return The formatted string.
+    //!
+    TSDUCKDLL UString PTSToString(uint64_t pts, bool hexa = true, bool decimal = true, bool ms = true);
 }
