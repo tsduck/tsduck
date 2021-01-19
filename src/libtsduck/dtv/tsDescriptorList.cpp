@@ -709,6 +709,9 @@ bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, 
             if (node->name().containSimilar(allowedOthers)) {
                 others.push_back(node);
             }
+            else if (node->name().similar(u"metadata")) {
+                // Always ignore <metadata> nodes.
+            }
             else {
                 parent->report().error(u"Illegal <%s> at line %d", {node->name(), node->lineNumber()});
                 success = false;

@@ -969,16 +969,17 @@ ts::xml::Element* ts::TablesLogger::buildXML(xml::Document& doc, const BinaryTab
     // Convert the table into an XML structure.
     xml::Element* elem = table.toXML(_duck, doc.rootElement(), false);
     if (elem != nullptr) {
-        // Add an XML comment as first child of the table.
-        UString comment;
-        comment.format(u" PID 0x%X (%<d)", {table.sourcePID()});
+        // Add <metadata> element as first child of the table.
+        // This element is not part of the table but describes how the table was collected.
+        xml::Element* meta = new xml::Element(elem, u"metadata", CASE_INSENSITIVE, false); // first position
+        meta->setIntAttribute(u"PID", table.sourcePID());
         if (_time_stamp) {
-            comment += u", at " + UString(Time::CurrentLocalTime());
+            meta->setDateTimeAttribute(u"time", Time::CurrentLocalTime());
         }
         if (_packet_index) {
-            comment.format(u", first TS packet: %'d, last: %'d", {table.getFirstTSPacketIndex(), table.getLastTSPacketIndex()});
+            meta->setIntAttribute(u"first_ts_packet", table.getFirstTSPacketIndex());
+            meta->setIntAttribute(u"last_ts_packet", table.getLastTSPacketIndex());
         }
-        new xml::Comment(elem, comment + u" ", false); // first position
     }
     return elem;
 }
