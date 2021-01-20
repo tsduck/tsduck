@@ -34,7 +34,7 @@
 #include "tsMain.h"
 #include "tsDuckContext.h"
 #include "tsMemory.h"
-#include "tsJSONArgs.h"
+#include "tsjsonOutputArgs.h"
 #include "tsTSFileInputBuffered.h"
 #include "tsTextFormatter.h"
 #include "tsjsonObject.h"
@@ -57,24 +57,24 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext    duck;
-        ts::TSPacketFormat format;
-        ts::UString        filename1;
-        ts::UString        filename2;
-        uint64_t           byte_offset;
-        size_t             buffered_packets;
-        size_t             threshold_diff;
-        bool               subset;
-        bool               dump;
-        uint32_t           dump_flags;
-        bool               normalized;
-        bool               quiet;
-        bool               payload_only;
-        bool               pcr_ignore;
-        bool               pid_ignore;
-        bool               cc_ignore;
-        bool               continue_all;
-        ts::JSONArgs       json;
+        ts::DuckContext      duck;
+        ts::TSPacketFormat   format;
+        ts::UString          filename1;
+        ts::UString          filename2;
+        uint64_t             byte_offset;
+        size_t               buffered_packets;
+        size_t               threshold_diff;
+        bool                 subset;
+        bool                 dump;
+        uint32_t             dump_flags;
+        bool                 normalized;
+        bool                 quiet;
+        bool                 payload_only;
+        bool                 pcr_ignore;
+        bool                 pid_ignore;
+        bool                 cc_ignore;
+        bool                 continue_all;
+        ts::json::OutputArgs json;
     };
 }
 

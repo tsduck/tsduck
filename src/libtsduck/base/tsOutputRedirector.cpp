@@ -44,8 +44,8 @@ ts::OutputRedirector::OutputRedirector(const UString& name,
     _previous(nullptr),
     _file()
 {
-    // Flawfinder: ignore: this is our open(), not ::open().
-    if (!name.empty()) {
+    // The nme "-" means standard output.
+    if (!name.empty() && name != u"-") {
         _file.open(name.toUTF8().c_str(), mode);
         if (_file) {
             _previous = _stream.rdbuf(_file.rdbuf());
