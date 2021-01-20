@@ -36,6 +36,9 @@
 #include "tsPatchXML.h"
 #include "tsxmlModelDocument.h"
 #include "tsxmlPatchDocument.h"
+#include "tsxmlJSONConverter.h"
+#include "tsjsonOutputArgs.h"
+#include "tsTextFormatter.h"
 #include "tsOutputRedirector.h"
 #include "tsSafePtr.h"
 #include "tsFatal.h"
@@ -56,14 +59,18 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext   duck;        // TSDuck execution contexts.
-        ts::UStringVector infiles;     // Input file names.
-        ts::UString       outfile;     // Output file name.
-        ts::UString       model;       // Model file name.
-        ts::UStringVector patches;     // XML patch files,.
-        bool              reformat;    // Reformat input files.
-        size_t            indent;      // Output indentation.
-        ts::xml::Tweaks   xml_tweaks;  // XML formatting options.
+        ts::DuckContext      duck;        // TSDuck execution contexts.
+        ts::UStringVector    infiles;     // Input file names.
+        ts::UString          outfile;     // Output file name.
+        ts::UString          model;       // Model file name.
+        ts::UStringVector    patches;     // XML patch files,.
+        bool                 reformat;    // Reformat input files.
+        bool                 xml_line;    // Output XML on one single line.
+        ts::UString          xml_prefix;  // Prefix in XML line.
+        size_t               indent;      // Output indentation.
+        ts::xml::Tweaks      xml_tweaks;  // XML formatting options.
+        ts::json::OutputArgs json;        // JSON output options.
+        ts::xml::JSONConverterArgs x2j;   // XML-to-JSON conversion options.
     };
 }
 
@@ -75,9 +82,16 @@ Options::Options(int argc, char *argv[]) :
     model(),
     patches(),
     reformat(false),
+    xml_line(false),
+    xml_prefix(),
     indent(2),
-    xml_tweaks()
+    xml_tweaks(),
+    json(true),
+    x2j()
 {
+    json.setHelp(u"Perform an automated XML-to-JSON conversion. The output file is in JSON format instead of XML.");
+    json.defineArgs(*this);
+    x2j.defineArgs(*this);
     xml_tweaks.defineArgs(*this);
 
     setIntro(u"Any input XML file name can be replaced with \"inline XML content\", starting with \"<?xml\".");
@@ -112,7 +126,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"output", 'o', STRING);
     help(u"output", u"filename",
          u"Specify the name of the output file (standard output by default). "
-         u"An output file is produced only if --patch or --reformat are specified.");
+         u"An output file is produced only if --patch, --reformat or --json are specified.");
 
     option(u"patch", 'p', STRING, 0, UNLIMITED_COUNT);
     help(u"patch", u"filename",
@@ -130,8 +144,16 @@ Options::Options(int argc, char *argv[]) :
          u"A shortcut for '--model tsduck.tables.model.xml'. "
          u"It verifies that the input files are valid PSI/SI tables files.");
 
+    option(u"xml-line", 0, STRING, 0, 1, 0, UNLIMITED_VALUE, true);
+    help(u"xml-line", u"'prefix'",
+         u"Log each table as one single XML line in the message logger instead of an output file. "
+         u"The optional string parameter specifies a prefix to prepend on the log "
+         u"line before the XML text to locate the appropriate line in the logs.");
+
     analyze(argc, argv);
 
+    json.loadArgs(duck, *this);
+    x2j.loadArgs(duck, *this);
     xml_tweaks.loadArgs(duck, *this);
 
     getValues(infiles, u"");
@@ -139,7 +161,9 @@ Options::Options(int argc, char *argv[]) :
     getValue(outfile, u"output");
     getValue(model, u"model");
     getIntValue(indent, u"indent", 2);
+    getValue(xml_prefix, u"xml-line");
     reformat = present(u"reformat") || !patches.empty();
+    xml_line = present(u"xml-line");
 
     // Predefined models.
     if (present(u"channel")) {
@@ -176,7 +200,9 @@ int MainCode(int argc, char *argv[])
     Options opt(argc, argv);
 
     // Load the model file if any is specified.
-    ts::xml::ModelDocument model(opt);
+    // Note that JSONConverter is a subclass of ModelDocument.
+    // The object named 'model' can be used either as a model and a JSON converter.
+    ts::xml::JSONConverter model(opt.x2j, opt);
     model.setTweaks(opt.xml_tweaks);
     if (!opt.model.empty() && !model.load(opt.model, true)) {
         opt.error(u"error loading model files, cannot validate input files");
@@ -189,7 +215,7 @@ int MainCode(int argc, char *argv[])
     opt.exitOnError();
 
     // Redirect standard output only if required.
-    ts::OutputRedirector out(opt.reformat ? opt.outfile : u"", opt, std::cout, std::ios::out);
+    ts::OutputRedirector out(opt.reformat || opt.json.json ? opt.outfile : u"", opt, std::cout, std::ios::out);
 
     // Now process each input file one by one.
     for (size_t i = 0; i < opt.infiles.size(); ++i) {
@@ -215,8 +241,31 @@ int MainCode(int argc, char *argv[])
         patch.applyPatches(doc);
 
         // Output the modified / reformatted document.
-        if (ok && opt.reformat) {
-            doc.save(u"", opt.indent, true);
+        if (ok) {
+            if (opt.xml_line) {
+                // Output XML result as one line on error log.
+                // Use a text formatter for one-liner.
+                ts::TextFormatter text(opt);
+                text.setString();
+                text.setEndOfLineMode(ts::TextFormatter::EndOfLineMode::SPACING);
+                doc.print(text);
+                opt.info(opt.xml_prefix + text.toString());
+            }
+            if (opt.json.json) {
+                // Perform XML to JSON conversion.
+                ts::json::ValuePtr jobj(model.convert(doc));
+                if (jobj.isNull()) {
+                    opt.error(u"JSON conversion error on %s", {display_name});
+                }
+                else {
+                    // Output JSON result, either on one line or output file.
+                    opt.json.report(*jobj, std::cout, opt);
+                }
+            }
+            else if (opt.reformat) {
+                // Same XML output on stdout (possibly already redirected to a file).
+                doc.save(u"", opt.indent, true);
+            }
         }
     }
     return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.25-2182
+VERSION 3.25-2185
 
 [NEW] New commands and plugins:
 
@@ -14,6 +14,13 @@ VERSION 3.25-2182
   * Everywhere an input XML file name is expected, it is possible to specify
     an "inline XML content" directly. The string is recognized as an inline
     XML content and not a file name when it starts with "<?xml".
+  * In some utilities or plugins where an output XML file name can be produced,
+    it is possible to specify an automated XML-to-JSON conversion and get a
+    JSON output.
+  * Everywhere XML or JSON output can be produced, it is possible to log
+    the XML or JSON data on one line using options --log-xml-line (or
+    --xml-line) and --json-line. Java or Python applications which intercept
+    messages from a TSProcessor can more easily grab the complete output data.
   * HEVC video attributes are now extracted and reported.
   * DVB-T/T2 and ISDB-T are no longer enumeration values ("6-MHz", "8-MHz",
     etc). They are arbitrary values in Hz. The previous values in command
@@ -36,6 +43,7 @@ VERSION 3.25-2182
     - Option --log-xml-line to "tstables" and plugin "tables".
     - Options --log-xml-line, --strict-xml, --text-output, --xml-output to
       "tspsi" and plugin "psi".
+    - Options --json, --json-line and --x2j-* to "tsxml".
 
 -------------------------------------------------------------------------------
 

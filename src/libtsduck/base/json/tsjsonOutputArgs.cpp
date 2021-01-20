@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsJSONArgs.h"
+#include "tsjsonOutputArgs.h"
 #include "tsArgs.h"
 TSDUCK_SOURCE;
 
@@ -36,7 +36,7 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::JSONArgs::JSONArgs(bool use_short_opt, const UString& help) :
+ts::json::OutputArgs::OutputArgs(bool use_short_opt, const UString& help) :
     json(false),
     json_line(false),
     json_prefix(),
@@ -50,7 +50,7 @@ ts::JSONArgs::JSONArgs(bool use_short_opt, const UString& help) :
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::JSONArgs::defineArgs(Args& args) const
+void ts::json::OutputArgs::defineArgs(Args& args) const
 {
     args.option(u"json", _use_short_opt ? 'j' : 0);
     args.help(u"json", _json_help);
@@ -69,7 +69,7 @@ void ts::JSONArgs::defineArgs(Args& args) const
 // Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-bool ts::JSONArgs::loadArgs(DuckContext& duck, Args& args)
+bool ts::json::OutputArgs::loadArgs(DuckContext& duck, Args& args)
 {
     json_line = args.present(u"json-line");
     json = json_line || args.present(u"json");
@@ -82,7 +82,7 @@ bool ts::JSONArgs::loadArgs(DuckContext& duck, Args& args)
 // Issue a JSON report according to options.
 //----------------------------------------------------------------------------
 
-void ts::JSONArgs::report(const json::Object& root, std::ostream& stm, Report& rep) const
+void ts::json::OutputArgs::report(const json::Value& root, std::ostream& stm, Report& rep) const
 {
     // An output text formatter for JSON output.
     TextFormatter text(rep);
@@ -99,5 +99,6 @@ void ts::JSONArgs::report(const json::Object& root, std::ostream& stm, Report& r
         text.setStream(stm);
         root.print(text);
         text << ts::endl;
+        text.close();
     }
 }

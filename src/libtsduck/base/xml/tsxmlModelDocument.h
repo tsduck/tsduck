@@ -71,6 +71,15 @@ namespace ts {
             //!
             bool validate(const Document& doc) const;
 
+        protected:
+            //!
+            //! Find a child element by name in an XML model element.
+            //! @param [in] elem An XML element in a model document.
+            //! @param [in] name Name of the child element to search.
+            //! @return Address of the child model or zero if not found.
+            //!
+            const Element* findModelElement(const Element* elem, const UString& name) const;
+
         private:
             //!
             //! Validate an XML tree of elements, used by validate().
@@ -79,14 +88,6 @@ namespace ts {
             //! @return True if @a doc matches @a model, false if it does not.
             //!
             bool validateElement(const Element* model, const Element* doc) const;
-
-            //!
-            //! Find a child element by name in an XML model element.
-            //! @param [in] elem An XML element in a model document.
-            //! @param [in] name Name of the child element to search.
-            //! @return Address of the child model or zero if not found.
-            //!
-            const Element* findModelElement(const Element* elem, const UString& name) const;
         };
     }
 }

@@ -28,57 +28,37 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Command line arguments for JSON reports.
+//!  Command line arguments for XML-to-JSON conversions.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsArgsSupplierInterface.h"
-#include "tsUString.h"
-#include "tsjsonObject.h"
 
 namespace ts {
-    //!
-    //! Command line arguments for JSON reports (@c -\-json or @c -\-json-line).
-    //! @ingroup cmd
-    //!
-    class TSDUCKDLL JSONArgs : public ArgsSupplierInterface
-    {
-        TS_NOCOPY(JSONArgs);
-    public:
-        // Public fields
-        bool    json;         //!< Option -\-json
-        bool    json_line;    //!< Option -\-json-line
-        UString json_prefix;  //!< Option -\-json-line="prefix"
+    namespace xml {
+        //!
+        //! Command line arguments for XML-to-JSON conversions.
+        //! @ingroup cmd
+        //!
+        class TSDUCKDLL JSONConverterArgs : public ArgsSupplierInterface
+        {
+        public:
+            // Public fields
+            bool include_root;      //!< Option -\-x2j-include-root
+            bool enforce_integer;   //!< Option -\-x2j-enforce-integer
+            bool enforce_boolean;   //!< Option -\-x2j-enforce-boolean
+            bool trim_text;         //!< Option -\-x2j-trim-text
+            bool collapse_text;     //!< Option -\-x2j-collapse-text
 
-        //!
-        //! Default constructor.
-        //! @param [in] use_short_opt Define @c 'j' as short option for @c -\-json.
-        //! @param [in] help Help text for option @c -\-json.
-        //!
-        JSONArgs(bool use_short_opt = false, const UString& help = UString());
+            //!
+            //! Default constructor.
+            //!
+            JSONConverterArgs();
 
-        //!
-        //! Set the help text for the @c -\-json option.
-        //! Must be called before defineArgs().
-        //! @param [in] text Help text for the @c -\-json option.
-        //!
-        void setHelp(const UString& text) const { _json_help = text; }
-
-        // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) const override;
-        virtual bool loadArgs(DuckContext& duck, Args& args) override;
-
-        //!
-        //! Issue a JSON report according to options.
-        //! @param [in] root JSON root object.
-        //! @param [in] stm Output stream when @c -\-json is specified but not @c -\-json-line.
-        //! @param [in] rep Logger to output one-line JSON when @c -\-json-line is specified.
-        //!
-        void report(const json::Object& root, std::ostream& stm, Report& rep) const;
-
-    private:
-        bool _use_short_opt;
-        mutable UString _json_help;
-    };
+            // Implementation of ArgsSupplierInterface.
+            virtual void defineArgs(Args& args) const override;
+            virtual bool loadArgs(DuckContext& duck, Args& args) override;
+        };
+    }
 }
