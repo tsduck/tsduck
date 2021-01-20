@@ -46,6 +46,10 @@ ts::xml::JSONConverter::JSONConverter(const JSONConverterArgs& args, Report& rep
 {
 }
 
+ts::xml::JSONConverter::~JSONConverter()
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Convert an XML document into a JSON object.

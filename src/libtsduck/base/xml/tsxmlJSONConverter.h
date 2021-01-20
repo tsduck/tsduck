@@ -87,6 +87,11 @@ namespace ts {
             JSONConverter(const JSONConverterArgs& args = JSONConverterArgs(), Report& report = NULLREP);
 
             //!
+            //! Destructor.
+            //!
+            virtual ~JSONConverter() override;
+
+            //!
             //! Convert an XML document into a JSON object.
             //! @param [in] source The source XML document to convert.
             //! @return A safe pointer to the converted JSON object or a null pointer on error.
