@@ -499,15 +499,16 @@ void ts::PSILogger::displayTable(const BinaryTable& table)
         _duck.out() << std::endl;
     }
 
-    // XML output.
+    // XML options.
+    BinaryTable::XMLOptions xml_opt;
+    xml_opt.setPID = true;
+
+    // Full XML output.
     if (_use_xml) {
 
         // Convert the table into an XML structure.
-        xml::Element* elem = table.toXML(_duck, _xml_doc.rootElement(), false);
+        xml::Element* elem = table.toXML(_duck, _xml_doc.rootElement(), xml_opt);
         if (elem != nullptr) {
-            // Add an XML comment as first child of the table.
-            new xml::Comment(elem, UString::Format(u" PID 0x%X (%<d) ", {table.sourcePID()}), false);
-
             // Print the new table.
             if (_xml_open) {
                 _xml_out << ts::margin;
@@ -534,11 +535,8 @@ void ts::PSILogger::displayTable(const BinaryTable& table)
         doc.initialize(u"tsduck");
 
         // Convert the table into an XML structure.
-        xml::Element* elem = table.toXML(_duck, doc.rootElement(), false);
+        xml::Element* elem = table.toXML(_duck, doc.rootElement(), xml_opt);
         if (elem != nullptr) {
-            // Add an XML comment as first child of the table.
-            new xml::Comment(elem, UString::Format(u" PID 0x%X (%<d) ", {table.sourcePID()}), false);
-
             // Initialize a text formatter for one-liner.
             TextFormatter text(_report);
             text.setString();

@@ -46,7 +46,7 @@ constexpr size_t ts::TablesLogger::DEFAULT_LOG_SIZE;
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::TablesLogger::TablesLogger(TablesDisplay& display) :
@@ -85,6 +85,7 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _use_next(false),
     _xml_tweaks(),
     _initial_pids(),
+    _xml_options(),
     _display(display),
     _duck(_display.duck()),
     _report(_duck.report()),
@@ -108,11 +109,6 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     TablesLoggerFilterRepository::Instance()->createFilters(_section_filters);
     _report.debug(u"TablesLogger has %s section filters", {_section_filters.size()});
 }
-
-
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
 
 ts::TablesLogger::~TablesLogger()
 {
@@ -353,7 +349,10 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
         _initial_pids |= pids;
     }
 
-    // Load XML options.
+    // XML options.
+    _xml_options.setPID = true;
+    _xml_options.setLocalTime = _time_stamp;
+    _xml_options.setPackets = _packet_index;
     return _xml_tweaks.loadArgs(duck, args);
 }
 
@@ -687,7 +686,7 @@ void ts::TablesLogger::logXML(const BinaryTable& table)
     // Build an XML document.
     xml::Document doc;
     doc.initialize(u"tsduck");
-    xml::Element* elem = buildXML(doc, table);
+    xml::Element* elem = table.toXML(_duck, doc.rootElement(), _xml_options);
     if (elem == nullptr) {
         // Error serializing the table, error message already printed.
         return;
@@ -929,7 +928,7 @@ bool ts::TablesLogger::createXML(const ts::UString& name)
 void ts::TablesLogger::saveXML(const ts::BinaryTable& table)
 {
     // Convert the table into an XML structure.
-    xml::Element* elem = buildXML(_xmlDoc, table);
+    xml::Element* elem = table.toXML(_duck, _xmlDoc.rootElement(), _xml_options);
     if (elem == nullptr) {
         return;
     }
@@ -961,31 +960,6 @@ void ts::TablesLogger::closeXML()
 
 
 //----------------------------------------------------------------------------
-// Add a binary table into an XML document.
-//----------------------------------------------------------------------------
-
-ts::xml::Element* ts::TablesLogger::buildXML(xml::Document& doc, const BinaryTable& table)
-{
-    // Convert the table into an XML structure.
-    xml::Element* elem = table.toXML(_duck, doc.rootElement(), false);
-    if (elem != nullptr) {
-        // Add <metadata> element as first child of the table.
-        // This element is not part of the table but describes how the table was collected.
-        xml::Element* meta = new xml::Element(elem, u"metadata", CASE_INSENSITIVE, false); // first position
-        meta->setIntAttribute(u"PID", table.sourcePID());
-        if (_time_stamp) {
-            meta->setDateTimeAttribute(u"time", Time::CurrentLocalTime());
-        }
-        if (_packet_index) {
-            meta->setIntAttribute(u"first_ts_packet", table.getFirstTSPacketIndex());
-            meta->setIntAttribute(u"last_ts_packet", table.getLastTSPacketIndex());
-        }
-    }
-    return elem;
-}
-
-
-//----------------------------------------------------------------------------
 // Log a table (option --log)
 //----------------------------------------------------------------------------
 
@@ -995,19 +969,19 @@ void ts::TablesLogger::logSection(const Section& sect)
 
     // Display time stamp if required.
     if (_time_stamp) {
-        header += UString(Time::CurrentLocalTime());
+        header += Time::CurrentLocalTime();
         header += u": ";
     }
 
     // Display packet index if required.
     if (_packet_index) {
-        header += UString::Format(u"Packet %'d to %'d, ", {sect.getFirstTSPacketIndex(), sect.getLastTSPacketIndex()});
+        header.format(u"Packet %'d to %'d, ", {sect.getFirstTSPacketIndex(), sect.getLastTSPacketIndex()});
     }
 
     // Table identification.
-    header += UString::Format(u"PID 0x%X, TID 0x%X", {sect.sourcePID(), sect.tableId()});
+    header.format(u"PID 0x%X, TID 0x%X", {sect.sourcePID(), sect.tableId()});
     if (sect.isLongSection()) {
-        header += UString::Format(u", TIDext 0x%X, V%d, Sec %d/%d", {sect.tableIdExtension(), sect.version(), sect.sectionNumber(), sect.lastSectionNumber()});
+        header.format(u", TIDext 0x%X, V%d, Sec %d/%d", {sect.tableIdExtension(), sect.version(), sect.sectionNumber(), sect.lastSectionNumber()});
     }
     header += u": ";
 

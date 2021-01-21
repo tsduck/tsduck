@@ -300,7 +300,7 @@ ts::PacketCounter ts::BinaryTable::getLastTSPacketIndex() const
     PacketCounter last = 0;
     for (auto it = _sections.begin(); it != _sections.end(); ++it) {
         if (!it->isNull()) {
-            last = std::max (last, (*it)->getLastTSPacketIndex());
+            last = std::max(last, (*it)->getLastTSPacketIndex());
         }
     }
     return last;
@@ -497,10 +497,23 @@ bool ts::BinaryTable::isShortSection() const
 
 
 //----------------------------------------------------------------------------
+// Options to convert a binary table into XML.
+//----------------------------------------------------------------------------
+
+ts::BinaryTable::XMLOptions::XMLOptions() :
+    forceGeneric(false),
+    setPID(false),
+    setLocalTime(false),
+    setPackets(false)
+{
+}
+
+
+//----------------------------------------------------------------------------
 // This method converts the table to XML.
 //----------------------------------------------------------------------------
 
-ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent, bool forceGeneric) const
+ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent, const XMLOptions& opt) const
 {
     // Filter invalid tables.
     if (!_is_valid || _sections.size() == 0 || _sections[0].isNull()) {
@@ -511,7 +524,7 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
     xml::Element* node = nullptr;
 
     // Try to generate a specialized XML structure.
-    if (!forceGeneric) {
+    if (!opt.forceGeneric) {
         // Do we know how to deserialize this table?
         PSIRepository::TableFactory fac = PSIRepository::Instance()->getTableFactory(_tid, duck.standards(), _source_pid);
         if (fac != nullptr) {
@@ -552,6 +565,23 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
                     node->addElement(u"section")->addHexaText(_sections[index]->payload(), _sections[index]->payloadSize());
                 }
             }
+        }
+    }
+
+    // Add optional metadata.
+    if ((opt.setPID && _source_pid != PID_NULL) || opt.setLocalTime || opt.setPackets) {
+        // Add <metadata> element as first child of the table.
+        // This element is not part of the table but describes how the table was collected.
+        xml::Element* meta = new xml::Element(node, u"metadata", CASE_INSENSITIVE, false); // first position
+        if (opt.setPID && _source_pid != PID_NULL) {
+            meta->setIntAttribute(u"PID", _source_pid);
+        }
+        if (opt.setLocalTime) {
+            meta->setDateTimeAttribute(u"time", Time::CurrentLocalTime());
+        }
+        if (opt.setPackets) {
+            meta->setIntAttribute(u"first_ts_packet", getFirstTSPacketIndex());
+            meta->setIntAttribute(u"last_ts_packet", getLastTSPacketIndex());
         }
     }
 

@@ -302,15 +302,28 @@ namespace ts {
         bool isShortSection() const;
 
         //!
+        //! Options to convert a binary table into XML.
+        //!
+        class TSDUCKDLL XMLOptions
+        {
+        public:
+            XMLOptions();       //!< Constructor.
+            bool forceGeneric;  //!< Force a generic table node even if the table can be specialized.
+            bool setPID;        //!< Add a metadata element with the source PID, when available.
+            bool setLocalTime;  //!< Add a metadata element with the current local time.
+            bool setPackets;    //!< Add a metadata element with the index of the first and last TS packets of the table.
+        };
+
+        //!
         //! This method converts the table to XML.
         //! If the table has a specialized implementation, generate a specialized XML structure.
         //! Otherwise, generate a \<generic_short_table> or \<generic_long_table> node.
         //! @param [in,out] duck TSDuck execution environment.
         //! @param [in,out] parent The parent node for the XML representation.
-        //! @param [in] forceGeneric Force a generic table node even if the table can be specialized.
+        //! @param [in] opt Conversion options.
         //! @return The new XML element or zero if the table is not valid.
         //!
-        xml::Element* toXML(DuckContext& duck, xml::Element* parent, bool forceGeneric = false) const;
+        xml::Element* toXML(DuckContext& duck, xml::Element* parent, const XMLOptions& opt = XMLOptions()) const;
 
         //!
         //! This method converts an XML node as a binary table.
