@@ -57,9 +57,9 @@ namespace ts {
         //!
         //! - Each XML element is converted to a JSON object {...}.
         //! - The name of the XML element is an attribute "#name" inside the object.
-        //!   Note that it was not possible to transform '<foo .../>' into '"foo" : {...}'
+        //!   Note that it was not possible to transform '\<foo .../>' into '"foo" : {...}'
         //!   because several XML element with the same name can appear in the same block.
-        //!   Consequently, '<foo .../>' is converted to '{"#name" : "foo", ...}'.
+        //!   Consequently, '\<foo .../>' is converted to '{"#name" : "foo", ...}'.
         //! - All attributes of the XML element are directly mapped into the JSON object.
         //!   - By default, attribute values are converted to JSON strings.
         //!   - If the model has a value for this attribute and if this model value starts
@@ -68,7 +68,7 @@ namespace ts {
         //!   - Similarly, if the model value starts with "bool" and the value can be successfully
         //!     converted to a boolean, then the value becomes a JSON True or False.
         //! - The children nodes inside an element are placed in a JSON array with name "#nodes".
-        //!   Consequently, '<foo> <bar/> <baz/> </foo>' is converted to
+        //!   Consequently, '\<foo> \<bar/> \<baz/> \</foo>' is converted to
         //!   '{"#name" : "foo", "#nodes" : [{"#name" : "bar"}, {"#name" : "baz"}]}'.
         //! - Each XML text node is converted to a JSON string. If the model has a value for this
         //!   text node and if this model value starts with "hexa", then all spaces are collapsed
