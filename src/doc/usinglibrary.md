@@ -9,8 +9,9 @@ you must install the TSDuck development environment first.
 - On Windows systems, you must select the optional "Development" component
   during the installation.
 - On Fedora, Red Hat and CentOS, you must install the package `tsduck-devel`.
-- On Ubuntu systems, you must install the package `tsduck-dev`.
+- On Ubuntu, Debian and Raspbian, you must install the package `tsduck-dev`.
 - On macOS systems, the development environment is always installed with TSDuck using Homebrew.
+- If you build TSDuck from sources, use `make install install-devel`.
 
 # Building applications on Linux and macOS  {#liblinux}
 
@@ -27,7 +28,7 @@ default: myexec
 ~~~~
 This is as simple as that.
 
-Just run "make" to build the application.
+Just run `make` to build the application.
 ~~~~
 $ make
 ~~~~

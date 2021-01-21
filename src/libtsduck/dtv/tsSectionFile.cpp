@@ -554,7 +554,7 @@ bool ts::SectionFile::generateDocument(xml::Document& doc) const
     for (BinaryTablePtrVector::const_iterator it = _tables.begin(); it != _tables.end(); ++it) {
         const BinaryTablePtr& table(*it);
         if (!table.isNull()) {
-            table->toXML(_duck, root, false);
+            table->toXML(_duck, root);
         }
     }
 

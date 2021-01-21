@@ -55,7 +55,7 @@ ts::xml::JSONConverter::~JSONConverter()
 // Convert an XML document into a JSON object.
 //----------------------------------------------------------------------------
 
-ts::json::ValuePtr ts::xml::JSONConverter::convert(const Document& source) const
+ts::json::ValuePtr ts::xml::JSONConverter::convert(const Document& source, bool force_root) const
 {
     const xml::Element* docRoot = source.rootElement();
 
@@ -71,7 +71,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convert(const Document& source) const
         }
 
         // Convert the source. Use no model if not the same as source.
-        if (_args.include_root) {
+        if (_args.include_root || force_root) {
             // Return a JSON object containing the root.
             return convertElement(modelRoot, docRoot);
         }

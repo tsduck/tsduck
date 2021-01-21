@@ -276,10 +276,13 @@ void SectionFileTest::testGenericShortTable()
     TSUNIT_ASSERT(refTable.isValid());
     TSUNIT_EQUAL(1, refTable.sectionCount());
 
+    ts::BinaryTable::XMLOptions opt;
+    opt.forceGeneric = true;
+
     ts::xml::Document doc(report());
     ts::xml::Element* root = doc.initialize(u"test");
     TSUNIT_ASSERT(root != nullptr);
-    TSUNIT_ASSERT(refTable.toXML(duck, root, true) != nullptr);
+    TSUNIT_ASSERT(refTable.toXML(duck, root, opt) != nullptr);
 
     ts::UString text(doc.toString());
     debug() << "SectionFileTest::testGenericShortTable: " << text << std::endl;
@@ -334,10 +337,13 @@ void SectionFileTest::testGenericLongTable()
     TSUNIT_EQUAL(0x1234, refTable.tableIdExtension());
     TSUNIT_EQUAL(2, refTable.sectionCount());
 
+    ts::BinaryTable::XMLOptions opt;
+    opt.forceGeneric = true;
+
     ts::xml::Document doc(report());
     ts::xml::Element* root = doc.initialize(u"test");
     TSUNIT_ASSERT(root != nullptr);
-    TSUNIT_ASSERT(refTable.toXML(duck, root, true) != nullptr);
+    TSUNIT_ASSERT(refTable.toXML(duck, root, opt) != nullptr);
 
     ts::UString text(doc.toString());
     debug() << "SectionFileTest::testGenericLongTable: " << text << std::endl;

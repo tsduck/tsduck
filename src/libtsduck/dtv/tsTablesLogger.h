@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsArgsSupplierInterface.h"
+#include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesLoggerFilterInterface.h"
 #include "tsArgs.h"
@@ -176,6 +177,7 @@ namespace ts {
         bool                     _use_next;          // Use tables with "next" flag.
         xml::Tweaks              _xml_tweaks;        // XML tweak options.
         PIDSet                   _initial_pids;      // Initial PID's to filter.
+        BinaryTable::XMLOptions  _xml_options;       // XML conversion options.
 
         // Working data:
         TablesDisplay&           _display;
@@ -207,9 +209,6 @@ namespace ts {
         bool createXML(const UString& name);
         void saveXML(const BinaryTable& table);
         void closeXML();
-
-        // Add a binary table into an XML document.
-        xml::Element* buildXML(xml::Document& doc, const BinaryTable& table);
 
         // Log XML one-liners.
         void logXML(const BinaryTable& table);

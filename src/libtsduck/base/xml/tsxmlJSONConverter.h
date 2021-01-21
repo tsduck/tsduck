@@ -50,7 +50,7 @@ namespace ts {
         //!
         //! In this class, the XML model is not used to @e validate the XML document.
         //! The model is optional (it can be empty). It is only used as a hint to infer
-        //! the type or XML attributes and text nodes in the source document.
+        //! the type of XML attributes and text nodes in the source document.
         //!
         //! There is no standard way to convert XML to JSON. Several tools exist and
         //! each of them has its own conversion rules. Here, we use the following rules:
@@ -58,14 +58,14 @@ namespace ts {
         //! - Each XML element is converted to a JSON object {...}.
         //! - The name of the XML element is an attribute "#name" inside the object.
         //!   Note that it was not possible to transform '<foo .../>' into '"foo" : {...}'
-        //!   because several XML element in the same name can appear in the same block.
+        //!   because several XML element with the same name can appear in the same block.
         //!   Consequently, '<foo .../>' is converted to '{"#name" : "foo", ...}'.
         //! - All attributes of the XML element are directly mapped into the JSON object.
         //!   - By default, attribute values are converted to JSON strings.
         //!   - If the model has a value for this attribute and if this model value starts
         //!     with "int" or "uint" and the attribute value can be successfully converted
         //!     to an integer, then the value becomes a JSON number.
-        //!   - Similarly, is the model value starts with "bool" and the value can be successfully
+        //!   - Similarly, if the model value starts with "bool" and the value can be successfully
         //!     converted to a boolean, then the value becomes a JSON True or False.
         //! - The children nodes inside an element are placed in a JSON array with name "#nodes".
         //!   Consequently, '<foo> <bar/> <baz/> </foo>' is converted to
@@ -94,9 +94,10 @@ namespace ts {
             //!
             //! Convert an XML document into a JSON object.
             //! @param [in] source The source XML document to convert.
+            //! @param [in] force_root If true, force the option -\-x2j-include-root.
             //! @return A safe pointer to the converted JSON object or a null pointer on error.
             //!
-            json::ValuePtr convert(const Document& source) const;
+            json::ValuePtr convert(const Document& source, bool force_root = false) const;
 
         private:
             JSONConverterArgs _args;  // XML-to-JSON conversion options.
