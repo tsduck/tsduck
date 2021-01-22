@@ -64,9 +64,7 @@ ts::PSILogger::PSILogger(TablesDisplay& display) :
     _display(display),
     _duck(_display.duck()),
     _report(_duck.report()),
-    _xml_out(_report),
     _xml_doc(_report),
-    _xml_open(false),
     _abort(false),
     _pat_ok(_cat_only),
     _cat_ok(_clear),
@@ -206,23 +204,13 @@ bool ts::PSILogger::open()
     }
 
     // Set XML options in document.
+    _xml_doc.clear();
     _xml_doc.setTweaks(_xml_tweaks);
 
     // Open/create the XML output.
-    if (_use_xml) {
-        _xml_out.close();
-        _xml_doc.clear();
-        if (_xml_destination.empty()) {
-            // Use standard output.
-            _xml_out.setStream(std::cout);
-        }
-        else if (!_xml_out.setFile(_xml_destination)) {
-            _abort = true;
-            return false;
-        }
-        // Initialize the XML document.
-        _xml_doc.initialize(u"tsduck");
-        _xml_open = false; // document header not set
+    if (_use_xml && !_xml_doc.open(u"tsduck", u"", _xml_destination, std::cout)) {
+        _abort = true;
+        return false;
     }
 
     // Specify the PID filters
@@ -249,10 +237,7 @@ bool ts::PSILogger::open()
 void ts::PSILogger::close()
 {
     // Complete XML output.
-    if (_xml_open) {
-        _xml_doc.printClose(_xml_out);
-        _xml_open = false;
-    }
+    _xml_doc.close();
 }
 
 
@@ -505,26 +490,11 @@ void ts::PSILogger::displayTable(const BinaryTable& table)
 
     // Full XML output.
     if (_use_xml) {
-
         // Convert the table into an XML structure.
-        xml::Element* elem = table.toXML(_duck, _xml_doc.rootElement(), xml_opt);
-        if (elem != nullptr) {
-            // Print the new table.
-            if (_xml_open) {
-                _xml_out << ts::margin;
-                elem->print(_xml_out, false);
-                _xml_out << std::endl;
-            }
-            else {
-                // If this is the first table, print the document header with it.
-                _xml_open = true;
-                _xml_doc.print(_xml_out, true);
-            }
+        table.toXML(_duck, _xml_doc.rootElement(), xml_opt);
 
-            // Now remove the table from the document. Keeping them would eat up memory for no use.
-            // Deallocating the element forces the removal from the document through the destructor.
-            delete elem;
-        }
+        // Print and delete the new table.
+        _xml_doc.flush();
     }
 
     // XML one-liner in the log.

@@ -45,7 +45,7 @@
 #include "tsUDPSocket.h"
 #include "tsCASMapper.h"
 #include "tsxmlTweaks.h"
-#include "tsxmlDocument.h"
+#include "tsxmlRunningDocument.h"
 
 namespace ts {
     //!
@@ -189,14 +189,12 @@ namespace ts {
         PacketCounter            _packet_count;
         SectionDemux             _demux;
         CASMapper                _cas_mapper;
-        TextFormatter            _xmlOut;            // XML output formatter.
-        xml::Document            _xmlDoc;            // XML root document.
-        bool                     _xmlOpen;           // The XML root element is open.
-        std::ofstream            _binfile;           // Binary output file.
+        xml::RunningDocument     _xml_doc;           // XML root document.
+        std::ofstream            _bin_file;          // Binary output file.
         UDPSocket                _sock;              // Output socket.
-        std::map<PID,SectionPtr> _shortSections;     // Tracking duplicate short sections by PID.
-        std::map<PID,SectionPtr> _allSections;       // Tracking duplicate sections by PID (with --all-sections).
-        std::set<uint64_t>       _sectionsOnce;      // Tracking sets of PID/TID/TDIext/secnum/version with --all-once.
+        std::map<PID,SectionPtr> _short_sections;    // Tracking duplicate short sections by PID.
+        std::map<PID,SectionPtr> _last_sections;     // Tracking duplicate sections by PID (with --all-sections).
+        std::set<uint64_t>       _sections_once;     // Tracking sets of PID/TID/TDIext/secnum/version with --all-once.
         TablesLoggerFilterVector _section_filters;   // All registered section filters.
 
         // Create a binary file. On error, set _abort and return false.

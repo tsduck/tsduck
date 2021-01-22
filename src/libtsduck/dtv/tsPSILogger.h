@@ -37,7 +37,7 @@
 #include "tsTablesDisplay.h"
 #include "tsSectionDemux.h"
 #include "tsTextFormatter.h"
-#include "tsxmlDocument.h"
+#include "tsxmlRunningDocument.h"
 
 namespace ts {
     //!
@@ -124,23 +124,21 @@ namespace ts {
         xml::Tweaks _xml_tweaks;        // XML tweak options.
 
         // Working data:
-        TablesDisplay&   _display;
-        DuckContext&     _duck;
-        Report&          _report;
-        TextFormatter    _xml_out;       // XML output formatter.
-        xml::Document    _xml_doc;       // XML root document.
-        bool             _xml_open;      // The XML root element is open.
-        bool             _abort;
-        bool             _pat_ok;        // Got a PAT
-        bool             _cat_ok;        // Got a CAT or not interested in CAT
-        bool             _sdt_ok;        // Got an SDT
-        bool             _bat_ok;        // Got a BAT
-        int              _expected_pmt;  // Expected PMT count
-        int              _received_pmt;  // Received PMT count
-        PacketCounter    _clear_packets_cnt;
-        PacketCounter    _scrambled_packets_cnt;
-        SectionDemux     _demux;         // Demux reporting PSI tables.
-        Standards        _standards;     // List of current standards in the PSI logger.
+        TablesDisplay&       _display;
+        DuckContext&         _duck;
+        Report&              _report;
+        xml::RunningDocument _xml_doc;       // XML root document.
+        bool                 _abort;
+        bool                 _pat_ok;        // Got a PAT
+        bool                 _cat_ok;        // Got a CAT or not interested in CAT
+        bool                 _sdt_ok;        // Got an SDT
+        bool                 _bat_ok;        // Got a BAT
+        int                  _expected_pmt;  // Expected PMT count
+        int                  _received_pmt;  // Received PMT count
+        PacketCounter        _clear_packets_cnt;
+        PacketCounter        _scrambled_packets_cnt;
+        SectionDemux         _demux;         // Demux reporting PSI tables.
+        Standards            _standards;     // List of current standards in the PSI logger.
 
         // Displays a binary table.
         void displayTable(const BinaryTable& table);
