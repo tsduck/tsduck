@@ -712,6 +712,7 @@
 #include "tsxmlModelDocument.h"
 #include "tsxmlNode.h"
 #include "tsxmlPatchDocument.h"
+#include "tsxmlRunningDocument.h"
 #include "tsxmlText.h"
 #include "tsxmlTweaks.h"
 #include "tsxmlUnknown.h"

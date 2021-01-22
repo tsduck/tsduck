@@ -77,6 +77,7 @@ ts::TextFormatter& ts::TextFormatter::setStream(std::ostream& strm)
 bool ts::TextFormatter::setFile(const UString& fileName)
 {
     close();
+    _report.debug(u"creating file %s", {fileName});
     _outFile.open(fileName.toUTF8().c_str(), std::ios::out);
     if (!_outFile) {
         _report.error(u"cannot create file %s", {fileName});

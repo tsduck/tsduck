@@ -95,14 +95,12 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _packet_count(0),
     _demux(_duck),
     _cas_mapper(_duck),
-    _xmlOut(_report),
-    _xmlDoc(_report),
-    _xmlOpen(false),
-    _binfile(),
+    _xml_doc(_report),
+    _bin_file(),
     _sock(false, _report),
-    _shortSections(),
-    _allSections(),
-    _sectionsOnce(),
+    _short_sections(),
+    _last_sections(),
+    _sections_once(),
     _section_filters()
 {
     // Create an instance of each registered section filter.
@@ -369,15 +367,13 @@ bool ts::TablesLogger::open()
     _packet_count = 0;
     _demux.reset();
     _cas_mapper.reset();
-    _xmlOut.close();
-    _xmlDoc.clear();
-    _xmlOpen = false;
-    _shortSections.clear();
-    _allSections.clear();
-    _sectionsOnce.clear();
+    _xml_doc.clear();
+    _short_sections.clear();
+    _last_sections.clear();
+    _sections_once.clear();
 
-    if (_binfile.is_open()) {
-        _binfile.close();
+    if (_bin_file.is_open()) {
+        _bin_file.close();
     }
     if (_sock.isOpen()) {
         _sock.close(_report);
@@ -407,7 +403,7 @@ bool ts::TablesLogger::open()
     }
 
     // Set XML options in document.
-    _xmlDoc.setTweaks(_xml_tweaks);
+    _xml_doc.setTweaks(_xml_tweaks);
 
     // Open/create the XML output.
     if (_use_xml && !_rewrite_xml && !createXML(_xml_destination)) {
@@ -457,8 +453,8 @@ void ts::TablesLogger::close()
 
         // Close files and documents.
         closeXML();
-        if (_binfile.is_open()) {
-            _binfile.close();
+        if (_bin_file.is_open()) {
+            _bin_file.close();
         }
         if (_sock.isOpen()) {
             _sock.close(_report);
@@ -510,9 +506,9 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
 
     // Ignore duplicate tables with a short section.
     if (_no_duplicate && table.isShortSection()) {
-        if (_shortSections[pid].isNull() || *_shortSections[pid] != *table.sectionAt(0)) {
+        if (_short_sections[pid].isNull() || *_short_sections[pid] != *table.sectionAt(0)) {
             // Not the same section, keep it for next time.
-            _shortSections[pid] = new Section(*table.sectionAt(0), ShareMode::COPY);
+            _short_sections[pid] = new Section(*table.sectionAt(0), ShareMode::COPY);
         }
         else {
             // Same section as previously, ignore it.
@@ -555,7 +551,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
             saveBinarySection(*table.sectionAt(i));
         }
         if (_rewrite_binary) {
-            _binfile.close();
+            _bin_file.close();
         }
     }
 
@@ -594,13 +590,13 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
             (uint64_t(sect.tableIdExtension()) << 16) |
             (uint64_t(sect.sectionNumber()) << 8) |
             uint64_t(sect.version());
-        if (_sectionsOnce.count(id) != 0) {
+        if (_sections_once.count(id) != 0) {
             // Already found this one, give up.
             return;
         }
         else {
             // Remember this combination.
-            _sectionsOnce.insert(id);
+            _sections_once.insert(id);
         }
     }
 
@@ -627,9 +623,9 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
 
     // Ignore duplicate sections.
     if (_no_duplicate) {
-        if (_allSections[pid].isNull() || *_allSections[pid] != sect) {
+        if (_last_sections[pid].isNull() || *_last_sections[pid] != sect) {
             // Not the same section, keep it for next time.
-            _allSections[pid] = new Section(sect, ShareMode::COPY);
+            _last_sections[pid] = new Section(sect, ShareMode::COPY);
         }
         else {
             // Same section as previously, ignore it.
@@ -661,7 +657,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
         }
         saveBinarySection(sect);
         if (_rewrite_binary) {
-            _binfile.close();
+            _bin_file.close();
         }
     }
 
@@ -859,9 +855,9 @@ bool ts::TablesLogger::AnalyzeUDPMessage(const uint8_t* data, size_t size, bool 
 bool ts::TablesLogger::createBinaryFile(const ts::UString& name)
 {
     _report.verbose(u"creating %s", {name});
-    _binfile.open(name.toUTF8().c_str(), std::ios::out | std::ios::binary);
+    _bin_file.open(name.toUTF8().c_str(), std::ios::out | std::ios::binary);
 
-    if (_binfile) {
+    if (_bin_file) {
         return true;
     }
     else {
@@ -882,9 +878,9 @@ void ts::TablesLogger::saveBinarySection(const Section& sect)
     if (_multi_files) {
         // Build a unique file name for this section
         UString outname(PathPrefix(_bin_destination));
-        outname += UString::Format(u"_p%04X_t%02X", {sect.sourcePID(), sect.tableId()});
+        outname.format(u"_p%04X_t%02X", {sect.sourcePID(), sect.tableId()});
         if (sect.isLongSection()) {
-            outname += UString::Format(u"_e%04X_v%02X_s%02X", {sect.tableIdExtension(), sect.version(), sect.sectionNumber()});
+            outname.format(u"_e%04X_v%02X_s%02X", {sect.tableIdExtension(), sect.version(), sect.sectionNumber()});
         }
         outname += PathSuffix(_bin_destination);
         // Create the output file
@@ -894,13 +890,13 @@ void ts::TablesLogger::saveBinarySection(const Section& sect)
     }
 
     // Write the section to the file
-    if (!sect.write(_binfile, _report)) {
+    if (!sect.write(_bin_file, _report)) {
         _abort = true;
     }
 
     // Close individual files
     if (_multi_files) {
-        _binfile.close();
+        _bin_file.close();
     }
 }
 
@@ -911,51 +907,21 @@ void ts::TablesLogger::saveBinarySection(const Section& sect)
 
 bool ts::TablesLogger::createXML(const ts::UString& name)
 {
-    if (name.empty()) {
-        // Use standard output.
-        _xmlOut.setStream(std::cout);
-    }
-    else if (!_xmlOut.setFile(name)) {
-        _abort = true;
-        return false;
-    }
-
-    // Initialize the XML document.
-    _xmlDoc.initialize(u"tsduck");
-    return true;
+    return _xml_doc.open(u"tsduck", u"", name, std::cout) != nullptr;
 }
 
 void ts::TablesLogger::saveXML(const ts::BinaryTable& table)
 {
     // Convert the table into an XML structure.
-    xml::Element* elem = table.toXML(_duck, _xmlDoc.rootElement(), _xml_options);
-    if (elem == nullptr) {
-        return;
-    }
+    table.toXML(_duck, _xml_doc.rootElement(), _xml_options);
 
-    // Print the new table.
-    if (_xmlOpen) {
-        _xmlOut << ts::margin;
-        elem->print(_xmlOut, false);
-        _xmlOut << std::endl;
-    }
-    else {
-        // If this is the first table, print the document header with it.
-        _xmlOpen = true;
-        _xmlDoc.print(_xmlOut, true);
-    }
-
-    // Now remove the table from the document. Keeping them would eat up memory for no use.
-    // Deallocating the element forces the removal from the document through the destructor.
-    delete elem;
+    // Print and delete the new table.
+    _xml_doc.flush();
 }
 
 void ts::TablesLogger::closeXML()
 {
-    if (_xmlOpen) {
-        _xmlDoc.printClose(_xmlOut);
-        _xmlOpen = false;
-    }
+    _xml_doc.close();
 }
 
 
