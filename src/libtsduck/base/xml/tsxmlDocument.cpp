@@ -121,14 +121,13 @@ bool ts::xml::Document::load(std::istream& strm)
 
 bool ts::xml::Document::load(const UString& fileName, bool search, bool stdInputIfEmpty)
 {
-    // Specific case of inline XML content, when the string is not the name
-    // of a file but directly an XML content.
+    // Specific case of inline XML content, when the string is not the name of a file but directly an XML content.
     if (IsInlineXML(fileName)) {
         return parse(fileName);
     }
 
     // Specific case of the standard input.
-    if (stdInputIfEmpty && fileName.empty()) {
+    if (stdInputIfEmpty && (fileName.empty() || fileName == u"-")) {
         return load(std::cin);
     }
 

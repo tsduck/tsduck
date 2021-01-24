@@ -75,7 +75,7 @@ ts::DuckExtensionRepository::Loader::Loader()
 
         // Get extension name from file name (without tslibext_).
         const UString name(BaseName(filename, TS_SHARED_LIB_SUFFIX).toRemovedPrefix(u"tslibext_", FileSystemCaseSensitivity));
-        if (name.containSimilar(ignore)) {
+        if (name.isContainedSimilarIn(ignore)) {
             // This extension is listed in TSLIBEXT_IGNORE.
             CERR.debug(u"ignoring extension \"%s\"", {filename});
         }

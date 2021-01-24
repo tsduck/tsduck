@@ -1355,7 +1355,7 @@ namespace ts {
         //! @see similar()
         //!
         template <class CONTAINER>
-        bool containSimilar(const CONTAINER& container) const;
+        bool isContainedSimilarIn(const CONTAINER& container) const;
 
         //!
         //! Locate into a map or multimap an element with a similar string.

@@ -157,6 +157,7 @@ namespace ts {
         //! Load a binary or XML file.
         //! @param [in] file_name XML file name.
         //! If the file name starts with "<?xml", this is considered as "inline XML content".
+        //! If the file name is empty or "-", the standard input is used.
         //! @param [in] type File type. If UNSPECIFIED, the file type is based on the file name.
         //! @return True on success, false on error.
         //!
@@ -174,6 +175,7 @@ namespace ts {
         //! Load an XML file.
         //! @param [in] file_name XML file name.
         //! If the file name starts with "<?xml", this is considered as "inline XML content".
+        //! If the file name is empty or "-", the standard input is used.
         //! @return True on success, false on error.
         //!
         bool loadXML(const UString& file_name);
@@ -195,6 +197,7 @@ namespace ts {
         //!
         //! Save an XML file.
         //! @param [in] file_name XML file name.
+        //! If the file name is empty or "-", the standard output is used.
         //! @return True on success, false on error.
         //!
         bool saveXML(const UString& file_name) const;
@@ -202,6 +205,7 @@ namespace ts {
         //!
         //! Save a JSON file after automated XML-to-JSON conversion.
         //! @param [in] file_name JSON file name.
+        //! If the file name is empty or "-", the standard output is used.
         //! @return True on success, false on error.
         //!
         bool saveJSON(const UString& file_name) const;
@@ -231,6 +235,7 @@ namespace ts {
         //!
         //! Load a binary section file.
         //! @param [in] file_name Binary file name.
+        //! If the file name is empty or "-", the standard input is used.
         //! @return True on success, false on error.
         //!
         bool loadBinary(const UString& file_name);
@@ -248,6 +253,7 @@ namespace ts {
         //!
         //! Save a binary section file.
         //! @param [in] file_name Binary file name.
+        //! If the file name is empty or "-", the standard output is used.
         //! @return True on success, false on error.
         //!
         bool saveBinary(const UString& file_name) const;
