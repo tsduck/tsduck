@@ -336,6 +336,7 @@ bool ts::InjectPlugin::reloadFiles()
     file.setCRCValidation(_crc_op);
 
     for (FileNameRateList::iterator it = _infiles.begin(); it != _infiles.end(); ++it) {
+        file.clear();
         if (_poll_files && !FileExists(it->file_name)) {
             // With --poll-files, we ignore non-existent files.
             it->retry_count = 0;  // no longer needed to retry
