@@ -199,5 +199,5 @@ int MainCode(int argc, char *argv[])
     }
 
     // Save the binary file containing the ECM's.
-    return ecmFile.saveBinary(opt.outFile, opt) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return ecmFile.saveBinary(opt.outFile) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

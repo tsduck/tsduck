@@ -158,11 +158,11 @@ void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, cons
     // Convert XML reference content to binary tables.
     ts::DuckContext duck;
     ts::SectionFile xml(duck);
-    TSUNIT_ASSERT(xml.parseXML(ref_xml, CERR));
+    TSUNIT_ASSERT(xml.parseXML(ref_xml));
 
     // Serialize binary tables to section data.
     std::ostringstream strm;
-    TSUNIT_ASSERT(xml.saveBinary(strm, CERR));
+    TSUNIT_ASSERT(xml.saveBinary(strm));
     const std::string sections(strm.str());
 
     // In debug mode, analyze data before failing.
@@ -195,7 +195,7 @@ void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, cons
     TSUNIT_EQUAL(0, ::memcmp(ref_sections, sections.data(), ref_sections_size));
 
     // Convert binary tables to XML.
-    TSUNIT_EQUAL(ref_xml, xml.toXML(CERR));
+    TSUNIT_EQUAL(ref_xml, xml.toXML());
 }
 
 
@@ -457,24 +457,24 @@ void SectionFileTest::testBuildSections()
     // Save files.
     debug() << "SectionFileTest::testBuildSections: saving " << _tempFileNameBin << std::endl;
     TSUNIT_ASSERT(!ts::FileExists(_tempFileNameBin));
-    TSUNIT_ASSERT(file.saveBinary(_tempFileNameBin, report()));
+    TSUNIT_ASSERT(file.saveBinary(_tempFileNameBin));
     TSUNIT_ASSERT(ts::FileExists(_tempFileNameBin));
 
     debug() << "SectionFileTest::testBuildSections: saving " << _tempFileNameXML << std::endl;
     TSUNIT_ASSERT(!ts::FileExists(_tempFileNameXML));
-    TSUNIT_ASSERT(file.saveXML(_tempFileNameXML, report()));
+    TSUNIT_ASSERT(file.saveXML(_tempFileNameXML));
     TSUNIT_ASSERT(ts::FileExists(_tempFileNameXML));
 
     // Reload files.
     ts::SectionFile binFile(duck);
     binFile.setCRCValidation(ts::CRC32::CHECK);
-    TSUNIT_ASSERT(binFile.loadBinary(_tempFileNameBin, report()));
+    TSUNIT_ASSERT(binFile.loadBinary(_tempFileNameBin));
     TSUNIT_EQUAL(3, binFile.tables().size());
     TSUNIT_EQUAL(5, binFile.sections().size());
     TSUNIT_EQUAL(0, binFile.orphanSections().size());
 
     ts::SectionFile xmlFile(duck);
-    TSUNIT_ASSERT(xmlFile.loadXML(_tempFileNameXML, report()));
+    TSUNIT_ASSERT(xmlFile.loadXML(_tempFileNameXML));
     TSUNIT_EQUAL(3, xmlFile.tables().size());
     TSUNIT_EQUAL(5, xmlFile.sections().size());
     TSUNIT_EQUAL(0, xmlFile.orphanSections().size());

@@ -707,7 +707,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
 
     // Analyze the message as a binary or XML section file.
     SectionFile secFile(duck);
-    if (!secFile.load(strm, *tsp, type)) {
+    if (!secFile.load(strm, type)) {
         // Error loading sections, error message already reported.
         return;
     }
