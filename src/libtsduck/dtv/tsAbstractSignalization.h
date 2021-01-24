@@ -125,6 +125,10 @@ namespace ts {
         //! XML tag name for generic tables with long sections.
         //!
         static const UChar* const XML_GENERIC_LONG_TABLE;
+        //!
+        //! File name of the XML model file for tables.
+        //!
+        static const UChar* const XML_TABLES_MODEL;
 
     protected:
         //!

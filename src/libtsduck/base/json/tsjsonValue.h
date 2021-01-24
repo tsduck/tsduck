@@ -86,6 +86,15 @@ namespace ts {
             //!
             virtual UString printed(size_t indent = 2, Report& report = NULLREP) const;
             //!
+            //! Save the value as a JSON file.
+            //! @param [in] fileName Name of the JSON file to save.
+            //! @param [in] indent Indentation width of each level.
+            //! @param [in] stdOutputIfEmpty If true and if @a fileName is empty or "-", writes to the standard output.
+            //! @param [in,out] report Where to report errors.
+            //! @return True on success, false on error.
+            //!
+            virtual bool save(const UString& fileName, size_t indent = 2, bool stdOutputIfEmpty = false, Report& report = NULLREP);
+            //!
             //! Check if this instance a is JSON null literal.
             //! @return True if this instance a is JSON null literal.
             //!

@@ -46,6 +46,9 @@
 #include "tsCASMapper.h"
 #include "tsxmlTweaks.h"
 #include "tsxmlRunningDocument.h"
+#include "tsxmlJSONConverter.h"
+#include "tsxmlJSONConverterArgs.h"
+#include "tsjsonRunningDocument.h"
 
 namespace ts {
     //!
@@ -147,18 +150,23 @@ namespace ts {
         // Command line options:
         bool                     _use_text;          // Produce formatted human-readable tables.
         bool                     _use_xml;           // Produce XML tables.
+        bool                     _use_json;          // Produce JSON tables.
         bool                     _use_binary;        // Save binary sections.
         bool                     _use_udp;           // Send sections using UDP/IP.
         UString                  _text_destination;  // Text output file name.
         UString                  _xml_destination;   // XML output file name.
+        UString                  _json_destination;  // JSON output file name.
         UString                  _bin_destination;   // Binary output file name.
         UString                  _udp_destination;   // UDP/IP destination address:port.
         bool                     _multi_files;       // Multiple binary output files (one per section).
         bool                     _flush;             // Flush output file.
         bool                     _rewrite_xml;       // Rewrite a new XML file for each table.
+        bool                     _rewrite_json;      // Rewrite a new JSON file for each table.
         bool                     _rewrite_binary;    // Rewrite a new binary file for each table.
         bool                     _log_xml_line;      // Log tables as one XML line in the system message log.
+        bool                     _log_json_line;     // Log tables as one JSON line in the system message log.
         UString                  _log_xml_prefix;    // Prefix before XML log line.
+        UString                  _log_json_prefix;   // Prefix before JSON log line.
         UString                  _udp_local;         // Name of outgoing local address (empty if unspecified).
         int                      _udp_ttl;           // Time-to-live socket option.
         bool                     _udp_raw;           // UDP messages contain raw sections, not structured messages.
@@ -176,6 +184,7 @@ namespace ts {
         bool                     _use_current;       // Use tables with "current" flag.
         bool                     _use_next;          // Use tables with "next" flag.
         xml::Tweaks              _xml_tweaks;        // XML tweak options.
+        xml::JSONConverterArgs   _x2j_options;       // XML-to-JSON convertion options.
         PIDSet                   _initial_pids;      // Initial PID's to filter.
         BinaryTable::XMLOptions  _xml_options;       // XML conversion options.
 
@@ -189,7 +198,9 @@ namespace ts {
         PacketCounter            _packet_count;
         SectionDemux             _demux;
         CASMapper                _cas_mapper;
-        xml::RunningDocument     _xml_doc;           // XML root document.
+        xml::RunningDocument     _xml_doc;           // XML document, built on-the-fly.
+        xml::JSONConverter       _x2j_conv;          // XML-to-JSON converter.
+        json::RunningDocument    _json_doc;          // JSON document, built on-the-fly.
         std::ofstream            _bin_file;          // Binary output file.
         UDPSocket                _sock;              // Output socket.
         std::map<PID,SectionPtr> _short_sections;    // Tracking duplicate short sections by PID.
@@ -203,13 +214,8 @@ namespace ts {
         // Save a section in a binary file
         void saveBinarySection(const Section&);
 
-        // Open/write/close XML tables.
-        bool createXML(const UString& name);
-        void saveXML(const BinaryTable& table);
-        void closeXML();
-
-        // Log XML one-liners.
-        void logXML(const BinaryTable& table);
+        // Log XML and/or JSON one-liners.
+        void logXMLJSON(const BinaryTable& table);
 
         // Send UDP table and section.
         void sendUDP(const BinaryTable& table);

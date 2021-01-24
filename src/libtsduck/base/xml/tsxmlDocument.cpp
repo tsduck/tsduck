@@ -236,7 +236,7 @@ bool ts::xml::Document::save(const UString& fileName, size_t indent, bool stdOut
     TextFormatter out(report());
     out.setIndentSize(indent);
 
-    if (stdOutputIfEmpty && fileName.empty()) {
+    if (stdOutputIfEmpty && (fileName.empty() || fileName == u"-")) {
         out.setStream(std::cout);
     }
     else if (!out.setFile(fileName)) {

@@ -205,7 +205,7 @@ void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, cons
 
 void SectionFileTest::testConfigurationFile()
 {
-    const ts::UString conf(ts::SearchConfigurationFile(TS_XML_TABLES_MODEL));
+    const ts::UString conf(ts::SearchConfigurationFile(ts::AbstractSignalization::XML_TABLES_MODEL));
     debug() << "SectionFileTest::testConfigurationFile: " << conf << std::endl;
     TSUNIT_ASSERT(ts::FileExists(conf));
 }

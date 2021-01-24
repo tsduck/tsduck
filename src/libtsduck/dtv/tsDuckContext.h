@@ -110,7 +110,7 @@ namespace ts {
 
         //!
         //! Redirect the output stream to a file.
-        //! @param [in] fileName The file name to create. If empty, reset to @c std::cout.
+        //! @param [in] fileName The file name to create. If empty or equal to "-", reset to @c std::cout.
         //! @param [in] override It true, the previous file is closed. If false and the
         //! output is already redirected outside @c std::cout, do nothing.
         //! @return True on success, false on error.

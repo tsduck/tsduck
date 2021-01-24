@@ -34,6 +34,7 @@
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsSectionFile.h"
+#include "tsAbstractSignalization.h"
 #include "tsTextFormatter.h"
 #include "tsCerrReport.h"
 #include "tsReportBuffer.h"
@@ -253,7 +254,7 @@ void XMLTest::testFileBOM()
 void XMLTest::testValidation()
 {
     ts::xml::ModelDocument model(report());
-    TSUNIT_ASSERT(model.load(TS_XML_TABLES_MODEL));
+    TSUNIT_ASSERT(model.load(ts::AbstractSignalization::XML_TABLES_MODEL));
 
     const ts::UString xmlContent(
         u"<?xml version='1.0' encoding='UTF-8'?>\n"
@@ -487,5 +488,5 @@ void XMLTest::testTweaks()
 void XMLTest::testChannels()
 {
     ts::xml::Document model(report());
-    TSUNIT_ASSERT(model.load(TS_XML_TABLES_MODEL));
+    TSUNIT_ASSERT(model.load(ts::AbstractSignalization::XML_TABLES_MODEL));
 }

@@ -43,19 +43,6 @@
 #include "tsTablesPtr.h"
 #include "tsCerrReport.h"
 
-//!
-//! Default suffix of binary section file names.
-//!
-#define TS_DEFAULT_BINARY_SECTION_FILE_SUFFIX u".bin"
-//!
-//! Default suffix of XML section file names.
-//!
-#define TS_DEFAULT_XML_SECTION_FILE_SUFFIX u".xml"
-//!
-//! File name of the XML model file for tables.
-//!
-#define TS_XML_TABLES_MODEL u"tsduck.tables.model.xml"
-
 namespace ts {
     //!
     //! A binary or XML file containing PSI/SI sections and tables.
