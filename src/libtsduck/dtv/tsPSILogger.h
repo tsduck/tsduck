@@ -39,7 +39,6 @@
 #include "tsTextFormatter.h"
 #include "tsxmlRunningDocument.h"
 #include "tsxmlJSONConverter.h"
-#include "tsxmlJSONConverterArgs.h"
 #include "tsjsonRunningDocument.h"
 
 namespace ts {
@@ -129,7 +128,6 @@ namespace ts {
         UString     _log_xml_prefix;          // Prefix before XML log line.
         UString     _log_json_prefix;         // Prefix before JSON log line.
         xml::Tweaks _xml_tweaks;              // XML tweak options.
-        xml::JSONConverterArgs _x2j_options;  // XML-to-JSON convertion options.
 
         // Working data:
         TablesDisplay&        _display;

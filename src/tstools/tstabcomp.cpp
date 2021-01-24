@@ -42,7 +42,6 @@
 #include "tsReportWithPrefix.h"
 #include "tsInputRedirector.h"
 #include "tsOutputRedirector.h"
-#include "tsAbstractSignalization.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
@@ -75,7 +74,6 @@ namespace {
         bool                withExtensions;  // XML model with extensions.
         ts::SectionFileArgs sectionOptions;  // Section file processing options.
         ts::xml::Tweaks     xmlTweaks;       // XML formatting options.
-        ts::xml::JSONConverterArgs x2j;      // XML-to-JSON conversion options.
     };
 }
 
@@ -91,15 +89,13 @@ Options::Options(int argc, char *argv[]) :
     xmlModel(false),
     withExtensions(false),
     sectionOptions(),
-    xmlTweaks(),
-    x2j()
+    xmlTweaks()
 {
     duck.defineArgsForStandards(*this);
     duck.defineArgsForTimeReference(*this);
     duck.defineArgsForCharset(*this);
     sectionOptions.defineArgs(*this);
     xmlTweaks.defineArgs(*this);
-    x2j.defineArgs(*this);
 
     option(u"", 0, STRING);
     help(u"",
@@ -147,7 +143,6 @@ Options::Options(int argc, char *argv[]) :
     duck.loadArgs(*this);
     sectionOptions.loadArgs(duck, *this);
     xmlTweaks.loadArgs(duck, *this);
-    x2j.loadArgs(duck, *this);
 
     getValues(infiles, u"");
     getValue(outfile, u"output");
@@ -178,48 +173,20 @@ Options::Options(int argc, char *argv[]) :
 namespace {
     bool DisplayModel(Options& opt)
     {
-        // Locate the model file.
-        const ts::UString inName(ts::SearchConfigurationFile(ts::AbstractSignalization::XML_TABLES_MODEL));
-        if (inName.empty()) {
-            opt.error(u"XML model file not found");
-            return false;
-        }
-        opt.verbose(u"original model file is %s", {inName});
-
         // Save to a file. Default to stdout.
         ts::UString outName(opt.outfile);
         if (opt.outdir) {
             // Specified output is a directory, add default name.
             outName.push_back(ts::PathSeparator);
-            outName.append(ts::AbstractSignalization::XML_TABLES_MODEL);
+            outName.append(ts::SectionFile::XML_TABLES_MODEL);
         }
         if (!outName.empty()) {
             opt.verbose(u"saving model file to %s", {outName});
         }
 
         // Load and save the model.
-        if (opt.withExtensions) {
-            // The extensions shall be loaded, use a DOM object to load the
-            // main model and its extensions, then save it in a file.
-            ts::xml::Document doc;
-            if (!ts::SectionFile::LoadModel(doc)) {
-                return false;
-            }
-            if (outName.empty()) {
-                std::cout << doc.toString();
-                return true;
-            }
-            else {
-                return doc.save(outName);
-            }
-        }
-        else {
-            // Redirect input and output, exit in case of error.
-            ts::InputRedirector in(inName, opt);
-            ts::OutputRedirector out(outName, opt);
-            std::cout << std::cin.rdbuf();
-            return true;
-        }
+        ts::xml::Document doc;
+        return ts::SectionFile::LoadModel(doc, opt.withExtensions) && doc.save(outName, 2, true);
     }
 }
 
@@ -247,7 +214,6 @@ namespace {
 
         ts::SectionFile file(opt.duck);
         file.setTweaks(opt.xmlTweaks);
-        file.setJSONConverterArgs(opt.x2j);
         file.setCRCValidation(ts::CRC32::CHECK);
 
         ts::ReportWithPrefix report(opt, ts::BaseName(infile) + u": ");

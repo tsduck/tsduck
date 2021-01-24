@@ -47,7 +47,6 @@
 #include "tsxmlTweaks.h"
 #include "tsxmlRunningDocument.h"
 #include "tsxmlJSONConverter.h"
-#include "tsxmlJSONConverterArgs.h"
 #include "tsjsonRunningDocument.h"
 
 namespace ts {
@@ -184,7 +183,6 @@ namespace ts {
         bool                     _use_current;       // Use tables with "current" flag.
         bool                     _use_next;          // Use tables with "next" flag.
         xml::Tweaks              _xml_tweaks;        // XML tweak options.
-        xml::JSONConverterArgs   _x2j_options;       // XML-to-JSON convertion options.
         PIDSet                   _initial_pids;      // Initial PID's to filter.
         BinaryTable::XMLOptions  _xml_options;       // XML conversion options.
 

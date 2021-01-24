@@ -36,7 +36,6 @@
 #include "tsxmlDocument.h"
 #include "tsxmlModelDocument.h"
 #include "tsjsonObject.h"
-#include "tsxmlJSONConverterArgs.h"
 #include "tsReport.h"
 
 namespace ts {
@@ -81,21 +80,14 @@ namespace ts {
         public:
             //!
             //! Default constructor.
-            //! @param [in] args Optional XML-to-JSON conversion options.
             //! @param [in,out] report Where to report errors.
             //!
-            JSONConverter(const JSONConverterArgs& args = JSONConverterArgs(), Report& report = NULLREP);
+            JSONConverter(Report& report = NULLREP);
 
             //!
             //! Destructor.
             //!
             virtual ~JSONConverter() override;
-
-            //!
-            //! Update XML-to-JSON conversion options.
-            //! @param [in] args New XML-to-JSON conversion options.
-            //!
-            void setConverterArgs(const JSONConverterArgs& args) { _args = args; }
 
             //!
             //! Convert an XML document into a JSON object.
@@ -106,13 +98,11 @@ namespace ts {
             json::ValuePtr convert(const Document& source, bool force_root = false) const;
 
         private:
-            JSONConverterArgs _args;  // XML-to-JSON conversion options.
-
             // Convert an XML tree of elements. Null pointer on error or if not convertible.
-            json::ValuePtr convertElement(const Element* model, const Element* source) const;
+            json::ValuePtr convertElement(const Element* model, const Element* source, const Tweaks&) const;
 
             // Convert all children of an element as a JSON array. Null pointer on error or if not convertible.
-            json::ValuePtr convertChildren(const Element* model, const Element* parent) const;
+            json::ValuePtr convertChildren(const Element* model, const Element* parent, const Tweaks&) const;
         };
     }
 }

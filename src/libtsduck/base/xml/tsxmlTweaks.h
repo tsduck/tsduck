@@ -99,6 +99,41 @@ namespace ts {
             //! The default is false.
             //!
             bool strictTextNodeFormatting;
+
+            //!
+            //! In the XML-to-JSON conversion, keep the root of the XML document as a JSON object.
+            //!
+            //! The default is false.
+            //!
+            bool x2jIncludeRoot;
+
+            //!
+            //! In the XML-to-JSON conversion without model, enforce the creation of a JSON number when possible.
+            //!
+            //! The default is false.
+            //!
+            bool x2jEnforceInteger;
+
+            //!
+            //! In the XML-to-JSON conversion without model, enforce the creation of a JSON boolean when possible.
+            //!
+            //! The default is false.
+            //!
+            bool x2jEnforceBoolean;
+
+            //!
+            //! In the XML-to-JSON conversion without model, trim all text nodes.
+            //!
+            //! The default is false.
+            //!
+            bool x2jTrimText;
+
+            //!
+            //! In the XML-to-JSON conversion without model, collapse spaces in all text nodes.
+            //!
+            //! The default is false.
+            //!
+            bool x2jCollapseText;     //!< Option -\-x2j-collapse-text
         };
     }
 }

@@ -30,6 +30,7 @@
 #include "tsPSILogger.h"
 #include "tsDuckContext.h"
 #include "tsBinaryTable.h"
+#include "tsSectionFile.h"
 #include "tsxmlComment.h"
 #include "tsxmlElement.h"
 #include "tsjsonArray.h"
@@ -67,12 +68,11 @@ ts::PSILogger::PSILogger(TablesDisplay& display) :
     _log_xml_prefix(),
     _log_json_prefix(),
     _xml_tweaks(),
-    _x2j_options(),
     _display(display),
     _duck(_display.duck()),
     _report(_duck.report()),
     _xml_doc(_report),
-    _x2j_conv(_x2j_options, _report),
+    _x2j_conv(_report),
     _json_doc(_report),
     _abort(false),
     _pat_ok(_cat_only),
@@ -102,7 +102,6 @@ void ts::PSILogger::defineArgs(Args& args) const
 {
     // Define XML options.
     _xml_tweaks.defineArgs(args);
-    _x2j_options.defineArgs(args);
 
     args.option(u"all-versions", 'a');
     args.help(u"all-versions",
@@ -203,7 +202,7 @@ bool ts::PSILogger::loadArgs(DuckContext& duck, Args& args)
     _use_next = args.present(u"include-next");
 
     // Load XML options.
-    return _x2j_options.loadArgs(duck, args) && _xml_tweaks.loadArgs(duck, args);
+    return _xml_tweaks.loadArgs(duck, args);
 }
 
 
@@ -213,9 +212,12 @@ bool ts::PSILogger::loadArgs(DuckContext& duck, Args& args)
 
 bool ts::PSILogger::open()
 {
+    // Set XML options in document.
+    _xml_doc.setTweaks(_xml_tweaks);
+    _x2j_conv.setTweaks(_xml_tweaks);
+
     // Load the XML model for tables if we need to convert to JSON.
-    if ((_use_json || _log_json_line) && !_x2j_conv.load(AbstractSignalization::XML_TABLES_MODEL, true)) {
-        _report.error(u"Main model for TSDuck XML files not found: %s", {AbstractSignalization::XML_TABLES_MODEL});
+    if ((_use_json || _log_json_line) && !SectionFile::LoadModel(_x2j_conv)) {
         return false;
     }
 
@@ -229,14 +231,8 @@ bool ts::PSILogger::open()
         _duck.out() << std::endl;
     }
 
-    // Set XML options in document.
-    _xml_doc.clear();
-    _xml_doc.setTweaks(_xml_tweaks);
-
-    // Set XML-to-JSON conversion options.
-    _x2j_conv.setConverterArgs(_x2j_options);
-
     // Open/create the XML output.
+    _xml_doc.clear();
     if (_use_xml && !_xml_doc.open(u"tsduck", u"", _xml_destination, std::cout)) {
         _abort = true;
         return false;
@@ -245,7 +241,7 @@ bool ts::PSILogger::open()
     // Open/create the JSON output.
     if (_use_json) {
         json::ValuePtr root;
-        if (_x2j_options.include_root) {
+        if (_xml_tweaks.x2jIncludeRoot) {
             root = new json::Object;
             root->add(u"#name", u"tsduck");
             root->add(u"#nodes", json::ValuePtr(new json::Array));

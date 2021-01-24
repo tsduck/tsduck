@@ -30,6 +30,7 @@
 #include "tsTablesLogger.h"
 #include "tsTablesLoggerFilterRepository.h"
 #include "tsBinaryTable.h"
+#include "tsSectionFile.h"
 #include "tsPAT.h"
 #include "tstlv.h"
 #include "tsTime.h"
@@ -91,7 +92,6 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _use_current(true),
     _use_next(false),
     _xml_tweaks(),
-    _x2j_options(),
     _initial_pids(),
     _xml_options(),
     _display(display),
@@ -104,7 +104,7 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _demux(_duck),
     _cas_mapper(_duck),
     _xml_doc(_report),
-    _x2j_conv(_x2j_options, _report),
+    _x2j_conv(_report),
     _json_doc(_report),
     _bin_file(),
     _sock(false, _report),
@@ -132,7 +132,6 @@ void ts::TablesLogger::defineArgs(Args& args) const
 {
     // Define XML options.
     _xml_tweaks.defineArgs(args);
-    _x2j_options.defineArgs(args);
 
     // Define options from all section filters.
     for (auto it = _section_filters.begin(); it != _section_filters.end(); ++it) {
@@ -378,7 +377,7 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _xml_options.setPID = true;
     _xml_options.setLocalTime = _time_stamp;
     _xml_options.setPackets = _packet_index;
-    return _x2j_options.loadArgs(duck, args) && _xml_tweaks.loadArgs(duck, args);
+    return _xml_tweaks.loadArgs(duck, args);
 }
 
 
@@ -425,8 +424,7 @@ bool ts::TablesLogger::open()
     _cas_mapper.setCurrentNext(_use_current, _use_next);
 
     // Load the XML model for tables if we need to convert to JSON.
-    if ((_use_json || _log_json_line) && !_x2j_conv.load(AbstractSignalization::XML_TABLES_MODEL, true)) {
-        _report.error(u"Main model for TSDuck XML files not found: %s", {AbstractSignalization::XML_TABLES_MODEL});
+    if ((_use_json || _log_json_line) && !SectionFile::LoadModel(_x2j_conv)) {
         return false;
     }
 
@@ -436,11 +434,9 @@ bool ts::TablesLogger::open()
         return false;
     }
 
-    // Set XML options in document.
+    // Set XML options in document and converter.
     _xml_doc.setTweaks(_xml_tweaks);
-
-    // Set XML-to-JSON conversion options.
-    _x2j_conv.setConverterArgs(_x2j_options);
+    _x2j_conv.setTweaks(_xml_tweaks);
 
     // Open/create the XML output.
     if (_use_xml && !_rewrite_xml && _xml_doc.open(u"tsduck", u"", _xml_destination, std::cout) == nullptr) {
@@ -451,7 +447,7 @@ bool ts::TablesLogger::open()
     // Open/create the JSON output.
     if (_use_json && !_rewrite_json) {
         json::ValuePtr root;
-        if (_x2j_options.include_root) {
+        if (_xml_tweaks.x2jIncludeRoot) {
             root = new json::Object;
             root->add(u"#name", u"tsduck");
             root->add(u"#nodes", json::ValuePtr(new json::Array));

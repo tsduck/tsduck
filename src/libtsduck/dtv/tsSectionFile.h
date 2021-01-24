@@ -41,7 +41,6 @@
 #include "tsUString.h"
 #include "tsDVBCharTable.h"
 #include "tsxmlTweaks.h"
-#include "tsxmlJSONConverterArgs.h"
 #include "tsTablesPtr.h"
 #include "tsCerrReport.h"
 
@@ -147,12 +146,6 @@ namespace ts {
         //! @param [in] tweaks XML tweaks.
         //!
         void setTweaks(const xml::Tweaks& tweaks) { _xmlTweaks = tweaks; }
-
-        //!
-        //! Set new options for automated XML-to-JSON conversion.
-        //! @param [in] args Options for automated XML-to-JSON conversion.
-        //!
-        void setJSONConverterArgs(const xml::JSONConverterArgs& args) { _x2jOptions = args; }
 
         //!
         //! Set the CRC32 processing mode when loading binary sections.
@@ -377,9 +370,25 @@ namespace ts {
         //! This static method loads the XML model for tables and descriptors.
         //! It loads the main model and merges all extensions.
         //! @param [out] doc XML document which receives the model.
+        //! @param [out] load_extensions If true (the default), load model additions from all declared TSDuck extensions.
         //! @return True on success, false on error.
         //!
-        static bool LoadModel(xml::Document& doc);
+        static bool LoadModel(xml::Document& doc, bool load_extensions = true);
+
+        //!
+        //! Default file name suffix for binary section files.
+        //!
+        static const UChar* const DEFAULT_BINARY_SECTION_FILE_SUFFIX;
+
+        //!
+        //! Default file name suffix for XML section files.
+        //!
+        static const UChar* const DEFAULT_XML_SECTION_FILE_SUFFIX;
+
+        //!
+        //! File name of the XML model file for tables.
+        //!
+        static const UChar* const XML_TABLES_MODEL;
 
     private:
         DuckContext&           _duck;            // Reference to TSDuck execution context.
@@ -388,7 +397,6 @@ namespace ts {
         SectionPtrVector       _sections;        // All sections from the file.
         SectionPtrVector       _orphanSections;  // Sections which do not belong to any table.
         xml::Tweaks            _xmlTweaks;       // XML formatting and parsing tweaks.
-        xml::JSONConverterArgs _x2jOptions;      // XML-to-JSON conversion options.
         CRC32::Validation      _crc_op;          // Processing of CRC32 when loading sections.
 
         // Load/save a binary section file from a stream with specific report.
