@@ -85,7 +85,7 @@ namespace ts {
             //! - All directories in @c TSPLUGINS_PATH environment variable.
             //! - All directories in @c LD_LIBRARY_PATH environment variable (UNIX only).
             //! - All directories in @c PATH (UNIX) or @c Path (Windows) environment variable.
-            //! @param [in] stdInputIfEmpty If true and if @a fileName is empty, reads the standard input.
+            //! @param [in] stdInputIfEmpty If true and if @a fileName is empty or "-", read the standard input.
             //! @return True on success, false on error.
             //!
             bool load(const UString& fileName, bool search = true, bool stdInputIfEmpty = false);

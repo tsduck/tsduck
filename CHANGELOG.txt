@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.25-2192
+VERSION 3.25-2194
 
 [NEW] New commands and plugins:
 
@@ -27,6 +27,8 @@ VERSION 3.25-2192
     line are still accepted for compatibility.
   * In plugin "bitrate_monitor", the alarm command receives more parameters.
   * The plugin "reduce" can now reduce the bitrate using PCR and VBR.
+  * The command "tstabcomp" can use the standard input and output for XML or
+    binary section files.
   * New options in exiting commands and plugins:
     - Option --save-es in plugin "pes".
     - Option --extended-info in "tslsdvb" (--verbose no longer displays the

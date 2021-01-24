@@ -94,11 +94,11 @@ void PluginRepositoryTest::testRegistrations()
     TSUNIT_ASSERT(!inputs.empty());
     TSUNIT_ASSERT(!outputs.empty());
     TSUNIT_ASSERT(!procs.empty());
-    TSUNIT_ASSERT(ts::UString(u"null").containSimilar(inputs));
-    TSUNIT_ASSERT(ts::UString(u"file").containSimilar(inputs));
-    TSUNIT_ASSERT(ts::UString(u"file").containSimilar(outputs));
-    TSUNIT_ASSERT(ts::UString(u"file").containSimilar(procs));
-    TSUNIT_ASSERT(ts::UString(u"drop").containSimilar(outputs));
+    TSUNIT_ASSERT(ts::UString(u"null").isContainedSimilarIn(inputs));
+    TSUNIT_ASSERT(ts::UString(u"file").isContainedSimilarIn(inputs));
+    TSUNIT_ASSERT(ts::UString(u"file").isContainedSimilarIn(outputs));
+    TSUNIT_ASSERT(ts::UString(u"file").isContainedSimilarIn(procs));
+    TSUNIT_ASSERT(ts::UString(u"drop").isContainedSimilarIn(outputs));
 }
 
 void PluginRepositoryTest::testEmbedded()

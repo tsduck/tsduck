@@ -64,9 +64,11 @@ namespace {
         Options(int argc, char *argv[]);
 
         ts::DuckContext     duck;            // Execution context.
-        ts::UStringVector   infiles;         // Input file names.
-        ts::UString         outfile;         // Output file path.
-        bool                outdir;          // Output name is a directory.
+        ts::UStringVector   inFiles;         // Input file names.
+        ts::UString         outFile;         // Output file path.
+        bool                outIsDir;        // Output name is a directory.
+        bool                useStdIn;        // At least one input file is the standard input.
+        bool                useStdOut;       // Use standard output.
         bool                compile;         // Explicit compilation.
         bool                decompile;       // Explicit decompilation.
         bool                json;            // Decompile to JSON.
@@ -80,9 +82,11 @@ namespace {
 Options::Options(int argc, char *argv[]) :
     Args(u"PSI/SI tables compiler", u"[options] filename ..."),
     duck(this),
-    infiles(),
-    outfile(),
-    outdir(false),
+    inFiles(),
+    outFile(),
+    outIsDir(false),
+    useStdIn(false),
+    useStdOut(false),
     compile(false),
     decompile(false),
     json(false),
@@ -99,20 +103,22 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"", 0, STRING);
     help(u"",
-         u"XML source files to compile or binary table files to decompile. By default, "
-         u"files ending in .xml are compiled and files ending in .bin are decompiled. "
+         u"XML source files to compile or binary table files to decompile. "
+         u"By default, files ending in .xml are compiled and files ending in .bin are decompiled. "
          u"For other files, explicitly specify --compile or --decompile.\n\n"
+         u"If an input file name is \"-\", the standard input is used. "
+         u"In that case, --compile or --decompile must be specified.\n\n"
          u"If an input file name starts with \"<?xml\", it is considered as \"inline XML content\".");
 
     option(u"compile", 'c');
     help(u"compile",
-         u"Compile all files as XML source files into binary files. This is the "
-         u"default for .xml files.");
+         u"Compile all files as XML source files into binary files. "
+         u"This is the default for .xml files.");
 
     option(u"decompile", 'd');
     help(u"decompile",
-         u"Decompile all files as binary files into XML files. This is the default "
-         u"for .bin files.");
+         u"Decompile all files as binary files into XML files. "
+         u"This is the default for .bin files.");
 
     option(u"extensions", 'e');
     help(u"extensions",
@@ -125,11 +131,12 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"output", 'o', STRING);
     help(u"output", u"filepath",
-         u"Specify the output file name. By default, the output file has the same "
-         u"name as the input and extension .bin (compile) or .xml (decompile). If "
-         u"the specified path is a directory, the output file is built from this "
-         u"directory and default file name. If more than one input file is specified, "
-         u"the output path, if present, must be a directory name.");
+         u"Specify the output file name. "
+         u"By default, the output file has the same name as the input and extension .bin (compile) or .xml (decompile). "
+         u"If the specified path is a directory, the output file is built from this directory and default file name. "
+         u"If the specified name is \"-\", the standard output is used.\n\n"
+         u"The default output file for the standard input (\"-\") is the standard output (\"-\"). "
+         u"If more than one input file is specified, the output path, if present, must be either a directory name or \"-\".");
 
     option(u"xml-model", 'x');
     help(u"xml-model",
@@ -144,19 +151,27 @@ Options::Options(int argc, char *argv[]) :
     sectionOptions.loadArgs(duck, *this);
     xmlTweaks.loadArgs(duck, *this);
 
-    getValues(infiles, u"");
-    getValue(outfile, u"output");
+    getValues(inFiles, u"");
+    getValue(outFile, u"output");
     compile = present(u"compile");
     decompile = present(u"decompile");
     xmlModel = present(u"xml-model");
     withExtensions = present(u"extensions");
-    outdir = !outfile.empty() && ts::IsDirectory(outfile);
+    useStdIn = ts::UString(u"-").isContainedSimilarIn(inFiles);
+    useStdOut = outFile == u"-";
+    outIsDir = !useStdOut && !outFile.empty() && ts::IsDirectory(outFile);
 
-    if (!infiles.empty() && xmlModel) {
+    if (useStdOut) {
+        outFile.clear();
+    }
+    if (!inFiles.empty() && xmlModel) {
         error(u"do not specify input files with --xml-model");
     }
-    if (infiles.size() > 1 && !outfile.empty() && !outdir) {
-        error(u"with more than one input file, --output must be a directory");
+    if (useStdIn && !compile && !decompile) {
+        error(u"with standard input, --compile or --decompile must be specified");
+    }
+    if (inFiles.size() > 1 && !outFile.empty() && !useStdOut && !outIsDir) {
+        error(u"with more than one input file, --output must be a directory or standard output");
     }
     if (compile && decompile) {
         error(u"specify either --compile or --decompile but not both");
@@ -174,8 +189,8 @@ namespace {
     bool DisplayModel(Options& opt)
     {
         // Save to a file. Default to stdout.
-        ts::UString outName(opt.outfile);
-        if (opt.outdir) {
+        ts::UString outName(opt.outFile);
+        if (opt.outIsDir) {
             // Specified output is a directory, add default name.
             outName.push_back(ts::PathSeparator);
             outName.append(ts::SectionFile::XML_TABLES_MODEL);
@@ -199,24 +214,36 @@ namespace {
     bool ProcessFile(Options& opt, const ts::UString& infile)
     {
         const ts::SectionFile::FileType inType = ts::SectionFile::GetFileType(infile);
+        const bool useStdIn = infile.empty() || infile == u"-";
+        const bool useStdOut = opt.useStdOut || (useStdIn && opt.outFile.empty());
         const bool compile = opt.compile || inType == ts::SectionFile::XML;
         const bool decompile = opt.decompile || inType == ts::SectionFile::BINARY;
         const ts::SectionFile::FileType outType = compile ? ts::SectionFile::BINARY : ts::SectionFile::XML;
 
-        // Compute output file name with default file type.
-        ts::UString outname(opt.outfile);
-        if (outname.empty()) {
-            outname = ts::SectionFile::BuildFileName(infile, outType);
+        // Set standard input or output in binary mode when necessary.
+        if (useStdIn && decompile) {
+            ts::SetBinaryModeStdin(opt);
         }
-        else if (opt.outdir) {
-            outname += ts::PathSeparator + ts::SectionFile::BuildFileName(ts::BaseName(infile), outType);
+        if (useStdOut && compile) {
+            ts::SetBinaryModeStdout(opt);
+        }
+
+        // Compute output file name with default file type.
+        ts::UString outname(opt.outFile);
+        if (!useStdOut) {
+            if (outname.empty()) {
+                outname = ts::SectionFile::BuildFileName(infile, outType);
+            }
+            else if (opt.outIsDir) {
+                outname += ts::PathSeparator + ts::SectionFile::BuildFileName(ts::BaseName(infile), outType);
+            }
         }
 
         ts::SectionFile file(opt.duck);
         file.setTweaks(opt.xmlTweaks);
         file.setCRCValidation(ts::CRC32::CHECK);
 
-        ts::ReportWithPrefix report(opt, ts::BaseName(infile) + u": ");
+        ts::ReportWithPrefix report(opt, (useStdIn ? u"stdin" : ts::BaseName(infile)) + u": ");
 
         // Process the input file, starting with error cases.
         if (!compile && !decompile) {
@@ -261,9 +288,9 @@ int MainCode(int argc, char *argv[])
         ok = DisplayModel(opt);
     }
     else {
-        for (size_t i = 0; i < opt.infiles.size(); ++i) {
-            if (!opt.infiles[i].empty()) {
-                ok = ProcessFile(opt, opt.infiles[i]) && ok;
+        for (size_t i = 0; i < opt.inFiles.size(); ++i) {
+            if (!opt.inFiles[i].empty()) {
+                ok = ProcessFile(opt, opt.inFiles[i]) && ok;
             }
         }
     }

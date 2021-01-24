@@ -706,7 +706,7 @@ bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, 
         }
         else {
             // The tag is not a descriptor name, check if this is one of the allowed node.
-            if (node->name().containSimilar(allowedOthers)) {
+            if (node->name().isContainedSimilarIn(allowedOthers)) {
                 others.push_back(node);
             }
             else if (node->name().similar(u"metadata")) {

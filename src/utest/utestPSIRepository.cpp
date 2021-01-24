@@ -88,14 +88,14 @@ void PSIRepositoryTest::testRegistrations()
     debug() << "PSIRepositoryTest::testRegistrations: table names: " << ts::UString::Join(names) << std::endl;
 
     TSUNIT_ASSERT(!names.empty());
-    TSUNIT_ASSERT(ts::UString(u"PAT").containSimilar(names));
-    TSUNIT_ASSERT(ts::UString(u"PMT").containSimilar(names));
+    TSUNIT_ASSERT(ts::UString(u"PAT").isContainedSimilarIn(names));
+    TSUNIT_ASSERT(ts::UString(u"PMT").isContainedSimilarIn(names));
 
     ts::PSIRepository::Instance()->getRegisteredDescriptorNames(names);
     debug() << "PSIRepositoryTest::testRegistrations: descriptor names: " << ts::UString::Join(names) << std::endl;
 
     TSUNIT_ASSERT(!names.empty());
-    TSUNIT_ASSERT(ts::UString(u"ca_descriptor").containSimilar(names));
+    TSUNIT_ASSERT(ts::UString(u"ca_descriptor").isContainedSimilarIn(names));
 }
 
 void PSIRepositoryTest::testSharedTID()

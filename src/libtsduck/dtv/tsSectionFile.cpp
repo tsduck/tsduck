@@ -331,6 +331,11 @@ void ts::SectionFile::rebuildTables()
 
 bool ts::SectionFile::loadBinary(const UString& file_name)
 {
+    // Separately process standard input.
+    if (file_name.empty() || file_name == u"-") {
+        return loadBinary(std::cin, _report);
+    }
+
     // Open the input file.
     std::ifstream strm(file_name.toUTF8().c_str(), std::ios::in | std::ios::binary);
     if (!strm.is_open()) {
@@ -373,6 +378,11 @@ bool ts::SectionFile::loadBinary(std::istream& strm, Report& report)
 
 bool ts::SectionFile::saveBinary(const UString& file_name) const
 {
+    // Separately process standard output.
+    if (file_name.empty() || file_name == u"-") {
+        return saveBinary(std::cout, _report);
+    }
+
     // Create the output file.
     std::ofstream strm(file_name.toUTF8().c_str(), std::ios::out | std::ios::binary);
     if (!strm.is_open()) {
@@ -479,7 +489,7 @@ bool ts::SectionFile::loadXML(const UString& file_name)
     clear();
     xml::Document doc(_report);
     doc.setTweaks(_xmlTweaks);
-    return doc.load(file_name, false) && parseDocument(doc);
+    return doc.load(file_name, false, true) && parseDocument(doc);
 }
 
 bool ts::SectionFile::loadXML(std::istream& strm)
@@ -539,7 +549,7 @@ bool ts::SectionFile::saveXML(const UString& file_name) const
 {
     xml::Document doc(_report);
     doc.setTweaks(_xmlTweaks);
-    return generateDocument(doc) && doc.save(file_name);
+    return generateDocument(doc) && doc.save(file_name, 2, true);
 }
 
 ts::UString ts::SectionFile::toXML() const
@@ -629,6 +639,9 @@ ts::SectionFile::FileType ts::SectionFile::GetFileType(const UString& file_name,
 {
     if (type != UNSPECIFIED) {
         return type; // already known
+    }
+    if (xml::Document::IsInlineXML(file_name)) {
+        return XML; // inline XML content
     }
     const UString ext(PathSuffix(file_name).toLower());
     if (ext == DEFAULT_XML_SECTION_FILE_SUFFIX) {
