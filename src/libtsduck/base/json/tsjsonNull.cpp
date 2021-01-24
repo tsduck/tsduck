@@ -40,7 +40,7 @@ ts::json::Null ts::json::NullValue;
 
 ts::json::Type ts::json::Null::type() const
 {
-     return TypeNull;
+     return Type::Null;
 }
 
 bool ts::json::Null::isNull() const

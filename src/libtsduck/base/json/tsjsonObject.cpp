@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 
 ts::json::Type ts::json::Object::type() const
 {
-     return TypeObject;
+     return Type::Object;
 }
 bool ts::json::Object::isObject() const
 {
@@ -61,6 +61,12 @@ void ts::json::Object::clear()
 //----------------------------------------------------------------------------
 // Manage object fields.
 //----------------------------------------------------------------------------
+
+ts::json::ValuePtr ts::json::Object::valuePtr(const UString& name)
+{
+    auto it = _fields.find(name);
+    return it == _fields.end() || it->second.isNull() ? ValuePtr() : it->second;
+}
 
 const ts::json::Value& ts::json::Object::value(const UString& name) const
 {
@@ -232,7 +238,7 @@ ts::json::Value& ts::json::Object::query(const UString& path, bool create, Type 
         }
         else if (create) {
             // Determine next field type
-            ValuePtr val(Factory(next.empty() ? type : (next.startWith(u"[") ? TypeArray : TypeObject)));
+            ValuePtr val(Factory(next.empty() ? type : (next.startWith(u"[") ? Type::Array : Type::Object)));
             _fields[field] = val;
             return val->query(next, create, type); // recursive query
         }

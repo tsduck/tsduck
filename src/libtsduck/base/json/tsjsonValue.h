@@ -171,7 +171,15 @@ namespace ts {
             //! @return For a JSON object, return a reference to the given element.
             //! When the field does not exist or for other types of JSON values, return a reference to a null JSON.
             //!
-            virtual Value& value(const UString& name, bool create = false, Type type = TypeObject);
+            virtual Value& value(const UString& name, bool create = false, Type type = Type::Object);
+            //!
+            //! Get the value of an object field (pointer version).
+            //! Must be a non-const object since we can potentially modify the field.
+            //! @param [in] name Field name.
+            //! @return For a JSON object, return a safe pointer to the given element.
+            //! When the field does not exist or for other types of JSON values, return a null pointer.
+            //!
+            virtual ValuePtr valuePtr(const UString& name);
             //!
             //! Remove a field from an object.
             //! @param [in] name Field name.
@@ -272,7 +280,7 @@ namespace ts {
             //! @return A reference to the final object. When the field does not exist or could
             //! not be created, return a reference to a null JSON.
             //!
-            virtual Value& query(const UString& path, bool create = false, Type type = TypeObject);
+            virtual Value& query(const UString& path, bool create = false, Type type = Type::Object);
         };
     }
 }

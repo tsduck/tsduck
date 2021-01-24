@@ -38,6 +38,7 @@
 #include "tsTextFormatter.h"
 #include "tsTextParser.h"
 #include "tsNullReport.h"
+#include "tsEnumeration.h"
 
 namespace ts {
     //!
@@ -48,23 +49,38 @@ namespace ts {
         class Value;
 
         //!
-        //! Smart pointer to a JSON value (not thread-safe).
+        //! Safe pointer to a JSON value (not thread-safe).
         //!
         typedef SafePtr<Value, NullMutex> ValuePtr;
+
+        //!
+        //! A vector of safe pointers to JSON values.
+        //!
+        typedef std::vector<ValuePtr> ValuePtrVector;
+
+        //!
+        //! A list of safe pointers to JSON values.
+        //!
+        typedef std::list<ValuePtr> ValuePtrList;
 
         //!
         //! Definition of the type of a value.
         //! JSON defines 7 types of value.
         //!
-        enum Type {
-            TypeNull,     //!< null literal.
-            TypeTrue,     //!< true literal.
-            TypeFalse,    //!< false literal.
-            TypeString,   //!< string value.
-            TypeNumber,   //!< number value (integer only for now).
-            TypeObject,   //!< structured object.
-            TypeArray     //!< array of values.
+        enum class Type {
+            Null,     //!< Null literal.
+            True,     //!< True literal.
+            False,    //!< False literal.
+            String,   //!< String value.
+            Number,   //!< Number value (integer only for now).
+            Object,   //!< Structured object.
+            Array     //!< Array of values.
         };
+
+        //!
+        //! Enumeration description of ts::json::Type.
+        //!
+        TSDUCKDLL extern const Enumeration TypeEnum;
 
         //!
         //! Create a JSON value by type.

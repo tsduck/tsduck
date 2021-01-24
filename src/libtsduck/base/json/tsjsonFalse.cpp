@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 
 ts::json::Type ts::json::False::type() const
 {
-    return TypeFalse;
+    return Type::False;
 }
 
 bool ts::json::False::isFalse() const

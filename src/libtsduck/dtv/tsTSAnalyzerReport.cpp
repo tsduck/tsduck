@@ -1115,7 +1115,7 @@ void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream
     for (auto it = _pids.begin(); it != _pids.end(); ++it) {
         const PIDContext& pc(*it->second);
         if (pc.referenced && pc.services.size() == 0 && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
-            root.query(u"ts.pids.global.pids", true, json::TypeArray).set(pc.pid);
+            root.query(u"ts.pids.global.pids", true, json::Type::Array).set(pc.pid);
         }
     }
 
@@ -1130,7 +1130,7 @@ void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream
     for (auto it = _pids.begin(); it != _pids.end(); ++it) {
         const PIDContext& pc (*it->second);
         if (!pc.referenced && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
-            root.query(u"ts.pids.unreferenced.pids", true, json::TypeArray).set(pc.pid);
+            root.query(u"ts.pids.unreferenced.pids", true, json::Type::Array).set(pc.pid);
         }
     }
 
@@ -1177,7 +1177,7 @@ void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream
         for (auto it_pid = _pids.begin(); it_pid != _pids.end(); ++it_pid) {
             if (it_pid->second->services.count(sv.service_id) != 0) {
                 // This PID belongs to the service
-                jv.query(u"pids", true, json::TypeArray).set(it_pid->first);
+                jv.query(u"pids", true, json::Type::Array).set(it_pid->first);
             }
         }
     }
@@ -1200,7 +1200,7 @@ void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream
             jv.add(u"cas", pc.cas_id);
         }
         for (auto it2 = pc.cas_operators.begin(); it2 != pc.cas_operators.end(); ++it2) {
-            jv.query(u"operators", true, json::TypeArray).set(*it2);
+            jv.query(u"operators", true, json::Type::Array).set(*it2);
         }
         jv.add(u"is-scrambled", json::Bool(pc.scrambled));
         if (pc.crypto_period != 0 && _ts_bitrate != 0) {
@@ -1216,14 +1216,14 @@ void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream
         jv.add(u"unreferenced", json::Bool(!pc.referenced));
         jv.add(u"global", json::Bool(pc.services.size() == 0));
         for (auto it1 = pc.services.begin(); it1 != pc.services.end(); ++it1) {
-            jv.query(u"services", true, json::TypeArray).set(*it1);
+            jv.query(u"services", true, json::Type::Array).set(*it1);
         }
         for (auto it1 = pc.ssu_oui.begin(); it1 != pc.ssu_oui.end(); ++it1) {
-            jv.query(u"ssu-oui", true, json::TypeArray).set(*it1);
+            jv.query(u"ssu-oui", true, json::Type::Array).set(*it1);
         }
         jv.add(u"t2mi", json::Bool(pc.carry_t2mi));
         for (auto it1 = pc.t2mi_plp_ts.begin(); it1 != pc.t2mi_plp_ts.end(); ++it1) {
-            jv.query(u"plp", true, json::TypeArray).set(it1->first);
+            jv.query(u"plp", true, json::Type::Array).set(it1->first);
         }
         jv.add(u"bitrate", pc.bitrate);
         jv.add(u"bitrate-204", ToBitrate204(pc.bitrate));
@@ -1270,7 +1270,7 @@ void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream
                 jv.add(u"last-version", etc.last_version);
                 for (size_t i = 0; i < etc.versions.size(); ++i) {
                     if (etc.versions.test(i)) {
-                        jv.query(u"versions", true, json::TypeArray).set(i);
+                        jv.query(u"versions", true, json::Type::Array).set(i);
                     }
                 }
             }

@@ -40,6 +40,8 @@
 #include "tsjsonString.h"
 #include "tsjsonObject.h"
 #include "tsjsonArray.h"
+#include "tsjsonRunningDocument.h"
+#include "tsSysUtils.h"
 #include "tsCerrReport.h"
 #include "tsNullReport.h"
 #include "tsunit.h"
@@ -53,6 +55,8 @@ TSDUCK_SOURCE;
 class JsonTest: public tsunit::Test
 {
 public:
+    JsonTest();
+
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -60,13 +64,23 @@ public:
     void testGitHub();
     void testFactory();
     void testQuery();
+    void testRunningDocumentEmpty();
+    void testRunningDocument();
 
     TSUNIT_TEST_BEGIN(JsonTest);
     TSUNIT_TEST(testSimple);
     TSUNIT_TEST(testGitHub);
     TSUNIT_TEST(testFactory);
     TSUNIT_TEST(testQuery);
+    TSUNIT_TEST(testRunningDocumentEmpty);
+    TSUNIT_TEST(testRunningDocument);
     TSUNIT_TEST_END();
+
+private:
+    ts::UString _tempFileName;
+
+    static ts::UString LoadFile(const ts::UString& filename);
+    ts::UString loadTempFile() const { return LoadFile(_tempFileName); }
 };
 
 TSUNIT_REGISTER(JsonTest);
@@ -76,15 +90,35 @@ TSUNIT_REGISTER(JsonTest);
 // Initialization.
 //----------------------------------------------------------------------------
 
+// Constructor.
+JsonTest::JsonTest() :
+    _tempFileName()
+{
+}
+
 // Test suite initialization method.
 void JsonTest::beforeTest()
 {
+    if (_tempFileName.empty()) {
+        _tempFileName = ts::TempFile(u".tmp.json");
+    }
+    ts::DeleteFile(_tempFileName);
 }
 
 // Test suite cleanup method.
 void JsonTest::afterTest()
 {
+    ts::DeleteFile(_tempFileName);
 }
+
+// Load the content of a text file.
+ts::UString JsonTest::LoadFile(const ts::UString& filename)
+{
+    ts::UStringList lines;
+    TSUNIT_ASSERT(ts::UString::Load(lines, filename));
+    return ts::UString::Join(lines, u"\n");
+}
+
 
 
 //----------------------------------------------------------------------------
@@ -612,25 +646,25 @@ void JsonTest::testFactory()
 {
     ts::json::ValuePtr jv;
 
-    jv = ts::json::Factory(ts::json::TypeTrue);
+    jv = ts::json::Factory(ts::json::Type::True);
     TSUNIT_ASSERT(!jv.isNull());
-    TSUNIT_EQUAL(ts::json::TypeTrue, jv->type());
+    TSUNIT_EQUAL(ts::json::Type::True, jv->type());
     TSUNIT_ASSERT(jv->isTrue());
 
-    jv = ts::json::Factory(ts::json::TypeObject);
+    jv = ts::json::Factory(ts::json::Type::Object);
     TSUNIT_ASSERT(!jv.isNull());
-    TSUNIT_EQUAL(ts::json::TypeObject, jv->type());
+    TSUNIT_EQUAL(ts::json::Type::Object, jv->type());
     TSUNIT_ASSERT(jv->isObject());
 
-    jv = ts::json::Factory(ts::json::TypeString, u"abcdef");
+    jv = ts::json::Factory(ts::json::Type::String, u"abcdef");
     TSUNIT_ASSERT(!jv.isNull());
-    TSUNIT_EQUAL(ts::json::TypeString, jv->type());
+    TSUNIT_EQUAL(ts::json::Type::String, jv->type());
     TSUNIT_ASSERT(jv->isString());
     TSUNIT_EQUAL(u"abcdef", jv->toString());
 
-    jv = ts::json::Factory(ts::json::TypeNumber, u"1,234");
+    jv = ts::json::Factory(ts::json::Type::Number, u"1,234");
     TSUNIT_ASSERT(!jv.isNull());
-    TSUNIT_EQUAL(ts::json::TypeNumber, jv->type());
+    TSUNIT_EQUAL(ts::json::Type::Number, jv->type());
     TSUNIT_ASSERT(jv->isNumber());
     TSUNIT_EQUAL(1234, jv->toInteger());
 }
@@ -695,4 +729,96 @@ void JsonTest::testQuery()
     TSUNIT_ASSERT(root.query(u"foo1.foo2.foo3[1].bar4").isObject());
 
     debug() << "JsonTest::testQuery:" << std::endl << root.printed() << std::endl;
+}
+
+void JsonTest::testRunningDocumentEmpty()
+{
+    ts::json::RunningDocument doc(CERR);
+
+    TSUNIT_ASSERT(!ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(doc.open(ts::json::ValuePtr(), _tempFileName));
+
+    doc.add(ts::json::String(u"foo"));
+    doc.add(ts::json::Number(-23));
+    ts::json::Object obj1;
+    obj1.value(u"obj1", true).add(u"arr2", new ts::json::Array());
+    doc.add(obj1);
+    doc.close();
+
+    TSUNIT_ASSERT(ts::FileExists(_tempFileName));
+    TSUNIT_EQUAL(u"[\n"
+                 u"  \"foo\",\n"
+                 u"  -23,\n"
+                 u"  {\n"
+                 u"    \"obj1\": {\n"
+                 u"      \"arr2\": [\n"
+                 u"      ]\n"
+                 u"    }\n"
+                 u"  }\n"
+                 u"]",
+                 loadTempFile());
+}
+
+void JsonTest::testRunningDocument()
+{
+    ts::json::RunningDocument doc(CERR);
+    ts::json::ValuePtr root(new ts::json::Object());
+    root->query(u"init_obj1.subobj1", true).add(u"val1", u"zeval1");
+    root->query(u"init_obj1.subobj1", true).add(u"val2", u"zeval2");
+    root->query(u"init_obj1.subobj2", true).add(u"val3", u"zeval3");
+    root->query(u"init_obj2.subobj3[0]", true).add(u"val4", u"zeval4");
+    root->query(u"init_obj2.subobj4", true).add(u"val5", u"zeval5");
+    root->query(u"init_obj3.subobj5", true).add(u"val6", u"zeval6");
+
+    TSUNIT_ASSERT(!ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(doc.open(root, _tempFileName));
+
+    doc.add(ts::json::String(u"foo"));
+    doc.add(ts::json::Number(-23));
+    ts::json::Object obj1;
+    obj1.query(u"obj1.arr2[1].obj2", true).add(u"xxxx", u"yyyy");
+    doc.add(obj1);
+    doc.close();
+
+    TSUNIT_ASSERT(ts::FileExists(_tempFileName));
+    TSUNIT_EQUAL(u"{\n"
+                 u"  \"init_obj1\": {\n"
+                 u"    \"subobj1\": {\n"
+                 u"      \"val1\": \"zeval1\",\n"
+                 u"      \"val2\": \"zeval2\"\n"
+                 u"    },\n"
+                 u"    \"subobj2\": {\n"
+                 u"      \"val3\": \"zeval3\"\n"
+                 u"    }\n"
+                 u"  },\n"
+                 u"  \"init_obj3\": {\n"
+                 u"    \"subobj5\": {\n"
+                 u"      \"val6\": \"zeval6\"\n"
+                 u"    }\n"
+                 u"  },\n"
+                 u"  \"init_obj2\": {\n"
+                 u"    \"subobj4\": {\n"
+                 u"      \"val5\": \"zeval5\"\n"
+                 u"    },\n"
+                 u"    \"subobj3\": [\n"
+                 u"      {\n"
+                 u"        \"val4\": \"zeval4\"\n"
+                 u"      },\n"
+                 u"      \"foo\",\n"
+                 u"      -23,\n"
+                 u"      {\n"
+                 u"        \"obj1\": {\n"
+                 u"          \"arr2\": [\n"
+                 u"            {\n"
+                 u"              \"obj2\": {\n"
+                 u"                \"xxxx\": \"yyyy\"\n"
+                 u"              }\n"
+                 u"            }\n"
+                 u"          ]\n"
+                 u"        }\n"
+                 u"      }\n"
+                 u"    ]\n"
+                 u"  }\n"
+                 u"}",
+                 loadTempFile());
 }

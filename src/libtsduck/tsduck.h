@@ -351,6 +351,7 @@
 #include "tsjsonNumber.h"
 #include "tsjsonObject.h"
 #include "tsjsonOutputArgs.h"
+#include "tsjsonRunningDocument.h"
 #include "tsjsonString.h"
 #include "tsjsonTrue.h"
 #include "tsjsonValue.h"

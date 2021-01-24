@@ -63,7 +63,7 @@ namespace ts {
             virtual void erase(size_t index, size_t count = 1) override;
             virtual ValuePtr extractAt(size_t index) override;
             virtual const Value& query(const UString& path) const override;
-            virtual Value& query(const UString& path, bool create = false, Type type = TypeObject) override;
+            virtual Value& query(const UString& path, bool create = false, Type type = Type::Object) override;
 
         private:
             std::vector<ValuePtr> _value;

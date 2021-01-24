@@ -28,26 +28,29 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a "running" XML document which is displayed on the fly.
+//!  Representation of a "running" JSON document which is displayed on the fly.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsxmlDocument.h"
+#include "tsjson.h"
 
 namespace ts {
-    namespace xml {
+    namespace json {
         //!
-        //! Representation of a "running" XML document which is displayed on the fly.
-        //! @ingroup xml
+        //! Representation of a "running" JSON document which is displayed on the fly.
+        //! @ingroup json
         //!
-        //! The idea is to display or save an XML document which is built element
-        //! by element without waiting for the end of the document. Moreover,
-        //! considering that the document can be arbitrary long, can take an arbitrary
-        //! long time to be built and is not used for anything else than display or save,
-        //! elements are destroyed after being displayed or saved to avoid wasting memory.
+        //! The idea is to display or save a JSON document containing an array of values
+        //! which is built value by value without waiting for the end of the document.
         //!
-        class TSDUCKDLL RunningDocument: public Document
+        //! The JSON document is initially displayed with whatever can be displayed
+        //! and the final array is left open so that new values can be added later.
+        //!
+        //! The "open" array can be the root value of the JSON document or inside one
+        //! or more levels of objects.
+        //!
+        class TSDUCKDLL RunningDocument
         {
             TS_NOCOPY(RunningDocument);
         public:
@@ -60,40 +63,45 @@ namespace ts {
             //!
             //! Destructor.
             //!
-            virtual ~RunningDocument() override;
+            ~RunningDocument();
 
             //!
             //! Initialize the running document.
-            //! The initial declaration and root are created.
-            //! The output XML file is initialized but nothing is printed yet.
-            //! @param [in] rootName Name of the root element to create.
-            //! @param [in] declaration Optional XML declaration.
-            //! When omitted or empty, the standard declaration is used, specifying UTF-8 as format.
+            //! @param [in] root Root JSON value.
+            //! - If @a root is a null pointer, assume an empty array.
+            //! - If @a root is an array, its current elements are printed and the array is left open.
+            //! - If @a root is an object, it is recursively searched until the first array is found.
+            //!   Everything else is printed and this array is left open. If no array is found, this is an error.
+            //! - If @a root is any other type of JSON value, this is an error.
             //! @param [in] fileName Output file name to create. When empty or "-", @a strm is used for output.
             //! @param [in,out] strm The default output text stream when @a fileName is empty or "-".
             //! The referenced stream object must remain valid as long as this object.
-            //! @return New root element of the document or null on error.
+            //! @return True on success, false on error.
             //!
-            Element* open(const UString& rootName, const UString& declaration = UString(), const UString& fileName = UString(), std::ostream& strm = std::cout);
+            bool open(const ValuePtr& root, const UString& fileName = UString(), std::ostream& strm = std::cout);
 
             //!
-            //! Flush the running document.
-            //! All elements under the document root are displayed or saved and then deleted.
-            //! The XML document header is issued with the first element.
-            //! The XML structure is left open for more elements, in the next call to flush().
+            //! Add one JSON value in the open array of the running document.
+            //! @param [in] value The JSON value to add.
             //!
-            void flush();
+            void add(const Value& value);
 
             //!
             //! Close the running document.
-            //! If the XML structure is still open, it is closed.
+            //! If the JSON structure is still open, it is closed.
             //! The output file, if any, is closed.
             //!
             void close();
 
         private:
-            TextFormatter _text;       // The text formatter.
-            bool          _open_root;  // Document root has been printed and is left open.
+            TextFormatter _text;         // The text formatter.
+            bool          _open_array;   // The array is open.
+            bool          _empty_array;  // The open array is currently empty.
+            size_t        _obj_count;    // Number of parent objects.
+
+            // Look for a JSON array in a tree. Return true if one is found, false otherwise.
+            // Build a path of objects, one per level. The last one is the array.
+            bool searchArray(const ValuePtr& root, ValuePtrVector& path);
         };
     }
 }

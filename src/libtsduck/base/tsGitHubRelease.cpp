@@ -181,7 +181,7 @@ bool ts::GitHubRelease::downloadInfo(const UString& owner, const UString& reposi
     _isValid = false;
 
     // Send the request to GitHub. We expect a JSON object.
-    return CallGitHub(_root, json::TypeObject, owner, repository, tag.empty() ? u"/releases/latest" : u"/releases/tags/" + tag, report) && validate(report);
+    return CallGitHub(_root, json::Type::Object, owner, repository, tag.empty() ? u"/releases/latest" : u"/releases/tags/" + tag, report) && validate(report);
 }
 
 
@@ -195,7 +195,7 @@ bool ts::GitHubRelease::GetAllVersions(GitHubReleaseVector& versions, const UStr
 
     // Send the request to GitHub. We expect an array of release objects.
     json::ValuePtr response;
-    if (!CallGitHub(response, json::TypeArray, owner, repository, u"/releases", report)) {
+    if (!CallGitHub(response, json::Type::Array, owner, repository, u"/releases", report)) {
         return false;
     }
 
