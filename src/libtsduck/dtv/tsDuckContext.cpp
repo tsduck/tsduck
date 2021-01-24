@@ -345,7 +345,7 @@ bool ts::DuckContext::setOutput(const UString& fileName, bool override)
         }
 
         // Open new file if any.
-        if (!fileName.empty()) {
+        if (!fileName.empty() && fileName != u"-") {
             _report->verbose(u"creating %s", {fileName});
             const std::string nameUTF8(fileName.toUTF8());
             _outFile.open(nameUTF8.c_str(), std::ios::out);

@@ -148,7 +148,7 @@ bool ts::TextFormatter::isOpen() const
 void ts::TextFormatter::close()
 {
     // Flush buffered characters.
-    (*_out) << std::flush;
+    flush();
 
     // Close resources.
     if (_out == &_outString) {

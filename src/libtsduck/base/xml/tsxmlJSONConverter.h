@@ -92,10 +92,16 @@ namespace ts {
             virtual ~JSONConverter() override;
 
             //!
+            //! Update XML-to-JSON conversion options.
+            //! @param [in] args New XML-to-JSON conversion options.
+            //!
+            void setConverterArgs(const JSONConverterArgs& args) { _args = args; }
+
+            //!
             //! Convert an XML document into a JSON object.
             //! @param [in] source The source XML document to convert.
             //! @param [in] force_root If true, force the option -\-x2j-include-root.
-            //! @return A safe pointer to the converted JSON object or a null pointer on error.
+            //! @return A safe pointer to the converted JSON object. Never null. Point to a JSON Null on error.
             //!
             json::ValuePtr convert(const Document& source, bool force_root = false) const;
 

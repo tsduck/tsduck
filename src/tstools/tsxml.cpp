@@ -253,14 +253,9 @@ int MainCode(int argc, char *argv[])
             }
             if (opt.json.json) {
                 // Perform XML to JSON conversion.
-                ts::json::ValuePtr jobj(model.convert(doc));
-                if (jobj.isNull()) {
-                    opt.error(u"JSON conversion error on %s", {display_name});
-                }
-                else {
-                    // Output JSON result, either on one line or output file.
-                    opt.json.report(*jobj, std::cout, opt);
-                }
+                const ts::json::ValuePtr jobj(model.convert(doc));
+                // Output JSON result, either on one line or output file.
+                opt.json.report(*jobj, std::cout, opt);
             }
             else if (opt.reformat) {
                 // Same XML output on stdout (possibly already redirected to a file).

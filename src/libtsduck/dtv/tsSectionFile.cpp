@@ -39,6 +39,9 @@
 #include "tsEIT.h"
 TSDUCK_SOURCE;
 
+#define TS_DEFAULT_BINARY_SECTION_FILE_SUFFIX u".bin"
+#define TS_DEFAULT_XML_SECTION_FILE_SUFFIX u".xml"
+
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
@@ -399,15 +402,15 @@ bool ts::SectionFile::saveBinary(std::ostream& strm, Report& report) const
 bool ts::SectionFile::LoadModel(xml::Document& doc)
 {
     // Load the main model. Use searching rules.
-    if (!doc.load(TS_XML_TABLES_MODEL, true)) {
-        doc.report().error(u"Main model for TSDuck XML files not found: %s", {TS_XML_TABLES_MODEL});
+    if (!doc.load(AbstractSignalization::XML_TABLES_MODEL, true)) {
+        doc.report().error(u"Main model for TSDuck XML files not found: %s", {AbstractSignalization::XML_TABLES_MODEL});
         return false;
     }
 
     // Get the root element in the model.
     xml::Element* root = doc.rootElement();
     if (root == nullptr) {
-        doc.report().error(u"Main model for TSDuck XML files is empty: %s", {TS_XML_TABLES_MODEL});
+        doc.report().error(u"Main model for TSDuck XML files is empty: %s", {AbstractSignalization::XML_TABLES_MODEL});
         return false;
     }
 

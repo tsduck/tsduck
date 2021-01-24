@@ -101,7 +101,7 @@ namespace ts {
             //! Save an XML file.
             //! @param [in] fileName Name of the XML file to save.
             //! @param [in] indent Indentation width of each level.
-            //! @param [in] stdOutputIfEmpty If true and if @a fileName is empty, writes to the standard output.
+            //! @param [in] stdOutputIfEmpty If true and if @a fileName is empty or "-", writes to the standard output.
             //! @return True on success, false on error.
             //!
             bool save(const UString& fileName, size_t indent = 2, bool stdOutputIfEmpty = false);

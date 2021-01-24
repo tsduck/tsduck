@@ -31,6 +31,7 @@
 #include "tsxmlElement.h"
 #include "tsxmlText.h"
 #include "tsjsonArray.h"
+#include "tsjsonNull.h"
 #include "tsjsonNumber.h"
 #include "tsjsonString.h"
 TSDUCK_SOURCE;
@@ -61,7 +62,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convert(const Document& source, bool 
 
     if (docRoot == nullptr) {
         report().error(u"invalid XML document, no root element");
-        return json::ValuePtr();
+        return json::ValuePtr(new json::Null());
     }
     else {
         // Ignore the model if the model root has a different name from the source root.

@@ -38,6 +38,8 @@
 #include "tsDuckProtocol.h"
 #include "tsxmlComment.h"
 #include "tsxmlElement.h"
+#include "tsjsonArray.h"
+#include "tsjsonObject.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -55,18 +57,23 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     SectionHandlerInterface(),
     _use_text(false),
     _use_xml(false),
+    _use_json(false),
     _use_binary(false),
     _use_udp(false),
     _text_destination(),
     _xml_destination(),
+    _json_destination(),
     _bin_destination(),
     _udp_destination(),
     _multi_files(false),
     _flush(false),
     _rewrite_xml(false),
+    _rewrite_json(false),
     _rewrite_binary(false),
     _log_xml_line(false),
+    _log_json_line(false),
     _log_xml_prefix(),
+    _log_json_prefix(),
     _udp_local(),
     _udp_ttl(0),
     _udp_raw(false),
@@ -84,6 +91,7 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _use_current(true),
     _use_next(false),
     _xml_tweaks(),
+    _x2j_options(),
     _initial_pids(),
     _xml_options(),
     _display(display),
@@ -96,6 +104,8 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _demux(_duck),
     _cas_mapper(_duck),
     _xml_doc(_report),
+    _x2j_conv(_x2j_options, _report),
+    _json_doc(_report),
     _bin_file(),
     _sock(false, _report),
     _short_sections(),
@@ -122,6 +132,7 @@ void ts::TablesLogger::defineArgs(Args& args) const
 {
     // Define XML options.
     _xml_tweaks.defineArgs(args);
+    _x2j_options.defineArgs(args);
 
     // Define options from all section filters.
     for (auto it = _section_filters.begin(); it != _section_filters.end(); ++it) {
@@ -191,6 +202,13 @@ void ts::TablesLogger::defineArgs(Args& args) const
               u"The optional string parameter specifies a prefix to prepend on the log "
               u"line before the XML text to locate the appropriate line in the logs.");
 
+    args.option(u"log-json-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
+    args.help(u"log-json-line", u"'prefix'",
+              u"Log each table as one single JSON line in the message logger instead of an output file. "
+              u"The table is formatted as XML and automated XML-to-JSON conversion is applied. "
+              u"The optional string parameter specifies a prefix to prepend on the log "
+              u"line before the JSON text to locate the appropriate line in the logs.");
+
     args.option(u"max-tables", 'x', Args::POSITIVE);
     args.help(u"max-tables", u"Maximum number of tables to dump. Stop logging tables when this limit is reached.");
 
@@ -256,6 +274,11 @@ void ts::TablesLogger::defineArgs(Args& args) const
               u"With --xml-output, rewrite the same file with each table. "
               u"The specified file always contains one single table, the latest one.");
 
+    args.option(u"rewrite-json");
+    args.help(u"rewrite-json",
+              u"With --json-output, rewrite the same file with each table. "
+              u"The specified file always contains one single table, the latest one.");
+
     args.option(u"text-output", 0, Args::STRING);
     args.help(u"text-output", u"filename", u"A synonym for --output-file.");
 
@@ -271,9 +294,14 @@ void ts::TablesLogger::defineArgs(Args& args) const
 
     args.option(u"xml-output", 0,  Args::STRING);
     args.help(u"xml-output", u"filename",
-              u"Save the tables in XML format in the specified file. To output the XML "
-              u"text on the standard output, explicitly specify this option with \"-\" "
-              u"as output file name.");
+              u"Save the tables in XML format in the specified file. "
+              u"To output the XML text on the standard output, explicitly specify this option with \"-\" as output file name.");
+
+    args.option(u"json-output", 0,  Args::STRING);
+    args.help(u"json-output", u"filename",
+              u"Save the tables in JSON format in the specified file. "
+              u"The tables are initially formatted as XML and automated XML-to-JSON conversion is applied. "
+              u"To output the JSON text on the standard output, explicitly specify this option with \"-\" as output file name.");
 }
 
 
@@ -285,10 +313,14 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
 {
     // Type of output, text is the default.
     _use_xml = args.present(u"xml-output");
+    _use_json = args.present(u"json-output");
     _use_binary = args.present(u"binary-output");
     _use_udp = args.present(u"ip-udp");
     _log_xml_line = args.present(u"log-xml-line");
-    _use_text = args.present(u"output-file") || args.present(u"text-output") || (!_use_xml && !_use_binary && !_use_udp && !_log_xml_line);
+    _log_json_line = args.present(u"log-json-line");
+    _use_text = args.present(u"output-file") ||
+                args.present(u"text-output") ||
+                (!_use_xml && !_use_json && !_use_binary && !_use_udp && !_log_xml_line && !_log_json_line);
 
     // --output-file and --text-output are synonyms.
     if (args.present(u"output-file") && args.present(u"text-output")) {
@@ -297,22 +329,17 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
 
     // Output destinations.
     args.getValue(_xml_destination, u"xml-output");
+    args.getValue(_json_destination, u"json-output");
     args.getValue(_bin_destination, u"binary-output");
     args.getValue(_udp_destination, u"ip-udp");
     args.getValue(_text_destination, u"output-file", args.value(u"text-output").c_str());
 
-    // Accept "-" as a specification for standard output (common convention in UNIX world).
-    if (_text_destination == u"-") {
-        _text_destination.clear();
-    }
-    if (_xml_destination == u"-") {
-        _xml_destination.clear();
-    }
-
     _multi_files = args.present(u"multiple-files");
     _rewrite_binary = args.present(u"rewrite-binary");
     _rewrite_xml = args.present(u"rewrite-xml");
+    _rewrite_json = args.present(u"rewrite-json");
     args.getValue(_log_xml_prefix, u"log-xml-line");
+    args.getValue(_log_json_prefix, u"log-json-line");
     _flush = args.present(u"flush");
     _udp_local = args.value(u"local-udp");
     args.getIntValue(_udp_ttl, u"ttl", 0);
@@ -351,7 +378,7 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _xml_options.setPID = true;
     _xml_options.setLocalTime = _time_stamp;
     _xml_options.setPackets = _packet_index;
-    return _xml_tweaks.loadArgs(duck, args);
+    return _x2j_options.loadArgs(duck, args) && _xml_tweaks.loadArgs(duck, args);
 }
 
 
@@ -368,6 +395,7 @@ bool ts::TablesLogger::open()
     _demux.reset();
     _cas_mapper.reset();
     _xml_doc.clear();
+    _json_doc.close();
     _short_sections.clear();
     _last_sections.clear();
     _sections_once.clear();
@@ -396,6 +424,12 @@ bool ts::TablesLogger::open()
     _demux.setCurrentNext(_use_current, _use_next);
     _cas_mapper.setCurrentNext(_use_current, _use_next);
 
+    // Load the XML model for tables if we need to convert to JSON.
+    if ((_use_json || _log_json_line) && !_x2j_conv.load(AbstractSignalization::XML_TABLES_MODEL, true)) {
+        _report.error(u"Main model for TSDuck XML files not found: %s", {AbstractSignalization::XML_TABLES_MODEL});
+        return false;
+    }
+
     // Open/create the text output.
     if (_use_text && !_duck.setOutput(_text_destination)) {
         _abort = true;
@@ -405,10 +439,27 @@ bool ts::TablesLogger::open()
     // Set XML options in document.
     _xml_doc.setTweaks(_xml_tweaks);
 
+    // Set XML-to-JSON conversion options.
+    _x2j_conv.setConverterArgs(_x2j_options);
+
     // Open/create the XML output.
-    if (_use_xml && !_rewrite_xml && !createXML(_xml_destination)) {
+    if (_use_xml && !_rewrite_xml && _xml_doc.open(u"tsduck", u"", _xml_destination, std::cout) == nullptr) {
         _abort = true;
         return false;
+    }
+
+    // Open/create the JSON output.
+    if (_use_json && !_rewrite_json) {
+        json::ValuePtr root;
+        if (_x2j_options.include_root) {
+            root = new json::Object;
+            root->add(u"#name", u"tsduck");
+            root->add(u"#nodes", json::ValuePtr(new json::Array));
+        }
+        if (!_json_doc.open(root, _json_destination, std::cout)) {
+            _abort = true;
+            return false;
+        }
     }
 
     // Open/create the binary output.
@@ -452,7 +503,7 @@ void ts::TablesLogger::close()
         }
 
         // Close files and documents.
-        closeXML();
+        _xml_doc.close();
         if (_bin_file.is_open()) {
             _bin_file.close();
         }
@@ -516,7 +567,9 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
         }
     }
 
-    // Filtering done, now save data.
+    // Filtering done, now save table in various formats.
+
+    // Save table in text format.
     if (_use_text) {
         preDisplay(table.getFirstTSPacketIndex(), table.getLastTSPacketIndex());
         if (_logger) {
@@ -531,16 +584,41 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
         postDisplay();
     }
 
+    // Save table in XML format.
     if (_use_xml) {
-        // In case of rewrite for each table, create a new file.
-        if (!_rewrite_xml || createXML(_xml_destination)) {
-            saveXML(table);
-            if (_rewrite_xml) {
-                closeXML();
-            }
+        if (_rewrite_xml) {
+            // Build and save a new document each time.
+            xml::Document doc(_report);
+            doc.initialize(u"tsduck");
+            table.toXML(_duck, doc.rootElement(), _xml_options);
+            doc.save(_xml_destination, 2, true);
+        }
+        else {
+            // Just add the table in the running doc.
+            // Convert the table into an XML structure, print and delete the XML table.
+            table.toXML(_duck, _xml_doc.rootElement(), _xml_options);
+            _xml_doc.flush();
         }
     }
 
+    // Save table in JSON format.
+    if (_use_json) {
+        // First, build an XML document with the table.
+        xml::Document doc(_report);
+        doc.initialize(u"tsduck");
+        table.toXML(_duck, doc.rootElement(), _xml_options);
+        if (_rewrite_json) {
+            // Convert to JSON and save a new document each time.
+            _x2j_conv.convert(doc)->save(_json_destination, 2, true, _report);
+        }
+        else {
+            // Convert to JSON. Force "tsduck" root to appear so that the path to the first table is always the same.
+            // Query the first (and only) converted table and add it to the running document.
+            _json_doc.add(_x2j_conv.convert(doc, true)->query(u"#nodes[0]"));
+        }
+    }
+
+    // Save table in binary format.
     if (_use_binary) {
         // In case of rewrite for each table, create a new file.
         if (_rewrite_binary && !createBinaryFile(_bin_destination)) {
@@ -555,10 +633,12 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
         }
     }
 
-    if (_log_xml_line) {
-        logXML(table);
+    // Log table as a one-liner XML and/or JSON.
+    if (_log_xml_line || _log_json_line) {
+        logXMLJSON(table);
     }
 
+    // Send binary table in UDP message.
     if (_use_udp) {
         sendUDP(table);
     }
@@ -677,7 +757,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
 // Log XML one-liners.
 //----------------------------------------------------------------------------
 
-void ts::TablesLogger::logXML(const BinaryTable& table)
+void ts::TablesLogger::logXMLJSON(const BinaryTable& table)
 {
     // Build an XML document.
     xml::Document doc;
@@ -693,11 +773,28 @@ void ts::TablesLogger::logXML(const BinaryTable& table)
     text.setString();
     text.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
 
-    // Serialize the XML object inside the text formatter.
-    doc.print(text);
-
     // Log the XML line.
-    _report.info(_log_xml_prefix + text.toString());
+    if (_log_xml_line) {
+        doc.print(text);
+        _report.info(_log_xml_prefix + text.toString());
+    }
+
+    // Log the JSON line.
+    if (_log_json_line) {
+
+        // Convert the XML document into JSON.
+        // Force "tsduck" root to appear so that the path to the first table is always the same.
+        const json::ValuePtr root(_x2j_conv.convert(doc, true));
+
+        // Reset the text formatter if already used for XML.
+        if (_log_xml_line) {
+            text.setString();
+        }
+
+        // Query the first (and only) converted table and log it as one line.
+        root->query(u"#nodes[0]").print(text);
+        _report.info(_log_json_prefix + text.toString());
+    }
 }
 
 
@@ -898,30 +995,6 @@ void ts::TablesLogger::saveBinarySection(const Section& sect)
     if (_multi_files) {
         _bin_file.close();
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Open/write/close XML file.
-//----------------------------------------------------------------------------
-
-bool ts::TablesLogger::createXML(const ts::UString& name)
-{
-    return _xml_doc.open(u"tsduck", u"", name, std::cout) != nullptr;
-}
-
-void ts::TablesLogger::saveXML(const ts::BinaryTable& table)
-{
-    // Convert the table into an XML structure.
-    table.toXML(_duck, _xml_doc.rootElement(), _xml_options);
-
-    // Print and delete the new table.
-    _xml_doc.flush();
-}
-
-void ts::TablesLogger::closeXML()
-{
-    _xml_doc.close();
 }
 
 

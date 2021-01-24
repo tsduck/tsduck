@@ -2211,7 +2211,7 @@
 
     <private_data_indicator_descriptor private_data_indicator="uint32, required"/>
 
-    <private_data_specifier_descriptor private_data_specifier="uint32|eacem|eutelsat|nordig|ofcom..., required"/>
+    <private_data_specifier_descriptor private_data_specifier="eacem|eutelsat|nordig|ofcom|...|uint32, required"/>
 
     <protection_message_descriptor>
       <!-- One per component, up to 15 components -->

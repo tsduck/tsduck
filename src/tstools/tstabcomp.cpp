@@ -41,6 +41,7 @@
 #include "tsReportWithPrefix.h"
 #include "tsInputRedirector.h"
 #include "tsOutputRedirector.h"
+#include "tsAbstractSignalization.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
@@ -166,7 +167,7 @@ namespace {
     bool DisplayModel(Options& opt)
     {
         // Locate the model file.
-        const ts::UString inName(ts::SearchConfigurationFile(TS_XML_TABLES_MODEL));
+        const ts::UString inName(ts::SearchConfigurationFile(ts::AbstractSignalization::XML_TABLES_MODEL));
         if (inName.empty()) {
             opt.error(u"XML model file not found");
             return false;
@@ -178,7 +179,7 @@ namespace {
         if (opt.outdir) {
             // Specified output is a directory, add default name.
             outName.push_back(ts::PathSeparator);
-            outName.append(TS_XML_TABLES_MODEL);
+            outName.append(ts::AbstractSignalization::XML_TABLES_MODEL);
         }
         if (!outName.empty()) {
             opt.verbose(u"saving model file to %s", {outName});
