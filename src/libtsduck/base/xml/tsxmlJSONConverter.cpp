@@ -41,9 +41,8 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::xml::JSONConverter::JSONConverter(const JSONConverterArgs& args, Report& report) :
-    ModelDocument(report),
-    _args(args)
+ts::xml::JSONConverter::JSONConverter(Report& report) :
+    ModelDocument(report)
 {
 }
 
@@ -72,13 +71,13 @@ ts::json::ValuePtr ts::xml::JSONConverter::convert(const Document& source, bool 
         }
 
         // Convert the source. Use no model if not the same as source.
-        if (_args.include_root || force_root) {
+        if (tweaks().x2jIncludeRoot || force_root) {
             // Return a JSON object containing the root.
-            return convertElement(modelRoot, docRoot);
+            return convertElement(modelRoot, docRoot, tweaks());
         }
         else {
             // Return a JSON array of all top-level elements in the root.
-            return convertChildren(modelRoot, docRoot);
+            return convertChildren(modelRoot, docRoot, tweaks());
         }
     }
 }
@@ -88,7 +87,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convert(const Document& source, bool 
 // Convert an XML tree of elements.
 //----------------------------------------------------------------------------
 
-ts::json::ValuePtr ts::xml::JSONConverter::convertElement(const Element* model, const Element* source) const
+ts::json::ValuePtr ts::xml::JSONConverter::convertElement(const Element* model, const Element* source, const Tweaks& xml_tweaks) const
 {
     // Build the JSON object for the node.
     json::ValuePtr jobj(new json::Object());
@@ -140,10 +139,10 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElement(const Element* model, 
         }
 
         // Try to enforce integer of boolean value if specified on command line.
-        if (jvalue.isNull() && _args.enforce_integer && !intModel && it->second.toInteger(intValue, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+        if (jvalue.isNull() && xml_tweaks.x2jEnforceInteger && !intModel && it->second.toInteger(intValue, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
             jvalue = new json::Number(intValue);
         }
-        if (jvalue.isNull() && _args.enforce_boolean && !boolModel && it->second.toBool(boolValue)) {
+        if (jvalue.isNull() && xml_tweaks.x2jEnforceBoolean && !boolModel && it->second.toBool(boolValue)) {
             jvalue = json::Bool(boolValue);
         }
 
@@ -158,7 +157,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElement(const Element* model, 
 
     // Process the list of children, if any.
     if (source->hasChildren()) {
-        jobj->add(u"#nodes", convertChildren(model, source));
+        jobj->add(u"#nodes", convertChildren(model, source, xml_tweaks));
     }
 
     return jobj;
@@ -169,7 +168,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElement(const Element* model, 
 // Convert all children of an element as a JSON array.
 //----------------------------------------------------------------------------
 
-ts::json::ValuePtr ts::xml::JSONConverter::convertChildren(const Element* model, const Element* parent) const
+ts::json::ValuePtr ts::xml::JSONConverter::convertChildren(const Element* model, const Element* parent, const Tweaks& xml_tweaks) const
 {
     // All JSON children are placed in an array.
     json::ValuePtr jchildren(new json::Array());
@@ -192,7 +191,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertChildren(const Element* model,
 
         if (elem != nullptr) {
             // Convert an element. Add a JSON child object in the array of JSON children.
-            jchildren->set(convertElement(findModelElement(model, elem->name()), elem));
+            jchildren->set(convertElement(findModelElement(model, elem->name()), elem, xml_tweaks));
         }
         else if (text != nullptr) {
             // Convert a text.
@@ -204,7 +203,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertChildren(const Element* model,
                 hexaModel = textModel.startWith(u"hexa", CASE_INSENSITIVE);
             }
             // Trim the text content according to model and command line options.
-            content.trim(hexaModel || _args.trim_text, hexaModel || _args.trim_text, hexaModel || _args.collapse_text);
+            content.trim(hexaModel || xml_tweaks.x2jTrimText, hexaModel || xml_tweaks.x2jTrimText, hexaModel || xml_tweaks.x2jCollapseText);
             // Add a JSON string for the text node in the array of JSON children.
             jchildren->set(content);
         }

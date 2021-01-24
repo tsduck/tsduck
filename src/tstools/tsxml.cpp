@@ -39,6 +39,7 @@
 #include "tsxmlJSONConverter.h"
 #include "tsjsonOutputArgs.h"
 #include "tsTextFormatter.h"
+#include "tsSectionFile.h"
 #include "tsOutputRedirector.h"
 #include "tsSafePtr.h"
 #include "tsFatal.h"
@@ -59,18 +60,18 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext      duck;        // TSDuck execution contexts.
-        ts::UStringVector    infiles;     // Input file names.
-        ts::UString          outfile;     // Output file name.
-        ts::UString          model;       // Model file name.
-        ts::UStringVector    patches;     // XML patch files,.
-        bool                 reformat;    // Reformat input files.
-        bool                 xml_line;    // Output XML on one single line.
-        ts::UString          xml_prefix;  // Prefix in XML line.
-        size_t               indent;      // Output indentation.
-        ts::xml::Tweaks      xml_tweaks;  // XML formatting options.
-        ts::json::OutputArgs json;        // JSON output options.
-        ts::xml::JSONConverterArgs x2j;   // XML-to-JSON conversion options.
+        ts::DuckContext      duck;          // TSDuck execution contexts.
+        ts::UStringVector    infiles;       // Input file names.
+        ts::UString          outfile;       // Output file name.
+        ts::UString          model;         // Model file name.
+        ts::UStringVector    patches;       // XML patch files,.
+        bool                 reformat;      // Reformat input files.
+        bool                 xml_line;      // Output XML on one single line.
+        bool                 tables_model;  // Use table model file.
+        ts::UString          xml_prefix;    // Prefix in XML line.
+        size_t               indent;        // Output indentation.
+        ts::xml::Tweaks      xml_tweaks;    // XML formatting options.
+        ts::json::OutputArgs json;          // JSON output options.
     };
 }
 
@@ -83,15 +84,14 @@ Options::Options(int argc, char *argv[]) :
     patches(),
     reformat(false),
     xml_line(false),
+    tables_model(false),
     xml_prefix(),
     indent(2),
     xml_tweaks(),
-    json(true),
-    x2j()
+    json(true)
 {
     json.setHelp(u"Perform an automated XML-to-JSON conversion. The output file is in JSON format instead of XML.");
     json.defineArgs(*this);
-    x2j.defineArgs(*this);
     xml_tweaks.defineArgs(*this);
 
     setIntro(u"Any input XML file name can be replaced with \"inline XML content\", starting with \"<?xml\".");
@@ -141,7 +141,8 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"tables", 't');
     help(u"tables",
-         u"A shortcut for '--model tsduck.tables.model.xml'. "
+         u"A shortcut for '--model " + ts::UString(ts::SectionFile::XML_TABLES_MODEL) + "'. "
+         u"Table definitions for installed TSDuck extensions are also merged in the main model. "
          u"It verifies that the input files are valid PSI/SI tables files.");
 
     option(u"xml-line", 0, STRING, 0, 1, 0, UNLIMITED_VALUE, true);
@@ -153,19 +154,22 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     json.loadArgs(duck, *this);
-    x2j.loadArgs(duck, *this);
     xml_tweaks.loadArgs(duck, *this);
 
     getValues(infiles, u"");
     getValues(patches, u"patch");
     getValue(outfile, u"output");
-    getValue(model, u"model");
     getIntValue(indent, u"indent", 2);
     getValue(xml_prefix, u"xml-line");
     reformat = present(u"reformat") || !patches.empty();
     xml_line = present(u"xml-line");
 
-    // Predefined models.
+    // Get model file.
+    if (present(u"model") + present(u"tables") + present(u"channel") + present(u"hf-band") + present(u"lnb") > 1) {
+        error(u"more than one XML model is specified");
+    }
+    getValue(model, u"model");
+    tables_model = present(u"tables");
     if (present(u"channel")) {
         model = u"tsduck.channels.model.xml";
     }
@@ -174,9 +178,6 @@ Options::Options(int argc, char *argv[]) :
     }
     else if (present(u"lnb")) {
         model = u"tsduck.lnbs.model.xml";
-    }
-    else if (present(u"tables")) {
-        model = u"tsduck.tables.model.xml";
     }
 
     // An input file named "" or "-" means standard input.
@@ -202,9 +203,16 @@ int MainCode(int argc, char *argv[])
     // Load the model file if any is specified.
     // Note that JSONConverter is a subclass of ModelDocument.
     // The object named 'model' can be used either as a model and a JSON converter.
-    ts::xml::JSONConverter model(opt.x2j, opt);
+    ts::xml::JSONConverter model(opt);
     model.setTweaks(opt.xml_tweaks);
-    if (!opt.model.empty() && !model.load(opt.model, true)) {
+    bool model_ok = true;
+    if (opt.tables_model) {
+        model_ok = ts::SectionFile::LoadModel(model);
+    }
+    else if (!opt.model.empty()) {
+        model_ok = model.load(opt.model, true);
+    }
+    if (!model_ok) {
         opt.error(u"error loading model files, cannot validate input files");
     }
 

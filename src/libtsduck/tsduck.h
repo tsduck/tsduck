@@ -709,7 +709,6 @@
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
 #include "tsxmlJSONConverter.h"
-#include "tsxmlJSONConverterArgs.h"
 #include "tsxmlModelDocument.h"
 #include "tsxmlNode.h"
 #include "tsxmlPatchDocument.h"

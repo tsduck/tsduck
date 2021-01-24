@@ -41,8 +41,9 @@
 #include "tsEIT.h"
 TSDUCK_SOURCE;
 
-#define TS_DEFAULT_BINARY_SECTION_FILE_SUFFIX u".bin"
-#define TS_DEFAULT_XML_SECTION_FILE_SUFFIX u".xml"
+const ts::UChar* const ts::SectionFile::DEFAULT_BINARY_SECTION_FILE_SUFFIX = u".bin";
+const ts::UChar* const ts::SectionFile::DEFAULT_XML_SECTION_FILE_SUFFIX = u".xml";
+const ts::UChar* const ts::SectionFile::XML_TABLES_MODEL = u"tsduck.tables.model.xml";
 
 
 //----------------------------------------------------------------------------
@@ -56,7 +57,6 @@ ts::SectionFile::SectionFile(DuckContext& duck) :
     _sections(),
     _orphanSections(),
     _xmlTweaks(),
-    _x2jOptions(),
     _crc_op(CRC32::IGNORE)
 {
 }
@@ -403,18 +403,23 @@ bool ts::SectionFile::saveBinary(std::ostream& strm, Report& report) const
 // This static method loads the XML model for tables and descriptors.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::LoadModel(xml::Document& doc)
+bool ts::SectionFile::LoadModel(xml::Document& doc, bool load_extensions)
 {
     // Load the main model. Use searching rules.
-    if (!doc.load(AbstractSignalization::XML_TABLES_MODEL, true)) {
-        doc.report().error(u"Main model for TSDuck XML files not found: %s", {AbstractSignalization::XML_TABLES_MODEL});
+    if (!doc.load(XML_TABLES_MODEL, true)) {
+        doc.report().error(u"Main model for TSDuck XML files not found: %s", {XML_TABLES_MODEL});
         return false;
+    }
+
+    // If no extension to be loaded, nothing more to do.
+    if (!load_extensions) {
+        return true;
     }
 
     // Get the root element in the model.
     xml::Element* root = doc.rootElement();
     if (root == nullptr) {
-        doc.report().error(u"Main model for TSDuck XML files is empty: %s", {AbstractSignalization::XML_TABLES_MODEL});
+        doc.report().error(u"Main model for TSDuck XML files is empty: %s", {XML_TABLES_MODEL});
         return false;
     }
 
@@ -557,9 +562,10 @@ ts::json::ValuePtr ts::SectionFile::convertToJSON() const
 
     // Conversion of XML into JSON.
     json::ValuePtr root;
-    xml::JSONConverter model(_x2jOptions, _report);
+    xml::JSONConverter model(_report);
+    model.setTweaks(_xmlTweaks);
 
-    if (generateDocument(doc) && model.load(AbstractSignalization::XML_TABLES_MODEL, true)) {
+    if (generateDocument(doc) && LoadModel(model)) {
         return model.convert(doc);
     }
     else {
@@ -625,10 +631,10 @@ ts::SectionFile::FileType ts::SectionFile::GetFileType(const UString& file_name,
         return type; // already known
     }
     const UString ext(PathSuffix(file_name).toLower());
-    if (ext == TS_DEFAULT_XML_SECTION_FILE_SUFFIX) {
+    if (ext == DEFAULT_XML_SECTION_FILE_SUFFIX) {
         return XML;
     }
-    else if (ext == TS_DEFAULT_BINARY_SECTION_FILE_SUFFIX) {
+    else if (ext == DEFAULT_BINARY_SECTION_FILE_SUFFIX) {
         return BINARY;
     }
     else {
@@ -645,9 +651,9 @@ ts::UString ts::SectionFile::BuildFileName(const UString& file_name, FileType ty
 {
     switch (type) {
         case BINARY:
-            return PathPrefix(file_name) + TS_DEFAULT_BINARY_SECTION_FILE_SUFFIX;
+            return PathPrefix(file_name) + DEFAULT_BINARY_SECTION_FILE_SUFFIX;
         case XML:
-            return PathPrefix(file_name) + TS_DEFAULT_XML_SECTION_FILE_SUFFIX;
+            return PathPrefix(file_name) + DEFAULT_XML_SECTION_FILE_SUFFIX;
         case UNSPECIFIED:
         default:
             return file_name;
