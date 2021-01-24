@@ -147,6 +147,9 @@ bool ts::TextFormatter::isOpen() const
 
 void ts::TextFormatter::close()
 {
+    // Flush buffered characters.
+    (*_out) << std::flush;
+
     // Close resources.
     if (_out == &_outString) {
         // Output is set to string. Reset internal buffer.

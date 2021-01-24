@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 
 ts::json::Type ts::json::Array::type() const
 {
-     return TypeArray;
+     return Type::Array;
 }
 bool ts::json::Array::isArray() const
 {
@@ -226,7 +226,7 @@ ts::json::Value& ts::json::Array::query(const UString& path, bool create, Type t
     }
     else if (create) {
         // Determine next field type
-        ValuePtr val(Factory(next.empty() ? type : (next.startWith(u"[") ? TypeArray : TypeObject)));
+        ValuePtr val(Factory(next.empty() ? type : (next.startWith(u"[") ? Type::Array : Type::Object)));
         set(val, index);
         return val->query(next, create, type); // recursive query
     }

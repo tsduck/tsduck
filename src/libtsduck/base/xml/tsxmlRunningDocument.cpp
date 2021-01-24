@@ -38,12 +38,13 @@ TSDUCK_SOURCE;
 ts::xml::RunningDocument::RunningDocument(Report& report) :
     Document(report),
     _text(report),
-    _openRoot(false)
+    _open_root(false)
 {
 }
 
 ts::xml::RunningDocument::~RunningDocument()
 {
+    close();
 }
 
 
@@ -81,10 +82,10 @@ void ts::xml::RunningDocument::flush()
         return;
     }
 
-    if (!_openRoot) {
+    if (!_open_root) {
         // This is the first time we print, print the document and its header with it, leave it open.
         print(_text, true);
-        _openRoot = true;
+        _open_root = true;
     }
     else {
         // The document header and previous elements where already displayed.
@@ -114,9 +115,9 @@ void ts::xml::RunningDocument::flush()
 void ts::xml::RunningDocument::close()
 {
     // Close the document structure if currently open.
-    if (_openRoot) {
+    if (_open_root) {
         printClose(_text);
-        _openRoot = false;
+        _open_root = false;
     }
 
     // Close the associated text formatter.

@@ -55,7 +55,8 @@ namespace ts {
             virtual void print(TextFormatter& output) const override;
             virtual size_t size() const override;
             virtual const Value& value(const UString& name) const override;
-            virtual Value& value(const UString& name, bool create = false, Type type = TypeObject) override;
+            virtual Value& value(const UString& name, bool create = false, Type type = Type::Object) override;
+            virtual ValuePtr valuePtr(const UString& name) override;
             virtual void remove(const UString& name) override;
             virtual ValuePtr extract(const UString& name) override;
             virtual void add(const UString& name, const ValuePtr& value) override;
@@ -64,7 +65,7 @@ namespace ts {
             virtual void clear() override;
             virtual void getNames(UStringList& names) const override;
             virtual const Value& query(const UString& path) const override;
-            virtual Value& query(const UString& path, bool create = false, Type type = TypeObject) override;
+            virtual Value& query(const UString& path, bool create = false, Type type = Type::Object) override;
 
         private:
             std::map<UString, ValuePtr> _fields;

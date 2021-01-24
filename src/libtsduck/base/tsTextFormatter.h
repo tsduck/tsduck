@@ -62,6 +62,12 @@ namespace ts {
         virtual ~TextFormatter() override;
 
         //!
+        //! Get the current report for log and error messages.
+        //! @return A reference to the current output report.
+        //!
+        Report& report() const { return _report; }
+
+        //!
         //! Get the margin size for outer-most elements.
         //! @return The margin size for outer-most elements.
         //!

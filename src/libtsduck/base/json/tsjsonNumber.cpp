@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 
 ts::json::Type ts::json::Number::type() const
 {
-    return TypeNumber;
+    return Type::Number;
 }
 
 bool ts::json::Number::isNumber() const

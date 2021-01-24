@@ -38,6 +38,16 @@
 #include "tsjsonArray.h"
 TSDUCK_SOURCE;
 
+const ts::Enumeration ts::json::TypeEnum({
+    {u"Null literal",  int(ts::json::Type::Null)},
+    {u"True literal",  int(ts::json::Type::True)},
+    {u"False literal", int(ts::json::Type::False)},
+    {u"string",        int(ts::json::Type::String)},
+    {u"number",        int(ts::json::Type::Number)},
+    {u"object",        int(ts::json::Type::Object)},
+    {u"array",         int(ts::json::Type::Array)},
+});
+
 
 //----------------------------------------------------------------------------
 // Create a JSON value by type.
@@ -51,22 +61,22 @@ ts::json::ValuePtr ts::json::Bool(bool value)
 ts::json::ValuePtr ts::json::Factory(Type type, const UString& value)
 {
     switch (type) {
-        case TypeTrue:
+        case Type::True:
             return ValuePtr(new True);
-        case TypeFalse:
+        case Type::False:
             return ValuePtr(new False);
-        case TypeString:
+        case Type::String:
             return ValuePtr(new String(value));
-        case TypeNumber: {
+        case Type::Number: {
             int64_t ivalue = 0;
             value.toInteger(ivalue, u",");
             return ValuePtr(new Number(ivalue));
         }
-        case TypeObject:
+        case Type::Object:
             return ValuePtr(new Object);
-        case TypeArray:
+        case Type::Array:
             return ValuePtr(new Array);
-        case TypeNull:
+        case Type::Null:
         default:
             return ValuePtr(new Null);
     }

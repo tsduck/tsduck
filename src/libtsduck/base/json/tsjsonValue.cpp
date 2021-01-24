@@ -138,6 +138,11 @@ ts::json::Value& ts::json::Value::value(const UString& name, bool create, Type t
     return NullValue;
 }
 
+ts::json::ValuePtr ts::json::Value::valuePtr(const UString& name)
+{
+    return ValuePtr();
+}
+
 const ts::json::Value& ts::json::Value::query(const UString& path) const
 {
     return path.empty() ? *this : NullValue;
