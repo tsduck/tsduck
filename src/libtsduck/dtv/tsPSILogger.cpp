@@ -32,6 +32,8 @@
 #include "tsBinaryTable.h"
 #include "tsxmlComment.h"
 #include "tsxmlElement.h"
+#include "tsjsonArray.h"
+#include "tsjsonObject.h"
 #include "tsTSPacket.h"
 #include "tsNames.h"
 #include "tsPAT.h"
@@ -54,17 +56,24 @@ ts::PSILogger::PSILogger(TablesDisplay& display) :
     _dump(false),
     _use_text(false),
     _use_xml(false),
+    _use_json(false),
     _log_xml_line(false),
+    _log_json_line(false),
     _use_current(true),
     _use_next(false),
     _text_destination(),
     _xml_destination(),
+    _json_destination(),
     _log_xml_prefix(),
+    _log_json_prefix(),
     _xml_tweaks(),
+    _x2j_options(),
     _display(display),
     _duck(_display.duck()),
     _report(_duck.report()),
     _xml_doc(_report),
+    _x2j_conv(_x2j_options, _report),
+    _json_doc(_report),
     _abort(false),
     _pat_ok(_cat_only),
     _cat_ok(_clear),
@@ -93,6 +102,7 @@ void ts::PSILogger::defineArgs(Args& args) const
 {
     // Define XML options.
     _xml_tweaks.defineArgs(args);
+    _x2j_options.defineArgs(args);
 
     args.option(u"all-versions", 'a');
     args.help(u"all-versions",
@@ -127,6 +137,13 @@ void ts::PSILogger::defineArgs(Args& args) const
               u"The optional string parameter specifies a prefix to prepend on the log "
               u"line before the XML text to locate the appropriate line in the logs.");
 
+    args.option(u"log-json-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
+    args.help(u"log-json-line", u"'prefix'",
+              u"Log each table as one single JSON line in the message logger instead of an output file. "
+              u"The table is formatted as XML and automated XML-to-JSON conversion is applied. "
+              u"The optional string parameter specifies a prefix to prepend on the log "
+              u"line before the JSON text to locate the appropriate line in the logs.");
+
     args.option(u"output-file", 'o', Args::STRING);
     args.help(u"output-file", u"filename",
               u"Save the tables in human-readable text format in the specified file. "
@@ -139,9 +156,14 @@ void ts::PSILogger::defineArgs(Args& args) const
 
     args.option(u"xml-output", 'x',  Args::STRING);
     args.help(u"xml-output", u"filename",
-              u"Save the tables in XML format in the specified file. To output the XML "
-              u"text on the standard output, explicitly specify this option with \"-\" "
-              u"as output file name.");
+              u"Save the tables in XML format in the specified file. "
+              u"To output the XML text on the standard output, explicitly specify this option with \"-\" as output file name.");
+
+    args.option(u"json-output", 'j',  Args::STRING);
+    args.help(u"json-output", u"filename",
+              u"Save the tables in JSON format in the specified file. "
+              u"The tables are initially formatted as XML and automated XML-to-JSON conversion is applied. "
+              u"To output the JSON text on the standard output, explicitly specify this option with \"-\" as output file name.");
 }
 
 
@@ -153,8 +175,12 @@ bool ts::PSILogger::loadArgs(DuckContext& duck, Args& args)
 {
     // Type of output, text is the default.
     _use_xml = args.present(u"xml-output");
+    _use_json = args.present(u"json-output");
     _log_xml_line = args.present(u"log-xml-line");
-    _use_text = args.present(u"output-file") || args.present(u"text-output") || (!_use_xml && !_log_xml_line);
+    _log_json_line = args.present(u"log-json-line");
+    _use_text = args.present(u"output-file") ||
+                args.present(u"text-output") ||
+                (!_use_xml && !_use_json && !_log_xml_line && !_log_json_line);
 
     // --output-file and --text-output are synonyms.
     if (args.present(u"output-file") && args.present(u"text-output")) {
@@ -163,16 +189,10 @@ bool ts::PSILogger::loadArgs(DuckContext& duck, Args& args)
 
     // Output destinations.
     args.getValue(_xml_destination, u"xml-output");
+    args.getValue(_json_destination, u"json-output");
     args.getValue(_text_destination, u"output-file", args.value(u"text-output").c_str());
     args.getValue(_log_xml_prefix, u"log-xml-line");
-
-    // Accept "-" as a specification for standard output (common convention in UNIX world).
-    if (_text_destination == u"-") {
-        _text_destination.clear();
-    }
-    if (_xml_destination == u"-") {
-        _xml_destination.clear();
-    }
+    args.getValue(_log_json_prefix, u"log-json-line");
 
     // Other options.
     _all_versions = args.present(u"all-versions");
@@ -183,7 +203,7 @@ bool ts::PSILogger::loadArgs(DuckContext& duck, Args& args)
     _use_next = args.present(u"include-next");
 
     // Load XML options.
-    return _xml_tweaks.loadArgs(duck, args);
+    return _x2j_options.loadArgs(duck, args) && _xml_tweaks.loadArgs(duck, args);
 }
 
 
@@ -193,6 +213,12 @@ bool ts::PSILogger::loadArgs(DuckContext& duck, Args& args)
 
 bool ts::PSILogger::open()
 {
+    // Load the XML model for tables if we need to convert to JSON.
+    if ((_use_json || _log_json_line) && !_x2j_conv.load(AbstractSignalization::XML_TABLES_MODEL, true)) {
+        _report.error(u"Main model for TSDuck XML files not found: %s", {AbstractSignalization::XML_TABLES_MODEL});
+        return false;
+    }
+
     // Open/create the destination
     if (_use_text) {
         if (!_duck.setOutput(_text_destination)) {
@@ -207,10 +233,27 @@ bool ts::PSILogger::open()
     _xml_doc.clear();
     _xml_doc.setTweaks(_xml_tweaks);
 
+    // Set XML-to-JSON conversion options.
+    _x2j_conv.setConverterArgs(_x2j_options);
+
     // Open/create the XML output.
     if (_use_xml && !_xml_doc.open(u"tsduck", u"", _xml_destination, std::cout)) {
         _abort = true;
         return false;
+    }
+
+    // Open/create the JSON output.
+    if (_use_json) {
+        json::ValuePtr root;
+        if (_x2j_options.include_root) {
+            root = new json::Object;
+            root->add(u"#name", u"tsduck");
+            root->add(u"#nodes", json::ValuePtr(new json::Array));
+        }
+        if (!_json_doc.open(root, _json_destination, std::cout)) {
+            _abort = true;
+            return false;
+        }
     }
 
     // Specify the PID filters
@@ -236,8 +279,8 @@ bool ts::PSILogger::open()
 
 void ts::PSILogger::close()
 {
-    // Complete XML output.
     _xml_doc.close();
+    _json_doc.close();
 }
 
 
@@ -485,38 +528,68 @@ void ts::PSILogger::displayTable(const BinaryTable& table)
     }
 
     // XML options.
-    BinaryTable::XMLOptions xml_opt;
-    xml_opt.setPID = true;
+    BinaryTable::XMLOptions xml_options;
+    xml_options.setPID = true;
 
     // Full XML output.
     if (_use_xml) {
         // Convert the table into an XML structure.
-        table.toXML(_duck, _xml_doc.rootElement(), xml_opt);
+        table.toXML(_duck, _xml_doc.rootElement(), xml_options);
 
         // Print and delete the new table.
         _xml_doc.flush();
     }
 
-    // XML one-liner in the log.
-    if (_log_xml_line) {
+    // Save table in JSON format.
+    if (_use_json) {
+        // First, build an XML document with the table.
+        xml::Document doc(_report);
+        doc.initialize(u"tsduck");
+        table.toXML(_duck, doc.rootElement(), xml_options);
+
+        // Convert to JSON. Force "tsduck" root to appear so that the path to the first table is always the same.
+        // Query the first (and only) converted table and add it to the running document.
+        _json_doc.add(_x2j_conv.convert(doc, true)->query(u"#nodes[0]"));
+    }
+
+    // XML and/or JSON one-liner in the log.
+    if (_log_xml_line || _log_json_line) {
 
         // Build an XML document.
         xml::Document doc;
         doc.initialize(u"tsduck");
 
         // Convert the table into an XML structure.
-        xml::Element* elem = table.toXML(_duck, doc.rootElement(), xml_opt);
+        xml::Element* elem = table.toXML(_duck, doc.rootElement(), xml_options);
         if (elem != nullptr) {
+
             // Initialize a text formatter for one-liner.
             TextFormatter text(_report);
             text.setString();
             text.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
 
-            // Serialize the XML object inside the text formatter.
-            doc.print(text);
-
             // Log the XML line.
-            _report.info(_log_xml_prefix + text.toString());
+            if (_log_xml_line) {
+                doc.print(text);
+                _report.info(_log_xml_prefix + text.toString());
+            }
+
+            // Log the JSON line.
+            if (_log_json_line) {
+
+                // Convert the XML document into JSON.
+                // Force "tsduck" root to appear so that the path to the first table is always the same.
+                const json::ValuePtr root(_x2j_conv.convert(doc, true));
+
+                // Reset the text formatter if already used for XML.
+                if (_log_xml_line) {
+                    text.setString();
+                }
+
+                // Query the first (and only) converted table and log it as one line.
+                root->query(u"#nodes[0]").print(text);
+                _report.info(_log_json_prefix + text.toString());
+            }
         }
     }
 }

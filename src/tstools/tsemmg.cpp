@@ -314,7 +314,7 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     for (auto it = inputFiles.begin(); it != inputFiles.end(); ++it) {
         ts::SectionFile file(duck);
         file.setCRCValidation(ts::CRC32::CHECK);
-        if (file.load(*it, *this)) {
+        if (file.load(*it)) {
             sections.insert(sections.end(), file.sections().begin(), file.sections().end());
         }
     }

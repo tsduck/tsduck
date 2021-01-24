@@ -504,6 +504,7 @@ void ts::TablesLogger::close()
 
         // Close files and documents.
         _xml_doc.close();
+        _json_doc.close();
         if (_bin_file.is_open()) {
             _bin_file.close();
         }
@@ -754,7 +755,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
 
 
 //----------------------------------------------------------------------------
-// Log XML one-liners.
+// Log XML or JSON one-liners.
 //----------------------------------------------------------------------------
 
 void ts::TablesLogger::logXMLJSON(const BinaryTable& table)

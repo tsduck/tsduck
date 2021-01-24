@@ -35,6 +35,8 @@
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsxmlModelDocument.h"
+#include "tsxmlJSONConverter.h"
+#include "tsjsonNull.h"
 #include "tsSysUtils.h"
 #include "tsEIT.h"
 TSDUCK_SOURCE;
@@ -49,10 +51,12 @@ TSDUCK_SOURCE;
 
 ts::SectionFile::SectionFile(DuckContext& duck) :
     _duck(duck),
+    _report(duck.report()),
     _tables(),
     _sections(),
     _orphanSections(),
     _xmlTweaks(),
+    _x2jOptions(),
     _crc_op(CRC32::IGNORE)
 {
 }
@@ -325,18 +329,18 @@ void ts::SectionFile::rebuildTables()
 // Load a binary section file.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::loadBinary(const UString& file_name, Report& report)
+bool ts::SectionFile::loadBinary(const UString& file_name)
 {
     // Open the input file.
     std::ifstream strm(file_name.toUTF8().c_str(), std::ios::in | std::ios::binary);
     if (!strm.is_open()) {
         clear();
-        report.error(u"cannot open %s", {file_name});
+        _report.error(u"cannot open %s", {file_name});
         return false;
     }
 
     // Load the section file.
-    ReportWithPrefix report_internal(report, file_name + u": ");
+    ReportWithPrefix report_internal(_report, file_name + u": ");
     const bool success = loadBinary(strm, report_internal);
     strm.close();
 
@@ -367,17 +371,17 @@ bool ts::SectionFile::loadBinary(std::istream& strm, Report& report)
 // Save a binary section file.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::saveBinary(const UString& file_name, Report& report) const
+bool ts::SectionFile::saveBinary(const UString& file_name) const
 {
     // Create the output file.
     std::ofstream strm(file_name.toUTF8().c_str(), std::ios::out | std::ios::binary);
     if (!strm.is_open()) {
-        report.error(u"error creating %s", {file_name});
+        _report.error(u"error creating %s", {file_name});
         return false;
     }
 
     // Save sections.
-    ReportWithPrefix report_internal(report, file_name + u": ");
+    ReportWithPrefix report_internal(_report, file_name + u": ");
     const bool success = saveBinary(strm, report_internal);
     strm.close();
 
@@ -465,26 +469,26 @@ bool ts::SectionFile::LoadModel(xml::Document& doc)
 // Load / parse an XML file.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::loadXML(const UString& file_name, Report& report)
+bool ts::SectionFile::loadXML(const UString& file_name)
 {
     clear();
-    xml::Document doc(report);
+    xml::Document doc(_report);
     doc.setTweaks(_xmlTweaks);
     return doc.load(file_name, false) && parseDocument(doc);
 }
 
-bool ts::SectionFile::loadXML(std::istream& strm, Report& report)
+bool ts::SectionFile::loadXML(std::istream& strm)
 {
     clear();
-    xml::Document doc(report);
+    xml::Document doc(_report);
     doc.setTweaks(_xmlTweaks);
     return doc.load(strm) && parseDocument(doc);
 }
 
-bool ts::SectionFile::parseXML(const UString& xml_content, Report& report)
+bool ts::SectionFile::parseXML(const UString& xml_content)
 {
     clear();
-    xml::Document doc(report);
+    xml::Document doc(_report);
     doc.setTweaks(_xmlTweaks);
     return doc.parse(xml_content) && parseDocument(doc);
 }
@@ -526,18 +530,59 @@ bool ts::SectionFile::parseDocument(const xml::Document& doc)
 // Create XML file or text.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::saveXML(const UString& file_name, Report& report) const
+bool ts::SectionFile::saveXML(const UString& file_name) const
 {
-    xml::Document doc(report);
+    xml::Document doc(_report);
     doc.setTweaks(_xmlTweaks);
     return generateDocument(doc) && doc.save(file_name);
 }
 
-ts::UString ts::SectionFile::toXML(Report& report) const
+ts::UString ts::SectionFile::toXML() const
 {
-    xml::Document doc(report);
+    xml::Document doc(_report);
     doc.setTweaks(_xmlTweaks);
     return generateDocument(doc) ? doc.toString() : UString();
+}
+
+
+//----------------------------------------------------------------------------
+// Create JSON file or text.
+//----------------------------------------------------------------------------
+
+ts::json::ValuePtr ts::SectionFile::convertToJSON() const
+{
+    // Generation of the initial XML document.
+    xml::Document doc(_report);
+    doc.setTweaks(_xmlTweaks);
+
+    // Conversion of XML into JSON.
+    json::ValuePtr root;
+    xml::JSONConverter model(_x2jOptions, _report);
+
+    if (generateDocument(doc) && model.load(AbstractSignalization::XML_TABLES_MODEL, true)) {
+        return model.convert(doc);
+    }
+    else {
+        return json::ValuePtr(new json::Null);
+    }
+}
+
+bool ts::SectionFile::saveJSON(const UString& file_name) const
+{
+    const json::ValuePtr root(convertToJSON());
+    return !root->isNull() && root->save(file_name, 2, true, _report);
+}
+
+ts::UString ts::SectionFile::toJSON() const
+{
+    const json::ValuePtr root(convertToJSON());
+    if (root->isNull()) {
+        return UString();
+    }
+    TextFormatter text(_report);
+    text.setString();
+    root->print(text);
+    return text.toString();
 }
 
 
@@ -614,33 +659,33 @@ ts::UString ts::SectionFile::BuildFileName(const UString& file_name, FileType ty
 // Load a binary or XML file.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::load(const UString& file_name, Report& report, FileType type)
+bool ts::SectionFile::load(const UString& file_name, FileType type)
 {
     if (xml::Document::IsInlineXML(file_name)) {
-        return loadXML(file_name, report);
+        return loadXML(file_name);
     }
     switch (GetFileType(file_name, type)) {
         case BINARY:
-            return loadBinary(file_name, report);
+            return loadBinary(file_name);
         case XML:
-            return loadXML(file_name, report);
+            return loadXML(file_name);
         case UNSPECIFIED:
         default:
-            report.error(u"unknown file type for %s", {file_name});
+            _report.error(u"unknown file type for %s", {file_name});
             return false;
     }
 }
 
-bool ts::SectionFile::load(std::istream& strm, Report& report, FileType type)
+bool ts::SectionFile::load(std::istream& strm, FileType type)
 {
     switch (type) {
         case BINARY:
-            return loadBinary(strm, report);
+            return loadBinary(strm);
         case XML:
-            return loadXML(strm, report);
+            return loadXML(strm);
         case UNSPECIFIED:
         default:
-            report.error(u"unknown input file type");
+            _report.error(u"unknown input file type");
             return false;
     }
 }

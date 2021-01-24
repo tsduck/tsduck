@@ -225,10 +225,10 @@ namespace {
         if (file_name.empty()) {
             // no input file specified, use standard input
             SetBinaryModeStdin(opt);
-            ok = file.loadBinary(std::cin, opt);
+            ok = file.loadBinary(std::cin);
         }
         else {
-            ok = file.loadBinary(file_name, opt);
+            ok = file.loadBinary(file_name);
         }
 
         if (ok) {

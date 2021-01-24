@@ -35,11 +35,13 @@
 #pragma once
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
+#include "tsjson.h"
 #include "tsSection.h"
 #include "tsBinaryTable.h"
 #include "tsUString.h"
 #include "tsDVBCharTable.h"
 #include "tsxmlTweaks.h"
+#include "tsxmlJSONConverterArgs.h"
 #include "tsTablesPtr.h"
 #include "tsCerrReport.h"
 
@@ -147,6 +149,12 @@ namespace ts {
         void setTweaks(const xml::Tweaks& tweaks) { _xmlTweaks = tweaks; }
 
         //!
+        //! Set new options for automated XML-to-JSON conversion.
+        //! @param [in] args Options for automated XML-to-JSON conversion.
+        //!
+        void setJSONConverterArgs(const xml::JSONConverterArgs& args) { _x2jOptions = args; }
+
+        //!
         //! Set the CRC32 processing mode when loading binary sections.
         //! @param [in] crc_op For binary files, how to process the CRC32 of the input sections.
         //!
@@ -156,92 +164,100 @@ namespace ts {
         //! Load a binary or XML file.
         //! @param [in] file_name XML file name.
         //! If the file name starts with "<?xml", this is considered as "inline XML content".
-        //! @param [in,out] report Where to report errors.
         //! @param [in] type File type. If UNSPECIFIED, the file type is based on the file name.
         //! @return True on success, false on error.
         //!
-        bool load(const UString& file_name, Report& report = CERR, FileType type = UNSPECIFIED);
+        bool load(const UString& file_name, FileType type = UNSPECIFIED);
 
         //!
         //! Load a binary or XML file.
         //! @param [in,out] strm A standard stream in input mode (binary mode for binary files).
-        //! @param [in,out] report Where to report errors.
         //! @param [in] type File type. If UNSPECIFIED, return an error.
         //! @return True on success, false on error.
         //!
-        bool load(std::istream& strm, Report& report = CERR, FileType type = UNSPECIFIED);
+        bool load(std::istream& strm, FileType type = UNSPECIFIED);
 
         //!
         //! Load an XML file.
         //! @param [in] file_name XML file name.
         //! If the file name starts with "<?xml", this is considered as "inline XML content".
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool loadXML(const UString& file_name, Report& report = CERR);
+        bool loadXML(const UString& file_name);
 
         //!
         //! Load an XML file.
         //! @param [in,out] strm A standard text stream in input mode.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool loadXML(std::istream& strm, Report& report = CERR);
+        bool loadXML(std::istream& strm);
 
         //!
         //! Parse an XML content.
         //! @param [in] xml_content XML file content in UTF-8.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool parseXML(const UString& xml_content, Report& report = CERR);
+        bool parseXML(const UString& xml_content);
 
         //!
         //! Save an XML file.
         //! @param [in] file_name XML file name.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool saveXML(const UString& file_name, Report& report = CERR) const;
+        bool saveXML(const UString& file_name) const;
+
+        //!
+        //! Save a JSON file after automated XML-to-JSON conversion.
+        //! @param [in] file_name JSON file name.
+        //! @return True on success, false on error.
+        //!
+        bool saveJSON(const UString& file_name) const;
 
         //!
         //! Serialize as XML text.
-        //! @param [in,out] report Where to report errors.
         //! @return Complete XML document text, empty on error.
         //!
-        UString toXML(Report& report = CERR) const;
+        UString toXML() const;
+
+        //!
+        //! Serialize as JSON text.
+        //! @return Complete JSON document text, empty on error.
+        //!
+        UString toJSON() const;
 
         //!
         //! Load a binary section file from a stream.
         //! @param [in,out] strm A standard stream in input mode (binary mode).
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool loadBinary(std::istream& strm, Report& report = CERR);
+        bool loadBinary(std::istream& strm)
+        {
+            return loadBinary(strm, _report);
+        }
 
         //!
         //! Load a binary section file.
         //! @param [in] file_name Binary file name.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool loadBinary(const UString& file_name, Report& report = CERR);
+        bool loadBinary(const UString& file_name);
 
         //!
         //! Save a binary section file.
         //! @param [in,out] strm A standard stream in output mode (binary mode).
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool saveBinary(std::ostream& strm, Report& report = CERR) const;
+        bool saveBinary(std::ostream& strm) const
+        {
+            return saveBinary(strm, _report);
+        }
 
         //!
         //! Save a binary section file.
         //! @param [in] file_name Binary file name.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool saveBinary(const UString& file_name, Report& report = CERR) const;
+        bool saveBinary(const UString& file_name) const;
 
         //!
         //! Fast access to the list of loaded tables.
@@ -366,35 +382,32 @@ namespace ts {
         static bool LoadModel(xml::Document& doc);
 
     private:
-        DuckContext&         _duck;            //!< Reference to TSDuck execution context.
-        BinaryTablePtrVector _tables;          //!< Loaded tables.
-        SectionPtrVector     _sections;        //!< All sections from the file.
-        SectionPtrVector     _orphanSections;  //!< Sections which do not belong to any table.
-        xml::Tweaks          _xmlTweaks;       //!< XML formatting and parsing tweaks.
-        CRC32::Validation    _crc_op;          //!< Processing of CRC32 when loading sections.
+        DuckContext&           _duck;            // Reference to TSDuck execution context.
+        Report&                _report;          // Where to report errors.
+        BinaryTablePtrVector   _tables;          // Loaded tables.
+        SectionPtrVector       _sections;        // All sections from the file.
+        SectionPtrVector       _orphanSections;  // Sections which do not belong to any table.
+        xml::Tweaks            _xmlTweaks;       // XML formatting and parsing tweaks.
+        xml::JSONConverterArgs _x2jOptions;      // XML-to-JSON conversion options.
+        CRC32::Validation      _crc_op;          // Processing of CRC32 when loading sections.
 
-        //!
-        //! Rebuild _tables and _orphanSections from _sections.
-        //!
+        // Load/save a binary section file from a stream with specific report.
+        bool loadBinary(std::istream& strm, Report& report);
+        bool saveBinary(std::ostream& strm, Report& report) const;
+
+        // Rebuild _tables and _orphanSections from _sections.
         void rebuildTables();
 
-        //!
-        //! Parse an XML document.
-        //! @param [in] doc Document to load.
-        //! @return True on success, false on error.
-        //!
+        // Parse an XML document.
         bool parseDocument(const xml::Document& doc);
 
-        //!
-        //! Generate an XML document.
-        //! @param [in,out] doc XML document.
-        //! @return True on success, false on error.
-        //!
+        // Generate an XML document.
         bool generateDocument(xml::Document& doc) const;
 
-        //!
-        //! Check it a table can be formed using the last sections in _orphanSections.
-        //!
+        // Check it a table can be formed using the last sections in _orphanSections.
         void collectLastTable();
+
+        // Generate a JSON document. Point to a JSON Null literal on error.
+        json::ValuePtr convertToJSON() const;
     };
 }

@@ -187,7 +187,7 @@ int MainCode(int argc, char *argv[])
             SetBinaryModeStdin(opt);
             opt.inType = ts::SectionFile::BINARY;
         }
-        if (!file.load(std::cin, opt, opt.inType) || !opt.sections_opt.processSectionFile(file, opt)) {
+        if (!file.load(std::cin, opt.inType) || !opt.sections_opt.processSectionFile(file, opt)) {
             return EXIT_FAILURE;
         }
         pzer.addSections(file.sections());
@@ -197,7 +197,7 @@ int MainCode(int argc, char *argv[])
     }
     else {
         for (auto it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
-            if (!file.load(it->file_name, opt, opt.inType) || !opt.sections_opt.processSectionFile(file, opt)) {
+            if (!file.load(it->file_name, opt.inType) || !opt.sections_opt.processSectionFile(file, opt)) {
                 return EXIT_FAILURE;
             }
             pzer.addSections(file.sections(), it->repetition);

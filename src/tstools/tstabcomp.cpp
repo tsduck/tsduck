@@ -38,6 +38,7 @@
 #include "tsSectionFileArgs.h"
 #include "tsDVBCharTable.h"
 #include "tsxmlTweaks.h"
+#include "tsxmlJSONConverter.h"
 #include "tsReportWithPrefix.h"
 #include "tsInputRedirector.h"
 #include "tsOutputRedirector.h"
@@ -69,10 +70,12 @@ namespace {
         bool                outdir;          // Output name is a directory.
         bool                compile;         // Explicit compilation.
         bool                decompile;       // Explicit decompilation.
+        bool                json;            // Decompile to JSON.
         bool                xmlModel;        // Display XML model instead of compilation.
         bool                withExtensions;  // XML model with extensions.
         ts::SectionFileArgs sectionOptions;  // Section file processing options.
         ts::xml::Tweaks     xmlTweaks;       // XML formatting options.
+        ts::xml::JSONConverterArgs x2j;      // XML-to-JSON conversion options.
     };
 }
 
@@ -84,16 +87,19 @@ Options::Options(int argc, char *argv[]) :
     outdir(false),
     compile(false),
     decompile(false),
+    json(false),
     xmlModel(false),
     withExtensions(false),
     sectionOptions(),
-    xmlTweaks()
+    xmlTweaks(),
+    x2j()
 {
     duck.defineArgsForStandards(*this);
     duck.defineArgsForTimeReference(*this);
     duck.defineArgsForCharset(*this);
     sectionOptions.defineArgs(*this);
     xmlTweaks.defineArgs(*this);
+    x2j.defineArgs(*this);
 
     option(u"", 0, STRING);
     help(u"",
@@ -116,6 +122,11 @@ Options::Options(int argc, char *argv[]) :
     help(u"extensions",
          u"With --xml-model, include the content of the available extensions.");
 
+    option(u"json", 'j');
+    help(u"json",
+         u"When decompiling, perform an automated XML-to-JSON conversion. "
+         u"The output file is in JSON format instead of XML.");
+
     option(u"output", 'o', STRING);
     help(u"output", u"filepath",
          u"Specify the output file name. By default, the output file has the same "
@@ -136,6 +147,7 @@ Options::Options(int argc, char *argv[]) :
     duck.loadArgs(*this);
     sectionOptions.loadArgs(duck, *this);
     xmlTweaks.loadArgs(duck, *this);
+    x2j.loadArgs(duck, *this);
 
     getValues(infiles, u"");
     getValue(outfile, u"output");
@@ -235,6 +247,7 @@ namespace {
 
         ts::SectionFile file(opt.duck);
         file.setTweaks(opt.xmlTweaks);
+        file.setJSONConverterArgs(opt.x2j);
         file.setCRCValidation(ts::CRC32::CHECK);
 
         ts::ReportWithPrefix report(opt, ts::BaseName(infile) + u": ");
@@ -255,16 +268,16 @@ namespace {
         else if (compile) {
             // Load XML file and save binary sections.
             opt.verbose(u"Compiling %s to %s", {infile, outname});
-            return file.loadXML(infile, report) &&
-                   opt.sectionOptions.processSectionFile(file, report) &&
-                   file.saveBinary(outname, report);
+            return file.loadXML(infile) &&
+                   opt.sectionOptions.processSectionFile(file, opt) &&
+                   file.saveBinary(outname);
         }
         else {
             // Load binary sections and save XML file.
             opt.verbose(u"Decompiling %s to %s", {infile, outname});
-            return file.loadBinary(infile, report) &&
-                   opt.sectionOptions.processSectionFile(file, report) &&
-                   file.saveXML(outname, report);
+            return file.loadBinary(infile) &&
+                   opt.sectionOptions.processSectionFile(file, opt) &&
+                   (opt.json ? file.saveJSON(outname) : file.saveXML(outname));
         }
     }
 }

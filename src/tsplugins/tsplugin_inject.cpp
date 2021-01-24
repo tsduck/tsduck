@@ -340,7 +340,7 @@ bool ts::InjectPlugin::reloadFiles()
             // With --poll-files, we ignore non-existent files.
             it->retry_count = 0;  // no longer needed to retry
         }
-        else if (!file.load(it->file_name, *tsp, _intype) || !_sections_opt.processSectionFile(file, *tsp)) {
+        else if (!file.load(it->file_name, _intype) || !_sections_opt.processSectionFile(file, *tsp)) {
             success = false;
             if (it->retry_count > 0) {
                 it->retry_count--;
