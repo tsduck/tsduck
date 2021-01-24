@@ -197,6 +197,7 @@ int MainCode(int argc, char *argv[])
     }
     else {
         for (auto it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
+            file.clear();
             if (!file.load(it->file_name, opt.inType) || !opt.sections_opt.processSectionFile(file, opt)) {
                 return EXIT_FAILURE;
             }

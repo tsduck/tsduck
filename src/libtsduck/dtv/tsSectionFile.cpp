@@ -339,7 +339,6 @@ bool ts::SectionFile::loadBinary(const UString& file_name)
     // Open the input file.
     std::ifstream strm(file_name.toUTF8().c_str(), std::ios::in | std::ios::binary);
     if (!strm.is_open()) {
-        clear();
         _report.error(u"cannot open %s", {file_name});
         return false;
     }
@@ -354,8 +353,6 @@ bool ts::SectionFile::loadBinary(const UString& file_name)
 
 bool ts::SectionFile::loadBinary(std::istream& strm, Report& report)
 {
-    clear();
-
     // Read all binary sections one by one.
     for (;;) {
         SectionPtr sp(new Section);
@@ -486,7 +483,6 @@ bool ts::SectionFile::LoadModel(xml::Document& doc, bool load_extensions)
 
 bool ts::SectionFile::loadXML(const UString& file_name)
 {
-    clear();
     xml::Document doc(_report);
     doc.setTweaks(_xmlTweaks);
     return doc.load(file_name, false, true) && parseDocument(doc);
@@ -494,7 +490,6 @@ bool ts::SectionFile::loadXML(const UString& file_name)
 
 bool ts::SectionFile::loadXML(std::istream& strm)
 {
-    clear();
     xml::Document doc(_report);
     doc.setTweaks(_xmlTweaks);
     return doc.load(strm) && parseDocument(doc);
@@ -502,7 +497,6 @@ bool ts::SectionFile::loadXML(std::istream& strm)
 
 bool ts::SectionFile::parseXML(const UString& xml_content)
 {
-    clear();
     xml::Document doc(_report);
     doc.setTweaks(_xmlTweaks);
     return doc.parse(xml_content) && parseDocument(doc);

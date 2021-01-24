@@ -155,6 +155,7 @@ namespace ts {
 
         //!
         //! Load a binary or XML file.
+        //! The loaded sections are added to the content of this object.
         //! @param [in] file_name XML file name.
         //! If the file name starts with "<?xml", this is considered as "inline XML content".
         //! If the file name is empty or "-", the standard input is used.
@@ -165,6 +166,7 @@ namespace ts {
 
         //!
         //! Load a binary or XML file.
+        //! The loaded sections are added to the content of this object.
         //! @param [in,out] strm A standard stream in input mode (binary mode for binary files).
         //! @param [in] type File type. If UNSPECIFIED, return an error.
         //! @return True on success, false on error.
@@ -173,6 +175,7 @@ namespace ts {
 
         //!
         //! Load an XML file.
+        //! The loaded tables are added to the content of this object.
         //! @param [in] file_name XML file name.
         //! If the file name starts with "<?xml", this is considered as "inline XML content".
         //! If the file name is empty or "-", the standard input is used.
@@ -182,6 +185,7 @@ namespace ts {
 
         //!
         //! Load an XML file.
+        //! The loaded sections are added to the content of this object.
         //! @param [in,out] strm A standard text stream in input mode.
         //! @return True on success, false on error.
         //!
@@ -189,6 +193,7 @@ namespace ts {
 
         //!
         //! Parse an XML content.
+        //! The parsed tables are added to the content of this object.
         //! @param [in] xml_content XML file content in UTF-8.
         //! @return True on success, false on error.
         //!
@@ -224,6 +229,7 @@ namespace ts {
 
         //!
         //! Load a binary section file from a stream.
+        //! The loaded sections are added to the content of this object.
         //! @param [in,out] strm A standard stream in input mode (binary mode).
         //! @return True on success, false on error.
         //!
@@ -234,6 +240,7 @@ namespace ts {
 
         //!
         //! Load a binary section file.
+        //! The loaded sections are added to the content of this object.
         //! @param [in] file_name Binary file name.
         //! If the file name is empty or "-", the standard input is used.
         //! @return True on success, false on error.
