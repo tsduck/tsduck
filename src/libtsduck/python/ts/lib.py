@@ -133,8 +133,200 @@ class OutByteBuffer:
 
 
 #-----------------------------------------------------------------------------
-# Bindings to C++ functions from the TSDuck library
+# Bindings to C++ functions from tspyDuckContext.cpp
 #-----------------------------------------------------------------------------
+
+# void* tspyNewDuckContext(void* report);
+
+tspyNewDuckContext = _lib.tspyNewDuckContext
+tspyNewDuckContext.restype = c_void_p
+tspyNewDuckContext.argtypes = [c_void_p]
+
+# void tspyDeleteDuckContext(void* duck);
+
+tspyDeleteDuckContext = _lib.tspyDeleteDuckContext
+tspyDeleteDuckContext.restype = None
+tspyDeleteDuckContext.argtypes = [c_void_p]
+
+#-----------------------------------------------------------------------------
+# Bindings to C++ functions from tspyInfo.cpp
+#-----------------------------------------------------------------------------
+
+# uint32_t tspyVersionInteger();
+
+tspyVersionInteger = _lib.tspyVersionInteger
+tspyVersionInteger.restype = c_uint32
+tspyVersionInteger.argtypes = []
+
+# void tspyVersionString(uint8_t* buffer, size_t* size);
+
+tspyVersionString = _lib.tspyVersionString
+tspyVersionString.restype = None
+tspyVersionString.argtypes = [POINTER(c_uint8), POINTER(c_size_t)]
+
+#-----------------------------------------------------------------------------
+# Bindings to C++ functions from 
+#-----------------------------------------------------------------------------
+
+# void tspyReportHeader(int severity, uint8_t* buffer, size_t* buffer_size);
+
+tspyReportHeader = _lib.tspyReportHeader
+tspyReportHeader.restype = None
+tspyReportHeader.argtypes = [c_int, POINTER(c_uint8), POINTER(c_size_t)]
+
+# void* tspyStdErrReport();
+
+tspyStdErrReport = _lib.tspyStdErrReport
+tspyStdErrReport.restype = c_void_p
+tspyStdErrReport.argtypes = []
+
+# void* tspyNullReport();
+
+tspyNullReport = _lib.tspyNullReport
+tspyNullReport.restype = c_void_p
+tspyNullReport.argtypes = []
+
+# void* tspyNewAsyncReport(int severity, bool sync_log, bool timed_log, size_t log_msg_count);
+
+tspyNewAsyncReport = _lib.tspyNewAsyncReport
+tspyNewAsyncReport.restype = c_void_p
+tspyNewAsyncReport.argtypes = [c_int, c_bool, c_bool, c_size_t]
+
+# void* tspyNewPyAsyncReport(ts::py::AsyncReport::LogCallback log, int severity, bool sync_log, size_t log_msg_count);
+
+tspyNewPyAsyncReport = _lib.tspyNewPyAsyncReport
+tspyNewPyAsyncReport.restype = c_void_p
+# Don't know which type to use for ctypes.CFUNCTYPE() as first parameter.
+# tspyNewPyAsyncReport.argtypes = [???, c_int, c_bool, c_size_t]
+
+# void* tspyNewPySyncReport(ts::py::SyncReport::LogCallback log, int severity);
+
+tspyNewPySyncReport = _lib.tspyNewPySyncReport
+tspyNewPySyncReport.restype = c_void_p
+# Don't know which type to use for ctypes.CFUNCTYPE() as first parameter.
+# tspyNewPySyncReport.argtypes = [???, c_int, c_bool, c_size_t]
+
+# void tspyTerminateAsyncReport(void* report);
+
+tspyTerminateAsyncReport = _lib.tspyTerminateAsyncReport
+tspyTerminateAsyncReport.restype = None
+tspyTerminateAsyncReport.argtypes = [c_void_p]
+
+# void tspyDeleteReport(void* report);
+
+tspyDeleteReport = _lib.tspyDeleteReport
+tspyDeleteReport.restype = None
+tspyDeleteReport.argtypes = [c_void_p]
+
+# void tspySetMaxSeverity(void* report, int severity);
+
+tspySetMaxSeverity = _lib.tspySetMaxSeverity
+tspySetMaxSeverity.restype = None
+tspySetMaxSeverity.argtypes = [c_void_p, c_int]
+
+# void tspyLogReport(void* report, int severity, const uint8_t* buffer, size_t size);
+
+tspyLogReport = _lib.tspyLogReport
+tspyLogReport.restype = None
+tspyLogReport.argtypes = [c_void_p, c_int, POINTER(c_uint8), c_size_t]
+
+#-----------------------------------------------------------------------------
+# Bindings to C++ functions from tspySectionFile.cpp
+#-----------------------------------------------------------------------------
+
+# void* tspyNewSectionFile(void* report);
+
+tspyNewSectionFile = _lib.tspyNewSectionFile
+tspyNewSectionFile.restype = c_void_p
+tspyNewSectionFile.argtypes = [c_void_p]
+
+# void tspyDeleteSectionFile(void* sf);
+
+tspyDeleteSectionFile = _lib.tspyDeleteSectionFile
+tspyDeleteSectionFile.restype = None
+tspyDeleteSectionFile.argtypes = [c_void_p]
+
+# void tspySectionFileClear(void* sf);
+
+tspySectionFileClear = _lib.tspySectionFileClear
+tspySectionFileClear.restype = None
+tspySectionFileClear.argtypes = [c_void_p]
+
+# size_t tspySectionFileBinarySize(void* sf);
+
+tspySectionFileBinarySize = _lib.tspySectionFileBinarySize
+tspySectionFileBinarySize.restype = c_size_t
+tspySectionFileBinarySize.argtypes = [c_void_p]
+
+# size_t tspySectionFileSectionsCount(void* sf);
+
+tspySectionFileSectionsCount = _lib.tspySectionFileSectionsCount
+tspySectionFileSectionsCount.restype = c_size_t
+tspySectionFileSectionsCount.argtypes = [c_void_p]
+
+# size_t tspySectionFileTablesCount(void* sf);
+
+tspySectionFileTablesCount = _lib.tspySectionFileTablesCount
+tspySectionFileTablesCount.restype = c_size_t
+tspySectionFileTablesCount.argtypes = [c_void_p]
+
+# bool tspySectionFileLoadBinary(void* sf, const uint8_t* name, size_t name_size);
+
+tspySectionFileLoadBinary = _lib.tspySectionFileLoadBinary
+tspySectionFileLoadBinary.restype = c_bool
+tspySectionFileLoadBinary.argtypes = [c_void_p, POINTER(c_uint8), c_size_t]
+
+# bool tspySectionFileSaveBinary(void* sf, const uint8_t* name, size_t name_size);
+
+tspySectionFileSaveBinary = _lib.tspySectionFileSaveBinary
+tspySectionFileSaveBinary.restype = c_bool
+tspySectionFileSaveBinary.argtypes = [c_void_p, POINTER(c_uint8), c_size_t]
+
+# bool tspySectionFileLoadXML(void* sf, const uint8_t* name, size_t name_size);
+
+tspySectionFileLoadXML = _lib.tspySectionFileLoadXML
+tspySectionFileLoadXML.restype = c_bool
+tspySectionFileLoadXML.argtypes = [c_void_p, POINTER(c_uint8), c_size_t]
+
+# bool tspySectionFileSaveXML(void* sf, const uint8_t* name, size_t name_size);
+
+tspySectionFileSaveXML = _lib.tspySectionFileSaveXML
+tspySectionFileSaveXML.restype = c_bool
+tspySectionFileSaveXML.argtypes = [c_void_p, POINTER(c_uint8), c_size_t]
+
+# bool tspySectionFileSaveJSON(void* sf, const uint8_t* name, size_t name_size);
+
+tspySectionFileSaveJSON = _lib.tspySectionFileSaveJSON
+tspySectionFileSaveJSON.restype = c_bool
+tspySectionFileSaveJSON.argtypes = [c_void_p, POINTER(c_uint8), c_size_t]
+
+# size_t tspySectionFileToXML(void* sf, uint8_t* buffer, size_t* size);
+
+tspySectionFileToXML = _lib.tspySectionFileToXML
+tspySectionFileToXML.restype = c_size_t
+tspySectionFileToXML.argtypes = [c_void_p, POINTER(c_uint8), POINTER(c_size_t)]
+
+# size_t tspySectionFileToJSON(void* sf, uint8_t* buffer, size_t* size);
+
+tspySectionFileToJSON = _lib.tspySectionFileToJSON
+tspySectionFileToJSON.restype = c_size_t
+tspySectionFileToJSON.argtypes = [c_void_p, POINTER(c_uint8), POINTER(c_size_t)]
+
+#-----------------------------------------------------------------------------
+# Bindings to C++ functions from tspyTSProcessor.cpp
+#-----------------------------------------------------------------------------
+
+# void* tspyNewTSProcessor(void* report);
+
+tspyNewTSProcessor = _lib.tspyNewTSProcessor
+tspyNewTSProcessor.restype = c_void_p
+tspyNewTSProcessor.argtypes = [c_void_p]
+
+# void tspyDeleteTSProcessor(void* tsp);
+
+tspyDeleteTSProcessor = _lib.tspyDeleteTSProcessor
+tspyDeleteTSProcessor.restype = None
+tspyDeleteTSProcessor.argtypes = [c_void_p]
 
 # struct tspyTSProcessorArgs {...}; (see file tspyTSProcessor.cpp)
 class tspyTSProcessorArgs(ctypes.Structure):
@@ -155,96 +347,17 @@ class tspyTSProcessorArgs(ctypes.Structure):
         ("log_plugin_index", ctypes.c_long),          # Log plugin index with plugin name (bool).
     ]
 
-# void tspyAbortTSProcessor(void* tsp);
-
-tspyAbortTSProcessor = _lib.tspyAbortTSProcessor
-tspyAbortTSProcessor.restype = None
-tspyAbortTSProcessor.argtypes = [c_void_p]
-
-# void tspyDeleteReport(void* report);
-
-tspyDeleteReport = _lib.tspyDeleteReport
-tspyDeleteReport.restype = None
-tspyDeleteReport.argtypes = [c_void_p]
-
-# void tspyDeleteTSProcessor(void* tsp);
-
-tspyDeleteTSProcessor = _lib.tspyDeleteTSProcessor
-tspyDeleteTSProcessor.restype = None
-tspyDeleteTSProcessor.argtypes = [c_void_p]
-
-# void tspyLogReport(void* report, int severity, const uint8_t* buffer, size_t size);
-
-tspyLogReport = _lib.tspyLogReport
-tspyLogReport.restype = None
-tspyLogReport.argtypes = [c_void_p, c_int, POINTER(c_uint8), c_size_t]
-
-# void* tspyNewAsyncReport(int severity, bool sync_log, bool timed_log, size_t log_msg_count);
-
-tspyNewAsyncReport = _lib.tspyNewAsyncReport
-tspyNewAsyncReport.restype = c_void_p
-tspyNewAsyncReport.argtypes = [c_int, c_bool, c_bool, c_size_t]
-
-# void* tspyNewPyAsyncReport(ts::py::AsyncReport::LogCallback log, int severity, bool sync_log, size_t log_msg_count);
-
-tspyNewPyAsyncReport = _lib.tspyNewPyAsyncReport
-tspyNewPyAsyncReport.restype = c_void_p
-# Don't know which type to use for ctypes.CFUNCTYPE() as first parameter.
-# tspyNewPyAsyncReport.argtypes = [???, c_int, c_bool, c_size_t]
-
-# void* tspyNewTSProcessor(void* report);
-
-tspyNewTSProcessor = _lib.tspyNewTSProcessor
-tspyNewTSProcessor.restype = c_void_p
-tspyNewTSProcessor.argtypes = [c_void_p]
-
-# void* tspyNullReport();
-
-tspyNullReport = _lib.tspyNullReport
-tspyNullReport.restype = c_void_p
-tspyNullReport.argtypes = []
-
-# void tspyReportHeader(int severity, uint8_t* buffer, size_t* buffer_size);
-
-tspyReportHeader = _lib.tspyReportHeader
-tspyReportHeader.restype = None
-tspyReportHeader.argtypes = [c_int, POINTER(c_uint8), POINTER(c_size_t)]
-
-# void tspySetMaxSeverity(void* report, int severity);
-
-tspySetMaxSeverity = _lib.tspySetMaxSeverity
-tspySetMaxSeverity.restype = None
-tspySetMaxSeverity.argtypes = [c_void_p, c_int]
-
 # bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, const uint8_t* plugins, size_t plugins_size);
 
 tspyStartTSProcessor = _lib.tspyStartTSProcessor
 tspyStartTSProcessor.restype = c_bool
 tspyStartTSProcessor.argtypes = [c_void_p, POINTER(tspyTSProcessorArgs), POINTER(c_uint8), c_size_t]
 
-# void* tspyStdErrReport();
+# void tspyAbortTSProcessor(void* tsp);
 
-tspyStdErrReport = _lib.tspyStdErrReport
-tspyStdErrReport.restype = c_void_p
-tspyStdErrReport.argtypes = []
-
-# void tspyTerminateAsyncReport(void* report);
-
-tspyTerminateAsyncReport = _lib.tspyTerminateAsyncReport
-tspyTerminateAsyncReport.restype = None
-tspyTerminateAsyncReport.argtypes = [c_void_p]
-
-# uint32_t tspyVersionInteger();
-
-tspyVersionInteger = _lib.tspyVersionInteger
-tspyVersionInteger.restype = c_uint32
-tspyVersionInteger.argtypes = []
-
-# void tspyVersionString(uint8_t* buffer, size_t* size);
-
-tspyVersionString = _lib.tspyVersionString
-tspyVersionString.restype = None
-tspyVersionString.argtypes = [POINTER(c_uint8), POINTER(c_size_t)]
+tspyAbortTSProcessor = _lib.tspyAbortTSProcessor
+tspyAbortTSProcessor.restype = None
+tspyAbortTSProcessor.argtypes = [c_void_p]
 
 # void tspyWaitTSProcessor(void* tsp);
 

@@ -30,49 +30,33 @@
 package io.tsduck;
 
 /**
- * An abstract Report class which can be derived by applications to get asynchronous log messages.
+ * A wrapper class for C++ DuckContext.
  * @ingroup java
- *
- * This class is functionally similar to {@link AsyncReport} except that the message handling can
- * be implemented in Java. This class is suitable for use with {@link TSProcessor}.
  */
-public abstract class AbstractAsyncReport extends Report implements NativeObject {
+public final class DuckContext implements NativeObject {
 
     // Load native library on startup.
     static {
         NativeLibrary.loadLibrary();
     }
 
+    // The address of the underlying C++ object.
+    private long nativeObject = 0;
+
     // Set the address of the C++ object.
-    private native void initNativeObject(String logMethodName, int severity, boolean syncLog, int logMsgCount);
+    private native void initNativeObject(Report report);
 
     /**
-     * Constructor (for subclasses).
-     * @param severity Initial severity.
-     * @param syncLog Synchronous log.
-     * @param logMsgCount Maximum buffered log messages.
+     * Constructor
+     * @param report The report object to use. If null, reports are sent to standard error.
      */
-    protected AbstractAsyncReport(int severity, boolean syncLog, int logMsgCount) {
-        initNativeObject("logMessageHandler", severity, syncLog, logMsgCount);
+    public DuckContext(Report report) {
+        initNativeObject(report);
     }
-
-    /**
-     * Synchronously terminates the asynchronous log thread.
-     */
-    public native void terminate();
 
     /**
      * Delete the encapsulated C++ object.
      */
     @Override
     public native void delete();
-
-    /**
-     * This method is invoked each time a message is logged.
-     * If a subclass wants to intercept log messages, it should override this method.
-     * Take care that this method is invoked in the context of a native thread.
-     * @param severity Severity of the message.
-     * @param message Message line.
-     */
-    abstract public void logMessageHandler(int severity, String message);
 }

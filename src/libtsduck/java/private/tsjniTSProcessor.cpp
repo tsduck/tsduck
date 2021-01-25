@@ -73,7 +73,10 @@ JNIEXPORT void JNICALL Java_io_tsduck_TSProcessor_initNativeObject(JNIEnv* env, 
     // Make sure we do not allocate twice (and lose previous instance).
     ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");
     if (tsp == nullptr) {
-        ts::Report* report = ts::jni::GetPointerField<ts::Report>(env, jreport, "nativeObject");
+        ts::Report* report = nullptr;
+        if (jreport != nullptr) {
+            report = ts::jni::GetPointerField<ts::Report>(env, jreport, "nativeObject");
+        }
         if (report == nullptr) {
             report = ts::NullReport::Instance();
         }

@@ -30,13 +30,18 @@
 package io.tsduck;
 
 /**
- * An abstract Report class which can be derived by applications to get asynchronous log messages.
+ * An abstract Report class which can be derived by applications to get synchronous log messages.
  * @ingroup java
  *
- * This class is functionally similar to {@link AsyncReport} except that the message handling can
- * be implemented in Java. This class is suitable for use with {@link TSProcessor}.
+ * Handling messages is performed synchronously, meaning that Java calls TSDuck which logs
+ * messages which calls the Java message handler.
+ *
+ * This class is not thread-safe. It shall be entirely used in the same Java thread.
+ * This report shall be passed to TSDuck features which synchronously execute in the
+ * caller thread only. Specifically, this class is not suitable for use with {@link TSProcessor}
+ * (use {@link AbstractAsyncReport } instead).
  */
-public abstract class AbstractAsyncReport extends Report implements NativeObject {
+public abstract class AbstractSyncReport extends Report implements NativeObject {
 
     // Load native library on startup.
     static {
@@ -44,22 +49,15 @@ public abstract class AbstractAsyncReport extends Report implements NativeObject
     }
 
     // Set the address of the C++ object.
-    private native void initNativeObject(String logMethodName, int severity, boolean syncLog, int logMsgCount);
+    private native void initNativeObject(String logMethodName, int severity);
 
     /**
      * Constructor (for subclasses).
      * @param severity Initial severity.
-     * @param syncLog Synchronous log.
-     * @param logMsgCount Maximum buffered log messages.
      */
-    protected AbstractAsyncReport(int severity, boolean syncLog, int logMsgCount) {
-        initNativeObject("logMessageHandler", severity, syncLog, logMsgCount);
+    protected AbstractSyncReport(int severity) {
+        initNativeObject("logMessageHandler", severity);
     }
-
-    /**
-     * Synchronously terminates the asynchronous log thread.
-     */
-    public native void terminate();
 
     /**
      * Delete the encapsulated C++ object.
@@ -70,7 +68,6 @@ public abstract class AbstractAsyncReport extends Report implements NativeObject
     /**
      * This method is invoked each time a message is logged.
      * If a subclass wants to intercept log messages, it should override this method.
-     * Take care that this method is invoked in the context of a native thread.
      * @param severity Severity of the message.
      * @param message Message line.
      */
