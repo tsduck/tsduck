@@ -27,17 +27,31 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  TSDuck Python bindings initialization
+#  TSDuck Python bindings to DuckContext.
 #
 #-----------------------------------------------------------------------------
 
-from .duck import DuckContext
-from .info import version, intVersion
+from . import lib
 from .native import NativeObject
-from .report import Report, NullReport, StdErrReport, AsyncReport, AbstractAsyncReport, AbstractSyncReport
-from .section import SectionFile
-from .tsp import TSProcessor
+import ctypes
 
-__all__ = []
-__author__ = 'Thierry Lelegard'
-__version__ = version()
+##
+# A wrapper class for C++ DuckContext.
+# @ingroup python
+#
+class DuckContext(NativeObject):
+
+    ##
+    # Constructor.
+    # @param report The ts.Report object to use.
+    #
+    def __init__(self, report):
+        super().__init__()
+        self._report = report
+        self._native_object = lib.tspyNewDuckContext(self._report._native_object)
+
+
+    # Explicitly free the underlying C++ object (inherited).
+    def delete(self):
+        lib.tspyDeleteDuckContext(self._native_object)
+        super().delete()

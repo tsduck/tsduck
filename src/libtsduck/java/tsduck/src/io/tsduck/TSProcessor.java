@@ -39,7 +39,7 @@ public final class TSProcessor implements NativeObject {
     static {
         NativeLibrary.loadLibrary();
     }
-    
+
     // The address of the underlying C++ object.
     private long nativeObject = 0;
 
@@ -68,7 +68,8 @@ public final class TSProcessor implements NativeObject {
 
     /**
      * Constructor
-     * @param report The report object to use.
+     * @param report The report object to use. If null, the logs are dropped.
+     * Be sure to specify a thread-safe report such has AsyncReport or a subclass of AbstractAsyncReport.
      */
     public TSProcessor(Report report) {
         initNativeObject(report);

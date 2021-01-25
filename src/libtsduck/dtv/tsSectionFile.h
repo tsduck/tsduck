@@ -123,6 +123,26 @@ namespace ts {
         void clear();
 
         //!
+        //! Get the size in bytes of all sections.
+        //! This would be the size of the corresponding binary file.
+        //! @return The size in bytes of all sections.
+        //!
+        size_t binarySize() const;
+
+        //!
+        //! Get the total number of sections in the file.
+        //! @return The total number of sections in the file.
+        //!
+        size_t sectionsCount() const { return _sections.size(); }
+
+        //!
+        //! Get the total number of full tables in the file.
+        //! Orphan sections are not included.
+        //! @return The total number of full tables in the file.
+        //!
+        size_t tablesCount() const { return _tables.size(); }
+
+        //!
         //! Get a file type, based on a file name.
         //! @param [in] file_name File name.
         //! @param [in] type File type.

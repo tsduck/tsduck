@@ -33,6 +33,7 @@
 
 #include "tspy.h"
 #include "tspyAsyncReport.h"
+#include "tspySyncReport.h"
 #include "tsCerrReport.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
@@ -80,6 +81,14 @@ TSDUCKPY void* tspyNewAsyncReport(int severity, bool sync_log, bool timed_log, s
 //! @return A new AsyncReport instance.
 //!
 TSDUCKPY void* tspyNewPyAsyncReport(ts::py::AsyncReport::LogCallback log, int severity, bool sync_log, size_t log_msg_count);
+
+//!
+//! Create a new instance of ts::py::SyncReport.
+//! @param [in] log Python callback to log messages.
+//! @param [in] severity Initial severity.
+//! @return A new SyncReport instance.
+//!
+TSDUCKPY void* tspyNewPySyncReport(ts::py::SyncReport::LogCallback log, int severity);
 
 //!
 //! Synchronously terminate an AsyncReport.
@@ -167,6 +176,15 @@ void* tspyNewPyAsyncReport(ts::py::AsyncReport::LogCallback log, int severity, b
     args.sync_log = sync_log;
     args.log_msg_count = log_msg_count > 0 ? log_msg_count : ts::AsyncReportArgs::MAX_LOG_MESSAGES;
     return new ts::py::AsyncReport(log, severity, args);
+}
+
+//-----------------------------------------------------------------------------
+// Interface to ts::py::SyncReport.
+//-----------------------------------------------------------------------------
+
+void* tspyNewPySyncReport(ts::py::SyncReport::LogCallback log, int severity)
+{
+    return new ts::py::SyncReport(log, severity);
 }
 
 //-----------------------------------------------------------------------------

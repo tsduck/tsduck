@@ -84,7 +84,10 @@ All TSDuck bindings are defined in a module named `ts`, the same name as
 the C++ namespace for the TSDuck library.
 
 The Python classes are documented in the @ref python "Python bindings" reference section.
-They are also informally described below.
+
+Some of them were also informally described below. But more Python bindings were added and
+not mentioned below. Only the @ref python "reference section" is complete, being automatically
+generated with the code.
 
 ## Informational functions  {#pyinfofunc}
 

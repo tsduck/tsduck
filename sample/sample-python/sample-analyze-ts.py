@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #----------------------------------------------------------------------------
 #
 # TSDuck sample Python application : analyze a transport stream.

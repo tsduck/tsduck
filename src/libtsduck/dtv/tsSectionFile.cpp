@@ -407,6 +407,22 @@ bool ts::SectionFile::saveBinary(std::ostream& strm, Report& report) const
 
 
 //----------------------------------------------------------------------------
+// Get the size in bytes of all sections.
+//----------------------------------------------------------------------------
+
+size_t ts::SectionFile::binarySize() const
+{
+    size_t size = 0;
+    for (size_t i = 0; i < _sections.size(); ++i) {
+        if (!_sections[i].isNull() && _sections[i]->isValid()) {
+            size += _sections[i]->size();
+        }
+    }
+    return size;
+}
+
+
+//----------------------------------------------------------------------------
 // This static method loads the XML model for tables and descriptors.
 //----------------------------------------------------------------------------
 

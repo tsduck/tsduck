@@ -34,6 +34,7 @@
 #include "tsNullReport.h"
 #include "tsCerrReport.h"
 #include "tsAsyncReport.h"
+#include "tsjniSyncReport.h"
 #include "tsjniAsyncReport.h"
 TSDUCK_SOURCE;
 
@@ -87,6 +88,14 @@ extern "C" {
     // Method: io.tsduck.AbstractAsyncReport.delete
     // Signature: ()V
     JNIEXPORT void JNICALL Java_io_tsduck_AbstractAsyncReport_delete(JNIEnv*, jobject);
+
+    // Method: io.tsduck.AbstractSyncReport.initNativeObject
+    // Signature: (Ljava/lang/String;I)V
+    JNIEXPORT void JNICALL Java_io_tsduck_AbstractSyncReport_initNativeObject(JNIEnv*, jobject, jstring, jint);
+
+    // Method: io.tsduck.AbstractSyncReport.delete
+    // Signature: ()V
+    JNIEXPORT void JNICALL Java_io_tsduck_AbstractSyncReport_delete(JNIEnv*, jobject);
 }
 
 //----------------------------------------------------------------------------
@@ -195,6 +204,27 @@ JNIEXPORT void JNICALL Java_io_tsduck_AbstractAsyncReport_terminate(JNIEnv* env,
 JNIEXPORT void JNICALL Java_io_tsduck_AbstractAsyncReport_delete(JNIEnv* env, jobject obj)
 {
     ts::jni::AsyncReport* report = ts::jni::GetPointerField<ts::jni::AsyncReport>(env, obj, "nativeObject");
+    if (report != nullptr) {
+        delete report;
+        ts::jni::SetLongField(env, obj, "nativeObject", 0);
+    }
+}
+
+//----------------------------------------------------------------------------
+// Implementation of native methods of Java class io.tsduck.AbstractSyncReport
+//----------------------------------------------------------------------------
+
+JNIEXPORT void JNICALL Java_io_tsduck_AbstractSyncReport_initNativeObject(JNIEnv* env, jobject obj, jstring method, jint severity)
+{
+    // Make sure we do not allocate twice (and lose previous instance).
+    ts::jni::SyncReport* report = ts::jni::GetPointerField<ts::jni::SyncReport>(env, obj, "nativeObject");
+    if (report == nullptr) {
+        ts::jni::SetPointerField(env, obj, "nativeObject", new ts::jni::SyncReport(env, obj, method, int(severity)));
+    }
+}
+JNIEXPORT void JNICALL Java_io_tsduck_AbstractSyncReport_delete(JNIEnv* env, jobject obj)
+{
+    ts::jni::SyncReport* report = ts::jni::GetPointerField<ts::jni::SyncReport>(env, obj, "nativeObject");
     if (report != nullptr) {
         delete report;
         ts::jni::SetLongField(env, obj, "nativeObject", 0);

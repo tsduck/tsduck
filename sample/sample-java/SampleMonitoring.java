@@ -6,6 +6,7 @@
 //----------------------------------------------------------------------------
 
 import java.io.File;
+
 import io.tsduck.AsyncReport;
 import io.tsduck.Info;
 import io.tsduck.Report;
@@ -45,10 +46,10 @@ public class SampleMonitoring {
 
         /*
          * Second phase: Play the file at regulated speed several times.
-         * Must use another instance of ts.TSProcessor.
+         * Must use another instance of TSProcessor.
          */
         System.out.printf("Playing %s ...\n", tsfile.getPath());
-        
+
         tsp = new TSProcessor(rep);
         tsp.monitor = true;
         tsp.input = new String[] {"file", tsfile.getPath(), "--repeat", "2"};

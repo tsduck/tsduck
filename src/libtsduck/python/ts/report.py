@@ -190,6 +190,33 @@ class AsyncReport(Report):
 
 ##
 # An abstract Report class which can be derived by applications to get log messages.
+# This class synchronously logs messages and is not thread-safe.
+# @ingroup python
+#
+class AbstractSyncReport(AsyncReport):
+
+    ##
+    # Constructor.
+    # @param severity Initial severity.
+    #
+    def __init__(self, severity = Report.Info):
+        super().__init__()
+
+        # An internal callback, called from the C++ class.
+        def log_callback(sev, buf, len):
+            self.log(sev, ctypes.string_at(buf, len).decode('utf-16'))
+
+        # Keep a reference on the callback in the object instance.
+        callback = ctypes.CFUNCTYPE(None, ctypes.c_int, ctypes.c_void_p, ctypes.c_size_t)
+        self._cb = callback(log_callback)
+
+        # Finally create the native object.
+        self._native_object = lib.tspyNewPySyncReport(self._cb, severity)
+
+##
+# An abstract Report class which can be derived by applications to get log messages.
+# This class uses the C++ class ts::AsyncReport which asynchronously logs messages
+# in a separate thread. The Python callback is invoked in a common C++ thread.
 # @ingroup python
 #
 class AbstractAsyncReport(AsyncReport):
@@ -207,7 +234,7 @@ class AbstractAsyncReport(AsyncReport):
         def log_callback(sev, buf, len):
             self.log(sev, ctypes.string_at(buf, len).decode('utf-16'))
 
-        # Keep a reference on teh callback in the object instance.
+        # Keep a reference on the callback in the object instance.
         callback = ctypes.CFUNCTYPE(None, ctypes.c_int, ctypes.c_void_p, ctypes.c_size_t)
         self._cb = callback(log_callback)
 
