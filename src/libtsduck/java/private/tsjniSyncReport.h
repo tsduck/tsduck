@@ -57,7 +57,6 @@ namespace ts {
             //! This method will be called with each log message. The Java profile of the method shall be
             //! @code void(int,String) @endcode (severity and message parameters).
             //! @param [in] max_severity Set initial level report to that level.
-            //! @param [in] args Initial parameters.
             //!
             SyncReport(JNIEnv* env, jobject obj, jstring log_method, int max_severity);
 
