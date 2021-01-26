@@ -74,6 +74,7 @@ Options::Options(int argc, char *argv[]) :
     duck.defineArgsForStandards(*this);
     duck.defineArgsForTimeReference(*this);
     duck.defineArgsForCharset(*this);
+    duck.defineArgsForPDS(*this);
     pager.defineArgs(*this);
     analysis.defineArgs(*this);
 
