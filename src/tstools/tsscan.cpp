@@ -117,6 +117,7 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
 {
     duck.defineArgsForHFBand(*this);
     duck.defineArgsForCharset(*this);
+    duck.defineArgsForPDS(*this);
     tuner_args.defineArgs(*this);
 
     setIntro(u"There are three mutually exclusive types of network scanning. "
