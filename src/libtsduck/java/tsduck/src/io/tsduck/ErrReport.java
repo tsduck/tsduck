@@ -32,7 +32,7 @@ package io.tsduck;
 /**
  * A wrapper class for C++ ErrReport.
  * @ingroup java
- * 
+ *
  * Since the corresponding C++ class is a singleton, there is no delete() method.
  */
 public final class ErrReport extends Report {
@@ -41,7 +41,7 @@ public final class ErrReport extends Report {
     static {
         NativeLibrary.loadLibrary();
     }
-    
+
     // Set the address of the C++ object.
     private native void initNativeObject();
 
@@ -50,5 +50,13 @@ public final class ErrReport extends Report {
      */
     public ErrReport() {
         initNativeObject();
+    }
+
+    /**
+     * Delete the encapsulated C++ object.
+     */
+    @Override
+    public void delete() {
+        // This is a C++ singleton, not to be deleted.
     }
 }

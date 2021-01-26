@@ -38,91 +38,11 @@
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 
-//----------------------------------------------------------------------------
-// Interface of native methods.
-//----------------------------------------------------------------------------
-
-//!
-//! Build a report header from a severity.
-//! @param [in] severity Severity level.
-//! @param [out] buffer Where to write the UTF-16 header string.
-//! @param [in,out] buffer_size Buffer size in bytes. Updated with the string length in bytes.
-//!
-TSDUCKPY void tspyReportHeader(int severity, uint8_t* buffer, size_t* buffer_size);
-
-//!
-//! Get the TSDuck CERR report instance.
-//! @return CERR report instance.
-//!
-TSDUCKPY void* tspyStdErrReport();
-
-//!
-//! Get the TSDuck NULLREP instance.
-//! @return NULLREP instance.
-//!
-TSDUCKPY void* tspyNullReport();
-
-//!
-//! Create a new instance of ts::AsyncReport.
-//! @param [in] severity Initial severity.
-//! @param [in] sync_log Synchronous log.
-//! @param [in] timed_log Add time stamps in log messages.
-//! @param [in] log_msg_count Maximum buffered log messages.
-//! @return A new AsyncReport instance.
-//!
-TSDUCKPY void* tspyNewAsyncReport(int severity, bool sync_log, bool timed_log, size_t log_msg_count);
-
-//!
-//! Create a new instance of ts::py::AsyncReport.
-//! @param [in] log Python callback to log messages.
-//! @param [in] severity Initial severity.
-//! @param [in] sync_log Synchronous log.
-//! @param [in] log_msg_count Maximum buffered log messages.
-//! @return A new AsyncReport instance.
-//!
-TSDUCKPY void* tspyNewPyAsyncReport(ts::py::AsyncReport::LogCallback log, int severity, bool sync_log, size_t log_msg_count);
-
-//!
-//! Create a new instance of ts::py::SyncReport.
-//! @param [in] log Python callback to log messages.
-//! @param [in] severity Initial severity.
-//! @return A new SyncReport instance.
-//!
-TSDUCKPY void* tspyNewPySyncReport(ts::py::SyncReport::LogCallback log, int severity);
-
-//!
-//! Synchronously terminate an AsyncReport.
-//! @param [in] report A previously allocated instance of Report.
-//!
-TSDUCKPY void tspyTerminateAsyncReport(void* report);
-
-//!
-//! Delete a previously allocated instance of Report.
-//! @param [in] report A previously allocated instance of Report.
-//!
-TSDUCKPY void tspyDeleteReport(void* report);
-
-//!
-//! Set the maximum severity of an instance of Report.
-//! @param [in] report Address of an instance of Report.
-//! @param [in] severity Message severity.
-//!
-TSDUCKPY void tspySetMaxSeverity(void* report, int severity);
-
-//!
-//! Log a message on an instance of Report.
-//! @param [in] report Address of an instance of Report.
-//! @param [in] severity Message severity.
-//! @param [in] buffer Address of a buffer containing a UTF-16 string.
-//! @param [in] size Size in bytes of the buffer.
-//!
-TSDUCKPY void tspyLogReport(void* report, int severity, const uint8_t* buffer, size_t size);
-
 //-----------------------------------------------------------------------------
 // Build a report header from a severity.
 //-----------------------------------------------------------------------------
 
-void tspyReportHeader(int severity, uint8_t* buffer, size_t* buffer_size)
+TSDUCKPY void tspyReportHeader(int severity, uint8_t* buffer, size_t* buffer_size)
 {
     if (buffer != nullptr && buffer_size != nullptr) {
         const ts::UString str(ts::Severity::Header(severity));
@@ -135,12 +55,12 @@ void tspyReportHeader(int severity, uint8_t* buffer, size_t* buffer_size)
 // Get static report instances.
 //-----------------------------------------------------------------------------
 
-void* tspyStdErrReport()
+TSDUCKPY void* tspyStdErrReport()
 {
     return ts::CerrReport::Instance();
 }
 
-void* tspyNullReport()
+TSDUCKPY void* tspyNullReport()
 {
     return ts::NullReport::Instance();
 }
@@ -149,7 +69,7 @@ void* tspyNullReport()
 // Interface to ts::AsyncReport.
 //-----------------------------------------------------------------------------
 
-void* tspyNewAsyncReport(int severity, bool sync_log, bool timed_log, size_t log_msg_count)
+TSDUCKPY void* tspyNewAsyncReport(int severity, bool sync_log, bool timed_log, size_t log_msg_count)
 {
     ts::AsyncReportArgs args;
     args.sync_log = sync_log;
@@ -158,7 +78,7 @@ void* tspyNewAsyncReport(int severity, bool sync_log, bool timed_log, size_t log
     return new ts::AsyncReport(severity, args);
 }
 
-void tspyTerminateAsyncReport(void* report)
+TSDUCKPY void tspyTerminateAsyncReport(void* report)
 {
     ts::AsyncReport* rep = reinterpret_cast<ts::AsyncReport*>(report);
     if (rep != nullptr) {
@@ -170,7 +90,7 @@ void tspyTerminateAsyncReport(void* report)
 // Interface to ts::py::AsyncReport.
 //-----------------------------------------------------------------------------
 
-void* tspyNewPyAsyncReport(ts::py::AsyncReport::LogCallback log, int severity, bool sync_log, size_t log_msg_count)
+TSDUCKPY void* tspyNewPyAsyncReport(ts::py::AsyncReport::LogCallback log, int severity, bool sync_log, size_t log_msg_count)
 {
     ts::AsyncReportArgs args;
     args.sync_log = sync_log;
@@ -182,7 +102,7 @@ void* tspyNewPyAsyncReport(ts::py::AsyncReport::LogCallback log, int severity, b
 // Interface to ts::py::SyncReport.
 //-----------------------------------------------------------------------------
 
-void* tspyNewPySyncReport(ts::py::SyncReport::LogCallback log, int severity)
+TSDUCKPY void* tspyNewPySyncReport(ts::py::SyncReport::LogCallback log, int severity)
 {
     return new ts::py::SyncReport(log, severity);
 }
@@ -191,7 +111,7 @@ void* tspyNewPySyncReport(ts::py::SyncReport::LogCallback log, int severity)
 // Delete a previously allocated instance of Report.
 //-----------------------------------------------------------------------------
 
-void tspyDeleteReport(void* report)
+TSDUCKPY void tspyDeleteReport(void* report)
 {
     delete reinterpret_cast<ts::Report*>(report);
 }
@@ -200,7 +120,7 @@ void tspyDeleteReport(void* report)
 // Set the maximum severity of an instance of Report.
 //-----------------------------------------------------------------------------
 
-void tspySetMaxSeverity(void* report, int severity)
+TSDUCKPY void tspySetMaxSeverity(void* report, int severity)
 {
     ts::Report* rep = reinterpret_cast<ts::Report*>(report);
     if (rep != nullptr) {
@@ -212,7 +132,7 @@ void tspySetMaxSeverity(void* report, int severity)
 // Log a message on an instance of Report.
 //-----------------------------------------------------------------------------
 
-void tspyLogReport(void* report, int severity, const uint8_t* buffer, size_t size)
+TSDUCKPY void tspyLogReport(void* report, int severity, const uint8_t* buffer, size_t size)
 {
     ts::Report* rep = reinterpret_cast<ts::Report*>(report);
     if (rep != nullptr) {

@@ -38,30 +38,16 @@ TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
 
-//----------------------------------------------------------------------------
-// Interface of native methods.
-//----------------------------------------------------------------------------
-
-extern "C" {
-    // Method: io.tsduck.Info.intVersion
-    // Signature: ()I
-    JNIEXPORT jint JNICALL Java_io_tsduck_Info_intVersion(JNIEnv*, jclass);
-
-    // Method: io.tsduck.Info.version
-    // Signature: ()Ljava/lang/String;
-    JNIEXPORT jstring JNICALL Java_io_tsduck_Info_version(JNIEnv*, jclass);
-}
-
-//----------------------------------------------------------------------------
-// Implementation of native methods.
-//----------------------------------------------------------------------------
-
-JNIEXPORT jint JNICALL Java_io_tsduck_Info_intVersion(JNIEnv* env, jclass clazz)
+// Method: io.tsduck.Info.intVersion
+// Signature: ()I
+TSDUCKJNI jint JNICALL Java_io_tsduck_Info_intVersion(JNIEnv* env, jclass clazz)
 {
     return TS_VERSION_INTEGER;
 }
 
-JNIEXPORT jstring JNICALL Java_io_tsduck_Info_version(JNIEnv* env, jclass clazz)
+// Method: io.tsduck.Info.version
+// Signature: ()Ljava/lang/String;
+TSDUCKJNI jstring JNICALL Java_io_tsduck_Info_version(JNIEnv* env, jclass clazz)
 {
     return ts::jni::ToJString(env, ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT));
 }

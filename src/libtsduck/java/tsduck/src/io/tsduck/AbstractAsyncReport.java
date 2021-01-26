@@ -36,7 +36,7 @@ package io.tsduck;
  * This class is functionally similar to {@link AsyncReport} except that the message handling can
  * be implemented in Java. This class is suitable for use with {@link TSProcessor}.
  */
-public abstract class AbstractAsyncReport extends Report implements NativeObject {
+public abstract class AbstractAsyncReport extends Report {
 
     // Load native library on startup.
     static {

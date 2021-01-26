@@ -33,7 +33,7 @@ package io.tsduck;
  * Base class for TSDuck report classes.
  * @ingroup java
  */
-public abstract class Report {
+public abstract class Report implements NativeObject {
 
     // Load native library on startup.
     static {
@@ -42,7 +42,7 @@ public abstract class Report {
 
     // The address of the underlying C++ object.
     private long nativeObject = 0;
-    
+
     // Severity levels, same values as C++ counterparts.
     static public final int Fatal   = -5;  //!< Fatal error, typically aborts the application.
     static public final int Severe  = -4;  //!< Severe error.
@@ -51,7 +51,7 @@ public abstract class Report {
     static public final int Info    = -1;  //!< Information message.
     static public final int Verbose = 0;   //!< Verbose information.
     static public final int Debug   = 1;   //!< First debug level.
-    
+
     /**
      * Set the maximum severity of the report.
      * @param severity Severity level.
@@ -104,7 +104,7 @@ public abstract class Report {
     public void debug(String message) {
         log(Debug, message);
     }
-    
+
     /**
      * Formatted line prefix header for a severity.
      * @param severity Severity value.

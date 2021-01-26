@@ -36,40 +36,22 @@ TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
 
-//----------------------------------------------------------------------------
-// Interface of native methods.
-//----------------------------------------------------------------------------
-
-extern "C" {
-    // Load/unload notification of the JNI library.
-    JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM*, void*);
-    JNIEXPORT void JNICALL JNI_OnUnload(JavaVM*, void*);
-
-    // Method: io.tsduck.NativeLibrary.initialize
-    // Signature: ()V
-    JNIEXPORT void JNICALL Java_io_tsduck_NativeLibrary_initialize(JNIEnv*, jclass);
-}
-
-//----------------------------------------------------------------------------
 // Initialization of the JNI library.
-//----------------------------------------------------------------------------
-
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
+TSDUCKJNI jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
 {
     ts::jni::javaVM = vm;
     return JNI_VERSION_1_2;
 }
 
-JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved)
+// Termination of the JNI library.
+TSDUCKJNI void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved)
 {
     ts::jni::javaVM = nullptr;
 }
 
-//----------------------------------------------------------------------------
-// Implementation of native methods.
-//----------------------------------------------------------------------------
-
-JNIEXPORT void JNICALL Java_io_tsduck_NativeLibrary_initialize(JNIEnv *env, jclass clazz)
+// Method: io.tsduck.NativeLibrary.initialize
+// Signature: ()V
+TSDUCKJNI void JNICALL Java_io_tsduck_NativeLibrary_initialize(JNIEnv *env, jclass clazz)
 {
     // Currently, there is nothing to initialize.
 }

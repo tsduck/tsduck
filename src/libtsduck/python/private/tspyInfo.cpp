@@ -36,33 +36,12 @@
 #include "tsVersionString.h"
 TSDUCK_SOURCE;
 
-//----------------------------------------------------------------------------
-// Interface of native methods.
-//----------------------------------------------------------------------------
-
-//!
-//! Get the TSDuck version as an integer, suitable for comparisons.
-//! @return the TSDuck version as Mmmccccc (Major, minor, commit).
-//!
-TSDUCKPY uint32_t tspyVersionInteger();
-
-//!
-//! Get the TSDuck version as a string.
-//! @param [out] buffer Address of a buffer where the version string is returned in UTF-16 format.
-//! @param [in,out] size Initial/maximum size in bytes of the buffer. Upon return, contains the written size in bytes.
-//!
-TSDUCKPY void tspyVersionString(uint8_t* buffer, size_t* size);
-
-//-----------------------------------------------------------------------------
-// Implementation of native methods.
-//-----------------------------------------------------------------------------
-
-uint32_t tspyVersionInteger()
+TSDUCKPY uint32_t tspyVersionInteger()
 {
     return TS_VERSION_INTEGER;
 }
 
-void tspyVersionString(uint8_t* buffer, size_t* size)
+TSDUCKPY void tspyVersionString(uint8_t* buffer, size_t* size)
 {
     ts::py::FromString(ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT), buffer, size);
 }

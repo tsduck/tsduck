@@ -136,17 +136,65 @@ class OutByteBuffer:
 # Bindings to C++ functions from tspyDuckContext.cpp
 #-----------------------------------------------------------------------------
 
-# void* tspyNewDuckContext(void* report);
+# void* tspyNewDuckContext(void* report)
 
 tspyNewDuckContext = _lib.tspyNewDuckContext
 tspyNewDuckContext.restype = c_void_p
 tspyNewDuckContext.argtypes = [c_void_p]
 
-# void tspyDeleteDuckContext(void* duck);
+# void tspyDeleteDuckContext(void* duck)
 
 tspyDeleteDuckContext = _lib.tspyDeleteDuckContext
 tspyDeleteDuckContext.restype = None
 tspyDeleteDuckContext.argtypes = [c_void_p]
+
+# bool tspyDuckContextSetDefaultCharset(void* duck_ptr, const uint8_t* name, size_t name_size)
+
+tspyDuckContextSetDefaultCharset = _lib.tspyDuckContextSetDefaultCharset
+tspyDuckContextSetDefaultCharset.restype = c_bool
+tspyDuckContextSetDefaultCharset.argtypes = [c_void_p, POINTER(c_uint8), c_size_t]
+
+# void tspyDuckContextSetDefaultCASId(void* duck_ptr, uint16_t cas)
+
+tspyDuckContextSetDefaultCASId = _lib.tspyDuckContextSetDefaultCASId
+tspyDuckContextSetDefaultCASId.restype = None
+tspyDuckContextSetDefaultCASId.argtypes = [c_void_p, c_uint16]
+
+# void tspyDuckContextSetDefaultPDS(void* duck_ptr, uint32_t pds)
+
+tspyDuckContextSetDefaultPDS = _lib.tspyDuckContextSetDefaultPDS
+tspyDuckContextSetDefaultPDS.restype = None
+tspyDuckContextSetDefaultPDS.argtypes = [c_void_p, c_uint32]
+
+# void tspyDuckContextAddStandards(void* duck_ptr, uint32_t mask)
+
+tspyDuckContextAddStandards = _lib.tspyDuckContextAddStandards
+tspyDuckContextAddStandards.restype = None
+tspyDuckContextAddStandards.argtypes = [c_void_p, c_uint32]
+
+# void tspyDuckContextResetStandards(void* duck_ptr, uint32_t mask)
+
+tspyDuckContextResetStandards = _lib.tspyDuckContextResetStandards
+tspyDuckContextResetStandards.restype = None
+tspyDuckContextResetStandards.argtypes = [c_void_p, c_uint32]
+
+# uint32_t tspyDuckContextStandards(void* duck_ptr)
+
+tspyDuckContextStandards = _lib.tspyDuckContextStandards
+tspyDuckContextStandards.restype = c_uint32
+tspyDuckContextStandards.argtypes = [c_void_p]
+
+# void tspyDuckContextSetTimeReferenceOffset(void* duck_ptr, int64_t offset)
+
+tspyDuckContextSetTimeReferenceOffset = _lib.tspyDuckContextSetTimeReferenceOffset
+tspyDuckContextSetTimeReferenceOffset.restype = None
+tspyDuckContextSetTimeReferenceOffset.argtypes = [c_void_p, c_int64]
+
+# bool tspyDuckContextSetTimeReference(void* duck_ptr, const uint8_t* name, size_t name_size)
+
+tspyDuckContextSetTimeReference = _lib.tspyDuckContextSetTimeReference
+tspyDuckContextSetTimeReference.restype = c_bool
+tspyDuckContextSetTimeReference.argtypes = [c_void_p, POINTER(c_uint8), c_size_t]
 
 #-----------------------------------------------------------------------------
 # Bindings to C++ functions from tspyInfo.cpp
@@ -165,7 +213,7 @@ tspyVersionString.restype = None
 tspyVersionString.argtypes = [POINTER(c_uint8), POINTER(c_size_t)]
 
 #-----------------------------------------------------------------------------
-# Bindings to C++ functions from 
+# Bindings to C++ functions from tspyReport.cpp 
 #-----------------------------------------------------------------------------
 
 # void tspyReportHeader(int severity, uint8_t* buffer, size_t* buffer_size);

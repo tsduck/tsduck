@@ -1,5 +1,6 @@
 !.project
 !.classpath
+!japanese-tables .bin
 .settings
 bin
 *.class
