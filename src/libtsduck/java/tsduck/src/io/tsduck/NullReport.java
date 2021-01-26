@@ -32,7 +32,7 @@ package io.tsduck;
 /**
  * A wrapper class for C++ NullReport.
  * @ingroup java
- * 
+ *
  * Since the corresponding C++ class is a singleton, there is no delete() method.
  */
 public final class NullReport extends Report {
@@ -41,7 +41,7 @@ public final class NullReport extends Report {
     static {
         NativeLibrary.loadLibrary();
     }
-    
+
     // Set the address of the C++ object.
     private native void initNativeObject();
 
@@ -50,5 +50,13 @@ public final class NullReport extends Report {
      */
     public NullReport() {
         initNativeObject();
+    }
+
+    /**
+     * Delete the encapsulated C++ object.
+     */
+    @Override
+    public void delete() {
+        // This is a C++ singleton, not to be deleted.
     }
 }

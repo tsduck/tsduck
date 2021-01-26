@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsReport.h"
-#include "tspy.h"
 
 namespace ts {
     namespace py {

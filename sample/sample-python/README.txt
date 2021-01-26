@@ -4,12 +4,10 @@ The code in 'sample-tsp.py' is similar in principle to the C++ sample applicatio
 in directory 'sample-app'. It runs a TS processing session with multiple plugins
 inside a Python application.
 
-The code in 'sample-monitoring.py' runs two successive TS processing sessions.
-The first session downloads a TS file using HTTP and the second one plays the
-downloaded file. System monitoring messages are reported to check the stability
-of the application.
+Other sample programs illustrate other features. The file japanese-tables.bin
+contains binary tables and is used as input by sample-japanese-tables.py.
 
-These two samples programs are functionally identical to the Java samples in
+These samples programs are functionally identical to the Java samples in
 directory ../sample-java.
 
 After building TSDuck, it is possible to execute the Python programs directly

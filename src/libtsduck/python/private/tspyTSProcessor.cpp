@@ -36,30 +36,12 @@
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 
-//----------------------------------------------------------------------------
-// Interface of native methods.
-//----------------------------------------------------------------------------
-
-TS_PUSH_WARNING()
 TS_MSC_NOWARNING(4091) // '__declspec(dllexport)': ignored on left of 'struct type' when no variable is declared
 
-//!
-//! Create a new instance of TSProcessor.
-//! @param [in] report A previously allocated instance of Report.
-//! @return A new TSProcessor instance.
-//!
-TSDUCKPY void* tspyNewTSProcessor(void* report);
-
-//!
-//! Delete a previously allocated instance of TSProcessor.
-//! @param [in] tsp A previously allocated instance of TSProcessor.
-//!
-TSDUCKPY void tspyDeleteTSProcessor(void* tsp);
-
-//!
-//! Argument structure (plain C structure) for start parameters.
-//! Use same names as ts::TSProcessorArgs but only long's to avoid interface issues.
-//!
+//
+// Argument structure (plain C structure) for start parameters.
+// Use same names as ts::TSProcessorArgs but only long's to avoid interface issues.
+//
 TSDUCKPY struct tspyTSProcessorArgs
 {
     long monitor;                  //!< Run a resource monitoring thread (bool).
@@ -78,48 +60,22 @@ TSDUCKPY struct tspyTSProcessorArgs
     long log_plugin_index;         //!< Log plugin index with plugin name (bool).
 };
 
-//!
-//! Start the TS processing.
-//! @param [in] tsp A previously allocated instance of TSProcessor.
-//! @param [in] args TS processing options.
-//! @param [in] plugins Address of a buffer containing a UTF-16 string with all plugins.
-//! Strings are separated with fake character 0xFFFF. First string is application name.
-//! Strings '-I', '-P' and '-O' identify plugin types.
-//! @param [in] plugins_size Size in bytes of the @a plugins buffer.
-//! @return True on success, false on failure to start.
-//!
-TSDUCKPY bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, const uint8_t* plugins, size_t plugins_size);
-
-//!
-//! Abort the processing.
-//! @param [in] tsp A previously allocated instance of TSProcessor.
-//!
-TSDUCKPY void tspyAbortTSProcessor(void* tsp);
-
-//!
-//! Suspend the calling thread until TS processing is completed.
-//! @param [in] tsp A previously allocated instance of TSProcessor.
-//!
-TSDUCKPY void tspyWaitTSProcessor(void* tsp);
-
-TS_POP_WARNING()
-
 //-----------------------------------------------------------------------------
 // Interface to TSProcessor.
 //-----------------------------------------------------------------------------
 
-void* tspyNewTSProcessor(void* report)
+TSDUCKPY void* tspyNewTSProcessor(void* report)
 {
     ts::Report* rep = reinterpret_cast<ts::Report*>(report);
     return new ts::TSProcessor(rep == nullptr ? NULLREP : *rep);
 }
 
-void tspyDeleteTSProcessor(void* tsp)
+TSDUCKPY void tspyDeleteTSProcessor(void* tsp)
 {
     delete reinterpret_cast<ts::TSProcessor*>(tsp);
 }
 
-void tspyAbortTSProcessor(void* tsp)
+TSDUCKPY void tspyAbortTSProcessor(void* tsp)
 {
     ts::TSProcessor* proc = reinterpret_cast<ts::TSProcessor*>(tsp);
     if (proc != nullptr) {
@@ -127,7 +83,7 @@ void tspyAbortTSProcessor(void* tsp)
     }
 }
 
-void tspyWaitTSProcessor(void* tsp)
+TSDUCKPY void tspyWaitTSProcessor(void* tsp)
 {
     ts::TSProcessor* proc = reinterpret_cast<ts::TSProcessor*>(tsp);
     if (proc != nullptr) {
@@ -139,7 +95,7 @@ void tspyWaitTSProcessor(void* tsp)
 // Start the TS processing and decode arguments.
 //-----------------------------------------------------------------------------
 
-bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, const uint8_t* plugins, size_t plugins_size)
+TSDUCKPY bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, const uint8_t* plugins, size_t plugins_size)
 {
     ts::TSProcessor* proc = reinterpret_cast<ts::TSProcessor*>(tsp);
     if (proc == nullptr || args == nullptr) {

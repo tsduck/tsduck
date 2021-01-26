@@ -39,9 +39,12 @@
 
 //!
 //! @hideinitializer
-//! Attribute to export a function to Python
+//! Attribute to export a function to Python.
 //!
-#define TSDUCKPY extern "C" TSDUCKDLL
+#define TSDUCKPY \
+    TS_GCC_NOWARNING(missing-prototypes) \
+    TS_LLVM_NOWARNING(missing-prototypes) \
+    extern "C" TSDUCKDLL
 
 namespace ts {
     //!

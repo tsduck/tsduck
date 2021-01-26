@@ -39,36 +39,12 @@ TSDUCK_SOURCE;
 #if !defined(TS_NO_JAVA)
 
 //----------------------------------------------------------------------------
-// Interface of native methods.
-//----------------------------------------------------------------------------
-
-extern "C" {
-    // Method: io.tsduck.TSProcessor.initNativeObject
-    // Signature: (Lio/tsduck/Report;)V
-    JNIEXPORT void JNICALL Java_io_tsduck_TSProcessor_initNativeObject(JNIEnv*, jobject, jobject);
-
-    // Method: io.tsduck.TSProcessor.start
-    // Signature: ()B
-    JNIEXPORT jboolean JNICALL Java_io_tsduck_TSProcessor_start(JNIEnv*, jobject);
-
-    // Method: io.tsduck.TSProcessor.abort
-    // Signature: ()V
-    JNIEXPORT void JNICALL Java_io_tsduck_TSProcessor_abort(JNIEnv*, jobject);
-
-    // Method: io.tsduck.TSProcessor.waitForTermination
-    // Signature: ()V
-    JNIEXPORT void JNICALL Java_io_tsduck_TSProcessor_waitForTermination(JNIEnv*, jobject);
-
-    // Method: io.tsduck.TSProcessor.delete
-    // Signature: ()V
-    JNIEXPORT void JNICALL Java_io_tsduck_TSProcessor_delete(JNIEnv*, jobject);
-}
-
-//----------------------------------------------------------------------------
 // Implementation of native methods.
 //----------------------------------------------------------------------------
 
-JNIEXPORT void JNICALL Java_io_tsduck_TSProcessor_initNativeObject(JNIEnv* env, jobject obj, jobject jreport)
+// Method: io.tsduck.TSProcessor.initNativeObject
+// Signature: (Lio/tsduck/Report;)V
+TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_initNativeObject(JNIEnv* env, jobject obj, jobject jreport)
 {
     // Make sure we do not allocate twice (and lose previous instance).
     ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");
@@ -84,7 +60,9 @@ JNIEXPORT void JNICALL Java_io_tsduck_TSProcessor_initNativeObject(JNIEnv* env, 
     }
 }
 
-JNIEXPORT void JNICALL Java_io_tsduck_TSProcessor_abort(JNIEnv* env, jobject obj)
+// Method: io.tsduck.TSProcessor.abort
+// Signature: ()V
+TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_abort(JNIEnv* env, jobject obj)
 {
     ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");
     if (tsp != nullptr) {
@@ -92,7 +70,9 @@ JNIEXPORT void JNICALL Java_io_tsduck_TSProcessor_abort(JNIEnv* env, jobject obj
     }
 }
 
-JNIEXPORT void JNICALL Java_io_tsduck_TSProcessor_waitForTermination(JNIEnv* env, jobject obj)
+// Method: io.tsduck.TSProcessor.waitForTermination
+// Signature: ()V
+TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_waitForTermination(JNIEnv* env, jobject obj)
 {
     ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");
     if (tsp != nullptr) {
@@ -100,7 +80,9 @@ JNIEXPORT void JNICALL Java_io_tsduck_TSProcessor_waitForTermination(JNIEnv* env
     }
 }
 
-JNIEXPORT void JNICALL Java_io_tsduck_TSProcessor_delete(JNIEnv* env, jobject obj)
+// Method: io.tsduck.TSProcessor.delete
+// Signature: ()V
+TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_delete(JNIEnv* env, jobject obj)
 {
     ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");
     if (tsp != nullptr) {
@@ -135,7 +117,9 @@ static bool GetPluginOption(JNIEnv* env, jobjectArray strings, ts::PluginOptions
 // Start method: the parameters are fetched from the Java object fields.
 //----------------------------------------------------------------------------
 
-JNIEXPORT jboolean JNICALL Java_io_tsduck_TSProcessor_start(JNIEnv* env, jobject obj)
+// Method: io.tsduck.TSProcessor.start
+// Signature: ()B
+TSDUCKJNI jboolean JNICALL Java_io_tsduck_TSProcessor_start(JNIEnv* env, jobject obj)
 {
     ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");
     if (tsp == nullptr) {

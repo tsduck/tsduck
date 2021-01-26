@@ -40,6 +40,15 @@
 #if !defined(TS_NO_JAVA)
 #include <jni.h>
 
+//!
+//! @hideinitializer
+//! Attribute to export a JNI native function to Java.
+//!
+#define TSDUCKJNI \
+    TS_GCC_NOWARNING(missing-prototypes) \
+    TS_LLVM_NOWARNING(missing-prototypes) \
+    extern "C" JNIEXPORT
+
 //
 // Java Class Names (JCN) in JNI notation.
 //
