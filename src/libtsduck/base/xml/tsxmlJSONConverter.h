@@ -95,14 +95,54 @@ namespace ts {
             //! @param [in] force_root If true, force the option -\-x2j-include-root.
             //! @return A safe pointer to the converted JSON object. Never null. Point to a JSON Null on error.
             //!
-            json::ValuePtr convert(const Document& source, bool force_root = false) const;
+            json::ValuePtr convertToJSON(const Document& source, bool force_root = false) const;
+
+            //!
+            //! Convert a JSON object into an XML document.
+            //! Not all JSON values can be converted. Basically, only JSON objects which were previously
+            //! converted from XML are guaranteed to be converted back. For other values, a best-effort
+            //! conversion is applied, without guarantee.
+            //! @param [in] source The source JSON value to convert. If this is a JSON object, it becomes the
+            //! root of the XML document. If this is an array, the XML root is taken from the model and the
+            //! array elements are converted inside that root.
+            //! @param [in] auto_validate If true, the converted document is validated according to the modeL.
+            //! @return True if the JSON source is converted without error and is correctly validated.
+            //!
+            bool convertToXML(const json::Value& source, Document& destination, bool auto_validate) const;
+
+            //!
+            //! The string "#name" which is used to hold the name of an XML element in a JSON object.
+            //!
+            static const UString HashName;
+
+            //!
+            //! The string "#nodes" which is used to hold the children of an XML element in a JSON object.
+            //!
+            static const UString HashNodes;
+
+            //!
+            //! The string "_unnamed" which is used for reverse JSON-toXML conversion for unnamed objects.
+            //!
+            static const UString HashUnnamed;
 
         private:
             // Convert an XML tree of elements. Null pointer on error or if not convertible.
-            json::ValuePtr convertElement(const Element* model, const Element* source, const Tweaks&) const;
+            json::ValuePtr convertElementToJSON(const Element* model, const Element* source, const Tweaks&) const;
 
             // Convert all children of an element as a JSON array. Null pointer on error or if not convertible.
-            json::ValuePtr convertChildren(const Element* model, const Element* parent, const Tweaks&) const;
+            json::ValuePtr convertChildrenToJSON(const Element* model, const Element* parent, const Tweaks&) const;
+
+            // Build a valid XML element name from a JSON string.
+            static UString ToElementName(const UString& str);
+
+            // Get the name of a JSON object for reverse conversion.
+            static UString ElementNameOf(const json::Value& obj, const UString& default_name = UString());
+
+            // Convert a JSON object into an XML element.
+            void convertObjectToXML(Element* element, const json::Value& object) const;
+
+            // Convert a JSON array into an children of an XML element.
+            void convertArrayToXML(Element* parent, const json::Value& array) const;
         };
     }
 }

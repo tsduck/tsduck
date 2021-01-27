@@ -606,12 +606,12 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
         table.toXML(_duck, doc.rootElement(), _xml_options);
         if (_rewrite_json) {
             // Convert to JSON and save a new document each time.
-            _x2j_conv.convert(doc)->save(_json_destination, 2, true, _report);
+            _x2j_conv.convertToJSON(doc)->save(_json_destination, 2, true, _report);
         }
         else {
             // Convert to JSON. Force "tsduck" root to appear so that the path to the first table is always the same.
             // Query the first (and only) converted table and add it to the running document.
-            _json_doc.add(_x2j_conv.convert(doc, true)->query(u"#nodes[0]"));
+            _json_doc.add(_x2j_conv.convertToJSON(doc, true)->query(u"#nodes[0]"));
         }
     }
 
@@ -781,7 +781,7 @@ void ts::TablesLogger::logXMLJSON(const BinaryTable& table)
 
         // Convert the XML document into JSON.
         // Force "tsduck" root to appear so that the path to the first table is always the same.
-        const json::ValuePtr root(_x2j_conv.convert(doc, true));
+        const json::ValuePtr root(_x2j_conv.convertToJSON(doc, true));
 
         // Reset the text formatter if already used for XML.
         if (_log_xml_line) {

@@ -99,6 +99,13 @@ bool ts::json::Parse(ValuePtr& value, const UString& text, Report& report)
     return Parse(value, parser, true, report);
 }
 
+bool ts::json::LoadFile(ValuePtr& value, const UString& filename, Report& report)
+{
+    TextParser parser(report);
+    return ((filename.empty() || filename == u"-") ? parser.loadStream(std::cin) : parser.loadFile(filename)) &&
+           Parse(value, parser, true, report);
+}
+
 bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report& report)
 {
     value.clear();
