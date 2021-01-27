@@ -36,6 +36,10 @@
 #include "tsjsonString.h"
 TSDUCK_SOURCE;
 
+const ts::UString ts::xml::JSONConverter::HashName(u"#name");
+const ts::UString ts::xml::JSONConverter::HashNodes(u"#nodes");
+const ts::UString ts::xml::JSONConverter::HashUnnamed(u"_unnamed");
+
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
@@ -55,7 +59,7 @@ ts::xml::JSONConverter::~JSONConverter()
 // Convert an XML document into a JSON object.
 //----------------------------------------------------------------------------
 
-ts::json::ValuePtr ts::xml::JSONConverter::convert(const Document& source, bool force_root) const
+ts::json::ValuePtr ts::xml::JSONConverter::convertToJSON(const Document& source, bool force_root) const
 {
     const xml::Element* docRoot = source.rootElement();
 
@@ -73,11 +77,11 @@ ts::json::ValuePtr ts::xml::JSONConverter::convert(const Document& source, bool 
         // Convert the source. Use no model if not the same as source.
         if (tweaks().x2jIncludeRoot || force_root) {
             // Return a JSON object containing the root.
-            return convertElement(modelRoot, docRoot, tweaks());
+            return convertElementToJSON(modelRoot, docRoot, tweaks());
         }
         else {
             // Return a JSON array of all top-level elements in the root.
-            return convertChildren(modelRoot, docRoot, tweaks());
+            return convertChildrenToJSON(modelRoot, docRoot, tweaks());
         }
     }
 }
@@ -87,12 +91,12 @@ ts::json::ValuePtr ts::xml::JSONConverter::convert(const Document& source, bool 
 // Convert an XML tree of elements.
 //----------------------------------------------------------------------------
 
-ts::json::ValuePtr ts::xml::JSONConverter::convertElement(const Element* model, const Element* source, const Tweaks& xml_tweaks) const
+ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* model, const Element* source, const Tweaks& xml_tweaks) const
 {
     // Build the JSON object for the node.
     json::ValuePtr jobj(new json::Object());
     CheckNonNull(jobj.pointer());
-    jobj->add(u"#name", source->name());
+    jobj->add(HashName, source->name());
 
     // Get all attributes of the XML element.
     std::map<UString,UString> attributes;
@@ -157,7 +161,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElement(const Element* model, 
 
     // Process the list of children, if any.
     if (source->hasChildren()) {
-        jobj->add(u"#nodes", convertChildren(model, source, xml_tweaks));
+        jobj->add(HashNodes, convertChildrenToJSON(model, source, xml_tweaks));
     }
 
     return jobj;
@@ -168,7 +172,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElement(const Element* model, 
 // Convert all children of an element as a JSON array.
 //----------------------------------------------------------------------------
 
-ts::json::ValuePtr ts::xml::JSONConverter::convertChildren(const Element* model, const Element* parent, const Tweaks& xml_tweaks) const
+ts::json::ValuePtr ts::xml::JSONConverter::convertChildrenToJSON(const Element* model, const Element* parent, const Tweaks& xml_tweaks) const
 {
     // All JSON children are placed in an array.
     json::ValuePtr jchildren(new json::Array());
@@ -191,7 +195,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertChildren(const Element* model,
 
         if (elem != nullptr) {
             // Convert an element. Add a JSON child object in the array of JSON children.
-            jchildren->set(convertElement(findModelElement(model, elem->name()), elem, xml_tweaks));
+            jchildren->set(convertElementToJSON(findModelElement(model, elem->name()), elem, xml_tweaks));
         }
         else if (text != nullptr) {
             // Convert a text.
@@ -209,4 +213,142 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertChildren(const Element* model,
         }
     }
     return jchildren;
+}
+
+
+//----------------------------------------------------------------------------
+// Build a valid XML element name from a JSON string.
+//----------------------------------------------------------------------------
+
+ts::UString ts::xml::JSONConverter::ToElementName(const UString& str)
+{
+    UString result;
+    result.reserve(3 * str.length());
+    for (size_t i = 0; i < str.length(); ++i) {
+        const UChar c = str[i];
+        if (IsAlpha(c) || c == u'_') {
+            result.push_back(c);
+        }
+        else if (i > 0 && (IsDigit(c) || c == u'-' || c == u'.')) {
+            result.push_back(c);
+        }
+        else {
+            result.format(u"_%02X", {int(c)});
+        }
+    }
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the name of a JSON object for reverse conversion.
+//----------------------------------------------------------------------------
+
+ts::UString ts::xml::JSONConverter::ElementNameOf(const json::Value& obj, const UString& default_name)
+{
+    const json::Value& jname(obj.value(HashName));
+    if (jname.isString() && jname.size() > 0) {
+        return ToElementName(jname.toString());
+    }
+    else {
+        return default_name.empty() ? HashUnnamed : default_name;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a JSON object into an XML document.
+//----------------------------------------------------------------------------
+
+bool ts::xml::JSONConverter::convertToXML(const json::Value& source, Document& destination, bool auto_validate) const
+{
+    // Clear the destination document.
+    destination.clear();
+
+    // Create the XML root of the destination using the name in the root JSON object (or the model root).
+    const Element* const modelRoot = rootElement();
+    Element* const destRoot = destination.initialize(ElementNameOf(source, modelRoot != nullptr ? modelRoot->name() : UString()));
+
+    // Now convert the structure
+    if (source.isObject()) {
+        // The JSON root is an object => XML root element
+        convertObjectToXML(destRoot, source);
+    }
+    else if (source.isArray()) {
+        // The JSON root is an object => children of the XML root element
+        convertArrayToXML(destRoot, source);
+    }
+    else {
+        // Other forms of root are unexpected, use a text node with the value.
+        destRoot->addText(source.toString(), true);
+    }
+
+    // Finally, validate the converted document, if correctly converted.
+    return !auto_validate || validate(destination);
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a JSON object into an XML element.
+//----------------------------------------------------------------------------
+
+void ts::xml::JSONConverter::convertObjectToXML(Element* element, const json::Value& object) const
+{
+    assert(object.isObject());
+
+    // Get the list of all attribute names in the object.
+    UStringList names;
+    object.getNames(names);
+
+    for (auto it = names.begin(); it != names.end(); ++it) {
+        const json::Value& child(object.value(*it));
+        if (it->similar(HashName)) {
+            // The "#name" was the name of the element, already used.
+        }
+        else if (it->similar(HashNodes)) {
+            // The value must be an array of child elements.
+            convertArrayToXML(element, child);
+        }
+        else if (child.isObject()) {
+            // Not expected in a reverse conversion, create an XML element from it.
+            Element* e = element->addElement(ElementNameOf(child));
+            convertObjectToXML(e, child);
+        }
+        else if (child.isArray()) {
+            // Not expected in a reverse conversion, create an XML element from each array element.
+            Element* e = element->addElement(ElementNameOf(child));
+            convertArrayToXML(e, child);
+        }
+        else if (!child.isNull()) {
+            // An attribute of the parent element.
+            element->setAttribute(ToElementName(*it), child.toString());
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a JSON array into an children of an XML element.
+//----------------------------------------------------------------------------
+
+void ts::xml::JSONConverter::convertArrayToXML(Element* parent, const json::Value& array) const
+{
+    assert(array.isArray());
+
+    // Each element in the array is a direct child of the parent.
+    for (size_t i = 0; i < array.size(); ++i) {
+        const json::Value& child(array.at(i));
+        if (child.isObject()) {
+            Element* e = parent->addElement(ElementNameOf(child));
+            convertObjectToXML(e, child);
+        }
+        else if (child.isArray()) {
+            // Not expected in a reverse conversion, create a direct child XML element from each array element.
+            convertArrayToXML(parent, child);
+        }
+        else if (!child.isNull()) {
+            // A text node.
+            parent->addText(child.toString());
+        }
+    }
 }

@@ -68,6 +68,9 @@ namespace {
         bool                 reformat;      // Reformat input files.
         bool                 xml_line;      // Output XML on one single line.
         bool                 tables_model;  // Use table model file.
+        bool                 use_model;     // There is a model to use.
+        bool                 from_json;     // Perform an automated JSON-to-XML conversion on input.
+        bool                 need_output;   // An output file is needed.
         ts::UString          xml_prefix;    // Prefix in XML line.
         size_t               indent;        // Output indentation.
         ts::xml::Tweaks      xml_tweaks;    // XML formatting options.
@@ -85,6 +88,9 @@ Options::Options(int argc, char *argv[]) :
     reformat(false),
     xml_line(false),
     tables_model(false),
+    use_model(false),
+    from_json(false),
+    need_output(false),
     xml_prefix(),
     indent(2),
     xml_tweaks(),
@@ -103,6 +109,12 @@ Options::Options(int argc, char *argv[]) :
     help(u"channel",
          u"A shortcut for '--model tsduck.channels.model.xml'. "
          u"It verifies that the input files are valid channel configuration files.");
+
+    option(u"from-json", 'f');
+    help(u"from-json",
+         u"Each input file must be a JSON file, "
+         u"typically from a previous automated XML-to-JSON conversion or in a similar format. "
+         u"A reverse conversion is first performed and the resulting XML document is processed as input.");
 
     option(u"hf-band", 'h');
     help(u"hf-band",
@@ -163,6 +175,7 @@ Options::Options(int argc, char *argv[]) :
     getValue(xml_prefix, u"xml-line");
     reformat = present(u"reformat") || !patches.empty();
     xml_line = present(u"xml-line");
+    from_json = present(u"from-json");
 
     // Get model file.
     if (present(u"model") + present(u"tables") + present(u"channel") + present(u"hf-band") + present(u"lnb") > 1) {
@@ -179,6 +192,7 @@ Options::Options(int argc, char *argv[]) :
     else if (present(u"lnb")) {
         model = u"tsduck.lnbs.model.xml";
     }
+    use_model = tables_model || !model.empty();
 
     // An input file named "" or "-" means standard input.
     for (auto it = infiles.begin(); it != infiles.end(); ++it) {
@@ -186,6 +200,9 @@ Options::Options(int argc, char *argv[]) :
             it->clear();
         }
     }
+
+    // An output file wil be produced.
+    need_output = reformat || json.json || from_json;
 
     exitOnError();
 }
@@ -223,7 +240,7 @@ int MainCode(int argc, char *argv[])
     opt.exitOnError();
 
     // Redirect standard output only if required.
-    ts::OutputRedirector out(opt.reformat || opt.json.json ? opt.outfile : u"", opt, std::cout, std::ios::out);
+    ts::OutputRedirector out(opt.need_output ? opt.outfile : u"", opt, std::cout, std::ios::out);
 
     // Now process each input file one by one.
     for (size_t i = 0; i < opt.infiles.size(); ++i) {
@@ -234,13 +251,22 @@ int MainCode(int argc, char *argv[])
         // Load the input file.
         ts::xml::Document doc(opt);
         doc.setTweaks(opt.xml_tweaks);
-        bool ok = doc.load(file_name, false, true);
+        bool ok = true;
+        if (opt.from_json) {
+            // Load a JSON fil and convert it to XML.
+            ts::json::ValuePtr root;
+            ok = ts::json::LoadFile(root, file_name, opt) && model.convertToXML(*root, doc, false);
+        }
+        else {
+            // Load a true XML file.
+            ok = doc.load(file_name, false, true);
+        }
         if (!ok) {
             opt.error(u"error loading %s", {display_name});
         }
 
         // Validate the file according to the model.
-        if (ok && !opt.model.empty() && !model.validate(doc)) {
+        if (ok && opt.use_model && !model.validate(doc)) {
             opt.error(u"%s is not conformant with the XML model", {display_name});
             ok = false;
         }
@@ -261,11 +287,11 @@ int MainCode(int argc, char *argv[])
             }
             if (opt.json.json) {
                 // Perform XML to JSON conversion.
-                const ts::json::ValuePtr jobj(model.convert(doc));
+                const ts::json::ValuePtr jobj(model.convertToJSON(doc));
                 // Output JSON result, either on one line or output file.
                 opt.json.report(*jobj, std::cout, opt);
             }
-            else if (opt.reformat) {
+            else if (opt.reformat || opt.from_json) {
                 // Same XML output on stdout (possibly already redirected to a file).
                 doc.save(u"", opt.indent, true);
             }

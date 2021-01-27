@@ -100,7 +100,7 @@ namespace ts {
         TSDUCKDLL ValuePtr Bool(bool value);
 
         //!
-        //! Parse a JSON value (typically an object or array.
+        //! Parse a JSON value (typically an object or array).
         //! @param [out] value A smart pointer to the parsed JSON value (null on error).
         //! @param [in] lines List of text lines forming the JSON value.
         //! @param [in,out] report Where to report errors.
@@ -109,7 +109,7 @@ namespace ts {
         TSDUCKDLL bool Parse(ValuePtr& value, const UStringList& lines, Report& report = NULLREP);
 
         //!
-        //! Parse a JSON value (typically an object or array.
+        //! Parse a JSON value (typically an object or array).
         //! @param [out] value A smart pointer to the parsed JSON value (null on error).
         //! @param [in] text The text forming the JSON value.
         //! @param [in,out] report Where to report errors.
@@ -118,7 +118,7 @@ namespace ts {
         TSDUCKDLL bool Parse(ValuePtr& value, const UString& text, Report& report = NULLREP);
 
         //!
-        //! Parse a JSON value (typically an object or array.
+        //! Parse a JSON value (typically an object or array).
         //! @param [out] value A smart pointer to the parsed JSON value (null on error).
         //! @param [in,out] parser A text parser.
         //! @param [in] jsonOnly If true, the parsed text shall not contain anything else than
@@ -128,5 +128,14 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         TSDUCKDLL bool Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report& report = NULLREP);
+
+        //!
+        //! Load a JSON value (typically an object or array) from a text file.
+        //! @param [out] value A smart pointer to the parsed JSON value (null on error).
+        //! @param [in] filename The name of the JSON file. If empty or "-", the standard input is used.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        TSDUCKDLL bool LoadFile(ValuePtr& value, const UString& filename, Report& report = NULLREP);
     }
 }

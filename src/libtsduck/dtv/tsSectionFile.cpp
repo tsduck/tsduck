@@ -661,7 +661,7 @@ ts::json::ValuePtr ts::SectionFile::convertToJSON() const
     model.setTweaks(_xmlTweaks);
 
     if (generateDocument(doc) && LoadModel(model)) {
-        return model.convert(doc);
+        return model.convertToJSON(doc);
     }
     else {
         return json::ValuePtr(new json::Null);
