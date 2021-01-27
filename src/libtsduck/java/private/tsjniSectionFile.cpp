@@ -194,7 +194,7 @@ TSDUCKJNI jbyteArray JNICALL Java_io_tsduck_SectionFile_toBinary(JNIEnv* env, jo
     }
     else {
         const size_t size = sf->binarySize();
-        const jbyteArray result = env->NewByteArray(size);
+        const jbyteArray result = env->NewByteArray(jsize(size));
         void* data = env->GetPrimitiveArrayCritical(result, nullptr);
         sf->saveBuffer(data, size);
         env->ReleasePrimitiveArrayCritical(result, data, 0);
