@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.25-2198
+VERSION 3.25-2200
 
 [NEW] New commands and plugins:
 
@@ -52,6 +52,11 @@ VERSION 3.25-2198
       "psi".
     - Options --json and --x2j-* to "tstabcomp".
     - Option --default-pds to "tsanalyze", "tsscan" and plugin "analyze".
+
+[BUG] Bug fixes:
+
+  * The global "tsp" options --default-pds and --hf-band-region were not
+    correctly passed to the plugins.
 
 -------------------------------------------------------------------------------
 
