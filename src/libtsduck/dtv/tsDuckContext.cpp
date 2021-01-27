@@ -614,7 +614,7 @@ bool ts::DuckContext::loadArgs(Args& args)
             _hfDefaultRegion = u"philippines";
         }
         else if (args.present(u"hf-band-region")) {
-            args.getValue(_hfDefaultRegion, u"hf-band-region");
+            args.getValue(_hfDefaultRegion, u"hf-band-region", _hfDefaultRegion.c_str());
         }
     }
 
@@ -725,6 +725,9 @@ void ts::DuckContext::restoreArgs(const SavedArgs& args)
     }
     if (_definedCmdOptions & CMD_CAS) {
         _casId = args._casId;
+    }
+    if (_definedCmdOptions & CMD_PDS) {
+        _defaultPDS = args._defaultPDS;
     }
     if (_definedCmdOptions & CMD_HF_REGION) {
         _hfDefaultRegion = args._hfDefaultRegion;
