@@ -112,7 +112,7 @@ TSDUCKJNI jint JNICALL Java_io_tsduck_SectionFile_tablesCount(JNIEnv* env, jobje
 }
 
 // Method: io.tsduck.SectionFile.loadBinary
-// Signature: (Ljava/lang/String;)B
+// Signature: (Ljava/lang/String;)Z
 TSDUCKJNI jboolean JNICALL Java_io_tsduck_SectionFile_loadBinary(JNIEnv* env, jobject obj, jstring jname)
 {
     ts::SectionFile* sf = ts::jni::GetPointerField<ts::SectionFile>(env, obj, "nativeObject");
@@ -120,7 +120,7 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_SectionFile_loadBinary(JNIEnv* env, jo
 }
 
 // Method: io.tsduck.SectionFile.saveBinary
-// Signature: (Ljava/lang/String;)B
+// Signature: (Ljava/lang/String;)Z
 TSDUCKJNI jboolean JNICALL Java_io_tsduck_SectionFile_saveBinary(JNIEnv* env, jobject obj, jstring jname)
 {
     ts::SectionFile* sf = ts::jni::GetPointerField<ts::SectionFile>(env, obj, "nativeObject");
@@ -128,7 +128,7 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_SectionFile_saveBinary(JNIEnv* env, jo
 }
 
 // Method: io.tsduck.SectionFile.loadXML
-// Signature: (Ljava/lang/String;)B
+// Signature: (Ljava/lang/String;)Z
 TSDUCKJNI jboolean JNICALL Java_io_tsduck_SectionFile_loadXML(JNIEnv* env, jobject obj, jstring jname)
 {
     ts::SectionFile* sf = ts::jni::GetPointerField<ts::SectionFile>(env, obj, "nativeObject");
@@ -136,7 +136,7 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_SectionFile_loadXML(JNIEnv* env, jobje
 }
 
 // Method: io.tsduck.SectionFile.saveXML
-// Signature: (Ljava/lang/String;)B
+// Signature: (Ljava/lang/String;)Z
 TSDUCKJNI jboolean JNICALL Java_io_tsduck_SectionFile_saveXML(JNIEnv* env, jobject obj, jstring jname)
 {
     ts::SectionFile* sf = ts::jni::GetPointerField<ts::SectionFile>(env, obj, "nativeObject");
@@ -144,7 +144,7 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_SectionFile_saveXML(JNIEnv* env, jobje
 }
 
 // Method: io.tsduck.SectionFile.saveJSON
-// Signature: (Ljava/lang/String;)B
+// Signature: (Ljava/lang/String;)Z
 TSDUCKJNI jboolean JNICALL Java_io_tsduck_SectionFile_saveJSON(JNIEnv* env, jobject obj, jstring jname)
 {
     ts::SectionFile* sf = ts::jni::GetPointerField<ts::SectionFile>(env, obj, "nativeObject");
@@ -165,6 +165,41 @@ TSDUCKJNI jstring JNICALL Java_io_tsduck_SectionFile_toJSON(JNIEnv* env, jobject
 {
     ts::SectionFile* sf = ts::jni::GetPointerField<ts::SectionFile>(env, obj, "nativeObject");
     return ts::jni::ToJString(env, sf != nullptr ? sf->toJSON() : ts::UString());
+}
+
+
+// Method: io.tsduck.SectionFile.fromBinary
+// Signature: ([B)Z
+TSDUCKJNI jboolean JNICALL Java_io_tsduck_SectionFile_fromBinary(JNIEnv* env, jobject obj, jbyteArray jdata)
+{
+    ts::SectionFile* sf = ts::jni::GetPointerField<ts::SectionFile>(env, obj, "nativeObject");
+    if (sf == nullptr) {
+        return false;
+    }
+    else {
+        void* data = env->GetPrimitiveArrayCritical(jdata, nullptr);
+        const bool result = sf->loadBuffer(data, size_t(env->GetArrayLength(jdata)));
+        env->ReleasePrimitiveArrayCritical(jdata, data, JNI_ABORT);
+        return result;
+    }
+}
+
+// Method: io.tsduck.SectionFile.fromBinary
+// Signature: ()[B)Z
+TSDUCKJNI jbyteArray JNICALL Java_io_tsduck_SectionFile_toBinary(JNIEnv* env, jobject obj)
+{
+    ts::SectionFile* sf = ts::jni::GetPointerField<ts::SectionFile>(env, obj, "nativeObject");
+    if (sf == nullptr) {
+        return nullptr;
+    }
+    else {
+        const size_t size = sf->binarySize();
+        const jbyteArray result = env->NewByteArray(size);
+        void* data = env->GetPrimitiveArrayCritical(result, nullptr);
+        sf->saveBuffer(data, size);
+        env->ReleasePrimitiveArrayCritical(result, data, 0);
+        return result;
+    }
 }
 
 #endif // TS_NO_JAVA

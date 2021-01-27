@@ -118,7 +118,7 @@ static bool GetPluginOption(JNIEnv* env, jobjectArray strings, ts::PluginOptions
 //----------------------------------------------------------------------------
 
 // Method: io.tsduck.TSProcessor.start
-// Signature: ()B
+// Signature: ()Z
 TSDUCKJNI jboolean JNICALL Java_io_tsduck_TSProcessor_start(JNIEnv* env, jobject obj)
 {
     ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");

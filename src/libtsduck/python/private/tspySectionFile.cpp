@@ -128,3 +128,17 @@ TSDUCKPY size_t tspySectionFileToJSON(void* sf, uint8_t* buffer, size_t* size)
     ts::py::FromString(text, buffer, size);
     return 2 * text.length();
 }
+
+TSDUCKPY bool tspySectionLoadBuffer(void* sf, const uint8_t* buffer, size_t size)
+{
+    ts::SectionFile* file = reinterpret_cast<ts::SectionFile*>(sf);
+    return file != nullptr && file->loadBuffer(buffer, size);
+}
+
+TSDUCKPY void tspySectionSaveBuffer(void* sf, uint8_t* buffer, size_t* size)
+{
+    ts::SectionFile* file = reinterpret_cast<ts::SectionFile*>(sf);
+    if (file != nullptr && size != nullptr) {
+        *size = file->saveBuffer(buffer, *size);
+    }
+}

@@ -100,7 +100,7 @@ TSDUCKJNI void JNICALL Java_io_tsduck_ErrReport_initNativeObject(JNIEnv* env, jo
 //----------------------------------------------------------------------------
 
 // Method: io.tsduck.AsyncReport.initNativeObject
-// Signature: (IBBI)V
+// Signature: (IZZI)V
 TSDUCKJNI void JNICALL Java_io_tsduck_AsyncReport_initNativeObject(JNIEnv* env, jobject obj, jint severity, jboolean syncLog, jboolean timedLog, jint logMsgCount)
 {
     // Make sure we do not allocate twice (and lose previous instance).
@@ -140,7 +140,7 @@ TSDUCKJNI void JNICALL Java_io_tsduck_AsyncReport_delete(JNIEnv* env, jobject ob
 //----------------------------------------------------------------------------
 
 // Method: io.tsduck.AbstractAsyncReport.initNativeObject
-// Signature: (Ljava/lang/String;IBI)V
+// Signature: (Ljava/lang/String;IZI)V
 TSDUCKJNI void JNICALL Java_io_tsduck_AbstractAsyncReport_initNativeObject(JNIEnv* env, jobject obj, jstring method, jint severity, jboolean syncLog, jint logMsgCount)
 {
     // Make sure we do not allocate twice (and lose previous instance).

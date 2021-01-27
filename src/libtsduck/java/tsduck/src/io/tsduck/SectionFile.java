@@ -90,6 +90,20 @@ public class SectionFile implements NativeObject {
     public native int tablesCount();
 
     /**
+     * Load a binary section file from a memory buffer.
+     * The loaded sections are added to the content of this object.
+     * @param data A byte array containing the binary data to load.
+     * @return True on success, False if some sections were incorrect or truncated.
+     */
+    public native boolean fromBinary(byte[] data);
+
+    /**
+     * Get the binary content of a section file.
+     * @return A byte array containing the binary sections.
+     */
+    public native byte[] toBinary();
+
+    /**
      * Load a binary section file.
      * The loaded sections are added to the content of this object.
      * @param file Binary file name. If the file name is empty or "-", the standard input is used.

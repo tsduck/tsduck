@@ -407,6 +407,81 @@ bool ts::SectionFile::saveBinary(std::ostream& strm, Report& report) const
 
 
 //----------------------------------------------------------------------------
+// Load a binary section file from a memory buffer.
+//----------------------------------------------------------------------------
+
+bool ts::SectionFile::loadBuffer(const void* buffer, size_t size)
+{
+    bool success = true;
+    const uint8_t* data = reinterpret_cast<const uint8_t*>(buffer);
+    while (size >= 3) {
+        const size_t section_size = 3 + (GetUInt16(data + 1) & 0x0FFF);
+        if (section_size > size) {
+            break;
+        }
+        SectionPtr sp(new Section(data, section_size, PID_NULL, CRC32::CHECK));
+        if (!sp.isNull() && sp->isValid()) {
+            add(sp);
+        }
+        else {
+            success = false;
+        }
+        data += section_size;
+        size -= section_size;
+    }
+    return success && size == 0;
+}
+
+bool ts::SectionFile::loadBuffer(const ByteBlock& data, size_t start, size_t count)
+{
+    start = std::min(start, data.size());
+    count = std::min(count, data.size() - start);
+    return loadBuffer(data.data() + start, count);
+}
+
+
+//----------------------------------------------------------------------------
+// Save the section file into a memory buffer.
+//----------------------------------------------------------------------------
+
+size_t ts::SectionFile::saveBuffer(void* buffer, size_t buffer_size) const
+{
+    size_t total = 0;
+    if (buffer != nullptr) {
+        uint8_t* data = reinterpret_cast<uint8_t*>(buffer);
+        for (size_t i = 0; i < _sections.size(); ++i) {
+            if (!_sections[i].isNull() && _sections[i]->isValid()) {
+                const size_t size = _sections[i]->size();
+                if (size > buffer_size) {
+                    break;
+                }
+                ::memcpy(data, _sections[i]->content(), size);
+                data += size;
+                total += size;
+                buffer_size -= size;
+            }
+        }
+    }
+    return total;
+}
+
+size_t ts::SectionFile::saveBuffer(ByteBlock& buffer) const
+{
+    // Pre-reserve memory to avoid reallocations.
+    buffer.reserve(buffer.size() + binarySize());
+
+    // Append all sections one by one.
+    const size_t initial = buffer.size();
+    for (size_t i = 0; i < _sections.size(); ++i) {
+        if (!_sections[i].isNull() && _sections[i]->isValid()) {
+            buffer.append(_sections[i]->content(), _sections[i]->size());
+        }
+    }
+    return buffer.size() - initial;
+}
+
+
+//----------------------------------------------------------------------------
 // Get the size in bytes of all sections.
 //----------------------------------------------------------------------------
 

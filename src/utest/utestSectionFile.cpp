@@ -69,6 +69,7 @@ public:
     void testGenericLongTable();
     void testPAT1();
     void testSCTE35();
+    void testMemory();
     void testBuildSections();
     void testMultiSectionsCAT();
     void testMultiSectionsAtProgramLevelPMT();
@@ -81,6 +82,7 @@ public:
     TSUNIT_TEST(testGenericLongTable);
     TSUNIT_TEST(testPAT1);
     TSUNIT_TEST(testSCTE35);
+    TSUNIT_TEST(testMemory);
     TSUNIT_TEST(testBuildSections);
     TSUNIT_TEST(testMultiSectionsCAT);
     TSUNIT_TEST(testMultiSectionsAtProgramLevelPMT);
@@ -734,4 +736,37 @@ void SectionFileTest::testMultiSectionsAtStreamLevelPMT()
             }
         }
     }
+}
+
+void SectionFileTest::testMemory()
+{
+    ts::ByteBlock input(5);
+    input.append(psi_pat1_sections, sizeof(psi_pat1_sections));
+    input.append(psi_pmt_scte35_sections, sizeof(psi_pmt_scte35_sections));
+    input.appendInt24(0);
+    TSUNIT_EQUAL(5 + 32 + 55 + 3, input.size());
+
+    ts::DuckContext duck;
+    ts::SectionFile sf1(duck);
+    TSUNIT_ASSERT(sf1.loadBuffer(input, 5, 87));
+    TSUNIT_EQUAL(87, sf1.binarySize());
+    TSUNIT_EQUAL(2, sf1.sectionsCount());
+    TSUNIT_EQUAL(2, sf1.tablesCount());
+    TSUNIT_EQUAL(ts::TID_PAT, sf1.tables()[0]->tableId());
+    TSUNIT_EQUAL(ts::TID_PMT, sf1.tables()[1]->tableId());
+
+    ts::ByteBlock output(3);
+    TSUNIT_EQUAL(87, sf1.saveBuffer(output));
+    TSUNIT_EQUAL(90, output.size());
+    TSUNIT_EQUAL(0, ::memcmp(&output[3], psi_pat1_sections, sizeof(psi_pat1_sections)));
+    TSUNIT_EQUAL(0, ::memcmp(&output[3 + 32], psi_pmt_scte35_sections, sizeof(psi_pmt_scte35_sections)));
+
+    uint8_t out1[40];
+    TSUNIT_EQUAL(32, sf1.saveBuffer(out1, sizeof(out1)));
+    TSUNIT_EQUAL(0, ::memcmp(out1, psi_pat1_sections, sizeof(psi_pat1_sections)));
+
+    uint8_t out2[100];
+    TSUNIT_EQUAL(87, sf1.saveBuffer(out2, sizeof(out2)));
+    TSUNIT_EQUAL(0, ::memcmp(out2, psi_pat1_sections, sizeof(psi_pat1_sections)));
+    TSUNIT_EQUAL(0, ::memcmp(out2 + 32, psi_pmt_scte35_sections, sizeof(psi_pmt_scte35_sections)));
 }
