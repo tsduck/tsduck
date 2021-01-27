@@ -286,6 +286,42 @@ namespace ts {
         bool saveBinary(const UString& file_name) const;
 
         //!
+        //! Load a binary section file from a memory buffer.
+        //! The loaded sections are added to the content of this object.
+        //! @param [in] data Address of the memory buffer.
+        //! @param [in] size Size in bytes of the memory buffer.
+        //! @return True on success, false if some sections were incorrect or truncated.
+        //!
+        bool loadBuffer(const void* data, size_t size);
+
+        //!
+        //! Load a binary section file from a memory buffer.
+        //! The loaded sections are added to the content of this object.
+        //! @param [in] data Byte block containing the binary data.
+        //! @param [in] start Starting index inside the byte buffer.
+        //! @param [in] count Size in bytes to read after @a start. If set to NPOS, use the rest of the buffer.
+        //! @return True on success, false if some sections were incorrect or truncated.
+        //!
+        bool loadBuffer(const ByteBlock& data, size_t start = 0, size_t count = NPOS);
+
+        //!
+        //! Save the section file into a memory buffer.
+        //! @param [out] buffer Address of the memory buffer to write.
+        //! @param [in] buffer_size Size in bytes of the memory buffer.
+        //! @return The written size in bytes. If the buffer is too short, no section is truncated.
+        //! The returned size includes complete sections only. Use binarySize() to get the required total size.
+        //!
+        size_t saveBuffer(void* buffer, size_t buffer_size) const;
+
+        //!
+        //! Save the section file into a memory buffer.
+        //! @param [in,out] buffer A byte block into which the sections are written.
+        //! The sections are appended to the existing content of @a buffer.
+        //! @return The number of bytes which were appended to the buffer.
+        //!
+        size_t saveBuffer(ByteBlock& buffer) const;
+
+        //!
         //! Fast access to the list of loaded tables.
         //! @return A constant reference to the internal list of loaded tables.
         //!

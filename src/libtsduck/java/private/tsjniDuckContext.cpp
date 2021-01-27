@@ -68,7 +68,7 @@ TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_delete(JNIEnv* env, jobject ob
 }
 
 // Method: io.tsduck.DuckContext.setDefaultCharset
-// Signature: (Ljava/lang/String;)B
+// Signature: (Ljava/lang/String;)Z
 TSDUCKJNI jboolean JNICALL Java_io_tsduck_DuckContext_setDefaultCharset(JNIEnv* env, jobject obj, jstring jname)
 {
     ts::DuckContext* duck = ts::jni::GetPointerField<ts::DuckContext>(env, obj, "nativeObject");
@@ -144,7 +144,7 @@ TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_setTimeReferenceOffset(JNIEnv*
 }
 
 // Method: io.tsduck.DuckContext.setTimeReference
-// Signature: (Ljava/lang/String;)B
+// Signature: (Ljava/lang/String;)Z
 TSDUCKJNI jboolean JNICALL Java_io_tsduck_DuckContext_setTimeReference(JNIEnv* env, jobject obj, jstring jname)
 {
     ts::DuckContext* duck = ts::jni::GetPointerField<ts::DuckContext>(env, obj, "nativeObject");

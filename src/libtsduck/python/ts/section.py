@@ -86,6 +86,28 @@ class SectionFile(NativeObject):
         return int(lib.tspySectionFileTablesCount(self._native_object))
 
     ##
+    # Load a binary section file from a memory buffer.
+    # The loaded sections are added to the content of this object.
+    # @param data A bytearray containing the binary data to load.
+    # @return True on success, False if some sections were incorrect or truncated.
+    #
+    def fromBinary(self, data):
+        size = ctypes.c_size_t(len(data))
+        carray_type = ctypes.c_uint8 * size.value
+        return lib.tspySectionLoadBuffer(self._native_object, ctypes.cast(carray_type.from_buffer(data), ctypes.POINTER(ctypes.c_uint8)), size)
+
+    ##
+    # Get the binary content of a section file.
+    # @return A bytearray containing the binary sections.
+    #
+    def toBinary(self):
+        size = ctypes.c_size_t(self.binarySize())
+        data = bytearray(size.value)
+        carray_type = ctypes.c_uint8 * size.value
+        lib.tspySectionSaveBuffer(self._native_object, ctypes.cast(carray_type.from_buffer(data), ctypes.POINTER(ctypes.c_uint8)), ctypes.byref(size))
+        return data[:size.value]
+
+    ##
     # Load a binary section file.
     # The loaded sections are added to the content of this object.
     # @param file Binary file name.

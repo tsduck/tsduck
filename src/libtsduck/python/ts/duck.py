@@ -133,6 +133,7 @@ class DuckContext(NativeObject):
     # variants of ISDB which reuse TOT, TDT and EIT but with another local time reference.
     # @param offset Offset from UTC in milli-seconds. Can be positive or negative.
     # The default offset is zero, meaning plain UTC time.
+    # @return None.
     #
     def setTimeReferenceOffset(self, offset):
         lib.tspyDuckContextSetTimeReferenceOffset(self._native_object, offset)
