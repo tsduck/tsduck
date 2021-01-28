@@ -126,7 +126,16 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
         if (intModel) {
             // Should be an integer according to the model.
             if (it->second.toInteger(intValue, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
-                jvalue = new json::Number(intValue);
+                if (intValue < -TS_CONST64(0xFFFFFFFF)) {
+                    // This is a "very negative" value. This is typically a large unsigned hexadecimal value
+                    // which will not be handled correctly when reading back the JSON file. We cannot use
+                    // hexadecimal literals in JSON (new in JSON 5), so we leave it as a string.
+                    jvalue = new json::String(it->second);
+                }
+                else {
+                    // Acceptable integer.
+                    jvalue = new json::Number(intValue);
+                }
             }
             else {
                 source->report().warning(u"attribute '%s' in <%s> line %d is '%s' but should be an integer", {it->first, source->name(), source->lineNumber(), it->second});

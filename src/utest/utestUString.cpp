@@ -863,6 +863,9 @@ void UStringTest::testStart()
 
     TSUNIT_ASSERT(ts::UString(u"").startWith(u"", ts::CASE_INSENSITIVE));
     TSUNIT_ASSERT(!ts::UString(u"").startWith(u"abcd", ts::CASE_INSENSITIVE));
+
+    TSUNIT_ASSERT(!ts::UString(u"  azertyuiop").startWith(u"az", ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"  azertyuiop").startWith(u"az", ts::CASE_SENSITIVE, true));
 }
 
 void UStringTest::testEnd()
@@ -887,6 +890,9 @@ void UStringTest::testEnd()
 
     TSUNIT_ASSERT(ts::UString(u"").endWith(u"", ts::CASE_INSENSITIVE));
     TSUNIT_ASSERT(!ts::UString(u"").endWith(u"abcd", ts::CASE_INSENSITIVE));
+
+    TSUNIT_ASSERT(!ts::UString(u"azertyuiop  ").endWith(u"uiop", ts::CASE_SENSITIVE, false));
+    TSUNIT_ASSERT(ts::UString(u"azertyuiop  ").endWith(u"uiop", ts::CASE_SENSITIVE, true));
 }
 
 void UStringTest::testJustifyLeft()

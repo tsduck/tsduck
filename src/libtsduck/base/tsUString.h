@@ -818,9 +818,10 @@ namespace ts {
         //! Check if the string starts with a specified prefix.
         //! @param [in] prefix A string prefix to check.
         //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @param [in] skip_space If true, ignore initial spaces in this string.
         //! @return True if this string starts with @a prefix, false otherwise.
         //!
-        bool startWith(const UString& prefix, CaseSensitivity cs = CASE_SENSITIVE) const;
+        bool startWith(const UString& prefix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_space = false) const;
 
         //!
         //! Check if a string contains a specified character.
@@ -841,9 +842,10 @@ namespace ts {
         //! Check if a string ends with a specified suffix.
         //! @param [in] suffix A string suffix to check.
         //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @param [in] skip_space If true, ignore trailing spaces in this string.
         //! @return True if this string ends with @a suffix, false otherwise.
         //!
-        bool endWith(const UString& suffix, CaseSensitivity cs = CASE_SENSITIVE) const;
+        bool endWith(const UString& suffix, CaseSensitivity cs = CASE_SENSITIVE, bool skip_space = false) const;
 
         //!
         //! Compute the number of similar leading characters in two strings.

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.25-2203
+VERSION 3.25-2205
 
 [NEW] New commands and plugins:
 
@@ -50,7 +50,8 @@ VERSION 3.25-2203
       "tstables" and plugin "tables".
     - Options --json-output, --log-json-line and --x2j-* to "tspsi" and plugin
       "psi".
-    - Options --json and --x2j-* to "tstabcomp".
+    - Options --json, --from-json and --x2j-* to "tstabcomp".
+    - Option --json to "tspacketize".
     - Option --default-pds to "tsanalyze", "tsscan" and plugin "analyze".
 
 [BUG] Bug fixes:

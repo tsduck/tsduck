@@ -34,7 +34,6 @@
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
-#include "tsxmlModelDocument.h"
 #include "tsxmlJSONConverter.h"
 #include "tsjsonNull.h"
 #include "tsSysUtils.h"
@@ -43,6 +42,7 @@ TSDUCK_SOURCE;
 
 const ts::UChar* const ts::SectionFile::DEFAULT_BINARY_SECTION_FILE_SUFFIX = u".bin";
 const ts::UChar* const ts::SectionFile::DEFAULT_XML_SECTION_FILE_SUFFIX = u".xml";
+const ts::UChar* const ts::SectionFile::DEFAULT_JSON_SECTION_FILE_SUFFIX = u".json";
 const ts::UChar* const ts::SectionFile::XML_TABLES_MODEL = u"tsduck.tables.model.xml";
 
 
@@ -56,6 +56,7 @@ ts::SectionFile::SectionFile(DuckContext& duck) :
     _tables(),
     _sections(),
     _orphanSections(),
+    _model(_report),
     _xmlTweaks(),
     _crc_op(CRC32::IGNORE)
 {
@@ -498,6 +499,22 @@ size_t ts::SectionFile::binarySize() const
 
 
 //----------------------------------------------------------------------------
+// Load the XML model in this instance, if not already done.
+//----------------------------------------------------------------------------
+
+bool ts::SectionFile::loadThisModel()
+{
+    if (_model.hasChildren()) {
+        return true; // already loaded
+    }
+    else {
+        _model.setTweaks(_xmlTweaks);
+        return LoadModel(_model, true);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // This static method loads the XML model for tables and descriptors.
 //----------------------------------------------------------------------------
 
@@ -595,14 +612,13 @@ bool ts::SectionFile::parseXML(const UString& xml_content)
 
 bool ts::SectionFile::parseDocument(const xml::Document& doc)
 {
-    // Load the XML model for TSDuck files. Search it in TSDuck directory.
-    xml::ModelDocument model(doc.report());
-    if (!LoadModel(model)) {
+    // Load the XML model for TSDuck files, if not already done.
+    if (!loadThisModel()) {
         return false;
     }
 
     // Validate the input document according to the model.
-    if (!model.validate(doc)) {
+    if (!_model.validate(doc)) {
         return false;
     }
 
@@ -646,35 +662,71 @@ ts::UString ts::SectionFile::toXML() const
 
 
 //----------------------------------------------------------------------------
-// Create JSON file or text.
+// Load / parse a JSON file.
 //----------------------------------------------------------------------------
 
-ts::json::ValuePtr ts::SectionFile::convertToJSON() const
+bool ts::SectionFile::loadJSON(const UString& file_name)
 {
-    // Generation of the initial XML document.
+    json::ValuePtr root;
     xml::Document doc(_report);
     doc.setTweaks(_xmlTweaks);
 
-    // Conversion of XML into JSON.
-    json::ValuePtr root;
-    xml::JSONConverter model(_report);
-    model.setTweaks(_xmlTweaks);
+    return loadThisModel() &&
+           json::LoadFile(root, file_name, _report) &&
+           _model.convertToXML(*root, doc, true) &&
+           parseDocument(doc);
+}
 
-    if (generateDocument(doc) && LoadModel(model)) {
-        return model.convertToJSON(doc);
+bool ts::SectionFile::loadJSON(std::istream& strm)
+{
+    json::ValuePtr root;
+    xml::Document doc(_report);
+    doc.setTweaks(_xmlTweaks);
+
+    return loadThisModel() &&
+           json::LoadStream(root, strm, _report) &&
+           _model.convertToXML(*root, doc, true) &&
+           parseDocument(doc);
+}
+
+bool ts::SectionFile::parseJSON(const UString& json_content)
+{
+    json::ValuePtr root;
+    xml::Document doc(_report);
+    doc.setTweaks(_xmlTweaks);
+
+    return loadThisModel() &&
+           json::Parse(root, json_content, _report) &&
+           _model.convertToXML(*root, doc, true) &&
+           parseDocument(doc);
+}
+
+
+//----------------------------------------------------------------------------
+// Create JSON file or text.
+//----------------------------------------------------------------------------
+
+ts::json::ValuePtr ts::SectionFile::convertToJSON()
+{
+    xml::Document doc(_report);
+    doc.setTweaks(_xmlTweaks);
+
+    // Load the XML model, generate the initial XML document, convert XML into JSON.
+    if (loadThisModel() && generateDocument(doc)) {
+        return _model.convertToJSON(doc);
     }
     else {
         return json::ValuePtr(new json::Null);
     }
 }
 
-bool ts::SectionFile::saveJSON(const UString& file_name) const
+bool ts::SectionFile::saveJSON(const UString& file_name)
 {
     const json::ValuePtr root(convertToJSON());
     return !root->isNull() && root->save(file_name, 2, true, _report);
 }
 
-ts::UString ts::SectionFile::toJSON() const
+ts::UString ts::SectionFile::toJSON()
 {
     const json::ValuePtr root(convertToJSON());
     if (root->isNull()) {
@@ -722,21 +774,27 @@ bool ts::SectionFile::generateDocument(xml::Document& doc) const
 
 ts::SectionFile::FileType ts::SectionFile::GetFileType(const UString& file_name, FileType type)
 {
-    if (type != UNSPECIFIED) {
+    if (type != FileType::UNSPECIFIED) {
         return type; // already known
     }
     if (xml::Document::IsInlineXML(file_name)) {
-        return XML; // inline XML content
+        return FileType::XML; // inline XML content
+    }
+    if (json::IsInlineJSON(file_name)) {
+        return FileType::JSON; // inline JSON content
     }
     const UString ext(PathSuffix(file_name).toLower());
     if (ext == DEFAULT_XML_SECTION_FILE_SUFFIX) {
-        return XML;
+        return FileType::XML;
+    }
+    if (ext == DEFAULT_JSON_SECTION_FILE_SUFFIX) {
+        return FileType::JSON;
     }
     else if (ext == DEFAULT_BINARY_SECTION_FILE_SUFFIX) {
-        return BINARY;
+        return FileType::BINARY;
     }
     else {
-        return UNSPECIFIED;
+        return FileType::UNSPECIFIED;
     }
 }
 
@@ -748,11 +806,13 @@ ts::SectionFile::FileType ts::SectionFile::GetFileType(const UString& file_name,
 ts::UString ts::SectionFile::BuildFileName(const UString& file_name, FileType type)
 {
     switch (type) {
-        case BINARY:
+        case FileType::BINARY:
             return PathPrefix(file_name) + DEFAULT_BINARY_SECTION_FILE_SUFFIX;
-        case XML:
+        case FileType::XML:
             return PathPrefix(file_name) + DEFAULT_XML_SECTION_FILE_SUFFIX;
-        case UNSPECIFIED:
+        case FileType::JSON:
+            return PathPrefix(file_name) + DEFAULT_JSON_SECTION_FILE_SUFFIX;
+        case FileType::UNSPECIFIED:
         default:
             return file_name;
     }
@@ -765,15 +825,14 @@ ts::UString ts::SectionFile::BuildFileName(const UString& file_name, FileType ty
 
 bool ts::SectionFile::load(const UString& file_name, FileType type)
 {
-    if (xml::Document::IsInlineXML(file_name)) {
-        return loadXML(file_name);
-    }
     switch (GetFileType(file_name, type)) {
-        case BINARY:
+        case FileType::BINARY:
             return loadBinary(file_name);
-        case XML:
+        case FileType::XML:
             return loadXML(file_name);
-        case UNSPECIFIED:
+        case FileType::JSON:
+            return loadJSON(file_name);
+        case FileType::UNSPECIFIED:
         default:
             _report.error(u"unknown file type for %s", {file_name});
             return false;
@@ -783,11 +842,13 @@ bool ts::SectionFile::load(const UString& file_name, FileType type)
 bool ts::SectionFile::load(std::istream& strm, FileType type)
 {
     switch (type) {
-        case BINARY:
+        case FileType::BINARY:
             return loadBinary(strm);
-        case XML:
+        case FileType::XML:
             return loadXML(strm);
-        case UNSPECIFIED:
+        case FileType::JSON:
+            return loadJSON(strm);
+        case FileType::UNSPECIFIED:
         default:
             _report.error(u"unknown input file type");
             return false;

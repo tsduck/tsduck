@@ -71,7 +71,8 @@ namespace {
         bool                useStdOut;       // Use standard output.
         bool                compile;         // Explicit compilation.
         bool                decompile;       // Explicit decompilation.
-        bool                json;            // Decompile to JSON.
+        bool                fromJSON;        // All input files are JSON.
+        bool                toJSON;          // Decompile to JSON.
         bool                xmlModel;        // Display XML model instead of compilation.
         bool                withExtensions;  // XML model with extensions.
         ts::SectionFileArgs sectionOptions;  // Section file processing options.
@@ -89,7 +90,8 @@ Options::Options(int argc, char *argv[]) :
     useStdOut(false),
     compile(false),
     decompile(false),
-    json(false),
+    fromJSON(false),
+    toJSON(false),
     xmlModel(false),
     withExtensions(false),
     sectionOptions(),
@@ -103,17 +105,20 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"", 0, STRING);
     help(u"",
-         u"XML source files to compile or binary table files to decompile. "
-         u"By default, files ending in .xml are compiled and files ending in .bin are decompiled. "
+         u"XML or JSON source files to compile or binary table files to decompile. "
+         u"By default, files ending in .xml or .json are compiled and files ending in .bin are decompiled. "
          u"For other files, explicitly specify --compile or --decompile.\n\n"
          u"If an input file name is \"-\", the standard input is used. "
          u"In that case, --compile or --decompile must be specified.\n\n"
-         u"If an input file name starts with \"<?xml\", it is considered as \"inline XML content\".");
+         u"If an input file name starts with \"<?xml\", it is considered as \"inline XML content\". "
+         u"Similarly, if an input file name starts with \"{\" or \"[\", it is considered as \"inline JSON content\".\n\n"
+         u"The reference source format is XML. JSON files are first translated to XML using the "
+         u"\"automated XML-to-JSON conversion\" rules of TSDuck and then compiled.");
 
     option(u"compile", 'c');
     help(u"compile",
-         u"Compile all files as XML source files into binary files. "
-         u"This is the default for .xml files.");
+         u"Compile all files as XML or JSON source files into binary files. "
+         u"This is the default for .xml and .json files.");
 
     option(u"decompile", 'd');
     help(u"decompile",
@@ -124,15 +129,23 @@ Options::Options(int argc, char *argv[]) :
     help(u"extensions",
          u"With --xml-model, include the content of the available extensions.");
 
+    option(u"from-json", 'f');
+    help(u"from-json",
+         u"Each input file must be a JSON file, "
+         u"typically from a previous automated XML-to-JSON conversion or in a similar format. "
+         u"This is automatically detected for file names ending in .json. "
+         u"This option is only required when the input file name has a non-standard extension or is the standard input.");
+
     option(u"json", 'j');
     help(u"json",
          u"When decompiling, perform an automated XML-to-JSON conversion. "
-         u"The output file is in JSON format instead of XML.");
+         u"The output file is in JSON format instead of XML. "
+         u"The default output file names have extension .json.");
 
     option(u"output", 'o', STRING);
     help(u"output", u"filepath",
          u"Specify the output file name. "
-         u"By default, the output file has the same name as the input and extension .bin (compile) or .xml (decompile). "
+         u"By default, the output file has the same name as the input and extension .bin (compile), .xml or .json (decompile). "
          u"If the specified path is a directory, the output file is built from this directory and default file name. "
          u"If the specified name is \"-\", the standard output is used.\n\n"
          u"The default output file for the standard input (\"-\") is the standard output (\"-\"). "
@@ -155,6 +168,8 @@ Options::Options(int argc, char *argv[]) :
     getValue(outFile, u"output");
     compile = present(u"compile");
     decompile = present(u"decompile");
+    fromJSON = present(u"from-json");
+    toJSON = present(u"json") || outFile.endWith(ts::SectionFile::DEFAULT_JSON_SECTION_FILE_SUFFIX);
     xmlModel = present(u"xml-model");
     withExtensions = present(u"extensions");
     useStdIn = ts::UString(u"-").isContainedSimilarIn(inFiles);
@@ -213,12 +228,14 @@ namespace {
 namespace {
     bool ProcessFile(Options& opt, const ts::UString& infile)
     {
-        const ts::SectionFile::FileType inType = ts::SectionFile::GetFileType(infile);
+        typedef ts::SectionFile::FileType FType;
+
+        const FType inType = opt.fromJSON ? FType::JSON : ts::SectionFile::GetFileType(infile);
         const bool useStdIn = infile.empty() || infile == u"-";
         const bool useStdOut = opt.useStdOut || (useStdIn && opt.outFile.empty());
-        const bool compile = opt.compile || inType == ts::SectionFile::XML;
-        const bool decompile = opt.decompile || inType == ts::SectionFile::BINARY;
-        const ts::SectionFile::FileType outType = compile ? ts::SectionFile::BINARY : ts::SectionFile::XML;
+        const bool compile = opt.compile || inType == FType::XML || inType == FType::JSON;
+        const bool decompile = opt.decompile || inType == FType::BINARY;
+        const FType outType = compile ? FType::BINARY : (opt.toJSON ? FType::JSON : FType::XML);
 
         // Set standard input or output in binary mode when necessary.
         if (useStdIn && decompile) {
@@ -250,18 +267,18 @@ namespace {
             opt.error(u"don't know what to do with file %s, unknown file type, specify --compile or --decompile", {infile});
             return false;
         }
-        else if (compile && inType == ts::SectionFile::BINARY) {
+        else if (compile && inType == FType::BINARY) {
             opt.error(u"cannot compile binary file %s", {infile});
             return false;
         }
-        else if (decompile && inType == ts::SectionFile::XML) {
-            opt.error(u"cannot decompile XML file %s", {infile});
+        else if (decompile && (inType == FType::XML || inType == FType::JSON)) {
+            opt.error(u"cannot decompile XML or JSON file %s", {infile});
             return false;
         }
         else if (compile) {
             // Load XML file and save binary sections.
             opt.verbose(u"Compiling %s to %s", {infile, outname});
-            return file.loadXML(infile) &&
+            return (inType == FType::JSON ? file.loadJSON(infile) : file.loadXML(infile)) &&
                    opt.sectionOptions.processSectionFile(file, opt) &&
                    file.saveBinary(outname);
         }
@@ -270,7 +287,7 @@ namespace {
             opt.verbose(u"Decompiling %s to %s", {infile, outname});
             return file.loadBinary(infile) &&
                    opt.sectionOptions.processSectionFile(file, opt) &&
-                   (opt.json ? file.saveJSON(outname) : file.saveXML(outname));
+                   (opt.toJSON ? file.saveJSON(outname) : file.saveXML(outname));
         }
     }
 }

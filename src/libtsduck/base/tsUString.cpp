@@ -897,22 +897,29 @@ ts::UString ts::UString::toRemovedSuffix(const UString& suffix, CaseSensitivity 
     return result;
 }
 
-bool ts::UString::startWith(const UString& prefix, CaseSensitivity cs) const
+bool ts::UString::startWith(const UString& prefix, CaseSensitivity cs, bool skip_space) const
 {
     const size_type len = length();
     const size_type sublen = prefix.length();
 
-    if (len < sublen) {
+    size_type start = 0;
+    if (skip_space) {
+        while (start < len && IsSpace(at(start))) {
+            ++start;
+        }
+    }
+
+    if (len < start + sublen) {
         return false;
     }
 
     switch (cs) {
         case CASE_SENSITIVE: {
-            return compare(0, sublen, prefix) == 0;
+            return compare(start, sublen, prefix) == 0;
         }
         case CASE_INSENSITIVE: {
             for (size_type i = 0; i < sublen; ++i) {
-                if (ToLower(at(i)) != ToLower(prefix.at(i))) {
+                if (ToLower(at(start + i)) != ToLower(prefix.at(i))) {
                     return false;
                 }
             }
@@ -925,10 +932,16 @@ bool ts::UString::startWith(const UString& prefix, CaseSensitivity cs) const
     }
 }
 
-bool ts::UString::endWith(const UString& suffix, CaseSensitivity cs) const
+bool ts::UString::endWith(const UString& suffix, CaseSensitivity cs, bool skip_space) const
 {
     size_type iString = length();
     size_type iSuffix = suffix.length();
+
+    if (skip_space) {
+        while (iString > 0 && IsSpace(at(iString - 1))) {
+            --iString;
+        }
+    }
 
     if (iString < iSuffix) {
         return false;

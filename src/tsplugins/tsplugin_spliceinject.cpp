@@ -667,15 +667,15 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
     assert(addr != nullptr);
 
     // Try to determine the file type, binary or XML.
-    SectionFile::FileType type = SectionFile::UNSPECIFIED;
+    SectionFile::FileType type = SectionFile::FileType::UNSPECIFIED;
     if (size > 0) {
         if (addr[0] == TID_SCTE35_SIT) {
             // First byte is the table id of a splice information table.
-            type = SectionFile::BINARY;
+            type = SectionFile::FileType::BINARY;
         }
         else if (addr[0] == '<') {
             // Typically the start of an XML definition.
-            type = SectionFile::XML;
+            type = SectionFile::FileType::XML;
         }
         else {
             // We need to search a bit more. First, skip UTF-8 BOM if present.
@@ -690,13 +690,13 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
             }
             // Does this look like XML now ?
             if (size > 0 && addr[0] == '<') {
-                type = SectionFile::XML;
+                type = SectionFile::FileType::XML;
             }
         }
     }
 
     // Give up if we cannot find a valid format.
-    if (type == SectionFile::UNSPECIFIED) {
+    if (type == SectionFile::FileType::UNSPECIFIED) {
         tsp->error(u"cannot find received data type, %d bytes, %s ...", {size, UString::Dump(addr, std::min<size_t>(size, 8), UString::SINGLE_LINE)});
         return;
     }

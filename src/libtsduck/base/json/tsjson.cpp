@@ -84,6 +84,48 @@ ts::json::ValuePtr ts::json::Factory(Type type, const UString& value)
 
 
 //----------------------------------------------------------------------------
+// Check if a "file name" is in fact inline JSON content.
+//----------------------------------------------------------------------------
+
+bool ts::json::IsInlineJSON(const UString& name)
+{
+    const size_t len = name.length();
+    size_t start = 0;
+    while (start < len && IsSpace(name[start])) {
+        ++start;
+    }
+    return start < len && (name[start] == '{' || name[start] == '[');
+}
+
+
+//----------------------------------------------------------------------------
+// Load a JSON value (typically an object or array) from a text file.
+//----------------------------------------------------------------------------
+
+bool ts::json::LoadFile(ValuePtr& value, const UString& filename, Report& report)
+{
+    TextParser parser(report);
+    bool ok = true;
+    if (filename.empty() || filename == u"-") {
+        ok = parser.loadStream(std::cin);
+    }
+    else if (IsInlineJSON(filename)) {
+        parser.loadDocument(filename);
+    }
+    else {
+        ok = parser.loadFile(filename);
+    }
+    return ok && Parse(value, parser, true, report);
+}
+
+bool ts::json::LoadStream(ValuePtr& value, std::istream& strm, Report& report)
+{
+    TextParser parser(report);
+    return parser.loadStream(strm) && Parse(value, parser, true, report);
+}
+
+
+//----------------------------------------------------------------------------
 // Parse a JSON value (typically an object or array).
 //----------------------------------------------------------------------------
 
@@ -97,13 +139,6 @@ bool ts::json::Parse(ValuePtr& value, const UString& text, Report& report)
 {
     TextParser parser(text, report);
     return Parse(value, parser, true, report);
-}
-
-bool ts::json::LoadFile(ValuePtr& value, const UString& filename, Report& report)
-{
-    TextParser parser(report);
-    return ((filename.empty() || filename == u"-") ? parser.loadStream(std::cin) : parser.loadFile(filename)) &&
-           Parse(value, parser, true, report);
 }
 
 bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report& report)

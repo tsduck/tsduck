@@ -133,9 +133,29 @@ namespace ts {
         //! Load a JSON value (typically an object or array) from a text file.
         //! @param [out] value A smart pointer to the parsed JSON value (null on error).
         //! @param [in] filename The name of the JSON file. If empty or "-", the standard input is used.
+        //! If @a filename starts with "{" or "[", this is considered as "inline JSON content".
+        //! The document is loaded from this string instead of reading a file.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
         TSDUCKDLL bool LoadFile(ValuePtr& value, const UString& filename, Report& report = NULLREP);
+
+        //!
+        //! Load a JSON value (typically an object or array) from an open text stream.
+        //! @param [out] value A smart pointer to the parsed JSON value (null on error).
+        //! @param [in,out] strm A standard text stream in input mode.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        TSDUCKDLL bool LoadStream(ValuePtr& value, std::istream& strm, Report& report = NULLREP);
+
+        //!
+        //! Check if a "file name" is in fact inline JSON content instead of a file name.
+        //! We currently only test if the name starts with '{' or '['. This will fail if
+        //! we port TSDuck to OpenVMS, however...
+        //! @param [in] name A file name string.
+        //! @return True if @a name contains inline JSON content, false otherwise.
+        //!
+        TSDUCKDLL bool IsInlineJSON(const UString& name);
     }
 }
