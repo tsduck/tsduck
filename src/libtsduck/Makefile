@@ -147,8 +147,8 @@ $(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(OBJS))
 
 # Installation targets.
 
-.PHONY: install install-devel
-install: $(SHARED_LIBTSDUCK)
+.PHONY: install-tools install-devel
+install-tools: $(SHARED_LIBTSDUCK)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck $(SYSROOT)$(SYSPREFIX)/share/tsduck/python/ts
 	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 ifdef MACOS
