@@ -37,7 +37,7 @@ OBJSUBDIR := objs-tsplugins
 
 include ../../Makefile.tsduck
 
-.PHONY: shlibs install install-devel
+.PHONY: shlibs install-tools install-devel
 
 ifndef STATIC
 
@@ -49,7 +49,7 @@ default: shlibs
 shlibs: $(SHLIBS)
 $(SHLIBS): $(SHARED_LIBTSDUCK)
 
-install: $(SHLIBS)
+install-tools: $(SHLIBS)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck
 	install -m 644 $(SHLIBS) $(SYSROOT)$(USRLIBDIR)/tsduck
 install-devel:
@@ -60,7 +60,7 @@ else
 # With static link, we compile only (in a specific directory), we do not build shared objects.
 default: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(TSPLUGINS)))
 	@true
-install:
+install-tools:
 	@true
 install-devel:
 	@true

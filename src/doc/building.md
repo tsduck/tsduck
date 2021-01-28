@@ -154,9 +154,9 @@ current version of TSDuck is 3.12-745.
 
 On Linux systems, there are two different packages. The package `tsduck` contains
 the tools and plugins. This is the only required package if you just need to use
-TSDuck. The package named `tsduck-devel` (or `tsduck-dev` on Ubuntu) contains the
-development environment. It is useful only for third-party applications which use
-the TSDuck library.
+TSDuck. The package named `tsduck-devel` (or `tsduck-dev` on Ubuntu and Debian)
+contains the development environment. It is useful only for third-party applications
+which use the TSDuck library.
 
 On Windows systems, there is only one binary installer which contains the tools,
 plugins, documentation and development environment. The user can select which

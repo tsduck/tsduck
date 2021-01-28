@@ -684,6 +684,10 @@ ifndef CPU_COUNT
     endif
 endif
 
+# Compute best multiprocessor make option if unspecified.
+# Warning, this must be a delayed eval ("=", not ":=").
+MAKEFLAGS_SMP = $(if $(filter -j%,$(MAKEFLAGS)),$(filter -j%,$(MAKEFLAGS)),-j$(CPU_COUNT))
+
 # Detect Cygwin platform. Impacts:
 # - The executables are started by the Windows loader which uses distinct environment
 #   variables for shared library resolution.
