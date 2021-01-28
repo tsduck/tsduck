@@ -114,6 +114,7 @@ $word.Visible = $False
 $doc = $word.Documents.Open($DocIn)
 
 # Update the document properties.
+Write-Output "New document version is $Version"
 Write-Output "Updating document fields"
 Set-CustomDocumentProperties $doc $PropVersion $Version
 Set-CustomDocumentProperties $doc $PropDate "${CurrentMonth} ${CurrentYear}"

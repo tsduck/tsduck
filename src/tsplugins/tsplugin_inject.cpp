@@ -106,7 +106,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"inject", ts::InjectPlugin);
 ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Inject tables and sections in a TS", u"[options] input-file[=rate] ..."),
     _infiles(),
-    _intype(SectionFile::UNSPECIFIED),
+    _intype(SectionFile::FileType::UNSPECIFIED),
     _sections_opt(),
     _specific_rates(false),
     _undefined_rates(false),
@@ -242,13 +242,13 @@ bool ts::InjectPlugin::start()
     _eval_interval = intValue<PacketCounter>(u"evaluate-interval", DEF_EVALUATE_INTERVAL);
 
     if (present(u"xml")) {
-        _intype = SectionFile::XML;
+        _intype = SectionFile::FileType::XML;
     }
     else if (present(u"binary")) {
-        _intype = SectionFile::BINARY;
+        _intype = SectionFile::FileType::BINARY;
     }
     else {
-        _intype = SectionFile::UNSPECIFIED;
+        _intype = SectionFile::FileType::UNSPECIFIED;
     }
 
     if (present(u"stuffing")) {

@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsxmlDocument.h"
+#include "tsxmlJSONConverter.h"
 #include "tsxmlElement.h"
 #include "tsjson.h"
 #include "tsSection.h"
@@ -111,10 +111,11 @@ namespace ts {
         //!
         //! Section file formats.
         //!
-        enum FileType {
+        enum class FileType {
             UNSPECIFIED,  //!< Unspecified, depends on file name extension.
             BINARY,       //!< Binary section file.
             XML,          //!< XML section file.
+            JSON,         //!< JSON (translated XML) section file.
         };
 
         //!
@@ -150,7 +151,7 @@ namespace ts {
         //! Otherwise, return the file type based on the file name. If the file
         //! name has no known extension, return @link UNSPECIFIED @endlink.
         //!
-        static FileType GetFileType(const UString& file_name, FileType type = UNSPECIFIED);
+        static FileType GetFileType(const UString& file_name, FileType type = FileType::UNSPECIFIED);
 
         //!
         //! Build a file name, based on a file type.
@@ -182,7 +183,7 @@ namespace ts {
         //! @param [in] type File type. If UNSPECIFIED, the file type is based on the file name.
         //! @return True on success, false on error.
         //!
-        bool load(const UString& file_name, FileType type = UNSPECIFIED);
+        bool load(const UString& file_name, FileType type = FileType::UNSPECIFIED);
 
         //!
         //! Load a binary or XML file.
@@ -191,7 +192,7 @@ namespace ts {
         //! @param [in] type File type. If UNSPECIFIED, return an error.
         //! @return True on success, false on error.
         //!
-        bool load(std::istream& strm, FileType type = UNSPECIFIED);
+        bool load(std::istream& strm, FileType type = FileType::UNSPECIFIED);
 
         //!
         //! Load an XML file.
@@ -204,7 +205,7 @@ namespace ts {
         bool loadXML(const UString& file_name);
 
         //!
-        //! Load an XML file.
+        //! Load an XML file from an open text stream.
         //! The loaded sections are added to the content of this object.
         //! @param [in,out] strm A standard text stream in input mode.
         //! @return True on success, false on error.
@@ -220,6 +221,35 @@ namespace ts {
         bool parseXML(const UString& xml_content);
 
         //!
+        //! Load a JSON file.
+        //! The JSON must have the format of a previous automated XML-to-JSON conversion.
+        //! The loaded tables are added to the content of this object.
+        //! @param [in] file_name JSON file name.
+        //! If the file name starts with "{" or "[", this is considered as "inline JSON content".
+        //! If the file name is empty or "-", the standard input is used.
+        //! @return True on success, false on error.
+        //!
+        bool loadJSON(const UString& file_name);
+
+        //!
+        //! Load a JSON file from an open text stream.
+        //! The JSON must have the format of a previous automated XML-to-JSON conversion.
+        //! The loaded sections are added to the content of this object.
+        //! @param [in,out] strm A standard text stream in input mode.
+        //! @return True on success, false on error.
+        //!
+        bool loadJSON(std::istream& strm);
+
+        //!
+        //! Parse a JSON content.
+        //! The JSON must have the format of a previous automated XML-to-JSON conversion.
+        //! The parsed tables are added to the content of this object.
+        //! @param [in] json_content JSON file content in UTF-8.
+        //! @return True on success, false on error.
+        //!
+        bool parseJSON(const UString& json_content);
+
+        //!
         //! Save an XML file.
         //! @param [in] file_name XML file name.
         //! If the file name is empty or "-", the standard output is used.
@@ -233,7 +263,7 @@ namespace ts {
         //! If the file name is empty or "-", the standard output is used.
         //! @return True on success, false on error.
         //!
-        bool saveJSON(const UString& file_name) const;
+        bool saveJSON(const UString& file_name);
 
         //!
         //! Serialize as XML text.
@@ -245,7 +275,7 @@ namespace ts {
         //! Serialize as JSON text.
         //! @return Complete JSON document text, empty on error.
         //!
-        UString toJSON() const;
+        UString toJSON();
 
         //!
         //! Load a binary section file from a stream.
@@ -455,18 +485,27 @@ namespace ts {
         static const UChar* const DEFAULT_XML_SECTION_FILE_SUFFIX;
 
         //!
+        //! Default file name suffix for JSON section files.
+        //!
+        static const UChar* const DEFAULT_JSON_SECTION_FILE_SUFFIX;
+
+        //!
         //! File name of the XML model file for tables.
         //!
         static const UChar* const XML_TABLES_MODEL;
 
     private:
-        DuckContext&           _duck;            // Reference to TSDuck execution context.
-        Report&                _report;          // Where to report errors.
-        BinaryTablePtrVector   _tables;          // Loaded tables.
-        SectionPtrVector       _sections;        // All sections from the file.
-        SectionPtrVector       _orphanSections;  // Sections which do not belong to any table.
-        xml::Tweaks            _xmlTweaks;       // XML formatting and parsing tweaks.
-        CRC32::Validation      _crc_op;          // Processing of CRC32 when loading sections.
+        DuckContext&         _duck;            // Reference to TSDuck execution context.
+        Report&              _report;          // Where to report errors.
+        BinaryTablePtrVector _tables;          // Loaded tables.
+        SectionPtrVector     _sections;        // All sections from the file.
+        SectionPtrVector     _orphanSections;  // Sections which do not belong to any table.
+        xml::JSONConverter   _model;           // XML model for tables.
+        xml::Tweaks          _xmlTweaks;       // XML formatting and parsing tweaks.
+        CRC32::Validation    _crc_op;          // Processing of CRC32 when loading sections.
+
+        // Load the XML model in this instance, if not already done.
+        bool loadThisModel();
 
         // Load/save a binary section file from a stream with specific report.
         bool loadBinary(std::istream& strm, Report& report);
@@ -485,6 +524,6 @@ namespace ts {
         void collectLastTable();
 
         // Generate a JSON document. Point to a JSON Null literal on error.
-        json::ValuePtr convertToJSON() const;
+        json::ValuePtr convertToJSON();
     };
 }

@@ -75,7 +75,7 @@ const ts::xml::Tweaks& ts::xml::Document::tweaks() const
 
 bool ts::xml::Document::IsInlineXML(const UString& name)
 {
-    return name.startWith(u"<?xml", CASE_INSENSITIVE);
+    return name.startWith(u"<?xml", CASE_INSENSITIVE, true);
 }
 
 
