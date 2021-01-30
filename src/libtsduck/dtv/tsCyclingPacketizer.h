@@ -81,7 +81,7 @@ namespace ts {
         //!
         //! Specify where stuffing applies.
         //!
-        enum StuffingPolicy {
+        enum class StuffingPolicy {
             NEVER,  //!< No stuffing, always pack sections.
             AT_END, //!< Stuffing at end of cycle, pack sections inside cycle.
             ALWAYS  //!< Always stuffing, never pack sections.
@@ -96,7 +96,7 @@ namespace ts {
         //! Useful only when using specific repetition rates for sections
         //! @param [in] report Optional address of a Report object for debug and trace messages.
         //!
-        CyclingPacketizer(const DuckContext& duck, PID pid = PID_NULL, StuffingPolicy policy = AT_END, BitRate bitrate = 0, Report* report = nullptr);
+        CyclingPacketizer(const DuckContext& duck, PID pid = PID_NULL, StuffingPolicy policy = StuffingPolicy::AT_END, BitRate bitrate = 0, Report* report = nullptr);
 
         //!
         //! Destructor

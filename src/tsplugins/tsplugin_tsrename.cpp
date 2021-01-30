@@ -113,9 +113,9 @@ ts::TSRenamePlugin::TSRenamePlugin(TSP* tsp_) :
     _add_bat(false),
     _add_nit(false),
     _demux(duck, this),
-    _pzer_pat(duck, PID_PAT, CyclingPacketizer::ALWAYS),
-    _pzer_sdt_bat(duck, PID_SDT, CyclingPacketizer::ALWAYS),
-    _pzer_nit(duck, PID_NIT, CyclingPacketizer::ALWAYS),
+    _pzer_pat(duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS),
+    _pzer_sdt_bat(duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS),
+    _pzer_nit(duck, PID_NIT, CyclingPacketizer::StuffingPolicy::ALWAYS),
     _eit_process(duck, PID_EIT)
 {
     option(u"add", 'a');

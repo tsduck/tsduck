@@ -88,7 +88,7 @@ Options::Options(int argc, char *argv[]) :
     sections_opt.defineArgs(*this);
 
     option(u"", 0, STRING);
-    help(u"",
+    help(u"", u"filename[=rate]",
          u"Input binary, XML or JSON files containing one or more sections or tables. "
          u"By default, files ending in .bin, .xml or .json are automatically recognized. "
          u"For other file names, explicitly specify --binary, --xml or --json. "

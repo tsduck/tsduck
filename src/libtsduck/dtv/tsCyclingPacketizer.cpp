@@ -403,9 +403,9 @@ void ts::CyclingPacketizer::provideSection(SectionCounter counter, SectionPtr& s
 
 bool ts::CyclingPacketizer::doStuffing()
 {
-    return _section_count == 0 ||   // no section => do stuffing
-        _stuffing == ALWAYS ||      // always do stuffing
-        (_stuffing == AT_END && _remain_in_cycle == _section_count); // At end of cycle
+    return _section_count == 0 ||  // no section => do stuffing
+           _stuffing == StuffingPolicy::ALWAYS ||  // always do stuffing
+           (_stuffing == StuffingPolicy::AT_END && _remain_in_cycle == _section_count);  // At end of cycle
 }
 
 

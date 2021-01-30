@@ -45,6 +45,9 @@
 #include "tsReportBuffer.h"
 TSDUCK_SOURCE;
 
+// To avoid long prefixes
+typedef ts::SectionFile::FileType FType;
+
 namespace {
     // Default maximum number of sections in queue.
     const size_t DEFAULT_SECTION_QUEUE_SIZE = 100;
@@ -267,7 +270,7 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
     setIntro(u"The splice commands are injected as splice information sections, as defined by "
              u"the SCTE 35 standard. All forms of splice information sections can be injected. "
              u"The sections shall be provided by some external equipment, in real time. The "
-             u"format of the section can be binary or XML. There are two possible mechanisms "
+             u"format of the section can be binary, XML or JSON. There are two possible mechanisms "
              u"to provide the sections: files or UDP.\n"
              u"\n"
              u"Files shall be specified as one single specification with optional wildcards. "
@@ -275,8 +278,8 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
              u"this directory are automatically loaded and injected. It is possible to automatically "
              u"delete all files after being loaded.\n"
              u"\n"
-             u"UDP datagrams shall contain exactly one XML document or binary sections. The "
-             u"sections are injected upon reception.");
+             u"UDP datagrams shall contain exactly one XML or JSON document or binary sections. "
+             u"The sections are injected upon reception.");
 
     option(u"buffer-size", 0, UNSIGNED);
     help(u"buffer-size",
@@ -290,10 +293,10 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
 
     option(u"files", 'f', STRING);
     help(u"files", u"'file-wildcard'",
-         u"A file specification with optional wildcards indicating which files should "
-         u"be polled. When such a file is created or updated, it is loaded and its "
-         u"content is interpreted as binary or XML tables. All tables shall be splice "
-         u"information tables.");
+         u"A file specification with optional wildcards indicating which files should be polled. "
+         u"When such a file is created or updated, it is loaded and its "
+         u"content is interpreted as binary, XML or JSON tables. "
+         u"All tables shall be splice information tables.");
 
     option(u"inject-count", 0, UNSIGNED);
     help(u"inject-count",
@@ -667,15 +670,19 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
     assert(addr != nullptr);
 
     // Try to determine the file type, binary or XML.
-    SectionFile::FileType type = SectionFile::FileType::UNSPECIFIED;
+    FType type = FType::UNSPECIFIED;
     if (size > 0) {
         if (addr[0] == TID_SCTE35_SIT) {
             // First byte is the table id of a splice information table.
-            type = SectionFile::FileType::BINARY;
+            type = FType::BINARY;
         }
         else if (addr[0] == '<') {
             // Typically the start of an XML definition.
-            type = SectionFile::FileType::XML;
+            type = FType::XML;
+        }
+        else if (addr[0] == '{' || addr[0] == '[') {
+            // Typically the start of a JSON definition.
+            type = FType::JSON;
         }
         else {
             // We need to search a bit more. First, skip UTF-8 BOM if present.
@@ -688,15 +695,20 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
                 addr++;
                 size--;
             }
-            // Does this look like XML now ?
-            if (size > 0 && addr[0] == '<') {
-                type = SectionFile::FileType::XML;
+            // Does this look like XML or JSON now ?
+            if (size > 0) {
+                if (addr[0] == '<') {
+                    type = FType::XML;
+                }
+                else if (addr[0] == '{' || addr[0] == '[') {
+                    type = FType::JSON;
+                }
             }
         }
     }
 
     // Give up if we cannot find a valid format.
-    if (type == SectionFile::FileType::UNSPECIFIED) {
+    if (type == FType::UNSPECIFIED) {
         tsp->error(u"cannot find received data type, %d bytes, %s ...", {size, UString::Dump(addr, std::min<size_t>(size, 8), UString::SINGLE_LINE)});
         return;
     }
@@ -705,7 +717,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
     std::istringstream strm(std::string(reinterpret_cast<const char*>(addr), size));
     tsp->debug(u"parsing section:\n%s", {UString::Dump(addr, size, UString::HEXA | UString::ASCII, 4)});
 
-    // Analyze the message as a binary or XML section file.
+    // Analyze the message as a binary, XML or JSON section file.
     SectionFile secFile(duck);
     if (!secFile.load(strm, type)) {
         // Error loading sections, error message already reported.
