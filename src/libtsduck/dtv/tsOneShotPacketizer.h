@@ -66,7 +66,7 @@ namespace ts {
         //!
         void setStuffingPolicy(bool do_stuffing)
         {
-            CyclingPacketizer::setStuffingPolicy(do_stuffing ? ALWAYS : AT_END);
+            CyclingPacketizer::setStuffingPolicy(do_stuffing ? StuffingPolicy::ALWAYS : StuffingPolicy::AT_END);
         }
 
         //!

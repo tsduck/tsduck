@@ -36,7 +36,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::OneShotPacketizer::OneShotPacketizer(const DuckContext& duck, PID pid, bool do_stuffing, BitRate bitrate) :
-    CyclingPacketizer(duck, pid, do_stuffing ? ALWAYS : AT_END, bitrate)
+    CyclingPacketizer(duck, pid, do_stuffing ? StuffingPolicy::ALWAYS : StuffingPolicy::AT_END, bitrate)
 {
 }
 

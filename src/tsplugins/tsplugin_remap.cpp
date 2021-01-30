@@ -167,7 +167,7 @@ ts::RemapPlugin::CyclingPacketizerPtr ts::RemapPlugin::getPacketizer(PID pid, bo
         return it->second;
     }
     else if (create) {
-        const CyclingPacketizerPtr ptr(new CyclingPacketizer(duck, pid, CyclingPacketizer::ALWAYS));
+        const CyclingPacketizerPtr ptr(new CyclingPacketizer(duck, pid, CyclingPacketizer::StuffingPolicy::ALWAYS));
         _pzer.insert(std::make_pair(pid, ptr));
         return ptr;
     }

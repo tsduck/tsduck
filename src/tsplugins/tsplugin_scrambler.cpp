@@ -473,7 +473,7 @@ bool ts::ScramblerPlugin::start()
     // The PMT will be modified, initialize the PMT packetizer.
     // Note that even without ECMG we may need to add a scrambling_descriptor in the PMT.
     _pzer_pmt.reset();
-    _pzer_pmt.setStuffingPolicy(CyclingPacketizer::ALWAYS);
+    _pzer_pmt.setStuffingPolicy(CyclingPacketizer::StuffingPolicy::ALWAYS);
 
     // Initialize the list of used pids. Preset reserved PIDs.
     _input_pids.reset();

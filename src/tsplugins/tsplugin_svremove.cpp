@@ -116,9 +116,9 @@ ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
     _drop_pids(),
     _ref_pids(),
     _demux(duck, this),
-    _pzer_pat(duck, PID_PAT, CyclingPacketizer::ALWAYS),
-    _pzer_sdt_bat(duck, PID_SDT, CyclingPacketizer::ALWAYS),
-    _pzer_nit(duck, PID_NIT, CyclingPacketizer::ALWAYS),
+    _pzer_pat(duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS),
+    _pzer_sdt_bat(duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS),
+    _pzer_nit(duck, PID_NIT, CyclingPacketizer::StuffingPolicy::ALWAYS),
     _eit_process(duck, PID_EIT)
 {
     // We need to define character sets to specify service names.
