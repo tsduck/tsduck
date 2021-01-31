@@ -28,7 +28,9 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Windows implementation of the ts::TunerDevice class.
+//!  Digital TV tuner physical device.
+//!  One version of this class exists for each operating system.
+//   ==> Windows implementation.
 //!
 //----------------------------------------------------------------------------
 
@@ -42,7 +44,8 @@
 
 namespace ts {
     //!
-    //! Windows implementation of the ts::TunerDevice class.
+    //! Digital TV tuner physical device.
+    //! One version of this class exists for each operating system.
     //! @ingroup hardware
     //!
     class TSDUCKDLL TunerDevice: public TunerBase

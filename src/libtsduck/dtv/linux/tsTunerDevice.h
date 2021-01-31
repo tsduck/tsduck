@@ -28,7 +28,9 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Linux implementation of the ts::TunerDevice class.
+//!  Digital TV tuner physical device.
+//!  One version of this class exists for each operating system.
+//   ==> Linux implementation.
 //!
 //----------------------------------------------------------------------------
 
@@ -42,7 +44,8 @@
 
 namespace ts {
     //!
-    //! Linux implementation of the ts::TunerDevice class.
+    //! Digital TV tuner physical device.
+    //! One version of this class exists for each operating system.
     //! @ingroup hardware
     //!
     class TSDUCKDLL TunerDevice: public TunerBase

@@ -28,8 +28,9 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  MacOS implementation of the ts::TunerDevice class.
-//!  WARNING: MacOS support is currently not implemented.
+//!  Digital TV tuner physical device.
+//!  One version of this class exists for each operating system.
+//   ==> macOS version => tuners are not implemented on macOS
 //!
 //----------------------------------------------------------------------------
 
@@ -38,8 +39,8 @@
 
 namespace ts {
     //!
-    //! MacOS implementation of the ts::TunerDevice class.
-    //! WARNING: MacOS support is currently not implemented.
+    //! Digital TV tuner physical device.
+    //! One version of this class exists for each operating system.
     //!
     typedef TunerBase TunerDevice;
 }
