@@ -32,7 +32,6 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTunerDevice.h"
-#include "tsTuner.h"
 #include "tsDuckContext.h"
 #include "tsHFBand.h"
 #include "tsTime.h"
@@ -141,16 +140,6 @@ namespace {
     {
         return ::ioctl(fd, ts::ioctl_request_t(FE_DISEQC_SEND_BURST), burst);
     }
-}
-
-
-//-----------------------------------------------------------------------------
-// Linux implementation of services from ts::Tuner.
-//-----------------------------------------------------------------------------
-
-ts::TunerBase* ts::Tuner::allocateDevice()
-{
-    return new TunerDevice(_duck);
 }
 
 

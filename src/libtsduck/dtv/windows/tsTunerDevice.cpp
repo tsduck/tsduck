@@ -32,7 +32,6 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTunerDevice.h"
-#include "tsTuner.h"
 #include "tsTSPacket.h"
 #include "tsTime.h"
 #include "tsNullReport.h"
@@ -68,16 +67,6 @@ ts::TunerDevice::TunerDevice(DuckContext& duck) :
 
 ts::TunerDevice::~TunerDevice()
 {
-}
-
-
-//-----------------------------------------------------------------------------
-// Windows implementation of services from ts::Tuner.
-//-----------------------------------------------------------------------------
-
-ts::TunerBase* ts::Tuner::allocateDevice()
-{
-    return new TunerDevice(_duck);
 }
 
 
