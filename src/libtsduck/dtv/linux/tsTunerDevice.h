@@ -40,15 +40,12 @@
 #include "tsReport.h"
 
 namespace ts {
+
     //!
     //! General-purpose implementation of a digital TV tuner.
     //! @ingroup hardware
     //!
-    //! This class encapsulates physical tuners and file-based tuner emulators.
-    //! When a "tuner name" is an XML file (a file path ending in ".xml"), the
-    //! tuner emulator is used. Otherwise, a physical tuner is used.
-    //!
-    //! The syntax of a physical tuner "device name" depends on the operating system.
+    //! The syntax of a tuner "device name" depends on the operating system.
     //!
     //! Linux:
     //! - Syntax: /dev/dvb/adapterA[:F[:M[:V]]]
@@ -65,9 +62,9 @@ namespace ts {
         TS_NOBUILD_NOCOPY(Tuner);
     public:
         //!
-        //! Get the list of all existing physical tuners.
+        //! Get the list of all existing DVB tuners.
         //! @param [in,out] duck TSDuck execution context.
-        //! @param [out] tuners Returned list of physical tuners on the system.
+        //! @param [out] tuners Returned list of DVB tuners on the system.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
@@ -87,8 +84,8 @@ namespace ts {
         //!
         //! Constructor and open device name.
         //! @param [in,out] duck TSDuck execution context.
-        //! @param [in] device_name Tuner device name. If teh name is empty, use the "first" or "default" tuner.
-        //! If the name is a file path ending in ".xml", a tuner emulator is used.
+        //! @param [in] device_name Tuner device name.
+        //! If name is empty, use "first" or "default" tuner.
         //! @param [in] info_only If true, we will only fetch the properties of
         //! the tuner, we won't use it to receive streams. Thus, it is possible
         //! to open tuners which are already used to actually receive a stream.
@@ -96,15 +93,15 @@ namespace ts {
         //!
         Tuner(DuckContext& duck, const UString& device_name, bool info_only, Report& report);
 
-        // Implementation of TunerBase.
+        // Inherited methods.
         virtual bool open(const UString& device_name, bool info_only, Report& report) override;
         virtual bool close(Report& report) override;
-        virtual bool isOpen() const override;
-        virtual bool infoOnly() const override;
-        virtual const DeliverySystemSet& deliverySystems() const override;
-        virtual UString deviceName() const override;
-        virtual UString deviceInfo() const override;
-        virtual UString devicePath() const override;
+        virtual bool isOpen() const { return _is_open; }
+        virtual bool infoOnly() const { return _info_only; }
+        virtual const DeliverySystemSet& deliverySystems() const { return _delivery_systems; }
+        virtual UString deviceName() const { return _device_name; }
+        virtual UString deviceInfo() const { return _device_info; }
+        virtual UString devicePath() const { return _device_path; }
         virtual bool signalLocked(Report& report) override;
         virtual int signalStrength(Report& report) override;
         virtual int signalQuality(Report& report) override;
@@ -117,7 +114,7 @@ namespace ts {
         virtual void setSignalTimeout(MilliSecond t) override;
         virtual void setSignalTimeoutSilent(bool silent) override;
         virtual bool setReceiveTimeout(MilliSecond t, Report& report) override;
-        virtual MilliSecond receiveTimeout() const override;
+        virtual MilliSecond receiveTimeout() const { return _receive_timeout; }
         virtual void setSignalPoll(MilliSecond t) override;
         virtual void setDemuxBufferSize(size_t s) override;
         virtual void setSinkQueueSize(size_t s) override;
@@ -127,9 +124,20 @@ namespace ts {
     private:
         TunerBase* _device;    // Physical tuner device.
         TunerBase* _emulator;  // File-based tuner emulator.
-        TunerBase* _current;   // Current tuner.
 
         // Allocate a physical tuner (depend on implementations).
         TunerBase* allocateDevice();
+
+        // Private members.
+        bool              _is_open;
+        bool              _info_only;
+        UString           _device_name;    // Used to open the tuner
+        UString           _device_info;    // Device-specific, can be empty
+        UString           _device_path;    // System-specific device path.
+        MilliSecond       _signal_timeout;
+        bool              _signal_timeout_silent;
+        MilliSecond       _receive_timeout;
+        DeliverySystemSet _delivery_systems;
+        Guts*             _guts;           // System-specific data
     };
 }

@@ -28,34 +28,25 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTuner.h"
+#include "tsTunerEmulator.h"
 #include "tsNullReport.h"
 #include "tsDuckContext.h"
 TSDUCK_SOURCE;
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-constexpr ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_TIMEOUT;
-#endif
-
 
 //-----------------------------------------------------------------------------
-// Constructors
+// Constructors and destructors.
+// The physical tuner device object is always allocated.
+// The tuner emulator is allocated on demand.
 //-----------------------------------------------------------------------------
 
 ts::Tuner::Tuner(DuckContext& duck) :
-    _duck(duck),
-    _is_open(false),
-    _info_only(true),
-    _device_name(),
-    _device_info(),
-    _device_path(),
-    _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
-    _signal_timeout_silent(false),
-    _receive_timeout(0),
-    _delivery_systems(),
-    _guts(nullptr)
+    TunerBase(duck),
+    _device(allocateDevice()),
+    _emulator(nullptr),
+    _current(_device)
 {
-    allocateGuts();
-    CheckNonNull(_guts);
+    CheckNonNull(_device);
 }
 
 ts::Tuner::Tuner(DuckContext& duck, const UString& device_name, bool info_only, Report& report) :
@@ -64,82 +55,198 @@ ts::Tuner::Tuner(DuckContext& duck, const UString& device_name, bool info_only, 
     this->open(device_name, info_only, report);
 }
 
-
-//-----------------------------------------------------------------------------
-// Destructor
-//-----------------------------------------------------------------------------
-
 ts::Tuner::~Tuner()
 {
-    if (_guts != nullptr) {
-        close(NULLREP);
-        deleteGuts();
-        _guts = nullptr;
+    if (_device != nullptr) {
+        _device->close(NULLREP);
+        delete _device;
+        _device = nullptr;
+    }
+    if (_emulator != nullptr) {
+        _emulator->close(NULLREP);
+        delete _emulator;
+        _emulator = nullptr;
+    }
+    _current = nullptr;
+}
+
+
+//-----------------------------------------------------------------------------
+// Open the tuner, switch to physical or emulated tuner.
+//-----------------------------------------------------------------------------
+
+bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
+{
+    if (_current->isOpen()) {
+        report.error(u"internal error, tuner already open");
+        return false;
+    }
+    else if (device_name.endWith(u".xml", CASE_INSENSITIVE)) {
+        // The device name is an XML file, create a tuner emulator.
+        assert(_emulator == nullptr);
+        _current = _emulator = new TunerEmulator(_duck);
+        CheckNonNull(_emulator);
+        if (_emulator->open(device_name, info_only, report)) {
+            return true;
+        }
+        else {
+            delete _emulator;
+            _emulator = nullptr;
+            _current = _device;
+            return false;
+        }
+    }
+    else {
+        // Assume a physical device.
+        _current = _device;
+        return _device->open(device_name, info_only, report);
     }
 }
 
 
 //-----------------------------------------------------------------------------
-// Set portable timeout properties.
+// Close the tuner, reset to physical tuner (in closed state).
 //-----------------------------------------------------------------------------
+
+bool ts::Tuner::close(Report& report)
+{
+    if (_emulator != nullptr) {
+        // Close and deallocate the terminal emulator.
+        const bool status = _emulator->close(report);
+        delete _emulator;
+        _emulator = nullptr;
+        // Switch back to physical tuner device.
+        _current = _device;
+        return status;
+    }
+    else {
+        // Close the physical tuner and keep the allocated object.
+        return _device->close(report);
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+// All other calls are redirected to the tuner emulator if allocated and
+// to the physical tuner device otherwise.
+//-----------------------------------------------------------------------------
+
+bool ts::Tuner::isOpen() const
+{
+    return _current->isOpen();
+}
+
+bool ts::Tuner::infoOnly() const
+{
+    return _current->infoOnly();
+}
+
+const ts::DeliverySystemSet& ts::Tuner::deliverySystems() const
+{
+    return _current->deliverySystems();
+}
+
+ts::UString ts::Tuner::deviceName() const
+{
+    return _current->deviceName();
+}
+
+ts::UString ts::Tuner::deviceInfo() const
+{
+    return _current->deviceInfo();
+}
+
+ts::UString ts::Tuner::devicePath() const
+{
+    return _current->devicePath();
+}
+
+bool ts::Tuner::signalLocked(Report& report)
+{
+    return _current->signalLocked(report);
+}
+
+int ts::Tuner::signalStrength(Report& report)
+{
+    return _current->signalStrength(report);
+}
+
+int ts::Tuner::signalQuality(Report& report)
+{
+    return _current->signalQuality(report);
+}
+
+bool ts::Tuner::tune(ModulationArgs& params, Report& report)
+{
+    return _current->tune(params, report);
+}
+
+bool ts::Tuner::start(Report& report)
+{
+    return _current->start(report);
+}
+
+bool ts::Tuner::stop(Report& report)
+{
+    return _current->stop(report);
+}
+
+void ts::Tuner::abort()
+{
+    _current->abort();
+}
+
+size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report)
+{
+    return _current->receive(buffer, max_packets, abort, report);
+}
+
+bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report)
+{
+    return _current->getCurrentTuning(params, reset_unknown, report);
+}
 
 void ts::Tuner::setSignalTimeout(MilliSecond t)
 {
-    _signal_timeout = t;
+    return _current->setSignalTimeout(t);
 }
 
 void ts::Tuner::setSignalTimeoutSilent(bool silent)
 {
-    _signal_timeout_silent = silent;
+    return _current->setSignalTimeoutSilent(silent);
 }
 
-
-//-----------------------------------------------------------------------------
-// Check the consistency of tune() parameters from in_params.
-//-----------------------------------------------------------------------------
-
-bool ts::Tuner::checkTuneParameters(ModulationArgs& params, Report& report) const
+bool ts::Tuner::setReceiveTimeout(MilliSecond t, Report& report)
 {
-    // Cannot tune if the device is not open.
-    if (!_is_open) {
-        report.error(u"tuner not open");
-        return false;
-    }
+    return _current->setReceiveTimeout(t, report);
+}
 
-    // Get default (preferred) delivery system from tuner when needed.
-    if (params.delivery_system.value(DS_UNDEFINED) == DS_UNDEFINED) {
-        params.delivery_system = _delivery_systems.preferred();
-        if (params.delivery_system == DS_UNDEFINED) {
-            report.error(u"no tuning delivery system specified");
-            return false;
-        }
-        else if (_delivery_systems.size() > 1) {
-            report.verbose(u"using default deliver system %s", {DeliverySystemEnum.name(params.delivery_system.value())});
-        }
-    }
+ts::MilliSecond ts::Tuner::receiveTimeout() const
+{
+    return _current->receiveTimeout();
+}
 
-    // Check if the delivery system is supported by this tuner.
-    if (!_delivery_systems.contains(params.delivery_system.value())) {
-        report.error(u"deliver system %s not supported on tuner %s", {DeliverySystemEnum.name(params.delivery_system.value()), _device_name});
-        return false;
-    }
+void ts::Tuner::setSignalPoll(MilliSecond t)
+{
+    return _current->setSignalPoll(t);
+}
 
-    // Set all unset tuning parameters to their default value.
-    params.setDefaultValues();
+void ts::Tuner::setDemuxBufferSize(size_t s)
+{
+    return _current->setDemuxBufferSize(s);
+}
 
-    // Add the tuner's standards to the execution context.
-    _duck.addStandards(StandardsOf(params.delivery_system.value()));
+void ts::Tuner::setSinkQueueSize(size_t s)
+{
+    return _current->setSinkQueueSize(s);
+}
 
-    // Check if all specified values are supported on the operating system.
-    return
-        CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, report) &&
-        CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, report) &&
-        CheckModVar(params.modulation, u"modulation", ModulationEnum, report) &&
-        CheckModVar(params.fec_hp, u"FEC", InnerFECEnum, report) &&
-        CheckModVar(params.fec_lp, u"FEC", InnerFECEnum, report) &&
-        CheckModVar(params.transmission_mode, u"transmission mode", TransmissionModeEnum, report) &&
-        CheckModVar(params.guard_interval, u"guard interval", GuardIntervalEnum, report) &&
-        CheckModVar(params.hierarchy, u"hierarchy", HierarchyEnum, report) &&
-        CheckModVar(params.pilots, u"pilots", PilotEnum, report) &&
-        CheckModVar(params.roll_off, u"roll-off factor", RollOffEnum, report);
+void ts::Tuner::setReceiverFilterName(const UString& name)
+{
+    return _current->setReceiverFilterName(name);
+}
+
+std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended)
+{
+    return _current->displayStatus(strm, margin, report, extended);
 }
