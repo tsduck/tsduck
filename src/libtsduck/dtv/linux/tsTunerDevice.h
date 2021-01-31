@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Digital TV tuner.
+//!  Linux implementation of the ts::TunerDevice class.
 //!
 //----------------------------------------------------------------------------
 
@@ -38,70 +38,38 @@
 #include "tsAbortInterface.h"
 #include "tsSafePtr.h"
 #include "tsReport.h"
+#include "tsDTVProperties.h"
 
 namespace ts {
 
     //!
-    //! General-purpose implementation of a digital TV tuner.
+    //! Linux implementation of the ts::TunerDevice class.
     //! @ingroup hardware
     //!
-    //! The syntax of a tuner "device name" depends on the operating system.
-    //!
-    //! Linux:
-    //! - Syntax: /dev/dvb/adapterA[:F[:M[:V]]]
-    //! - A = adapter number
-    //! - F = frontend number (default: 0)
-    //! - M = demux number (default: 0)
-    //! - V = dvr number (default: 0)
-    //!
-    //! Windows:
-    //! - DirectShow/BDA tuner filter name
-    //!
-    class TSDUCKDLL Tuner: public TunerBase
+    class TSDUCKDLL TunerDevice: public TunerBase
     {
-        TS_NOBUILD_NOCOPY(Tuner);
+        TS_NOBUILD_NOCOPY(TunerDevice);
     public:
-        //!
-        //! Get the list of all existing DVB tuners.
-        //! @param [in,out] duck TSDuck execution context.
-        //! @param [out] tuners Returned list of DVB tuners on the system.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
-        //!
-        static bool GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report);
-
         //!
         //! Constructor.
         //! @param [in,out] duck TSDuck execution context.
         //!
-        Tuner(DuckContext& duck);
+        TunerDevice(DuckContext& duck);
 
         //!
         //! Destructor.
         //!
-        ~Tuner();
+        ~TunerDevice();
 
-        //!
-        //! Constructor and open device name.
-        //! @param [in,out] duck TSDuck execution context.
-        //! @param [in] device_name Tuner device name.
-        //! If name is empty, use "first" or "default" tuner.
-        //! @param [in] info_only If true, we will only fetch the properties of
-        //! the tuner, we won't use it to receive streams. Thus, it is possible
-        //! to open tuners which are already used to actually receive a stream.
-        //! @param [in,out] report Where to report errors.
-        //!
-        Tuner(DuckContext& duck, const UString& device_name, bool info_only, Report& report);
-
-        // Inherited methods.
+        // Implementation of TunerBase.
         virtual bool open(const UString& device_name, bool info_only, Report& report) override;
         virtual bool close(Report& report) override;
-        virtual bool isOpen() const { return _is_open; }
-        virtual bool infoOnly() const { return _info_only; }
-        virtual const DeliverySystemSet& deliverySystems() const { return _delivery_systems; }
-        virtual UString deviceName() const { return _device_name; }
-        virtual UString deviceInfo() const { return _device_info; }
-        virtual UString devicePath() const { return _device_path; }
+        virtual bool isOpen() const override;
+        virtual bool infoOnly() const override;
+        virtual const DeliverySystemSet& deliverySystems() const override;
+        virtual UString deviceName() const override;
+        virtual UString deviceInfo() const override;
+        virtual UString devicePath() const override;
         virtual bool signalLocked(Report& report) override;
         virtual int signalStrength(Report& report) override;
         virtual int signalQuality(Report& report) override;
@@ -114,30 +82,52 @@ namespace ts {
         virtual void setSignalTimeout(MilliSecond t) override;
         virtual void setSignalTimeoutSilent(bool silent) override;
         virtual bool setReceiveTimeout(MilliSecond t, Report& report) override;
-        virtual MilliSecond receiveTimeout() const { return _receive_timeout; }
+        virtual MilliSecond receiveTimeout() const override;
         virtual void setSignalPoll(MilliSecond t) override;
         virtual void setDemuxBufferSize(size_t s) override;
-        virtual void setSinkQueueSize(size_t s) override;
-        virtual void setReceiverFilterName(const UString& name) override;
         virtual std::ostream& displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended = false) override;
 
     private:
-        TunerBase* _device;    // Physical tuner device.
-        TunerBase* _emulator;  // File-based tuner emulator.
+        bool                _is_open;
+        bool                _info_only;
+        UString             _device_name;      // Used to open the tuner
+        UString             _device_info;      // Device-specific, can be empty
+        UString             _device_path;      // System-specific device path.
+        MilliSecond         _signal_timeout;
+        bool                _signal_timeout_silent;
+        MilliSecond         _receive_timeout;
+        DeliverySystemSet   _delivery_systems;
+        volatile bool       _reading_dvr;      // Read operation in progree on dvr.
+        volatile bool       _aborted;          // Tuner operation was aborted
+        UString             _frontend_name;    // Frontend device name
+        UString             _demux_name;       // Demux device name
+        UString             _dvr_name;         // DVR device name
+        int                 _frontend_fd;      // Frontend device file descriptor
+        int                 _demux_fd;         // Demux device file descriptor
+        int                 _dvr_fd;           // DVR device file descriptor
+        unsigned long       _demux_bufsize;    // Demux device buffer size
+        ::dvb_frontend_info _fe_info;          // Front-end characteristics
+        MilliSecond         _signal_poll;
+        int                 _rt_signal;        // Receive timeout signal number
+        ::timer_t           _rt_timer;         // Receive timeout timer
+        bool                _rt_timer_valid;   // Receive timeout timer was created
 
-        // Allocate a physical tuner (depend on implementations).
-        TunerBase* allocateDevice();
+        // Clear tuner, return true on success, false on error
+        bool dtvClear(Report&);
 
-        // Private members.
-        bool              _is_open;
-        bool              _info_only;
-        UString           _device_name;    // Used to open the tuner
-        UString           _device_info;    // Device-specific, can be empty
-        UString           _device_path;    // System-specific device path.
-        MilliSecond       _signal_timeout;
-        bool              _signal_timeout_silent;
-        MilliSecond       _receive_timeout;
-        DeliverySystemSet _delivery_systems;
-        Guts*             _guts;           // System-specific data
+        // Perform a tune operation.
+        bool dtvTune(DTVProperties&, Report&);
+
+        // Discard all pending frontend events
+        void discardFrontendEvents(Report&);
+
+        // Get frontend status, encapsulate weird error management.
+        bool getFrontendStatus(::fe_status_t&, Report&);
+
+        // Hard close of the tuner, report can be null.
+        void hardClose(Report*);
+
+        // Setup the dish for satellite tuners.
+        bool dishControl(const ModulationArgs&, const LNB::Transposition&, Report&);
     };
 }

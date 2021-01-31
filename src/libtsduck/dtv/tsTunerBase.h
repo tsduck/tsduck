@@ -81,6 +81,15 @@ namespace ts {
     {
     public:
         //!
+        //! Get the list of all existing physical tuners.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [out] tuners Returned list of physical tuners on the system.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        static bool GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report);
+
+        //!
         //! Constructor.
         //! @param [in,out] duck TSDuck execution context.
         //!
