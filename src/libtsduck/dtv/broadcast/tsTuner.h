@@ -119,8 +119,5 @@ namespace ts {
         TunerBase* _device;    // Physical tuner device.
         TunerBase* _emulator;  // File-based tuner emulator.
         TunerBase* _current;   // Current tuner.
-
-        // Allocate a physical tuner (depend on implementations).
-        TunerBase* allocateDevice();
     };
 }

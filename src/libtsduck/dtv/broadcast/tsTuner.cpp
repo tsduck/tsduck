@@ -28,6 +28,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTuner.h"
+#include "tsTunerDevice.h"
 #include "tsTunerEmulator.h"
 #include "tsNullReport.h"
 #include "tsDuckContext.h"
@@ -37,12 +38,12 @@ TSDUCK_SOURCE;
 //-----------------------------------------------------------------------------
 // Constructors and destructors.
 // The physical tuner device object is always allocated.
-// The tuner emulator is allocated on demand.
+// The tuner emulator is allocated on demand and used only when open.
 //-----------------------------------------------------------------------------
 
 ts::Tuner::Tuner(DuckContext& duck) :
     TunerBase(duck),
-    _device(allocateDevice()),
+    _device(new TunerDevice(duck)),
     _emulator(nullptr),
     _current(_device)
 {
@@ -83,15 +84,18 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
     }
     else if (device_name.endWith(u".xml", CASE_INSENSITIVE)) {
         // The device name is an XML file, create a tuner emulator.
-        assert(_emulator == nullptr);
-        _current = _emulator = new TunerEmulator(_duck);
-        CheckNonNull(_emulator);
+        if (_emulator == nullptr) {
+            // First time we use an emulator, allocate one.
+            _emulator = new TunerEmulator(_duck);
+            CheckNonNull(_emulator);
+        }
         if (_emulator->open(device_name, info_only, report)) {
+            // Use the emulator as current device only when successfully used.
+            _current = _emulator;
             return true;
         }
         else {
-            delete _emulator;
-            _emulator = nullptr;
+            // In case of failure, switch back to closed tuner device.
             _current = _device;
             return false;
         }
@@ -110,19 +114,12 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 
 bool ts::Tuner::close(Report& report)
 {
-    if (_emulator != nullptr) {
-        // Close and deallocate the terminal emulator.
-        const bool status = _emulator->close(report);
-        delete _emulator;
-        _emulator = nullptr;
-        // Switch back to physical tuner device.
-        _current = _device;
-        return status;
-    }
-    else {
-        // Close the physical tuner and keep the allocated object.
-        return _device->close(report);
-    }
+    // Close the current tuner, whichever it is.
+    const bool status = _current->close(report);
+
+    // Switch back to (closed) physical tuner device.
+    _current = _device;
+    return status;
 }
 
 

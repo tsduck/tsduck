@@ -28,18 +28,12 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTunerDevice.h"
-#include "tsTuner.h"
 TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------
-// MacOS implementation of services from ts::Tuner and ts::TunerBase.
+// MacOS implementation of services from ts::TunerBase.
 //-----------------------------------------------------------------------------
-
-ts::TunerBase* ts::Tuner::allocateDevice()
-{
-    return new TunerDevice(_duck);
-}
 
 bool ts::TunerBase::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report)
 {
