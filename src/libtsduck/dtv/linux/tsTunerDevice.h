@@ -41,7 +41,6 @@
 #include "tsDTVProperties.h"
 
 namespace ts {
-
     //!
     //! Linux implementation of the ts::TunerDevice class.
     //! @ingroup hardware
