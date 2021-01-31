@@ -122,7 +122,7 @@ Options::Options(int argc, char *argv[]) :
 //----------------------------------------------------------------------------
 
 namespace {
-    void ListTuner(ts::DuckContext& duck, ts::Tuner& tuner, int tuner_index, Options& opt)
+    void ListTuner(ts::DuckContext& duck, ts::TunerBase& tuner, int tuner_index, Options& opt)
     {
         // If not opened, nothing to display.
         if (!tuner.isOpen()) {

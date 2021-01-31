@@ -161,7 +161,7 @@ void ts::Tuner::deleteGuts()
 
 
 //-----------------------------------------------------------------------------
-// Set the poll interval for signal timeout.
+// Set the Linux-specific parameters.
 //-----------------------------------------------------------------------------
 
 void ts::Tuner::setSignalPoll(MilliSecond t)
@@ -169,14 +169,22 @@ void ts::Tuner::setSignalPoll(MilliSecond t)
     _guts->signal_poll = t;
 }
 
-
-//-----------------------------------------------------------------------------
-// Set the demux buffer size in bytes.
-//-----------------------------------------------------------------------------
-
 void ts::Tuner::setDemuxBufferSize(size_t s)
 {
     _guts->demux_bufsize = s;
+}
+
+
+//-----------------------------------------------------------------------------
+// Set the Windows-specific parameters.
+//-----------------------------------------------------------------------------
+
+void ts::Tuner::setSinkQueueSize(size_t)
+{
+}
+
+void ts::Tuner::setReceiverFilterName(const UString&)
+{
 }
 
 

@@ -26,84 +26,23 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//
-// MacOS implementation of the ts::Tuner class.
-//
-// WARNING: MacOS support is currently not implemented.
-// All methods return errors.
-//
-//-----------------------------------------------------------------------------
 
+#include "tsTunerDevice.h"
 #include "tsTuner.h"
 TSDUCK_SOURCE;
 
-#define ERROR(ret) report.error(u"Digital tuners are not implemented on macOS"); return (ret)
 
-// There is nothing in system guts but we need to allocate something.
-class ts::Tuner::Guts
-{
-};
+//-----------------------------------------------------------------------------
+// MacOS implementation of services from ts::Tuner.
+//-----------------------------------------------------------------------------
 
-void ts::Tuner::allocateGuts()
+ts::TunerBase* ts::Tuner::allocateDevice()
 {
-    _guts = new Guts;
+    return new TunerDevice(_duck);
 }
-void ts::Tuner::deleteGuts()
-{
-    delete _guts;
-}
+
 bool ts::Tuner::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report)
 {
-    ERROR(false);
-}
-bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
-{
-    ERROR(false);
-}
-bool ts::Tuner::close(Report& report)
-{
-    ERROR(false);
-}
-bool ts::Tuner::signalLocked(Report& report)
-{
-    ERROR(false);
-}
-int ts::Tuner::signalStrength(Report& report)
-{
-    ERROR(-1);
-}
-int ts::Tuner::signalQuality(Report& report)
-{
-    ERROR(-1);
-}
-bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report)
-{
-    ERROR(false);
-}
-bool ts::Tuner::tune(ModulationArgs& params, Report& report)
-{
-    ERROR(false);
-}
-bool ts::Tuner::start(Report& report)
-{
-    ERROR(false);
-}
-bool ts::Tuner::stop(Report& report)
-{
-    ERROR(false);
-}
-void ts::Tuner::abort()
-{
-}
-bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
-{
-    ERROR(false);
-}
-size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report)
-{
-    ERROR(false);
-}
-std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended)
-{
-    ERROR(strm);
+    report.error(u"Digital tuners are not implemented on macOS");
+    return false;
 }
