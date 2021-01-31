@@ -33,7 +33,7 @@ TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------
-// MacOS implementation of services from ts::Tuner.
+// MacOS implementation of services from ts::Tuner and ts::TunerBase.
 //-----------------------------------------------------------------------------
 
 ts::TunerBase* ts::Tuner::allocateDevice()
@@ -41,7 +41,7 @@ ts::TunerBase* ts::Tuner::allocateDevice()
     return new TunerDevice(_duck);
 }
 
-bool ts::Tuner::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report)
+bool ts::TunerBase::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report)
 {
     report.error(u"Digital tuners are not implemented on macOS");
     return false;

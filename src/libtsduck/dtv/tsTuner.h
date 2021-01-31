@@ -65,15 +65,6 @@ namespace ts {
         TS_NOBUILD_NOCOPY(Tuner);
     public:
         //!
-        //! Get the list of all existing physical tuners.
-        //! @param [in,out] duck TSDuck execution context.
-        //! @param [out] tuners Returned list of physical tuners on the system.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
-        //!
-        static bool GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report);
-
-        //!
         //! Constructor.
         //! @param [in,out] duck TSDuck execution context.
         //!
@@ -87,7 +78,7 @@ namespace ts {
         //!
         //! Constructor and open device name.
         //! @param [in,out] duck TSDuck execution context.
-        //! @param [in] device_name Tuner device name. If teh name is empty, use the "first" or "default" tuner.
+        //! @param [in] device_name Tuner device name. If the name is empty, use the "first" or "default" tuner.
         //! If the name is a file path ending in ".xml", a tuner emulator is used.
         //! @param [in] info_only If true, we will only fetch the properties of
         //! the tuner, we won't use it to receive streams. Thus, it is possible
