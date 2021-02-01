@@ -45,7 +45,34 @@ namespace ts {
     //! Digital TV tuner emulator.
     //! @ingroup hardware
     //!
-    //! @@ TO BE COMPLETED @@
+    //! A tuner emulator implements the TunerBase interface without physical tuner.
+    //! The "device name" is the name of an XML file which describes the tuner configuration.
+    //!
+    //! A tuner configuration contains a list of frequencies. The "tuner" can tune around each
+    //! of these frequencies (center frequency with a given bandwidth). Each frequency is
+    //! associated with a TS file. When the emulated tuner is tuned to a valid frequency, the
+    //! reception is emulated by reading packets from the associated TS file again and again.
+    //!
+    //! Sample XML tuner emulator configuration:
+    //! @code
+    //! <?xml version="1.0" encoding="UTF-8"?>
+    //! <tsduck>
+    //!   <defaults delivery="DVB-T" bandwidth="4,000,000" directory="/home/user/streams"/>
+    //!   <channel frequency="474,000,000" file="mux1.ts"/>
+    //!   <channel frequency="482,000,000" file="mux2.ts"/>
+    //!   <channel frequency="490,000,000" file="mux3.ts"/>
+    //!   <channel frequency="498,000,000" file="mux4.ts"/>
+    //!   <channel frequency="506,000,000" file="mux5.ts"/>
+    //!   <channel frequency="514,000,000" file="mux6.ts"/>
+    //!   <channel frequency="522,000,000" file="mux7.ts"/>
+    //!   <channel frequency="530,000,000" file="mux8.ts" delivery="DVB-T2" bandwidth="6,000,000"/>
+    //! </tsduck>
+    //! @endcode
+    //!
+    //! Sample tuning test using this tuner emulator. The various TS files are read as if they were actual muxes:
+    //! @code
+    //! tsscan -d etuner.xml --uhf-band --first-channel 21 --last-channel 28 --service-list
+    //! @endcode
     //!
     class TSDUCKDLL TunerEmulator: public TunerBase
     {

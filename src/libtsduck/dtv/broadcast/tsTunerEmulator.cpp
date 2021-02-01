@@ -87,7 +87,7 @@ int ts::TunerEmulator::Channel::strength(uint64_t freq) const
     const uint64_t dist = distance(freq);
     const uint64_t max = std::max<uint64_t>(1, bandwidth / 2);
     // Emulate a strength: 100% at center frequency, 50% at end of bandwidth.
-    return (dist > max) ? 0 : 50 + (50 * (max - dist)) / max;
+    return (dist > max) ? 0 : int(50 + (50 * (max - dist)) / max);
 }
 
 
