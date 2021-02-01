@@ -35,6 +35,7 @@
 #pragma once
 #include "tsTableHandlerInterface.h"
 #include "tsTuner.h"
+#include "tsTSPacket.h"
 #include "tsSectionDemux.h"
 #include "tsPAT.h"
 #include "tsPMT.h"

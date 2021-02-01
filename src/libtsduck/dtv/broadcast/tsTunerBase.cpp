@@ -27,70 +27,178 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "tsTuner.h"
-#include "tsNullReport.h"
+#include "tsTunerBase.h"
 #include "tsDuckContext.h"
+#include "tsReport.h"
+#include "tsModulationArgs.h"
+#include "tsDeliverySystem.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-constexpr ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_TIMEOUT;
+constexpr ts::MilliSecond ts::TunerBase::DEFAULT_SIGNAL_TIMEOUT;
+constexpr ts::MilliSecond ts::TunerBase::DEFAULT_SIGNAL_POLL;
+constexpr size_t ts::TunerBase::DEFAULT_DEMUX_BUFFER_SIZE;
 #endif
 
 
 //-----------------------------------------------------------------------------
-// Constructors
+// Constructors and destructors.
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner(DuckContext& duck) :
-    _duck(duck),
-    _is_open(false),
-    _info_only(true),
-    _device_name(),
-    _device_info(),
-    _device_path(),
-    _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
-    _signal_timeout_silent(false),
-    _receive_timeout(0),
-    _delivery_systems(),
-    _guts(nullptr)
+ts::TunerBase::TunerBase(DuckContext& duck) :
+    _duck(duck)
 {
-    allocateGuts();
-    CheckNonNull(_guts);
 }
 
-ts::Tuner::Tuner(DuckContext& duck, const UString& device_name, bool info_only, Report& report) :
-    Tuner(duck)
+ts::TunerBase::~TunerBase()
 {
-    this->open(device_name, info_only, report);
 }
 
 
 //-----------------------------------------------------------------------------
-// Destructor
+// Unimplemented methods, return an error.
 //-----------------------------------------------------------------------------
 
-ts::Tuner::~Tuner()
+#define UNIMPLEMENTED(ret) report.error(u"Digital tuners are not implemented"); return (ret)
+
+bool ts::TunerBase::open(const UString& device_name, bool info_only, Report& report)
 {
-    if (_guts != nullptr) {
-        close(NULLREP);
-        deleteGuts();
-        _guts = nullptr;
-    }
+    UNIMPLEMENTED(false);
+}
+
+bool ts::TunerBase::close(Report& report)
+{
+    UNIMPLEMENTED(false);
+}
+
+bool ts::TunerBase::tune(ModulationArgs& params, Report& report)
+{
+    UNIMPLEMENTED(false);
+}
+
+bool ts::TunerBase::start(Report& report)
+{
+    UNIMPLEMENTED(false);
+}
+
+bool ts::TunerBase::stop(Report& report)
+{
+    UNIMPLEMENTED(false);
+}
+
+size_t ts::TunerBase::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report)
+{
+    UNIMPLEMENTED(false);
+}
+
+bool ts::TunerBase::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report)
+{
+    UNIMPLEMENTED(false);
 }
 
 
 //-----------------------------------------------------------------------------
-// Set portable timeout properties.
+// Default methods which silently return nothing.
 //-----------------------------------------------------------------------------
 
-void ts::Tuner::setSignalTimeout(MilliSecond t)
+bool ts::TunerBase::isOpen() const
 {
-    _signal_timeout = t;
+    return false;
 }
 
-void ts::Tuner::setSignalTimeoutSilent(bool silent)
+bool ts::TunerBase::infoOnly() const
 {
-    _signal_timeout_silent = silent;
+    return false;
+}
+
+const ts::DeliverySystemSet& ts::TunerBase::deliverySystems() const
+{
+    // A static unused empty value.
+    static const DeliverySystemSet empty;
+    return empty;
+}
+
+ts::UString ts::TunerBase::deviceName() const
+{
+    return UString();
+}
+
+ts::UString ts::TunerBase::deviceInfo() const
+{
+    return UString();
+}
+
+ts::UString ts::TunerBase::devicePath() const
+{
+    return UString();
+}
+
+bool ts::TunerBase::signalLocked(Report& report)
+{
+    return false;
+}
+
+int ts::TunerBase::signalStrength(Report& report)
+{
+    return -1;
+}
+
+int ts::TunerBase::signalQuality(Report& report)
+{
+    return -1;
+}
+
+void ts::TunerBase::abort()
+{
+}
+
+void ts::TunerBase::setSignalTimeout(MilliSecond t)
+{
+}
+
+void ts::TunerBase::setSignalTimeoutSilent(bool silent)
+{
+}
+
+bool ts::TunerBase::setReceiveTimeout(MilliSecond timeout, Report& report)
+{
+    return true;
+}
+
+ts::MilliSecond ts::TunerBase::receiveTimeout() const
+{
+    return 0;
+}
+
+std::ostream& ts::TunerBase::displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended)
+{
+    return strm;
+}
+
+
+//-----------------------------------------------------------------------------
+// Set the Linux-specific parameters. Overriden on Linux only.
+//-----------------------------------------------------------------------------
+
+void ts::TunerBase::setSignalPoll(MilliSecond)
+{
+}
+
+void ts::TunerBase::setDemuxBufferSize(size_t)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+// Set the Windows-specific parameters. Overriden on Windows only.
+//-----------------------------------------------------------------------------
+
+void ts::TunerBase::setSinkQueueSize(size_t)
+{
+}
+
+void ts::TunerBase::setReceiverFilterName(const UString&)
+{
 }
 
 
@@ -98,29 +206,30 @@ void ts::Tuner::setSignalTimeoutSilent(bool silent)
 // Check the consistency of tune() parameters from in_params.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::checkTuneParameters(ModulationArgs& params, Report& report) const
+bool ts::TunerBase::checkTuneParameters(ModulationArgs& params, Report& report) const
 {
     // Cannot tune if the device is not open.
-    if (!_is_open) {
+    if (!isOpen()) {
         report.error(u"tuner not open");
         return false;
     }
 
     // Get default (preferred) delivery system from tuner when needed.
+    const DeliverySystemSet& delivery_systems(deliverySystems());
     if (params.delivery_system.value(DS_UNDEFINED) == DS_UNDEFINED) {
-        params.delivery_system = _delivery_systems.preferred();
+        params.delivery_system = delivery_systems.preferred();
         if (params.delivery_system == DS_UNDEFINED) {
             report.error(u"no tuning delivery system specified");
             return false;
         }
-        else if (_delivery_systems.size() > 1) {
+        else if (delivery_systems.size() > 1) {
             report.verbose(u"using default deliver system %s", {DeliverySystemEnum.name(params.delivery_system.value())});
         }
     }
 
     // Check if the delivery system is supported by this tuner.
-    if (!_delivery_systems.contains(params.delivery_system.value())) {
-        report.error(u"deliver system %s not supported on tuner %s", {DeliverySystemEnum.name(params.delivery_system.value()), _device_name});
+    if (!delivery_systems.contains(params.delivery_system.value())) {
+        report.error(u"deliver system %s not supported on tuner %s", {DeliverySystemEnum.name(params.delivery_system.value()), deviceName()});
         return false;
     }
 

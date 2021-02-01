@@ -147,9 +147,9 @@ namespace ts {
         //! Get a file type, based on a file name.
         //! @param [in] file_name File name.
         //! @param [in] type File type.
-        //! @return If @a type is not @link UNSPECIFIED @endlink, return @a type.
+        //! @return If @a type is not FileType::UNSPECIFIED, return @a type.
         //! Otherwise, return the file type based on the file name. If the file
-        //! name has no known extension, return @link UNSPECIFIED @endlink.
+        //! name has no known extension, return FileType::UNSPECIFIED.
         //!
         static FileType GetFileType(const UString& file_name, FileType type = FileType::UNSPECIFIED);
 
@@ -157,7 +157,7 @@ namespace ts {
         //! Build a file name, based on a file type.
         //! @param [in] file_name File name.
         //! @param [in] type File type.
-        //! @return If @a type is not @link UNSPECIFIED @endlink, remove the
+        //! @return If @a type is not FileType::UNSPECIFIED, remove the
         //! extension from @a file_name and add the extension corresponding to @a type.
         //!
         static UString BuildFileName(const UString& file_name, FileType type);

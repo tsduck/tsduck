@@ -217,7 +217,7 @@ SectionEnd
 
 ; Installation of development environment for third-party applications
 ; --------------------------------------------------------------------
-Section /o "Development" SectionDevelopment
+Section /o "C++ Development" SectionDevelopment
     ; Unselected by default (/o).
 
     ; Work on "all users" context, not current user.

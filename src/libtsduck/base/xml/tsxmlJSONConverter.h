@@ -105,6 +105,7 @@ namespace ts {
             //! @param [in] source The source JSON value to convert. If this is a JSON object, it becomes the
             //! root of the XML document. If this is an array, the XML root is taken from the model and the
             //! array elements are converted inside that root.
+            //! @param [out] destination The converted XML document.
             //! @param [in] auto_validate If true, the converted document is validated according to the modeL.
             //! @return True if the JSON source is converted without error and is correctly validated.
             //!

@@ -1,4 +1,4 @@
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2021, Thierry Lelegard
@@ -25,23 +25,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
-//----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 25
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2216
+#include "tsTunerDevice.h"
+#include "tsReport.h"
+TSDUCK_SOURCE;
+
+
+//-----------------------------------------------------------------------------
+// MacOS implementation of services from ts::TunerBase.
+//-----------------------------------------------------------------------------
+
+bool ts::TunerBase::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report)
+{
+    report.error(u"Digital tuners are not implemented on macOS");
+    return false;
+}

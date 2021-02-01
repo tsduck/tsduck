@@ -27,11 +27,12 @@
 //
 //-----------------------------------------------------------------------------
 //
-// Windows implementation of the ts::Tuner class.
+//  Windows implementation of the ts::TunerDevice class.
 //
 //-----------------------------------------------------------------------------
 
-#include "tsTuner.h"
+#include "tsTunerDevice.h"
+#include "tsTSPacket.h"
 #include "tsTime.h"
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
@@ -42,93 +43,101 @@
 #include "tsSinkFilter.h"
 TSDUCK_SOURCE;
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-constexpr size_t ts::Tuner::DEFAULT_SINK_QUEUE_SIZE;
-#endif
-
 
 //-----------------------------------------------------------------------------
-// Windows version of the syste guts class.
+// Constructor and destructor.
 //-----------------------------------------------------------------------------
 
-class ts::Tuner::Guts
-{
-    TS_NOCOPY(Guts);
-public:
-    volatile bool aborted;           // Reception was aborted
-    size_t        sink_queue_size;   // Media sample queue size
-    TunerGraph    graph;             // The filter graph
-
-    // Constructor and destructor.
-    Guts();
-    ~Guts();
-
-    // Get signal strength in mdB.
-    // Return true if found, false if not found.
-    bool getSignalStrength_mdB(::LONG&);
-
-    // Find one or more tuners. Exactly one of Tuner* or TunerPtrVector* must be non-zero.
-    // If Tuner* is non-zero, find the first tuner (matching _device_name if not empty).
-    // If _device_name is ":integer", use integer as device index in list of DVB devices.
-    // If TunerPtrVector* is non- zero, find all tuners in the system.
-    // Return true on success, false on error.
-    static bool FindTuners(DuckContext& duck, Tuner*, TunerPtrVector*, Report&);
-};
-
-
-//-----------------------------------------------------------------------------
-// System guts constructor and destructor.
-//-----------------------------------------------------------------------------
-
-ts::Tuner::Guts::Guts() :
-    aborted(false),
-    sink_queue_size(DEFAULT_SINK_QUEUE_SIZE),
-    graph()
+ts::TunerDevice::TunerDevice(DuckContext& duck) :
+    TunerBase(duck),
+    _is_open(false),
+    _info_only(false),
+    _device_name(),
+    _device_info(),
+    _device_path(),
+    _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
+    _signal_timeout_silent(false),
+    _receive_timeout(0),
+    _delivery_systems(),
+    _aborted(false),
+    _sink_queue_size(DEFAULT_SINK_QUEUE_SIZE),
+    _graph()
 {
 }
 
-ts::Tuner::Guts::~Guts()
+ts::TunerDevice::~TunerDevice()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-// System guts allocation.
-//-----------------------------------------------------------------------------
-
-void ts::Tuner::allocateGuts()
-{
-    _guts = new Guts();
-}
-
-void ts::Tuner::deleteGuts()
-{
-    delete _guts;
-}
-
-
-//-----------------------------------------------------------------------------
-// Set the Windows-specific parameters.
-//-----------------------------------------------------------------------------
-
-void ts::Tuner::setSinkQueueSize(size_t s)
-{
-    _guts->sink_queue_size = s;
-}
-
-void ts::Tuner::setReceiverFilterName(const UString& name)
-{
-    _guts->graph.setReceiverName(name);
-}
-
-
-//-----------------------------------------------------------------------------
+// Linux implementation of services from ts::TunerBase.
 // Get the list of all existing DVB tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report)
+bool ts::TunerBase::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report)
 {
-    return Guts::FindTuners(duck, nullptr, &tuners, report);
+    return TunerDevice::FindTuners(duck, nullptr, &tuners, report);
+}
+
+
+//-----------------------------------------------------------------------------
+// Get/set basic parameters.
+//-----------------------------------------------------------------------------
+
+bool ts::TunerDevice::isOpen() const
+{
+    return _is_open;
+}
+
+bool ts::TunerDevice::infoOnly() const
+{
+    return _info_only;
+}
+
+const ts::DeliverySystemSet& ts::TunerDevice::deliverySystems() const
+{
+    return _delivery_systems;
+}
+
+ts::UString ts::TunerDevice::deviceName() const
+{
+    return _device_name;
+}
+
+ts::UString ts::TunerDevice::deviceInfo() const
+{
+    return _device_info;
+}
+
+ts::UString ts::TunerDevice::devicePath() const
+{
+    return _device_path;
+}
+
+ts::MilliSecond ts::TunerDevice::receiveTimeout() const
+{
+    return _receive_timeout;
+}
+
+void ts::TunerDevice::setSignalTimeout(MilliSecond t)
+{
+    _signal_timeout = t;
+}
+
+void ts::TunerDevice::setSignalTimeoutSilent(bool silent)
+{
+    _signal_timeout_silent = silent;
+}
+
+void ts::TunerDevice::setSinkQueueSize(size_t s)
+{
+    _sink_queue_size = s;
+}
+
+void ts::TunerDevice::setReceiverFilterName(const UString& name)
+{
+    _graph.setReceiverName(name);
 }
 
 
@@ -136,14 +145,14 @@ bool ts::Tuner::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& 
 // Open the tuner.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
+bool ts::TunerDevice::open(const UString& device_name, bool info_only, Report& report)
 {
     if (_is_open) {
         report.error(u"tuner already open");
         return false;
     }
     _device_name = device_name;
-    if (!Guts::FindTuners(_duck, this, nullptr, report)) {
+    if (!FindTuners(_duck, this, nullptr, report)) {
         return false;
     }
     else if (_is_open) {
@@ -165,14 +174,14 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 // Close tuner.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::close(Report& report)
+bool ts::TunerDevice::close(Report& report)
 {
     _is_open = false;
     _device_name.clear();
     _device_info.clear();
     _device_path.clear();
     _delivery_systems.clear();
-    _guts->graph.clear(report);
+    _graph.clear(report);
     return true;
 }
 
@@ -181,7 +190,7 @@ bool ts::Tuner::close(Report& report)
 // Check if a signal is present and locked
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::signalLocked(Report& report)
+bool ts::TunerDevice::signalLocked(Report& report)
 {
     if (!_is_open) {
         report.error(u"tuner not open");
@@ -189,9 +198,9 @@ bool ts::Tuner::signalLocked(Report& report)
     }
 
     ::BOOL locked = 0;
-    const bool found = _guts->graph.searchProperty(locked, TunerGraph::psHIGHEST,
-                                                   &::IBDA_SignalStatistics::get_SignalLocked,
-                                                   KSPROPSETID_BdaSignalStats, KSPROPERTY_BDA_SIGNAL_LOCKED);
+    bool found = _graph.searchProperty(locked, TunerGraph::psHIGHEST,
+                                       &::IBDA_SignalStatistics::get_SignalLocked,
+                                       KSPROPSETID_BdaSignalStats, KSPROPERTY_BDA_SIGNAL_LOCKED);
     return found && locked != 0;
 }
 
@@ -200,16 +209,16 @@ bool ts::Tuner::signalLocked(Report& report)
 // Get signal strength in mdB.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::Guts::getSignalStrength_mdB(::LONG& strength)
+bool ts::TunerDevice::getSignalStrength_mdB(::LONG& strength)
 {
     // The header bdamedia.h defines carrier strength in mdB (1/1000 of a dB).
     // A strength of 0 is nominal strength as expected for the given network.
     // Sub-nominal strengths are reported as positive mdB
     // Super-nominal strengths are reported as negative mdB
 
-    return graph.searchProperty(strength, TunerGraph::psHIGHEST,
-                                &::IBDA_SignalStatistics::get_SignalStrength,
-                                KSPROPSETID_BdaSignalStats, KSPROPERTY_BDA_SIGNAL_STRENGTH);
+    return _graph.searchProperty(strength, TunerGraph::psHIGHEST,
+                                 &::IBDA_SignalStatistics::get_SignalStrength,
+                                 KSPROPSETID_BdaSignalStats, KSPROPERTY_BDA_SIGNAL_STRENGTH);
 }
 
 
@@ -217,7 +226,7 @@ bool ts::Tuner::Guts::getSignalStrength_mdB(::LONG& strength)
 // Return signal strength, in percent (0=bad, 100=good)
 //-----------------------------------------------------------------------------
 
-int ts::Tuner::signalStrength(Report& report)
+int ts::TunerDevice::signalStrength(Report& report)
 {
     if (!_is_open) {
         report.error(u"tuner not open");
@@ -225,7 +234,7 @@ int ts::Tuner::signalStrength(Report& report)
     }
     else {
         ::LONG strength = 0;
-        return _guts->getSignalStrength_mdB(strength) ? std::max(0, 100 + int(strength) / 1000) : -1;
+        return getSignalStrength_mdB(strength) ? std::max(0, 100 + int(strength) / 1000) : -1;
     }
 }
 
@@ -235,7 +244,7 @@ int ts::Tuner::signalStrength(Report& report)
 // Return a negative value on error.
 //-----------------------------------------------------------------------------
 
-int ts::Tuner::signalQuality(Report& report)
+int ts::TunerDevice::signalQuality(Report& report)
 {
     if (!_is_open) {
         report.error(u"tuner not open");
@@ -243,9 +252,9 @@ int ts::Tuner::signalQuality(Report& report)
     }
 
     ::LONG quality = 0;
-    const bool found = _guts->graph.searchProperty(quality, TunerGraph::psHIGHEST,
-                                                   &::IBDA_SignalStatistics::get_SignalQuality,
-                                                   KSPROPSETID_BdaSignalStats, KSPROPERTY_BDA_SIGNAL_QUALITY);
+    bool found = _graph.searchProperty(quality, TunerGraph::psHIGHEST,
+                                       &::IBDA_SignalStatistics::get_SignalQuality,
+                                       KSPROPSETID_BdaSignalStats, KSPROPERTY_BDA_SIGNAL_QUALITY);
     return found ? int(quality) : -1;
 }
 
@@ -254,7 +263,7 @@ int ts::Tuner::signalQuality(Report& report)
 // Get the current tuning parameters
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report)
+bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report)
 {
     if (!_is_open) {
         report.error(u"tuner not open");
@@ -282,22 +291,22 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
                 params.lnb.clear();
             }
             // Spectral inversion
-            _guts->graph.searchVarProperty<::SpectralInversion>(
+            _graph.searchVarProperty<::SpectralInversion>(
                 ::BDA_SPECTRAL_INVERSION_NOT_SET, params.inversion, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_SpectralInversion,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
             // Symbol rate
-            _guts->graph.searchVarProperty<::ULONG>(
+            _graph.searchVarProperty<::ULONG>(
                 0, params.symbol_rate, TunerGraph::psHIGHEST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_SymbolRate,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SYMBOL_RATE);
             // Inner FEC
-            _guts->graph.searchVarProperty<::BinaryConvolutionCodeRate>(
+            _graph.searchVarProperty<::BinaryConvolutionCodeRate>(
                 ::BDA_BCC_RATE_NOT_SET, params.inner_fec, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_InnerFECRate,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
             // Modulation
-            _guts->graph.searchVarProperty<::ModulationType>(
+            _graph.searchVarProperty<::ModulationType>(
                 ::BDA_MOD_NOT_SET, params.modulation, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_ModulationType,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
@@ -310,12 +319,12 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
                 params.delivery_system.clear();
             }
             // DVB-S2 pilot
-            _guts->graph.searchVarProperty<::Pilot>(
+            _graph.searchVarProperty<::Pilot>(
                 ::BDA_PILOT_NOT_SET, params.pilots, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator2::get_Pilot,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_PILOT);
             // DVB-S2 roll-off factor
-            _guts->graph.searchVarProperty<::RollOff>(
+            _graph.searchVarProperty<::RollOff>(
                 ::BDA_ROLL_OFF_NOT_SET, params.roll_off, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator2::get_RollOff,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_ROLL_OFF);
@@ -328,22 +337,22 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
                 params.frequency.clear();
             }
             // Spectral inversion
-            _guts->graph.searchVarProperty<::SpectralInversion>(
+            _graph.searchVarProperty<::SpectralInversion>(
                 ::BDA_SPECTRAL_INVERSION_NOT_SET, params.inversion, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_SpectralInversion,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
             // Symbol rate
-            _guts->graph.searchVarProperty<::ULONG>(
+            _graph.searchVarProperty<::ULONG>(
                 0, params.symbol_rate, TunerGraph::psHIGHEST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_SymbolRate,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SYMBOL_RATE);
             // Inner FEC
-            _guts->graph.searchVarProperty<::BinaryConvolutionCodeRate>(
+            _graph.searchVarProperty<::BinaryConvolutionCodeRate>(
                 ::BDA_BCC_RATE_NOT_SET, params.inner_fec, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_InnerFECRate,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
             // Modulation
-            _guts->graph.searchVarProperty<::ModulationType>(
+            _graph.searchVarProperty<::ModulationType>(
                 ::BDA_MOD_NOT_SET, params.modulation, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_ModulationType,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
@@ -356,24 +365,24 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
                 params.frequency.clear();
             }
             // Spectral inversion
-            _guts->graph.searchVarProperty<::SpectralInversion>(
+            _graph.searchVarProperty<::SpectralInversion>(
                 ::BDA_SPECTRAL_INVERSION_NOT_SET, params.inversion, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_SpectralInversion,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
             // High priority FEC
-            _guts->graph.searchVarProperty<::BinaryConvolutionCodeRate>(
+            _graph.searchVarProperty<::BinaryConvolutionCodeRate>(
                 ::BDA_BCC_RATE_NOT_SET, params.fec_hp, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_InnerFECRate,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
             // Modulation
-            _guts->graph.searchVarProperty<::ModulationType>(
+            _graph.searchVarProperty<::ModulationType>(
                 ::BDA_MOD_NOT_SET, params.modulation, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_ModulationType,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
             // Other DVB-T parameters, not supported in IBDA_DigitalDemodulator
             // but which may be supported as properties.
             ::TransmissionMode tm = ::BDA_XMIT_MODE_NOT_SET;
-            found = _guts->graph.searchTunerProperty(tm, TunerGraph::psFIRST, KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_TRANSMISSION_MODE);
+            found = _graph.searchTunerProperty(tm, TunerGraph::psFIRST, KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_TRANSMISSION_MODE);
             if (found && tm != ::BDA_XMIT_MODE_NOT_SET) {
                 params.transmission_mode = ts::TransmissionMode(tm);
             }
@@ -381,7 +390,7 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
                 params.transmission_mode.clear();
             }
             ::GuardInterval gi = ::BDA_GUARD_NOT_SET;
-            found = _guts->graph.searchTunerProperty(gi, TunerGraph::psFIRST, KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_GUARD_INTERVAL);
+            found = _graph.searchTunerProperty(gi, TunerGraph::psFIRST, KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_GUARD_INTERVAL);
             if (found && gi != ::BDA_GUARD_NOT_SET) {
                 params.guard_interval = ts::GuardInterval(gi);
             }
@@ -401,12 +410,12 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
                 params.frequency.clear();
             }
             // Spectral inversion
-            _guts->graph.searchVarProperty<::SpectralInversion>(
+            _graph.searchVarProperty<::SpectralInversion>(
                 ::BDA_SPECTRAL_INVERSION_NOT_SET, params.inversion, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_SpectralInversion,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
             // Modulation
-            _guts->graph.searchVarProperty<::ModulationType>(
+            _graph.searchVarProperty<::ModulationType>(
                 ::BDA_MOD_NOT_SET, params.modulation, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_ModulationType,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
@@ -434,9 +443,9 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
 // Tune to the specified parameters and start receiving.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tune(ModulationArgs& params, Report& report)
+bool ts::TunerDevice::tune(ModulationArgs& params, Report& report)
 {
-    return checkTuneParameters(params, report) && _guts->graph.sendTuneRequest(_duck, params, report);
+    return checkTuneParameters(params, report) && _graph.sendTuneRequest(_duck, params, report);
 }
 
 
@@ -445,9 +454,9 @@ bool ts::Tuner::tune(ModulationArgs& params, Report& report)
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::start(Report& report)
+bool ts::TunerDevice::start(Report& report)
 {
-    SinkFilter* const sink = _guts->graph.sinkFilter();
+    SinkFilter* const sink = _graph.sinkFilter();
 
     if (!_is_open || sink == nullptr) {
         report.error(u"tuner not open");
@@ -455,20 +464,20 @@ bool ts::Tuner::start(Report& report)
     }
 
     // Cannot restart if aborted.
-    if (_guts->aborted) {
+    if (_aborted) {
         return false;
     }
 
     // Set media samples queue size.
-    sink->SetMaxMessages(_guts->sink_queue_size);
+    sink->SetMaxMessages(_sink_queue_size);
 
     // Run the graph.
-    if (!_guts->graph.run(report)) {
+    if (!_graph.run(report)) {
         return false;
     }
 
     // Check if aborted while starting.
-    if (_guts->aborted) {
+    if (_aborted) {
         return false;
     }
 
@@ -499,9 +508,9 @@ bool ts::Tuner::start(Report& report)
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::stop(Report& report)
+bool ts::TunerDevice::stop(Report& report)
 {
-    return _is_open && _guts->graph.stop(report);
+    return _is_open && _graph.stop(report);
 }
 
 
@@ -511,7 +520,7 @@ bool ts::Tuner::stop(Report& report)
 // Return true on success, false on errors.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report&)
+bool ts::TunerDevice::setReceiveTimeout(MilliSecond timeout, Report&)
 {
     _receive_timeout = timeout;
     return true;
@@ -522,11 +531,11 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report&)
 // Abort any pending or blocked reception.
 //-----------------------------------------------------------------------------
 
-void ts::Tuner::abort()
+void ts::TunerDevice::abort()
 {
-    SinkFilter* const sink = _guts->graph.sinkFilter();
+    SinkFilter* const sink = _graph.sinkFilter();
     if (_is_open && sink != nullptr) {
-        _guts->aborted = true;
+        _aborted = true;
         sink->Abort();
     }
 }
@@ -538,15 +547,15 @@ void ts::Tuner::abort()
 // Returning zero means error or end of input.
 //-----------------------------------------------------------------------------
 
-size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report)
+size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report)
 {
-    SinkFilter* const sink = _guts->graph.sinkFilter();
+    SinkFilter* const sink = _graph.sinkFilter();
 
     if (!_is_open || sink == nullptr) {
         report.error(u"tuner not open");
         return 0;
     }
-    if (_guts->aborted) {
+    if (_aborted) {
         return 0;
     }
 
@@ -571,7 +580,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
 // Display the characteristics and status of the tuner.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended)
+std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended)
 {
     if (!_is_open) {
         report.error(u"tuner not open");
@@ -584,14 +593,14 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin
         strm << margin << "Signal quality:   " << quality << " %" << std::endl;
     }
     ::LONG strength;
-    if (_guts->getSignalStrength_mdB(strength)) {
+    if (getSignalStrength_mdB(strength)) {
         strm << margin << "Signal strength:  " << UString::Decimal(strength) << " milli dB" << std::endl;
     }
 
     // The DirectSho graph can be very verbose.
     if (extended) {
         strm << std::endl << margin << "DirectShow graph:" << std::endl;
-        _guts->graph.display(strm, report, margin + u"  ", true);
+        _graph.display(strm, report, margin + u"  ", true);
     }
 
     return strm;
@@ -602,7 +611,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin
 // Private static method: Find one or more tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::Guts::FindTuners(DuckContext& duck, Tuner* tuner, TunerPtrVector* tuner_list, Report& report)
+bool ts::TunerDevice::FindTuners(DuckContext& duck, TunerDevice* tuner, TunerPtrVector* tuner_list, Report& report)
 {
     // Report to use when errors shall be reported in debug mode only
     Report& debug_report(report.debug() ? report : NULLREP);
@@ -688,24 +697,25 @@ bool ts::Tuner::Guts::FindTuners(DuckContext& duck, Tuner* tuner, TunerPtrVector
 
         // If we search one specific tuner (tuner != nullptr), use this one.
         // If we are building a list of all tuners (tuner_list != nullptr), allocate a new tuner.
-        TunerPtr tptr(tuner == nullptr ? new Tuner(duck) : nullptr);
-        Tuner& tref(tuner == nullptr ? *tptr : *tuner);
+        TunerDevice* new_tuner = tuner == nullptr ? new TunerDevice(duck) : nullptr;
+        TunerPtr tptr(new_tuner);
+        TunerDevice& tref(tuner == nullptr ? *new_tuner : *tuner);
 
         // Try to build a graph from this network provider and tuner
-        if (tref._guts->graph.initialize(tuner_name, tuner_monikers[moniker_index].pointer(), tref._delivery_systems, report)) {
+        if (tref._graph.initialize(tuner_name, tuner_monikers[moniker_index].pointer(), tref._delivery_systems, report)) {
 
             // Graph correctly built, this is a valid tuner.
             // Check if a device was specified by adapter index.
             if (dvb_device_index >= 0 && dvb_device_current != dvb_device_index) {
                 // Adapter index was specified, but not this one.
-                tref._guts->graph.clear(debug_report);
+                tref._graph.clear(debug_report);
                 tref._delivery_systems.clear();
             }
             else {
                 // Either no adapter index was specified or this is the right one.
                 // Use that tuner.
                 tref._is_open = true;
-                tref._guts->aborted = false;
+                tref._aborted = false;
                 tref._info_only = true;
                 tref._device_name = tuner_name;
                 tref._device_path = device_path;

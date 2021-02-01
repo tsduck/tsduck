@@ -53,13 +53,9 @@ namespace ts {
         UString     device_name;        //!< Name of tuner device.
         MilliSecond signal_timeout;     //!< Signal locking timeout in milliseconds.
         MilliSecond receive_timeout;    //!< Packet received timeout in milliseconds.
-#if defined(TS_LINUX) || defined(DOXYGEN)
         size_t      demux_buffer_size;  //!< Demux buffer size in bytes (Linux-specific).
-#endif
-#if defined(TS_WINDOWS) || defined(DOXYGEN)
         size_t      demux_queue_size;   //!< Max number of queued media samples (Windows-specific).
         UString     receiver_name;      //!< Name of the DirectShow receiver to use (Windows-specific).
-#endif
 
         //!
         //! Default constructor.
