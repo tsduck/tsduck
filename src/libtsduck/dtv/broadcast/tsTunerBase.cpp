@@ -162,7 +162,7 @@ void ts::TunerBase::setSignalTimeoutSilent(bool silent)
 
 bool ts::TunerBase::setReceiveTimeout(MilliSecond timeout, Report& report)
 {
-    return false;
+    return true;
 }
 
 ts::MilliSecond ts::TunerBase::receiveTimeout() const

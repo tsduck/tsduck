@@ -38,6 +38,7 @@
 #include "tsAbortInterface.h"
 #include "tsSafePtr.h"
 #include "tsReport.h"
+#include "tsTSFile.h"
 
 namespace ts {
     //!
@@ -82,8 +83,40 @@ namespace ts {
         virtual std::ostream& displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended = false) override;
 
     private:
-        DeliverySystemSet _delivery_systems;  // Collection of all delivery systems.
-        UString           _file_path;         // Main XML file path.
-        bool              _info_only;         // Open mode, useless here, just informational.
+        // Possible states of the tuner emulator.
+        enum class State {CLOSED, OPEN, TUNED, STARTED};
+
+        // Description of a channel.
+        class Channel
+        {
+        public:
+            uint64_t       frequency;   // Center frequency in Hz.
+            uint64_t       bandwidth;   // Bandwidth in Hz, over which reception is possible.
+            DeliverySystem delivery;    // Delivery system for this frequency.
+            UString        file;        // TS file name.
+
+            // Constructor.
+            Channel();
+
+            // Compute the distance of a frequency from the center one.
+            uint64_t distance(uint64_t frequency) const;
+
+            // Check if a frequency is in the channel.
+            bool inBand(uint64_t frequency) const;
+
+            // Compute the virtual signal strength for a given frequency.
+            int strength(uint64_t frequency) const;
+        };
+
+        // Tuner emulator private members.
+        DeliverySystemSet    _delivery_systems;  // Collection of all delivery systems.
+        UString              _xml_file_path;     // Main XML file path.
+        bool                 _info_only;         // Open mode, useless here, just informational.
+        State                _state;             // Current state.
+        TSFile               _file;              // Current TS file, open after tune().
+        std::vector<Channel> _channels;          // Map of channels.
+        size_t               _tune_index;        // Currently tuned channel.
+        uint64_t             _tune_frequency;    // Requested frequency.
+        int                  _strength;          // Signal strength and quality in percent.
     };
 }
