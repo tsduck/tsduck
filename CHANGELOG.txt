@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.25-2205
+VERSION 3.25-2219
 
 [NEW] New commands and plugins:
 
@@ -14,9 +14,9 @@ VERSION 3.25-2205
   * Everywhere an input XML file name is expected, it is possible to specify
     an "inline XML content" directly. The string is recognized as an inline
     XML content and not a file name when it starts with "<?xml".
-  * In some utilities or plugins where an output XML file name can be produced,
-    it is possible to specify an automated XML-to-JSON conversion and get a
-    JSON output.
+  * In most utilities or plugins where XML files can be read or written, it is
+    possible to specify an automated XML-to-JSON conversion and read or write
+    JSON input or output.
   * Everywhere XML or JSON output can be produced, it is possible to log
     the XML or JSON data on one line using options --log-xml-line (or
     --xml-line) and --json-line. Java or Python applications which intercept
@@ -58,6 +58,9 @@ VERSION 3.25-2205
 
   * The global "tsp" options --default-pds and --hf-band-region were not
     correctly passed to the plugins.
+  * Fixed issue #719: The option --default-pds was not correctly used in
+    "tsscan" when looking for logical channel numbers in streams with invalid
+    signalization (missing private data specifier descriptor).
 
 -------------------------------------------------------------------------------
 

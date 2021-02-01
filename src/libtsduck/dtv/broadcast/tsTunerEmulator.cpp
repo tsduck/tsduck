@@ -103,6 +103,9 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only, Report&
         return false;
     }
 
+    // Get absolute path of XML file directory (in case of relative paths in the file).
+    const UString base_directory(DirectoryName(AbsoluteFilePath(device_name)));
+
     // Reset channel descriptions.
     _delivery_systems.clear();
     _channels.clear();
@@ -129,7 +132,13 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only, Report&
         success = def->getIntEnumAttribute(def_delivery, DeliverySystemEnum, u"delivery", false, DS_UNDEFINED) &&
                   def->getIntAttribute(def_bandwidth, u"bandwidth", false, 0) &&
                   def->getAttribute(def_directory, u"directory", false);
-        report.debug(u"default delivery system: %s, default bandwidth: %'d Hz", {DeliverySystemEnum.name(def_delivery), def_bandwidth});
+        if (def_directory.empty()) {
+            def_directory = base_directory;
+        }
+        else {
+            def_directory = AbsoluteFilePath(def_directory, base_directory);
+        }
+        report.debug(u"defaults: delivery: %s, bandwidth: %'d Hz, directory: %s", {DeliverySystemEnum.name(def_delivery), def_bandwidth, def_directory});
     }
 
     // Get all channel descriptions.
@@ -142,8 +151,8 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only, Report&
                   (*it)->getIntAttribute(chan.bandwidth, u"bandwidth", false, def_bandwidth) &&
                   (*it)->getIntEnumAttribute(chan.delivery, DeliverySystemEnum, u"delivery", false, def_delivery) &&
                   (*it)->getAttribute(chan.file, u"file", true);
-        if (success && !IsAbsoluteFilePath(chan.file) && !def_directory.empty()) {
-            chan.file = def_directory + PathSeparator + chan.file;
+        if (success) {
+            chan.file = AbsoluteFilePath(chan.file, def_directory);
         }
         _delivery_systems.insert(chan.delivery);
         _channels.push_back(chan);

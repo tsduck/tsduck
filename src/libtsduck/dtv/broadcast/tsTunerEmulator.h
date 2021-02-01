@@ -87,7 +87,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~TunerEmulator();
+        virtual ~TunerEmulator() override;
 
         // Implementation of TunerBase.
         // Some methods are not implemented, left to the default method in base class.

@@ -576,7 +576,17 @@ bool ts::DuckContext::loadArgs(Args& args)
 
     // Options relating to default DVB character sets.
     if (_definedCmdOptions & CMD_CHARSET) {
-        if (args.present(u"europe")) {
+        const UString name(args.value(u"default-charset"));
+        if (!name.empty()) {
+            const Charset* cset = DVBCharTable::GetCharset(name);
+            if (cset == nullptr) {
+                args.error(u"invalid character set name '%s'", {name});
+            }
+            else {
+                _charsetIn = _charsetOut = cset;
+            }
+        }
+        else if (args.present(u"europe")) {
             _charsetIn = _charsetOut = &DVBCharTableSingleByte::DVB_ISO_8859_15;
         }
         else if (args.present(u"brazil")) {
@@ -588,23 +598,14 @@ bool ts::DuckContext::loadArgs(Args& args)
         else if (args.present(u"japan")) {
             _charsetIn = _charsetOut = &ARIBCharset::B24;
         }
-        else {
-            const UString name(args.value(u"default-charset"));
-            if (!name.empty()) {
-                const Charset* cset = DVBCharTable::GetCharset(name);
-                if (cset == nullptr) {
-                    args.error(u"invalid character set name '%s'", {name});
-                }
-                else {
-                    _charsetIn = _charsetOut = cset;
-                }
-            }
-        }
     }
 
     // Options relating to default UHF/VHF region.
     if (_definedCmdOptions & CMD_HF_REGION) {
-        if (args.present(u"japan")) {
+        if (args.present(u"hf-band-region")) {
+            args.getValue(_hfDefaultRegion, u"hf-band-region", _hfDefaultRegion.c_str());
+        }
+        else if (args.present(u"japan")) {
             _hfDefaultRegion = u"japan";
         }
         else if (args.present(u"brazil")) {
@@ -612,9 +613,6 @@ bool ts::DuckContext::loadArgs(Args& args)
         }
         else if (args.present(u"philippines")) {
             _hfDefaultRegion = u"philippines";
-        }
-        else if (args.present(u"hf-band-region")) {
-            args.getValue(_hfDefaultRegion, u"hf-band-region", _hfDefaultRegion.c_str());
         }
     }
 
@@ -655,7 +653,13 @@ bool ts::DuckContext::loadArgs(Args& args)
 
     // Options relating to non-standard time reference.
     if (_definedCmdOptions & CMD_TIMEREF) {
-        if (args.present(u"japan")) {
+        if (args.present(u"time-reference")) {
+            const UString name(args.value(u"time-reference"));
+            if (!setTimeReference(name)) {
+                args.error(u"invalid time reference '%s'", {name});
+            }
+        }
+        else if (args.present(u"japan")) {
             _timeReference = Time::JSTOffset;
         }
         else if (args.present(u"brazil")) {
@@ -663,12 +667,6 @@ bool ts::DuckContext::loadArgs(Args& args)
         }
         else if (args.present(u"philippines")) {
             _timeReference = 8 * MilliSecPerHour; // UTC+8
-        }
-        else if (args.present(u"time-reference")) {
-            const UString name(args.value(u"time-reference"));
-            if (!setTimeReference(name)) {
-                args.error(u"invalid time reference '%s'", {name});
-            }
         }
     }
 

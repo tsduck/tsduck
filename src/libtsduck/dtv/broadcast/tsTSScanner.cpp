@@ -32,7 +32,7 @@
 #include "tsTime.h"
 #include "tsTVCT.h"
 #include "tsCVCT.h"
-#include "tsDuckContext.h"
+#include "tsLogicalChannelNumbers.h"
 TSDUCK_SOURCE;
 
 #define BUFFER_PACKET_COUNT  10000 // packets
@@ -149,32 +149,6 @@ bool ts::TSScanner::getServices(ServiceList& services) const
             }
         }
 
-        // Logical channel number is extracted from the NIT.
-        // Since locating the TS in the NIT requires the ONId, the SDT must be there as well.
-        if (!_nit.isNull() && !_sdt.isNull()) {
-            // Search the TS in the NIT
-            const TransportStreamId ts(srv.getTSId(), srv.getONId());
-            const NIT::TransportMap::const_iterator tit = _nit->transports.find(ts);
-            if (tit != _nit->transports.end()) {
-                const DescriptorList& dlist(tit->second.descs);
-                // Loop on all logical_channel_number_descriptors
-                for (size_t i = dlist.search(DID_LOGICAL_CHANNEL_NUM, 0, PDS_EICTA);
-                     i < dlist.count() && !srv.hasLCN();
-                     i = dlist.search(DID_LOGICAL_CHANNEL_NUM, i + 1, PDS_EICTA)) {
-
-                    const uint8_t* data = dlist[i]->payload();
-                    size_t size = dlist[i]->payloadSize();
-                    while (size >= 4 && !srv.hasLCN()) {
-                        if (GetUInt16(data) == srv.getId()) {
-                            srv.setLCN(GetUInt16(data + 2) & 0x03FF);
-                        }
-                        data += 4;
-                        size -= 4;
-                    }
-                }
-            }
-        }
-
         // ATSC service descriptions are extracted from the VCT.
         if (!_vct.isNull()) {
             // Search service in the VCT
@@ -198,6 +172,13 @@ bool ts::TSScanner::getServices(ServiceList& services) const
 
         // Add new service definition in result
         services.push_back(srv);
+    }
+
+    // Logical channel numbers are extracted from the NIT.
+    if (!_nit.isNull()) {
+        LogicalChannelNumbers lcn_store(_duck);
+        lcn_store.addFromNIT(*_nit);
+        lcn_store.updateServices(services, true);
     }
 
     return true;
