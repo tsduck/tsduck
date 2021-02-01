@@ -670,6 +670,8 @@
 #include "tsTSSpeedMetrics.h"
 #include "tsTuner.h"
 #include "tsTunerArgs.h"
+#include "tsTunerBase.h"
+#include "tsTunerEmulator.h"
 #include "tsTVAIdDescriptor.h"
 #include "tsTVCT.h"
 #include "tsTypedEnumeration.h"
@@ -720,11 +722,13 @@
 #if defined(TS_LINUX)
 #include "tsDTVProperties.h"
 #include "tsSignalAllocator.h"
+#include "tsTunerDevice.h"
 #include "tsTunerDeviceInfo.h"
 #endif
 
 #if defined(TS_MAC)
 #include "tsMacPList.h"
+#include "tsTunerDevice.h"
 #endif
 
 #if defined(TS_WINDOWS)
@@ -737,6 +741,7 @@
 #include "tsDirectShowUtils.h"
 #include "tsMediaTypeUtils.h"
 #include "tsSinkFilter.h"
+#include "tsTunerDevice.h"
 #include "tsTunerGraph.h"
 #include "tsWinUtils.h"
 #endif

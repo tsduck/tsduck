@@ -47,12 +47,9 @@ ts::TunerArgs::TunerArgs(bool info_only, bool allow_short_options) :
     device_name(),
     signal_timeout(Tuner::DEFAULT_SIGNAL_TIMEOUT),
     receive_timeout(0),
-#if defined(TS_LINUX)
     demux_buffer_size(Tuner::DEFAULT_DEMUX_BUFFER_SIZE),
-#elif defined(TS_WINDOWS)
     demux_queue_size(Tuner::DEFAULT_SINK_QUEUE_SIZE),
     receiver_name(),
-#endif
     _info_only(info_only)
 {
 }
@@ -67,12 +64,9 @@ void ts::TunerArgs::reset()
     device_name.clear();
     signal_timeout = Tuner::DEFAULT_SIGNAL_TIMEOUT;
     receive_timeout = 0;
-#if defined(TS_LINUX)
     demux_buffer_size = Tuner::DEFAULT_DEMUX_BUFFER_SIZE;
-#elif defined(TS_WINDOWS)
     demux_queue_size = Tuner::DEFAULT_SINK_QUEUE_SIZE;
     receiver_name.clear();
-#endif
 
     // Reset superclass.
     ModulationArgs::reset();
@@ -294,9 +288,7 @@ bool ts::TunerArgs::configureTuner(Tuner& tuner, Report& report) const
     }
 
     // These options shall be set before open().
-#if defined(TS_WINDOWS)
     tuner.setReceiverFilterName(receiver_name);
-#endif
 
     // Open DVB tuner. Use first device by default (if device name is empty).
     if (!tuner.open(device_name, _info_only, report)) {
@@ -307,15 +299,13 @@ bool ts::TunerArgs::configureTuner(Tuner& tuner, Report& report) const
     if (!_info_only) {
         tuner.setSignalTimeout(signal_timeout);
         if (!tuner.setReceiveTimeout(receive_timeout, report)) {
+            report.error(u"failed to set tuner receive timeout");
             tuner.close(NULLREP);
             return false;
         }
-#if defined(TS_LINUX)
         tuner.setSignalPoll(Tuner::DEFAULT_SIGNAL_POLL);
         tuner.setDemuxBufferSize(demux_buffer_size);
-#elif defined(TS_WINDOWS)
         tuner.setSinkQueueSize(demux_queue_size);
-#endif
     }
 
     return true;

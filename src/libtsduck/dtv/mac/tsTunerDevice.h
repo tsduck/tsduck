@@ -28,20 +28,19 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Digital TV tuner physical device.
+//!  One version of this class exists for each operating system.
+//   ==> macOS version => tuners are not implemented on macOS
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 25
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2216
+#include "tsTunerBase.h"
+
+namespace ts {
+    //!
+    //! Digital TV tuner physical device.
+    //! One version of this class exists for each operating system.
+    //!
+    typedef TunerBase TunerDevice;
+}
