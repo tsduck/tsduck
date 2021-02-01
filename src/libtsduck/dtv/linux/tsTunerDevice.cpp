@@ -173,8 +173,8 @@ bool ts::TunerBase::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Repo
 
         const size_t index = tuners.size();
         tuners.resize(index + 1);
-        tuners[index] = new Tuner(duck, tuner_name, true, report);
-        if (!tuners[index]->isOpen()) {
+        tuners[index] = new TunerDevice(duck);
+        if (!tuners[index]->open(tuner_name, true, report)) {
             ok = false;
             tuners[index].clear();
             tuners.resize(index);

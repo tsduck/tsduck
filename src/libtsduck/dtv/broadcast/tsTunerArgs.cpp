@@ -299,6 +299,7 @@ bool ts::TunerArgs::configureTuner(Tuner& tuner, Report& report) const
     if (!_info_only) {
         tuner.setSignalTimeout(signal_timeout);
         if (!tuner.setReceiveTimeout(receive_timeout, report)) {
+            report.error(u"failed to set tuner receive timeout");
             tuner.close(NULLREP);
             return false;
         }
