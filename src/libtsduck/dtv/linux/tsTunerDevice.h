@@ -61,7 +61,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~TunerDevice();
+        virtual ~TunerDevice() override;
 
         // Implementation of TunerBase.
         virtual bool open(const UString& device_name, bool info_only, Report& report) override;

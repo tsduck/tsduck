@@ -363,6 +363,7 @@
 #include "tsLIT.h"
 #include "tsLNB.h"
 #include "tsLocalTimeOffsetDescriptor.h"
+#include "tsLogicalChannelNumbers.h"
 #include "tsLogoTransmissionDescriptor.h"
 #include "tsMACAddress.h"
 #include "tsMain.h"

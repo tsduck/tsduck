@@ -73,7 +73,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~Tuner();
+        virtual ~Tuner() override;
 
         //!
         //! Constructor and open device name.
