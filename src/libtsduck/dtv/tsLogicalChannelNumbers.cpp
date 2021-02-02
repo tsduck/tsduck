@@ -30,6 +30,7 @@
 #include "tsLogicalChannelNumbers.h"
 #include "tsEacemLogicalChannelNumberDescriptor.h"
 #include "tsEacemHDSimulcastLogicalChannelDescriptor.h"
+#include "tsEutelsatChannelNumberDescriptor.h"
 #include "tsDTGLogicalChannelDescriptor.h"
 #include "tsDTGHDSimulcastLogicalChannelDescriptor.h"
 #include "tsNorDigLogicalChannelDescriptorV1.h"
@@ -113,6 +114,15 @@ size_t ts::LogicalChannelNumbers::addFromDescriptors(const DescriptorList& descs
                 if (desc.isValid()) {
                     for (auto it = desc.entries.begin(); it != desc.entries.end(); ++it) {
                         addLCN(it->lcn, it->service_id, ts_id, onet_id);
+                        count++;
+                    }
+                }
+            }
+            else if (pds == PDS_EUTELSAT && tag == DID_EUTELSAT_CHAN_NUM) {
+                EutelsatChannelNumberDescriptor desc(_duck, *ptr);
+                if (desc.isValid()) {
+                    for (auto it = desc.entries.begin(); it != desc.entries.end(); ++it) {
+                        addLCN(it->ecn, it->service_id, it->ts_id, it->onetw_id);
                         count++;
                     }
                 }
