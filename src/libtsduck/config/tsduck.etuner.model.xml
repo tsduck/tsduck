@@ -45,8 +45,17 @@
 
 -->
 <tsduck>
+
   <!-- Default values for channel entries -->
-  <defaults delivery="string, optional" bandwidth="uint64, optional" directory="string, optional"/>
+  <defaults delivery="string, optional"
+            bandwidth="uint64, optional"
+            directory="string, optional"/>
+
   <!-- One channel entry per frequency -->
-  <channel frequency="uint64, required" delivery="string, optional" bandwidth="uint64, optional" file="string, required"/>
+  <channel frequency="uint64, required"
+           delivery="string, optional"
+           bandwidth="uint64, optional"
+           file="string, optional"
+           pipe="string, optional"/>
+
 </tsduck>

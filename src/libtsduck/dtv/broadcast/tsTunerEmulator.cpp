@@ -45,6 +45,7 @@ ts::TunerEmulator::TunerEmulator(DuckContext& duck) :
     _info_only(false),
     _state(State::CLOSED),
     _file(),
+    _pipe(),
     _channels(),
     _tune_index(0),
     _tune_frequency(0),
@@ -65,7 +66,8 @@ ts::TunerEmulator::Channel::Channel() :
     frequency(0),
     bandwidth(0),
     delivery(DS_UNDEFINED),
-    file()
+    file(),
+    pipe()
 {
 }
 
@@ -150,8 +152,15 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only, Report&
         success = (*it)->getIntAttribute(chan.frequency, u"frequency", true) &&
                   (*it)->getIntAttribute(chan.bandwidth, u"bandwidth", false, def_bandwidth) &&
                   (*it)->getIntEnumAttribute(chan.delivery, DeliverySystemEnum, u"delivery", false, def_delivery) &&
-                  (*it)->getAttribute(chan.file, u"file", true);
-        if (success) {
+                  (*it)->getAttribute(chan.file, u"file", false) &&
+                  (*it)->getAttribute(chan.pipe, u"pipe", false);
+        chan.file.trim();
+        chan.pipe.trim();
+        if (success && (chan.file.empty() + chan.pipe.empty()) != 1) {
+            report.error(u"%s, line%d: exactly one of file or pipe must be set in <channel>", {device_name, (*it)->lineNumber()});
+            success = false;
+        }
+        if (success && !chan.file.empty()) {
             chan.file = AbsoluteFilePath(chan.file, def_directory);
         }
         _delivery_systems.insert(chan.delivery);
@@ -286,7 +295,7 @@ bool ts::TunerEmulator::tune(ModulationArgs& params, Report& report)
         return false;
     }
 
-    // Tuned !
+    // Found a valid entry for the frequency.
     _tune_index = index;
     _tune_frequency = freq;
     _strength = _channels[index].strength(freq);
@@ -307,18 +316,26 @@ bool ts::TunerEmulator::start(Report& report)
     }
 
     assert(!_file.isOpen());
+    assert(!_pipe.isOpen());
     assert(_tune_index < _channels.size());
 
     const Channel& chan(_channels[_tune_index]);
-    if (chan.file.empty()) {
-        report.error(u"empty file name for channel at %'d Hz", {chan.frequency});
-        return false;
+    if (!chan.file.empty()) {
+        if (!_file.openRead(chan.file, 0, 0, report)) {
+            return false;
+        }
     }
-    else if (!_file.openRead(chan.file, 0, 0, report)) {
+    else if (!chan.pipe.empty()) {
+        if (!_pipe.open(chan.pipe, ForkPipe::SYNCHRONOUS, 0, report, ForkPipe::STDOUT_PIPE, ForkPipe::STDIN_NONE)) {
+            return false;
+        }
+    }
+    else {
+        report.error(u"empty file and pipe names for channel at %'d Hz", {chan.frequency});
         return false;
     }
 
-    // Started !
+    // Started.
     _state = State::STARTED;
     return true;
 }
@@ -328,6 +345,9 @@ bool ts::TunerEmulator::stop(Report& report)
     // Close resources, regardless of state.
     if (_file.isOpen()) {
         _file.close(report);
+    }
+    if (_pipe.isOpen()) {
+        _pipe.close(report);
     }
     // Change state only if started.
     if (_state == State::STARTED) {
@@ -343,8 +363,14 @@ bool ts::TunerEmulator::stop(Report& report)
 
 size_t ts::TunerEmulator::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report)
 {
-    if (_state == State::STARTED && _file.isOpen()) {
+    if (_state != State::STARTED) {
+        return 0;  // error
+    }
+    else if (_file.isOpen()) {
         return _file.readPackets(buffer, nullptr, max_packets, report);
+    }
+    else if (_pipe.isOpen()) {
+        return _pipe.readPackets(buffer, nullptr, max_packets, report);
     }
     else {
         return 0;  // error
@@ -394,6 +420,9 @@ std::ostream& ts::TunerEmulator::displayStatus(std::ostream& strm, const UString
              << ", width: " << UString::Decimal(chan.bandwidth) << ")";
         if (!chan.file.empty()) {
             strm << " file: " << chan.file;
+        }
+        if (!chan.pipe.empty()) {
+            strm << " pipe: " << chan.pipe;
         }
         strm << std::endl;
     }

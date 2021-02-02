@@ -39,6 +39,7 @@
 #include "tsSafePtr.h"
 #include "tsReport.h"
 #include "tsTSFile.h"
+#include "tsTSForkPipe.h"
 
 namespace ts {
     //!
@@ -121,6 +122,7 @@ namespace ts {
             uint64_t       bandwidth;   // Bandwidth in Hz, over which reception is possible.
             DeliverySystem delivery;    // Delivery system for this frequency.
             UString        file;        // TS file name.
+            UString        pipe;        // Command line to pipe output in terminal emulator.
 
             // Constructor.
             Channel();
@@ -140,7 +142,8 @@ namespace ts {
         UString              _xml_file_path;     // Main XML file path.
         bool                 _info_only;         // Open mode, useless here, just informational.
         State                _state;             // Current state.
-        TSFile               _file;              // Current TS file, open after tune().
+        TSFile               _file;              // Current TS file.
+        TSForkPipe           _pipe;              // Current pipe process.
         std::vector<Channel> _channels;          // Map of channels.
         size_t               _tune_index;        // Currently tuned channel.
         uint64_t             _tune_frequency;    // Requested frequency.
