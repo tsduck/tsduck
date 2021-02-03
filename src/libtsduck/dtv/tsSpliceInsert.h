@@ -53,6 +53,11 @@ namespace ts {
         //!
         typedef std::map<uint8_t, SpliceTime> SpliceByComponent;
 
+        //!
+        //! An invalid value for event id, can be used as place-holder.
+        //!
+        static constexpr uint32_t INVALID_EVENT_ID = 0xFFFFFFFF;
+
         // Public members, derived from SCTE 35 standard.
         uint32_t          event_id;        //!< Splice event id.
         bool              canceled;        //!< When true, event is canceled, other fields are ignored.

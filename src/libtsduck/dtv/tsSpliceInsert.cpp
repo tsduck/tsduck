@@ -38,6 +38,10 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"splice_insert"
 #define MY_STD ts::Standards::SCTE
 
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+constexpr uint32_t ts::SpliceInsert::INVALID_EVENT_ID;
+#endif
+
 
 //----------------------------------------------------------------------------
 // Default constructor.

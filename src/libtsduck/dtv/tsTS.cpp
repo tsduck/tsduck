@@ -131,3 +131,17 @@ ts::UString ts::PTSToString(uint64_t pts, bool hexa, bool decimal, bool ms)
     return TimeStampToString(pts, hexa, decimal, ms, SYSTEM_CLOCK_SUBFREQ, 9);
 }
 
+
+//----------------------------------------------------------------------------
+// Convert PCR, PTS, DTS values to milliseconds.
+//----------------------------------------------------------------------------
+
+ts::MilliSecond ts::PCRToMilliSecond(uint64_t pcr)
+{
+    return pcr >= PCR_SCALE ? -1 : pcr / (SYSTEM_CLOCK_FREQ / MilliSecPerSec);
+}
+
+ts::MilliSecond ts::PTSToMilliSecond(uint64_t pts)
+{
+    return pts >= PTS_DTS_SCALE ? -1 : pts / (SYSTEM_CLOCK_SUBFREQ / MilliSecPerSec);
+}

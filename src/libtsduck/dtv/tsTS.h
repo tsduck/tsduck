@@ -455,4 +455,18 @@ namespace ts {
     //! @return The formatted string.
     //!
     TSDUCKDLL UString PTSToString(uint64_t pts, bool hexa = true, bool decimal = true, bool ms = true);
+
+    //!
+    //! Convert a PCR value to milliseconds.
+    //! @param [in] pcr The PCR value.
+    //! @return The corresponding number of milliseconds or -1 on invalid value.
+    //!
+    TSDUCKDLL MilliSecond PCRToMilliSecond(uint64_t pcr);
+
+    //!
+    //! Convert a PTS or DTS value to milliseconds.
+    //! @param [in] pts The PTS or DTS value.
+    //! @return The corresponding number of milliseconds or -1 on invalid value.
+    //!
+    TSDUCKDLL MilliSecond PTSToMilliSecond(uint64_t pts);
 }
