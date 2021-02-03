@@ -7,7 +7,7 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_splicemonitor.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{2F7A9060-4479-48E7-9899-54210E1E1F1C}</ProjectGuid>
+    <ProjectGuid>{71E9C4D5-1FFD-4731-A9E3-491A41F07DBD}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tsplugin_splicemonitor</RootNamespace>
   </PropertyGroup>
