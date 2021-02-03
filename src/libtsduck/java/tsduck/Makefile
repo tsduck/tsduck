@@ -52,7 +52,7 @@ default install:
 else
 
 # Generate classes to make sure they are compatible with Java 8.
-JAVAC_FLAGS = -source 1.8 -target 1.8
+JAVAC_FLAGS = -source 1.8 -target 1.8 -Xlint:-options
 
 JAR      := $(shell $(ROOTDIR)/build/java-config.sh --jar)
 CLASSDIR  = $(OBJDIR)/java
