@@ -157,7 +157,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only, Report&
         chan.file.trim();
         chan.pipe.trim();
         if (success && (chan.file.empty() + chan.pipe.empty()) != 1) {
-            report.error(u"%s, line%d: exactly one of file or pipe must be set in <channel>", {device_name, (*it)->lineNumber()});
+            report.error(u"%s, line %d: exactly one of file or pipe must be set in <channel>", {device_name, (*it)->lineNumber()});
             success = false;
         }
         if (success && !chan.file.empty()) {
