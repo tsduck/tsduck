@@ -1,0 +1,2 @@
+dark green:  RGB: 39, 174, 96  (#27ae60)
+light green: RGB: 46, 204, 113 (#2ecc71)
