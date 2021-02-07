@@ -38,15 +38,17 @@ TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
 
-// Method: io.tsduck.Info.intVersion
-// Signature: ()I
+//
+// public static native int intVersion();
+//
 TSDUCKJNI jint JNICALL Java_io_tsduck_Info_intVersion(JNIEnv* env, jclass clazz)
 {
     return TS_VERSION_INTEGER;
 }
 
-// Method: io.tsduck.Info.version
-// Signature: ()Ljava/lang/String;
+//
+// public static native String version();
+//
 TSDUCKJNI jstring JNICALL Java_io_tsduck_Info_version(JNIEnv* env, jclass clazz)
 {
     return ts::jni::ToJString(env, ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT));

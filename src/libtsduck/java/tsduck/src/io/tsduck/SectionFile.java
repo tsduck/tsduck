@@ -50,6 +50,11 @@ public class SectionFile implements NativeObject {
     // Set the address of the C++ object.
     private native void initNativeObject(DuckContext duck);
 
+    // CRC32 validation methods, used when loading binary MPEG sections, same values as C++ counterparts.
+    static public final int CRC32_IGNORE  = 0;  //!< Ignore the section CRC32 when loading a binary section. This is the default.
+    static public final int CRC32_CHECK   = 1;  //!< Check that the value of the CRC32 of the section is correct and fail if it isn't.
+    static public final int CRC32_COMPUTE = 2; //!< Recompute a fresh new CRC32 value based on the content of the section.
+
     /**
      * Constructor
      * @param duck The TSDuck execution context object to use.
@@ -88,6 +93,13 @@ public class SectionFile implements NativeObject {
      * @return The total number of full tables in the file.
      */
     public native int tablesCount();
+
+    /**
+     * Set the CRC32 processing mode when loading binary sections.
+     * @param mode For binary files, how to process the CRC32 of the input sections.
+     * Must be one of the CRC32_* values.
+     */
+    public native void setCRCValidation(int mode);
 
     /**
      * Load a binary section file from a memory buffer.
@@ -152,4 +164,41 @@ public class SectionFile implements NativeObject {
      * @return Complete JSON document text, empty on error.
      */
     public native String toJSON();
+
+    /**
+     * Reorganize all EIT sections according to ETSI TS 101 211.
+     *
+     * Only one EITp/f subtable is kept per service. It is split in two sections if two
+     * events (present and following) are specified. All EIT schedule are kept. But they
+     * are completely reorganized. All events are extracted and spread over new EIT
+     * sections according to ETSI TS 101 211 rules.
+     *
+     * The "last midnight" according to which EIT segments are assigned is derived from
+     * parameters @a year, @a month and @a day. If any of them is out or range, the start
+     * time of the oldest event in the section file is used as "reference date".
+     *
+     * @param year Year of the reference time for EIT schedule.
+     * This is the "last midnight" according to which EIT segments are assigned.
+     * @param month Month (1..12) of the reference time for EIT schedule.
+     * @param day Day (1..31) of the reference time for EIT schedule.
+     * @see ETSI TS 101 211, section 4.1.4
+     */
+    public native void reorganizeEITs(int year, int month, int day);
+
+
+    /**
+     * Reorganize all EIT sections according to ETSI TS 101 211.
+     *
+     * Only one EITp/f subtable is kept per service. It is split in two sections if two
+     * events (present and following) are specified. All EIT schedule are kept. But they
+     * are completely reorganized. All events are extracted and spread over new EIT
+     * sections according to ETSI TS 101 211 rules.
+     *
+     * The start time of the oldest event in the section file is used as "reference date".
+     *
+     * @see ETSI TS 101 211, section 4.1.4
+     */
+    public void reorganizeEITs() {
+        reorganizeEITs(0, 0, 0);
+    }
 }

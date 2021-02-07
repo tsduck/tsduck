@@ -3,4 +3,4 @@
 default:
 	@true
 clean distclean:
-	@rm -rf *.class
+	@rm -rf *.class eit.bin

@@ -38,12 +38,9 @@ TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
 
-//----------------------------------------------------------------------------
-// Implementation of native methods.
-//----------------------------------------------------------------------------
-
-// Method: io.tsduck.TSProcessor.initNativeObject
-// Signature: (Lio/tsduck/Report;)V
+//
+// private native void initNativeObject(Report report);
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_initNativeObject(JNIEnv* env, jobject obj, jobject jreport)
 {
     // Make sure we do not allocate twice (and lose previous instance).
@@ -60,8 +57,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_initNativeObject(JNIEnv* env, 
     }
 }
 
-// Method: io.tsduck.TSProcessor.abort
-// Signature: ()V
+//
+// public native void abort();
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_abort(JNIEnv* env, jobject obj)
 {
     ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");
@@ -70,8 +68,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_abort(JNIEnv* env, jobject obj
     }
 }
 
-// Method: io.tsduck.TSProcessor.waitForTermination
-// Signature: ()V
+//
+// public native void waitForTermination();
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_waitForTermination(JNIEnv* env, jobject obj)
 {
     ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");
@@ -80,8 +79,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_waitForTermination(JNIEnv* env
     }
 }
 
-// Method: io.tsduck.TSProcessor.delete
-// Signature: ()V
+//
+// public native void delete();
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_delete(JNIEnv* env, jobject obj)
 {
     ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");
@@ -117,8 +117,9 @@ static bool GetPluginOption(JNIEnv* env, jobjectArray strings, ts::PluginOptions
 // Start method: the parameters are fetched from the Java object fields.
 //----------------------------------------------------------------------------
 
-// Method: io.tsduck.TSProcessor.start
-// Signature: ()Z
+//
+// public native boolean start();
+//
 TSDUCKJNI jboolean JNICALL Java_io_tsduck_TSProcessor_start(JNIEnv* env, jobject obj)
 {
     ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");

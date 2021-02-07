@@ -137,9 +137,9 @@ namespace ts {
         //! Used when building MPEG sections.
         //!
         enum Validation {
-            IGNORE,   //!< Ignore the section CRC32.
-            CHECK,    //!< Check that the value of the CRC32 of the section is correct and fail if it isn't.
-            COMPUTE   //!< Recompute a fresh new CRC32 value based on the content of the section.
+            IGNORE  = 0,  //!< Ignore the section CRC32.
+            CHECK   = 1,  //!< Check that the value of the CRC32 of the section is correct and fail if it isn't.
+            COMPUTE = 2   //!< Recompute a fresh new CRC32 value based on the content of the section.
         };
 
     private:
