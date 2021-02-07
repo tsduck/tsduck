@@ -41,6 +41,14 @@ import ctypes
 #
 class SectionFile(NativeObject):
 
+    # CRC32 validation methods, used when loading binary MPEG sections, same values as C++ counterparts.
+    ## Ignore the section CRC32 when loading a binary section. This is the default.
+    CRC32_IGNORE = 0
+    ## Check that the value of the CRC32 of the section is correct and fail if it isn't.
+    CRC32_CHECK = 1
+    ## Recompute a fresh new CRC32 value based on the content of the section.
+    CRC32_COMPUTE = 2
+
     ##
     # Constructor.
     # @param duck The ts.DuckContext object to use.
@@ -85,6 +93,15 @@ class SectionFile(NativeObject):
     def tablesCount(self):
         return int(lib.tspySectionFileTablesCount(self._native_object))
 
+    ##
+    # Set the CRC32 processing mode when loading binary sections.
+    # @param mode For binary files, how to process the CRC32 of the input sections.
+    # Must be one of the CRC32_* values.
+    # @return None
+    #
+    def setCRCValidation(self, mode):
+        lib.tspySectionFileSetCRCValidation(self._native_object, mode)
+        
     ##
     # Load a binary section file from a memory buffer.
     # The loaded sections are added to the content of this object.
@@ -185,3 +202,25 @@ class SectionFile(NativeObject):
             buf = lib.OutByteBuffer(len)
             len = lib.tspySectionFileToJSON(self._native_object, buf.data_ptr(), buf.size_ptr())
         return buf.to_string()
+
+    ##
+    # Reorganize all EIT sections according to ETSI TS 101 211.
+    # 
+    # Only one EITp/f subtable is kept per service. It is split in two sections if two
+    # events (present and following) are specified. All EIT schedule are kept. But they
+    # are completely reorganized. All events are extracted and spread over new EIT
+    # sections according to ETSI TS 101 211 rules.
+    # 
+    # The "last midnight" according to which EIT segments are assigned is derived from
+    # parameters @a year, @a month and @a day. If any of them is out or range, the start
+    # time of the oldest event in the section file is used as "reference date".
+    # 
+    # @param year Year of the reference time for EIT schedule.
+    # This is the "last midnight" according to which EIT segments are assigned.
+    # @param month Month (1..12) of the reference time for EIT schedule.
+    # @param day Day (1..31) of the reference time for EIT schedule.
+    # @return None.
+    # @see ETSI TS 101 211, section 4.1.4
+    #
+    def reorganizeEITs(self, year = 0, month = 0, day = 0):
+        lib.tspySectionFileReorganizeEITs(self._native_object, year, month, day)

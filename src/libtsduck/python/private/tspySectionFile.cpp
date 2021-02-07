@@ -142,3 +142,23 @@ TSDUCKPY void tspySectionSaveBuffer(void* sf, uint8_t* buffer, size_t* size)
         *size = file->saveBuffer(buffer, *size);
     }
 }
+
+TSDUCKPY void tspySectionFileSetCRCValidation(void* sf, int mode)
+{
+    ts::SectionFile* file = reinterpret_cast<ts::SectionFile*>(sf);
+    if (file != nullptr) {
+        file->setCRCValidation(ts::CRC32::Validation(mode));
+    }
+}
+
+TSDUCKPY void tspySectionFileReorganizeEITs(void* sf, int year, int month, int day)
+{
+    ts::SectionFile* file = reinterpret_cast<ts::SectionFile*>(sf);
+    if (file != nullptr) {
+        ts::Time reftime;
+        if (year > 0 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+            reftime = ts::Time::Fields(int(year), int(month), int(day));
+        }
+        file->reorganizeEITs(reftime);
+    }
+}

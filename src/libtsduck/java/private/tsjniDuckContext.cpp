@@ -38,8 +38,9 @@ TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
 
-// Method: io.tsduck.DuckContext.initNativeObject
-// Signature: (Lio/tsduck/Report;)V
+//
+// private native void initNativeObject(Report report);
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_initNativeObject(JNIEnv* env, jobject obj, jobject jreport)
 {
     // Make sure we do not allocate twice (and lose previous instance).
@@ -56,8 +57,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_initNativeObject(JNIEnv* env, 
     }
 }
 
-// Method: io.tsduck.DuckContext.delete
-// Signature: ()V
+//
+// public native void delete();
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_delete(JNIEnv* env, jobject obj)
 {
     ts::DuckContext* duck = ts::jni::GetPointerField<ts::DuckContext>(env, obj, "nativeObject");
@@ -67,8 +69,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_delete(JNIEnv* env, jobject ob
     }
 }
 
-// Method: io.tsduck.DuckContext.setDefaultCharset
-// Signature: (Ljava/lang/String;)Z
+//
+// public native boolean setDefaultCharset(String charset);
+//
 TSDUCKJNI jboolean JNICALL Java_io_tsduck_DuckContext_setDefaultCharset(JNIEnv* env, jobject obj, jstring jname)
 {
     ts::DuckContext* duck = ts::jni::GetPointerField<ts::DuckContext>(env, obj, "nativeObject");
@@ -85,8 +88,9 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_DuckContext_setDefaultCharset(JNIEnv* 
     return false;
 }
 
-// Method: io.tsduck.DuckContext.setDefaultCASId
-// Signature: (S)V
+//
+// public native void setDefaultCASId(short cas);
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_setDefaultCASId(JNIEnv* env, jobject obj, jshort cas)
 {
     ts::DuckContext* duck = ts::jni::GetPointerField<ts::DuckContext>(env, obj, "nativeObject");
@@ -95,8 +99,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_setDefaultCASId(JNIEnv* env, j
     }
 }
 
-// Method: io.tsduck.DuckContext.setDefaultPDS
-// Signature: (I)V
+//
+// public native void setDefaultPDS(int pds);
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_setDefaultPDS(JNIEnv* env, jobject obj, jint pds)
 {
     ts::DuckContext* duck = ts::jni::GetPointerField<ts::DuckContext>(env, obj, "nativeObject");
@@ -105,8 +110,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_setDefaultPDS(JNIEnv* env, job
     }
 }
 
-// Method: io.tsduck.DuckContext.addStandards
-// Signature: (I)V
+//
+// public native void addStandards(int mask);
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_addStandards(JNIEnv* env, jobject obj, jint mask)
 {
     ts::DuckContext* duck = ts::jni::GetPointerField<ts::DuckContext>(env, obj, "nativeObject");
@@ -115,16 +121,18 @@ TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_addStandards(JNIEnv* env, jobj
     }
 }
 
-// Method: io.tsduck.DuckContext.standards
-// Signature: ()I
+//
+// public native int standards();
+//
 TSDUCKJNI jint JNICALL Java_io_tsduck_DuckContext_standards(JNIEnv* env, jobject obj)
 {
     ts::DuckContext* duck = ts::jni::GetPointerField<ts::DuckContext>(env, obj, "nativeObject");
     return duck == nullptr ? 0 : jint(duck->standards());
 }
 
-// Method: io.tsduck.DuckContext.resetStandards
-// Signature: (I)V
+//
+// public native void resetStandards(int mask);
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_resetStandards(JNIEnv* env, jobject obj, jint mask)
 {
     ts::DuckContext* duck = ts::jni::GetPointerField<ts::DuckContext>(env, obj, "nativeObject");
@@ -133,8 +141,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_resetStandards(JNIEnv* env, jo
     }
 }
 
-// Method: io.tsduck.DuckContext.setTimeReferenceOffset
-// Signature: (J)V
+//
+// public native void setTimeReferenceOffset(long offset);
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_setTimeReferenceOffset(JNIEnv* env, jobject obj, jlong offset)
 {
     ts::DuckContext* duck = ts::jni::GetPointerField<ts::DuckContext>(env, obj, "nativeObject");
@@ -143,8 +152,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_setTimeReferenceOffset(JNIEnv*
     }
 }
 
-// Method: io.tsduck.DuckContext.setTimeReference
-// Signature: (Ljava/lang/String;)Z
+//
+// public native boolean setTimeReference(String name);
+//
 TSDUCKJNI jboolean JNICALL Java_io_tsduck_DuckContext_setTimeReference(JNIEnv* env, jobject obj, jstring jname)
 {
     ts::DuckContext* duck = ts::jni::GetPointerField<ts::DuckContext>(env, obj, "nativeObject");

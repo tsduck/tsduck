@@ -40,21 +40,22 @@ import ctypes
 # @ingroup python
 #
 class Report(NativeObject):
+
     # Severity levels, same values as C++ counterparts.
     ## Fatal error, typically aborts the application.
-    Fatal   = -5;
+    Fatal   = -5
     ## Severe errror.
-    Severe  = -4;
+    Severe  = -4
     ## Regular error.
-    Error   = -3;
+    Error   = -3
     ## Warning message.
-    Warning = -2;
+    Warning = -2
     ## Information message.
-    Info    = -1;
+    Info    = -1
     ## Verbose information.
-    Verbose =  0;
+    Verbose =  0
     ## First debug level.
-    Debug   =  1;
+    Debug   =  1
 
     ##
     # Formatted line prefix header for a severity.

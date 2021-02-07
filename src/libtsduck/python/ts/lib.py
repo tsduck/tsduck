@@ -372,6 +372,18 @@ tspySectionSaveBuffer = _lib.tspySectionSaveBuffer
 tspySectionSaveBuffer.restype = None
 tspySectionSaveBuffer.argtypes = [c_void_p, POINTER(c_uint8), POINTER(c_size_t)]
 
+# void tspySectionFileSetCRCValidation(void* sf, int mode)
+
+tspySectionFileSetCRCValidation = _lib.tspySectionFileSetCRCValidation
+tspySectionFileSetCRCValidation.restype = None
+tspySectionFileSetCRCValidation.argtypes = [c_void_p, c_int]
+
+# void tspySectionFileReorganizeEITs(void* sf, int year, int month, int day)
+
+tspySectionFileReorganizeEITs = _lib.tspySectionFileReorganizeEITs
+tspySectionFileReorganizeEITs.restype = None
+tspySectionFileReorganizeEITs.argtypes = [c_void_p, c_int, c_int, c_int]
+
 #-----------------------------------------------------------------------------
 # Bindings to C++ functions from tspyTSProcessor.cpp
 #-----------------------------------------------------------------------------

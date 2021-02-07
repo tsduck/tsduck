@@ -44,15 +44,17 @@ TSDUCK_SOURCE;
 // Implementation of native methods of Java class io.tsduck.Report
 //----------------------------------------------------------------------------
 
-// Method: io.tsduck.Report.header (static)
-// Signature: (I)Ljava/lang/String;
+//
+// public static native String header(int severity);
+//
 TSDUCKJNI jstring JNICALL Java_io_tsduck_Report_header(JNIEnv* env, jclass clazz, jint severity)
 {
     return ts::jni::ToJString(env, ts::Severity::Header(int(severity)));
 }
 
-// Method: io.tsduck.Report.setMaxSeverity
-// Signature: (I)V
+//
+// public native void setMaxSeverity(int severity);
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_Report_setMaxSeverity(JNIEnv* env, jobject obj, jint severity)
 {
     ts::Report* report = ts::jni::GetPointerField<ts::Report>(env, obj, "nativeObject");
@@ -61,8 +63,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_Report_setMaxSeverity(JNIEnv* env, jobject
     }
 }
 
-// Method: io.tsduck.Report.log
-// Signature: (ILjava/lang/String;)V
+//
+// public native void log(int severity, String message);
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_Report_log(JNIEnv* env, jobject obj, jint severity, jstring message)
 {
     ts::Report* report = ts::jni::GetPointerField<ts::Report>(env, obj, "nativeObject");
@@ -75,8 +78,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_Report_log(JNIEnv* env, jobject obj, jint 
 // Implementation of native methods of Java class io.tsduck.NullReport
 //----------------------------------------------------------------------------
 
-// Method: io.tsduck.NullReport.initNativeObject
-// Signature: ()V
+//
+// private native void initNativeObject();
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_NullReport_initNativeObject(JNIEnv* env, jobject obj)
 {
     // Set the same singleton address to all Java instances (won't be deleted).
@@ -87,8 +91,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_NullReport_initNativeObject(JNIEnv* env, j
 // Implementation of native methods of Java class io.tsduck.ErrReport
 //----------------------------------------------------------------------------
 
-// Method: io.tsduck.ErrReport.initNativeObject
-// Signature: ()V
+//
+// private native void initNativeObject();
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_ErrReport_initNativeObject(JNIEnv* env, jobject obj)
 {
     // Set the same singleton address to all Java instances (won't be deleted).
@@ -99,8 +104,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_ErrReport_initNativeObject(JNIEnv* env, jo
 // Implementation of native methods of Java class io.tsduck.AsyncReport
 //----------------------------------------------------------------------------
 
-// Method: io.tsduck.AsyncReport.initNativeObject
-// Signature: (IZZI)V
+//
+// private native void initNativeObject(int severity, boolean syncLog, boolean timedLog, int logMsgCount);
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_AsyncReport_initNativeObject(JNIEnv* env, jobject obj, jint severity, jboolean syncLog, jboolean timedLog, jint logMsgCount)
 {
     // Make sure we do not allocate twice (and lose previous instance).
@@ -114,8 +120,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_AsyncReport_initNativeObject(JNIEnv* env, 
     }
 }
 
-// Method: io.tsduck.AsyncReport.terminate
-// Signature: ()V
+//
+// public native void terminate();
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_AsyncReport_terminate(JNIEnv* env, jobject obj)
 {
     ts::AsyncReport* report = ts::jni::GetPointerField<ts::AsyncReport>(env, obj, "nativeObject");
@@ -124,8 +131,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_AsyncReport_terminate(JNIEnv* env, jobject
     }
 }
 
-// Method: io.tsduck.AsyncReport.delete
-// Signature: ()V
+//
+// public native void delete();
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_AsyncReport_delete(JNIEnv* env, jobject obj)
 {
     ts::AsyncReport* report = ts::jni::GetPointerField<ts::AsyncReport>(env, obj, "nativeObject");
@@ -139,8 +147,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_AsyncReport_delete(JNIEnv* env, jobject ob
 // Implementation of native methods of Java class io.tsduck.AbstractAsyncReport
 //----------------------------------------------------------------------------
 
-// Method: io.tsduck.AbstractAsyncReport.initNativeObject
-// Signature: (Ljava/lang/String;IZI)V
+//
+// private native void initNativeObject(String logMethodName, int severity, boolean syncLog, int logMsgCount);
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_AbstractAsyncReport_initNativeObject(JNIEnv* env, jobject obj, jstring method, jint severity, jboolean syncLog, jint logMsgCount)
 {
     // Make sure we do not allocate twice (and lose previous instance).
@@ -153,8 +162,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_AbstractAsyncReport_initNativeObject(JNIEn
     }
 }
 
-// Method: io.tsduck.AbstractAsyncReport.terminate
-// Signature: ()V
+//
+// public native void terminate();
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_AbstractAsyncReport_terminate(JNIEnv* env, jobject obj)
 {
     ts::jni::AsyncReport* report = ts::jni::GetPointerField<ts::jni::AsyncReport>(env, obj, "nativeObject");
@@ -163,8 +173,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_AbstractAsyncReport_terminate(JNIEnv* env,
     }
 }
 
-// Method: io.tsduck.AbstractAsyncReport.delete
-// Signature: ()V
+//
+// public native void delete();
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_AbstractAsyncReport_delete(JNIEnv* env, jobject obj)
 {
     ts::jni::AsyncReport* report = ts::jni::GetPointerField<ts::jni::AsyncReport>(env, obj, "nativeObject");
@@ -178,8 +189,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_AbstractAsyncReport_delete(JNIEnv* env, jo
 // Implementation of native methods of Java class io.tsduck.AbstractSyncReport
 //----------------------------------------------------------------------------
 
-// Method: io.tsduck.AbstractSyncReport.initNativeObject
-// Signature: (Ljava/lang/String;I)V
+//
+// private native void initNativeObject(String logMethodName, int severity);
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_AbstractSyncReport_initNativeObject(JNIEnv* env, jobject obj, jstring method, jint severity)
 {
     // Make sure we do not allocate twice (and lose previous instance).
@@ -189,8 +201,9 @@ TSDUCKJNI void JNICALL Java_io_tsduck_AbstractSyncReport_initNativeObject(JNIEnv
     }
 }
 
-// Method: io.tsduck.AbstractSyncReport.delete
-// Signature: ()V
+//
+// public native void delete();
+//
 TSDUCKJNI void JNICALL Java_io_tsduck_AbstractSyncReport_delete(JNIEnv* env, jobject obj)
 {
     ts::jni::SyncReport* report = ts::jni::GetPointerField<ts::jni::SyncReport>(env, obj, "nativeObject");
