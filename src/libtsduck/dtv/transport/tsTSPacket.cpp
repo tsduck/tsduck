@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSPacket.h"
-#include "tsPCR.h"
 #include "tsPES.h"
 #include "tsNames.h"
 #include "tsByteBlock.h"
@@ -430,8 +429,28 @@ size_t ts::TSPacket::getPESHeaderSize() const
 }
 
 //----------------------------------------------------------------------------
-// These private methods compute the offset of PCR, OPCR.
-// Return 0 if there is none.
+// Static routines to extract / insert a PCR from / to a stream.
+//----------------------------------------------------------------------------
+
+uint64_t ts::TSPacket::GetPCR(const uint8_t* b)
+{
+    const uint32_t v32 = GetUInt32(b);
+    const uint16_t v16 = GetUInt16(b + 4);
+    const uint64_t pcr_base = (uint64_t(v32) << 1) | uint64_t(v16 >> 15);
+    const uint64_t pcr_ext = uint64_t(v16 & 0x01FF);
+    return pcr_base * SYSTEM_CLOCK_SUBFACTOR + pcr_ext;
+}
+
+void ts::TSPacket::PutPCR(uint8_t* b, const uint64_t& pcr)
+{
+    const uint64_t pcr_base = pcr / SYSTEM_CLOCK_SUBFACTOR;
+    const uint64_t pcr_ext = pcr % SYSTEM_CLOCK_SUBFACTOR;
+    PutUInt32(b, uint32_t(pcr_base >> 1));
+    PutUInt16(b + 4, uint16_t(uint32_t((pcr_base << 15) | 0x7E00 | pcr_ext)));
+}
+
+//----------------------------------------------------------------------------
+// Private methods to compute the offset of PCR or OPCR.
 //----------------------------------------------------------------------------
 
 size_t ts::TSPacket::PCROffset() const
@@ -485,10 +504,10 @@ size_t ts::TSPacket::privateDataOffset() const
     }
 
     // Compute offset of private data.
-    const size_t offset = 6 +                     // start of AF, after flags
-        (((b[5] & 0x10) != 0) ? PCR_SIZE : 0) +   // skip PCR
-        (((b[5] & 0x08) != 0) ? PCR_SIZE : 0) +   // skip OPCR
-        (((b[5] & 0x04) != 0) ? 1 : 0);           // skip splicing countdown
+    const size_t offset = 6 +                      // start of AF, after flags
+        (((b[5] & 0x10) != 0) ? PCR_BYTES : 0) +   // skip PCR
+        (((b[5] & 0x08) != 0) ? PCR_BYTES : 0) +   // skip OPCR
+        (((b[5] & 0x04) != 0) ? 1 : 0);            // skip splicing countdown
 
     // Check that private data fit inside the AF.
     const size_t endAF = 4 + af;
@@ -554,10 +573,10 @@ bool ts::TSPacket::setPrivateData(const void* data, size_t size, bool shift_payl
     assert(hasAF());
 
     // Compute offset of private data.
-    const size_t offset = 6 +                     // start of AF, after flags
-        (((b[5] & 0x10) != 0) ? PCR_SIZE : 0) +   // skip PCR
-        (((b[5] & 0x08) != 0) ? PCR_SIZE : 0) +   // skip OPCR
-        (((b[5] & 0x04) != 0) ? 1 : 0);           // skip splicing countdown
+    const size_t offset = 6 +                      // start of AF, after flags
+        (((b[5] & 0x10) != 0) ? PCR_BYTES : 0) +   // skip PCR
+        (((b[5] & 0x08) != 0) ? PCR_BYTES : 0) +   // skip OPCR
+        (((b[5] & 0x04) != 0) ? 1 : 0);            // skip splicing countdown
 
     // Do we have valid private data already?
     const bool hasData = (b[5] & 0x02) != 0;
@@ -666,7 +685,7 @@ bool ts::TSPacket::setSpliceCountdown(int8_t count, bool shift_payload)
         // Set splicing point countdown flag.
         b[5] |= 0x04;
         // Compute splicing point countdown offset.
-        offset = 6 + (hasPCR() ? PCR_SIZE : 0) + (hasOPCR() ? PCR_SIZE : 0);
+        offset = 6 + (hasPCR() ? PCR_BYTES : 0) + (hasOPCR() ? PCR_BYTES : 0);
         // Shift the existing AF 1 byte ahead to make room for the splicing point countdown value.
         ::memmove(b + offset + 1, b + offset, 4 + getAFSize() - offset - 1);
     }
@@ -741,7 +760,7 @@ bool ts::TSPacket::setPCR(const uint64_t &pcr, bool shift_payload)
     size_t offset = PCROffset();
     if (offset == 0) {
         // Currently no PCR is present, we need to create one.
-        if (!reserveStuffing(PCR_SIZE, shift_payload, false)) {
+        if (!reserveStuffing(PCR_BYTES, shift_payload, false)) {
             // Could not create space for PCR.
             return false;
         }
@@ -749,7 +768,7 @@ bool ts::TSPacket::setPCR(const uint64_t &pcr, bool shift_payload)
         b[5] |= 0x10;  // set PCR flag
         offset = 6;    // PCR offset in packet
         // Shift the existing AF 6 bytes ahead to make room for the PCR value.
-        ::memmove(b + offset + PCR_SIZE, b + offset, 4 + getAFSize() - offset - PCR_SIZE);
+        ::memmove(b + offset + PCR_BYTES, b + offset, 4 + getAFSize() - offset - PCR_BYTES);
     }
 
     // Finally write the PCR value.
@@ -766,16 +785,16 @@ bool ts::TSPacket::setOPCR(const uint64_t &opcr, bool shift_payload)
     size_t offset = OPCROffset();
     if (offset == 0) {
         // Currently no OPCR is present, we need to create one.
-        if (!reserveStuffing(PCR_SIZE, shift_payload, false)) {
+        if (!reserveStuffing(PCR_BYTES, shift_payload, false)) {
             // Could not create space for PCR.
             return false;
         }
         // Set OPCR flag.
         b[5] |= 0x08;
         // Compute OPCR offset.
-        offset = 6 + (hasPCR() ? PCR_SIZE : 0);
+        offset = 6 + (hasPCR() ? PCR_BYTES : 0);
         // Shift the existing AF 6 bytes ahead to make room for the PCR value.
-        ::memmove(b + offset + PCR_SIZE, b + offset, 4 + getAFSize() - offset - PCR_SIZE);
+        ::memmove(b + offset + PCR_BYTES, b + offset, 4 + getAFSize() - offset - PCR_BYTES);
     }
 
     // Finally write the OPCR value.

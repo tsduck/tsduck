@@ -48,20 +48,20 @@ namespace ts {
     //! This class is typically used to handle -\-patch-xml command line options.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL PatchXML : public ArgsSupplierInterface
+    class TSDUCKDLL TablePatchXML : public ArgsSupplierInterface
     {
-        TS_NOBUILD_NOCOPY(PatchXML);
+        TS_NOBUILD_NOCOPY(TablePatchXML);
     public:
         //!
         //! Constructor.
         //! @param [in,out] duck TSDuck execution context.
         //!
-        PatchXML(DuckContext& duck);
+        TablePatchXML(DuckContext& duck);
 
         //!
         //! Virtual destructor.
         //!
-        virtual ~PatchXML() override;
+        virtual ~TablePatchXML() override;
 
         // Implementation of ArgsSupplierInterface.
         virtual void defineArgs(Args& args) const override;

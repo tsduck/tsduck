@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPatchXML.h"
+#include "tsTablePatchXML.h"
 #include "tsxmlPatchDocument.h"
 #include "tsxmlElement.h"
 #include "tsFatal.h"
@@ -39,14 +39,14 @@ TSDUCK_SOURCE;
 // Constructors and destructors
 //----------------------------------------------------------------------------
 
-ts::PatchXML::PatchXML(DuckContext& duck) :
+ts::TablePatchXML::TablePatchXML(DuckContext& duck) :
     _duck(duck),
     _patchFiles(),
     _patches()
 {
 }
 
-ts::PatchXML::~PatchXML()
+ts::TablePatchXML::~TablePatchXML()
 {
 }
 
@@ -54,7 +54,7 @@ ts::PatchXML::~PatchXML()
 // Clear all previously loaded patch files, clear list of patch files.
 //----------------------------------------------------------------------------
 
-void ts::PatchXML::clear()
+void ts::TablePatchXML::clear()
 {
     _patchFiles.clear();
     _patches.clear();
@@ -65,7 +65,7 @@ void ts::PatchXML::clear()
 // Define standard command line arguments.
 //----------------------------------------------------------------------------
 
-void ts::PatchXML::defineArgs(Args& args) const
+void ts::TablePatchXML::defineArgs(Args& args) const
 {
     args.option(u"patch-xml", 0, Args::STRING, 0, Args::UNLIMITED_COUNT);
     args.help(u"patch-xml", u"filename",
@@ -80,23 +80,23 @@ void ts::PatchXML::defineArgs(Args& args) const
 // Load patch file names and command line arguments.
 //----------------------------------------------------------------------------
 
-bool ts::PatchXML::loadArgs(DuckContext& duck, Args& args)
+bool ts::TablePatchXML::loadArgs(DuckContext& duck, Args& args)
 {
     args.getValues(_patchFiles, u"patch-xml");
     return true;
 }
 
-void ts::PatchXML::addPatchFileName(const UString& filename)
+void ts::TablePatchXML::addPatchFileName(const UString& filename)
 {
     _patchFiles.push_back(filename);
 }
 
-void ts::PatchXML::addPatchFileNames(const UStringVector& filenames)
+void ts::TablePatchXML::addPatchFileNames(const UStringVector& filenames)
 {
     _patchFiles.insert(_patchFiles.end(), filenames.begin(), filenames.end());
 }
 
-void ts::PatchXML::addPatchFileNames(const UStringList& filenames)
+void ts::TablePatchXML::addPatchFileNames(const UStringList& filenames)
 {
     _patchFiles.insert(_patchFiles.end(), filenames.begin(), filenames.end());
 }
@@ -106,7 +106,7 @@ void ts::PatchXML::addPatchFileNames(const UStringList& filenames)
 // Load (or reload) the XML patch files.
 //----------------------------------------------------------------------------
 
-bool ts::PatchXML::loadPatchFiles(const xml::Tweaks& tweaks)
+bool ts::TablePatchXML::loadPatchFiles(const xml::Tweaks& tweaks)
 {
     // Clear previously loaded files.
     _patches.clear();
@@ -133,7 +133,7 @@ bool ts::PatchXML::loadPatchFiles(const xml::Tweaks& tweaks)
 // Apply the XML patch files to an XML document.
 //----------------------------------------------------------------------------
 
-void ts::PatchXML::applyPatches(xml::Document& doc) const
+void ts::TablePatchXML::applyPatches(xml::Document& doc) const
 {
     for (size_t i = 0; i < _patches.size(); ++i) {
         _patches[i]->patch(doc);
@@ -145,7 +145,7 @@ void ts::PatchXML::applyPatches(xml::Document& doc) const
 // Apply the XML patch files to a binary table.
 //----------------------------------------------------------------------------
 
-bool ts::PatchXML::applyPatches(BinaryTable& table) const
+bool ts::TablePatchXML::applyPatches(BinaryTable& table) const
 {
     // If no patch is loaded, nothing to do.
     if (_patches.empty()) {
