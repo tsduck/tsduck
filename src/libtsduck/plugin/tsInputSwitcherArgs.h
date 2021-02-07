@@ -78,11 +78,9 @@ namespace ts {
         InputSwitcherArgs();
 
         //!
-        //! Copy constructor.
-        //! Default or minimum values are enforced.
-        //! @param [in] other instance to copy.
+        //! Enforce default or minimum values.
         //!
-        InputSwitcherArgs(const InputSwitcherArgs& other);
+        void enforceDefaults();
 
         // Implementation of ArgsSupplierInterface.
         virtual void defineArgs(Args& args) const override;

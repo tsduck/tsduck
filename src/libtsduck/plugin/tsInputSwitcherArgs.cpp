@@ -68,25 +68,12 @@ ts::InputSwitcherArgs::InputSwitcherArgs() :
 {
 }
 
-ts::InputSwitcherArgs::InputSwitcherArgs(const InputSwitcherArgs& other) :
-    appName(other.appName),
-    fastSwitch(other.fastSwitch),
-    delayedSwitch(other.delayedSwitch),
-    terminate(other.terminate),
-    monitor(other.monitor),
-    reusePort(other.reusePort),
-    firstInput(std::min(other.firstInput, std::max<size_t>(other.inputs.size(), 1) - 1)),
-    primaryInput(other.primaryInput),
-    cycleCount(other.cycleCount),
-    bufferedPackets(std::max(other.bufferedPackets, MIN_BUFFERED_PACKETS)),
-    maxInputPackets(std::max(other.maxInputPackets, MIN_INPUT_PACKETS)),
-    maxOutputPackets(std::max(other.maxOutputPackets, MIN_OUTPUT_PACKETS)),
-    sockBuffer(other.sockBuffer),
-    remoteServer(other.remoteServer),
-    allowedRemote(other.allowedRemote),
-    receiveTimeout(other.receiveTimeout),
-    inputs(other.inputs),
-    output(other.output)
+
+//----------------------------------------------------------------------------
+// Enforce default or minimum values.
+//----------------------------------------------------------------------------
+
+void ts::InputSwitcherArgs::enforceDefaults()
 {
     if (inputs.empty()) {
         // If no input plugin is used, used only standard input.
@@ -98,6 +85,11 @@ ts::InputSwitcherArgs::InputSwitcherArgs(const InputSwitcherArgs& other) :
     if (receiveTimeout <= 0 && primaryInput != NPOS) {
         receiveTimeout = DEFAULT_RECEIVE_TIMEOUT;
     }
+
+    firstInput = std::min(firstInput, inputs.size() - 1);
+    bufferedPackets = std::max(bufferedPackets, MIN_BUFFERED_PACKETS);
+    maxInputPackets = std::max(maxInputPackets, MIN_INPUT_PACKETS);
+    maxOutputPackets = std::max(maxOutputPackets, MIN_OUTPUT_PACKETS);
 }
 
 
