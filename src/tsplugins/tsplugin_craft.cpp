@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
-#include "tsPCR.h"
 TSDUCK_SOURCE;
 
 
@@ -342,12 +341,12 @@ bool ts::CraftInput::getOptions()
                 (privateData.empty() ? 0x00 : 0x02);
             // Optional fields in the adaptation field
             if (pcr != INVALID_PCR) {
-                PutPCR(data, pcr);
-                data += 6;
+                TSPacket::PutPCR(data, pcr);
+                data += TSPacket::PCR_BYTES;
             }
             if (opcr != INVALID_PCR) {
-                PutPCR(data, opcr);
-                data += 6;
+                TSPacket::PutPCR(data, opcr);
+                data += TSPacket::PCR_BYTES;
             }
             if (hasSplicing) {
                 *data++ = spliceCountdown;

@@ -33,7 +33,7 @@
 
 #include "tsMain.h"
 #include "tsDuckContext.h"
-#include "tsPatchXML.h"
+#include "tsTablePatchXML.h"
 #include "tsxmlModelDocument.h"
 #include "tsxmlPatchDocument.h"
 #include "tsxmlJSONConverter.h"
@@ -234,7 +234,7 @@ int MainCode(int argc, char *argv[])
     }
 
     // Load patch files.
-    ts::PatchXML patch(opt.duck);
+    ts::TablePatchXML patch(opt.duck);
     patch.addPatchFileNames(opt.patches);
     patch.loadPatchFiles(opt.xml_tweaks);
     opt.exitOnError();

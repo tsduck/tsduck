@@ -58,10 +58,11 @@ default: $(GITHOOKS_TARGETS)
 	+@$(RECURSE)
 
 # Doxygen needs the TSDuck version and dot (from Graphviz).
-ifneq ($(filter-out doxygen,$(MAKECMDGOALS)), $(MAKECMDGOALS))
+ifneq ($(filter-out doxygen,$(MAKECMDGOALS)),$(MAKECMDGOALS))
     export TS_FULL_VERSION := $(shell ./get-version-from-sources.sh)
     export DOT_PATH := $(call F_SEARCH,dot)
     export HAVE_DOT := $(if $(DOT_PATH),YES,NO)
+    export DOXY_INCLUDE_PATH := $(shell find $(LIBTSDUCKDIR) -type d)
 endif
 
 # Install system files.
