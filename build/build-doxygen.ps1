@@ -80,6 +80,9 @@ if (-not $Version) {
 }
 $env:TS_FULL_VERSION = "${VersionMajor}.${VersionMinor}-${VersionCommit}"
 
+# List of include directories.
+$env:DOXY_INCLUDE_PATH = (Get-ChildItem "$SrcDir\libtsduck" -Recurse -Directory | ForEach-Object { $_.FullName }) -join " "
+
 # Check if Doxygen is installed.
 $DoxyExe = (Get-ChildItem 'C:\Program Files*\Doxygen*\bin' -Include doxygen.exe -Recurse | Select-Object FullName -First 1)
 
