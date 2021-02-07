@@ -114,7 +114,7 @@ void ts::SystemMonitor::main()
 {
     const TimeProfile* time_profile = monitor_time_profile;
     const Time start_time(Time::CurrentLocalTime());
-    ProcessMetrics start_metrics;                // Initial system metrics
+    ProcessMetrics start_metrics;               // Initial system metrics
     GetProcessMetrics(start_metrics);           // Get initial system metrics
     ProcessMetrics last_metrics(start_metrics); // Last system metrics
     Time last_time(start_time);                 // Last report time

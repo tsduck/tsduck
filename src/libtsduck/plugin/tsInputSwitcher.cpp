@@ -35,42 +35,138 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor and destructor.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::InputSwitcher::InputSwitcher(const InputSwitcherArgs& args, Report& report) :
+ts::InputSwitcher::InputSwitcher(Report& report) :
     PluginEventHandlerRegistry(),
+    _report(report),
+    _args(),
+    _monitor(nullptr),
+    _core(nullptr),
+    _remote(nullptr),
     _success(false)
 {
-    // Clear errors on the report, used to check further initialisation errors.
-    report.resetErrors();
+}
 
-    // Create the tsswitch core instance.
-    tsswitch::Core core(args, *this, report);
-    if (report.gotErrors()) {
-        return; // error
+ts::InputSwitcher::InputSwitcher(const InputSwitcherArgs& args, Report& report) :
+    InputSwitcher(report)
+{
+    _success = start(args);
+    waitForTermination();
+}
+
+ts::InputSwitcher::~InputSwitcher()
+{
+    // Wait for processing termination to avoid other threads accessing a destroyed object.
+    waitForTermination();
+}
+
+
+//----------------------------------------------------------------------------
+// Start the input switcher session.
+//----------------------------------------------------------------------------
+
+bool ts::InputSwitcher::start(const InputSwitcherArgs& args)
+{
+    // Filter already started.
+    if (_core != nullptr) {
+        _report.error(u"input switcher already started");
+        return false;
     }
 
+    // Keep command line options for further use.
+    _args = args;
+    _args.enforceDefaults();
+
+    // Clear errors on the report, used to check further initialisation errors.
+    _report.resetErrors();
+
+    // Create the tsswitch core instance.
+    _core = new tsswitch::Core(_args, *this, _report);
+    CheckNonNull(_core);
+    _success = !_report.gotErrors();
+
     // Create a monitoring thread if required.
-    ts::SystemMonitor monitor(&report);
-    if (args.monitor) {
-        monitor.start();
+    if (_success && _args.monitor) {
+        _monitor = new SystemMonitor(&_report);
+        CheckNonNull(_monitor);
+        _monitor->start();
     }
 
     // If a remote control is specified, start a UDP listener thread.
-    tsswitch::CommandListener remoteControl(core, args, report);
-    if (args.remoteServer.hasPort() && !remoteControl.open()) {
-        return; // error
+    if (_success && _args.remoteServer.hasPort()) {
+        _remote = new tsswitch::CommandListener(*_core, _args, _report);
+        CheckNonNull(_remote);
+        _success = _remote->open();
     }
 
     // Start the processing.
-    if (!core.start()) {
-        return; // error
+    _success = _success && _core->start();
+
+    if (!_success) {
+        waitForTermination();  // cleanup resources
     }
 
-    // Wait for completion.
-    core.waitForTermination();
+    return _success;
+}
 
-    // Now, we have a successful completion.
-    _success = true;
+
+//----------------------------------------------------------------------------
+// Delegations to core object.
+//----------------------------------------------------------------------------
+
+void ts::InputSwitcher::setInput(size_t pluginIndex)
+{
+    if (_core != nullptr) {
+        _core->setInput(pluginIndex);
+    }
+}
+
+void ts::InputSwitcher::nextInput()
+{
+    if (_core != nullptr) {
+        _core->nextInput();
+    }
+}
+
+void ts::InputSwitcher::previousInput()
+{
+    if (_core != nullptr) {
+        _core->previousInput();
+    }
+}
+
+void ts::InputSwitcher::stop()
+{
+    if (_core != nullptr) {
+        _core->stop(true);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Suspend the calling thread until input switcher is completed.
+//----------------------------------------------------------------------------
+
+void ts::InputSwitcher::waitForTermination()
+{
+    // Deleting each object waits for all its internal threads terminations.
+    // Terminate the remote control first since it references the core.
+    if (_remote != nullptr) {
+        delete _remote;
+        _remote = nullptr;
+    }
+
+    // Then, terminate the core.
+    if (_core != nullptr) {
+        delete _core;
+        _core = nullptr;
+    }
+
+    // The monitor is independent, we can terminate it any time.
+    if (_monitor != nullptr) {
+        delete _monitor;
+        _monitor = nullptr;
+    }
 }
