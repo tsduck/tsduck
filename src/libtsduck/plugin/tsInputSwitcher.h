@@ -141,5 +141,8 @@ namespace ts {
         tsswitch::Core*            _core;
         tsswitch::CommandListener* _remote;
         volatile bool              _success;
+
+        // Internal and unconditional cleanupp of resources.
+        void internalCleanup();
     };
 }
