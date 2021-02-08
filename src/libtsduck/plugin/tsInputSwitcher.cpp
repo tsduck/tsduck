@@ -105,9 +105,8 @@ bool ts::InputSwitcher::start(const InputSwitcherArgs& args)
     _success = _success && _core->start();
 
     if (!_success) {
-        waitForTermination();  // cleanup resources
+        internalCleanup();
     }
-
     return _success;
 }
 
@@ -146,10 +145,10 @@ void ts::InputSwitcher::stop()
 
 
 //----------------------------------------------------------------------------
-// Suspend the calling thread until input switcher is completed.
+// Internal and unconditional cleanupp of resources.
 //----------------------------------------------------------------------------
 
-void ts::InputSwitcher::waitForTermination()
+void ts::InputSwitcher::internalCleanup()
 {
     // Deleting each object waits for all its internal threads terminations.
     // Terminate the remote control first since it references the core.
@@ -169,4 +168,17 @@ void ts::InputSwitcher::waitForTermination()
         delete _monitor;
         _monitor = nullptr;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Suspend the calling thread until input switcher is completed.
+//----------------------------------------------------------------------------
+
+void ts::InputSwitcher::waitForTermination()
+{
+    if (_core != nullptr) {
+        _core->waitForTermination();
+    }
+    internalCleanup();
 }
