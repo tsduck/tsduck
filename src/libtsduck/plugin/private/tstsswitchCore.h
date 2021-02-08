@@ -100,6 +100,12 @@ namespace ts {
             void previousInput();
 
             //!
+            //! Get the index of the current input plugin.
+            //! @return The index of the current input plugin.
+            //!
+            size_t currentInput();
+
+            //!
             //! Called by an input plugin when it started an input session.
             //! @param [in] pluginIndex Index of the input plugin.
             //! @param [in] success True if the start operation succeeded.
