@@ -157,15 +157,18 @@ namespace ts {
         UString                  _json_destination;  // JSON output file name.
         UString                  _bin_destination;   // Binary output file name.
         UString                  _udp_destination;   // UDP/IP destination address:port.
-        bool                     _multi_files;       // Multiple binary output files (one per section).
+        bool                     _bin_multi_files;   // Multiple binary output files (one per section).
+        bool                     _bin_stdout;        // Output binary sections on stdout.
         bool                     _flush;             // Flush output file.
         bool                     _rewrite_xml;       // Rewrite a new XML file for each table.
         bool                     _rewrite_json;      // Rewrite a new JSON file for each table.
         bool                     _rewrite_binary;    // Rewrite a new binary file for each table.
         bool                     _log_xml_line;      // Log tables as one XML line in the system message log.
         bool                     _log_json_line;     // Log tables as one JSON line in the system message log.
+        bool                     _log_hexa_line;     // Log tables as one hexa line in the system message log.
         UString                  _log_xml_prefix;    // Prefix before XML log line.
         UString                  _log_json_prefix;   // Prefix before JSON log line.
+        UString                  _log_hexa_prefix;   // Prefix before hexa log line.
         UString                  _udp_local;         // Name of outgoing local address (empty if unspecified).
         int                      _udp_ttl;           // Time-to-live socket option.
         bool                     _udp_raw;           // UDP messages contain raw sections, not structured messages.

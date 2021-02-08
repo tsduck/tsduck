@@ -66,15 +66,18 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _json_destination(),
     _bin_destination(),
     _udp_destination(),
-    _multi_files(false),
+    _bin_multi_files(false),
+    _bin_stdout(false),
     _flush(false),
     _rewrite_xml(false),
     _rewrite_json(false),
     _rewrite_binary(false),
     _log_xml_line(false),
     _log_json_line(false),
+    _log_hexa_line(false),
     _log_xml_prefix(),
     _log_json_prefix(),
+    _log_hexa_prefix(),
     _udp_local(),
     _udp_ttl(0),
     _udp_raw(false),
@@ -153,6 +156,7 @@ void ts::TablesLogger::defineArgs(Args& args) const
     args.option(u"binary-output", 'b', Args::STRING);
     args.help(u"binary-output", u"filename",
               u"Save sections in the specified binary output file. "
+              u"If empty or '-', the binary sections are written to the standard output. "
               u"See also option -m, --multiple-files.");
 
     args.option(u"fill-eit");
@@ -207,6 +211,13 @@ void ts::TablesLogger::defineArgs(Args& args) const
               u"The table is formatted as XML and automated XML-to-JSON conversion is applied. "
               u"The optional string parameter specifies a prefix to prepend on the log "
               u"line before the JSON text to locate the appropriate line in the logs.");
+
+    args.option(u"log-hexa-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
+    args.help(u"log-hexa-line", u"'prefix'",
+              u"Log each binary table or section (with --all-sections) as one single hexadecimal "
+              u"line in the message logger instead of an output binary file. "
+              u"The optional string parameter specifies a prefix to prepend on the log "
+              u"line before the hexadecimal text to locate the appropriate line in the logs.");
 
     args.option(u"max-tables", 'x', Args::POSITIVE);
     args.help(u"max-tables", u"Maximum number of tables to dump. Stop logging tables when this limit is reached.");
@@ -317,9 +328,10 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _use_udp = args.present(u"ip-udp");
     _log_xml_line = args.present(u"log-xml-line");
     _log_json_line = args.present(u"log-json-line");
+    _log_hexa_line = args.present(u"log-hexa-line");
     _use_text = args.present(u"output-file") ||
                 args.present(u"text-output") ||
-                (!_use_xml && !_use_json && !_use_binary && !_use_udp && !_log_xml_line && !_log_json_line);
+                (!_use_xml && !_use_json && !_use_binary && !_use_udp && !_log_xml_line && !_log_json_line && !_log_hexa_line);
 
     // --output-file and --text-output are synonyms.
     if (args.present(u"output-file") && args.present(u"text-output")) {
@@ -333,12 +345,14 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     args.getValue(_udp_destination, u"ip-udp");
     args.getValue(_text_destination, u"output-file", args.value(u"text-output").c_str());
 
-    _multi_files = args.present(u"multiple-files");
-    _rewrite_binary = args.present(u"rewrite-binary");
+    _bin_stdout = _use_binary && (_bin_destination.empty() || _bin_destination == u"-");
+    _bin_multi_files = !_bin_stdout && args.present(u"multiple-files");
+    _rewrite_binary = !_bin_stdout && args.present(u"rewrite-binary");
     _rewrite_xml = args.present(u"rewrite-xml");
     _rewrite_json = args.present(u"rewrite-json");
     args.getValue(_log_xml_prefix, u"log-xml-line");
     args.getValue(_log_json_prefix, u"log-json-line");
+    args.getValue(_log_hexa_prefix, u"log-hexa-line");
     _flush = args.present(u"flush");
     _udp_local = args.value(u"local-udp");
     args.getIntValue(_udp_ttl, u"ttl", 0);
@@ -358,7 +372,7 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _use_next = args.present(u"include-next");
 
     // Check consistency of options.
-    if (_rewrite_binary && _multi_files) {
+    if (_rewrite_binary && _bin_multi_files) {
         args.error(u"options --rewrite-binary and --multiple-files are incompatible");
         return false;
     }
@@ -459,7 +473,7 @@ bool ts::TablesLogger::open()
     }
 
     // Open/create the binary output.
-    if (_use_binary && !_multi_files && !_rewrite_binary && !createBinaryFile(_bin_destination)) {
+    if (_use_binary && !_bin_multi_files && !_rewrite_binary && !createBinaryFile(_bin_destination)) {
         _abort = true;
         return false;
     }
@@ -625,7 +639,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
         for (size_t i = 0; i < table.sectionCount(); ++i) {
             saveBinarySection(*table.sectionAt(i));
         }
-        if (_rewrite_binary) {
+        if (_rewrite_binary && _bin_file.is_open()) {
             _bin_file.close();
         }
     }
@@ -633,6 +647,16 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
     // Log table as a one-liner XML and/or JSON.
     if (_log_xml_line || _log_json_line) {
         logXMLJSON(table);
+    }
+
+    // Log table as a one-liner hexadecimal.
+    if (_log_hexa_line) {
+        UString line;
+        // Concatenate all sections in hexa.
+        for (size_t i = 0; i < table.sectionCount(); ++i) {
+            line.append(UString::Dump(table.sectionAt(i)->content(), table.sectionAt(i)->size(), UString::COMPACT));
+        }
+        _report.info(_log_hexa_prefix + line);
     }
 
     // Send binary table in UDP message.
@@ -733,9 +757,14 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
             return;
         }
         saveBinarySection(sect);
-        if (_rewrite_binary) {
+        if (_rewrite_binary && _bin_file.is_open()) {
             _bin_file.close();
         }
+    }
+
+    if (_log_hexa_line) {
+        // Log section as a one-liner hexadecimal.
+        _report.info(_log_hexa_prefix + UString::Dump(sect.content(), sect.size(), UString::COMPACT));
     }
 
     if (_use_udp) {
@@ -948,16 +977,21 @@ bool ts::TablesLogger::AnalyzeUDPMessage(const uint8_t* data, size_t size, bool 
 
 bool ts::TablesLogger::createBinaryFile(const ts::UString& name)
 {
-    _report.verbose(u"creating %s", {name});
-    _bin_file.open(name.toUTF8().c_str(), std::ios::out | std::ios::binary);
-
-    if (_bin_file) {
-        return true;
+    if (_bin_stdout) {
+        // Make sure that the standard output is in binary mode.
+        return SetBinaryModeStdout(_report);
     }
     else {
-        _report.error(u"error creating %s", {name});
-        _abort = true;
-        return false;
+        _report.verbose(u"creating %s", {name});
+        _bin_file.open(name.toUTF8().c_str(), std::ios::out | std::ios::binary);
+        if (_bin_file) {
+            return true;
+        }
+        else {
+            _report.error(u"error creating %s", {name});
+            _abort = true;
+            return false;
+        }
     }
 }
 
@@ -969,7 +1003,7 @@ bool ts::TablesLogger::createBinaryFile(const ts::UString& name)
 void ts::TablesLogger::saveBinarySection(const Section& sect)
 {
     // Create individual file for this section if required.
-    if (_multi_files) {
+    if (_bin_multi_files) {
         // Build a unique file name for this section
         UString outname(PathPrefix(_bin_destination));
         outname.format(u"_p%04X_t%02X", {sect.sourcePID(), sect.tableId()});
@@ -984,12 +1018,11 @@ void ts::TablesLogger::saveBinarySection(const Section& sect)
     }
 
     // Write the section to the file
-    if (!sect.write(_bin_file, _report)) {
-        _abort = true;
-    }
+    const bool success = _bin_stdout ? bool(sect.write(std::cout, _report)) : bool(sect.write(_bin_file, _report));
+    _abort = _abort || !success;
 
     // Close individual files
-    if (_multi_files) {
+    if (_bin_multi_files && _bin_file.is_open()) {
         _bin_file.close();
     }
 }
