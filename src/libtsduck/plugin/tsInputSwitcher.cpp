@@ -136,6 +136,11 @@ void ts::InputSwitcher::previousInput()
     }
 }
 
+size_t ts::InputSwitcher::currentInput()
+{
+    return _core == nullptr ? 0 : _core->currentInput();
+}
+
 void ts::InputSwitcher::stop()
 {
     if (_core != nullptr) {

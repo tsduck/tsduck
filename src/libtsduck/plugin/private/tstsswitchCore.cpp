@@ -179,6 +179,12 @@ void ts::tsswitch::Core::previousInput()
     setInputLocked((_curPlugin > 0 ? _curPlugin : _inputs.size()) - 1, false);
 }
 
+size_t ts::tsswitch::Core::currentInput()
+{
+    Guard lock(_mutex);
+    return _curPlugin;
+}
+
 
 //----------------------------------------------------------------------------
 // Change input plugin with mutex already held.

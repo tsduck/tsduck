@@ -107,6 +107,12 @@ namespace ts {
         void previousInput();
 
         //!
+        //! Get the index of the current input plugin.
+        //! @return The index of the current input plugin.
+        //!
+        size_t currentInput();
+
+        //!
         //! Stop the input switcher.
         //!
         void stop();
