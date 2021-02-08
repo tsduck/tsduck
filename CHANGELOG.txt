@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.25-2222
+VERSION 3.25-2231
 
 [NEW] New commands and plugins:
 
@@ -43,7 +43,8 @@ VERSION 3.25-2222
       --reference-pcr-pid, --target-bitrate, --time-window in plugin "reduce".
     - Option --json-line in "tsanalyze", "tscmp", "tsdektec" and plugin
       "analyze".
-    - Option --log-xml-line to "tstables" and plugin "tables".
+    - Options --log-xml-line and --log-hexa-line to "tstables" and plugin
+      "tables".
     - Options --log-xml-line, --strict-xml, --text-output, --xml-output to
       "tspsi" and plugin "psi".
     - Options --json, --json-line, --from-json and --x2j-* to "tsxml".
