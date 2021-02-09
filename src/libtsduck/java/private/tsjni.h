@@ -263,7 +263,7 @@ namespace ts {
         //! Get a vector of plugin descriptions from a Java array of string.
         //! @param [in,out] env JNI callback environment.
         //! @param [in,out] strings Java array of arrays of strings.
-        //! @param [out] plugin Decoded plugins description.
+        //! @param [out] plugins Decoded plugins descriptions.
         //! @return True on success, false on error.
         //!
         bool GetPluginOptionsVector(JNIEnv* env, jobjectArray strings, PluginOptionsVector& plugins);
