@@ -96,7 +96,7 @@ TSDUCKJNI void JNICALL Java_io_tsduck_InputSwitcher_previousInput(JNIEnv* env, j
 TSDUCKJNI jint JNICALL Java_io_tsduck_InputSwitcher_currentInput(JNIEnv* env, jobject obj)
 {
     ts::InputSwitcher* isw = ts::jni::GetPointerField<ts::InputSwitcher>(env, obj, "nativeObject");
-    return isw == nullptr ? 0 : isw->currentInput();
+    return isw == nullptr ? 0 : jint(isw->currentInput());
 }
 
 //
