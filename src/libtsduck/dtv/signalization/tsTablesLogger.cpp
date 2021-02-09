@@ -667,7 +667,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
     // Check max table count
     _table_count++;
     if (_max_tables > 0 && _table_count >= _max_tables) {
-        _abort = true;
+        _exit = true;
     }
 }
 
@@ -774,7 +774,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     // Check max table count (actually count sections with --all-sections)
     _table_count++;
     if (_max_tables > 0 && _table_count >= _max_tables) {
-        _abort = true;
+        _exit = true;
     }
 }
 
