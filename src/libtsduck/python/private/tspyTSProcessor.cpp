@@ -44,20 +44,20 @@ TS_MSC_NOWARNING(4091) // '__declspec(dllexport)': ignored on left of 'struct ty
 //
 TSDUCKPY struct tspyTSProcessorArgs
 {
-    long monitor;                  //!< Run a resource monitoring thread (bool).
-    long ignore_joint_termination; //!< Ignore "joint termination" options in plugins (bool).
-    long buffer_size;              //!< Size in bytes of the global TS packet buffer.
-    long max_flushed_packets;      //!< Max processed packets before flush.
-    long max_input_packets;        //!< Max packets per input operation.
-    long initial_input_packets;    //!< Initial number of input packets to read before starting the processing (zero means default).
-    long add_input_stuffing_0;     //!< Add input stuffing: add @a add_input_stuffing_0 null packets ...
-    long add_input_stuffing_1;     //!< ... every @a add_input_stuffing_1 input packets.
-    long add_start_stuffing;       //!< Add null packets before actual input.
-    long add_stop_stuffing;        //!< Add null packets after end of actual input.
-    long bitrate;                  //!< Fixed input bitrate (user-specified).
-    long bitrate_adjust_interval;  //!< Bitrate adjust interval in (milliseconds).
-    long receive_timeout;          //!< Timeout on input operations (in milliseconds).
-    long log_plugin_index;         //!< Log plugin index with plugin name (bool).
+    long monitor;                  // Run a resource monitoring thread (bool).
+    long ignore_joint_termination; // Ignore "joint termination" options in plugins (bool).
+    long buffer_size;              // Size in bytes of the global TS packet buffer.
+    long max_flushed_packets;      // Max processed packets before flush.
+    long max_input_packets;        // Max packets per input operation.
+    long initial_input_packets;    // Initial number of input packets to read before starting the processing (zero means default).
+    long add_input_stuffing_0;     // Add input stuffing: add @a add_input_stuffing_0 null packets ...
+    long add_input_stuffing_1;     // ... every @a add_input_stuffing_1 input packets.
+    long add_start_stuffing;       // Add null packets before actual input.
+    long add_stop_stuffing;        // Add null packets after end of actual input.
+    long bitrate;                  // Fixed input bitrate (user-specified).
+    long bitrate_adjust_interval;  // Bitrate adjust interval in (milliseconds).
+    long receive_timeout;          // Timeout on input operations (in milliseconds).
+    long log_plugin_index;         // Log plugin index with plugin name (bool).
 };
 
 //-----------------------------------------------------------------------------

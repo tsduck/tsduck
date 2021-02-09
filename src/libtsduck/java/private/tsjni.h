@@ -36,6 +36,7 @@
 
 #pragma once
 #include "tsUString.h"
+#include "tsPluginOptions.h"
 
 #if !defined(TS_NO_JAVA)
 #include <jni.h>
@@ -248,6 +249,24 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool SetStringField(JNIEnv* env, jobject obj, const char* fieldName, const ts::UString& value);
+
+        //!
+        //! Get a plugin description from a Java array of string.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in,out] strings Java array of strings.
+        //! @param [out] plugin Decoded plugin description.
+        //! @return True on success, false on error.
+        //!
+        bool GetPluginOptions(JNIEnv* env, jobjectArray strings, PluginOptions& plugin);
+
+        //!
+        //! Get a vector of plugin descriptions from a Java array of string.
+        //! @param [in,out] env JNI callback environment.
+        //! @param [in,out] strings Java array of arrays of strings.
+        //! @param [out] plugin Decoded plugins description.
+        //! @return True on success, false on error.
+        //!
+        bool GetPluginOptionsVector(JNIEnv* env, jobjectArray strings, PluginOptionsVector& plugins);
     }
 }
 

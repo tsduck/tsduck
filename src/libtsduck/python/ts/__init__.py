@@ -33,10 +33,11 @@
 
 from .duck import DuckContext
 from .info import version, intVersion
+from .switch import InputSwitcher, SwitchStartError
 from .native import NativeObject
 from .report import Report, NullReport, StdErrReport, AsyncReport, AbstractAsyncReport, AbstractSyncReport
 from .section import SectionFile
-from .tsp import TSProcessor
+from .tsp import TSProcessor, TSPStartError
 
 __all__ = []
 __author__ = 'Thierry Lelegard'

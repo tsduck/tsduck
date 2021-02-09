@@ -213,6 +213,83 @@ tspyVersionString.restype = None
 tspyVersionString.argtypes = [POINTER(c_uint8), POINTER(c_size_t)]
 
 #-----------------------------------------------------------------------------
+# Bindings to C++ functions from tspyInputSwitcher.cpp
+#-----------------------------------------------------------------------------
+
+# struct tspyInputSwitcherArgs {...}
+class tspyInputSwitcherArgs(ctypes.Structure):
+    _fields_ = [
+        ("fast_switch", c_long),         # Fast switch between input plugins (bool).
+        ("delayed_switch", c_long),      # Delayed switch between input plugins (bool).
+        ("terminate", c_long),           # Terminate when one input plugin completes (bool).
+        ("monitor", c_long),             # Run a resource monitoring thread (bool).
+        ("reuse_port", c_long),          # Reuse-port socket option (bool).
+        ("first_input", c_long),         # Index of first input plugin.
+        ("primary_input", c_long),       # Index of primary input plugin, negative if there is none.
+        ("cycle_count", c_long),         # Number of input cycles to execute (0;
+        ("buffered_packets", c_long),    # Input buffer size in packets (0=default).
+        ("max_input_packets", c_long),   # Maximum input packets to read at a time (0=default).
+        ("max_output_packets", c_long),  # Maximum input packets to send at a time (0=default).
+        ("sock_buffer", c_long),         # Socket buffer size (0=default).
+        ("remote_server_port", c_long),  # UDP server port for remote control (0=none).
+        ("receive_timeout", c_long),     # Receive timeout before switch (0=none).
+    ]
+
+# void* tspyNewInputSwitcher(void* report)
+
+tspyNewInputSwitcher = _lib.tspyNewInputSwitcher
+tspyNewInputSwitcher.restype = c_void_p
+tspyNewInputSwitcher.argtypes = [c_void_p]
+
+# void tspyDeleteInputSwitcher(void* pyobj)
+
+tspyDeleteInputSwitcher = _lib.tspyDeleteInputSwitcher
+tspyDeleteInputSwitcher.restype = None
+tspyDeleteInputSwitcher.argtypes = [c_void_p]
+
+# void tspyStopInputSwitcher(void* pyobj)
+
+tspyStopInputSwitcher = _lib.tspyStopInputSwitcher
+tspyStopInputSwitcher.restype = None
+tspyStopInputSwitcher.argtypes = [c_void_p]
+
+# void tspyWaitInputSwitcher(void* tsp)
+
+tspyWaitInputSwitcher = _lib.tspyWaitInputSwitcher
+tspyWaitInputSwitcher.restype = None
+tspyWaitInputSwitcher.argtypes = [c_void_p]
+
+# void tspyInputSwitcherSetInput(void* pyobj, size_t index)
+
+tspyInputSwitcherSetInput = _lib.tspyInputSwitcherSetInput
+tspyInputSwitcherSetInput.restype = None
+tspyInputSwitcherSetInput.argtypes = [c_void_p, c_size_t]
+
+# void tspyInputSwitcherNextInput(void* tsp)
+
+tspyInputSwitcherNextInput = _lib.tspyInputSwitcherNextInput
+tspyInputSwitcherNextInput.restype = None
+tspyInputSwitcherNextInput.argtypes = [c_void_p]
+
+# void tspyInputSwitcherPreviousInput(void* tsp)
+
+tspyInputSwitcherPreviousInput = _lib.tspyInputSwitcherPreviousInput
+tspyInputSwitcherPreviousInput.restype = None
+tspyInputSwitcherPreviousInput.argtypes = [c_void_p]
+
+# size_t tspyInputSwitcherCurrentInput(void* pyobj)
+
+tspyInputSwitcherCurrentInput = _lib.tspyInputSwitcherCurrentInput
+tspyInputSwitcherCurrentInput.restype = c_size_t
+tspyInputSwitcherCurrentInput.argtypes = [c_void_p]
+
+# bool tspyStartInputSwitcher(void* pyobj, const tspyInputSwitcherArgs* pyargs, const uint8_t* plugins, size_t plugins_size)
+
+tspyStartInputSwitcher = _lib.tspyStartInputSwitcher
+tspyStartInputSwitcher.restype = c_bool
+tspyStartInputSwitcher.argtypes = [c_void_p, POINTER(tspyInputSwitcherArgs), POINTER(c_uint8), c_size_t]
+
+#-----------------------------------------------------------------------------
 # Bindings to C++ functions from tspyReport.cpp 
 #-----------------------------------------------------------------------------
 
@@ -388,6 +465,25 @@ tspySectionFileReorganizeEITs.argtypes = [c_void_p, c_int, c_int, c_int]
 # Bindings to C++ functions from tspyTSProcessor.cpp
 #-----------------------------------------------------------------------------
 
+# struct tspyTSProcessorArgs {...}
+class tspyTSProcessorArgs(ctypes.Structure):
+    _fields_ = [
+        ("monitor", c_long),                   # Run a resource monitoring thread (bool).
+        ("ignore_joint_termination", c_long),  # Ignore "joint termination" options in plugins (bool).
+        ("buffer_size", c_long),               # Size in bytes of the global TS packet buffer.
+        ("max_flushed_packets", c_long),       # Max processed packets before flush.
+        ("max_input_packets", c_long),         # Max packets per input operation.
+        ("initial_input_packets", c_long),     # Initial number of input packets to read before starting the processing.
+        ("add_input_stuffing_0", c_long),      # Add input stuffing: add instuff_nullpkt null packets ...
+        ("add_input_stuffing_1", c_long),      # ...  every @a instuff_inpkt input packets.
+        ("add_start_stuffing", c_long),        # Add null packets before actual input.
+        ("add_stop_stuffing", c_long),         # Add null packets after end of actual input.
+        ("bitrate", c_long),                   # Fixed input bitrate (user-specified).
+        ("bitrate_adjust_interval", c_long),   # Bitrate adjust interval (in milliseconds).
+        ("receive_timeout", c_long),           # Timeout on input operations (in milliseconds).
+        ("log_plugin_index", c_long),          # Log plugin index with plugin name (bool).
+    ]
+
 # void* tspyNewTSProcessor(void* report)
 
 tspyNewTSProcessor = _lib.tspyNewTSProcessor
@@ -400,31 +496,6 @@ tspyDeleteTSProcessor = _lib.tspyDeleteTSProcessor
 tspyDeleteTSProcessor.restype = None
 tspyDeleteTSProcessor.argtypes = [c_void_p]
 
-# struct tspyTSProcessorArgs {...}; (see file tspyTSProcessor.cpp)
-class tspyTSProcessorArgs(ctypes.Structure):
-    _fields_ = [
-        ("monitor", ctypes.c_long),                   # Run a resource monitoring thread (bool).
-        ("ignore_joint_termination", ctypes.c_long),  # Ignore "joint termination" options in plugins (bool).
-        ("buffer_size", ctypes.c_long),               # Size in bytes of the global TS packet buffer.
-        ("max_flushed_packets", ctypes.c_long),       # Max processed packets before flush.
-        ("max_input_packets", ctypes.c_long),         # Max packets per input operation.
-        ("initial_input_packets", ctypes.c_long),     # Initial number of input packets to read before starting the processing.
-        ("add_input_stuffing_0", ctypes.c_long),      # Add input stuffing: add instuff_nullpkt null packets ...
-        ("add_input_stuffing_1", ctypes.c_long),      # ...  every @a instuff_inpkt input packets.
-        ("add_start_stuffing", ctypes.c_long),        # Add null packets before actual input.
-        ("add_stop_stuffing", ctypes.c_long),         # Add null packets after end of actual input.
-        ("bitrate", ctypes.c_long),                   # Fixed input bitrate (user-specified).
-        ("bitrate_adjust_interval", ctypes.c_long),   # Bitrate adjust interval (in milliseconds).
-        ("receive_timeout", ctypes.c_long),           # Timeout on input operations (in milliseconds).
-        ("log_plugin_index", ctypes.c_long),          # Log plugin index with plugin name (bool).
-    ]
-
-# bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, const uint8_t* plugins, size_t plugins_size)
-
-tspyStartTSProcessor = _lib.tspyStartTSProcessor
-tspyStartTSProcessor.restype = c_bool
-tspyStartTSProcessor.argtypes = [c_void_p, POINTER(tspyTSProcessorArgs), POINTER(c_uint8), c_size_t]
-
 # void tspyAbortTSProcessor(void* tsp)
 
 tspyAbortTSProcessor = _lib.tspyAbortTSProcessor
@@ -436,5 +507,11 @@ tspyAbortTSProcessor.argtypes = [c_void_p]
 tspyWaitTSProcessor = _lib.tspyWaitTSProcessor
 tspyWaitTSProcessor.restype = None
 tspyWaitTSProcessor.argtypes = [c_void_p]
+
+# bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, const uint8_t* plugins, size_t plugins_size)
+
+tspyStartTSProcessor = _lib.tspyStartTSProcessor
+tspyStartTSProcessor.restype = c_bool
+tspyStartTSProcessor.argtypes = [c_void_p, POINTER(tspyTSProcessorArgs), POINTER(c_uint8), c_size_t]
 
 ## @endcond

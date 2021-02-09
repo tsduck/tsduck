@@ -53,12 +53,12 @@ namespace ts {
         bool                reusePort;         //!< Reuse-port socket option.
         size_t              firstInput;        //!< Index of first input plugin.
         size_t              primaryInput;      //!< Index of primary input plugin, NPOS if there is none.
-        size_t              cycleCount;        //!< Number of input cycles to execute.
+        size_t              cycleCount;        //!< Number of input cycles to execute (0 = infinite).
         size_t              bufferedPackets;   //!< Input buffer size in packets.
         size_t              maxInputPackets;   //!< Maximum input packets to read at a time.
         size_t              maxOutputPackets;  //!< Maximum input packets to send at a time.
         size_t              sockBuffer;        //!< Socket buffer size.
-        SocketAddress       remoteServer;      //!< UDP server addres for remote control.
+        SocketAddress       remoteServer;      //!< UDP server address for remote control.
         IPAddressSet        allowedRemote;     //!< Set of allowed remotes.
         MilliSecond         receiveTimeout;    //!< Receive timeout before switch (0=none).
         PluginOptionsVector inputs;            //!< Input plugins descriptions.

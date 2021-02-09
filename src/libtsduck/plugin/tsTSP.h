@@ -229,6 +229,12 @@ namespace ts {
         //!
         void addNonPluginPackets(size_t incr) {_total_packets += incr;}
 
+        //!
+        //! Restart accounting for plugin session.
+        //! Typically invoked when the plugin is restarted.
+        //!
+        void restartPluginSession() { _plugin_packets = 0; }
+
     private:
         PacketCounter _total_packets;   // Total processed packets in the plugin thread.
         PacketCounter _plugin_packets;  // Total processed packets in the plugin object.

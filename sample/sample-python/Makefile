@@ -3,4 +3,4 @@
 default:
 	@true
 clean distclean:
-	@rm -rf __pycache__ eit.bin
+	@rm -rf __pycache__ eit.bin sample-input-switcher-out.ts

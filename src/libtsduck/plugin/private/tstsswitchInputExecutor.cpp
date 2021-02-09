@@ -206,6 +206,8 @@ void ts::tsswitch::InputExecutor::main()
             // At this point, start is requested, reset trigger.
             _startRequest = false;
             _stopRequest = false;
+            // Inform the TSP layer to reset plugin session accounting.
+            restartPluginSession();
         }
 
         // Here, we need to start an input session.
