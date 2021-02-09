@@ -92,28 +92,6 @@ TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_delete(JNIEnv* env, jobject ob
 }
 
 //----------------------------------------------------------------------------
-// Get a plugin description from a Java array of string.
-//----------------------------------------------------------------------------
-
-static bool GetPluginOption(JNIEnv* env, jobjectArray strings, ts::PluginOptions& plugin)
-{
-    plugin.clear();
-    if (env == nullptr || strings == nullptr || env->ExceptionCheck()) {
-        return false;
-    }
-    const jsize count = env->GetArrayLength(strings);
-    if (count > 0) {
-        plugin.name = ts::jni::ToUString(env, jstring(env->GetObjectArrayElement(strings, 0)));
-        plugin.args.resize(size_t(count - 1));
-        for (jsize i = 1; i < count; ++i) {
-            plugin.args[i-1] = ts::jni::ToUString(env, jstring(env->GetObjectArrayElement(strings, i)));
-        }
-    }
-    return !plugin.name.empty();
-}
-
-
-//----------------------------------------------------------------------------
 // Start method: the parameters are fetched from the Java object fields.
 //----------------------------------------------------------------------------
 
@@ -149,16 +127,10 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_TSProcessor_start(JNIEnv* env, jobject
     args.app_name = ts::jni::GetStringField(env, obj, "appName");
 
     // Get plugins description.
-    // Note: The packet processor plugin can be null (no plugin)
-    // but the presence of the input and output plugin is required.
-    const jobjectArray jplugins = jobjectArray(ts::jni::GetObjectField(env, obj, "plugins", JCS_ARRAY(JCS_ARRAY(JCS_STRING))));
-    bool ok = GetPluginOption(env, jobjectArray(ts::jni::GetObjectField(env, obj, "input", JCS_ARRAY(JCS_STRING))), args.input) &&
-              GetPluginOption(env, jobjectArray(ts::jni::GetObjectField(env, obj, "output", JCS_ARRAY(JCS_STRING))), args.output);
-    const jsize count = jplugins != nullptr ? env->GetArrayLength(jplugins) : 0;
-    args.plugins.resize(size_t(count));
-    for (jsize i = 0; ok && i < count; ++i) {
-        ok = GetPluginOption(env, jobjectArray(env->GetObjectArrayElement(jplugins, i)), args.plugins[i]);
-    }
+    // Note: The packet processor plugin can be null (no plugin) but the presence of the input and output plugin is required.
+    bool ok = ts::jni::GetPluginOptions(env, jobjectArray(ts::jni::GetObjectField(env, obj, "input", JCS_ARRAY(JCS_STRING))), args.input) &&
+              ts::jni::GetPluginOptions(env, jobjectArray(ts::jni::GetObjectField(env, obj, "output", JCS_ARRAY(JCS_STRING))), args.output) &&
+              ts::jni::GetPluginOptionsVector(env, jobjectArray(ts::jni::GetObjectField(env, obj, "plugins", JCS_ARRAY(JCS_ARRAY(JCS_STRING)))), args.plugins);
 
     // Debug message.
     if (tsp->report().debug()) {

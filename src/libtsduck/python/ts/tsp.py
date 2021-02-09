@@ -60,39 +60,39 @@ class TSProcessor(NativeObject):
 
         # Publicly customizable tsp options:
         ## Option -\-monitor.
-        self.monitor = False                   
+        self.monitor = False
         ## Option -\-ignore-joint-termination.
-        self.ignore_joint_termination = False  
+        self.ignore_joint_termination = False
         ## Option -\-log-plugin-index.
-        self.log_plugin_index = False          
+        self.log_plugin_index = False
         ## Option -\-buffer-size-mb (in bytes here).
-        self.buffer_size = 16 * 1024 * 1024    
+        self.buffer_size = 16 * 1024 * 1024
         ## Option -\-max-flushed-packets (zero means default).
-        self.max_flushed_packets = 0           
+        self.max_flushed_packets = 0
         ## Option -\-max-input-packets (zero means default).
-        self.max_input_packets = 0             
+        self.max_input_packets = 0
         ## Option -\-initial-input-packets (zero means default).
-        self.initial_input_packets = 0         
+        self.initial_input_packets = 0
         ## Option -\-add-input-stuffing nullpkt/inpkt (two values).
-        self.add_input_stuffing = [0, 0]       
+        self.add_input_stuffing = [0, 0]
         ## Option -\-add-start-stuffing.
-        self.add_start_stuffing = 0            
+        self.add_start_stuffing = 0
         ## Option -\-add-stop-stuffing.
-        self.add_stop_stuffing = 0             
+        self.add_stop_stuffing = 0
         ## Option -\-bitrate.
-        self.bitrate = 0                       
+        self.bitrate = 0
         ## Option -\-bitrate-adjust-interval (in milliseconds).
-        self.bitrate_adjust_interval = 5000    
+        self.bitrate_adjust_interval = 5000
         ## Option -\-receive-timeout.
-        self.receive_timeout = 0               
+        self.receive_timeout = 0
         ## Application name, for help messages.
-        self.app_name = ""                     
+        self.app_name = ""
         ## Input plugin name and arguments (list of strings).
-        self.input = []                        
+        self.input = []
         ## Packet processor plugins names and arguments (list of lists of strings).
-        self.plugins = []                      
+        self.plugins = []
         ## Output plugin name and arguments (list of strings).
-        self.output = []                       
+        self.output = []
 
     # Explicitly free the underlying C++ object (inherited).
     def delete(self):

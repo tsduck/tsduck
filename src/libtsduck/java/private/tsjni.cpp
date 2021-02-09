@@ -202,4 +202,37 @@ bool ts::jni::SetStringField(JNIEnv* env, jobject obj, const char* fieldName, co
     return jval != nullptr && SetObjectField(env, obj, fieldName, JCS_STRING, jval);
 }
 
+
+//----------------------------------------------------------------------------
+// Get a plugin description from a Java array of string.
+//----------------------------------------------------------------------------
+
+bool ts::jni::GetPluginOptions(JNIEnv* env, jobjectArray strings, ts::PluginOptions& plugin)
+{
+    plugin.clear();
+    if (env == nullptr || strings == nullptr || env->ExceptionCheck()) {
+        return false;
+    }
+    const jsize count = env->GetArrayLength(strings);
+    if (count > 0) {
+        plugin.name = ts::jni::ToUString(env, jstring(env->GetObjectArrayElement(strings, 0)));
+        plugin.args.resize(size_t(count - 1));
+        for (jsize i = 1; i < count; ++i) {
+            plugin.args[i-1] = ts::jni::ToUString(env, jstring(env->GetObjectArrayElement(strings, i)));
+        }
+    }
+    return !plugin.name.empty();
+}
+
+bool ts::jni::GetPluginOptionsVector(JNIEnv* env, jobjectArray strings, PluginOptionsVector& plugins)
+{
+    const jsize count = strings != nullptr ? env->GetArrayLength(strings) : 0;
+    plugins.resize(size_t(count));
+    bool ok = true;
+    for (jsize i = 0; ok && i < count; ++i) {
+        ok = GetPluginOptions(env, jobjectArray(env->GetObjectArrayElement(strings, i)), plugins[i]);
+    }
+    return true;
+}
+
 #endif // TS_NO_JAVA

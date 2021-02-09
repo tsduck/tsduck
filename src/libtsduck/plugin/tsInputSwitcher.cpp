@@ -79,6 +79,19 @@ bool ts::InputSwitcher::start(const InputSwitcherArgs& args)
     _args = args;
     _args.enforceDefaults();
 
+    // Debug message.
+    if (_report.debug()) {
+        ts::UString cmd(args.appName);
+        cmd.append(u" ");
+        for (auto it = args.inputs.begin(); it != args.inputs.end(); ++it) {
+            cmd.append(u" ");
+            cmd.append(it->toString(ts::PluginType::INPUT));
+        }
+        cmd.append(u" ");
+        cmd.append(args.output.toString(ts::PluginType::OUTPUT));
+        _report.debug(u"starting: %s", {cmd});
+    }
+
     // Clear errors on the report, used to check further initialisation errors.
     _report.resetErrors();
 

@@ -54,9 +54,12 @@ namespace ts {
         virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
     private:
+        // Command line options:
         uint8_t       _initCC;      // continuity_counter
         bool          _constantCC;  // Do not increment continuity counter
         PacketCounter _maxCount;    // Number of packets to generate
+
+        // Working data:
         PacketCounter _limit;       // Current max number of packets
         TSPacket      _packet;      // Template of packet to generate
     };

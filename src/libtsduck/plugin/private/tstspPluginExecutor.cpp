@@ -349,6 +349,9 @@ bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
     // First, stop the current execution.
     plugin()->stop();
 
+    // Inform the TSP layer to reset plugin session accounting.
+    restartPluginSession();
+
     // Reset the execution context to cleanup previous plugin-specific options or accumulated data.
     plugin()->resetContext(_options.duck_args);
 
