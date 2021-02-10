@@ -59,15 +59,18 @@ languages which can be classified according to two sets of criteria:
 - Native vs. abstract:
   - Native classes are the C++ classes which are used in all the TSDuck command line
     tools. They are typically used to report to standard output, standard error,
-    files or dropping the logs. They can be used from 
+    files or dropping the logs. They can be used from Java and Python directly but
+    cannot be derived or customized. They are typically used when predefined error
+    logging is sufficient.
   - Abstract classes are pure Java or Python base classes which are designed to be
-    derived in the applications. Such application-defined classes shall override
-    the method `logMessageHandler` (Java) or `log` (Python) to intercept and process
-    the message lines.
+    derived in applications. Such application-defined classes shall override the
+    method `logMessageHandler` (Java) or `log` (Python) to intercept and process the
+    message lines.
 
 The asynchronous abstract classes can be useful to collect events, tables and
 sections in XML, JSON or binary / hexadecimal form in Java or Python applications
-when using `TSProcessor` or `InputSwitcher`.
+when using `TSProcessor` or `InputSwitcher`. Some of the sample Java and Python
+applications illustrate this mechanism.
 
 | Category               | C++ class         | Java class                      | Python class
 | ---------------------- | ----------------- | ------------------------------- | ------------------------
