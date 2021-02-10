@@ -62,9 +62,11 @@ namespace ts {
         bool          _dump_datagram;   // Dump complete network datagrams.
         bool          _dump_udp;        // Dump UDP payloads.
         bool          _send_udp;        // Send all datagrams through UDP.
+        bool          _log_hexa_line;   // Log datagrams as one hexa line in the system message log.
         bool          _all_mpe_pids;    // Extract all MPE PID's.
         bool          _outfile_append;  // Append file.
         UString       _outfile_name;    // Output file name.
+        UString       _log_hexa_prefix; // Prefix before hexa log line.
         PacketCounter _max_datagram;    // Maximum number of datagrams to extract.
         size_t        _min_net_size;    // Minimum size of network datagrams.
         size_t        _max_net_size;    // Maximum size of network datagrams.
@@ -114,9 +116,11 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
     _dump_datagram(false),
     _dump_udp(false),
     _send_udp(false),
+    _log_hexa_line(false),
     _all_mpe_pids(false),
     _outfile_append(false),
     _outfile_name(),
+    _log_hexa_prefix(),
     _max_datagram(0),
     _min_net_size(0),
     _max_net_size(0),
@@ -149,15 +153,15 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
          u"Filter MPE UDP datagrams based on the specified destination IP address.");
 
     option(u"dump-datagram");
-    help(u"dump-datagram", u"With --log, dump each complete network datagram.");
+    help(u"dump-datagram", u"With --log or --log-hexa-line, dump each complete network datagram.");
 
     option(u"dump-udp");
-    help(u"dump-udp", u"With --log, dump the UDP payload of each network datagram.");
+    help(u"dump-udp", u"With --log or --log-hexa-line, dump the UDP payload of each network datagram.");
 
     option(u"dump-max", 0, UNSIGNED);
     help(u"dump-max",
-         u"With --dump-datagram or --dump-udp, specify the maximum number of bytes "
-         u"to dump. By default, dump everything.");
+         u"With --dump-datagram, --dump-udp or --log-hexa-line, specify the maximum number of bytes to dump. "
+         u"By default, dump everything.");
 
     option(u"local-address", 0, STRING);
     help(u"local-address", u"address",
@@ -185,6 +189,13 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
     help(u"log",
          u"Log all MPE datagrams using a short summary for each of them.");
 
+    option(u"log-hexa-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
+    help(u"log-hexa-line", u"'prefix'",
+         u"Same as --log but log the full content of each datagram as one single hexadecimal line in the message logger. "
+         u"Dump either the full datagram (the default) or the UDP payload (with --dump-udp). "
+         u"The optional string parameter specifies a prefix to prepend on the log "
+         u"line before the hexadecimal text to locate the appropriate line in the logs.");
+
     option(u"max-datagram", 'm', POSITIVE);
     help(u"max-datagram",
          u"Specify the maximum number of datagrams to extract, then stop. By default, "
@@ -211,7 +222,7 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
 
     option(u"skip", 0, UNSIGNED);
     help(u"skip",
-         u"With --output-file, --dump-datagram or --dump-udp, specify the initial "
+         u"With --output-file, --dump-datagram, --dump-udp or --log-hexa-line, specify the initial "
          u"number of bytes to skip. By default, save or dump from the beginning.");
 
     option(u"source", 's', STRING);
@@ -259,10 +270,12 @@ bool ts::MPEPlugin::getOptions()
     _sync_layout = present(u"sync-layout");
     _dump_datagram = present(u"dump-datagram");
     _dump_udp = present(u"dump-udp");
-    _log = _sync_layout || _dump_udp || _dump_datagram || present(u"log");
+    _log_hexa_line = present(u"log-hexa-line");
+    _log = _sync_layout || _dump_udp || _dump_datagram || _log_hexa_line || present(u"log");
     _send_udp = present(u"udp-forward");
     _outfile_append = present(u"append");
     getValue(_outfile_name, u"output-file");
+    getValue(_log_hexa_prefix, u"log-hexa-line");
     getIntValue(_max_datagram, u"max-datagram");
     getIntValue(_dump_max, u"dump-max", NPOS);
     getIntValue(_skip_size, u"skip");
@@ -441,7 +454,10 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
     assert(netSize >= IPv4_MIN_HEADER_SIZE);
 
     // Log MPE packets.
-    if (_log) {
+    if (_log_hexa_line) {
+        tsp->info(_log_hexa_prefix + dumpString(mpe));
+    }
+    else if (_log) {
         // Get destination IP and MAC address.
         const IPAddress destIP(mpe.destinationIPAddress());
         const MACAddress destMAC(mpe.destinationMACAddress());
@@ -455,8 +471,8 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
         }
 
         // Finally log the complete message.
-        tsp->info(u"PID 0x%X (%d), src: %s:%d, dest: %s:%d (%s%s), %d bytes, fragment: 0x%X%s%s",
-                  {mpe.sourcePID(), mpe.sourcePID(), mpe.sourceIPAddress(), mpe.sourceUDPPort(),
+        tsp->info(u"PID 0x%X (%<d), src: %s:%d, dest: %s:%d (%s%s), %d bytes, fragment: 0x%X%s%s",
+                  {mpe.sourcePID(), mpe.sourceIPAddress(), mpe.sourceUDPPort(),
                    destIP, mpe.destinationUDPPort(), destMAC, macComment, udpSize,
                    GetUInt16(mpe.datagram() + 6), syncLayoutString(udp, udpSize), dumpString(mpe)});
     }
@@ -521,13 +537,13 @@ ts::UString ts::MPEPlugin::dumpString(const MPEPacket& mpe)
     size_t size = 0;
 
     // Select what to dump.
-    if (_dump_datagram) {
-        data = mpe.datagram();
-        size = mpe.datagramSize();
-    }
-    else if (_dump_udp) {
+    if (_dump_udp) {
         data = mpe.udpMessage();
         size = mpe.udpMessageSize();
+    }
+    else if (_dump_datagram || _log_hexa_line) {
+        data = mpe.datagram();
+        size = mpe.datagramSize();
     }
     else {
         return UString();
@@ -540,7 +556,16 @@ ts::UString ts::MPEPlugin::dumpString(const MPEPacket& mpe)
     data += _skip_size;
     size -= _skip_size;
 
-    return u"\n" + UString::Dump(data, std::min(size, _dump_max), UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, 2, 16);
+    // Maximum dump size.
+    size = std::min(size, _dump_max);
+
+    // Build dump line.
+    if (_log_hexa_line) {
+        return UString::Dump(data, size, UString::COMPACT);
+    }
+    else {
+        return u"\n" + UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, 2, 16);
+    }
 }
 
 
