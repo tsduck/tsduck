@@ -69,14 +69,11 @@ namespace ts {
 
         private:
             // Inherited from ts::AsyncReport:
-            virtual void asyncThreadStarted() override;
             virtual void asyncThreadLog(int severity, const UString& message) override;
-            virtual void asyncThreadCompleted() override;
 
-            JNIEnv*   _env_constructor;  // JNI environment in the thread which called the constructor.
-            JNIEnv*   _env_thread;       // JNI environment in the logging thread.
-            jobject   _obj_ref;          // Global JNI reference to the Java object to notify.
-            jmethodID _obj_method;       // Method to log messages in the Java object.
+            JNIEnv*   _env;         // JNI environment in the thread which called the constructor.
+            jobject   _obj_ref;     // Global JNI reference to the Java object to notify.
+            jmethodID _obj_method;  // Method to log messages in the Java object.
         };
     }
 }

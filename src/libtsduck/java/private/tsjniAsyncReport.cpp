@@ -38,8 +38,7 @@ TSDUCK_SOURCE;
 
 ts::jni::AsyncReport::AsyncReport(JNIEnv* env, jobject obj, jstring log_method, int max_severity, const AsyncReportArgs& args) :
     ts::AsyncReport(max_severity, args),
-    _env_constructor(env),
-    _env_thread(nullptr),
+    _env(env),
     _obj_ref(env == nullptr || obj == nullptr ? nullptr : env->NewGlobalRef(obj)),
     _obj_method(nullptr)
 {
@@ -54,35 +53,9 @@ ts::jni::AsyncReport::AsyncReport(JNIEnv* env, jobject obj, jstring log_method, 
 
 ts::jni::AsyncReport::~AsyncReport()
 {
-    if (_env_constructor != nullptr && _obj_ref != nullptr) {
-        _env_constructor->DeleteGlobalRef(_obj_ref);
+    if (_env != nullptr && _obj_ref != nullptr) {
+        _env->DeleteGlobalRef(_obj_ref);
         _obj_ref = nullptr;
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Initialization/completion of the asynchronous logging thread.
-//----------------------------------------------------------------------------
-
-void ts::jni::AsyncReport::asyncThreadStarted()
-{
-    // Attach the logging thread to the Java VM.
-    if (ts::jni::javaVM != nullptr) {
-        void* penv = nullptr;
-        const jint status = ts::jni::javaVM->AttachCurrentThread(&penv, nullptr);
-        if (status == JNI_OK && penv != nullptr) {
-            _env_thread = reinterpret_cast<JNIEnv*>(penv);
-        }
-    }
-}
-
-void ts::jni::AsyncReport::asyncThreadCompleted()
-{
-    // Detach the logging thread from the Java VM.
-    if (ts::jni::javaVM != nullptr) {
-        _env_thread = nullptr;
-        ts::jni::javaVM->DetachCurrentThread();
     }
 }
 
@@ -93,11 +66,12 @@ void ts::jni::AsyncReport::asyncThreadCompleted()
 
 void ts::jni::AsyncReport::asyncThreadLog(int severity, const UString& message)
 {
-    if (_env_thread != nullptr && _obj_ref != nullptr && _obj_method != nullptr) {
-        const jstring jmessage = ToJString(_env_thread, message);
+    JNIEnv* env = JNIEnvForCurrentThead();
+    if (env != nullptr && _obj_ref != nullptr && _obj_method != nullptr) {
+        const jstring jmessage = ToJString(env, message);
         if (jmessage != nullptr) {
-            _env_thread->CallVoidMethod(_obj_ref, _obj_method, jint(severity), jmessage);
-            _env_thread->DeleteLocalRef(jmessage);
+            env->CallVoidMethod(_obj_ref, _obj_method, jint(severity), jmessage);
+            env->DeleteLocalRef(jmessage);
         }
     }
 }
