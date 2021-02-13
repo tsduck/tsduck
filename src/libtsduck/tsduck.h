@@ -623,6 +623,7 @@
 #include "tsTextParser.h"
 #include "tsThread.h"
 #include "tsThreadAttributes.h"
+#include "tsThreadLocalObjects.h"
 #include "tsTime.h"
 #include "tsTimeShiftBuffer.h"
 #include "tsTimeShiftedEventDescriptor.h"

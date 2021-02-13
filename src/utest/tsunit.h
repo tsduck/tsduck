@@ -514,9 +514,9 @@ namespace tsunit {
     class Assertions
     {
     private:
-        static volatile size_t _passedCount;
-        static volatile size_t _failedAssertionsCount;
-        static volatile size_t _failedAssumptionsCount;
+        static std::atomic_size_t _passedCount;
+        static std::atomic_size_t _failedAssertionsCount;
+        static std::atomic_size_t _failedAssumptionsCount;
     public:
         // Assertion counts.
         static size_t getPassedCount() { return _passedCount; }

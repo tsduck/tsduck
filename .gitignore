@@ -52,3 +52,4 @@ cov-int
 ._*
 bin
 __pycache__
+*.pyc

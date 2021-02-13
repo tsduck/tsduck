@@ -87,6 +87,14 @@ namespace ts {
         extern JavaVM* javaVM;
 
         //!
+        //! Get the JNIEnv pointer for the current thread.
+        //! If the thread is a native one and is not yet attached to the JVM, attachment is done first.
+        //! Non-native threads are automatically detached from the JVM.
+        //! @return The JNIEnv pointer for the current thread.
+        //!
+        JNIEnv* JNIEnvForCurrentThead();
+
+        //!
         //! Get the address of the first character in a string as a Java character.
         //! This is based on the fact that ts::UString and java.lang.String use the same
         //! representation for characters.

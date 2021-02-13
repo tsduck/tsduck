@@ -484,9 +484,9 @@ char const* tsunit::Failure::what() const noexcept
 // Generation of assertion failures.
 //---------------------------------------------------------------------------------
 
-volatile size_t tsunit::Assertions::_passedCount = 0;
-volatile size_t tsunit::Assertions::_failedAssertionsCount = 0;
-volatile size_t tsunit::Assertions::_failedAssumptionsCount = 0;
+std::atomic_size_t tsunit::Assertions::_passedCount(0);
+std::atomic_size_t tsunit::Assertions::_failedAssertionsCount(0);
+std::atomic_size_t tsunit::Assertions::_failedAssumptionsCount(0);
 
 void tsunit::Assertions::fail(const std::string& message, const char* sourcefile, int linenumber)
 {

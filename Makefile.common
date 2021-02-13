@@ -1049,13 +1049,13 @@ $(OBJDIR)/%.dep: %.c
 	@echo '  [DEP] $<'; \
 	mkdir -p $(OBJDIR); \
 	$(CC) -MM $(CPPFLAGS) $(CFLAGS_INCLUDES) $(CFLAGS_STANDARD) $(CFLAGS_NO_WARNINGS) $< >$@ && \
-	$(SED) -i 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' $@ || \
+	$(SED) -i 's,\($*\)\.o *: *,$(OBJDIR)/\1.o $@ : ,g' $@ || \
 	rm -f $@
 $(OBJDIR)/%.dep: %.cpp
 	@echo '  [DEP] $<'; \
 	mkdir -p $(OBJDIR); \
 	$(CC) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_STANDARD) $(CXXFLAGS_NO_WARNINGS) $< >$@ && \
-	$(SED) -i 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' $@ || \
+	$(SED) -i 's,\($*\)\.o *: *,$(OBJDIR)/\1.o $@ : ,g' $@ || \
 	rm -f $@
 
 # Rebuild and include all .dep files, unless the explicit targets do not require the .dep files.
@@ -1075,7 +1075,7 @@ endif
 clean:
 	@echo '  [CLEAN] $(CURDIR)'; \
 	rm -rf $(EXTRA_CLEAN) *~ \
-	    *.o *.ko *.a *.class *.gcov *.dep tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump
+	    *.o *.ko *.a *.class *.pyc *.gcov *.dep tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump
 	+@$(RECURSE)
 distclean: clean
 	@echo '  [DISTCLEAN] $(CURDIR)'; \
