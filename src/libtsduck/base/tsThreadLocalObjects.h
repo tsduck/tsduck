@@ -91,7 +91,7 @@ namespace ts {
         class ThreadLocalRepository
         {
         public:
-            ThreadLocalRepository() = default;
+            ThreadLocalRepository();
             std::map<UString, ObjectPtr> objects;
         };
 

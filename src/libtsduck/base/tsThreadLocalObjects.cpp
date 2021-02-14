@@ -58,6 +58,11 @@ ts::ThreadLocalObjects::ThreadLocalObjects() :
 #endif
 }
 
+ts::ThreadLocalObjects::ThreadLocalRepository::ThreadLocalRepository() :
+    objects()
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Get or create the ThreadLocalRepository of the current thread. Never null.

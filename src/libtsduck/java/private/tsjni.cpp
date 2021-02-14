@@ -250,6 +250,8 @@ namespace {
     public:
         // The constructor attaches to the JVM when necessary.
         LocalThreadJNI();
+        LocalThreadJNI(const LocalThreadJNI&) = default;
+        LocalThreadJNI& operator=(const LocalThreadJNI&) = default;
 
         // The destructor detaches from the JVM when necessary.
         virtual ~LocalThreadJNI() override;
