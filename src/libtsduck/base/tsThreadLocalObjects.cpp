@@ -107,7 +107,6 @@ void ts::ThreadLocalObjects::deleteLocalObjects()
         ::TlsSetValue(_tls_index, nullptr);
         delete repo;
     }
-    return repo;
 #else
     ThreadLocalRepository* repo = reinterpret_cast<ThreadLocalRepository*>(::pthread_getspecific(_key));
     if (repo != nullptr) {

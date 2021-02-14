@@ -76,7 +76,7 @@ Push-Location $SrcRoot\src
 Get-ChildItem -Recurse . -Name *.java |
     ForEach-Object {
         Write-Output "Compiling $_ ..."
-        . $JavaBin\javac.exe -source 1.8 -target 1.8 -d $BinDir $_
+        . $JavaBin\javac.exe -source 1.8 -target 1.8 -Xlint:-options -d $BinDir $_
     }
 Pop-Location
 

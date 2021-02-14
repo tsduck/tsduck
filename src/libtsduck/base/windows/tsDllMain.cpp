@@ -1,4 +1,4 @@
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2021, Thierry Lelegard
@@ -25,23 +25,42 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
-//----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//
+//  TSDuck DLL entry point on Windows.
+//
+//-----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 26
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2239
+#include "tsThreadLocalObjects.h"
+TSDUCK_SOURCE;
+
+// This code makes sense only when TSDuck is not compiled as a static library.
+#if !defined(TSDUCK_STATIC_LIBRARY)
+
+::BOOL WINAPI DllMain(::HINSTANCE hdll, ::DWORD reason, ::LPVOID reserved)
+{
+    // Perform actions based on the reason for calling.
+    switch (reason) {
+        case DLL_PROCESS_ATTACH:
+            // Initialization of the DLL in the process, executed once.
+            break;
+
+        case DLL_THREAD_ATTACH:
+            // Thread initialization, executed for each new thread.
+            break;
+
+        case DLL_THREAD_DETACH:
+            // Thread termination, executed for each terminating thread.
+            // Delete all local objects in the thread. Already done for ts::Thread objects.
+            // Added as a precaution if TSDuck code is called in the context of other threads.
+            ts::ThreadLocalObjects::Instance()->deleteLocalObjects();
+            break;
+
+        case DLL_PROCESS_DETACH:
+            // Termination of the DLL in the process, executed once.
+            break;
+    }
+    return true;
+}
+
+#endif
