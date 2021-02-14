@@ -81,6 +81,7 @@
 #include <exception>
 #include <cstdlib>
 #include <cstdio>
+#include <atomic>
 
 //!
 //! Unitary tests namespace.
