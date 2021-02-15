@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Abstract base class for objects which can be stored in a repository
+//!  General-purpose base class for polymophic objects.
 //!
 //----------------------------------------------------------------------------
 
@@ -45,11 +45,11 @@ namespace ts {
     typedef SafePtr<Object, Mutex> ObjectPtr;
 
     //!
-    //! Abstract base class for objects which can be stored in a repository.
+    //! General-purpose base class for polymophic objects.
     //! @ingroup cpp
     //!
-    //! This type of object is typically used to communicate between independent
-    //! modules or plugins.
+    //! This type of object is typically derived by application-defined classes and
+    //! used to communicate these user-data between independent modules or plugins.
     //!
     class TSDUCKDLL Object
     {
@@ -58,34 +58,5 @@ namespace ts {
         //! Virtual destructor.
         //!
         virtual ~Object();
-
-        //!
-        //! Store a safe pointer to an Object in a static thread-safe repository.
-        //! @param [in] name Each stored pointer is associated to a name.
-        //! @param [in] value Safe-pointer to the object to store.
-        //! @return The previous value which was associated to that name or a null
-        //! pointer when not previously assigned.
-        //!
-        static ObjectPtr StoreInRepository(const UString& name, const ObjectPtr& value);
-
-        //!
-        //! Get the safe pointer to an Object in the static thread-safe repository.
-        //! @param [in] name Name which is associated to the object.
-        //! @return A safe-pointer to the stored object or a null pointer when not found.
-        //!
-        static ObjectPtr RetrieveFromRepository(const UString& name);
-
-        //!
-        //! Erase an object from the static thread-safe repository.
-        //! @param [in] name Name which is associated to the object to erase.
-        //!
-        static void EraseFromRepository(const UString& name);
-
-    private:
-        // Static thread-safe repository of Object
-        static std::map<UString, ObjectPtr> _repository;
-
-        // Mutex protecting access to the static thread-safe repository of Object
-        static Mutex _repository_mutex;
     };
 }

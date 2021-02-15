@@ -28,11 +28,14 @@
 //----------------------------------------------------------------------------
 
 #include "tsUserInterrupt.h"
-#include "tsSingletonManager.h"
+#include "tsStaticInstance.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
 ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = nullptr;
+
+// A local mutex to avoid multiple activations.
+TS_STATIC_INSTANCE(ts::Mutex, (), ActivationMutex)
 
 // On UNIX platforms, we use a semaphore (sem_t). On MacOS, the address of the
 // semaphore is returned by sem_open. On other UNIX, the semaphore instance is
@@ -82,7 +85,7 @@ void ts::UserInterrupt::sysHandler(int sig)
 #if defined(TS_UNIX)
 void ts::UserInterrupt::main()
 {
-    while (!_terminate) {
+    while (_terminate == 0) {
         // Wait for the semaphore to be signaled
         if (::sem_wait(SEM_PARAM(this)) < 0 && errno != EINTR) {
             ::perror("sem_wait");
@@ -157,7 +160,7 @@ ts::UserInterrupt::UserInterrupt(InterruptHandler* handler, bool one_shot, bool 
 #if defined(TS_UNIX)
     // stack size: 16 kB, maximum priority
     Thread(ThreadAttributes().setStackSize(16 * 1024).setPriority(ThreadAttributes::GetMaximumPriority())),
-    _terminate(false),
+    _terminate(0),
     _got_sigint(0),
 #if defined(TS_MAC)
     _sem_name(UString::Format(u"tsduck-%d-%d", {getpid(), ptrdiff_t(this)}).toUTF8()),
@@ -201,7 +204,7 @@ void ts::UserInterrupt::activate()
     }
 
     // Ensure that there is only one active instance at a time
-    Guard lock(SingletonManager::Instance()->mutex);
+    Guard lock(ActivationMutex::Instance());
     if (_active_instance != nullptr) {
         return;
     }
@@ -269,8 +272,8 @@ void ts::UserInterrupt::activate()
 
 void ts::UserInterrupt::deactivate()
 {
-    // Deactivate only if active
-    Guard lock(SingletonManager::Instance()->mutex);
+    // Deactivate only if active.
+    Guard lock(ActivationMutex::Instance());
     if (!_active) {
         return;
     }
@@ -308,7 +311,7 @@ void ts::UserInterrupt::deactivate()
     }
 
     // Signal the semaphore to unlock the monitor thread
-    _terminate = true;
+    _terminate = 1;
     if (::sem_post(SEM_PARAM(this)) < 0) {
         ::perror("sem_post error in SIGINT handler");
         ::exit(EXIT_FAILURE);

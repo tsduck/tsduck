@@ -91,6 +91,16 @@ TSDUCKPY void tspyWaitTSProcessor(void* tsp)
     }
 }
 
+TSDUCKPY void tspyTSProcessorRegisterEventHandler(void* tsp, ts::PluginEventHandlerInterface* handler, uint32_t event_code)
+{
+    ts::TSProcessor* proc = reinterpret_cast<ts::TSProcessor*>(tsp);
+    if (proc != nullptr) {
+        ts::PluginEventHandlerRegistry::Criteria criteria;
+        criteria.event_code = event_code;
+        proc->registerEventHandler(handler, criteria);
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Start the TS processing and decode arguments.
 //-----------------------------------------------------------------------------

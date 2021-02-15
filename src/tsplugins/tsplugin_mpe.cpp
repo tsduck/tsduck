@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
+#include "tsPluginEventData.h"
 #include "tsMPEDemux.h"
 #include "tsMPEPacket.h"
 #include "tsUDPSocket.h"
@@ -63,6 +64,7 @@ namespace ts {
         bool          _dump_udp;        // Dump UDP payloads.
         bool          _send_udp;        // Send all datagrams through UDP.
         bool          _log_hexa_line;   // Log datagrams as one hexa line in the system message log.
+        bool          _signal_event;    // Signal a plugin event on MPE packet.
         bool          _all_mpe_pids;    // Extract all MPE PID's.
         bool          _outfile_append;  // Append file.
         UString       _outfile_name;    // Output file name.
@@ -74,6 +76,7 @@ namespace ts {
         size_t        _max_udp_size;    // Maximum size of UDP datagrams.
         size_t        _dump_max;        // Max dump size in bytes.
         size_t        _skip_size;       // Initial bytes to skip for --dump and --output-file.
+        uint32_t      _event_code;      // Event code to signal.
         int           _ttl;             // Time to live option.
         PIDSet        _pids;            // Explicitly specified PID's to extract.
         SocketAddress _ip_source;       // IP source filter.
@@ -95,9 +98,8 @@ namespace ts {
         virtual void handleMPENewPID(MPEDemux&, const PMT&, PID) override;
         virtual void handleMPEPacket(MPEDemux&, const MPEPacket&) override;
 
-        // Build the strings for --sync-layout or --dump-*.
+        // Build the string for --sync-layout.
         UString syncLayoutString(const uint8_t* udp, size_t udpSize);
-        UString dumpString(const MPEPacket& mpe);
     };
 }
 
@@ -117,6 +119,7 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
     _dump_udp(false),
     _send_udp(false),
     _log_hexa_line(false),
+    _signal_event(false),
     _all_mpe_pids(false),
     _outfile_append(false),
     _outfile_name(),
@@ -128,6 +131,7 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
     _max_udp_size(0),
     _dump_max(0),
     _skip_size(0),
+    _event_code(0),
     _ttl(0),
     _pids(),
     _ip_source(),
@@ -162,6 +166,13 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
     help(u"dump-max",
          u"With --dump-datagram, --dump-udp or --log-hexa-line, specify the maximum number of bytes to dump. "
          u"By default, dump everything.");
+
+    option(u"event-code", 0, UINT32);
+    help(u"event-code",
+         u"This option is for C++, Java or Python developers only.\n\n"
+         u"Signal a plugin event with the specified code for each MPE packet. "
+         u"The event data is an instance of PluginEventData pointing to "
+         u"the network datagram (default) or UDP payload (with --dump-udp).");
 
     option(u"local-address", 0, STRING);
     help(u"local-address", u"address",
@@ -271,7 +282,8 @@ bool ts::MPEPlugin::getOptions()
     _dump_datagram = present(u"dump-datagram");
     _dump_udp = present(u"dump-udp");
     _log_hexa_line = present(u"log-hexa-line");
-    _log = _sync_layout || _dump_udp || _dump_datagram || _log_hexa_line || present(u"log");
+    _signal_event = present(u"event-code");
+    _log = _sync_layout || (_dump_udp && !_signal_event) || _dump_datagram || _log_hexa_line || present(u"log");
     _send_udp = present(u"udp-forward");
     _outfile_append = present(u"append");
     getValue(_outfile_name, u"output-file");
@@ -279,6 +291,7 @@ bool ts::MPEPlugin::getOptions()
     getIntValue(_max_datagram, u"max-datagram");
     getIntValue(_dump_max, u"dump-max", NPOS);
     getIntValue(_skip_size, u"skip");
+    getIntValue(_event_code, u"event-code");
     getIntValue(_ttl, u"ttl");
     getIntValues(_pids, u"pid");
     const UString ipSource(value(u"source"));
@@ -441,21 +454,38 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
     }
 
     // Network datagram and UDP payload.
-    const uint8_t* const udp = mpe.udpMessage();
-    const size_t udpSize = mpe.udpMessageSize();
-    const size_t netSize = mpe.datagramSize();
+    const uint8_t* const net_data = mpe.datagram();
+    const uint8_t* const udp_data = mpe.udpMessage();
+    const size_t udp_size = mpe.udpMessageSize();
+    const size_t net_size = mpe.datagramSize();
 
     // Apply size filters.
-    if (netSize < _min_net_size || netSize > _max_net_size || udpSize < _min_udp_size || udpSize > _max_udp_size) {
+    if (net_size < _min_net_size || net_size > _max_net_size || udp_size < _min_udp_size || udp_size > _max_udp_size) {
         return;
     }
 
     // We will directly access some fields of the IPv4 header.
-    assert(netSize >= IPv4_MIN_HEADER_SIZE);
+    assert(net_size >= IPv4_MIN_HEADER_SIZE);
+
+    // Select what to dump.
+    const uint8_t* dump_data = _dump_udp ? udp_data : net_data;
+    size_t dump_size = _dump_udp ? udp_size : net_size;
+
+    // Skip initial bytes.
+    if (dump_size <= _skip_size) {
+        dump_size = 0;
+    }
+    else {
+        dump_data += _skip_size;
+        dump_size -= _skip_size;
+    }
+
+    // Maximum dump size.
+    dump_size = std::min(dump_size, _dump_max);
 
     // Log MPE packets.
     if (_log_hexa_line) {
-        tsp->info(_log_hexa_prefix + dumpString(mpe));
+        tsp->info(_log_hexa_prefix + UString::Dump(dump_data, dump_size, UString::COMPACT));
     }
     else if (_log) {
         // Get destination IP and MAC address.
@@ -471,15 +501,16 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
         }
 
         // Finally log the complete message.
-        tsp->info(u"PID 0x%X (%<d), src: %s:%d, dest: %s:%d (%s%s), %d bytes, fragment: 0x%X%s%s",
+        tsp->info(u"PID 0x%X (%<d), src: %s:%d, dest: %s:%d (%s%s), %d bytes, fragment: 0x%X%s\n%s",
                   {mpe.sourcePID(), mpe.sourceIPAddress(), mpe.sourceUDPPort(),
-                   destIP, mpe.destinationUDPPort(), destMAC, macComment, udpSize,
-                   GetUInt16(mpe.datagram() + 6), syncLayoutString(udp, udpSize), dumpString(mpe)});
+                   destIP, mpe.destinationUDPPort(), destMAC, macComment, udp_size,
+                   GetUInt16(mpe.datagram() + 6), syncLayoutString(udp_data, udp_size),
+                   UString::Dump(dump_data, dump_size, UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, 2, 16)});
     }
 
     // Save UDP messages in binary file.
-    if (_outfile.is_open() && udpSize > _skip_size) {
-        _outfile.write(reinterpret_cast<const char*>(udp + _skip_size), std::streamsize(udpSize - _skip_size));
+    if (_outfile.is_open() && udp_size > _skip_size) {
+        _outfile.write(reinterpret_cast<const char*>(udp_data + _skip_size), std::streamsize(udp_size - _skip_size));
         if (!_outfile) {
             tsp->error(u"error writing to %s", {_outfile_name});
             _abort = true;
@@ -514,9 +545,15 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
         }
 
         // Send the UDP datagram.
-        if (!_sock.send(udp, udpSize, dest, *tsp)) {
+        if (!_sock.send(udp_data, udp_size, dest, *tsp)) {
             _abort = true;
         }
+    }
+
+    // Signal application-defined event. The call to the application callbacks is synchronous.
+    if (_signal_event) {
+        PluginEventData data(dump_data, dump_size);
+        tsp->signalPluginEvent(_event_code, &data);
     }
 
     // Stop after reaching the maximum number of datagrams.
@@ -528,52 +565,10 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
 
 
 //----------------------------------------------------------------------------
-// Build the string for --dump-*.
-//----------------------------------------------------------------------------
-
-ts::UString ts::MPEPlugin::dumpString(const MPEPacket& mpe)
-{
-    const uint8_t* data = nullptr;
-    size_t size = 0;
-
-    // Select what to dump.
-    if (_dump_udp) {
-        data = mpe.udpMessage();
-        size = mpe.udpMessageSize();
-    }
-    else if (_dump_datagram || _log_hexa_line) {
-        data = mpe.datagram();
-        size = mpe.datagramSize();
-    }
-    else {
-        return UString();
-    }
-
-    // Skip initial bytes.
-    if (size <= _skip_size) {
-        return UString();
-    }
-    data += _skip_size;
-    size -= _skip_size;
-
-    // Maximum dump size.
-    size = std::min(size, _dump_max);
-
-    // Build dump line.
-    if (_log_hexa_line) {
-        return UString::Dump(data, size, UString::COMPACT);
-    }
-    else {
-        return u"\n" + UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, 2, 16);
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Build the string for --sync-layout.
 //----------------------------------------------------------------------------
 
-ts::UString ts::MPEPlugin::syncLayoutString(const uint8_t* udp, size_t udpSize)
+ts::UString ts::MPEPlugin::syncLayoutString(const uint8_t* udp, size_t udp_size)
 {
     // Nothing to display without --sync-layout.
     if (!_sync_layout) {
@@ -589,7 +584,7 @@ ts::UString ts::MPEPlugin::syncLayoutString(const uint8_t* udp, size_t udpSize)
     // Build the log string.
     UString result;
     size_t start = 0;
-    for (size_t i = 0; i < udpSize; ++i) {
+    for (size_t i = 0; i < udp_size; ++i) {
         if (udp[i] == SYNC_BYTE) {
             syncIndex.push_back(i);
             hasShorter = hasShorter || i - start < PKT_SIZE - 1;
@@ -606,25 +601,25 @@ ts::UString ts::MPEPlugin::syncLayoutString(const uint8_t* udp, size_t udpSize)
     if (result.empty()) {
         return u"\n  no sync byte";
     }
-    else if (start < udpSize) {
-        result.append(UString::Format(u" %d", {udpSize - start}));
+    else if (start < udp_size) {
+        result.append(UString::Format(u" %d", {udp_size - start}));
     }
 
     // If we have shorter intervals (less than 187), maybe some 0x47 were simply data bytes.
     // Try to find complete TS packets, starting at first 0x47, then second, etc.
     if (hasShorter) {
         // Loop on starting 0x47 from the previous list.
-        for (size_t si = 0; si < syncIndex.size() && syncIndex[si] + PKT_SIZE <= udpSize; ++si) {
+        for (size_t si = 0; si < syncIndex.size() && syncIndex[si] + PKT_SIZE <= udp_size; ++si) {
             // Check if we can find complete TS packets starting here.
             bool found = true;
-            for (size_t i = syncIndex[si]; found && i < udpSize; i += PKT_SIZE) {
+            for (size_t i = syncIndex[si]; found && i < udp_size; i += PKT_SIZE) {
                 found = udp[i] == SYNC_BYTE;
             }
             if (found) {
                 // Yes, found a list of complete TS packets.
                 result.append(UString::Format(u"\n  %d", {syncIndex[si]}));
-                for (size_t i = syncIndex[si]; i < udpSize; i += PKT_SIZE) {
-                    result.append(UString::Format(u" S %d", {std::min(PKT_SIZE - 1, udpSize - i)}));
+                for (size_t i = syncIndex[si]; i < udp_size; i += PKT_SIZE) {
+                    result.append(UString::Format(u" S %d", {std::min(PKT_SIZE - 1, udp_size - i)}));
                 }
                 // Not need to try starting at the next sync byte?
                 break;
