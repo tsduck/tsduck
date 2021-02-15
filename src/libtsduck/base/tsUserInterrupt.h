@@ -113,7 +113,7 @@ namespace ts {
         static void sysHandler(int sig);
         virtual void main() override;  // ts::Thread implementation
 
-        volatile bool           _terminate;
+        volatile ::sig_atomic_t _terminate;
         volatile ::sig_atomic_t _got_sigint;
 #if defined(TS_MAC)
         std::string             _sem_name;

@@ -32,6 +32,7 @@
 #-----------------------------------------------------------------------------
 
 from .duck import DuckContext
+from .event import PluginEventContext, AbstractPluginEventHandler
 from .info import version, intVersion
 from .switch import InputSwitcher, SwitchStartError
 from .native import NativeObject

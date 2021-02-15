@@ -28,35 +28,51 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  General-purpose base class for polymophic objects.
+//!  A global repository of general-purpose base class for polymophic objects.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSafePtr.h"
+#include "tsSingletonManager.h"
+#include "tsObject.h"
 
 namespace ts {
-
-    class Object;
-
     //!
-    //! Safe pointer for Object (thread-safe).
-    //!
-    typedef SafePtr<Object, Mutex> ObjectPtr;
-
-    //!
-    //! General-purpose base class for polymophic objects.
+    //! A global repository of general-purpose base class for polymophic objects.
     //! @ingroup cpp
     //!
-    //! This type of object is typically derived by application-defined classes and
-    //! used to communicate these user-data between independent modules or plugins.
+    //! The repository is a thread-safe singleton. It can be used as a central
+    //! repository of user-defined objects which is shared by all modules, all
+    //! plugins, all threads.
     //!
-    class TSDUCKDLL Object
+    class TSDUCKDLL ObjectRepository
     {
+        TS_DECLARE_SINGLETON(ObjectRepository);
     public:
         //!
-        //! Virtual destructor.
+        //! Store a safe pointer to an Object (or typically a subclass thereof) in the repository.
+        //! @param [in] name Each stored pointer is associated to a name.
+        //! @param [in] value Safe-pointer to the object to store.
+        //! @return The previous value which was associated to that name or a null
+        //! pointer when not previously assigned.
         //!
-        virtual ~Object();
+        ObjectPtr store(const UString& name, const ObjectPtr& value);
+
+        //!
+        //! Get the safe pointer to an Object in the repository.
+        //! @param [in] name Name which is associated to the object.
+        //! @return A safe-pointer to the stored object or a null pointer when not found.
+        //!
+        ObjectPtr retrieve(const UString& name);
+
+        //!
+        //! Erase an object from the repository.
+        //! @param [in] name Name which is associated to the object to erase.
+        //!
+        void erase(const UString& name);
+
+    private:
+        Mutex _mutex;
+        std::map<UString, ObjectPtr> _repository;
     };
 }

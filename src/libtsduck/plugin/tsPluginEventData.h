@@ -28,35 +28,57 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  General-purpose base class for polymophic objects.
+//!  General-purpose plugin event data referencing constant binary data.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSafePtr.h"
+#include "tsObject.h"
 
 namespace ts {
-
-    class Object;
-
     //!
-    //! Safe pointer for Object (thread-safe).
+    //! General-purpose plugin event data referencing constant binary data.
+    //! @ingroup plugin
     //!
-    typedef SafePtr<Object, Mutex> ObjectPtr;
-
+    //! This subclass of Object can be used as "plugin data" when a plugin triggers
+    //! an event and wants to pass to the application a read-only binary area.
     //!
-    //! General-purpose base class for polymophic objects.
-    //! @ingroup cpp
+    //! The plugin event handlers in the application are synchronously invoked in
+    //! the context of the thread plugin. The referenced binary data can be local
+    //! data inside the plugin. The event handler may read it but not write it and
+    //! not saved a reference to it.
     //!
-    //! This type of object is typically derived by application-defined classes and
-    //! used to communicate these user-data between independent modules or plugins.
-    //!
-    class TSDUCKDLL Object
+    class TSDUCKDLL PluginEventData : public Object
     {
+        // Prevent copy to allow safe storage of references.
+        TS_NOBUILD_NOCOPY(PluginEventData);
     public:
         //!
-        //! Virtual destructor.
+        //! Constructor.
+        //! @param [in] data Address of the plugin data to pass to applications. It can be a null pointer.
+        //! @param [in] size Size in bytes of the plugin data.
         //!
-        virtual ~Object();
+        PluginEventData(const uint8_t* data, size_t size);
+
+        //!
+        //! Destructor.
+        //!
+        ~PluginEventData();
+
+        //!
+        //! Get the address of the plugin data.
+        //! @return The address of the plugin data.
+        //!
+        const uint8_t* data() const { return _data; }
+
+        //!
+        //! Get the size in bytes of the plugin data.
+        //! @return The size in bytes of the plugin data.
+        //!
+        size_t size() const { return _size; }
+
+    private:
+        const uint8_t* const _data;
+        const size_t _size;
     };
 }

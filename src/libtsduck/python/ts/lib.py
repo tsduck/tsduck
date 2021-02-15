@@ -197,6 +197,24 @@ tspyDuckContextSetTimeReference.restype = c_bool
 tspyDuckContextSetTimeReference.argtypes = [c_void_p, POINTER(c_uint8), c_size_t]
 
 #-----------------------------------------------------------------------------
+# Bindings to C++ functions from tspyPluginEventHandler.cpp
+#-----------------------------------------------------------------------------
+
+# void* tspyNewPyPluginEventHandler(ts::py::PluginEventHandler::PyCallback callback)
+
+tspyNewPyPluginEventHandler = _lib.tspyNewPyPluginEventHandler
+tspyNewPyPluginEventHandler.restype = c_void_p
+tspyNewDuckContext.argtypes = [c_void_p]
+# Don't know which type to use for ctypes.CFUNCTYPE() as first parameter.
+# tspyNewPyPluginEventHandler.argtypes = [???]
+
+# void tspyDeletePyPluginEventHandler(void* obj)
+
+tspyDeletePyPluginEventHandler = _lib.tspyDeletePyPluginEventHandler
+tspyDeletePyPluginEventHandler.restype = None
+tspyDeletePyPluginEventHandler.argtypes = [c_void_p]
+
+#-----------------------------------------------------------------------------
 # Bindings to C++ functions from tspyInfo.cpp
 #-----------------------------------------------------------------------------
 
@@ -507,6 +525,12 @@ tspyAbortTSProcessor.argtypes = [c_void_p]
 tspyWaitTSProcessor = _lib.tspyWaitTSProcessor
 tspyWaitTSProcessor.restype = None
 tspyWaitTSProcessor.argtypes = [c_void_p]
+
+# void tspyTSProcessorRegisterEventHandler(void* tsp, ts::PluginEventHandlerInterface* handler, uint32_t event_code)
+
+tspyTSProcessorRegisterEventHandler = _lib.tspyTSProcessorRegisterEventHandler
+tspyTSProcessorRegisterEventHandler.restype = None
+tspyTSProcessorRegisterEventHandler.argtypes = [c_void_p, c_void_p, c_uint32]
 
 # bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, const uint8_t* plugins, size_t plugins_size)
 

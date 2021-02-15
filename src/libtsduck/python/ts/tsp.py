@@ -100,6 +100,15 @@ class TSProcessor(NativeObject):
         super().delete()
 
     ##
+    # Register an event handler.
+    # @param handler An instance of AbstractPluginEventHandler.
+    # @param event_code The code of the events to handle.
+    # @return None.
+    #
+    def registerEventHandler(self, handler, event_code):
+        lib.tspyTSProcessorRegisterEventHandler(self._native_object, handler._native_object, ctypes.c_uint32(event_code))
+
+    ##
     # Start the TS processor.
     # All properties shall have been set before calling this method.
     # @return None.
