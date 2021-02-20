@@ -45,7 +45,7 @@ TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_initNativeObject(JNIEnv* env, 
 {
     // Make sure we do not allocate twice (and lose previous instance).
     ts::DuckContext* duck = ts::jni::GetPointerField<ts::DuckContext>(env, obj, "nativeObject");
-    if (duck == nullptr) {
+    if (env != nullptr && duck == nullptr) {
         ts::Report* report = nullptr;
         if (jreport != nullptr) {
             report = ts::jni::GetPointerField<ts::Report>(env, jreport, "nativeObject");

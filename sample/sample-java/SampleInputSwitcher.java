@@ -10,6 +10,10 @@ import io.tsduck.Report;
 
 public class SampleInputSwitcher {
 
+    /**
+     * Main program.
+     * @param args Command line arguments.
+     */
     public static void main(String[] args) {
 
         // Create an Input Switcher with an asynchronous logger.

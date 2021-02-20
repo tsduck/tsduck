@@ -76,6 +76,13 @@ public final class TSProcessor implements NativeObject {
     }
 
     /**
+     * Register an event handler.
+     * @param handler An instance of AbstractPluginEventHandler.
+     * @param eventCode The code of the events to handle.
+     */
+    public native void registerEventHandler(AbstractPluginEventHandler handler, int eventCode);
+
+    /**
      * Start the TS processor.
      * All properties shall have been set before calling this method.
      * @return True on success, false on error.

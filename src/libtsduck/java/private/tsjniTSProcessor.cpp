@@ -45,7 +45,7 @@ TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_initNativeObject(JNIEnv* env, 
 {
     // Make sure we do not allocate twice (and lose previous instance).
     ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");
-    if (tsp == nullptr) {
+    if (env != nullptr && tsp == nullptr) {
         ts::Report* report = nullptr;
         if (jreport != nullptr) {
             report = ts::jni::GetPointerField<ts::Report>(env, jreport, "nativeObject");
@@ -54,6 +54,20 @@ TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_initNativeObject(JNIEnv* env, 
             report = ts::NullReport::Instance();
         }
         ts::jni::SetPointerField(env, obj, "nativeObject", new ts::TSProcessor(*report));
+    }
+}
+
+//
+// public native void registerEventHandler(AbstractPluginEventHandler handler, int eventCode);
+//
+TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_registerEventHandler(JNIEnv* env, jobject obj, jobject jhandler, jint eventCode)
+{
+    ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");
+    ts::PluginEventHandlerInterface* handler = ts::jni::GetPointerField<ts::PluginEventHandlerInterface>(env, jhandler, "nativeObject");
+    if (tsp != nullptr && handler != nullptr) {
+        ts::PluginEventHandlerRegistry::Criteria criteria;
+        criteria.event_code = eventCode;
+        tsp->registerEventHandler(handler, criteria);
     }
 }
 

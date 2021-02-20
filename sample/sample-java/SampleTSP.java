@@ -11,6 +11,10 @@ import io.tsduck.TSProcessor;
 
 public class SampleTSP {
 
+    /**
+     * Main program.
+     * @param args Command line arguments.
+     */
     public static void main(String[] args) {
 
         System.out.printf("TSDuck version: %s\n", Info.version());

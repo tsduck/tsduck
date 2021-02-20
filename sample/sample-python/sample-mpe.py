@@ -26,7 +26,7 @@ rep = ts.AsyncReport()
 # Create an event handler to catch plugin events.
 handler = EventHandler()
 
-# Create a TS process, register our event handler, set plugin chain.
+# Create a TS processor, register our event handler, set plugin chain.
 tsp = ts.TSProcessor(rep)
 tsp.registerEventHandler(handler, EVENT_CODE)
 tsp.input = ['http', 'https://github.com/tsduck/tsduck-test/raw/master/input/test-016.ts']

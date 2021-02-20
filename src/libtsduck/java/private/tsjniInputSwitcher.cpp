@@ -45,7 +45,7 @@ TSDUCKJNI void JNICALL Java_io_tsduck_InputSwitcher_initNativeObject(JNIEnv* env
 {
     // Make sure we do not allocate twice (and lose previous instance).
     ts::InputSwitcher* isw = ts::jni::GetPointerField<ts::InputSwitcher>(env, obj, "nativeObject");
-    if (isw == nullptr) {
+    if (env != nullptr && isw == nullptr) {
         ts::Report* report = nullptr;
         if (jreport != nullptr) {
             report = ts::jni::GetPointerField<ts::Report>(env, jreport, "nativeObject");

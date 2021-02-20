@@ -75,4 +75,33 @@ void ts::jni::SyncReport::writeLog(int severity, const UString& message)
     }
 }
 
+
+//----------------------------------------------------------------------------
+// Implementation of native methods of Java class io.tsduck.AbstractSyncReport
+//----------------------------------------------------------------------------
+
+//
+// private native void initNativeObject(String logMethodName, int severity);
+//
+TSDUCKJNI void JNICALL Java_io_tsduck_AbstractSyncReport_initNativeObject(JNIEnv* env, jobject obj, jstring method, jint severity)
+{
+    // Make sure we do not allocate twice (and lose previous instance).
+    ts::jni::SyncReport* report = ts::jni::GetPointerField<ts::jni::SyncReport>(env, obj, "nativeObject");
+    if (env != nullptr && report == nullptr) {
+        ts::jni::SetPointerField(env, obj, "nativeObject", new ts::jni::SyncReport(env, obj, method, int(severity)));
+    }
+}
+
+//
+// public native void delete();
+//
+TSDUCKJNI void JNICALL Java_io_tsduck_AbstractSyncReport_delete(JNIEnv* env, jobject obj)
+{
+    ts::jni::SyncReport* report = ts::jni::GetPointerField<ts::jni::SyncReport>(env, obj, "nativeObject");
+    if (report != nullptr) {
+        delete report;
+        ts::jni::SetLongField(env, obj, "nativeObject", 0);
+    }
+}
+
 #endif // TS_NO_JAVA
