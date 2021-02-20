@@ -1,4 +1,4 @@
-#-----------------------------------------------------------------------------
+.#-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
 #  Copyright (c) 2005-2021, Thierry Lelegard
@@ -47,39 +47,19 @@ class PluginEventContext:
     # Constructor.
     #
     def __init__(self):
-        ##
-        # A plugin-defined 32-bit code describing the event type.
-        # There is no predefined list of event codes. The application typically
-        # specifies the event code using a @c --event-code option in the plugin command.
-        #
+        ## A plugin-defined 32-bit code describing the event type.
         self.event_code = 0
-        ##
-        # Plugin name as found in the plugin registry.
-        #
+        ## Plugin name as found in the plugin registry.
         self.plugin_name = ""
-        ##
-        # Plugin index in the chain. For tsp, plugins are numbered from 0 (the input plugin)
-        # to N-1 (the output plugin). For tsswitch, the input plugins are numbered from 0
-        # to N-2 and the output plugin is N-1.
-        #
+        ## Plugin index in the chain.
         self.plugin_index = 0
-        ##
-        # Total number N of plugins in the chain.
-        #
+        ## Total number N of plugins in the chain.
         self.plugin_count = 0
-        ##
-        # Known bitrate in the context of the plugin at the time of the event.
-        #
+        ## Known bitrate in the context of the plugin at the time of the event.
         self.bitrate = 0
-        ##
-        # Number of packets which passed through the plugin at the time of the event.
-        #
+        ## Number of packets which passed through the plugin at the time of the event.
         self.plugin_packets = 0
-        ##
-        # Total number of packets which passed through the plugin thread at the time of the event.
-        # It can be more than @a plugin_packets if some packets were not submitted to the plugin
-        # (deleted or excluded packets).
-        #
+        ## Total number of packets which passed through the plugin thread at the time of the event.
         self.total_packets = 0
 
 ##

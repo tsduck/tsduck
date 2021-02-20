@@ -63,7 +63,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~PluginEventData();
+        virtual ~PluginEventData() override;
 
         //!
         //! Get the address of the plugin data.
