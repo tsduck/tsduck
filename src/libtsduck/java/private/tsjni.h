@@ -56,24 +56,26 @@
 #define JCN_CLASS  "java/lang/Class"
 #define JCN_OBJECT "java/lang/Object"
 #define JCN_STRING "java/lang/String"
+#define JCN_PLUGIN_EVENT_CONTEXT "io/tsduck/PluginEventContext"
 
 //
 // Java Class Signatures (JCS) in JNI notation.
 //
-#define JCS(name)      "L" name ";"
-#define JCS_ARRAY(jcs) "[" jcs
-#define JCS_BOOLEAN    "Z"
-#define JCS_BYTE       "B"
-#define JCS_CHAR       "C"
-#define JCS_SHORT      "S"
-#define JCS_INT        "I"
-#define JCS_LONG       "J"
-#define JCS_FLOAT      "F"
-#define JCS_DOUBLE     "D"
-#define JCS_VOID       "V"
-#define JCS_CLASS      JCS(JCN_CLASS)
-#define JCS_OBJECT     JCS(JCN_OBJECT)
-#define JCS_STRING     JCS(JCN_STRING)
+#define JCS(name)       "L" name ";"
+#define JCS_ARRAY(jcs)  "[" jcs
+#define JCS_BOOLEAN     "Z"
+#define JCS_BYTE        "B"
+#define JCS_CHAR        "C"
+#define JCS_SHORT       "S"
+#define JCS_INT         "I"
+#define JCS_LONG        "J"
+#define JCS_FLOAT       "F"
+#define JCS_DOUBLE      "D"
+#define JCS_VOID        "V"
+#define JCS_CLASS       JCS(JCN_CLASS)
+#define JCS_OBJECT      JCS(JCN_OBJECT)
+#define JCS_STRING      JCS(JCN_STRING)
+#define JCS_CONSTRUCTOR "<init>"
 
 namespace ts {
     //!

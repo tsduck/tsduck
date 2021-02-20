@@ -16,7 +16,11 @@ public class SampleMonitoring {
 
     private static final String URL = "https://tsduck.io/streams/france-dttv/tnt-uhf30-546MHz-2019-01-22.ts";
 
-    public static void main(String[] args) throws Exception {
+    /**
+     * Main program.
+     * @param args Command line arguments.
+     */
+   public static void main(String[] args) throws Exception {
 
         System.out.printf("TSDuck version: %s\n", Info.version());
 
