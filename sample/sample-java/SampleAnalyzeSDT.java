@@ -26,7 +26,7 @@ public class SampleAnalyzeSDT {
      * This string is a user-defined marker to locate the XML line in the log.
      * It can be anything that is sufficiently weird to be unique in the logs.
      */
-    private static final String xmlMarker = "[_SDT_XML_]";
+    private static final String XML_MARKER = "[_SDT_XML_]";
 
     /**
      * This method processes the XML data from the SDT.
@@ -83,8 +83,8 @@ public class SampleAnalyzeSDT {
          * Constructor.
          * @param severity Initial severity.
          */
-        public Logger() {
-            super(Report.Info, false, 512);
+        public Logger(int severity) {
+            super(severity, false, 512);
         }
 
         /**
@@ -95,10 +95,10 @@ public class SampleAnalyzeSDT {
         @Override
         public void logMessageHandler(int severity, String message) {
             // Filter lines containing the XML marker.
-            final int pos = message.lastIndexOf(xmlMarker);
+            final int pos = message.lastIndexOf(XML_MARKER);
             if (pos >= 0) {
                 // Pass the XML text to the XML processing routine.
-                xmlHandler(message.substring(pos + xmlMarker.length()));
+                xmlHandler(message.substring(pos + XML_MARKER.length()));
             }
             else {
                 // This looks like a real log message.
@@ -117,14 +117,14 @@ public class SampleAnalyzeSDT {
         final String fileName = args.length >= 1 ? args[0] : "file.ts";
 
         // Create a user-defined report to log multi-threaded messages.
-        Logger rep = new Logger();
+        Logger rep = new Logger(Report.Info);
 
         // Create a TS processor using the report.
         TSProcessor tsp = new TSProcessor(rep);
 
         // Set the plugin chain.
         tsp.input = new String[] {"file", fileName};
-        tsp.plugins = new String[][] {{"tables", "--pid", "0x11", "--tid", "0x42", "--max-tables", "1", "--log-xml-line=" + xmlMarker}};
+        tsp.plugins = new String[][] {{"tables", "--pid", "0x11", "--tid", "0x42", "--max-tables", "1", "--log-xml-line=" + XML_MARKER}};
         tsp.output = new String[] {"drop"};
 
         // Run the TS processing and wait until completion.

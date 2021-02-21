@@ -11,23 +11,6 @@ import io.tsduck.SectionFile;
 
 public class SampleBinaryTables {
 
-    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
-
-    /**
-     * Convert a byte array as an hexadecimal string.
-     * @param bytes The byte array to convert.
-     * @return The hexadecimal string.
-     */
-    public static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for (int j = 0; j < bytes.length; j++) {
-            final int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
-
     /**
      * Main program.
      * @param args Command line arguments.
@@ -51,7 +34,7 @@ public class SampleBinaryTables {
         // Convert to binary.
         byte[] data = file1.toBinary();
         System.out.println("---- Binary content ----");
-        System.out.println(bytesToHex(data));
+        System.out.println(SampleUtils.bytesToHex(data));
         System.out.println();
 
         // Build another section file and load the binary data.

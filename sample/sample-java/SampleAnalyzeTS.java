@@ -26,7 +26,7 @@ public class SampleAnalyzeTS {
      * This string is a user-defined marker to locate the JSON line in the log.
      * It can be anything that is sufficiently weird to be unique in the logs.
      */
-    private static final String jsonMarker = "[_TS_JSON_]";
+    private static final String JSON_MARKER = "[_TS_JSON_]";
 
     /**
      * This method processes the parsed JSON data from the TS analysis.
@@ -63,10 +63,10 @@ public class SampleAnalyzeTS {
         @Override
         public void logMessageHandler(int severity, String message) {
             // Filter lines containing the JSON marker.
-            final int pos = message.lastIndexOf(jsonMarker);
+            final int pos = message.lastIndexOf(JSON_MARKER);
             if (pos >= 0) {
                 // Pass the JSON text to the JSON processing routine.
-                jsonHandler(message.substring(pos + jsonMarker.length()));
+                jsonHandler(message.substring(pos + JSON_MARKER.length()));
             }
             else {
                 // This looks like a real log message.
@@ -92,7 +92,7 @@ public class SampleAnalyzeTS {
 
         // Set the plugin chain.
         tsp.input = new String[] {"file", fileName};
-        tsp.plugins = new String[][] {{"analyze", "--json-line=" + jsonMarker}};
+        tsp.plugins = new String[][] {{"analyze", "--json-line=" + JSON_MARKER}};
         tsp.output = new String[] {"drop"};
 
         // Run the TS processing and wait until completion.

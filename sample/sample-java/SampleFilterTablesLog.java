@@ -1,7 +1,10 @@
 //---------------------------------------------------------------------------
 //
-// TSDuck sample Java application running a chain of plugins
-// and handling the TSDuck log messages in a Java class.
+// TSDuck sample Java application running a chain of plugins:
+// Filter tables using --log-hexa-line to get binary tables in a Java class.
+//
+// See SampleFilterTablesEvent.java for an equivalent example using plugin
+// events to get a binary content of the tables.
 //
 //----------------------------------------------------------------------------
 
@@ -9,7 +12,12 @@ import io.tsduck.AbstractAsyncReport;
 import io.tsduck.Report;
 import io.tsduck.TSProcessor;
 
-public class SampleMessageHandling {
+public class SampleFilterTablesLog {
+
+    /**
+     * This string is a user-defined marker to locate the hexa line in the log.
+     */
+    private static final String LOG_PREFIX = "#TABLE#";
 
     /**
      * A pure Java class which handles TSDuck log messages.
@@ -31,7 +39,17 @@ public class SampleMessageHandling {
          */
         @Override
         public void logMessageHandler(int severity, String message) {
-            System.out.printf("Severity: %d, message: %s%s\n", severity, Report.header(severity), message);
+            // Filter lines containing the marker.
+            final int pos = message.lastIndexOf(LOG_PREFIX);
+            if (pos >= 0) {
+                // Got a hexadecimal representation of the table.
+                String hexa = message.substring(pos + LOG_PREFIX.length());
+                System.out.println("Table: " + hexa);
+            }
+            else {
+                // This looks like a real log message.
+                System.err.println(message);
+            }
         }
     }
 
@@ -41,28 +59,15 @@ public class SampleMessageHandling {
      */
     public static void main(String[] args) {
 
-        // Create a report to log multi-threaded messages.
-        // In this example, this is a user-defined Java class which collects messages.
-        Logger rep = new Logger(Report.Verbose);
-
-        // Checking that it works as well with Java application messages.
-        rep.info("application message");
+        // Create a user-defined report to log multi-threaded messages.
+        Logger rep = new Logger(Report.Info);
 
         // Create a TS processor using the report.
         TSProcessor tsp = new TSProcessor(rep);
 
-        // Set some global TS processing options.
-        tsp.addInputStuffingNull = 1;    // one null packet ...
-        tsp.addInputStuffingInput = 10;  // ... every 10 input packets
-        tsp.bitrate = 1000000;           // nominal bitrate is 1 Mb/s
-        tsp.appName = "demo";            // informational only, for log messages
-
         // Set the plugin chain.
-        tsp.input = new String[] {"craft", "--count", "1000", "--pid", "100", "--payload-pattern", "0123"};
-        tsp.plugins = new String[][] {
-            {"until", "--packet", "100"},
-            {"count"},
-        };
+        tsp.input = new String[] {"http", "https://github.com/tsduck/tsduck-test/raw/master/input/test-001.ts"};
+        tsp.plugins = new String[][] {{"tables", "--pid", "0", "--log-hexa-line=" + LOG_PREFIX}};
         tsp.output = new String[] {"drop"};
 
         // Run the TS processing and wait until completion.
