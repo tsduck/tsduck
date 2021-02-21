@@ -2,12 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2242
+VERSION 3.26-2246
 
 [IMP] Improvements on existing commands and plugins:
 
   * New options in exiting commands and plugins:
-    - Option --event-code in plugin "mpe".
+    - Option --event-code in plugins "mpe", "psi" and "tables".
 
 -------------------------------------------------------------------------------
 

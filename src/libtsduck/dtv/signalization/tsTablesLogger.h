@@ -85,6 +85,28 @@ namespace ts {
         virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
         //!
+        //! Set a table handler which is called for each complete table in addition to logging.
+        //! When the table handler or the section handler is not null, there is no default logging.
+        //! To have the tables or sections displayed, you must explicitly specify -\-text-output -.
+        //! @param [in] h The new table handler.
+        //!
+        void setTableHandler(TableHandlerInterface* h)
+        {
+            _table_handler = h;
+        }
+
+        //!
+        //! Set a section handler which is called for each section in addition to logging.
+        //! When the table handler or the section handler is not null, there is no default logging.
+        //! To have the tables or sections displayed, you must explicitly specify -\-text-output -.
+        //! @param [in] h The new handler.
+        //!
+        void setSectionHandler(SectionHandlerInterface* h)
+        {
+            _section_handler = h;
+        }
+
+        //!
         //! The following method feeds the logger with a TS packet.
         //! @param [in] pkt A new transport stream packet.
         //!
@@ -193,6 +215,8 @@ namespace ts {
         TablesDisplay&           _display;
         DuckContext&             _duck;
         Report&                  _report;
+        TableHandlerInterface*   _table_handler;     // If not null, also log all complete tables through this handler.
+        SectionHandlerInterface* _section_handler;   // If not null, also log all sections through this handler.
         bool                     _abort;
         bool                     _exit;
         uint32_t                 _table_count;
