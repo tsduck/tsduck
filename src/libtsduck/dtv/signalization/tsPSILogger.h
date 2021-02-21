@@ -69,6 +69,28 @@ namespace ts {
         virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
         //!
+        //! Set a table handler which is called for each complete table in addition to logging.
+        //! When the table handler or the section handler is not null, there is no default logging.
+        //! To have the tables or sections displayed, you must explicitly specify -\-text-output -.
+        //! @param [in] h The new table handler.
+        //!
+        void setTableHandler(TableHandlerInterface* h)
+        {
+            _table_handler = h;
+        }
+
+        //!
+        //! Set a section handler which is called for each section in addition to logging.
+        //! When the table handler or the section handler is not null, there is no default logging.
+        //! To have the tables or sections displayed, you must explicitly specify -\-text-output -.
+        //! @param [in] h The new handler.
+        //!
+        void setSectionHandler(SectionHandlerInterface* h)
+        {
+            _section_handler = h;
+        }
+
+        //!
         //! Open files, start operations.
         //! The options must have been loaded first.
         //! @return True on success, false on error.
@@ -99,10 +121,7 @@ namespace ts {
         //! Return true when the analysis is complete.
         //! @return True when the analysis is complete.
         //!
-        bool completed() const
-        {
-            return _abort || (!_all_versions && _pat_ok && _cat_ok && _sdt_ok && _received_pmt >= _expected_pmt);
-        }
+        bool completed() const;
 
         //!
         //! Report the demux errors (if any).
@@ -130,23 +149,25 @@ namespace ts {
         xml::Tweaks _xml_tweaks;              // XML tweak options.
 
         // Working data:
-        TablesDisplay&        _display;
-        DuckContext&          _duck;
-        Report&               _report;
-        xml::RunningDocument  _xml_doc;       // XML document, built on-the-fly.
-        xml::JSONConverter    _x2j_conv;      // XML-to-JSON converter.
-        json::RunningDocument _json_doc;      // JSON document, built on-the-fly.
-        bool                  _abort;
-        bool                  _pat_ok;        // Got a PAT
-        bool                  _cat_ok;        // Got a CAT or not interested in CAT
-        bool                  _sdt_ok;        // Got an SDT
-        bool                  _bat_ok;        // Got a BAT
-        int                   _expected_pmt;  // Expected PMT count
-        int                   _received_pmt;  // Received PMT count
-        PacketCounter         _clear_packets_cnt;
-        PacketCounter         _scrambled_packets_cnt;
-        SectionDemux          _demux;         // Demux reporting PSI tables.
-        Standards             _standards;     // List of current standards in the PSI logger.
+        TablesDisplay&           _display;
+        DuckContext&             _duck;
+        Report&                  _report;
+        TableHandlerInterface*   _table_handler;   // If not null, also log all complete tables through this handler.
+        SectionHandlerInterface* _section_handler; // If not null, also log all sections through this handler.
+        xml::RunningDocument     _xml_doc;         // XML document, built on-the-fly.
+        xml::JSONConverter       _x2j_conv;        // XML-to-JSON converter.
+        json::RunningDocument    _json_doc;        // JSON document, built on-the-fly.
+        bool                     _abort;
+        bool                     _pat_ok;          // Got a PAT
+        bool                     _cat_ok;          // Got a CAT or not interested in CAT
+        bool                     _sdt_ok;          // Got an SDT
+        bool                     _bat_ok;          // Got a BAT
+        int                      _expected_pmt;    // Expected PMT count
+        int                      _received_pmt;    // Received PMT count
+        PacketCounter            _clear_packets_cnt;
+        PacketCounter            _scrambled_packets_cnt;
+        SectionDemux             _demux;           // Demux reporting PSI tables.
+        Standards                _standards;       // List of current standards in the PSI logger.
 
         // Displays a binary table.
         void displayTable(const BinaryTable& table);

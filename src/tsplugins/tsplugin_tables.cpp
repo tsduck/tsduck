@@ -34,6 +34,7 @@
 
 #include "tsPluginRepository.h"
 #include "tsTablesLogger.h"
+#include "tsPluginEventData.h"
 TSDUCK_SOURCE;
 
 
@@ -42,7 +43,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class TablesPlugin: public ProcessorPlugin
+    class TablesPlugin: public ProcessorPlugin, private SectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TablesPlugin);
     public:
@@ -52,10 +53,14 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        // Implementation of SectionHandlerInterface
+        virtual void handleSection(SectionDemux& demux, const Section& section) override;
 
     private:
         TablesDisplay _display;
         TablesLogger  _logger;
+        bool          _signal_event;  // Signal a plugin event on section.
+        uint32_t      _event_code;    // Event code to signal.
     };
 }
 
@@ -69,7 +74,9 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"tables", ts::TablesPlugin);
 ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Collect PSI/SI Tables", u"[options]"),
     _display(duck),
-    _logger(_display)
+    _logger(_display),
+    _signal_event(false),
+    _event_code(0)
 {
     duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);
@@ -78,6 +85,13 @@ ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
     duck.defineArgsForCharset(*this);
     _logger.defineArgs(*this);
     _display.defineArgs(*this);
+
+    option(u"event-code", 0, UINT32);
+    help(u"event-code",
+         u"This option is for C++, Java or Python developers only.\n\n"
+         u"Signal a plugin event with the specified code for each section. "
+         u"The event data is an instance of PluginEventData pointing to the section content. "
+         u"Without --all-sections, an event is signaled for each section of complete new tables.");
 }
 
 
@@ -88,6 +102,9 @@ ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
 bool ts::TablesPlugin::getOptions()
 {
     duck.reset();
+    _signal_event = present(u"event-code");
+    getIntValue(_event_code, u"event-code");
+    _logger.setSectionHandler(_signal_event ? this : nullptr);
     return duck.loadArgs(*this) && _logger.loadArgs(duck, *this) && _display.loadArgs(duck, *this);
 }
 
@@ -101,6 +118,20 @@ bool ts::TablesPlugin::stop()
 {
     _logger.close();
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Called by the TablesLogger for each section
+//----------------------------------------------------------------------------
+
+void ts::TablesPlugin::handleSection(SectionDemux&, const Section& sect)
+{
+    // Signal application-defined event. The call to the application callbacks is synchronous.
+    if (_signal_event) {
+        PluginEventData data(sect.content(), sect.size());
+        tsp->signalPluginEvent(_event_code, &data);
+    }
 }
 
 

@@ -100,6 +100,8 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _display(display),
     _duck(_display.duck()),
     _report(_duck.report()),
+    _table_handler(nullptr),
+    _section_handler(nullptr),
     _abort(false),
     _exit(false),
     _table_count(0),
@@ -321,7 +323,7 @@ void ts::TablesLogger::defineArgs(Args& args) const
 
 bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
 {
-    // Type of output, text is the default.
+    // Type of output, text is the default when no other logging option is specified.
     _use_xml = args.present(u"xml-output");
     _use_json = args.present(u"json-output");
     _use_binary = args.present(u"binary-output");
@@ -331,7 +333,9 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _log_hexa_line = args.present(u"log-hexa-line");
     _use_text = args.present(u"output-file") ||
                 args.present(u"text-output") ||
-                (!_use_xml && !_use_json && !_use_binary && !_use_udp && !_log_xml_line && !_log_json_line && !_log_hexa_line);
+                (!_use_xml && !_use_json && !_use_binary && !_use_udp &&
+                 !_log_xml_line && !_log_json_line && !_log_hexa_line &&
+                 _table_handler == nullptr && _section_handler == nullptr);
 
     // --output-file and --text-output are synonyms.
     if (args.present(u"output-file") && args.present(u"text-output")) {
@@ -546,7 +550,7 @@ void ts::TablesLogger::feedPacket(const TSPacket& pkt)
 // This hook is invoked when a complete table is available.
 //----------------------------------------------------------------------------
 
-void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
+void ts::TablesLogger::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     // Give up if completed.
     if (completed()) {
@@ -664,6 +668,16 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
         sendUDP(table);
     }
 
+    // Notify table, either at once or section by section.
+    if (_table_handler != nullptr) {
+        _table_handler->handleTable(demux, table);
+    }
+    else if (_section_handler != nullptr) {
+        for (size_t i = 0; i < table.sectionCount(); ++i) {
+            _section_handler->handleSection(demux, *table.sectionAt(i));
+        }
+    }
+
     // Check max table count
     _table_count++;
     if (_max_tables > 0 && _table_count >= _max_tables) {
@@ -769,6 +783,10 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
 
     if (_use_udp) {
         sendUDP(sect);
+    }
+
+    if (_section_handler != nullptr) {
+        _section_handler->handleSection(demux, sect);
     }
 
     // Check max table count (actually count sections with --all-sections)

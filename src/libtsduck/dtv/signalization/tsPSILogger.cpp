@@ -71,6 +71,8 @@ ts::PSILogger::PSILogger(TablesDisplay& display) :
     _display(display),
     _duck(_display.duck()),
     _report(_duck.report()),
+    _table_handler(nullptr),
+    _section_handler(nullptr),
     _xml_doc(_report),
     _x2j_conv(_report),
     _json_doc(_report),
@@ -179,7 +181,8 @@ bool ts::PSILogger::loadArgs(DuckContext& duck, Args& args)
     _log_json_line = args.present(u"log-json-line");
     _use_text = args.present(u"output-file") ||
                 args.present(u"text-output") ||
-                (!_use_xml && !_use_json && !_log_xml_line && !_log_json_line);
+                (!_use_xml && !_use_json && !_log_xml_line && !_log_json_line &&
+                 _table_handler == nullptr && _section_handler == nullptr);
 
     // --output-file and --text-output are synonyms.
     if (args.present(u"output-file") && args.present(u"text-output")) {
@@ -277,6 +280,16 @@ void ts::PSILogger::close()
 {
     _xml_doc.close();
     _json_doc.close();
+}
+
+
+//----------------------------------------------------------------------------
+// Return true when the analysis is complete.
+//----------------------------------------------------------------------------
+
+bool ts::PSILogger::completed() const
+{
+    return _abort || (!_all_versions && _pat_ok && _cat_ok && _sdt_ok && _received_pmt >= _expected_pmt);
 }
 
 
@@ -586,6 +599,16 @@ void ts::PSILogger::displayTable(const BinaryTable& table)
                 root->query(u"#nodes[0]").print(text);
                 _report.info(_log_json_prefix + text.toString());
             }
+        }
+    }
+
+    // Notify table, either at once or section by section.
+    if (_table_handler != nullptr) {
+        _table_handler->handleTable(_demux, table);
+    }
+    else if (_section_handler != nullptr) {
+        for (size_t i = 0; i < table.sectionCount(); ++i) {
+            _section_handler->handleSection(_demux, *table.sectionAt(i));
         }
     }
 }
