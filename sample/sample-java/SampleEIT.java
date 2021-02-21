@@ -4,35 +4,12 @@
 //
 //----------------------------------------------------------------------------
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
 import io.tsduck.DuckContext;
 import io.tsduck.ErrReport;
 import io.tsduck.Report;
 import io.tsduck.SectionFile;
 
 public class SampleEIT {
-
-    /**
-     * Execute a command and print its output.
-     * @param cmd
-     */
-    private static void execute(String cmd) {
-        try {
-            Process process = Runtime.getRuntime().exec(cmd);
-            BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = input.readLine()) != null) {
-                System.out.println(line);
-            }
-            process.waitFor();
-        }
-        catch (Exception e) {
-            System.out.println(e.toString());
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Main program.
@@ -80,7 +57,7 @@ public class SampleEIT {
         file.saveBinary("eit.bin");
 
         // Launch a "tstabdump" command to dump the EIT sections.
-        execute("tstabdump eit.bin");
+        SampleUtils.execute("tstabdump eit.bin");
 
         // Deallocate C++ resources (in reverse order from creation).
         file.delete();

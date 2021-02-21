@@ -1,7 +1,10 @@
 //---------------------------------------------------------------------------
 //
-// TSDuck sample Java application running a chain of plugins
-// and handling plugin events in a Java class.
+// TSDuck sample Java application running a chain of plugins:
+// Filter tables using plugin events to get binary tables in a Java class.
+//
+// See SampleFilterTablesLog.java for an equivalent example using log lines
+// to get a hexadecimal representation of the binary content of the tables.
 //
 //----------------------------------------------------------------------------
 
@@ -10,12 +13,12 @@ import io.tsduck.AsyncReport;
 import io.tsduck.PluginEventContext;
 import io.tsduck.TSProcessor;
 
-public class SampleMPE {
+public class SampleFilterTablesEvent {
 
     /**
-     *  A 32-bit plugin event code ("MPE1" ASCII)
+     *  A 32-bit plugin event code ("TABL" ASCII)
      */
-    private static final int EVENT_CODE = 0x4D504531;
+    private static final int EVENT_CODE = 0x5441424C;
 
     /**
      * A pure Java class which handles TSDuck plugin events.
@@ -31,7 +34,7 @@ public class SampleMPE {
         public void handlePluginEvent(PluginEventContext context, byte[] data) {
             System.out.printf("==== Event code: 0x%X from plugin #%d (%s), data size: %d bytes, at TS packet %d\n",
                               context.eventCode(), context.pluginIndex(), context.pluginName(), data.length, context.pluginPackets());
-            System.out.printf("MPE datagram: %s\n", SampleUtils.bytesToHex(data));
+            System.out.printf("Section: %s\n", SampleUtils.bytesToHex(data));
         }
     }
 
@@ -54,8 +57,8 @@ public class SampleMPE {
         tsp.registerEventHandler(handler, EVENT_CODE);
 
         // Set the plugin chain.
-        tsp.input = new String[] {"http", "https://github.com/tsduck/tsduck-test/raw/master/input/test-016.ts"};
-        tsp.plugins = new String[][] {{"mpe", "--pid", "2001", "--max-datagram", "2", "--event-code", String.valueOf(EVENT_CODE)}};
+        tsp.input = new String[] {"http", "https://github.com/tsduck/tsduck-test/raw/master/input/test-001.ts"};
+        tsp.plugins = new String[][] {{"tables", "--pid", "0", "--event-code", String.valueOf(EVENT_CODE)}};
         tsp.output = new String[] {"drop"};
 
         // Run the TS processing and wait until completion.
