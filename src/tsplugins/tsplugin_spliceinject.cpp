@@ -89,11 +89,36 @@ namespace ts {
     public:
         // Implementation of plugin API
         SpliceInjectPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
+        // Command line options:
+        bool          _use_files;         // Use file polling input.
+        bool          _use_udp;           // Use UDP input.
+        bool          _delete_files;
+        bool          _reuse_port;
+        bool          _wait_first_batch;  // Option --wait-first-batch (wfb).
+        PID           _inject_pid_opt;    // PID for injection, as specified in cmmand line.
+        PID           _pcr_pid_opt;       // PID containing PCR's, as specified in cmmand line.
+        PID           _pts_pid_opt;       // PID containing PTS's, as specified in cmmand line.
+        BitRate       _min_bitrate;
+        PacketCounter _min_inter_packet;
+        UString       _files;
+        UString       _service_ref;       // Service name or id.
+        SocketAddress _server_address;
+        size_t        _sock_buf_size;
+        size_t        _inject_count;
+        MilliSecond   _inject_interval;
+        MilliSecond   _start_delay;
+        MilliSecond   _poll_interval;
+        MilliSecond   _min_stable_delay;
+        int64_t       _max_file_size;
+        size_t        _queue_size;
+        SectionPtr    _null_splice;       // A null splice section to maintain PID bitrate.
+
         // The plugin contains two internal threads in addition to the packet processing thread.
         // One thread polls input files and another thread receives UDP messages.
 
@@ -180,39 +205,26 @@ namespace ts {
         };
 
         // -------------------
-        // Plugin private data
+        // Plugin working data
         // -------------------
 
-        bool             _abort;      // Error found, abort asap.
-        bool             _use_files;  // Use file polling input.
-        bool             _use_udp;    // Use UDP input.
-        UString          _files;
-        bool             _delete_files;
-        SocketAddress    _server_address;
-        bool             _reuse_port;
-        size_t           _sock_buf_size;
-        size_t           _inject_count;
-        MilliSecond      _inject_interval;
-        MilliSecond      _start_delay;
-        MilliSecond      _poll_interval;
-        MilliSecond      _min_stable_delay;
-        int64_t          _max_file_size;
-        size_t           _queue_size;
+        bool             _abort;            // Error found, abort asap.
         ServiceDiscovery _service;          // Service holding the SCTE 35 injection.
-        PID              _inject_pid;       // PID for injection.
-        PID              _pcr_pid;          // PID containing PCR's.
-        PID              _pts_pid;          // PID containing PTS's.
         FileListener     _file_listener;    // TCP listener thread.
         UDPListener      _udp_listener;     // UDP listener thread.
         CommandQueue     _queue;            // Queue for splice commands.
         Packetizer       _packetizer;       // Packetizer for Splice Information sections.
         uint64_t         _last_pts;         // Last PTS value from a clock reference.
+        PID              _inject_pid_act;   // PID for injection, actual.
+        PID              _pcr_pid_act;      // PID containing PCR's, actual.
+        PID              _pts_pid_act;      // PID containing PTS's, actual.
+        PacketCounter    _last_inject_pkt;  // Insertion point of last splice command packet.
+        PacketCounter    _inter_packet;     // Interval between two splice command packets (0 if none speficied).
 
-        // Specific support for deterministic start (non-regression testing).
-        bool          _wait_first_batch;    // Option --wait-first-batch (wfb).
-        volatile bool _wfb_received;        // First batch was received.
-        Mutex         _wfb_mutex;           // Mutex waiting for _wfb_received.
-        Condition     _wfb_condition;       // Condition waiting for _wfb_received.
+        // Specific support for deterministic start (wfb = wait first batch, non-regression testing).
+        volatile bool    _wfb_received;     // First batch was received.
+        Mutex            _wfb_mutex;        // Mutex waiting for _wfb_received.
+        Condition        _wfb_condition;    // Condition waiting for _wfb_received.
 
         // Implementation of SignalizationHandlerInterface.
         virtual void handlePMT(const PMT&, PID) override;
@@ -235,13 +247,19 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"spliceinject", ts::SpliceInjectPlugin);
 
 ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Inject SCTE 35 splice commands in a transport stream", u"[options]"),
-    _abort(false),
     _use_files(false),
     _use_udp(false),
-    _files(),
     _delete_files(false),
-    _server_address(),
     _reuse_port(false),
+    _wait_first_batch(false),
+    _inject_pid_opt(PID_NULL),
+    _pcr_pid_opt(PID_NULL),
+    _pts_pid_opt(PID_NULL),
+    _min_bitrate(0),
+    _min_inter_packet(0),
+    _files(),
+    _service_ref(),
+    _server_address(),
     _sock_buf_size(0),
     _inject_count(0),
     _inject_interval(0),
@@ -250,20 +268,32 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
     _min_stable_delay(0),
     _max_file_size(0),
     _queue_size(0),
+    _null_splice(),
+    _abort(false),
     _service(duck, this),
-    _inject_pid(PID_NULL),
-    _pcr_pid(PID_NULL),
-    _pts_pid(PID_NULL),
     _file_listener(this),
     _udp_listener(this),
     _queue(),
     _packetizer(duck, PID_NULL, this),
     _last_pts(INVALID_PTS),
-    _wait_first_batch(false),
+    _inject_pid_act(PID_NULL),
+    _pcr_pid_act(PID_NULL),
+    _pts_pid_act(PID_NULL),
+    _last_inject_pkt(0),
+    _inter_packet(0),
     _wfb_received(false),
     _wfb_mutex(),
     _wfb_condition()
 {
+    // Build a null splice command section for PID stuffing.
+    SpliceInformationTable null_splice;
+    null_splice.splice_command_type = SPLICE_NULL;
+    BinaryTable bin_null_splice;
+    null_splice.serialize(duck, bin_null_splice);
+    assert(bin_null_splice.isValid());
+    assert(bin_null_splice.sectionCount() > 0);
+    _null_splice = bin_null_splice.sectionAt(0);
+
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);
 
@@ -316,6 +346,17 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
          u"Files larger than the specified size are ignored. This avoids loading "
          u"large spurious files which could clutter memory. The default is " +
          UString::Decimal(DEFAULT_MAX_FILE_SIZE) + u" bytes.");
+
+    option(u"min-bitrate", 0, UNSIGNED);
+    help(u"min-bitrate",
+         u"The minimum bitrate to maintain in the PID carrying the splice information tables. "
+         u"By default, the PID remains inactive when there is no splice information. "
+         u"If this is a problem for monitoring tools, an artificial bitrate can be maintained using null splice commands.");
+
+    option(u"min-inter-packet", 0, UNSIGNED);
+    help(u"min-inter-packet",
+         u"This option can be used instead of --min-bitrate when the bitrate of the transport stream is unknown or unreliable. "
+         u"The specified value is the number of TS packets between two splice commands.");
 
     option(u"min-stable-delay", 0, UNSIGNED);
     help(u"min-stable-delay",
@@ -392,33 +433,34 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get command line options.
 //----------------------------------------------------------------------------
 
-bool ts::SpliceInjectPlugin::start()
+bool ts::SpliceInjectPlugin::getOptions()
 {
-    // Decode command line options.
     duck.loadArgs(*this);
-    _files = value(u"files");
+    getValue(_files, u"files");
+    getValue(_service_ref, u"service");
     const UString udpName(value(u"udp"));
-    _service.set(value(u"service"));
-    _inject_pid = intValue<PID>(u"pid", PID_NULL);
-    _pcr_pid = intValue<PID>(u"pcr-pid", PID_NULL);
-    _pts_pid = intValue<PID>(u"pts-pid", PID_NULL);
+    getIntValue(_inject_pid_opt, u"pid", PID_NULL);
+    getIntValue(_pcr_pid_opt, u"pcr-pid", PID_NULL);
+    getIntValue(_pts_pid_opt, u"pts-pid", PID_NULL);
+    getIntValue(_min_bitrate, u"min-bitrate");
+    getIntValue(_min_inter_packet, u"min-inter-packet");
     _delete_files = present(u"delete-files");
     _reuse_port = !present(u"no-reuse-port");
-    _sock_buf_size = intValue<size_t>(u"buffer-size");
-    _inject_count = intValue<size_t>(u"inject-count", DEFAULT_INJECT_COUNT);
-    _inject_interval = intValue<MilliSecond>(u"inject-interval", DEFAULT_INJECT_INTERVAL);
-    _start_delay = intValue<MilliSecond>(u"start-delay", DEFAULT_START_DELAY);
-    _max_file_size = intValue<int64_t>(u"max-file-size", DEFAULT_MAX_FILE_SIZE);
-    _poll_interval = intValue<MilliSecond>(u"poll-interval", DEFAULT_POLL_INTERVAL);
-    _min_stable_delay = intValue<MilliSecond>(u"min-stable-delay", DEFAULT_MIN_STABLE_DELAY);
-    _queue_size = intValue<size_t>(u"queue-size", DEFAULT_SECTION_QUEUE_SIZE);
+    getIntValue(_sock_buf_size, u"buffer-size");
+    getIntValue(_inject_count, u"inject-count", DEFAULT_INJECT_COUNT);
+    getIntValue(_inject_interval, u"inject-interval", DEFAULT_INJECT_INTERVAL);
+    getIntValue(_start_delay, u"start-delay", DEFAULT_START_DELAY);
+    getIntValue(_max_file_size, u"max-file-size", DEFAULT_MAX_FILE_SIZE);
+    getIntValue(_poll_interval, u"poll-interval", DEFAULT_POLL_INTERVAL);
+    getIntValue(_min_stable_delay, u"min-stable-delay", DEFAULT_MIN_STABLE_DELAY);
+    getIntValue(_queue_size, u"queue-size", DEFAULT_SECTION_QUEUE_SIZE);
     _wait_first_batch = present(u"wait-first-batch");
 
     // We need either a service or specified PID's.
-    if (!_service.hasName() && !_service.hasId() && (_inject_pid == PID_NULL || _pts_pid == PID_NULL)) {
+    if (_service_ref.empty() && (_inject_pid_opt == PID_NULL || _pts_pid_opt == PID_NULL)) {
         tsp->error(u"specify --service or --pid and --pts-pid");
         return false;
     }
@@ -431,16 +473,13 @@ bool ts::SpliceInjectPlugin::start()
         return false;
     }
 
-    // The packetizer generates packets for the inject PID.
-    _packetizer.setPID(_inject_pid);
+    // At most one way of specifying the splice bitrate.
+    if (_min_bitrate > 0 && _min_inter_packet > 0) {
+        tsp->error(u"specify at most one of --min-bitrate and --min-inter-packet");
+        return false;
+    }
 
-    // Tune the section queue.
-    _queue.setMaxMessages(_queue_size);
-
-    // Clear the "first message received" flag.
-    _wfb_received = false;
-
-    // Initialize the UDP receiver.
+    // Resolve UDP addresses.
     if (_use_udp) {
         if (!_server_address.resolve(udpName, *tsp)) {
             return false;
@@ -449,6 +488,49 @@ bool ts::SpliceInjectPlugin::start()
             tsp->error(u"missing port name in --udp");
             return false;
         }
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::SpliceInjectPlugin::start()
+{
+    // The reference PID's can be taken from the command line or discovered later.
+    _inject_pid_act = _inject_pid_opt;
+    _pcr_pid_act = _pcr_pid_opt;
+    _pts_pid_act = _pts_pid_opt;
+
+    // Interval between two splice command packets.
+    const BitRate initial_bitrate = tsp->bitrate();
+    if (_min_bitrate > 0 && initial_bitrate > 0) {
+        _inter_packet = std::max<PacketCounter>(1, initial_bitrate / _min_bitrate);
+    }
+    else {
+        _inter_packet = _min_inter_packet;
+    }
+
+    // Initialize service discovery.
+    _service.clear();
+    _service.set(_service_ref);
+
+    // The packetizer generates packets for the inject PID.
+    _packetizer.reset();
+    _packetizer.setPID(_inject_pid_act);
+
+    // Tune the section queue.
+    _queue.clear();
+    _queue.setMaxMessages(_queue_size);
+
+    // Clear the "first message received" flag.
+    _wfb_received = false;
+
+    // Initialize the UDP receiver.
+    if (_use_udp) {
         if (!_udp_listener.open()) {
             return false;
         }
@@ -460,15 +542,18 @@ bool ts::SpliceInjectPlugin::start()
         _file_listener.start();
     }
 
+    _last_inject_pkt = 0;
     _last_pts = INVALID_PTS;
     _abort = false;
 
     // If --wait-first-batch was specified, suspend until a first batch of commands is queued.
     if (_wait_first_batch) {
         tsp->verbose(u"waiting for first batch of commands");
-        GuardCondition lock(_wfb_mutex, _wfb_condition);
-        while (!_wfb_received) {
-            lock.waitCondition();
+        {
+            GuardCondition lock(_wfb_mutex, _wfb_condition);
+            while (!_wfb_received) {
+                lock.waitCondition();
+            }
         }
         tsp->verbose(u"received first batch of commands");
     }
@@ -503,7 +588,7 @@ ts::ProcessorPlugin::Status ts::SpliceInjectPlugin::processPacket(TSPacket& pkt,
     const PID pid = pkt.getPID();
 
     // Feed the service finder with the packet as long as the required PID's are not found.
-    if (_inject_pid == PID_NULL || _pts_pid == PID_NULL) {
+    if (_inject_pid_act == PID_NULL || _pts_pid_act == PID_NULL) {
         _service.feedPacket(pkt);
         if (_service.nonExistentService()) {
             return TSP_END;
@@ -517,9 +602,12 @@ ts::ProcessorPlugin::Status ts::SpliceInjectPlugin::processPacket(TSPacket& pkt,
 
     if (pid == PID_NULL) {
         // Replace null packets with splice information section data, when available.
-        _packetizer.getNextPacket(pkt);
+        if (_packetizer.getNextPacket(pkt)) {
+            // Remember position of last injected packet.
+            _last_inject_pkt = tsp->pluginPackets();
+        }
     }
-    else if (pid == _pts_pid) {
+    else if (pid == _pts_pid_act) {
         if (pkt.hasPTS()) {
             // Get a PTS from the PTS clock reference.
             _last_pts = pkt.getPTS();
@@ -529,7 +617,7 @@ ts::ProcessorPlugin::Status ts::SpliceInjectPlugin::processPacket(TSPacket& pkt,
             _last_pts = pkt.getPCR() / SYSTEM_CLOCK_SUBFACTOR;
         }
     }
-    else if (pid == _pcr_pid && pkt.hasPCR()) {
+    else if (pid == _pcr_pid_act && pkt.hasPCR()) {
         // Get a PCR from the PCR clock reference.
         _last_pts = pkt.getPCR() / SYSTEM_CLOCK_SUBFACTOR;
     }
@@ -546,35 +634,35 @@ ts::ProcessorPlugin::Status ts::SpliceInjectPlugin::processPacket(TSPacket& pkt,
 void ts::SpliceInjectPlugin::handlePMT(const PMT& pmt, PID)
 {
     // Get the PID with PCR's.
-    if (_pcr_pid == PID_NULL) {
-        _pcr_pid = pmt.pcr_pid;
+    if (_pcr_pid_act == PID_NULL) {
+        _pcr_pid_act = pmt.pcr_pid;
     }
 
     // Inspect all components.
     for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
         // By default, PTS are taken from the first video PID.
-        if (_pts_pid == PID_NULL && it->second.isVideo(duck)) {
-            _pts_pid = it->first;
+        if (_pts_pid_act == PID_NULL && it->second.isVideo(duck)) {
+            _pts_pid_act = it->first;
         }
         // Look for a component with a stream type 0x86.
-        if (_inject_pid == PID_NULL && it->second.stream_type == ST_SCTE35_SPLICE) {
+        if (_inject_pid_act == PID_NULL && it->second.stream_type == ST_SCTE35_SPLICE) {
             // Found an SCTE 35 splice information stream, use its PID.
-            _inject_pid = it->first;
-            _packetizer.setPID(_inject_pid);
+            _inject_pid_act = it->first;
+            _packetizer.setPID(_inject_pid_act);
         }
     }
 
     // If PTS PID is missing, use the PCR one.
-    if (_pts_pid == PID_NULL) {
-        _pts_pid = _pcr_pid;
+    if (_pts_pid_act == PID_NULL) {
+        _pts_pid_act = _pcr_pid_act;
     }
 
     // If no PID is found for clock reference or splice command injection, abort.
-    if (_inject_pid == PID_NULL) {
+    if (_inject_pid_act == PID_NULL) {
         tsp->error(u"could not find an SCTE 35 splice information stream in service, use option --pid");
         _abort = true;
     }
-    if (_pts_pid == PID_NULL) {
+    if (_pts_pid_act == PID_NULL) {
         tsp->error(u"could not find a PID with PCR or PTS in service, use option --pts-pid");
         _abort = true;
     }
@@ -592,7 +680,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
     section.clear();
 
     // If injection PID is unknown or if we have no time reference, do nothing.
-    if (_inject_pid == PID_NULL || _last_pts == INVALID_PTS) {
+    if (_inject_pid_act == PID_NULL || _last_pts == INVALID_PTS) {
         return;
     }
 
@@ -644,6 +732,20 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
             }
             break;
         }
+    }
+
+    // Recompute inter-packet interval based on bitrate.
+    if (_min_bitrate > 0) {
+        const BitRate current_bitrate = tsp->bitrate();
+        if (current_bitrate > 0) {
+            _inter_packet = std::max<PacketCounter>(1, current_bitrate / _min_bitrate);
+        }
+    }
+
+    // Inject null splice commands when necessary to fill the PID.
+    if (section.isNull() && _inter_packet > 0 && tsp->pluginPackets() >= _last_inject_pkt + _inter_packet) {
+        // It is time to insert a null splice command.
+        section = _null_splice;
     }
 }
 

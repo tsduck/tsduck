@@ -2,12 +2,13 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2246
+VERSION 3.26-2250
 
 [IMP] Improvements on existing commands and plugins:
 
   * New options in exiting commands and plugins:
     - Option --event-code in plugins "mpe", "psi" and "tables".
+    - Options --min-bitrate and --min-inter-packet in plugin "spliceinject".
 
 -------------------------------------------------------------------------------
 
