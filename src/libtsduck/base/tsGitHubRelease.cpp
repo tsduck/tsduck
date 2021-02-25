@@ -125,7 +125,7 @@ bool ts::GitHubRelease::CallGitHub(json::ValuePtr& response, json::Type expected
 
     // Build the request.
     WebRequest req(report);
-    req.setURL(github + u"/repos/" + owner + u"/" + repository + request);
+    const UString url(github + u"/repos/" + owner + u"/" + repository + request);
 
     // Look for an optional GitHub authorization token.
     UString token(GetEnvironment(u"TSDUCK_GITHUB_API_TOKEN"));
@@ -147,7 +147,7 @@ bool ts::GitHubRelease::CallGitHub(json::ValuePtr& response, json::Type expected
 
     // Send the request, fetch the response, analyze the JSON.
     UString text;
-    if (!req.downloadTextContent(text) || !json::Parse(response, text, report)) {
+    if (!req.downloadTextContent(url, text) || !json::Parse(response, text, report)) {
         return false;
     }
     assert(!response.isNull());

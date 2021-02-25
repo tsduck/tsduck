@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsWebRequestHandlerInterface.h"
 #include "tsWebRequestArgs.h"
 #include "tsReport.h"
 #include "tsByteBlock.h"
@@ -48,11 +47,13 @@ namespace ts {
     //! On Windows systems, the implementation uses Microsoft Wininet.
     //! We could have used libcurl on Windows but building it was a pain...
     //!
-    //! The URL and optional proxy settings must be set before any download
-    //! operation. By default, no proxy is used. On Windows, if no proxy is
-    //! set, the default system proxy is used.
+    //! The proxy and transfer settings must be set before starting any
+    //! download operation. The HTTP status and the response headers are
+    //! available after a successful download start.
     //!
-    //! The response headers are available after a successful download operation.
+    //! By default, no proxy is used. If no proxy is set, the default proxy
+    //! is used (system configuration on Windows, http_proxy environment on
+    //! Unix systems).
     //!
     class TSDUCKDLL WebRequest
     {
@@ -68,37 +69,6 @@ namespace ts {
         //! Destructor.
         //!
         virtual ~WebRequest();
-
-        //!
-        //! Set the URL to get.
-        //! @param [in] url The complete URL to fetch.
-        //!
-        void setURL(const UString& url);
-
-        //!
-        //! Get the original URL, as set by setURL().
-        //! @return The original URL.
-        //!
-        UString originalURL() const
-        {
-            return _originalURL;
-        }
-
-        //!
-        //! Get the final URL of the actual download operation.
-        //!
-        //! It can be different from originalURL() if some HTTP redirections were performed.
-        //! When called before a download operation, return originalURL().
-        //!
-        //! If redirections are disabled using setAutoRedirect() and the site
-        //! returned a redirection, finalURL() returns the redirected URL.
-        //!
-        //! @return The final / redirected URL.
-        //!
-        UString finalURL() const
-        {
-            return _finalURL;
-        }
 
         //!
         //! Set the connection timeout for this request.
@@ -141,6 +111,30 @@ namespace ts {
         static void SetDefaultProxyUser(const UString& user, const UString& password);
 
         //!
+        //! Get the current actual proxy host.
+        //! @return A constant reference to the proxy host name.
+        //!
+        const UString& proxyHost() const;
+
+        //!
+        //! Get the current actual proxy port number.
+        //! @return The proxy port number.
+        //!
+        uint16_t proxyPort() const;
+
+        //!
+        //! Get the current actual proxy user name.
+        //! @return A constant reference to the proxy user name.
+        //!
+        const UString& proxyUser() const;
+
+        //!
+        //! Get the current actual proxy user password.
+        //! @return A constant reference to the proxy user password.
+        //!
+        const UString& proxyPassword() const;
+
+        //!
         //! Enable the use of cookies for all requests using this instance.
         //! @param [in] fileName The name of the file to use to load and store cookies.
         //! On Windows, there is an implicit per-user cookie repository and @a fileName
@@ -176,20 +170,14 @@ namespace ts {
         //! Set the user agent name to use in HTTP headers.
         //! @param [in] name The user agent name.
         //!
-        void setUserAgent(const UString& name)
-        {
-            _userAgent = name;
-        }
+        void setUserAgent(const UString& name) { _userAgent = name; }
 
         //!
         //! Enable or disable the automatic redirection of HTTP requests.
         //! This option is active by default.
         //! @param [in] on If true, allow automatic redirection of HTTP requests.
         //!
-        void setAutoRedirect(bool on)
-        {
-            _autoRedirect = on;
-        }
+        void setAutoRedirect(bool on) { _autoRedirect = on; }
 
         //!
         //! Set various arguments from command line.
@@ -210,36 +198,26 @@ namespace ts {
         void clearRequestHeaders();
 
         //!
-        //! Download the content of the URL as binary data.
-        //! @param [out] data The content of the URL.
+        //! Open an URL and start the transfer.
+        //! For HTTP request, perform all redirections and get response headers.
+        //! @param [in] url The complete URL to fetch.
         //! @return True on success, false on error.
         //!
-        bool downloadBinaryContent(ByteBlock& data);
+        bool open(const UString& url);
 
         //!
-        //! Download the content of the URL as text.
-        //! The downloaded text is converted from UTF-8.
-        //! End of lines are normalized as LF.
-        //! @param [out] text The content of the URL.
-        //! @return True on success, false on error.
+        //! Get the HTTP status code (200, 404, etc).
+        //! @return The HTTP status code.
         //!
-        bool downloadTextContent(UString& text);
+        int httpStatus() const { return _httpStatus; }
 
         //!
-        //! Download the content of the URL in a file.
-        //! No transformation is applied to the data.
-        //! @param [in] fileName Name of the file to create.
-        //! @return True on success, false on error.
+        //! Get the announced content size in bytes.
+        //! This is the value which was sent in the content headers.
+        //! This mat  be zero, this may not be the actual size of the content to download.
+        //! @return Announced content size in bytes.
         //!
-        bool downloadFile(const UString& fileName);
-
-        //!
-        //! Download the content of the URL and pass data to the application.
-        //! No transformation is applied to the data.
-        //! @param [in] handler Application-defined handler to process received data.
-        //! @return True on success, false on error.
-        //!
-        bool downloadToApplication(WebRequestHandlerInterface* handler);
+        size_t announdedContentSize() const { return _headerContentSize; }
 
         //!
         //! Representation of request or reponse headers.
@@ -270,22 +248,91 @@ namespace ts {
         UString mimeType(bool simple = true, bool lowercase = true) const;
 
         //!
+        //! Get the original URL, as set by setURL().
+        //! @return The original URL.
+        //!
+        UString originalURL() const { return _originalURL; }
+
+        //!
+        //! Get the final URL of the actual download operation.
+        //!
+        //! It can be different from originalURL() if some HTTP redirections were performed.
+        //! When called before a download operation, return originalURL().
+        //!
+        //! If redirections are disabled using setAutoRedirect() and the site
+        //! returned a redirection, finalURL() returns the redirected URL.
+        //!
+        //! @return The final / redirected URL.
+        //!
+        UString finalURL() const { return _finalURL; }
+
+        //!
+        //! Receive data.
+        //!
+        //! @param [out] buffer Address of the buffer for the received data.
+        //! @param [in] maxSize Size in bytes of the reception buffer.
+        //! @param [out] retSize Size in bytes of the received data. Will never be larger than @a max_size.
+        //! When @a ret_size is zero, this is the end of the transfer.
+        //! @return True on success, false on error. A successful end of transfer is reported when
+        //! @a ret_size is zero and the returned value is true.
+        //!
+        bool receive(void* buffer, size_t maxSize, size_t& retSize);
+
+        //!
+        //! Close the transfer.
+        //! @return True on success, false on error.
+        //! 
+        bool close();
+
+        //!
+        //! Abort a transfer in progress.
+        //! Can be called from another thread.
+        //!
+        void abort();
+
+        //!
         //! Get the size in bytes of the downloaded content.
         //! @return Size in bytes of the downloaded content.
         //!
-        size_t contentSize() const
-        {
-            return _contentSize;
-        }
+        size_t contentSize() const { return _contentSize; }
 
         //!
-        //! Get the HTTP status code (200, 404, etc).
-        //! @return The HTTP status code.
+        //! Default download chunk size for bulk transfers.
         //!
-        int httpStatus() const
-        {
-            return _httpStatus;
-        }
+        static constexpr size_t DEFAULT_CHUNK_SIZE = 64 * 1024;
+
+        //!
+        //! Download the content of the URL as binary data in one operation.
+        //! The open/read/close session is embedded in this method.
+        //! @param [in] url The complete URL to fetch.
+        //! @param [out] data The content of the URL.
+        //! @param [in] chunkSize Individual download chunk size.
+        //! @return True on success, false on error.
+        //!
+        bool downloadBinaryContent(const UString& url, ByteBlock& data, size_t chunkSize = DEFAULT_CHUNK_SIZE);
+
+        //!
+        //! Download the content of the URL as text in one operation.
+        //! The open/read/close session is embedded in this method..
+        //! The downloaded text is converted from UTF-8.
+        //! End of lines are normalized as LF.
+        //! @param [in] url The complete URL to fetch.
+        //! @param [out] text The content of the URL.
+        //! @param [in] chunkSize Individual download chunk size.
+        //! @return True on success, false on error.
+        //!
+        bool downloadTextContent(const UString& url, UString& text, size_t chunkSize = DEFAULT_CHUNK_SIZE);
+
+        //!
+        //! Download the content of the URL in a file in one operation.
+        //! The open/read/close session is embedded in this method..
+        //! No transformation is applied to the data.
+        //! @param [in] url The complete URL to fetch.
+        //! @param [in] fileName Name of the file to create.
+        //! @param [in] chunkSize Individual download chunk size.
+        //! @return True on success, false on error.
+        //!
+        bool downloadFile(const UString& url, const UString& fileName, size_t chunkSize = DEFAULT_CHUNK_SIZE);
 
         //!
         //! Get the version of the underlying HTTP library.
@@ -311,16 +358,14 @@ namespace ts {
         UString       _proxyPassword;
         UString       _cookiesFileName;
         bool          _useCookies;
-        HeadersMap    _requestHeaders;           // all request headers (to send)
-        HeadersMap    _responseHeaders;          // all response headers (received)
-        int           _httpStatus;               // 200, 404, etc.
-        size_t        _contentSize;              // actually downloaded size
-        size_t        _headerContentSize;        // content size, as announced in response header
-        ByteBlock*    _dlData;                   // download data buffer
-        std::ofstream _dlFile;                   // download file
-        WebRequestHandlerInterface* _dlHandler;  // application-defined handler
-        volatile bool _interrupted;              // interrupted by application-defined handler
-        SystemGuts*   _guts;                     // system-specific data
+        HeadersMap    _requestHeaders;     // all request headers (to send)
+        HeadersMap    _responseHeaders;    // all response headers (received)
+        int           _httpStatus;         // 200, 404, etc.
+        size_t        _contentSize;        // actually downloaded size
+        size_t        _headerContentSize;  // content size, as announced in response header
+        volatile bool _isOpen;             // The transfer is open/started.
+        volatile bool _interrupted;        // interrupted by application-defined handler
+        SystemGuts*   _guts;               // system-specific data
 
         static UString  _defaultProxyHost;
         static uint16_t _defaultProxyPort;
@@ -331,31 +376,10 @@ namespace ts {
         void allocateGuts();
         void deleteGuts();
 
-        // Perform initialization before any download.
-        bool downloadInitialize();
-
-        // Close or abort initialized download.
-        void downloadClose();
-
-        // Perform actual download.
-        bool download();
-
         // Process a list of response headers. Header lines are terminated by LF or CRLF.
         void processReponseHeaders(const UString& text);
 
-        // Copy some downloaded data.
-        bool copyData(const void* addr, size_t size);
-
-        // Provide possible total download size.
-        bool setPossibleContentSize(size_t totalSize);
-
-        // Clear the transfer results, status, etc.
-        bool clearTransferResults();
-
-        // Get references to actual proxy characteristics.
-        const UString&  proxyHost() const { return _proxyHost.empty() ? _defaultProxyHost : _proxyHost; }
-        uint16_t        proxyPort() const { return _proxyPort == 0 ? _defaultProxyPort : _proxyPort; }
-        const UString&  proxyUser() const { return _proxyUser.empty() ? _defaultProxyUser : _proxyUser; }
-        const UString&  proxyPassword() const { return _proxyPassword.empty() ? _defaultProxyPassword : _proxyPassword; }
+        // System-specific transfer initialization.
+        bool startTransfer();
     };
 }

@@ -33,8 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPushInputPlugin.h"
-#include "tsWebRequestHandlerInterface.h"
+#include "tsInputPlugin.h"
 #include "tsTSFile.h"
 
 namespace ts {
@@ -42,16 +41,15 @@ namespace ts {
     //! Abstract base class for HTTP-based input plugins.
     //! @ingroup plugin
     //!
-    class TSDUCKDLL AbstractHTTPInputPlugin: public PushInputPlugin, protected WebRequestHandlerInterface
+    class TSDUCKDLL AbstractHTTPInputPlugin: public InputPlugin
     {
         TS_NOBUILD_NOCOPY(AbstractHTTPInputPlugin);
     public:
         // Implementation of Plugin interface.
         // If overridden by subclass, superclass must be explicitly invoked.
         virtual bool start() override;
-
-        // Inherited from PushInputPlugin.
-        virtual bool pushPackets(const TSPacket* buffer, size_t count) override;
+        virtual bool abortInput() override;
+        virtual bool stop() override;
 
         //!
         //! Set a directory name where all loaded files are automatically saved.
@@ -68,15 +66,10 @@ namespace ts {
         //!
         AbstractHTTPInputPlugin(TSP* tsp, const UString& description, const UString& syntax);
 
-        // Implementation of WebRequestHandlerInterface
-        virtual bool handleWebStart(const WebRequest& request, size_t size) override;
-        virtual bool handleWebData(const WebRequest& request, const void* data, size_t size) override;
-        virtual bool handleWebStop(const WebRequest& request) override;
-
     private:
-        TSPacket     _partial;       // Buffer for incomplete packets.
-        size_t       _partial_size;  // Number of bytes in partial.
-        UString      _autoSaveDir;   // If not empty, automatically save loaded files to this directory.
-        TSFile       _outSave;       // TS file where to store the loaded file.
+        TSPacket _partial;       // Buffer for incomplete packets.
+        size_t   _partial_size;  // Number of bytes in partial.
+        UString  _autoSaveDir;   // If not empty, automatically save loaded files to this directory.
+        TSFile   _outSave;       // TS file where to store the loaded file.
     };
 }

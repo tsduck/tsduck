@@ -39,20 +39,18 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
-#define DEFAULT_MAX_QUEUED_PACKETS  1000    // Default size in packet of the inter-thread queue.
-
 
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class HttpInput: public AbstractHTTPInputPlugin
+    class HTTPInputPlugin: public AbstractHTTPInputPlugin
     {
-        TS_NOBUILD_NOCOPY(HttpInput);
+        TS_NOBUILD_NOCOPY(HTTPInputPlugin);
     public:
         // Implementation of plugin API
-        HttpInput(TSP*);
+        HTTPInputPlugin(TSP*);
         virtual bool getOptions() override;
         virtual void processInput() override;
         virtual bool setReceiveTimeout(MilliSecond timeout) override;
@@ -66,14 +64,14 @@ namespace ts {
     };
 }
 
-TS_REGISTER_INPUT_PLUGIN(u"http", ts::HttpInput);
+TS_REGISTER_INPUT_PLUGIN(u"http", ts::HTTPInputPlugin);
 
 
 //----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::HttpInput::HttpInput(TSP* tsp_) :
+ts::HTTPInputPlugin::HTTPInputPlugin(TSP* tsp_) :
     AbstractHTTPInputPlugin(tsp_, u"Read a transport stream from an HTTP server", u"[options] url"),
     _repeat_count(0),
     _ignore_errors(false),
@@ -120,7 +118,7 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
 // Command line options method
 //----------------------------------------------------------------------------
 
-bool ts::HttpInput::getOptions()
+bool ts::HTTPInputPlugin::getOptions()
 {
     // Decode options.
     _url = value(u"");
@@ -140,7 +138,7 @@ bool ts::HttpInput::getOptions()
 // Set receive timeout from tsp.
 //----------------------------------------------------------------------------
 
-bool ts::HttpInput::setReceiveTimeout(MilliSecond timeout)
+bool ts::HTTPInputPlugin::setReceiveTimeout(MilliSecond timeout)
 {
     if (timeout > 0) {
         _web_args.receiveTimeout = _web_args.connectionTimeout = timeout;
@@ -153,7 +151,7 @@ bool ts::HttpInput::setReceiveTimeout(MilliSecond timeout)
 // Input method. Executed in a separate thread.
 //----------------------------------------------------------------------------
 
-void ts::HttpInput::processInput()
+void ts::HTTPInputPlugin::processInput()
 {
     bool ok = true;
 
