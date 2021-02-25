@@ -64,20 +64,20 @@ public:
     // Destructor.
     ~SystemGuts();
 
-    // Initialize, clear, start Web transfer.
+    // Delegation of methods from WebRequest.
     bool init();
+    bool receive(void* buffer, size_t maxSize, size_t& retSize);
     void clear();
-    bool start();
-
-    // Report an error message.
-    void error(const UChar* message, ::DWORD code = ::GetLastError());
 
 private:
     WebRequest& _request;        // Parent request.
-    ::HINTERNET _inet;           // Handle to all Internet operations.
-    ::HINTERNET _url;            // Handle to URL operations.
+    volatile ::HINTERNET _inet;  // Handle to all Internet operations.
+    volatile ::HINTERNET _url;   // Handle to URL operations.
     int         _redirectCount;  // Current number of redirections.
     UString     _previousURL;    // Previous URL, before getting a redirection.
+
+    // Report an error message.
+    void error(const UChar* message, ::DWORD code = ::GetLastError());
 
     // Transmit response headers to the WebRequest.
     void transmitResponseHeaders();
@@ -116,19 +116,33 @@ void ts::WebRequest::deleteGuts()
 // Download operations from the WebRequest class.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::downloadInitialize()
+bool ts::WebRequest::startTransfer()
 {
     return _guts->init();
 }
 
-void ts::WebRequest::downloadClose()
+bool ts::WebRequest::receive(void* buffer, size_t maxSize, size_t& retSize)
 {
-    _guts->clear();
+    if (_isOpen) {
+        return _guts->receive(buffer, maxSize, retSize);
+    }
+    else {
+        _report.error(u"transfer not started");
+        return false;
+    }
 }
 
-bool ts::WebRequest::download()
+bool ts::WebRequest::close()
 {
-    return _guts->start();
+    bool success = _isOpen;
+    _guts->clear();
+    _isOpen = false;
+    return success;
+}
+
+void ts::WebRequest::abort()
+{
+    _guts->clear();
 }
 
 
@@ -148,6 +162,23 @@ void ts::WebRequest::SystemGuts::error(const UChar* message, ::DWORD code)
 
 
 //----------------------------------------------------------------------------
+// Abort / clear the Web transfer.
+//----------------------------------------------------------------------------
+
+void ts::WebRequest::SystemGuts::clear()
+{
+    // Close Internet handles.
+    if (_url != 0 && !::InternetCloseHandle(_url)) {
+        error(u"error closing URL handle");
+    }
+    if (_inet != 0 && !::InternetCloseHandle(_inet)) {
+        error(u"error closing main Internet handle");
+    }
+    _url = _inet = 0;
+}
+
+
+//----------------------------------------------------------------------------
 // Initialize Web transfer.
 //----------------------------------------------------------------------------
 
@@ -155,6 +186,7 @@ bool ts::WebRequest::SystemGuts::init()
 {
     // Make sure we start from a clean state.
     clear();
+    _redirectCount = 0;
 
     // Prepare proxy name.
     const bool useProxy = !_request.proxyHost().empty();
@@ -286,49 +318,19 @@ bool ts::WebRequest::SystemGuts::init()
 
 
 //----------------------------------------------------------------------------
-// Abort / clear the Web transfer.
+// Perform Web transfer.
 //----------------------------------------------------------------------------
 
-void ts::WebRequest::SystemGuts::clear()
+bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t& retSize)
 {
-    // Close Internet handles.
-    if (_url != 0 && !::InternetCloseHandle(_url)) {
-        error(u"error closing URL handle");
-    }
-    if (_inet != 0 && !::InternetCloseHandle(_inet)) {
-        error(u"error closing main Internet handle");
-    }
-    _url = _inet = 0;
-    _redirectCount = 0;
-}
+    ::DWORD thisSize = 0;
+    const bool success = ::InternetReadFile(_url, buffer, ::DWORD(maxSize), &thisSize);
 
-
-//----------------------------------------------------------------------------
-// Perform the Web transfer.
-// The URL is open, the response headers have been received, now receive data.
-//----------------------------------------------------------------------------
-
-bool ts::WebRequest::SystemGuts::start()
-{
-    bool success = true;
-    std::array<uint8_t, 1024> data;
-
-    while (success) {
-        ::DWORD gotSize = 0;
-        if (!::InternetReadFile(_url, data.data(), ::DWORD(data.size()), &gotSize)) {
-            error(u"download error");
-            success = false;
-        }
-        else if (gotSize == 0) {
-            // Successfully reading zero bytes means end of file.
-            break;
-        }
-        else {
-            // Get real data, transmit them to the WebRequest object.
-            success = _request.copyData(data.data(), size_t(gotSize));
-        }
+    if (!success) {
+        error(u"download error");
     }
 
+    retSize = size_t(thisSize);
     return success;
 }
 

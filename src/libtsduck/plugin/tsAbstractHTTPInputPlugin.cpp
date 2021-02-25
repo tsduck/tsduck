@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::AbstractHTTPInputPlugin::AbstractHTTPInputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
-    PushInputPlugin(tsp_, description, syntax),
+    InputPlugin(tsp_, description, syntax),
     _partial(),
     _partial_size(0),
     _autoSaveDir(),
@@ -55,9 +55,7 @@ ts::AbstractHTTPInputPlugin::AbstractHTTPInputPlugin(TSP* tsp_, const UString& d
 bool ts::AbstractHTTPInputPlugin::start()
 {
     _partial_size = 0;
-
-    // Invoke superclass.
-    return PushInputPlugin::start();
+    return true;
 }
 
 

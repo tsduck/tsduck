@@ -52,6 +52,12 @@ namespace ts {
     //!
     //! This class is a bridge between push mode and pull mode. Input plugins which
     //! prefer to work in push mode should inherit from this class.
+    //! 
+    //! Note: This class was originally developed to support HTTP-based input plugins.
+    //! Because the "curl_easy" interface was used on Unix, these plugins had to work
+    //! in push mode. Now, we use these plugins use the "curl_multi" interface and
+    //! the PushInputPlugin is no longer used in TSDuck. It remains here jsut in case
+    //! some future input plugin has to work in push mode.
     //!
     class TSDUCKDLL PushInputPlugin : public InputPlugin
     {

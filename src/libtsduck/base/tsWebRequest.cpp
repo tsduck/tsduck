@@ -54,19 +54,23 @@ namespace {
         const ts::URL url;
     };
 
+    TS_DEFINE_SINGLETON(DefaultProxy);
+
+    DefaultProxy::DefaultProxy() :
+        url(ts::GetEnvironment(u"https_proxy", ts::GetEnvironment(u"http_proxy")))
+    {
+    }
 }
 
-TS_DEFINE_SINGLETON(DefaultProxy);
-
-DefaultProxy::DefaultProxy() :
-    url(ts::GetEnvironment(u"https_proxy", ts::GetEnvironment(u"http_proxy")))
-{
-}
-
+// WebRequest static fields:
 ts::UString ts::WebRequest::_defaultProxyHost(DefaultProxy::Instance()->url.getHost());
 uint16_t    ts::WebRequest::_defaultProxyPort = DefaultProxy::Instance()->url.getPort();
 ts::UString ts::WebRequest::_defaultProxyUser(DefaultProxy::Instance()->url.getUserName());
 ts::UString ts::WebRequest::_defaultProxyPassword(DefaultProxy::Instance()->url.getPassword());
+
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+constexpr size_t ts::WebRequest::DEFAULT_CHUNK_SIZE;
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -92,9 +96,7 @@ ts::WebRequest::WebRequest(Report& report) :
     _httpStatus(0),
     _contentSize(0),
     _headerContentSize(0),
-    _dlData(nullptr),
-    _dlFile(),
-    _dlHandler(nullptr),
+    _isOpen(false),
     _interrupted(false),
     _guts(nullptr)
 {
@@ -117,18 +119,7 @@ ts::WebRequest::~WebRequest()
 
 
 //----------------------------------------------------------------------------
-// Set the URL to get.
-//----------------------------------------------------------------------------
-
-void ts::WebRequest::setURL(const UString& url)
-{
-    _originalURL = url;
-    _finalURL = url;
-}
-
-
-//----------------------------------------------------------------------------
-// Set other options.
+// Set timeout options.
 //----------------------------------------------------------------------------
 
 void ts::WebRequest::setConnectionTimeout(MilliSecond timeout)
@@ -141,12 +132,16 @@ void ts::WebRequest::setReceiveTimeout(MilliSecond timeout)
     _receiveTimeout = timeout;
 }
 
+
+//----------------------------------------------------------------------------
+// Set/get proxy options.
+//----------------------------------------------------------------------------
+
 void ts::WebRequest::setProxyHost(const UString& host, uint16_t port)
 {
     _proxyHost = host;
     _proxyPort = port;
 }
-
 
 void ts::WebRequest::setProxyUser(const UString& user, const UString& password)
 {
@@ -160,11 +155,30 @@ void ts::WebRequest::SetDefaultProxyHost(const UString& host, uint16_t port)
     _defaultProxyPort = port;
 }
 
-
 void ts::WebRequest::SetDefaultProxyUser(const UString& user, const UString& password)
 {
     _defaultProxyUser = user;
     _defaultProxyPassword = password;
+}
+
+const ts::UString& ts::WebRequest::proxyHost() const
+{
+    return _proxyHost.empty() ? _defaultProxyHost : _proxyHost;
+}
+
+uint16_t ts::WebRequest::proxyPort() const
+{
+    return _proxyPort == 0 ? _defaultProxyPort : _proxyPort;
+}
+
+const ts::UString& ts::WebRequest::proxyUser() const
+{
+    return _proxyUser.empty() ? _defaultProxyUser : _proxyUser;
+}
+
+const ts::UString& ts::WebRequest::proxyPassword() const
+{
+    return _proxyPassword.empty() ? _defaultProxyPassword : _proxyPassword;
 }
 
 
@@ -337,7 +351,7 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
                 _report.debug(u"redirected to %s", {_finalURL});
             }
             else if (name.similar(u"Content-length") && value.toInteger(size)) {
-                setPossibleContentSize(size);
+                _headerContentSize = size;
             }
         }
     }
@@ -345,70 +359,72 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
 
 
 //----------------------------------------------------------------------------
-// Copy some downloaded data.
+// Open an URL and start the transfer.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::copyData(const void* addr, size_t size)
+bool ts::WebRequest::open(const UString& url)
 {
-    // Copy data in memory buffer if there is one.
-    if (_dlData != nullptr) {
-        // Check maximum buffer size.
-        const size_t newSize = BoundedAdd(_dlData->size(), size);
-        if (newSize >= _dlData->max_size()) {
-            return false; // too large (but unlikely)
-        }
-
-        // Enlarge the buffer capacity to avoid too frequent reallocations.
-        // At least double the capacity of the buffer each time.
-        if (newSize > _dlData->capacity()) {
-            _dlData->reserve(std::max(newSize, 2 * _dlData->capacity()));
-        }
-
-        // Finally copy the data.
-        _dlData->append(addr, size);
-    }
-
-    // Save data in file if there is one.
-    if (_dlFile.is_open()) {
-        _dlFile.write(reinterpret_cast<const char*>(addr), size);
-        if (!_dlFile) {
-            _report.error(u"error saving downloaded file");
-            return false;
-        }
-    }
-
-    // Pass data to application if a handler is defined.
-    if (_dlHandler != nullptr && !_dlHandler->handleWebData(*this, addr, size)) {
-        _report.debug(u"Web transfer is interrupted by application");
-        _interrupted = true;
+    if (url.empty()) {
+        _report.error(u"no URL specified");
         return false;
     }
 
-    _contentSize += size;
-    return true;
+    if (_isOpen) {
+        _report.error(u"internal error, transfer already started, cannot download %s", {url});
+        return false;
+    }
+
+    _finalURL = _originalURL = url;
+    _responseHeaders.clear();
+    _contentSize = _headerContentSize = 0;
+    _httpStatus = 0;
+    _interrupted = false;
+
+    // System-specific transfer initialization.
+    return _isOpen = startTransfer();
 }
 
 
 //----------------------------------------------------------------------------
-// Provide possible total download size.
+// Download the content of the URL as binary data.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::setPossibleContentSize(size_t totalSize)
+bool ts::WebRequest::downloadBinaryContent(const UString& url, ByteBlock& data, size_t chunkSize)
 {
-    if (totalSize > _headerContentSize) {
-        // Keep this value.
-        _headerContentSize = totalSize;
-        _report.debug(u"announced content size: %d bytes", {_headerContentSize});
+    data.clear();
 
-        // Enlarge memory buffer when necessary to avoid too frequent reallocations.
-        if (_dlData != nullptr && totalSize > _dlData->capacity()) {
-            if (totalSize > _dlData->max_size()) {
-                return false; // too large (but unlikely)
-            }
-            _dlData->reserve(totalSize);
+    // Transfer initialization.
+    if (!open(url)) {
+        return false;
+    }
+
+    // Initialize download buffers.
+    size_t receivedSize = 0;
+    data.reserve(_headerContentSize);
+    data.resize(chunkSize);
+    bool success = true;
+
+    for (;;) {
+        // Transfer one chunk.
+        size_t thisSize = 0;
+        success = receive(data.data() + receivedSize, data.size() - receivedSize, thisSize);
+        receivedSize += std::min(thisSize, data.size() - receivedSize);
+
+        // Error or end of transfer.
+        if (!success || thisSize == 0) {
+            break;
+        }
+
+        // Enlarge the buffer for next chunk.
+        // Don't do that too often in case of very short transfers.
+        if (data.size() - receivedSize < chunkSize / 2) {
+            data.resize(receivedSize + chunkSize);
         }
     }
-    return true;
+
+    // Resize data buffer to actually transfered size.
+    data.resize(receivedSize);
+    return close() && success;
 }
 
 
@@ -416,11 +432,11 @@ bool ts::WebRequest::setPossibleContentSize(size_t totalSize)
 // Download the content of the URL as text.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::downloadTextContent(UString& text)
+bool ts::WebRequest::downloadTextContent(const UString& url, UString& text, size_t chunkSize)
 {
     // Download the content as raw binary data.
     ByteBlock data;
-    if (downloadBinaryContent(data)) {
+    if (downloadBinaryContent(url, data, chunkSize)) {
         // Convert to UTF-8.
         text.assignFromUTF8(reinterpret_cast<const char*>(data.data()), data.size());
         // Remove all CR, just keep the LF.
@@ -436,121 +452,46 @@ bool ts::WebRequest::downloadTextContent(UString& text)
 
 
 //----------------------------------------------------------------------------
-// Clear the transfer results, status, etc.
-//----------------------------------------------------------------------------
-
-bool ts::WebRequest::clearTransferResults()
-{
-    _httpStatus = 0;
-    _contentSize = 0;
-    _headerContentSize = 0;
-    _finalURL = _originalURL;
-    _dlData = nullptr;
-    _dlHandler = nullptr;
-
-    // Close spurious file (should not happen).
-    if (_dlFile.is_open()) {
-        _dlFile.close();
-    }
-
-    // Make sure we have an URL.
-    if (_originalURL.empty()) {
-        _report.error(u"no URL specified");
-        return false;
-    }
-
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Download the content of the URL as binary data.
-//----------------------------------------------------------------------------
-
-bool ts::WebRequest::downloadBinaryContent(ByteBlock& data)
-{
-    data.clear();
-    _interrupted = false;
-
-    // Transfer initialization.
-    bool ok = clearTransferResults() && downloadInitialize();
-
-    // Actual transfer.
-    if (ok) {
-        try {
-            _dlData = &data;
-            ok = download();
-        }
-        catch (...) {
-            ok = false;
-        }
-        _dlData = nullptr;
-        downloadClose();
-    }
-
-    return ok;
-}
-
-
-//----------------------------------------------------------------------------
 // Download the content of the URL in a file.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::downloadFile(const UString& fileName)
+bool ts::WebRequest::downloadFile(const UString& url, const UString& fileName, size_t chunkSize)
 {
-    _interrupted = false;
-
     // Transfer initialization.
-    if (!clearTransferResults() || !downloadInitialize()) {
+    if (!open(url)) {
         return false;
     }
 
     // Create the output file.
-    _dlFile.open(fileName.toUTF8().c_str(), std::ios::out | std::ios::binary);
-    if (!_dlFile) {
+    std::ofstream file(fileName.toUTF8().c_str(), std::ios::out | std::ios::binary);
+    if (!file) {
         _report.error(u"error creating file %s", {fileName});
-        downloadClose();
+        close();
         return false;
     }
 
-    // Actual transfer.
-    const bool ok = download();
-    _dlFile.close();
-    downloadClose();
-    return ok;
-}
+    std::vector<char> buffer(chunkSize);
+    bool success = true;
 
+    for (;;) {
+        // Transfer one chunk.
+        size_t thisSize = 0;
+        success = receive(buffer.data(), buffer.size(), thisSize);
 
-//----------------------------------------------------------------------------
-// Download the content of the URL and pass data to the application.
-//----------------------------------------------------------------------------
-
-bool ts::WebRequest::downloadToApplication(WebRequestHandlerInterface* handler)
-{
-    _interrupted = false;
-
-    // Transfer initialization.
-    bool ok = handler != nullptr && clearTransferResults() && downloadInitialize();
-
-    // Actual transfer.
-    if (ok) {
-        try {
-            _dlHandler = handler;
-            ok = handler->handleWebStart(*this, _headerContentSize);
-            if (ok) {
-                ok = download();
-                ok = handler->handleWebStop(*this) && ok;
-            }
-            else {
-                _report.debug(u"Web request is aborted by application before transfer");
-            }
+        // Error or end of transfer.
+        if (!success || thisSize == 0) {
+            break;
         }
-        catch (...) {
-            ok = false;
+
+        file.write(buffer.data(), thisSize);
+        if (!file) {
+            _report.error(u"error saving download to %s", {fileName});
+            success = false;
+            break;
         }
-        _dlHandler = nullptr;
-        downloadClose();
     }
 
-    return ok;
+    // Resize data buffer to actually transfered size.
+    file.close();
+    return close() && success;
 }
