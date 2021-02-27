@@ -51,6 +51,7 @@ $(SHLIBS): $(SHARED_LIBTSDUCK)
 
 install-tools: $(SHLIBS)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck
+	rm -f $(addprefix $(SYSROOT)$(USRLIBDIR)/tsduck/tsplugin_,$(addsuffix .so,dektec drop file fork hls http ip null srt))
 	install -m 644 $(SHLIBS) $(SYSROOT)$(USRLIBDIR)/tsduck
 install-devel:
 	@true

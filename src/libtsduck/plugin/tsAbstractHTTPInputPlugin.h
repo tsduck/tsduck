@@ -35,6 +35,8 @@
 #pragma once
 #include "tsInputPlugin.h"
 #include "tsTSFile.h"
+#include "tsWebRequest.h"
+#include "tsWebRequestArgs.h"
 
 namespace ts {
     //!
@@ -47,9 +49,12 @@ namespace ts {
     public:
         // Implementation of Plugin interface.
         // If overridden by subclass, superclass must be explicitly invoked.
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool abortInput() override;
         virtual bool stop() override;
+        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
+        virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
         //!
         //! Set a directory name where all loaded files are automatically saved.
@@ -66,10 +71,30 @@ namespace ts {
         //!
         AbstractHTTPInputPlugin(TSP* tsp, const UString& description, const UString& syntax);
 
+        //!
+        //! Open an URL.
+        //! This abstract method must be implemented by subclasses.
+        //! It is invoked repeatedly by the superclass at the end of each download.
+        //! @param [in,out] request The request object to open.
+        //! @return True on success, false on error or when no more download shall be performed.
+        //!
+        virtual bool openURL(WebRequest& request) = 0;
+
+        //!
+        //! Web command line options can be accessed by subclasses for additional web operations.
+        //!
+        WebRequestArgs webArgs;
+
     private:
-        TSPacket _partial;       // Buffer for incomplete packets.
-        size_t   _partial_size;  // Number of bytes in partial.
-        UString  _autoSaveDir;   // If not empty, automatically save loaded files to this directory.
-        TSFile   _outSave;       // TS file where to store the loaded file.
+        WebRequest _request;      // Current Web transfer in progress.
+        TSPacket   _partial;      // Buffer for incomplete packets.
+        size_t     _partialSize;  // Number of bytes in partial.
+        UString    _autoSaveDir;  // If not empty, automatically save loaded files to this directory.
+        TSFile     _outSave;      // TS file where to store the loaded file.
+
+        // Start/receive/stop on one single transfer.
+        bool startTransfer();
+        size_t receiveTransfer(TSPacket*, size_t);
+        bool stopTransfer();
     };
 }

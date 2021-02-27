@@ -37,8 +37,6 @@ TS_REGISTER_INPUT_PLUGIN(u"hls", ts::hls::InputPlugin);
 // A dummy storage value to force inclusion of this module when using the static library.
 const int ts::hls::InputPlugin::REFERENCE = 0;
 
-#define DEFAULT_MAX_QUEUED_PACKETS  1000    // Default size in packet of the inter-thread queue.
-
 
 //----------------------------------------------------------------------------
 // Input constructor
@@ -60,11 +58,8 @@ ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
     _lowestRes(false),
     _highestRes(false),
     _maxSegmentCount(0),
-    _webArgs(),
     _playlist()
 {
-    _webArgs.defineArgs(*this);
-
     option(u"", 0, STRING, 1, 1);
     help(u"",
          u"Specify the URL of an HLS manifest or playlist. "
@@ -124,11 +119,6 @@ ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
          u"When the URL is a master playlist, select a content the resolution of which has a "
          u"lower height than the specified maximum.");
 
-    option(u"max-queue", 0, POSITIVE);
-    help(u"max-queue",
-         u"Specify the maximum number of queued TS packets before their insertion into the stream. "
-         u"The default is " + UString::Decimal(DEFAULT_MAX_QUEUED_PACKETS) + u".");
-
     option(u"save-files", 0, STRING);
     help(u"save-files", u"directory-name",
          u"Specify a directory where all downloaded files, media segments and playlists, are saved "
@@ -173,8 +163,6 @@ bool ts::hls::InputPlugin::isRealTime()
 
 bool ts::hls::InputPlugin::getOptions()
 {
-    // Decode options.
-    _webArgs.loadArgs(duck, *this);
     _url.setURL(value(u""));
     const UString saveDirectory(value(u"save-files"));
     getIntValue(_maxSegmentCount, u"segment-count");
@@ -191,10 +179,13 @@ bool ts::hls::InputPlugin::getOptions()
     _highestRes = present(u"highest-resolution");
     _listVariants = present(u"list-variants");
 
+    // Invoke superclass to initialize webArgs.
+    AbstractHTTPInputPlugin::getOptions();
+
     // Enable authentication tokens from master playlist to media playlist
     // and from media playlists to media segments.
-    _webArgs.useCookies = true;
-    _webArgs.cookiesFile = TempFile(u".cookies");
+    webArgs.useCookies = true;
+    webArgs.cookiesFile = TempFile(u".cookies");
 
     if (present(u"live")) {
         // With live streams, start at the last segment.
@@ -222,26 +213,10 @@ bool ts::hls::InputPlugin::getOptions()
         return false;
     }
 
-    // Resize the inter-thread packet queue.
-    setQueueSize(intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS));
-
     // Automatically save media segments and playlists.
     setAutoSaveDirectory(saveDirectory);
     _playlist.setAutoSaveDirectory(saveDirectory);
 
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Set receive timeout from tsp.
-//----------------------------------------------------------------------------
-
-bool ts::hls::InputPlugin::setReceiveTimeout(MilliSecond timeout)
-{
-    if (timeout > 0) {
-        _webArgs.receiveTimeout = _webArgs.connectionTimeout = timeout;
-    }
     return true;
 }
 
@@ -254,7 +229,7 @@ bool ts::hls::InputPlugin::start()
 {
     // Load the HLS playlist, can be a master playlist or a media playlist.
     _playlist.clear();
-    if (!_playlist.loadURL(_url.toString(), false, _webArgs, hls::UNKNOWN_PLAYLIST, *tsp)) {
+    if (!_playlist.loadURL(_url.toString(), false, webArgs, hls::UNKNOWN_PLAYLIST, *tsp)) {
         return false;
     }
 
@@ -301,7 +276,7 @@ bool ts::hls::InputPlugin::start()
 
             // Download selected media playlist.
             _playlist.clear();
-            if (_playlist.loadURL(nextURL, false, _webArgs, hls::UNKNOWN_PLAYLIST, *tsp)) {
+            if (_playlist.loadURL(nextURL, false, webArgs, hls::UNKNOWN_PLAYLIST, *tsp)) {
                 break; // media playlist loaded
             }
             else if (master.playListCount() == 1) {
@@ -356,6 +331,8 @@ bool ts::hls::InputPlugin::start()
         tsp->debug(u"dropped initial segment, %d remaining segments", {_playlist.segmentCount()});
     }
 
+    _segmentCount = 0;
+
     // Invoke superclass.
     return AbstractHTTPInputPlugin::start();
 }
@@ -371,11 +348,11 @@ bool ts::hls::InputPlugin::stop()
     bool ok = AbstractHTTPInputPlugin::stop();
 
     // Delete all cookies from this session.
-    if (FileExists(_webArgs.cookiesFile)) {
-        tsp->debug(u"deleting cookies file %s", {_webArgs.cookiesFile});
-        const SysErrorCode status = DeleteFile(_webArgs.cookiesFile);
+    if (FileExists(webArgs.cookiesFile)) {
+        tsp->debug(u"deleting cookies file %s", {webArgs.cookiesFile});
+        const SysErrorCode status = DeleteFile(webArgs.cookiesFile);
         if (status != SYS_SUCCESS) {
-            tsp->error(u"error deleting cookies file %s", {_webArgs.cookiesFile});
+            tsp->error(u"error deleting cookies file %s", {webArgs.cookiesFile});
         }
     }
 
@@ -384,50 +361,56 @@ bool ts::hls::InputPlugin::stop()
 
 
 //----------------------------------------------------------------------------
-// Input method. Executed in a separate thread.
+// Called by AbstractHTTPInputPlugin to open an URL.
 //----------------------------------------------------------------------------
 
-void ts::hls::InputPlugin::processInput()
+bool ts::hls::InputPlugin::openURL(WebRequest& request)
 {
-    // Loop on all segments in the media playlists.
-    for (size_t count = 0; _playlist.segmentCount() > 0 && (_maxSegmentCount == 0 || count < _maxSegmentCount) && !tsp->aborting() && !isInterrupted(); ++count) {
+    // Check if the playlist is completed
+    bool completed =
+        // the playlist is originally empty
+        (_segmentCount == 0 && _playlist.segmentCount() == 0) ||
+        // reached maximum number of segments
+        (_maxSegmentCount > 0 && _segmentCount >= _maxSegmentCount) ||
+        // user interruption
+        tsp->aborting();
 
-        // Remove first segment from the playlist.
-        hls::MediaSegment seg;
-        _playlist.popFirstSegment(seg);
+    // If there is only one or zero remaining segment, try to reload the playlist.
+    if (!completed && _playlist.segmentCount() < 2 && _playlist.updatable()) {
 
-        // Create a Web request to download the content.
-        WebRequest request(*tsp);
-        request.setURL(seg.urlString());
-        request.setAutoRedirect(true);
-        request.setArgs(_webArgs);
-        request.enableCookies(_webArgs.cookiesFile);
+        // Reload the playlist, ignore errors, continue to play next segments.
+        _playlist.reload(false, webArgs, *tsp);
 
-        // Perform the download of the current segment.
-        // Ignore errors, continue to play next segments.
-        tsp->debug(u"downloading segment %s", {seg.urlString()});
-        request.downloadToApplication(this);
+        // If the playlist is still empty, this means that we have read all segments before the server
+        // could produce new segments. For live streams, this is possible because new segments
+        // can be produced as late as the estimated end time of the previous playlist. So, we retry
+        // at regular intervals until we get new segments.
 
-        // If there is only one or zero remaining segment, try to reload the playlist.
-        if (_playlist.segmentCount() < 2 && _playlist.updatable() && !tsp->aborting()) {
-
-            // Ignore errors, continue to play next segments.
-            _playlist.reload(false, _webArgs, *tsp);
-
-            // If the playout is still empty, this means that we have read all segments before the server
-            // could produce new segments. For live streams, this is possible because new segments
-            // can be produced as late as the estimated end time of the previous playlist. So, we retry
-            // at regular intervals until we get new segments.
-
-            while (_playlist.segmentCount() == 0 && Time::CurrentUTC() <= _playlist.terminationUTC() && !tsp->aborting()) {
-                // The wait between two retries is half the target duration of a segment, with a minimum of 2 seconds.
-                SleepThread(std::max<MilliSecond>(2000, (MilliSecPerSec * _playlist.targetDuration()) / 2));
-                // This time, we stop on error.
-                if (!_playlist.reload(false, _webArgs, *tsp)) {
-                    break;
-                }
+        while (_playlist.segmentCount() == 0 && Time::CurrentUTC() <= _playlist.terminationUTC() && !tsp->aborting()) {
+            // The wait between two retries is half the target duration of a segment, with a minimum of 2 seconds.
+            SleepThread(std::max<MilliSecond>(2000, (MilliSecPerSec * _playlist.targetDuration()) / 2));
+            // This time, we stop on reload error.
+            if (!_playlist.reload(false, webArgs, *tsp)) {
+                break;
             }
         }
+
+        // End of playlist if we cannot find new segments.
+        completed = _playlist.segmentCount() == 0;
     }
-    tsp->verbose(u"HLS playlist completed");
+
+    if (completed) {
+        tsp->verbose(u"HLS playlist completed");
+        return false;
+    }
+
+    // Remove first segment from the playlist.
+    hls::MediaSegment seg;
+    _playlist.popFirstSegment(seg);
+    _segmentCount++;
+
+    // Open the segment.
+    tsp->debug(u"downloading segment %s", {seg.urlString()});
+    request.enableCookies(webArgs.cookiesFile);
+    return request.open(seg.urlString());
 }

@@ -36,8 +36,6 @@
 #include "tsAbstractHTTPInputPlugin.h"
 #include "tshlsPlayList.h"
 #include "tsURL.h"
-#include "tsWebRequest.h"
-#include "tsWebRequestArgs.h"
 
 namespace ts {
     namespace hls {
@@ -63,31 +61,36 @@ namespace ts {
             virtual bool start() override;
             virtual bool stop() override;
             virtual bool isRealTime() override;
-            virtual void processInput() override;
-            virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
             //! @cond nodoxygen
             // A dummy storage value to force inclusion of this module when using the static library.
             static const int REFERENCE;
             //! @endcond
 
+        protected:
+            // Implementation of AbstractHTTPInputPlugin
+            virtual bool openURL(WebRequest&) override;
+
         private:
-            URL            _url;
-            BitRate        _minRate;
-            BitRate        _maxRate;
-            size_t         _minWidth;
-            size_t         _maxWidth;
-            size_t         _minHeight;
-            size_t         _maxHeight;
-            int            _startSegment;
-            bool           _listVariants;
-            bool           _lowestRate;
-            bool           _highestRate;
-            bool           _lowestRes;
-            bool           _highestRes;
-            size_t         _maxSegmentCount;
-            WebRequestArgs _webArgs;
-            PlayList       _playlist;
+            // Command line options:
+            URL      _url;
+            BitRate  _minRate;
+            BitRate  _maxRate;
+            size_t   _minWidth;
+            size_t   _maxWidth;
+            size_t   _minHeight;
+            size_t   _maxHeight;
+            int      _startSegment;
+            bool     _listVariants;
+            bool     _lowestRate;
+            bool     _highestRate;
+            bool     _lowestRes;
+            bool     _highestRes;
+            size_t   _maxSegmentCount;
+
+            // Working data:
+            size_t   _segmentCount;
+            PlayList _playlist;
         };
     }
 }
