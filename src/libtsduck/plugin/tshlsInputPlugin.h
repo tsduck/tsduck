@@ -59,7 +59,6 @@ namespace ts {
             // Implementation of plugin API
             virtual bool getOptions() override;
             virtual bool start() override;
-            virtual bool stop() override;
             virtual bool isRealTime() override;
 
             //! @cond nodoxygen

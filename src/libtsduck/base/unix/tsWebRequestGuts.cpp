@@ -29,10 +29,25 @@
 //
 //  Perform a simple Web request - UNIX specific parts with libcurl.
 //
+//  IMPLEMENTATION NOTE:
+//  There are two ways to use libcurl: "curl_easy" and "curl_multi".
+//  The former is easier to use but it works in "push mode" only.
+//
+//  Initially, TSDuck used "curl_easy" with the consequence that all
+//  HTTP-based plugins should work in push mode with an intermediate
+//  packet queue (see class PushInputPlugin). Later, the implementation
+//  was completely changed to use "curl_multi" and remove the intermediate
+//  packet queue in HTTP-based plugins.
+//
+//  Also note that using curl_multi before version 7.66 is not very
+//  efficient since there is some sort of sleep/wait cycles.
+//
 //----------------------------------------------------------------------------
 
 #include "tsWebRequest.h"
 #include "tsSingletonManager.h"
+#include "tsMutex.h"
+#include "tsGuard.h"
 TSDUCK_SOURCE;
 
 
@@ -47,9 +62,10 @@ TSDUCK_SOURCE;
 class ts::WebRequest::SystemGuts {};
 void ts::WebRequest::allocateGuts() { _guts = new SystemGuts; }
 void ts::WebRequest::deleteGuts() { delete _guts; }
-bool ts::WebRequest::downloadInitialize() { _report.error(TS_NO_CURL_MESSAGE); return false; }
-void ts::WebRequest::downloadClose() {}
-bool ts::WebRequest::download() { _report.error(TS_NO_CURL_MESSAGE); return false; }
+bool ts::WebRequest::startTransfer() { _report.error(TS_NO_CURL_MESSAGE); return false; }
+bool ts::WebRequest::receive(void*, size_t, size_t&) { _report.error(TS_NO_CURL_MESSAGE); return false; }
+bool ts::WebRequest::close() { return true; }
+void ts::WebRequest::abort() {}
 ts::UString ts::WebRequest::GetLibraryVersion() { return UString(); }
 
 #else
@@ -62,22 +78,20 @@ ts::UString ts::WebRequest::GetLibraryVersion() { return UString(); }
 TS_LLVM_NOWARNING(old-style-cast)
 
 #include <curl/curl.h>
-//
-// The callback CURLOPT_XFERINFOFUNCTION was introduced with libcurl 7.32.0.
-// Before this version, CURLOPT_PROGRESSFUNCTION shall be used.
-//
-// The function is equivalent, the callbacks are equivalent, except
-// that the old callback used "double" parameters while the new one
-// uses "curl_off_t" values.
-//
-#if LIBCURL_VERSION_NUM < 0x072000
-    #define TS_CALLBACK_PARAM     double
-    #define TS_CALLBACK_FUNCTION  CURLOPT_PROGRESSFUNCTION
-    #define TS_CALLBACK_DATA      CURLOPT_PROGRESSDATA
-#else
-    #define TS_CALLBACK_PARAM     ::curl_off_t
-    #define TS_CALLBACK_FUNCTION  CURLOPT_XFERINFOFUNCTION
-    #define TS_CALLBACK_DATA      CURLOPT_XFERINFODATA
+
+// Check if curl_multi_wakeup() is present.
+#if CURL_AT_LEAST_VERSION(7,68,0)
+#define TS_CURL_WAKEUP 1
+#endif
+
+// Check if curl_multi_poll() is present.
+#if CURL_AT_LEAST_VERSION(7,66,0)
+#define TS_CURL_POLL 1
+#endif
+
+// Check if curl_multi_perform() can return CURLM_CALL_MULTI_PERFORM.
+#if ! CURL_AT_LEAST_VERSION(7,20,0)
+#define TS_CURL_CALLAGAIN 1
 #endif
 
 
@@ -120,25 +134,40 @@ public:
     // Destructor.
     ~SystemGuts();
 
-    // Initialize, clear, start CURL Easy transfer.
-    bool init();
-    void clear();
-    bool start();
+    // Start the transfer using WebRequest parameters.
+    bool startTransfer();
 
-    // Build an error message from libcurl.
-    UString message(const UString& title, ::CURLcode = ::CURLE_OK);
+    // Close and cleanup everything.
+    void clear();
+
+    // Wait for data to be present in the reception buffer.
+    // If maxSize is zero, wait until something is present in data buffer
+    // without returning anything.
+    bool receive(void* buffer, size_t maxSize, size_t* retSize);
+
+    // Can be called from another thread to safely interrupt the current transfer.
+    void abort();
+
+    // Build error messages from curl_multi and curl_easy.
+    template<typename ENUM> UString message(const UString& title, ENUM code, const char* (*strerror)(ENUM));
+    UString easyMessage(const UString& title, ::CURLcode code) { return message(title, code, ::curl_easy_strerror); }
+    UString multiMessage(const UString& title, ::CURLMcode code) { return message(title, code, ::curl_multi_strerror); }
 
 private:
-    WebRequest&   _request;
-    ::CURL*       _curl;
-    ::curl_slist* _headers;
+    WebRequest&   _request;                 // Reference to parent WebRequest.
+#if defined(TS_CURL_WAKEUP)
+    Mutex         _mutex;                   // Exclusive access to _curlm/_curl init/clear sequences.
+#endif
+    ::CURLM*      _curlm;                   // "curl_multi" handler.
+    ::CURL*       _curl;                    // "curl_easy" handler.
+    ::curl_slist* _headers;                 // Request headers.
+    ByteBlock     _data;                    // Received data, filled by writeCallback(), emptied by receive().
     char          _error[CURL_ERROR_SIZE];  // Error message buffer for libcurl.
 
     // Libcurl callbacks for response headers and response data.
-    // The userdata points to this object.
+    // The userdata points to this SystemGuts object.
     static size_t headerCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
     static size_t writeCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
-    static int progressCallback(void *clientp, TS_CALLBACK_PARAM dltotal, TS_CALLBACK_PARAM dlnow, TS_CALLBACK_PARAM ultotal, TS_CALLBACK_PARAM ulnow);
 };
 
 
@@ -148,8 +177,13 @@ private:
 
 ts::WebRequest::SystemGuts::SystemGuts(WebRequest& request) :
     _request(request),
+#if defined(TS_CURL_WAKEUP)
+    _mutex(),
+#endif
+    _curlm(nullptr),
     _curl(nullptr),
     _headers(nullptr),
+    _data(),
     _error{0}
 {
 }
@@ -171,18 +205,103 @@ void ts::WebRequest::deleteGuts()
 
 
 //----------------------------------------------------------------------------
-// Initialize CURL Easy transfer.
+// Build an error message from libcurl.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::SystemGuts::init()
+template<typename ENUM>
+ts::UString ts::WebRequest::SystemGuts::message(const UString& title, ENUM code, const char* (*strerror)(ENUM))
 {
+    UString msg(title);
+    msg.append(u", ");
+    const char* err = strerror(code);
+    if (err != nullptr && err[0] != 0) {
+        msg.append(UString::FromUTF8(err));
+    }
+    else {
+        msg.format(u"error code %d", {int(code)});
+    }
+    if (_error[0] != 0) {
+        msg.append(u", ");
+        msg.append(UString::FromUTF8(_error));
+    }
+    return msg;
+}
+
+
+//----------------------------------------------------------------------------
+// Download operations from the WebRequest class.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::startTransfer()
+{
+    return _guts->startTransfer();
+}
+
+bool ts::WebRequest::receive(void* buffer, size_t maxSize, size_t& retSize)
+{
+    if (_isOpen) {
+        return _guts->receive(buffer, maxSize, &retSize);
+    }
+    else {
+        _report.error(u"transfer not started");
+        return false;
+    }
+}
+
+bool ts::WebRequest::close()
+{
+    bool success = _isOpen;
+    _guts->clear();
+    _isOpen = false;
+    return success;
+}
+
+void ts::WebRequest::abort()
+{
+    _interrupted = true;
+    _guts->abort();
+}
+
+
+//----------------------------------------------------------------------------
+// Initialize transfer.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::SystemGuts::startTransfer()
+{
+    // Check that libcurl was correctly initialized.
+    if (LibCurlInit::Instance()->initStatus != ::CURLE_OK) {
+        _request._report.error(easyMessage(u"libcurl initialization error", LibCurlInit::Instance()->initStatus));
+        return false;
+    }
+
     // Make sure we start from a clean state.
     clear();
 
-    // Initialize CURL Easy
-    if ((_curl = ::curl_easy_init()) == nullptr) {
-        _request._report.error(u"libcurl 'curl easy' initialization error");
-        return false;
+    // The initialization and cleanup sequences of _curlm and _curl must be protected
+    // when we have the ability to wakeup curl_multi from another thread.
+    {
+#if defined(TS_CURL_WAKEUP)
+        Guard lock(_mutex);
+#endif
+        // Initialize curl_multi and curl_easy
+        if ((_curlm = ::curl_multi_init()) == nullptr) {
+            _request._report.error(u"libcurl 'curl_multi' initialization error");
+            return false;
+        }
+        if ((_curl = ::curl_easy_init()) == nullptr) {
+            _request._report.error(u"libcurl 'curl_easy' initialization error");
+            clear();
+            return false;
+        }
+
+        // Register the curl_easy handle inside the curl_multi handle.
+        ::CURLMcode mstatus = ::curl_multi_add_handle(_curlm, _curl);
+        if (mstatus != ::CURLM_OK) {
+            _request._report.error(multiMessage(u"curl_multi_add_handle error", mstatus));
+            clear();
+            return false;
+        }
     }
 
     // The curl_easy_setopt() function is a strange macro which triggers warnings.
@@ -231,16 +350,6 @@ bool ts::WebRequest::SystemGuts::init()
     if (status == ::CURLE_OK) {
         status = ::curl_easy_setopt(_curl, CURLOPT_HEADERDATA, this);
     }
-    if (status == ::CURLE_OK) {
-        status = ::curl_easy_setopt(_curl, TS_CALLBACK_FUNCTION, &SystemGuts::progressCallback);
-    }
-    if (status == ::CURLE_OK) {
-        status = ::curl_easy_setopt(_curl, TS_CALLBACK_DATA, this);
-    }
-    if (status == ::CURLE_OK) {
-        // Enable progress meter.
-        status = ::curl_easy_setopt(_curl, CURLOPT_NOPROGRESS, 0L);
-    }
 
     // Always follow redirections.
     if (status == ::CURLE_OK) {
@@ -288,118 +397,180 @@ bool ts::WebRequest::SystemGuts::init()
 
     // Now process setopt error.
     if (status != ::CURLE_OK) {
-        _request._report.error(message(u"libcurl setopt error", status));
+        _request._report.error(easyMessage(u"libcurl setopt error", status));
         clear();
         return false;
     }
 
+    // There is no specific way to wait for connection and end of response header reception.
+    // So, wait until at least one data byte of response body is received.
+    if (receive(nullptr, 0, nullptr)) {
+        return true;
+    }
+    else {
+        clear();
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Wait for data to be present in the reception buffer.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* retSize)
+{
+    // Preset returned size as zero.
+    if (retSize != nullptr) {
+        *retSize = 0;
+    }
+
+    ::CURLMcode mstatus = ::CURLM_OK;
+    int runningHandles = 0;
+
+    // If the response buffer is empty, wait for data.
+    while (_data.empty() && !_request._interrupted) {
+
+        // Perform all immediate operations. Non-blocking call.
+#if defined(TS_CURL_CALLAGAIN)
+        // Older versions of curl may need to be called again immediately.
+        do {
+            mstatus = ::curl_multi_perform(_curlm, &runningHandles);
+        } while (mstatus == CURLM_CALL_MULTI_PERFORM);
+#else
+        mstatus = ::curl_multi_perform(_curlm, &runningHandles);
+#endif
+        if (mstatus != ::CURLM_OK) {
+            _request._report.error(multiMessage(u"download error", mstatus));
+            return false;
+        }
+
+        // If there is no more running handle, no need to wait for more.
+        if (runningHandles == 0 || _request._interrupted) {
+            break;
+        }
+
+        // If there is still nothing in the response buffer, wait for something to be ready.
+        if (_data.empty()) {
+
+            // Wait for something to happen on the sockets or some t
+            int numfds = 0;
+#if defined(TS_CURL_POLL)
+            // Recent versions of curl have an explicit poll. Wait no more than one second.
+            mstatus = ::curl_multi_poll(_curlm, nullptr, 0, 1000, &numfds);
+#else
+            // Recent versions of curl have an explicit poll. Wait no more than one second.
+            mstatus = ::curl_multi_wait(_curlm, nullptr, 0, 1000, &numfds);
+#endif
+            if (mstatus != ::CURLM_OK) {
+                _request._report.error(multiMessage(u"download error", mstatus));
+                return false;
+            }
+        }
+    }
+
+    // Immediate error on interrupt.
+    if (_request._interrupted) {
+        return false;
+    }
+
+    // If the data buffer is empty and there is no more running transfer, check status.
+    if (_data.empty() && runningHandles == 0) {
+        ::CURLMsg* msg = nullptr;
+        int remainingMsg = 0;
+        while ((msg = ::curl_multi_info_read(_curlm, &remainingMsg)) != nullptr) {
+            if (msg->msg == CURLMSG_DONE && msg->easy_handle == _curl) {
+                // End of transfer.
+                if (msg->data.result == ::CURLE_OK) {
+                    // Successful end of transfer, return true and let retSize be zero.
+                    return true;
+                }
+                else {
+                    // Transfer error.
+                    _request._report.error(easyMessage(u"download error", msg->data.result));
+                    return false;
+                }
+            }
+        }
+        // At this point, there is no data, no completion, no running handler, we are lost...
+        // It has been observed that this happens when there is no reponse data (only headers).
+        // So, let's assume that the transfer was successful.
+        return true;
+    }
+
+    // Now transfer data to the user.
+    const size_t size = buffer == nullptr ? 0 : std::min(_data.size(), maxSize);
+    if (size > 0) {
+        ::memcpy(buffer, _data.data(), size);
+        if (size >= _data.size()) {
+            _data.clear();
+        }
+        else {
+            _data.erase(0, size);
+        }
+    }
+    if (retSize != nullptr) {
+        *retSize = size;
+    }
     return true;
 }
 
 
 //----------------------------------------------------------------------------
-// System-specific cleanup.
+// Can be called from another thread to safely interrupt the current transfer.
+//----------------------------------------------------------------------------
+
+void ts::WebRequest::SystemGuts::abort()
+{
+    // On older versions of curl, without curl_multi_wakeup, there is no safe way to wake it up from another thread.
+#if defined(TS_CURL_WAKEUP)
+    Guard lock(_mutex);
+    if (_curlm != nullptr) {
+        ::curl_multi_wakeup(_curlm);
+    }
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Close and cleanup everything.
 //----------------------------------------------------------------------------
 
 void ts::WebRequest::SystemGuts::clear()
 {
+#if defined(TS_CURL_WAKEUP)
+    // Make sure we don't call curl_multi_wakeup() while deallocating.
+    Guard lock(_mutex);
+#endif
+
     // Deallocate list of headers.
     if (_headers != nullptr) {
         ::curl_slist_free_all(_headers);
         _headers = nullptr;
     }
 
-    // Make sure the CURL Easy is clean.
+    // Remove curl_easy handler.
+    if (_curl != nullptr && _curlm != nullptr) {
+        ::curl_multi_remove_handle(_curlm, _curl);
+    }
+
+    // Make sure the curl_easy is clean.
     if (_curl != nullptr) {
         ::curl_easy_cleanup(_curl);
         _curl = nullptr;
     }
 
+    // Make sure the curl_multi is clean.
+    if (_curlm != nullptr) {
+        ::curl_multi_cleanup(_curlm);
+        _curlm = nullptr;
+    }
+
     // Erase nul-terminated error message.
     _error[0] = 0;
-}
 
-
-//----------------------------------------------------------------------------
-// Perform transfer.
-//----------------------------------------------------------------------------
-
-bool ts::WebRequest::SystemGuts::start()
-{
-    assert(_curl != nullptr);
-
-    const ::CURLcode status = ::curl_easy_perform(_curl);
-    const bool ok = status == ::CURLE_OK;
-
-    if (!ok && !_request._interrupted) {
-        _request._report.error(message(u"download error", status));
-    }
-
-    clear();
-    return ok;
-}
-
-
-//----------------------------------------------------------------------------
-// Build an error message from libcurl.
-//----------------------------------------------------------------------------
-
-ts::UString ts::WebRequest::SystemGuts::message(const UString& title, ::CURLcode code)
-{
-    UString msg(title);
-    if (code != ::CURLE_OK) {
-        msg.append(u", ");
-        const char* err = ::curl_easy_strerror(code);
-        if (err != nullptr && err[0] != 0) {
-            msg.append(UString::FromUTF8(err));
-        }
-        else {
-            msg.append(u"error code ");
-            msg.append(UString::Decimal(int(code)));
-        }
-    }
-    if (_error[0] != 0) {
-        msg.append(u", ");
-        msg.append(UString::FromUTF8(_error));
-    }
-    return msg;
-}
-
-
-//----------------------------------------------------------------------------
-// Perform initialization before any download.
-//----------------------------------------------------------------------------
-
-bool ts::WebRequest::downloadInitialize()
-{
-    // Check that libcul was correctly initialized.
-    if (LibCurlInit::Instance()->initStatus != ::CURLE_OK) {
-        _report.error(_guts->message(u"libcurl initialization error", LibCurlInit::Instance()->initStatus));
-        return false;
-    }
-
-    // Initialize "CURL Easy".
-    return _guts->init();
-}
-
-
-//----------------------------------------------------------------------------
-// Abort initialized download.
-//----------------------------------------------------------------------------
-
-void ts::WebRequest::downloadClose()
-{
-    _guts->clear();
-}
-
-
-//----------------------------------------------------------------------------
-// Perform actual download.
-//----------------------------------------------------------------------------
-
-bool ts::WebRequest::download()
-{
-    return _guts->start();
+    // Cleanup response data buffer.
+    _data.clear();
 }
 
 
@@ -415,7 +586,7 @@ size_t ts::WebRequest::SystemGuts::headerCallback(char *ptr, size_t size, size_t
         return 0; // error
     }
     else {
-        // Store headers in the request.
+        // Store headers in the WebRequest.
         const size_t headerSize = size * nmemb;
         guts->_request.processReponseHeaders(UString::FromUTF8(ptr, headerSize));
         return headerSize;
@@ -429,27 +600,17 @@ size_t ts::WebRequest::SystemGuts::headerCallback(char *ptr, size_t size, size_t
 
 size_t ts::WebRequest::SystemGuts::writeCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
-    const size_t dataSize = size * nmemb;
-
     // The userdata points to the guts object.
     SystemGuts* guts = reinterpret_cast<SystemGuts*>(userdata);
-
-    // Process downloaded data. Return 0 on error.
-    return guts != nullptr && guts->_request.copyData(ptr, dataSize) ? dataSize : 0;
-}
-
-
-//----------------------------------------------------------------------------
-// Libcurl progress callback for response data.
-//----------------------------------------------------------------------------
-
-int ts::WebRequest::SystemGuts::progressCallback(void *clientp, TS_CALLBACK_PARAM dltotal, TS_CALLBACK_PARAM dlnow, TS_CALLBACK_PARAM ultotal, TS_CALLBACK_PARAM ulnow)
-{
-    // The clientp points to the guts object.
-    SystemGuts* guts = reinterpret_cast<SystemGuts*>(clientp);
-
-    // We only use dltotal to reserve the buffer size. Return 0 on success.
-    return guts != nullptr && guts->_request.setPossibleContentSize(size_t(dltotal)) ? 0 : 1;
+    if (guts == nullptr) {
+        return 0; // error
+    }
+    else {
+        // Store response data in the SystemGuts.
+        const size_t dataSize = size * nmemb;
+        guts->_data.append(ptr, dataSize);
+        return dataSize;
+    }
 }
 
 
@@ -474,7 +635,6 @@ ts::UString ts::WebRequest::GetLibraryVersion()
             result += u", libz: " + UString::FromUTF8(info->libz_version);
         }
     }
-
     return result;
 }
 
