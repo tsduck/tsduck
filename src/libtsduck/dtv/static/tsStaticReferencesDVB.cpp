@@ -48,6 +48,7 @@
 #include "tsIPOutputPlugin.h"
 #include "tsDektecInputPlugin.h"
 #include "tsDektecOutputPlugin.h"
+#include "tsHTTPInputPlugin.h"
 #include "tshlsInputPlugin.h"
 #include "tshlsOutputPlugin.h"
 #include "tsSRTInputPlugin.h"
@@ -95,6 +96,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_OBJECT(IPOutputPlugin::REFERENCE);
     REF_OBJECT(DektecInputPlugin::REFERENCE);
     REF_OBJECT(DektecOutputPlugin::REFERENCE);
+    REF_OBJECT(HTTPInputPlugin::REFERENCE);
     REF_OBJECT(hls::InputPlugin::REFERENCE);
     REF_OBJECT(hls::OutputPlugin::REFERENCE);
     REF_OBJECT(SRTInputPlugin::REFERENCE);

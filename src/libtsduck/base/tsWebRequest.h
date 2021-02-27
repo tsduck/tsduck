@@ -206,6 +206,12 @@ namespace ts {
         bool open(const UString& url);
 
         //!
+        //! Check if a transfer is open.
+        //! @return True if a transfer is open, false otherwise.
+        //!
+        bool isOpen() const { return _isOpen; }
+
+        //!
         //! Get the HTTP status code (200, 404, etc).
         //! @return The HTTP status code.
         //!
@@ -281,7 +287,7 @@ namespace ts {
         //!
         //! Close the transfer.
         //! @return True on success, false on error.
-        //! 
+        //!
         bool close();
 
         //!

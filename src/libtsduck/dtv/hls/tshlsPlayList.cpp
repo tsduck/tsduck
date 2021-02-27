@@ -377,7 +377,6 @@ bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArg
 
     // Build a web request to download the playlist.
     WebRequest web(report);
-    web.setURL(_original);
     web.setArgs(args);
     if (args.useCookies) {
         web.enableCookies(args.cookiesFile);
@@ -389,7 +388,7 @@ bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArg
     // Download the content.
     UString text;
     report.debug(u"downloading %s", {_original});
-    if (!web.downloadTextContent(text)) {
+    if (!web.downloadTextContent(_original, text)) {
         return false;
     }
 

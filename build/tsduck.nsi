@@ -144,6 +144,7 @@ Section "Tools & Plugins" SectionTools
     Delete "$INSTDIR\bin\tsplugin_file.dll"
     Delete "$INSTDIR\bin\tsplugin_fork.dll"
     Delete "$INSTDIR\bin\tsplugin_hls.dll"
+    Delete "$INSTDIR\bin\tsplugin_http.dll"
     Delete "$INSTDIR\bin\tsplugin_ip.dll"
     Delete "$INSTDIR\bin\tsplugin_null.dll"
     Delete "$INSTDIR\bin\tsplugin_srt.dll"
