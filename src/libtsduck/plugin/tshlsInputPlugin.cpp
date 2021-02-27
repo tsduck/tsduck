@@ -58,6 +58,7 @@ ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
     _lowestRes(false),
     _highestRes(false),
     _maxSegmentCount(0),
+    _segmentCount(0),
     _playlist()
 {
     option(u"", 0, STRING, 1, 1);
