@@ -101,6 +101,7 @@ bool ts::AbstractHTTPInputPlugin::start()
 
 bool ts::AbstractHTTPInputPlugin::stop()
 {
+    _request.deleteCookiesFile(*tsp);
     return stopTransfer();
 }
 

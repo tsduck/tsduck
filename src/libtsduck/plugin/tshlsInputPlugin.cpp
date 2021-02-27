@@ -339,28 +339,6 @@ bool ts::hls::InputPlugin::start()
 
 
 //----------------------------------------------------------------------------
-// Input stop method
-//----------------------------------------------------------------------------
-
-bool ts::hls::InputPlugin::stop()
-{
-    // Invoke superclass.
-    bool ok = AbstractHTTPInputPlugin::stop();
-
-    // Delete all cookies from this session.
-    if (FileExists(webArgs.cookiesFile)) {
-        tsp->debug(u"deleting cookies file %s", {webArgs.cookiesFile});
-        const SysErrorCode status = DeleteFile(webArgs.cookiesFile);
-        if (status != SYS_SUCCESS) {
-            tsp->error(u"error deleting cookies file %s", {webArgs.cookiesFile});
-        }
-    }
-
-    return ok;
-}
-
-
-//----------------------------------------------------------------------------
 // Called by AbstractHTTPInputPlugin to open an URL.
 //----------------------------------------------------------------------------
 

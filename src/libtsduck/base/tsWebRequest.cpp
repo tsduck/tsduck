@@ -241,6 +241,9 @@ void ts::WebRequest::setArgs(const ts::WebRequestArgs& args)
     if (args.receiveTimeout > 0) {
         setReceiveTimeout(args.receiveTimeout);
     }
+    if (args.useCookies) {
+        enableCookies(args.cookiesFile);
+    }
 }
 
 
