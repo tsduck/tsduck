@@ -28,20 +28,47 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Memory input plugin for tsp.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 26
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2257
+#include "tsInputPlugin.h"
+#include "tsMemoryPluginProxy.h"
+
+namespace ts {
+    //!
+    //! Memory input plugin for tsp.
+    //! @ingroup plugin
+    //!
+    class MemoryInputPlugin: public InputPlugin
+    {
+        TS_NOBUILD_NOCOPY(MemoryInputPlugin);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
+        //!
+        MemoryInputPlugin(TSP* tsp);
+
+        // Implementation of plugin API
+        virtual bool getOptions() override;
+        virtual bool start() override;
+        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
+
+        //!
+        //! Get the current port number of the plugin.
+        //! @return The current port number of the plugin.
+        //!
+        MemoryPluginProxy::PortNumber currentPortNumber() const { return _port; }
+
+        //! @cond nodoxygen
+        // A dummy storage value to force inclusion of this module when using the static library.
+        static const int REFERENCE;
+        //! @endcond
+
+    private:
+        MemoryPluginProxy::PortNumber _port;
+        MemoryPullHandlerInterface*   _handler;
+    };
+}

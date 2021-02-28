@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2250
+VERSION 3.26-2257
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -17,6 +17,7 @@ VERSION 3.25-2236
 [NEW] New commands and plugins:
 
   * Added plugin "splicemonitor" (monitor SCTE-35 splice commands).
+  * Added input and output plugins "memory" for C++/Java/Python developers.
   * Java bindings have been added for high-level functions of the TSDuck
     library. All "tsp" features are now available from Java.
 

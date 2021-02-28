@@ -28,20 +28,49 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Abstract interface to push TS packets from a memory output plugin.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 26
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2257
+#include "tsPlatform.h"
+
+namespace ts {
+
+    class TSPacket;
+    class TSPacketMetadata;
+    class MemoryOutputPlugin;
+
+    //!
+    //! Abstract interface to push TS packets from a memory output plugin.
+    //! @ingroup mpeg
+    //!
+    //! This abstract interface must be implemented by applications which use
+    //! an instance of TSProcessor with a "memory" output plugin in push mode.
+    //! In this mode, the output plugin invokes this handler when packets are available000.
+    //!
+    //! In practice, the memory output plugin checks if a push handler is declared
+    //! by the application. If a plugin exists, it is used to push packets. If no
+    //! handler is declared, the plugin writes packet on the output queue from where
+    //! the application can pull them.
+    //!
+    class TSDUCKDLL MemoryPushHandlerInterface
+    {
+    public:
+        //!
+        //! This hook is invoked when a memory output plugin sends TS packets.
+        //! @param [in] plugin The calling handler. For information only.
+        //! @param [in] packets Address of output packet buffer.
+        //! @param [in] metadata Address of packet metadata buffer.
+        //! @param [in] packets_count Number of packets in the buffer.
+        //! @return True in case of success, false if there is an output error
+        //! and the processing chain shall abort.
+        //!
+        virtual bool pushPackets(MemoryOutputPlugin* plugin, const TSPacket* packets, const TSPacketMetadata* metadata, size_t packets_count) = 0;
+
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~MemoryPushHandlerInterface();
+    };
+}
