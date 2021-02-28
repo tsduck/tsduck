@@ -53,6 +53,8 @@
 #include "tshlsOutputPlugin.h"
 #include "tsSRTInputPlugin.h"
 #include "tsSRTOutputPlugin.h"
+#include "tsMemoryInputPlugin.h"
+#include "tsMemoryOutputPlugin.h"
 TSDUCK_SOURCE;
 
 // Macros to generate a unique symbol name.
@@ -101,6 +103,8 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_OBJECT(hls::OutputPlugin::REFERENCE);
     REF_OBJECT(SRTInputPlugin::REFERENCE);
     REF_OBJECT(SRTOutputPlugin::REFERENCE);
+    REF_OBJECT(MemoryInputPlugin::REFERENCE);
+    REF_OBJECT(MemoryOutputPlugin::REFERENCE);
 
     // References to all DVB tables and descriptors.
     // The file tsRefType.h is automatically generated.

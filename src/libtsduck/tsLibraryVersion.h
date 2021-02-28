@@ -75,4 +75,4 @@
 //!
 //! - Incompatible modifications in the TSDuck extension interface.
 //!
-#define TS_LIBRARY_VERSION 2
+#define TS_LIBRARY_VERSION 3
