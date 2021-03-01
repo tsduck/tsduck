@@ -471,6 +471,7 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
 
     // Immediate error on interrupt.
     if (_request._interrupted) {
+        _request._report.debug(u"curl: request was interrupted");
         return false;
     }
 
@@ -483,6 +484,7 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
                 // End of transfer.
                 if (msg->data.result == ::CURLE_OK) {
                     // Successful end of transfer, return true and let retSize be zero.
+                    _request._report.debug(u"curl: end of transfer");
                     return true;
                 }
                 else {
@@ -495,6 +497,7 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
         // At this point, there is no data, no completion, no running handler, we are lost...
         // It has been observed that this happens when there is no reponse data (only headers).
         // So, let's assume that the transfer was successful.
+        _request._report.debug(u"curl: no data, no more running handle");
         return true;
     }
 

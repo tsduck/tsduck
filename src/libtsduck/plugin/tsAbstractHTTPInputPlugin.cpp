@@ -214,7 +214,7 @@ size_t ts::AbstractHTTPInputPlugin::receiveTransfer(TSPacket* buffer, size_t max
 
         // Receive more data into partial packet. We must receive at least one packet
         // because returning zero means end of transfer.
-        while (_partialSize <= PKT_SIZE) {
+        while (_partialSize < PKT_SIZE) {
             if (!_request.receive(_partial.b + _partialSize, PKT_SIZE - _partialSize, receiveSize) || receiveSize == 0) {
                 // Error or end of transfer.
                 return 0;
