@@ -31,7 +31,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsMemoryPluginProxy.h"
+#include "tsPluginEventHandlerInterface.h"
+#include "tsPluginEventData.h"
 #include "tsTSProcessor.h"
 #include "tsAsyncReport.h"
 #include "tsunit.h"
@@ -48,12 +49,10 @@ public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
-    void testPullMode();
-    void testPushMode();
+    void testAll();
 
     TSUNIT_TEST_BEGIN(MemoryPluginTest);
-    TSUNIT_TEST(testPullMode);
-    TSUNIT_TEST(testPushMode);
+    TSUNIT_TEST(testAll);
     TSUNIT_TEST_END();
 };
 
@@ -102,42 +101,73 @@ namespace {
             _buffer.append(ts::LINE_FEED);
         }
         _buffer.append(message);
+        tsunit::Test::debug() << message << std::endl;
     }
 }
 
 
 //----------------------------------------------------------------------------
-// A pull handler which sends an array of packets one by one.
+// An event handler for memory input plugin: send packets one by one.
 //----------------------------------------------------------------------------
 
 namespace {
-    class PullInput : public ts::MemoryPullHandlerInterface
+    class Input : public ts::PluginEventHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(PullInput);
+        TS_NOBUILD_NOCOPY(Input);
     public:
-        PullInput(const ts::TSPacket* packets, size_t count);
-        virtual size_t pullPackets(ts::MemoryInputPlugin* plugin, ts::TSPacket* packets, ts::TSPacketMetadata* metadata, size_t max_packets) override;
+        Input(const ts::TSPacket* packets, size_t count);
+        virtual void handlePluginEvent(const ts::PluginEventContext& context) override;
     private:
         const ts::TSPacket* _packets;
         size_t _packets_count;
     };
 
-    PullInput::PullInput(const ts::TSPacket* packets, size_t count) :
+    Input::Input(const ts::TSPacket* packets, size_t count) :
         _packets(packets),
         _packets_count(count)
     {
     }
 
-    size_t PullInput::pullPackets(ts::MemoryInputPlugin* plugin, ts::TSPacket* packets, ts::TSPacketMetadata* metadata, size_t max_packets)
+    void Input::handlePluginEvent(const ts::PluginEventContext& context)
     {
-        // Return packets one by one.
-        if (_packets_count == 0 || max_packets == 0) {
-            return 0;
-        }
-        else {
-            *packets++ = *_packets++;
+        ts::PluginEventData* data = dynamic_cast<ts::PluginEventData*>(context.pluginData());
+        if (data != nullptr && _packets_count > 0) {
+            data->append(_packets, ts::PKT_SIZE);
+            _packets++;
             _packets_count--;
-            return 1;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// An event handler for memory output plugin: fill a vector of packets.
+//----------------------------------------------------------------------------
+
+namespace {
+    class Output : public ts::PluginEventHandlerInterface
+    {
+        TS_NOBUILD_NOCOPY(Output);
+    public:
+        Output(ts::TSPacketVector& output);
+        virtual void handlePluginEvent(const ts::PluginEventContext& context) override;
+    private:
+        ts::TSPacketVector& _output;
+    };
+
+    Output::Output(ts::TSPacketVector& output) :
+        _output(output)
+    {
+    }
+
+    void Output::handlePluginEvent(const ts::PluginEventContext& context)
+    {
+        ts::PluginEventData* data = dynamic_cast<ts::PluginEventData*>(context.pluginData());
+        if (data != nullptr) {
+            const size_t packets_count = data->size() / ts::PKT_SIZE;
+            const size_t index = _output.size();
+            _output.resize(index + packets_count);
+            ts::TSPacket::Copy(&_output[index], data->data(), packets_count);
         }
     }
 }
@@ -201,39 +231,27 @@ namespace {
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void MemoryPluginTest::testPullMode()
+void MemoryPluginTest::testAll()
 {
     ts::UString log_buffer;
     TestReport log(log_buffer);
 
-    PullInput pull(REF_PACKETS, REF_PACKETS_COUNT);
+    ts::TSPacketVector output_packets;
+    Input input(REF_PACKETS, REF_PACKETS_COUNT);
+    Output output(output_packets);
 
     ts::TSProcessorArgs opt;
-    opt.input = {u"memory", {u"--port", u"2"}};
-    opt.output = {u"memory", {u"--port", u"7"}};
+    opt.input = {u"memory", {}};
+    opt.output = {u"memory", {}};
 
     ts::TSProcessor tsp(log);
-    ts::MemoryPluginProxy::Instance()->registerInputPullHandler(2, &pull);
-    ts::MemoryPluginProxy::Instance()->startPullOutput(7);
+    tsp.registerEventHandler(&input, ts::PluginType::INPUT);
+    tsp.registerEventHandler(&output, ts::PluginType::OUTPUT);
+
     TSUNIT_ASSERT(tsp.start(opt));
-
-    ts::TSPacket pkt;
-
-    TSUNIT_EQUAL(1, ts::MemoryPluginProxy::Instance()->pullOutputPackets(7, &pkt, nullptr, 1));
-    TSUNIT_ASSERT(pkt == REF_PACKETS[0]);
-
-    TSUNIT_EQUAL(1, ts::MemoryPluginProxy::Instance()->pullOutputPackets(7, &pkt, nullptr, 1));
-    TSUNIT_ASSERT(pkt == REF_PACKETS[1]);
-
-    TSUNIT_EQUAL(1, ts::MemoryPluginProxy::Instance()->pullOutputPackets(7, &pkt, nullptr, 1));
-    TSUNIT_ASSERT(pkt == REF_PACKETS[2]);
-
-    TSUNIT_EQUAL(0, ts::MemoryPluginProxy::Instance()->pullOutputPackets(7, &pkt, nullptr, 1));
-
     tsp.waitForTermination();
-    TSUNIT_EQUAL(u"", log_buffer);
-}
 
-void MemoryPluginTest::testPushMode()
-{
+    TSUNIT_EQUAL(REF_PACKETS_COUNT, output_packets.size());
+    TSUNIT_EQUAL(0, ::memcmp(&output_packets[0], REF_PACKETS, ts::PKT_SIZE * REF_PACKETS_COUNT));
+    TSUNIT_EQUAL(u"", log_buffer);
 }

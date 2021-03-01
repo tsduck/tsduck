@@ -51,6 +51,30 @@ ts::PluginEventHandlerRegistry::Criteria::Criteria() :
 {
 }
 
+ts::PluginEventHandlerRegistry::Criteria::Criteria(uint32_t code) :
+    plugin_name(),
+    plugin_index(),
+    plugin_type(),
+    event_code(code)
+{
+}
+
+ts::PluginEventHandlerRegistry::Criteria::Criteria(PluginType type) :
+    plugin_name(),
+    plugin_index(),
+    plugin_type(type),
+    event_code()
+{
+}
+
+ts::PluginEventHandlerRegistry::Criteria::Criteria(const UString& name) :
+    plugin_name(name),
+    plugin_index(),
+    plugin_type(),
+    event_code()
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Register an event handler.

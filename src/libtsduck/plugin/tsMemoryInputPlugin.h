@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsInputPlugin.h"
-#include "tsMemoryPluginProxy.h"
 
 namespace ts {
     //!
@@ -53,14 +52,7 @@ namespace ts {
 
         // Implementation of plugin API
         virtual bool getOptions() override;
-        virtual bool start() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
-
-        //!
-        //! Get the current port number of the plugin.
-        //! @return The current port number of the plugin.
-        //!
-        MemoryPluginProxy::PortNumber currentPortNumber() const { return _port; }
 
         //! @cond nodoxygen
         // A dummy storage value to force inclusion of this module when using the static library.
@@ -68,7 +60,6 @@ namespace ts {
         //! @endcond
 
     private:
-        MemoryPluginProxy::PortNumber _port;
-        MemoryPullHandlerInterface*   _handler;
+        uint32_t _event_code;
     };
 }
