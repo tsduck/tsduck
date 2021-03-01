@@ -31,10 +31,11 @@ public class SampleFilterTablesEvent {
          * @param data A byte array containing the data of the event.
          */
         @Override
-        public void handlePluginEvent(PluginEventContext context, byte[] data) {
+        public boolean handlePluginEvent(PluginEventContext context, byte[] data) {
             System.out.printf("==== Event code: 0x%X from plugin #%d (%s), data size: %d bytes, at TS packet %d\n",
                               context.eventCode(), context.pluginIndex(), context.pluginName(), data.length, context.pluginPackets());
             System.out.printf("Section: %s\n", SampleUtils.bytesToHex(data));
+            return true;
         }
     }
 

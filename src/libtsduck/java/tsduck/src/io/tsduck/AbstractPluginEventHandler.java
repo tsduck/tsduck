@@ -65,6 +65,7 @@ public abstract class AbstractPluginEventHandler implements NativeObject {
      * @param context An instance of PluginEventContext containing the details of the event.
      * @param data A byte array containing the data of the event. This is a read-only
      * sequence of bytes. There is no way to return data from Java to the plugin.
+     * @return True in case of success, false to set the error indicator of the event.
      */
-    abstract public void handlePluginEvent(PluginEventContext context, byte[] data);
+    abstract public boolean handlePluginEvent(PluginEventContext context, byte[] data);
 }

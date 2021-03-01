@@ -214,6 +214,12 @@ tspyDeletePyPluginEventHandler = _lib.tspyDeletePyPluginEventHandler
 tspyDeletePyPluginEventHandler.restype = None
 tspyDeletePyPluginEventHandler.argtypes = [c_void_p]
 
+# void tspyPyPluginEventHandlerUpdateData(void* obj, void* data, size_t size)
+
+tspyPyPluginEventHandlerUpdateData = _lib.tspyPyPluginEventHandlerUpdateData
+tspyPyPluginEventHandlerUpdateData.restype = None
+tspyPyPluginEventHandlerUpdateData.argtypes = [c_void_p, c_void_p, c_size_t]
+
 #-----------------------------------------------------------------------------
 # Bindings to C++ functions from tspyInfo.cpp
 #-----------------------------------------------------------------------------
@@ -531,6 +537,18 @@ tspyWaitTSProcessor.argtypes = [c_void_p]
 tspyTSProcessorRegisterEventHandler = _lib.tspyTSProcessorRegisterEventHandler
 tspyTSProcessorRegisterEventHandler.restype = None
 tspyTSProcessorRegisterEventHandler.argtypes = [c_void_p, c_void_p, c_uint32]
+
+# void tspyTSProcessorRegisterInputEventHandler(void* tsp, ts::PluginEventHandlerInterface* handler)
+
+tspyTSProcessorRegisterInputEventHandler = _lib.tspyTSProcessorRegisterInputEventHandler
+tspyTSProcessorRegisterInputEventHandler.restype = None
+tspyTSProcessorRegisterInputEventHandler.argtypes = [c_void_p, c_void_p]
+
+# void tspyTSProcessorRegisterOutputEventHandler(void* tsp, ts::PluginEventHandlerInterface* handler)
+
+tspyTSProcessorRegisterOutputEventHandler = _lib.tspyTSProcessorRegisterOutputEventHandler
+tspyTSProcessorRegisterOutputEventHandler.restype = None
+tspyTSProcessorRegisterOutputEventHandler.argtypes = [c_void_p, c_void_p]
 
 # bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, const uint8_t* plugins, size_t plugins_size)
 

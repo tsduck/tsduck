@@ -56,7 +56,7 @@ namespace ts {
             //! @param [in] handle_method A Java string containing the name of a method in the Java object.
             //! This method will be called for each plugin event. The Java profile of the method shall be
             //! @code
-            //! void handlePluginEvent(PluginEventContext context, byte[] data);
+            //! boolean handlePluginEvent(PluginEventContext context, byte[] data);
             //! @endcode
             //!
             PluginEventHandler(JNIEnv* env, jobject obj, jstring handle_method);
