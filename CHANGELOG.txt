@@ -2,7 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2257
+VERSION 3.26-2258
+
+[NEW] New commands and plugins:
+
+  * Added input and output plugins "memory" (direct application interaction).
 
 [IMP] Improvements on existing commands and plugins:
 

@@ -65,11 +65,37 @@ namespace ts {
         class TSDUCKDLL Criteria
         {
         public:
-            Criteria();                         //!< Default constructor.
             Variable<UString>    plugin_name;   //!< When specified, the plugin must match that name.
             Variable<size_t>     plugin_index;  //!< When specified, the plugin must be at that index in the chain.
             Variable<PluginType> plugin_type;   //!< When specified, the plugin must be of this type.
             Variable<uint32_t>   event_code;    //!< When specified, the event must use that code.
+
+            //!
+            //! Default constructor.
+            //! No criteria is set, meaning it matches all events.
+            //!
+            Criteria();
+
+            //!
+            //! Constructor with an event code.
+            //! It matches all events with that code from any plugin.
+            //! @param [in] code Event code.
+            //!
+            Criteria(uint32_t code);
+
+            //!
+            //! Constructor with a plugin type.
+            //! It matches all events from any plugin of that type.
+            //! @param [in] type Plugin type.
+            //!
+            Criteria(PluginType type);
+
+            //!
+            //! Constructor with a plugin name.
+            //! It matches all events from any plugin of that name.
+            //! @param [in] name Plugin name.
+            //!
+            Criteria(const UString& name);
         };
 
         //!

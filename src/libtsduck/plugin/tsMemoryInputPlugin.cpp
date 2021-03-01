@@ -29,6 +29,7 @@
 
 #include "tsMemoryInputPlugin.h"
 #include "tsPluginRepository.h"
+#include "tsPluginEventData.h"
 TSDUCK_SOURCE;
 
 TS_REGISTER_INPUT_PLUGIN(u"memory", ts::MemoryInputPlugin);
@@ -43,18 +44,18 @@ const int ts::MemoryInputPlugin::REFERENCE = 0;
 
 ts::MemoryInputPlugin::MemoryInputPlugin(TSP* tsp_) :
     InputPlugin(tsp_, u"Direct memory input from an application", u"[options]"),
-    _port(0),
-    _handler(nullptr)
+    _event_code(0)
 {
     setIntro(u"Developer plugin: This plugin is useful only to C++, Java or Python developers "
              u"who run a TSProcessor pipeline inside their applications and want this application "
              u"to directly interact with the input of the pipeline.");
 
-    option(u"port", 'p', UINT16);
-    help(u"port",
-         u"A 'port number' for the memory communication with the application. "
-         u"If there is only one instance of TSProcessor running in the application, "
-         u"the default value (zero) is just fine.");
+    option(u"event-code", 'e', UINT32);
+    help(u"event-code",
+         u"Signal a plugin event with the specified code each time the plugin needs input packets. "
+         u"The event data is an instance of PluginEventData pointing to the input buffer. "
+         u"The application shall handle the event, waiting for input packets as long as necessary. "
+         u"Returning zero packet (or not handling the event) means end if input.");
 }
 
 
@@ -64,19 +65,7 @@ ts::MemoryInputPlugin::MemoryInputPlugin(TSP* tsp_) :
 
 bool ts::MemoryInputPlugin::getOptions()
 {
-    getIntValue(_port, u"port");
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Start method.
-//----------------------------------------------------------------------------
-
-bool ts::MemoryInputPlugin::start()
-{
-    _handler = MemoryPluginProxy::Instance()->getInputPullHandler(_port);
-    tsp->debug(u"memory input plugin started on port %d in %s mode", {_port, _handler != nullptr ? u"pull" : u"push"});
+    getIntValue(_event_code, u"event-code");
     return true;
 }
 
@@ -87,12 +76,8 @@ bool ts::MemoryInputPlugin::start()
 
 size_t ts::MemoryInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets)
 {
-    if (_handler != nullptr) {
-        // Pull mode: call the application to get some packets.
-        return _handler->pullPackets(this, buffer, metadata, max_packets);
-    }
-    else {
-        // Push mode: wait for the application to push something in our buffer.
-        return MemoryPluginProxy::Instance()->getPushedInputPackets(_port, buffer, metadata, max_packets);
-    }
+    // Prepare an event data block pointing to the input buffer.
+    PluginEventData data(buffer->b, 0, PKT_SIZE * max_packets);
+    tsp->signalPluginEvent(_event_code, &data);
+    return data.size() / PKT_SIZE;
 }

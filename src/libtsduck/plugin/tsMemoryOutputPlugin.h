@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsOutputPlugin.h"
-#include "tsMemoryPluginProxy.h"
 
 namespace ts {
     //!
@@ -53,15 +52,7 @@ namespace ts {
 
         // Implementation of plugin API
         virtual bool getOptions() override;
-        virtual bool start() override;
-        virtual bool stop() override;
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
-
-        //!
-        //! Get the current port number of the plugin.
-        //! @return The current port number of the plugin.
-        //!
-        MemoryPluginProxy::PortNumber currentPortNumber() const { return _port; }
 
         //! @cond nodoxygen
         // A dummy storage value to force inclusion of this module when using the static library.
@@ -69,7 +60,6 @@ namespace ts {
         //! @endcond
 
     private:
-        MemoryPluginProxy::PortNumber _port;
-        MemoryPushHandlerInterface*   _handler;
+        uint32_t _event_code;
     };
 }
