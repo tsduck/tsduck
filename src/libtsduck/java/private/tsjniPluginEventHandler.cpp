@@ -49,8 +49,8 @@ ts::jni::PluginEventHandler::PluginEventHandler(JNIEnv* env, jobject obj, jstrin
         const char* const handle_str = env->GetStringUTFChars(handle_method, nullptr);
         // Cache the method id of the handler method in the io.tsduck.PluginEventContext class.
         if (handle_str != nullptr) {
-            // Expected profile:  void handlePluginEvent(PluginEventContext context, byte[] data);
-            _obj_method = env->GetMethodID(env->GetObjectClass(_obj_ref), handle_str, "(" JCS(JCN_PLUGIN_EVENT_CONTEXT) JCS_ARRAY(JCS_BYTE) ")" JCS_VOID);
+            // Expected profile: boolean handlePluginEvent(PluginEventContext context, byte[] data);
+            _obj_method = env->GetMethodID(env->GetObjectClass(_obj_ref), handle_str, "(" JCS(JCN_PLUGIN_EVENT_CONTEXT) JCS_ARRAY(JCS_BYTE) ")" JCS_BOOLEAN);
             env->ReleaseStringUTFChars(handle_method, handle_str);
         }
         // Get a global reference to class io.tsduck.PluginEventContext.
@@ -94,8 +94,9 @@ void ts::jni::PluginEventHandler::handlePluginEvent(const PluginEventContext& co
 {
     JNIEnv* env = JNIEnvForCurrentThead();
     if (env != nullptr && _valid) {
-        const PluginEventData* event_data = dynamic_cast<const PluginEventData*>(context.pluginData());
-        const jsize data_size = event_data != nullptr && event_data->data() != nullptr ? jsize(event_data->size()) : 0;
+        PluginEventData* event_data = dynamic_cast<PluginEventData*>(context.pluginData());
+        const bool valid_data = event_data != nullptr && event_data->data() != nullptr;
+        const jsize data_size = valid_data ? jsize(event_data->size()) : 0;
         const jstring jname = ToJString(env, context.pluginName());
 
         // Build an instance of io.tsduck.PluginEventContext. The constructor is:
@@ -109,13 +110,14 @@ void ts::jni::PluginEventHandler::handlePluginEvent(const PluginEventContext& co
 
         // Build a Java bytes[] containing the plugin data.
         const jbyteArray jdata = env->NewByteArray(data_size);
-        if (jdata != nullptr && data_size > 0) {
+        if (jdata != nullptr && valid_data && data_size > 0) {
             env->SetByteArrayRegion(jdata, 0, data_size, reinterpret_cast<const jbyte*>(event_data->data()));
         }
 
         // Call the Java event handler.
+        jboolean success = true;
         if (pec != nullptr && jdata != nullptr) {
-            env->CallVoidMethod(_obj_ref, _obj_method, pec, jdata);
+            success = env->CallBooleanMethod(_obj_ref, _obj_method, pec, jdata);
         }
 
         // Free local references.
@@ -127,6 +129,11 @@ void ts::jni::PluginEventHandler::handlePluginEvent(const PluginEventContext& co
         }
         if (jname != nullptr) {
             env->DeleteLocalRef(jname);
+        }
+
+        // Set error indicator if the Java callback returned false.
+        if (!success && valid_data) {
+            event_data->setError(true);
         }
     }
 }

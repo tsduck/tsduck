@@ -48,16 +48,19 @@ namespace ts {
             //!
             //! Profile of a Python callback which receives event.
             //!
-            typedef void* (*PyCallback)(uint32_t       event_code,
-                                        const UChar*   plugin_name,
-                                        size_t         plugin_name_bytes,
-                                        size_t         plugin_index,
-                                        size_t         plugin_count,
-                                        size_t         bitrate,
-                                        size_t         plugin_packets,
-                                        size_t         total_packets,
-                                        const uint8_t* data,
-                                        size_t         data_bytes);
+            typedef bool (*PyCallback)(uint32_t       event_code,
+                                       const UChar*   plugin_name_addr,
+                                       size_t         plugin_name_bytes,
+                                       size_t         plugin_index,
+                                       size_t         plugin_count,
+                                       size_t         bitrate,
+                                       size_t         plugin_packets,
+                                       size_t         total_packets,
+                                       const uint8_t* data_addr,
+                                       size_t         data_size,
+                                       size_t         data_max_size,
+                                       bool           data_read_only,
+                                       void*          event_data);
 
             //!
             //! Constructor.

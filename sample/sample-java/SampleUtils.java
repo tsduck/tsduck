@@ -28,7 +28,7 @@ public class SampleUtils {
 
     /**
      * Execute a command and print its output.
-     * @param cmd
+     * @param cmd The shell command line to execute.
      */
     public static void execute(String cmd) {
         try {

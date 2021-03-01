@@ -74,23 +74,54 @@ class AbstractPluginEventHandler(NativeObject):
     def __init__(self):
         super().__init__()
 
-        # An internal callback, called from the C++ class.
-        def event_callback(evcode, name_data, name_size, plindex, plcount, bitrate, plpackets, total_packets, data, size):
+        # Profile of the Python callback!
+        callback = ctypes.CFUNCTYPE(ctypes.c_bool, # return type
+                                    ctypes.c_uint32, ctypes.c_void_p, ctypes.c_size_t,
+                                    ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+                                    ctypes.c_size_t, ctypes.c_size_t,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_size_t, ctypes.c_size_t,
+                                    ctypes.c_bool, ctypes.c_void_p)
+
+        # The internal callback with profile above, called from the C++ class.
+        def event_callback(event_code, name_addr, name_size,
+                           plugin_index, plugin_count, bitrate,
+                           plugin_packets, total_packets,
+                           data_addr, data_size, data_max_size,
+                           data_read_only, event_data_obj):
+            # Build a PluginEventContext from individual fields.
             context = PluginEventContext()
-            context.event_code = evcode
-            context.plugin_name = ctypes.string_at(name_data, name_size).decode('utf-16')
-            context.plugin_index = plindex
-            context.plugin_count = plcount
+            context.event_code = event_code
+            context.plugin_name = ctypes.string_at(name_addr, name_size).decode('utf-16')
+            context.plugin_index = plugin_index
+            context.plugin_count = plugin_count
             context.bitrate = bitrate
-            context.plugin_packets = plpackets
+            context.plugin_packets = plugin_packets
             context.total_packets = total_packets
-            evdata = bytes(ctypes.string_at(data, size))
-            self.handlePluginEvent(context, evdata)
+            # Build the input binary data of the event.
+            event_data = bytes(ctypes.string_at(data_addr, data_size))
+            # Call the public Python callback.
+            ret = self.handlePluginEvent(context, event_data)
+            # Analyze the result: bool, bytearray or tuple of both.
+            success = True
+            outdata = None
+            if type(ret) is bool:
+                success = ret
+            elif type(ret) is bytearray:
+                outdata = ret
+            elif type(ret) is tuple:
+                for elem in ret:
+                    if type(elem) is bool:
+                        success = elem
+                    elif type(ret) is bytearray:
+                        outdata = elem
+            # Copy back output data if there are any.
+            if type(outdata) is bytearray:
+                carray_type = ctypes.c_uint8 * len(outdata)
+                carray = ctypes.cast(carray_type.from_buffer(outdata), ctypes.POINTER(ctypes.c_uint8))
+                lib.tspyPyPluginEventHandlerUpdateData(event_data_obj, carray, ctypes. c_size_t(len(outdata)))
+            return success
 
         # Keep a reference on the callback in the object instance.
-        callback = ctypes.CFUNCTYPE(None, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
-                                    ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
-                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_size_t)
         self._cb = callback(event_callback)
 
         # Finally create the native object.
@@ -101,14 +132,15 @@ class AbstractPluginEventHandler(NativeObject):
         lib.tspyDeletePyPluginEventHandler(self._native_object)
         super().delete()
 
-
     ##
     # This handler is invoked when a plugin signals an event for which this object is registered.
     # The application should override it to collect the event.
     # @param context An instance of PluginEventContext containing the details of the event.
     # @param data A bytes object containing the data of the event. This is a read-only
     # sequence of bytes. There is no way to return data from Python to the plugin.
-    # @return None.
+    # @return A bool, a bytearray or a tuple of both. The bool is True on success or
+    # False to set the error indicator of the event. The bytearray is the updated output
+    # event data (if the even data is not read-only).
     # 
     def handlePluginEvent(self, context, data):
-        pass
+        return True

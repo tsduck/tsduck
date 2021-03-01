@@ -95,9 +95,23 @@ TSDUCKPY void tspyTSProcessorRegisterEventHandler(void* tsp, ts::PluginEventHand
 {
     ts::TSProcessor* proc = reinterpret_cast<ts::TSProcessor*>(tsp);
     if (proc != nullptr) {
-        ts::PluginEventHandlerRegistry::Criteria criteria;
-        criteria.event_code = event_code;
-        proc->registerEventHandler(handler, criteria);
+        proc->registerEventHandler(handler, event_code);
+    }
+}
+
+TSDUCKPY void tspyTSProcessorRegisterInputEventHandler(void* tsp, ts::PluginEventHandlerInterface* handler)
+{
+    ts::TSProcessor* proc = reinterpret_cast<ts::TSProcessor*>(tsp);
+    if (proc != nullptr) {
+        proc->registerEventHandler(handler, ts::PluginType::INPUT);
+    }
+}
+
+TSDUCKPY void tspyTSProcessorRegisterOutputEventHandler(void* tsp, ts::PluginEventHandlerInterface* handler)
+{
+    ts::TSProcessor* proc = reinterpret_cast<ts::TSProcessor*>(tsp);
+    if (proc != nullptr) {
+        proc->registerEventHandler(handler, ts::PluginType::OUTPUT);
     }
 }
 
