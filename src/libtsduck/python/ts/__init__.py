@@ -43,3 +43,21 @@ from .tsp import TSProcessor, TSPStartError
 __all__ = []
 __author__ = 'Thierry Lelegard'
 __version__ = version()
+
+## MPEG TS packet size in bytes.
+PKT_SIZE = 188
+
+## MPEG TS packet size in bits.
+PKT_SIZE_BITS = 8 * PKT_SIZE
+
+## Size in bytes of a Reed-Solomon outer FEC.
+RS_SIZE = 16
+
+## Size in bytes of a TS packet with trailing Reed-Solomon outer FEC.
+PKT_RS_SIZE = PKT_SIZE + RS_SIZE
+
+## Size in bytes of a timestamp preceeding a TS packet in M2TS files (Blu-ray disc).
+M2TS_HEADER_SIZE = 4
+
+## Size in bytes of an TS packet in M2TS files (Blu-ray disc).
+PKT_M2TS_SIZE = M2TS_HEADER_SIZE + PKT_SIZE

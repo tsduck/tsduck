@@ -43,7 +43,8 @@ ts::jni::PluginEventHandler::PluginEventHandler(JNIEnv* env, jobject obj, jstrin
     _obj_ref(env == nullptr || obj == nullptr ? nullptr : env->NewGlobalRef(obj)),
     _obj_method(nullptr),
     _pec_class(nullptr),
-    _pec_constructor(nullptr)
+    _pec_constructor(nullptr),
+    _pec_outdata(nullptr)
 {
     if (_obj_ref != nullptr) {
         const char* const handle_str = env->GetStringUTFChars(handle_method, nullptr);
@@ -60,14 +61,14 @@ ts::jni::PluginEventHandler::PluginEventHandler(JNIEnv* env, jobject obj, jstrin
             _pec_class = jclass(env->NewGlobalRef(clazz));
             // And free the local reference.
             env->DeleteLocalRef(clazz);
-        }
-        // Get the id of the constructor:
-        // PluginEventContext(int ecode, String pname, int pindex, int pcount, int brate, long ppackets, long tpackets)
-        if (_pec_class != nullptr) {
-            _pec_constructor = env->GetMethodID(_pec_class, JCS_CONSTRUCTOR, "(" JCS_INT JCS_STRING JCS_INT JCS_INT JCS_INT JCS_LONG JCS_LONG ")" JCS_VOID);
+            // Get the id of the constructor:
+            // PluginEventContext(int ecode, String pname, int pindex, int pcount, int brate, long ppackets, long tpackets, boolean rdonly, int maxdsize)
+            _pec_constructor = env->GetMethodID(_pec_class, JCS_CONSTRUCTOR, "(" JCS_INT JCS_STRING JCS_INT JCS_INT JCS_INT JCS_LONG JCS_LONG JCS_BOOLEAN JCS_INT ")" JCS_VOID);
+            // Get the id of the private field "byte[] _outputData":
+            _pec_outdata = env->GetFieldID(_pec_class, "_outputData", JCS_ARRAY(JCS_BYTE));
         }
     }
-    _valid = _env != nullptr && _obj_ref != nullptr && _obj_method != nullptr && _pec_class != nullptr && _pec_constructor != nullptr;
+    _valid = _env != nullptr && _obj_ref != nullptr && _obj_method != nullptr && _pec_class != nullptr && _pec_constructor != nullptr && _pec_outdata != nullptr;
 }
 
 ts::jni::PluginEventHandler::~PluginEventHandler()
@@ -81,6 +82,7 @@ ts::jni::PluginEventHandler::~PluginEventHandler()
             _env->DeleteGlobalRef(_pec_class);
             _pec_class = nullptr;
             _pec_constructor = nullptr;
+            _pec_outdata = nullptr;
         }
     }
 }
@@ -96,7 +98,9 @@ void ts::jni::PluginEventHandler::handlePluginEvent(const PluginEventContext& co
     if (env != nullptr && _valid) {
         PluginEventData* event_data = dynamic_cast<PluginEventData*>(context.pluginData());
         const bool valid_data = event_data != nullptr && event_data->data() != nullptr;
+        const bool read_only_data = event_data == nullptr || event_data->readOnly();
         const jsize data_size = valid_data ? jsize(event_data->size()) : 0;
+        const jsize max_data_size = read_only_data ? 0 : jsize(event_data->maxSize());
         const jstring jname = ToJString(env, context.pluginName());
 
         // Build an instance of io.tsduck.PluginEventContext. The constructor is:
@@ -106,7 +110,9 @@ void ts::jni::PluginEventHandler::handlePluginEvent(const PluginEventContext& co
                                            jint(context.pluginIndex()), jint(context.pluginCount()),
                                            jint(context.bitrate()),
                                            jlong(context.pluginPackets()),
-                                           jlong(context.totalPackets()));
+                                           jlong(context.totalPackets()),
+                                           jboolean(read_only_data),
+                                           jint(max_data_size));
 
         // Build a Java bytes[] containing the plugin data.
         const jbyteArray jdata = env->NewByteArray(data_size);
@@ -118,6 +124,19 @@ void ts::jni::PluginEventHandler::handlePluginEvent(const PluginEventContext& co
         jboolean success = true;
         if (pec != nullptr && jdata != nullptr) {
             success = env->CallBooleanMethod(_obj_ref, _obj_method, pec, jdata);
+        }
+
+        // If the event data are modifiable, check if the Java handler set some output data.
+        if (success && valid_data && !read_only_data) {
+            const jbyteArray joutdata = jbyteArray(env->GetObjectField(pec, _pec_outdata));
+            if (joutdata != nullptr) {
+                // There are some output data which were set by the Java event handler.
+                const jsize outsize = env->GetArrayLength(joutdata);
+                if (outsize <= max_data_size) {
+                    env->GetByteArrayRegion(joutdata, 0, outsize, reinterpret_cast<jbyte*>(event_data->outputData()));
+                    event_data->updateSize(size_t(outsize));
+                }
+            }
         }
 
         // Free local references.

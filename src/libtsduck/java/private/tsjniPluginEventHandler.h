@@ -77,6 +77,7 @@ namespace ts {
             jmethodID _obj_method;       // Method to handle events in the Java object.
             jclass    _pec_class;        // Global reference to Java class io.tsduck.PluginEventContext
             jmethodID _pec_constructor;  // Constructor method to create a io.tsduck.PluginEventContext
+            jfieldID  _pec_outdata;      // Internal private field "_outputData" in io.tsduck.PluginEventContext
         };
     }
 }

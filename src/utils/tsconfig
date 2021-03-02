@@ -54,6 +54,8 @@ Syntax: $SCRIPT [options]
   --plugin      directory for TSDuck plugins
   --config      directory for TSDuck configuration files
   --include     include directory
+  --java        jar file for TSDuck Java bindings, to be added in CLASSPATH
+  --python      directory for TSDuck Python bindings, to be added in PYTHONPATH
 
   --help        display this help and exit
   --version     output version information
@@ -82,6 +84,14 @@ cmd_config() {
 
 cmd_include() {
     echo "$(cmd_prefix)/include/tsduck"
+}
+
+cmd_java() {
+    echo "$(cmd_prefix)/share/tsduck/java/tsduck.jar"
+}
+
+cmd_python() {
+    echo "$(cmd_prefix)/share/tsduck/python"
 }
 
 cmd_lib() {
@@ -143,6 +153,8 @@ if [ $# -eq 0 ]; then
     echo "cflags: $(cmd_cflags)"
     echo "libs: $(cmd_libs)"
     echo "static-libs: $(cmd_staticlibs)"
+    echo "java: $(cmd_java)"
+    echo "python: $(cmd_python)"
 else
     # Display options one by one.
     for arg in "$@"; do
@@ -152,10 +164,12 @@ else
             --config) cmd_config ;;
             --help) cmd_help ;;
             --include) cmd_include ;;
+            --java) cmd_java ;;
             --lib) cmd_lib ;;
             --libs) cmd_libs ;;
             --plugin) cmd_plugin ;;
             --prefix) cmd_prefix ;;
+            --python) cmd_python ;;
             --static-libs) cmd_staticlibs ;;
             --version) cmd_version ;;
             --vernum) cmd_vernum ;;

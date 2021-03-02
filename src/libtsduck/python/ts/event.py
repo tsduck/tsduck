@@ -61,6 +61,10 @@ class PluginEventContext:
         self.plugin_packets = 0
         ## Total number of packets which passed through the plugin thread at the time of the event.
         self.total_packets = 0
+        ## Indicate if the event data are read-only or if they can be updated.
+        self.read_only_data = True
+        ## Maximum returned data size in bytes (if they can be modified).
+        self.max_data_size = 0
 
 ##
 # An abstract class which can be derived by applications to get plugin events.
@@ -97,6 +101,8 @@ class AbstractPluginEventHandler(NativeObject):
             context.bitrate = bitrate
             context.plugin_packets = plugin_packets
             context.total_packets = total_packets
+            context.read_only_data = bool(data_read_only)
+            context.max_data_size = 0 if data_read_only else data_max_size
             # Build the input binary data of the event.
             event_data = bytes(ctypes.string_at(data_addr, data_size))
             # Call the public Python callback.
