@@ -62,7 +62,7 @@ def search_libtsduck():
             return file
 
     # If not found in various explicit paths, try system search.
-    return ctypes.util.find_library(base)
+    return ctypes.util.find_library('tsduck')
 
 # Load the TSDuck library.
 _lib = CDLL(search_libtsduck())

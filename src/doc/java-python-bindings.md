@@ -116,6 +116,15 @@ Java and Python applications can derive from class `AbstractPluginEventHandler` 
 and register their own event handlers. Thus, binary sections or MPE datagrams can be
 handled directly from the plugin to the Java or Python application.
 
+Some plugins are even dedicated to application developers and are useless on `tsp` command lines.
+This is the case of the `memory` plugin (both an input and an output plugin).
+This plugin, when used in a `TSProcessor` instance, performs direct transport stream input
+and output from and to the application using memory buffers. The memory buffers are
+signalled using plugin events. The `memory` input plugin is an example of an
+application-defined event handler returning data to the plugin.
+See [sample code](https://github.com/tsduck/tsduck/blob/master/sample/sample-memory-plugins/)
+in the TSDuck source code tree.
+
 # Communication between Java or Python applications and their plugins  {#jpplugincomm}
 
 At high level, Java and Python applications can only run `TSProcessor` or `InputSwitcher`
@@ -175,9 +184,10 @@ The following sample applications can be used as a starting point:
 | ------------------ | ---- | ------
 | Logging (XML) | [SampleAnalyzeSDT](https://github.com/tsduck/tsduck/blob/master/sample/sample-java/SampleAnalyzeSDT.java) | [sample-analyze-sdt.py](https://github.com/tsduck/tsduck/blob/master/sample/sample-python/sample-analyze-sdt.py)
 | Logging (JSON) | [SampleAnalyzeTS](https://github.com/tsduck/tsduck/blob/master/sample/sample-java/SampleAnalyzeTS.java) | [sample-analyze-ts.py](https://github.com/tsduck/tsduck/blob/master/sample/sample-python/sample-analyze-ts.py)
-| Loggin (bin/hexa) | [SampleFilterTablesLog](https://github.com/tsduck/tsduck/blob/master/sample/sample-java/SampleFilterTablesLog.java) | [sample-filter-tables-log.py](https://github.com/tsduck/tsduck/blob/master/sample/sample-python/sample-filter-tables-log.py)
+| Logging (bin/hexa) | [SampleFilterTablesLog](https://github.com/tsduck/tsduck/blob/master/sample/sample-java/SampleFilterTablesLog.java) | [sample-filter-tables-log.py](https://github.com/tsduck/tsduck/blob/master/sample/sample-python/sample-filter-tables-log.py)
 | Plugin events (sections) | [SampleFilterTablesEvent](https://github.com/tsduck/tsduck/blob/master/sample/sample-java/SampleFilterTablesEvent.java) | [sample-filter-tables-event.py](https://github.com/tsduck/tsduck/blob/master/sample/sample-python/sample-filter-tables-event.py)
 | Plugin events (MPE datagrams) | [SampleMPE](https://github.com/tsduck/tsduck/blob/master/sample/sample-java/SampleMPE.java) | [sample-mpe.py](https://github.com/tsduck/tsduck/blob/master/sample/sample-python/sample-mpe.py)
+| Plugin events (input/output) | [SampleMemoryPlugins](https://github.com/tsduck/tsduck/blob/master/sample/sample-memory-plugins/SampleMemoryPlugins.java) | [sample-memory-plugins.py](https://github.com/tsduck/tsduck/blob/master/sample/sample-memory-plugins/sample-memory-plugins.py)
 
 # Using TSDuck Java bindings  {#javausing}
 

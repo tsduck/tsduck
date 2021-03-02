@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2258
+VERSION 3.26-2261
 
 [NEW] New commands and plugins:
 
@@ -13,6 +13,7 @@ VERSION 3.26-2258
   * New options in exiting commands and plugins:
     - Option --event-code in plugins "mpe", "psi" and "tables".
     - Options --min-bitrate and --min-inter-packet in plugin "spliceinject".
+    - Option --java and --python in "tsconfig".
 
 -------------------------------------------------------------------------------
 
@@ -53,7 +54,7 @@ VERSION 3.25-2236
       "tstabcomp", "tstabdump", "tstables", "tsterinfo" and plugins "dvb",
       "analyze", "psi", "tables".
     - Option --abnt in "tsanalyze", "tsdate", "tsp", "tspsi", "tstabcomp",
-      "tstabdump", "tstables", and plugins "analyze", "psi", "tables".
+      "tstabdump", "tstables" and plugins "analyze", "psi", "tables".
     - Options --fixed-proportion, --input-bitrate, --packet-window, --pcr-based,
       --reference-pcr-pid, --target-bitrate, --time-window in plugin "reduce".
     - Option --json-line in "tsanalyze", "tscmp", "tsdektec" and plugin

@@ -37,13 +37,16 @@ package io.tsduck;
  */
 public class PluginEventContext {
 
-    private int    _eventCode = 0;
-    private String _pluginName = "";
-    private int    _pluginIndex = 0;
-    private int    _pluginCount = 0;
-    private int    _bitrate = 0;
-    private long   _pluginPackets = 0;
-    private long   _totalPackets = 0;
+    private int     _eventCode = 0;
+    private String  _pluginName = "";
+    private int     _pluginIndex = 0;
+    private int     _pluginCount = 0;
+    private int     _bitrate = 0;
+    private long    _pluginPackets = 0;
+    private long    _totalPackets = 0;
+    private boolean _readOnlyData = true;
+    private int     _maxDataSize = 0;
+    private byte[]  _outputData = null;
 
     /**
      * Constructor.
@@ -62,8 +65,10 @@ public class PluginEventContext {
      * @param ppackets Number of packet0s which passed through the plugin at the time of the event.
      * @param tpackets Total number of packets which passed through the plugin thread at the time of the event.
      * It can be more than @a ppackets if some packets were not submitted to the plugin (deleted or excluded packets).
+     * @param rdonly True if the event data are read-only.
+     * @param maxdsize Maximum returned data size (if not read only).
      */
-    public PluginEventContext(int ecode, String pname, int pindex, int pcount, int brate, long ppackets, long tpackets) {
+    public PluginEventContext(int ecode, String pname, int pindex, int pcount, int brate, long ppackets, long tpackets, boolean rdonly, int maxdsize) {
         _eventCode = ecode;
         _pluginName = pname;
         _pluginIndex = pindex;
@@ -71,6 +76,8 @@ public class PluginEventContext {
         _bitrate = brate;
         _pluginPackets = ppackets;
         _totalPackets = tpackets;
+        _readOnlyData = rdonly;
+        _maxDataSize = maxdsize;
     }
 
     /**
@@ -129,5 +136,37 @@ public class PluginEventContext {
      */
     public long totalPackets() {
         return _totalPackets;
+    }
+
+    /**
+     * Indicate if the event data are read-only or if they can be updated.
+     * @return True if the event data are read-only, false if they can be updated.
+     */
+    public boolean readOnlyData() {
+        return _readOnlyData;
+    }
+
+    /**
+     * Get the maximum returned data size in bytes (if they can be modified).
+     * @return Maximum returned data size in bytes.
+     */
+    public int maxDataSize() {
+        return _readOnlyData ? 0 : _maxDataSize;
+    }
+
+    /**
+     * Set the event returned data.
+     * @param data Event returned data. Ignored is returned data is read-only or larger than its max size.
+     */
+    public void setOutputData(byte[] data) {
+        _outputData = _readOnlyData || data == null || data.length > _maxDataSize ? null : data;
+    }
+
+    /**
+     * Get the event returned data.
+     * @return Event returned data.
+     */
+    public byte[] outputData() {
+        return _outputData;
     }
 }
