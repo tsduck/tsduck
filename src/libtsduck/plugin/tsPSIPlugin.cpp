@@ -26,45 +26,16 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor shared library:
-//  Display PSI/SI information from a transport stream
-//
-//----------------------------------------------------------------------------
 
+#include "tsPSIPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsPSILogger.h"
 #include "tsPluginEventData.h"
 TSDUCK_SOURCE;
 
-
-//----------------------------------------------------------------------------
-// Plugin definition
-//----------------------------------------------------------------------------
-
-namespace ts {
-    class PSIPlugin: public ProcessorPlugin, private SectionHandlerInterface
-    {
-        TS_NOBUILD_NOCOPY(PSIPlugin);
-    public:
-        // Implementation of plugin API
-        PSIPlugin(TSP*);
-        virtual bool getOptions() override;
-        virtual bool start() override;
-        virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
-        // Implementation of SectionHandlerInterface
-        virtual void handleSection(SectionDemux& demux, const Section& section) override;
-
-    private:
-        TablesDisplay _display;
-        PSILogger     _logger;
-        bool          _signal_event;  // Signal a plugin event on section.
-        uint32_t      _event_code;    // Event code to signal.
-    };
-}
-
 TS_REGISTER_PROCESSOR_PLUGIN(u"psi", ts::PSIPlugin);
+
+// A dummy storage value to force inclusion of this module when using the static library.
+const int ts::PSIPlugin::REFERENCE = 0;
 
 
 //----------------------------------------------------------------------------

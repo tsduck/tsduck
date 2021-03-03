@@ -133,12 +133,15 @@ Section "Tools & Plugins" SectionTools
     ; Work on "all users" context, not current user.
     SetShellVarContext all
 
-    ; Delete obsolete files from previous versions.
+    ; Delete obsolete configuration files from previous versions.
     Delete "$INSTDIR\bin\tsgentab.exe"
     Delete "$INSTDIR\bin\tsgentab*.dll"
     Delete "$INSTDIR\bin\tsduck.xml"
     Delete "$INSTDIR\bin\tsduck.channels.xml"
     Delete "$INSTDIR\bin\tsduck.dvb.names"
+
+    ; Delete obsolete plugins from previous versions.
+    ; Maintenance: also update src/tsplugins/Makefile
     Delete "$INSTDIR\bin\tsplugin_dektec.dll"
     Delete "$INSTDIR\bin\tsplugin_drop.dll"
     Delete "$INSTDIR\bin\tsplugin_file.dll"
@@ -147,7 +150,10 @@ Section "Tools & Plugins" SectionTools
     Delete "$INSTDIR\bin\tsplugin_http.dll"
     Delete "$INSTDIR\bin\tsplugin_ip.dll"
     Delete "$INSTDIR\bin\tsplugin_null.dll"
+    Delete "$INSTDIR\bin\tsplugin_psi.dll"
+    Delete "$INSTDIR\bin\tsplugin_skip.dll"
     Delete "$INSTDIR\bin\tsplugin_srt.dll"
+    Delete "$INSTDIR\bin\tsplugin_tables.dll"
 
     ; Create folder for binaries
     CreateDirectory "$INSTDIR\bin"

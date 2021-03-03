@@ -28,33 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsStaticReferencesDVB.h"
-#include "tsTables.h"
-
-#include "tsDVBCharTableSingleByte.h"
-#include "tsDVBCharTableUTF16.h"
-#include "tsDVBCharTableUTF8.h"
-#include "tsARIBCharset.h"
-#include "tsDumpCharset.h"
-
-#include "tsDropOutputPlugin.h"
-#include "tsNullInputPlugin.h"
-#include "tsFileInputPlugin.h"
-#include "tsFileOutputPlugin.h"
-#include "tsFilePacketPlugin.h"
-#include "tsForkInputPlugin.h"
-#include "tsForkOutputPlugin.h"
-#include "tsForkPacketPlugin.h"
-#include "tsIPInputPlugin.h"
-#include "tsIPOutputPlugin.h"
-#include "tsDektecInputPlugin.h"
-#include "tsDektecOutputPlugin.h"
-#include "tsHTTPInputPlugin.h"
-#include "tshlsInputPlugin.h"
-#include "tshlsOutputPlugin.h"
-#include "tsSRTInputPlugin.h"
-#include "tsSRTOutputPlugin.h"
-#include "tsMemoryInputPlugin.h"
-#include "tsMemoryOutputPlugin.h"
+#include "tsduck.h"
 TSDUCK_SOURCE;
 
 // Macros to generate a unique symbol name.
@@ -105,6 +79,9 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_OBJECT(SRTOutputPlugin::REFERENCE);
     REF_OBJECT(MemoryInputPlugin::REFERENCE);
     REF_OBJECT(MemoryOutputPlugin::REFERENCE);
+    REF_OBJECT(SkipPlugin::REFERENCE);
+    REF_OBJECT(TablesPlugin::REFERENCE);
+    REF_OBJECT(PSIPlugin::REFERENCE);
 
     // References to all DVB tables and descriptors.
     // The file tsRefType.h is automatically generated.

@@ -34,9 +34,7 @@
 #
 #  The following files are rebuilt:
 #
-#  - build/qtcreator/libtsduck/libtsduck-files.pri
 #  - src/libtsduck/tsduck.h
-#  - src/libtsduck/dtv/tsTables.h
 #  - src/libtsduck/dtv/private/tsRefType.h
 #
 #  See the PowerShell script build-project-files.ps1 for a Windows equivalent.
@@ -130,24 +128,6 @@ GenerateMainHeader()
     echo '#endif'
 }
 
-# Generate the header file for PSI/SI tables and descriptors.
-GenerateTablesHeader()
-{
-    PREFIX="#include \"ts"
-    SUFFIX=".h\""
-
-    cat "$ROOTDIR/src/HEADER.txt"
-    echo ''
-    echo '//! @file'
-    echo '//! All headers for MPEG/DVB tables and descriptors.'
-    echo ''
-    echo '#pragma once'
-    echo ''
-    GetGroup table
-    echo ''
-    GetGroup descriptor
-}
-
 # Generate the header file containing static references to all tables and descriptors.
 GenerateRefType()
 {
@@ -161,7 +141,6 @@ GenerateRefType()
 
 # Generate the files.
 [[ -z "$TARGET" || "$TARGET" == "tsduck.h"    ]] && GenerateMainHeader >"$SRCDIR/tsduck.h"
-[[ -z "$TARGET" || "$TARGET" == "tsTables.h"  ]] && GenerateTablesHeader >"$SRCDIR/dtv/tsTables.h"
 [[ -z "$TARGET" || "$TARGET" == "tsRefType.h" ]] && GenerateRefType >"$SRCDIR/dtv/private/tsRefType.h"
 
 exit 0

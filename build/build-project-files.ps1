@@ -39,9 +39,7 @@
 
   The following files are rebuilt:
 
-  - build/qtcreator/libtsduck/libtsduck-files.pri
   - src/libtsduck/tsduck.h
-  - src/libtsduck/dtv/tsTables.h
   - src/libtsduck/dtv/private/tsRefType.h
 
   See the shell script build-project-files.sh for a Unix equivalent.
@@ -135,24 +133,6 @@ function GenerateMainHeader()
     echo '#endif'
 }
 
-# Generate the header file for PSI/SI tables and descriptors.
-function GenerateTablesHeader()
-{
-    $prefix = "#include `"ts"
-    $suffix = ".h`""
-
-    Get-Content $SrcDir\..\HEADER.txt
-    echo ''
-    echo '//! @file'
-    echo '//! All headers for MPEG/DVB tables and descriptors.'
-    echo ''
-    echo '#pragma once'
-    echo ''
-    GetGroup -Group table -Prefix $prefix -Suffix $suffix
-    echo ''
-    GetGroup -Group descriptor -Prefix $prefix -Suffix $suffix
-}
-
 # Generate the header file containing static references to all tables and descriptors.
 function GenerateRefType()
 {
@@ -165,9 +145,8 @@ function GenerateRefType()
 }
 
 # Generate the files.
-GenerateMainHeader   | Out-File -Encoding ascii $SrcDir\tsduck.h
-GenerateTablesHeader | Out-File -Encoding ascii $SrcDir\dtv\tsTables.h
-GenerateRefType      | Out-File -Encoding ascii $SrcDir\dtv\private\tsRefType.h
+GenerateMainHeader | Out-File -Encoding ascii $SrcDir\tsduck.h
+GenerateRefType    | Out-File -Encoding ascii $SrcDir\dtv\private\tsRefType.h
 
 if (-not $NoPause) {
     pause
