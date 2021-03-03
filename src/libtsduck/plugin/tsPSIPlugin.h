@@ -50,7 +50,7 @@ namespace ts {
         //! Constructor.
         //! @param [in] tsp Associated callback to @c tsp executable.
         //!
-        PSIPlugin(TSP*);
+        PSIPlugin(TSP* tsp);
 
         // Implementation of plugin API
         virtual bool getOptions() override;

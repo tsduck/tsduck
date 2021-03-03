@@ -48,7 +48,7 @@ namespace ts {
         //! Constructor.
         //! @param [in] tsp Associated callback to @c tsp executable.
         //!
-        SkipPlugin(TSP*);
+        SkipPlugin(TSP* tsp);
 
         // Implementation of plugin API
         virtual bool getOptions() override;

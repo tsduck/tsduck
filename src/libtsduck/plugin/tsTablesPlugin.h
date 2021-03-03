@@ -49,7 +49,7 @@ namespace ts {
         //! Constructor.
         //! @param [in] tsp Associated callback to @c tsp executable.
         //!
-        TablesPlugin(TSP*);
+        TablesPlugin(TSP* tsp);
 
         // Implementation of plugin API
         virtual bool getOptions() override;
