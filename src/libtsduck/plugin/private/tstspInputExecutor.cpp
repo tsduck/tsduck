@@ -97,6 +97,7 @@ bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer, PacketMetadata
     const size_t pkt_read = receiveAndStuff(0, init_packets);
 
     if (pkt_read == 0) {
+        debug(u"no initial packet read");
         return false; // receive error
     }
 

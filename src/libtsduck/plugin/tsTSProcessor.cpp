@@ -167,8 +167,9 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         // Adjust some default parameters.
         _args.applyDefaults(realtime);
 
-        // Exit on error when initializing the plugins
+        // Exit on error when initializing the plugins.
         if (_report.gotErrors()) {
+            _report.debug(u"error when initializing the plugins");
             cleanupInternal();
             return false;
         }
@@ -180,6 +181,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
             proc->setRealTimeForAll(realtime);
             // Decode command line parameters for the plugin.
             if (!proc->plugin()->getOptions()) {
+                _report.debug(u"getOptions() error in plugin %s", {proc->pluginName()});
                 cleanupInternal();
                 return false;
             }
@@ -211,6 +213,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
     // Exit application in case of error.
     for (tsp::PluginExecutor* proc = _output->ringPrevious<tsp::PluginExecutor>(); proc != _output; proc = proc->ringPrevious<tsp::PluginExecutor>()) {
         if (!proc->plugin()->start()) {
+            _report.debug(u"start() error in plugin %s", {proc->pluginName()});
             cleanupInternal();
             return false;
         }
@@ -219,6 +222,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
     // Initialize packet buffer in the ring of executors.
     // Exit application in case of error.
     if (!_input->initAllBuffers(_packet_buffer, _metadata_buffer)) {
+        _report.debug(u"init buffer error");
         cleanupInternal();
         return false;
     }
@@ -226,6 +230,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
     // Start the output device (we now have an idea of the bitrate).
     // Exit application in case of error.
     if (!_output->plugin()->start()) {
+        _report.debug(u"start() error in output plugin %s", {_output->pluginName()});
         cleanupInternal();
         return false;
     }

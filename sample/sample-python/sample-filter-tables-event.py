@@ -22,7 +22,6 @@ class EventHandler(ts.AbstractPluginEventHandler):
         print("==== Event code: 0x%X from plugin #%d (%s), data size: %d bytes, at TS packet %d" %
               (context.event_code, context.plugin_index, context.plugin_name, len(data), context.plugin_packets))
         print("Section: %s" % (data.hex()))
-        return True
 
 # Create an asynchronous report to log multi-threaded messages.
 rep = ts.AsyncReport()

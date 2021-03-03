@@ -136,6 +136,7 @@ void ts::jni::PluginEventHandler::handlePluginEvent(const PluginEventContext& co
                     env->GetByteArrayRegion(joutdata, 0, outsize, reinterpret_cast<jbyte*>(event_data->outputData()));
                     event_data->updateSize(size_t(outsize));
                 }
+                env->DeleteLocalRef(joutdata);
             }
         }
 
@@ -151,7 +152,7 @@ void ts::jni::PluginEventHandler::handlePluginEvent(const PluginEventContext& co
         }
 
         // Set error indicator if the Java callback returned false.
-        if (!success && valid_data) {
+        if (!success && event_data != nullptr) {
             event_data->setError(true);
         }
     }
