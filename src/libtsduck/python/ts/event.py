@@ -92,6 +92,7 @@ class AbstractPluginEventHandler(NativeObject):
                            plugin_packets, total_packets,
                            data_addr, data_size, data_max_size,
                            data_read_only, event_data_obj):
+
             # Build a PluginEventContext from individual fields.
             context = PluginEventContext()
             context.event_code = event_code
@@ -112,14 +113,18 @@ class AbstractPluginEventHandler(NativeObject):
             outdata = None
             if type(ret) is bool:
                 success = ret
-            elif type(ret) is bytearray:
+            elif type(ret) is bytearray or type(ret) is bytes:
                 outdata = ret
             elif type(ret) is tuple:
                 for elem in ret:
                     if type(elem) is bool:
                         success = elem
-                    elif type(ret) is bytearray:
+                    elif type(elem) is bytearray or type(elem) is bytes:
                         outdata = elem
+            # If output data is a non-mutable bytes field, do not know how to get its address in ctypes.
+            # So, convert it to a mutable bytearray first. This is very inefficient and deserves improvement.
+            if type(outdata) is bytes:
+                outdata = bytearray(outdata)
             # Copy back output data if there are any.
             if type(outdata) is bytearray:
                 carray_type = ctypes.c_uint8 * len(outdata)
@@ -141,12 +146,44 @@ class AbstractPluginEventHandler(NativeObject):
     ##
     # This handler is invoked when a plugin signals an event for which this object is registered.
     # The application should override it to collect the event.
+    #
+    # The associated input event data is passed in @a data. If @a context.read_only_data is
+    # False, it is possible to update the data. This is typically the case with the @e memory
+    # input plugin which signals events with empty input data and expects TS packets as
+    # returned data. The updated data, if any, should be returned by the function as a bytearray.
+    # The size of the returned data shall not exceed @a context.max_data_size. Otherwise, it will
+    # be ignored.
+    #
+    # It is also possible to signal an error state by returning False.
+    #
+    # The return value of this function can consequently be a bool, a bytearray or a tuple of both.
+    # The bool is True on success or False to set the error indicator of the event. The bytearray
+    # is the updated output event data (if the even data is not read-only). The default is no error,
+    # no data if the function returns nothing.
+    #
+    # Example: error, no data:
+    # @code
+    #   return False
+    # @endcode
+    #
+    # Example: no error, 10-byte data:
+    # @code
+    #   return bytearray(b'0123456789')
+    # @endcode
+    #
+    # Example: error but also with 10-byte data:
+    # @code
+    #   return False, bytearray(b'0123456789')
+    # @endcode
+    # or
+    # @code
+    #   return bytearray(b'0123456789'), False
+    # @endcode
+    #
     # @param context An instance of PluginEventContext containing the details of the event.
     # @param data A bytes object containing the data of the event. This is a read-only
     # sequence of bytes. There is no way to return data from Python to the plugin.
-    # @return A bool, a bytearray or a tuple of both. The bool is True on success or
-    # False to set the error indicator of the event. The bytearray is the updated output
-    # event data (if the even data is not read-only).
-    # 
+    # @return A bool, a bytearray or a tuple of both.
+    #
     def handlePluginEvent(self, context, data):
-        return True
+        pass

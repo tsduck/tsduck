@@ -43,7 +43,6 @@ class InputHandler(ts.AbstractPluginEventHandler):
             return packet
         else:
             self._report.info("end of input")
-            return True
 
 
 #----------------------------------------------------------------------------
@@ -65,7 +64,6 @@ class OutputHandler(ts.AbstractPluginEventHandler):
         for i in range(packets_count):
             packet = data[i * ts.PKT_SIZE : ts.PKT_SIZE]
             self._report.info("packet #%d: %s" % (i, packet.hex()))
-        return True
 
 
 #----------------------------------------------------------------------------
