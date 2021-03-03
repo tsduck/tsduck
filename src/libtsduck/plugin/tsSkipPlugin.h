@@ -26,79 +26,42 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor shared library:
-//  Skip leading TS packets of a stream.
-//
+//!
+//!  @file
+//!  Skip packet processor plugin for tsp.
+//!
 //----------------------------------------------------------------------------
 
-#include "tsPluginRepository.h"
-TSDUCK_SOURCE;
-
-
-//----------------------------------------------------------------------------
-// Plugin definition
-//----------------------------------------------------------------------------
+#pragma once
+#include "tsProcessorPlugin.h"
 
 namespace ts {
+    //!
+    //! Skip packet processor plugin for tsp.
+    //! @ingroup plugin
+    //!
     class SkipPlugin: public ProcessorPlugin
     {
         TS_NOBUILD_NOCOPY(SkipPlugin);
     public:
-        // Implementation of plugin API
+        //!
+        //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
+        //!
         SkipPlugin(TSP*);
-        virtual bool start() override;
+
+        // Implementation of plugin API
+        virtual bool getOptions() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
+        //! @cond nodoxygen
+        // A dummy storage value to force inclusion of this module when using the static library.
+        static const int REFERENCE;
+        //! @endcond
+
     private:
-        PacketCounter skip_count;
-        bool          use_stuffing;
+        // Command line options:
+        PacketCounter _skip_count;
+        bool          _use_stuffing;
     };
-}
-
-TS_REGISTER_PROCESSOR_PLUGIN(u"skip", ts::SkipPlugin);
-
-
-//----------------------------------------------------------------------------
-// Constructor
-//----------------------------------------------------------------------------
-
-ts::SkipPlugin::SkipPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Skip leading TS packets of a stream", u"[options] count"),
-    skip_count(0),
-    use_stuffing(false)
-{
-    option(u"", 0, UNSIGNED, 1, 1);
-    help(u"", u"Number of leading packets to skip.");
-
-    option(u"stuffing", 's');
-    help(u"stuffing", u"Replace excluded leading packets with stuffing (null packets) instead of removing them.\n");
-}
-
-
-//----------------------------------------------------------------------------
-// Start method
-//----------------------------------------------------------------------------
-
-bool ts::SkipPlugin::start()
-{
-    skip_count = intValue<PacketCounter>();
-    use_stuffing = present(u"stuffing");
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Packet processing method
-//----------------------------------------------------------------------------
-
-ts::ProcessorPlugin::Status ts::SkipPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
-{
-    if (skip_count == 0) {
-        return TSP_OK;
-    }
-    else {
-        skip_count--;
-        return use_stuffing ? TSP_NULL : TSP_DROP;
-    }
 }

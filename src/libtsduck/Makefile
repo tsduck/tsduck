@@ -72,7 +72,7 @@ default: headers libs configs
 	+@$(RECURSE)
 
 # The GEN_HEADERS headers are automatically generated from SRC_HEADERS using BUILD_PROJ_FILES.
-GEN_HEADERS = tsduck.h dtv/tsTables.h dtv/private/tsRefType.h
+GEN_HEADERS = tsduck.h dtv/private/tsRefType.h
 SRC_HEADERS = $(filter-out $(GEN_HEADERS),$(wildcard *.h */*.h */*/*.h))
 BUILD_PROJ_FILES = $(ROOTDIR)/build/build-project-files.sh
 .PHONY: headers
@@ -85,8 +85,8 @@ $(GEN_HEADERS): $(BUILD_PROJ_FILES) $(SRCROOT)/HEADER.txt $(SRC_HEADERS)
 # finished before building tsVersionInfo.o. However, the .dep file contains full paths
 # of dependencies and make cannot realize it is the same header files.
 
-$(OBJDIR)/tsduck.o: tsduck.h dtv/tsTables.h
-$(OBJDIR)/tsStaticReferencesDVB.o: dtv/private/tsRefType.h
+$(OBJDIR)/tsduck.o: tsduck.h
+$(OBJDIR)/tsStaticReferencesDVB.o: dtv/private/tsRefType.h tsduck.h
 
 # Specific (per-module) compilation options:
 

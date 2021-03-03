@@ -26,45 +26,16 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor shared library:
-//  Collect selected PSI/SI tables from a transport stream.
-//
-//----------------------------------------------------------------------------
 
+#include "tsTablesPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsTablesLogger.h"
 #include "tsPluginEventData.h"
 TSDUCK_SOURCE;
 
-
-//----------------------------------------------------------------------------
-// Plugin definition
-//----------------------------------------------------------------------------
-
-namespace ts {
-    class TablesPlugin: public ProcessorPlugin, private SectionHandlerInterface
-    {
-        TS_NOBUILD_NOCOPY(TablesPlugin);
-    public:
-        // Implementation of plugin API
-        TablesPlugin(TSP*);
-        virtual bool getOptions() override;
-        virtual bool start() override;
-        virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
-        // Implementation of SectionHandlerInterface
-        virtual void handleSection(SectionDemux& demux, const Section& section) override;
-
-    private:
-        TablesDisplay _display;
-        TablesLogger  _logger;
-        bool          _signal_event;  // Signal a plugin event on section.
-        uint32_t      _event_code;    // Event code to signal.
-    };
-}
-
 TS_REGISTER_PROCESSOR_PLUGIN(u"tables", ts::TablesPlugin);
+
+// A dummy storage value to force inclusion of this module when using the static library.
+const int ts::TablesPlugin::REFERENCE = 0;
 
 
 //----------------------------------------------------------------------------

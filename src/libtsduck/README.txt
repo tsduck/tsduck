@@ -30,5 +30,4 @@ be updated. Do not update them manually, use one of the following scripts:
 The following files are rebuilt:
 
   - src/libtsduck/tsduck.h
-  - src/libtsduck/dtv/tsTables.h
   - src/libtsduck/dtv/private/tsRefType.h

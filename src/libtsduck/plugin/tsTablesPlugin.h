@@ -28,20 +28,46 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Collect selected PSI/SI tables plugin for tsp.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 26
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2263
+#include "tsProcessorPlugin.h"
+#include "tsTablesLogger.h"
+
+namespace ts {
+    //!
+    //! Collect selected PSI/SI tables plugin for tsp.
+    //! @ingroup plugin
+    //!
+    class TablesPlugin: public ProcessorPlugin, private SectionHandlerInterface
+    {
+        TS_NOBUILD_NOCOPY(TablesPlugin);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
+        //!
+        TablesPlugin(TSP*);
+
+        // Implementation of plugin API
+        virtual bool getOptions() override;
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+        // Implementation of SectionHandlerInterface
+        virtual void handleSection(SectionDemux& demux, const Section& section) override;
+
+        //! @cond nodoxygen
+        // A dummy storage value to force inclusion of this module when using the static library.
+        static const int REFERENCE;
+        //! @endcond
+
+    private:
+        TablesDisplay _display;
+        TablesLogger  _logger;
+        bool          _signal_event;  // Signal a plugin event on section.
+        uint32_t      _event_code;    // Event code to signal.
+    };
+}
