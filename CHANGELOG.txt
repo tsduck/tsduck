@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2261
+VERSION 3.26-2266
 
 [NEW] New commands and plugins:
 
@@ -14,6 +14,9 @@ VERSION 3.26-2261
     - Option --event-code in plugins "mpe", "psi" and "tables".
     - Options --min-bitrate and --min-inter-packet in plugin "spliceinject".
     - Option --java and --python in "tsconfig".
+    - Options --alarm-command, --max-pre-roll-time, --max-repetition,
+      --min-pre-roll-time, --min-repetition value and --no-adjustment
+      to plugin "splicemonitor".
 
 -------------------------------------------------------------------------------
 

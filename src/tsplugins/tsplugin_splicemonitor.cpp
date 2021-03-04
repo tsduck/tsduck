@@ -38,6 +38,7 @@
 #include "tsSectionDemux.h"
 #include "tsSignalizationDemux.h"
 #include "tsSpliceInformationTable.h"
+#include "tsForkPipe.h"
 TSDUCK_SOURCE;
 
 
@@ -76,14 +77,19 @@ namespace ts {
         };
 
         // Command line options:
-        bool    _display_commands;  // Display the content of splice commands.
-        bool    _all_commands;      // Display all splice commands.
-        bool    _packet_index;      // Show packet index.
-        bool    _use_log;           // Use tsp logger for messages.
-        bool    _no_adjustment;     // Do not adjust PTS of splice command reception time.
-        PID     _splice_pid;        // The only splice PID to monitor.
-        PID     _pts_pid;           // The only PTS PID to use.
-        UString _output_file;       // Output file name.
+        bool        _display_commands;  // Display the content of splice commands.
+        bool        _all_commands;      // Display all splice commands.
+        bool        _packet_index;      // Show packet index.
+        bool        _use_log;           // Use tsp logger for messages.
+        bool        _no_adjustment;     // Do not adjust PTS of splice command reception time.
+        PID         _splice_pid;        // The only splice PID to monitor.
+        PID         _pts_pid;           // The only PTS PID to use.
+        UString     _output_file;       // Output file name.
+        UString     _alarm_command;     // Alarm command name.
+        size_t      _min_repetition;    // Minimum number of occurrences per command.
+        size_t      _max_repetition;    // Maximum number of occurrences per command.
+        MilliSecond _min_preroll;       // Minimum pre-roll time in milliseconds.
+        MilliSecond _max_preroll;       // Maximum pre-roll time in milliseconds.
 
         // Working data:
         TablesDisplay               _display;          // Display engine for splice information tables.
@@ -95,8 +101,9 @@ namespace ts {
         // Associate all audio/video PID's in a PMT to a splice PID.
         void setSplicePID(const PMT&, PID);
 
-        // Report a one-line message.
-        void message(PID splice_pid, const UChar* format, const std::initializer_list<ArgMixIn>& args = {});
+        // Build and report a one-line message.
+        UString message(PID splice_pid, const UChar* format, const std::initializer_list<ArgMixIn>& args = {});
+        void display(const UString& line);
 
         // Implementation of interfaces.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -121,12 +128,29 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     _splice_pid(PID_NULL),
     _pts_pid(PID_NULL),
     _output_file(),
+    _alarm_command(),
+    _min_repetition(0),
+    _max_repetition(0),
+    _min_preroll(0),
+    _max_preroll(0),
     _display(duck),
     _splice_contexts(),
     _splice_pids(),
     _section_demux(duck, this),
     _sig_demux(duck, this)
 {
+    option(u"alarm-command", 0, STRING);
+    help(u"alarm-command", u"'command'",
+         u"Command to run when a splice event is outside the nominal range as specified by other --min and --max options. "
+         u"The command receives seven additional parameters:\n\n"
+         u"1. A human-readable message, the same as logged by the plugin.\n"
+         u"2. The PID of the splice command.\n"
+         u"3. The event id.\n"
+         u"4. The string \"in\" or \"out\" for splice in / splice out command.\n"
+         u"5. The adjusted PTS value in the splice command.\n"
+         u"6. Pre-roll time in milliseconds.\n"
+         u"7. Number of occurences of the command before the event.");
+
     option(u"all-commands", 'a');
     help(u"all-commands",
          u"Same as --display-commands but display all SCTE-35 splice information commands. "
@@ -142,6 +166,26 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
          u"When computing the anticipated pre-roll time at reception of a splice command, "
          u"do not try to adjust the time using the distance between the last PTS and the splice command. "
          u"By default, use the bitrate to adjust the supposed PTS of the splice command itself.");
+
+    option(u"min-pre-roll-time", 0, POSITIVE);
+    help(u"min-pre-roll-time",
+         u"Specify a minimum pre-roll time in milliseconds for splice commands. "
+         u"See option --alarm-command for non-nominal cases.");
+
+    option(u"max-pre-roll-time", 0, POSITIVE);
+    help(u"max-pre-roll-time",
+         u"Specify a maximum pre-roll time in milliseconds for splice commands. "
+         u"See option --alarm-command for non-nominal cases.");
+
+    option(u"min-repetition", 0, POSITIVE);
+    help(u"min-repetition",
+         u"Specify a minimum number of repetitions for each splice command. "
+         u"See option --alarm-command for non-nominal cases.");
+
+    option(u"max-repetition", 0, POSITIVE);
+    help(u"max-repetition",
+         u"Specify a maximum number of repetitions for each splice command. "
+         u"See option --alarm-command for non-nominal cases.");
 
     option(u"output-file", 'o', STRING);
     help(u"output-file", u"file-name",
@@ -193,6 +237,11 @@ bool ts::SpliceMonitorPlugin::getOptions()
     getIntValue(_splice_pid, u"splice-pid", PID_NULL);
     getIntValue(_pts_pid, u"time-pid", PID_NULL);
     getValue(_output_file, u"output-file");
+    getValue(_alarm_command, u"alarm-command");
+    getIntValue(_min_preroll, u"min-pre-roll-time");
+    getIntValue(_max_preroll, u"max-pre-roll-time");
+    getIntValue(_min_repetition, u"min-repetition");
+    getIntValue(_max_repetition, u"max-repetition");
     _use_log = !_display_commands && _output_file.empty();
     return true;
 }
@@ -289,7 +338,7 @@ void ts::SpliceMonitorPlugin::setSplicePID(const PMT& pmt, PID splice_pid)
 // Report a one-line message.
 //----------------------------------------------------------------------------
 
-void ts::SpliceMonitorPlugin::message(PID splice_pid, const UChar* format, const std::initializer_list<ArgMixIn>& args)
+ts::UString ts::SpliceMonitorPlugin::message(PID splice_pid, const UChar* format, const std::initializer_list<ArgMixIn>& args)
 {
     UString line;
     if (_packet_index) {
@@ -303,6 +352,16 @@ void ts::SpliceMonitorPlugin::message(PID splice_pid, const UChar* format, const
         }
     }
     line.format(format, args);
+    return line;
+}
+
+
+//----------------------------------------------------------------------------
+// Report a one-line message.
+//----------------------------------------------------------------------------
+
+void ts::SpliceMonitorPlugin::display(const UString& line)
+{
     if (_use_log) {
         tsp->info(line);
     }
@@ -349,10 +408,10 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
         const uint64_t event_pts = si.lowestPTS();
 
         if (si.canceled) {
-            message(spid, u"canceled");
+            display(message(spid, u"canceled"));
         }
         else if (si.immediate) {
-            message(spid, u"immediately %s", {si.splice_out ? "OUT" : "IN"});
+            display(message(spid, u"immediately %s", {si.splice_out ? "OUT" : "IN"}));
         }
         else {
             // This is a planned insert command. Is this a repetition or new event?
@@ -387,7 +446,7 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
                     time.format(u", time to event: %'d ms", {PTSToMilliSecond(ctx.event_pts - current_pts)});
                 }
             }
-            message(spid, u"occurrence #%d%s", {ctx.event_count, time});
+            display(message(spid, u"occurrence #%d%s", {ctx.event_count, time}));
         }
     }
 
@@ -422,11 +481,22 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
         if (ctx.event_id != SpliceInsert::INVALID_EVENT_ID && ctx.event_pts != INVALID_PTS && ctx.last_pts >= ctx.event_pts) {
             // Evaluate time since first command. Assume constant bitrate since then.
             const MilliSecond preroll = PacketInterval(tsp->bitrate(), tsp->pluginPackets() - ctx.first_cmd_packet);
-            if (preroll == 0) {
-                message(spid, u"occurred");
+            UString line(message(spid, u"occurred"));
+            if (preroll > 0) {
+                line.format(u", actual pre-roll time: %'d ms", {preroll});
             }
-            else {
-                message(spid, u"occurred, actual pre-roll time: %'d ms", {preroll});
+            display(line);
+            // Raise alarm if outside nominal range.
+            if (!_alarm_command.empty() &&
+                ((_min_preroll != 0 && preroll != 0 && preroll < _min_preroll) ||
+                 (_max_preroll != 0 && preroll > _max_preroll) ||
+                 (_min_repetition != 0 && ctx.event_count < _min_repetition) ||
+                 (_max_repetition != 0 && ctx.event_count > _max_repetition)))
+            {
+                UString command;
+                command.format(u"%s \"%s\" %d %d %s %d %d %d",
+                               {_alarm_command, line, spid, ctx.event_id, ctx.event_out ? u"out" : u"in", ctx.event_pts, preroll, ctx.event_count});
+                ForkPipe::Launch(command, *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
             }
             // Forget about this event, it is now in the past.
             ctx.event_id = SpliceInsert::INVALID_EVENT_ID;

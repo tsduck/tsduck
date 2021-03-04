@@ -236,12 +236,12 @@ bool ts::BitrateMonitorPlugin::getOptions()
     }
 
     // Get options
-    _tag = value(u"tag");
-    _alarm_command = value(u"alarm-command");
-    _window_size = intValue(u"time-interval", DEFAULT_TIME_WINDOW_SIZE);
-    _min_bitrate = intValue(u"min", DEFAULT_BITRATE_MIN);
-    _max_bitrate = intValue(u"max", DEFAULT_BITRATE_MAX);
-    _periodic_bitrate = intValue(u"periodic-bitrate", 0);
+    getValue(_tag, u"tag");
+    getValue(_alarm_command, u"alarm-command");
+    getIntValue(_window_size, u"time-interval", DEFAULT_TIME_WINDOW_SIZE);
+    getIntValue(_min_bitrate, u"min", DEFAULT_BITRATE_MIN);
+    getIntValue(_max_bitrate, u"max", DEFAULT_BITRATE_MAX);
+    getIntValue(_periodic_bitrate, u"periodic-bitrate", 0);
     getIntValues(_labels_below, u"set-label-below");
     getIntValues(_labels_normal, u"set-label-normal");
     getIntValues(_labels_above, u"set-label-above");
