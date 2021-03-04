@@ -147,7 +147,7 @@ namespace tsunit {
     //! #include "tsunit.h"
     //! int main(int argc, char* argv[])
     //! {
-    //!     tsunit::Main ctx(argc, argv, "MyProjectName");
+    //!     tsunit::Main ctx(argc, argv);
     //!     return ctx.run();
     //! }
     //! @endcode
@@ -213,9 +213,6 @@ namespace tsunit {
 //!     class Bar: public tsunit::Test
 //!     {
 //!     public:
-//!         Bar();
-//!         virtual ~Bar();
-//!
 //!         void test1();
 //!         void test2();
 //!         void test3();

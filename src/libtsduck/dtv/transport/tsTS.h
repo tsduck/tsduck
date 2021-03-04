@@ -137,7 +137,7 @@ namespace ts {
     //!
     TSDUCKDLL inline PacketCounter PacketDistance(BitRate bitrate, MilliSecond duration)
     {
-        return (PacketCounter (bitrate) * (duration >= 0 ? duration : -duration)) / (MilliSecPerSec * 8 * PKT_SIZE);
+        return (PacketCounter(bitrate) * (duration >= 0 ? duration : -duration)) / (MilliSecPerSec * 8 * PKT_SIZE);
     }
 
     //!
