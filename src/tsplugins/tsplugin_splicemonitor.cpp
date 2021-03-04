@@ -68,6 +68,7 @@ namespace ts {
             SpliceContext();                // Constructor.
             uint64_t      last_pts;         // Last PTS value in audio/video PID's for that splice PID.
             PacketCounter last_pts_packet;  // Packet index of last PTS.
+            PacketCounter first_cmd_packet; // Packet index of first occurence of splice command for latest signaled event.
             uint32_t      event_id;         // Latest signaled event.
             uint64_t      event_pts;        // Latest signaled PTS (lowest PTS value in command).
             bool          event_out;        // Copy of splice_out for this event.
@@ -79,6 +80,7 @@ namespace ts {
         bool    _all_commands;      // Display all splice commands.
         bool    _packet_index;      // Show packet index.
         bool    _use_log;           // Use tsp logger for messages.
+        bool    _no_adjustment;     // Do not adjust PTS of splice command reception time.
         PID     _splice_pid;        // The only splice PID to monitor.
         PID     _pts_pid;           // The only PTS PID to use.
         UString _output_file;       // Output file name.
@@ -115,6 +117,7 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     _all_commands(false),
     _packet_index(false),
     _use_log(false),
+    _no_adjustment(false),
     _splice_pid(PID_NULL),
     _pts_pid(PID_NULL),
     _output_file(),
@@ -133,6 +136,12 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     help(u"display-commands",
          u"Display the content of SCTE-35 splice insert commands. "
          u"By default, only log a short event description.");
+
+    option(u"no-adjustment", 'n');
+    help(u"no-adjustment",
+         u"When computing the anticipated pre-roll time at reception of a splice command, "
+         u"do not try to adjust the time using the distance between the last PTS and the splice command. "
+         u"By default, use the bitrate to adjust the supposed PTS of the splice command itself.");
 
     option(u"output-file", 'o', STRING);
     help(u"output-file", u"file-name",
@@ -162,6 +171,7 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
 ts::SpliceMonitorPlugin::SpliceContext::SpliceContext() :
     last_pts(INVALID_PTS),
     last_pts_packet(0),
+    first_cmd_packet(0),
     event_id(SpliceInsert::INVALID_EVENT_ID),
     event_pts(INVALID_PTS),
     event_out(false),
@@ -179,6 +189,7 @@ bool ts::SpliceMonitorPlugin::getOptions()
     _all_commands = present(u"all-commands");
     _display_commands = _all_commands || present(u"display-commands");
     _packet_index = present(u"packet-index");
+    _no_adjustment = present(u"no-adjustment");
     getIntValue(_splice_pid, u"splice-pid", PID_NULL);
     getIntValue(_pts_pid, u"time-pid", PID_NULL);
     getValue(_output_file, u"output-file");
@@ -346,23 +357,28 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
         else {
             // This is a planned insert command. Is this a repetition or new event?
             if (si.event_id == ctx.event_id && event_pts == ctx.event_pts && si.splice_out == ctx.event_out) {
+                // Repetition of a previous event.
                 ctx.event_count++;
             }
             else {
+                // First command about a new event.
                 ctx.event_id = si.event_id;
                 ctx.event_pts = event_pts;
                 ctx.event_out = si.splice_out;
                 ctx.event_count = 1;
+                ctx.first_cmd_packet = tsp->pluginPackets();
             }
             // Format time to event.
             UString time;
             if (ctx.last_pts != INVALID_PTS) {
                 // Compute "current" PTS. We use the latest PTS found and adjust it by the distance to its packet.
                 uint64_t current_pts = ctx.last_pts;
-                const PacketCounter distance = tsp->pluginPackets() - ctx.last_pts_packet;
-                const BitRate bitrate = tsp->bitrate();
-                if (bitrate != 0 && distance != 0) {
-                    current_pts += (distance * 8 * PKT_SIZE * SYSTEM_CLOCK_SUBFREQ) / bitrate;
+                if (!_no_adjustment) {
+                    const PacketCounter distance = tsp->pluginPackets() - ctx.last_pts_packet;
+                    const BitRate bitrate = tsp->bitrate();
+                    if (bitrate != 0 && distance != 0) {
+                        current_pts += (distance * 8 * PKT_SIZE * SYSTEM_CLOCK_SUBFREQ) / bitrate;
+                    }
                 }
                 if (current_pts > ctx.event_pts) {
                     time.format(u", event is in the past by %'d ms", {PTSToMilliSecond(current_pts - ctx.event_pts)});
@@ -404,7 +420,14 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
 
         // Look for event occurrence.
         if (ctx.event_id != SpliceInsert::INVALID_EVENT_ID && ctx.event_pts != INVALID_PTS && ctx.last_pts >= ctx.event_pts) {
-            message(spid, u"occurred");
+            // Evaluate time since first command. Assume constant bitrate since then.
+            const MilliSecond preroll = PacketInterval(tsp->bitrate(), tsp->pluginPackets() - ctx.first_cmd_packet);
+            if (preroll == 0) {
+                message(spid, u"occurred");
+            }
+            else {
+                message(spid, u"occurred, actual pre-roll time: %'d ms", {preroll});
+            }
             // Forget about this event, it is now in the past.
             ctx.event_id = SpliceInsert::INVALID_EVENT_ID;
             ctx.event_pts = INVALID_PTS;
