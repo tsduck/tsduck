@@ -198,10 +198,13 @@ Section /o "Python Bindings" SectionPython
     ; Work on "all users" context, not current user.
     SetShellVarContext all
 
+    ; Delete obsolete files from previous versions.
+    RMDir /r "$INSTDIR\python\ts"
+
     ; Python files.
-    CreateDirectory "$INSTDIR\python\ts"
-    SetOutPath "$INSTDIR\python\ts"
-    File "${PythonDir}\ts\*.py"
+    CreateDirectory "$INSTDIR\python"
+    SetOutPath "$INSTDIR\python"
+    File "${PythonDir}\ts.py"
 
 SectionEnd
 
