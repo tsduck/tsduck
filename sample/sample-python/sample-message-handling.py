@@ -6,28 +6,28 @@
 #
 #----------------------------------------------------------------------------
 
-import ts
+import tsduck
 
 # A pure Python class which handles TSDuck log messages.
-class Logger(ts.AbstractAsyncReport):
+class Logger(tsduck.AbstractAsyncReport):
 
     # Constructor.
-    def __init__(self, severity = ts.Report.Info, sync_log = False, log_msg_count = 0):
+    def __init__(self, severity = tsduck.Report.Info, sync_log = False, log_msg_count = 0):
         super().__init__(severity, sync_log, log_msg_count)
 
     # Log a message to the report.
     # This method is invoked each time a message is logged by TSDuck.
     def log(self, severity, message):
-        print("Severity: %d, message: %s%s" % (severity, ts.Report.header(severity), message))
+        print("Severity: %d, message: %s%s" % (severity, tsduck.Report.header(severity), message))
 
 
 # Create an asynchronous report to log multi-threaded messages.
 # In this example, this is a user-defined Python class which collects messages.
-rep = Logger(severity = ts.Report.Verbose)
-rep.info("TSDuck version: %s" % ts.__version__)
+rep = Logger(severity = tsduck.Report.Verbose)
+rep.info("TSDuck version: %s" % tsduck.__version__)
 
 # Create a TS processor using the report.
-tsp = ts.TSProcessor(rep)
+tsp = tsduck.TSProcessor(rep)
 
 # Set some global TS processing options.
 tsp.add_input_stuffing = [1, 10]   # one null packet every 10 input packets

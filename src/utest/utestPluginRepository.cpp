@@ -129,7 +129,7 @@ void PluginRepositoryTest::testLoaded()
     ts::Report& report(debugMode() ? *static_cast<ts::Report*>(&CERR) : *static_cast<ts::Report*>(&NULLREP));
     ts::PluginRepository* repo = ts::PluginRepository::Instance();
 
-    TSUNIT_ASSERT(repo->getInput(u"skip", report) == nullptr);
-    TSUNIT_ASSERT(repo->getOutput(u"skip", report) == nullptr);
-    TSUNIT_ASSERT(repo->getProcessor(u"skip", report) != nullptr);
+    TSUNIT_ASSERT(repo->getInput(u"merge", report) == nullptr);
+    TSUNIT_ASSERT(repo->getOutput(u"merge", report) == nullptr);
+    TSUNIT_ASSERT(repo->getProcessor(u"merge", report) != nullptr);
 }

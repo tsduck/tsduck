@@ -8,7 +8,7 @@
 #
 #----------------------------------------------------------------------------
 
-import ts
+import tsduck
 
 
 #----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ import ts
 # transport stream packets one by one. A real application should get its
 # input packets from somewhere else and return them in larger chunks.
 
-class InputHandler(ts.AbstractPluginEventHandler):
+class InputHandler(tsduck.AbstractPluginEventHandler):
 
     # A predefined list of transport stream packets used as input.
     _PACKETS = (
@@ -36,7 +36,7 @@ class InputHandler(ts.AbstractPluginEventHandler):
 
     # This event handler is called each time the memory plugin needs input packets.
     def handlePluginEvent(self, context, data):
-        if self._next_packet < len(InputHandler._PACKETS) and context.max_data_size >= ts.PKT_SIZE:
+        if self._next_packet < len(InputHandler._PACKETS) and context.max_data_size >= tsduck.PKT_SIZE:
             self._report.info("returning input packet #%d" % (self._next_packet))
             packet = bytearray.fromhex(InputHandler._PACKETS[self._next_packet])
             self._next_packet = self._next_packet + 1
@@ -50,7 +50,7 @@ class InputHandler(ts.AbstractPluginEventHandler):
 # It is invoked by the "memory" output plugin each time TS packets are sent.
 #----------------------------------------------------------------------------
 
-class OutputHandler(ts.AbstractPluginEventHandler):
+class OutputHandler(tsduck.AbstractPluginEventHandler):
 
     # Constructor.
     def __init__(self, report):
@@ -59,10 +59,10 @@ class OutputHandler(ts.AbstractPluginEventHandler):
 
     # This event handler is called each time the memory plugin sends output packets.
     def handlePluginEvent(self, context, data):
-        packets_count = len(data) // ts.PKT_SIZE
+        packets_count = len(data) // tsduck.PKT_SIZE
         self._report.info("received %d output packets" % (packets_count))
         for i in range(packets_count):
-            packet = data[i * ts.PKT_SIZE : ts.PKT_SIZE]
+            packet = data[i * tsduck.PKT_SIZE : tsduck.PKT_SIZE]
             self._report.info("packet #%d: %s" % (i, packet.hex()))
 
 
@@ -71,14 +71,14 @@ class OutputHandler(ts.AbstractPluginEventHandler):
 #----------------------------------------------------------------------------
 
 # Create a thread-safe asynchronous report.
-report = ts.AsyncReport()
+report = tsduck.AsyncReport()
 
 # Create our event handlers for the memory plugins.
 input = InputHandler(report)
 output = OutputHandler(report)
 
 # Create a transport stream processor and register our event handlers.
-tsp = ts.TSProcessor(report)
+tsp = tsduck.TSProcessor(report)
 tsp.registerInputEventHandler(input)
 tsp.registerOutputEventHandler(output)
 

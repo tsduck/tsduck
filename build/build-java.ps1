@@ -52,7 +52,7 @@ Import-Module -Force -Name (Join-Path $PSScriptRoot build-common.psm1)
 # Get the project directories.
 $RootDir = (Split-Path -Parent $PSScriptRoot)
 $BinDir = "$RootDir\bin\java"
-$SrcRoot = "$RootDir\src\libtsduck\java\tsduck"
+$SrcRoot = "$RootDir\src\libtsduck\java"
 $JavaBin = (Find-Java)
 
 if (-not $JavaBin) {

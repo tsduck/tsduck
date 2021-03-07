@@ -283,8 +283,8 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
         Copy-Item (Join-Multipath @($RootDir, "doc", "tsduck.pdf")) -Destination $TempDoc
         Copy-Item (Join-Path $RootDir "CHANGELOG.txt") -Destination $TempDoc
 
-        $TempPython = (New-Directory @($TempRoot, "python", "ts"))
-        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "python", "ts", "*.py")) -Destination $TempPython
+        $TempPython = (New-Directory @($TempRoot, "python"))
+        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "python", "*.py")) -Destination $TempPython
 
         $TempJava = (New-Directory @($TempRoot, "java"))
         Copy-Item $JarFile -Destination $TempJava

@@ -9,26 +9,26 @@
 #
 #----------------------------------------------------------------------------
 
-import ts, sys
+import tsduck, sys
 
 # A Python class which handles TSDuck log messages.
 # Here, there is no multi-threaded TSProcessor, so we use a synchronous Report.
-# If the application does not need to handle the messages, ts.StdErrReport can
+# If the application does not need to handle the messages, tsduck.StdErrReport can
 # be used for simplicity, instead of a user-defined class.
-class Logger(ts.AbstractSyncReport):
+class Logger(tsduck.AbstractSyncReport):
 
     # Constructor.
-    def __init__(self, severity = ts.Report.Info):
+    def __init__(self, severity = tsduck.Report.Info):
         super().__init__(severity)
 
     # This method is invoked each time a message is logged by TSDuck.
     def log(self, severity, message):
-        print("==> %s%s" % (ts.Report.header(severity), message))
+        print("==> %s%s" % (tsduck.Report.header(severity), message))
 
 # Main program: create a SectionFile.
-rep = Logger(ts.Report.Verbose)
-duck = ts.DuckContext(rep)
-file = ts.SectionFile(duck)
+rep = Logger(tsduck.Report.Verbose)
+duck = tsduck.DuckContext(rep)
+file = tsduck.SectionFile(duck)
 
 # If command line arguments are provided, load the corresponding files.
 if __name__ == "__main__":

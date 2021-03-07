@@ -5,11 +5,11 @@
 #
 #----------------------------------------------------------------------------
 
-import ts
+import tsduck
 
 # Create an Input Switcher with an asynchronous logger.
-rep = ts.AsyncReport(ts.Report.Verbose)
-tsswitch = ts.InputSwitcher(rep)
+rep = tsduck.AsyncReport(tsduck.Report.Verbose)
+tsswitch = tsduck.InputSwitcher(rep)
 
 tsswitch.first_input = 2    # Let's start with input #2.
 tsswitch.cycle_count = 3    # Number of input cycles to execute (0 = infinite).

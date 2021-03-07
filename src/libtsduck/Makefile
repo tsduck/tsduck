@@ -156,7 +156,7 @@ ifdef MACOS
 endif
 	install -m 644 $(CONFIG_FILES) $(SYSROOT)$(SYSPREFIX)/share/tsduck
 	$(MAKE) -C python install
-	$(MAKE) -C java/tsduck install
+	$(MAKE) -C java install
 install-devel: $(STATIC_LIBTSDUCK) tsduck.h
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
