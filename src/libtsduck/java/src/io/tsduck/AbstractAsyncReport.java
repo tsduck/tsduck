@@ -38,12 +38,9 @@ package io.tsduck;
  */
 public abstract class AbstractAsyncReport extends Report {
 
-    // Load native library on startup.
-    static {
-        NativeLibrary.loadLibrary();
-    }
-
-    // Set the address of the C++ object.
+    /*
+     * Set the address of the C++ object.
+     */
     private native void initNativeObject(String logMethodName, int severity, boolean syncLog, int logMsgCount);
 
     /**

@@ -33,14 +33,11 @@ package io.tsduck;
  * A wrapper class for C++ AsyncReport.
  * @ingroup java
  */
-public final class AsyncReport extends Report implements NativeObject {
+public final class AsyncReport extends Report {
 
-    // Load native library on startup.
-    static {
-        NativeLibrary.loadLibrary();
-    }
-    
-    // Set the address of the C++ object.
+    /*
+     * Set the address of the C++ object.
+     */
     private native void initNativeObject(int severity, boolean syncLog, boolean timedLog, int logMsgCount);
 
     /**
@@ -49,7 +46,7 @@ public final class AsyncReport extends Report implements NativeObject {
     public AsyncReport() {
         initNativeObject(Info, false, false, 512);
     }
-    
+
     /**
      * Constructor
      * @param severity Initial severity.
@@ -60,12 +57,12 @@ public final class AsyncReport extends Report implements NativeObject {
     public AsyncReport(int severity, boolean syncLog, boolean timedLog, int logMsgCount) {
         initNativeObject(severity, syncLog, timedLog, logMsgCount);
     }
-    
+
     /**
      * Synchronously terminates the async log thread.
      */
     public native void terminate();
-    
+
     /**
      * Delete the encapsulated C++ object.
      */

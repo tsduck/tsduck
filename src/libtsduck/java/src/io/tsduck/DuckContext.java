@@ -33,20 +33,16 @@ package io.tsduck;
  * A wrapper class for C++ DuckContext.
  * @ingroup java
  */
-public final class DuckContext implements NativeObject {
+public final class DuckContext extends  NativeObject {
 
-    // Load native library on startup.
-    static {
-        NativeLibrary.loadLibrary();
-    }
-
-    // The address of the underlying C++ object.
-    private long nativeObject = 0;
-
-    // Set the address of the C++ object.
+    /*
+     * Set the address of the C++ object.
+     */
     private native void initNativeObject(Report report);
 
-    // Bit masks for standards, used to qualify the signalization, same values as C++ counterparts.
+    /*
+     * Bit masks for standards, used to qualify the signalization, same values as C++ counterparts.
+     */
     static public final int NONE  = 0x00;  //!< No known standard
     static public final int MPEG  = 0x01;  //!< Defined by MPEG, common to all standards
     static public final int DVB   = 0x02;  //!< Defined by ETSI/DVB.

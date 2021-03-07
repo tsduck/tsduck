@@ -33,20 +33,16 @@ package io.tsduck;
  * A wrapper class for C++ InputSwitcher.
  * @ingroup java
  */
-public final class InputSwitcher implements NativeObject {
+public final class InputSwitcher extends  NativeObject {
 
-    // Load native library on startup.
-    static {
-        NativeLibrary.loadLibrary();
-    }
-
-    // The address of the underlying C++ object.
-    private long nativeObject = 0;
-
-    // Set the address of the C++ object.
+    /*
+     * Set the address of the C++ object.
+     */
     private native void initNativeObject(Report report);
 
-    // List of parameters to set before start().
+    /*
+     * List of parameters to set before start().
+     */
     public boolean fastSwitch = false;     //!< Fast switch between input plugins.
     public boolean delayedSwitch = false;  //!< Delayed switch between input plugins.
     public boolean terminate = false;      //!< Terminate when one input plugin completes.

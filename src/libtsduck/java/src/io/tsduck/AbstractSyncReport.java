@@ -41,12 +41,7 @@ package io.tsduck;
  * caller thread only. Specifically, this class is not suitable for use with {@link TSProcessor}
  * (use {@link AbstractAsyncReport } instead).
  */
-public abstract class AbstractSyncReport extends Report implements NativeObject {
-
-    // Load native library on startup.
-    static {
-        NativeLibrary.loadLibrary();
-    }
+public abstract class AbstractSyncReport extends Report {
 
     // Set the address of the C++ object.
     private native void initNativeObject(String logMethodName, int severity);

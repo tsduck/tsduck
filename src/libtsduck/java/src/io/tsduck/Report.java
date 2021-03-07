@@ -33,17 +33,11 @@ package io.tsduck;
  * Base class for TSDuck report classes.
  * @ingroup java
  */
-public abstract class Report implements NativeObject {
+public abstract class Report extends NativeObject {
 
-    // Load native library on startup.
-    static {
-        NativeLibrary.loadLibrary();
-    }
-
-    // The address of the underlying C++ object.
-    private long nativeObject = 0;
-
-    // Severity levels, same values as C++ counterparts.
+    /*
+     * Severity levels, same values as C++ counterparts.
+     */
     static public final int Fatal   = -5;  //!< Fatal error, typically aborts the application.
     static public final int Severe  = -4;  //!< Severe error.
     static public final int Error   = -3;  //!< Regular error.
