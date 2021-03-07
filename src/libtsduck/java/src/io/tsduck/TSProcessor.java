@@ -33,20 +33,16 @@ package io.tsduck;
  * A wrapper class for C++ TSProcessor.
  * @ingroup java
  */
-public final class TSProcessor implements NativeObject {
+public final class TSProcessor extends NativeObject {
 
-    // Load native library on startup.
-    static {
-        NativeLibrary.loadLibrary();
-    }
-
-    // The address of the underlying C++ object.
-    private long nativeObject = 0;
-
-    // Set the address of the C++ object.
+    /*
+     * Set the address of the C++ object.
+     */
     private native void initNativeObject(Report report);
 
-    // List of parameters to set before start().
+    /*
+     * List of parameters to set before start().
+     */
     public boolean monitor = false;                 //!< Option -\-monitor
     public boolean ignoreJointTermination = false;  //!< Option -\-ignore-joint-termination
     public boolean logPluginIndex = false;          //!< Option -\-log-plugin-index

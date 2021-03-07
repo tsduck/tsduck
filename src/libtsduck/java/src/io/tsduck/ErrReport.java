@@ -37,12 +37,9 @@ package io.tsduck;
  */
 public final class ErrReport extends Report {
 
-    // Load native library on startup.
-    static {
-        NativeLibrary.loadLibrary();
-    }
-
-    // Set the address of the C++ object.
+    /*
+     * Set the address of the C++ object.
+     */
     private native void initNativeObject();
 
     /**

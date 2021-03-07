@@ -35,11 +35,13 @@ package io.tsduck;
  */
 public class Info {
 
-    // Load native library on startup.
+    /*
+     * Load native library on startup.
+     */
     static {
         NativeLibrary.loadLibrary();
     }
-    
+
     /**
      * TSDuck version as an integer.
      * @return TSDuck version as an integer, suitable for comparison between versions.

@@ -33,27 +33,25 @@ package io.tsduck;
  * A wrapper class for C++ SectionFile.
  * @ingroup java
  */
-public class SectionFile implements NativeObject {
+public class SectionFile extends NativeObject {
 
-    // Load native library on startup.
-    static {
-        NativeLibrary.loadLibrary();
-    }
-
-    // The address of the underlying C++ object.
-    private long nativeObject = 0;
-
-    // The address of a self-allocated C++ Duck context object, if null was provided in the constructor.
-    // Will be deallocated with the C++ SectionFile object.
+    /*
+     * The address of a self-allocated C++ Duck context object, if null was provided in the constructor.
+     * Will be deallocated with the C++ SectionFile object.
+     */
     private long nativeDuckContext = 0;
 
-    // Set the address of the C++ object.
+    /*
+     * Set the address of the C++ object.
+     */
     private native void initNativeObject(DuckContext duck);
 
-    // CRC32 validation methods, used when loading binary MPEG sections, same values as C++ counterparts.
+    /*
+     * CRC32 validation methods, used when loading binary MPEG sections, same values as C++ counterparts.
+     */
     static public final int CRC32_IGNORE  = 0;  //!< Ignore the section CRC32 when loading a binary section. This is the default.
     static public final int CRC32_CHECK   = 1;  //!< Check that the value of the CRC32 of the section is correct and fail if it isn't.
-    static public final int CRC32_COMPUTE = 2; //!< Recompute a fresh new CRC32 value based on the content of the section.
+    static public final int CRC32_COMPUTE = 2;  //!< Recompute a fresh new CRC32 value based on the content of the section.
 
     /**
      * Constructor

@@ -39,13 +39,17 @@ import java.nio.file.Path;
  */
 class NativeLibrary {
 
-    // Operating system features.
+    /*
+     * Operating system features.
+     */
     private static final String pathSeparator = System.getProperty("path.separator");
     private static final String osName = System.getProperty("os.name").toLowerCase().replaceAll(" ", "");
     private static final boolean isWindows = osName.startsWith("win") || osName.startsWith("nt");
     private static final boolean isMac = osName.startsWith("mac");
 
-    // TSDuck native library.
+    /*
+     * TSDuck native library.
+     */
     private static final String libName = "tsduck";
     private static boolean loaded = false;
 

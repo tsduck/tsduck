@@ -33,17 +33,11 @@ package io.tsduck;
  * An abstract class which can be derived by applications to get plugin events.
  * @ingroup java
  */
-public abstract class AbstractPluginEventHandler implements NativeObject {
+public abstract class AbstractPluginEventHandler extends NativeObject {
 
-    // Load native library on startup.
-    static {
-        NativeLibrary.loadLibrary();
-    }
-
-    // The address of the underlying C++ object.
-    private long nativeObject = 0;
-
-    // Set the address of the C++ object.
+    /*
+     * Set the address of the C++ object.
+     */
     private native void initNativeObject(String handlerMethodName);
 
     /**

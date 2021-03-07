@@ -41,6 +41,8 @@ import ctypes.util
 # Load the TSDuck library
 #-----------------------------------------------------------------------------
 
+## @cond nodoxygen
+
 # This internal function searches the TSDuck shared library.
 def _searchLibTSDuck():
     if os.name == 'nt':
@@ -66,6 +68,8 @@ def _searchLibTSDuck():
 
 # Load the TSDuck library.
 _lib = ctypes.CDLL(_searchLibTSDuck())
+
+## @endcond
 
 
 #-----------------------------------------------------------------------------
@@ -1145,6 +1149,8 @@ class TSPStartError(Exception):
 # Internal class to pass TSProcessorArgs to the native library
 #-----------------------------------------------------------------------------
 
+## @cond nodoxygen
+
 class _tspyTSProcessorArgs(ctypes.Structure):         # struct tspyTSProcessorArgs {...}
     _fields_ = [
         ("monitor", ctypes.c_long),                   # Run a resource monitoring thread (bool).
@@ -1162,6 +1168,8 @@ class _tspyTSProcessorArgs(ctypes.Structure):         # struct tspyTSProcessorAr
         ("receive_timeout", ctypes.c_long),           # Timeout on input operations (in milliseconds).
         ("log_plugin_index", ctypes.c_long),          # Log plugin index with plugin name (bool).
     ]
+
+## @endcond
 
 
 #-----------------------------------------------------------------------------
@@ -1350,6 +1358,8 @@ class SwitchStartError(Exception):
 # Internal class to pass TSProcessorArgs to the native library
 #-----------------------------------------------------------------------------
 
+## @cond nodoxygen
+
 class _tspyInputSwitcherArgs(ctypes.Structure): # struct tspyInputSwitcherArgs {...}
     _fields_ = [
         ("fast_switch", ctypes.c_long),         # Fast switch between input plugins (bool).
@@ -1367,6 +1377,8 @@ class _tspyInputSwitcherArgs(ctypes.Structure): # struct tspyInputSwitcherArgs {
         ("remote_server_port", ctypes.c_long),  # UDP server port for remote control (0=none).
         ("receive_timeout", ctypes.c_long),     # Receive timeout before switch (0=none).
     ]
+
+## @endcond
 
 
 #-----------------------------------------------------------------------------
@@ -1541,6 +1553,10 @@ class InputSwitcher(NativeObject):
 # Module initialization
 #-----------------------------------------------------------------------------
 
+## @cond nodoxygen
+
 __author__ = 'Thierry Lelegard'
 __copyright__ = '2005-2021, Thierry Lelegard'
 __version__ = version()
+
+## @endcond
