@@ -12,3 +12,4 @@ default:
 install:
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck/python
 	install -m 644 tsduck.py ts.py $(SYSROOT)$(SYSPREFIX)/share/tsduck/python
+	rm -rf $(SYSROOT)$(SYSPREFIX)/share/tsduck/python/ts
