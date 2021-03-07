@@ -6,13 +6,13 @@
 #
 #----------------------------------------------------------------------------
 
-import ts
+import tsduck
 
 # A 32-bit plugin event code ("MPE1" ASCII)
 EVENT_CODE = 0x4D504531
 
 # A pure Python class which handles TSDuck plugin events.
-class EventHandler(ts.AbstractPluginEventHandler):
+class EventHandler(tsduck.AbstractPluginEventHandler):
 
     # This method is invoked each time a TSDuck plugin signals an event for which we registered.
     def handlePluginEvent(self, context, data):
@@ -22,13 +22,13 @@ class EventHandler(ts.AbstractPluginEventHandler):
         return True
 
 # Create an asynchronous report to log multi-threaded messages.
-rep = ts.AsyncReport()
+rep = tsduck.AsyncReport()
 
 # Create an event handler to catch plugin events.
 handler = EventHandler()
 
 # Create a TS processor, register our event handler, set plugin chain.
-tsp = ts.TSProcessor(rep)
+tsp = tsduck.TSProcessor(rep)
 tsp.registerEventHandler(handler, EVENT_CODE)
 tsp.input = ['http', 'https://github.com/tsduck/tsduck-test/raw/master/input/test-016.ts']
 tsp.plugins = [

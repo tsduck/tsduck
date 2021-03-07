@@ -204,6 +204,7 @@ Section /o "Python Bindings" SectionPython
     ; Python files.
     CreateDirectory "$INSTDIR\python"
     SetOutPath "$INSTDIR\python"
+    File "${PythonDir}\tsduck.py"
     File "${PythonDir}\ts.py"
 
 SectionEnd

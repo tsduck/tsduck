@@ -9,7 +9,7 @@
 #
 #----------------------------------------------------------------------------
 
-import ts
+import tsduck
 import json
 
 # This string is a user-defined marker to locate the JSON line in the log.
@@ -23,7 +23,7 @@ def process_json(data):
         print('Name: "%s", provider: "%s", bitrate: %d b/s' % (srv['name'], srv['provider'], srv['bitrate']))
 
 # A Python class which handles TSDuck log messages.
-class Logger(ts.AbstractAsyncReport):
+class Logger(tsduck.AbstractAsyncReport):
     # This method is invoked each time a message is logged by TSDuck.
     def log(self, severity, message):
         # Filter, locate, extract and parse the JSON output from plugin "analyze".
@@ -33,7 +33,7 @@ class Logger(ts.AbstractAsyncReport):
 
 # Main program: see details in "sample-tsp.py" or "sample-message-handling.py".
 rep = Logger()
-tsp = ts.TSProcessor(rep)
+tsp = tsduck.TSProcessor(rep)
 
 tsp.input = ['file', 'file.ts']
 tsp.plugins = [ ['analyze', '--json-line=' + json_marker] ]

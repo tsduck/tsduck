@@ -6,12 +6,12 @@
 #
 #----------------------------------------------------------------------------
 
-import ts
+import tsduck
 import os
 import tempfile
 
 # Create an asynchronous report to log multi-threaded messages.
-rep = ts.AsyncReport(severity = ts.Report.Verbose)
+rep = tsduck.AsyncReport(severity = tsduck.Report.Verbose)
 
 # Build a temporary file name to download a real TS file.
 url = "https://tsduck.io/streams/france-dttv/tnt-uhf30-546MHz-2019-01-22.ts"
@@ -20,7 +20,7 @@ tsfile = tempfile.gettempdir() + os.path.sep + tempfile.gettempprefix() + str(os
 # First phase: Download the TS file:
 print("Downloading %s to %s ..." % (url, tsfile))
 
-tsp = ts.TSProcessor(rep)
+tsp = tsduck.TSProcessor(rep)
 tsp.input = ['http', url]
 tsp.output = ['file', tsfile]
 tsp.start()
@@ -28,10 +28,10 @@ tsp.waitForTermination()
 tsp.delete()
 
 # Second phase: Play the file at regulated speed several times.
-# Must use another instance of ts.TSProcessor.
+# Must use another instance of tsduck.TSProcessor.
 print("Playing %s ..." % (tsfile))
 
-tsp = ts.TSProcessor(rep)
+tsp = tsduck.TSProcessor(rep)
 tsp.monitor = True
 tsp.input = ['file', tsfile, '--repeat', '2']
 tsp.plugins = [ ['regulate'] ]

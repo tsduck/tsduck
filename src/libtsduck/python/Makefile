@@ -11,4 +11,4 @@ default:
 .PHONY: install
 install:
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck/python
-	install -m 644 ts.py $(SYSROOT)$(SYSPREFIX)/share/tsduck/python
+	install -m 644 tsduck.py ts.py $(SYSROOT)$(SYSPREFIX)/share/tsduck/python

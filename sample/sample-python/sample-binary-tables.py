@@ -5,12 +5,12 @@
 #
 #----------------------------------------------------------------------------
 
-import ts
+import tsduck
 
 # Create a SectionFile.
-rep = ts.StdErrReport()
-duck = ts.DuckContext(rep)
-file1 = ts.SectionFile(duck)
+rep = tsduck.StdErrReport()
+duck = tsduck.DuckContext(rep)
+file1 = tsduck.SectionFile(duck)
 
 # Loading inline XML table.
 file1.loadXML("""<?xml version="1.0" encoding="UTF-8"?>
@@ -28,7 +28,7 @@ print(data.hex())
 print()
 
 # Build another SectionFile and load the binary data.
-file2 = ts.SectionFile(duck)
+file2 = tsduck.SectionFile(duck)
 file2.fromBinary(data)
 
 # Convert the second SectionFile to XML.

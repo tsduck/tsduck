@@ -14,12 +14,12 @@
 #
 #----------------------------------------------------------------------------
 
-import ts
+import tsduck
 
 # Create a SectionFile.
-rep = ts.StdErrReport()
-duck = ts.DuckContext(rep)
-file = ts.SectionFile(duck)
+rep = tsduck.StdErrReport()
+duck = tsduck.DuckContext(rep)
+file = tsduck.SectionFile(duck)
 
 # Load a binary file containing tables which were capture on a Japanese TS.
 file.loadBinary("japanese-tables.bin")
@@ -31,7 +31,7 @@ print("---- XML file content with default DVB settings ----")
 print(file.toXML())
 
 # Use typical settings for Japan.
-duck.addStandards(ts.DuckContext.ISDB | ts.DuckContext.JAPAN)
+duck.addStandards(tsduck.DuckContext.ISDB | tsduck.DuckContext.JAPAN)
 duck.setDefaultCharset("ARIB-STD-B24")
 duck.setTimeReference("JST")
 

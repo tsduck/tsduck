@@ -9,13 +9,13 @@
 #
 #----------------------------------------------------------------------------
 
-import ts
+import tsduck
 
 # This string is a user-defined marker to locate the hexa line in the log.
 LOG_PREFIX = "#TABLE#"
 
 # A Python class which handles TSDuck log messages.
-class Logger(ts.AbstractAsyncReport):
+class Logger(tsduck.AbstractAsyncReport):
     # This method is invoked each time a message is logged by TSDuck.
     def log(self, severity, message):
         # Filter, locate, extract and parse the hexa output from plugin "tables".
@@ -28,7 +28,7 @@ class Logger(ts.AbstractAsyncReport):
 rep = Logger()
 
 # Create a TS processor, set plugin chain.
-tsp = ts.TSProcessor(rep)
+tsp = tsduck.TSProcessor(rep)
 tsp.input = ['http', 'https://github.com/tsduck/tsduck-test/raw/master/input/test-001.ts']
 tsp.plugins = [ ['tables', '--pid', '0', '--log-hexa-line=' + LOG_PREFIX] ]
 tsp.output = ['drop']

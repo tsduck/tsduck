@@ -8,7 +8,7 @@
 #
 #----------------------------------------------------------------------------
 
-import ts
+import tsduck
 import xml.etree.ElementTree as xmlet
 
 # This string is a user-defined marker to locate the XML line in the log.
@@ -36,7 +36,7 @@ def process_xml(root):
             print('Service id: %d, name: "%s", provider: "%s"' % (id, name, provider))
 
 # A Python class which handles TSDuck log messages.
-class Logger(ts.AbstractAsyncReport):
+class Logger(tsduck.AbstractAsyncReport):
     # This method is invoked each time a message is logged by TSDuck.
     def log(self, severity, message):
         # Filter, locate, extract and parse the XML output from plugin "tables".
@@ -46,7 +46,7 @@ class Logger(ts.AbstractAsyncReport):
 
 # Main program: see details in "sample-tsp.py" or "sample-message-handling.py".
 rep = Logger()
-tsp = ts.TSProcessor(rep)
+tsp = tsduck.TSProcessor(rep)
 
 tsp.input = ['file', 'file.ts']
 tsp.plugins = [ ['tables', '--pid', '0x11', '--tid', '0x42', '--max-tables', '1', '--log-xml-line=' + sdt_xml_marker] ]

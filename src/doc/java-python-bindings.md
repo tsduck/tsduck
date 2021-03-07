@@ -27,14 +27,14 @@ the high-level classes.
 
 | Command line | C++ class                         | Java class                             | Python class
 | ------------ | --------------------------------- | -------------------------------------- | ------------------------
-| `tsp`        | `ts::TSProcessor`                 | `io.tsduck.TSProcessor`                | `ts.TSProcessor`
-| `tsswitch`   | `ts::InputSwitcher`               | `io.tsduck.InputSwitcher`              | `ts.InputSwitcher`
-| `tstabcomp`  | `ts::SectionFile`                 | `io.tsduck.SectionFile`                | `ts.SectionFile`
-| n/a          | `ts::DuckContext`                 | `io.tsduck.DuckContext`                | `ts.DuckContext`
-| n/a          | `ts::Report`                      | `io.tsduck.AbstractSyncReport`         | `ts.AbstractSyncReport`
-| n/a          | `ts::AsyncReport`                 | `io.tsduck.AbstractAsyncReport`        | `ts.AbstractAsyncReport`
-| n/a          | `ts::PluginEventHandlerInterface` | `io.tsduck.AbstractPluginEventHandler` | `ts.AbstractPluginEventHandler`
-| n/a          | `ts::PluginEventContext`          | `io.tsduck.PluginEventContext`         | `ts.PluginEventContext`
+| `tsp`        | `ts::TSProcessor`                 | `io.tsduck.TSProcessor`                | `tsduck.TSProcessor`
+| `tsswitch`   | `ts::InputSwitcher`               | `io.tsduck.InputSwitcher`              | `tsduck.InputSwitcher`
+| `tstabcomp`  | `ts::SectionFile`                 | `io.tsduck.SectionFile`                | `tsduck.SectionFile`
+| n/a          | `ts::DuckContext`                 | `io.tsduck.DuckContext`                | `tsduck.DuckContext`
+| n/a          | `ts::Report`                      | `io.tsduck.AbstractSyncReport`         | `tsduck.AbstractSyncReport`
+| n/a          | `ts::AsyncReport`                 | `io.tsduck.AbstractAsyncReport`        | `tsduck.AbstractAsyncReport`
+| n/a          | `ts::PluginEventHandlerInterface` | `io.tsduck.AbstractPluginEventHandler` | `tsduck.AbstractPluginEventHandler`
+| n/a          | `ts::PluginEventContext`          | `io.tsduck.PluginEventContext`         | `tsduck.PluginEventContext`
 
 # Support classes  {#jpsupportclasses}
 
@@ -84,11 +84,11 @@ applications illustrate this mechanism.
 
 | Category               | C++ class         | Java class                      | Python class
 | ---------------------- | ----------------- | ------------------------------- | ------------------------
-| Synchronous, native    | `ts::CerrReport`  | `io.tsduck.ErrReport`           | `ts.StdErrReport`
-|                        | `ts::NullReport`  | `io.tsduck.NullReport`          | `ts.NullReport`
-| Asynchronous, native   | `ts::AsyncReport` | `io.tsduck.AsyncReport`         | `ts.AsyncReport`
-| Synchronous, abstract  | `ts::Report`      | `io.tsduck.AbstractSyncReport`  | `ts.AbstractSyncReport`
-| Asynchronous, abstract | `ts::AsyncReport` | `io.tsduck.AbstractAsyncReport` | `ts.AbstractAsyncReport`
+| Synchronous, native    | `ts::CerrReport`  | `io.tsduck.ErrReport`           | `tsduck.StdErrReport`
+|                        | `ts::NullReport`  | `io.tsduck.NullReport`          | `tsduck.NullReport`
+| Asynchronous, native   | `ts::AsyncReport` | `io.tsduck.AsyncReport`         | `tsduck.AsyncReport`
+| Synchronous, abstract  | `ts::Report`      | `io.tsduck.AbstractSyncReport`  | `tsduck.AbstractSyncReport`
+| Asynchronous, abstract | `ts::AsyncReport` | `io.tsduck.AbstractAsyncReport` | `tsduck.AbstractAsyncReport`
 
 ## Plugin events  {#jpevents}
 
@@ -225,20 +225,15 @@ can use TSDuck directly.
 
 # Using TSDuck Python bindings  {#pyusing}
 
-All TSDuck bindings are defined in a module named `ts`.
+All TSDuck bindings are defined in a module named `tsduck`.
 All Python programs using TSDuck shall consequently start with:
 ~~~
-import ts
+import tsduck
 ~~~
 
 A few examples are provided in the directory
 [`sample/sample-python`](https://github.com/tsduck/tsduck/tree/master/sample/sample-python)
 in the TSDuck source code package.
-
-Warning: Do to the structure of Python modules and how they are managed by Doxygen,
-the Python classes are documented with intermediate names such as `ts.tsp.TSProcessor`
-but the actual name to use in applications should be `ts.TSProcessor` without
-intermediate name.
 
 ## Linux  {#pylinux}
 

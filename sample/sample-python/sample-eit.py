@@ -5,12 +5,12 @@
 #
 #----------------------------------------------------------------------------
 
-import ts, os
+import tsduck, os
 
 # Create a SectionFile.
-rep = ts.StdErrReport()
-duck = ts.DuckContext(rep)
-file = ts.SectionFile(duck)
+rep = tsduck.StdErrReport()
+duck = tsduck.DuckContext(rep)
+file = tsduck.SectionFile(duck)
 
 # Loading inline XML EIT's. There is one EITp/f without following event and an EIT
 # Schedule with two events which should not be grouped and in the wrong order.
