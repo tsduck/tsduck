@@ -3,7 +3,7 @@ include(../tsduck.pri)
 TEMPLATE = app
 TARGET = utest
 
-QMAKE_POST_LINK += cp ../tsplugin_skip/tsplugin_skip.so . $$escape_expand(\\n\\t)
+# QMAKE_POST_LINK += cp ../tsplugin_skip/tsplugin_skip.so . $$escape_expand(\\n\\t)
 
 HEADERS += $$system(find $$SRCROOT/utest -name \\*.h)
 SOURCES += $$system(find $$SRCROOT/utest -name \\*.cpp)

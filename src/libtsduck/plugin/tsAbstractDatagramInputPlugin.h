@@ -68,13 +68,16 @@ namespace ts {
         //! @param [in] system_time_name When the subclass provides timestamps, this is a lowercase name
         //! which is used in option -\-timestamp-priority. When empty, there is no timestamps from the subclass.
         //! @param [in] system_time_description Description of @a system_time_name for help text.
+        //! @param [in] real_time If true (the default), the reception occurs in real-time, typically from
+        //! the network. When false, the "reception" can be reading a capture file.
         //!
         AbstractDatagramInputPlugin(TSP* tsp,
                                     size_t buffer_size,
                                     const UString& description = UString(),
                                     const UString& syntax = UString(),
                                     const UString& system_time_name = UString(),
-                                    const UString& system_time_description = UString());
+                                    const UString& system_time_description = UString(),
+                                    bool real_time = true);
 
         //!
         //! Receive a datagram message.
@@ -85,12 +88,13 @@ namespace ts {
         //! @param [out] timestamp Receive timestamp in micro-seconds or -1 if not available.
         //! @return True on success, false on error.
         //!
-        virtual bool receiveDatagram(void* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp) = 0;
+        virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp) = 0;
 
     private:
         // Order of priority for input timestamps. SYSTEM means lower layer from subclass (UDP, SRT, etc).
         enum TimePriority {RTP_SYSTEM_TSP, SYSTEM_RTP_TSP, RTP_TSP, SYSTEM_TSP, TSP_ONLY};
 
+        bool          _real_time;             // Real-time reception.
         MilliSecond   _eval_time;             // Bitrate evaluation interval in milli-seconds
         MilliSecond   _display_time;          // Bitrate display interval in milli-seconds
         Enumeration   _time_priority_enum;    // Enumeration values for _time_priority

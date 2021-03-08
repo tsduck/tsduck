@@ -224,9 +224,9 @@ namespace ts {
         bool          _rewindable;       //!< Opened in rewindable mode
         bool          _regular;          //!< Is a regular file (ie. not a pipe or special device)
 #if defined(TS_WINDOWS)
-        ::HANDLE      _handle;         //!< File handle
+        ::HANDLE      _handle;           //!< File handle
 #else
-        int           _fd;             //!< File descriptor
+        int           _fd;               //!< File descriptor
 #endif
 
         // Implementation of AbstractReadStreamInterface

@@ -2,11 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2266
+VERSION 3.26-2271
 
 [NEW] New commands and plugins:
 
   * Added input and output plugins "memory" (direct application interaction).
+  * Added input plugin "pcap" (Wireshark capture files).
 
 [IMP] Improvements on existing commands and plugins:
 

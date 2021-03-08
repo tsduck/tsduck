@@ -42,8 +42,10 @@ ts::AbstractDatagramInputPlugin::AbstractDatagramInputPlugin(TSP* tsp_,
                                                              const UString& description,
                                                              const UString& syntax,
                                                              const UString& system_time_name,
-                                                             const UString& system_time_description) :
+                                                             const UString& system_time_description,
+                                                             bool real_time) :
     InputPlugin(tsp_, description, syntax),
+    _real_time(real_time),
     _eval_time(0),
     _display_time(0),
     _time_priority_enum(),
@@ -62,18 +64,20 @@ ts::AbstractDatagramInputPlugin::AbstractDatagramInputPlugin(TSP* tsp_,
     _inbuf(std::max(buffer_size, 7 * PKT_SIZE)),
     _mdata(_inbuf.size() / PKT_SIZE)
 {
-    option(u"display-interval", 'd', POSITIVE);
-    help(u"display-interval",
-         u"Specify the interval in seconds between two displays of the evaluated "
-         u"real-time input bitrate. The default is to never display the bitrate. "
-         u"This option is ignored if --evaluation-interval is not specified.");
+    if (_real_time) {
+        option(u"display-interval", 'd', POSITIVE);
+        help(u"display-interval",
+             u"Specify the interval in seconds between two displays of the evaluated "
+             u"real-time input bitrate. The default is to never display the bitrate. "
+             u"This option is ignored if --evaluation-interval is not specified.");
 
-    option(u"evaluation-interval", 'e', POSITIVE);
-    help(u"evaluation-interval",
-         u"Specify that the real-time input bitrate shall be evaluated on a regular "
-         u"basis. The value specifies the number of seconds between two evaluations. "
-         u"By default, the real-time input bitrate is never evaluated and the input "
-         u"bitrate is evaluated from the PCR in the input packets.");
+        option(u"evaluation-interval", 'e', POSITIVE);
+        help(u"evaluation-interval",
+             u"Specify that the real-time input bitrate shall be evaluated on a regular "
+             u"basis. The value specifies the number of seconds between two evaluations. "
+             u"By default, the real-time input bitrate is never evaluated and the input "
+             u"bitrate is evaluated from the PCR in the input packets.");
+    }
 
     // Order of priority for input timestamps.
     _time_priority_enum.add(u"rtp-tsp", TimePriority::RTP_TSP);
@@ -106,7 +110,7 @@ ts::AbstractDatagramInputPlugin::AbstractDatagramInputPlugin(TSP* tsp_,
 
 bool ts::AbstractDatagramInputPlugin::isRealTime()
 {
-    return true;
+    return _real_time;
 }
 
 
@@ -116,9 +120,10 @@ bool ts::AbstractDatagramInputPlugin::isRealTime()
 
 bool ts::AbstractDatagramInputPlugin::getOptions()
 {
-    // Get command line arguments
-    _eval_time = MilliSecPerSec * intValue<MilliSecond>(u"evaluation-interval", 0);
-    _display_time = MilliSecPerSec * intValue<MilliSecond>(u"display-interval", 0);
+    if (_real_time) {
+        _eval_time = MilliSecPerSec * intValue<MilliSecond>(u"evaluation-interval", 0);
+        _display_time = MilliSecPerSec * intValue<MilliSecond>(u"display-interval", 0);
+    }
     getIntValue(_time_priority, u"timestamp-priority", _default_time_priority);
     return true;
 }
@@ -144,7 +149,7 @@ bool ts::AbstractDatagramInputPlugin::start()
 
 ts::BitRate ts::AbstractDatagramInputPlugin::getBitrate()
 {
-    if (_eval_time <= 0 || _start_0 == _start_1) {
+    if (!_real_time || _eval_time <= 0 || _start_0 == _start_1) {
         // Input bitrate not evaluated at all or first evaluation period not yet complete
         return 0;
     }
@@ -239,7 +244,7 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
     }
 
     // If new packets were received, we may need to re-evaluate the real-time input bitrate.
-    if (new_packets && _eval_time > 0) {
+    if (new_packets && _real_time && _eval_time > 0) {
 
         const Time now(Time::CurrentUTC());
 
