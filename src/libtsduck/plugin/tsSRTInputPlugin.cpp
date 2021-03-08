@@ -43,7 +43,9 @@ const int ts::SRTInputPlugin::REFERENCE = 0;
 //----------------------------------------------------------------------------
 
 ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
-    AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE, u"Receive TS packets from Secure Reliable Transport (SRT)", u"[options] [address:]port", u"srt", u"SRT source time stamp"),
+    AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE,
+                                u"Receive TS packets from Secure Reliable Transport (SRT)", u"[options] [address:]port",
+                                u"srt", u"SRT source time stamp"),
     _sock(),
     _mode(SRTSocketMode::CALLER),
     _local_addr(),
@@ -129,7 +131,7 @@ bool ts::SRTInputPlugin::abortInput()
 // Datagram reception method.
 //----------------------------------------------------------------------------
 
-bool ts::SRTInputPlugin::receiveDatagram(void* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp)
+bool ts::SRTInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp)
 {
     return _sock.receive(buffer, buffer_size, ret_size, timestamp, *tsp);
 }

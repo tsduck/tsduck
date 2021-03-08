@@ -437,6 +437,8 @@
 #include "tsPartialReceptionDescriptor.h"
 #include "tsPartialTransportStreamDescriptor.h"
 #include "tsPAT.h"
+#include "tsPcap.h"
+#include "tsPcapFile.h"
 #include "tsPCAT.h"
 #include "tsPCRAnalyzer.h"
 #include "tsPCRRegulator.h"
