@@ -229,8 +229,8 @@ bool ts::PcapFile::analyzeNgInterface(const uint8_t* data, size_t size, Report& 
     ifd.time_units = MicroSecPerSec;
 
     // Loop on options. Each option has 16-bit tag and 16-bit length.
-    data += 8;
     const uint8_t* end = data + size;
+    data += 8;
     while (data + 4 <= end) {
 
         // Get tag and length.
