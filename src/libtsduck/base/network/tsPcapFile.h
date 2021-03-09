@@ -137,6 +137,6 @@ namespace ts {
         // Read 32 or 16 bits using the endianness.
         uint16_t get16(const void* addr) const { return _be ? GetUInt16BE(addr) : GetUInt16LE(addr); }
         uint32_t get32(const void* addr) const { return _be ? GetUInt32BE(addr) : GetUInt32LE(addr); }
-        uint32_t get64(const void* addr) const { return _be ? GetUInt64BE(addr) : GetUInt64LE(addr); }
+        uint64_t get64(const void* addr) const { return _be ? GetUInt64BE(addr) : GetUInt64LE(addr); }
     };
 }
