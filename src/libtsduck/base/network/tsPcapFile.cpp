@@ -157,7 +157,7 @@ bool ts::PcapFile::readall(uint8_t* data, size_t size, Report& report)
         }
 
         // Actual number of bytes.
-        const size_t insize = std::min<size_t>(_in->gcount(), size);
+        const size_t insize = std::min(size_t(_in->gcount()), size);
         size -= insize;
         data += insize;
     }
