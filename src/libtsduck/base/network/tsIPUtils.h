@@ -424,7 +424,6 @@ namespace ts {
     constexpr size_t  IPv4_SRC_ADDR_OFFSET  =    12;   //!< Offset of source IP address in an IPv4 header.
     constexpr size_t  IPv4_DEST_ADDR_OFFSET =    16;   //!< Offset of destination IP address in an IPv4 header.
     constexpr size_t  IPv4_MIN_HEADER_SIZE  =    20;   //!< Minimum size of an IPv4 header.
-    constexpr size_t  UDP_HEADER_SIZE       =     8;   //!< Size of a UDP header.
     constexpr size_t  IP_MAX_PACKET_SIZE    = 65536;   //!< Maximum size of an IP packet.
 
     //!
@@ -472,6 +471,40 @@ namespace ts {
     //! @return True if the checksum was update, false on incorrect buffer.
     //!
     TSDUCKDLL bool UpdateIPHeaderChecksum(void* data, size_t size);
+
+    //------------------------------------------------------------------------
+    // Ethernet II link layer.
+    //------------------------------------------------------------------------
+
+    constexpr size_t ETHER_DEST_ADDR_OFFSET =  0;   //!< Offset of destination MAC address in an Ethernet II header.
+    constexpr size_t ETHER_SRC_ADDR_OFFSET  =  6;   //!< Offset of destination MAC address in an Ethernet II header.
+    constexpr size_t ETHER_TYPE_OFFSET      = 12;   //!< Offset of destination MAC address in an Ethernet II header.
+    constexpr size_t ETHER_HEADER_SIZE      = 14;   //!< Size of an Ethernet II header.
+    constexpr size_t ETHER_ADDR_SIZE        =  6;   //!< Size in bytes of a MAC address in an Ethernet II header.
+    constexpr size_t ETHER_CRC_SIZE         =  4;   //!< Size in bytes of the trailing CRC in an Ethernet II frame.
+
+    //!
+    //! Selected Ethernet II protocol type identifiers.
+    //! @see https://en.wikipedia.org/wiki/EtherType
+    //!
+    enum : uint16_t {
+        ETHERTYPE_IPv4   = 0x0800,  //!< Protocol identifier for IPv4.
+        ETHERTYPE_ARP    = 0x0806,  //!< Protocol identifier for ARP.
+        ETHERTYPE_WOL    = 0x0842,  //!< Protocol identifier for Wake-on-LAN.
+        ETHERTYPE_RARP   = 0x8035,  //!< Protocol identifier for RARP.
+        ETHERTYPE_802_1Q = 0x8100,  //!< Protocol identifier for a 2-byte IEEE 802.1Q tag (VLAN) after EtherType, then real EtherType.
+        ETHERTYPE_IPv6   = 0x86DD,  //!< Protocol identifier for IPv6.
+    };
+
+    //------------------------------------------------------------------------
+    // User Datagram Protocol (UDP)
+    //------------------------------------------------------------------------
+
+    constexpr size_t UDP_SRC_PORT_OFFSET  = 0;   //!< Offset of source port in a UDP header.
+    constexpr size_t UDP_DEST_PORT_OFFSET = 2;   //!< Offset of destination port in a UDP header.
+    constexpr size_t UDP_LENGTH_OFFSET    = 4;   //!< Offset of packet length (UDP header + UDP payload) in a UDP header.
+    constexpr size_t UDP_CHECKSUM_OFFSET  = 6;   //!< Offset of checksum in a UDP header.
+    constexpr size_t UDP_HEADER_SIZE      = 8;   //!< Size of a UDP header.
 
     //------------------------------------------------------------------------
     // Real-time Transport Protocol (RTP)

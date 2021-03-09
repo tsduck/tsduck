@@ -275,4 +275,14 @@ namespace ts {
     private:
         uint16_t _port;  // Port in host byte order
     };
+
+    //!
+    //! Vector of socket addresses.
+    //!
+    typedef std::vector<SocketAddress> SocketAddressVector;
+
+    //!
+    //! Set of socket addresses.
+    //!
+    typedef std::set<SocketAddress> SocketAddressSet;
 }

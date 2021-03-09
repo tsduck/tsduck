@@ -469,10 +469,14 @@ bool ts::PcapFile::readIPv4(uint8_t* user_data, size_t user_max_size, size_t& re
             cap_start += 4;
             cap_size -= 4;
         }
-        else if (ifd.link_type == LINKTYPE_ETHERNET && cap_size > 14 + ifd.fcs_size && GetUInt16BE(buffer.data() + cap_start + 12) == 0x0800) {
+        else if ((ifd.link_type == LINKTYPE_ETHERNET || ifd.link_type == LINKTYPE_NULL || ifd.link_type == LINKTYPE_LOOP) &&
+                 cap_size > ETHER_HEADER_SIZE + ifd.fcs_size && GetUInt16BE(buffer.data() + cap_start + ETHER_TYPE_OFFSET) == ETHERTYPE_IPv4)
+        {
             // Ethernet frame: 14-byte header: destination MAC (6 bytes), source MAC (6 bytes), ether type (2 bytes, 0x0800 for IPv4).
-            cap_start += 14;
-            cap_size -= 14 + ifd.fcs_size;
+            // This should apply to LINKTYPE_ETHERNET only. However, in some pcap files (not pcap-ng), it has been noticed that
+            // LINKTYPE_NULL and LINKTYPE_LOOP can contain a raw Ethernet frame without the initial 4 bytes of encapsulation.
+            cap_start += ETHER_HEADER_SIZE;
+            cap_size -= ETHER_HEADER_SIZE + ifd.fcs_size;
         }
         else if (ifd.link_type == LINKTYPE_RAW && cap_size >= IPv4_MIN_HEADER_SIZE && (buffer[cap_start] >> 4) == 4) {
             // Raw IPv4 or IPv6 header (version in first byte), no encopsulation.
@@ -482,8 +486,9 @@ bool ts::PcapFile::readIPv4(uint8_t* user_data, size_t user_max_size, size_t& re
             cap_size = 0;
         }
 
-        // If an IPv4 datagram was found, copy it into the user's buffer.
-        if (cap_size > 0) {
+        // A possible IPv4 datagram was found. Check that it starts with something that looks like
+        // an IPv4 header and copy it into the user's buffer.
+        if (IPHeaderSize(buffer.data() + cap_start, cap_size) != 0) {
             ret_size = std::min(user_max_size, cap_size);
             ::memcpy(user_data, buffer.data() + cap_start, ret_size);
             return true;
