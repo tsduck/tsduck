@@ -237,7 +237,12 @@ namespace ts {
         // Actual starting point of thread. Parameter is "this".
         static ::DWORD WINAPI ThreadProc(::LPVOID parameter);
 #else
-        pthread_t _pthread;
+    #if defined(GPROF)
+        // When using gprof, we need to pass the ITIMER_PROF value to the thread.
+        ::itimerval _itimer;
+        bool        _itimer_valid;
+    #endif
+        pthread_t   _pthread;
         // Actual starting point of thread. Parameter is "this".
         static void* ThreadProc(void* parameter);
 #endif

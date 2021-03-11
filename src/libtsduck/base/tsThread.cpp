@@ -38,28 +38,13 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Default constructor (all attributes have their default values).
+// Constructors and destructors
 //----------------------------------------------------------------------------
 
 ts::Thread::Thread() :
-    _attributes(),
-    _mutex(),
-    _typename(),
-    _started(false),
-    _waiting(false),
-#if defined(TS_WINDOWS)
-    _handle(INVALID_HANDLE_VALUE),
-    _thread_id(0)
-#else
-    _pthread()
-#endif
+    Thread(ThreadAttributes())
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from specified attributes.
-//----------------------------------------------------------------------------
 
 ts::Thread::Thread(const ThreadAttributes& attributes) :
     _attributes(attributes),
@@ -71,15 +56,15 @@ ts::Thread::Thread(const ThreadAttributes& attributes) :
     _handle(INVALID_HANDLE_VALUE),
     _thread_id(0)
 #else
+#if defined(GPROF)
+    // When using gprof, get the initial profiling timer.
+    _itimer(),
+    _itimer_valid(::getitimer(ITIMER_PROF, &_itimer) == 0),
+#endif
     _pthread()
 #endif
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
 
 ts::Thread::~Thread()
 {
@@ -367,8 +352,9 @@ void ts::Thread::mainWrapper()
 
 ::DWORD WINAPI ts::Thread::ThreadProc(::LPVOID parameter)
 {
-    // Execute thread code.
     Thread* thread = reinterpret_cast<Thread*>(parameter);
+
+    // Execute thread code.
     thread->mainWrapper();
 
     // Perform auto-deallocation
@@ -385,8 +371,16 @@ void ts::Thread::mainWrapper()
 
 void* ts::Thread::ThreadProc(void* parameter)
 {
-    // Execute thread code.
     Thread* thread = reinterpret_cast<Thread*>(parameter);
+
+#if defined(GPROF)
+    // When using gprof, set the same profiling timer as the calling thread.
+    if (thread->_itimer_valid) {
+        ::setitimer(ITIMER_PROF, &thread->_itimer, nullptr);
+    }
+#endif
+
+    // Execute thread code.
     thread->mainWrapper();
 
     // Perform auto-deallocation

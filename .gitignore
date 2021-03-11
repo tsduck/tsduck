@@ -53,3 +53,6 @@ cov-int
 bin
 __pycache__
 *.pyc
+gmon.out
+callgrind.out
+callgrind.out.*

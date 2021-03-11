@@ -107,7 +107,7 @@ tstool {
     SOURCES += $$SRCROOT/tstools/$${TARGET}.cpp
 }
 util {
-    # TSDuck utils shall use "CONFIG += utils"
+    # TSDuck utils shall use "CONFIG += util"
     CONFIG += libtsduck
     TEMPLATE = app
     SOURCES += $$SRCROOT/utils/$${TARGET}.cpp
@@ -119,6 +119,8 @@ tsplugin {
     SOURCES += $$SRCROOT/tsplugins/$${TARGET}.cpp
     QMAKE_POST_LINK += mkdir -p ../tsp $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += cp $${TARGET}.so ../tsp $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += mkdir -p ../tsprofiling $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += cp $${TARGET}.so ../tsprofiling $$escape_expand(\\n\\t)
 }
 libtsduck {
     # Applications using libtsduck shall use "CONFIG += libtsduck".

@@ -35,7 +35,7 @@ OBJSUBDIR := objs-utils
 include ../../Makefile.tsduck
 
 # Filter out Windows-only tools.
-EXECS := $(filter-out $(BINDIR)/setpath,$(EXECS))
+EXECS := $(filter-out $(BINDIR)/setpath $(if $(NOTEST),$(BINDIR)/tsprofiling,),$(EXECS))
 
 default: execs
 	@true
@@ -43,13 +43,9 @@ default: execs
 .PHONY: execs
 execs: $(EXECS)
 
-# Use dynamic or static library.
-ifndef STATIC
-    $(EXECS): $(SHARED_LIBTSDUCK)
-else
-    LDFLAGS_EXTRA = -static
-    $(EXECS): $(STATIC_LIBTSDUCK)
-endif
+# We build tsprofiling with the static library
+$(BINDIR)/tsprofiling: $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS))) $(STATIC_LIBTSDUCK)
+$(filter-out $(BINDIR)/tsprofiling,$(EXECS)): $(SHARED_LIBTSDUCK)
 
 .PHONY: install-tools install-devel
 install-tools: $(EXECS)
