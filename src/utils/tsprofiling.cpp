@@ -53,8 +53,10 @@
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
-// We use the TSDuck static library, enforce a reference to MPEG/DVB structures.
+// On Linux, we use the TSDuck static library, enforce a reference to MPEG/DVB structures.
+#if !defined(TS_WINDOWS)
 const ts::StaticReferencesDVB dependenciesForStaticLib;
+#endif
 
 
 //----------------------------------------------------------------------------
