@@ -111,6 +111,12 @@
 #  listvars:
 #    Display make variables for debug purposes.
 #
+#  gcov:
+#   Compile with gcov support.
+#
+#  gprof:
+#   Compile with gprof support.
+#
 #  m32:
 #    Build the default target of the current directory for 32-bit target
 #    (see input variable M32).
@@ -273,6 +279,10 @@
 #  GCOV
 #    If defined (any non-empty value), compile and link with gcov support.
 #    The preprocessing macro GCOV is also defined for C/C++ compilations.
+#
+#  GPROF
+#    If defined (any non-empty value), compile and link with gprof support.
+#    The preprocessing macro GPROF is also defined for C/C++ compilations.
 #
 #  LDCXX
 #    Must be defined to a non-empty value to include the C++ libraries in
@@ -855,6 +865,16 @@ debug:
 llvm clang:
 	+@$(MAKE) LLVM=true
 
+# Alternate target to recompile with gcov support.
+.PHONY: gcov
+gcov:
+	+@$(MAKE) DEBUG=true GCOV=true
+
+# Alternate target to recompile with gprof support.
+.PHONY: gprof
+gprof:
+	+@$(MAKE) DEBUG=true GPROF=true
+
 # Alternate target to recompile for 32-bit target
 .PHONY: m32
 m32:
@@ -943,6 +963,15 @@ else
     LDFLAGS_GCOV =
 endif
 
+# Compilation flags for code profiling using gprof.
+ifdef GPROF
+    CFLAGS_GPROF = -g -pg -DGPROF=1
+    LDFLAGS_GPROF = -g -pg
+else
+    CFLAGS_GPROF =
+    LDFLAGS_GPROF =
+endif
+
 # Compilation flags for posix threads.
 CFLAGS_PTHREAD = -pthread
 LDFLAGS_PTHREAD = $(if $(MACOS),,-pthread)
@@ -952,11 +981,14 @@ LDLIBS += $(if $(LDCXX),-lstdc++,) -lpthread $(if $(MACOS),,-lrt) -lm
 
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using FLAGS_EXTRA.
-CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_SECURITY) $(CFLAGS_INCLUDES) \
-           $(TARGET_FLAGS) $(CFLAGS_FPIC) $(CFLAGS_STANDARD) $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CFLAGS_EXTRA)
-CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) \
-           $(TARGET_FLAGS) $(CFLAGS_FPIC) $(CXXFLAGS_STANDARD) $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)
-LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_FLAGS) $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA)
+CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_GPROF) $(CFLAGS_WARNINGS) \
+           $(CFLAGS_SECURITY) $(CFLAGS_INCLUDES) $(TARGET_FLAGS) $(CFLAGS_FPIC) $(CFLAGS_STANDARD) \
+           $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CFLAGS_EXTRA)
+CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_GPROF) $(CXXFLAGS_WARNINGS) \
+           $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) $(TARGET_FLAGS) $(CFLAGS_FPIC) $(CXXFLAGS_STANDARD) \
+           $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)
+LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(LDFLAGS_GPROF) $(TARGET_FLAGS) \
+           $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA)
 ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
 # Output subdirectories in each project directory.
@@ -1075,7 +1107,8 @@ endif
 clean:
 	@echo '  [CLEAN] $(CURDIR)'; \
 	rm -rf $(EXTRA_CLEAN) *~ \
-	    *.o *.ko *.a *.class *.pyc *.gcov *.dep tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump
+	    *.o *.ko *.a *.class *.pyc *.gcov gmon.out *.dep tmp *.tmp *.out *.log *.tlog core core.* \
+	    vgcore.* *.stackdump callgrind.out*
 	+@$(RECURSE)
 distclean: clean
 	@echo '  [DISTCLEAN] $(CURDIR)'; \
@@ -1088,12 +1121,12 @@ distclean: clean
 # List of file and directory patterns for non-source files.
 NOSOURCE = \
     .git .svn *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* [Bb]in doxy doxygen *.t2d \
-    *.o *.so *.ko *.a *.lib *.obj *.exe *.dll *.gcov *.dep .kdbgrc.* \
+    *.o *.so *.ko *.a *.lib *.obj *.exe *.dll *.gcov gmon.out *.dep .kdbgrc.* \
     tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
     .vs ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user *.user.* \
     *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
     .tmp_versions *.VC.db *.VC.dbopen *.VC.opendb *.deb *.rpm *.bz2 *.7z \
-    *~ *.bak *.autosave cov-int bin
+    *~ *.bak *.autosave cov-int bin callgrind.out*
 
 # Doxygen version 1.8.17 has a bug which reports thousands of false errors.
 # Define a filter for doxygen errors.

@@ -32,9 +32,15 @@
 #-----------------------------------------------------------------------------
 
 
-# Forced usage of LLVM (clang) when GCC is otherwise the default.
+# Duplicate output for specific compilers or profiling tools.
 ifdef LLVM
     BINDIR_SUFFIX = -clang
+endif
+ifdef GCOV
+    BINDIR_SUFFIX = -gcov
+endif
+ifdef GPROF
+    BINDIR_SUFFIX = -gprof
 endif
 
 # Standard common makefile is in same directory.
