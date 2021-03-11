@@ -1,24 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
   </ImportGroup>
-
   <ItemGroup>
     <ClCompile Include="..\..\src\utils\tsprofiling.cpp" />
   </ItemGroup>
-
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{C932660E-56D0-40FD-9A90-A7DAD8C93F73}</ProjectGuid>
+    <ProjectGuid>{697160DD-281E-4BDB-98A6-00BC1A2031B1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tsprofiling</RootNamespace>
   </PropertyGroup>
-
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-target-exe.props" />
     <Import Project="msvc-use-tsduckdll.props" />
     <Import Project="msvc-common-end.props" />
   </ImportGroup>
-
 </Project>
