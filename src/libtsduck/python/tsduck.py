@@ -32,7 +32,6 @@
 #-----------------------------------------------------------------------------
 
 import os
-import re
 import ctypes
 import ctypes.util
 
@@ -69,6 +68,10 @@ def _searchLibTSDuck():
 # Load the TSDuck library.
 _lib = ctypes.CDLL(_searchLibTSDuck())
 
+# Definition of some C/C++ pointer types.
+_c_uint8_p = ctypes.POINTER(ctypes.c_uint8)
+_c_size_p = ctypes.POINTER(ctypes.c_size_t)
+
 ## @endcond
 
 
@@ -82,7 +85,10 @@ _lib = ctypes.CDLL(_searchLibTSDuck())
 class _InByteBuffer:
     # Constructor with string value.
     def __init__(self, string):
-        self._data = bytearray(string.encode("utf-16"))
+        if isinstance(string, str):
+            self._data = bytearray(string.encode("utf-16"))
+        else:
+            self._data = bytearray()
 
     # Append with the content of a string or list of strings.
     # Strings are separated with an FFFF sequence.
@@ -90,7 +96,7 @@ class _InByteBuffer:
         if isinstance(strings, list):
             for s in strings:
                 self.extend(s)
-        else:
+        elif isinstance(strings, str):
             if len(self._data) > 0:
                 self._data.extend(b'\xFF\xFF')
             self._data.extend(strings.encode("utf-16"))
@@ -98,7 +104,7 @@ class _InByteBuffer:
     # "uint8_t* buffer" parameter for the C++ function.
     def data_ptr(self):
         carray_type = ctypes.c_uint8 * len(self._data)
-        return ctypes.cast(carray_type.from_buffer(self._data), ctypes.POINTER(ctypes.c_uint8))
+        return ctypes.cast(carray_type.from_buffer(self._data), _c_uint8_p)
 
     # "size_t size" parameter for the C++ function.
     def size(self):
@@ -125,7 +131,7 @@ class _OutByteBuffer:
     # "uint8_t* buffer" parameter for the C++ function.
     def data_ptr(self):
         carray_type = ctypes.c_uint8 * self._size.value
-        return ctypes.cast(carray_type.from_buffer(self._data), ctypes.POINTER(ctypes.c_uint8))
+        return ctypes.cast(carray_type.from_buffer(self._data), _c_uint8_p)
 
     # "size_t* size" parameter for the C++ function.
     def size_ptr(self):
@@ -190,7 +196,7 @@ def version():
     # void tspyVersionString(uint8_t* buffer, size_t* size)
     cfunc = _lib.tspyVersionString
     cfunc.restype = None
-    cfunc.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_size_t)]
+    cfunc.argtypes = [_c_uint8_p, _c_size_p]
     buf = _OutByteBuffer(64)
     cfunc(buf.data_ptr(), buf.size_ptr())
     return buf.to_string()
@@ -286,7 +292,7 @@ class Report(NativeObject):
         # void tspyReportHeader(int severity, uint8_t* buffer, size_t* buffer_size)
         cfunc = _lib.tspyReportHeader
         cfunc.restype = None
-        cfunc.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_size_t)]
+        cfunc.argtypes = [ctypes.c_int, _c_uint8_p, _c_size_p]
         buf = _OutByteBuffer(64)
         cfunc(severity, buf.data_ptr(), buf.size_ptr())
         return buf.to_string()
@@ -319,7 +325,7 @@ class Report(NativeObject):
         # void tspyLogReport(void* report, int severity, const uint8_t* buffer, size_t size)
         cfunc = _lib.tspyLogReport
         cfunc.restype = None
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+        cfunc.argtypes = [ctypes.c_void_p, ctypes.c_int, _c_uint8_p, ctypes.c_size_t]
         buf = _InByteBuffer(message)
         cfunc(self._native_object, severity, buf.data_ptr(), buf.size())
 
@@ -592,7 +598,7 @@ class DuckContext(NativeObject):
         # bool tspyDuckContextSetDefaultCharset(void* duck_ptr, const uint8_t* name, size_t name_size)
         cfunc = _lib.tspyDuckContextSetDefaultCharset
         cfunc.restype = ctypes.c_bool
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+        cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         buf = _InByteBuffer(charset)
         return bool(cfunc(self._native_object, buf.data_ptr(), buf.size()))
 
@@ -681,7 +687,7 @@ class DuckContext(NativeObject):
         # bool tspyDuckContextSetTimeReference(void* duck_ptr, const uint8_t* name, size_t name_size)
         cfunc = _lib.tspyDuckContextSetTimeReference
         cfunc.restype = ctypes.c_bool
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+        cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         buf = _InByteBuffer(name)
         return bool(cfunc(self._native_object, buf.data_ptr(), buf.size()))
 
@@ -797,7 +803,7 @@ class AbstractPluginEventHandler(NativeObject):
                 cfunc.restype = None
                 cfunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t]
                 carray_type = ctypes.c_uint8 * len(outdata)
-                carray = ctypes.cast(carray_type.from_buffer(outdata), ctypes.POINTER(ctypes.c_uint8))
+                carray = ctypes.cast(carray_type.from_buffer(outdata), _c_uint8_p)
                 cfunc(event_data_obj, carray, ctypes.c_size_t(len(outdata)))
 
             return success
@@ -979,10 +985,10 @@ class SectionFile(NativeObject):
         # bool tspySectionLoadBuffer(void* sf, const uint8_t* buffer, size_t size)
         cfunc = _lib.tspySectionLoadBuffer
         cfunc.restype = ctypes.c_bool
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+        cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         size = ctypes.c_size_t(len(data))
         carray_type = ctypes.c_uint8 * size.value
-        return bool(cfunc(self._native_object, ctypes.cast(carray_type.from_buffer(data), ctypes.POINTER(ctypes.c_uint8)), size))
+        return bool(cfunc(self._native_object, ctypes.cast(carray_type.from_buffer(data), _c_uint8_p), size))
 
     ##
     # Get the binary content of a section file.
@@ -992,11 +998,11 @@ class SectionFile(NativeObject):
         # void tspySectionSaveBuffer(void* sf, uint8_t* buffer, size_t* size)
         cfunc = _lib.tspySectionSaveBuffer
         cfunc.restype = None
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_size_t)]
+        cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, _c_size_p]
         size = ctypes.c_size_t(self.binarySize())
         data = bytearray(size.value)
         carray_type = ctypes.c_uint8 * size.value
-        cfunc(self._native_object, ctypes.cast(carray_type.from_buffer(data), ctypes.POINTER(ctypes.c_uint8)), ctypes.byref(size))
+        cfunc(self._native_object, ctypes.cast(carray_type.from_buffer(data), _c_uint8_p), ctypes.byref(size))
         return data[:size.value]
 
     ##
@@ -1010,7 +1016,7 @@ class SectionFile(NativeObject):
         # bool tspySectionFileLoadBinary(void* sf, const uint8_t* name, size_t name_size)
         cfunc = _lib.tspySectionFileLoadBinary
         cfunc.restype = ctypes.c_bool
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+        cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         name = _InByteBuffer(file)
         return bool(cfunc(self._native_object, name.data_ptr(), name.size()))
 
@@ -1024,7 +1030,7 @@ class SectionFile(NativeObject):
         # bool tspySectionFileSaveBinary(void* sf, const uint8_t* name, size_t name_size)
         cfunc = _lib.tspySectionFileSaveBinary
         cfunc.restype = ctypes.c_bool
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+        cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         name = _InByteBuffer(file)
         return bool(cfunc(self._native_object, name.data_ptr(), name.size()))
 
@@ -1040,7 +1046,7 @@ class SectionFile(NativeObject):
         # bool tspySectionFileLoadXML(void* sf, const uint8_t* name, size_t name_size)
         cfunc = _lib.tspySectionFileLoadXML
         cfunc.restype = ctypes.c_bool
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+        cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         name = _InByteBuffer(file)
         return bool(cfunc(self._native_object, name.data_ptr(), name.size()))
 
@@ -1054,7 +1060,7 @@ class SectionFile(NativeObject):
         # bool tspySectionFileSaveXML(void* sf, const uint8_t* name, size_t name_size)
         cfunc = _lib.tspySectionFileSaveXML
         cfunc.restype = ctypes.c_bool
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+        cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         name = _InByteBuffer(file)
         return bool(cfunc(self._native_object, name.data_ptr(), name.size()))
 
@@ -1068,7 +1074,7 @@ class SectionFile(NativeObject):
         # bool tspySectionFileSaveJSON(void* sf, const uint8_t* name, size_t name_size)
         cfunc = _lib.tspySectionFileSaveJSON
         cfunc.restype = ctypes.c_bool
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+        cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         name = _InByteBuffer(file)
         return bool(cfunc(self._native_object, name.data_ptr(), name.size()))
 
@@ -1080,7 +1086,7 @@ class SectionFile(NativeObject):
         # size_t tspySectionFileToXML(void* sf, uint8_t* buffer, size_t* size)
         cfunc = _lib.tspySectionFileToXML
         cfunc.restype = ctypes.c_size_t
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_size_t)]
+        cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, _c_size_p]
         buf = _OutByteBuffer(2048)
         len = cfunc(self._native_object, buf.data_ptr(), buf.size_ptr())
         if len > 2048:
@@ -1097,7 +1103,7 @@ class SectionFile(NativeObject):
         # size_t tspySectionFileToJSON(void* sf, uint8_t* buffer, size_t* size)
         cfunc = _lib.tspySectionFileToJSON
         cfunc.restype = ctypes.c_size_t
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_size_t)]
+        cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, _c_size_p]
         buf = _OutByteBuffer(2048)
         len = cfunc(self._native_object, buf.data_ptr(), buf.size_ptr())
         if len > 2048:
@@ -1146,33 +1152,6 @@ class TSPStartError(Exception):
 
 
 #-----------------------------------------------------------------------------
-# Internal class to pass TSProcessorArgs to the native library
-#-----------------------------------------------------------------------------
-
-## @cond nodoxygen
-
-class _tspyTSProcessorArgs(ctypes.Structure):         # struct tspyTSProcessorArgs {...}
-    _fields_ = [
-        ("monitor", ctypes.c_long),                   # Run a resource monitoring thread (bool).
-        ("ignore_joint_termination", ctypes.c_long),  # Ignore "joint termination" options in plugins (bool).
-        ("buffer_size", ctypes.c_long),               # Size in bytes of the global TS packet buffer.
-        ("max_flushed_packets", ctypes.c_long),       # Max processed packets before flush.
-        ("max_input_packets", ctypes.c_long),         # Max packets per input operation.
-        ("initial_input_packets", ctypes.c_long),     # Initial number of input packets to read before starting the processing.
-        ("add_input_stuffing_0", ctypes.c_long),      # Add input stuffing: add instuff_nullpkt null packets ...
-        ("add_input_stuffing_1", ctypes.c_long),      # ...  every @a instuff_inpkt input packets.
-        ("add_start_stuffing", ctypes.c_long),        # Add null packets before actual input.
-        ("add_stop_stuffing", ctypes.c_long),         # Add null packets after end of actual input.
-        ("bitrate", ctypes.c_long),                   # Fixed input bitrate (user-specified).
-        ("bitrate_adjust_interval", ctypes.c_long),   # Bitrate adjust interval (in milliseconds).
-        ("receive_timeout", ctypes.c_long),           # Timeout on input operations (in milliseconds).
-        ("log_plugin_index", ctypes.c_long),          # Log plugin index with plugin name (bool).
-    ]
-
-## @endcond
-
-
-#-----------------------------------------------------------------------------
 # TSProcessor: Python bindings to "tsp" command
 #-----------------------------------------------------------------------------
 
@@ -1181,6 +1160,29 @@ class _tspyTSProcessorArgs(ctypes.Structure):         # struct tspyTSProcessorAr
 # @ingroup python
 #
 class TSProcessor(NativeObject):
+
+    ## @cond nodoxygen
+    # Internal class to pass TSProcessorArgs to the native library
+    class _tspyTSProcessorArgs(ctypes.Structure):         # struct tspyTSProcessorArgs {...}
+        _fields_ = [
+            ("monitor", ctypes.c_long),                   # Run a resource monitoring thread (bool).
+            ("ignore_joint_termination", ctypes.c_long),  # Ignore "joint termination" options in plugins (bool).
+            ("buffer_size", ctypes.c_long),               # Size in bytes of the global TS packet buffer.
+            ("max_flushed_packets", ctypes.c_long),       # Max processed packets before flush.
+            ("max_input_packets", ctypes.c_long),         # Max packets per input operation.
+            ("initial_input_packets", ctypes.c_long),     # Initial number of input packets to read before starting the processing.
+            ("add_input_stuffing_0", ctypes.c_long),      # Add input stuffing: add instuff_nullpkt null packets ...
+            ("add_input_stuffing_1", ctypes.c_long),      # ...  every @a instuff_inpkt input packets.
+            ("add_start_stuffing", ctypes.c_long),        # Add null packets before actual input.
+            ("add_stop_stuffing", ctypes.c_long),         # Add null packets after end of actual input.
+            ("bitrate", ctypes.c_long),                   # Fixed input bitrate (user-specified).
+            ("bitrate_adjust_interval", ctypes.c_long),   # Bitrate adjust interval (in milliseconds).
+            ("receive_timeout", ctypes.c_long),           # Timeout on input operations (in milliseconds).
+            ("log_plugin_index", ctypes.c_long),          # Log plugin index with plugin name (bool).
+            ("plugins", _c_uint8_p),                      # Address of UTF-16 multi-strings buffer for plugins.
+            ("plugins_size", ctypes.c_size_t),            # Size in bytes of plugins multi-strings buffer.
+        ]
+    ## @endcond
 
     ##
     # Constructor.
@@ -1285,19 +1287,22 @@ class TSProcessor(NativeObject):
     # @return None.
     #
     def start(self):
-        # Build global options. Copy expected fields in C++ struct from this object.
-        # When an expected field name is "prefix_int", fetch field "prefix[int]".
-        args = _tspyTSProcessorArgs()
-        reg = re.compile('^(.*)_(\d+)$') # match "prefix_int" as "(1)_(2)"
-        for f in args._fields_:
-            name = f[0]
-            search = reg.match(name)
-            if search:
-                # Fetch field "prefix[int]"
-                setattr(args, name, getattr(self, search.group(1))[int(search.group(2))])
-            else:
-                # Fetch field "name"
-                setattr(args, name, getattr(self, name))
+        # Build global options.
+        args = self._tspyTSProcessorArgs()
+        args.monitor = ctypes.c_long(self.monitor)
+        args.ignore_joint_termination = ctypes.c_long(self.ignore_joint_termination)
+        args.buffer_size = ctypes.c_long(self.buffer_size)
+        args.max_flushed_packets = ctypes.c_long(self.max_flushed_packets)
+        args.max_input_packets = ctypes.c_long(self.max_input_packets)
+        args.initial_input_packets = ctypes.c_long(self.initial_input_packets)
+        args.add_input_stuffing_0 = ctypes.c_long(self.add_input_stuffing[0])
+        args.add_input_stuffing_1 = ctypes.c_long(self.add_input_stuffing[1])
+        args.add_start_stuffing = ctypes.c_long(self.add_start_stuffing)
+        args.add_stop_stuffing = ctypes.c_long(self.add_stop_stuffing)
+        args.bitrate = ctypes.c_long(self.bitrate)
+        args.bitrate_adjust_interval = ctypes.c_long(self.bitrate_adjust_interval)
+        args.receive_timeout = ctypes.c_long(self.receive_timeout)
+        args.log_plugin_index = ctypes.c_long(self.log_plugin_index)
 
         # Build UTF-16 buffer with application names and plugins.
         plugins = _InByteBuffer(self.app_name)
@@ -1310,13 +1315,15 @@ class TSProcessor(NativeObject):
         if len(self.output) > 0:
             plugins.extend('-O')
             plugins.extend(self.output)
+        args.plugins = plugins.data_ptr()
+        args.plugins_size = plugins.size()
 
         # Start the processing.
-        # bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, const uint8_t* plugins, size_t plugins_size)
+        # bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args)
         cfunc = _lib.tspyStartTSProcessor
         cfunc.restype = ctypes.c_bool
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(_tspyTSProcessorArgs), ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
-        if not cfunc(self._native_object, ctypes.byref(args), plugins.data_ptr(), plugins.size()):
+        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(self._tspyTSProcessorArgs)]
+        if not cfunc(self._native_object, ctypes.byref(args)):
             raise TSPStartError("Error starting TS processor")
 
     ##
@@ -1355,33 +1362,6 @@ class SwitchStartError(Exception):
 
 
 #-----------------------------------------------------------------------------
-# Internal class to pass TSProcessorArgs to the native library
-#-----------------------------------------------------------------------------
-
-## @cond nodoxygen
-
-class _tspyInputSwitcherArgs(ctypes.Structure): # struct tspyInputSwitcherArgs {...}
-    _fields_ = [
-        ("fast_switch", ctypes.c_long),         # Fast switch between input plugins (bool).
-        ("delayed_switch", ctypes.c_long),      # Delayed switch between input plugins (bool).
-        ("terminate", ctypes.c_long),           # Terminate when one input plugin completes (bool).
-        ("monitor", ctypes.c_long),             # Run a resource monitoring thread (bool).
-        ("reuse_port", ctypes.c_long),          # Reuse-port socket option (bool).
-        ("first_input", ctypes.c_long),         # Index of first input plugin.
-        ("primary_input", ctypes.c_long),       # Index of primary input plugin, negative if there is none.
-        ("cycle_count", ctypes.c_long),         # Number of input cycles to execute (0;
-        ("buffered_packets", ctypes.c_long),    # Input buffer size in packets (0=default).
-        ("max_input_packets", ctypes.c_long),   # Maximum input packets to read at a time (0=default).
-        ("max_output_packets", ctypes.c_long),  # Maximum input packets to send at a time (0=default).
-        ("sock_buffer", ctypes.c_long),         # Socket buffer size (0=default).
-        ("remote_server_port", ctypes.c_long),  # UDP server port for remote control (0=none).
-        ("receive_timeout", ctypes.c_long),     # Receive timeout before switch (0=none).
-    ]
-
-## @endcond
-
-
-#-----------------------------------------------------------------------------
 # InputSwitcher: Python bindings to "tsswitch" command
 #-----------------------------------------------------------------------------
 
@@ -1390,6 +1370,37 @@ class _tspyInputSwitcherArgs(ctypes.Structure): # struct tspyInputSwitcherArgs {
 # @ingroup python
 #
 class InputSwitcher(NativeObject):
+
+    ## @cond nodoxygen
+    # Internal class to pass TSProcessorArgs to the native library
+    class _tspyInputSwitcherArgs(ctypes.Structure): # struct tspyInputSwitcherArgs {...}
+        _fields_ = [
+            ("fast_switch", ctypes.c_long),           # Fast switch between input plugins (bool).
+            ("delayed_switch", ctypes.c_long),        # Delayed switch between input plugins (bool).
+            ("terminate", ctypes.c_long),             # Terminate when one input plugin completes (bool).
+            ("monitor", ctypes.c_long),               # Run a resource monitoring thread (bool).
+            ("reuse_port", ctypes.c_long),            # Reuse-port socket option (bool).
+            ("first_input", ctypes.c_long),           # Index of first input plugin.
+            ("primary_input", ctypes.c_long),         # Index of primary input plugin, negative if there is none.
+            ("cycle_count", ctypes.c_long),           # Number of input cycles to execute (0;
+            ("buffered_packets", ctypes.c_long),      # Input buffer size in packets (0=default).
+            ("max_input_packets", ctypes.c_long),     # Maximum input packets to read at a time (0=default).
+            ("max_output_packets", ctypes.c_long),    # Maximum input packets to send at a time (0=default).
+            ("sock_buffer", ctypes.c_long),           # Socket buffer size (0=default).
+            ("remote_server_port", ctypes.c_long),    # UDP server port for remote control (0=none).
+            ("receive_timeout", ctypes.c_long),       # Receive timeout before switch (0=none).
+            ("plugins", _c_uint8_p),                  # Address of UTF-16 multi-strings buffer for plugins.
+            ("plugins_size", ctypes.c_size_t),        # Size in bytes of plugins multi-strings buffer.
+            ("event_command", _c_uint8_p),            # Address of UTF-16 multi-strings buffer for event command.
+            ("event_command_size", ctypes.c_size_t),  # Size in bytes of event_command.
+            ("event_udp_addr", _c_uint8_p),           # Address of UTF-16 multi-strings buffer for event UDP IP addresds.
+            ("event_udp_addr_size", ctypes.c_size_t), # Size in bytes of event_udp_addr.
+            ("event_udp_port", ctypes.c_long),        # Associated UDP port number.
+            ("local_addr", _c_uint8_p),               # Address of UTF-16 multi-strings buffer for event UDP outgoing interface.
+            ("local_addr_size", ctypes.c_size_t),     # Size in bytes of local_addr.
+            ("event_ttl", ctypes.c_long),             # Time-to-live socket option for event UDP.
+        ]
+    ## @endcond
 
     ##
     # Constructor.
@@ -1435,6 +1446,17 @@ class InputSwitcher(NativeObject):
         self.remote_server_port = 0
         ## Receive timeout before switch (0=none).
         self.receive_timeout = 0
+        ## External shell command to run on a switching event.
+        self.event_command = ''
+        ## Remote IPv4 address or host name to receive switching event JSON description.
+        self.event_udp_address = ''
+        ## Remote UDP port to receive switching event JSON description.
+        self.event_udp_port = 0
+        ## Outgoing local interface for UDP event description.
+        self.event_local_address = ''
+        ## Time-to-live socket option for UDP event description.
+        self.event_ttl = 0
+
         ## Application name, for help messages.
         self.app_name = ""
         ## Input plugins name and arguments (list of lists of strings).
@@ -1457,12 +1479,33 @@ class InputSwitcher(NativeObject):
     # @return None.
     #
     def start(self):
-        # Build global options. Copy expected fields in C++ struct from this object.
-        # When an expected field name is "prefix_int", fetch field "prefix[int]".
-        args = _tspyInputSwitcherArgs()
-        for f in args._fields_:
-            name = f[0]
-            setattr(args, name, getattr(self, name))
+        # Build global options.
+        args = self._tspyInputSwitcherArgs()
+        args.fast_switch = ctypes.c_long(self.fast_switch)
+        args.delayed_switch = ctypes.c_long(self.delayed_switch)
+        args.terminate = ctypes.c_long(self.terminate)
+        args.monitor = ctypes.c_long(self.monitor)
+        args.reuse_port = ctypes.c_long(self.reuse_port)
+        args.first_input = ctypes.c_long(self.first_input)
+        args.primary_input = ctypes.c_long(self.primary_input)
+        args.cycle_count = ctypes.c_long(self.cycle_count)
+        args.buffered_packets = ctypes.c_long(self.buffered_packets)
+        args.max_input_packets = ctypes.c_long(self.max_input_packets)
+        args.max_output_packets = ctypes.c_long(self.max_output_packets)
+        args.sock_buffer = ctypes.c_long(self.sock_buffer)
+        args.remote_server_port = ctypes.c_long(self.remote_server_port)
+        args.receive_timeout = ctypes.c_long(self.receive_timeout)
+        evcmd_buf = _InByteBuffer(self.event_command)
+        args.event_command = evcmd_buf.data_ptr()
+        args.event_command_size = evcmd_buf.size()
+        evudp_buf = _InByteBuffer(self.event_udp_address)
+        args.event_udp_addr = evudp_buf.data_ptr()
+        args.event_udp_addr_size = evudp_buf.size()
+        args.event_udp_port = ctypes.c_long(self.event_udp_port)
+        evloc_buf = _InByteBuffer(self.event_local_address)
+        args.local_addr = evloc_buf.data_ptr()
+        args.local_addr_size = evloc_buf.size()
+        args.event_ttl = ctypes.c_long(self.event_ttl)
 
         # Build UTF-16 buffer with application names and plugins.
         plugins = _InByteBuffer(self.app_name)
@@ -1472,13 +1515,15 @@ class InputSwitcher(NativeObject):
         if len(self.output) > 0:
             plugins.extend('-O')
             plugins.extend(self.output)
+        args.plugins = plugins.data_ptr()
+        args.plugins_size = plugins.size()
 
         # Start the processing.
-        # bool tspyStartInputSwitcher(void* pyobj, const tspyInputSwitcherArgs* pyargs, const uint8_t* plugins, size_t plugins_size)
+        # bool tspyStartInputSwitcher(void* pyobj, const tspyInputSwitcherArgs* pyargs)
         cfunc = _lib.tspyStartInputSwitcher
         cfunc.restype = ctypes.c_bool
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(_tspyInputSwitcherArgs), ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
-        if not cfunc(self._native_object, ctypes.byref(args), plugins.data_ptr(), plugins.size()):
+        cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(self._tspyInputSwitcherArgs)]
+        if not cfunc(self._native_object, ctypes.byref(args)):
             raise SwitchStartError("Error starting input switcher")
 
     ##

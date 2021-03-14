@@ -23,6 +23,11 @@ tsswitch.inputs = [
 ]
 tsswitch.output = ['file', 'sample-input-switcher-out.ts']
 
+# Demonstrate switching event notification.
+tsswitch.event_command = 'echo "=== EVENT"'
+tsswitch.event_udp_address = 'localhost'
+tsswitch.event_udp_port = 4444
+
 # Run the input switcher session and wait until completion.
 tsswitch.start()
 tsswitch.waitForTermination()

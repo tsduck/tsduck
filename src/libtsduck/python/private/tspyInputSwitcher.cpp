@@ -58,6 +58,16 @@ TSDUCKPY struct tspyInputSwitcherArgs
     long sock_buffer;         // Socket buffer size (0=default).
     long remote_server_port;  // UDP server port for remote control (0=none).
     long receive_timeout;     // Receive timeout before switch (0=none).
+    const uint8_t* plugins;   // Address of UTF-16 multi-strings buffer for plugins.
+    size_t         plugins_size;         // Size in bytes of plugins buffer.
+    const uint8_t* event_command;        // Address of UTF-16 multi-strings buffer for event command.
+    size_t         event_command_size;   // Size in bytes of event_command.
+    const uint8_t* event_udp_addr;       // Address of UTF-16 multi-strings buffer for event UDP IP addresds.
+    size_t         event_udp_addr_size;  // Size in bytes of event_udp_addr.
+    long           event_udp_port;       // Associated UDP port number.
+    const uint8_t* local_addr;           // Address of UTF-16 multi-strings buffer for event UDP outgoing interface.
+    size_t         local_addr_size;      // Size in bytes of local_addr.
+    long           event_ttl;            // Time-to-live socket option for event UDP.
 };
 
 //-----------------------------------------------------------------------------
@@ -125,7 +135,7 @@ TSDUCKPY size_t tspyInputSwitcherCurrentInput(void* pyobj)
 // Start the input switcher and decode arguments.
 //-----------------------------------------------------------------------------
 
-TSDUCKPY bool tspyStartInputSwitcher(void* pyobj, const tspyInputSwitcherArgs* pyargs, const uint8_t* plugins, size_t plugins_size)
+TSDUCKPY bool tspyStartInputSwitcher(void* pyobj, const tspyInputSwitcherArgs* pyargs)
 {
     ts::InputSwitcher* isw = reinterpret_cast<ts::InputSwitcher*>(pyobj);
     if (isw == nullptr || pyargs == nullptr) {
@@ -150,12 +160,25 @@ TSDUCKPY bool tspyStartInputSwitcher(void* pyobj, const tspyInputSwitcherArgs* p
     if (pyargs->remote_server_port > 0 && pyargs->remote_server_port < 0xFFFF) {
         args.remoteServer.setPort(uint16_t(pyargs->remote_server_port));
     }
+    args.eventCommand = ts::py::ToString(pyargs->event_command, pyargs->event_command_size);
+    ts::UString addr(ts::py::ToString(pyargs->event_udp_addr, pyargs->event_udp_addr_size));
+    if (!addr.empty() && !args.eventUDP.resolve(addr, isw->report())) {
+        return false;
+    }
+    if (pyargs->event_udp_port > 0 && pyargs->event_udp_port < 0xFFFF) {
+        args.eventUDP.setPort(uint16_t(pyargs->event_udp_port));
+    }
+    addr = ts::py::ToString(pyargs->local_addr, pyargs->local_addr_size);
+    if (!addr.empty() && !args.eventLocalAddress.resolve(addr, isw->report())) {
+        return false;
+    }
+    args.eventTTL = int(pyargs->event_ttl);
 
     // Default output plugins.
     args.output.set(u"drop");
 
     // Split plugins strings.
-    const ts::UStringList fields(ts::py::ToStringList(plugins, plugins_size));
+    const ts::UStringList fields(ts::py::ToStringList(pyargs->plugins, pyargs->plugins_size));
 
     // Analyze list of strings.
     auto it = fields.begin();
