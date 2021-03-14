@@ -164,17 +164,29 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_InputSwitcher_start(JNIEnv* env, jobje
     args.maxOutputPackets = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "maxOutputPackets")));
     args.sockBuffer = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "sockBuffer")));
     args.receiveTimeout = ts::MilliSecond(std::max<jint>(0, ts::jni::GetIntField(env, obj, "receiveTimeout")));
-    const jint remoteServerPort = ts::jni::GetIntField(env, obj, "remoteServerPort");
-    if (remoteServerPort > 0 && remoteServerPort < 0xFFFF) {
-        args.remoteServer.setPort(uint16_t(remoteServerPort));
+    jint port = ts::jni::GetIntField(env, obj, "remoteServerPort");
+    if (port > 0 && port < 0xFFFF) {
+        args.remoteServer.setPort(uint16_t(port));
     }
+    args.eventCommand = ts::jni::GetStringField(env, obj, "eventCommand");
+    ts::UString addr(ts::jni::GetStringField(env, obj, "eventUDPAddress"));
+    if (!addr.empty() && !args.eventUDP.resolve(addr, isw->report())) {
+        return false;
+    }
+    port = ts::jni::GetIntField(env, obj, "eventUDPPort");
+    if (port > 0 && port < 0xFFFF) {
+        args.eventUDP.setPort(uint16_t(port));
+    }
+    addr = ts::jni::GetStringField(env, obj, "eventLocalAddress");
+    if (!addr.empty() && !args.eventLocalAddress.resolve(addr, isw->report())) {
+        return false;
+    }
+    args.eventTTL = int(ts::jni::GetIntField(env, obj, "eventTTL"));
 
-    // Get plugins description.
-    bool ok = ts::jni::GetPluginOptions(env, jobjectArray(ts::jni::GetObjectField(env, obj, "output", JCS_ARRAY(JCS_STRING))), args.output) &&
-              ts::jni::GetPluginOptionsVector(env, jobjectArray(ts::jni::GetObjectField(env, obj, "inputs", JCS_ARRAY(JCS_ARRAY(JCS_STRING)))), args.inputs);
-
-    // Finally start the input switcher.
-    return ok = ok && isw->start(args);
+    // Get plugins description and start the input switcher.
+    return ts::jni::GetPluginOptions(env, jobjectArray(ts::jni::GetObjectField(env, obj, "output", JCS_ARRAY(JCS_STRING))), args.output) &&
+           ts::jni::GetPluginOptionsVector(env, jobjectArray(ts::jni::GetObjectField(env, obj, "inputs", JCS_ARRAY(JCS_ARRAY(JCS_STRING)))), args.inputs) &&
+           isw->start(args);
 }
 
 #endif // TS_NO_JAVA
