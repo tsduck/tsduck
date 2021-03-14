@@ -58,6 +58,8 @@ TSDUCKPY struct tspyTSProcessorArgs
     long bitrate_adjust_interval;  // Bitrate adjust interval in (milliseconds).
     long receive_timeout;          // Timeout on input operations (in milliseconds).
     long log_plugin_index;         // Log plugin index with plugin name (bool).
+    const uint8_t* plugins;        // Address of UTF-16 multi-strings buffer for plugins.
+    size_t plugins_size;           // Size in bytes of plugins multi-strings buffer.
 };
 
 //-----------------------------------------------------------------------------
@@ -119,58 +121,58 @@ TSDUCKPY void tspyTSProcessorRegisterOutputEventHandler(void* tsp, ts::PluginEve
 // Start the TS processing and decode arguments.
 //-----------------------------------------------------------------------------
 
-TSDUCKPY bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, const uint8_t* plugins, size_t plugins_size)
+TSDUCKPY bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* pyargs)
 {
     ts::TSProcessor* proc = reinterpret_cast<ts::TSProcessor*>(tsp);
-    if (proc == nullptr || args == nullptr) {
+    if (proc == nullptr || pyargs == nullptr) {
         return false;
     }
 
     // Build TSProcessor arguments.
-    ts::TSProcessorArgs tsargs;
-    tsargs.monitor = bool(args->monitor);
-    tsargs.ignore_jt = bool(args->ignore_joint_termination);
-    tsargs.ts_buffer_size = args->buffer_size == 0 ? ts::TSProcessorArgs::DEFAULT_BUFFER_SIZE : size_t(args->buffer_size);
-    tsargs.max_flush_pkt = size_t(args->max_flushed_packets);
-    tsargs.max_input_pkt = size_t(args->max_input_packets);
-    tsargs.init_input_pkt = size_t(args->initial_input_packets);
-    tsargs.instuff_nullpkt = size_t(args->add_input_stuffing_0);
-    tsargs.instuff_inpkt = size_t(args->add_input_stuffing_1);
-    tsargs.instuff_start = size_t(args->add_start_stuffing);
-    tsargs.instuff_stop = size_t(args->add_stop_stuffing);
-    tsargs.fixed_bitrate = ts::BitRate(args->bitrate);
-    tsargs.bitrate_adj = ts::MilliSecond(args->bitrate_adjust_interval);
-    tsargs.receive_timeout = ts::MilliSecond(args->receive_timeout);
-    tsargs.log_plugin_index = bool(args->log_plugin_index);
+    ts::TSProcessorArgs args;
+    args.monitor = bool(pyargs->monitor);
+    args.ignore_jt = bool(pyargs->ignore_joint_termination);
+    args.ts_buffer_size = pyargs->buffer_size == 0 ? ts::TSProcessorArgs::DEFAULT_BUFFER_SIZE : size_t(pyargs->buffer_size);
+    args.max_flush_pkt = size_t(pyargs->max_flushed_packets);
+    args.max_input_pkt = size_t(pyargs->max_input_packets);
+    args.init_input_pkt = size_t(pyargs->initial_input_packets);
+    args.instuff_nullpkt = size_t(pyargs->add_input_stuffing_0);
+    args.instuff_inpkt = size_t(pyargs->add_input_stuffing_1);
+    args.instuff_start = size_t(pyargs->add_start_stuffing);
+    args.instuff_stop = size_t(pyargs->add_stop_stuffing);
+    args.fixed_bitrate = ts::BitRate(pyargs->bitrate);
+    args.bitrate_adj = ts::MilliSecond(pyargs->bitrate_adjust_interval);
+    args.receive_timeout = ts::MilliSecond(pyargs->receive_timeout);
+    args.log_plugin_index = bool(pyargs->log_plugin_index);
 
     // Default input and output plugins.
-    tsargs.input.set(u"null");
-    tsargs.output.set(u"drop");
+    args.input.set(u"null");
+    args.output.set(u"drop");
 
     // Split plugins strings.
-    const ts::UStringList fields(ts::py::ToStringList(plugins, plugins_size));
+    const ts::UStringList fields(ts::py::ToStringList(pyargs->plugins, pyargs->plugins_size));
 
     // Analyze list of strings.
     auto it = fields.begin();
     if (it != fields.end() && !it->startWith(u"-")) {
         // First element is application name.
-        tsargs.app_name = *it++;
+        args.app_name = *it++;
     }
     ts::PluginOptions* current = nullptr;
     for (; it != fields.end(); ++it) {
         if (*it == u"-I") {
-            current = &tsargs.input;
+            current = &args.input;
             current->clear();
             continue;
         }
         else if (*it == u"-O") {
-            current = &tsargs.output;
+            current = &args.output;
             current->clear();
             continue;
         }
         else if (*it == u"-P") {
-            tsargs.plugins.resize(tsargs.plugins.size() + 1);
-            current = &tsargs.plugins.back();
+            args.plugins.resize(args.plugins.size() + 1);
+            current = &args.plugins.back();
             current->clear();
             continue;
         }
@@ -188,18 +190,18 @@ TSDUCKPY bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* args, c
 
     // Debug message.
     if (proc->report().debug()) {
-        ts::UString cmd(tsargs.app_name);
+        ts::UString cmd(args.app_name);
         cmd.append(u" ");
-        cmd.append(tsargs.input.toString(ts::PluginType::INPUT));
-        for (auto it2 = tsargs.plugins.begin(); it2 != tsargs.plugins.end(); ++it2) {
+        cmd.append(args.input.toString(ts::PluginType::INPUT));
+        for (auto it2 = args.plugins.begin(); it2 != args.plugins.end(); ++it2) {
             cmd.append(u" ");
             cmd.append(it2->toString(ts::PluginType::PROCESSOR));
         }
         cmd.append(u" ");
-        cmd.append(tsargs.output.toString(ts::PluginType::OUTPUT));
+        cmd.append(args.output.toString(ts::PluginType::OUTPUT));
         proc->report().debug(u"starting: %s", {cmd});
     }
 
     // Finally start the TSProcessor.
-    return proc->start(tsargs);
+    return proc->start(args);
 }
