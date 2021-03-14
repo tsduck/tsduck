@@ -32,6 +32,11 @@ public class SampleInputSwitcher {
         };
         tsswitch.output = new String[] {"file", "sample-input-switcher-out.ts"};
 
+        // Demonstrate switching event notification.
+        tsswitch.eventCommand = "echo \"=== EVENT\"";
+        tsswitch.eventUDPAddress = "localhost";
+        tsswitch.eventUDPPort = 4444;
+
         // Run the input switcher session and wait until completion.
         tsswitch.start();
         tsswitch.waitForTermination();

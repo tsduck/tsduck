@@ -57,6 +57,11 @@ public final class InputSwitcher extends  NativeObject {
     public int sockBuffer = 0;             //!< Socket buffer size (0=default).
     public int remoteServerPort = 0;       //!< UDP server port for remote control (0=none).
     public int receiveTimeout = 0;         //!< Receive timeout before switch (0=none).
+    public String eventCommand = "";       //!< External shell command to run on a switching event.
+    public String eventUDPAddress = "";    //!< Remote IPv4 address or host name to receive switching event JSON description.
+    public int eventUDPPort = 0;           //!< Remote UDP port to receive switching event JSON description.
+    public String eventLocalAddress = "";  //!< Outgoing local interface for UDP event description.
+    public int eventTTL = 0;               //!< Time-to-live socket option for UDP event description.
     public String appName = "";            //!< Application name, for help messages.
     public String[][] inputs = null;       //!< Input plugins name and arguments (array of arrays of strings)
     public String[] output = null;         //!< Output plugin name and arguments (array of strings)
