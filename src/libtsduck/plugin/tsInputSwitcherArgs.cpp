@@ -51,7 +51,6 @@ ts::InputSwitcherArgs::InputSwitcherArgs() :
     fastSwitch(false),
     delayedSwitch(false),
     terminate(false),
-    monitor(false),
     reusePort(false),
     firstInput(0),
     primaryInput(NPOS),
@@ -186,12 +185,6 @@ void ts::InputSwitcherArgs::defineArgs(Args& args) const
               u"Specify the maximum number of TS packets to write at a time. "
               u"The default is " + UString::Decimal(DEFAULT_MAX_OUTPUT_PACKETS) + u" packets.");
 
-    args.option(u"monitor", 'm');
-    args.help(u"monitor",
-              u"Continuously monitor the system resources which are used by tsswitch. "
-              u"This includes CPU load, virtual memory usage. Useful to verify the "
-              u"stability of the application.");
-
     args.option(u"primary-input", 'p', Args::UNSIGNED);
     args.help(u"primary-input",
               u"Specify the index of the input plugin which is considered as primary "
@@ -241,7 +234,6 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
     delayedSwitch = args.present(u"delayed-switch");
     terminate = args.present(u"terminate");
     args.getIntValue(cycleCount, u"cycle", args.present(u"infinite") ? 0 : 1);
-    monitor = args.present(u"monitor");
     args.getIntValue(bufferedPackets, u"buffer-packets", DEFAULT_BUFFERED_PACKETS);
     maxInputPackets = std::min(args.intValue<size_t>(u"max-input-packets", DEFAULT_MAX_INPUT_PACKETS), bufferedPackets / 2);
     args.getIntValue(maxOutputPackets, u"max-output-packets", DEFAULT_MAX_OUTPUT_PACKETS);

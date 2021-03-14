@@ -79,13 +79,14 @@ ts::UString ts::SystemMonitor::MonPrefix(const ts::Time& date)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::SystemMonitor::SystemMonitor(Report* report) :
+ts::SystemMonitor::SystemMonitor(Report& report, const UString& config) :
     Thread(ThreadAttributes().setPriority(ThreadAttributes::GetMinimumPriority()).setStackSize(MONITOR_STACK_SIZE)),
     _report(report),
     _mutex(),
     _wake_up(),
     _terminate(false)
 {
+    // Configuration file not yet implemented....
 }
 
 
@@ -96,13 +97,20 @@ ts::SystemMonitor::SystemMonitor(Report* report) :
 ts::SystemMonitor::~SystemMonitor()
 {
     // Signal that the thread shall terminate
-
-    {
-        GuardCondition lock(_mutex, _wake_up);
-        _terminate = true;
-        lock.signal();
-    }
+    stop();
     waitForTermination();
+}
+
+
+//----------------------------------------------------------------------------
+// Stop the monitor thread.
+//----------------------------------------------------------------------------
+
+void ts::SystemMonitor::stop()
+{
+    GuardCondition lock(_mutex, _wake_up);
+    _terminate = true;
+    lock.signal();
 }
 
 
@@ -121,20 +129,17 @@ void ts::SystemMonitor::main()
     Time vsize_uptime(start_time);              // Time of last vsize increase
     size_t vsize_max(start_metrics.vmem_size);  // Maximum vsize
 
-    _report->info(u"%sresource monitoring started", {MonPrefix(Time::CurrentLocalTime())});
+    _report.info(u"%sresource monitoring started", {MonPrefix(Time::CurrentLocalTime())});
 
     // Loop on monitoring intervals
-
     for (;;) {
 
         // Compute next time profile
-
         while (time_profile->up_to != 0 && last_time > start_time + time_profile->up_to) {
             time_profile++;
         }
 
         // Wait until due time or termination request
-
         {
             GuardCondition lock(_mutex, _wake_up);
             if (!_terminate) {
@@ -146,13 +151,11 @@ void ts::SystemMonitor::main()
         }
 
         // Get current process metrics
-
         Time current_time(Time::CurrentLocalTime());
         ProcessMetrics metrics;
         GetProcessMetrics(metrics);
 
         // Format virtual memory size status
-
         UString message(MonPrefix(current_time) + u"VM:" + UString::HumanSize(metrics.vmem_size));
 
         if (metrics.vmem_size != last_metrics.vmem_size) {
@@ -173,7 +176,6 @@ void ts::SystemMonitor::main()
         }
 
         // Format CPU load.
-
         message += u", CPU:";
         message += UString::Percentage(metrics.cpu_time - last_metrics.cpu_time, current_time - last_time);
         message += u" (average:";
@@ -181,12 +183,11 @@ void ts::SystemMonitor::main()
         message += u")";
 
         // Display monitoring status
-
-        _report->info(message);
+        _report.info(message);
 
         last_time = current_time;
         last_metrics = metrics;
     }
 
-    _report->info(u"%sresource monitoring terminated", {MonPrefix(Time::CurrentLocalTime())});
+    _report.info(u"%sresource monitoring terminated", {MonPrefix(Time::CurrentLocalTime())});
 }

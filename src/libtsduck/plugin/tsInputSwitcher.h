@@ -39,7 +39,6 @@
 namespace ts {
 
     // Used in private part.
-    class SystemMonitor;
     namespace tsswitch {
         class Core;
         class CommandListener;
@@ -143,7 +142,6 @@ namespace ts {
     private:
         Report&                    _report;
         InputSwitcherArgs          _args;
-        SystemMonitor*             _monitor;
         tsswitch::Core*            _core;
         tsswitch::CommandListener* _remote;
         volatile bool              _success;

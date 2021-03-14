@@ -59,6 +59,10 @@ namespace ts {
     //! - Up to start + 1 hour, log every 5 minutes
     //! - After start + 1 hour, log every 30 minutes
     //!
+    //! This class derives from Thread. The methods start() and waitForTermination() are
+    //! inherited. The destructor stops the thread and synchronously waits for its termination.
+    //! The method stop() can be used to stop the thread.
+    //!
     class TSDUCKDLL SystemMonitor: public Thread
     {
         TS_NOBUILD_NOCOPY(SystemMonitor);
@@ -66,17 +70,26 @@ namespace ts {
         //!
         //! Constructor.
         //! @param [in] report Where to report log data.
+        //! @param [in] config Name of the monitoring configuration file, if different from the default.
         //!
-        SystemMonitor(Report* report);
+        SystemMonitor(Report& report, const UString& config = UString());
 
         //!
         //! Destructor.
+        //! The monitor thread is stopped.
         //!
         virtual ~SystemMonitor() override;
 
+        //!
+        //! Stop the monitor thread.
+        //! The monitor thread is requested to stop. This method returns immediately,
+        //! use waitForTermination() to synchronously wait for its termination.
+        //!
+        void stop();
+
     private:
         // Private members
-        Report*   _report;
+        Report&   _report;
         Mutex     _mutex;
         Condition _wake_up;    // accessed under mutex
         bool      _terminate;  // accessed under mutex

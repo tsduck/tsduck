@@ -38,6 +38,7 @@
 #include "tsPluginRepository.h"
 #include "tsAsyncReport.h"
 #include "tsUserInterrupt.h"
+#include "tsSystemMonitor.h"
 #include "tsOutputPager.h"
 #include "tsVersionInfo.h"
 TSDUCK_SOURCE;
@@ -62,8 +63,9 @@ namespace {
         TSPOptions(int argc, char *argv[]);
 
         // Option values
-        ts::DuckContext     duck;             // TSDuck context
         int                 list_proc_flags;  // List processors, mask of PluginRepository::ListFlag.
+        bool                monitor;          // Run a resource monitoring thread in the background.
+        ts::DuckContext     duck;             // TSDuck context
         ts::AsyncReportArgs log_args;         // Asynchronous logger arguments.
         ts::TSProcessorArgs tsp_args;         // TS processing arguments.
     };
@@ -71,8 +73,9 @@ namespace {
 
 TSPOptions::TSPOptions(int argc, char *argv[]) :
     ts::ArgsWithPlugins(0, 1, 0, UNLIMITED_COUNT, 0, 1),
-    duck(this),
     list_proc_flags(0),
+    monitor(false),
+    duck(this),
     log_args(),
     tsp_args()
 {
@@ -95,11 +98,18 @@ TSPOptions::TSPOptions(int argc, char *argv[]) :
     option(u"list-processors", 'l', ts::PluginRepository::ListProcessorEnum, 0, 1, true);
     help(u"list-processors", u"List all available processors.");
 
+    option(u"monitor", 'm');
+    help(u"monitor",
+         u"Continuously monitor the system resources which are used by tsp. "
+         u"This includes CPU load, virtual memory usage. "
+         u"Useful to verify the stability of the application.");
+
     // Analyze the command.
     analyze(argc, argv);
 
     // Load option values.
     list_proc_flags = present(u"list-processors") ? intValue<int>(u"list-processors", ts::PluginRepository::LIST_ALL) : 0;
+    monitor = present(u"monitor");
     duck.loadArgs(*this);
     log_args.loadArgs(duck, *this);
     tsp_args.loadArgs(duck, *this);
@@ -186,12 +196,20 @@ int MainCode(int argc, char *argv[])
     // Create an asynchronous error logger. Can be used in multi-threaded context.
     ts::AsyncReport report(opt.maxSeverity(), opt.log_args);
 
+    // System monitor thread.
+    ts::SystemMonitor monitor(report);
+
     // The TS processing is performed into this object.
     ts::TSProcessor tsproc(report);
 
     // Use a Ctrl+C interrupt handler
     TSPInterruptHandler interrupt_handler(&report, &tsproc);
     ts::UserInterrupt interrupt_manager(&interrupt_handler, true, true);
+
+    // Start the monitoring thread if required.
+    if (opt.monitor) {
+        monitor.start();
+    }
 
     // Start the TS processing.
     if (!tsproc.start(opt.tsp_args)) {

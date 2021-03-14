@@ -10,6 +10,7 @@ import java.io.File;
 import io.tsduck.AsyncReport;
 import io.tsduck.Info;
 import io.tsduck.Report;
+import io.tsduck.SystemMonitor;
 import io.tsduck.TSProcessor;
 
 public class SampleMonitoring {
@@ -27,6 +28,10 @@ public class SampleMonitoring {
         // Create an asynchronous report to log multi-threaded messages.
         AsyncReport rep = new AsyncReport();
         rep.setMaxSeverity(Report.Verbose);
+
+        // Create and start a background system monitor.
+        SystemMonitor mon = new SystemMonitor(rep);
+        mon.start();
 
         // Build a temporary file name to download a real TS file.
         File tsfile = File.createTempFile("temp", ".ts", null);
@@ -47,13 +52,17 @@ public class SampleMonitoring {
         System.out.printf("Playing %s ...\n", tsfile.getPath());
 
         tsp = new TSProcessor(rep);
-        tsp.monitor = true;
         tsp.input = new String[] {"file", tsfile.getPath(), "--repeat", "2"};
         tsp.plugins = new String[][] {{"regulate"}};
         tsp.output = new String[] {"drop"};
         tsp.start();
         tsp.waitForTermination();
         tsp.delete();
+
+        // Terminate the system monitor.
+        mon.stop();
+        mon.waitForTermination();
+        mon.delete();
 
         // Terminate the asynchronous report.
         rep.terminate();

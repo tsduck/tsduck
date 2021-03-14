@@ -138,10 +138,13 @@ int main(int argc, char* argv[])
     // Make it display all messages up to debug level (default is info level).
     ts::AsyncReport report(ts::Severity::Debug);
 
+    // Create and start a background system monitor.
+    ts::SystemMonitor monitor(report);
+    monitor.start();
+
     // Build tsp options. Accept most default values, except a few ones.
     ts::TSProcessorArgs opt;
     opt.app_name = u"myexec";  // for error messages only.
-    opt.monitor = true;        // use a system monitor threads.
     opt.instuff_start = 10;    // insert 10 null packets at start of stream.
     opt.instuff_stop = 5;      // insert 5 null packets at end of stream.
 

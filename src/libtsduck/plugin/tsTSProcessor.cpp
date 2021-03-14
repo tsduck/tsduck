@@ -49,7 +49,6 @@ ts::TSProcessor::TSProcessor(Report& report) :
     _args(),
     _input(nullptr),
     _output(nullptr),
-    _monitor(&_report),
     _control(nullptr),
     _packet_buffer(nullptr),
     _metadata_buffer(nullptr)
@@ -69,6 +68,14 @@ ts::TSProcessor::~TSProcessor()
 
 void ts::TSProcessor::cleanupInternal()
 {
+    // Terminate and delete the control server.
+    // This must be done first since the control server accesses the plugin executors.
+    if (_control != nullptr) {
+        // Deleting the object terminates the server thread.
+        delete _control;
+        _control = nullptr;
+    }
+
     // Abort and wait for threads to terminate
     tsp::PluginExecutor* proc = _input;
     do {
@@ -90,20 +97,14 @@ void ts::TSProcessor::cleanupInternal()
     _input = nullptr;
     _output = nullptr;
 
+    // Deallocate packet buffers.
     if (_packet_buffer != nullptr) {
         delete _packet_buffer;
         _packet_buffer = nullptr;
     }
-
     if (_metadata_buffer != nullptr) {
         delete _metadata_buffer;
         _metadata_buffer = nullptr;
-    }
-
-    if (_control != nullptr) {
-        // Deleting the object terminates the monitor thread.
-        delete _control;
-        _control = nullptr;
     }
 }
 
@@ -202,11 +203,6 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         CheckNonNull(_metadata_buffer);
 
         // End of locked section.
-    }
-
-    // Start the monitoring thread if required.
-    if (_args.monitor) {
-        _monitor.start();
     }
 
     // Start all processors, except output, in reverse order (input last).

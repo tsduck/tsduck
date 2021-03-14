@@ -47,7 +47,6 @@ TSDUCKPY struct tspyInputSwitcherArgs
     long fast_switch;         // Fast switch between input plugins.
     long delayed_switch;      // Delayed switch between input plugins.
     long terminate;           // Terminate when one input plugin completes.
-    long monitor;             // Run a resource monitoring thread.
     long reuse_port;          // Reuse-port socket option.
     long first_input;         // Index of first input plugin.
     long primary_input;       // Index of primary input plugin, negative if there is none.
@@ -144,7 +143,6 @@ TSDUCKPY bool tspyStartInputSwitcher(void* pyobj, const tspyInputSwitcherArgs* p
 
     // Build InputSwitcher arguments.
     ts::InputSwitcherArgs args;
-    args.monitor = bool(pyargs->monitor);
     args.terminate = bool(pyargs->terminate);
     args.fastSwitch = bool(pyargs->fast_switch);
     args.delayedSwitch = bool(pyargs->delayed_switch);

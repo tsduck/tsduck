@@ -44,7 +44,6 @@ TS_MSC_NOWARNING(4091) // '__declspec(dllexport)': ignored on left of 'struct ty
 //
 TSDUCKPY struct tspyTSProcessorArgs
 {
-    long monitor;                  // Run a resource monitoring thread (bool).
     long ignore_joint_termination; // Ignore "joint termination" options in plugins (bool).
     long buffer_size;              // Size in bytes of the global TS packet buffer.
     long max_flushed_packets;      // Max processed packets before flush.
@@ -130,7 +129,6 @@ TSDUCKPY bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* pyargs)
 
     // Build TSProcessor arguments.
     ts::TSProcessorArgs args;
-    args.monitor = bool(pyargs->monitor);
     args.ignore_jt = bool(pyargs->ignore_joint_termination);
     args.ts_buffer_size = pyargs->buffer_size == 0 ? ts::TSProcessorArgs::DEFAULT_BUFFER_SIZE : size_t(pyargs->buffer_size);
     args.max_flush_pkt = size_t(pyargs->max_flushed_packets);

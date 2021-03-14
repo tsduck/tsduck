@@ -49,7 +49,6 @@ namespace ts {
         bool                fastSwitch;        //!< Fast switch between input plugins.
         bool                delayedSwitch;     //!< Delayed switch between input plugins.
         bool                terminate;         //!< Terminate when one input plugin completes.
-        bool                monitor;           //!< Run a resource monitoring thread.
         bool                reusePort;         //!< Reuse-port socket option.
         size_t              firstInput;        //!< Index of first input plugin.
         size_t              primaryInput;      //!< Index of primary input plugin, NPOS if there is none.

@@ -43,7 +43,6 @@ public final class TSProcessor extends NativeObject {
     /*
      * List of parameters to set before start().
      */
-    public boolean monitor = false;                 //!< Option -\-monitor
     public boolean ignoreJointTermination = false;  //!< Option -\-ignore-joint-termination
     public boolean logPluginIndex = false;          //!< Option -\-log-plugin-index
     public int bufferSize = 16 * 1024 * 1024;       //!< Option -\-buffer-size-mb (in bytes here)

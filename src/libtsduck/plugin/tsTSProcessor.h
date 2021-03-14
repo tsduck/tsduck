@@ -36,7 +36,6 @@
 #include "tsPluginEventHandlerRegistry.h"
 #include "tsTSProcessorArgs.h"
 #include "tsTSPacketMetadata.h"
-#include "tsSystemMonitor.h"
 #include "tsMutex.h"
 
 namespace ts {
@@ -116,7 +115,6 @@ namespace ts {
         TSProcessorArgs       _args;             // Processing options.
         tsp::InputExecutor*   _input;            // Input processor execution thread.
         tsp::OutputExecutor*  _output;           // Output processor execution thread.
-        SystemMonitor         _monitor;          // System monitor thread.
         tsp::ControlServer*   _control;          // TSP control command server thread.
         PacketBuffer*         _packet_buffer;    // Global TS packet buffer.
         PacketMetadataBuffer* _metadata_buffer;  // Global packet metabata buffer.

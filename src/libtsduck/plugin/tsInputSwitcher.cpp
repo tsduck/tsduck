@@ -42,7 +42,6 @@ ts::InputSwitcher::InputSwitcher(Report& report) :
     PluginEventHandlerRegistry(),
     _report(report),
     _args(),
-    _monitor(nullptr),
     _core(nullptr),
     _remote(nullptr),
     _success(false)
@@ -99,13 +98,6 @@ bool ts::InputSwitcher::start(const InputSwitcherArgs& args)
     _core = new tsswitch::Core(_args, *this, _report);
     CheckNonNull(_core);
     _success = !_report.gotErrors();
-
-    // Create a monitoring thread if required.
-    if (_success && _args.monitor) {
-        _monitor = new SystemMonitor(&_report);
-        CheckNonNull(_monitor);
-        _monitor->start();
-    }
 
     // If a remote control is specified, start a UDP listener thread.
     if (_success && _args.remoteServer.hasPort()) {
@@ -179,12 +171,6 @@ void ts::InputSwitcher::internalCleanup()
     if (_core != nullptr) {
         delete _core;
         _core = nullptr;
-    }
-
-    // The monitor is independent, we can terminate it any time.
-    if (_monitor != nullptr) {
-        delete _monitor;
-        _monitor = nullptr;
     }
 }
 
