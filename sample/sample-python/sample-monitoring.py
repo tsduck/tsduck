@@ -13,6 +13,10 @@ import tempfile
 # Create an asynchronous report to log multi-threaded messages.
 rep = tsduck.AsyncReport(severity = tsduck.Report.Verbose)
 
+# Create and start a background system monitor.
+mon = tsduck.SystemMonitor(rep)
+mon.start()
+
 # Build a temporary file name to download a real TS file.
 url = "https://tsduck.io/streams/france-dttv/tnt-uhf30-546MHz-2019-01-22.ts"
 tsfile = tempfile.gettempdir() + os.path.sep + tempfile.gettempprefix() + str(os.getpid()) + ".ts"
@@ -32,13 +36,18 @@ tsp.delete()
 print("Playing %s ..." % (tsfile))
 
 tsp = tsduck.TSProcessor(rep)
-tsp.monitor = True
 tsp.input = ['file', tsfile, '--repeat', '2']
 tsp.plugins = [ ['regulate'] ]
 tsp.output = ['drop']
+
 tsp.start()
 tsp.waitForTermination()
 tsp.delete()
+
+# Terminate the system monitor.
+mon.stop()
+mon.waitForTermination()
+mon.delete()
 
 # Terminate the asynchronous report.
 rep.terminate()

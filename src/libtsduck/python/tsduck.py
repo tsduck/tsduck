@@ -565,7 +565,7 @@ class DuckContext(NativeObject):
 
     ##
     # Constructor.
-    # @param report The ts.Report object to use.
+    # @param report The tsduck.Report object to use.
     #
     def __init__(self, report):
         super().__init__()
@@ -896,7 +896,7 @@ class SectionFile(NativeObject):
 
     ##
     # Constructor.
-    # @param duck The ts.DuckContext object to use.
+    # @param duck The tsduck.DuckContext object to use.
     #
     def __init__(self, duck):
         super().__init__()
@@ -1140,6 +1140,77 @@ class SectionFile(NativeObject):
 
 
 #-----------------------------------------------------------------------------
+# SystemMonitor: A wrapper class for C++ SystemMonitor
+#-----------------------------------------------------------------------------
+
+##
+# A wrapper class for C++ SystemMonitor.
+# @ingroup python
+#
+class SystemMonitor(NativeObject):
+
+    ##
+    # Constructor.
+    # Create the monitoring object but do not start the monitoring thread yet.
+    # @param report The tsduck.Report object to use.
+    # @param config The monitoring configuration file name, if different from the default.
+    #
+    def __init__(self, report, config = None):
+        super().__init__()
+        self._report = report
+        # void* tspyNewSystemMonitor(void* report, const uint8_t* config, size_t config_size)
+        cfunc = _lib.tspyNewSystemMonitor
+        cfunc.restype = ctypes.c_void_p
+        cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
+        buf = _InByteBuffer(config)
+        self._native_object = cfunc(self._report._native_object, buf.data_ptr(), buf.size())
+
+    # Explicitly free the underlying C++ object (inherited).
+    def delete(self):
+        # void tspyDeleteReport(void* report)
+        cfunc = _lib.tspyDeleteReport
+        cfunc.restype = None
+        cfunc.argtypes = [ctypes.c_void_p]
+        cfunc(self._native_object)
+        super().delete()
+
+    ##
+    # Start the monitoring thread.
+    # @return None.
+    #
+    def start(self):
+        # void tspyStartSystemMonitor(void* pymon)
+        cfunc = _lib.tspyStartSystemMonitor
+        cfunc.restype = None
+        cfunc.argtypes = [ctypes.c_void_p]
+        cfunc(self._native_object)
+
+    ##
+    # Stop the monitoring thread.
+    # The monitoring thread is requested to stop. This method returns immediately,
+    # use waitForTermination() to synchronously wait for its termination.
+    # @return None.
+    #
+    def stop(self):
+        # void tspyStopSystemMonitor(void* pymon)
+        cfunc = _lib.tspyStopSystemMonitor
+        cfunc.restype = None
+        cfunc.argtypes = [ctypes.c_void_p]
+        cfunc(self._native_object)
+
+    ##
+    # Synchronously wait for the monitoring thread to stop.
+    # @return None.
+    #
+    def waitForTermination(self):
+        # void tspyWaitSystemMonitor(void* pymon)
+        cfunc = _lib.tspyWaitSystemMonitor
+        cfunc.restype = None
+        cfunc.argtypes = [ctypes.c_void_p]
+        cfunc(self._native_object)
+
+
+#-----------------------------------------------------------------------------
 # TSPStartError: Exception class for start error in TSProcessor
 #-----------------------------------------------------------------------------
 
@@ -1165,7 +1236,6 @@ class TSProcessor(NativeObject):
     # Internal class to pass TSProcessorArgs to the native library
     class _tspyTSProcessorArgs(ctypes.Structure):         # struct tspyTSProcessorArgs {...}
         _fields_ = [
-            ("monitor", ctypes.c_long),                   # Run a resource monitoring thread (bool).
             ("ignore_joint_termination", ctypes.c_long),  # Ignore "joint termination" options in plugins (bool).
             ("buffer_size", ctypes.c_long),               # Size in bytes of the global TS packet buffer.
             ("max_flushed_packets", ctypes.c_long),       # Max processed packets before flush.
@@ -1186,7 +1256,7 @@ class TSProcessor(NativeObject):
 
     ##
     # Constructor.
-    # @param report The ts.Report object to use.
+    # @param report The tsduck.Report object to use.
     #
     def __init__(self, report):
         super().__init__()
@@ -1200,8 +1270,6 @@ class TSProcessor(NativeObject):
         self._native_object = cfunc(self._report._native_object)
 
         # Publicly customizable tsp options:
-        ## Option -\-monitor.
-        self.monitor = False
         ## Option -\-ignore-joint-termination.
         self.ignore_joint_termination = False
         ## Option -\-log-plugin-index.
@@ -1289,7 +1357,6 @@ class TSProcessor(NativeObject):
     def start(self):
         # Build global options.
         args = self._tspyTSProcessorArgs()
-        args.monitor = ctypes.c_long(self.monitor)
         args.ignore_joint_termination = ctypes.c_long(self.ignore_joint_termination)
         args.buffer_size = ctypes.c_long(self.buffer_size)
         args.max_flushed_packets = ctypes.c_long(self.max_flushed_packets)
@@ -1378,7 +1445,6 @@ class InputSwitcher(NativeObject):
             ("fast_switch", ctypes.c_long),           # Fast switch between input plugins (bool).
             ("delayed_switch", ctypes.c_long),        # Delayed switch between input plugins (bool).
             ("terminate", ctypes.c_long),             # Terminate when one input plugin completes (bool).
-            ("monitor", ctypes.c_long),               # Run a resource monitoring thread (bool).
             ("reuse_port", ctypes.c_long),            # Reuse-port socket option (bool).
             ("first_input", ctypes.c_long),           # Index of first input plugin.
             ("primary_input", ctypes.c_long),         # Index of primary input plugin, negative if there is none.
@@ -1404,7 +1470,7 @@ class InputSwitcher(NativeObject):
 
     ##
     # Constructor.
-    # @param report The ts.Report object to use.
+    # @param report The tsduck.Report object to use.
     #
     def __init__(self, report):
         super().__init__()
@@ -1424,8 +1490,6 @@ class InputSwitcher(NativeObject):
         self.delayed_switch = False
         ## Terminate when one input plugin completes.
         self.terminate = False
-        ## Run a resource monitoring thread.
-        self.monitor = False
         ## Reuse-port socket option.
         self.reuse_port = False
         ## Index of first input plugin.
@@ -1484,7 +1548,6 @@ class InputSwitcher(NativeObject):
         args.fast_switch = ctypes.c_long(self.fast_switch)
         args.delayed_switch = ctypes.c_long(self.delayed_switch)
         args.terminate = ctypes.c_long(self.terminate)
-        args.monitor = ctypes.c_long(self.monitor)
         args.reuse_port = ctypes.c_long(self.reuse_port)
         args.first_input = ctypes.c_long(self.first_input)
         args.primary_input = ctypes.c_long(self.primary_input)

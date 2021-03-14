@@ -46,7 +46,6 @@ public final class InputSwitcher extends  NativeObject {
     public boolean fastSwitch = false;     //!< Fast switch between input plugins.
     public boolean delayedSwitch = false;  //!< Delayed switch between input plugins.
     public boolean terminate = false;      //!< Terminate when one input plugin completes.
-    public boolean monitor = false;        //!< Run a resource monitoring thread.
     public boolean reusePort = false;      //!< Reuse-port socket option.
     public int firstInput = 0;             //!< Index of first input plugin.
     public int primaryInput = -1;          //!< Index of primary input plugin, negative if there is none.

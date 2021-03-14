@@ -150,7 +150,6 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_InputSwitcher_start(JNIEnv* env, jobje
     // Build InputSwitcher arguments.
     ts::InputSwitcherArgs args;
     args.appName = ts::jni::GetStringField(env, obj, "appName");
-    args.monitor = ts::jni::GetBoolField(env, obj, "monitor");
     args.terminate = ts::jni::GetBoolField(env, obj, "terminate");
     args.fastSwitch = ts::jni::GetBoolField(env, obj, "fastSwitch");
     args.delayedSwitch = ts::jni::GetBoolField(env, obj, "delayedSwitch");

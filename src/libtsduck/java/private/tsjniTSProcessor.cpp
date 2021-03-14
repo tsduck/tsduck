@@ -143,7 +143,6 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_TSProcessor_start(JNIEnv* env, jobject
 
     // Build TSProcessor arguments.
     ts::TSProcessorArgs args;
-    args.monitor = ts::jni::GetBoolField(env, obj, "monitor");
     args.ignore_jt = ts::jni::GetBoolField(env, obj, "ignoreJointTermination");
     args.log_plugin_index = ts::jni::GetBoolField(env, obj, "logPluginIndex");
     args.ts_buffer_size = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "bufferSize")));

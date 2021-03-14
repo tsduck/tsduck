@@ -71,6 +71,7 @@ namespace {
     public:
         TSSwitchOptions(int argc, char *argv[]);
 
+        bool                  monitor;      // Run a resource monitoring thread in the background.
         ts::DuckContext       duck;         // TSDuck context
         ts::AsyncReportArgs   log_args;     // Asynchronous logger arguments.
         ts::InputSwitcherArgs switch_args;  // TS processing arguments.
@@ -79,12 +80,19 @@ namespace {
 
 TSSwitchOptions::TSSwitchOptions(int argc, char *argv[]) :
     ts::ArgsWithPlugins(0, UNLIMITED_COUNT, 0, 0, 0, 1),
+    monitor(false),
     duck(this),
     log_args(),
     switch_args()
 {
     setDescription(u"TS input source switch using remote control");
     setSyntax(u"[tsswitch-options] -I input-name [input-options] ... [-O output-name [output-options]]");
+
+    option(u"monitor", 'm');
+    help(u"monitor",
+         u"Continuously monitor the system resources which are used by tsswitch. "
+         u"This includes CPU load, virtual memory usage. "
+         u"Useful to verify the stability of the application.");
 
     log_args.defineArgs(*this);
     switch_args.defineArgs(*this);
@@ -93,6 +101,7 @@ TSSwitchOptions::TSSwitchOptions(int argc, char *argv[]) :
     analyze(argc, argv);
 
     // Load option values.
+    monitor = present(u"monitor");
     log_args.loadArgs(duck, *this);
     switch_args.loadArgs(duck, *this);
 
@@ -118,6 +127,14 @@ int MainCode(int argc, char *argv[])
 
     // Create and start an asynchronous log (separate thread).
     ts::AsyncReport report(opt.maxSeverity(), opt.log_args);
+
+    // System monitor thread.
+    ts::SystemMonitor monitor(report);
+
+    // Start the monitoring thread if required.
+    if (opt.monitor) {
+        monitor.start();
+    }
 
     // The TS input processing is performed into this object.
     ts::InputSwitcher switcher(opt.switch_args, report);

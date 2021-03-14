@@ -33,6 +33,7 @@ the high-level classes.
 | n/a          | `ts::DuckContext`                 | `io.tsduck.DuckContext`                | `tsduck.DuckContext`
 | n/a          | `ts::Report`                      | `io.tsduck.AbstractSyncReport`         | `tsduck.AbstractSyncReport`
 | n/a          | `ts::AsyncReport`                 | `io.tsduck.AbstractAsyncReport`        | `tsduck.AbstractAsyncReport`
+| n/a          | `ts::SystemMonitor`               | `io.tsduck.SystemMonitor`              | `tsduck.SystemMonitor`
 | n/a          | `ts::PluginEventHandlerInterface` | `io.tsduck.AbstractPluginEventHandler` | `tsduck.AbstractPluginEventHandler`
 | n/a          | `ts::PluginEventContext`          | `io.tsduck.PluginEventContext`         | `tsduck.PluginEventContext`
 
@@ -89,6 +90,17 @@ applications illustrate this mechanism.
 | Asynchronous, native   | `ts::AsyncReport` | `io.tsduck.AsyncReport`         | `tsduck.AsyncReport`
 | Synchronous, abstract  | `ts::Report`      | `io.tsduck.AbstractSyncReport`  | `tsduck.AbstractSyncReport`
 | Asynchronous, abstract | `ts::AsyncReport` | `io.tsduck.AbstractAsyncReport` | `tsduck.AbstractAsyncReport`
+
+## Resource monitoring  {#jpmonitor}
+
+The `SystemMonitor` class is available in all languages, C++, Java and Python.
+It can be used at the top-level of an application to implement the `--monitor`
+option as found in `tsp` and `tsswitch`. An instance of a thread-safe `Report`
+class is used to report monitoring messages.
+
+The `SystemMonitor` class is very simple to used. Examples are available in
+[Java](https://github.com/tsduck/tsduck/blob/master/sample/sample-java/SampleMonitoring.java) and
+[Python](https://github.com/tsduck/tsduck/blob/master/sample/sample-python/sample-monitoring.py).
 
 ## Plugin events  {#jpevents}
 
