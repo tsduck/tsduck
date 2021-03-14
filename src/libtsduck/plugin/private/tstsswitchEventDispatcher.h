@@ -28,20 +28,50 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Input switch (tsswitch) event dispatcher.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 26
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2280
+#include "tsInputSwitcherArgs.h"
+#include "tsUDPSocket.h"
+#include "tsjsonObject.h"
+
+namespace ts {
+    namespace tsswitch {
+        //!
+        //! Input switch (tsswitch) event dispatcher.
+        //! @ingroup plugin
+        //!
+        class EventDispatcher
+        {
+            TS_NOBUILD_NOCOPY(EventDispatcher);
+        public:
+            //!
+            //! Constructor.
+            //! @param [in] opt Command line options.
+            //! @param [in,out] log Log report.
+            //!
+            EventDispatcher(const InputSwitcherArgs& opt, Report& log);
+
+            //!
+            //! Signal a "new input" event.
+            //! @param [in] oldPluginIndex Index of the input plugin before the switch.
+            //! @param [in] newPluginIndex Index of the input plugin after the switch.
+            //! @return True on success, false on error.
+            //!
+            bool signalNewInput(size_t oldPluginIndex, size_t newPluginIndex);
+
+        private:
+            const InputSwitcherArgs& _opt;
+            Report&   _log;
+            bool      _sendCommand;
+            bool      _sendUDP;
+            UDPSocket _socket;
+
+            // Send command and UDP message.
+            bool sendCommand(const UString& eventName, const UString& otherParameters = UString());
+            bool sendUDP(const UString& eventName, json::Object& object);
+        };
+    }
+}

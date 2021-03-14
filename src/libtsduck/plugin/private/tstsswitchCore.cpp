@@ -43,7 +43,8 @@ ts::tsswitch::Core::Core(const InputSwitcherArgs& opt, const PluginEventHandlerR
     _log(log),
     _opt(opt), // consistency enforced by copy constructor
     _inputs(_opt.inputs.size(), nullptr),
-    _output(opt, handlers, *this, log), // load output plugin and analyze options
+    _output(_opt, handlers, *this, _log), // load output plugin and analyze options
+    _eventDispatcher(_opt, _log),
     _receiveWatchDog(this, _opt.receiveTimeout, 0, _log),
     _mutex(),
     _gotInput(),
@@ -129,6 +130,9 @@ bool ts::tsswitch::Core::start()
             _inputs[_opt.primaryInput]->startInput(false);
         }
     }
+
+    // Signal initial input.
+    _eventDispatcher.signalNewInput(_curPlugin, _curPlugin);
 
     return success;
 }
@@ -406,6 +410,7 @@ void ts::tsswitch::Core::execute(const Action& event)
                 break;
             }
             case SET_CURRENT: {
+                _eventDispatcher.signalNewInput(_curPlugin, action.index);
                 _curPlugin = action.index;
                 break;
             }
