@@ -65,6 +65,7 @@ namespace {
         // Option values
         int                 list_proc_flags;  // List processors, mask of PluginRepository::ListFlag.
         bool                monitor;          // Run a resource monitoring thread in the background.
+        ts::UString         monitor_config;   // System monitoring configuration file.S
         ts::DuckContext     duck;             // TSDuck context
         ts::AsyncReportArgs log_args;         // Asynchronous logger arguments.
         ts::TSProcessorArgs tsp_args;         // TS processing arguments.
@@ -75,6 +76,7 @@ TSPOptions::TSPOptions(int argc, char *argv[]) :
     ts::ArgsWithPlugins(0, 1, 0, UNLIMITED_COUNT, 0, 1),
     list_proc_flags(0),
     monitor(false),
+    monitor_config(),
     duck(this),
     log_args(),
     tsp_args()
@@ -98,11 +100,12 @@ TSPOptions::TSPOptions(int argc, char *argv[]) :
     option(u"list-processors", 'l', ts::PluginRepository::ListProcessorEnum, 0, 1, true);
     help(u"list-processors", u"List all available processors.");
 
-    option(u"monitor", 'm');
-    help(u"monitor",
+    option(u"monitor", 'm', STRING, 0, 1, 0, UNLIMITED_VALUE, true);
+    help(u"monitor", u"filename",
          u"Continuously monitor the system resources which are used by tsp. "
          u"This includes CPU load, virtual memory usage. "
-         u"Useful to verify the stability of the application.");
+         u"Useful to verify the stability of the application. "
+         u"The optional file is an XML monitoring configuration file.");
 
     // Analyze the command.
     analyze(argc, argv);
@@ -110,6 +113,7 @@ TSPOptions::TSPOptions(int argc, char *argv[]) :
     // Load option values.
     list_proc_flags = present(u"list-processors") ? intValue<int>(u"list-processors", ts::PluginRepository::LIST_ALL) : 0;
     monitor = present(u"monitor");
+    getValue(monitor_config, u"monitor");
     duck.loadArgs(*this);
     log_args.loadArgs(duck, *this);
     tsp_args.loadArgs(duck, *this);
@@ -197,7 +201,7 @@ int MainCode(int argc, char *argv[])
     ts::AsyncReport report(opt.maxSeverity(), opt.log_args);
 
     // System monitor thread.
-    ts::SystemMonitor monitor(report);
+    ts::SystemMonitor monitor(report, opt.monitor_config);
 
     // The TS processing is performed into this object.
     ts::TSProcessor tsproc(report);

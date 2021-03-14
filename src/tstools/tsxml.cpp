@@ -135,6 +135,11 @@ Options::Options(int argc, char *argv[]) :
     help(u"model", u"filename",
          u"Specify an XML model file which is used to validate all input files.");
 
+    option(u"monitor");
+    help(u"monitor",
+         u"A shortcut for '--model tsduck.monitor.model.xml'. "
+         u"It verifies that the input files are valid system monitoring configuration files.");
+
     option(u"output", 'o', STRING);
     help(u"output", u"filename",
          u"Specify the name of the output file (standard output by default). "

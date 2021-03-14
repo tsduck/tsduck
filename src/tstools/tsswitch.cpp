@@ -71,16 +71,18 @@ namespace {
     public:
         TSSwitchOptions(int argc, char *argv[]);
 
-        bool                  monitor;      // Run a resource monitoring thread in the background.
-        ts::DuckContext       duck;         // TSDuck context
-        ts::AsyncReportArgs   log_args;     // Asynchronous logger arguments.
-        ts::InputSwitcherArgs switch_args;  // TS processing arguments.
+        bool                  monitor;         // Run a resource monitoring thread in the background.
+        ts::UString           monitor_config;  // System monitoring configuration file.S
+        ts::DuckContext       duck;            // TSDuck context
+        ts::AsyncReportArgs   log_args;        // Asynchronous logger arguments.
+        ts::InputSwitcherArgs switch_args;     // TS processing arguments.
     };
 }
 
 TSSwitchOptions::TSSwitchOptions(int argc, char *argv[]) :
     ts::ArgsWithPlugins(0, UNLIMITED_COUNT, 0, 0, 0, 1),
     monitor(false),
+    monitor_config(),
     duck(this),
     log_args(),
     switch_args()
@@ -88,11 +90,12 @@ TSSwitchOptions::TSSwitchOptions(int argc, char *argv[]) :
     setDescription(u"TS input source switch using remote control");
     setSyntax(u"[tsswitch-options] -I input-name [input-options] ... [-O output-name [output-options]]");
 
-    option(u"monitor", 'm');
-    help(u"monitor",
+    option(u"monitor", 'm', STRING, 0, 1, 0, UNLIMITED_VALUE, true);
+    help(u"monitor", u"filename",
          u"Continuously monitor the system resources which are used by tsswitch. "
          u"This includes CPU load, virtual memory usage. "
-         u"Useful to verify the stability of the application.");
+         u"Useful to verify the stability of the application. "
+         u"The optional file is an XML monitoring configuration file.");
 
     log_args.defineArgs(*this);
     switch_args.defineArgs(*this);
@@ -129,7 +132,7 @@ int MainCode(int argc, char *argv[])
     ts::AsyncReport report(opt.maxSeverity(), opt.log_args);
 
     // System monitor thread.
-    ts::SystemMonitor monitor(report);
+    ts::SystemMonitor monitor(report, opt.monitor_config);
 
     // Start the monitoring thread if required.
     if (opt.monitor) {
