@@ -36,6 +36,7 @@
 #include "tsInputSwitcherArgs.h"
 #include "tstsswitchInputExecutor.h"
 #include "tstsswitchOutputExecutor.h"
+#include "tstsswitchEventDispatcher.h"
 #include "tsMutex.h"
 #include "tsCondition.h"
 #include "tsWatchDog.h"
@@ -56,7 +57,7 @@ namespace ts {
             //!
             //! Constructor.
             //! @param [in] opt Command line options.
-            //! @param [in] handlers Registry of event handlers.
+            //! @param [in] handlers Registry of plugin event handlers.
             //! @param [in,out] log Log report.
             //!
             Core(const InputSwitcherArgs& opt, const PluginEventHandlerRegistry& handlers, Report& log);
@@ -194,6 +195,7 @@ namespace ts {
             InputSwitcherArgs   _opt;             // Command line options.
             InputExecutorVector _inputs;          // Input plugins threads.
             OutputExecutor      _output;          // Output plugin thread.
+            EventDispatcher     _eventDispatcher; // External event dispatcher.
             WatchDog            _receiveWatchDog; // Handle reception timeout.
             Mutex               _mutex;           // Global mutex, protect access to all subsequent fields.
             Condition           _gotInput;        // Signaled each time an input plugin reports new packets.

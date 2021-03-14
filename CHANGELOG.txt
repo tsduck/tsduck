@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2271
+VERSION 3.26-2280
 
 [NEW] New commands and plugins:
 
@@ -18,6 +18,8 @@ VERSION 3.26-2271
     - Options --alarm-command, --max-pre-roll-time, --max-repetition,
       --min-pre-roll-time, --min-repetition value and --no-adjustment
       to plugin "splicemonitor".
+    - Options --event-command, --event-udp, --event-ttl and --event-local-address
+      to "tsswitch".
 
 -------------------------------------------------------------------------------
 

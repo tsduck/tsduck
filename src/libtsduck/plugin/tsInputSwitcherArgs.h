@@ -57,6 +57,10 @@ namespace ts {
         size_t              bufferedPackets;   //!< Input buffer size in packets.
         size_t              maxInputPackets;   //!< Maximum input packets to read at a time.
         size_t              maxOutputPackets;  //!< Maximum input packets to send at a time.
+        UString             eventCommand;      //!< External shell command to run on an event.
+        SocketAddress       eventUDP;          //!< Remote UDP socket address for event description.
+        IPAddress           eventLocalAddress; //!< Outgoing local interface for UDP event description.
+        int                 eventTTL;          //!< Time-to-live socket option for event UDP.
         size_t              sockBuffer;        //!< Socket buffer size.
         SocketAddress       remoteServer;      //!< UDP server address for remote control.
         IPAddressSet        allowedRemote;     //!< Set of allowed remotes.
@@ -81,6 +85,15 @@ namespace ts {
         //! Enforce default or minimum values.
         //!
         void enforceDefaults();
+
+        //!
+        //! Set the UDP destination for event reporting using strings.
+        //! @param [in] destination Remote UDP socket address for event description. Empty to erase the destination.
+        //! @param [in] local Outgoing local interface for UDP event description. Can be empty.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on failure.
+        //!
+        bool setEventUDP(const UString& destination, const UString& local, Report& report);
 
         // Implementation of ArgsSupplierInterface.
         virtual void defineArgs(Args& args) const override;
