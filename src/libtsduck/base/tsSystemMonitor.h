@@ -38,6 +38,7 @@
 #include "tsCondition.h"
 #include "tsTime.h"
 #include "tsReport.h"
+#include "tsxml.h"
 
 namespace ts {
     //!
@@ -88,16 +89,43 @@ namespace ts {
         void stop();
 
     private:
+        // Description of a monitoring configuration, during one period.
+        class Config
+        {
+        public:
+            Config();               // Constructor.
+            bool    log_messages;   // Log monitoring messages.
+            bool    stable_memory;  // If true, raise an alarm when the virtual memory increases.
+            int     max_cpu;        // Maximum allowed CPU percentage.
+            UString alarm_command;  // Shell command to run on alarm.
+        };
+
+        // Description of a monitoring period.
+        class Period: public Config
+        {
+        public:
+            Period();               // Constructor.
+            MilliSecond duration;   // Period duration in milliseconds.
+            MilliSecond interval;   // Monitoring interval in that period.
+        };
+        typedef std::list<Period> PeriodList;
+
         // Private members
-        Report&   _report;
-        Mutex     _mutex;
-        Condition _wake_up;    // accessed under mutex
-        bool      _terminate;  // accessed under mutex
+        Report&    _report;
+        PeriodList _periods;    // List of monitoring periods, constant after constructor.
+        bool       _valid;      // Configuration is valid.
+        Mutex      _mutex;
+        Condition  _wake_up;    // Accessed under mutex.
+        bool       _terminate;  // Accessed under mutex.
 
         // Inherited from Thread
         virtual void main() override;
 
         // Prefix strings for all monitor messages
         static UString MonPrefix(const ts::Time& date);
+
+        // Laad the monitoring configuration file.
+        bool loadConfigurationFile(const UString& config);
+        bool loadConfig(Config&, const xml::Element*, const Config*);
     };
 }

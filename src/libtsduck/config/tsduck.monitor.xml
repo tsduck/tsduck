@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+ TSDuck - The MPEG Transport Stream Toolkit
+ Copyright (c) 2005-2021, Thierry Lelegard
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+ 1. Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ THE POSSIBILITY OF SUCH DAMAGE.
+
+                 - - - - - - - - - - - - - - - -
+
+ Default TSDuck XML configuration files for resource monitoring.
+
+-->
+<tsduck>
+
+  <!-- Default behaviour, relatively liberal, no alarm command -->
+  <defaults max_cpu="80" stable_memory="false" log="true"/>
+
+  <!-- Monitoring time profile -->
+  <profile>
+
+    <!-- First 2 minutes, monitor every 10 seconds, no CPU limitation -->
+    <period duration="120" interval="10" max_cpu="100"/>
+
+    <!-- Next 8 minutes (up to start + 10 mn), monitor every minute -->
+    <period duration="480" interval="60"/>
+
+    <!-- Next 10 minutes (up to start + 20 mn), monitor every 2 minutes -->
+    <period duration="600" interval="120"/>
+
+    <!-- Next 40 minutes (up to start + 1 hour), monitor every 5 minutes -->
+    <period duration="2400" interval="300"/>
+
+    <!-- Next 9 hours (up to start + 10 hours), monitor every 30 minutes -->
+    <period duration="32400" interval="1800"/>
+
+    <!-- After 10 hours, monitor every 30 minutes, alarm when memory is not stable, stop logging messages -->
+    <period interval="1800" stable_memory="true" log="false"/>
+
+  </profile>
+
+</tsduck>

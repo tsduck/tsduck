@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2280
+VERSION 3.26-2284
 
 [NEW] New commands and plugins:
 
@@ -11,6 +11,9 @@ VERSION 3.26-2280
 
 [IMP] Improvements on existing commands and plugins:
 
+  * Resource monitoring of "tsp" and "tsswitch" (option --monitor) is now
+    configurable using XML files and alarm commands can be triggered on
+    CPU or memory misbehavior.
   * New options in exiting commands and plugins:
     - Option --event-code in plugins "mpe", "psi" and "tables".
     - Options --min-bitrate and --min-inter-packet in plugin "spliceinject".
