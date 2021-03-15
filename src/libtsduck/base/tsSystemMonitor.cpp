@@ -186,8 +186,8 @@ void ts::SystemMonitor::main()
         }
         else {
             // VM stable since last time. Check if temporarily stable or safely stable.
-            // If no increase during last 95% of the running time, then we are stable.
-            message += (current_time - vsize_uptime) > (95 * (current_time - start_time)) / 100 ? u" (stable)" : u" (leaking)";
+            // If no increase during last 95% of the running time, then we are really stable.
+            message += (current_time - vsize_uptime) > (95 * (current_time - start_time)) / 100 ? u" (stable)" : u" (stabilizing)";
         }
 
         // Format CPU load.
