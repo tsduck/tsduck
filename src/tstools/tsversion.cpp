@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsVersionInfo.h"
 #include "tsGitHubRelease.h"
 #include "tsWebRequest.h"
 #include "tsSysUtils.h"

@@ -197,8 +197,8 @@ void ts::SystemMonitor::main()
         message += UString::Percentage(metrics.cpu_time - start_metrics.cpu_time, current_time - start_time);
         message += u")";
 
-        // Display monitoring message if allowed in this period.
-        if (period->log_messages) {
+        // Display monitoring message if allowed in this period or if vmem has increased.
+        if (period->log_messages || metrics.vmem_size > vsize_max) {
             _report.info(message);
         }
 

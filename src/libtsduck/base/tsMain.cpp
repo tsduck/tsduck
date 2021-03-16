@@ -26,44 +26,55 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  @ingroup app
-//!  Define a standard main() function with appropriate checks.
-//!
+
+#include "tsMain.h"
+#include "tsConsoleState.h"
+#include "tsIPUtils.h"
+#include "tsCOM.h"
+#include "tsVersionInfo.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// A function to wrap the entry point of an application.
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsArgs.h"
+int MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* argv[])
+{
+    // Save console state, set UTF-8 output, restore state on exit.
+    ts::ConsoleState _consoleState;
 
-//!
-//! A function to wrap the entry point of an application.
-//! The application code should use the macro TS_MAIN instead of
-//! directly calling this function.
-//!
-//! Uncaught exceptions are displayed.
-//!
-//! On Windows, the COM environment and IP networking are initialized.
-//! The version of the tsduck DLL is checked. It has been noted that using
-//! a tsduck DLL with an incompatible version sometimes makes the application
-//! silently exit on Windows. This is why we check the version of the DLL.
-//!
-//! @param [in] func The actual main function with the same profile as main().
-//! @param [in] argc Command line parameter count.
-//! @param [in] argv Command line parameters.
-//! @return The process exit code, typically EXIT_SUCCESS or EXIT_FAILURE.
-//!
-int MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* argv[]);
+    try {
 
-//!
-//! A macro which expands to a main() program.
-//! @param func The actual main function with the same profile as main().
-//! @hideinitializer
-//!
-#define TS_MAIN(func)                         \
-    int func(int argc, char *argv[]);         \
-    int main(int argc, char *argv[])          \
-    {                                         \
-        return MainWrapper(func, argc, argv); \
-    }                                         \
-    typedef int TS_UNIQUE_NAME(UnusedMainType) /* allow trailing semi-colon */
+#if defined(TS_WINDOWS)
+
+        // On Windows, verify that the DLL has the same version number as the application.
+        if (tsduckLibraryVersionMajor != TS_VERSION_MAJOR ||
+            tsduckLibraryVersionMinor != TS_VERSION_MINOR ||
+            tsduckLibraryVersionCommit != TS_COMMIT)
+        {
+            std::cerr << "**** TSDuck library version mismatch, library is "
+                      << tsduckLibraryVersionMajor << "."
+                      << tsduckLibraryVersionMinor << "-"
+                      << tsduckLibraryVersionCommit
+                      << ", this command needs " TS_VERSION_USTRING " ****"
+                      << std::endl << std::flush;
+            return EXIT_FAILURE;
+        }
+
+        // Initialize COM and networking.
+        ts::COM com;
+        if (!com.isInitialized() || !ts::IPInitialize()) {
+            return EXIT_FAILURE;
+        }
+
+#endif
+
+        // Actual application code.
+        return func(argc, argv);
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Program aborted: " << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+}
