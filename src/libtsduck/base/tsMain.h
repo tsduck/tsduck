@@ -53,7 +53,7 @@
 //! @param [in] argv Command line parameters.
 //! @return The process exit code, typically EXIT_SUCCESS or EXIT_FAILURE.
 //!
-int MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* argv[]);
+int TSDUCKDLL MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* argv[]);
 
 //!
 //! A macro which expands to a main() program.
