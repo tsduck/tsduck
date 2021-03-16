@@ -31,6 +31,7 @@
 #include "tsConsoleState.h"
 #include "tsIPUtils.h"
 #include "tsCOM.h"
+#include "tsVersionString.h"
 #include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
@@ -57,7 +58,7 @@ int MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* argv[])
                       << tsduckLibraryVersionMajor << "."
                       << tsduckLibraryVersionMinor << "-"
                       << tsduckLibraryVersionCommit
-                      << ", this command needs " TS_VERSION_USTRING " ****"
+                      << ", this command needs " TS_VERSION_STRING " ****"
                       << std::endl << std::flush;
             return EXIT_FAILURE;
         }
