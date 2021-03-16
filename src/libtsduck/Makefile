@@ -162,8 +162,8 @@ install-devel: $(STATIC_LIBTSDUCK) tsduck.h
 	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	rm -f $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsMPEG.h
 	install -m 644 tsduck.mk \
-	    $(filter-out $(if $(NOTELETEXT),%/tsTeletextCharset.h %/tsTeletextDemux.h,),$(shell find . -name 'ts*.h' ! -path '*/private/*' ! -path '*/windows/*' ! -path '*/$(SKIPDIR)/*')) \
+	    $(shell find . -name 'ts*.h' ! -path '*/private/*' ! -path '*/windows/*' ! -path '*/$(SKIPDIR)/*' $(if $(NOTELETEXT),! -name tsTeletextDemux.h,)) \
 	    $(SYSROOT)$(SYSPREFIX)/include/tsduck
 ifdef NOTELETEXT
-	sed tsduck.h -e '/tsTeletextCharset.h/d' -e '/tsTeletextDemux.h/d' >$(SYSROOT)$(SYSPREFIX)/include/tsduck/tsduck.h
+	sed tsduck.h -e '/tsTeletextDemux.h/d' >$(SYSROOT)$(SYSPREFIX)/include/tsduck/tsduck.h
 endif
