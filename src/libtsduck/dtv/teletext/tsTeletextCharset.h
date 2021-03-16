@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsUChar.h"
-#if !defined(TS_NOTELETEXT)
 
 namespace ts {
     //!
@@ -51,25 +50,25 @@ namespace ts {
 
         //!
         //! Check parity and translate any reasonable Teletext character into UCS-2.
-        //! @param [in] c Teletext character.
+        //! @param [in] chr Teletext character.
         //! @return UCS-2 equivalent.
         //!
-        UChar teletextToUcs2(uint8_t c) const;
+        UChar teletextToUcs2(uint8_t chr) const;
 
         //!
         //! Translate a G2 character into UCS-2.
-        //! @param [in] c Teletext character.
+        //! @param [in] chr Teletext character.
         //! @param [in] accent Accent mode (0 to 14) if @a c is a letter.
         //! @return UCS-2 equivalent.
         //!
-        UChar g2AccentToUcs2(uint8_t c, uint8_t accent) const;
+        UChar g2AccentToUcs2(uint8_t chr, uint8_t accent) const;
 
         //!
         //! Translate a G2 character into UCS-2.
-        //! @param [in] c Teletext character.
+        //! @param [in] chr Teletext character.
         //! @return UCS-2 equivalent.
         //!
-        UChar g2ToUcs2(uint8_t c) const;
+        UChar g2ToUcs2(uint8_t chr) const;
 
         //!
         //! Set default G0 character set.
@@ -130,7 +129,7 @@ namespace ts {
         //!
         //! Undefined charset index.
         //!
-        static const uint8_t UNDEFINED = 0xFF;
+        static constexpr uint8_t UNDEFINED = 0xFF;
 
         //!
         //! Remap the GO character set.
@@ -146,5 +145,3 @@ namespace ts {
         G0CharsetData  _G0;        //!< Current character set data.
     };
 }
-
-#endif // TS_NOTELETEXT

@@ -222,8 +222,9 @@ if (-not $NoInstaller) {
     if ($NoTeletext) {
         $Exclude += "*\tsduck.h"
         $Exclude += "*\tsTeletextDemux.h"
-        $Exclude += "*\tsTeletextCharset.h"
-        Get-Content (Join-Multipath @($SrcDir, "libtsduck", "tsduck.h")) | `            Where-Object { ($_ -notmatch 'tsTeletextDemux.h') -and ($_ -notmatch 'tsTeletextCharset.h') } | `            Out-File -Encoding ascii (Join-Path $TempDir tsduck.h)
+        Get-Content (Join-Multipath @($SrcDir, "libtsduck", "tsduck.h")) | `
+            Where-Object { $_ -notmatch 'tsTeletextDemux.h' } | `
+            Out-File -Encoding ascii (Join-Path $TempDir tsduck.h)
     }
     Get-ChildItem (Join-Path $SrcDir libtsduck) -Recurse -Include "*.h" | `
         Where-Object {
@@ -337,7 +338,8 @@ if (-not $NoSource) {
         & (Join-MultiPath @($TempRoot, "build", "cleanup.ps1")) -Deep -NoPause -Silent
 
         if ($NoTeletext) {
-            Get-ChildItem $TempRoot -Recurse -Include @("tsTeletextDemux.*", "tsTeletextCharset.*", "tsplugin_teletext.*") | Remove-Item -Force -ErrorAction Ignore
+            Get-ChildItem $TempRoot -Recurse -Include @("tsTeletextDemux.*", "tsplugin_teletext.*") | `
+                Remove-Item -Force -ErrorAction Ignore
         }
 
         # Create the source zip file.
