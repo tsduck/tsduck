@@ -36,6 +36,8 @@
 #include "tsEnumeration.h"
 #include "tsReport.h"
 #include "tsThread.h"
+#include "tsVersion.h"
+#include "tsLibraryVersion.h"
 
 //!
 //! TSDuck namespace, containing all TSDuck classes and functions.
@@ -143,12 +145,51 @@ namespace ts {
 }
 
 extern "C" {
-    //! Major version of the TSDuck library.
-    TSDUCKDLL extern const int tsduckLibraryVersionMajor;
-    //! Minor version of the TSDuck library.
-    TSDUCKDLL extern const int tsduckLibraryVersionMinor;
-    //! Commit version of the TSDuck library.
-    TSDUCKDLL extern const int tsduckLibraryVersionCommit;
-    //! Interface version of the TSDuck library.
-    TSDUCKDLL extern const int tsduckLibraryVersionInterface;
+    //! Major version of the TSDuck library as the int value of a symbol from the library.
+    extern const int TSDUCKDLL tsduckLibraryVersionMajor;
+    //! Minor version of the TSDuck library as the int value of a symbol from the library.
+    extern const int TSDUCKDLL tsduckLibraryVersionMinor;
+    //! Commit version of the TSDuck library as the int value of a symbol from the library.
+    extern const int TSDUCKDLL tsduckLibraryVersionCommit;
+    //! Interface version of the TSDuck library as the int value of a symbol from the library.
+    extern const int TSDUCKDLL tsduckLibraryVersionInterface;
+
+    //! @cond nodoxygen
+    #define TS_SYM2(a,b) TS_SYM2a(a,b)
+    #define TS_SYM2a(a,b) a##_##b
+    #define TSDUCK_LIBRARY_ABI_SYMBOL TS_SYM2(TSDUCK_LIBRARY_ABI,TS_LIBRARY_VERSION)
+    #define TS_SYM4(a,b,c,d) TS_SYM4a(a,b,c,d)
+    #define TS_SYM4a(a,b,c,d) a##_##b##_##c##_##d
+    #define TSDUCK_LIBRARY_VERSION_SYMBOL TS_SYM4(TSDUCK_LIBRARY_VERSION,TS_VERSION_MAJOR,TS_VERSION_MINOR,TS_COMMIT)
+    //! @endcond
+
+    //!
+    //! Full version of the TSDuck library in the name of a symbol from the library.
+    //!
+    //! Can be used to force an undefined reference at run-time in case of version mismatch.
+    //! The C++ application uses the name TSDUCK_LIBRARY_VERSION_SYMBOL but this
+    //! generates a reference to a symbol containing the actual version number.
+    //!
+    //! Example:
+    //! @code
+    //!   $ nm -C tsVersionInfo.o | grep TSDUCK_LIBRARY_VERSION
+    //!   00000000000008dc R TSDUCK_LIBRARY_VERSION_3_26_2289
+    //! @endcode
+    //!
+    extern const int TSDUCKDLL TSDUCK_LIBRARY_VERSION_SYMBOL;
+
+    //!
+    //! ABI version of the TSDuck library in the name of a symbol from the library.
+    //!
+    //! Can be used to force an undefined reference at run-time in case of version mismatch.
+    //! The C++ application uses the name TSDUCK_LIBRARY_ABI_SYMBOL but this
+    //! generates a reference to a symbol containing the actual version number.
+    //!
+    //! Example:
+    //! @code
+    //!   $ nm -C tsVersionInfo.o | grep TSDUCK_LIBRARY_ABI
+    //!   00000000000008e0 R TSDUCK_LIBRARY_ABI_3
+    //! @endcode
+    //!
+    extern const int TSDUCKDLL TSDUCK_LIBRARY_ABI_SYMBOL;
 }
