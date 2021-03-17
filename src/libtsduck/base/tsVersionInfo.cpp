@@ -40,10 +40,26 @@
 TSDUCK_SOURCE;
 
 // Exported version of the TSDuck library.
+// The names of these symbols are constant, their values are not.
 const int tsduckLibraryVersionMajor = TS_VERSION_MAJOR;
 const int tsduckLibraryVersionMinor = TS_VERSION_MINOR;
 const int tsduckLibraryVersionCommit = TS_COMMIT;
 const int tsduckLibraryVersionInterface = TS_LIBRARY_VERSION;
+
+//
+// Also export symbols containining the version in their name in case there is a
+// need to force an undefined reference at run-time in case of version mismatch.
+// Example:
+//   $ nm -C tsVersionInfo.o | grep TSDUCK_LIBRARY
+//   00000000000008e0 R TSDUCK_LIBRARY_ABI_3
+//   00000000000008dc R TSDUCK_LIBRARY_VERSION_3_26_2289
+//
+#define TS_SYM2(a,b) TS_SYM2a(a,b)
+#define TS_SYM2a(a,b) a##_##b
+#define TS_SYM4(a,b,c,d) TS_SYM4a(a,b,c,d)
+#define TS_SYM4a(a,b,c,d) a##_##b##_##c##_##d
+TSDUCKDLL extern "C" const int TS_SYM4(TSDUCK_LIBRARY_VERSION,TS_VERSION_MAJOR,TS_VERSION_MINOR,TS_COMMIT) = 0;
+TSDUCKDLL extern "C" const int TS_SYM2(TSDUCK_LIBRARY_ABI,TS_LIBRARY_VERSION) = 0;
 
 // Enumeration description of ts::VersionFormat.
 const ts::Enumeration ts::VersionInfo::FormatEnum({

@@ -42,11 +42,8 @@
 //! directly calling this function.
 //!
 //! Uncaught exceptions are displayed.
-//!
 //! On Windows, the COM environment and IP networking are initialized.
-//! The version of the tsduck DLL is checked. It has been noted that using
-//! a tsduck DLL with an incompatible version sometimes makes the application
-//! silently exit on Windows. This is why we check the version of the DLL.
+//! The Windows console is set to UTF-8 mode and restored to its previous value on exit.
 //!
 //! @param [in] func The actual main function with the same profile as main().
 //! @param [in] argc Command line parameter count.
@@ -55,8 +52,36 @@
 //!
 int TSDUCKDLL MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* argv[]);
 
+//! @cond nodoxygen
+// On Windows, verify that the DLL has the same version number as the application.
+#if defined (TS_WINDOWS)
+#include "tsVersionString.h"
+#include "tsVersionInfo.h"
+#define TS_CHECK_TSDUCKLIB_VERSION                                       \
+    if (tsduckLibraryVersionMajor != TS_VERSION_MAJOR ||                 \
+        tsduckLibraryVersionMinor != TS_VERSION_MINOR ||                 \
+        tsduckLibraryVersionCommit != TS_COMMIT)                         \
+    {                                                                    \
+        std::cerr << "**** TSDuck library version mismatch, library is " \
+                  << tsduckLibraryVersionMajor << "."                    \
+                  << tsduckLibraryVersionMinor << "-"                    \
+                  << tsduckLibraryVersionCommit                          \
+                  << ", this command needs " TS_VERSION_STRING " ****"   \
+                  << std::endl << std::flush;                            \
+        return EXIT_FAILURE;                                             \
+    }
+#else
+#define TS_CHECK_TSDUCKLIB_VERSION
+#endif
+//! @endcond
+
 //!
 //! A macro which expands to a main() program.
+//!
+//! On Windows, the version of the tsduck DLL is checked before the first call to it.
+//! It has been noted that using a tsduck DLL with an incompatible version sometimes makes
+//! the application silently exit on Windows. This is why we check the version of the DLL.
+//!
 //! @param func The actual main function with the same profile as main().
 //! @hideinitializer
 //!
@@ -64,6 +89,7 @@ int TSDUCKDLL MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* a
     int func(int argc, char *argv[]);         \
     int main(int argc, char *argv[])          \
     {                                         \
+        TS_CHECK_TSDUCKLIB_VERSION            \
         return MainWrapper(func, argc, argv); \
     }                                         \
     typedef int TS_UNIQUE_NAME(UnusedMainType) /* allow trailing semi-colon */

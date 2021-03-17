@@ -31,8 +31,6 @@
 #include "tsConsoleState.h"
 #include "tsIPUtils.h"
 #include "tsCOM.h"
-#include "tsVersionString.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -48,27 +46,11 @@ int MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* argv[])
     try {
 
 #if defined(TS_WINDOWS)
-
-        // On Windows, verify that the DLL has the same version number as the application.
-        if (tsduckLibraryVersionMajor != TS_VERSION_MAJOR ||
-            tsduckLibraryVersionMinor != TS_VERSION_MINOR ||
-            tsduckLibraryVersionCommit != TS_COMMIT)
-        {
-            std::cerr << "**** TSDuck library version mismatch, library is "
-                      << tsduckLibraryVersionMajor << "."
-                      << tsduckLibraryVersionMinor << "-"
-                      << tsduckLibraryVersionCommit
-                      << ", this command needs " TS_VERSION_STRING " ****"
-                      << std::endl << std::flush;
-            return EXIT_FAILURE;
-        }
-
         // Initialize COM and networking.
         ts::COM com;
         if (!com.isInitialized() || !ts::IPInitialize()) {
             return EXIT_FAILURE;
         }
-
 #endif
 
         // Actual application code.
