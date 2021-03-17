@@ -58,8 +58,8 @@ const int tsduckLibraryVersionInterface = TS_LIBRARY_VERSION;
 #define TS_SYM2a(a,b) a##_##b
 #define TS_SYM4(a,b,c,d) TS_SYM4a(a,b,c,d)
 #define TS_SYM4a(a,b,c,d) a##_##b##_##c##_##d
-TSDUCKDLL extern "C" const int TS_SYM4(TSDUCK_LIBRARY_VERSION,TS_VERSION_MAJOR,TS_VERSION_MINOR,TS_COMMIT) = 0;
-TSDUCKDLL extern "C" const int TS_SYM2(TSDUCK_LIBRARY_ABI,TS_LIBRARY_VERSION) = 0;
+extern "C" TSDUCKDLL const int TS_SYM4(TSDUCK_LIBRARY_VERSION,TS_VERSION_MAJOR,TS_VERSION_MINOR,TS_COMMIT) = 0;
+extern "C" TSDUCKDLL const int TS_SYM2(TSDUCK_LIBRARY_ABI,TS_LIBRARY_VERSION) = 0;
 
 // Enumeration description of ts::VersionFormat.
 const ts::Enumeration ts::VersionInfo::FormatEnum({
