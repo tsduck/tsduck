@@ -37,7 +37,7 @@
 #include "tsSection.h"
 #include "tsTablesPtr.h"
 #include "tsSingletonManager.h"
-#include "tsLibraryVersion.h"
+#include "tsVersionInfo.h"
 
 namespace ts {
 
@@ -232,7 +232,6 @@ namespace ts {
         public:
             //!
             //! Register a fully implemented table.
-            //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation of the caller.
             //! @param [in] factory Function which creates a table of this type.
             //! @param [in] tids List of table ids for this type. Usually there is only one (notable exception: EIT, SDT, NIT).
             //! @param [in] standards List of standards which define this table.
@@ -244,8 +243,7 @@ namespace ts {
             //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only. Same as @a minCAS when set as CASID_NULL.
             //! @see TS_REGISTER_TABLE
             //!
-            RegisterTable(int libversion,
-                          TableFactory factory,
+            RegisterTable(TableFactory factory,
                           const std::vector<TID>& tids,
                           Standards standards,
                           const UString& xmlName,
@@ -257,7 +255,6 @@ namespace ts {
 
             //!
             //! Register a known table with display functions but no full C++ class.
-            //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation of the caller.
             //! @param [in] tids List of table ids for this type. Usually there is only one (notable exception: EIT, SDT, NIT).
             //! @param [in] standards List of standards which define this table.
             //! @param [in] displayFunction Display function for the corresponding sections. Can be null.
@@ -267,8 +264,7 @@ namespace ts {
             //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only. Same as @a minCAS when set as CASID_NULL.
             //! @see TS_REGISTER_SECTION
             //!
-            RegisterTable(int libversion,
-                          const std::vector<TID>& tids,
+            RegisterTable(const std::vector<TID>& tids,
                           Standards standards,
                           DisplaySectionFunction displayFunction = nullptr,
                           LogSectionFunction logFunction = nullptr,
@@ -288,7 +284,6 @@ namespace ts {
         public:
             //!
             //! Register a descriptor factory for a given descriptor tag.
-            //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation of the caller.
             //! @param [in] factory Function which creates a descriptor of this type.
             //! @param [in] edid Exended descriptor id.
             //! @param [in] xmlName XML node name for this descriptor type.
@@ -296,8 +291,7 @@ namespace ts {
             //! @param [in] xmlNameLegacy Legacy XML node name for this descriptor type (optional).
             //! @see TS_REGISTER_DESCRIPTOR
             //!
-            RegisterDescriptor(int libversion,
-                               DescriptorFactory factory,
+            RegisterDescriptor(DescriptorFactory factory,
                                const EDID& edid,
                                const UString& xmlName,
                                DisplayDescriptorFunction displayFunction = nullptr,
@@ -305,14 +299,13 @@ namespace ts {
 
             //!
             //! Registers a CA_descriptor display function for a given range of CA_system_id.
-            //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation of the caller.
             //! @param [in] displayFunction Display function for the corresponding descriptors.
             //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
             //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
             //! Same @a minCAS when set as CASID_NULL.
             //! @see TS_REGISTER_CA_DESCRIPTOR
             //!
-            RegisterDescriptor(int libversion, DisplayCADescriptorFunction displayFunction, uint16_t minCAS, uint16_t maxCAS = CASID_NULL);
+            RegisterDescriptor(DisplayCADescriptorFunction displayFunction, uint16_t minCAS, uint16_t maxCAS = CASID_NULL);
 
         private:
             void registerXML(DescriptorFactory factory, const EDID& edid, const UString& xmlName, const UString& xmlNameLegacy);
@@ -330,14 +323,13 @@ namespace ts {
             //!
             //! Register an additional XML model file containing definitions for tables and descriptors.
             //! This file will be merged with the main model.
-            //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation of the caller.
             //! @param [in] filename Name of the XML model file. This should be a simple file name,
             //! without directory. This file will be searched in the same directory as the executable,
             //! then in all directories from $TSPLUGINS_PATH, then from $LD_LIBRARY_PATH (Linux only),
             //! then from $PATH.
             //! @see TS_REGISTER_XML_FILE
             //!
-            RegisterXML(int libversion, const UString& filename);
+            RegisterXML(const UString& filename);
         };
 
         //!
@@ -352,14 +344,13 @@ namespace ts {
             //!
             //! Register an additional names file.
             //! This file will be merged with the main names files.
-            //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation of the caller.
             //! @param [in] filename Name of the names file. This should be a simple file name,
             //! without directory. This file will be searched in the same directory as the executable,
             //! then in all directories from $TSPLUGINS_PATH, then from $LD_LIBRARY_PATH (Linux only),
             //! then from $PATH.
             //! @see TS_REGISTER_NAMES_FILE
             //!
-            RegisterNames(int libversion, const UString& filename);
+            RegisterNames(const UString& filename);
         };
 
     private:
@@ -438,39 +429,51 @@ namespace ts {
 //! Registration of a fully implemented table inside the ts::PSIRepository singleton.
 //! This macro is typically used in the .cpp file of a table.
 //!
-#define TS_REGISTER_TABLE(classname, ...) _TS_TABLE_FACTORY(classname) static ts::PSIRepository::RegisterTable _TS_REGISTRAR_NAME(TS_LIBRARY_VERSION, _TS_FACTORY_NAME, __VA_ARGS__)
+#define TS_REGISTER_TABLE(classname, ...) \
+    TS_LIBCHECK(); \
+    _TS_TABLE_FACTORY(classname) static ts::PSIRepository::RegisterTable _TS_REGISTRAR_NAME(_TS_FACTORY_NAME, __VA_ARGS__)
 
 //!
 //! @hideinitializer
 //! Registration of a known table with display functions but no full C++ class.
 //! This macro is typically used in the .cpp file of a CAS-specific module or TSDuck extension.
 //!
-#define TS_REGISTER_SECTION(...) static ts::PSIRepository::RegisterTable _TS_REGISTRAR_NAME(TS_LIBRARY_VERSION, __VA_ARGS__)
+#define TS_REGISTER_SECTION(...) \
+    TS_LIBCHECK(); \
+    static ts::PSIRepository::RegisterTable _TS_REGISTRAR_NAME(__VA_ARGS__)
 
 //!
 //! @hideinitializer
 //! Registration of a fully implemented descriptor inside the ts::PSIRepository singleton.
 //! This macro is typically used in the .cpp file of a descriptor.
 //!
-#define TS_REGISTER_DESCRIPTOR(classname, ...) _TS_DESCRIPTOR_FACTORY(classname) static ts::PSIRepository::RegisterDescriptor _TS_REGISTRAR_NAME(TS_LIBRARY_VERSION, _TS_FACTORY_NAME, __VA_ARGS__)
+#define TS_REGISTER_DESCRIPTOR(classname, ...) \
+    TS_LIBCHECK(); \
+    _TS_DESCRIPTOR_FACTORY(classname) static ts::PSIRepository::RegisterDescriptor _TS_REGISTRAR_NAME(_TS_FACTORY_NAME, __VA_ARGS__)
 
 //!
 //! @hideinitializer
 //! Registration of a display function for a CA_descriptor inside the ts::PSIRepository singleton.
 //! This macro is typically used in the .cpp file of a CAS-specific module or TSDuck extension.
 //!
-#define TS_REGISTER_CA_DESCRIPTOR(func, ...) static ts::PSIRepository::RegisterDescriptor _TS_REGISTRAR_NAME(TS_LIBRARY_VERSION, func, __VA_ARGS__)
+#define TS_REGISTER_CA_DESCRIPTOR(func, ...) \
+    TS_LIBCHECK(); \
+    static ts::PSIRepository::RegisterDescriptor _TS_REGISTRAR_NAME(func, __VA_ARGS__)
 
 //!
 //! @hideinitializer
 //! Registration of an extension XML model file inside the ts::PSIRepository singleton.
 //! This macro is typically used in the .cpp file of a TSDuck extension.
 //!
-#define TS_REGISTER_XML_FILE(filename) static ts::PSIRepository::RegisterXML _TS_REGISTRAR_NAME(TS_LIBRARY_VERSION, filename)
+#define TS_REGISTER_XML_FILE(filename) \
+    TS_LIBCHECK(); \
+    static ts::PSIRepository::RegisterXML _TS_REGISTRAR_NAME(filename)
 
 //!
 //! @hideinitializer
 //! Registration of an extension names file inside the ts::PSIRepository singleton.
 //! This macro is typically used in the .cpp file of a TSDuck extension.
 //!
-#define TS_REGISTER_NAMES_FILE(filename) static ts::PSIRepository::RegisterNames _TS_REGISTRAR_NAME(TS_LIBRARY_VERSION, filename)
+#define TS_REGISTER_NAMES_FILE(filename) \
+    TS_LIBCHECK(); \
+    static ts::PSIRepository::RegisterNames _TS_REGISTRAR_NAME(filename)

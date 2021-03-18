@@ -36,6 +36,7 @@
 #include "tsSingletonManager.h"
 #include "tsReport.h"
 #include "tsSysUtils.h"
+#include "tsVersionInfo.h"
 
 namespace ts {
     //!
@@ -92,15 +93,13 @@ namespace ts {
         public:
             //!
             //! The constructor registers an extension.
-            //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation of the caller.
             //! @param [in] name Extension name.
             //! @param [in] file_name Extension shared library file name. If empty, the caller's library is used.
             //! @param [in] description One-line description of the extension.
             //! @param [in] plugins List of tsp plugin names which are provided by this extension.
             //! @param [in] tools List of tools (executables) which are provided by this extension.
             //!
-            Register(int libversion,
-                     const UString& name,
+            Register(const UString& name,
                      const UString& file_name,
                      const UString& description,
                      const UStringVector& plugins = UStringVector(),
@@ -150,4 +149,6 @@ namespace ts {
 //! TS_REGISTER_EXTENSION(u"foo", u"Manipulate FOO tables", {u"fooinject", u"fooextract"}, {u"foogen"});
 //! @endcode
 //!
-#define TS_REGISTER_EXTENSION(name,...) static ts::DuckExtensionRepository::Register TS_UNIQUE_NAME(_RE)(TS_LIBRARY_VERSION,name,ts::CallerLibraryFile(),__VA_ARGS__)
+#define TS_REGISTER_EXTENSION(name,...) \
+    TS_LIBCHECK(); \
+    static ts::DuckExtensionRepository::Register TS_UNIQUE_NAME(_RE)(name,ts::CallerLibraryFile(),__VA_ARGS__)

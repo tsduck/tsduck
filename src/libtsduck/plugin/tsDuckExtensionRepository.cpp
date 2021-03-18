@@ -29,7 +29,6 @@
 
 #include "tsDuckExtensionRepository.h"
 #include "tsApplicationSharedLibrary.h"
-#include "tsVersionInfo.h"
 #include "tsCerrReport.h"
 TSDUCK_SOURCE;
 
@@ -97,17 +96,14 @@ ts::DuckExtensionRepository::Loader::Loader()
 // This constructor registers an extension.
 //----------------------------------------------------------------------------
 
-ts::DuckExtensionRepository::Register::Register(int libversion,
-                                                const UString& name,
+ts::DuckExtensionRepository::Register::Register(const UString& name,
                                                 const UString& file_name,
                                                 const UString& description,
                                                 const UStringVector& plugins,
                                                 const UStringVector& tools)
 {
     CERR.debug(u"registering extension \"%s\"", {name});
-    if (VersionInfo::CheckLibraryVersion(libversion)) {
-        DuckExtensionRepository::Instance()->_extensions.push_back({name, file_name, description, plugins, tools});
-    }
+    DuckExtensionRepository::Instance()->_extensions.push_back({ name, file_name, description, plugins, tools });
 }
 
 

@@ -35,6 +35,7 @@
 
 #pragma once
 #include "tsArgs.h"
+#include "tsVersionInfo.h"
 
 //!
 //! A function to wrap the entry point of an application.
@@ -52,36 +53,10 @@
 //!
 int TSDUCKDLL MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* argv[]);
 
-//! @cond nodoxygen
-// On Windows, verify that the DLL has the same version number as the application.
-#if defined (TS_WINDOWS)
-#include "tsVersionString.h"
-#include "tsVersionInfo.h"
-#define TS_CHECK_TSDUCKLIB_VERSION                                       \
-    if (tsduckLibraryVersionMajor != TS_VERSION_MAJOR ||                 \
-        tsduckLibraryVersionMinor != TS_VERSION_MINOR ||                 \
-        tsduckLibraryVersionCommit != TS_COMMIT)                         \
-    {                                                                    \
-        std::cerr << "**** TSDuck library version mismatch, library is " \
-                  << tsduckLibraryVersionMajor << "."                    \
-                  << tsduckLibraryVersionMinor << "-"                    \
-                  << tsduckLibraryVersionCommit                          \
-                  << ", this command needs " TS_VERSION_STRING " ****"   \
-                  << std::endl << std::flush;                            \
-        return EXIT_FAILURE;                                             \
-    }
-#else
-#define TS_CHECK_TSDUCKLIB_VERSION
-#endif
-//! @endcond
-
 //!
 //! A macro which expands to a main() program.
-//!
-//! On Windows, the version of the tsduck DLL is checked before the first call to it.
-//! It has been noted that using a tsduck DLL with an incompatible version sometimes makes
-//! the application silently exit on Windows. This is why we check the version of the DLL.
-//!
+//! An explicit reference is made to the TSDuck library version to check
+//! that the compilation and runtime versions are identical.
 //! @param func The actual main function with the same profile as main().
 //! @hideinitializer
 //!
@@ -89,7 +64,7 @@ int TSDUCKDLL MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* a
     int func(int argc, char *argv[]);         \
     int main(int argc, char *argv[])          \
     {                                         \
-        TS_CHECK_TSDUCKLIB_VERSION            \
+        TS_LIBCHECK();                        \
         return MainWrapper(func, argc, argv); \
     }                                         \
     typedef int TS_UNIQUE_NAME(UnusedMainType) /* allow trailing semi-colon */

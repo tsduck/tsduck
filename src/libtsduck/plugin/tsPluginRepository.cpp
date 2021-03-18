@@ -29,7 +29,6 @@
 
 #include "tsPluginRepository.h"
 #include "tsApplicationSharedLibrary.h"
-#include "tsVersionInfo.h"
 #include "tsAlgorithm.h"
 #include "tsCerrReport.h"
 #include "tsSysUtils.h"
@@ -63,43 +62,43 @@ ts::PluginRepository::PluginRepository() :
 // Plugin registration.
 //----------------------------------------------------------------------------
 
-void ts::PluginRepository::registerInput(int libversion, const UString& name, InputPluginFactory allocator)
+void ts::PluginRepository::registerInput(const UString& name, InputPluginFactory allocator)
 {
     CERR.debug(u"registering input plugin \"%s\", status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
-    if (allocator != nullptr && VersionInfo::CheckLibraryVersion(libversion)) {
+    if (allocator != nullptr) {
         _inputPlugins[name] = allocator;
     }
 }
 
-void ts::PluginRepository::registerProcessor(int libversion, const UString& name, ProcessorPluginFactory allocator)
+void ts::PluginRepository::registerProcessor(const UString& name, ProcessorPluginFactory allocator)
 {
     CERR.debug(u"registering processor plugin \"%s\", status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
-    if (allocator != nullptr && VersionInfo::CheckLibraryVersion(libversion)) {
+    if (allocator != nullptr) {
         _processorPlugins[name] = allocator;
     }
 }
 
-void ts::PluginRepository::registerOutput(int libversion, const UString& name, OutputPluginFactory allocator)
+void ts::PluginRepository::registerOutput(const UString& name, OutputPluginFactory allocator)
 {
     CERR.debug(u"registering output plugin \"%s\", status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
-    if (allocator != nullptr && VersionInfo::CheckLibraryVersion(libversion)) {
+    if (allocator != nullptr) {
         _outputPlugins[name] = allocator;
     }
 }
 
-ts::PluginRepository::Register::Register(int libversion, const UString& name, InputPluginFactory allocator)
+ts::PluginRepository::Register::Register(const UString& name, InputPluginFactory allocator)
 {
-    PluginRepository::Instance()->registerInput(libversion, name, allocator);
+    PluginRepository::Instance()->registerInput(name, allocator);
 }
 
-ts::PluginRepository::Register::Register(int libversion, const UString& name, ProcessorPluginFactory allocator)
+ts::PluginRepository::Register::Register(const UString& name, ProcessorPluginFactory allocator)
 {
-    PluginRepository::Instance()->registerProcessor(libversion, name, allocator);
+    PluginRepository::Instance()->registerProcessor(name, allocator);
 }
 
-ts::PluginRepository::Register::Register(int libversion, const UString& name, OutputPluginFactory allocator)
+ts::PluginRepository::Register::Register(const UString& name, OutputPluginFactory allocator)
 {
-    PluginRepository::Instance()->registerOutput(libversion, name, allocator);
+    PluginRepository::Instance()->registerOutput(name, allocator);
 }
 
 
