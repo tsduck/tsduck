@@ -1479,27 +1479,23 @@ namespace ts {
 // object files.
 //----------------------------------------------------------------------------
 
-#if !defined(DOXYGEN)
-//
-// The macro TS_SET_BUILD_MARK defines an internal string data in the
-// object file containin a string. The difficulty is to make sure that
-// the compiler will not optimize away this data (it is local and unused).
-//
+//!
+//! This macro generates a reference to some address (string literal, external symbol, etc.)
+//! The reference is a unique static symbol which is otherwise unused.
+//! The difficulty is to make sure that the compiler will not optimize away this data (it is local and unused).
+//! @param addr An address to reference (string literal, external symbol, etc.)
+//! @hideinitializer
+//!
 #if defined(TS_GCC)
-#define TS_SET_BUILD_MARK(s) static __attribute__ ((used)) const char* const _tsBuildMark = (s)
+#define TS_STATIC_REFERENCE(addr) \
+    static __attribute__ ((used)) volatile const void* volatile const TS_UNIQUE_NAME(ref) = (addr)
 #else
-#define TS_SET_BUILD_MARK(s)                                                  \
-    namespace {                                                               \
-        class _tsBuildMarkClass {                                             \
-            TS_NOBUILD_NOCOPY(_tsBuildMarkClass);                             \
-        public:                                                               \
-            const char* const str;                                            \
-            _tsBuildMarkClass(const char* _s): str(_s) {}                     \
-        };                                                                    \
-        const _tsBuildMarkClass _tsBuildMark(s);                              \
-    }
+// Keep this definition on one line because of TS_UNIQUE_NAME.
+#define TS_STATIC_REFERENCE(addr) \
+    static volatile const void* volatile const TS_UNIQUE_NAME(ref) = (addr); static volatile const void* volatile const TS_UNIQUE_NAME(ref2) = &TS_UNIQUE_NAME(ref)
 #endif
 
+#if !defined(DOXYGEN)
 //
 // Define the prefix which is used to locate the build marker string in the object file.
 // The first character in the prefix will be used as field separator.
@@ -1516,24 +1512,8 @@ namespace ts {
     #define TS_BUILD_VERSION TS_BUILD_MARK_SEPARATOR TS_VERSION_STRING
 #endif
 #define TS_BUILD_MARK_PREFIX TS_BUILD_MARK_SEPARATOR TS_BUILD_MARK_MARKER TS_BUILD_MARK_SEPARATOR "tsduck" TS_BUILD_VERSION TS_BUILD_MARK_SEPARATOR
-
-//
-// Disable one LLVM warning about non-reproduceability of data and time.
-// This sequence should be portable. However, GCC complains about pragmas
-// in this context. Probably a GCC bug but we need to handle it.
-//
-#if defined(TS_LLVM)
-    #define TSDUCK_SOURCE_BEGIN  TS_PUSH_WARNING() TS_LLVM_NOWARNING(date-time)
-    #define TSDUCK_SOURCE_END    TS_POP_WARNING()
-#else
-    #define TSDUCK_SOURCE_BEGIN
-    #define TSDUCK_SOURCE_END
-#endif
-
 #endif // DOXYGEN
 
-//!
-//! @hideinitializer
 //!
 //! This macro inserts a build mark in the source code, identifying it as part or TSDuck.
 //!
@@ -1551,7 +1531,9 @@ namespace ts {
 //!   by the asctime function.
 //! - Name of the source file which invokes the macro.
 //!
+//! @hideinitializer
+//!
 #define TSDUCK_SOURCE \
-    TSDUCK_SOURCE_BEGIN \
-    TS_SET_BUILD_MARK(TS_BUILD_MARK_PREFIX __DATE__ TS_BUILD_MARK_SEPARATOR __TIME__ TS_BUILD_MARK_SEPARATOR __FILE__ TS_BUILD_MARK_SEPARATOR) \
-    TSDUCK_SOURCE_END
+    TS_PUSH_WARNING() TS_LLVM_NOWARNING(date-time) \
+    TS_STATIC_REFERENCE(TS_BUILD_MARK_PREFIX __DATE__ TS_BUILD_MARK_SEPARATOR __TIME__ TS_BUILD_MARK_SEPARATOR __FILE__ TS_BUILD_MARK_SEPARATOR) \
+    TS_POP_WARNING()

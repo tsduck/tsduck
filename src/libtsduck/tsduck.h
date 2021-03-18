@@ -359,7 +359,6 @@
 #include "tsKeyTable.h"
 #include "tsLDT.h"
 #include "tsLegacyBandWidth.h"
-#include "tsLibraryVersion.h"
 #include "tsLinkageDescriptor.h"
 #include "tsLIT.h"
 #include "tsLNB.h"

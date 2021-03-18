@@ -37,7 +37,6 @@
 #include "tsReport.h"
 #include "tsThread.h"
 #include "tsVersion.h"
-#include "tsLibraryVersion.h"
 
 //!
 //! TSDuck namespace, containing all TSDuck classes and functions.
@@ -113,21 +112,6 @@ namespace ts {
         //!
         static int CompareVersions(const UString& v1, const UString& v2);
 
-        //!
-        //! Check that the TSDuck library is compatible with some external binary (application or shared library).
-        //!
-        //! This static method is typically invoked during the initialization of an external
-        //! binary which registers some plugin or extension. The @e version parameter is
-        //! provided by the external binary and is the version of the TSDuck library when
-        //! this external binary was compiled.
-        //!
-        //! @param [in] libversion The value of TS_LIBRARY_VERSION during the compilation
-        //! of some external application or shared library.
-        //! @return True when @a version is identical to the value of TS_LIBRARY_VERSION
-        //! during the compilation of the TSDuck library. Return false otherwise.
-        //!
-        static bool CheckLibraryVersion(int libversion);
-
     private:
         Report& _report;
         Report& _debug;
@@ -145,19 +129,20 @@ namespace ts {
 }
 
 extern "C" {
+    //!
     //! Major version of the TSDuck library as the int value of a symbol from the library.
+    //!
     extern const int TSDUCKDLL tsduckLibraryVersionMajor;
+    //!
     //! Minor version of the TSDuck library as the int value of a symbol from the library.
+    //!
     extern const int TSDUCKDLL tsduckLibraryVersionMinor;
+    //!
     //! Commit version of the TSDuck library as the int value of a symbol from the library.
+    //!
     extern const int TSDUCKDLL tsduckLibraryVersionCommit;
-    //! Interface version of the TSDuck library as the int value of a symbol from the library.
-    extern const int TSDUCKDLL tsduckLibraryVersionInterface;
 
     //! @cond nodoxygen
-    #define TS_SYM2(a,b) TS_SYM2a(a,b)
-    #define TS_SYM2a(a,b) a##_##b
-    #define TSDUCK_LIBRARY_ABI_SYMBOL TS_SYM2(TSDUCK_LIBRARY_ABI,TS_LIBRARY_VERSION)
     #define TS_SYM4(a,b,c,d) TS_SYM4a(a,b,c,d)
     #define TS_SYM4a(a,b,c,d) a##_##b##_##c##_##d
     #define TSDUCK_LIBRARY_VERSION_SYMBOL TS_SYM4(TSDUCK_LIBRARY_VERSION,TS_VERSION_MAJOR,TS_VERSION_MINOR,TS_COMMIT)
@@ -177,19 +162,22 @@ extern "C" {
     //! @endcode
     //!
     extern const int TSDUCKDLL TSDUCK_LIBRARY_VERSION_SYMBOL;
-
-    //!
-    //! ABI version of the TSDuck library in the name of a symbol from the library.
-    //!
-    //! Can be used to force an undefined reference at run-time in case of version mismatch.
-    //! The C++ application uses the name TSDUCK_LIBRARY_ABI_SYMBOL but this
-    //! generates a reference to a symbol containing the actual version number.
-    //!
-    //! Example:
-    //! @code
-    //!   $ nm -C tsVersionInfo.o | grep TSDUCK_LIBRARY_ABI
-    //!   00000000000008e0 R TSDUCK_LIBRARY_ABI_3
-    //! @endcode
-    //!
-    extern const int TSDUCKDLL TSDUCK_LIBRARY_ABI_SYMBOL;
 }
+
+//!
+//! A macro to use in application code to enforce the TSDuck library version.
+//!
+//! When this macro is used in an executable or shared library which uses the
+//! TSDuck library, it generates an external reference to a symbol name which
+//! contains the TSDuck library version number, at the time of the compilation
+//! of the application code. If the application is run later on a system with
+//! a TSDuck library with a different version, the reference won't be resolved
+//! and the application won't run.
+//!
+//! If we don't do this, the initialization of application automatically calls
+//! complex "Register" constructors in the TSDuck library which may fail if the
+//! version of the library is different.
+//!
+//! @hideinitializer
+//!
+#define TS_LIBCHECK() TS_STATIC_REFERENCE(&TSDUCK_LIBRARY_VERSION_SYMBOL)
