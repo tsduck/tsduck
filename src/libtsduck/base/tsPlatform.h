@@ -1512,6 +1512,20 @@ namespace ts {
     #define TS_BUILD_VERSION TS_BUILD_MARK_SEPARATOR TS_VERSION_STRING
 #endif
 #define TS_BUILD_MARK_PREFIX TS_BUILD_MARK_SEPARATOR TS_BUILD_MARK_MARKER TS_BUILD_MARK_SEPARATOR "tsduck" TS_BUILD_VERSION TS_BUILD_MARK_SEPARATOR
+
+//
+// Disable one LLVM warning about non-reproduceability of data and time.
+// This sequence should be portable. However, GCC complains about pragmas
+// in this context. Probably a GCC bug but we need to handle it.
+//
+#if defined(TS_LLVM)
+    #define TSDUCK_SOURCE_BEGIN  TS_PUSH_WARNING() TS_LLVM_NOWARNING(date-time)
+    #define TSDUCK_SOURCE_END    TS_POP_WARNING()
+#else
+    #define TSDUCK_SOURCE_BEGIN
+    #define TSDUCK_SOURCE_END
+#endif
+
 #endif // DOXYGEN
 
 //!
@@ -1534,6 +1548,6 @@ namespace ts {
 //! @hideinitializer
 //!
 #define TSDUCK_SOURCE \
-    TS_PUSH_WARNING() TS_LLVM_NOWARNING(date-time) \
+    TSDUCK_SOURCE_BEGIN \
     TS_STATIC_REFERENCE(TS_BUILD_MARK_PREFIX __DATE__ TS_BUILD_MARK_SEPARATOR __TIME__ TS_BUILD_MARK_SEPARATOR __FILE__ TS_BUILD_MARK_SEPARATOR) \
-    TS_POP_WARNING()
+    TSDUCK_SOURCE_END
