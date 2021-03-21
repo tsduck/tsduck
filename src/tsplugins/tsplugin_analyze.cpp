@@ -35,6 +35,7 @@
 #include "tsPluginRepository.h"
 #include "tsTSAnalyzerReport.h"
 #include "tsTSSpeedMetrics.h"
+#include "tsFileNameGenerator.h"
 #include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
@@ -68,6 +69,7 @@ namespace ts {
         TSSpeedMetrics    _metrics;
         NanoSecond        _next_report;
         TSAnalyzerReport  _analyzer;
+        FileNameGenerator _name_gen;
 
         bool openOutput();
         void closeOutput();
@@ -92,7 +94,8 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
     _output(nullptr),
     _metrics(),
     _next_report(0),
-    _analyzer(duck)
+    _analyzer(duck),
+    _name_gen()
 {
     // Define all standard analysis options.
     duck.defineArgsForStandards(*this);
@@ -113,7 +116,7 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
          u"When used with --interval and --output-file, create a new file for each "
          u"analysis instead of rewriting the previous file. Assuming that the "
          u"specified output file name has the form 'base.ext', each file is created "
-         u"with a time stamp in its name as 'base_YYYYMMDD_hhmmss.ext'.");
+         u"with a time stamp in its name as 'base-YYYYMMDD-hhmmss.ext'.");
 
     option(u"output-file", 'o', STRING);
     help(u"output-file", u"filename",
@@ -145,6 +148,7 @@ bool ts::AnalyzePlugin::start()
 {
     _output = _output_name.empty() ? &std::cout : &_output_stream;
     _analyzer.setAnalysisOptions(_analyzer_options);
+    _name_gen.initDateTime(_output_name);
 
     // For production of multiple reports at regular intervals.
     _metrics.start();
@@ -173,14 +177,7 @@ bool ts::AnalyzePlugin::openOutput()
     }
 
     // Build file name in case of --multiple-files
-    UString name;
-    if (_multiple_output) {
-        const Time::Fields now(Time::CurrentLocalTime());
-        name = UString::Format(u"%s_%04d%02d%02d_%02d%02d%02d%s", {PathPrefix(_output_name), now.year, now.month, now.day, now.hour, now.minute, now.second, PathSuffix(_output_name)});
-    }
-    else {
-        name = _output_name;
-    }
+    const UString name(_multiple_output ? _name_gen.newFileName() : _output_name);
 
     // Create the file
     _output_stream.open(name.toUTF8().c_str());

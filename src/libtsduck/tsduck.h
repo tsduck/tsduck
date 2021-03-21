@@ -272,6 +272,7 @@
 #include "tsExternalESIdDescriptor.h"
 #include "tsFatal.h"
 #include "tsFileInputPlugin.h"
+#include "tsFileNameGenerator.h"
 #include "tsFileNameRate.h"
 #include "tsFileOutputPlugin.h"
 #include "tsFilePacketPlugin.h"

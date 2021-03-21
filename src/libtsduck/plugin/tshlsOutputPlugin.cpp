@@ -44,7 +44,6 @@ const int ts::hls::OutputPlugin::REFERENCE = 0;
 #define DEFAULT_OUT_DURATION      10  // Default segment target duration for output streams.
 #define DEFAULT_OUT_LIVE_DURATION  5  // Default segment target duration for output live streams.
 #define DEFAULT_EXTRA_DURATION     2  // Default segment extra duration when intra image is not found.
-#define DEFAULT_OUT_NUM_WIDTH      6  // Default size of number field in output segment files.
 
 
 //----------------------------------------------------------------------------
@@ -62,10 +61,7 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     _fixedSegmentSize(0),
     _initialMediaSeq(0),
     _closeLabels(),
-    _segmentTemplateHead(),
-    _segmentTemplateTail(),
-    _segmentNumWidth(DEFAULT_OUT_NUM_WIDTH),
-    _segmentNextFile(0),
+    _nameGenerator(),
     _demux(duck, this),
     _patPackets(),
     _pmtPackets(),
@@ -84,7 +80,7 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     help(u"",
          u"Specify the name template of the output media segment files. "
          u"A number is automatically added to the name part so that successive segment "
-         u"files receive distinct names. Example: if the specified file name is foo-.ts, "
+         u"files receive distinct names. Example: if the specified file name is foo.ts, "
          u"the various segment files are named foo-000000.ts, foo-000001.ts, etc.\n\n"
          u"If the specified template already contains trailing digits, this unmodified "
          u"name is used for the first segment. Then, the integer part is incremented. "
@@ -192,25 +188,7 @@ bool ts::hls::OutputPlugin::getOptions()
 bool ts::hls::OutputPlugin::start()
 {
     // Analyze the segment file name template to isolate segments.
-    _segmentTemplateHead = PathPrefix(_segmentTemplate);
-    _segmentTemplateTail = PathSuffix(_segmentTemplate);
-
-    // Compute number of existing digits at end of template head.
-    const size_t len = _segmentTemplateHead.length();
-    _segmentNumWidth = 0;
-    while (_segmentNumWidth < len && IsDigit(_segmentTemplateHead[len - 1 - _segmentNumWidth])) {
-        _segmentNumWidth++;
-    }
-    if (_segmentNumWidth == 0) {
-        // No pre-existing integer field at end of file name. Use defaults.
-        _segmentNumWidth = DEFAULT_OUT_NUM_WIDTH;
-        _segmentNextFile = 0;
-    }
-    else {
-        // Use existing integer field as initial value.
-        _segmentTemplateHead.substr(len - _segmentNumWidth).toInteger(_segmentNextFile);
-        _segmentTemplateHead.erase(len - _segmentNumWidth);
-    }
+    _nameGenerator.initCounter(_segmentTemplate);
 
     // Initialize the demux to get the PAT and PMT.
     _demux.reset();
@@ -271,16 +249,13 @@ bool ts::hls::OutputPlugin::createNextSegment()
     }
 
     // Generate a new segment file name.
-    const UString fileName(UString::Format(u"%s%0*d%s", {_segmentTemplateHead, _segmentNumWidth, _segmentNextFile, _segmentTemplateTail}));
+    const UString fileName(_nameGenerator.newFileName());
 
     // Create the segment file.
     tsp->verbose(u"creating media segment %s", {fileName});
     if (!_segmentFile.open(fileName, TSFile::WRITE | TSFile::SHARED, *tsp)) {
         return false;
     }
-
-    // Increment index for next segment name.
-    _segmentNextFile++;
 
     // Reset the PCR analysis in each segment to get to bitrate of this segment.
     _pcrAnalyzer.reset();
